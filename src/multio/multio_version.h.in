@@ -1,0 +1,19 @@
+#ifndef multio_version_h
+#define multio_version_h
+
+#define MULTIO_VERSION_STR "@MULTIO_VERSION_STR@"
+#define MULTIO_VERSION     "@MULTIO_VERSION@"
+
+#define MULTIO_MAJOR_VERSION @MULTIO_MAJOR_VERSION@
+#define MULTIO_MINOR_VERSION @MULTIO_MINOR_VERSION@
+#define MULTIO_PATCH_VERSION @MULTIO_PATCH_VERSION@
+
+const char * multio_version();
+
+unsigned int multio_version_int();
+
+const char * multio_version_str();
+
+const char * multio_git_sha1();
+
+#endif

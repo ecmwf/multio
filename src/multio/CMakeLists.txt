@@ -15,7 +15,12 @@ configure_file( multio_version.cc.in  multio_version.cc )
 
 ### multio sources
 
-list( APPEND multio_srcs multio_version.cc ifsio.h ifsio.c )
+list( APPEND multio_srcs
+    multio_version.cc
+    MultIO.h
+    MultIO.cc
+    ifsio.h
+    ifsio.c )
 
 
 ### multio library

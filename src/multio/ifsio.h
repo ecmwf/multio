@@ -10,7 +10,7 @@
 
 /**
  *   @author Tiago Quintino
- *   @date Dec 2013
+ *   @date Dec 2015
  */
 
 #include <sys/types.h>

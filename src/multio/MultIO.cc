@@ -48,6 +48,53 @@ void MultIO::print(std::ostream&) const
 
 }
 
+//
+// LEGACY INTERFACE
+//
+
+int MultIO::iclosefdb(int *addr) {
+
+}
+
+int MultIO::iopenfdb(const char *name, int *addr, const char *mode, int name_len, int mode_len) {
+
+}
+
+int MultIO::iinitfdb(void) {
+
+}
+
+int MultIO::isetcommfdb(int *rank) {
+
+}
+
+int MultIO::isetrankfdb(int *addr, int *rank) {
+
+}
+
+int MultIO::iset_fdb_root(int *addr, const char *name, int name_len) {
+
+}
+
+int MultIO::ireadfdb(int *addr, void *data, int *words) {
+
+}
+
+int MultIO::iwritefdb(int *addr, void *data, int *words) {
+
+}
+
+int MultIO::iflushfdb(int *addr) {
+
+}
+
+int MultIO::isetfieldcountfdb(int *addr, int *all_ranks, int *this_rank) {
+
+}
+
+int MultIO::isetvalfdb(int *addr, const char *name, const char *value, int name_len, int value_len) {
+
+}
 
 //----------------------------------------------------------------------------------------------------------------------
 

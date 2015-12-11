@@ -42,6 +42,25 @@ public:
 
     virtual void close();
 
+    ///
+    /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO LEAN WRITE() INTERFACE
+    ///
+
+    int iclosefdb(int *addr);
+    int iopenfdb(const char *name, int *addr, const char *mode, int name_len, int mode_len);
+    int iinitfdb(void);
+
+    int isetcommfdb(int *rank);
+    int isetrankfdb(int *addr, int *rank);
+    int iset_fdb_root(int *addr, const char *name, int name_len);
+
+    int ireadfdb(int *addr, void *data, int *words);
+    int iwritefdb(int *addr, void *data, int *words);
+    int iflushfdb(int *addr);
+
+    int isetfieldcountfdb(int *addr, int *all_ranks, int *this_rank);
+    int isetvalfdb(int *addr, const char *name, const char *value, int name_len, int value_len);
+
 protected:
 
     virtual void print(std::ostream&) const;

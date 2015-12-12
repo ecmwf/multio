@@ -24,35 +24,46 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-MultIO::MultIO(const eckit::Configuration& config) : DataSink() {
+MultIO::MultIO(const eckit::Configuration& config) :
+    MultiplexerSink(config),
+    fdb4_(new FDB4(config)) {
 }
 
 MultIO::~MultIO() {
 }
 
-void MultIO::open(const std::string& key)
-{
+void MultIO::open(const std::string& key) {
 
+    fdb4().open(key);
+
+    MultiplexerSink::open(key);
 }
 
-void MultIO::write(const void* buffer, const eckit::Length& length)
-{
+void MultIO::write(const void* buffer, const eckit::Length& length) {
 
+    fdb4().write(buffer,length);
+
+    MultiplexerSink::write(buffer,length);
 }
 
-void MultIO::close()
-{
+void MultIO::close() {
+
+    fdb4().close();
+
+    MultiplexerSink::close();
 
 }
 
 FDB4& MultIO::fdb4() const
 {
     ASSERT(fdb4_);
+
+    return *fdb4_;
 }
 
 void MultIO::print(std::ostream&) const
 {
-
+    NOTIMP;
 }
 
 //----------------------------------------------------------------------------------------------------------------------

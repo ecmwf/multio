@@ -23,6 +23,7 @@
 #include "eckit/io/Length.h"
 
 #include "eckit/multiplexer/DataSink.h"
+#include "eckit/multiplexer/MultiplexerSink.h"
 
 namespace multio {
 
@@ -30,7 +31,7 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class MultIO : private eckit::multiplexer::DataSink {
+class MultIO : private eckit::multiplexer::MultiplexerSink {
 
 public:
 
@@ -63,7 +64,7 @@ private:
 
 private: // members
 
-    FDB4* fdb4_;
+    eckit::ScopedPtr<FDB4> fdb4_;
 
 };
 

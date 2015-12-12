@@ -10,6 +10,7 @@
 
 #include "eckit/runtime/Tool.h"
 #include "eckit/io/Buffer.h"
+#include "eckit/config/LocalConfiguration.h"
 
 #include "multio/MultIO.h"
 
@@ -35,13 +36,17 @@ void Mx::run()
     std::string key("myfdb");
     Buffer buffer(1024*1024);
 
-    MultIO multio;
+    LocalConfiguration config;
 
-    multio.open(key);
+    /// @TODO populate config
 
-    multio.write(buffer, buffer.size());
+    MultIO msink(config);
 
-    multio.close();
+    msink.open(key);
+
+    msink.write(buffer, buffer.size());
+
+    msink.close();
 }
 
 } // namespace multio

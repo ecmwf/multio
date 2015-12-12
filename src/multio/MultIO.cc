@@ -18,12 +18,14 @@
 #include "eckit/thread/Mutex.h"
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/FDB4.h"
+
 namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-MultIO::MultIO() {}
-
+MultIO::MultIO(const eckit::Configuration& config) : DataSink() {
+}
 
 MultIO::~MultIO() {
 }
@@ -43,56 +45,13 @@ void MultIO::close()
 
 }
 
+FDB4& MultIO::fdb4() const
+{
+    ASSERT(fdb4_);
+}
+
 void MultIO::print(std::ostream&) const
 {
-
-}
-
-//
-// LEGACY INTERFACE
-//
-
-int MultIO::iclosefdb(int *addr) {
-
-}
-
-int MultIO::iopenfdb(const char *name, int *addr, const char *mode, int name_len, int mode_len) {
-
-}
-
-int MultIO::iinitfdb(void) {
-
-}
-
-int MultIO::isetcommfdb(int *rank) {
-
-}
-
-int MultIO::isetrankfdb(int *addr, int *rank) {
-
-}
-
-int MultIO::iset_fdb_root(int *addr, const char *name, int name_len) {
-
-}
-
-int MultIO::ireadfdb(int *addr, void *data, int *words) {
-
-}
-
-int MultIO::iwritefdb(int *addr, void *data, int *words) {
-
-}
-
-int MultIO::iflushfdb(int *addr) {
-
-}
-
-int MultIO::isetfieldcountfdb(int *addr, int *all_ranks, int *this_rank) {
-
-}
-
-int MultIO::isetvalfdb(int *addr, const char *name, const char *value, int name_len, int value_len) {
 
 }
 

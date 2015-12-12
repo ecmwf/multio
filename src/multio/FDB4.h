@@ -12,8 +12,8 @@
 /// @date Dec 2015
 
 
-#ifndef multio_MultIO_H
-#define multio_MultIO_H
+#ifndef multio_FDB4_H
+#define multio_FDB4_H
 
 #include <iosfwd>
 #include <string>
@@ -26,17 +26,15 @@
 
 namespace multio {
 
-    class FDB4;
-
 //----------------------------------------------------------------------------------------------------------------------
 
-class MultIO : private eckit::multiplexer::DataSink {
+class FDB4 : private eckit::multiplexer::DataSink {
 
 public:
 
-    MultIO(const eckit::Configuration& config);
+    FDB4(const eckit::Configuration& config);
 
-    virtual ~MultIO();
+    virtual ~FDB4();
 
     virtual void open(const std::string& key);
 
@@ -45,10 +43,23 @@ public:
     virtual void close();
 
     ///
-    /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
+    /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO LEAN WRITE() INTERFACE
     ///
 
-    FDB4& fdb4() const;
+    int iclosefdb(int *addr);
+    int iopenfdb(const char *name, int *addr, const char *mode, int name_len, int mode_len);
+    int iinitfdb(void);
+
+    int isetcommfdb(int *rank);
+    int isetrankfdb(int *addr, int *rank);
+    int iset_fdb_root(int *addr, const char *name, int name_len);
+
+    int ireadfdb(int *addr, void *data, int *words);
+    int iwritefdb(int *addr, void *data, int *words);
+    int iflushfdb(int *addr);
+
+    int isetfieldcountfdb(int *addr, int *all_ranks, int *this_rank);
+    int isetvalfdb(int *addr, const char *name, const char *value, int name_len, int value_len);
 
 protected:
 
@@ -56,14 +67,10 @@ protected:
 
 private:
 
-    friend std::ostream &operator<<(std::ostream &s, const MultIO &p) {
+    friend std::ostream &operator<<(std::ostream &s, const FDB4 &p) {
         p.print(s);
         return s;
     }
-
-private: // members
-
-    FDB4* fdb4_;
 
 };
 

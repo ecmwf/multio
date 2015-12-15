@@ -25,6 +25,29 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+class JournalMessage {
+
+    // The journal has a certain file structure
+    //
+    // header
+    //   -- Magic tag
+    //   -- Version
+    // journal entries (repeated)
+    //   -- Each contained element has a single character code.
+    //   -- data
+    //      > Code "D"
+    //      > size_t length
+    //      > Data of that length
+    //   -- Journal entry
+    //      > Code "J"
+    //      > TODO: Some identifying information about the 
+    //      > size_t length
+    //      > Data (specific to the DataSink that did the journaling)
+
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+
 class Journal : private eckit::NonCopyable {
 
 public:

@@ -1,0 +1,9 @@
+- FileSink should be able to specify overwrite/not overwrite.
+- FileSink should be able to append to an existing file.
+- Deal with asynchronous file access.
+  > Assumes success, unless something throws
+  > Correctly journals on failure
+  > If journaling is not enabled, fails rather hard on failure
+  > Should be a type of FileSink
+- Journal should have a standardised way to write/read to/from file
+- ...

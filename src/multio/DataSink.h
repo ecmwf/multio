@@ -84,7 +84,8 @@ private: // methods
 private: // members
 
     bool failOnError_;
-    bool journaled_;
+    bool journaled_;        /// Write to a journal file
+    bool journalAlways_;    /// Write details to journal even if a write succeeds.
 
     Journal* journal_;
 

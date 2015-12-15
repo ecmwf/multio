@@ -38,4 +38,4 @@ ecbuild_add_library(TARGET multio
                     PRIVATE_INCLUDES
                         ${ECKIT_INCLUDE_DIRS}
                     LIBS
-                        eckit_multiplexer )
+                        multiplexer )

@@ -12,13 +12,9 @@ ecbuild_requires_macro_version( 2.0 )
 
 # eckit multiplexer
 
-ecbuild_use_package( PROJECT eckit VERSION  0.11 REQUIRED )
+ecbuild_use_package( PROJECT eckit VERSION  0.10 REQUIRED )
 
 ecbuild_debug("   ECKIT_FEATURES : [${ECKIT_FEATURES}]" )
-
-if( NOT ECKIT_HAVE_EXPERIMENTAL )
-   ecbuild_fatal( "eckit hasn't EXPERIMENTAL support" )
-endif()
 
 # fdb
 

@@ -9,71 +9,108 @@
  */
 
 /// @author Tiago Quintino
+/// @author Simon Smart
 /// @date Dec 2015
 
 
-#ifndef multio_MultIO_H
-#define multio_MultIO_H
+#ifndef multiplexer_DataSink_H
+#define multiplexer_DataSink_H
 
 #include <iosfwd>
 #include <string>
 #include <vector>
 
+#include "eckit/config/Configuration.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/io/Length.h"
+#include "eckit/io/Buffer.h"
 
-#include "multiplexer/DataSink.h"
-#include "multiplexer/MultiplexerSink.h"
-
-namespace multio {
+namespace eckit {
+namespace multiplexer {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class MultIO : public eckit::multiplexer::MultiplexerSink {
+class DataSink : private eckit::NonCopyable {
 
 public:
 
-    MultIO(const eckit::Configuration& config);
+    DataSink();
 
-    virtual ~MultIO();
+    virtual ~DataSink();
+
+    virtual void open(const std::string& key) = 0;
+
+    virtual void write(const void* buffer, const Length& length) = 0;
+
+    virtual void close() = 0;
 
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
     ///
 
     virtual int iopenfdb(const char *name, const char *mode, int name_len, int mode_len);
-    virtual int iinitfdb(void);
+    virtual int iinitfdb();
     // virtual int iclosefdb();
 
     virtual int isetcommfdb(int *rank);
     virtual int isetrankfdb(int *rank);
     virtual int iset_fdb_root(const char *name, int name_len);
 
-    virtual int ireadfdb(void *data, int *words);
-    // virtual int iwritefdb(void *data, int *words);
     virtual int iflushfdb();
 
     virtual int isetfieldcountfdb(int *all_ranks, int *this_rank);
     virtual int isetvalfdb(const char *name, const char *value, int name_len, int value_len);
 
+    // virtual int ireadfdb(void *data, int *words);
+    // virtual iwritefdb(void *data, int *words);
+
 protected:
 
-    virtual void print(std::ostream&) const;
+    virtual void print(std::ostream&) const = 0;
 
 private:
 
-    friend std::ostream &operator<<(std::ostream &s, const MultIO &p) {
+    friend std::ostream &operator<<(std::ostream &s, const DataSink &p) {
         p.print(s);
         return s;
     }
-
-private: // members
 
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace multio
+class DataSinkFactory {
+
+    std::string name_;
+    virtual DataSink* make(const Configuration& config) = 0;
+
+protected:
+
+    DataSinkFactory(const std::string&);
+    virtual ~DataSinkFactory();
+
+public:
+
+    static void list(std::ostream &);
+    static DataSink* build(const std::string&, const Configuration& config);
+
+};
+
+template< class T>
+class DataSinkBuilder : public DataSinkFactory {
+
+    virtual DataSink* make(const Configuration& config) {
+        return new T(config);
+    }
+
+public:
+    DataSinkBuilder(const std::string &name) : DataSinkFactory(name) {}
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+
+}  // namespace multiplexer
+}  // namespace eckit
 
 #endif
 

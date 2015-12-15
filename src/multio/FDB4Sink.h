@@ -22,7 +22,7 @@
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/io/Length.h"
 
-#include "eckit/multiplexer/DataSink.h"
+#include "multiplexer/DataSink.h"
 
 namespace multio {
 

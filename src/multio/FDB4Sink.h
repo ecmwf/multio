@@ -12,8 +12,8 @@
 /// @date Dec 2015
 
 
-#ifndef multio_FDB4_H
-#define multio_FDB4_H
+#ifndef multio_FDB4Sink_H
+#define multio_FDB4Sink_H
 
 #include <iosfwd>
 #include <string>
@@ -28,13 +28,13 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class FDB4 : private eckit::multiplexer::DataSink {
+class FDB4Sink : public eckit::multiplexer::DataSink {
 
 public:
 
-    FDB4(const eckit::Configuration& config);
+    FDB4Sink(const eckit::Configuration& config);
 
-    virtual ~FDB4();
+    virtual ~FDB4Sink();
 
     virtual void open(const std::string& key);
 
@@ -43,23 +43,24 @@ public:
     virtual void close();
 
     ///
-    /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO LEAN WRITE() INTERFACE
+    /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
     ///
 
-    int iclosefdb(int *addr);
-    int iopenfdb(const char *name, int *addr, const char *mode, int name_len, int mode_len);
-    int iinitfdb(void);
+    virtual int iclosefdb(int *addr);
+    virtual int iopenfdb(const char *name, int *addr, const char *mode, int name_len, int mode_len);
+    virtual int iinitfdb(void);
 
-    int isetcommfdb(int *rank);
-    int isetrankfdb(int *addr, int *rank);
-    int iset_fdb_root(int *addr, const char *name, int name_len);
+    virtual int isetcommfdb(int *rank);
+    virtual int isetrankfdb(int *addr, int *rank);
+    virtual int iset_fdb_root(int *addr, const char *name, int name_len);
 
-    int ireadfdb(int *addr, void *data, int *words);
-    int iwritefdb(int *addr, void *data, int *words);
-    int iflushfdb(int *addr);
+    virtual int iflushfdb(int *addr);
 
-    int isetfieldcountfdb(int *addr, int *all_ranks, int *this_rank);
-    int isetvalfdb(int *addr, const char *name, const char *value, int name_len, int value_len);
+    virtual int isetfieldcountfdb(int *addr, int *all_ranks, int *this_rank);
+    virtual int isetvalfdb(int *addr, const char *name, const char *value, int name_len, int value_len);
+
+    virtual int ireadfdb(int *addr, void *data, int *words);
+    // virtual iwritefdb(int *addr, void *data, int *words);
 
 protected:
 
@@ -67,7 +68,7 @@ protected:
 
 private:
 
-    friend std::ostream &operator<<(std::ostream &s, const FDB4 &p) {
+    friend std::ostream &operator<<(std::ostream &s, const FDB4Sink &p) {
         p.print(s);
         return s;
     }

@@ -18,53 +18,91 @@
 #include "eckit/thread/Mutex.h"
 #include "eckit/exception/Exceptions.h"
 
-#include "multio/FDB4.h"
+using namespace eckit;
+using namespace eckit::multiplexer;
 
 namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
 MultIO::MultIO(const eckit::Configuration& config) :
-    MultiplexerSink(config),
-    fdb4_(new FDB4(config)) {
+    MultiplexerSink(config) {
 }
 
 MultIO::~MultIO() {
 }
 
-void MultIO::open(const std::string& key) {
+//----------------------------------------------------------------------------------------------------------------------
 
-    fdb4().open(key);
-
-    MultiplexerSink::open(key);
+int MultIO::iopenfdb(const char *name, const char *mode, int name_len, int mode_len) {
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        (*it)->iopenfdb(name,mode,name_len,mode_len);
+    }
+    return 0;
 }
 
-void MultIO::write(const void* buffer, const eckit::Length& length) {
-
-    fdb4().write(buffer,length);
-
-    MultiplexerSink::write(buffer,length);
+int MultIO::iinitfdb() {
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        (*it)->iinitfdb();
+    }
+    return 0;
 }
 
-void MultIO::close() {
-
-    fdb4().close();
-
-    MultiplexerSink::close();
-
+int MultIO::isetcommfdb(int *rank) {
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        (*it)->isetcommfdb(rank);
+    }
+    return 0;
 }
 
-FDB4& MultIO::fdb4() const
-{
-    ASSERT(fdb4_);
-
-    return *fdb4_;
+int MultIO::isetrankfdb(int *rank) {
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        (*it)->isetrankfdb(rank);
+    }
+    return 0;
 }
 
-void MultIO::print(std::ostream&) const
-{
+int MultIO::iset_fdb_root(const char *name, int name_len) {
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        (*it)->iset_fdb_root(name,name_len);
+    }
+    return 0;
+}
+
+int MultIO::ireadfdb(void *data, int *words) {
     NOTIMP;
+    return 0;
 }
+
+int MultIO::iflushfdb() {
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        (*it)->iflushfdb();
+    }
+    return 0;
+}
+
+int MultIO::isetfieldcountfdb(int *all_ranks, int *this_rank) {
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        (*it)->isetfieldcountfdb(all_ranks,this_rank);
+    }
+    return 0;
+}
+
+int MultIO::isetvalfdb(const char *name, const char *value, int name_len, int value_len) {
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        (*it)->isetvalfdb(name,value,name_len,value_len);
+    }
+    return 0;
+}
+
+void MultIO::print(std::ostream& os) const
+{
+    os << "MultIO(";
+    MultiplexerSink::print(os);
+    os << ")";
+}
+
+DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");
 
 //----------------------------------------------------------------------------------------------------------------------
 

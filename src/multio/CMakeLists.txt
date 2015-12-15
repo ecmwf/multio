@@ -19,10 +19,10 @@ list( APPEND multio_srcs
     multio_version.cc
     MultIO.h
     MultIO.cc
-    FDB4.h
-    FDB4.cc
+    FDB4Sink.h
+    FDB4Sink.cc
     ifsio.h
-    ifsio.c )
+    ifsio.cc )
 
 
 ### multio library

@@ -25,6 +25,8 @@ list( APPEND multio_srcs
     MultIO.cc
     FDB4Sink.h
     FDB4Sink.cc
+    Journal.h
+    Journal.cc
     ifsio.h
     ifsio.cc )
 

@@ -47,12 +47,14 @@ void Mx::run()
             "    {"
             "        \"type\" : \"file\","
             "        \"path\" : \"bar.grib\""
+            "    },"
+            "    {"
+            "        \"type\" : \"file\","
+            "        \"path\" : \"/dev/null\""
             "    }"
             "   ] }" << std::endl;
 
     JSONConfiguration config(oss);
-
-    /// @TODO populate config
 
     MultIO msink(config);
 

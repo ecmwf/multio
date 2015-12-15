@@ -27,13 +27,16 @@
 
 namespace multio {
 
+    class Journal {};
+
 //----------------------------------------------------------------------------------------------------------------------
 
-class DataSink : private eckit::NonCopyable {
+class DataSink : private eckit::NonCopyable,
+                 public Journal {
 
-public:
+public: // methods
 
-    DataSink();
+    DataSink(const eckit::Configuration& config);
 
     virtual ~DataSink();
 
@@ -42,6 +45,8 @@ public:
     virtual void write(const void* buffer, const eckit::Length& length) = 0;
 
     virtual void close() = 0;
+
+    void journal(Journal *const journal) { journal_ = journal; }
 
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
@@ -63,16 +68,25 @@ public:
     // virtual int ireadfdb(void *data, int *words);
     // virtual iwritefdb(void *data, int *words);
 
-protected:
+protected: // methods
 
     virtual void print(std::ostream&) const = 0;
 
-private:
+    bool failOnError() { return failOnError_; }
+
+private: // methods
 
     friend std::ostream &operator<<(std::ostream &s, const DataSink &p) {
         p.print(s);
         return s;
     }
+
+private: // members
+
+    bool failOnError_;
+    bool journaled_;
+
+    Journal* journal_;
 
 };
 

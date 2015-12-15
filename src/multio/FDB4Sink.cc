@@ -24,7 +24,9 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-FDB4Sink::FDB4Sink(const Configuration& config) : DataSink() {}
+FDB4Sink::FDB4Sink(const Configuration& config) :
+    DataSink(config) {
+}
 
 FDB4Sink::~FDB4Sink() {
 }

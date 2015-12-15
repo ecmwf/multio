@@ -30,11 +30,13 @@ using namespace eckit;
 
 namespace multio {
 
-FileSink::FileSink(const Configuration& config)
-: path_( config.getString("path") ),
+FileSink::FileSink(const Configuration& config) :
+  DataSink(config),
+  path_( config.getString("path") ),
   handle_( path_.fileHandle() ),
   isOpen_(false)
 {
+    // config.getBool("aio",false);
 }
 
 FileSink::~FileSink() {

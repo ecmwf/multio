@@ -25,12 +25,14 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-MultIO::MultIO(const eckit::Configuration& config) {
+MultIO::MultIO(const eckit::Configuration& config) :
+    DataSink(config) {
 
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 
     for(std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end(); ++c) {
         sinks_.push_back( DataSinkFactory::build(c->getString("type"),*c) );
+        sinks_.back()->journal(this);
     }
 
 }

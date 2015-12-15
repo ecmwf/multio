@@ -36,7 +36,7 @@ public:
 
     virtual ~MultIO();
 
-    virtual void open(const std::string& key);
+    virtual void open();
 
     virtual void write(const void* buffer, const eckit::Length& length);
 

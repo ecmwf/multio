@@ -8,9 +8,11 @@
  * does it submit to any jurisdiction.
  */
 
+#include <sstream>
+
 #include "eckit/runtime/Tool.h"
 #include "eckit/io/Buffer.h"
-#include "eckit/config/LocalConfiguration.h"
+#include "eckit/config/JSONConfiguration.h"
 
 #include "multio/MultIO.h"
 
@@ -32,18 +34,29 @@ public:
 
 void Mx::run()
 {
-    std::string key("myfdb");
     Buffer buffer(1024*1024);
 
     /// @TODO load some data
 
-    LocalConfiguration config;
+    std::stringstream oss;
+    oss << "{ \"sinks\" : ["
+            "    {"
+            "        \"type\" : \"file\","
+            "        \"path\" : \"foo.grib\""
+            "    },"
+            "    {"
+            "        \"type\" : \"file\","
+            "        \"path\" : \"bar.grib\""
+            "    }"
+            "   ] }" << std::endl;
+
+    JSONConfiguration config(oss);
 
     /// @TODO populate config
 
     MultIO msink(config);
 
-    msink.open(key);
+    msink.open();
 
     msink.write(buffer, buffer.size());
 

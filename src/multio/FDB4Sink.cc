@@ -29,7 +29,7 @@ FDB4Sink::FDB4Sink(const Configuration& config) : DataSink() {}
 FDB4Sink::~FDB4Sink() {
 }
 
-void FDB4Sink::open(const std::string& key)
+void FDB4Sink::open()
 {
 
 }
@@ -49,15 +49,11 @@ void FDB4Sink::print(std::ostream& os) const
     os << "FDB4Sink()";
 }
 
-int FDB4Sink::iclosefdb(int *addr) {
+int FDB4Sink::iopenfdb(const char *name, const char *mode, int name_len, int mode_len) {
 
 }
 
-int FDB4Sink::iopenfdb(const char *name, int *addr, const char *mode, int name_len, int mode_len) {
-
-}
-
-int FDB4Sink::iinitfdb(void) {
+int FDB4Sink::iinitfdb() {
 
 }
 
@@ -65,27 +61,23 @@ int FDB4Sink::isetcommfdb(int *rank) {
 
 }
 
-int FDB4Sink::isetrankfdb(int *addr, int *rank) {
+int FDB4Sink::isetrankfdb(int *rank) {
 
 }
 
-int FDB4Sink::iset_fdb_root(int *addr, const char *name, int name_len) {
+int FDB4Sink::iset_fdb_root(const char *name, int name_len) {
 
 }
 
-int FDB4Sink::ireadfdb(int *addr, void *data, int *words) {
+int FDB4Sink::iflushfdb() {
 
 }
 
-int FDB4Sink::iflushfdb(int *addr) {
+int FDB4Sink::isetfieldcountfdb(int *all_ranks, int *this_rank) {
 
 }
 
-int FDB4Sink::isetfieldcountfdb(int *addr, int *all_ranks, int *this_rank) {
-
-}
-
-int FDB4Sink::isetvalfdb(int *addr, const char *name, const char *value, int name_len, int value_len) {
+int FDB4Sink::isetvalfdb(const char *name, const char *value, int name_len, int value_len) {
 
 }
 

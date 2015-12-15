@@ -22,6 +22,7 @@
 #include "eckit/io/Length.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
+#include "eckit/io/DataHandle.h"
 
 using namespace eckit;
 
@@ -29,54 +30,53 @@ using namespace eckit;
 
 namespace multio {
 
-FileSink::FileSink(const Configuration& config) : DataSink() {}
-
-FileSink::~FileSink() {
-    if (is_open())
-        close();
+FileSink::FileSink(const Configuration& config)
+: path_( config.getString("path") ),
+  handle_( path_.fileHandle() ),
+  isOpen_(false)
+{
 }
 
-void FileSink::open(const std::string& key) {
+FileSink::~FileSink() {
+    close();
+}
+
+void FileSink::open() {
+
     eckit::Log::info() << "[" << *this << "]: open" << std::endl;
+    eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
-    eckit::AutoLock<eckit::Mutex> lock(file_mutex_);
-
-    if (is_open())
-        throw eckit::SeriousBug("FileSink: Cannot open multiple times");
-
-    key_ = key;
-    file_.open(key_.c_str(), std::ios_base::trunc | std::ios_base::out);
+    if(!isOpen_) {
+        handle_->openForWrite(0);
+        isOpen_ = true;
+    }
 }
 
 void FileSink::write(const void* buffer, const Length& length) {
+
     eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
+    eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
-    eckit::AutoLock<eckit::Mutex> lock(file_mutex_);
-
-    if (!is_open())
-        throw eckit::SeriousBug(std::string("FileSink: Cannot write without opening"));
-
-    file_.write(reinterpret_cast<const char*>(buffer), length);
+    handle_->write(buffer, length);
 }
 
 void FileSink::close() {
+
     eckit::Log::info() << "[" << *this << "]: close" << std::endl;
+    eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
-    eckit::AutoLock<eckit::Mutex> lock(file_mutex_);
-
-    file_.close();
-    key_ = "";
+    if(isOpen_) {
+        handle_->close();
+        isOpen_ = false;
+    }
 }
 
-bool FileSink::is_open() const {
-    return file_.is_open();
-}
 
 void FileSink::print(std::ostream& os) const {
-    os << "DataSink (FileSink): " << key_;
+    os << "FileSink(path=" << path_ << ")";
 }
 
-DataSinkBuilder<FileSink> FileSinkFactorySingleton("foo");
+DataSinkBuilder<FileSink> FileSinkFactorySingleton("file");
 
 }  // namespace multiplexer
 

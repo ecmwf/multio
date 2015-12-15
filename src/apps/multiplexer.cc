@@ -14,7 +14,8 @@
 #include "eckit/memory/ScopedPtr.h"
 #include "eckit/io/Buffer.h"
 
-#include "eckit/config/LocalConfiguration.h"
+#include "eckit/config/JSONConfiguration.h"
+
 #include "multio/DataSink.h"
 #include "multio/DummySource.h"
 #include "multio/MultIO.h"
@@ -35,7 +36,10 @@ public:
 
 void Multiplexer::run()
 {
-    LocalConfiguration config;
+    std::istringstream iss;
+    iss << "{}" << std::endl;
+
+    JSONConfiguration config(iss);
 
     /// @TODO populate config
 

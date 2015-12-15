@@ -37,7 +37,7 @@ public:
 
     virtual ~DataSink();
 
-    virtual void open(const std::string& key) = 0;
+    virtual void open() = 0;
 
     virtual void write(const void* buffer, const eckit::Length& length) = 0;
 

@@ -20,10 +20,14 @@
 
 #include "eckit/io/Length.h"
 #include "eckit/memory/NonCopyable.h"
+#include "eckit/memory/ScopedPtr.h"
 #include "eckit/thread/Mutex.h"
+#include "eckit/filesystem/PathName.h"
 #include "multio/DataSink.h"
 
 //----------------------------------------------------------------------------------------------------------------------
+
+namespace eckit { class FileHandle; }
 
 namespace multio {
 
@@ -35,7 +39,7 @@ public:
 
     virtual ~FileSink();
 
-    virtual void open(const std::string& key);
+    virtual void open();
 
     virtual void write(const void* buffer, const eckit::Length& length);
 
@@ -45,13 +49,13 @@ protected:
 
     virtual void print(std::ostream&) const;
 
-    bool is_open() const;
-
 private:
 
-    std::string key_;
-    std::ofstream file_;
-    eckit::Mutex file_mutex_;
+    eckit::PathName path_;
+    eckit::ScopedPtr<eckit::DataHandle> handle_;
+    eckit::Mutex mutex_;
+
+    bool isOpen_;
 
 };
 

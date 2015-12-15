@@ -30,7 +30,7 @@ MultIO::MultIO(const eckit::Configuration& config) {
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 
     for(std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end(); ++c) {
-        sinks_.push_back( DataSinkFactory::build(c->getString("sinkName"),*c) );
+        sinks_.push_back( DataSinkFactory::build(c->getString("type"),*c) );
     }
 
 }
@@ -45,12 +45,12 @@ MultIO::~MultIO() {
 }
 
 
-void MultIO::open(const std::string& key) {
+void MultIO::open() {
 
     eckit::Log::info() << "[" << *this << "]: open" << std::endl;
 
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->open(key);
+        (*it)->open();
     }
 }
 

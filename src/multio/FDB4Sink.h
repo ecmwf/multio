@@ -36,7 +36,7 @@ public:
 
     virtual ~FDB4Sink();
 
-    virtual void open(const std::string& key);
+    virtual void open();
 
     virtual void write(const void* buffer, const eckit::Length& length);
 
@@ -46,21 +46,21 @@ public:
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
     ///
 
-    virtual int iclosefdb(int *addr);
-    virtual int iopenfdb(const char *name, int *addr, const char *mode, int name_len, int mode_len);
-    virtual int iinitfdb(void);
+    virtual int iopenfdb(const char *name, const char *mode, int name_len, int mode_len);
+    virtual int iinitfdb();
+    // virtual int iclosefdb();
 
     virtual int isetcommfdb(int *rank);
-    virtual int isetrankfdb(int *addr, int *rank);
-    virtual int iset_fdb_root(int *addr, const char *name, int name_len);
+    virtual int isetrankfdb(int *rank);
+    virtual int iset_fdb_root(const char *name, int name_len);
 
-    virtual int iflushfdb(int *addr);
+    virtual int iflushfdb();
 
-    virtual int isetfieldcountfdb(int *addr, int *all_ranks, int *this_rank);
-    virtual int isetvalfdb(int *addr, const char *name, const char *value, int name_len, int value_len);
+    virtual int isetfieldcountfdb(int *all_ranks, int *this_rank);
+    virtual int isetvalfdb(const char *name, const char *value, int name_len, int value_len);
 
-    virtual int ireadfdb(int *addr, void *data, int *words);
-    // virtual iwritefdb(int *addr, void *data, int *words);
+    // virtual int ireadfdb(void *data, int *words);
+    // virtual iwritefdb(void *data, int *words);
 
 protected:
 
@@ -72,6 +72,8 @@ private:
         p.print(s);
         return s;
     }
+
+private:
 
 };
 

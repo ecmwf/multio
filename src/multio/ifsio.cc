@@ -14,7 +14,9 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/thread/AutoLock.h"
-#include "eckit/config/LocalConfiguration.h"
+#include "eckit/config/Resource.h"
+#include "eckit/config/JSONConfiguration.h"
+#include "eckit/filesystem/PathName.h"
 
 #include "multio/multio_version.h"
 #include "multio/ifsio.h"
@@ -22,6 +24,7 @@
 #include "multio/MultIO.h"
 
 
+using namespace eckit;
 using namespace multio;
 
 static multio::MultIO* mio = 0;
@@ -31,8 +34,12 @@ static eckit::Mutex *local_mutex = 0;
 static pthread_once_t once = PTHREAD_ONCE_INIT;
 
 static void init() {
+
     local_mutex = new eckit::Mutex();
-    eckit::LocalConfiguration config;
+
+    PathName multioConfigFile = Resource<PathName>("multioConfigFile;$MULTIO_CONFIG_FILE", "multio.json");
+    eckit::JSONConfiguration config(multioConfigFile);
+
     mio = new MultIO(config);
 }
 
@@ -73,9 +80,7 @@ fortint iopenfdb_(const char* name, fortint* addr, const char* mode, int name_le
     *addr = 1;
     fdbAddr = *addr;
 
-    std::string key; /// build from fortran
-    NOTIMP;
-    mio->open(key);
+    mio->open();
 
     return res;
 }

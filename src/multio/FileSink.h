@@ -51,11 +51,16 @@ protected:
 
 private:
 
+    // TODO: Discuss with Tiago. I have put these here so that truncate_ is initialised
+    //       before handle_. How would you prefer to handle that.
+    bool isOpen_;
+    bool append_;
+    bool truncate_;
+
     eckit::PathName path_;
     eckit::ScopedPtr<eckit::DataHandle> handle_;
     eckit::Mutex mutex_;
 
-    bool isOpen_;
 
 };
 

@@ -13,8 +13,8 @@
 /// @date Dec 2015
 
 
-#ifndef multiplexer_DataSink_H
-#define multiplexer_DataSink_H
+#ifndef multio_DataSink_H
+#define multio_DataSink_H
 
 #include <iosfwd>
 #include <string>
@@ -25,8 +25,7 @@
 #include "eckit/io/Length.h"
 #include "eckit/io/Buffer.h"
 
-namespace eckit {
-namespace multiplexer {
+namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -40,7 +39,7 @@ public:
 
     virtual void open(const std::string& key) = 0;
 
-    virtual void write(const void* buffer, const Length& length) = 0;
+    virtual void write(const void* buffer, const eckit::Length& length) = 0;
 
     virtual void close() = 0;
 
@@ -82,7 +81,7 @@ private:
 class DataSinkFactory {
 
     std::string name_;
-    virtual DataSink* make(const Configuration& config) = 0;
+    virtual DataSink* make(const eckit::Configuration& config) = 0;
 
 protected:
 
@@ -92,14 +91,14 @@ protected:
 public:
 
     static void list(std::ostream &);
-    static DataSink* build(const std::string&, const Configuration& config);
+    static DataSink* build(const std::string&, const eckit::Configuration& config);
 
 };
 
 template< class T>
 class DataSinkBuilder : public DataSinkFactory {
 
-    virtual DataSink* make(const Configuration& config) {
+    virtual DataSink* make(const eckit::Configuration& config) {
         return new T(config);
     }
 
@@ -110,7 +109,6 @@ public:
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multiplexer
-}  // namespace eckit
 
 #endif
 

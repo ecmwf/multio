@@ -11,10 +11,8 @@
 /// @author Tiago Quintino
 /// @author Simon Smart
 /// @date Dec 2015
-
-
-#ifndef multiplexer_DummySink_H
-#define multiplexer_DummySink_H
+#ifndef multio_FileSink_H
+#define multio_FileSink_H
 
 #include <iosfwd>
 #include <string>
@@ -23,24 +21,23 @@
 #include "eckit/io/Length.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/thread/Mutex.h"
-#include "multiplexer/DataSink.h"
-
-namespace eckit {
-namespace multiplexer {
+#include "multio/DataSink.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class DummySink : public DataSink {
+namespace multio {
+
+class FileSink : public DataSink {
 
 public:
 
-    DummySink(const Configuration& config);
+    FileSink(const eckit::Configuration& config);
 
-    virtual ~DummySink();
+    virtual ~FileSink();
 
     virtual void open(const std::string& key);
 
-    virtual void write(const void* buffer, const Length& length);
+    virtual void write(const void* buffer, const eckit::Length& length);
 
     virtual void close();
 
@@ -61,7 +58,6 @@ private:
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multiplexer
-}  // namespace eckit
 
-#endif // multiplexer_DummySink_H
+#endif // multio_FileSink_H
 

@@ -15,11 +15,10 @@
 #include "grib_api.h"
 
 #include "eckit/io/Length.h"
-#include "multiplexer/DataSink.h"
-#include "multiplexer/DummySource.h"
+#include "multio/DataSink.h"
+#include "multio/DummySource.h"
 
-namespace eckit {
-namespace multiplexer {
+namespace multio {
 
 //-------------------------------------------------------------------------------------------------
 
@@ -88,5 +87,4 @@ void DummySource::generate_field() {
 }
 
 } // eckit
-} // multiplexer
 

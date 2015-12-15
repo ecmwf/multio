@@ -22,13 +22,13 @@
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/io/Length.h"
 
-#include "multiplexer/DataSink.h"
+#include "multio/DataSink.h"
 
 namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class FDB4Sink : public eckit::multiplexer::DataSink {
+class FDB4Sink : public DataSink {
 
 public:
 

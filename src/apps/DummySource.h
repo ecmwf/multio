@@ -11,15 +11,14 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
-#ifndef multiplexer_DummySource_H
-#define multiplexer_DummySource_H
+#ifndef multio_DummySource_H
+#define multio_DummySource_H
 
 #include "eckit/memory/ScopedPtr.h"
 
-#include "multiplexer/DataSink.h"
+#include "multio/DataSink.h"
 
-namespace eckit {
-namespace multiplexer {
+namespace multio {
 
 // --------------------------------------------------------------------------------------------------
 
@@ -42,6 +41,5 @@ private:
 // --------------------------------------------------------------------------------------------------
 
 } // multiplexer
-} // eckit
 
 #endif

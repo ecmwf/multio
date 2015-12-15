@@ -12,14 +12,15 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
-#include "multiplexer/DataSink.h"
+#include "multio/DataSink.h"
 
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
 #include "eckit/exception/Exceptions.h"
 
-namespace eckit {
-namespace multiplexer {
+using namespace eckit;
+
+namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -63,7 +64,7 @@ void DataSinkFactory::list(std::ostream& out) {
 }
 
 
-DataSink* DataSinkFactory::build(const std::string &name, const Configuration& config) {
+DataSink* DataSinkFactory::build(const std::string &name, const eckit::Configuration& config) {
 
     pthread_once(&once, init);
 
@@ -127,5 +128,4 @@ int DataSink::isetvalfdb(const char *name, const char *value, int name_len, int 
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multiplexer
-}  // namespace eckit
 

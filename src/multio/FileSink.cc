@@ -15,52 +15,51 @@
 #include <iosfwd>
 #include <fstream>
 
-#include "multiplexer/DummySink.h"
-#include "multiplexer/DataSink.h"
+#include "multio/FileSink.h"
+#include "multio/DataSink.h"
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/Length.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
 
-namespace eckit {
-namespace multiplexer {
+using namespace eckit;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+namespace multio {
 
-DummySink::DummySink(const Configuration& config) : DataSink() {}
+FileSink::FileSink(const Configuration& config) : DataSink() {}
 
-
-DummySink::~DummySink() {
+FileSink::~FileSink() {
     if (is_open())
         close();
 }
 
-void DummySink::open(const std::string& key) {
+void FileSink::open(const std::string& key) {
     eckit::Log::info() << "[" << *this << "]: open" << std::endl;
 
     eckit::AutoLock<eckit::Mutex> lock(file_mutex_);
 
     if (is_open())
-        throw eckit::SeriousBug("DummySink: Cannot open multiple times");
+        throw eckit::SeriousBug("FileSink: Cannot open multiple times");
 
     key_ = key;
     file_.open(key_.c_str(), std::ios_base::trunc | std::ios_base::out);
 }
 
-void DummySink::write(const void* buffer, const Length& length) {
+void FileSink::write(const void* buffer, const Length& length) {
     eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
 
     eckit::AutoLock<eckit::Mutex> lock(file_mutex_);
 
     if (!is_open())
-        throw eckit::SeriousBug(std::string("DummySink: Cannot write without opening"));
+        throw eckit::SeriousBug(std::string("FileSink: Cannot write without opening"));
 
     file_.write(reinterpret_cast<const char*>(buffer), length);
 }
 
-void DummySink::close() {
+void FileSink::close() {
     eckit::Log::info() << "[" << *this << "]: close" << std::endl;
 
     eckit::AutoLock<eckit::Mutex> lock(file_mutex_);
@@ -69,18 +68,16 @@ void DummySink::close() {
     key_ = "";
 }
 
-bool DummySink::is_open() const {
+bool FileSink::is_open() const {
     return file_.is_open();
 }
 
-void DummySink::print(std::ostream& os) const {
-    os << "DataSink (DummySink): " << key_;
+void FileSink::print(std::ostream& os) const {
+    os << "DataSink (FileSink): " << key_;
 }
 
-DataSinkBuilder<DummySink> DummySinkFactorySingleton("foo");
-
-//----------------------------------------------------------------------------------------------------------------------
+DataSinkBuilder<FileSink> FileSinkFactorySingleton("foo");
 
 }  // namespace multiplexer
-}  // namespace eckit
+
 

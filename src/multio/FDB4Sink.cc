@@ -19,7 +19,6 @@
 #include "eckit/exception/Exceptions.h"
 
 using namespace eckit;
-using namespace eckit::multiplexer;
 
 namespace multio {
 

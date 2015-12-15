@@ -4,3 +4,25 @@ ecbuild_add_executable(
     INCLUDES ${ECKIT_INCLUDE_DIRS}
     LIBS multio
 )
+
+ecbuild_add_executable(
+
+    TARGET multiplexer
+    NOINSTALL
+
+    CONDITION
+        HAVE_GRIB
+
+    SOURCES
+        multiplexer.cc
+        DummySource.cc
+        DummySource.h
+
+    INCLUDES
+        ${ECKIT_INCLUDE_DIRS}
+        ${GRIB_API_INCLUDE_DIRS}
+
+    LIBS
+        multio
+        ${GRIB_API_LIBRARIES}
+)

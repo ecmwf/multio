@@ -17,20 +17,72 @@
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/config/LocalConfiguration.h"
 
 using namespace eckit;
-using namespace eckit::multiplexer;
 
 namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-MultIO::MultIO(const eckit::Configuration& config) :
-    MultiplexerSink(config) {
+MultIO::MultIO(const eckit::Configuration& config) {
+
+    const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
+
+    for(std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end(); ++c) {
+        sinks_.push_back( DataSinkFactory::build(c->getString("sinkName"),*c) );
+    }
+
 }
 
 MultIO::~MultIO() {
+
+    close();
+
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        delete (*it);
+    }
 }
+
+
+void MultIO::open(const std::string& key) {
+
+    eckit::Log::info() << "[" << *this << "]: open" << std::endl;
+
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        (*it)->open(key);
+    }
+}
+
+
+void MultIO::write(const void* buffer, const Length& length) {
+
+    eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
+
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        (*it)->write(buffer, length);
+    }
+}
+
+
+void MultIO::close() {
+
+    eckit::Log::info() << "[" << *this << "]: close" << std::endl;
+
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        (*it)->close();
+    }
+}
+
+void MultIO::print(std::ostream& os) const {
+    os << "MultIO(";
+    for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        os << (*it);
+    }
+    os << ")";
+}
+
+
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -69,11 +121,6 @@ int MultIO::iset_fdb_root(const char *name, int name_len) {
     return 0;
 }
 
-int MultIO::ireadfdb(void *data, int *words) {
-    NOTIMP;
-    return 0;
-}
-
 int MultIO::iflushfdb() {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->iflushfdb();
@@ -93,13 +140,6 @@ int MultIO::isetvalfdb(const char *name, const char *value, int name_len, int va
         (*it)->isetvalfdb(name,value,name_len,value_len);
     }
     return 0;
-}
-
-void MultIO::print(std::ostream& os) const
-{
-    os << "MultIO(";
-    MultiplexerSink::print(os);
-    os << ")";
 }
 
 DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");

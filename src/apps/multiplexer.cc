@@ -15,12 +15,11 @@
 #include "eckit/io/Buffer.h"
 
 #include "eckit/config/LocalConfiguration.h"
-#include "multiplexer/DataSink.h"
-#include "multiplexer/DummySource.h"
-#include "multiplexer/MultiplexerSink.h"
+#include "multio/DataSink.h"
+#include "multio/DummySource.h"
+#include "multio/MultIO.h"
 
-namespace eckit {
-namespace multiplexer {
+namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -40,7 +39,7 @@ void Multiplexer::run()
 
     /// @TODO populate config
 
-    MultiplexerSink sink(config);
+    MultIO sink(config);
 
     DummySource source(sink, "twiddle.tmp");
 
@@ -57,8 +56,7 @@ void Multiplexer::run()
    // ptr->close();
 }
 
-} // namespace multiplexer
-} // namespace eckit
+} // namespace multio
 
 //----------------------------------------------------------------------------------------------------------------------
 

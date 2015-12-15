@@ -22,20 +22,25 @@
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/io/Length.h"
 
-#include "multiplexer/DataSink.h"
-#include "multiplexer/MultiplexerSink.h"
+#include "multio/DataSink.h"
 
 namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class MultIO : public eckit::multiplexer::MultiplexerSink {
+class MultIO : public DataSink {
 
 public:
 
     MultIO(const eckit::Configuration& config);
 
     virtual ~MultIO();
+
+    virtual void open(const std::string& key);
+
+    virtual void write(const void* buffer, const eckit::Length& length);
+
+    virtual void close();
 
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
@@ -49,25 +54,31 @@ public:
     virtual int isetrankfdb(int *rank);
     virtual int iset_fdb_root(const char *name, int name_len);
 
-    virtual int ireadfdb(void *data, int *words);
+    // virtual int ireadfdb(void *data, int *words);
     // virtual int iwritefdb(void *data, int *words);
     virtual int iflushfdb();
 
     virtual int isetfieldcountfdb(int *all_ranks, int *this_rank);
     virtual int isetvalfdb(const char *name, const char *value, int name_len, int value_len);
 
+protected: // types
+
+    typedef std::vector<DataSink*> sink_store_t;
+
 protected:
 
     virtual void print(std::ostream&) const;
 
-private:
+protected: // members
+
+    sink_store_t sinks_;
+
+private: // methods
 
     friend std::ostream &operator<<(std::ostream &s, const MultIO &p) {
         p.print(s);
         return s;
     }
-
-private: // members
 
 };
 

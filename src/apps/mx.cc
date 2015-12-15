@@ -15,7 +15,6 @@
 #include "multio/MultIO.h"
 
 using namespace eckit;
-using namespace eckit::multiplexer;
 
 namespace multio {
 
@@ -35,6 +34,8 @@ void Mx::run()
 {
     std::string key("myfdb");
     Buffer buffer(1024*1024);
+
+    /// @TODO load some data
 
     LocalConfiguration config;
 

@@ -33,10 +33,9 @@ namespace multio {
 FileSink::FileSink(const Configuration& config) :
     DataSink(config),
     isOpen_(false),
-    append_(config.getBool("append", false)),
     truncate_(config.getBool("truncate", false)),
     path_( config.getString("path") ),
-    handle_( path_.fileHandle(!truncate_) )
+    handle_( path_.fileHandle(false) )
 {
     // config.getBool("aio",false);
     eckit::Log::info() << "Config: " << truncate_ << std::endl;
@@ -51,11 +50,9 @@ void FileSink::open() {
     eckit::Log::info() << "[" << *this << "]: open" << std::endl;
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
-    if(!isOpen_) {
+    if (!isOpen_) {
 
-        // Note that we have set overwrite_ = !truncate_. Thus if we are not truncating
-        // it tries to overwrite, but determines that the file size is not zero and ASSERTS
-        if (append_) {
+        if (!truncate_) {
             handle_->openForAppend(0);
         } else {
             handle_->openForWrite(0);

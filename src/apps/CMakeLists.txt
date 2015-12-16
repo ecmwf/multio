@@ -26,3 +26,10 @@ ecbuild_add_executable(
         multio
         ${GRIB_API_LIBRARIES}
 )
+
+ecbuild_add_executable(
+    TARGET readjournal
+    SOURCES readjournal.cc
+    INCLUDES ${ECKIT_INCLUDE_DIRS}
+    LIBS multio
+)

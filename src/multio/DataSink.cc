@@ -89,7 +89,9 @@ DataSink* DataSinkFactory::build(const std::string &name, const eckit::Configura
 DataSink::DataSink(const eckit::Configuration& config) :
     Journal(config),
     failOnError_( config.getBool("failOnError",true) ),
-    journaled_( config.getBool("journaled",false) ) {
+    journaled_( config.getBool("journaled",false) ),
+    // By default, use self as the journal, unless externally overridden.
+    journal_(this) {
 }
 
 DataSink::~DataSink() {}

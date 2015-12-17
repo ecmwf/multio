@@ -39,7 +39,7 @@ void Mx::run()
     /// @TODO load some data
 
     std::stringstream oss;
-    oss << "{ \"journalfile\": \"journal_%s\","
+    oss << "{ \"journalfile\": \"customjournal\","
             " \"sinks\" : ["
             "    {"
             "        \"type\" : \"file\","

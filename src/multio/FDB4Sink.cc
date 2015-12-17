@@ -31,7 +31,7 @@ FDB4Sink::FDB4Sink(const Configuration& config) :
 FDB4Sink::~FDB4Sink() {
 }
 
-void FDB4Sink::open()
+void FDB4Sink::open_()
 {
 
 }

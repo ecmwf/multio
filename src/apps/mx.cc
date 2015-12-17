@@ -39,11 +39,12 @@ void Mx::run()
     /// @TODO load some data
 
     std::stringstream oss;
-    oss << "{ \"sinks\" : ["
+    oss << "{ \"journalfile\": \"journal_%s\","
+            " \"sinks\" : ["
             "    {"
             "        \"type\" : \"file\","
             "        \"path\" : \"foo.grib\","
-            "        \"truncate\": true"
+            "        \"truncate\": true,"
             "    },"
             "    {"
             "        \"type\" : \"file\","

@@ -39,7 +39,7 @@ public:
 
     virtual ~FileSink();
 
-    virtual void open();
+    virtual void open_();
 
     virtual void write(const void* buffer, const eckit::Length& length);
 

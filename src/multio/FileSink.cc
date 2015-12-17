@@ -45,7 +45,7 @@ FileSink::~FileSink() {
     close();
 }
 
-void FileSink::open() {
+void FileSink::open_() {
 
     eckit::Log::info() << "[" << *this << "]: open" << std::endl;
     eckit::AutoLock<eckit::Mutex> lock(mutex_);

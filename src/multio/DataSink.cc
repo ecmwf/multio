@@ -87,6 +87,7 @@ DataSink* DataSinkFactory::build(const std::string &name, const eckit::Configura
 //----------------------------------------------------------------------------------------------------------------------
 
 DataSink::DataSink(const eckit::Configuration& config) :
+    Journal(config),
     failOnError_( config.getBool("failOnError",true) ),
     journaled_( config.getBool("journaled",false) ) {
 }
@@ -94,6 +95,14 @@ DataSink::DataSink(const eckit::Configuration& config) :
 DataSink::~DataSink() {}
 
 //----------------------------------------------------------------------------------------------------------------------
+
+void DataSink::open() {
+
+    journal_->open();
+
+    // Call the implementation specific open routine.
+    open_();
+}
 
 int DataSink::iopenfdb(const char *name, const char *mode, int name_len, int mode_len) {
     return 0;

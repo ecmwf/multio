@@ -25,14 +25,14 @@
 #include "eckit/io/Length.h"
 #include "eckit/io/Buffer.h"
 
-namespace multio {
+#include "Journal.h"
 
-    class Journal {};
+namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class DataSink : private eckit::NonCopyable,
-                 public Journal {
+// n.b. Journal is already NonCopyable
+class DataSink : public Journal {
 
 public: // methods
 
@@ -40,7 +40,10 @@ public: // methods
 
     virtual ~DataSink();
 
-    virtual void open() = 0;
+    // open() and its ilk ensure that journaling is correctly set up.
+    // open_() implement the sink-specific functionality
+    void open();
+    virtual void open_() = 0;
 
     virtual void write(const void* buffer, const eckit::Length& length) = 0;
 

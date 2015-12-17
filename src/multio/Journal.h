@@ -9,6 +9,7 @@
  */
 
 /// @author Tiago Quintino
+/// @author Simon Smart
 /// @date Dec 2015
 
 
@@ -19,59 +20,70 @@
 #include <string>
 #include <vector>
 
+#include "eckit/config/Configuration.h"
+#include "eckit/filesystem/PathName.h"
+#include "eckit/io/DataHandle.h"
 #include "eckit/memory/NonCopyable.h"
+#include "eckit/memory/ScopedPtr.h"
+#include "eckit/thread/Mutex.h"
+#include "eckit/types/FixedString.h"
 
 namespace multio {
 
-//----------------------------------------------------------------------------------------------------------------------
-
-class JournalMessage {
-
-    // The journal has a certain file structure
-    //
-    // header
-    //   -- Magic tag
-    //   -- Version
-    // journal entries (repeated)
-    //   -- Each contained element has a single character code.
-    //   -- data
-    //      > Code "D"
-    //      > size_t length
-    //      > Data of that length
-    //   -- Journal entry
-    //      > Code "J"
-    //      > TODO: Some identifying information about the 
-    //      > size_t length
-    //      > Data (specific to the DataSink that did the journaling)
-
-};
-
-//----------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
 
 class Journal : private eckit::NonCopyable {
 
-public:
+public: // types
 
-    Journal();
+    struct Header {
+
+        eckit::FixedString<8> tag_;             // (8)   Magic tag (IOJOU999) [I/O Journal 999]
+        unsigned char         tagVersion;       // (1)   Identify journal version.
+        unsigned char         unused_[3];       // (3)   Reserved for future use. 
+
+        unsigned char         unused2_[116];    // (116) reserved for future use.
+    } head_;
+
+    // TODO:
+    struct Footer {
+    } foot_;
+
+public: // methods
+
+    Journal(const eckit::Configuration& config);
 
     ~Journal();
 
-protected:
+    /// If the journal is not yet open, then open it and write header info.
+    void open();
+
+    /// If the journal is open, finalise and close it.
+    void close();
+
+protected: // methods
 
     void print(std::ostream&) const;
 
-private:
+private: // methods
+
+    void init_header();
 
     friend std::ostream &operator<<(std::ostream &s, const Journal &p) {
         p.print(s);
         return s;
     }
 
-private:
+private: // members
 
+    eckit::PathName path_;
+    eckit::ScopedPtr<eckit::DataHandle> handle_;
+    eckit::Mutex mutex_;
+
+    bool isOpen_;
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
 
 }  // namespace multio
 

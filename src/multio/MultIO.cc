@@ -47,7 +47,7 @@ MultIO::~MultIO() {
 }
 
 
-void MultIO::open() {
+void MultIO::open_() {
 
     eckit::Log::info() << "[" << *this << "]: open" << std::endl;
 

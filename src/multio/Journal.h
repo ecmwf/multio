@@ -19,6 +19,7 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
+#include <sys/time.h>
 
 #include "eckit/config/Configuration.h"
 #include "eckit/filesystem/PathName.h"
@@ -27,6 +28,8 @@
 #include "eckit/memory/ScopedPtr.h"
 #include "eckit/thread/Mutex.h"
 #include "eckit/types/FixedString.h"
+
+#include "JournalRecord.h"
 
 namespace multio {
 
@@ -39,15 +42,15 @@ public: // types
     struct Header {
 
         eckit::FixedString<8> tag_;             // (8)   Magic tag (IOJOU999) [I/O Journal 999]
-        unsigned char         tagVersion;       // (1)   Identify journal version.
+        unsigned char         tagVersion_;       // (1)   Identify journal version.
         unsigned char         unused_[3];       // (3)   Reserved for future use. 
+
+        timeval               timestamp_;       // (16) Time of creation of journal (in unix seconds)
 
         unsigned char         unused2_[116];    // (116) reserved for future use.
     } head_;
 
-    // TODO:
-    struct Footer {
-    } foot_;
+    JournalRecord footer_;
 
 public: // methods
 

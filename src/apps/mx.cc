@@ -44,7 +44,7 @@ void Mx::run()
             "    {"
             "        \"type\" : \"file\","
             "        \"path\" : \"foo.grib\","
-            "        \"truncate\": true,"
+            "        \"truncate\": true"
             "    },"
             "    {"
             "        \"type\" : \"file\","

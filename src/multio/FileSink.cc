@@ -38,7 +38,6 @@ FileSink::FileSink(const Configuration& config) :
     handle_( path_.fileHandle(false) )
 {
     // config.getBool("aio",false);
-    eckit::Log::info() << "Config: " << truncate_ << std::endl;
 }
 
 FileSink::~FileSink() {

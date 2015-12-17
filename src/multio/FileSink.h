@@ -11,6 +11,7 @@
 /// @author Tiago Quintino
 /// @author Simon Smart
 /// @date Dec 2015
+
 #ifndef multio_FileSink_H
 #define multio_FileSink_H
 

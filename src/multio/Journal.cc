@@ -12,8 +12,11 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
+#include <sys/time.h>
+
 #include "multio/Journal.h"
 
+#include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
@@ -74,8 +77,12 @@ void Journal::close() {
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
     if (isOpen_) {
-        // TODO: Write finalised information
-
+        // TODO: do we want to write the number of records to the header?
+        // Initialise and write the footer information
+        // TODO: Refactor this somewhere sensible.
+        footer_.initialise(JournalRecord::EndOfJournal);
+        footer_.writeRecord(*handle_);
+            
         handle_->close();
         isOpen_ = false;
     }
@@ -86,7 +93,9 @@ void Journal::close() {
 void Journal::init_header() {
 
     head_.tag_ = journalHeaderTag;
-    head_.tagVersion = journalVersion;
+    head_.tagVersion_ = journalVersion;
+
+    SYSCALL(::gettimeofday(&head_.timestamp_, NULL));
 
 }
 

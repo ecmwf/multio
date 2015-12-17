@@ -37,7 +37,7 @@ const unsigned char journalVersion = 1;
 // TODO: Generate timestamped filename?
 Journal::Journal(const Configuration& config) :
     path_(config.getString("journalfile", "journal")),
-    handle_(path_.fileHandle(true)), // overwrite = 0 with length = 0 --> NEVER TRUNCATE.
+    handle_(path_.fileHandle(false)),
     isOpen_(false) {
 }
 

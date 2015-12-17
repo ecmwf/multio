@@ -28,8 +28,8 @@ namespace multio {
 //-------------------------------------------------------------------------------------------------
 
 
-static const FixedString<8> journalHeaderTag("IOJOU999");
-static const unsigned char journalVersion = 1;
+const FixedString<8> journalHeaderTag("IOJOU999");
+const unsigned char journalVersion = 1;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -92,6 +92,7 @@ void Journal::close() {
 /// Initialise a journal header struct with valid information for writing out
 void Journal::init_header() {
 
+    eckit::zero(head_);
     head_.tag_ = journalHeaderTag;
     head_.tagVersion_ = journalVersion;
 

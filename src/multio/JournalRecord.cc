@@ -21,20 +21,32 @@ using namespace eckit;
 
 namespace multio {
 
+    const FixedString<4> terminationMarker("END!");
+    const unsigned char currentTagVersion = 1;
+
 // -------------------------------------------------------------------------------------------------
 
+/// Initialise a (new) Journal record, such that it will be valid for writing
+/// (once payload data has been added as appropriate).
 void JournalRecord::initialise(RecordType type) {
 
+    eckit::zero(head_);
     head_.tag_ = type;
     head_.tagVersion_ = currentTagVersion;
 
     SYSCALL(::gettimeofday(&head_.timestamp_, NULL));
 
+    marker_ = terminationMarker;
 }
 
 
 void JournalRecord::writeRecord(DataHandle& handle) {
 
+    handle.write(&head_, sizeof(head_));
+
+    // TODO: We write the payload data here.
+
+    handle.write(&marker_, sizeof(marker_));
 }
 
 

@@ -53,7 +53,6 @@ struct JournalRecord {
     enum RecordType {
         EndOfJournal
     };
-    const static unsigned char currentTagVersion = 1;
 
     struct Head {
 

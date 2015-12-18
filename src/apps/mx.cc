@@ -66,6 +66,9 @@ void Mx::run()
 
     msink.write(buffer, buffer.size());
 
+    memset(buffer, 170, buffer.size());
+    msink.write(buffer, buffer.size());
+
     msink.close();
 }
 

@@ -120,8 +120,7 @@ void DataSink::write(const void* buffer, const Length& length, JournalRecord * c
 
     // If we are the creator of the journal record, we are responsible for ensuring that it
     // gets written if it is populated.
-    // TODO: Add test here. For now, ALWAYS WRITE.
-    if (!parent_record) {
+    if (!parent_record && journal_record.utilised()) {
         journal_->write_record(journal_record);
     }
 

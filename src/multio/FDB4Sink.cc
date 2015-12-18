@@ -36,7 +36,7 @@ void FDB4Sink::open_()
 
 }
 
-void FDB4Sink::write(const void* buffer, const eckit::Length& length)
+void FDB4Sink::write_(const void* buffer, const eckit::Length& length, JournalRecord& journal_record)
 {
 
 }

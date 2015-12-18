@@ -25,6 +25,7 @@
 #include "eckit/thread/Mutex.h"
 #include "eckit/filesystem/PathName.h"
 #include "multio/DataSink.h"
+#include "multio/JournalRecord.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -42,7 +43,7 @@ public:
 
     virtual void open_();
 
-    virtual void write(const void* buffer, const eckit::Length& length);
+    virtual void write_(const void* buffer, const eckit::Length& length, JournalRecord& journal_record);
 
     virtual void close();
 

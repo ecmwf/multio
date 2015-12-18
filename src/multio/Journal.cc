@@ -38,7 +38,8 @@ const unsigned char journalVersion = 1;
 Journal::Journal(const Configuration& config) :
     path_(config.getString("journalfile", "journal")),
     handle_(path_.fileHandle(false)),
-    isOpen_(false) {
+    isOpen_(false),
+    footer_(JournalRecord::Uninitialised) {
 }
 
 Journal::~Journal() {
@@ -89,6 +90,13 @@ void Journal::close() {
 }
 
 
+void Journal::write_record(JournalRecord& record) {
+
+    eckit::AutoLock<eckit::Mutex> lock(mutex_);
+    record.writeRecord(*handle_);
+}
+
+
 /// Initialise a journal header struct with valid information for writing out
 void Journal::init_header() {
 
@@ -99,6 +107,13 @@ void Journal::init_header() {
     SYSCALL(::gettimeofday(&head_.timestamp_, NULL));
 
 }
+
+// TODO: make this no-longer a REALLY NAIVE routine, that just dumps the data to a
+//       journal, without adding actions.
+//
+// i)   We ought to make the journal aware of what data we are considering. It should store a pointer.
+// ii)  The (potentially various) sinks should add their journaling elements
+// iii) When it is done, it should write if, and only if, there are any (non-data) elements.
 
 void Journal::print(std::ostream& os) const
 {

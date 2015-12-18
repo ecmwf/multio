@@ -45,7 +45,10 @@ public: // methods
     void open();
     virtual void open_() = 0;
 
-    virtual void write(const void* buffer, const eckit::Length& length) = 0;
+    virtual void write(const void* buffer, const eckit::Length& length,
+                       JournalRecord * const parent_record = NULL);
+    virtual void write_(const void* buffer, const eckit::Length& length,
+                        JournalRecord& journal_record) = 0;
 
     virtual void close() = 0;
 

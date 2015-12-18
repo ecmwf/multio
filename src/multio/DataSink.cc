@@ -106,6 +106,27 @@ void DataSink::open() {
     open_();
 }
 
+void DataSink::write(const void* buffer, const Length& length, JournalRecord * const parent_record) {
+
+    ScopedPtr<JournalRecord> new_record;
+
+    if (!parent_record) {
+        new_record.reset(new JournalRecord(JournalRecord::WriteEntry));
+    }
+
+    JournalRecord& journal_record(parent_record ? *parent_record : *new_record);
+
+    write_(buffer, length, journal_record);
+
+    // If we are the creator of the journal record, we are responsible for ensuring that it
+    // gets written if it is populated.
+    // TODO: Add test here. For now, ALWAYS WRITE.
+    if (parent_record) {
+        journal_->write_record(journal_record);
+    }
+
+}
+
 int DataSink::iopenfdb(const char *name, const char *mode, int name_len, int mode_len) {
     return 0;
 }

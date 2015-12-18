@@ -24,6 +24,7 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/io/DataHandle.h"
+#include "eckit/io/Length.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/memory/ScopedPtr.h"
 #include "eckit/thread/Mutex.h"
@@ -42,7 +43,7 @@ public: // types
     struct Header {
 
         eckit::FixedString<8> tag_;             // (8)   Magic tag (IOJOU999) [I/O Journal 999]
-        unsigned char         tagVersion_;       // (1)   Identify journal version.
+        unsigned char         tagVersion_;      // (1)   Identify journal version.
         unsigned char         unused_[3];       // (3)   Reserved for future use. 
 
         timeval               timestamp_;       // (16) Time of creation of journal (in unix seconds)
@@ -63,6 +64,12 @@ public: // methods
 
     /// If the journal is open, finalise and close it.
     void close();
+
+    // n.b. we separate the call for journaling data, which is always done in the same
+    //      way, from journaling the journal entries, which are specific to each of
+    //      the data sinks.
+
+    void write_record(JournalRecord& record);
 
 protected: // methods
 

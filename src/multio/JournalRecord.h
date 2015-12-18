@@ -21,15 +21,21 @@
 #include <sys/time.h>
 #include <stdint.h>
 
-#include "eckit/memory/NonCopyable.h"
-#include "eckit/types/FixedString.h"
+#include "eckit/io/Buffer.h"
 #include "eckit/io/DataHandle.h"
+#include "eckit/memory/NonCopyable.h"
+#include "eckit/memory/ScopedPtr.h"
+#include "eckit/types/FixedString.h"
 
 namespace multio {
 
 //-------------------------------------------------------------------------------------------------
 
-struct JournalRecord {
+class Journal;
+
+class JournalRecord {
+
+public: // Data types, and structural members.
 
     // The journal has a certain file structure
     //
@@ -54,7 +60,9 @@ struct JournalRecord {
     // ---------------------------------------------------------
 
     enum RecordType {
-        EndOfJournal
+        Uninitialised,
+        EndOfJournal,
+        WriteEntry
     };
 
     struct Head {
@@ -94,6 +102,9 @@ struct JournalRecord {
     };
 
 
+    eckit::ScopedPtr<const eckit::Buffer> dataBuffer_;
+
+
     // Add a way to stream all the journal elements out.
 
     // Payload goes here (should depend on the specific type. Will be pointed to.
@@ -104,11 +115,26 @@ struct JournalRecord {
 
 public: // methods
 
+    /// Create a (blank) journal record associated with a given journal. If
+    /// triggered this can then 
+    JournalRecord(RecordType type=Uninitialised);
+
+    ~JournalRecord();
+
     /// Initialise a blank JournalRecord with valid values to be written to the journal log.
     void initialise(RecordType type);
 
     /// Write the journal record to the supplied data handle
     void writeRecord(eckit::DataHandle& handle);
+
+    /// add data to the journal element
+    void addData(const void * data, const eckit::Length& length);
+
+    bool utilised() const { return utilised_; }
+
+private: // internal control elements
+
+    bool utilised_;
 
 };
 

@@ -61,12 +61,16 @@ void FileSink::open_() {
     }
 }
 
-void FileSink::write(const void* buffer, const Length& length) {
+void FileSink::write_(const void* buffer, const Length& length, JournalRecord& journal_record) {
 
     eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
     handle_->write(buffer, length);
+
+    // For now, we are testing inside MultiIO. Also need to test the seperate case later.
+    journal_record.addData(buffer, length);
+
 }
 
 void FileSink::close() {

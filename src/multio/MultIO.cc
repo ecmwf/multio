@@ -57,12 +57,12 @@ void MultIO::open_() {
 }
 
 
-void MultIO::write(const void* buffer, const Length& length) {
+void MultIO::write_(const void* buffer, const Length& length, JournalRecord& journal_record) {
 
     eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
 
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->write(buffer, length);
+        (*it)->write(buffer, length, &journal_record);
     }
 }
 

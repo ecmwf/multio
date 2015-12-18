@@ -34,7 +34,9 @@ public:
 
 void Mx::run()
 {
-    Buffer buffer(1024*1024);
+    /// Buffer buffer(1024*1024);
+    Buffer buffer(10*10);
+    memset(buffer, 255, buffer.size());
 
     /// @TODO load some data
 

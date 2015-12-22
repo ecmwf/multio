@@ -73,7 +73,7 @@ public: // Data types, and structural members.
         unsigned char   tag_;           /// (1)
         unsigned char   tagVersion_;    /// (1)
 
-        char            unused_[2];     /// (2)  reserved for future use
+        uint16_t        numEntries_;    /// (2) The number of JournalEntries contaitned
 
         timeval         timestamp_;     /// (16) date & time of entry (in Unix seconds)
 
@@ -114,7 +114,7 @@ public: // Data types, and structural members.
         eckit::SharedPtr<SharableBuffer> data_;
     };
 
-    std::list<JournalEntry> events_;
+    std::list<JournalEntry> entries_;
 
     // Add a way to stream all the journal elements out.
 

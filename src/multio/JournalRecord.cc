@@ -57,6 +57,7 @@ void JournalRecord::initialise(RecordType type) {
     eckit::zero(head_);
     head_.tag_ = type;
     head_.tagVersion_ = currentTagVersion;
+    head_.numEntries_ = 0;
 
     SYSCALL(::gettimeofday(&head_.timestamp_, NULL));
 
@@ -72,7 +73,9 @@ void JournalRecord::writeRecord(DataHandle& handle) {
 
     handle.write(&head_, sizeof(head_));
 
-    for (std::list<JournalEntry>::const_iterator it = events_.begin(); it != events_.end(); ++it) {
+    ASSERT(size_t(head_.numEntries_) == entries_.size());
+
+    for (std::list<JournalEntry>::const_iterator it = entries_.begin(); it != entries_.end(); ++it) {
         handle.write(&it->head_, sizeof(it->head_));
 
         // If there is data associated with the journal entry then it should be appended below
@@ -91,16 +94,12 @@ void JournalRecord::writeRecord(DataHandle& handle) {
 
 void JournalRecord::addData(const void * data, const Length& length) {
 
-    eckit::Log::info() << "... ADD: " << events_.size() << ", " << events_.empty() << std::endl << std::flush;
-
     // n.b. The data must be the first thing added to the Journal Record
-    if (events_.empty()) {
+    if (entries_.empty()) {
 
-        eckit::Log::info() << "... Add data" << std::endl << std::flush;
+        entries_.push_back(JournalEntry());
 
-        events_.push_back(JournalEntry());
-
-        JournalEntry& entry = events_.back();
+        JournalEntry& entry = entries_.back();
 
         eckit::zero(entry.head_);
         entry.head_.tag_ = JournalEntry::Data;
@@ -116,29 +115,35 @@ void JournalRecord::addData(const void * data, const Length& length) {
 
         // Now that something has been added, we should certainly write this entry on exit!
         utilised_ = true;
+        head_.numEntries_++;
 
     } else {
-        eckit::Log::info() << "... Add data (already added)" << std::endl << std::flush;
-
+        // We don't need to duplicate the data if multiple DataSinks are reporting to the journal
         ASSERT(utilised_);
-        ASSERT(events_.front().head_.tag_ == JournalEntry::Data);
-        ASSERT(events_.front().head_.payload_length_ == length);
+        ASSERT(entries_.front().head_.tag_ == JournalEntry::Data);
+        ASSERT(entries_.front().head_.payload_length_ == length);
     }
 }
 
 
 void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type) {
 
+    // Before we add a journal entry, the data MUST have been added already
+    ASSERT(utilised_);
+    ASSERT(entries_.front().head_.tag_ == JournalEntry::Data);
+
     // These are (currently) default journal entries with no attached data.
     // This needs to be extended.
-    eckit::Log::info() << "Adding entry" << std::endl << std::flush;
-    events_.push_back(JournalEntry());
-    JournalEntry& entry = events_.back();
+    entries_.push_back(JournalEntry());
+    JournalEntry& entry = entries_.back();
 
     eckit::zero(entry.head_);
     entry.head_.tag_ = type;
     entry.head_.payload_length_ = 0;
     SYSCALL(::gettimeofday(&entry.head_.timestamp_, NULL));
+
+    // Add an entry!
+    head_.numEntries_++;
 }
 
 // -------------------------------------------------------------------------------------------------

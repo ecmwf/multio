@@ -12,6 +12,7 @@
 
 #include "eckit/runtime/Tool.h"
 #include "eckit/log/Log.h"
+#include "eckit/runtime/Context.h"
 
 #include "multio/MultIO.h"
 
@@ -29,11 +30,28 @@ public:
     ~ReadJournal() {}
 
     virtual void run();
+
+    void usage();
 };
+
+void ReadJournal::usage() {
+    eckit::Log::info() << std::endl;
+    eckit::Log::info() << "Usage: " << std::endl;
+    eckit::Log::info() << "    readjournal <journalfile>" << std::endl;
+    eckit::Log::info() << std::flush;
+}
 
 void ReadJournal::run()
 {
     eckit::Log::info() << "We are reading the journal ... (not)\n";
+
+    if (Context::instance().argc() != 2) {
+        usage();
+        ::exit(0);
+    }
+
+    eckit::Log::info() << "ARGC: " << Context::instance().argc() << std::endl;
+    eckit::Log::info() << "ARGV0: " << Context::instance().argv(1) << std::endl;
         
     eckit::Log::info() << std::flush;
 }
@@ -50,4 +68,3 @@ int main(int argc,char **argv)
     app.start();
     return 0;
 }
-

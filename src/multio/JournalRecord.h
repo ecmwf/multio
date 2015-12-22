@@ -81,6 +81,14 @@ public: // Data types, and structural members.
                                          /// TOTAL: 32
     } head_;
 
+
+    const static std::string RecordTypeNames[];
+
+    const static eckit::FixedString<4> TerminationMarker;
+
+    const static unsigned char CurrentTagVersion;
+
+
     // ---------------------------------------------------------
 
     // Inside the JournalRecord, there are a series of JournalEntries.

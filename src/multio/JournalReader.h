@@ -23,6 +23,7 @@
 #include "eckit/memory/ScopedPtr.h"
 
 #include "multio/Journal.h"
+#include "multio/JournalRecord.h"
 
 namespace multio {
 
@@ -35,6 +36,8 @@ public: // methods
     JournalReader(const eckit::Configuration& config, const eckit::PathName& path);
 
     ~JournalReader();
+
+    bool readRecord(JournalRecord& record);
 
 protected: // methods
 

@@ -59,6 +59,11 @@ void ReadJournal::run()
 
     // Read from the file specified as the first argument
     JournalReader journal(config, PathName(Context::instance().argv(1)));
+
+    while (true) {
+        JournalRecord record;
+        journal.readRecord(record);
+    };
         
     eckit::Log::info() << std::flush;
 }

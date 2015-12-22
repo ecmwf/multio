@@ -23,8 +23,17 @@ using namespace eckit;
 
 namespace multio {
 
-    const FixedString<4> terminationMarker("END!");
-    const unsigned char currentTagVersion = 1;
+// -------------------------------------------------------------------------------------------------
+
+const FixedString<4> JournalRecord::TerminationMarker("END!");
+const unsigned char JournalRecord::CurrentTagVersion = 1;
+
+const std::string JournalRecord::RecordTypeNames[] = {
+    "Uninitialised",
+    "End of Journal",
+    "Journal entry"
+};
+
 
 // -------------------------------------------------------------------------------------------------
 
@@ -56,12 +65,12 @@ void JournalRecord::initialise(RecordType type) {
 
     eckit::zero(head_);
     head_.tag_ = type;
-    head_.tagVersion_ = currentTagVersion;
+    head_.tagVersion_ = JournalRecord::CurrentTagVersion;
     head_.numEntries_ = 0;
 
     SYSCALL(::gettimeofday(&head_.timestamp_, NULL));
 
-    marker_ = terminationMarker;
+    marker_ = JournalRecord::TerminationMarker;
 }
 
 

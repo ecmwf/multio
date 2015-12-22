@@ -25,7 +25,10 @@
 #include "eckit/io/DataHandle.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/memory/ScopedPtr.h"
+#include "eckit/memory/SharedPtr.h"
 #include "eckit/types/FixedString.h"
+
+#include "multio/SharableBuffer.h"
 
 namespace multio {
 
@@ -87,23 +90,31 @@ public: // Data types, and structural members.
 
         enum EntryType {
             Data = 'D',
-            Entry = 'J',
+            Write = 'W',
             End = 'E'
         };
 
         struct Header {
 
-            unsigned char     tag_;
-            unsigned char     unused_[3];
+            // TODO: What other information needs to go into here?
 
-            uint64_t          payload_length;
+            unsigned char     tag_;             /// (1)
+            unsigned char     unused_[3];       /// (3)
+
+            timeval           timestamp_;       /// (16)
+
+            uint64_t          payload_length_;  /// (8)
+
+            char              unused2_[12];
 
         } head_;
+
+        // (Optional) additional data.
+        // It would be nicer to have a ScopetPtr, but no rvalue-refs...
+        eckit::SharedPtr<SharableBuffer> data_;
     };
 
-
-    eckit::ScopedPtr<const eckit::Buffer> dataBuffer_;
-
+    std::list<JournalEntry> events_;
 
     // Add a way to stream all the journal elements out.
 
@@ -129,6 +140,10 @@ public: // methods
 
     /// add data to the journal element
     void addData(const void * data, const eckit::Length& length);
+
+    /// Add a new journal entry to the list
+    /// TODO: Add a way to attach data...
+    void addJournalEntry(JournalEntry::EntryType type);
 
     bool utilised() const { return utilised_; }
 

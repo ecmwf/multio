@@ -16,7 +16,8 @@
 #include "eckit/io/Buffer.h"
 #include "eckit/io/DataHandle.h"
 
-#include "JournalRecord.h"
+#include "multio/JournalRecord.h"
+#include "multio/SharableBuffer.h"
 
 using namespace eckit;
 
@@ -63,41 +64,81 @@ void JournalRecord::initialise(RecordType type) {
 }
 
 
+/// Write the journal record, consisting of three parts:
+/// i)   The header
+/// ii)  The JournalEntries
+/// iii) The end-of-record marker
 void JournalRecord::writeRecord(DataHandle& handle) {
 
     handle.write(&head_, sizeof(head_));
 
-    // TODO: We write the payload data here.
+    for (std::list<JournalEntry>::const_iterator it = events_.begin(); it != events_.end(); ++it) {
+        handle.write(&it->head_, sizeof(it->head_));
 
-    if (dataBuffer_) {
-        
-        JournalEntry entry;
-        eckit::zero(entry.head_);
-        entry.head_.tag_ = JournalEntry::Data;
-        entry.head_.payload_length = dataBuffer_->size();
-
-        handle.write(&entry.head_, sizeof(entry.head_));
-        handle.write(*dataBuffer_, dataBuffer_->size());
+        // If there is data associated with the journal entry then it should be appended below
+        // the header information.
+        if (it->data_) {
+            ASSERT(it->head_.payload_length_ == it->data_->size());
+            handle.write(*(it->data_), it->data_->size());
+        } else {
+            ASSERT(it->head_.payload_length_ == 0);
+        }
     }
-
+    
     handle.write(&marker_, sizeof(marker_));
 }
 
 
 void JournalRecord::addData(const void * data, const Length& length) {
 
-    // TODO: We don't necessarily have to do a buffer copy here. We do for now, and
-    //       async stuff will be more complicated, but  at least for blocking I/O
-    //       the supplied data should outlive the journalrecord...
+    eckit::Log::info() << "... ADD: " << events_.size() << ", " << events_.empty() << std::endl << std::flush;
 
-    if (!dataBuffer_) {
+    // n.b. The data must be the first thing added to the Journal Record
+    if (events_.empty()) {
+
+        eckit::Log::info() << "... Add data" << std::endl << std::flush;
+
+        events_.push_back(JournalEntry());
+
+        JournalEntry& entry = events_.back();
+
+        eckit::zero(entry.head_);
+        entry.head_.tag_ = JournalEntry::Data;
+        entry.head_.payload_length_ = length;
+        SYSCALL(::gettimeofday(&entry.head_.timestamp_, NULL));
+
         // n.b. Don't worry about const cast. That is just to make Buffer constructor happy.
         //      The overall Buffer is const...
-        dataBuffer_.reset(new Buffer(const_cast<void*>(data), length, false));
-    }
+        //
+        // We are making the promise here that the data will outlive the journal writing
+        // process.
+        entry.data_.reset(new SharableBuffer(const_cast<void*>(data), length, false));
 
-    // Now that something has been added, we should certainly write this entry on exit!
-    utilised_ = true;
+        // Now that something has been added, we should certainly write this entry on exit!
+        utilised_ = true;
+
+    } else {
+        eckit::Log::info() << "... Add data (already added)" << std::endl << std::flush;
+
+        ASSERT(utilised_);
+        ASSERT(events_.front().head_.tag_ == JournalEntry::Data);
+        ASSERT(events_.front().head_.payload_length_ == length);
+    }
+}
+
+
+void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type) {
+
+    // These are (currently) default journal entries with no attached data.
+    // This needs to be extended.
+    eckit::Log::info() << "Adding entry" << std::endl << std::flush;
+    events_.push_back(JournalEntry());
+    JournalEntry& entry = events_.back();
+
+    eckit::zero(entry.head_);
+    entry.head_.tag_ = type;
+    entry.head_.payload_length_ = 0;
+    SYSCALL(::gettimeofday(&entry.head_.timestamp_, NULL));
 }
 
 // -------------------------------------------------------------------------------------------------

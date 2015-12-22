@@ -68,9 +68,7 @@ void FileSink::write_(const void* buffer, const Length& length, JournalRecord& j
 
     handle_->write(buffer, length);
 
-    // For now, we are testing inside MultiIO. Also need to test the seperate case later.
-    journal_record.addData(buffer, length);
-
+    record_write_journal_entry(journal_record, buffer, length);
 }
 
 void FileSink::close() {

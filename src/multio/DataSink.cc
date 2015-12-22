@@ -126,6 +126,21 @@ void DataSink::write(const void* buffer, const Length& length, JournalRecord * c
 
 }
 
+
+void DataSink::record_write_journal_entry(JournalRecord& journal_record,
+                                          const void * buffer, const eckit::Length& length) {
+
+    // Ensure that the JournalEntry has a copy of the data. Note that this may
+    // already have been done by another DataSink (in which case this is a NOP).
+    journal_record.addData(buffer, length);
+
+    // Add the entry here. By default there is no additional (DataSink-specific)
+    // information, so the payload length is zero
+    journal_record.addJournalEntry(JournalRecord::JournalEntry::Write);
+
+}
+
+
 int DataSink::iopenfdb(const char *name, const char *mode, int name_len, int mode_len) {
     return 0;
 }

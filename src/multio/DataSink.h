@@ -54,6 +54,13 @@ public: // methods
 
     void journal(Journal *const journal) { journal_ = journal; }
 
+    // Overridable routine that records a 'write' entry in the journal by adding
+    // it to the journal record.
+    //
+    // --> If there is any datasink specific data, it should be added here.
+    virtual void record_write_journal_entry(JournalRecord& journal_record,
+                                            const void * buffer, const eckit::Length& length);
+
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
     ///

@@ -10,11 +10,13 @@
 
 #include <sstream>
 
-#include "eckit/runtime/Tool.h"
+#include "eckit/config/JSONConfiguration.h"
+#include "eckit/filesystem/PathName.h"
 #include "eckit/log/Log.h"
 #include "eckit/runtime/Context.h"
+#include "eckit/runtime/Tool.h"
 
-#include "multio/MultIO.h"
+#include "multio/JournalReader.h"
 
 using namespace eckit;
 
@@ -50,8 +52,13 @@ void ReadJournal::run()
         ::exit(0);
     }
 
-    eckit::Log::info() << "ARGC: " << Context::instance().argc() << std::endl;
-    eckit::Log::info() << "ARGV0: " << Context::instance().argv(1) << std::endl;
+    // Construct a (null) configuration for now.
+    std::stringstream oss;
+    oss << "{}" << std::endl;
+    JSONConfiguration config(oss);
+
+    // Read from the file specified as the first argument
+    JournalReader journal(config, PathName(Context::instance().argv(1)));
         
     eckit::Log::info() << std::flush;
 }

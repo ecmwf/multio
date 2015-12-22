@@ -29,6 +29,8 @@ list( APPEND multio_srcs
     Journal.cc
     JournalRecord.h
     JournalRecord.cc
+    JournalReader.h
+    JournalReader.cc
     ifsio.h
     ifsio.cc )
 

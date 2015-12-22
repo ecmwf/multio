@@ -30,13 +30,18 @@
 #include "eckit/thread/Mutex.h"
 #include "eckit/types/FixedString.h"
 
-#include "JournalRecord.h"
+#include "multio/JournalRecord.h"
 
 namespace multio {
 
 //-------------------------------------------------------------------------------------------------
 
 class Journal : private eckit::NonCopyable {
+
+public: // constants
+
+    const static eckit::FixedString<8> CurrentHeaderTag;
+    const static unsigned char CurrentVersion;
 
 public: // types
 

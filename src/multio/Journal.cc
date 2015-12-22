@@ -28,8 +28,9 @@ namespace multio {
 //-------------------------------------------------------------------------------------------------
 
 
-const FixedString<8> journalHeaderTag("IOJOU999");
-const unsigned char journalVersion = 1;
+// Initialise static members
+const eckit::FixedString<8> Journal::CurrentHeaderTag("IOJOU999");
+const unsigned char Journal::CurrentVersion = 1;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -101,8 +102,8 @@ void Journal::write_record(JournalRecord& record) {
 void Journal::init_header() {
 
     eckit::zero(head_);
-    head_.tag_ = journalHeaderTag;
-    head_.tagVersion_ = journalVersion;
+    head_.tag_ = Journal::CurrentHeaderTag;
+    head_.tagVersion_ = Journal::CurrentVersion;
 
     SYSCALL(::gettimeofday(&head_.timestamp_, NULL));
 

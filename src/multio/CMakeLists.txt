@@ -23,8 +23,6 @@ list( APPEND multio_srcs
     FileSink.cc
     MultIO.h
     MultIO.cc
-    FDB4Sink.h
-    FDB4Sink.cc
     Journal.h
     Journal.cc
     JournalRecord.h
@@ -57,3 +55,6 @@ ecbuild_add_library(
 
     LIBS
         eckit )
+
+
+add_subdirectory( fdb4 )

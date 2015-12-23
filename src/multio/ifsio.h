@@ -35,7 +35,7 @@ fortint iflushfdb_(fortint *addr);
 
 fortint iset_fdb_root_(fortint *addr, const char *name, int name_len);
 
-int isetcommfdb_(fortint *rank);
+int isetcommfdb_(fortint *comm);
 int isetrankfdb_(fortint *addr, fortint *rank);
 int isetfieldcountfdb_(fortint *addr, fortint *all_ranks, fortint *this_rank);
 

@@ -12,8 +12,8 @@
 /// @date Dec 2015
 
 
-#ifndef multio_FDB4Sink_H
-#define multio_FDB4Sink_H
+#ifndef multio_fdb4_FDB4Sink_H
+#define multio_fdb4_FDB4Sink_H
 
 #include <iosfwd>
 #include <string>
@@ -51,7 +51,7 @@ public:
     virtual int iinitfdb();
     // virtual int iclosefdb();
 
-    virtual int isetcommfdb(int *rank);
+    virtual int isetcommfdb(int *comm);
     virtual int isetrankfdb(int *rank);
     virtual int iset_fdb_root(const char *name, int name_len);
 
@@ -75,6 +75,9 @@ private:
     }
 
 private:
+
+    int fdb_;   ///< fdb instance
+    bool open_;
 
 };
 

@@ -16,6 +16,7 @@
 #include "eckit/io/Buffer.h"
 #include "eckit/io/DataHandle.h"
 
+#include "multio/Journal.h"
 #include "multio/JournalRecord.h"
 #include "multio/SharableBuffer.h"
 
@@ -45,8 +46,9 @@ const std::string JournalRecord::RecordTypeNames[] = {
  * --> Will require some careful consideration of locking for the journal.
  */
 
-JournalRecord::JournalRecord(RecordType type) :
-    utilised_(false){
+JournalRecord::JournalRecord(Journal &journal, RecordType type) :
+    journal_(journal),
+    utilised_(false) {
 
     if (type != JournalRecord::Uninitialised) {
 
@@ -71,6 +73,11 @@ void JournalRecord::initialise(RecordType type) {
     SYSCALL(::gettimeofday(&head_.timestamp_, NULL));
 
     marker_ = JournalRecord::TerminationMarker;
+}
+
+void JournalRecord::write(const void *data, const Length &length)
+{
+    journal_.writeJournalEntry(data, length, *this);
 }
 
 

@@ -37,11 +37,10 @@ public:
 
     virtual ~MultIO();
 
-    virtual void open_();
-
-    virtual void write_(const void* buffer, const eckit::Length& length, JournalRecord& journal_record, Metadata* Metadata = 0);
-
-    virtual void close();
+    virtual void write(const void* buffer,
+                       const eckit::Length& length,
+                       JournalRecord *const record = NULL,
+                       Metadata *const Metadata = NULL);
 
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
@@ -71,6 +70,8 @@ protected:
     virtual void print(std::ostream&) const;
 
 protected: // members
+
+    Journal journal_;
 
     sink_store_t sinks_;
 

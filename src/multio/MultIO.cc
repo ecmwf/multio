@@ -26,13 +26,13 @@ namespace multio {
 //----------------------------------------------------------------------------------------------------------------------
 
 MultIO::MultIO(const eckit::Configuration& config) :
-    DataSink(config) {
+    DataSink(config),
+    journal_(config) {
 
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 
     for(std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end(); ++c) {
         sinks_.push_back( DataSinkFactory::build(c->getString("type"),*c) );
-        sinks_.back()->journal(this);
     }
 
 }
@@ -44,34 +44,33 @@ MultIO::~MultIO() {
     }
 }
 
-void MultIO::open_() {
 
-    eckit::Log::info() << "[" << *this << "]: open" << std::endl;
-
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->open();
-    }
-}
-
-
-void MultIO::write_(const void* buffer, const Length& length, JournalRecord& journal_record, Metadata* metadata) {
+void MultIO::write(const void* buffer, const Length& length, JournalRecord *const record, Metadata *const metadata ) {
 
     eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
 
+    JournalRecord* r;
+
+    // shall we create our own journal record ?
+    ScopedPtr<JournalRecord> newRecord;
+    if( !record && journaled_ ) {
+        newRecord.reset( new JournalRecord(journal_, JournalRecord::WriteEntry) );
+        r = newRecord.get();
+    }
+    else
+        r = record;
+
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->write(buffer, length, &journal_record);
+        (*it)->write(buffer, length, r, metadata);
+    }
+
+    // if we are the creator of the journal record,
+    // we are responsible for ensuring that it gets written if it is populated.
+    if( newRecord ) {
+        journal_.writeRecord(*newRecord);
     }
 }
 
-
-void MultIO::close() {
-
-    eckit::Log::info() << "[" << *this << "]: close" << std::endl;
-
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->close();
-    }
-}
 
 void MultIO::print(std::ostream& os) const {
     os << "MultIO(";

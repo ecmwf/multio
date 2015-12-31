@@ -33,8 +33,7 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-// n.b. Journal is already NonCopyable
-class DataSink : public Journal {
+class DataSink : private eckit::NonCopyable {
 
 public: // methods
 
@@ -42,29 +41,10 @@ public: // methods
 
     virtual ~DataSink();
 
-    // open() and its ilk ensure that journaling is correctly set up.
-    // open_() implement the sink-specific functionality
-    void open();
-    virtual void open_() = 0;
-
     virtual void write(const void* buffer,
                        const eckit::Length& length,
-                       JournalRecord * const parent_record = NULL, Metadata* metadata = 0);
-
-    virtual void write_(const void* buffer, const eckit::Length& length,
-                        JournalRecord& journal_record, Metadata* metadata = 0) = 0;
-
-    virtual void close() = 0;
-
-    void journal(Journal *const journal) { journal_ = journal; }
-
-    // Overridable routine that records a 'write' entry in the journal by adding
-    // it to the journal record.
-    //
-    // --> If there is any datasink specific data, it should be added here.
-    virtual void record_write_journal_entry(JournalRecord& journal_record,
-                                            const void * buffer,
-                                            const eckit::Length& length);
+                       JournalRecord *const record = NULL,
+                       Metadata *const metadata = NULL) = 0;
 
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
@@ -99,14 +79,11 @@ private: // methods
         return s;
     }
 
-private: // members
+protected: // members
 
     bool failOnError_;
     bool journaled_;        /// Write to a journal file
     bool journalAlways_;    /// Write details to journal even if a write succeeds.
-
-    Journal* journal_;
-
 };
 
 //----------------------------------------------------------------------------------------------------------------------

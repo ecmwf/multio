@@ -136,12 +136,15 @@ public: // methods
 
     /// Create a (blank) journal record associated with a given journal. If
     /// triggered this can then 
-    JournalRecord(RecordType type=Uninitialised);
+    JournalRecord(Journal& journal, RecordType type=Uninitialised);
 
     ~JournalRecord();
 
     /// Initialise a blank JournalRecord with valid values to be written to the journal log.
     void initialise(RecordType type);
+
+    ///
+    void write(const void * data, const eckit::Length& length);
 
     /// Write the journal record to the supplied data handle
     void writeRecord(eckit::DataHandle& handle);
@@ -156,6 +159,8 @@ public: // methods
     bool utilised() const { return utilised_; }
 
 private: // internal control elements
+
+    Journal& journal_;
 
     bool utilised_;
 

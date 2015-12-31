@@ -41,22 +41,16 @@ public:
 
     virtual ~FileSink();
 
-    virtual void open_();
-
-    virtual void write_(const void* buffer, const eckit::Length& length, JournalRecord& journal_record, Metadata* md = 0);
-
-    virtual void close();
+    virtual void write(const void* buffer,
+                       const eckit::Length& length,
+                       JournalRecord *const record,
+                       Metadata *const md);
 
 protected:
 
     virtual void print(std::ostream&) const;
 
 private:
-
-    // TODO: Discuss with Tiago. I have put these here so that truncate_ is initialised
-    //       before handle_. How would you prefer to handle that.
-    bool isOpen_;
-    bool truncate_;
 
     eckit::PathName path_;
     eckit::ScopedPtr<eckit::DataHandle> handle_;

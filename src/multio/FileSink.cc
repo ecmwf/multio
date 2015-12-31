@@ -32,8 +32,6 @@ namespace multio {
 
 FileSink::FileSink(const Configuration& config) :
     DataSink(config),
-    isOpen_(false),
-    truncate_(config.getBool("truncate", false)),
     path_( config.getString("path") ),
     handle_( path_.fileHandle(false) )
 {
@@ -41,34 +39,18 @@ FileSink::FileSink(const Configuration& config) :
 }
 
 FileSink::~FileSink() {
-    close();
+    handle_->close();
 }
 
-void FileSink::open_() {
-
-    eckit::Log::info() << "[" << *this << "]: open" << std::endl;
-    eckit::AutoLock<eckit::Mutex> lock(mutex_);
-
-    if (!isOpen_) {
-
-        if (!truncate_) {
-            handle_->openForAppend(0);
-        } else {
-            handle_->openForWrite(0);
-        }
-
-        isOpen_ = true;
-    }
-}
-
-void FileSink::write_(const void* buffer, const Length& length, JournalRecord& journal_record, Metadata*) {
+void FileSink::write(const void* buffer, const Length& length, JournalRecord *const record, Metadata *const) {
 
     eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
     handle_->write(buffer, length);
 
-    record_write_journal_entry(journal_record, buffer, length);
+    if(record)
+        record->write(buffer, length);
 }
 
 

@@ -12,7 +12,6 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
-
 #ifndef multio_Journal_H
 #define multio_Journal_H
 
@@ -34,9 +33,11 @@
 
 namespace multio {
 
-//-------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 class Journal : private eckit::NonCopyable {
+
+    friend class JournalRecord;
 
 public: // constants
 
@@ -74,15 +75,23 @@ public: // methods
     //      way, from journaling the journal entries, which are specific to each of
     //      the data sinks.
 
-    void write_record(JournalRecord& record);
+    void writeRecord(JournalRecord& record);
 
 protected: // methods
+
+    // Overridable routine that records a 'write' entry in the journal by adding
+    // it to the journal record.
+    //
+    // --> If there is any datasink specific data, it should be added here.
+    void writeJournalEntry(const void * buffer,
+                           const eckit::Length& length,
+                           JournalRecord& );
 
     void print(std::ostream&) const;
 
 private: // methods
 
-    void init_header();
+    void initHeader();
 
     friend std::ostream &operator<<(std::ostream &s, const Journal &p) {
         p.print(s);
@@ -98,7 +107,7 @@ private: // members
     bool isOpen_;
 };
 
-//-------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
 

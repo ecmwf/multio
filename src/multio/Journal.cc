@@ -25,26 +25,23 @@ using namespace eckit;
 
 namespace multio {
 
-//-------------------------------------------------------------------------------------------------
-
+//----------------------------------------------------------------------------------------------------------------------
 
 // Initialise static members
 const eckit::FixedString<8> Journal::CurrentHeaderTag("IOJOU999");
 const unsigned char Journal::CurrentVersion = 1;
 
-
-//-------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 // TODO: Generate timestamped filename?
 Journal::Journal(const Configuration& config) :
     path_(config.getString("journalfile", "journal")),
     handle_(path_.fileHandle(false)),
     isOpen_(false),
-    footer_(JournalRecord::Uninitialised) {
+    footer_(*this, JournalRecord::Uninitialised) {
 }
 
 Journal::~Journal() {
-
     close();
 }
 
@@ -59,7 +56,7 @@ void Journal::open() {
         handle_->openForWrite(0);
         isOpen_ = true;
 
-        init_header();
+        initHeader();
         // TODO: Write header
 
         // And actually write out this header.
@@ -91,21 +88,37 @@ void Journal::close() {
 }
 
 
-void Journal::write_record(JournalRecord& record) {
+void Journal::writeRecord(JournalRecord& record) {
 
-    eckit::AutoLock<eckit::Mutex> lock(mutex_);
-    record.writeRecord(*handle_);
+    if(record.utilised()) {
+        eckit::AutoLock<eckit::Mutex> lock(mutex_);
+        record.writeRecord(*handle_);
+    }
 }
 
 
 /// Initialise a journal header struct with valid information for writing out
-void Journal::init_header() {
+void Journal::initHeader() {
 
     eckit::zero(head_);
     head_.tag_ = Journal::CurrentHeaderTag;
     head_.tagVersion_ = Journal::CurrentVersion;
 
     SYSCALL(::gettimeofday(&head_.timestamp_, NULL));
+
+}
+
+void Journal::writeJournalEntry(const void * buffer,
+                                const eckit::Length& length,
+                                JournalRecord& record ) {
+
+    // Ensure that the JournalEntry has a copy of the data. Note that this may
+    // already have been done by another DataSink (in which case this is a NOP).
+    record.addData(buffer, length);
+
+    // Add the entry here. By default there is no additional (DataSink-specific)
+    // information, so the payload length is zero
+    record.addJournalEntry(JournalRecord::JournalEntry::Write);
 
 }
 
@@ -121,9 +134,7 @@ void Journal::print(std::ostream& os) const
     os << "Journal()";
 }
 
-
-
-//-------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
 

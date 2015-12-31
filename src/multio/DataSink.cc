@@ -87,59 +87,14 @@ DataSink* DataSinkFactory::build(const std::string &name, const eckit::Configura
 //----------------------------------------------------------------------------------------------------------------------
 
 DataSink::DataSink(const eckit::Configuration& config) :
-    Journal(config),
     failOnError_( config.getBool("failOnError",true) ),
-    journaled_( config.getBool("journaled",false) ),
-    // By default, use self as the journal, unless externally overridden.
-    journal_(this) {
+    journaled_( config.getBool("journaled",false) ) {
 }
 
-DataSink::~DataSink() {}
+DataSink::~DataSink() {
+}
 
 //----------------------------------------------------------------------------------------------------------------------
-
-void DataSink::open() {
-
-    journal_->open();
-
-    // Call the implementation specific open routine.
-    open_();
-}
-
-void DataSink::write(const void* buffer, const Length& length, JournalRecord * const parent_record, Metadata* metadata) {
-
-    ScopedPtr<JournalRecord> new_record;
-
-    if (!parent_record) {
-        new_record.reset(new JournalRecord(JournalRecord::WriteEntry));
-    }
-
-    JournalRecord& journal_record(parent_record ? *parent_record : *new_record);
-
-    write_(buffer, length, journal_record);
-
-    // If we are the creator of the journal record, we are responsible for ensuring that it
-    // gets written if it is populated.
-    if (!parent_record && journal_record.utilised()) {
-        journal_->write_record(journal_record);
-    }
-
-}
-
-
-void DataSink::record_write_journal_entry(JournalRecord& journal_record,
-                                          const void * buffer, const eckit::Length& length) {
-
-    // Ensure that the JournalEntry has a copy of the data. Note that this may
-    // already have been done by another DataSink (in which case this is a NOP).
-    journal_record.addData(buffer, length);
-
-    // Add the entry here. By default there is no additional (DataSink-specific)
-    // information, so the payload length is zero
-    journal_record.addJournalEntry(JournalRecord::JournalEntry::Write);
-
-}
-
 
 int DataSink::iopenfdb(const char *name, const char *mode, int name_len, int mode_len) {
     return 0;

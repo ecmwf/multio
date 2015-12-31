@@ -106,7 +106,7 @@ void DataSink::open() {
     open_();
 }
 
-void DataSink::write(const void* buffer, const Length& length, JournalRecord * const parent_record) {
+void DataSink::write(const void* buffer, const Length& length, JournalRecord * const parent_record, Metadata* metadata) {
 
     ScopedPtr<JournalRecord> new_record;
 

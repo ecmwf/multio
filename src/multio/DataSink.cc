@@ -145,6 +145,10 @@ int DataSink::iopenfdb(const char *name, const char *mode, int name_len, int mod
     return 0;
 }
 
+int DataSink::iclosefdb() {
+    return 0;
+}
+
 int DataSink::iinitfdb() {
     return 0;
 }
@@ -173,8 +177,7 @@ int DataSink::isetvalfdb(const char *name, const char *value, int name_len, int 
     return 0;
 }
 
-
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace multiplexer
+}  // namespace multio
 

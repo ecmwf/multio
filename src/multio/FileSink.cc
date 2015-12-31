@@ -37,7 +37,7 @@ FileSink::FileSink(const Configuration& config) :
     path_( config.getString("path") ),
     handle_( path_.fileHandle(false) )
 {
-    // config.getBool("aio",false);
+    handle_->openForWrite(0);
 }
 
 FileSink::~FileSink() {
@@ -61,7 +61,7 @@ void FileSink::open_() {
     }
 }
 
-void FileSink::write_(const void* buffer, const Length& length, JournalRecord& journal_record) {
+void FileSink::write_(const void* buffer, const Length& length, JournalRecord& journal_record, Metadata*) {
 
     eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
@@ -71,17 +71,6 @@ void FileSink::write_(const void* buffer, const Length& length, JournalRecord& j
     record_write_journal_entry(journal_record, buffer, length);
 }
 
-void FileSink::close() {
-
-    eckit::Log::info() << "[" << *this << "]: close" << std::endl;
-    eckit::AutoLock<eckit::Mutex> lock(mutex_);
-
-    if(isOpen_) {
-        handle_->close();
-        isOpen_ = false;
-    }
-}
-
 
 void FileSink::print(std::ostream& os) const {
     os << "FileSink(path=" << path_ << ")";
@@ -89,6 +78,6 @@ void FileSink::print(std::ostream& os) const {
 
 DataSinkBuilder<FileSink> FileSinkFactorySingleton("file");
 
-}  // namespace multiplexer
+}  // namespace multio
 
 

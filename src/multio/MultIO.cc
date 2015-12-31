@@ -39,13 +39,10 @@ MultIO::MultIO(const eckit::Configuration& config) :
 
 MultIO::~MultIO() {
 
-    close();
-
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         delete (*it);
     }
 }
-
 
 void MultIO::open_() {
 
@@ -57,7 +54,7 @@ void MultIO::open_() {
 }
 
 
-void MultIO::write_(const void* buffer, const Length& length, JournalRecord& journal_record) {
+void MultIO::write_(const void* buffer, const Length& length, JournalRecord& journal_record, Metadata* metadata) {
 
     eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
 
@@ -84,13 +81,18 @@ void MultIO::print(std::ostream& os) const {
     os << ")";
 }
 
-
-
 //----------------------------------------------------------------------------------------------------------------------
 
 int MultIO::iopenfdb(const char *name, const char *mode, int name_len, int mode_len) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->iopenfdb(name,mode,name_len,mode_len);
+    }
+    return 0;
+}
+
+int MultIO::iclosefdb() {
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        (*it)->iclosefdb();
     }
     return 0;
 }

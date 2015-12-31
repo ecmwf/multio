@@ -43,7 +43,7 @@ public:
 
     virtual void open_();
 
-    virtual void write_(const void* buffer, const eckit::Length& length, JournalRecord& journal_record);
+    virtual void write_(const void* buffer, const eckit::Length& length, JournalRecord& journal_record, Metadata* md = 0);
 
     virtual void close();
 
@@ -61,13 +61,11 @@ private:
     eckit::PathName path_;
     eckit::ScopedPtr<eckit::DataHandle> handle_;
     eckit::Mutex mutex_;
-
-
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace multiplexer
+}  // namespace multio
 
 #endif // multio_FileSink_H
 

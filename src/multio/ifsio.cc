@@ -80,8 +80,6 @@ fortint iopenfdb_(const char* name, fortint* addr, const char* mode, int name_le
     *addr = 1;
     fdbAddr = *addr;
 
-    mio->open();
-
     return res;
 }
 
@@ -92,7 +90,7 @@ fortint iclosefdb_(fortint* addr) {
 
     ASSERT(mio && fdbAddr == *addr);
 
-    mio->close();
+    mio->iclosefdb();
 
     *addr = 0;
     fdbAddr = 0;

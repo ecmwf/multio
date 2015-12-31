@@ -16,13 +16,6 @@ ecbuild_use_package( PROJECT eckit VERSION  0.10 REQUIRED )
 
 ecbuild_debug("   ECKIT_FEATURES : [${ECKIT_FEATURES}]" )
 
-# fdb
-
-ecbuild_add_option( FEATURE FDB
-                    DEFAULT ON
-                    DESCRIPTION "Send data to FDB4"
-                    REQUIRED_PACKAGES "PROJECT fdb VERSION 4.8" )
-
 ### start project
 
 ecbuild_declare_project()

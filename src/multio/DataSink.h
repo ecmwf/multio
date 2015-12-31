@@ -29,6 +29,8 @@
 
 namespace multio {
 
+    class Metadata;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 // n.b. Journal is already NonCopyable
@@ -46,9 +48,9 @@ public: // methods
     virtual void open_() = 0;
 
     virtual void write(const void* buffer, const eckit::Length& length,
-                       JournalRecord * const parent_record = NULL);
+                       JournalRecord * const parent_record = NULL, Metadata* metadata = 0);
     virtual void write_(const void* buffer, const eckit::Length& length,
-                        JournalRecord& journal_record) = 0;
+                        JournalRecord& journal_record, Metadata* metadata = 0) = 0;
 
     virtual void close() = 0;
 
@@ -59,7 +61,8 @@ public: // methods
     //
     // --> If there is any datasink specific data, it should be added here.
     virtual void record_write_journal_entry(JournalRecord& journal_record,
-                                            const void * buffer, const eckit::Length& length);
+                                            const void * buffer,
+                                            const eckit::Length& length);
 
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
@@ -67,7 +70,7 @@ public: // methods
 
     virtual int iopenfdb(const char *name, const char *mode, int name_len, int mode_len);
     virtual int iinitfdb();
-    // virtual int iclosefdb();
+    virtual int iclosefdb();
 
     virtual int isetcommfdb(int *rank);
     virtual int isetrankfdb(int *rank);
@@ -136,7 +139,7 @@ public:
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace multiplexer
+}  // namespace multio
 
 #endif
 

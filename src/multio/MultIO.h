@@ -39,7 +39,7 @@ public:
 
     virtual void open_();
 
-    virtual void write_(const void* buffer, const eckit::Length& length, JournalRecord& journal_record);
+    virtual void write_(const void* buffer, const eckit::Length& length, JournalRecord& journal_record, Metadata* Metadata = 0);
 
     virtual void close();
 
@@ -48,8 +48,8 @@ public:
     ///
 
     virtual int iopenfdb(const char *name, const char *mode, int name_len, int mode_len);
-    virtual int iinitfdb(void);
-    // virtual int iclosefdb();
+    virtual int iinitfdb();
+    virtual int iclosefdb();
 
     virtual int isetcommfdb(int *rank);
     virtual int isetrankfdb(int *rank);

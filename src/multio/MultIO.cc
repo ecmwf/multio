@@ -44,6 +44,16 @@ MultIO::~MultIO() {
     }
 }
 
+bool MultIO::ready() const
+{
+    for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        if( ! (*it)->ready() ) {
+            return false;
+        }
+    }
+    return true;
+}
+
 
 void MultIO::write(const void* buffer, const Length& length, JournalRecord *const record, Metadata *const metadata ) {
 

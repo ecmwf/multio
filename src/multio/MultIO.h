@@ -37,6 +37,8 @@ public:
 
     virtual ~MultIO();
 
+    virtual bool ready() const;
+
     virtual void write(const void* buffer,
                        const eckit::Length& length,
                        JournalRecord *const record = NULL,

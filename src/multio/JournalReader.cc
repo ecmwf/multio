@@ -52,7 +52,6 @@ JournalReader::~JournalReader() {}
 /// is reached in an inappropriate way, an exception is thrown.
 ///
 /// @param record the JournalRecord to initialise.
-/// @return true if record has been read, false if EOF marker has been reached.
 
 bool JournalReader::readRecord(JournalRecord& record) {
 

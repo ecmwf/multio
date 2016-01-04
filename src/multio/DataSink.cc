@@ -94,6 +94,11 @@ DataSink::DataSink(const eckit::Configuration& config) :
 DataSink::~DataSink() {
 }
 
+bool DataSink::ready() const
+{
+    return true; // default for synchronous sinks
+}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 int DataSink::iopenfdb(const char *name, const char *mode, int name_len, int mode_len) {

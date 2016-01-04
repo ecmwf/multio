@@ -137,7 +137,7 @@ void JournalRecord::addData(const void * data, const Length& length) {
         // We don't need to duplicate the data if multiple DataSinks are reporting to the journal
         ASSERT(utilised_);
         ASSERT(entries_.front().head_.tag_ == JournalEntry::Data);
-        ASSERT(entries_.front().head_.payload_length_ == length);
+        ASSERT(entries_.front().head_.payload_length_ == uint64_t(length));
     }
 }
 

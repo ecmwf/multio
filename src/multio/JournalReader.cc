@@ -101,6 +101,8 @@ bool JournalReader::readRecord(JournalRecord& record) {
     eckit::Log::info() << "[" << *this << "]  - Finished reading entries" << record.marker_.asString() << "--" << std::endl << std::flush;
 
     ASSERT(record.marker_ == JournalRecord::TerminationMarker);
+
+    return true;
 }
 
 

@@ -35,10 +35,10 @@ const unsigned char Journal::CurrentVersion = 1;
 
 // TODO: Generate timestamped filename?
 Journal::Journal(const Configuration& config) :
+    footer_(*this, JournalRecord::Uninitialised),
     path_(config.getString("journalfile", "journal")),
     handle_(path_.fileHandle(false)),
-    isOpen_(false),
-    footer_(*this, JournalRecord::Uninitialised) {
+    isOpen_(false) {
 }
 
 Journal::~Journal() {

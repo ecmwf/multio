@@ -155,7 +155,7 @@ int MultIO::isetvalfdb(const char *name, const char *value, int name_len, int va
     return 0;
 }
 
-DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");
+static DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");
 
 //----------------------------------------------------------------------------------------------------------------------
 

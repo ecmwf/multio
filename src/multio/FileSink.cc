@@ -58,7 +58,7 @@ void FileSink::print(std::ostream& os) const {
     os << "FileSink(path=" << path_ << ")";
 }
 
-DataSinkBuilder<FileSink> FileSinkFactorySingleton("file");
+static DataSinkBuilder<FileSink> FileSinkFactorySingleton("file");
 
 }  // namespace multio
 

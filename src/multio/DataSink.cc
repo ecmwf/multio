@@ -88,7 +88,8 @@ DataSink* DataSinkFactory::build(const std::string &name, const eckit::Configura
 
 DataSink::DataSink(const eckit::Configuration& config) :
     failOnError_( config.getBool("failOnError",true) ),
-    journaled_( config.getBool("journaled",false) ) {
+    journaled_( config.getBool("journaled",false) ),
+    journalAlways_( config.getBool("journalAlways", false) ){
 }
 
 DataSink::~DataSink() {

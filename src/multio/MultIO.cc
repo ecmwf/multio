@@ -29,6 +29,9 @@ MultIO::MultIO(const eckit::Configuration& config) :
     DataSink(config),
     journal_(config) {
 
+    if (journaled_)
+        journal_.open();
+
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 
     for(std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end(); ++c) {

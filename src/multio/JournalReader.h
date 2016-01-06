@@ -50,6 +50,8 @@ private: // methods
         return s;
     }
 
+    void readConfiguration();
+
 private:
 
     eckit::PathName path_;

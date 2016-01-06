@@ -12,8 +12,9 @@
 /// @date Dec 2015
 
 #include <sys/time.h>
+#include <sstream>
 
-#include "eckit/config/Configuration.h"
+#include "eckit/config/JSONConfiguration.h"
 
 #include "multio/Journal.h"
 #include "multio/JournalReader.h"
@@ -39,6 +40,8 @@ JournalReader::JournalReader(const Configuration& config, const PathName& path) 
 
     ASSERT(head_.tag_ == Journal::CurrentHeaderTag);
     ASSERT(head_.tagVersion_ == Journal::CurrentVersion);
+
+    readConfiguration();
 }
 
 
@@ -88,7 +91,9 @@ bool JournalReader::readRecord(JournalRecord& record) {
             entry.data_.reset(new SharableBuffer(entry.head_.payload_length_));
             eckit::Log::info() << "[" << *this << "]     - reading payload ("
                                << entry.data_->size() << ")" << std::endl << std::flush;
-            handle_->read(&entry.data_, size_t(entry.head_.payload_length_));
+            handle_->read(*entry.data_, size_t(entry.head_.payload_length_));
+
+            //eckit::Log::info() << "[" << *this << "]     - " << std::string(*entry.data_, size_t(entry.head_.payload_length_)) << "---" << std::endl << std::flush;
         }
         eckit::Log::info() << "[" << *this << "]     - done" << std::endl << std::flush;
     }
@@ -97,12 +102,49 @@ bool JournalReader::readRecord(JournalRecord& record) {
 
     // Check that we get the terminantion marker!
     handle_->read(record.marker_.data(), sizeof(record.marker_.size()));
-    eckit::Log::info() << "[" << *this << "]  - Finished reading entries" << record.marker_.asString() << "--" << std::endl << std::flush;
 
     ASSERT(record.marker_ == JournalRecord::TerminationMarker);
 
     return true;
 }
+
+
+/*
+ * Read the JournalRecord corresponding to the JSON configuration stored in the file.
+ * This will (MUST) be the first JournalRecord in the file.
+ *
+ * This is NOT part of the header structure, as although we always include it in
+ * version 1, we don't want to assume that this will always be the case.
+ */
+void JournalReader::readConfiguration() {
+
+    JournalRecord record(*this, JournalRecord::Uninitialised);
+    readRecord(record);
+
+    ASSERT(record.head_.tag_ == JournalRecord::Configuration);
+    ASSERT(record.head_.numEntries_ == 1);
+    ASSERT(record.entries_.size() == 1);
+
+    // Manipulate this into an istream for the JSON configuration.
+    JournalRecord::JournalEntry& dataEntry(record.entries_.front());
+    SharableBuffer& buffer(*dataEntry.data_);
+
+    ASSERT(buffer.size() == dataEntry.head_.payload_length_);
+
+    std::string json_str(buffer, buffer.size());
+
+    std::istringstream iss(json_str);
+
+    JSONConfiguration file_config(iss);
+
+    Log::info() << "[" << *this << "]  - Journal file configuration: " << std::endl;
+    Log::info() << "-------------------------------------------------------------" << std::endl;
+    Log::info() << file_config.get() << std::endl;
+    Log::info() << "-------------------------------------------------------------" << std::endl;
+
+    // TODO: This configuration may be tested against the externally supplied config
+}
+
 
 
 void JournalReader::print(std::ostream& os) const {

@@ -32,7 +32,8 @@ const unsigned char JournalRecord::CurrentTagVersion = 1;
 const std::string JournalRecord::RecordTypeNames[] = {
     "Uninitialised",
     "End of Journal",
-    "Journal entry"
+    "Journal entry",
+    "Configuration"
 };
 
 

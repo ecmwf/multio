@@ -13,11 +13,14 @@
 /// @date Dec 2015
 
 #include <sys/time.h>
+#include <sstream>
 
 #include "multio/Journal.h"
 
+#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
+#include "eckit/parser/JSON.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
 
@@ -36,8 +39,10 @@ const unsigned char Journal::CurrentVersion = 1;
 // TODO: Generate timestamped filename?
 Journal::Journal(const Configuration& config) :
     footer_(*this, JournalRecord::Uninitialised),
+    configurationRecord_(*this, JournalRecord::Uninitialised),
     path_(config.getString("journalfile", "journal")),
     handle_(path_.fileHandle(false)),
+    config_(config),
     isOpen_(false) {
 }
 
@@ -61,6 +66,16 @@ void Journal::open() {
 
         // And actually write out this header.
         handle_->write(&head_, sizeof(head_));
+
+        // Get the current configuration into a string, which we can test the length of
+        std::stringstream json_stream;
+        JSON config_json(json_stream);
+        config_json << config_.get();
+        std::string json_str = json_stream.str();
+
+        configurationRecord_.initialise(JournalRecord::Configuration);
+        configurationRecord_.addData(json_str.c_str(), json_str.length());
+        configurationRecord_.writeRecord(*handle_);
     }
 }
 

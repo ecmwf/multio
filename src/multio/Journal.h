@@ -20,7 +20,6 @@
 #include <vector>
 #include <sys/time.h>
 
-#include "eckit/config/Configuration.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/io/DataHandle.h"
 #include "eckit/io/Length.h"
@@ -30,6 +29,10 @@
 #include "eckit/types/FixedString.h"
 
 #include "multio/JournalRecord.h"
+
+namespace eckit {
+    class Configuration;
+}
 
 namespace multio {
 
@@ -57,6 +60,7 @@ public: // types
         unsigned char         unused2_[116];    // (116) reserved for future use.
     } head_;
 
+    JournalRecord configurationRecord_;
     JournalRecord footer_;
 
 public: // methods
@@ -104,6 +108,7 @@ private: // members
     eckit::ScopedPtr<eckit::DataHandle> handle_;
     eckit::Mutex mutex_;
 
+    eckit::Configuration const& config_;
     bool isOpen_;
 };
 

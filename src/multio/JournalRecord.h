@@ -65,7 +65,8 @@ public: // Data types, and structural members.
     enum RecordType {
         Uninitialised,
         EndOfJournal,
-        WriteEntry
+        WriteEntry,
+        Configuration
     };
 
     struct Head {

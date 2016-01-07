@@ -47,10 +47,13 @@ void FileSink::write(const void* buffer, const Length& length, JournalRecord *co
     eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
-    handle_->write(buffer, length);
+    long written = handle_->write(buffer, length);
 
-    if(record)
+    // We should throw an exception if we are not journaling anything
+    if (record && (written != length || journalAlways_))
         record->addWriteEntry(buffer, length);
+    else if (written != length)
+        throw WriteError(std::string("Write error on file: ") + path_, Here());
 }
 
 

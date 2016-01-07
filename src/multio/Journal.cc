@@ -54,7 +54,7 @@ Journal::~Journal() {
 /// Open a new journal file, and initialise it with header information
 void Journal::open() {
 
-    eckit::Log::info() << "Opening the journal (for writing)" << std::endl;
+    eckit::Log::info() << "[" << *this << "] Opening the journal (for writing)" << std::endl;
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
     if (!isOpen_){
@@ -87,7 +87,7 @@ void Journal::open() {
 /// and close the associated file.
 void Journal::close() {
 
-    eckit::Log::info() << "Closing the journal" << std::endl;
+    eckit::Log::info() << "[" << *this << "] Closing the journal" << std::endl;
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
     if (isOpen_) {

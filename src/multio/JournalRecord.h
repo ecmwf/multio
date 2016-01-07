@@ -123,6 +123,8 @@ public: // Data types, and structural members.
         eckit::SharedPtr<SharableBuffer> data_;
     };
 
+    static const char * EntryTypeName(JournalEntry::EntryType type);
+
     std::list<JournalEntry> entries_;
 
     // Add a way to stream all the journal elements out.
@@ -158,6 +160,19 @@ public: // methods
     void addJournalEntry(JournalEntry::EntryType type);
 
     bool utilised() const { return utilised_; }
+
+protected: // methods
+
+    void print(std::ostream&) const;
+
+private: // methods
+
+    void initHeader();
+
+    friend std::ostream &operator<<(std::ostream &s, const JournalRecord &p) {
+        p.print(s);
+        return s;
+    }
 
 private: // internal control elements
 

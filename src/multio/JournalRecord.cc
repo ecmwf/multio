@@ -94,12 +94,11 @@ void JournalRecord::addWriteEntry(const void *data, const Length &length)
 /// iii) The end-of-record marker
 void JournalRecord::writeRecord(DataHandle& handle) {
 
+    Log::info() << "[" << *this << "] Writing record" << std::endl;
+
     handle.write(&head_, sizeof(head_));
 
     ASSERT(size_t(head_.numEntries_) == entries_.size());
-    Log::info() << "Writing record." << std::endl;
-    Log::info() << "nEntries: " << head_.numEntries_ << std::endl;
-    Log::info() << "type: " << JournalRecord::RecordTypeNames[head_.tag_] << std::endl;
 
     for (std::list<JournalEntry>::const_iterator it = entries_.begin(); it != entries_.end(); ++it) {
         handle.write(&it->head_, sizeof(it->head_));
@@ -122,6 +121,8 @@ void JournalRecord::addData(const void * data, const Length& length) {
 
     // n.b. The data must be the first thing added to the Journal Record
     if (entries_.empty()) {
+
+        Log::info() << "[" << *this << "] Adding data element" << std::endl;
 
         entries_.push_back(JournalEntry());
 
@@ -154,6 +155,9 @@ void JournalRecord::addData(const void * data, const Length& length) {
 
 void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type) {
 
+    Log::info() << "[" << *this << "] Adding journal entry ("
+                << EntryTypeName(type) << ")"<< std::endl;
+
     // Before we add a journal entry, the data MUST have been added already
     ASSERT(utilised_);
     ASSERT(entries_.front().head_.tag_ == JournalEntry::Data);
@@ -170,6 +174,37 @@ void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type)
 
     // Add an entry!
     head_.numEntries_++;
+}
+
+
+const char * JournalRecord::EntryTypeName(JournalEntry::EntryType type) {
+
+    const char * name;
+
+    switch(type) {
+    case JournalEntry::Data:
+        name = "Data";
+        break;
+
+    case JournalEntry::Write:
+        name = "Write";
+        break;
+
+    case JournalEntry::End:
+        name = "End";
+        break;
+
+    default:
+        name = "** Unknown **";
+        break;
+    };
+
+    return name;
+}
+
+void JournalRecord::print(std::ostream& os) const
+{
+    os << "JournalRecord(" << JournalRecord::RecordTypeNames[head_.tag_] << ")";
 }
 
 // -------------------------------------------------------------------------------------------------

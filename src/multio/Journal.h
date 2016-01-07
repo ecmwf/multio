@@ -83,14 +83,6 @@ public: // methods
 
 protected: // methods
 
-    // Overridable routine that records a 'write' entry in the journal by adding
-    // it to the journal record.
-    //
-    // --> If there is any datasink specific data, it should be added here.
-    void writeJournalEntry(const void * buffer,
-                           const eckit::Length& length,
-                           JournalRecord& );
-
     void print(std::ostream&) const;
 
 private: // methods

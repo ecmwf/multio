@@ -123,19 +123,6 @@ void Journal::initHeader() {
 
 }
 
-void Journal::writeJournalEntry(const void * buffer,
-                                const eckit::Length& length,
-                                JournalRecord& record ) {
-
-    // Ensure that the JournalEntry has a copy of the data. Note that this may
-    // already have been done by another DataSink (in which case this is a NOP).
-    record.addData(buffer, length);
-
-    // Add the entry here. By default there is no additional (DataSink-specific)
-    // information, so the payload length is zero
-    record.addJournalEntry(JournalRecord::JournalEntry::Write);
-
-}
 
 // TODO: make this no-longer a REALLY NAIVE routine, that just dumps the data to a
 //       journal, without adding actions.

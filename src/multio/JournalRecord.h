@@ -145,7 +145,7 @@ public: // methods
     void initialise(RecordType type);
 
     ///
-    void write(const void * data, const eckit::Length& length);
+    void addWriteEntry(const void *data, const eckit::Length& length);
 
     /// Write the journal record to the supplied data handle
     void writeRecord(eckit::DataHandle& handle);

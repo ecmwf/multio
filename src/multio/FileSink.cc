@@ -50,7 +50,7 @@ void FileSink::write(const void* buffer, const Length& length, JournalRecord *co
     handle_->write(buffer, length);
 
     if(record)
-        record->write(buffer, length);
+        record->addWriteEntry(buffer, length);
 }
 
 

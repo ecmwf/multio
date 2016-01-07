@@ -30,13 +30,13 @@ JournalReader::JournalReader(const Configuration& config, const PathName& path) 
     path_(path),
     handle_(path.fileHandle()) {
 
-    eckit::Log::info() << "[" << *this << "] Opening journal file: " << path_ << std::endl;
+    Log::info() << "[" << *this << "] Opening journal file: " << path_ << std::endl;
 
     // Read the header from the datahandle, and check that everything is valid.
     handle_->openForRead();
     handle_->read(&head_, sizeof(Journal::Header));
 
-    eckit::Log::info() << "[" << *this << "] Journal file version: " << int(head_.tagVersion_) << std::endl;
+    Log::info() << "[" << *this << "] Journal file version: " << int(head_.tagVersion_) << std::endl;
 
     ASSERT(head_.tag_ == Journal::CurrentHeaderTag);
     ASSERT(head_.tagVersion_ == Journal::CurrentVersion);
@@ -60,10 +60,10 @@ bool JournalReader::readRecord(JournalRecord& record) {
 
     handle_->read(&record.head_, sizeof(JournalRecord::Head));
 
-    eckit::Log::info() << "[" << *this << "] Read journal record" << std::endl;
-    eckit::Log::info() << "[" << *this << "]  - Record type: "
+    Log::info() << "[" << *this << "] Read journal record" << std::endl;
+    Log::info() << "[" << *this << "]  - Record type: "
                        << JournalRecord::RecordTypeNames[record.head_.tag_] << std::endl;
-    eckit::Log::info() << "[" << *this << "]  - Num entries: "
+    Log::info() << "[" << *this << "]  - Num entries: "
                        << int(record.head_.numEntries_) << std::endl;
 
     // Given the header, allocate space to store the contained JournalEntries
@@ -77,31 +77,31 @@ bool JournalReader::readRecord(JournalRecord& record) {
         // Read the (header) of the Journal Entry
         JournalRecord::JournalEntry& entry(*it);
         handle_->read(&entry.head_, sizeof(JournalRecord::JournalEntry::Header));
-        eckit::Log::info() << "[" << *this << "]  * Read length: "
+        Log::info() << "[" << *this << "]  * Read length: "
                            << sizeof(JournalRecord::JournalEntry::Header) << std::endl;
 
-        eckit::Log::info() << "[" << *this << "]  * Read entry (" << i << ")" << std::endl;
-        eckit::Log::info() << "[" << *this << "]     - entry type: "
+        Log::info() << "[" << *this << "]  * Read entry (" << i << ")" << std::endl;
+        Log::info() << "[" << *this << "]     - entry type: "
                            << entry.head_.tag_ << std::endl << std::flush;
-        eckit::Log::info() << "[" << *this << "]     - Payload length: "
+        Log::info() << "[" << *this << "]     - Payload length: "
                            << entry.head_.payload_length_ << std::endl << std::flush;
 
         // Deal with any associated data payload
         if (entry.head_.payload_length_ != 0) {
             entry.data_.reset(new SharableBuffer(entry.head_.payload_length_));
-            eckit::Log::info() << "[" << *this << "]     - reading payload ("
+            Log::info() << "[" << *this << "]     - reading payload ("
                                << entry.data_->size() << ")" << std::endl << std::flush;
             handle_->read(*entry.data_, size_t(entry.head_.payload_length_));
 
-            //eckit::Log::info() << "[" << *this << "]     - " << std::string(*entry.data_, size_t(entry.head_.payload_length_)) << "---" << std::endl << std::flush;
+            //Log::info() << "[" << *this << "]     - " << std::string(*entry.data_, size_t(entry.head_.payload_length_)) << "---" << std::endl << std::flush;
         }
-        eckit::Log::info() << "[" << *this << "]     - done" << std::endl << std::flush;
+        Log::info() << "[" << *this << "]     - done" << std::endl << std::flush;
     }
 
-    eckit::Log::info() << "[" << *this << "]  - Finished reading entries" << std::endl << std::flush;
+    Log::info() << "[" << *this << "]  - Finished reading entries" << std::endl << std::flush;
 
     // Check that we get the terminantion marker!
-    handle_->read(record.marker_.data(), sizeof(record.marker_.size()));
+    handle_->read(record.marker_.data(), record.marker_.size());
 
     ASSERT(record.marker_ == JournalRecord::TerminationMarker);
 

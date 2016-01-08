@@ -81,6 +81,8 @@ public: // methods
 
     void writeRecord(JournalRecord& record);
 
+    bool isOpen() const;
+
 protected: // methods
 
     void print(std::ostream&) const;

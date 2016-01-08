@@ -87,10 +87,11 @@ void Journal::open() {
 /// and close the associated file.
 void Journal::close() {
 
-    eckit::Log::info() << "[" << *this << "] Closing the journal" << std::endl;
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
     if (isOpen_) {
+        eckit::Log::info() << "[" << *this << "] Closing the journal" << std::endl;
+
         // TODO: do we want to write the number of records to the header?
         // Initialise and write the footer information
         // TODO: Refactor this somewhere sensible.
@@ -121,6 +122,11 @@ void Journal::initHeader() {
 
     SYSCALL(::gettimeofday(&head_.timestamp_, NULL));
 
+}
+
+
+bool Journal::isOpen() const {
+    return isOpen_;
 }
 
 

@@ -46,6 +46,12 @@ MultIO::~MultIO() {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         delete (*it);
     }
+
+    // Ideally the Journal should be committed explicitly before we hit the destructors.
+    if (journaled_ && journal_.isOpen()) {
+        Log::warning() << "[" << *this << "] Journal has not been committed prior to MultIO destruction"
+                       << std::endl;
+    }
 }
 
 bool MultIO::ready() const
@@ -83,6 +89,17 @@ void MultIO::write(const void* buffer, const Length& length, JournalRecord *cons
     if( newRecord ) {
         journal_.writeRecord(*newRecord);
     }
+}
+
+
+void MultIO::commitJournal() {
+
+    Log::info() << "[" << *this << "] Committing MultIO journal" << std::endl;
+    if (!journaled_ || !journal_.isOpen()) {
+        Log::warning() << "[" << *this << "] Attempting to commit a journal that has not been created"
+                       << std::endl;
+    } else
+        journal_.close();
 }
 
 

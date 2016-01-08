@@ -44,6 +44,8 @@ public:
                        JournalRecord *const record = NULL,
                        Metadata *const Metadata = NULL);
 
+    void commitJournal();
+
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
     ///

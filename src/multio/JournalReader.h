@@ -39,6 +39,10 @@ public: // methods
 
     bool readRecord(JournalRecord& record);
 
+    int readEvents() const;
+
+    int readWriteRecords() const;
+
 protected: // methods
 
     void print(std::ostream&) const;
@@ -56,6 +60,9 @@ private:
 
     eckit::PathName path_;
     eckit::ScopedPtr<eckit::DataHandle> handle_;
+
+    int nReadWriteRecords_; // This excludes the header and footer.
+    int nReadEvents_;
 };
 
 // -------------------------------------------------------------------------------------------------

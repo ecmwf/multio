@@ -28,7 +28,9 @@ namespace multio {
 JournalReader::JournalReader(const Configuration& config, const PathName& path) : 
     Journal(config),
     path_(path),
-    handle_(path.fileHandle()) {
+    handle_(path.fileHandle()),
+    nReadEvents_(0),
+    nReadWriteRecords_(0) {
 
     Log::info() << "[" << *this << "] Opening journal file: " << path_ << std::endl;
 
@@ -55,6 +57,7 @@ JournalReader::~JournalReader() {}
 /// is reached in an inappropriate way, an exception is thrown.
 ///
 /// @param record the JournalRecord to initialise.
+/// @return true if there are still records remaining to read.
 
 bool JournalReader::readRecord(JournalRecord& record) {
 
@@ -96,6 +99,8 @@ bool JournalReader::readRecord(JournalRecord& record) {
                                << entry.data_->size() << ")" << std::endl;
             handle_->read(*entry.data_, size_t(entry.head_.payload_length_));
 
+            nReadEvents_++;
+
             //Log::info() << "[" << *this << "]     - " << std::string(*entry.data_, size_t(entry.head_.payload_length_)) << "---" << std::endl;
         }
     }
@@ -106,7 +111,12 @@ bool JournalReader::readRecord(JournalRecord& record) {
     handle_->read(record.marker_.data(), record.marker_.size());
 
     ASSERT(record.marker_ == JournalRecord::TerminationMarker);
-    return true;
+
+    // We want to keep records of what has been read.
+    if (record.head_.tag_ == JournalRecord::WriteEntry)
+        nReadWriteRecords_++;
+
+    return record.head_.tag_ != JournalRecord::EndOfJournal;
 }
 
 
@@ -146,6 +156,15 @@ void JournalReader::readConfiguration() {
     // TODO: This configuration may be tested against the externally supplied config
 }
 
+
+int JournalReader::readEvents() const {
+    return nReadEvents_;
+}
+
+
+int JournalReader::readWriteRecords() const {
+    return nReadWriteRecords_;
+}
 
 
 void JournalReader::print(std::ostream& os) const {

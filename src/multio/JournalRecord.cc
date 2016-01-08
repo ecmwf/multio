@@ -72,7 +72,6 @@ void JournalRecord::initialise(RecordType type) {
 
 void JournalRecord::addWriteEntry(const void *data, const Length &length, int sinkId)
 {
-    Log::info() << "Write ... " << sinkId << std::endl;
     // Ensure that the JournalEntry has a copy of the data. Note that this may
     // already have been done by another DataSink (in which case this is a NOP).
     addData(data, length);

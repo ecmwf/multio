@@ -51,7 +51,7 @@ void FileSink::write(const void* buffer, const Length& length, JournalRecord *co
 
     // We should throw an exception if we are not journaling anything
     if (record && (written != length || journalAlways_))
-        record->addWriteEntry(buffer, length);
+        record->addWriteEntry(buffer, length, id_);
     else if (written != length)
         throw WriteError(std::string("Write error on file: ") + path_, Here());
 }

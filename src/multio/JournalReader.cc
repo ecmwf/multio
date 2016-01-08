@@ -82,29 +82,29 @@ bool JournalReader::readRecord(JournalRecord& record) {
 
         Log::info() << "[" << *this << "]  * Read entry (" << i << ")" << std::endl;
         Log::info() << "[" << *this << "]     - entry type: "
-                           << entry.head_.tag_ << std::endl << std::flush;
+                           << entry.head_.tag_ << std::endl;
+        Log::info() << "[" << *this << "]     - sink id: "
+                           << entry.head_.id_ << std::endl;
         Log::info() << "[" << *this << "]     - Payload length: "
-                           << entry.head_.payload_length_ << std::endl << std::flush;
+                           << entry.head_.payload_length_ << std::endl;
 
         // Deal with any associated data payload
         if (entry.head_.payload_length_ != 0) {
             entry.data_.reset(new SharableBuffer(entry.head_.payload_length_));
             Log::info() << "[" << *this << "]     - reading payload ("
-                               << entry.data_->size() << ")" << std::endl << std::flush;
+                               << entry.data_->size() << ")" << std::endl;
             handle_->read(*entry.data_, size_t(entry.head_.payload_length_));
 
-            //Log::info() << "[" << *this << "]     - " << std::string(*entry.data_, size_t(entry.head_.payload_length_)) << "---" << std::endl << std::flush;
+            //Log::info() << "[" << *this << "]     - " << std::string(*entry.data_, size_t(entry.head_.payload_length_)) << "---" << std::endl;
         }
-        Log::info() << "[" << *this << "]     - done" << std::endl << std::flush;
     }
 
-    Log::info() << "[" << *this << "]  - Finished reading entries" << std::endl << std::flush;
+    Log::info() << "[" << *this << "]  - Finished reading entries" << std::endl;
 
     // Check that we get the terminantion marker!
     handle_->read(record.marker_.data(), record.marker_.size());
 
     ASSERT(record.marker_ == JournalRecord::TerminationMarker);
-
     return true;
 }
 

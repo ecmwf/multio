@@ -107,8 +107,9 @@ public: // Data types, and structural members.
 
             // TODO: What other information needs to go into here?
 
-            unsigned char     tag_;             /// (1)
-            unsigned char     unused_[3];       /// (3)
+            unsigned char     tag_;             /// (1) - The EntryType
+            uint16_t          id_;              /// (2) - The index of the DataSink (in a MultiIO)
+            unsigned char     unused_[1];       /// (1)
 
             timeval           timestamp_;       /// (16)
 
@@ -147,7 +148,7 @@ public: // methods
     void initialise(RecordType type);
 
     ///
-    void addWriteEntry(const void *data, const eckit::Length& length);
+    void addWriteEntry(const void *data, const eckit::Length& length, int sinkId);
 
     /// Write the journal record to the supplied data handle
     void writeRecord(eckit::DataHandle& handle);
@@ -157,7 +158,7 @@ public: // methods
 
     /// Add a new journal entry to the list
     /// TODO: Add a way to attach data...
-    void addJournalEntry(JournalEntry::EntryType type);
+    void addJournalEntry(JournalEntry::EntryType type, int sinkId);
 
     bool utilised() const { return utilised_; }
 

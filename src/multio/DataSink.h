@@ -48,6 +48,10 @@ public: // methods
                        JournalRecord *const record = NULL,
                        Metadata *const metadata = NULL) = 0;
 
+    /// Set the datasink ID that is used by other classes to identify this one.
+    /// In particular, it labels which sink within a MultIO this one is.
+    void setId(int id);
+
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
     ///
@@ -86,6 +90,8 @@ protected: // members
     bool failOnError_;
     bool journaled_;        /// Write to a journal file
     bool journalAlways_;    /// Write details to journal even if a write succeeds.
+
+    int id_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

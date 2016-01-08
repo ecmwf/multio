@@ -36,6 +36,7 @@ MultIO::MultIO(const eckit::Configuration& config) :
 
     for(std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end(); ++c) {
         sinks_.push_back( DataSinkFactory::build(c->getString("type"),*c) );
+        sinks_.back()->setId(sinks_.size()-1);
     }
 
 }

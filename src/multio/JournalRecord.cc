@@ -76,15 +76,16 @@ void JournalRecord::initialise(RecordType type) {
     marker_ = JournalRecord::TerminationMarker;
 }
 
-void JournalRecord::addWriteEntry(const void *data, const Length &length)
+void JournalRecord::addWriteEntry(const void *data, const Length &length, int sinkId)
 {
+    Log::info() << "Write ... " << sinkId << std::endl;
     // Ensure that the JournalEntry has a copy of the data. Note that this may
     // already have been done by another DataSink (in which case this is a NOP).
     addData(data, length);
 
     // Add the entry here. By default there is no additional (DataSink-specific)
     // information, so the payload length is zero
-    addJournalEntry(JournalRecord::JournalEntry::Write);
+    addJournalEntry(JournalRecord::JournalEntry::Write, sinkId);
 }
 
 
@@ -153,7 +154,7 @@ void JournalRecord::addData(const void * data, const Length& length) {
 }
 
 
-void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type) {
+void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type, int sinkId) {
 
     Log::info() << "[" << *this << "] Adding journal entry ("
                 << EntryTypeName(type) << ")"<< std::endl;
@@ -171,6 +172,11 @@ void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type)
     entry.head_.tag_ = type;
     entry.head_.payload_length_ = 0;
     SYSCALL(::gettimeofday(&entry.head_.timestamp_, NULL));
+
+    if (sinkId != -1) {
+        entry.head_.id_ = unsigned(sinkId);
+        ASSERT(entry.head_.id_ == sinkId);
+    }
 
     // Add an entry!
     head_.numEntries_++;

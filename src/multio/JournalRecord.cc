@@ -29,12 +29,6 @@ namespace multio {
 const FixedString<4> JournalRecord::TerminationMarker("END!");
 const unsigned char JournalRecord::CurrentTagVersion = 1;
 
-const std::string JournalRecord::RecordTypeNames[] = {
-    "Uninitialised",
-    "End of Journal",
-    "Journal entry",
-    "Configuration"
-};
 
 
 // -------------------------------------------------------------------------------------------------
@@ -183,6 +177,21 @@ void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type,
 }
 
 
+const std::string& JournalRecord::RecordTypeName(RecordType type) {
+
+    const static std::string names[] = {
+        "Uninitialised",
+        "End of Journal",
+        "Journal entry",
+        "Configuration"
+    };
+
+    ASSERT(type >= 0 && type <= Configuration);
+
+    return names[type];
+}
+
+
 const char * JournalRecord::EntryTypeName(JournalEntry::EntryType type) {
 
     const char * name;
@@ -210,7 +219,7 @@ const char * JournalRecord::EntryTypeName(JournalEntry::EntryType type) {
 
 void JournalRecord::print(std::ostream& os) const
 {
-    os << "JournalRecord(" << JournalRecord::RecordTypeNames[head_.tag_] << ")";
+    os << "JournalRecord(" << RecordTypeName(RecordType(head_.tag_)) << ")";
 }
 
 // -------------------------------------------------------------------------------------------------

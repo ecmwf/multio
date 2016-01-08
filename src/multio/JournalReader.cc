@@ -62,7 +62,8 @@ bool JournalReader::readRecord(JournalRecord& record) {
 
     Log::info() << "[" << *this << "] Read journal record" << std::endl;
     Log::info() << "[" << *this << "]  - Record type: "
-                       << JournalRecord::RecordTypeNames[record.head_.tag_] << std::endl;
+                       << JournalRecord::RecordTypeName(JournalRecord::RecordType(record.head_.tag_))
+                       << std::endl;
     Log::info() << "[" << *this << "]  - Num entries: "
                        << int(record.head_.numEntries_) << std::endl;
 

@@ -62,7 +62,7 @@ public: // Data types, and structural members.
 
     // ---------------------------------------------------------
 
-    enum RecordType {
+    enum RecordType {   // n.b. if we add types, update the ASSERT in JournalRecord::RecordTypeName
         Uninitialised,
         EndOfJournal,
         WriteEntry,
@@ -81,9 +81,6 @@ public: // Data types, and structural members.
         char            unused2_[12];    /// (12) reserved for future use
                                          /// TOTAL: 32
     } head_;
-
-
-    const static std::string RecordTypeNames[];
 
     const static eckit::FixedString<4> TerminationMarker;
 
@@ -124,8 +121,6 @@ public: // Data types, and structural members.
         eckit::SharedPtr<SharableBuffer> data_;
     };
 
-    static const char * EntryTypeName(JournalEntry::EntryType type);
-
     std::list<JournalEntry> entries_;
 
     // Add a way to stream all the journal elements out.
@@ -161,6 +156,11 @@ public: // methods
     void addJournalEntry(JournalEntry::EntryType type, int sinkId);
 
     bool utilised() const { return utilised_; }
+
+    static const std::string& RecordTypeName(RecordType type);
+
+    static const char * EntryTypeName(JournalEntry::EntryType type);
+
 
 protected: // methods
 

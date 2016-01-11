@@ -27,7 +27,7 @@ namespace multio {
 
 MultIO::MultIO(const eckit::Configuration& config) :
     DataSink(config),
-    journal_(config) {
+    journal_(config, this) {
 
     if (journaled_)
         journal_.open();

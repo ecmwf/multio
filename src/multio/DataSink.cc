@@ -14,9 +14,10 @@
 
 #include "multio/DataSink.h"
 
+#include "eckit/exception/Exceptions.h"
+#include "eckit/parser/JSON.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
-#include "eckit/exception/Exceptions.h"
 
 using namespace eckit;
 
@@ -90,6 +91,7 @@ DataSink::DataSink(const eckit::Configuration& config) :
     failOnError_( config.getBool("failOnError",true) ),
     journaled_( config.getBool("journaled",false) ),
     journalAlways_( config.getBool("journalAlways", false) ),
+    config_(config.get()),
     id_(-1) {
 }
 
@@ -99,6 +101,16 @@ DataSink::~DataSink() {
 bool DataSink::ready() const
 {
     return true; // default for synchronous sinks
+}
+
+
+std::string DataSink::json() const {
+
+    std::stringstream json_stream;
+    JSON config_json(json_stream);
+    config_json << config_.get();
+
+    return json_stream.str();
 }
 
 

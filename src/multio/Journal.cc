@@ -15,6 +15,7 @@
 #include <sys/time.h>
 #include <sstream>
 
+#include "multio/DataSink.h"
 #include "multio/Journal.h"
 
 #include "eckit/config/Configuration.h"
@@ -37,11 +38,12 @@ const unsigned char Journal::CurrentVersion = 1;
 //----------------------------------------------------------------------------------------------------------------------
 
 // TODO: Generate timestamped filename?
-Journal::Journal(const Configuration& config) :
+Journal::Journal(const Configuration& config, DataSink * const dataSink) :
     footer_(*this, JournalRecord::Uninitialised),
     configurationRecord_(*this, JournalRecord::Uninitialised),
     path_(config.getString("journalfile", "journal")),
     handle_(path_.fileHandle(false)),
+    dataSink_(dataSink),
     config_(config),
     isOpen_(false) {
 }
@@ -58,6 +60,12 @@ void Journal::open() {
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
     if (!isOpen_){
+
+        if (NULL == dataSink_) {
+            throw SeriousBug("Can only open a journal for writing if it is associated with a MultIO DataSink",
+                             Here());
+        }
+
         handle_->openForWrite(0);
         isOpen_ = true;
 
@@ -67,12 +75,7 @@ void Journal::open() {
         // And actually write out this header.
         handle_->write(&head_, sizeof(head_));
 
-        // Get the current configuration into a string, which we can test the length of
-        std::stringstream json_stream;
-        JSON config_json(json_stream);
-        config_json << config_.get();
-        std::string json_str = json_stream.str();
-
+        std::string json_str = dataSink_->json();
         configurationRecord_.initialise(JournalRecord::Configuration);
         configurationRecord_.addData(json_str.c_str(), json_str.length());
         configurationRecord_.writeRecord(*handle_);

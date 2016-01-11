@@ -38,6 +38,9 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+class DataSink;
+
+
 class Journal : private eckit::NonCopyable {
 
     friend class JournalRecord;
@@ -65,7 +68,7 @@ public: // types
 
 public: // methods
 
-    Journal(const eckit::Configuration& config);
+    Journal(const eckit::Configuration& config, DataSink * const dataSink = NULL);
 
     ~Journal();
 
@@ -101,6 +104,8 @@ private: // members
     eckit::PathName path_;
     eckit::ScopedPtr<eckit::DataHandle> handle_;
     eckit::Mutex mutex_;
+
+    DataSink * const dataSink_;
 
     eckit::Configuration const& config_;
     bool isOpen_;

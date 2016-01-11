@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/Configuration.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/io/Length.h"
@@ -47,6 +48,12 @@ public: // methods
                        const eckit::Length& length,
                        JournalRecord *const record = NULL,
                        Metadata *const metadata = NULL) = 0;
+
+    /// Dump all relevant config details to json, which can be used to reinitialise
+    /// the datasink in playjournal. Not necessarily equal to the supplied config
+    /// as other sources of configuration may be used. By default this just returns
+    /// the supplied Configuration.
+    virtual std::string json() const;
 
     /// Set the datasink ID that is used by other classes to identify this one.
     /// In particular, it labels which sink within a MultIO this one is.
@@ -91,6 +98,7 @@ protected: // members
     bool journaled_;        /// Write to a journal file
     bool journalAlways_;    /// Write details to journal even if a write succeeds.
 
+    eckit::LocalConfiguration config_;
     int id_;
 };
 

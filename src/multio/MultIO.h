@@ -44,6 +44,8 @@ public:
                        JournalRecord *const record = NULL,
                        Metadata *const Metadata = NULL);
 
+    virtual void replayRecord(const JournalRecord& record);
+
     void commitJournal();
 
     ///

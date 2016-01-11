@@ -18,6 +18,7 @@
 
 #include <iosfwd>
 
+#include "eckit/config/JSONConfiguration.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/io/DataHandle.h"
 #include "eckit/memory/ScopedPtr.h"
@@ -43,6 +44,8 @@ public: // methods
 
     int readWriteRecords() const;
 
+    const eckit::Configuration& config() const;
+
 protected: // methods
 
     void print(std::ostream&) const;
@@ -63,6 +66,8 @@ private:
 
     int nReadWriteRecords_; // This excludes the header and footer.
     int nReadEvents_;
+
+    eckit::ScopedPtr<eckit::JSONConfiguration> config_;
 };
 
 // -------------------------------------------------------------------------------------------------

@@ -146,11 +146,11 @@ void JournalReader::readConfiguration() {
 
     std::istringstream iss(json_str);
 
-    JSONConfiguration file_config(iss);
+    config_.reset(new JSONConfiguration(iss));
 
     Log::info() << "[" << *this << "]  - Journal file configuration: " << std::endl;
     Log::info() << "-------------------------------------------------------------" << std::endl;
-    Log::info() << file_config.get() << std::endl;
+    Log::info() << config_->get() << std::endl;
     Log::info() << "-------------------------------------------------------------" << std::endl;
 
     // TODO: This configuration may be tested against the externally supplied config
@@ -164,6 +164,11 @@ int JournalReader::readEvents() const {
 
 int JournalReader::readWriteRecords() const {
     return nReadWriteRecords_;
+}
+
+
+const Configuration& JournalReader::config() const {
+    return *config_;
 }
 
 

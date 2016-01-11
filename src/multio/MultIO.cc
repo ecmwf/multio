@@ -92,6 +92,59 @@ void MultIO::write(const void* buffer, const Length& length, JournalRecord *cons
 }
 
 
+void MultIO::replayRecord(const JournalRecord& record) {
+
+    Log::info() << "[" << *this << "] Replaying journal record" << std::endl;
+    Log::info() << "[" << *this << "]  - Record type: "
+                       << JournalRecord::RecordTypeName(JournalRecord::RecordType(record.head_.tag_))
+                       << std::endl;
+
+
+    // Provide a journal record so that failures that occur during playback
+    // will be (re)journaled.
+    ScopedPtr<JournalRecord> newRecord;
+    if (journaled_) {
+        newRecord.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
+    }
+
+    // Once the data entry is found, point to the associated data so it can be used
+    // by the write entries.
+    SharedPtr<SharableBuffer> data;
+
+    int i = 0;
+    for (std::list<JournalRecord::JournalEntry>::const_iterator it = record.entries_.begin();
+            it != record.entries_.end(); (++i, ++it) ) {
+
+        Log::info() << "[" << *this << "]  * Entry: " << i << std::endl;
+
+        switch (it->head_.tag_) {
+
+        case JournalRecord::JournalEntry::Data:
+            Log::info() << "[" << *this << "]    - Got data entry" << std::endl;
+            data.reset(it->data_);
+            break;
+
+        case JournalRecord::JournalEntry::Write:
+            Log::info() << "[" << *this << "]    - Write entry for journal: " << it->head_.id_ << std::endl;
+            ASSERT(data);
+            ASSERT(it->head_.id_ < sinks_.size());
+
+            sinks_[it->head_.id_]->write(*data, data->size(), newRecord.get());
+            break;
+
+        default:
+            Log::warning() << "[" << *this << "]    - Unrecognised entry type";
+
+        }
+    }
+
+    // And ensure that any appropriate elements are written properly
+    if (newRecord)
+        journal_.writeRecord(*newRecord);
+
+}
+
+
 void MultIO::commitJournal() {
 
     Log::info() << "[" << *this << "] Committing MultIO journal" << std::endl;

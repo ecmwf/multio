@@ -25,11 +25,11 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-static eckit::Mutex *local_mutex = 0;
+static Mutex *local_mutex = 0;
 static std::map<std::string, DataSinkFactory*> *m = 0;
 static pthread_once_t once = PTHREAD_ONCE_INIT;
 static void init() {
-    local_mutex = new eckit::Mutex();
+    local_mutex = new Mutex();
     m = new std::map<std::string, DataSinkFactory*>();
 }
 
@@ -38,7 +38,7 @@ DataSinkFactory::DataSinkFactory(const std::string &name) :
 
     pthread_once(&once, init);
 
-    eckit::AutoLock<eckit::Mutex> lock(local_mutex);
+    AutoLock<Mutex> lock(local_mutex);
 
     ASSERT(m->find(name) == m->end());
     (*m)[name] = this;
@@ -46,7 +46,7 @@ DataSinkFactory::DataSinkFactory(const std::string &name) :
 
 
 DataSinkFactory::~DataSinkFactory() {
-    eckit::AutoLock<eckit::Mutex> lock(local_mutex);
+    AutoLock<Mutex> lock(local_mutex);
     m->erase(name_);
 }
 
@@ -55,7 +55,7 @@ void DataSinkFactory::list(std::ostream& out) {
 
     pthread_once(&once, init);
 
-    eckit::AutoLock<eckit::Mutex> lock(local_mutex);
+    AutoLock<Mutex> lock(local_mutex);
 
     const char* sep = "";
     for (std::map<std::string, DataSinkFactory*>::const_iterator j = m->begin() ; j != m->end() ; ++j) {
@@ -65,21 +65,21 @@ void DataSinkFactory::list(std::ostream& out) {
 }
 
 
-DataSink* DataSinkFactory::build(const std::string &name, const eckit::Configuration& config) {
+DataSink* DataSinkFactory::build(const std::string &name, const Configuration& config) {
 
     pthread_once(&once, init);
 
-    eckit::AutoLock<eckit::Mutex> lock(local_mutex);
+    AutoLock<Mutex> lock(local_mutex);
 
-    eckit::Log::info() << "Looking for DataSinkFactory [" << name << "]" << std::endl;
+    Log::info() << "Looking for DataSinkFactory [" << name << "]" << std::endl;
 
     std::map<std::string, DataSinkFactory *>::const_iterator j = m->find(name);
     if (j == m->end()) {
-        eckit::Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;
-        eckit::Log::error() << "DataSinkFactories are:" << std::endl;
+        Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;
+        Log::error() << "DataSinkFactories are:" << std::endl;
         for (j = m->begin() ; j != m->end() ; ++j)
-            eckit::Log::error() << "   " << (*j).first << std::endl;
-        throw eckit::SeriousBug(std::string("No DataSinkFactory called ") + name);
+            Log::error() << "   " << (*j).first << std::endl;
+        throw SeriousBug(std::string("No DataSinkFactory called ") + name);
     }
 
     return (*j).second->make(config);
@@ -87,7 +87,7 @@ DataSink* DataSinkFactory::build(const std::string &name, const eckit::Configura
 
 //----------------------------------------------------------------------------------------------------------------------
 
-DataSink::DataSink(const eckit::Configuration& config) :
+DataSink::DataSink(const Configuration& config) :
     failOnError_( config.getBool("failOnError",true) ),
     journaled_( config.getBool("journaled",false) ),
     journalAlways_( config.getBool("journalAlways", false) ),

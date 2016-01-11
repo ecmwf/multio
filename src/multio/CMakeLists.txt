@@ -21,16 +21,17 @@ list( APPEND multio_srcs
     DataSink.h
     FileSink.h
     FileSink.cc
-    Metadata.h
-    Metadata.cc
-    MultIO.h
-    MultIO.cc
     Journal.h
     Journal.cc
     JournalRecord.h
     JournalRecord.cc
     JournalReader.h
     JournalReader.cc
+    Metadata.h
+    Metadata.cc
+    MultIO.h
+    MultIO.cc
+    SharableBuffer.h
     ifsio.h
     ifsio.cc )
 

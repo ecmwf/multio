@@ -29,9 +29,6 @@ MultIO::MultIO(const eckit::Configuration& config) :
     DataSink(config),
     journal_(config, this) {
 
-    if (journaled_)
-        journal_.open();
-
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 
     for(std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end(); ++c) {
@@ -39,6 +36,9 @@ MultIO::MultIO(const eckit::Configuration& config) :
         sinks_.back()->setId(sinks_.size()-1);
     }
 
+    // Must open after sinks are initialised, or the subsink configs won't exist yet.
+    if (journaled_)
+        journal_.open();
 }
 
 MultIO::~MultIO() {
@@ -62,6 +62,24 @@ bool MultIO::ready() const
         }
     }
     return true;
+}
+
+
+Value MultIO::configValue() const {
+
+    Value config(config_.get());
+
+    // Overwrite the "sinks" component of the configuration with that returned by the
+    // instantiated sinks. This allows them to include additional information that is
+    // not by default in the Configuration (e.g. stuff included in a Resource).
+    std::vector<Value> sink_configs;
+    for (sink_store_t::const_iterator sink = sinks_.begin(); sink != sinks_.end(); ++sink) {
+        Log::info() << "Push back" << std::endl;
+        sink_configs.push_back((*sink)->configValue());
+    }
+    config["sinks"] = Value(sink_configs);
+
+    return config;
 }
 
 

@@ -104,11 +104,22 @@ bool DataSink::ready() const
 }
 
 
+Value DataSink::configValue() const {
+    return config_.get();
+}
+
+
 std::string DataSink::json() const {
 
     std::stringstream json_stream;
     JSON config_json(json_stream);
-    config_json << config_.get();
+
+    Log::info() << "Get val" << std::endl;
+    Value val(configValue());
+    Log::info() << "Val" << std::endl << std::flush;
+    Log::info() << val["journaled"] << std::endl << std::flush;
+
+    config_json << val;
 
     return json_stream.str();
 }

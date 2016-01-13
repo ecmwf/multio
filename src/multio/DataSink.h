@@ -59,6 +59,9 @@ public: // methods
     /// In particular, it labels which sink within a MultIO this one is.
     void setId(int id);
 
+    /// Return the value that is serialised to produce the json() in the journal
+    virtual eckit::Value configValue() const;
+
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
     ///

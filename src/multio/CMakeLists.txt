@@ -53,7 +53,7 @@ ecbuild_add_library(
     GENERATED
         multio_version.cc
 
-    PRIVATE_INCLUDES
+    INCLUDES
         ${ECKIT_INCLUDE_DIRS}
 
     LIBS

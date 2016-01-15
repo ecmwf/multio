@@ -44,7 +44,7 @@ public:
     virtual void write(const void* buffer,
                        const eckit::Length& length,
                        JournalRecord *const record,
-                       Metadata *const md);
+                       eckit::Metadata *const md);
 
 protected:
 

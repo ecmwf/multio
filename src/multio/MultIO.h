@@ -47,7 +47,7 @@ public:
     virtual void write(const void* buffer,
                        const eckit::Length& length,
                        JournalRecord *const record = NULL,
-                       Metadata *const Metadata = NULL);
+                       eckit::Metadata *const Metadata = NULL);
 
     virtual void replayRecord(const JournalRecord& record);
 

@@ -27,8 +27,6 @@ list( APPEND multio_srcs
     JournalRecord.cc
     JournalReader.h
     JournalReader.cc
-    Metadata.h
-    Metadata.cc
     MultIO.h
     MultIO.cc
     SharableBuffer.h

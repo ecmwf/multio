@@ -28,9 +28,11 @@
 
 #include "Journal.h"
 
-namespace multio {
-
+namespace eckit {
     class Metadata;
+}
+
+namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -47,7 +49,7 @@ public: // methods
     virtual void write(const void* buffer,
                        const eckit::Length& length,
                        JournalRecord *const record = NULL,
-                       Metadata *const metadata = NULL) = 0;
+                       eckit::Metadata *const metadata = NULL) = 0;
 
     /// Dump all relevant config details to json, which can be used to reinitialise
     /// the datasink in playjournal. Not necessarily equal to the supplied config

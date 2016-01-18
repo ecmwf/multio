@@ -42,16 +42,18 @@ FileSink::~FileSink() {
     handle_->close();
 }
 
-void FileSink::write(const void* buffer, const Length& length, JournalRecord *const record, Metadata *const) {
+void FileSink::write(eckit::DataBlobPtr blob, JournalRecord *const record) {
+
+    size_t length = blob->length();
 
     eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
-    long written = handle_->write(buffer, length);
+    long written = handle_->write(blob->buffer(), length);
 
     // We should throw an exception if we are not journaling anything
     if (record && (written != length || journalAlways_))
-        record->addWriteEntry(buffer, length, id_);
+        record->addWriteEntry(blob, id_);
     else if (written != length)
         throw WriteError(std::string("Write error on file: ") + path_, Here());
 }

@@ -21,7 +21,7 @@
 #include <sys/time.h>
 #include <stdint.h>
 
-#include "eckit/io/Buffer.h"
+#include "eckit/io/DataBlob.h"
 #include "eckit/io/DataHandle.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/memory/ScopedPtr.h"
@@ -118,7 +118,7 @@ public: // Data types, and structural members.
 
         // (Optional) additional data.
         // It would be nicer to have a ScopetPtr, but no rvalue-refs...
-        eckit::SharedPtr<SharableBuffer> data_;
+        eckit::DataBlobPtr data_;
     };
 
     std::list<JournalEntry> entries_;
@@ -143,13 +143,13 @@ public: // methods
     void initialise(RecordType type);
 
     ///
-    void addWriteEntry(const void *data, const eckit::Length& length, int sinkId);
+    void addWriteEntry(const eckit::DataBlobPtr&, int sinkId);
 
     /// Write the journal record to the supplied data handle
     void writeRecord(eckit::DataHandle& handle);
 
     /// add data to the journal element
-    void addData(const void * data, const eckit::Length& length);
+    void addData(const eckit::DataBlobPtr&);
 
     /// Add a new journal entry to the list
     /// TODO: Add a way to attach data...

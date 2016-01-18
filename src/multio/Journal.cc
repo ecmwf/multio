@@ -77,7 +77,7 @@ void Journal::open() {
 
         std::string json_str = dataSink_->json();
         configurationRecord_.initialise(JournalRecord::Configuration);
-        configurationRecord_.addData(json_str.c_str(), json_str.length());
+//        configurationRecord_.addData(json_str.c_str(), json_str.length()); /// FIXMENOW
         configurationRecord_.writeRecord(*handle_);
     }
 }

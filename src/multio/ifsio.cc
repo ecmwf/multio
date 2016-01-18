@@ -23,6 +23,7 @@
 
 #include "multio/MultIO.h"
 
+#include "gribpp/GribDataBlob.h"
 
 using namespace eckit;
 using namespace multio;
@@ -105,12 +106,14 @@ fortint iflushfdb_(fortint *addr) {
     return mio->iflushfdb();
 }
 
-fortint iwritefdb_(fortint* addr, void *data, fortint* words) {
+fortint iwritefdb_(const fortint* addr, const void *data, const fortint* words) {
 
     ASSERT(mio && fdbAddr == *addr);
 
     size_t len( (*words)*sizeof(fortint) );
-    mio->write(data, len);
+
+    eckit::DataBlobPtr blob ( new gribpp::GribDataBlob(data, len) );
+    mio->write(blob);
     return 0;
 }
 

@@ -14,6 +14,9 @@ ecbuild_requires_macro_version( 2.0 )
 
 ecbuild_use_package( PROJECT eckit VERSION  0.10 REQUIRED )
 
+### temporary
+ecbuild_use_package( PROJECT gribpp VERSION 0.1 REQUIRED )
+
 ecbuild_debug("   ECKIT_FEATURES : [${ECKIT_FEATURES}]" )
 
 ### start project

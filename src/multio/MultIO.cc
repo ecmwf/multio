@@ -18,6 +18,7 @@
 #include "eckit/thread/Mutex.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/io/DataBlob.h"
 
 using namespace eckit;
 
@@ -83,9 +84,9 @@ Value MultIO::configValue() const {
 }
 
 
-void MultIO::write(const void* buffer, const Length& length, JournalRecord *const record, Metadata *const metadata ) {
+void MultIO::write(DataBlobPtr blob, JournalRecord *const record) {
 
-    eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
+    eckit::Log::info() << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
 
     JournalRecord* r;
 
@@ -99,7 +100,7 @@ void MultIO::write(const void* buffer, const Length& length, JournalRecord *cons
         r = record;
 
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->write(buffer, length, r, metadata);
+        (*it)->write(blob, r);
     }
 
     // if we are the creator of the journal record,
@@ -127,7 +128,7 @@ void MultIO::replayRecord(const JournalRecord& record) {
 
     // Once the data entry is found, point to the associated data so it can be used
     // by the write entries.
-    SharedPtr<SharableBuffer> data;
+    DataBlobPtr data;
 
     int i = 0;
     for (std::list<JournalRecord::JournalEntry>::const_iterator it = record.entries_.begin();
@@ -147,7 +148,9 @@ void MultIO::replayRecord(const JournalRecord& record) {
             ASSERT(data);
             ASSERT(it->head_.id_ < sinks_.size());
 
-            sinks_[it->head_.id_]->write(*data, data->size(), newRecord.get());
+
+
+//            sinks_[it->head_.id_]->write(data->buffer(), data->length(), newRecord.get()); /// FIXMENOW
             break;
 
         default:

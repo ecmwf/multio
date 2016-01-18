@@ -33,10 +33,7 @@ public:
 
     virtual ~TestDataSink() {}
 
-    virtual void write(const void* buffer,
-               const Length& length,
-               JournalRecord *const record, 
-               Metadata *const metadata) {}
+    virtual void write(eckit::DataBlobPtr blob, JournalRecord *const record) {}
 
     Configuration const * config_;
 

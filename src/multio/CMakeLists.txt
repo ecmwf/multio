@@ -52,7 +52,8 @@ ecbuild_add_library(
         multio_version.cc
 
     INCLUDES
-        ${ECKIT_INCLUDE_DIRS}
+      ${ECKIT_INCLUDE_DIRS}
+      ${GRIBPP_INCLUDE_DIRS}
 
     LIBS
-        eckit )
+        gribpp eckit )

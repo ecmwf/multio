@@ -31,18 +31,18 @@ fortint iinitfdb_(void);
 fortint iopenfdb_(const char *name, fortint *addr, const char *mode, int name_len, int mode_len);
 fortint iclosefdb_(fortint *addr);
 
-fortint iflushfdb_(fortint *addr);
+fortint iflushfdb_(const fortint *addr);
 
-fortint iset_fdb_root_(fortint *addr, const char *name, int name_len);
+fortint iset_fdb_root_(const fortint *addr, const char *name, int name_len);
 
-int isetcommfdb_(fortint *comm);
-int isetrankfdb_(fortint *addr, fortint *rank);
-int isetfieldcountfdb_(fortint *addr, fortint *all_ranks, fortint *this_rank);
+int isetcommfdb_(const fortint *comm);
+int isetrankfdb_(const fortint *addr, const fortint *rank);
+int isetfieldcountfdb_(const fortint *addr, const fortint *all_ranks, const fortint *this_rank);
 
-fortint isetvalfdb_(fortint *addr, const char *name, const char *value, int name_len, int value_len);
+fortint isetvalfdb_(const fortint *addr, const char *name, const char *value, int name_len, int value_len);
 
-fortint iwritefdb_(fortint *addr, void *data, fortint *words);
-fortint ireadfdb_(fortint *addr, void *data, fortint *words);
+fortint iwritefdb_(const fortint *addr, const void *data, const fortint *words);
+fortint ireadfdb_(const fortint *addr, void *data, fortint *words);
 
 #ifdef __cplusplus
 }

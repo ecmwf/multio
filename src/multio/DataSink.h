@@ -23,14 +23,9 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/Configuration.h"
 #include "eckit/memory/NonCopyable.h"
-#include "eckit/io/Length.h"
-#include "eckit/io/Buffer.h"
+#include "eckit/io/DataBlob.h"
 
-#include "Journal.h"
-
-namespace eckit {
-    class Metadata;
-}
+#include "multio/Journal.h"
 
 namespace multio {
 
@@ -46,10 +41,7 @@ public: // methods
 
     virtual bool ready() const;
 
-    virtual void write(const void* buffer,
-                       const eckit::Length& length,
-                       JournalRecord *const record = NULL,
-                       eckit::Metadata *const metadata = NULL) = 0;
+    virtual void write(eckit::DataBlobPtr blob, JournalRecord *const record = NULL) = 0;
 
     /// Dump all relevant config details to json, which can be used to reinitialise
     /// the datasink in playjournal. Not necessarily equal to the supplied config

@@ -94,10 +94,10 @@ bool JournalReader::readRecord(JournalRecord& record) {
 
         // Deal with any associated data payload
         if (entry.head_.payload_length_ != 0) {
-            entry.data_.reset(new SharableBuffer(entry.head_.payload_length_));
+//            entry.data_.reset(new DataBlob(entry.head_.payload_length_)); /// FIXMENOW
             Log::info() << "[" << *this << "]     - reading payload ("
-                               << entry.data_->size() << ")" << std::endl;
-            handle_->read(*entry.data_, size_t(entry.head_.payload_length_));
+                               << entry.data_->length() << ")" << std::endl;
+//            handle_->read(*entry.data_->buffer(), size_t(entry.head_.payload_length_));  /// FIXMENOW
 
             nReadEvents_++;
 
@@ -138,11 +138,11 @@ void JournalReader::readConfiguration() {
 
     // Manipulate this into an istream for the JSON configuration.
     JournalRecord::JournalEntry& dataEntry(record.entries_.front());
-    SharableBuffer& buffer(*dataEntry.data_);
+    DataBlob& blob(*dataEntry.data_);
 
-    ASSERT(buffer.size() == dataEntry.head_.payload_length_);
+    ASSERT(blob.length() == dataEntry.head_.payload_length_);
 
-    std::string json_str(buffer, buffer.size());
+    std::string json_str(blob.buffer(), blob.length());
 
     std::istringstream iss(json_str);
 

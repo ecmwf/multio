@@ -41,10 +41,7 @@ public:
 
     virtual ~FileSink();
 
-    virtual void write(const void* buffer,
-                       const eckit::Length& length,
-                       JournalRecord *const record,
-                       eckit::Metadata *const md);
+    virtual void write(eckit::DataBlobPtr blob, JournalRecord *const record = NULL);
 
 protected:
 

@@ -70,11 +70,11 @@ void JournalRecord::initialise(RecordType type) {
     marker_ = JournalRecord::TerminationMarker;
 }
 
-void JournalRecord::addWriteEntry(const void *data, const Length &length, int sinkId)
+void JournalRecord::addWriteEntry(const DataBlobPtr& blob, int sinkId)
 {
     // Ensure that the JournalEntry has a copy of the data. Note that this may
     // already have been done by another DataSink (in which case this is a NOP).
-    addData(data, length);
+    addData(blob);
 
     // Add the entry here. By default there is no additional (DataSink-specific)
     // information, so the payload length is zero
@@ -100,8 +100,10 @@ void JournalRecord::writeRecord(DataHandle& handle) {
         // If there is data associated with the journal entry then it should be appended below
         // the header information.
         if (it->data_) {
-            ASSERT(it->head_.payload_length_ == it->data_->size());
-            handle.write(*(it->data_), it->data_->size());
+            size_t length = it->data_->length();
+            ASSERT(it->head_.payload_length_ == length);
+            const void* data = it->data_->buffer();
+            handle.write(data, length);
         } else {
             ASSERT(it->head_.payload_length_ == 0);
         }
@@ -111,7 +113,7 @@ void JournalRecord::writeRecord(DataHandle& handle) {
 }
 
 
-void JournalRecord::addData(const void * data, const Length& length) {
+void JournalRecord::addData(const DataBlobPtr& blob) {
 
     // n.b. The data must be the first thing added to the Journal Record
     if (entries_.empty()) {
@@ -124,15 +126,10 @@ void JournalRecord::addData(const void * data, const Length& length) {
 
         eckit::zero(entry.head_);
         entry.head_.tag_ = JournalEntry::Data;
-        entry.head_.payload_length_ = length;
+        entry.head_.payload_length_ = blob->length();
         SYSCALL(::gettimeofday(&entry.head_.timestamp_, NULL));
 
-        // n.b. Don't worry about const cast. That is just to make Buffer constructor happy.
-        //      The overall Buffer is const...
-        //
-        // We are making the promise here that the data will outlive the journal writing
-        // process.
-        entry.data_.reset(new SharableBuffer(const_cast<void*>(data), length, false));
+        entry.data_.reset( blob );
 
         // Now that something has been added, we should certainly write this entry on exit!
         utilised_ = true;
@@ -142,10 +139,9 @@ void JournalRecord::addData(const void * data, const Length& length) {
         // We don't need to duplicate the data if multiple DataSinks are reporting to the journal
         ASSERT(utilised_);
         ASSERT(entries_.front().head_.tag_ == JournalEntry::Data);
-        ASSERT(entries_.front().head_.payload_length_ == uint64_t(length));
+        ASSERT(entries_.front().head_.payload_length_ == uint64_t(blob->length()));
     }
 }
-
 
 void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type, int sinkId) {
 

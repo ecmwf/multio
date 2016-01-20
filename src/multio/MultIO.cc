@@ -148,9 +148,7 @@ void MultIO::replayRecord(const JournalRecord& record) {
             ASSERT(data);
             ASSERT(it->head_.id_ < sinks_.size());
 
-
-
-//            sinks_[it->head_.id_]->write(data->buffer(), data->length(), newRecord.get()); /// FIXMENOW
+            sinks_[it->head_.id_]->write(data, newRecord.get());
             break;
 
         default:

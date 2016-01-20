@@ -30,9 +30,17 @@
 
 #include "multio/SharableBuffer.h"
 
+// -------------------------------------------------------------------------------------------------
+
+namespace eckit {
+    class Value;
+}
+
+// -------------------------------------------------------------------------------------------------
+
 namespace multio {
 
-//-------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 class Journal;
 
@@ -141,6 +149,9 @@ public: // methods
 
     /// Initialise a blank JournalRecord with valid values to be written to the journal log.
     void initialise(RecordType type);
+
+    /// Add an eckit::Value containing a configuration to be serialised
+    void addConfiguration(const eckit::Value& configValue);
 
     ///
     void addWriteEntry(const eckit::DataBlobPtr&, int sinkId);

@@ -43,17 +43,14 @@ public: // methods
 
     virtual void write(eckit::DataBlobPtr blob, JournalRecord *const record = NULL) = 0;
 
-    /// Dump all relevant config details to json, which can be used to reinitialise
-    /// the datasink in playjournal. Not necessarily equal to the supplied config
-    /// as other sources of configuration may be used. By default this just returns
-    /// the supplied Configuration.
-    virtual std::string json() const;
-
     /// Set the datasink ID that is used by other classes to identify this one.
     /// In particular, it labels which sink within a MultIO this one is.
     void setId(int id);
 
-    /// Return the value that is serialised to produce the json() in the journal
+    /// Return the value that is serialised to produce the json() in the journal.
+    /// Not necessarily equal to the supplied config as other sources of
+    /// configuration may be used. By default this just returns the supplied
+    /// Configuration.
     virtual eckit::Value configValue() const;
 
     ///

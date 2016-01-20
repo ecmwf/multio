@@ -109,22 +109,6 @@ Value DataSink::configValue() const {
 }
 
 
-std::string DataSink::json() const {
-
-    std::stringstream json_stream;
-    JSON config_json(json_stream);
-
-    Log::info() << "Get val" << std::endl;
-    Value val(configValue());
-    Log::info() << "Val" << std::endl << std::flush;
-    Log::info() << val["journaled"] << std::endl << std::flush;
-
-    config_json << val;
-
-    return json_stream.str();
-}
-
-
 void DataSink::setId(int id) {
     id_ = id;
 }

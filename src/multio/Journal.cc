@@ -22,7 +22,6 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/DataBlob.h"
 #include "eckit/log/Log.h"
-#include "eckit/parser/JSON.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
 
@@ -76,12 +75,9 @@ void Journal::open() {
         // And actually write out this header.
         handle_->write(&head_, sizeof(head_));
 
-        std::string json_str = dataSink_->json();
-        DataBlobPtr blob(DataBlobFactory::build("json", json_str.c_str(), json_str.length()));
-
-        // TODO: Add an addConfiguration method, which encapsulates this.
+        // Write out the configuration information associated with the
         configurationRecord_.initialise(JournalRecord::Configuration);
-        configurationRecord_.addData(blob);
+        configurationRecord_.addConfiguration(dataSink_->configValue());
         configurationRecord_.writeRecord(*handle_);
     }
 }

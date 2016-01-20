@@ -15,6 +15,9 @@
 
 #include "eckit/io/Buffer.h"
 #include "eckit/io/DataHandle.h"
+#include "eckit/parser/JSON.h"
+#include "eckit/value/Value.h"
+#include "eckit/parser/JSONDataBlob.h"
 
 #include "multio/Journal.h"
 #include "multio/JournalRecord.h"
@@ -69,6 +72,23 @@ void JournalRecord::initialise(RecordType type) {
 
     marker_ = JournalRecord::TerminationMarker;
 }
+
+
+void JournalRecord::addConfiguration(const Value& configValue) {
+
+    ASSERT(head_.tag_ == JournalRecord::Configuration);
+
+    // Serialise the value into a (string) JSON
+    std::stringstream json_stream;
+    JSON config_json(json_stream);
+
+    config_json << configValue;
+    std::string json_str(json_stream.str());
+
+    DataBlobPtr blob(new JSONDataBlob(json_str.c_str(), json_str.length()));
+    addData(blob);
+}
+
 
 void JournalRecord::addWriteEntry(const DataBlobPtr& blob, int sinkId)
 {

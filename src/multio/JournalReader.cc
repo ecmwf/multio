@@ -15,6 +15,7 @@
 #include <sstream>
 
 #include "eckit/config/JSONConfiguration.h"
+#include "eckit/io/DataBlob.h"
 
 #include "multio/Journal.h"
 #include "multio/JournalReader.h"
@@ -106,7 +107,7 @@ bool JournalReader::readRecord(JournalRecord& record) {
             entry.data_.reset(
                 DataBlobFactory::build(
                     JournalRecord::blobTypeName(JournalRecord::RecordType(record.head_.tag_)),
-                    buf.release(),
+                    buf,
                     entry.head_.payload_length_));
 
             nReadEvents_++;

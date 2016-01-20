@@ -20,6 +20,7 @@
 
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/io/DataBlob.h"
 #include "eckit/log/Log.h"
 #include "eckit/parser/JSON.h"
 #include "eckit/thread/AutoLock.h"

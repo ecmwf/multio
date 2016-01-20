@@ -19,10 +19,10 @@
 #include "multio/DataSink.h"
 
 #include "eckit/exception/Exceptions.h"
+#include "eckit/io/DataHandle.h"
 #include "eckit/io/Length.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
-#include "eckit/io/DataHandle.h"
 
 using namespace eckit;
 

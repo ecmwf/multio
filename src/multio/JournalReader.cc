@@ -94,10 +94,20 @@ bool JournalReader::readRecord(JournalRecord& record) {
 
         // Deal with any associated data payload
         if (entry.head_.payload_length_ != 0) {
-//            entry.data_.reset(new DataBlob(entry.head_.payload_length_)); /// FIXMENOW
+            Buffer buf(entry.head_.payload_length_);
+
             Log::info() << "[" << *this << "]     - reading payload ("
-                               << entry.data_->length() << ")" << std::endl;
-//            handle_->read(*entry.data_->buffer(), size_t(entry.head_.payload_length_));  /// FIXMENOW
+                               << buf.size() << ")" << std::endl << std::flush;
+
+            handle_->read(buf, buf.size());
+
+            // N.B. This only tries to construct a DataBlob if data is present, which avoids the
+            //      risk of trying and failing whilst reading, e.g., the End of Journal marker.
+            entry.data_.reset(
+                DataBlobFactory::build(
+                    JournalRecord::blobTypeName(JournalRecord::RecordType(record.head_.tag_)),
+                    buf.release(),
+                    entry.head_.payload_length_));
 
             nReadEvents_++;
 

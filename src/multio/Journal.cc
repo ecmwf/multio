@@ -76,8 +76,11 @@ void Journal::open() {
         handle_->write(&head_, sizeof(head_));
 
         std::string json_str = dataSink_->json();
+        DataBlobPtr blob(DataBlobFactory::build("json", json_str.c_str(), json_str.length()));
+
+        // TODO: Add an addConfiguration method, which encapsulates this.
         configurationRecord_.initialise(JournalRecord::Configuration);
-//        configurationRecord_.addData(json_str.c_str(), json_str.length()); /// FIXMENOW
+        configurationRecord_.addData(blob);
         configurationRecord_.writeRecord(*handle_);
     }
 }

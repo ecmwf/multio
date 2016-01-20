@@ -212,6 +212,26 @@ const char * JournalRecord::EntryTypeName(JournalEntry::EntryType type) {
     return name;
 }
 
+
+const char* JournalRecord::blobTypeName(RecordType type) {
+
+    // It is valid to query what the blob type would be for a record type that has no data.
+    // Obviously, it would not be valid to try and instantiate such a blob, which will
+    // incur and error elsewhere.
+
+    const static char * names[] = {
+        "INVALID", // Uninitialised
+        "INVALID", // No data for End of Journal Marker
+        "grib",    // Normal journal entry
+        "json"     // Configuration
+    };
+
+    ASSERT(type >= 0 && type <= Configuration);
+
+    return names[type];
+}
+
+
 void JournalRecord::print(std::ostream& os) const
 {
     os << "JournalRecord(" << RecordTypeName(RecordType(head_.tag_)) << ")";

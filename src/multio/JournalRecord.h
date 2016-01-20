@@ -161,6 +161,8 @@ public: // methods
 
     static const char * EntryTypeName(JournalEntry::EntryType type);
 
+    static const char * blobTypeName(RecordType type);
+
 
 protected: // methods
 

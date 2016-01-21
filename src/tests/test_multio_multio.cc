@@ -24,5 +24,7 @@ using namespace eckit;
 
 BOOST_AUTO_TEST_SUITE( test_multio_multio )
 
+BOOST_AUTO_TEST_CASE( test_dummy ) {}
+
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -23,27 +23,32 @@ using namespace eckit;
 
 // -------------------------------------------------------------------------------------------------
 
-class TestDataSink : public DataSink {
+//
+// Ensure that the testing classes/stuff are only available in this file.
+namespace {
 
-public:
+    class TestDataSink : public DataSink {
 
-    TestDataSink(const Configuration& config) :
-        DataSink(config),
-        config_(&config) {}
+    public:
 
-    virtual ~TestDataSink() {}
+        TestDataSink(const Configuration& config) :
+            DataSink(config),
+            config_(&config) {}
 
-    virtual void write(eckit::DataBlobPtr blob, JournalRecord *const record) {}
+        virtual ~TestDataSink() {}
 
-    Configuration const * config_;
+        virtual void write(eckit::DataBlobPtr blob, SharedPtr<JournalRecord> record) {}
 
-protected:
+        Configuration const * config_;
 
-    virtual void print(std::ostream& os) const { os << "tmp"; }
-};
+    protected:
 
-// And a factory builder!!
-static DataSinkBuilder<TestDataSink> testSinkBuilder("test");
+        virtual void print(std::ostream& os) const { os << "tmp"; }
+    };
+
+
+    static DataSinkBuilder<TestDataSink> testSinkBuilder("test");
+}
 
 // -------------------------------------------------------------------------------------------------
 

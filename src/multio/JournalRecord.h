@@ -44,7 +44,7 @@ namespace multio {
 
 class Journal;
 
-class JournalRecord {
+class JournalRecord : public eckit::OwnedLock {
 
 public: // Data types, and structural members.
 
@@ -193,6 +193,7 @@ private: // internal control elements
     Journal& journal_;
 
     bool utilised_;
+    bool written_;
 
 };
 

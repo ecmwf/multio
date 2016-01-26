@@ -46,7 +46,8 @@ const unsigned char JournalRecord::CurrentTagVersion = 1;
 
 JournalRecord::JournalRecord(Journal &journal, RecordType type) :
     journal_(journal),
-    utilised_(false) {
+    utilised_(false),
+    written_(false) {
 
     if (type != JournalRecord::Uninitialised) {
 
@@ -56,6 +57,12 @@ JournalRecord::JournalRecord(Journal &journal, RecordType type) :
 
 
 JournalRecord::~JournalRecord() {
+
+    // If this is a JournalRecord that is opened for writing, has been used
+    // and has not yet been written, then write it
+    if (utilised_ && !written_) {
+        journal_.writeRecord(*this);
+    }
 }
 
 
@@ -77,6 +84,7 @@ void JournalRecord::initialise(RecordType type) {
 void JournalRecord::addConfiguration(const Value& configValue) {
 
     ASSERT(head_.tag_ == JournalRecord::Configuration);
+    ASSERT(!written_);
 
     // Serialise the value into a (string) JSON
     std::stringstream json_stream;
@@ -92,6 +100,8 @@ void JournalRecord::addConfiguration(const Value& configValue) {
 
 void JournalRecord::addWriteEntry(const DataBlobPtr& blob, int sinkId)
 {
+    ASSERT(!written_);
+
     // Ensure that the JournalEntry has a copy of the data. Note that this may
     // already have been done by another DataSink (in which case this is a NOP).
     addData(blob);
@@ -130,10 +140,16 @@ void JournalRecord::writeRecord(DataHandle& handle) {
     }
     
     handle.write(&marker_, sizeof(marker_));
+
+    // Keep track of this having been written to avoid any possibility of writing the
+    // stuff out twice!
+    written_ = true;
 }
 
 
 void JournalRecord::addData(const DataBlobPtr& blob) {
+
+    ASSERT(!written_);
 
     // n.b. The data must be the first thing added to the Journal Record
     if (entries_.empty()) {
@@ -164,6 +180,8 @@ void JournalRecord::addData(const DataBlobPtr& blob) {
 }
 
 void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type, int sinkId) {
+
+    ASSERT(!written_);
 
     Log::info() << "[" << *this << "] Adding journal entry ("
                 << EntryTypeName(type) << ")"<< std::endl;

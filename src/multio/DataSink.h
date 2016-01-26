@@ -20,10 +20,11 @@
 #include <string>
 #include <vector>
 
-#include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/Configuration.h"
-#include "eckit/memory/NonCopyable.h"
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/io/DataBlob.h"
+#include "eckit/memory/NonCopyable.h"
+#include "eckit/memory/SharedPtr.h"
 
 #include "multio/Journal.h"
 
@@ -41,7 +42,8 @@ public: // methods
 
     virtual bool ready() const;
 
-    virtual void write(eckit::DataBlobPtr blob, JournalRecord *const record = NULL) = 0;
+    virtual void write(eckit::DataBlobPtr blob);
+    virtual void write(eckit::DataBlobPtr blob, eckit::SharedPtr<JournalRecord> record) = 0;
 
     /// Set the datasink ID that is used by other classes to identify this one.
     /// In particular, it labels which sink within a MultIO this one is.

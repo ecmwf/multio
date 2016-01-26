@@ -42,7 +42,7 @@ FileSink::~FileSink() {
     handle_->close();
 }
 
-void FileSink::write(eckit::DataBlobPtr blob, JournalRecord *const record) {
+void FileSink::write(eckit::DataBlobPtr blob, SharedPtr<JournalRecord> record) {
 
     size_t length = blob->length();
 

@@ -84,30 +84,33 @@ Value MultIO::configValue() const {
 }
 
 
-void MultIO::write(DataBlobPtr blob, JournalRecord *const record) {
+// Provides a wrapper without the record argument, as we cannot specify an object that
+// needs constructing as a defaut argument.
+void MultIO::write(DataBlobPtr blob) {
+    this->write(blob, SharedPtr<JournalRecord>());
+}
+
+
+void MultIO::write(DataBlobPtr blob, SharedPtr<JournalRecord> record) {
 
     eckit::Log::info() << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
 
     JournalRecord* r;
 
     // shall we create our own journal record ?
-    ScopedPtr<JournalRecord> newRecord;
     if( !record && journaled_ ) {
-        newRecord.reset( new JournalRecord(journal_, JournalRecord::WriteEntry) );
-        r = newRecord.get();
+        record.reset( new JournalRecord(journal_, JournalRecord::WriteEntry) );
     }
-    else
-        r = record;
 
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->write(blob, r);
+        (*it)->write(blob, record);
     }
 
-    // if we are the creator of the journal record,
-    // we are responsible for ensuring that it gets written if it is populated.
-    if( newRecord ) {
-        journal_.writeRecord(*newRecord);
-    }
+    // TODO: The cleanup should be done elsewhere
+    // TODO: Should we have a record factory that keeps track of all outstanding records?
+    //if( newRecord ) {
+        //journal_.writeRecord(*newRecord);
+    //}
 }
 
 
@@ -121,7 +124,7 @@ void MultIO::replayRecord(const JournalRecord& record) {
 
     // Provide a journal record so that failures that occur during playback
     // will be (re)journaled.
-    ScopedPtr<JournalRecord> newRecord;
+    SharedPtr<JournalRecord> newRecord;
     if (journaled_) {
         newRecord.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
     }
@@ -148,7 +151,7 @@ void MultIO::replayRecord(const JournalRecord& record) {
             ASSERT(data);
             ASSERT(it->head_.id_ < sinks_.size());
 
-            sinks_[it->head_.id_]->write(data, newRecord.get());
+            sinks_[it->head_.id_]->write(data, newRecord);
             break;
 
         default:
@@ -158,8 +161,10 @@ void MultIO::replayRecord(const JournalRecord& record) {
     }
 
     // And ensure that any appropriate elements are written properly
-    if (newRecord)
-        journal_.writeRecord(*newRecord);
+    // TODO: The cleanup should be done elsewhere
+    // TODO: Should we have a record factory that keeps track of all outstanding records?
+    //if (newRecord)
+        //journal_.writeRecord(*newRecord);
 
 }
 

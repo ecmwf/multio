@@ -32,7 +32,7 @@ namespace multio {
 //----------------------------------------------------------------------------------------------------------------------
 
 // Initialise static members
-const eckit::FixedString<8> Journal::CurrentHeaderTag("IOJOU999");
+const FixedString<8> Journal::CurrentHeaderTag("IOJOU999");
 const unsigned char Journal::CurrentVersion = 1;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -56,8 +56,8 @@ Journal::~Journal() {
 /// Open a new journal file, and initialise it with header information
 void Journal::open() {
 
-    eckit::Log::info() << "[" << *this << "] Opening the journal (for writing)" << std::endl;
-    eckit::AutoLock<eckit::Mutex> lock(mutex_);
+    Log::info() << "[" << *this << "] Opening the journal (for writing)" << std::endl;
+    AutoLock<Mutex> lock(mutex_);
 
     if (!isOpen_){
 
@@ -90,10 +90,10 @@ void Journal::open() {
 /// and close the associated file.
 void Journal::close() {
 
-    eckit::AutoLock<eckit::Mutex> lock(mutex_);
+    AutoLock<Mutex> lock(mutex_);
 
     if (isOpen_) {
-        eckit::Log::info() << "[" << *this << "] Closing the journal" << std::endl;
+        Log::info() << "[" << *this << "] Closing the journal" << std::endl;
 
         // TODO: do we want to write the number of records to the header?
         // Initialise and write the footer information
@@ -110,7 +110,7 @@ void Journal::close() {
 void Journal::writeRecord(JournalRecord& record) {
 
     if(record.utilised()) {
-        eckit::AutoLock<eckit::Mutex> lock(mutex_);
+        AutoLock<Mutex> lock(mutex_);
         record.writeRecord(*handle_);
     }
 }
@@ -119,7 +119,7 @@ void Journal::writeRecord(JournalRecord& record) {
 /// Initialise a journal header struct with valid information for writing out
 void Journal::initHeader() {
 
-    eckit::zero(head_);
+    zero(head_);
     head_.tag_ = Journal::CurrentHeaderTag;
     head_.tagVersion_ = Journal::CurrentVersion;
 

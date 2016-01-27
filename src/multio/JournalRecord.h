@@ -190,6 +190,8 @@ private: // methods
 
 private: // internal control elements
 
+    eckit::Mutex mutex_;
+
     Journal& journal_;
 
     bool utilised_;

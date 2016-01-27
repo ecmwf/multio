@@ -16,8 +16,9 @@
 #include "eckit/io/Buffer.h"
 #include "eckit/io/DataHandle.h"
 #include "eckit/parser/JSON.h"
-#include "eckit/value/Value.h"
 #include "eckit/parser/JSONDataBlob.h"
+#include "eckit/thread/AutoLock.h"
+#include "eckit/value/Value.h"
 
 #include "multio/Journal.h"
 #include "multio/JournalRecord.h"
@@ -58,6 +59,8 @@ JournalRecord::JournalRecord(Journal &journal, RecordType type) :
 
 JournalRecord::~JournalRecord() {
 
+    AutoLock<Mutex> lock(mutex_);
+
     // If this is a JournalRecord that is opened for writing, has been used
     // and has not yet been written, then write it
     if (utilised_ && !written_) {
@@ -69,6 +72,8 @@ JournalRecord::~JournalRecord() {
 /// Initialise a (new) Journal record, such that it will be valid for writing
 /// (once payload data has been added as appropriate).
 void JournalRecord::initialise(RecordType type) {
+
+    AutoLock<Mutex> lock(mutex_);
 
     eckit::zero(head_);
     head_.tag_ = type;
@@ -100,6 +105,8 @@ void JournalRecord::addConfiguration(const Value& configValue) {
 
 void JournalRecord::addWriteEntry(const DataBlobPtr& blob, int sinkId)
 {
+    AutoLock<Mutex> lock(mutex_);
+
     ASSERT(!written_);
 
     // Ensure that the JournalEntry has a copy of the data. Note that this may
@@ -117,6 +124,8 @@ void JournalRecord::addWriteEntry(const DataBlobPtr& blob, int sinkId)
 /// ii)  The JournalEntries
 /// iii) The end-of-record marker
 void JournalRecord::writeRecord(DataHandle& handle) {
+
+    AutoLock<Mutex> lock(mutex_);
 
     Log::info() << "[" << *this << "] Writing record" << std::endl;
 
@@ -149,6 +158,8 @@ void JournalRecord::writeRecord(DataHandle& handle) {
 
 void JournalRecord::addData(const DataBlobPtr& blob) {
 
+    AutoLock<Mutex> lock(mutex_);
+
     ASSERT(!written_);
 
     // n.b. The data must be the first thing added to the Journal Record
@@ -180,6 +191,8 @@ void JournalRecord::addData(const DataBlobPtr& blob) {
 }
 
 void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type, int sinkId) {
+
+    AutoLock<Mutex> lock(mutex_);
 
     ASSERT(!written_);
 

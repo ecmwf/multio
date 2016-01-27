@@ -43,7 +43,7 @@ public: // methods
     virtual bool ready() const;
 
     virtual void write(eckit::DataBlobPtr blob);
-    virtual void write(eckit::DataBlobPtr blob, eckit::SharedPtr<JournalRecord> record) = 0;
+    virtual void write(eckit::DataBlobPtr blob, JournalRecordPtr record) = 0;
 
     /// Set the datasink ID that is used by other classes to identify this one.
     /// In particular, it labels which sink within a MultIO this one is.

@@ -201,6 +201,10 @@ private: // internal control elements
 
 //--------------------------------------------------------------------------------------------------
 
+typedef eckit::SharedPtr<JournalRecord> JournalRecordPtr;
+
+//--------------------------------------------------------------------------------------------------
+
 }  // namespace multio
 
 #endif // multio_JournalRecord_H

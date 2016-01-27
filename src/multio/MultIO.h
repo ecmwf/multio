@@ -45,7 +45,7 @@ public:
     virtual eckit::Value configValue() const;
 
     virtual void write(eckit::DataBlobPtr blob);
-    virtual void write(eckit::DataBlobPtr blob, eckit::SharedPtr<JournalRecord> record);
+    virtual void write(eckit::DataBlobPtr blob, JournalRecordPtr record);
 
     virtual void replayRecord(const JournalRecord& record);
 

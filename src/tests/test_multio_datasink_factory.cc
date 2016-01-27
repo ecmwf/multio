@@ -37,7 +37,7 @@ namespace {
 
         virtual ~TestDataSink() {}
 
-        virtual void write(eckit::DataBlobPtr blob, SharedPtr<JournalRecord> record) {}
+        virtual void write(eckit::DataBlobPtr blob, JournalRecordPtr record) {}
 
         Configuration const * config_;
 

@@ -87,11 +87,11 @@ Value MultIO::configValue() const {
 // Provides a wrapper without the record argument, as we cannot specify an object that
 // needs constructing as a defaut argument.
 void MultIO::write(DataBlobPtr blob) {
-    this->write(blob, SharedPtr<JournalRecord>());
+    this->write(blob, JournalRecordPtr());
 }
 
 
-void MultIO::write(DataBlobPtr blob, SharedPtr<JournalRecord> record) {
+void MultIO::write(DataBlobPtr blob, JournalRecordPtr record) {
 
     eckit::Log::info() << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
 
@@ -124,7 +124,7 @@ void MultIO::replayRecord(const JournalRecord& record) {
 
     // Provide a journal record so that failures that occur during playback
     // will be (re)journaled.
-    SharedPtr<JournalRecord> newRecord;
+    JournalRecordPtr newRecord;
     if (journaled_) {
         newRecord.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
     }

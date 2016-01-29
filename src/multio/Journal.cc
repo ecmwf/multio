@@ -37,7 +37,6 @@ const unsigned char Journal::CurrentVersion = 1;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-// TODO: Generate timestamped filename?
 Journal::Journal(const Configuration& config, DataSink * const dataSink) :
     footer_(*this, JournalRecord::Uninitialised),
     configurationRecord_(*this, JournalRecord::Uninitialised),
@@ -70,7 +69,6 @@ void Journal::open() {
         isOpen_ = true;
 
         initHeader();
-        // TODO: Write header
 
         // And actually write out this header.
         handle_->write(&head_, sizeof(head_));
@@ -83,7 +81,6 @@ void Journal::open() {
 }
 
 
-// TODO: Close journal. Write footer.
 // TODO: Ensure that all pending writes are flushed through before closing the journal
 //
 /// Finalise the journal by writing termination markers,
@@ -97,7 +94,6 @@ void Journal::close() {
 
         // TODO: do we want to write the number of records to the header?
         // Initialise and write the footer information
-        // TODO: Refactor this somewhere sensible.
         footer_.initialise(JournalRecord::EndOfJournal);
         footer_.writeRecord(*handle_);
             
@@ -132,13 +128,6 @@ bool Journal::isOpen() const {
     return isOpen_;
 }
 
-
-// TODO: make this no-longer a REALLY NAIVE routine, that just dumps the data to a
-//       journal, without adding actions.
-//
-// i)   We ought to make the journal aware of what data we are considering. It should store a pointer.
-// ii)  The (potentially various) sinks should add their journaling elements
-// iii) When it is done, it should write if, and only if, there are any (non-data) elements.
 
 void Journal::print(std::ostream& os) const
 {

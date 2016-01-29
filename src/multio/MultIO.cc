@@ -105,12 +105,6 @@ void MultIO::write(DataBlobPtr blob, JournalRecordPtr record) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->write(blob, record);
     }
-
-    // TODO: The cleanup should be done elsewhere
-    // TODO: Should we have a record factory that keeps track of all outstanding records?
-    //if( newRecord ) {
-        //journal_.writeRecord(*newRecord);
-    //}
 }
 
 
@@ -159,13 +153,6 @@ void MultIO::replayRecord(const JournalRecord& record) {
 
         }
     }
-
-    // And ensure that any appropriate elements are written properly
-    // TODO: The cleanup should be done elsewhere
-    // TODO: Should we have a record factory that keeps track of all outstanding records?
-    //if (newRecord)
-        //journal_.writeRecord(*newRecord);
-
 }
 
 

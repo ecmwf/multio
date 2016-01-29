@@ -160,8 +160,6 @@ void JournalReader::readConfiguration() {
     Log::info() << "-------------------------------------------------------------" << std::endl;
     Log::info() << config_->get() << std::endl;
     Log::info() << "-------------------------------------------------------------" << std::endl;
-
-    // TODO: This configuration may be tested against the externally supplied config
 }
 
 

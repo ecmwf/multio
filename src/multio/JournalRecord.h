@@ -53,20 +53,24 @@ public: // Data types, and structural members.
     // header
     //   -- Magic tag
     //   -- Version
+    //   -- Timestamp
     // journal entries (repeated)
-    //   -- Each contained element has a single character code.
-    //   -- data
-    //      > Code "D"
-    //      > size_t length
-    //      > Data of that length
-    //   -- Journal entry
-    //      > Code "J"
-    //      > TODO: Some identifying information about the (sub-)DataSink that generated
-    //              this record so that it can be sent to the correct sink for processing.
-    //      > size_t length
-    //      > Data (specific to the DataSink that did the journaling)
-    //   -- End
-    //      >> Code 'E'
+    //   -- Identifying tag and version
+    //   -- The number of contained entries
+    //   -- A creation timestamp
+    //   -- Each contained entries has a single character code.
+    //     -- data
+    //        > Code "D"
+    //        > size_t length
+    //        > Data of that length
+    //     -- Journal entry
+    //        > Code "J"
+    //        > id of the DataSink (in a MultIO)
+    //        > size_t length
+    //        > Data (specific to the DataSink that did the journaling)
+    //     -- End
+    //        >> Code 'E'
+    //   -- A termination marker for the record
 
     // ---------------------------------------------------------
 
@@ -109,8 +113,6 @@ public: // Data types, and structural members.
         };
 
         struct Header {
-
-            // TODO: What other information needs to go into here?
 
             unsigned char     tag_;             /// (1) - The EntryType
             uint16_t          id_;              /// (2) - The index of the DataSink (in a MultiIO)
@@ -163,7 +165,6 @@ public: // methods
     void addData(const eckit::DataBlobPtr&);
 
     /// Add a new journal entry to the list
-    /// TODO: Add a way to attach data...
     void addJournalEntry(JournalEntry::EntryType type, int sinkId);
 
     bool utilised() const { return utilised_; }

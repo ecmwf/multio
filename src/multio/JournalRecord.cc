@@ -37,13 +37,7 @@ const unsigned char JournalRecord::CurrentTagVersion = 1;
 
 // -------------------------------------------------------------------------------------------------
 
-/*
- * TODO: SDS. For more complicated cases, it may well be woth changing utilised_ into
- *       writeOnDestruct_, and then having the JournalRecord write itself.
- *
- * --> This will require passing in the Journal object
- * --> Will require some careful consideration of locking for the journal.
- */
+// TODO: Should we have a record factory that keeps track of all outstanding records?
 
 JournalRecord::JournalRecord(Journal &journal, RecordType type) :
     journal_(journal),

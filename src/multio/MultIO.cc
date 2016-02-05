@@ -95,8 +95,6 @@ void MultIO::write(DataBlobPtr blob, JournalRecordPtr record) {
 
     eckit::Log::info() << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
 
-    JournalRecord* r;
-
     // shall we create our own journal record ?
     if( !record && journaled_ ) {
         record.reset( new JournalRecord(journal_, JournalRecord::WriteEntry) );

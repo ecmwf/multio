@@ -38,8 +38,8 @@ const unsigned char Journal::CurrentVersion = 1;
 //----------------------------------------------------------------------------------------------------------------------
 
 Journal::Journal(const Configuration& config, DataSink * const dataSink) :
-    footer_(*this, JournalRecord::Uninitialised),
     configurationRecord_(*this, JournalRecord::Uninitialised),
+    footer_(*this, JournalRecord::Uninitialised),
     path_(config.getString("journalfile", "journal")),
     handle_(path_.fileHandle(false)),
     dataSink_(dataSink),

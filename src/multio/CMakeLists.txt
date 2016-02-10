@@ -51,7 +51,7 @@ ecbuild_add_library(
     GENERATED
         multio_version.cc
 
-    INCLUDES
+    PRIVATE_INCLUDES
       ${ECKIT_INCLUDE_DIRS}
       ${GRIBPP_INCLUDE_DIRS}
 

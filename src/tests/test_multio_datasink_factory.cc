@@ -57,11 +57,11 @@ BOOST_AUTO_TEST_SUITE( test_multio_datasink_factory )
 BOOST_AUTO_TEST_CASE( test_factory_generate )
 {
     LocalConfiguration config;
-    DataSink * sink = DataSinkFactory::build("test", config);
+    ScopedPtr<DataSink> sink(DataSinkFactory::build("test", config));
 
     // Check that we generate a sink of the correct type (and implicitly that the factory
     // is correctly registered).
-    TestDataSink * testSink = dynamic_cast<TestDataSink*>(sink);
+    TestDataSink * testSink = dynamic_cast<TestDataSink*>(sink.get());
     BOOST_CHECK(testSink);
 
     // Test that the configuration is passed through the builder/factory.

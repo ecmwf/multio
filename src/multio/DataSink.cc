@@ -115,6 +115,8 @@ void DataSink::write(DataBlobPtr blob) {
     this->write(blob, JournalRecordPtr());
 }
 
+void DataSink::flush() {}
+
 
 void DataSink::setId(int id) {
     id_ = id;

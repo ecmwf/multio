@@ -45,6 +45,9 @@ public: // methods
     virtual void write(eckit::DataBlobPtr blob);
     virtual void write(eckit::DataBlobPtr blob, JournalRecordPtr record) = 0;
 
+    /// No further writes to this sink
+    virtual void flush();
+
     /// Set the datasink ID that is used by other classes to identify this one.
     /// In particular, it labels which sink within a MultIO this one is.
     void setId(int id);

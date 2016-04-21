@@ -75,7 +75,6 @@ Value MultIO::configValue() const {
     // not by default in the Configuration (e.g. stuff included in a Resource).
     std::vector<Value> sink_configs;
     for (sink_store_t::const_iterator sink = sinks_.begin(); sink != sinks_.end(); ++sink) {
-        Log::info() << "Push back" << std::endl;
         sink_configs.push_back((*sink)->configValue());
     }
     config["sinks"] = Value(sink_configs);
@@ -93,7 +92,7 @@ void MultIO::write(DataBlobPtr blob) {
 
 void MultIO::write(DataBlobPtr blob, JournalRecordPtr record) {
 
-    eckit::Log::info() << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
+    Log::info() << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
 
     // shall we create our own journal record ?
     if( !record && journaled_ ) {
@@ -103,6 +102,12 @@ void MultIO::write(DataBlobPtr blob, JournalRecordPtr record) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->write(blob, record);
     }
+}
+
+
+void MultIO::flush() {
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it)
+        (*it)->flush();
 }
 
 

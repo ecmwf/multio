@@ -47,6 +47,8 @@ public:
     virtual void write(eckit::DataBlobPtr blob);
     virtual void write(eckit::DataBlobPtr blob, JournalRecordPtr record);
 
+    virtual void flush();
+
     virtual void replayRecord(const JournalRecord& record);
 
     void commitJournal();

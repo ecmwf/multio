@@ -17,6 +17,7 @@
 #include "eckit/config/Resource.h"
 #include "eckit/config/JSONConfiguration.h"
 #include "eckit/filesystem/PathName.h"
+#include "eckit/parser/Tokenizer.h"
 
 #include "multio/multio_version.h"
 #include "multio/ifsio.h"
@@ -40,13 +41,43 @@ static void init() {
 
     local_mutex = new eckit::Mutex();
 
-    PathName multioConfigFile = Resource<PathName>("multioConfigFile;$MULTIO_CONFIG_FILE", "multio.json");
+    if(::getenv("MULTIO_SINKS")) {
 
-    std::cout << "MultIO initilising with file " << multioConfigFile << std::endl;
+        eckit::Tokenizer parse(":");
 
-    eckit::JSONConfiguration config(multioConfigFile);
+        StringList sinks;
+        parse(::getenv("MULTIO_SINKS"), sinks);
 
-    mio = new MultIO(config);
+        ASSERT(sinks.size());
+
+        std::ostringstream oss;
+
+        oss << "{ \"sinks\" : [";
+
+        const char* sep = "";
+        for(StringList::iterator i = sinks.begin(); i != sinks.end(); ++i) {
+            oss << sep << "{ \"type\" : \"" << *i << "\" }";
+            sep = ",";
+        }
+        oss << "] }";
+
+        std::cout << "MultIO initilising with $MULTIO_SINKS " << oss.str() << std::endl;
+
+        std::istringstream iss(oss.str());
+
+        eckit::JSONConfiguration config(iss);
+
+        mio = new MultIO(config);
+    }
+    else {
+        PathName multioConfigFile = Resource<PathName>("multioConfigFile;$MULTIO_CONFIG_FILE", "multio.json");
+
+        std::cout << "MultIO initilising with file " << multioConfigFile << std::endl;
+
+        eckit::JSONConfiguration config(multioConfigFile);
+
+        mio = new MultIO(config);
+    }
 }
 
 /**********************************************************************************************************************/

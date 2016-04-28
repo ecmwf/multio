@@ -124,7 +124,7 @@ void DataSink::setId(int id) {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-int DataSink::iopenfdb(const char *name, const char *mode, int name_len, int mode_len) {
+int DataSink::iopenfdb(const std::string& name, const std::string& mode) {
     return 0;
 }
 
@@ -136,15 +136,15 @@ int DataSink::iinitfdb() {
     return 0;
 }
 
-int DataSink::isetcommfdb(int *rank) {
+int DataSink::isetcommfdb(int rank) {
     return 0;
 }
 
-int DataSink::isetrankfdb(int *rank) {
+int DataSink::isetrankfdb(int rank) {
     return 0;
 }
 
-int DataSink::iset_fdb_root(const char *name, int name_len) {
+int DataSink::iset_fdb_root(const std::string& name) {
     return 0;
 }
 
@@ -152,11 +152,11 @@ int DataSink::iflushfdb() {
     return 0;
 }
 
-int DataSink::isetfieldcountfdb(int *all_ranks, int *this_rank) {
+int DataSink::isetfieldcountfdb(int all_ranks, int this_rank) {
     return 0;
 }
 
-int DataSink::isetvalfdb(const char *name, const char *value, int name_len, int value_len) {
+int DataSink::isetvalfdb(const std::string& name, const std::string& value) {
     return 0;
 }
 

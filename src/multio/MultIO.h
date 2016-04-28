@@ -57,20 +57,18 @@ public:
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
     ///
 
-    virtual int iopenfdb(const char *name, const char *mode, int name_len, int mode_len);
+    virtual int iopenfdb(const std::string& name, const std::string& mode);
     virtual int iinitfdb();
     virtual int iclosefdb();
 
-    virtual int isetcommfdb(int *rank);
-    virtual int isetrankfdb(int *rank);
-    virtual int iset_fdb_root(const char *name, int name_len);
+    virtual int isetcommfdb(int rank);
+    virtual int isetrankfdb(int rank);
+    virtual int iset_fdb_root(const std::string& name);
 
-    // virtual int ireadfdb(void *data, int *words);
-    // virtual int iwritefdb(void *data, int *words);
     virtual int iflushfdb();
 
-    virtual int isetfieldcountfdb(int *all_ranks, int *this_rank);
-    virtual int isetvalfdb(const char *name, const char *value, int name_len, int value_len);
+    virtual int isetfieldcountfdb(int all_ranks, int this_rank);
+    virtual int isetvalfdb(const std::string& name, const std::string& value);
 
 protected: // types
 

@@ -180,9 +180,9 @@ void MultIO::print(std::ostream& os) const {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-int MultIO::iopenfdb(const char *name, const char *mode, int name_len, int mode_len) {
+int MultIO::iopenfdb(const std::string& name, const std::string& mode) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->iopenfdb(name,mode,name_len,mode_len);
+        (*it)->iopenfdb(name,mode);
     }
     return 0;
 }
@@ -201,23 +201,23 @@ int MultIO::iinitfdb() {
     return 0;
 }
 
-int MultIO::isetcommfdb(int *rank) {
+int MultIO::isetcommfdb(int rank) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->isetcommfdb(rank);
     }
     return 0;
 }
 
-int MultIO::isetrankfdb(int *rank) {
+int MultIO::isetrankfdb(int rank) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->isetrankfdb(rank);
     }
     return 0;
 }
 
-int MultIO::iset_fdb_root(const char *name, int name_len) {
+int MultIO::iset_fdb_root(const std::string& name) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->iset_fdb_root(name,name_len);
+        (*it)->iset_fdb_root(name);
     }
     return 0;
 }
@@ -229,16 +229,16 @@ int MultIO::iflushfdb() {
     return 0;
 }
 
-int MultIO::isetfieldcountfdb(int *all_ranks, int *this_rank) {
+int MultIO::isetfieldcountfdb(int all_ranks, int this_rank) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->isetfieldcountfdb(all_ranks,this_rank);
     }
     return 0;
 }
 
-int MultIO::isetvalfdb(const char *name, const char *value, int name_len, int value_len) {
+int MultIO::isetvalfdb(const std::string& name, const std::string& value) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->isetvalfdb(name,value,name_len,value_len);
+        (*it)->isetvalfdb(name,value);
     }
     return 0;
 }

@@ -208,8 +208,6 @@ fortint iwritefdb_(const fortint* addr, const void *data, const fortint* words) 
 
         size_t len( (*words)*sizeof(fortint) );
 
-        std::cout << "XXXXXXXXX wrting len " << len << std::endl;
-
         eckit::DataBlobPtr blob ( new gribpp::GribDataBlob(data, len) );
         mio->write(blob);
         return 0;

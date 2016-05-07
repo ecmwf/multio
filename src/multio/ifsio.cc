@@ -82,7 +82,7 @@ static void init() {
 
 /**********************************************************************************************************************/
 
-#define MULTIO_TRACE
+//#define MULTIO_TRACE
 
 #ifdef  MULTIO_TRACE
 #define MULTIO_TRACE_FUNC()       fprintf(stdout,"MULTIO %s : %s()\n",MULTIO_VERSION,__FUNCTION__);

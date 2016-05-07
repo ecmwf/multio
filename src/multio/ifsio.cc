@@ -82,7 +82,7 @@ static void init() {
 
 /**********************************************************************************************************************/
 
-#define MULTIO_TRACE fprintf(stdout,"MULTIO %s : %s()\n",MULTIO_VERSION,__FUNCTION__);
+#define MULTIO_TRACE
 
 #ifdef  MULTIO_TRACE
 #define MULTIO_TRACE_FUNC()       fprintf(stdout,"MULTIO %s : %s()\n",MULTIO_VERSION,__FUNCTION__);
@@ -102,6 +102,8 @@ fortint iinitfdb_() {
 
     try {
 
+        MULTIO_TRACE_FUNC();
+
         pthread_once(&once, init);
         eckit::AutoLock<eckit::Mutex> lock(local_mutex);
 
@@ -119,6 +121,10 @@ fortint iinitfdb_() {
 fortint iinitfdb_vpp_(const char *name, int name_len) {
 
     try {
+
+        std::string sname(name, name+name_len);
+
+        MULTIO_TRACE_FUNC1(sname.c_str());
 
         pthread_once(&once, init);
         eckit::AutoLock<eckit::Mutex> lock(local_mutex);
@@ -140,6 +146,9 @@ fortint iopenfdb_(const char* name, fortint* addr, const char* mode, int name_le
 
         std::string sname(name, name+name_len);
         std::string smode(mode, mode+mode_len);
+
+
+        MULTIO_TRACE_FUNC2(sname.c_str(), smode.c_str());
 
         pthread_once(&once, init);
         eckit::AutoLock<eckit::Mutex> lock(local_mutex);
@@ -163,6 +172,7 @@ fortint iclosefdb_(fortint* addr) {
 
     try {
 
+        MULTIO_TRACE_FUNC();
 
         pthread_once(&once, init);
         eckit::AutoLock<eckit::Mutex> lock(local_mutex);
@@ -187,6 +197,7 @@ fortint iflushfdb_(const fortint *addr) {
 
     try {
 
+        MULTIO_TRACE_FUNC();
 
         ASSERT(mio && fdbAddr == *addr);
 
@@ -203,6 +214,7 @@ fortint iwritefdb_(const fortint* addr, const void *data, const fortint* words) 
 
     try {
 
+        MULTIO_TRACE_FUNC();
 
         ASSERT(mio && fdbAddr == *addr);
 
@@ -225,6 +237,8 @@ fortint iset_fdb_root_(const fortint *addr,const char* name, int name_len) {
 
         std::string sname(name, name+name_len);
 
+        MULTIO_TRACE_FUNC1(sname.c_str());
+
         pthread_once(&once, init);
         eckit::AutoLock<eckit::Mutex> lock(local_mutex);
 
@@ -246,6 +260,8 @@ fortint isetvalfdb_(const fortint *addr, const char* name, const char* value, in
         std::string sname(name, name+name_len);
         std::string svalue(value, value+value_len);
 
+        MULTIO_TRACE_FUNC2(sname.c_str(), svalue.c_str());
+
         ASSERT(mio && fdbAddr == *addr);
 
         return mio->isetvalfdb(sname, svalue);
@@ -261,6 +277,7 @@ int isetcommfdb_(const fortint* comm) {
 
     try {
 
+        MULTIO_TRACE_FUNC();
 
         pthread_once(&once, init);
         eckit::AutoLock<eckit::Mutex> lock(local_mutex);
@@ -280,6 +297,8 @@ int isetrankfdb_(const fortint *addr, const fortint* rank) {
 
     try {
 
+        MULTIO_TRACE_FUNC();
+
         ASSERT(mio && fdbAddr == *addr);
 
         return mio->isetrankfdb(*rank);
@@ -296,6 +315,8 @@ int isetfieldcountfdb_(const fortint *addr, const fortint* all_ranks, const fort
 
     try {
 
+        MULTIO_TRACE_FUNC();
+
         ASSERT(mio && fdbAddr == *addr);
 
         return mio->isetfieldcountfdb(*all_ranks, *this_rank);
@@ -311,6 +332,8 @@ fortint ireadfdb_(const fortint* addr, void *data, fortint* words)
 {
 
     try {
+
+        MULTIO_TRACE_FUNC();
 
         NOTIMP;
         return 0;

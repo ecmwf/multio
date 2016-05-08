@@ -180,67 +180,58 @@ void MultIO::print(std::ostream& os) const {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-int MultIO::iopenfdb(const std::string& name, const std::string& mode) {
+void MultIO::iopenfdb(const std::string& name, const std::string& mode) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->iopenfdb(name,mode);
     }
-    return 0;
 }
 
-int MultIO::iclosefdb() {
+void MultIO::iclosefdb() {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->iclosefdb();
     }
-    return 0;
 }
 
-int MultIO::iinitfdb() {
+void MultIO::iinitfdb() {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->iinitfdb();
     }
-    return 0;
 }
 
-int MultIO::isetcommfdb(int rank) {
+void MultIO::isetcommfdb(int rank) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->isetcommfdb(rank);
     }
-    return 0;
 }
 
-int MultIO::isetrankfdb(int rank) {
+void MultIO::isetrankfdb(int rank) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->isetrankfdb(rank);
     }
-    return 0;
 }
 
-int MultIO::iset_fdb_root(const std::string& name) {
+void MultIO::iset_fdb_root(const std::string& name) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->iset_fdb_root(name);
     }
-    return 0;
 }
 
-int MultIO::iflushfdb() {
+void MultIO::iflushfdb() {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->iflushfdb();
     }
-    return 0;
 }
 
-int MultIO::isetfieldcountfdb(int all_ranks, int this_rank) {
+void MultIO::isetfieldcountfdb(int all_ranks, int this_rank) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->isetfieldcountfdb(all_ranks,this_rank);
     }
-    return 0;
 }
 
-int MultIO::isetvalfdb(const std::string& name, const std::string& value) {
+void MultIO::isetvalfdb(const std::string& name, const std::string& value) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         (*it)->isetvalfdb(name,value);
     }
-    return 0;
 }
 
 static DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");

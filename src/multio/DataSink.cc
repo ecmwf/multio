@@ -124,40 +124,31 @@ void DataSink::setId(int id) {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-int DataSink::iopenfdb(const std::string& name, const std::string& mode) {
-    return 0;
+void DataSink::iopenfdb(const std::string& name, const std::string& mode) {
 }
 
-int DataSink::iclosefdb() {
-    return 0;
+void DataSink::iclosefdb() {
 }
 
-int DataSink::iinitfdb() {
-    return 0;
+void DataSink::iinitfdb() {
 }
 
-int DataSink::isetcommfdb(int rank) {
-    return 0;
+void DataSink::isetcommfdb(int rank) {
 }
 
-int DataSink::isetrankfdb(int rank) {
-    return 0;
+void DataSink::isetrankfdb(int rank) {
 }
 
-int DataSink::iset_fdb_root(const std::string& name) {
-    return 0;
+void DataSink::iset_fdb_root(const std::string& name) {
 }
 
-int DataSink::iflushfdb() {
-    return 0;
+void DataSink::iflushfdb() {
 }
 
-int DataSink::isetfieldcountfdb(int all_ranks, int this_rank) {
-    return 0;
+void DataSink::isetfieldcountfdb(int all_ranks, int this_rank) {
 }
 
-int DataSink::isetvalfdb(const std::string& name, const std::string& value) {
-    return 0;
+void DataSink::isetvalfdb(const std::string& name, const std::string& value) {
 }
 
 //----------------------------------------------------------------------------------------------------------------------

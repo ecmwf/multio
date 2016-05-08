@@ -52,10 +52,10 @@ void FileSink::write(eckit::DataBlobPtr blob, JournalRecordPtr record) {
     long written = handle_->write(blob->buffer(), length);
 
     // We should throw an exception if we are not journaling anything
-    if (record && ( (size_t)written != length || journalAlways_)) {
+    if (record && ( size_t(written) != length || journalAlways_)) {
         record->addWriteEntry(blob, id_);
     }
-    else if ((size_t)written != length) {
+    else if (size_t(written) != length) {
         throw WriteError(std::string("Write error on file: ") + path_, Here());
     }
 }

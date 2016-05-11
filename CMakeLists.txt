@@ -14,10 +14,22 @@ ecbuild_requires_macro_version( 2.0 )
 
 ecbuild_use_package( PROJECT eckit VERSION  0.10 REQUIRED )
 
-### temporary
+### for GribDataBlobs
 ecbuild_use_package( PROJECT gribpp VERSION 0.1 REQUIRED )
 
-ecbuild_debug("   ECKIT_FEATURES : [${ECKIT_FEATURES}]" )
+### fdb4 plugin
+
+ecbuild_add_option( FEATURE FDB4
+                    DEFAULT ON
+                    DESCRIPTION "Send data to FDB4"
+                    REQUIRED_PACKAGES "PROJECT fdb VERSION 4.8" )
+
+### fdb5 plugin
+
+ecbuild_add_option( FEATURE FDB5
+                    DEFAULT ON
+                    DESCRIPTION "Send data to FDB5"
+                    REQUIRED_PACKAGES "PROJECT mars_server VERSION 7.5" )
 
 ### start project
 
@@ -39,7 +51,7 @@ add_subdirectory( src )
 ### finalize project
 
 ecbuild_pkgconfig(NAME multio
-                  DESCRIPTION "ECMWF IO library"
+                  DESCRIPTION "ECMWF Multiplexing IO library"
                   LIBRARIES multio )
 
 ecbuild_install_project( NAME ${PROJECT_NAME} )

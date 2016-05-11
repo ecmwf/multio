@@ -57,3 +57,7 @@ ecbuild_add_library(
 
     LIBS
         gribpp eckit )
+
+add_subdirectory(fdb4)
+add_subdirectory(fdb5)
+

@@ -108,7 +108,7 @@ void MultIO::write(DataBlobPtr blob) {
 
         if (journal_entry) {
             if (!record) record.reset( new JournalRecord(journal_, JournalRecord::WriteEntry));
-            record->addWriteEntry(blob, (*it)->id());
+            record->addWriteEntry(blob, it->sink_->id());
         }
     }
 }
@@ -149,20 +149,27 @@ void MultIO::replayRecord(const JournalRecord& record) {
             data.reset(it->data_);
             break;
 
-        case JournalRecord::JournalEntry::Write:
+        case JournalRecord::JournalEntry::Write: {
             Log::info() << "[" << *this << "]    - Write entry for journal: " << it->head_.id_ << std::endl;
             ASSERT(data);
             ASSERT(it->head_.id_ < sinks_.size());
 
+            bool journal_entry = false;
+
             try {
-                sinks_[it->head_.id_]->write(data);
+                sinks_[it->head_.id_].sink_->write(data);
             } catch (WriteError& e) {
                 if (!journaled_) throw;
+                journal_entry = true;
+            }
+
+            if (journal_entry) {
                 if (!newRecord) newRecord.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
                 newRecord->addWriteEntry(data, id_);
             }
 
             break;
+        }
 
         default:
             Log::warning() << "[" << *this << "]    - Unrecognised entry type";

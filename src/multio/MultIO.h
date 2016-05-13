@@ -71,7 +71,12 @@ public:
 
 protected: // types
 
-    typedef std::vector<DataSink*> sink_store_t;
+    struct SinkStoreElem {
+        DataSink * sink_;
+        bool journalAlways_;
+    };
+
+    typedef std::vector<SinkStoreElem> sink_store_t;
 
 protected:
 

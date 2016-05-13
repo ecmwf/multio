@@ -57,13 +57,9 @@ FDB4Sink::FDB4Sink(const Configuration& config) :
 FDB4Sink::~FDB4Sink() {
 }
 
-void FDB4Sink::write(DataBlobPtr blob, JournalRecordPtr record) {
+void FDB4Sink::write(DataBlobPtr blob) {
 
     ASSERT(open_);
-
-    if (record && journalAlways_) {
-        record->addWriteEntry(blob, id_);
-    }
 
     size_t length = blob->length();
 
@@ -72,12 +68,8 @@ void FDB4Sink::write(DataBlobPtr blob, JournalRecordPtr record) {
     size_t len = words * sizeof(fortint);
     ASSERT( len == length );
 
-    int err = iwritefdb4_(&fdb_, const_cast<Buffer&>(blob->buffer()), &words);
-    if (err) {
-        if (record && !journalAlways_)
-            record->addWriteEntry(blob, id_);
-        else
-            throw WriteError("Write failed in FDBSink. File: ");
+    if (iwritefdb4_(&fdb_, const_cast<Buffer&>(blob->buffer()), &words)) {
+        throw WriteError("Write failed in FDBSink. File: ");
     }
 }
 

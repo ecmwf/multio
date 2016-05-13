@@ -109,17 +109,15 @@ Value DataSink::configValue() const {
 }
 
 
-// Provides a wrapper without the record argument, as we cannot specify an object that
-// needs constructing as a defaut argument.
-void DataSink::write(DataBlobPtr blob) {
-    this->write(blob, JournalRecordPtr());
-}
-
 void DataSink::flush() {}
 
 
 void DataSink::setId(int id) {
     id_ = id;
+}
+
+int DataSink::id() const {
+    return id_;
 }
 
 //----------------------------------------------------------------------------------------------------------------------

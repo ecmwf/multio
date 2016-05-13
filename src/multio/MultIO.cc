@@ -83,24 +83,22 @@ Value MultIO::configValue() const {
 }
 
 
-// Provides a wrapper without the record argument, as we cannot specify an object that
-// needs constructing as a defaut argument.
 void MultIO::write(DataBlobPtr blob) {
-    this->write(blob, JournalRecordPtr());
-}
-
-
-void MultIO::write(DataBlobPtr blob, JournalRecordPtr record) {
 
     Log::info() << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
 
-    // shall we create our own journal record ?
-    if( !record && journaled_ ) {
-        record.reset( new JournalRecord(journal_, JournalRecord::WriteEntry) );
-    }
-
+    JournalRecordPtr record;
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->write(blob, record);
+
+        try {
+
+            (*it)->write(blob);
+
+        } catch (WriteError& e) {
+            if (!journaled_) throw;
+            if (!record) record.reset( new JournalRecord(journal_, JournalRecord::WriteEntry));
+            record->addWriteEntry(blob, (*it)->id());
+        }
     }
 }
 
@@ -122,9 +120,6 @@ void MultIO::replayRecord(const JournalRecord& record) {
     // Provide a journal record so that failures that occur during playback
     // will be (re)journaled.
     JournalRecordPtr newRecord;
-    if (journaled_) {
-        newRecord.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
-    }
 
     // Once the data entry is found, point to the associated data so it can be used
     // by the write entries.
@@ -148,7 +143,14 @@ void MultIO::replayRecord(const JournalRecord& record) {
             ASSERT(data);
             ASSERT(it->head_.id_ < sinks_.size());
 
-            sinks_[it->head_.id_]->write(data, newRecord);
+            try {
+                sinks_[it->head_.id_]->write(data);
+            } catch (WriteError& e) {
+                if (!journaled_) throw;
+                if (!newRecord) newRecord.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
+                newRecord->addWriteEntry(data, id_);
+            }
+
             break;
 
         default:

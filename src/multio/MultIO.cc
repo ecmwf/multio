@@ -28,7 +28,8 @@ namespace multio {
 
 MultIO::MultIO(const eckit::Configuration& config) :
     DataSink(config),
-    journal_(config, this) {
+    journal_(config, this),
+    journaled_(config.getBool("journaled", false)) {
 
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 

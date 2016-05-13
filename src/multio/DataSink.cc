@@ -89,8 +89,6 @@ DataSink* DataSinkFactory::build(const std::string &name, const Configuration& c
 
 DataSink::DataSink(const Configuration& config) :
     failOnError_( config.getBool("failOnError",true) ),
-    journaled_( config.getBool("journaled",false) ),
-    journalAlways_( config.getBool("journalAlways", false) ),
     config_(config.get()),
     id_(-1) {
 }

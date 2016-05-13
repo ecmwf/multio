@@ -94,8 +94,6 @@ private: // methods
 protected: // members
 
     bool failOnError_;
-    bool journaled_;        /// Write to a journal file
-    bool journalAlways_;    /// Write details to journal even if a write succeeds.
 
     eckit::LocalConfiguration config_;
     int id_;

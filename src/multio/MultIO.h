@@ -83,6 +83,8 @@ protected: // members
 
     sink_store_t sinks_;
 
+    bool journaled_;
+
 private: // methods
 
     friend std::ostream &operator<<(std::ostream &s, const MultIO &p) {

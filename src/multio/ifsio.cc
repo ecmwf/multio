@@ -45,7 +45,7 @@ static void init() {
 
         PathName path(::getenv("MULTIO_CONFIG_FILE"));
 
-        std::cout << "MultIO initilising with file " << path << std::endl;
+        std::cout << "MultIO initialising with file " << path << std::endl;
 
         eckit::JSONConfiguration config(path);
 
@@ -73,8 +73,7 @@ static void init() {
     }
     oss << "] }";
 
-    std::cout << "MultIO initilising with $MULTIO_SINKS " << oss.str() << std::endl;
-    std::cout << "MultIO initilising with $MULTIO_SINKS " << oss.str() << std::endl;
+    std::cout << "MultIO initialising with $MULTIO_SINKS " << oss.str() << std::endl;
 
     std::istringstream iss(oss.str());
 

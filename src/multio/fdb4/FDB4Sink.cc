@@ -53,7 +53,12 @@ using namespace multio;
 FDB4Sink::FDB4Sink(const Configuration& config) :
     DataSink(config),
     fdb_(0),
+<<<<<<< 0e30a79e759583dd3feff8a32d5c0bbd57a6db80
     open_(false) {
+=======
+    open_(false)
+{
+>>>>>>> Fix FDB4 sink initialisation
 }
 
 FDB4Sink::~FDB4Sink() {

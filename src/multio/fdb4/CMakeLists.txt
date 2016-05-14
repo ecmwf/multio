@@ -13,4 +13,4 @@ ecbuild_add_library(
     CONDITION HAVE_FDB4
 
     LIBS
-        multio fdb )
+        multio ifsio )

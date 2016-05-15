@@ -70,7 +70,6 @@ private:
 private:
 
     int fdb_;   ///< fdb instance
-    bool open_;
 
 };
 

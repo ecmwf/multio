@@ -67,12 +67,10 @@ void FDB4Sink::write(DataBlobPtr blob, JournalRecordPtr record) {
         record->addWriteEntry(blob, id_);
     }
 
-    size_t length = blob->length();
-
-    int words = size_t(length) / sizeof(fortint);
-
+    size_t length = blob->buffer().size(); // we assume is a multiple of sizeof(fortint) (see ifsio.cc)
     size_t len = words * sizeof(fortint);
-    ASSERT( len == length );
+
+    ASSERT( len == length );               // we check that indeed is a multiple of sizeof(fortint)
 
     int err = iwritefdb4_(&fdb_, const_cast<Buffer&>(blob->buffer()), &words);
     if (err) {

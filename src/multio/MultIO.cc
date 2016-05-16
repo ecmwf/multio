@@ -51,8 +51,10 @@ MultIO::MultIO(const eckit::Configuration& config) :
 MultIO::~MultIO() {
 
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         delete it->sink_;
     }
+    sinks_.clear();
 
     // Ideally the Journal should be committed explicitly before we hit the destructors.
     if (journaled_ && journal_.isOpen()) {
@@ -64,6 +66,7 @@ MultIO::~MultIO() {
 bool MultIO::ready() const
 {
     for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         if( ! it->sink_->ready() ) {
             return false;
         }
@@ -81,6 +84,7 @@ Value MultIO::configValue() const {
     // not by default in the Configuration (e.g. stuff included in a Resource).
     std::vector<Value> sink_configs;
     for (sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         sink_configs.push_back(it->sink_->configValue());
     }
     config["sinks"] = Value(sink_configs);
@@ -96,6 +100,7 @@ void MultIO::write(DataBlobPtr blob) {
     JournalRecordPtr record;
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
 
+        ASSERT( it->sink_ );
         bool journal_entry = false;
 
         try {
@@ -115,8 +120,10 @@ void MultIO::write(DataBlobPtr blob) {
 
 
 void MultIO::flush() {
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it)
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         it->sink_->flush();
+    }
 }
 
 
@@ -157,6 +164,7 @@ void MultIO::replayRecord(const JournalRecord& record) {
             bool journal_entry = false;
 
             try {
+                ASSERT( sinks_[it->head_.id_].sink_ );
                 sinks_[it->head_.id_].sink_->write(data);
             } catch (Exception& e) {
                 if (!journaled_) throw;
@@ -193,6 +201,7 @@ void MultIO::commitJournal() {
 void MultIO::print(std::ostream& os) const {
     os << "MultIO(";
     for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         os << it->sink_;
     }
     os << ")";
@@ -202,54 +211,63 @@ void MultIO::print(std::ostream& os) const {
 
 void MultIO::iopenfdb(const std::string& name, const std::string& mode) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         it->sink_->iopenfdb(name,mode);
     }
 }
 
 void MultIO::iclosefdb() {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         it->sink_->iclosefdb();
     }
 }
 
 void MultIO::iinitfdb() {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         it->sink_->iinitfdb();
     }
 }
 
 void MultIO::isetcommfdb(int rank) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         it->sink_->isetcommfdb(rank);
     }
 }
 
 void MultIO::isetrankfdb(int rank) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         it->sink_->isetrankfdb(rank);
     }
 }
 
 void MultIO::iset_fdb_root(const std::string& name) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         it->sink_->iset_fdb_root(name);
     }
 }
 
 void MultIO::iflushfdb() {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         it->sink_->iflushfdb();
     }
 }
 
 void MultIO::isetfieldcountfdb(int all_ranks, int this_rank) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         it->sink_->isetfieldcountfdb(all_ranks,this_rank);
     }
 }
 
 void MultIO::isetvalfdb(const std::string& name, const std::string& value) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
         it->sink_->isetvalfdb(name,value);
     }
 }

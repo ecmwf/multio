@@ -32,7 +32,7 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class DataSink : private eckit::NonCopyable {
+class DataSink : public eckit::Owned {
 
 public: // methods
 

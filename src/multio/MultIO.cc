@@ -36,7 +36,7 @@ MultIO::MultIO(const eckit::Configuration& config) :
     for(std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end(); ++c) {
 
         SinkStoreElem elem;
-        elem.sink_ = DataSinkFactory::build(c->getString("type"),*c);
+        elem.sink_.reset(DataSinkFactory::build(c->getString("type"),*c));
         elem.journalAlways_=  c->getBool("journalAlways", false);
         elem.sink_->setId(sinks_.size());
 
@@ -49,12 +49,6 @@ MultIO::MultIO(const eckit::Configuration& config) :
 }
 
 MultIO::~MultIO() {
-
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
-        delete it->sink_;
-    }
-    sinks_.clear();
 
     // Ideally the Journal should be committed explicitly before we hit the destructors.
     if (journaled_ && journal_.isOpen()) {

@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "eckit/memory/NonCopyable.h"
+#include "eckit/memory/SharedPtr.h"
 #include "eckit/io/Length.h"
 
 #include "multio/DataSink.h"
@@ -72,7 +73,7 @@ public:
 protected: // types
 
     struct SinkStoreElem {
-        DataSink * sink_;
+        eckit::SharedPtr<DataSink> sink_;
         bool journalAlways_;
     };
 

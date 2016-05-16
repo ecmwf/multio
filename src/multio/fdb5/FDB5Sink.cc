@@ -39,12 +39,7 @@ void FDB5Sink::write(DataBlobPtr blob) {
 
     ASSERT(archiver_);
 
-    try {
-        archiver_->archive(blob);
-    } catch(Exception& e) {
-        // TODO: Push Exception handling higher up...
-        throw WriteError("Write error in FDB5 sink");
-    }
+    archiver_->archive(blob);
 }
 
 void FDB5Sink::iopenfdb(const std::string& name, const std::string& mode)

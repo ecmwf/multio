@@ -101,7 +101,7 @@ void MultIO::write(DataBlobPtr blob) {
         try {
             it->sink_->write(blob);
             if (it->journalAlways_) journal_entry = true;
-        } catch (WriteError& e) {
+        } catch (Exception& e) {
             if (!journaled_) throw;
             journal_entry = true;
         }
@@ -158,7 +158,7 @@ void MultIO::replayRecord(const JournalRecord& record) {
 
             try {
                 sinks_[it->head_.id_].sink_->write(data);
-            } catch (WriteError& e) {
+            } catch (Exception& e) {
                 if (!journaled_) throw;
                 journal_entry = true;
             }

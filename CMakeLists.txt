@@ -24,6 +24,11 @@ ecbuild_add_option( FEATURE FDB4
                     DESCRIPTION "Send data to FDB4"
                     REQUIRED_PACKAGES "PROJECT fdb VERSION 4.8" )
 
+if( NOT FDB_HAVE_IFSIO ) # multio uses FDB4 IFSIO interface
+  set(HAVE_FDB4 0)
+endif()
+
+
 ### fdb5 plugin
 
 ecbuild_add_option( FEATURE FDB5

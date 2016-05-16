@@ -31,7 +31,7 @@ typedef int32_t fortint;
 using namespace eckit;
 using namespace multio;
 
-static multio::MultIO* mio = 0;
+static multio::MultIO *mio = 0;
 static fortint fdbAddr = 0;
 static eckit::Mutex *local_mutex = 0;
 
@@ -41,43 +41,46 @@ static void init() {
 
     local_mutex = new eckit::Mutex();
 
-    if(::getenv("MULTIO_SINKS")) {
+    if (::getenv("MULTIO_CONFIG_FILE")) {
 
-        eckit::Tokenizer parse(":");
+        PathName path(::getenv("MULTIO_CONFIG_FILE"));
 
-        StringList sinks;
-        parse(::getenv("MULTIO_SINKS"), sinks);
+        std::cout << "MultIO initialising with file " << path << std::endl;
 
-        ASSERT(sinks.size());
-
-        std::ostringstream oss;
-
-        oss << "{ \"sinks\" : [";
-
-        const char* sep = "";
-        for(StringList::iterator i = sinks.begin(); i != sinks.end(); ++i) {
-            oss << sep << "{ \"type\" : \"" << *i << "\" }";
-            sep = ",";
-        }
-        oss << "] }";
-
-        std::cout << "MultIO initilising with $MULTIO_SINKS " << oss.str() << std::endl;
-
-        std::istringstream iss(oss.str());
-
-        eckit::JSONConfiguration config(iss);
+        eckit::JSONConfiguration config(path);
 
         mio = new MultIO(config);
+
+        return;
     }
-    else {
-        PathName multioConfigFile = Resource<PathName>("multioConfigFile;$MULTIO_CONFIG_FILE", "multio.json");
 
-        std::cout << "MultIO initilising with file " << multioConfigFile << std::endl;
 
-        eckit::JSONConfiguration config(multioConfigFile);
+    eckit::Tokenizer parse(":");
 
-        mio = new MultIO(config);
+    StringList sinks;
+    parse(::getenv("MULTIO_SINKS") ? ::getenv("MULTIO_SINKS") : "fdb4", sinks);
+
+    ASSERT(sinks.size());
+
+    std::ostringstream oss;
+
+    oss << "{ \"sinks\" : [";
+
+    const char *sep = "";
+    for (StringList::iterator i = sinks.begin(); i != sinks.end(); ++i) {
+        oss << sep << "{ \"type\" : \"" << *i << "\" }";
+        sep = ",";
     }
+    oss << "] }";
+
+    std::cout << "MultIO initialising with $MULTIO_SINKS " << oss.str() << std::endl;
+
+    std::istringstream iss(oss.str());
+
+    eckit::JSONConfiguration config(iss);
+
+    mio = new MultIO(config);
+
 }
 
 /**********************************************************************************************************************/
@@ -98,252 +101,238 @@ static void init() {
 
 extern "C" {
 
-fortint iinitfdb_() {
+    fortint iinitfdb_() {
 
-    try {
+        try {
 
-        MULTIO_TRACE_FUNC();
+            MULTIO_TRACE_FUNC();
 
-        pthread_once(&once, init);
-        eckit::AutoLock<eckit::Mutex> lock(local_mutex);
+            pthread_once(&once, init);
+            eckit::AutoLock<eckit::Mutex> lock(local_mutex);
 
-        ASSERT(mio);
+            ASSERT(mio);
 
-        mio->iinitfdb();
+            mio->iinitfdb();
+        } catch (std::exception &e) {
+            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
+            return -2;
+        }
+        return 0;
     }
-    catch (std::exception &e) {
-        eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-        return -2;
+
+    fortint iinitfdb_vpp_(const char *name, int name_len) {
+
+        try {
+
+            std::string sname(name, name + name_len);
+
+            MULTIO_TRACE_FUNC1(sname.c_str());
+
+            pthread_once(&once, init);
+            eckit::AutoLock<eckit::Mutex> lock(local_mutex);
+
+            ASSERT(mio);
+
+            mio->iinitfdb();
+        } catch (std::exception &e) {
+            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
+            return -2;
+        }
+        return 0;
     }
-    return 0;
-}
 
-fortint iinitfdb_vpp_(const char *name, int name_len) {
+    fortint iopenfdb_(const char *name, fortint *addr, const char *mode, int name_len, int mode_len) {
 
-    try {
+        try {
 
-        std::string sname(name, name+name_len);
+            std::string sname(name, name + name_len);
+            std::string smode(mode, mode + mode_len);
 
-        MULTIO_TRACE_FUNC1(sname.c_str());
 
-        pthread_once(&once, init);
-        eckit::AutoLock<eckit::Mutex> lock(local_mutex);
+            MULTIO_TRACE_FUNC2(sname.c_str(), smode.c_str());
 
-        ASSERT(mio);
+            pthread_once(&once, init);
+            eckit::AutoLock<eckit::Mutex> lock(local_mutex);
 
-        mio->iinitfdb();
+            ASSERT(mio);
+
+
+            mio->iopenfdb(sname, smode);
+
+            *addr = 1;
+            fdbAddr = *addr;
+
+        } catch (std::exception &e) {
+            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
+            return -2;
+        }
+        return 0;
     }
-    catch (std::exception &e) {
-        eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-        return -2;
+
+    fortint iclosefdb_(fortint *addr) {
+
+        try {
+
+            MULTIO_TRACE_FUNC();
+
+            pthread_once(&once, init);
+            eckit::AutoLock<eckit::Mutex> lock(local_mutex);
+
+            ASSERT(mio && fdbAddr == *addr);
+
+            mio->iclosefdb();
+
+            *addr = 0;
+            fdbAddr = 0;
+
+        } catch (std::exception &e) {
+            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
+            return -2;
+        }
+        return 0;
     }
-    return 0;
-}
 
-fortint iopenfdb_(const char* name, fortint* addr, const char* mode, int name_len, int mode_len) {
+    fortint iflushfdb_(const fortint *addr) {
 
-    try {
+        try {
 
-        std::string sname(name, name+name_len);
-        std::string smode(mode, mode+mode_len);
+            MULTIO_TRACE_FUNC();
 
+            ASSERT(mio && fdbAddr == *addr);
 
-        MULTIO_TRACE_FUNC2(sname.c_str(), smode.c_str());
-
-        pthread_once(&once, init);
-        eckit::AutoLock<eckit::Mutex> lock(local_mutex);
-
-        ASSERT(mio);
-
-
-        mio->iopenfdb(sname, smode);
-
-        *addr = 1;
-        fdbAddr = *addr;
-
+            mio->iflushfdb();
+        } catch (std::exception &e) {
+            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
+            return -2;
+        }
+        return 0;
     }
-    catch (std::exception &e) {
-        eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-        return -2;
+
+    fortint iwritefdb_(const fortint *addr, const void *data, const fortint *words) {
+
+        try {
+
+            MULTIO_TRACE_FUNC();
+
+            ASSERT(mio && fdbAddr == *addr);
+
+            size_t len( (*words)*sizeof(fortint) );
+
+            eckit::DataBlobPtr blob ( new gribpp::GribDataBlob(data, len) );
+
+            mio->write(blob);
+
+        } catch (std::exception &e) {
+            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
+            return -2;
+        }
+        return 0;
     }
-    return 0;
-}
 
-fortint iclosefdb_(fortint* addr) {
+    fortint iset_fdb_root_(const fortint *addr, const char *name, int name_len) {
 
-    try {
+        try {
 
-        MULTIO_TRACE_FUNC();
+            std::string sname(name, name + name_len);
 
-        pthread_once(&once, init);
-        eckit::AutoLock<eckit::Mutex> lock(local_mutex);
+            MULTIO_TRACE_FUNC1(sname.c_str());
 
-        ASSERT(mio && fdbAddr == *addr);
+            pthread_once(&once, init);
+            eckit::AutoLock<eckit::Mutex> lock(local_mutex);
 
-        mio->iclosefdb();
+            ASSERT(mio && fdbAddr == *addr);
 
-        *addr = 0;
-        fdbAddr = 0;
-
+            mio->iset_fdb_root(sname);
+        } catch (std::exception &e) {
+            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
+            return -2;
+        }
+        return 0;
     }
-    catch (std::exception &e) {
-        eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-        return -2;
+
+    fortint isetvalfdb_(const fortint *addr, const char *name, const char *value, int name_len, int value_len) {
+
+        try {
+
+            std::string sname(name, name + name_len);
+            std::string svalue(value, value + value_len);
+
+            MULTIO_TRACE_FUNC2(sname.c_str(), svalue.c_str());
+
+            ASSERT(mio && fdbAddr == *addr);
+
+            mio->isetvalfdb(sname, svalue);
+        } catch (std::exception &e) {
+            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
+            return -2;
+        }
+        return 0;
     }
-    return 0;
-}
 
-fortint iflushfdb_(const fortint *addr) {
+    int isetcommfdb_(const fortint *comm) {
 
-    try {
+        try {
 
-        MULTIO_TRACE_FUNC();
+            MULTIO_TRACE_FUNC();
 
-        ASSERT(mio && fdbAddr == *addr);
+            pthread_once(&once, init);
+            eckit::AutoLock<eckit::Mutex> lock(local_mutex);
 
-        mio->iflushfdb();
+            ASSERT(mio);
+
+            mio->isetcommfdb(*comm);
+        } catch (std::exception &e) {
+            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
+            return -2;
+        }
+        return 0;
     }
-    catch (std::exception &e) {
-        eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-        return -2;
+
+    int isetrankfdb_(const fortint *addr, const fortint *rank) {
+
+        try {
+
+            MULTIO_TRACE_FUNC();
+
+            ASSERT(mio && fdbAddr == *addr);
+
+            mio->isetrankfdb(*rank);
+        } catch (std::exception &e) {
+            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
+            return -2;
+        }
+        return 0;
     }
-    return 0;
-}
 
-fortint iwritefdb_(const fortint* addr, const void *data, const fortint* words) {
+    int isetfieldcountfdb_(const fortint *addr, const fortint *all_ranks, const fortint *this_rank) {
 
-    try {
+        try {
 
-        MULTIO_TRACE_FUNC();
+            MULTIO_TRACE_FUNC();
 
-        ASSERT(mio && fdbAddr == *addr);
+            ASSERT(mio && fdbAddr == *addr);
 
-        size_t len( (*words)*sizeof(fortint) );
-
-        eckit::DataBlobPtr blob ( new gribpp::GribDataBlob(data, len) );
-
-        mio->write(blob);
-
+            mio->isetfieldcountfdb(*all_ranks, *this_rank);
+        } catch (std::exception &e) {
+            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
+            return -2;
+        }
+        return 0;
     }
-    catch (std::exception &e) {
-        eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-        return -2;
+
+    fortint ireadfdb_(const fortint *addr, void *data, fortint *words) {
+
+        try {
+
+            MULTIO_TRACE_FUNC();
+
+            NOTIMP;
+
+        } catch (std::exception &e) {
+            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
+            return -2;
+        }
+        return 0;
     }
-    return 0;
-}
-
-fortint iset_fdb_root_(const fortint *addr,const char* name, int name_len) {
-
-    try {
-
-        std::string sname(name, name+name_len);
-
-        MULTIO_TRACE_FUNC1(sname.c_str());
-
-        pthread_once(&once, init);
-        eckit::AutoLock<eckit::Mutex> lock(local_mutex);
-
-        ASSERT(mio && fdbAddr == *addr);
-
-        mio->iset_fdb_root(sname);
-    }
-    catch (std::exception &e) {
-        eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-        return -2;
-    }
-    return 0;
-}
-
-fortint isetvalfdb_(const fortint *addr, const char* name, const char* value, int name_len, int value_len) {
-
-    try {
-
-        std::string sname(name, name+name_len);
-        std::string svalue(value, value+value_len);
-
-        MULTIO_TRACE_FUNC2(sname.c_str(), svalue.c_str());
-
-        ASSERT(mio && fdbAddr == *addr);
-
-        mio->isetvalfdb(sname, svalue);
-    }
-    catch (std::exception &e) {
-        eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-        return -2;
-    }
-    return 0;
-}
-
-int isetcommfdb_(const fortint* comm) {
-
-    try {
-
-        MULTIO_TRACE_FUNC();
-
-        pthread_once(&once, init);
-        eckit::AutoLock<eckit::Mutex> lock(local_mutex);
-
-        ASSERT(mio);
-
-        mio->isetcommfdb(*comm);
-    }
-    catch (std::exception &e) {
-        eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-        return -2;
-    }
-    return 0;
-}
-
-int isetrankfdb_(const fortint *addr, const fortint* rank) {
-
-    try {
-
-        MULTIO_TRACE_FUNC();
-
-        ASSERT(mio && fdbAddr == *addr);
-
-        mio->isetrankfdb(*rank);
-    }
-    catch (std::exception &e) {
-        eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-        return -2;
-    }
-    return 0;
-}
-
-int isetfieldcountfdb_(const fortint *addr, const fortint* all_ranks, const fortint* this_rank)
-{
-
-    try {
-
-        MULTIO_TRACE_FUNC();
-
-        ASSERT(mio && fdbAddr == *addr);
-
-        mio->isetfieldcountfdb(*all_ranks, *this_rank);
-    }
-    catch (std::exception &e) {
-        eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-        return -2;
-    }
-    return 0;
-}
-
-fortint ireadfdb_(const fortint* addr, void *data, fortint* words)
-{
-
-    try {
-
-        MULTIO_TRACE_FUNC();
-
-        NOTIMP;
-
-    }
-    catch (std::exception &e) {
-        eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-        return -2;
-    }
-    return 0;
-}
 
 } // extern C

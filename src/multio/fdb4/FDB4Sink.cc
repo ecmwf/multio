@@ -51,7 +51,9 @@ using namespace multio;
 //----------------------------------------------------------------------------------------------------------------------
 
 FDB4Sink::FDB4Sink(const Configuration& config) :
-    DataSink(config) {
+    DataSink(config),
+    fdb_(0),
+    open_(false) {
 }
 
 FDB4Sink::~FDB4Sink() {
@@ -61,12 +63,12 @@ void FDB4Sink::write(DataBlobPtr blob) {
 
     ASSERT(open_);
 
-    size_t length = blob->length();
+    size_t length = blob->buffer().size(); // we assume is a multiple of sizeof(fortint) (see ifsio.cc)
 
     int words = size_t(length) / sizeof(fortint);
-
     size_t len = words * sizeof(fortint);
-    ASSERT( len == length );
+
+    ASSERT( len == length );               // we check that indeed is a multiple of sizeof(fortint)
 
     if (iwritefdb4_(&fdb_, const_cast<Buffer&>(blob->buffer()), &words)) {
         throw WriteError("Write failed in FDBSink. File: ");

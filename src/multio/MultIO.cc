@@ -28,13 +28,19 @@ namespace multio {
 
 MultIO::MultIO(const eckit::Configuration& config) :
     DataSink(config),
-    journal_(config, this) {
+    journal_(config, this),
+    journaled_(config.getBool("journaled", false)) {
 
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 
     for(std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end(); ++c) {
-        sinks_.push_back( DataSinkFactory::build(c->getString("type"),*c) );
-        sinks_.back()->setId(sinks_.size()-1);
+
+        SinkStoreElem elem;
+        elem.sink_.reset(DataSinkFactory::build(c->getString("type"),*c));
+        elem.journalAlways_=  c->getBool("journalAlways", false);
+        elem.sink_->setId(sinks_.size());
+
+        sinks_.push_back( elem );
     }
 
     // Must open after sinks are initialised, or the subsink configs won't exist yet.
@@ -43,10 +49,6 @@ MultIO::MultIO(const eckit::Configuration& config) :
 }
 
 MultIO::~MultIO() {
-
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        delete (*it);
-    }
 
     // Ideally the Journal should be committed explicitly before we hit the destructors.
     if (journaled_ && journal_.isOpen()) {
@@ -58,7 +60,8 @@ MultIO::~MultIO() {
 bool MultIO::ready() const
 {
     for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        if( ! (*it)->ready() ) {
+        ASSERT( it->sink_ );
+        if( ! it->sink_->ready() ) {
             return false;
         }
     }
@@ -74,8 +77,9 @@ Value MultIO::configValue() const {
     // instantiated sinks. This allows them to include additional information that is
     // not by default in the Configuration (e.g. stuff included in a Resource).
     std::vector<Value> sink_configs;
-    for (sink_store_t::const_iterator sink = sinks_.begin(); sink != sinks_.end(); ++sink) {
-        sink_configs.push_back((*sink)->configValue());
+    for (sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
+        sink_configs.push_back(it->sink_->configValue());
     }
     config["sinks"] = Value(sink_configs);
 
@@ -83,31 +87,37 @@ Value MultIO::configValue() const {
 }
 
 
-// Provides a wrapper without the record argument, as we cannot specify an object that
-// needs constructing as a defaut argument.
 void MultIO::write(DataBlobPtr blob) {
-    this->write(blob, JournalRecordPtr());
-}
-
-
-void MultIO::write(DataBlobPtr blob, JournalRecordPtr record) {
 
     Log::info() << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
 
-    // shall we create our own journal record ?
-    if( !record && journaled_ ) {
-        record.reset( new JournalRecord(journal_, JournalRecord::WriteEntry) );
-    }
-
+    JournalRecordPtr record;
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->write(blob, record);
+
+        ASSERT( it->sink_ );
+        bool journal_entry = false;
+
+        try {
+            it->sink_->write(blob);
+            if (it->journalAlways_) journal_entry = true;
+        } catch (Exception& e) {
+            if (!journaled_) throw;
+            journal_entry = true;
+        }
+
+        if (journal_entry) {
+            if (!record) record.reset( new JournalRecord(journal_, JournalRecord::WriteEntry));
+            record->addWriteEntry(blob, it->sink_->id());
+        }
     }
 }
 
 
 void MultIO::flush() {
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it)
-        (*it)->flush();
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
+        it->sink_->flush();
+    }
 }
 
 
@@ -122,9 +132,6 @@ void MultIO::replayRecord(const JournalRecord& record) {
     // Provide a journal record so that failures that occur during playback
     // will be (re)journaled.
     JournalRecordPtr newRecord;
-    if (journaled_) {
-        newRecord.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
-    }
 
     // Once the data entry is found, point to the associated data so it can be used
     // by the write entries.
@@ -143,13 +150,28 @@ void MultIO::replayRecord(const JournalRecord& record) {
             data.reset(it->data_);
             break;
 
-        case JournalRecord::JournalEntry::Write:
+        case JournalRecord::JournalEntry::Write: {
             Log::info() << "[" << *this << "]    - Write entry for journal: " << it->head_.id_ << std::endl;
             ASSERT(data);
             ASSERT(it->head_.id_ < sinks_.size());
 
-            sinks_[it->head_.id_]->write(data, newRecord);
+            bool journal_entry = false;
+
+            try {
+                ASSERT( sinks_[it->head_.id_].sink_ );
+                sinks_[it->head_.id_].sink_->write(data);
+            } catch (Exception& e) {
+                if (!journaled_) throw;
+                journal_entry = true;
+            }
+
+            if (journal_entry) {
+                if (!newRecord) newRecord.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
+                newRecord->addWriteEntry(data, id_);
+            }
+
             break;
+        }
 
         default:
             Log::warning() << "[" << *this << "]    - Unrecognised entry type";
@@ -173,7 +195,8 @@ void MultIO::commitJournal() {
 void MultIO::print(std::ostream& os) const {
     os << "MultIO(";
     for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        os << (*it);
+        ASSERT( it->sink_ );
+        os << it->sink_;
     }
     os << ")";
 }
@@ -182,55 +205,64 @@ void MultIO::print(std::ostream& os) const {
 
 void MultIO::iopenfdb(const std::string& name, const std::string& mode) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->iopenfdb(name,mode);
+        ASSERT( it->sink_ );
+        it->sink_->iopenfdb(name,mode);
     }
 }
 
 void MultIO::iclosefdb() {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->iclosefdb();
+        ASSERT( it->sink_ );
+        it->sink_->iclosefdb();
     }
 }
 
 void MultIO::iinitfdb() {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->iinitfdb();
+        ASSERT( it->sink_ );
+        it->sink_->iinitfdb();
     }
 }
 
 void MultIO::isetcommfdb(int rank) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->isetcommfdb(rank);
+        ASSERT( it->sink_ );
+        it->sink_->isetcommfdb(rank);
     }
 }
 
 void MultIO::isetrankfdb(int rank) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->isetrankfdb(rank);
+        ASSERT( it->sink_ );
+        it->sink_->isetrankfdb(rank);
     }
 }
 
 void MultIO::iset_fdb_root(const std::string& name) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->iset_fdb_root(name);
+        ASSERT( it->sink_ );
+        it->sink_->iset_fdb_root(name);
     }
 }
 
 void MultIO::iflushfdb() {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->iflushfdb();
+        ASSERT( it->sink_ );
+        it->sink_->iflushfdb();
     }
 }
 
 void MultIO::isetfieldcountfdb(int all_ranks, int this_rank) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->isetfieldcountfdb(all_ranks,this_rank);
+        ASSERT( it->sink_ );
+        it->sink_->isetfieldcountfdb(all_ranks,this_rank);
     }
 }
 
 void MultIO::isetvalfdb(const std::string& name, const std::string& value) {
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->isetvalfdb(name,value);
+        ASSERT( it->sink_ );
+        it->sink_->isetvalfdb(name,value);
     }
 }
 

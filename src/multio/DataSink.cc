@@ -89,8 +89,6 @@ DataSink* DataSinkFactory::build(const std::string &name, const Configuration& c
 
 DataSink::DataSink(const Configuration& config) :
     failOnError_( config.getBool("failOnError",true) ),
-    journaled_( config.getBool("journaled",false) ),
-    journalAlways_( config.getBool("journalAlways", false) ),
     config_(config.get()),
     id_(-1) {
 }
@@ -109,17 +107,15 @@ Value DataSink::configValue() const {
 }
 
 
-// Provides a wrapper without the record argument, as we cannot specify an object that
-// needs constructing as a defaut argument.
-void DataSink::write(DataBlobPtr blob) {
-    this->write(blob, JournalRecordPtr());
-}
-
 void DataSink::flush() {}
 
 
 void DataSink::setId(int id) {
     id_ = id;
+}
+
+int DataSink::id() const {
+    return id_;
 }
 
 //----------------------------------------------------------------------------------------------------------------------

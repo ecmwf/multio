@@ -31,7 +31,7 @@ FDB5Sink::FDB5Sink(const Configuration& config) :
 FDB5Sink::~FDB5Sink() {
 }
 
-void FDB5Sink::write(DataBlobPtr blob, JournalRecordPtr record) {
+void FDB5Sink::write(DataBlobPtr blob) {
 
     fdb5::UMask umask(fdb5::UMask::defaultUMask());
 
@@ -39,22 +39,7 @@ void FDB5Sink::write(DataBlobPtr blob, JournalRecordPtr record) {
 
     ASSERT(archiver_);
 
-    if (record && journalAlways_) {
-        record->addWriteEntry(blob, id_);
-    }
-
-    try {
-        archiver_->archive(blob);
-    }
-    catch(Exception& e) {
-
-        // If something goes wrong, we need to journal (unless we have already journalled above)
-        if (record) {
-            if (!journalAlways_) record->addWriteEntry(blob, id_);
-        } else {
-            throw;
-        }
-    }
+    archiver_->archive(blob);
 }
 
 void FDB5Sink::iopenfdb(const std::string& name, const std::string& mode)

@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "eckit/memory/NonCopyable.h"
+#include "eckit/memory/SharedPtr.h"
 #include "eckit/io/Length.h"
 
 #include "multio/DataSink.h"
@@ -45,7 +46,6 @@ public:
     virtual eckit::Value configValue() const;
 
     virtual void write(eckit::DataBlobPtr blob);
-    virtual void write(eckit::DataBlobPtr blob, JournalRecordPtr record);
 
     virtual void flush();
 
@@ -72,7 +72,12 @@ public:
 
 protected: // types
 
-    typedef std::vector<DataSink*> sink_store_t;
+    struct SinkStoreElem {
+        eckit::SharedPtr<DataSink> sink_;
+        bool journalAlways_;
+    };
+
+    typedef std::vector<SinkStoreElem> sink_store_t;
 
 protected:
 
@@ -83,6 +88,8 @@ protected: // members
     Journal journal_;
 
     sink_store_t sinks_;
+
+    bool journaled_;
 
 private: // methods
 

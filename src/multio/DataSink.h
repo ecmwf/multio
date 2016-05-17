@@ -32,7 +32,7 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class DataSink : private eckit::NonCopyable {
+class DataSink : public eckit::Owned {
 
 public: // methods
 
@@ -42,8 +42,7 @@ public: // methods
 
     virtual bool ready() const;
 
-    virtual void write(eckit::DataBlobPtr blob);
-    virtual void write(eckit::DataBlobPtr blob, JournalRecordPtr record) = 0;
+    virtual void write(eckit::DataBlobPtr blob) = 0;
 
     /// No further writes to this sink
     virtual void flush();
@@ -51,6 +50,7 @@ public: // methods
     /// Set the datasink ID that is used by other classes to identify this one.
     /// In particular, it labels which sink within a MultIO this one is.
     void setId(int id);
+    int id() const;
 
     /// Return the value that is serialised to produce the json() in the journal.
     /// Not necessarily equal to the supplied config as other sources of
@@ -94,8 +94,6 @@ private: // methods
 protected: // members
 
     bool failOnError_;
-    bool journaled_;        /// Write to a journal file
-    bool journalAlways_;    /// Write details to journal even if a write succeeds.
 
     eckit::LocalConfiguration config_;
     int id_;

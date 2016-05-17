@@ -34,7 +34,7 @@ public:
 
     virtual ~FDB4Sink();
 
-    virtual void write(eckit::DataBlobPtr blob, multio::JournalRecordPtr record);
+    virtual void write(eckit::DataBlobPtr blob);
 
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE

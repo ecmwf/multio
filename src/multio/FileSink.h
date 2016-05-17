@@ -41,7 +41,7 @@ public:
 
     virtual ~FileSink();
 
-    virtual void write(eckit::DataBlobPtr blob, JournalRecordPtr record);
+    virtual void write(eckit::DataBlobPtr blob);
 
 protected:
 

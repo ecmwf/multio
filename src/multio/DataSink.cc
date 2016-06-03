@@ -89,7 +89,7 @@ DataSink* DataSinkFactory::build(const std::string &name, const Configuration& c
 
 DataSink::DataSink(const Configuration& config) :
     failOnError_( config.getBool("failOnError",true) ),
-    config_(config.get()),
+    config_(config),
     id_(-1) {
 }
 

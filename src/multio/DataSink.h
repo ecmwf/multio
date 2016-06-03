@@ -95,7 +95,7 @@ protected: // members
 
     bool failOnError_;
 
-    eckit::LocalConfiguration config_;
+    const eckit::LocalConfiguration& config_;
     int id_;
 };
 

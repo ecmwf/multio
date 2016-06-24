@@ -91,7 +91,7 @@ protected: // members
 
     bool journaled_;
 
-    eckit::Mutex mutex_;
+    mutable eckit::Mutex mutex_;
 
 private: // methods
 

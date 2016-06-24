@@ -29,7 +29,8 @@ namespace multio {
 MultIO::MultIO(const eckit::Configuration& config) :
     DataSink(config),
     journal_(config, this),
-    journaled_(config.getBool("journaled", false)) {
+    journaled_(config.getBool("journaled", false)),
+    mutex_() {
 
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 
@@ -57,8 +58,9 @@ MultIO::~MultIO() {
     }
 }
 
-bool MultIO::ready() const
-{
+bool MultIO::ready() const {
+    AutoLock<Mutex> lock(mutex_);
+
     for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         if( ! it->sink_->ready() ) {
@@ -70,6 +72,7 @@ bool MultIO::ready() const
 
 
 Value MultIO::configValue() const {
+    AutoLock<Mutex> lock(mutex_);
 
     Value config(config_.get());
 
@@ -88,6 +91,7 @@ Value MultIO::configValue() const {
 
 
 void MultIO::write(DataBlobPtr blob) {
+    AutoLock<Mutex> lock(mutex_);
 
     Log::info() << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
 
@@ -114,6 +118,7 @@ void MultIO::write(DataBlobPtr blob) {
 
 
 void MultIO::flush() {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->flush();
@@ -122,6 +127,7 @@ void MultIO::flush() {
 
 
 void MultIO::replayRecord(const JournalRecord& record) {
+    AutoLock<Mutex> lock(mutex_);
 
     Log::info() << "[" << *this << "] Replaying journal record" << std::endl;
     Log::info() << "[" << *this << "]  - Record type: "
@@ -182,6 +188,7 @@ void MultIO::replayRecord(const JournalRecord& record) {
 
 
 void MultIO::commitJournal() {
+    AutoLock<Mutex> lock(mutex_);
 
     Log::info() << "[" << *this << "] Committing MultIO journal" << std::endl;
     if (!journaled_ || !journal_.isOpen()) {
@@ -193,6 +200,7 @@ void MultIO::commitJournal() {
 
 
 void MultIO::print(std::ostream& os) const {
+    AutoLock<Mutex> lock(mutex_);
     os << "MultIO(";
     for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
@@ -204,6 +212,7 @@ void MultIO::print(std::ostream& os) const {
 //----------------------------------------------------------------------------------------------------------------------
 
 void MultIO::iopenfdb(const std::string& name, const std::string& mode) {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iopenfdb(name,mode);
@@ -211,6 +220,7 @@ void MultIO::iopenfdb(const std::string& name, const std::string& mode) {
 }
 
 void MultIO::iclosefdb() {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iclosefdb();
@@ -218,6 +228,7 @@ void MultIO::iclosefdb() {
 }
 
 void MultIO::iinitfdb() {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iinitfdb();
@@ -225,6 +236,7 @@ void MultIO::iinitfdb() {
 }
 
 void MultIO::isetcommfdb(int rank) {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->isetcommfdb(rank);
@@ -232,6 +244,7 @@ void MultIO::isetcommfdb(int rank) {
 }
 
 void MultIO::isetrankfdb(int rank) {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->isetrankfdb(rank);
@@ -239,6 +252,7 @@ void MultIO::isetrankfdb(int rank) {
 }
 
 void MultIO::iset_fdb_root(const std::string& name) {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iset_fdb_root(name);
@@ -246,6 +260,7 @@ void MultIO::iset_fdb_root(const std::string& name) {
 }
 
 void MultIO::iflushfdb() {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iflushfdb();
@@ -253,6 +268,7 @@ void MultIO::iflushfdb() {
 }
 
 void MultIO::isetfieldcountfdb(int all_ranks, int this_rank) {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->isetfieldcountfdb(all_ranks,this_rank);
@@ -260,6 +276,7 @@ void MultIO::isetfieldcountfdb(int all_ranks, int this_rank) {
 }
 
 void MultIO::isetvalfdb(const std::string& name, const std::string& value) {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->isetvalfdb(name,value);

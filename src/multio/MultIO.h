@@ -91,6 +91,8 @@ protected: // members
 
     bool journaled_;
 
+    eckit::Mutex mutex_;
+
 private: // methods
 
     friend std::ostream &operator<<(std::ostream &s, const MultIO &p) {

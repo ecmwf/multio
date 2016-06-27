@@ -204,7 +204,7 @@ void MultIO::print(std::ostream& os) const {
     os << "MultIO(";
     for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
-        os << it->sink_;
+        os << *(it->sink_);
     }
     os << ")";
 }

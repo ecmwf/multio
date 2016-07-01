@@ -93,7 +93,7 @@ Value MultIO::configValue() const {
 void MultIO::write(DataBlobPtr blob) {
     AutoLock<Mutex> lock(mutex_);
 
-    Log::info() << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
+    std::cout << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
 
     JournalRecordPtr record;
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
@@ -190,7 +190,7 @@ void MultIO::replayRecord(const JournalRecord& record) {
 void MultIO::commitJournal() {
     AutoLock<Mutex> lock(mutex_);
 
-    Log::info() << "[" << *this << "] Committing MultIO journal" << std::endl;
+    std::cout << "[" << *this << "] Committing MultIO journal" << std::endl;
     if (!journaled_ || !journal_.isOpen()) {
         Log::warning() << "[" << *this << "] Attempting to commit a journal that has not been created"
                        << std::endl;
@@ -204,7 +204,7 @@ void MultIO::print(std::ostream& os) const {
     os << "MultIO(";
     for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
-        os << it->sink_;
+        os << *(it->sink_);
     }
     os << ")";
 }

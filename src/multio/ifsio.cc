@@ -85,12 +85,20 @@ static void init() {
 
 /**********************************************************************************************************************/
 
-//#define MULTIO_TRACE
+#define MULTIO_TRACE
+
+static bool traceme() {
+    static char* trace = ::getenv("MULTIO_TRACE");
+    if(trace == 0) {
+        return false;
+    }
+    return true;
+}
 
 #ifdef  MULTIO_TRACE
-#define MULTIO_TRACE_FUNC()       fprintf(stdout,"MULTIO %s : %s()\n",MULTIO_VERSION,__FUNCTION__);
-#define MULTIO_TRACE_FUNC1(p1)    fprintf(stdout,"MULTIO %s : %s(%s)\n",MULTIO_VERSION,__FUNCTION__,p1);
-#define MULTIO_TRACE_FUNC2(p1,p2) fprintf(stdout,"MULTIO %s : %s(%s,%s)\n",MULTIO_VERSION,__FUNCTION__,p1,p2);
+#define MULTIO_TRACE_FUNC()       if(traceme()) { fprintf(stdout,"MULTIO %s : %s()\n",MULTIO_VERSION,__FUNCTION__); }
+#define MULTIO_TRACE_FUNC1(p1)    if(traceme()) { fprintf(stdout,"MULTIO %s : %s(%s)\n",MULTIO_VERSION,__FUNCTION__,p1); }
+#define MULTIO_TRACE_FUNC2(p1,p2) if(traceme()) { fprintf(stdout,"MULTIO %s : %s(%s,%s)\n",MULTIO_VERSION,__FUNCTION__,p1,p2); }
 #else
 #define MULTIO_TRACE_FUNC()
 #define MULTIO_TRACE_FUNC1(p1)

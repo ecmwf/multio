@@ -21,13 +21,15 @@ ecbuild_use_package( PROJECT gribpp VERSION 0.1 REQUIRED )
 
 ecbuild_add_option( FEATURE FDB4
                     DEFAULT ON
+                    CONDITION FDB_HAVE_IFSIO
                     DESCRIPTION "Send data to FDB4"
                     REQUIRED_PACKAGES "PROJECT fdb VERSION 4.8" )
 
-if( NOT FDB_HAVE_IFSIO ) # multio uses FDB4 IFSIO interface
+# multio uses FDB4 IFSIO interface
+# we repeat the CONDITION because ecbuild checks it before trying to find the packages
+if( NOT FDB_HAVE_IFSIO )
   set(HAVE_FDB4 0)
 endif()
-
 
 ### fdb5 plugin
 

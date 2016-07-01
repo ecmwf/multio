@@ -21,16 +21,15 @@ list( APPEND multio_srcs
     DataSink.h
     FileSink.h
     FileSink.cc
-    Metadata.h
-    Metadata.cc
-    MultIO.h
-    MultIO.cc
     Journal.h
     Journal.cc
     JournalRecord.h
     JournalRecord.cc
     JournalReader.h
     JournalReader.cc
+    MultIO.h
+    MultIO.cc
+    SharableBuffer.h
     ifsio.h
     ifsio.cc )
 
@@ -53,7 +52,12 @@ ecbuild_add_library(
         multio_version.cc
 
     PRIVATE_INCLUDES
-        ${ECKIT_INCLUDE_DIRS}
+      ${ECKIT_INCLUDE_DIRS}
+      ${GRIBPP_INCLUDE_DIRS}
 
     LIBS
-        eckit )
+        gribpp eckit )
+
+add_subdirectory(fdb4)
+add_subdirectory(fdb5)
+

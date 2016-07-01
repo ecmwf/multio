@@ -18,6 +18,7 @@
 #include "eckit/thread/Mutex.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/io/DataBlob.h"
 
 using namespace eckit;
 
@@ -27,125 +28,262 @@ namespace multio {
 
 MultIO::MultIO(const eckit::Configuration& config) :
     DataSink(config),
-    journal_(config) {
+    journal_(config, this),
+    journaled_(config.getBool("journaled", false)),
+    mutex_() {
 
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 
     for(std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end(); ++c) {
-        sinks_.push_back( DataSinkFactory::build(c->getString("type"),*c) );
+
+        SinkStoreElem elem;
+        elem.sink_.reset(DataSinkFactory::build(c->getString("type"),*c));
+        elem.journalAlways_=  c->getBool("journalAlways", false);
+        elem.sink_->setId(sinks_.size());
+
+        sinks_.push_back( elem );
     }
 
+    // Must open after sinks are initialised, or the subsink configs won't exist yet.
+    if (journaled_)
+        journal_.open();
 }
 
 MultIO::~MultIO() {
 
+    // Ideally the Journal should be committed explicitly before we hit the destructors.
+    if (journaled_ && journal_.isOpen()) {
+        Log::warning() << "[" << *this << "] Journal has not been committed prior to MultIO destruction"
+                       << std::endl;
+    }
+}
+
+bool MultIO::ready() const {
+    AutoLock<Mutex> lock(mutex_);
+
+    for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
+        if( ! it->sink_->ready() ) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+Value MultIO::configValue() const {
+    AutoLock<Mutex> lock(mutex_);
+
+    Value config(config_.get());
+
+    // Overwrite the "sinks" component of the configuration with that returned by the
+    // instantiated sinks. This allows them to include additional information that is
+    // not by default in the Configuration (e.g. stuff included in a Resource).
+    std::vector<Value> sink_configs;
+    for (sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
+        sink_configs.push_back(it->sink_->configValue());
+    }
+    config["sinks"] = Value(sink_configs);
+
+    return config;
+}
+
+
+void MultIO::write(DataBlobPtr blob) {
+    AutoLock<Mutex> lock(mutex_);
+
+    std::cout << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
+
+    JournalRecordPtr record;
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        delete (*it);
+
+        ASSERT( it->sink_ );
+        bool journal_entry = false;
+
+        try {
+            it->sink_->write(blob);
+            if (it->journalAlways_) journal_entry = true;
+        } catch (Exception& e) {
+            if (!journaled_) throw;
+            journal_entry = true;
+        }
+
+        if (journal_entry) {
+            if (!record) record.reset( new JournalRecord(journal_, JournalRecord::WriteEntry));
+            record->addWriteEntry(blob, it->sink_->id());
+        }
     }
 }
 
 
-void MultIO::write(const void* buffer, const Length& length, JournalRecord *const record, Metadata *const metadata ) {
-
-    eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
-
-    JournalRecord* r;
-
-    // shall we create our own journal record ?
-    ScopedPtr<JournalRecord> newRecord;
-    if( !record && journaled_ ) {
-        newRecord.reset( new JournalRecord(journal_, JournalRecord::WriteEntry) );
-        r = newRecord.get();
-    }
-    else
-        r = record;
-
+void MultIO::flush() {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->write(buffer, length, r, metadata);
+        ASSERT( it->sink_ );
+        it->sink_->flush();
     }
+}
 
-    // if we are the creator of the journal record,
-    // we are responsible for ensuring that it gets written if it is populated.
-    if( newRecord ) {
-        journal_.writeRecord(*newRecord);
+
+void MultIO::replayRecord(const JournalRecord& record) {
+    AutoLock<Mutex> lock(mutex_);
+
+    Log::info() << "[" << *this << "] Replaying journal record" << std::endl;
+    Log::info() << "[" << *this << "]  - Record type: "
+                       << JournalRecord::RecordTypeName(JournalRecord::RecordType(record.head_.tag_))
+                       << std::endl;
+
+
+    // Provide a journal record so that failures that occur during playback
+    // will be (re)journaled.
+    JournalRecordPtr newRecord;
+
+    // Once the data entry is found, point to the associated data so it can be used
+    // by the write entries.
+    DataBlobPtr data;
+
+    int i = 0;
+    for (std::list<JournalRecord::JournalEntry>::const_iterator it = record.entries_.begin();
+            it != record.entries_.end(); (++i, ++it) ) {
+
+        Log::info() << "[" << *this << "]  * Entry: " << i << std::endl;
+
+        switch (it->head_.tag_) {
+
+        case JournalRecord::JournalEntry::Data:
+            Log::info() << "[" << *this << "]    - Got data entry" << std::endl;
+            data.reset(it->data_);
+            break;
+
+        case JournalRecord::JournalEntry::Write: {
+            Log::info() << "[" << *this << "]    - Write entry for journal: " << it->head_.id_ << std::endl;
+            ASSERT(data);
+            ASSERT(it->head_.id_ < sinks_.size());
+
+            bool journal_entry = false;
+
+            try {
+                ASSERT( sinks_[it->head_.id_].sink_ );
+                sinks_[it->head_.id_].sink_->write(data);
+            } catch (Exception& e) {
+                if (!journaled_) throw;
+                journal_entry = true;
+            }
+
+            if (journal_entry) {
+                if (!newRecord) newRecord.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
+                newRecord->addWriteEntry(data, id_);
+            }
+
+            break;
+        }
+
+        default:
+            Log::warning() << "[" << *this << "]    - Unrecognised entry type";
+
+        }
     }
+}
+
+
+void MultIO::commitJournal() {
+    AutoLock<Mutex> lock(mutex_);
+
+    std::cout << "[" << *this << "] Committing MultIO journal" << std::endl;
+    if (!journaled_ || !journal_.isOpen()) {
+        Log::warning() << "[" << *this << "] Attempting to commit a journal that has not been created"
+                       << std::endl;
+    } else
+        journal_.close();
 }
 
 
 void MultIO::print(std::ostream& os) const {
+    AutoLock<Mutex> lock(mutex_);
     os << "MultIO(";
     for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        os << (*it);
+        ASSERT( it->sink_ );
+        os << *(it->sink_);
     }
     os << ")";
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 
-int MultIO::iopenfdb(const char *name, const char *mode, int name_len, int mode_len) {
+void MultIO::iopenfdb(const std::string& name, const std::string& mode) {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->iopenfdb(name,mode,name_len,mode_len);
+        ASSERT( it->sink_ );
+        it->sink_->iopenfdb(name,mode);
     }
-    return 0;
 }
 
-int MultIO::iclosefdb() {
+void MultIO::iclosefdb() {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->iclosefdb();
+        ASSERT( it->sink_ );
+        it->sink_->iclosefdb();
     }
-    return 0;
 }
 
-int MultIO::iinitfdb() {
+void MultIO::iinitfdb() {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->iinitfdb();
+        ASSERT( it->sink_ );
+        it->sink_->iinitfdb();
     }
-    return 0;
 }
 
-int MultIO::isetcommfdb(int *rank) {
+void MultIO::isetcommfdb(int rank) {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->isetcommfdb(rank);
+        ASSERT( it->sink_ );
+        it->sink_->isetcommfdb(rank);
     }
-    return 0;
 }
 
-int MultIO::isetrankfdb(int *rank) {
+void MultIO::isetrankfdb(int rank) {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->isetrankfdb(rank);
+        ASSERT( it->sink_ );
+        it->sink_->isetrankfdb(rank);
     }
-    return 0;
 }
 
-int MultIO::iset_fdb_root(const char *name, int name_len) {
+void MultIO::iset_fdb_root(const std::string& name) {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->iset_fdb_root(name,name_len);
+        ASSERT( it->sink_ );
+        it->sink_->iset_fdb_root(name);
     }
-    return 0;
 }
 
-int MultIO::iflushfdb() {
+void MultIO::iflushfdb() {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->iflushfdb();
+        ASSERT( it->sink_ );
+        it->sink_->iflushfdb();
     }
-    return 0;
 }
 
-int MultIO::isetfieldcountfdb(int *all_ranks, int *this_rank) {
+void MultIO::isetfieldcountfdb(int all_ranks, int this_rank) {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->isetfieldcountfdb(all_ranks,this_rank);
+        ASSERT( it->sink_ );
+        it->sink_->isetfieldcountfdb(all_ranks,this_rank);
     }
-    return 0;
 }
 
-int MultIO::isetvalfdb(const char *name, const char *value, int name_len, int value_len) {
+void MultIO::isetvalfdb(const std::string& name, const std::string& value) {
+    AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        (*it)->isetvalfdb(name,value,name_len,value_len);
+        ASSERT( it->sink_ );
+        it->sink_->isetvalfdb(name,value);
     }
-    return 0;
 }
 
-DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");
+static DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");
 
 //----------------------------------------------------------------------------------------------------------------------
 

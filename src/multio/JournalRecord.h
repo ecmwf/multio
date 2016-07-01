@@ -21,7 +21,7 @@
 #include <sys/time.h>
 #include <stdint.h>
 
-#include "eckit/io/Buffer.h"
+#include "eckit/io/DataBlob.h"
 #include "eckit/io/DataHandle.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/memory/ScopedPtr.h"
@@ -30,13 +30,21 @@
 
 #include "multio/SharableBuffer.h"
 
+// -------------------------------------------------------------------------------------------------
+
+namespace eckit {
+    class Value;
+}
+
+// -------------------------------------------------------------------------------------------------
+
 namespace multio {
 
-//-------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 class Journal;
 
-class JournalRecord {
+class JournalRecord : public eckit::OwnedLock {
 
 public: // Data types, and structural members.
 
@@ -45,27 +53,32 @@ public: // Data types, and structural members.
     // header
     //   -- Magic tag
     //   -- Version
+    //   -- Timestamp
     // journal entries (repeated)
-    //   -- Each contained element has a single character code.
-    //   -- data
-    //      > Code "D"
-    //      > size_t length
-    //      > Data of that length
-    //   -- Journal entry
-    //      > Code "J"
-    //      > TODO: Some identifying information about the (sub-)DataSink that generated
-    //              this record so that it can be sent to the correct sink for processing.
-    //      > size_t length
-    //      > Data (specific to the DataSink that did the journaling)
-    //   -- End
-    //      >> Code 'E'
+    //   -- Identifying tag and version
+    //   -- The number of contained entries
+    //   -- A creation timestamp
+    //   -- Each contained entries has a single character code.
+    //     -- data
+    //        > Code "D"
+    //        > size_t length
+    //        > Data of that length
+    //     -- Journal entry
+    //        > Code "J"
+    //        > id of the DataSink (in a MultIO)
+    //        > size_t length
+    //        > Data (specific to the DataSink that did the journaling)
+    //     -- End
+    //        >> Code 'E'
+    //   -- A termination marker for the record
 
     // ---------------------------------------------------------
 
-    enum RecordType {
+    enum RecordType {   // n.b. if we add types, update the ASSERT in JournalRecord::RecordTypeName
         Uninitialised,
         EndOfJournal,
-        WriteEntry
+        WriteEntry,
+        Configuration
     };
 
     struct Head {
@@ -80,9 +93,6 @@ public: // Data types, and structural members.
         char            unused2_[12];    /// (12) reserved for future use
                                          /// TOTAL: 32
     } head_;
-
-
-    const static std::string RecordTypeNames[];
 
     const static eckit::FixedString<4> TerminationMarker;
 
@@ -104,10 +114,9 @@ public: // Data types, and structural members.
 
         struct Header {
 
-            // TODO: What other information needs to go into here?
-
-            unsigned char     tag_;             /// (1)
-            unsigned char     unused_[3];       /// (3)
+            unsigned char     tag_;             /// (1) - The EntryType
+            uint16_t          id_;              /// (2) - The index of the DataSink (in a MultiIO)
+            unsigned char     unused_[1];       /// (1)
 
             timeval           timestamp_;       /// (16)
 
@@ -119,7 +128,7 @@ public: // Data types, and structural members.
 
         // (Optional) additional data.
         // It would be nicer to have a ScopetPtr, but no rvalue-refs...
-        eckit::SharedPtr<SharableBuffer> data_;
+        eckit::DataBlobPtr data_;
     };
 
     std::list<JournalEntry> entries_;
@@ -143,28 +152,57 @@ public: // methods
     /// Initialise a blank JournalRecord with valid values to be written to the journal log.
     void initialise(RecordType type);
 
+    /// Add an eckit::Value containing a configuration to be serialised
+    void addConfiguration(const eckit::Value& configValue);
+
     ///
-    void write(const void * data, const eckit::Length& length);
+    void addWriteEntry(const eckit::DataBlobPtr&, int sinkId);
 
     /// Write the journal record to the supplied data handle
     void writeRecord(eckit::DataHandle& handle);
 
     /// add data to the journal element
-    void addData(const void * data, const eckit::Length& length);
+    void addData(const eckit::DataBlobPtr&);
 
     /// Add a new journal entry to the list
-    /// TODO: Add a way to attach data...
-    void addJournalEntry(JournalEntry::EntryType type);
+    void addJournalEntry(JournalEntry::EntryType type, int sinkId);
 
     bool utilised() const { return utilised_; }
 
+    static const std::string& RecordTypeName(RecordType type);
+
+    static const char * EntryTypeName(JournalEntry::EntryType type);
+
+    static const char * blobTypeName(RecordType type);
+
+
+protected: // methods
+
+    void print(std::ostream&) const;
+
+private: // methods
+
+    void initHeader();
+
+    friend std::ostream &operator<<(std::ostream &s, const JournalRecord &p) {
+        p.print(s);
+        return s;
+    }
+
 private: // internal control elements
+
+    eckit::Mutex mutex_;
 
     Journal& journal_;
 
     bool utilised_;
+    bool written_;
 
 };
+
+//--------------------------------------------------------------------------------------------------
+
+typedef eckit::SharedPtr<JournalRecord> JournalRecordPtr;
 
 //--------------------------------------------------------------------------------------------------
 

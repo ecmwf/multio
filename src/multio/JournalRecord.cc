@@ -15,6 +15,10 @@
 
 #include "eckit/io/Buffer.h"
 #include "eckit/io/DataHandle.h"
+#include "eckit/parser/JSON.h"
+#include "eckit/parser/JSONDataBlob.h"
+#include "eckit/thread/AutoLock.h"
+#include "eckit/value/Value.h"
 
 #include "multio/Journal.h"
 #include "multio/JournalRecord.h"
@@ -29,26 +33,16 @@ namespace multio {
 const FixedString<4> JournalRecord::TerminationMarker("END!");
 const unsigned char JournalRecord::CurrentTagVersion = 1;
 
-const std::string JournalRecord::RecordTypeNames[] = {
-    "Uninitialised",
-    "End of Journal",
-    "Journal entry"
-};
 
 
 // -------------------------------------------------------------------------------------------------
 
-/*
- * TODO: SDS. For more complicated cases, it may well be woth changing utilised_ into
- *       writeOnDestruct_, and then having the JournalRecord write itself.
- *
- * --> This will require passing in the Journal object
- * --> Will require some careful consideration of locking for the journal.
- */
+// TODO: Should we have a record factory that keeps track of all outstanding records?
 
 JournalRecord::JournalRecord(Journal &journal, RecordType type) :
     journal_(journal),
-    utilised_(false) {
+    utilised_(false),
+    written_(false) {
 
     if (type != JournalRecord::Uninitialised) {
 
@@ -58,12 +52,22 @@ JournalRecord::JournalRecord(Journal &journal, RecordType type) :
 
 
 JournalRecord::~JournalRecord() {
+
+    AutoLock<Mutex> lock(mutex_);
+
+    // If this is a JournalRecord that is opened for writing, has been used
+    // and has not yet been written, then write it
+    if (utilised_ && !written_) {
+        journal_.writeRecord(*this);
+    }
 }
 
 
 /// Initialise a (new) Journal record, such that it will be valid for writing
 /// (once payload data has been added as appropriate).
 void JournalRecord::initialise(RecordType type) {
+
+    AutoLock<Mutex> lock(mutex_);
 
     eckit::zero(head_);
     head_.tag_ = type;
@@ -75,9 +79,37 @@ void JournalRecord::initialise(RecordType type) {
     marker_ = JournalRecord::TerminationMarker;
 }
 
-void JournalRecord::write(const void *data, const Length &length)
+
+void JournalRecord::addConfiguration(const Value& configValue) {
+
+    ASSERT(head_.tag_ == JournalRecord::Configuration);
+    ASSERT(!written_);
+
+    // Serialise the value into a (string) JSON
+    std::stringstream json_stream;
+    JSON config_json(json_stream);
+
+    config_json << configValue;
+    std::string json_str(json_stream.str());
+
+    DataBlobPtr blob(new JSONDataBlob(json_str.c_str(), json_str.length()));
+    addData(blob);
+}
+
+
+void JournalRecord::addWriteEntry(const DataBlobPtr& blob, int sinkId)
 {
-    journal_.writeJournalEntry(data, length, *this);
+    AutoLock<Mutex> lock(mutex_);
+
+    ASSERT(!written_);
+
+    // Ensure that the JournalEntry has a copy of the data. Note that this may
+    // already have been done by another DataSink (in which case this is a NOP).
+    addData(blob);
+
+    // Add the entry here. By default there is no additional (DataSink-specific)
+    // information, so the payload length is zero
+    addJournalEntry(JournalRecord::JournalEntry::Write, sinkId);
 }
 
 
@@ -86,6 +118,10 @@ void JournalRecord::write(const void *data, const Length &length)
 /// ii)  The JournalEntries
 /// iii) The end-of-record marker
 void JournalRecord::writeRecord(DataHandle& handle) {
+
+    AutoLock<Mutex> lock(mutex_);
+
+    Log::info() << "[" << *this << "] Writing record" << std::endl;
 
     handle.write(&head_, sizeof(head_));
 
@@ -97,21 +133,33 @@ void JournalRecord::writeRecord(DataHandle& handle) {
         // If there is data associated with the journal entry then it should be appended below
         // the header information.
         if (it->data_) {
-            ASSERT(it->head_.payload_length_ == it->data_->size());
-            handle.write(*(it->data_), it->data_->size());
+            size_t length = it->data_->length();
+            ASSERT(it->head_.payload_length_ == length);
+            const void* data = it->data_->buffer();
+            handle.write(data, length);
         } else {
             ASSERT(it->head_.payload_length_ == 0);
         }
     }
     
     handle.write(&marker_, sizeof(marker_));
+
+    // Keep track of this having been written to avoid any possibility of writing the
+    // stuff out twice!
+    written_ = true;
 }
 
 
-void JournalRecord::addData(const void * data, const Length& length) {
+void JournalRecord::addData(const DataBlobPtr& blob) {
+
+    AutoLock<Mutex> lock(mutex_);
+
+    ASSERT(!written_);
 
     // n.b. The data must be the first thing added to the Journal Record
     if (entries_.empty()) {
+
+        Log::info() << "[" << *this << "] Adding data element" << std::endl;
 
         entries_.push_back(JournalEntry());
 
@@ -119,15 +167,10 @@ void JournalRecord::addData(const void * data, const Length& length) {
 
         eckit::zero(entry.head_);
         entry.head_.tag_ = JournalEntry::Data;
-        entry.head_.payload_length_ = length;
+        entry.head_.payload_length_ = blob->length();
         SYSCALL(::gettimeofday(&entry.head_.timestamp_, NULL));
 
-        // n.b. Don't worry about const cast. That is just to make Buffer constructor happy.
-        //      The overall Buffer is const...
-        //
-        // We are making the promise here that the data will outlive the journal writing
-        // process.
-        entry.data_.reset(new SharableBuffer(const_cast<void*>(data), length, false));
+        entry.data_.reset( blob );
 
         // Now that something has been added, we should certainly write this entry on exit!
         utilised_ = true;
@@ -137,12 +180,18 @@ void JournalRecord::addData(const void * data, const Length& length) {
         // We don't need to duplicate the data if multiple DataSinks are reporting to the journal
         ASSERT(utilised_);
         ASSERT(entries_.front().head_.tag_ == JournalEntry::Data);
-        ASSERT(entries_.front().head_.payload_length_ == length);
+        ASSERT(entries_.front().head_.payload_length_ == uint64_t(blob->length()));
     }
 }
 
+void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type, int sinkId) {
 
-void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type) {
+    AutoLock<Mutex> lock(mutex_);
+
+    ASSERT(!written_);
+
+    Log::info() << "[" << *this << "] Adding journal entry ("
+                << EntryTypeName(type) << ")"<< std::endl;
 
     // Before we add a journal entry, the data MUST have been added already
     ASSERT(utilised_);
@@ -158,8 +207,79 @@ void JournalRecord::addJournalEntry(JournalRecord::JournalEntry::EntryType type)
     entry.head_.payload_length_ = 0;
     SYSCALL(::gettimeofday(&entry.head_.timestamp_, NULL));
 
+    if (sinkId != -1) {
+        entry.head_.id_ = unsigned(sinkId);
+        ASSERT(entry.head_.id_ == sinkId);
+    }
+
     // Add an entry!
     head_.numEntries_++;
+}
+
+
+const std::string& JournalRecord::RecordTypeName(RecordType type) {
+
+    const static std::string names[] = {
+        "Uninitialised",
+        "End of Journal",
+        "Journal entry",
+        "Configuration"
+    };
+
+    ASSERT(type >= 0 && type <= Configuration);
+
+    return names[type];
+}
+
+
+const char * JournalRecord::EntryTypeName(JournalEntry::EntryType type) {
+
+    const char * name;
+
+    switch(type) {
+    case JournalEntry::Data:
+        name = "Data";
+        break;
+
+    case JournalEntry::Write:
+        name = "Write";
+        break;
+
+    case JournalEntry::End:
+        name = "End";
+        break;
+
+    default:
+        name = "** Unknown **";
+        break;
+    };
+
+    return name;
+}
+
+
+const char* JournalRecord::blobTypeName(RecordType type) {
+
+    // It is valid to query what the blob type would be for a record type that has no data.
+    // Obviously, it would not be valid to try and instantiate such a blob, which will
+    // incur and error elsewhere.
+
+    const static char * names[] = {
+        "INVALID", // Uninitialised
+        "INVALID", // No data for End of Journal Marker
+        "grib",    // Normal journal entry
+        "json"     // Configuration
+    };
+
+    ASSERT(type >= 0 && type <= Configuration);
+
+    return names[type];
+}
+
+
+void JournalRecord::print(std::ostream& os) const
+{
+    os << "JournalRecord(" << RecordTypeName(RecordType(head_.tag_)) << ")";
 }
 
 // -------------------------------------------------------------------------------------------------

@@ -20,7 +20,6 @@
 #include <vector>
 #include <sys/time.h>
 
-#include "eckit/config/Configuration.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/io/DataHandle.h"
 #include "eckit/io/Length.h"
@@ -31,9 +30,16 @@
 
 #include "multio/JournalRecord.h"
 
+namespace eckit {
+    class Configuration;
+}
+
 namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
+
+class DataSink;
+
 
 class Journal : private eckit::NonCopyable {
 
@@ -57,11 +63,12 @@ public: // types
         unsigned char         unused2_[116];    // (116) reserved for future use.
     } head_;
 
+    JournalRecord configurationRecord_;
     JournalRecord footer_;
 
 public: // methods
 
-    Journal(const eckit::Configuration& config);
+    Journal(const eckit::Configuration& config, DataSink * const dataSink = NULL);
 
     ~Journal();
 
@@ -77,15 +84,9 @@ public: // methods
 
     void writeRecord(JournalRecord& record);
 
-protected: // methods
+    bool isOpen() const;
 
-    // Overridable routine that records a 'write' entry in the journal by adding
-    // it to the journal record.
-    //
-    // --> If there is any datasink specific data, it should be added here.
-    void writeJournalEntry(const void * buffer,
-                           const eckit::Length& length,
-                           JournalRecord& );
+protected: // methods
 
     void print(std::ostream&) const;
 
@@ -104,6 +105,9 @@ private: // members
     eckit::ScopedPtr<eckit::DataHandle> handle_;
     eckit::Mutex mutex_;
 
+    DataSink * const dataSink_;
+
+    eckit::Configuration const& config_;
     bool isOpen_;
 };
 

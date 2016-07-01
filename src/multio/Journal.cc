@@ -13,10 +13,14 @@
 /// @date Dec 2015
 
 #include <sys/time.h>
+#include <sstream>
 
+#include "multio/DataSink.h"
 #include "multio/Journal.h"
 
+#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/io/DataBlob.h"
 #include "eckit/log/Log.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
@@ -28,17 +32,19 @@ namespace multio {
 //----------------------------------------------------------------------------------------------------------------------
 
 // Initialise static members
-const eckit::FixedString<8> Journal::CurrentHeaderTag("IOJOU999");
+const FixedString<8> Journal::CurrentHeaderTag("IOJOU999");
 const unsigned char Journal::CurrentVersion = 1;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-// TODO: Generate timestamped filename?
-Journal::Journal(const Configuration& config) :
+Journal::Journal(const Configuration& config, DataSink * const dataSink) :
+    configurationRecord_(*this, JournalRecord::Uninitialised),
+    footer_(*this, JournalRecord::Uninitialised),
     path_(config.getString("journalfile", "journal")),
     handle_(path_.fileHandle(false)),
-    isOpen_(false),
-    footer_(*this, JournalRecord::Uninitialised) {
+    dataSink_(dataSink),
+    config_(config),
+    isOpen_(false) {
 }
 
 Journal::~Journal() {
@@ -49,36 +55,45 @@ Journal::~Journal() {
 /// Open a new journal file, and initialise it with header information
 void Journal::open() {
 
-    eckit::Log::info() << "Opening the journal (for writing)" << std::endl;
-    eckit::AutoLock<eckit::Mutex> lock(mutex_);
+    Log::info() << "[" << *this << "] Opening the journal (for writing)" << std::endl;
+    AutoLock<Mutex> lock(mutex_);
 
     if (!isOpen_){
+
+        if (NULL == dataSink_) {
+            throw SeriousBug("Can only open a journal for writing if it is associated with a MultIO DataSink",
+                             Here());
+        }
+
         handle_->openForWrite(0);
         isOpen_ = true;
 
         initHeader();
-        // TODO: Write header
 
         // And actually write out this header.
         handle_->write(&head_, sizeof(head_));
+
+        // Write out the configuration information associated with the
+        configurationRecord_.initialise(JournalRecord::Configuration);
+        configurationRecord_.addConfiguration(dataSink_->configValue());
+        configurationRecord_.writeRecord(*handle_);
     }
 }
 
 
-// TODO: Close journal. Write footer.
 // TODO: Ensure that all pending writes are flushed through before closing the journal
 //
 /// Finalise the journal by writing termination markers,
 /// and close the associated file.
 void Journal::close() {
 
-    eckit::Log::info() << "Closing the journal" << std::endl;
-    eckit::AutoLock<eckit::Mutex> lock(mutex_);
+    AutoLock<Mutex> lock(mutex_);
 
     if (isOpen_) {
+        Log::info() << "[" << *this << "] Closing the journal" << std::endl;
+
         // TODO: do we want to write the number of records to the header?
         // Initialise and write the footer information
-        // TODO: Refactor this somewhere sensible.
         footer_.initialise(JournalRecord::EndOfJournal);
         footer_.writeRecord(*handle_);
             
@@ -91,7 +106,7 @@ void Journal::close() {
 void Journal::writeRecord(JournalRecord& record) {
 
     if(record.utilised()) {
-        eckit::AutoLock<eckit::Mutex> lock(mutex_);
+        AutoLock<Mutex> lock(mutex_);
         record.writeRecord(*handle_);
     }
 }
@@ -100,7 +115,7 @@ void Journal::writeRecord(JournalRecord& record) {
 /// Initialise a journal header struct with valid information for writing out
 void Journal::initHeader() {
 
-    eckit::zero(head_);
+    zero(head_);
     head_.tag_ = Journal::CurrentHeaderTag;
     head_.tagVersion_ = Journal::CurrentVersion;
 
@@ -108,26 +123,11 @@ void Journal::initHeader() {
 
 }
 
-void Journal::writeJournalEntry(const void * buffer,
-                                const eckit::Length& length,
-                                JournalRecord& record ) {
 
-    // Ensure that the JournalEntry has a copy of the data. Note that this may
-    // already have been done by another DataSink (in which case this is a NOP).
-    record.addData(buffer, length);
-
-    // Add the entry here. By default there is no additional (DataSink-specific)
-    // information, so the payload length is zero
-    record.addJournalEntry(JournalRecord::JournalEntry::Write);
-
+bool Journal::isOpen() const {
+    return isOpen_;
 }
 
-// TODO: make this no-longer a REALLY NAIVE routine, that just dumps the data to a
-//       journal, without adding actions.
-//
-// i)   We ought to make the journal aware of what data we are considering. It should store a pointer.
-// ii)  The (potentially various) sinks should add their journaling elements
-// iii) When it is done, it should write if, and only if, there are any (non-data) elements.
 
 void Journal::print(std::ostream& os) const
 {

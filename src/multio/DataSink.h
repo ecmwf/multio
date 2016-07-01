@@ -21,19 +21,18 @@
 #include <vector>
 
 #include "eckit/config/Configuration.h"
+#include "eckit/config/LocalConfiguration.h"
+#include "eckit/io/DataBlob.h"
 #include "eckit/memory/NonCopyable.h"
-#include "eckit/io/Length.h"
-#include "eckit/io/Buffer.h"
+#include "eckit/memory/SharedPtr.h"
 
-#include "Journal.h"
+#include "multio/Journal.h"
 
 namespace multio {
 
-    class Metadata;
-
 //----------------------------------------------------------------------------------------------------------------------
 
-class DataSink : private eckit::NonCopyable {
+class DataSink : public eckit::Owned {
 
 public: // methods
 
@@ -41,27 +40,40 @@ public: // methods
 
     virtual ~DataSink();
 
-    virtual void write(const void* buffer,
-                       const eckit::Length& length,
-                       JournalRecord *const record = NULL,
-                       Metadata *const metadata = NULL) = 0;
+    virtual bool ready() const;
+
+    virtual void write(eckit::DataBlobPtr blob) = 0;
+
+    /// No further writes to this sink
+    virtual void flush();
+
+    /// Set the datasink ID that is used by other classes to identify this one.
+    /// In particular, it labels which sink within a MultIO this one is.
+    void setId(int id);
+    int id() const;
+
+    /// Return the value that is serialised to produce the json() in the journal.
+    /// Not necessarily equal to the supplied config as other sources of
+    /// configuration may be used. By default this just returns the supplied
+    /// Configuration.
+    virtual eckit::Value configValue() const;
 
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
     ///
 
-    virtual int iopenfdb(const char *name, const char *mode, int name_len, int mode_len);
-    virtual int iinitfdb();
-    virtual int iclosefdb();
+    virtual void iopenfdb(const std::string& name, const std::string& mode);
+    virtual void iinitfdb();
+    virtual void iclosefdb();
 
-    virtual int isetcommfdb(int *rank);
-    virtual int isetrankfdb(int *rank);
-    virtual int iset_fdb_root(const char *name, int name_len);
+    virtual void isetcommfdb(int rank);
+    virtual void isetrankfdb(int rank);
+    virtual void iset_fdb_root(const std::string& name);
 
-    virtual int iflushfdb();
+    virtual void iflushfdb();
 
-    virtual int isetfieldcountfdb(int *all_ranks, int *this_rank);
-    virtual int isetvalfdb(const char *name, const char *value, int name_len, int value_len);
+    virtual void isetfieldcountfdb(int all_ranks, int this_rank);
+    virtual void isetvalfdb(const std::string& name, const std::string& value);
 
     // virtual int ireadfdb(void *data, int *words);
     // virtual iwritefdb(void *data, int *words);
@@ -82,8 +94,9 @@ private: // methods
 protected: // members
 
     bool failOnError_;
-    bool journaled_;        /// Write to a journal file
-    bool journalAlways_;    /// Write details to journal even if a write succeeds.
+
+    const eckit::LocalConfiguration& config_;
+    int id_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

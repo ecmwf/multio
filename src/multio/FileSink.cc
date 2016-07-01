@@ -19,10 +19,10 @@
 #include "multio/DataSink.h"
 
 #include "eckit/exception/Exceptions.h"
+#include "eckit/io/DataHandle.h"
 #include "eckit/io/Length.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
-#include "eckit/io/DataHandle.h"
 
 using namespace eckit;
 
@@ -42,15 +42,15 @@ FileSink::~FileSink() {
     handle_->close();
 }
 
-void FileSink::write(const void* buffer, const Length& length, JournalRecord *const record, Metadata *const) {
+void FileSink::write(eckit::DataBlobPtr blob) {
 
-    eckit::Log::info() << "[" << *this << "]: write (" << length << ")" << std::endl;
+    size_t length = blob->length();
+
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
 
-    handle_->write(buffer, length);
-
-    if(record)
-        record->write(buffer, length);
+    if (size_t(handle_->write(blob->buffer(), length)) != length) {
+        throw WriteError(std::string("Write error on file: ") + path_, Here());
+    }
 }
 
 
@@ -58,7 +58,7 @@ void FileSink::print(std::ostream& os) const {
     os << "FileSink(path=" << path_ << ")";
 }
 
-DataSinkBuilder<FileSink> FileSinkFactorySingleton("file");
+static DataSinkBuilder<FileSink> FileSinkFactorySingleton("file");
 
 }  // namespace multio
 

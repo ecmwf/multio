@@ -41,16 +41,13 @@ public:
 
     virtual ~FileSink();
 
-    virtual void write(const void* buffer,
-                       const eckit::Length& length,
-                       JournalRecord *const record,
-                       Metadata *const md);
+private: // methods
 
-protected:
+    virtual void write(eckit::DataBlobPtr blob);
 
     virtual void print(std::ostream&) const;
 
-private:
+private: // members
 
     eckit::PathName path_;
     eckit::ScopedPtr<eckit::DataHandle> handle_;

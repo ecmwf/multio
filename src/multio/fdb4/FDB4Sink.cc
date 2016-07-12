@@ -57,6 +57,12 @@ FDB4Sink::FDB4Sink(const Configuration& config) :
 FDB4Sink::~FDB4Sink() {
 }
 
+void FDB4Sink::write(eckit::DataBlobPtr blob) {
+    std::ostringstream msg;
+    msg << "FDB4Sink::write() not implemented for FDB4";
+    throw SeriousBug(msg.str());
+}
+
 void FDB4Sink::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
 
     size_t length = blob->buffer().size(); // we assume is a multiple of sizeof(fortint) (see ifsio.cc)

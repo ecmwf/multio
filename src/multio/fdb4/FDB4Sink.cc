@@ -90,7 +90,7 @@ void FDB4Sink::iopenfdb(const std::string& name, int& fdbaddr, const std::string
 
 void FDB4Sink::iclosefdb(int fdbaddr)
 {
-    int err = iclosefdb4_(fdbaddr);
+    int err = iclosefdb4_(&fdbaddr);
     if(err) {
         throw SeriousBug("Multio FDB4 failed to close", Here());
     }
@@ -125,7 +125,7 @@ void FDB4Sink::iset_fdb_root(int fdbaddr, const std::string& name) {
 }
 
 void FDB4Sink::iflushfdb(int fdbaddr) {
-    int err = iflushfdb4_(fdbaddr);
+    int err = iflushfdb4_(&fdbaddr);
     if(err) {
         throw SeriousBug("Multio FDB4 failed to flush", Here());
     }

@@ -51,8 +51,7 @@ using namespace multio;
 //----------------------------------------------------------------------------------------------------------------------
 
 FDB4Sink::FDB4Sink(const Configuration& config) :
-    DataSink(config),
-    fdb_(0) {
+    DataSink(config) {
 }
 
 FDB4Sink::~FDB4Sink() {

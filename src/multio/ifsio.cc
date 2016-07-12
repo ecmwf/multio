@@ -165,7 +165,9 @@ extern "C" {
             ASSERT(mio);
             ASSERT(addr);
 
-            mio->iopenfdb(sname, *addr, smode);
+            int fdbaddr = 0;
+            mio->iopenfdb(sname, fdbaddr, smode);
+            *addr = fdbaddr;
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;

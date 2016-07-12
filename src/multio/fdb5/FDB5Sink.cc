@@ -42,7 +42,11 @@ void FDB5Sink::write(DataBlobPtr blob) {
     archiver_->archive(blob);
 }
 
-void FDB5Sink::iopenfdb(const std::string& name, const std::string& mode)
+void FDB5Sink::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
+    FDB5Sink::write(blob);
+}
+
+void FDB5Sink::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode)
 {
     std::cout << "FDB5Sink::iopenfdb(" << name << "," << mode << ")" << std::endl;
     archiver_.reset( new fdb5::legacy::LegacyArchiver() );
@@ -53,9 +57,9 @@ void FDB5Sink::iinitfdb()
     std::cout << "FDB5Sink::iinitfdb()" << std::endl;
 }
 
-void FDB5Sink::iclosefdb()
+void FDB5Sink::iclosefdb(int fdbaddr)
 {
-    std::cout << "FDB5Sink::iclosefdb()" << std::endl;
+    std::cout << "FDB5Sink::iclosefdb(" << fdbaddr << ")" << std::endl;
     archiver_.reset(0);
 }
 
@@ -64,31 +68,31 @@ void FDB5Sink::isetcommfdb(int comm)
     std::cout << "FDB5Sink::isetcommfdb(" << comm << ")" << std::endl;
 }
 
-void FDB5Sink::isetrankfdb(int rank)
+void FDB5Sink::isetrankfdb(int fdbaddr, int rank)
 {
-    std::cout << "FDB5Sink::isetrankfdb(" << rank << ")" << std::endl;
+    std::cout << "FDB5Sink::isetrankfdb(" << fdbaddr << "," << rank << ")" << std::endl;
 }
 
-void FDB5Sink::iset_fdb_root(const std::string& name)
+void FDB5Sink::iset_fdb_root(int fdbaddr, const std::string& name)
 {
-    std::cout << "FDB5Sink::iset_fdb_root(" << name << ")" << std::endl;
+    std::cout << "FDB5Sink::iset_fdb_root(" << fdbaddr << "," << name << ")" << std::endl;
 }
 
-void FDB5Sink::iflushfdb()
+void FDB5Sink::iflushfdb(int fdbaddr)
 {
-    std::cout << "FDB5Sink::iflushfdb()" << std::endl;
+    std::cout << "FDB5Sink::iflushfdb(" << fdbaddr << ")" << std::endl;
     ASSERT(archiver_);
     archiver_->flush();
 }
 
-void FDB5Sink::isetfieldcountfdb(int all_ranks, int this_rank)
+void FDB5Sink::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank)
 {
-    std::cout << "FDB5Sink::isetfieldcountfdb("<< all_ranks << "," << this_rank << ")" << std::endl;
+    std::cout << "FDB5Sink::isetfieldcountfdb(" << fdbaddr << "," << all_ranks << "," << this_rank << ")" << std::endl;
 }
 
-void FDB5Sink::isetvalfdb(const std::string& name, const std::string& value)
+void FDB5Sink::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value)
 {
-    std::cout << "FDB5Sink::isetvalfdb(" << name << "," << value << ")" << std::endl;
+    std::cout << "FDB5Sink::isetvalfdb(" << fdbaddr << "," << name << "," << value << ")" << std::endl;
     ASSERT(archiver_);
     archiver_->legacy(name, value);
 }

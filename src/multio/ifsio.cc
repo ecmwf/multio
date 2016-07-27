@@ -32,7 +32,6 @@ using namespace eckit;
 using namespace multio;
 
 static multio::MultIO *mio = 0;
-static fortint fdbAddr = 0;
 static eckit::Mutex *local_mutex = 0;
 
 static pthread_once_t once = PTHREAD_ONCE_INIT;
@@ -121,6 +120,7 @@ extern "C" {
             ASSERT(mio);
 
             mio->iinitfdb();
+
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
             return -2;
@@ -142,6 +142,7 @@ extern "C" {
             ASSERT(mio);
 
             mio->iinitfdb();
+
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
             return -2;
@@ -156,19 +157,17 @@ extern "C" {
             std::string sname(name, name + name_len);
             std::string smode(mode, mode + mode_len);
 
-
             MULTIO_TRACE_FUNC2(sname.c_str(), smode.c_str());
 
             pthread_once(&once, init);
             eckit::AutoLock<eckit::Mutex> lock(local_mutex);
 
             ASSERT(mio);
+            ASSERT(addr);
 
-
-            mio->iopenfdb(sname, smode);
-
-            *addr = 1;
-            fdbAddr = *addr;
+            int fdbaddr = 0;
+            mio->iopenfdb(sname, fdbaddr, smode);
+            *addr = fdbaddr;
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -186,12 +185,10 @@ extern "C" {
             pthread_once(&once, init);
             eckit::AutoLock<eckit::Mutex> lock(local_mutex);
 
-            ASSERT(mio && fdbAddr == *addr);
+            ASSERT(mio);
+            ASSERT(addr);
 
-            mio->iclosefdb();
-
-            *addr = 0;
-            fdbAddr = 0;
+            mio->iclosefdb(*addr);
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -206,9 +203,11 @@ extern "C" {
 
             MULTIO_TRACE_FUNC();
 
-            ASSERT(mio && fdbAddr == *addr);
+            ASSERT(mio);
+            ASSERT(addr);
 
-            mio->iflushfdb();
+            mio->iflushfdb(*addr);
+
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
             return -2;
@@ -222,13 +221,14 @@ extern "C" {
 
             MULTIO_TRACE_FUNC();
 
-            ASSERT(mio && fdbAddr == *addr);
+            ASSERT(mio);
+            ASSERT(addr);
 
             size_t len( (*words)*sizeof(fortint) );
 
             eckit::DataBlobPtr blob ( new gribpp::GribDataBlob(data, len) );
 
-            mio->write(blob);
+            mio->iwritefdb(*addr, blob);
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -248,9 +248,11 @@ extern "C" {
             pthread_once(&once, init);
             eckit::AutoLock<eckit::Mutex> lock(local_mutex);
 
-            ASSERT(mio && fdbAddr == *addr);
+            ASSERT(mio);
+            ASSERT(addr);
 
-            mio->iset_fdb_root(sname);
+            mio->iset_fdb_root(*addr, sname);
+
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
             return -2;
@@ -267,9 +269,11 @@ extern "C" {
 
             MULTIO_TRACE_FUNC2(sname.c_str(), svalue.c_str());
 
-            ASSERT(mio && fdbAddr == *addr);
+            ASSERT(mio);
+            ASSERT(addr);
 
-            mio->isetvalfdb(sname, svalue);
+            mio->isetvalfdb(*addr, sname, svalue);
+
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
             return -2;
@@ -289,6 +293,7 @@ extern "C" {
             ASSERT(mio);
 
             mio->isetcommfdb(*comm);
+
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
             return -2;
@@ -302,9 +307,11 @@ extern "C" {
 
             MULTIO_TRACE_FUNC();
 
-            ASSERT(mio && fdbAddr == *addr);
+            ASSERT(mio);
+            ASSERT(addr);
 
-            mio->isetrankfdb(*rank);
+            mio->isetrankfdb(*addr, *rank);
+
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
             return -2;
@@ -318,9 +325,11 @@ extern "C" {
 
             MULTIO_TRACE_FUNC();
 
-            ASSERT(mio && fdbAddr == *addr);
+            ASSERT(mio);
+            ASSERT(addr);
 
-            mio->isetfieldcountfdb(*all_ranks, *this_rank);
+            mio->isetfieldcountfdb(*addr, *all_ranks, *this_rank);
+
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
             return -2;

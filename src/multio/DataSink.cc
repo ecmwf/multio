@@ -120,10 +120,10 @@ int DataSink::id() const {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-void DataSink::iopenfdb(const std::string& name, const std::string& mode) {
+void DataSink::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {
 }
 
-void DataSink::iclosefdb() {
+void DataSink::iclosefdb(int fdbaddr) {
 }
 
 void DataSink::iinitfdb() {
@@ -132,19 +132,25 @@ void DataSink::iinitfdb() {
 void DataSink::isetcommfdb(int rank) {
 }
 
-void DataSink::isetrankfdb(int rank) {
+void DataSink::isetrankfdb(int fdbaddr, int rank) {
 }
 
-void DataSink::iset_fdb_root(const std::string& name) {
+void DataSink::iset_fdb_root(int fdbaddr, const std::string& name) {
 }
 
-void DataSink::iflushfdb() {
+void DataSink::iflushfdb(int fdbaddr) {
 }
 
-void DataSink::isetfieldcountfdb(int all_ranks, int this_rank) {
+void DataSink::isetfieldcountfdb(int fdbaddr,int all_ranks, int this_rank) {
 }
 
-void DataSink::isetvalfdb(const std::string& name, const std::string& value) {
+void DataSink::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {
+}
+
+void DataSink::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
+    std::ostringstream msg;
+    msg << "DataSink::iwritefdb() not implemented in derived class";
+    throw SeriousBug(msg.str());
 }
 
 //----------------------------------------------------------------------------------------------------------------------

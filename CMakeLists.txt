@@ -21,7 +21,7 @@ ecbuild_use_package( PROJECT gribpp VERSION 0.1 REQUIRED )
 
 ecbuild_add_option( FEATURE FDB4
                     DEFAULT ON
-                    CONDITION FDB_HAVE_IFSIO
+#                    CONDITION FDB_HAVE_IFSIO        # FIXME: only works inside bundles
                     DESCRIPTION "Send data to FDB4"
                     REQUIRED_PACKAGES "PROJECT fdb VERSION 4.8" )
 

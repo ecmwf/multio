@@ -211,19 +211,20 @@ void MultIO::print(std::ostream& os) const {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-void MultIO::iopenfdb(const std::string& name, const std::string& mode) {
+void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {
     AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
-        it->sink_->iopenfdb(name,mode);
+        /// NOTE: this does not quite work with multiple FDB4 since fdbaddr will be overwritten
+        it->sink_->iopenfdb(name, fdbaddr, mode);
     }
 }
 
-void MultIO::iclosefdb() {
+void MultIO::iclosefdb(int fdbaddr) {
     AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
-        it->sink_->iclosefdb();
+        it->sink_->iclosefdb(fdbaddr);
     }
 }
 
@@ -243,43 +244,51 @@ void MultIO::isetcommfdb(int rank) {
     }
 }
 
-void MultIO::isetrankfdb(int rank) {
+void MultIO::isetrankfdb(int fdbaddr, int rank) {
     AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
-        it->sink_->isetrankfdb(rank);
+        it->sink_->isetrankfdb(fdbaddr, rank);
     }
 }
 
-void MultIO::iset_fdb_root(const std::string& name) {
+void MultIO::iset_fdb_root(int fdbaddr, const std::string& name) {
     AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
-        it->sink_->iset_fdb_root(name);
+        it->sink_->iset_fdb_root(fdbaddr, name);
     }
 }
 
-void MultIO::iflushfdb() {
+void MultIO::iflushfdb(int fdbaddr) {
     AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
-        it->sink_->iflushfdb();
+        it->sink_->iflushfdb(fdbaddr);
     }
 }
 
-void MultIO::isetfieldcountfdb(int all_ranks, int this_rank) {
+void MultIO::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
     AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
-        it->sink_->isetfieldcountfdb(all_ranks,this_rank);
+        it->sink_->isetfieldcountfdb(fdbaddr, all_ranks, this_rank);
     }
 }
 
-void MultIO::isetvalfdb(const std::string& name, const std::string& value) {
+void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {
     AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
-        it->sink_->isetvalfdb(name,value);
+        it->sink_->isetvalfdb(fdbaddr, name, value);
+    }
+}
+
+void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
+    AutoLock<Mutex> lock(mutex_);
+    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT( it->sink_ );
+        it->sink_->iwritefdb(fdbaddr, blob);
     }
 }
 

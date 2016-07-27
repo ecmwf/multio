@@ -51,14 +51,19 @@ using namespace multio;
 //----------------------------------------------------------------------------------------------------------------------
 
 FDB4Sink::FDB4Sink(const Configuration& config) :
-    DataSink(config),
-    fdb_(0) {
+    DataSink(config) {
 }
 
 FDB4Sink::~FDB4Sink() {
 }
 
-void FDB4Sink::write(DataBlobPtr blob) {
+void FDB4Sink::write(eckit::DataBlobPtr blob) {
+    std::ostringstream msg;
+    msg << "FDB4Sink::write() not implemented for FDB4";
+    throw SeriousBug(msg.str());
+}
+
+void FDB4Sink::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
 
     size_t length = blob->buffer().size(); // we assume is a multiple of sizeof(fortint) (see ifsio.cc)
 
@@ -67,7 +72,7 @@ void FDB4Sink::write(DataBlobPtr blob) {
 
     ASSERT( len == length );               // we check that indeed is a multiple of sizeof(fortint)
 
-    if (iwritefdb4_(&fdb_, const_cast<Buffer&>(blob->buffer()), &words)) {
+    if (iwritefdb4_(&fdbaddr, const_cast<Buffer&>(blob->buffer()), &words)) {
         throw WriteError("Write failed in FDBSink. File: ");
     }
 }
@@ -77,19 +82,20 @@ void FDB4Sink::print(std::ostream& os) const
     os << "FDB4Sink()";
 }
 
-void FDB4Sink::iopenfdb(const std::string& name, const std::string& mode) {
+void FDB4Sink::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {
 
-    int err = iopenfdb4_(name.c_str(), &fdb_, mode.c_str(), name.size(), mode.size());
-    // fdb_ is now set => fdb is open...
+    fortint addr;
+    int err = iopenfdb4_(name.c_str(), &addr, mode.c_str(), name.size(), mode.size());
+    fdbaddr = addr;
 
     if(err) {
         throw SeriousBug("Multio FDB4 fail to open", Here());
     }
 }
 
-void FDB4Sink::iclosefdb()
+void FDB4Sink::iclosefdb(int fdbaddr)
 {
-    int err = iclosefdb4_(&fdb_);
+    int err = iclosefdb4_(&fdbaddr);
     if(err) {
         throw SeriousBug("Multio FDB4 failed to close", Here());
     }
@@ -109,36 +115,36 @@ void FDB4Sink::isetcommfdb(int comm) {
     }
 }
 
-void FDB4Sink::isetrankfdb(int rank) {
-    int err = isetrankfdb4_(&fdb_, &rank);
+void FDB4Sink::isetrankfdb(int fdbaddr, int rank) {
+    int err = isetrankfdb4_(&fdbaddr, &rank);
     if(err) {
         throw SeriousBug("Multio FDB4 failed to set MPI rank", Here());
     }
 }
 
-void FDB4Sink::iset_fdb_root(const std::string& name) {
-    int err = iset_fdb4_root_(&fdb_, name.c_str(), name.size());
+void FDB4Sink::iset_fdb_root(int fdbaddr, const std::string& name) {
+    int err = iset_fdb4_root_(&fdbaddr, name.c_str(), name.size());
     if(err) {
         throw SeriousBug("Multio FDB4 failed to set FDB root", Here());
     }
 }
 
-void FDB4Sink::iflushfdb() {
-    int err = iflushfdb4_(&fdb_);
+void FDB4Sink::iflushfdb(int fdbaddr) {
+    int err = iflushfdb4_(&fdbaddr);
     if(err) {
         throw SeriousBug("Multio FDB4 failed to flush", Here());
     }
 }
 
-void FDB4Sink::isetfieldcountfdb(int all_ranks, int this_rank) {
-    int err = isetfieldcountfdb4_(&fdb_, &all_ranks, &this_rank);
+void FDB4Sink::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
+    int err = isetfieldcountfdb4_(&fdbaddr, &all_ranks, &this_rank);
     if(err) {
         throw SeriousBug("Multio FDB4 failed to set field count", Here());
     }
 }
 
-void FDB4Sink::isetvalfdb(const std::string& name, const std::string& value) {
-    int err = isetvalfdb4_(&fdb_, name.c_str(), value.c_str(), name.size(), value.size());
+void FDB4Sink::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {
+    int err = isetvalfdb4_(&fdbaddr, name.c_str(), value.c_str(), name.size(), value.size());
     if(err) {
         throw SeriousBug("Multio FDB4 failed to set metadata values", Here());
     }

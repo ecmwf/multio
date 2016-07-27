@@ -62,21 +62,21 @@ public: // methods
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
     ///
 
-    virtual void iopenfdb(const std::string& name, const std::string& mode);
+    virtual void iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode);
     virtual void iinitfdb();
-    virtual void iclosefdb();
+    virtual void iclosefdb(int fdbaddr);
 
     virtual void isetcommfdb(int rank);
-    virtual void isetrankfdb(int rank);
-    virtual void iset_fdb_root(const std::string& name);
+    virtual void isetrankfdb(int fdbaddr, int rank);
+    virtual void iset_fdb_root(int fdbaddr, const std::string& name);
 
-    virtual void iflushfdb();
+    virtual void iflushfdb(int fdbaddr);
 
-    virtual void isetfieldcountfdb(int all_ranks, int this_rank);
-    virtual void isetvalfdb(const std::string& name, const std::string& value);
+    virtual void isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank);
+    virtual void isetvalfdb(int fdbaddr, const std::string& name, const std::string& value);
 
     // virtual int ireadfdb(void *data, int *words);
-    // virtual iwritefdb(void *data, int *words);
+    virtual void iwritefdb(int fdbaddr, eckit::DataBlobPtr blob);
 
 protected: // methods
 
@@ -95,7 +95,7 @@ protected: // members
 
     bool failOnError_;
 
-    const eckit::LocalConfiguration& config_;
+    const eckit::LocalConfiguration config_;
     int id_;
 };
 

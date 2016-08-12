@@ -14,6 +14,7 @@
 #include "multio/fdb4/FDB4Sink.h"
 
 #include "eckit/exception/Exceptions.h"
+#include "eckit/parser/StringTools.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -144,8 +145,14 @@ void FDB4Sink::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
 }
 
 void FDB4Sink::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {
+
     int err = isetvalfdb4_(&fdbaddr, name.c_str(), value.c_str(), name.size(), value.size());
     if(err) {
+
+        // ignore values that are set to off in FDB4
+        std::string v = eckit::StringTools::lower(value);
+        if(v == "off") return;
+
         throw SeriousBug("Multio FDB4 failed to set metadata values", Here());
     }
 }

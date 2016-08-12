@@ -6,11 +6,13 @@ ecbuild_add_library(
         FDB4Sink.h
         FDB4Sink.cc
 
+    CONDITION
+        HAVE_FDB4
+
     PRIVATE_INCLUDES
-        ${MULTIO_INCLUDE_DIRS}
         ${ECKIT_INCLUDE_DIRS}
 
-    CONDITION HAVE_FDB4
-
     LIBS
-        multio ifsio )
+        multio
+        ifsio
+)

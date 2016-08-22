@@ -30,8 +30,8 @@ JournalReader::JournalReader(const Configuration& config, const PathName& path) 
     Journal(config),
     path_(path),
     handle_(path.fileHandle()),
-    nReadEvents_(0),
-    nReadWriteRecords_(0) {
+    nReadWriteRecords_(0),
+    nReadEvents_(0) {
 
     Log::info() << "[" << *this << "] Opening journal file: " << path_ << std::endl;
 

@@ -14,7 +14,6 @@
 #include "eckit/config/Resource.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/Log.h"
-#include "eckit/runtime/Context.h"
 #include "eckit/runtime/Tool.h"
 
 #include "multio/JournalReader.h"

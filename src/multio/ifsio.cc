@@ -24,7 +24,7 @@
 
 #include "multio/MultIO.h"
 
-#include "gribpp/GribDataBlob.h"
+#include "metkit/grib/GribDataBlob.h"
 
 typedef int32_t fortint;
 
@@ -226,7 +226,7 @@ extern "C" {
 
             size_t len( (*words)*sizeof(fortint) );
 
-            eckit::DataBlobPtr blob ( new gribpp::GribDataBlob(data, len) );
+            eckit::DataBlobPtr blob ( new metkit::grib::GribDataBlob(data, len) );
 
             mio->iwritefdb(*addr, blob);
 

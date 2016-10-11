@@ -14,7 +14,7 @@ ecbuild_add_executable(
         ${MULTIO_FDB5}
         ${MULTIO_FDB4}
         multio
-        gribpp
+        metkit
 )
 
 ecbuild_add_executable(

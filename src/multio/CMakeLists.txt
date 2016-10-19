@@ -52,11 +52,11 @@ ecbuild_add_library(
         multio_version.cc
 
     PRIVATE_INCLUDES
+      ${METKIT_INCLUDE_DIRS}
       ${ECKIT_INCLUDE_DIRS}
-      ${GRIBPP_INCLUDE_DIRS}
 
     LIBS
-        gribpp eckit )
+        metkit eckit )
 
 add_subdirectory(fdb4)
 add_subdirectory(fdb5)

@@ -30,6 +30,8 @@ MultIO::MultIO(const eckit::Configuration& config) :
     DataSink(config),
     journal_(config, this),
     journaled_(config.getBool("journaled", false)),
+    nwrites_(0),
+    nflushes_(0),
     mutex_() {
 
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
@@ -91,9 +93,17 @@ Value MultIO::configValue() const {
 
 
 void MultIO::write(DataBlobPtr blob) {
+
     AutoLock<Mutex> lock(mutex_);
 
-    std::cout << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
+    ++nwrites_;
+
+    if(nwrites_ == 1) {
+        Log::info() << "MultIO first write len=" << blob->length() << " -- following writes will be silent" << std::endl;
+    }
+    else {
+        Log::debug() << "MultIO write " << nwrites_ << " len=" << blob->length() << std::endl;
+    }
 
     JournalRecordPtr record;
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
@@ -118,7 +128,18 @@ void MultIO::write(DataBlobPtr blob) {
 
 
 void MultIO::flush() {
+
     AutoLock<Mutex> lock(mutex_);
+
+    ++nflushes_;
+
+    if(nflushes_ == 1) {
+        Log::info() << "MultIO first flush -- following flushes will be silent" << std::endl;
+    }
+    else {
+        Log::debug() << "MultIO flush " << nflushes_ << std::endl;
+    }
+
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->flush();
@@ -190,7 +211,7 @@ void MultIO::replayRecord(const JournalRecord& record) {
 void MultIO::commitJournal() {
     AutoLock<Mutex> lock(mutex_);
 
-    std::cout << "[" << *this << "] Committing MultIO journal" << std::endl;
+    Log::info() << "[" << *this << "] Committing MultIO journal" << std::endl;
     if (!journaled_ || !journal_.isOpen()) {
         Log::warning() << "[" << *this << "] Attempting to commit a journal that has not been created"
                        << std::endl;
@@ -212,7 +233,11 @@ void MultIO::print(std::ostream& os) const {
 //----------------------------------------------------------------------------------------------------------------------
 
 void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {
+
     AutoLock<Mutex> lock(mutex_);
+
+    Log::info() << "MultIO iopenfdb name=" << name << " mode=" << mode << std::endl;
+
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         /// NOTE: this does not quite work with multiple FDB4 since fdbaddr will be overwritten
@@ -221,7 +246,11 @@ void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& 
 }
 
 void MultIO::iclosefdb(int fdbaddr) {
+
     AutoLock<Mutex> lock(mutex_);
+
+    Log::info() << "MultIO iclosefdb writes=" << nwrites_ << " flushes=" << nflushes_ << std::endl;
+
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iclosefdb(fdbaddr);
@@ -261,7 +290,17 @@ void MultIO::iset_fdb_root(int fdbaddr, const std::string& name) {
 }
 
 void MultIO::iflushfdb(int fdbaddr) {
+
     AutoLock<Mutex> lock(mutex_);
+
+    ++nflushes_;
+
+    if(nflushes_ == 1) {
+        Log::info() << "MultIO first iflushfdb" << std::endl;
+    }
+
+    Log::debug() << "MultIO flush " << nflushes_ << std::endl;
+
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iflushfdb(fdbaddr);
@@ -285,7 +324,17 @@ void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string&
 }
 
 void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
+
     AutoLock<Mutex> lock(mutex_);
+
+    ++nwrites_;
+
+    if(nwrites_ == 1) {
+        Log::info() << "MultIO first iwritefdb len=" << blob->length() << " -- following writes will be silent" << std::endl;
+    }
+
+    Log::debug() << "MultIO write " << nwrites_ << " len=" << blob->length() << std::endl;
+
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iwritefdb(fdbaddr, blob);

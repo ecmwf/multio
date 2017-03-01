@@ -15,6 +15,7 @@
 #include "eckit/io/Length.h"
 #include "eckit/log/Bytes.h"
 #include "eckit/thread/AutoLock.h"
+#include "eckit/log/Statistics.h"
 
 #include "multio/IOLogger.h"
 
@@ -61,18 +62,16 @@ void IOLogger::logWrite(const eckit::Length &size) {
 }
 
 
-std::string IOLogger::report() const {
-
-    std::stringstream s;
+void IOLogger::report(std::ostream& s) const {
 
     if (numWrites_ != 0) {
         s << "Write statistics: " << std::endl;
-        s << "    Total writes: " << numWrites_ << std::endl;
-        s << "    Bytes write: " << Bytes(bytesWritten_) << std::endl;
-        s << "    Average size: " << Bytes(double(bytesWritten_) / double(numWrites_)) << std::endl;
+        Statistics::reportCount(s, "Writes", numWrites_);
+        Statistics::reportBytes(s, "Written", bytesWritten_);
+        Statistics::reportBytes(s, "Av. size", size_t(double(bytesWritten_) / double(numWrites_)));
 
         double stddev_write = std::sqrt((numWrites_ * sumBytesWrittenSquared_ - bytesWritten_ * bytesWritten_) / numWrites_);
-        s << "    Std. Deviation: " << Bytes(stddev_write);
+        Statistics::reportBytes(s, "Std. dev.", size_t(stddev_write));
 
         if (numReads_ != 0)
             s << std::endl;
@@ -82,15 +81,13 @@ std::string IOLogger::report() const {
 
     if (numReads_ != 0) {
         s << "Read statistics: " << std::endl;
-        s << "    Total reads: " << numReads_ << std::endl;
-        s << "    Bytes read: " << Bytes(bytesRead_) << std::endl;
-        s << "    Average size: " << Bytes(double(bytesRead_) / double(numReads_)) << std::endl;
+        Statistics::reportCount(s, "Reads", numReads_);
+        Statistics::reportBytes(s, "Read", bytesRead_);
+        Statistics::reportBytes(s, "Av. size", size_t(double(bytesRead_) / double(numReads_)));
 
         double stddev_read = std::sqrt((numReads_ * sumBytesReadSquared_ - bytesRead_ * bytesRead_) / numReads_);
-        s << "    Std. Deviation: " << Bytes(stddev_read);
+        Statistics::reportBytes(s, "Std. dev.", size_t(stddev_read));
     }
-
-    return s.str();
 }
 
 

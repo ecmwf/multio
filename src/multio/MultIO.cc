@@ -62,7 +62,8 @@ MultIO::~MultIO() {
     Log::info() << std::endl;
     Log::info() << "MultIO data movement logging:" << std::endl;
     Log::info() << "=============================" << std::endl;
-    Log::info() << ioLog_.report() << std::endl;
+    ioLog_.report(Log::info());
+    Log::info() << std::endl;
 }
 
 bool MultIO::ready() const {

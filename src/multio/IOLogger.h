@@ -36,7 +36,7 @@ public:
     IOLogger();
     ~IOLogger();
 
-    std::string report() const;
+    void report(std::ostream& s) const;
 
     void logRead(const eckit::Length& size);
     void logWrite(const eckit::Length& size);

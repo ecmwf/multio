@@ -58,6 +58,11 @@ MultIO::~MultIO() {
         Log::warning() << "[" << *this << "] Journal has not been committed prior to MultIO destruction"
                        << std::endl;
     }
+
+    Log::info() << std::endl;
+    Log::info() << "MultIO data movement logging:" << std::endl;
+    Log::info() << "=============================" << std::endl;
+    Log::info() << ioLog_.report() << std::endl;
 }
 
 bool MultIO::ready() const {
@@ -124,6 +129,9 @@ void MultIO::write(DataBlobPtr blob) {
             record->addWriteEntry(blob, it->sink_->id());
         }
     }
+
+    // Log the write
+    ioLog_.logWrite(blob->length());
 }
 
 

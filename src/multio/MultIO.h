@@ -25,6 +25,7 @@
 
 #include "multio/DataSink.h"
 #include "multio/JournalRecord.h"
+#include "multio/IOLogger.h"
 
 namespace multio {
 
@@ -89,6 +90,7 @@ protected:
 protected: // members
 
     Journal journal_;
+    IOLogger ioLog_;
 
     sink_store_t sinks_;
 

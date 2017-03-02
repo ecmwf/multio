@@ -100,9 +100,8 @@ Value MultIO::configValue() const {
 
 void MultIO::write(DataBlobPtr blob) {
 
-    Timer timer;
-
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
 
     ++nwrites_;
 
@@ -134,7 +133,8 @@ void MultIO::write(DataBlobPtr blob) {
     }
 
     // Log the write
-    stats_.logWrite(blob->length(), timer);
+    timer_.stop();
+    stats_.logWrite(blob->length(), timer_);
 }
 
 
@@ -245,8 +245,8 @@ void MultIO::print(std::ostream& os) const {
 
 void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {
 
-    Timer timer;
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
 
     Log::info() << "MultIO iopenfdb name=" << name << " mode=" << mode << std::endl;
 
@@ -256,13 +256,14 @@ void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& 
         it->sink_->iopenfdb(name, fdbaddr, mode);
     }
 
-    stats_.logiopenfdb_(timer);
+    timer_.stop();
+    stats_.logiopenfdb_(timer_);
 }
 
 void MultIO::iclosefdb(int fdbaddr) {
 
-    Timer timer;
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
 
     Log::info() << "MultIO iclosefdb writes=" << nwrites_ << " flushes=" << nflushes_ << std::endl;
 
@@ -271,22 +272,23 @@ void MultIO::iclosefdb(int fdbaddr) {
         it->sink_->iclosefdb(fdbaddr);
     }
 
-    stats_.logiclosefdb_(timer);
+    timer_.stop();
+    stats_.logiclosefdb_(timer_);
 }
 
 void MultIO::iinitfdb() {
-    Timer timer;
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iinitfdb();
     }
 
-    stats_.logiinitfdb_(timer);
+    timer_.stop();
+    stats_.logiinitfdb_(timer_);
 }
 
 void MultIO::isetcommfdb(int rank) {
-    Timer timer;
     AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
@@ -295,7 +297,6 @@ void MultIO::isetcommfdb(int rank) {
 }
 
 void MultIO::isetrankfdb(int fdbaddr, int rank) {
-    Timer timer;
     AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
@@ -304,7 +305,6 @@ void MultIO::isetrankfdb(int fdbaddr, int rank) {
 }
 
 void MultIO::iset_fdb_root(int fdbaddr, const std::string& name) {
-    Timer timer;
     AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
@@ -314,8 +314,8 @@ void MultIO::iset_fdb_root(int fdbaddr, const std::string& name) {
 
 void MultIO::iflushfdb(int fdbaddr) {
 
-    Timer timer;
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
 
     ++nflushes_;
 
@@ -330,11 +330,11 @@ void MultIO::iflushfdb(int fdbaddr) {
         it->sink_->iflushfdb(fdbaddr);
     }
 
-    stats_.logiflushfdb_(timer);
+    timer_.stop();
+    stats_.logiflushfdb_(timer_);
 }
 
 void MultIO::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
-    Timer timer;
     AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
@@ -343,7 +343,6 @@ void MultIO::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
 }
 
 void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {
-    Timer timer;
     AutoLock<Mutex> lock(mutex_);
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
@@ -353,8 +352,8 @@ void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string&
 
 void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
 
-    Timer timer;
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
 
     ++nwrites_;
 
@@ -369,7 +368,8 @@ void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
         it->sink_->iwritefdb(fdbaddr, blob);
     }
 
-    stats_.logiwritefdb_(timer);
+    timer_.stop();
+    stats_.logiwritefdb_(timer_);
 }
 
 static DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");

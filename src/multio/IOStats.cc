@@ -150,7 +150,7 @@ void IOStats::report(std::ostream& s) const {
         Statistics::reportTime(s, "Av. time", timingCopy);
     }
 
-    // Output for IFS statistics
+    // Output for legacy interface statistics
 
     if (numiinitfdb_ != 0) {
         Statistics::reportCount(s, "No. iinitfdb", numiinitfdb_);

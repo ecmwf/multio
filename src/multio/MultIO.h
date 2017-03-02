@@ -22,6 +22,7 @@
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/memory/SharedPtr.h"
 #include "eckit/io/Length.h"
+#include "eckit/log/Timer.h"
 
 #include "multio/DataSink.h"
 #include "multio/JournalRecord.h"
@@ -100,6 +101,8 @@ protected: // members
     size_t nflushes_;
 
     mutable eckit::Mutex mutex_;
+
+    eckit::Timer timer_;
 
 private: // methods
 

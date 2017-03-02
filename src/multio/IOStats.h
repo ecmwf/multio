@@ -71,7 +71,7 @@ private: // members
     size_t sumBytesWrittenSquared_;
     eckit::Timing writeTiming_;
 
-    // Log access counts for the IFS interfaces
+    // Log access counts for the legacy interface
 
     size_t numiinitfdb_;           eckit::Timing timingiinitfdb_;
     size_t numiopenfdb_;           eckit::Timing timingiopenfdb_;

@@ -41,7 +41,13 @@ IOStats::IOStats() :
     sumBytesReadSquared_(0),
     numWrites_(0),
     bytesWritten_(0),
-    sumBytesWrittenSquared_(0) {}
+    sumBytesWrittenSquared_(0),
+    numiinitfdb_(0),
+    numiopenfdb_(0),
+    numiclosefdb_(0),
+    numiflushfdb_(0),
+    numiwritefdb_(0),
+    numireadfdb_(0) {}
 
 
 IOStats::~IOStats() {}
@@ -62,6 +68,48 @@ void IOStats::logWrite(const Length &size, Timer& timer) {
     bytesWritten_ += size;
     sumBytesWrittenSquared_ += (size * size);
     writeTiming_ += timer;
+}
+
+
+void IOStats::logiinitfdb_(eckit::Timer& timer) {
+
+    numiinitfdb_++;
+    timingiinitfdb_ += timer;
+}
+
+
+void IOStats::logiopenfdb_(eckit::Timer& timer) {
+
+    numiopenfdb_++;
+    timingiopenfdb_ += timer;
+}
+
+
+void IOStats::logiclosefdb_(eckit::Timer& timer) {
+
+    numiclosefdb_++;
+    timingiclosefdb_ += timer;
+}
+
+
+void IOStats::logiflushfdb_(eckit::Timer& timer) {
+
+    numiflushfdb_++;
+    timingiflushfdb_ += timer;
+}
+
+
+void IOStats::logiwritefdb_(eckit::Timer& timer) {
+
+    numiwritefdb_++;
+    timingiwritefdb_ += timer;
+}
+
+
+void IOStats::logireadfdb_(eckit::Timer& timer) {
+
+    numireadfdb_++;
+    timingireadfdb_ += timer;
 }
 
 
@@ -100,6 +148,37 @@ void IOStats::report(std::ostream& s) const {
         Timing timingCopy = readTiming_;
         timingCopy /= numReads_;
         Statistics::reportTime(s, "Av. time", timingCopy);
+    }
+
+    // Output for IFS statistics
+
+    if (numiinitfdb_ != 0) {
+        Statistics::reportCount(s, "No. iinitfdb", numiinitfdb_);
+        Statistics::reportTime(s, "Time iinitfdb", timingiinitfdb_);
+    }
+    if (numiinitfdb_ != 0) {
+        Statistics::reportCount(s, "No. iinitfdb", numiinitfdb_);
+        Statistics::reportTime(s, "Time iinitfdb", timingiinitfdb_);
+    }
+    if (numiopenfdb_ != 0) {
+        Statistics::reportCount(s, "No. iopenfdb", numiopenfdb_);
+        Statistics::reportTime(s, "Time iopenfdb", timingiopenfdb_);
+    }
+    if (numiclosefdb_ != 0) {
+        Statistics::reportCount(s, "No. iclosefdb", numiclosefdb_);
+        Statistics::reportTime(s, "Time iclosefdb", timingiclosefdb_);
+    }
+    if (numiflushfdb_ != 0) {
+        Statistics::reportCount(s, "No. iflushfdb", numiflushfdb_);
+        Statistics::reportTime(s, "Time iflushfdb", timingiflushfdb_);
+    }
+    if (numiwritefdb_ != 0) {
+        Statistics::reportCount(s, "No. iwritefdb", numiwritefdb_);
+        Statistics::reportTime(s, "Time iwritefdb", timingiwritefdb_);
+    }
+    if (numireadfdb_ != 0) {
+        Statistics::reportCount(s, "No. ireadfdb", numireadfdb_);
+        Statistics::reportTime(s, "Time ireadfdb", timingireadfdb_);
     }
 }
 

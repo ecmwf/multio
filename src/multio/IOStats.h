@@ -43,6 +43,15 @@ public:
     void logRead(const eckit::Length& size, eckit::Timer& timer);
     void logWrite(const eckit::Length& size, eckit::Timer& timer);
 
+    // Log the IFS interfaces
+
+    void logiinitfdb_(eckit::Timer& timer);
+    void logiopenfdb_(eckit::Timer& timer);
+    void logiclosefdb_(eckit::Timer& timer);
+    void logiflushfdb_(eckit::Timer& timer);
+    void logiwritefdb_(eckit::Timer& timer);
+    void logireadfdb_(eckit::Timer& timer);
+
 private: // methods
 
     void print(std::ostream& s) const;
@@ -62,11 +71,14 @@ private: // members
     size_t sumBytesWrittenSquared_;
     eckit::Timing writeTiming_;
 
-    // ...
+    // Log access counts for the IFS interfaces
 
-
-    // Todo: track stddev, min, max, mean on the fly.
-
+    size_t numiinitfdb_;           eckit::Timing timingiinitfdb_;
+    size_t numiopenfdb_;           eckit::Timing timingiopenfdb_;
+    size_t numiclosefdb_;          eckit::Timing timingiclosefdb_;
+    size_t numiflushfdb_;          eckit::Timing timingiflushfdb_;
+    size_t numiwritefdb_;          eckit::Timing timingiwritefdb_;
+    size_t numireadfdb_;           eckit::Timing timingireadfdb_;
 
 private: // methods
 

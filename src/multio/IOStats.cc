@@ -115,71 +115,53 @@ void IOStats::logireadfdb_(eckit::Timer& timer) {
 
 void IOStats::report(std::ostream& s) const {
 
-    if (numWrites_ != 0) {
-        s << "Write statistics: " << std::endl;
-        Statistics::reportCount(s, "Writes", numWrites_);
-        Statistics::reportBytes(s, "Written", bytesWritten_);
-        Statistics::reportBytes(s, "Av. size", size_t(double(bytesWritten_) / double(numWrites_)));
+    // Write statistics
 
-        double stddev_write = std::sqrt((numWrites_ * sumBytesWrittenSquared_ - bytesWritten_ * bytesWritten_)) / numWrites_;
-        Statistics::reportBytes(s, "Std. dev.", size_t(stddev_write));
-        Statistics::reportTime(s, "Time: ", writeTiming_);
+    Statistics::reportCount(s, "Multio num writes", numWrites_);
+    Statistics::reportBytes(s, "Multio bytes written", bytesWritten_);
+    Statistics::reportBytes(s, "Multio average write size",
+                            size_t(double(bytesWritten_) / double(numWrites_ == 0 ? 1 : numWrites_)));
+    double stddev_write = std::sqrt((numWrites_ * sumBytesWrittenSquared_ - bytesWritten_ * bytesWritten_))
+                        / (numWrites_ == 0 ? 1 : numWrites_);
+    Statistics::reportBytes(s, "Multio write size std. dev.", size_t(stddev_write));
+    Statistics::reportTime(s, "Multio write time: ", writeTiming_);
 
-        Timing timingCopy = writeTiming_;
-        timingCopy /= numWrites_;
-        Statistics::reportTime(s, "Av. time", timingCopy);
+    Timing timingCopyWrite = writeTiming_;
+    timingCopyWrite /= numWrites_;
+    Statistics::reportTime(s, "Multio average write time", timingCopyWrite);
 
-        if (numReads_ != 0)
-            s << std::endl;
-    }
+    // Read statistics
 
-    // -----
+    Statistics::reportCount(s, "Multio num reads", numReads_);
+    Statistics::reportBytes(s, "Multio bytes read", bytesRead_);
+    Statistics::reportBytes(s, "Multio average read size",
+                            size_t(double(bytesRead_) / double(numReads_ == 0 ? 1 : numReads_)));
 
-    if (numReads_ != 0) {
-        s << "Read statistics: " << std::endl;
-        Statistics::reportCount(s, "Reads", numReads_);
-        Statistics::reportBytes(s, "Read", bytesRead_);
-        Statistics::reportBytes(s, "Av. size", size_t(double(bytesRead_) / double(numReads_)));
+    double stddev_read = std::sqrt((numReads_ * sumBytesReadSquared_ - bytesRead_ * bytesRead_))
+                       / (numReads_ == 0 ? 1 : numReads_);
+    Statistics::reportBytes(s, "Multio read size std. dev.", size_t(stddev_read));
+    Statistics::reportTime(s, "Multio read time", readTiming_);
 
-        double stddev_read = std::sqrt((numReads_ * sumBytesReadSquared_ - bytesRead_ * bytesRead_)) / numReads_;
-        Statistics::reportBytes(s, "Std. dev.", size_t(stddev_read));
-        Statistics::reportTime(s, "Time", readTiming_);
-
-        Timing timingCopy = readTiming_;
-        timingCopy /= numReads_;
-        Statistics::reportTime(s, "Av. time", timingCopy);
-    }
+    Timing timingCopyRead = readTiming_;
+    timingCopyRead /= numReads_;
+    Statistics::reportTime(s, "Multio average read time", timingCopyRead);
 
     // Output for legacy interface statistics
 
-    if (numiinitfdb_ != 0) {
-        Statistics::reportCount(s, "No. iinitfdb", numiinitfdb_);
-        Statistics::reportTime(s, "Time iinitfdb", timingiinitfdb_);
-    }
-    if (numiinitfdb_ != 0) {
-        Statistics::reportCount(s, "No. iinitfdb", numiinitfdb_);
-        Statistics::reportTime(s, "Time iinitfdb", timingiinitfdb_);
-    }
-    if (numiopenfdb_ != 0) {
-        Statistics::reportCount(s, "No. iopenfdb", numiopenfdb_);
-        Statistics::reportTime(s, "Time iopenfdb", timingiopenfdb_);
-    }
-    if (numiclosefdb_ != 0) {
-        Statistics::reportCount(s, "No. iclosefdb", numiclosefdb_);
-        Statistics::reportTime(s, "Time iclosefdb", timingiclosefdb_);
-    }
-    if (numiflushfdb_ != 0) {
-        Statistics::reportCount(s, "No. iflushfdb", numiflushfdb_);
-        Statistics::reportTime(s, "Time iflushfdb", timingiflushfdb_);
-    }
-    if (numiwritefdb_ != 0) {
-        Statistics::reportCount(s, "No. iwritefdb", numiwritefdb_);
-        Statistics::reportTime(s, "Time iwritefdb", timingiwritefdb_);
-    }
-    if (numireadfdb_ != 0) {
-        Statistics::reportCount(s, "No. ireadfdb", numireadfdb_);
-        Statistics::reportTime(s, "Time ireadfdb", timingireadfdb_);
-    }
+    Statistics::reportCount(s, "Multio num iinitfdb", numiinitfdb_);
+    Statistics::reportTime(s, "Multio time iinitfdb", timingiinitfdb_);
+    Statistics::reportCount(s, "Multio num iinitfdb", numiinitfdb_);
+    Statistics::reportTime(s, "Multio time iinitfdb", timingiinitfdb_);
+    Statistics::reportCount(s, "Multio num iopenfdb", numiopenfdb_);
+    Statistics::reportTime(s, "Multio time iopenfdb", timingiopenfdb_);
+    Statistics::reportCount(s, "Multio num iclosefdb", numiclosefdb_);
+    Statistics::reportTime(s, "Multio time iclosefdb", timingiclosefdb_);
+    Statistics::reportCount(s, "Multio num iflushfdb", numiflushfdb_);
+    Statistics::reportTime(s, "Multio time iflushfdb", timingiflushfdb_);
+    Statistics::reportCount(s, "Multio num iwritefdb", numiwritefdb_);
+    Statistics::reportTime(s, "Multio time iwritefdb", timingiwritefdb_);
+    Statistics::reportCount(s, "Multio num ireadfdb", numireadfdb_);
+    Statistics::reportTime(s, "Multio time ireadfdb", timingireadfdb_);
 }
 
 

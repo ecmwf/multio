@@ -70,7 +70,7 @@ void IOLogger::report(std::ostream& s) const {
         Statistics::reportBytes(s, "Written", bytesWritten_);
         Statistics::reportBytes(s, "Av. size", size_t(double(bytesWritten_) / double(numWrites_)));
 
-        double stddev_write = std::sqrt((numWrites_ * sumBytesWrittenSquared_ - bytesWritten_ * bytesWritten_) / numWrites_);
+        double stddev_write = std::sqrt((numWrites_ * sumBytesWrittenSquared_ - bytesWritten_ * bytesWritten_)) / numWrites_;
         Statistics::reportBytes(s, "Std. dev.", size_t(stddev_write));
 
         if (numReads_ != 0)
@@ -85,7 +85,7 @@ void IOLogger::report(std::ostream& s) const {
         Statistics::reportBytes(s, "Read", bytesRead_);
         Statistics::reportBytes(s, "Av. size", size_t(double(bytesRead_) / double(numReads_)));
 
-        double stddev_read = std::sqrt((numReads_ * sumBytesReadSquared_ - bytesRead_ * bytesRead_) / numReads_);
+        double stddev_read = std::sqrt((numReads_ * sumBytesReadSquared_ - bytesRead_ * bytesRead_)) / numReads_;
         Statistics::reportBytes(s, "Std. dev.", size_t(stddev_read));
     }
 }

@@ -45,16 +45,16 @@ IOStats::IOStats() :
     sumBytesWrittenSquared_(0),
     sumWriteTimesSquared_(0),
     numiinitfdb_(0),
-    sumTimingSquaresiinitfdb_(0),
     numiopenfdb_(0),
-    sumTimingSquaresiopenfdb_(0),
     numiclosefdb_(0),
-    sumTimingSquaresiclosefdb_(0),
     numiflushfdb_(0),
-    sumTimingSquaresiflushfdb_(0),
     numiwritefdb_(0),
-    sumTimingSquaresiwritefdb_(0),
     numireadfdb_(0),
+    sumTimingSquaresiinitfdb_(0),
+    sumTimingSquaresiopenfdb_(0),
+    sumTimingSquaresiclosefdb_(0),
+    sumTimingSquaresiflushfdb_(0),
+    sumTimingSquaresiwritefdb_(0),
     sumTimingSquaresireadfdb_(0) {}
 
 

@@ -62,24 +62,3 @@ ecbuild_add_library(
 
 add_subdirectory(fdb4)
 add_subdirectory(fdb5)
-
-
-ecbuild_add_executable(
-
-    TARGET multx
-
-    SOURCES
-        multx.cc
-
-    INCLUDES
-        ${MULTIO_INCLUDE_DIRS}
-        ${METKIT_INCLUDE_DIRS}
-        ${ECKIT_INCLUDE_DIRS}
-
-    NOINSTALL
-
-    LIBS
-        multio-fdb4
-        multio-fdb5
-        multio
-        metkit )

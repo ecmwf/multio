@@ -75,12 +75,26 @@ private: // members
 
     // Log access counts for the legacy interface
 
-    size_t numiinitfdb_;     eckit::Timing timingiinitfdb_;   double sumTimingSquaresiinitfdb_;
-    size_t numiopenfdb_;     eckit::Timing timingiopenfdb_;   double sumTimingSquaresiopenfdb_;
-    size_t numiclosefdb_;    eckit::Timing timingiclosefdb_;  double sumTimingSquaresiclosefdb_;
-    size_t numiflushfdb_;    eckit::Timing timingiflushfdb_;  double sumTimingSquaresiflushfdb_;
-    size_t numiwritefdb_;    eckit::Timing timingiwritefdb_;  double sumTimingSquaresiwritefdb_;
-    size_t numireadfdb_;     eckit::Timing timingireadfdb_;   double sumTimingSquaresireadfdb_;
+    size_t numiinitfdb_;
+    size_t numiopenfdb_;
+    size_t numiclosefdb_;
+    size_t numiflushfdb_;
+    size_t numiwritefdb_;
+    size_t numireadfdb_;
+
+    double sumTimingSquaresiinitfdb_;
+    double sumTimingSquaresiopenfdb_;
+    double sumTimingSquaresiclosefdb_;
+    double sumTimingSquaresiflushfdb_;
+    double sumTimingSquaresiwritefdb_;
+    double sumTimingSquaresireadfdb_;
+
+    eckit::Timing timingiinitfdb_;
+    eckit::Timing timingiopenfdb_;
+    eckit::Timing timingiclosefdb_;
+    eckit::Timing timingiflushfdb_;
+    eckit::Timing timingiwritefdb_;
+    eckit::Timing timingireadfdb_;
 
 private: // methods
 

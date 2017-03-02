@@ -36,24 +36,25 @@ static eckit::Mutex *local_mutex = 0;
 static pthread_once_t once = PTHREAD_ONCE_INIT;
 
 
-class MIOSingleton {
+class MIO {
 public:
+
     static void initialise(const eckit::JSONConfiguration& config) {
-        eckit::ScopedPtr<multio::MultIO>& mio(instancePtr());
+        eckit::ScopedPtr<MultIO>& mio(ptr());
         ASSERT(!mio);
         mio.reset(new MultIO(config));
     }
 
-    static multio::MultIO& instance() {
-        const eckit::ScopedPtr<multio::MultIO>& mio(instancePtr());
+    static MultIO& instance() {
+        const eckit::ScopedPtr<MultIO>& mio(ptr());
         ASSERT(mio);
         return *mio;
     }
 
 private:
 
-    static eckit::ScopedPtr<multio::MultIO>& instancePtr() {
-        static eckit::ScopedPtr<multio::MultIO> mio;
+    static eckit::ScopedPtr<MultIO>& ptr() {
+        static eckit::ScopedPtr<MultIO> mio;
         return mio;
     }
 };
@@ -71,7 +72,7 @@ static void init() {
 
         eckit::JSONConfiguration config(path);
 
-        MIOSingleton::initialise(config);
+        MIO::initialise(config);
 
         return;
     }
@@ -101,7 +102,7 @@ static void init() {
 
     eckit::JSONConfiguration config(iss);
 
-    MIOSingleton::initialise(config);
+    MIO::initialise(config);
 
 }
 
@@ -140,7 +141,7 @@ extern "C" {
             pthread_once(&once, init);
             eckit::AutoLock<eckit::Mutex> lock(local_mutex);
 
-            MIOSingleton::instance().iinitfdb();
+            MIO::instance().iinitfdb();
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -160,7 +161,7 @@ extern "C" {
             pthread_once(&once, init);
             eckit::AutoLock<eckit::Mutex> lock(local_mutex);
 
-            MIOSingleton::instance().iinitfdb();
+            MIO::instance().iinitfdb();
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -184,7 +185,7 @@ extern "C" {
             ASSERT(addr);
 
             int fdbaddr = 0;
-            MIOSingleton::instance().iopenfdb(sname, fdbaddr, smode);
+            MIO::instance().iopenfdb(sname, fdbaddr, smode);
             *addr = fdbaddr;
 
         } catch (std::exception &e) {
@@ -205,7 +206,7 @@ extern "C" {
 
             ASSERT(addr);
 
-            MIOSingleton::instance().iclosefdb(*addr);
+            MIO::instance().iclosefdb(*addr);
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -222,7 +223,7 @@ extern "C" {
 
             ASSERT(addr);
 
-            MIOSingleton::instance().iflushfdb(*addr);
+            MIO::instance().iflushfdb(*addr);
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -243,7 +244,7 @@ extern "C" {
 
             eckit::DataBlobPtr blob ( new metkit::grib::GribDataBlob(data, len) );
 
-            MIOSingleton::instance().iwritefdb(*addr, blob);
+            MIO::instance().iwritefdb(*addr, blob);
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -265,7 +266,7 @@ extern "C" {
 
             ASSERT(addr);
 
-            MIOSingleton::instance().iset_fdb_root(*addr, sname);
+            MIO::instance().iset_fdb_root(*addr, sname);
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -285,7 +286,7 @@ extern "C" {
 
             ASSERT(addr);
 
-            MIOSingleton::instance().isetvalfdb(*addr, sname, svalue);
+            MIO::instance().isetvalfdb(*addr, sname, svalue);
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -303,7 +304,7 @@ extern "C" {
             pthread_once(&once, init);
             eckit::AutoLock<eckit::Mutex> lock(local_mutex);
 
-            MIOSingleton::instance().isetcommfdb(*comm);
+            MIO::instance().isetcommfdb(*comm);
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -320,7 +321,7 @@ extern "C" {
 
             ASSERT(addr);
 
-            MIOSingleton::instance().isetrankfdb(*addr, *rank);
+            MIO::instance().isetrankfdb(*addr, *rank);
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -337,7 +338,7 @@ extern "C" {
 
             ASSERT(addr);
 
-            MIOSingleton::instance().isetfieldcountfdb(*addr, *all_ranks, *this_rank);
+            MIO::instance().isetfieldcountfdb(*addr, *all_ranks, *this_rank);
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;

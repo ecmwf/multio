@@ -64,21 +64,23 @@ private: // members
     size_t bytesRead_;
     size_t sumBytesReadSquared_;
     eckit::Timing readTiming_;
+    double sumReadTimesSquared_;
 
     // Can we track no. reads/writes separately to the the number of fields read/written
     size_t numWrites_;
     size_t bytesWritten_;
     size_t sumBytesWrittenSquared_;
     eckit::Timing writeTiming_;
+    double sumWriteTimesSquared_;
 
     // Log access counts for the legacy interface
 
-    size_t numiinitfdb_;           eckit::Timing timingiinitfdb_;
-    size_t numiopenfdb_;           eckit::Timing timingiopenfdb_;
-    size_t numiclosefdb_;          eckit::Timing timingiclosefdb_;
-    size_t numiflushfdb_;          eckit::Timing timingiflushfdb_;
-    size_t numiwritefdb_;          eckit::Timing timingiwritefdb_;
-    size_t numireadfdb_;           eckit::Timing timingireadfdb_;
+    size_t numiinitfdb_;     eckit::Timing timingiinitfdb_;   double sumTimingSquaresiinitfdb_;
+    size_t numiopenfdb_;     eckit::Timing timingiopenfdb_;   double sumTimingSquaresiopenfdb_;
+    size_t numiclosefdb_;    eckit::Timing timingiclosefdb_;  double sumTimingSquaresiclosefdb_;
+    size_t numiflushfdb_;    eckit::Timing timingiflushfdb_;  double sumTimingSquaresiflushfdb_;
+    size_t numiwritefdb_;    eckit::Timing timingiwritefdb_;  double sumTimingSquaresiwritefdb_;
+    size_t numireadfdb_;     eckit::Timing timingireadfdb_;   double sumTimingSquaresireadfdb_;
 
 private: // methods
 

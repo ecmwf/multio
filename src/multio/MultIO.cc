@@ -100,6 +100,8 @@ Value MultIO::configValue() const {
 
 void MultIO::write(DataBlobPtr blob) {
 
+    Timer timer;
+
     AutoLock<Mutex> lock(mutex_);
 
     ++nwrites_;
@@ -132,7 +134,7 @@ void MultIO::write(DataBlobPtr blob) {
     }
 
     // Log the write
-    stats_.logWrite(blob->length());
+    stats_.logWrite(blob->length(), timer);
 }
 
 

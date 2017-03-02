@@ -16,12 +16,14 @@
 #define multio_IOStats_H
 
 
+#include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
 #include <string>
 
 namespace eckit {
     class Length;
+    class Timer;
 }
 
 
@@ -38,8 +40,8 @@ public:
 
     void report(std::ostream& s) const;
 
-    void logRead(const eckit::Length& size);
-    void logWrite(const eckit::Length& size);
+    void logRead(const eckit::Length& size, eckit::Timer& timer);
+    void logWrite(const eckit::Length& size, eckit::Timer& timer);
 
 private: // methods
 
@@ -52,13 +54,13 @@ private: // members
     size_t numReads_;
     size_t bytesRead_;
     size_t sumBytesReadSquared_;
-    // timeRead_;
+    eckit::Timing readTiming_;
 
     // Can we track no. reads/writes separately to the the number of fields read/written
     size_t numWrites_;
     size_t bytesWritten_;
     size_t sumBytesWrittenSquared_;
-    // timeWrite_;
+    eckit::Timing writeTiming_;
 
     // ...
 

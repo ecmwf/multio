@@ -14,8 +14,9 @@
 
 #include "eckit/io/Length.h"
 #include "eckit/log/Bytes.h"
-#include "eckit/thread/AutoLock.h"
 #include "eckit/log/Statistics.h"
+#include "eckit/log/Timer.h"
+#include "eckit/thread/AutoLock.h"
 
 #include "multio/IOStats.h"
 
@@ -46,19 +47,21 @@ IOStats::IOStats() :
 IOStats::~IOStats() {}
 
 
-void IOStats::logRead(const eckit::Length &size) {
+void IOStats::logRead(const Length &size, Timer& timer) {
 
     numReads_++;
     bytesRead_ += size;
     sumBytesReadSquared_ += (size * size);
+    readTiming_ += timer;
 }
 
 
-void IOStats::logWrite(const eckit::Length &size) {
+void IOStats::logWrite(const Length &size, Timer& timer) {
 
     numWrites_++;
     bytesWritten_ += size;
     sumBytesWrittenSquared_ += (size * size);
+    writeTiming_ += timer;
 }
 
 
@@ -72,6 +75,11 @@ void IOStats::report(std::ostream& s) const {
 
         double stddev_write = std::sqrt((numWrites_ * sumBytesWrittenSquared_ - bytesWritten_ * bytesWritten_)) / numWrites_;
         Statistics::reportBytes(s, "Std. dev.", size_t(stddev_write));
+        Statistics::reportTime(s, "Time: ", writeTiming_);
+
+        Timing timingCopy = writeTiming_;
+        timingCopy /= numWrites_;
+        Statistics::reportTime(s, "Av. time", timingCopy);
 
         if (numReads_ != 0)
             s << std::endl;
@@ -87,6 +95,11 @@ void IOStats::report(std::ostream& s) const {
 
         double stddev_read = std::sqrt((numReads_ * sumBytesReadSquared_ - bytesRead_ * bytesRead_)) / numReads_;
         Statistics::reportBytes(s, "Std. dev.", size_t(stddev_read));
+        Statistics::reportTime(s, "Time", readTiming_);
+
+        Timing timingCopy = readTiming_;
+        timingCopy /= numReads_;
+        Statistics::reportTime(s, "Av. time", timingCopy);
     }
 }
 

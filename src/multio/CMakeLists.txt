@@ -29,8 +29,8 @@ list( APPEND multio_srcs
     JournalReader.cc
     MultIO.h
     MultIO.cc
-    IOLogger.h
-    IOLogger.cc
+    IOStats.h
+    IOStats.cc
     SharableBuffer.h
     ifsio.h
     ifsio.cc )

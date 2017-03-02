@@ -62,7 +62,7 @@ MultIO::~MultIO() {
     Log::info() << std::endl;
     Log::info() << "MultIO data movement logging:" << std::endl;
     Log::info() << "=============================" << std::endl;
-    ioLog_.report(Log::info());
+    stats_.report(Log::info());
     Log::info() << std::endl;
 }
 
@@ -132,7 +132,7 @@ void MultIO::write(DataBlobPtr blob) {
     }
 
     // Log the write
-    ioLog_.logWrite(blob->length());
+    stats_.logWrite(blob->length());
 }
 
 

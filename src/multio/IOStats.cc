@@ -67,7 +67,9 @@ void IOStats::logRead(const Length &size, Timer& timer) {
     bytesRead_ += size;
     sumBytesReadSquared_ += (size * size);
     readTiming_ += timer;
-    sumReadTimesSquared_ += timer.elapsed() * timer.elapsed();
+
+    double elapsed = timer.elapsed();
+    sumReadTimesSquared_ += elapsed * elapsed;
 }
 
 
@@ -77,7 +79,19 @@ void IOStats::logWrite(const Length &size, Timer& timer) {
     bytesWritten_ += size;
     sumBytesWrittenSquared_ += (size * size);
     writeTiming_ += timer;
-    sumWriteTimesSquared_ += timer.elapsed() * timer.elapsed();
+
+    double elapsed = timer.elapsed();
+    sumWriteTimesSquared_ += elapsed * elapsed;
+}
+
+
+void IOStats::logFlush(Timer& timer) {
+
+    numFlush_++;
+    flushTiming_ += timer;
+
+    double elapsed = timer.elapsed();
+    sumFlushTimesSquared_ += elapsed * elapsed;
 }
 
 
@@ -85,7 +99,9 @@ void IOStats::logiinitfdb_(eckit::Timer& timer) {
 
     numiinitfdb_++;
     timingiinitfdb_ += timer;
-    sumTimingSquaresiinitfdb_ += timer.elapsed() * timer.elapsed();
+
+    double elapsed = timer.elapsed();
+    sumTimingSquaresiinitfdb_ += elapsed * elapsed;
 }
 
 
@@ -93,7 +109,9 @@ void IOStats::logiopenfdb_(eckit::Timer& timer) {
 
     numiopenfdb_++;
     timingiopenfdb_ += timer;
-    sumTimingSquaresiopenfdb_ += timer.elapsed() * timer.elapsed();
+
+    double elapsed = timer.elapsed();
+    sumTimingSquaresiopenfdb_ += elapsed * elapsed;
 }
 
 
@@ -101,7 +119,9 @@ void IOStats::logiclosefdb_(eckit::Timer& timer) {
 
     numiclosefdb_++;
     timingiclosefdb_ += timer;
-    sumTimingSquaresiclosefdb_ += timer.elapsed() * timer.elapsed();
+
+    double elapsed = timer.elapsed();
+    sumTimingSquaresiclosefdb_ += elapsed * elapsed;
 }
 
 
@@ -109,7 +129,9 @@ void IOStats::logiflushfdb_(eckit::Timer& timer) {
 
     numiflushfdb_++;
     timingiflushfdb_ += timer;
-    sumTimingSquaresiflushfdb_ += timer.elapsed() * timer.elapsed();
+
+    double elapsed = timer.elapsed();
+    sumTimingSquaresiflushfdb_ += elapsed * elapsed;
 }
 
 
@@ -117,7 +139,9 @@ void IOStats::logiwritefdb_(eckit::Timer& timer) {
 
     numiwritefdb_++;
     timingiwritefdb_ += timer;
-    sumTimingSquaresiwritefdb_ += timer.elapsed() * timer.elapsed();
+
+    double elapsed = timer.elapsed();
+    sumTimingSquaresiwritefdb_ += elapsed * elapsed;
 }
 
 
@@ -125,7 +149,9 @@ void IOStats::logireadfdb_(eckit::Timer& timer) {
 
     numireadfdb_++;
     timingireadfdb_ += timer;
-    sumTimingSquaresireadfdb_ += timer.elapsed() * timer.elapsed();
+
+    double elapsed = timer.elapsed();
+    sumTimingSquaresireadfdb_ += elapsed * elapsed;
 }
 
 
@@ -181,13 +207,19 @@ void IOStats::report(std::ostream& s) const {
                             stdDeviation(bytesRead_, sumBytesReadSquared_, numReads_),
                             "", true);
     Statistics::reportTime(s, "Multio read time", timeAverage(readTiming_, numReads_), "", true);
+    Statistics::reportTime(s, "Multio average read time", timeAverage(readTiming_, numReads_), "", true);
     Statistics::reportTime(s, "Multio read time std. dev",
                            timeStdDeviation(readTiming_, sumReadTimesSquared_, numReads_)
                            , "", true);
 
-    Timing timingCopyRead = readTiming_;
-    timingCopyRead /= numReads_;
-    Statistics::reportTime(s, "Multio average read time", timingCopyRead);
+    // Flush statistics
+
+    Statistics::reportCount(s, "Multio num flush", numFlush_, "", true);
+    Statistics::reportTime(s, "Multio flush time", timeAverage(flushTiming_, numFlush_), "", true);
+    Statistics::reportTime(s, "Multio average flush time", timeAverage(flushTiming_, numFlush_), "", true);
+    Statistics::reportTime(s, "Multio flush time std. dev",
+                           timeStdDeviation(flushTiming_, sumFlushTimesSquared_, numFlush_)
+                           , "", true);
 
     // Output for legacy interface statistics
 

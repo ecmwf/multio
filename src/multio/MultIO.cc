@@ -142,6 +142,7 @@ void MultIO::write(DataBlobPtr blob) {
 void MultIO::flush() {
 
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
 
     ++nflushes_;
 
@@ -156,6 +157,10 @@ void MultIO::flush() {
         ASSERT( it->sink_ );
         it->sink_->flush();
     }
+
+    // Log the flush
+    timer_.stop();
+    stats_.logFlush(timer_);
 }
 
 

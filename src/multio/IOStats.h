@@ -42,6 +42,7 @@ public:
 
     void logRead(const eckit::Length& size, eckit::Timer& timer);
     void logWrite(const eckit::Length& size, eckit::Timer& timer);
+    void logFlush(eckit::Timer& timer);
 
     // Log the legacy interfaces
 
@@ -71,6 +72,10 @@ private: // members
     size_t sumBytesWrittenSquared_;
     eckit::Timing writeTiming_;
     double sumWriteTimesSquared_;
+
+    size_t numFlush_;
+    eckit::Timing flushTiming_;
+    double sumFlushTimesSquared_;
 
     // Log access counts for the legacy interface
 

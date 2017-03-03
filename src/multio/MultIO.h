@@ -22,9 +22,11 @@
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/memory/SharedPtr.h"
 #include "eckit/io/Length.h"
+#include "eckit/log/Timer.h"
 
 #include "multio/DataSink.h"
 #include "multio/JournalRecord.h"
+#include "multio/IOStats.h"
 
 namespace multio {
 
@@ -89,12 +91,15 @@ protected:
 protected: // members
 
     Journal journal_;
+    IOStats stats_;
 
     sink_store_t sinks_;
 
     bool journaled_;
 
     mutable eckit::Mutex mutex_;
+
+    eckit::Timer timer_;
 
 private: // methods
 

@@ -14,8 +14,11 @@ ecbuild_requires_macro_version( 2.0 )
 
 ecbuild_use_package( PROJECT eckit VERSION  0.10 REQUIRED )
 
-### for GribDataBlobs
+### metkit must be built with GRIB support for GribDataBlobs
 ecbuild_use_package( PROJECT metkit VERSION 0.3 REQUIRED )
+if( NOT METKIT_HAVE_GRIB )
+  ecbuild_critical( "metkit must be built with GRIB support" )
+endif()
 
 ### fdb4 plugin
 

@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <string.h>
 
+#include "eckit/runtime/Main.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/config/Resource.h"
@@ -59,10 +60,13 @@ private:
     }
 };
 
-
 static void init() {
 
     local_mutex = new eckit::Mutex();
+
+    static const char *argv[2] = {"ifsio", 0};
+
+    eckit::Main::initialise(1, const_cast<char**>(argv));
 
     if (::getenv("MULTIO_CONFIG_FILE")) {
 

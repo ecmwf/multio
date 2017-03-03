@@ -43,7 +43,7 @@ public:
     void logRead(const eckit::Length& size, eckit::Timer& timer);
     void logWrite(const eckit::Length& size, eckit::Timer& timer);
 
-    // Log the IFS interfaces
+    // Log the legacy interfaces
 
     void logiinitfdb_(eckit::Timer& timer);
     void logiopenfdb_(eckit::Timer& timer);
@@ -66,7 +66,6 @@ private: // members
     eckit::Timing readTiming_;
     double sumReadTimesSquared_;
 
-    // Can we track no. reads/writes separately to the the number of fields read/written
     size_t numWrites_;
     size_t bytesWritten_;
     size_t sumBytesWrittenSquared_;

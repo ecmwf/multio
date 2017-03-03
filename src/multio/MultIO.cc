@@ -12,13 +12,17 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "multio/MultIO.h"
 
+#include "eckit/config/LocalConfiguration.h"
+#include "eckit/exception/Exceptions.h"
+#include "eckit/io/DataBlob.h"
+#include "eckit/runtime/Main.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
-#include "eckit/exception/Exceptions.h"
-#include "eckit/config/LocalConfiguration.h"
-#include "eckit/io/DataBlob.h"
 
 using namespace eckit;
 
@@ -59,11 +63,8 @@ MultIO::~MultIO() {
                        << std::endl;
     }
 
-    Log::info() << std::endl;
-    Log::info() << "MultIO data movement logging:" << std::endl;
-    Log::info() << "=============================" << std::endl;
+    Log::info() << "MultIO statistics report on " << Main::hostname() << " PID " << ::getpid() << ":" << std::endl;
     stats_.report(Log::info());
-    Log::info() << std::endl;
 }
 
 bool MultIO::ready() const {

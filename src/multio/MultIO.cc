@@ -60,9 +60,6 @@ MultIO::~MultIO() {
         Log::warning() << "[" << *this << "] Journal has not been committed prior to MultIO destruction"
                        << std::endl;
     }
-
-    Log::info() << "MultIO statistics report on " << Main::hostname() << " PID " << ::getpid() << ":" << std::endl;
-    stats_.report(Log::info());
 }
 
 bool MultIO::ready() const {
@@ -202,6 +199,11 @@ void MultIO::replayRecord(const JournalRecord& record) {
 
         }
     }
+}
+
+void MultIO::report(std::ostream& s)
+{
+    stats_.report(s);
 }
 
 

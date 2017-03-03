@@ -53,6 +53,8 @@ public:
 
     virtual void replayRecord(const JournalRecord& record);
 
+    void report(std::ostream&);
+
     void commitJournal();
 
     ///

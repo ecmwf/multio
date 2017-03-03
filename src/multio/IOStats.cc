@@ -19,6 +19,7 @@
 #include "eckit/thread/AutoLock.h"
 
 #include "multio/IOStats.h"
+#include "multio/LibMultio.h"
 
 #include <cmath>
 
@@ -55,7 +56,9 @@ IOStats::IOStats() :
     sumTimingSquaresiclosefdb_(0),
     sumTimingSquaresiflushfdb_(0),
     sumTimingSquaresiwritefdb_(0),
-    sumTimingSquaresireadfdb_(0) {}
+    sumTimingSquaresireadfdb_(0),
+    iwritefdbBytesWritten_(0),
+    iwritefdbSumBytesWrittenSquared_(0) {}
 
 
 IOStats::~IOStats() {}
@@ -70,6 +73,12 @@ void IOStats::logRead(const Length &size, Timer& timer) {
 
     double elapsed = timer.elapsed();
     sumReadTimesSquared_ += elapsed * elapsed;
+
+    Log::debug<LibMultio>() << "Read count: " << numReads_
+                            << ", size: " << Bytes(size)
+                            << ", total: " << Bytes(bytesRead_)
+                            << ", time: " << Seconds(elapsed)
+                            << ", total: " << Seconds(writeTiming_.elapsed_) << std::endl;
 }
 
 
@@ -82,6 +91,12 @@ void IOStats::logWrite(const Length &size, Timer& timer) {
 
     double elapsed = timer.elapsed();
     sumWriteTimesSquared_ += elapsed * elapsed;
+
+    Log::debug<LibMultio>() << "Write count: " << numWrites_
+                            << ", size: " << Bytes(size)
+                            << ", total: " << Bytes(bytesWritten_)
+                            << ", time: " << Seconds(elapsed)
+                            << ", total: " << Seconds(writeTiming_.elapsed_) << std::endl;
 }
 
 
@@ -92,6 +107,10 @@ void IOStats::logFlush(Timer& timer) {
 
     double elapsed = timer.elapsed();
     sumFlushTimesSquared_ += elapsed * elapsed;
+
+    Log::debug<LibMultio>() << "Flush count: " << numFlush_
+                            << ", time: " << Seconds(elapsed)
+                            << ", total: " << Seconds(flushTiming_.elapsed_) << std::endl;
 }
 
 
@@ -102,6 +121,10 @@ void IOStats::logiinitfdb_(eckit::Timer& timer) {
 
     double elapsed = timer.elapsed();
     sumTimingSquaresiinitfdb_ += elapsed * elapsed;
+
+    Log::debug<LibMultio>() << "iinitfdb count: " << numiinitfdb_
+                            << ", time: " << Seconds(elapsed)
+                            << ", total: " << Seconds(timingiinitfdb_.elapsed_) << std::endl;
 }
 
 
@@ -112,6 +135,10 @@ void IOStats::logiopenfdb_(eckit::Timer& timer) {
 
     double elapsed = timer.elapsed();
     sumTimingSquaresiopenfdb_ += elapsed * elapsed;
+
+    Log::debug<LibMultio>() << "iopenfdb count: " << numiopenfdb_
+                            << ", time: " << Seconds(elapsed)
+                            << ", total: " << Seconds(timingiopenfdb_.elapsed_) << std::endl;
 }
 
 
@@ -122,6 +149,10 @@ void IOStats::logiclosefdb_(eckit::Timer& timer) {
 
     double elapsed = timer.elapsed();
     sumTimingSquaresiclosefdb_ += elapsed * elapsed;
+
+    Log::debug<LibMultio>() << "iclosefdb count: " << numiclosefdb_
+                            << ", time: " << Seconds(elapsed)
+                            << ", total: " << Seconds(timingiclosefdb_.elapsed_) << std::endl;
 }
 
 
@@ -132,16 +163,26 @@ void IOStats::logiflushfdb_(eckit::Timer& timer) {
 
     double elapsed = timer.elapsed();
     sumTimingSquaresiflushfdb_ += elapsed * elapsed;
+
+    Log::debug<LibMultio>() << "iflushfdb count: " << numiflushfdb_
+                            << ", time: " << Seconds(elapsed)
+                            << ", total: " << Seconds(timingiflushfdb_.elapsed_) << std::endl;
 }
 
 
-void IOStats::logiwritefdb_(eckit::Timer& timer) {
+void IOStats::logiwritefdb_(const eckit::Length& size, eckit::Timer& timer) {
 
     numiwritefdb_++;
+    iwritefdbBytesWritten_ += size;
+    iwritefdbSumBytesWrittenSquared_ += (size * size);
     timingiwritefdb_ += timer;
 
     double elapsed = timer.elapsed();
     sumTimingSquaresiwritefdb_ += elapsed * elapsed;
+
+    Log::debug<LibMultio>() << "iwritefdb count: " << numiwritefdb_
+                            << ", time: " << Seconds(elapsed)
+                            << ", total: " << Seconds(timingiwritefdb_.elapsed_) << std::endl;
 }
 
 
@@ -152,6 +193,10 @@ void IOStats::logireadfdb_(eckit::Timer& timer) {
 
     double elapsed = timer.elapsed();
     sumTimingSquaresireadfdb_ += elapsed * elapsed;
+
+    Log::debug<LibMultio>() << "ireadfdb count: " << numireadfdb_
+                            << ", time: " << Seconds(elapsed)
+                            << ", total: " << Seconds(timingireadfdb_.elapsed_) << std::endl;
 }
 
 
@@ -252,6 +297,11 @@ void IOStats::report(std::ostream& s) const {
                            , "", true);
 
     Statistics::reportCount(s, "Multio num iwritefdb", numiwritefdb_, "", true);
+    Statistics::reportBytes(s, "Multio bytes iwritefdb", iwritefdbBytesWritten_, "", true);
+    Statistics::reportBytes(s, "Multio average iwritefdb size", average(iwritefdbBytesWritten_, numiwritefdb_), "", true);
+    Statistics::reportBytes(s, "Multio iwritefdb size std. dev.",
+                            stdDeviation(iwritefdbBytesWritten_, iwritefdbSumBytesWrittenSquared_, numiwritefdb_),
+                            "", true);
     Statistics::reportTime(s, "Multio time iwritefdb", timingiwritefdb_, "", true);
     Statistics::reportTime(s, "Multio average time iwritefdb", timeAverage(timingiwritefdb_, numiwritefdb_), "", true);
     Statistics::reportTime(s, "Multio time std. dev iwritefdb",

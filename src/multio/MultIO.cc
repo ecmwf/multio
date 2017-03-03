@@ -34,8 +34,6 @@ MultIO::MultIO(const eckit::Configuration& config) :
     DataSink(config),
     journal_(config, this),
     journaled_(config.getBool("journaled", false)),
-    nwrites_(0),
-    nflushes_(0),
     mutex_() {
 
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
@@ -104,15 +102,6 @@ void MultIO::write(DataBlobPtr blob) {
     AutoLock<Mutex> lock(mutex_);
     timer_.start();
 
-    ++nwrites_;
-
-    if(nwrites_ == 1) {
-        Log::info() << "MultIO first write len=" << blob->length() << " -- following writes will be silent" << std::endl;
-    }
-    else {
-        Log::debug() << "MultIO write " << nwrites_ << " len=" << blob->length() << std::endl;
-    }
-
     JournalRecordPtr record;
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
 
@@ -143,15 +132,6 @@ void MultIO::flush() {
 
     AutoLock<Mutex> lock(mutex_);
     timer_.start();
-
-    ++nflushes_;
-
-    if(nflushes_ == 1) {
-        Log::info() << "MultIO first flush -- following flushes will be silent" << std::endl;
-    }
-    else {
-        Log::debug() << "MultIO flush " << nflushes_ << std::endl;
-    }
 
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
@@ -271,8 +251,6 @@ void MultIO::iclosefdb(int fdbaddr) {
     AutoLock<Mutex> lock(mutex_);
     timer_.start();
 
-    Log::info() << "MultIO iclosefdb writes=" << nwrites_ << " flushes=" << nflushes_ << std::endl;
-
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iclosefdb(fdbaddr);
@@ -323,14 +301,6 @@ void MultIO::iflushfdb(int fdbaddr) {
     AutoLock<Mutex> lock(mutex_);
     timer_.start();
 
-    ++nflushes_;
-
-    if(nflushes_ == 1) {
-        Log::info() << "MultIO first iflushfdb" << std::endl;
-    }
-
-    Log::debug() << "MultIO flush " << nflushes_ << std::endl;
-
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iflushfdb(fdbaddr);
@@ -359,15 +329,6 @@ void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string&
 void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
 
     AutoLock<Mutex> lock(mutex_);
-    timer_.start();
-
-    ++nwrites_;
-
-    if(nwrites_ == 1) {
-        Log::info() << "MultIO first iwritefdb len=" << blob->length() << " -- following writes will be silent" << std::endl;
-    }
-
-    Log::debug() << "MultIO write " << nwrites_ << " len=" << blob->length() << std::endl;
 
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
@@ -375,7 +336,7 @@ void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
     }
 
     timer_.stop();
-    stats_.logiwritefdb_(timer_);
+    stats_.logiwritefdb_(blob->length(), timer_);
 }
 
 static DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");

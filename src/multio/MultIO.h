@@ -97,9 +97,6 @@ protected: // members
 
     bool journaled_;
 
-    size_t nwrites_;
-    size_t nflushes_;
-
     mutable eckit::Mutex mutex_;
 
     eckit::Timer timer_;

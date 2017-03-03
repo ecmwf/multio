@@ -50,7 +50,7 @@ public:
     void logiopenfdb_(eckit::Timer& timer);
     void logiclosefdb_(eckit::Timer& timer);
     void logiflushfdb_(eckit::Timer& timer);
-    void logiwritefdb_(eckit::Timer& timer);
+    void logiwritefdb_(const eckit::Length& size, eckit::Timer& timer);
     void logireadfdb_(eckit::Timer& timer);
 
 private: // methods
@@ -99,6 +99,9 @@ private: // members
     eckit::Timing timingiflushfdb_;
     eckit::Timing timingiwritefdb_;
     eckit::Timing timingireadfdb_;
+
+    size_t iwritefdbBytesWritten_;
+    size_t iwritefdbSumBytesWrittenSquared_;
 
 private: // methods
 

@@ -45,6 +45,8 @@ IOStats::IOStats() :
     bytesWritten_(0),
     sumBytesWrittenSquared_(0),
     sumWriteTimesSquared_(0),
+    numFlush_(0),
+    sumFlushTimesSquared_(0),
     numiinitfdb_(0),
     numiopenfdb_(0),
     numiclosefdb_(0),

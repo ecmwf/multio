@@ -64,7 +64,7 @@ private:
 
     ~MIO() {
         if(ptr_) {
-            Log::info() << "IFS MultIO statistics report on " << Main::hostname() << " PID " << ::getpid() << ":" << std::endl;
+            std::cout << "IFS MultIO statistics report on " << Main::hostname() << " PID " << ::getpid() << ":" << std::endl;
             ptr_->report(std::cout);
         }
     }

@@ -12,13 +12,17 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "multio/MultIO.h"
 
+#include "eckit/config/LocalConfiguration.h"
+#include "eckit/exception/Exceptions.h"
+#include "eckit/io/DataBlob.h"
+#include "eckit/runtime/Main.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
-#include "eckit/exception/Exceptions.h"
-#include "eckit/config/LocalConfiguration.h"
-#include "eckit/io/DataBlob.h"
 
 using namespace eckit;
 
@@ -56,6 +60,9 @@ MultIO::~MultIO() {
         Log::warning() << "[" << *this << "] Journal has not been committed prior to MultIO destruction"
                        << std::endl;
     }
+
+    Log::info() << "MultIO statistics report on " << Main::hostname() << " PID " << ::getpid() << ":" << std::endl;
+    stats_.report(Log::info());
 }
 
 bool MultIO::ready() const {
@@ -91,9 +98,9 @@ Value MultIO::configValue() const {
 
 
 void MultIO::write(DataBlobPtr blob) {
-    AutoLock<Mutex> lock(mutex_);
 
-    std::cout << "[" << *this << "]: write (" << blob->length() << ")" << std::endl;
+    AutoLock<Mutex> lock(mutex_);
+    timer_.start();
 
     JournalRecordPtr record;
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
@@ -114,15 +121,26 @@ void MultIO::write(DataBlobPtr blob) {
             record->addWriteEntry(blob, it->sink_->id());
         }
     }
+
+    // Log the write
+    timer_.stop();
+    stats_.logWrite(blob->length(), timer_);
 }
 
 
 void MultIO::flush() {
+
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
+
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->flush();
     }
+
+    // Log the flush
+    timer_.stop();
+    stats_.logFlush(timer_);
 }
 
 
@@ -190,7 +208,7 @@ void MultIO::replayRecord(const JournalRecord& record) {
 void MultIO::commitJournal() {
     AutoLock<Mutex> lock(mutex_);
 
-    std::cout << "[" << *this << "] Committing MultIO journal" << std::endl;
+    Log::info() << "[" << *this << "] Committing MultIO journal" << std::endl;
     if (!journaled_ || !journal_.isOpen()) {
         Log::warning() << "[" << *this << "] Attempting to commit a journal that has not been created"
                        << std::endl;
@@ -212,28 +230,46 @@ void MultIO::print(std::ostream& os) const {
 //----------------------------------------------------------------------------------------------------------------------
 
 void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {
+
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
+
+    Log::info() << "MultIO iopenfdb name=" << name << " mode=" << mode << std::endl;
+
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         /// NOTE: this does not quite work with multiple FDB4 since fdbaddr will be overwritten
         it->sink_->iopenfdb(name, fdbaddr, mode);
     }
+
+    timer_.stop();
+    stats_.logiopenfdb_(timer_);
 }
 
 void MultIO::iclosefdb(int fdbaddr) {
+
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
+
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iclosefdb(fdbaddr);
     }
+
+    timer_.stop();
+    stats_.logiclosefdb_(timer_);
 }
 
 void MultIO::iinitfdb() {
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iinitfdb();
     }
+
+    timer_.stop();
+    stats_.logiinitfdb_(timer_);
 }
 
 void MultIO::isetcommfdb(int rank) {
@@ -261,11 +297,17 @@ void MultIO::iset_fdb_root(int fdbaddr, const std::string& name) {
 }
 
 void MultIO::iflushfdb(int fdbaddr) {
+
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
+
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iflushfdb(fdbaddr);
     }
+
+    timer_.stop();
+    stats_.logiflushfdb_(timer_);
 }
 
 void MultIO::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
@@ -285,11 +327,16 @@ void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string&
 }
 
 void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
+
     AutoLock<Mutex> lock(mutex_);
+
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->iwritefdb(fdbaddr, blob);
     }
+
+    timer_.stop();
+    stats_.logiwritefdb_(blob->length(), timer_);
 }
 
 static DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");

@@ -1,9 +1,9 @@
 ecbuild_add_executable(
 
-    TARGET playjournal
+    TARGET multio-play-journal
 
     SOURCES
-        playjournal.cc
+        multio-play-journal.cc
 
     INCLUDES
         ${MULTIO_INCLUDE_DIRS}
@@ -19,10 +19,10 @@ ecbuild_add_executable(
 
 ecbuild_add_executable(
 
-    TARGET readjournal
+    TARGET multio-read-journal
 
     SOURCES
-        readjournal.cc
+        multio-read-journal.cc
 
     INCLUDES
         ${MULTIO_INCLUDE_DIRS}
@@ -31,3 +31,24 @@ ecbuild_add_executable(
     LIBS
         multio
 )
+
+ecbuild_add_executable(
+
+    NOINSTALL
+
+    TARGET multx
+
+    SOURCES
+        multx.cc
+
+    INCLUDES
+        ${MULTIO_INCLUDE_DIRS}
+        ${METKIT_INCLUDE_DIRS}
+        ${ECKIT_INCLUDE_DIRS}
+
+    LIBS
+        multio-fdb4
+        multio-fdb5
+        multio
+        metkit )
+

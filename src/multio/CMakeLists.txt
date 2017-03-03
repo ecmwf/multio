@@ -16,22 +16,27 @@ configure_file( multio_version.cc.in  multio_version.cc )
 ### multio sources
 
 list( APPEND multio_srcs
-    multio_version.cc
     DataSink.cc
     DataSink.h
-    FileSink.h
     FileSink.cc
-    Journal.h
+    FileSink.h
+    IOStats.cc
+    IOStats.h
     Journal.cc
-    JournalRecord.h
-    JournalRecord.cc
-    JournalReader.h
+    Journal.h
     JournalReader.cc
-    MultIO.h
+    JournalReader.h
+    JournalRecord.cc
+    JournalRecord.h
+    LibMultio.cc
+    LibMultio.h
     MultIO.cc
+    MultIO.h
     SharableBuffer.h
+    ifsio.cc
     ifsio.h
-    ifsio.cc )
+    multio_version.cc
+)
 
 
 ### multio library
@@ -60,4 +65,3 @@ ecbuild_add_library(
 
 add_subdirectory(fdb4)
 add_subdirectory(fdb5)
-

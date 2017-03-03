@@ -47,8 +47,9 @@ ecbuild_add_executable(
         ${ECKIT_INCLUDE_DIRS}
 
     LIBS
-        multio-fdb4
-        multio-fdb5
+        ${MULTIO_FDB5}
+        ${MULTIO_FDB4}
         multio
-        metkit )
+        metkit
+        eckit_option )
 

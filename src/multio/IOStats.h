@@ -35,7 +35,7 @@ class IOStats : public eckit::NonCopyable {
 
 public:
 
-    IOStats();
+    IOStats(const std::string& prefix=std::string());
     ~IOStats();
 
     void report(std::ostream& s) const;
@@ -57,7 +57,17 @@ private: // methods
 
     void print(std::ostream& s) const;
 
+    void reportCount(std::ostream& s, const std::string& label, size_t num) const;
+    void reportBytes(std::ostream& s, const std::string& label, size_t num, size_t sum, size_t sumSquares) const;
+    void reportTimes(std::ostream& s,
+                     const std::string& label,
+                     size_t num,
+                     const eckit::Timing& sum,
+                     double sumSquares) const;
+
 private: // members
+
+    std::string prefix_;
 
     // The data elements that we actually want to track
 

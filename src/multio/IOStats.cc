@@ -13,8 +13,9 @@
 /// @date Dec 2015
 
 #include "eckit/io/Length.h"
+#include "eckit/log/BigNum.h"
 #include "eckit/log/Bytes.h"
-#include "eckit/log/Statistics.h"
+#include "eckit/log/Seconds.h"
 #include "eckit/log/Timer.h"
 #include "eckit/thread/AutoLock.h"
 
@@ -22,6 +23,8 @@
 #include "multio/LibMultio.h"
 
 #include <cmath>
+
+static const int FORMAT_WIDTH = 42;
 
 
 using namespace eckit;
@@ -36,7 +39,8 @@ namespace multio {
 //----------------------------------------------------------------------------------------------------------------------
 
 
-IOStats::IOStats() :
+IOStats::IOStats(const std::string& prefix) :
+    prefix_(prefix),
     numReads_(0),
     bytesRead_(0),
     sumBytesReadSquared_(0),
@@ -60,7 +64,11 @@ IOStats::IOStats() :
     sumTimingSquaresiwritefdb_(0),
     sumTimingSquaresireadfdb_(0),
     iwritefdbBytesWritten_(0),
-    iwritefdbSumBytesWrittenSquared_(0) {}
+    iwritefdbSumBytesWrittenSquared_(0) {
+
+    if (!prefix_.empty())
+        prefix_ += std::string(" ");
+}
 
 
 IOStats::~IOStats() {}
@@ -202,125 +210,107 @@ void IOStats::logireadfdb_(eckit::Timer& timer) {
 }
 
 
-static double stdDeviation(double sum, double sumSquares, size_t count) {
-
-    if (count == 0)
-        return 0;
-
-    return std::sqrt((count * sumSquares) - (sum* sum)) / count;
-}
-
-
-static double timeStdDeviation(const Timing& sum, double sumSquares, size_t count) {
-    return stdDeviation(sum.elapsed_, sumSquares, count);
-}
-
-
-static double average(double sum, size_t count) {
-
-    if (count == 0)
-        return 0;
-    return sum / count;
-}
-
-
-static double timeAverage(const Timing& sum, size_t count) {
-    return average(sum.elapsed_, count);
-}
-
-
 void IOStats::report(std::ostream& s) const {
 
     // Write statistics
 
-    Statistics::reportCount(s, "Multio num writes", numWrites_, "", true);
-    Statistics::reportBytes(s, "Multio bytes written", bytesWritten_, "", true);
-    Statistics::reportBytes(s, "Multio average write size", average(bytesWritten_, numWrites_), "", true);
-    Statistics::reportBytes(s, "Multio write size std. dev.",
-                            stdDeviation(bytesWritten_, sumBytesWrittenSquared_, numWrites_),
-                            "", true);
-    Statistics::reportTime(s, "Multio write time: ", writeTiming_, "", true);
-    Statistics::reportTime(s, "Multio average write time", timeAverage(writeTiming_, numWrites_), "", true);
-    Statistics::reportTime(s, "Multio write time std. dev",
-                           timeStdDeviation(writeTiming_, sumWriteTimesSquared_, numWrites_)
-                           , "", true);
+    reportCount(s, "num writes", numWrites_);
+    reportBytes(s, "bytes written", numWrites_, bytesWritten_, sumBytesWrittenSquared_);
+    reportTimes(s, "write time", numWrites_, writeTiming_, sumWriteTimesSquared_);
 
     // Read statistics
 
-    Statistics::reportCount(s, "Multio num reads", numReads_, "", true);
-    Statistics::reportBytes(s, "Multio bytes read", bytesRead_, "", true);
-    Statistics::reportBytes(s, "Multio average read size", average(bytesRead_, numReads_), "", true);
-    Statistics::reportBytes(s, "Multio read size std. dev.",
-                            stdDeviation(bytesRead_, sumBytesReadSquared_, numReads_),
-                            "", true);
-    Statistics::reportTime(s, "Multio read time", timeAverage(readTiming_, numReads_), "", true);
-    Statistics::reportTime(s, "Multio average read time", timeAverage(readTiming_, numReads_), "", true);
-    Statistics::reportTime(s, "Multio read time std. dev",
-                           timeStdDeviation(readTiming_, sumReadTimesSquared_, numReads_)
-                           , "", true);
+    reportCount(s, "num reads", numReads_);
+    reportBytes(s, "bytes read", numReads_, bytesRead_, sumBytesReadSquared_);
+    reportTimes(s, "read time", numReads_, readTiming_, sumReadTimesSquared_);
 
     // Flush statistics
 
-    Statistics::reportCount(s, "Multio num flush", numFlush_, "", true);
-    Statistics::reportTime(s, "Multio flush time", timeAverage(flushTiming_, numFlush_), "", true);
-    Statistics::reportTime(s, "Multio average flush time", timeAverage(flushTiming_, numFlush_), "", true);
-    Statistics::reportTime(s, "Multio flush time std. dev",
-                           timeStdDeviation(flushTiming_, sumFlushTimesSquared_, numFlush_)
-                           , "", true);
+    reportCount(s, "num flush", numFlush_);
+    reportTimes(s, "flush time", numFlush_, flushTiming_, sumFlushTimesSquared_);
 
     // Output for legacy interface statistics
 
-    Statistics::reportCount(s, "Multio num iinitfdb", numiinitfdb_, "", true);
-    Statistics::reportTime(s, "Multio time iinitfdb", timingiinitfdb_, "", true);
-    Statistics::reportTime(s, "Multio average time iinitfdb", timeAverage(timingiinitfdb_, numiinitfdb_), "", true);
-    Statistics::reportTime(s, "Multio time std. dev iinitfdb",
-                           timeStdDeviation(timingiinitfdb_, sumTimingSquaresiinitfdb_, numiinitfdb_)
-                           , "", true);
+    reportCount(s, "num iinitfdb", numiinitfdb_);
+    reportTimes(s, "time iinitfdb", numiinitfdb_, timingiinitfdb_, sumTimingSquaresiinitfdb_);
 
-    Statistics::reportCount(s, "Multio num iopenfdb", numiopenfdb_, "", true);
-    Statistics::reportTime(s, "Multio time iopenfdb", timingiopenfdb_, "", true);
-    Statistics::reportTime(s, "Multio average time iopenfdb", timeAverage(timingiopenfdb_, numiopenfdb_), "", true);
-    Statistics::reportTime(s, "Multio time std. dev iopenfdb",
-                           timeStdDeviation(timingiopenfdb_, sumTimingSquaresiopenfdb_, numiopenfdb_)
-                           , "", true);
+    reportCount(s, "num iopenfdb", numiopenfdb_);
+    reportTimes(s, "time iopenfdb", numiopenfdb_, timingiopenfdb_, sumTimingSquaresiopenfdb_);
 
-    Statistics::reportCount(s, "Multio num iclosefdb", numiclosefdb_, "", true);
-    Statistics::reportTime(s, "Multio time iclosefdb", timingiclosefdb_, "", true);
-    Statistics::reportTime(s, "Multio average time iclosefdb", timeAverage(timingiclosefdb_, numiclosefdb_), "", true);
-    Statistics::reportTime(s, "Multio time std. dev iclosefdb",
-                           timeStdDeviation(timingiclosefdb_, sumTimingSquaresiclosefdb_, numiclosefdb_)
-                           , "", true);
+    reportCount(s, "num iclosefdb", numiclosefdb_);
+    reportTimes(s, "time iclosefdb", numiclosefdb_, timingiclosefdb_, sumTimingSquaresiclosefdb_);
 
-    Statistics::reportCount(s, "Multio num iflushfdb", numiflushfdb_, "", true);
-    Statistics::reportTime(s, "Multio time iflushfdb", timingiflushfdb_, "", true);
-    Statistics::reportTime(s, "Multio average time iflushfdb", timeAverage(timingiflushfdb_, numiflushfdb_), "", true);
-    Statistics::reportTime(s, "Multio time std. dev iflushfdb",
-                           timeStdDeviation(timingiflushfdb_, sumTimingSquaresiflushfdb_, numiflushfdb_)
-                           , "", true);
+    reportCount(s, "num iflushfdb", numiflushfdb_);
+    reportTimes(s, "time iflushfdb", numiflushfdb_, timingiflushfdb_, sumTimingSquaresiflushfdb_);
 
-    Statistics::reportCount(s, "Multio num iwritefdb", numiwritefdb_, "", true);
-    Statistics::reportBytes(s, "Multio bytes iwritefdb", iwritefdbBytesWritten_, "", true);
-    Statistics::reportBytes(s, "Multio average iwritefdb size", average(iwritefdbBytesWritten_, numiwritefdb_), "", true);
-    Statistics::reportBytes(s, "Multio iwritefdb size std. dev.",
-                            stdDeviation(iwritefdbBytesWritten_, iwritefdbSumBytesWrittenSquared_, numiwritefdb_),
-                            "", true);
-    Statistics::reportTime(s, "Multio time iwritefdb", timingiwritefdb_, "", true);
-    Statistics::reportTime(s, "Multio average time iwritefdb", timeAverage(timingiwritefdb_, numiwritefdb_), "", true);
-    Statistics::reportTime(s, "Multio time std. dev iwritefdb",
-                           timeStdDeviation(timingiwritefdb_, sumTimingSquaresiwritefdb_, numiwritefdb_)
-                           , "", true);
+    reportCount(s, "num ireadfdb", numiwritefdb_);
+    reportBytes(s, "bites ireadfdb", numiwritefdb_, iwritefdbBytesWritten_, iwritefdbSumBytesWrittenSquared_);
+    reportTimes(s, "time ireadfdb", numiwritefdb_, timingiwritefdb_, sumTimingSquaresiwritefdb_);
 
-    Statistics::reportCount(s, "Multio num ireadfdb", numireadfdb_, "", true);
-    Statistics::reportTime(s, "Multio time ireadfdb", timingireadfdb_, "", true);
-    Statistics::reportTime(s, "Multio average time ireadfdb", timeAverage(timingireadfdb_, numireadfdb_), "", true);
-    Statistics::reportTime(s, "Multio time std. dev ireadfdb",
-                           timeStdDeviation(timingireadfdb_, sumTimingSquaresireadfdb_, numireadfdb_)
-                           , "", true);
+    reportCount(s, "num ireadfdb", numireadfdb_);
+    reportTimes(s, "time ireadfdb", numireadfdb_, timingireadfdb_, sumTimingSquaresireadfdb_);
 }
 
 
 void IOStats::print(std::ostream &s) const {
     s << "IOStats()";
+}
+
+void IOStats::reportCount(std::ostream& s, const std::string &label, size_t num) const {
+
+    s << prefix_
+      << label
+      << std::setw(FORMAT_WIDTH - label.length())
+      << " : "
+      << BigNum(num)
+      << std::endl;
+}
+
+void IOStats::reportBytes(std::ostream& s, const std::string &label, size_t num, size_t sum, size_t sumSquares) const {
+
+    std::string lbl = label + " (tot, avg, std dev)";
+
+    double average = 0;
+    double stdDeviation = 0;
+    if (num != 0) {
+        average = sum / num;
+        stdDeviation = std::sqrt((num * sumSquares) - (sum * sum)) / num;
+    }
+
+    s << prefix_
+      << lbl
+      << std::setw(FORMAT_WIDTH - lbl.length())
+      << " : "
+      << BigNum(sum) << " (" << Bytes(sum) << ")"
+      << ", " << BigNum(size_t(average)) << " (" << Bytes(average) << ")"
+      << ", " << BigNum(size_t(stdDeviation)) << " (" << Bytes(stdDeviation) << ")"
+      << std::endl;
+}
+
+void IOStats::reportTimes(std::ostream& s,
+                          const std::string &label,
+                          size_t num,
+                          const Timing& sum,
+                          double sumSquares) const {
+
+    double elapsed = sum.elapsed_;
+    std::string lbl = label + " (tot, avg, std dev)";
+
+    double average = 0;
+    double stdDeviation = 0;
+    if (num != 0) {
+        average = elapsed / num;
+        stdDeviation = std::sqrt((num * sumSquares) - (elapsed * elapsed)) / num;
+    }
+
+    s << prefix_
+      << lbl
+      << std::setw(FORMAT_WIDTH - lbl.length())
+      << " : "
+      << Seconds(elapsed)
+      << ", " << Seconds(average)
+      << ", " << Seconds(stdDeviation)
+      << std::endl;
 }
 
 

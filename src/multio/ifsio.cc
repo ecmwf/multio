@@ -58,19 +58,22 @@ public:
         return *ptr_;
     }
 
-private:
+    void log(bool log) { log_ = log; }
 
-    MIO() {}
-
-    ~MIO() {
-        if(ptr_) {
-            Log::info() << "IFS MultIO statistics report on " << Main::hostname() << " PID " << ::getpid() << ":" << std::endl;
+    void report() {
+        if(log_ && ptr_) {
             ptr_->report(std::cout);
         }
     }
 
-    eckit::ScopedPtr<MultIO> ptr_;
+private:
 
+    MIO() : log_(false) {}
+
+    ~MIO() {}
+
+    eckit::ScopedPtr<MultIO> ptr_;
+    bool log_;
 };
 
 static void init() {
@@ -205,6 +208,8 @@ extern "C" {
             MIO::instance().mio().iopenfdb(sname, fdbaddr, smode);
             *addr = fdbaddr;
 
+            MIO::instance().log(true);
+
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
             return -2;
@@ -225,6 +230,8 @@ extern "C" {
 
             MIO::instance().mio().iclosefdb(*addr);
 
+            MIO::instance().report();
+
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
             return -2;
@@ -241,6 +248,7 @@ extern "C" {
             ASSERT(addr);
 
             MIO::instance().mio().iflushfdb(*addr);
+            MIO::instance().log(true);
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
@@ -262,6 +270,7 @@ extern "C" {
             eckit::DataBlobPtr blob ( new metkit::grib::GribDataBlob(data, len) );
 
             MIO::instance().mio().iwritefdb(*addr, blob);
+            MIO::instance().log(true);
 
         } catch (std::exception &e) {
             eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;

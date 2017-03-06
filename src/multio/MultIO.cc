@@ -23,6 +23,7 @@
 #include "eckit/runtime/Main.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
+#include "eckit/utils/Translator.h"
 
 using namespace eckit;
 
@@ -33,6 +34,7 @@ namespace multio {
 MultIO::MultIO(const eckit::Configuration& config) :
     DataSink(config),
     journal_(config, this),
+    stats_(std::string("Multio ") + Main::hostname() + ":" + Translator<int,std::string>()(::getpid())),
     journaled_(config.getBool("journaled", false)),
     mutex_() {
 

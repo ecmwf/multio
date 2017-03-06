@@ -88,7 +88,7 @@ void IOStats::logRead(const Length &size, Timer& timer) {
                             << ", size: " << Bytes(size)
                             << ", total: " << Bytes(bytesRead_)
                             << ", time: " << Seconds(elapsed)
-                            << ", total: " << Seconds(writeTiming_.elapsed_) << std::endl;
+                            << ", total: " << Seconds(readTiming_.elapsed_) << std::endl;
 }
 
 
@@ -243,12 +243,14 @@ void IOStats::report(std::ostream& s) const {
     reportCount(s, "num iflushfdb", numiflushfdb_);
     reportTimes(s, "time iflushfdb", numiflushfdb_, timingiflushfdb_, sumTimingSquaresiflushfdb_);
 
-    reportCount(s, "num ireadfdb", numiwritefdb_);
-    reportBytes(s, "bites ireadfdb", numiwritefdb_, iwritefdbBytesWritten_, iwritefdbSumBytesWrittenSquared_);
-    reportTimes(s, "time ireadfdb", numiwritefdb_, timingiwritefdb_, sumTimingSquaresiwritefdb_);
+    reportCount(s, "num iwritefdb", numiwritefdb_);
+    reportBytes(s, "bytes iwritefdb", numiwritefdb_, iwritefdbBytesWritten_, iwritefdbSumBytesWrittenSquared_);
+    reportTimes(s, "time iwritefdb", numiwritefdb_, timingiwritefdb_, sumTimingSquaresiwritefdb_);
 
-    reportCount(s, "num ireadfdb", numireadfdb_);
-    reportTimes(s, "time ireadfdb", numireadfdb_, timingireadfdb_, sumTimingSquaresireadfdb_);
+//    reportCount(s, "num ireadfdb", numireadfdb_);
+//    reportBytes(s, "bytes ireadfdb", numireadfdb_, ireadfdbBytesWritten_, ireadfdbSumBytesWrittenSquared_);
+//    reportTimes(s, "time ireadfdb", numireadfdb_, timingireadfdb_, sumTimingSquaresireadfdb_);
+
 }
 
 

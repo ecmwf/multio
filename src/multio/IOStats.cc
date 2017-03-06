@@ -24,7 +24,7 @@
 
 #include <cmath>
 
-static const int FORMAT_WIDTH = 38;
+static const int FORMAT_WIDTH = 42;
 
 
 using namespace eckit;

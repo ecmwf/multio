@@ -61,7 +61,7 @@ public:
     void log(bool log) { log_ = log; }
 
     void report() {
-        if(log_ && ptr_) {
+        if(log_ && ptr_ && !::getenv("MULTIO_NO_REPORT")) {
             ptr_->report(std::cout);
         }
     }

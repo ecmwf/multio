@@ -276,7 +276,7 @@ void IOStats::reportBytes(std::ostream& s, const std::string &label, size_t num,
     double stdDeviation = 0;
     if (num != 0) {
         average = sum / num;
-        stdDeviation = std::sqrt((num * sumSquares) - (sum * sum)) / num;
+        stdDeviation = std::sqrt(std::max((num * sumSquares) - (sum * sum), size_t(0))) / num;
     }
 
     s << prefix_
@@ -302,7 +302,7 @@ void IOStats::reportTimes(std::ostream& s,
     double stdDeviation = 0;
     if (num != 0) {
         average = elapsed / num;
-        stdDeviation = std::sqrt((num * sumSquares) - (elapsed * elapsed)) / num;
+        stdDeviation = std::sqrt(std::max((num * sumSquares) - (elapsed * elapsed), 0.0)) / num;
     }
 
     s << prefix_

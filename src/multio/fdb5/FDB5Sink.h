@@ -21,6 +21,7 @@
 
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/io/Length.h"
+#include "eckit/types/Types.h"
 
 #include "fdb5/legacy/LegacyArchiver.h"
 
@@ -61,6 +62,17 @@ public:
 protected:
 
     virtual void print(std::ostream&) const;
+
+private: // members
+
+    /// The last values of the specified keys. Use to track if the key has flushed.
+    eckit::StringDict lastKeys_;
+
+    /// Keys to signal that index should be flushed. If none specified, flush occurs when called.
+    std::vector<std::string> flushOn_;
+
+    /// Set true if data has been written since the last flush
+    bool dirty_;
 
 private:
 

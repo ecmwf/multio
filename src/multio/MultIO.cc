@@ -324,10 +324,13 @@ void MultIO::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
 
 void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {
     AutoLock<Mutex> lock(mutex_);
+    timer_.start();
     for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT( it->sink_ );
         it->sink_->isetvalfdb(fdbaddr, name, value);
     }
+    timer_.stop();
+    stats_.logisetvalfdb_(timer_);
 }
 
 void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {

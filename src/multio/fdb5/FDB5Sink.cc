@@ -12,6 +12,7 @@
 /// @date   Dec 2015
 
 #include "multio/fdb5/FDB5Sink.h"
+#include "multio/LibMultio.h"
 
 #include "eckit/exception/Exceptions.h"
 #include "fdb5/config/UMask.h"
@@ -52,7 +53,7 @@ void FDB5Sink::write(DataBlobPtr blob) {
 
     fdb5::UMask umask(fdb5::UMask::defaultUMask());
 
-    std::cout << "FDB5Sink::write()" << std::endl;
+    Log::debug<LibMultio>() << "FDB5Sink::write()" << std::endl;
 
     ASSERT(archiver_);
 
@@ -66,39 +67,39 @@ void FDB5Sink::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
 
 void FDB5Sink::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode)
 {
-    std::cout << "FDB5Sink::iopenfdb(" << name << "," << mode << ")" << std::endl;
+    Log::debug<LibMultio>() << "FDB5Sink::iopenfdb(" << name << "," << mode << ")" << std::endl;
     archiver_.reset( new fdb5::legacy::LegacyArchiver() );
 }
 
 void FDB5Sink::iinitfdb()
 {
-    std::cout << "FDB5Sink::iinitfdb()" << std::endl;
+    Log::debug<LibMultio>() << "FDB5Sink::iinitfdb()" << std::endl;
 }
 
 void FDB5Sink::iclosefdb(int fdbaddr)
 {
-    std::cout << "FDB5Sink::iclosefdb(" << fdbaddr << ")" << std::endl;
+    Log::debug<LibMultio>() << "FDB5Sink::iclosefdb(" << fdbaddr << ")" << std::endl;
     archiver_.reset(0);
 }
 
 void FDB5Sink::isetcommfdb(int comm)
 {
-    std::cout << "FDB5Sink::isetcommfdb(" << comm << ")" << std::endl;
+    Log::debug<LibMultio>() << "FDB5Sink::isetcommfdb(" << comm << ")" << std::endl;
 }
 
 void FDB5Sink::isetrankfdb(int fdbaddr, int rank)
 {
-    std::cout << "FDB5Sink::isetrankfdb(" << fdbaddr << "," << rank << ")" << std::endl;
+    Log::debug<LibMultio>() << "FDB5Sink::isetrankfdb(" << fdbaddr << "," << rank << ")" << std::endl;
 }
 
 void FDB5Sink::iset_fdb_root(int fdbaddr, const std::string& name)
 {
-    std::cout << "FDB5Sink::iset_fdb_root(" << fdbaddr << "," << name << ")" << std::endl;
+    Log::debug<LibMultio>() << "FDB5Sink::iset_fdb_root(" << fdbaddr << "," << name << ")" << std::endl;
 }
 
 void FDB5Sink::iflushfdb(int fdbaddr)
 {
-    std::cout << "FDB5Sink::iflushfdb(" << fdbaddr << ")" << std::endl;
+    Log::debug<LibMultio>() << "FDB5Sink::iflushfdb(" << fdbaddr << ")" << std::endl;
     ASSERT(archiver_);
 
     // If flushOn is specified in the config, then we only flush when specified keys are changed.
@@ -107,18 +108,18 @@ void FDB5Sink::iflushfdb(int fdbaddr)
         archiver_->flush();
         dirty_ = false;
     } else {
-        std::cout << "FDB5Sink::iflushfdb skipped by flushOn configuration" << std::endl;
+        Log::debug<LibMultio>() << "FDB5Sink::iflushfdb skipped by flushOn configuration" << std::endl;
     }
 }
 
 void FDB5Sink::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank)
 {
-    std::cout << "FDB5Sink::isetfieldcountfdb(" << fdbaddr << "," << all_ranks << "," << this_rank << ")" << std::endl;
+    Log::debug<LibMultio>() << "FDB5Sink::isetfieldcountfdb(" << fdbaddr << "," << all_ranks << "," << this_rank << ")" << std::endl;
 }
 
 void FDB5Sink::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value)
 {
-    std::cout << "FDB5Sink::isetvalfdb(" << fdbaddr << "," << name << "," << value << ")" << std::endl;
+    Log::debug<LibMultio>() << "FDB5Sink::isetvalfdb(" << fdbaddr << "," << name << "," << value << ")" << std::endl;
     ASSERT(archiver_);
     archiver_->legacy(name, value);
 
@@ -131,7 +132,7 @@ void FDB5Sink::isetvalfdb(int fdbaddr, const std::string& name, const std::strin
         if (lastVal != value) {
 
             if (lastVal.empty() && dirty_) {
-                std::cout << "FDB5Sink::isetvalfdb triggering archiver flush on key change" << std::endl;
+                Log::debug<LibMultio>() << "FDB5Sink::isetvalfdb triggering archiver flush on key change" << std::endl;
                 archiver_->flush();
                 dirty_ = false;
             }

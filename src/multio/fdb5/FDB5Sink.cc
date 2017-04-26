@@ -44,6 +44,9 @@ FDB5Sink::FDB5Sink(const Configuration& config) :
             throw UserError("Flush on key duplicated in configuration", Here());
         lastKeys_[flushOn_[i]] = std::string();
     }
+
+    if (!flushOn_.empty())
+        Log::info() << "FDB5 sink filtering iflushfdb calls according to: " << flushOn_ << std::endl;
 }
 
 FDB5Sink::~FDB5Sink() {
@@ -128,10 +131,9 @@ void FDB5Sink::isetvalfdb(int fdbaddr, const std::string& name, const std::strin
 
     if (std::find(flushOn_.begin(), flushOn_.end(), name) != flushOn_.end()) {
 
-        std::string lastVal = lastKeys_[name];
+        const std::string& lastVal = lastKeys_[name];
         if (lastVal != value) {
-
-            if (lastVal.empty() && dirty_) {
+            if (dirty_) {
                 Log::debug<LibMultio>() << "FDB5Sink::isetvalfdb triggering archiver flush on key change" << std::endl;
                 archiver_->flush();
                 dirty_ = false;

@@ -71,7 +71,7 @@ void FDB5Sink::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
 void FDB5Sink::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode)
 {
     Log::debug<LibMultio>() << "FDB5Sink::iopenfdb(" << name << "," << mode << ")" << std::endl;
-    archiver_.reset( new fdb5::legacy::LegacyArchiver() );
+    archiver_.reset( new fdb5::legacy::LegacyArchiver(config_) );
 }
 
 void FDB5Sink::iinitfdb()

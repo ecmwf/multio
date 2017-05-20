@@ -10,9 +10,9 @@ ecbuild_requires_macro_version( 2.0 )
 
 ### dependencies
 
-# eckit multiplexer
+# eckit -- version >= 0.16.5 includes new library registration mechanism
 
-ecbuild_use_package( PROJECT eckit VERSION  0.10 REQUIRED )
+ecbuild_use_package( PROJECT eckit VERSION  0.16.5 REQUIRED )
 
 ### metkit must be built with GRIB support for GribDataBlobs
 ecbuild_use_package( PROJECT metkit VERSION 0.3 REQUIRED )
@@ -33,7 +33,7 @@ ecbuild_add_option( FEATURE FDB4
 ecbuild_add_option( FEATURE FDB5
                     DEFAULT ON
                     DESCRIPTION "Send data to FDB5"
-                    REQUIRED_PACKAGES "PROJECT mars_server VERSION 7.5" )
+                    REQUIRED_PACKAGES "PROJECT mars_server VERSION 7.8.10" )
 
 ### start project
 

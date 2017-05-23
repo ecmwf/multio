@@ -23,14 +23,14 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-static LibMultio libmultio;
-
+REGISTER_LIBRARY(LibMultio);
 
 LibMultio::LibMultio() :
     Library("multio") {}
 
 
 const LibMultio& LibMultio::instance() {
+    static LibMultio libmultio;
     return libmultio;
 }
 

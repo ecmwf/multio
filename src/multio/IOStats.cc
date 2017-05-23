@@ -209,6 +209,20 @@ void IOStats::logireadfdb_(eckit::Timer& timer) {
                             << ", total: " << Seconds(timingireadfdb_.elapsed_) << std::endl;
 }
 
+void IOStats::logisetvalfdb_(Timer &timer) {
+
+    numisetvalfdb_++;
+    timingisetvalfdb_ += timer;
+
+    double elapsed = timer.elapsed();
+    sumTimingSquaresisetvalfdb_ += elapsed * elapsed;
+
+    Log::debug<LibMultio>() << "isetfdb count: " << numisetvalfdb_
+                            << ", time: " << Seconds(elapsed)
+                            << ", total: " << Seconds(timingisetvalfdb_.elapsed_) << std::endl;
+
+}
+
 
 void IOStats::report(std::ostream& s) const {
 
@@ -242,6 +256,9 @@ void IOStats::report(std::ostream& s) const {
 
     reportCount(s, "num iflushfdb", numiflushfdb_);
     reportTimes(s, "time iflushfdb", numiflushfdb_, timingiflushfdb_, sumTimingSquaresiflushfdb_);
+
+    reportCount(s, "num isetvalfdb", numisetvalfdb_);
+    reportTimes(s, "time isetvalfdb", numisetvalfdb_, timingisetvalfdb_, sumTimingSquaresisetvalfdb_);
 
     reportCount(s, "num iwritefdb", numiwritefdb_);
     reportBytes(s, "bytes iwritefdb", numiwritefdb_, iwritefdbBytesWritten_, iwritefdbSumBytesWrittenSquared_);

@@ -87,7 +87,7 @@ void IOStats::logRead(const Length &size, Timer& timer) {
                             << ", size: " << Bytes(size)
                             << ", total: " << Bytes(bytesRead_)
                             << ", time: " << elapsed << "s"
-                            << ", total: " << readTiming_.elapsed_) << "s" << std::endl;
+                            << ", total: " << readTiming_.elapsed_ << "s" << std::endl;
 }
 
 

@@ -230,12 +230,14 @@ void IOStats::report(std::ostream& s) const {
     reportCount(s, "num writes", numWrites_);
     reportBytes(s, "bytes written", numWrites_, bytesWritten_, sumBytesWrittenSquared_);
     reportTimes(s, "write time", numWrites_, writeTiming_, sumWriteTimesSquared_);
+    reportRate(s, "write rate", bytesWritten_, writeTiming_);
 
     // Read statistics
 
     reportCount(s, "num reads", numReads_);
     reportBytes(s, "bytes read", numReads_, bytesRead_, sumBytesReadSquared_);
     reportTimes(s, "read time", numReads_, readTiming_, sumReadTimesSquared_);
+    reportRate(s, "read rate", bytesRead_, readTiming_);
 
     // Flush statistics
 
@@ -262,6 +264,7 @@ void IOStats::report(std::ostream& s) const {
     reportCount(s, "num iwritefdb", numiwritefdb_);
     reportBytes(s, "bytes iwritefdb", numiwritefdb_, iwritefdbBytesWritten_, iwritefdbSumBytesWrittenSquared_);
     reportTimes(s, "time iwritefdb", numiwritefdb_, timingiwritefdb_, sumTimingSquaresiwritefdb_);
+    reportRate(s, "rate iwritefdb", iwritefdbBytesWritten_, timingiwritefdb_);
 
 //    reportCount(s, "num ireadfdb", numireadfdb_);
 //    reportBytes(s, "bytes ireadfdb", numireadfdb_, ireadfdbBytesWritten_, ireadfdbSumBytesWrittenSquared_);
@@ -328,6 +331,23 @@ void IOStats::reportTimes(std::ostream& s,
       << elapsed << "s"
       << ", " << average << "s"
       << ", " << stdDeviation << "s"
+      << std::endl;
+}
+
+void IOStats::reportRate(std::ostream &s, const std::string& label, size_t bytes, const Timing &time) const {
+
+    double elapsed = time.elapsed_;
+    double rate = 0;
+
+    if (bytes != 0 && elapsed > 0) {
+        rate = bytes / elapsed;
+    }
+
+    s << prefix_
+      << label
+      << std::setw(FORMAT_WIDTH - label.length())
+      << " : "
+      << Bytes(rate) << " per second"
       << std::endl;
 }
 

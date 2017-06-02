@@ -65,6 +65,7 @@ private: // methods
                      size_t num,
                      const eckit::Timing& sum,
                      double sumSquares) const;
+    void reportRate(std::ostream& s, const std::string& label, size_t bytes, const eckit::Timing& time) const;
 
 private: // members
 

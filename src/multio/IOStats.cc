@@ -56,12 +56,14 @@ IOStats::IOStats(const std::string& prefix) :
     numiflushfdb_(0),
     numiwritefdb_(0),
     numireadfdb_(0),
+    numisetvalfdb_(0),
     sumTimingSquaresiinitfdb_(0),
     sumTimingSquaresiopenfdb_(0),
     sumTimingSquaresiclosefdb_(0),
     sumTimingSquaresiflushfdb_(0),
     sumTimingSquaresiwritefdb_(0),
     sumTimingSquaresireadfdb_(0),
+    sumTimingSquaresisetvalfdb_(0),
     iwritefdbBytesWritten_(0),
     iwritefdbSumBytesWrittenSquared_(0) {
 

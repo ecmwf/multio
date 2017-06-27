@@ -28,19 +28,14 @@
 #include "eckit/memory/SharedPtr.h"
 #include "eckit/types/FixedString.h"
 
-#include "multio/SharableBuffer.h"
-
-// -------------------------------------------------------------------------------------------------
 
 namespace eckit {
     class Value;
 }
 
-// -------------------------------------------------------------------------------------------------
-
 namespace multio {
 
-// -------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 class Journal;
 
@@ -72,8 +67,6 @@ public: // Data types, and structural members.
     //        >> Code 'E'
     //   -- A termination marker for the record
 
-    // ---------------------------------------------------------
-
     enum RecordType {   // n.b. if we add types, update the ASSERT in JournalRecord::RecordTypeName
         Uninitialised,
         EndOfJournal,
@@ -98,8 +91,6 @@ public: // Data types, and structural members.
 
     const static unsigned char CurrentTagVersion;
 
-
-    // ---------------------------------------------------------
 
     // Inside the JournalRecord, there are a series of JournalEntries.
     // Each of these starts with a (very brief) header, describing what it is.
@@ -137,7 +128,6 @@ public: // Data types, and structural members.
 
     // Payload goes here (should depend on the specific type. Will be pointed to.
     // eckit::ScopedPtr<JournalRecordPayload> payload_
-    // ---------------------------------------------------------
 
     eckit::FixedString<4> marker_;           /// (4) Termination marker
 
@@ -200,11 +190,10 @@ private: // internal control elements
 
 };
 
-//--------------------------------------------------------------------------------------------------
-
 typedef eckit::SharedPtr<JournalRecord> JournalRecordPtr;
 
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+
 
 }  // namespace multio
 

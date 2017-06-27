@@ -22,20 +22,17 @@
 
 #include "multio/Journal.h"
 #include "multio/JournalRecord.h"
-#include "multio/SharableBuffer.h"
 
 using namespace eckit;
 
 namespace multio {
 
-// -------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+
 
 const FixedString<4> JournalRecord::TerminationMarker("END!");
 const unsigned char JournalRecord::CurrentTagVersion = 1;
 
-
-
-// -------------------------------------------------------------------------------------------------
 
 // TODO: Should we have a record factory that keeps track of all outstanding records?
 
@@ -282,6 +279,6 @@ void JournalRecord::print(std::ostream& os) const
     os << "JournalRecord(" << RecordTypeName(RecordType(head_.tag_)) << ")";
 }
 
-// -------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 } // namespace multio

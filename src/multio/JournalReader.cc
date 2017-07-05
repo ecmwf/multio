@@ -14,7 +14,7 @@
 #include <sys/time.h>
 #include <sstream>
 
-#include "eckit/config/JSONConfiguration.h"
+#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/io/DataBlob.h"
 
 #include "multio/Journal.h"
@@ -154,7 +154,7 @@ void JournalReader::readConfiguration() {
 
     std::istringstream iss(json_str);
 
-    config_.reset(new JSONConfiguration(iss));
+    config_.reset(new YAMLConfiguration(iss));
 
     Log::info() << "[" << *this << "]  - Journal file configuration: " << std::endl;
     Log::info() << "-------------------------------------------------------------" << std::endl;

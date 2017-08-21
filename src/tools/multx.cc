@@ -28,7 +28,7 @@
 //#include "eckit/option/SimpleOption.h"
 //#include "eckit/option/VectorOption.h"
 
-#include "metkit/grib/EmosFile.h"
+#include "metkit/grib/MetFile.h"
 #include "metkit/grib/GribDataBlob.h"
 
 #include "multio/MultIO.h"
@@ -133,7 +133,7 @@ void Multx::run()
 
     long len = 0;
 
-    metkit::grib::EmosFile file( path );
+    metkit::grib::MetFile file( path );
 
     Log::status() << "Analysing GRIB data" << std::endl;
 

@@ -32,7 +32,6 @@ list( APPEND multio_srcs
     LibMultio.h
     MultIO.cc
     MultIO.h
-    SharableBuffer.h
     ifsio.cc
     ifsio.h
     multio_version.cc

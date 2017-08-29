@@ -10,7 +10,7 @@
 
 #include <sstream>
 
-#include "eckit/config/JSONConfiguration.h"
+#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/config/Resource.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/Log.h"
@@ -57,7 +57,7 @@ void ReadJournal::run()
     // Construct a (null) configuration for now.
     std::stringstream oss;
     oss << "{}" << std::endl;
-    JSONConfiguration config(oss);
+    YAMLConfiguration config(oss);
 
     // Read from the file specified as the first argument
     JournalReader journal(config, inPath_);

@@ -8,23 +8,30 @@
  * does it submit to any jurisdiction.
  */
 
-#define BOOST_TEST_MODULE test_multio
-
-#include "ecbuild/boost_test_framework.h"
-
 #include "eckit/log/Log.h"
 #include "multio/DataSink.h"
 #include "multio/FileSink.h"
 
-#include <iostream>
+#include "eckit/testing/Test.h"
 
-using namespace multio;
-using namespace eckit;
+using namespace eckit::testing;
 
+namespace multio {
+namespace test {
 
-BOOST_AUTO_TEST_SUITE( test_multio_multio )
+//-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( test_dummy ) {}
+CASE( "test_dummy" )
+{
+    EXPECT(true);
+}
 
-BOOST_AUTO_TEST_SUITE_END()
+//-----------------------------------------------------------------------------
 
+}  // namespace test
+}  // namespace multio
+
+int main(int argc, char **argv)
+{
+    return run_tests ( argc, argv );
+}

@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "eckit/config/JSONConfiguration.h"
+#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
@@ -37,11 +37,12 @@ static eckit::Mutex *local_mutex = 0;
 
 static pthread_once_t once = PTHREAD_ONCE_INIT;
 
+//----------------------------------------------------------------------------------------------------------------------
 
 class MIO {
 public:
 
-    static void initialise(const eckit::JSONConfiguration& config) {
+    static void initialise(const eckit::YAMLConfiguration& config) {
         MIO& mio = instance();
         if(mio.ptr_) return;
         mio.ptr_.reset(new MultIO(config));
@@ -90,7 +91,7 @@ static void init() {
 
         std::cout << "MultIO initialising with file " << path << std::endl;
 
-        eckit::JSONConfiguration config(path);
+        eckit::YAMLConfiguration config(path);
 
         MIO::initialise(config);
 
@@ -126,13 +127,13 @@ static void init() {
 
     std::istringstream iss(oss.str());
 
-    eckit::JSONConfiguration config(iss);
+    eckit::YAMLConfiguration config(iss);
 
     MIO::initialise(config);
 
 }
 
-/**********************************************************************************************************************/
+//----------------------------------------------------------------------------------------------------------------------
 
 #define MULTIO_TRACE
 
@@ -154,7 +155,7 @@ static bool traceme() {
 #define MULTIO_TRACE_FUNC2(p1,p2)
 #endif
 
-/**********************************************************************************************************************/
+//----------------------------------------------------------------------------------------------------------------------
 
 extern "C" {
 

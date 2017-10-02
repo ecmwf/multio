@@ -10,9 +10,7 @@ ecbuild_requires_macro_version( 2.0 )
 
 ### dependencies
 
-# eckit -- version >= 0.16.5 includes new library registration mechanism
-
-ecbuild_use_package( PROJECT eckit VERSION  0.16.5 REQUIRED )
+ecbuild_use_package( PROJECT eckit VERSION  0.18.0 REQUIRED ) # 0.18.0 has correct YAML parser
 
 ### metkit must be built with GRIB support for GribDataBlobs
 ecbuild_use_package( PROJECT metkit VERSION 0.3 REQUIRED )

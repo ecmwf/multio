@@ -11,7 +11,7 @@
 #include <sstream>
 #include <unistd.h>
 
-#include "eckit/config/JSONConfiguration.h"
+#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/config/Resource.h"
 #include "eckit/io/Buffer.h"
 #include "eckit/io/DataBlob.h"
@@ -28,16 +28,17 @@
 //#include "eckit/option/SimpleOption.h"
 //#include "eckit/option/VectorOption.h"
 
-#include "metkit/grib/EmosFile.h"
+#include "metkit/grib/MetFile.h"
 #include "metkit/grib/GribDataBlob.h"
 
 #include "multio/MultIO.h"
 
 using namespace eckit;
-//using namespace eckit::option;
 using namespace multio;
 
-//--------------------------------------------------------------------------------------------------
+//using namespace eckit::option;
+
+//----------------------------------------------------------------------------------------------------------------------
 
 class Multx : public Tool {
 
@@ -84,15 +85,15 @@ private: // members
     std::stringstream defaultConfig_;
 };
 
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 void Multx::usage(const std::string &tool) {
 
     eckit::Log::info()
-            << std::endl << "Usage: " << tool << " [--config=<json-path>] <grib>" << std::endl
+            << std::endl << "Usage: " << tool << " [--config=<yaml-path>] <grib>" << std::endl
             << std::endl << "Examples: " << std::endl
             << "  % " << tool << " input.grib" << std::endl
-            << "  % " << tool << " --config=sinks.json input.grib" << std::endl;
+            << "  % " << tool << " --config=sinks.yaml input.grib" << std::endl;
 }
 
 void Multx::run()
@@ -100,18 +101,18 @@ void Multx::run()
     // Read the input
 
     std::vector<option::Option*> options;
-    options.push_back(new option::SimpleOption<PathName>("config", "The JSON configuration to use"));
+    options.push_back(new option::SimpleOption<PathName>("config", "The YAML configuration to use"));
     option::CmdArgs args(&Multx::usage, options, 1, 1);
 
     // Which config should we use?
 
-    eckit::ScopedPtr<JSONConfiguration> config;
+    eckit::ScopedPtr<YAMLConfiguration> config;
     if (args.has("config")) {
         std::string configPath;
         args.get("config", configPath);
-        config.reset(new JSONConfiguration(configPath));
+        config.reset(new YAMLConfiguration(configPath));
     } else {
-        config.reset(new JSONConfiguration(defaultConfig_));
+        config.reset(new YAMLConfiguration(defaultConfig_));
     }
 
     //    std::vector<const Option *> options;
@@ -132,7 +133,7 @@ void Multx::run()
 
     long len = 0;
 
-    metkit::grib::EmosFile file( path );
+    metkit::grib::MetFile file( path );
 
     Log::status() << "Analysing GRIB data" << std::endl;
 

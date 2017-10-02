@@ -8,53 +8,46 @@
  * does it submit to any jurisdiction.
  */
 
-#define BOOST_TEST_MODULE test_multio_datasink
-
-#include "ecbuild/boost_test_framework.h"
 
 #include "eckit/log/Log.h"
 #include "multio/DataSink.h"
 #include "multio/FileSink.h"
+#include "eckit/testing/Test.h"
 
-#include <iostream>
+#include <cstring>
 
-using namespace multio;
 using namespace eckit;
+using namespace eckit::testing;
 
-// -------------------------------------------------------------------------------------------------
+namespace multio {
+namespace test {
 
-//
-// Ensure that the testing classes/stuff are only available in this file.
-namespace {
+//-----------------------------------------------------------------------------
+class TestDataSink : public DataSink {
 
-    class TestDataSink : public DataSink {
+public:
 
-    public:
+    TestDataSink(const Configuration& config) :
+        DataSink(config),
+        config_(&config) {}
 
-        TestDataSink(const Configuration& config) :
-            DataSink(config),
-            config_(&config) {}
+    virtual ~TestDataSink() {}
 
-        virtual ~TestDataSink() {}
+    virtual void write(eckit::DataBlobPtr blob) {}
 
-        virtual void write(eckit::DataBlobPtr blob) {}
+    Configuration const * config_;
 
-        Configuration const * config_;
+protected:
 
-    protected:
-
-        virtual void print(std::ostream& os) const { os << "tmp"; }
-    };
+    virtual void print(std::ostream& os) const { os << "tmp"; }
+};
 
 
-    static DataSinkBuilder<TestDataSink> testSinkBuilder("test");
-}
+static DataSinkBuilder<TestDataSink> testSinkBuilder("test");
 
-// -------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_SUITE( test_multio_datasink_factory )
-
-BOOST_AUTO_TEST_CASE( test_factory_generate )
+CASE( "test_factory_generate" )
 {
     LocalConfiguration config;
     ScopedPtr<DataSink> sink(DataSinkFactory::build("test", config));
@@ -62,13 +55,13 @@ BOOST_AUTO_TEST_CASE( test_factory_generate )
     // Check that we generate a sink of the correct type (and implicitly that the factory
     // is correctly registered).
     TestDataSink * testSink = dynamic_cast<TestDataSink*>(sink.get());
-    BOOST_CHECK(testSink);
+    EXPECT(testSink);
 
     // Test that the configuration is passed through the builder/factory.
-    BOOST_CHECK_EQUAL(testSink->config_, &config);
+    EXPECT(testSink->config_ == &config);
 }
 
-BOOST_AUTO_TEST_CASE( test_list_factories )
+CASE( "test_list_factories" )
 {
     // DataSinkFactory::list appends the results to a ostream&, so we need to extract them.
     std::stringstream ss;
@@ -87,9 +80,18 @@ BOOST_AUTO_TEST_CASE( test_list_factories )
     }
 
     // We expect the file and MultIO factories to be in there too...
-    BOOST_CHECK(std::find(strings.begin(), strings.end(), "file") != strings.end());
-    BOOST_CHECK(std::find(strings.begin(), strings.end(), "multio") != strings.end());
-    BOOST_CHECK(std::find(strings.begin(), strings.end(), "test") != strings.end());
+    EXPECT(std::find(strings.begin(), strings.end(), "file") != strings.end());
+    EXPECT(std::find(strings.begin(), strings.end(), "multio") != strings.end());
+    EXPECT(std::find(strings.begin(), strings.end(), "test") != strings.end());
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+
+//-----------------------------------------------------------------------------
+
+}  // namespace test
+}  // namespace multio
+
+int main(int argc, char **argv)
+{
+    return run_tests ( argc, argv );
+}

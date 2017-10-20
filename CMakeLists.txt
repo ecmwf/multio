@@ -14,7 +14,7 @@ ecbuild_use_package( PROJECT eckit VERSION  0.18.0 REQUIRED ) # 0.18.0 has corre
 
 ### metkit must be built with GRIB support for GribDataBlobs
 ecbuild_use_package( PROJECT metkit VERSION 0.3 REQUIRED )
-if( NOT METKIT_HAVE_GRIB )
+if( NOT (METKIT_HAVE_GRIB OR METKIT_HAVE_ECCODES) )
   ecbuild_critical( "metkit must be built with GRIB support" )
 endif()
 

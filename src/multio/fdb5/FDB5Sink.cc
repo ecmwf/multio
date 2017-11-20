@@ -16,7 +16,6 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "fdb5/config/UMask.h"
-#include "fdb5/config/MasterConfig.h"
 
 
 using namespace eckit;
@@ -36,7 +35,6 @@ using namespace multio;
 FDB5Sink::FDB5Sink(const Configuration& config) :
     DataSink(config),
     dirty_(false) {
-	fdb5::MasterConfig::instance();
 
     config.get("flushOn", flushOn_);
     for (size_t i = 0; i < flushOn_.size(); i++) {
@@ -149,22 +147,6 @@ void FDB5Sink::print(std::ostream& os) const
     os << "FDB5Sink()";
 }
 
-
-//----------------------------------------------------------------------------------------------------------------------
-
-// Ensure that we reference fdb5::MasterConfig, so that it is initialised before
-// any other fdb5 objects
-
-class FDB5DataSinkBuilder : public DataSinkBuilder<FDB5Sink> {
-public:
-
-    FDB5DataSinkBuilder() : DataSinkBuilder<FDB5Sink>("fdb5") {
-        fdb5::MasterConfig::instance();
-    }
-
-    virtual ~FDB5DataSinkBuilder() {}
-};
-
-static FDB5DataSinkBuilder FDB5SinkBuilder;
+static DataSinkBuilder<FDB5Sink> FDB5SinkBuilder("fdb5");
 
 //----------------------------------------------------------------------------------------------------------------------

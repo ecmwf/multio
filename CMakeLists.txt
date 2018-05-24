@@ -49,6 +49,7 @@ get_directory_property( MULTIO_DEFINITIONS COMPILE_DEFINITIONS )
 include_directories( ${MULTIO_INCLUDE_DIRS} )
 
 add_subdirectory( src )
+add_subdirectory( tests )
 
 ### finalize project
 

@@ -21,8 +21,7 @@ namespace test {
 
 //-----------------------------------------------------------------------------
 
-CASE( "test_dummy" )
-{
+CASE("test_dummy") {
     EXPECT(true);
 }
 
@@ -31,7 +30,6 @@ CASE( "test_dummy" )
 }  // namespace test
 }  // namespace multio
 
-int main(int argc, char **argv)
-{
-    return run_tests ( argc, argv );
+int main(int argc, char** argv) {
+    return run_tests(argc, argv);
 }

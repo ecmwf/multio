@@ -53,6 +53,38 @@ MultIO::MultIO(const eckit::Configuration& config) :
     // Must open after sinks are initialised, or the subsink configs won't exist yet.
     if (journaled_)
         journal_.open();
+
+    // LocalConfiguration cfgTrigger;
+    // if(config_.has("event_trigger")) {
+    //     std::cout << "Found configuration \"event_trigger\"" << std::endl;
+    //     cfgTrigger = config_.getSubConfiguration("event_trigger");
+    // }
+    // LocalConfiguration cfgMetadata;
+    // if(cfgTrigger.has("metadata")) {
+    //     std::cout << "Found configuration \"metadata\"" << std::endl;
+    //     cfgMetadata = cfgTrigger.getSubConfiguration("metadata");
+    // }
+    // LocalConfiguration cfgStep;
+    // if(cfgMetadata.has("step")) {
+    //     std::cout << "Found configuration \"step\"" << std::endl;
+    //     cfgStep = cfgMetadata.getSubConfiguration("step");
+    // }
+
+    LocalConfiguration cfgStep;
+    if (config_.getSubConfiguration("event_trigger").getSubConfiguration("metadata").has("step")) {
+        std::cout << "Found configuration \"step\"" << std::endl;
+        cfgStep = config_.getSubConfiguration("event_trigger")
+                      .getSubConfiguration("metadata")
+                      .getSubConfiguration("step");
+    }
+    Value val = cfgStep.get();
+    std::vector<std::string> step_vals;
+    eckit::fromValue(step_vals, val);
+    std::cout << "Vals = " << val << std::endl;
+    std::cout << "Converted values: ";
+    std::copy(step_vals.begin(), step_vals.end(),
+              std::ostream_iterator<std::string>(std::cout, ", "));
+    std::cout << std::endl;
 }
 
 MultIO::~MultIO() {

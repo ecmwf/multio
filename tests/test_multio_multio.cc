@@ -12,6 +12,7 @@
 #include "multio/DataSink.h"
 #include "multio/FileSink.h"
 
+#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/testing/Test.h"
 
 using namespace eckit::testing;
@@ -21,9 +22,19 @@ namespace test {
 
 //-----------------------------------------------------------------------------
 
-CASE( "test_dummy" )
-{
+CASE("test_dummy") {
     EXPECT(true);
+}
+
+CASE("test_multio_with_event_trigger") {
+    std::istringstream in(
+        "{ \"sinks\" : [ {\"type\" : \"file\", \"path\" : \"/dev/null\"} ], \"event_trigger\" : { "
+        "\"host\" : \"cob-login-4\", \"port\" : "
+        "\"106723\", \"metadata\" : {\"step\" : [0, 3, 6, 9, 12]} } }");
+
+    eckit::YAMLConfiguration config(in.str());
+
+    DataSink* multio_sink = DataSinkFactory::build("multio", config);
 }
 
 //-----------------------------------------------------------------------------
@@ -31,7 +42,6 @@ CASE( "test_dummy" )
 }  // namespace test
 }  // namespace multio
 
-int main(int argc, char **argv)
-{
-    return run_tests ( argc, argv );
+int main(int argc, char** argv) {
+    return run_tests(argc, argv);
 }

@@ -85,12 +85,14 @@ public: // methods
     {
         ASSERT(config.getString("type") == eventType());
 
+        if(config.has("file"))
+            file_ = config.getString("file");
+
         if(config.has("port"))
             port_ = config.getInt("port");
 
         if(config.has("host"))
             host_ = config.getString("host");
-
     }
 
 
@@ -143,18 +145,25 @@ private: // methods
         ASSERT(it != values_.end());
         std::string value = *it;
 
-        Log::info() << "EVENT ISSUED -- Key " << key_ << " Value " << value << std::endl;
-
         Event e(eventType(), "multio");
         e.set(key_, value);
 
         std::ostringstream os;
         JSON msg(os);
+        e.json(msg);
+
+        Log::info() << "EVENT ISSUED -- Key " << key_ << " Value " << value << " : " << os.str() << std::endl;
 
         if(!host_.empty()) {
             TCPClient c;
             c.connect(host_, port_);
             c.write(os.str().c_str(), os.str().size());
+        }
+
+        if(!file_.empty()) {
+            std::ofstream f(PathName(file_).asString().c_str(), std::ios::app);
+            f << os.str() << std::endl;
+            f.close();
         }
     }
 
@@ -169,6 +178,8 @@ private: // members
 
     mutable std::vector<std::string>::const_iterator lastSeen_;
     mutable std::vector<std::string>::const_iterator issued_;
+
+    std::string file_;
 
 };
 

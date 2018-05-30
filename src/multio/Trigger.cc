@@ -18,10 +18,41 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/types/Metadata.h"
+#include "eckit/net/TCPClient.h"
+#include "eckit/parser/JSON.h"
 
 using namespace eckit;
 
 namespace multio {
+
+//----------------------------------------------------------------------------------------------------------------------
+
+class Event {
+
+    std::string event_;
+    std::string app_;
+
+    StringDict metadata_;
+
+public: // methods
+
+    Event(const std::string& event, const std::string& app) :
+        event_(event),
+        app_(app) {
+    }
+
+    void set(const std::string& k, const std::string& v) { metadata_[k] = v; }
+
+    void json(JSON& s) const {
+        s.startObject();
+        s << "event" << event_;
+        s << "app"  << app_;
+        for(StringDict::const_iterator it = metadata_.begin(); it != metadata_.end(); ++it) {
+            s << it->first << it->second;
+        }
+        s.endObject();
+    }
+};
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -38,7 +69,6 @@ public: // methods
     static EventTrigger* build(const Configuration& config);
 };
 
-
 //----------------------------------------------------------------------------------------------------------------------
 
 class MetadataChangeTrigger : public EventTrigger {
@@ -48,14 +78,19 @@ public: // methods
     static const char* eventType() { return "MetadataChange"; }
 
     MetadataChangeTrigger(const Configuration& config) : EventTrigger(config),
-        port_(config.getInt("port")),
-        hostname_(config.getString("host")),
         key_(config.getString("key")),
         values_(config.getStringVector("values")),
         lastSeen_(values_.end()),
         issued_(values_.end())
     {
         ASSERT(config.getString("type") == eventType());
+
+        if(config.has("port"))
+            port_ = config.getInt("port");
+
+        if(config.has("host"))
+            host_ = config.getString("host");
+
     }
 
 
@@ -108,16 +143,26 @@ private: // methods
         ASSERT(it != values_.end());
         std::string value = *it;
 
-        Log::info() << "EVENT ISSUED -- Key " << key_ << " Value " << value
-                    << " HOST " << hostname_ << " PORT " << port_ << std::endl;
+        Log::info() << "EVENT ISSUED -- Key " << key_ << " Value " << value << std::endl;
 
+        Event e(eventType(), "multio");
+        e.set(key_, value);
+
+        std::ostringstream os;
+        JSON msg(os);
+
+        if(!host_.empty()) {
+            TCPClient c;
+            c.connect(host_, port_);
+            c.write(os.str().c_str(), os.str().size());
+        }
     }
 
 
 private: // members
 
     int port_;
-    std::string hostname_;
+    std::string host_;
 
     std::string key_;
     std::vector<std::string> values_;

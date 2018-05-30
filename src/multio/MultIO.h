@@ -27,6 +27,7 @@
 #include "multio/DataSink.h"
 #include "multio/IOStats.h"
 #include "multio/JournalRecord.h"
+#include "multio/Trigger.h"
 
 namespace multio {
 
@@ -87,16 +88,19 @@ protected:
     virtual void print(std::ostream&) const;
 
 protected:  // members
+
     Journal journal_;
     IOStats stats_;
 
     sink_store_t sinks_;
 
-    bool journaled_;
+    Trigger trigger_;
 
     mutable eckit::Mutex mutex_;
 
     eckit::Timer timer_;
+
+    bool journaled_;
 
 private:  // methods
     friend std::ostream& operator<<(std::ostream& s, const MultIO& p) {

@@ -9,12 +9,18 @@
  */
 
 #include "eckit/log/Log.h"
-#include "multio/DataSink.h"
-#include "multio/FileSink.h"
-
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/testing/Test.h"
+#include "eckit/parser/JSON.h"
+#include "eckit/io/DataBlob.h"
+#include "eckit/parser/JSONDataBlob.h"
+#include "eckit/utils/Translator.h"
 
+#include "multio/DataSink.h"
+#include "multio/FileSink.h"
+#include "multio/MultIO.h"
+
+using namespace eckit;
 using namespace eckit::testing;
 
 namespace multio {
@@ -26,15 +32,62 @@ CASE("test_dummy") {
     EXPECT(true);
 }
 
+class XX {
+
+    std::string stream_;
+    std::string step_;
+    std::string level_;
+
+public: // methods
+
+    XX(const std::string& stream) : stream_(stream), step_(), level_() {}
+
+    void step(long step) { step_ = Translator<long,std::string>()(step); }
+    void level(long level) { level_ = Translator<long,std::string>()(level); }
+
+    void json(JSON& s) const {
+        s.startObject();
+        s << "stream" << stream_;
+        s << "step"   << step_;
+        s << "level"  << level_;
+        s.endObject();
+    }
+};
+
+
 CASE("test_multio_with_event_trigger") {
+
     std::istringstream in(
-        "{ \"sinks\" : [ {\"type\" : \"file\", \"path\" : \"/dev/null\"} ], \"event_trigger\" : { "
-        "\"host\" : \"cob-login-4\", \"port\" : "
-        "\"106723\", \"metadata\" : {\"step\" : [0, 3, 6, 9, 12]} } }");
+        "{ \"sinks\" : [ {\"type\" : \"file\", \"path\" : \"/dev/null\"} ], "
+        "\"triggers\" : [ "
+        "{ \"type\" : \"MetadataChange\", \"host\" : \"localhost\", \"port\" : \"106723\", \"key\" : \"step\"\, \"values\" : [\"0\", \"3\", \"6\", \"9\", \"12\", \"24\"] },"
+        "{ \"type\" : \"MetadataChange\", \"host\" : \"localhost\", \"port\" : \"7777\", \"key\" : \"step\"\, \"values\" : [\"1\", \"4\", \"5\", \"6\", \"10\"] }"
+                       "] }");
 
     eckit::YAMLConfiguration config(in.str());
 
-    DataSink* multio_sink = DataSinkFactory::build("multio", config);
+    eckit::ScopedPtr<MultIO> mio(new MultIO(config));
+
+    XX x("oper");
+
+    for(int step = 0; step <= 24; step++) {
+        for(int level = 1; level <= 5; level++) {
+
+            Log::info() << "step " << step << " level " << level << std::endl;
+
+            std::ostringstream os;
+            JSON msg(os);
+
+            x.step(step);
+            x.level(level);
+            x.json(msg);
+
+            DataBlobPtr blob(new JSONDataBlob(os.str().c_str(), os.str().size()));
+
+            mio->write(blob);
+        }
+    }
+
 }
 
 //-----------------------------------------------------------------------------

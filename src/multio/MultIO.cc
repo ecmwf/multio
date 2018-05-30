@@ -36,8 +36,10 @@ MultIO::MultIO(const eckit::Configuration& config) :
     journal_(config, this),
     stats_(std::string("Multio ") + Main::hostname() + ":" +
            Translator<int, std::string>()(::getpid())),
-    journaled_(config.getBool("journaled", false)),
-    mutex_() {
+    trigger_(config),
+    mutex_(),
+    journaled_(config.getBool("journaled", false)) {
+
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 
     for (std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end();
@@ -53,38 +55,6 @@ MultIO::MultIO(const eckit::Configuration& config) :
     // Must open after sinks are initialised, or the subsink configs won't exist yet.
     if (journaled_)
         journal_.open();
-
-    // LocalConfiguration cfgTrigger;
-    // if(config_.has("event_trigger")) {
-    //     std::cout << "Found configuration \"event_trigger\"" << std::endl;
-    //     cfgTrigger = config_.getSubConfiguration("event_trigger");
-    // }
-    // LocalConfiguration cfgMetadata;
-    // if(cfgTrigger.has("metadata")) {
-    //     std::cout << "Found configuration \"metadata\"" << std::endl;
-    //     cfgMetadata = cfgTrigger.getSubConfiguration("metadata");
-    // }
-    // LocalConfiguration cfgStep;
-    // if(cfgMetadata.has("step")) {
-    //     std::cout << "Found configuration \"step\"" << std::endl;
-    //     cfgStep = cfgMetadata.getSubConfiguration("step");
-    // }
-
-    LocalConfiguration cfgStep;
-    if (config_.getSubConfiguration("event_trigger").getSubConfiguration("metadata").has("step")) {
-        std::cout << "Found configuration \"step\"" << std::endl;
-        cfgStep = config_.getSubConfiguration("event_trigger")
-                      .getSubConfiguration("metadata")
-                      .getSubConfiguration("step");
-    }
-    Value val = cfgStep.get();
-    std::vector<std::string> step_vals;
-    eckit::fromValue(step_vals, val);
-    std::cout << "Vals = " << val << std::endl;
-    std::cout << "Converted values: ";
-    std::copy(step_vals.begin(), step_vals.end(),
-              std::ostream_iterator<std::string>(std::cout, ", "));
-    std::cout << std::endl;
 }
 
 MultIO::~MultIO() {
@@ -130,6 +100,9 @@ Value MultIO::configValue() const {
 
 void MultIO::write(DataBlobPtr blob) {
     AutoLock<Mutex> lock(mutex_);
+
+    trigger_.events(blob);
+
     timer_.start();
 
     JournalRecordPtr record;
@@ -363,6 +336,10 @@ void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string&
 
 void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
     AutoLock<Mutex> lock(mutex_);
+
+    trigger_.events(blob);
+
+    timer_.start();
 
     for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
         ASSERT(it->sink_);

@@ -32,6 +32,8 @@ list( APPEND multio_srcs
     LibMultio.h
     MultIO.cc
     MultIO.h
+    Trigger.cc
+    Trigger.h
     ifsio.cc
     ifsio.h
     multio_version.cc

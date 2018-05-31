@@ -59,6 +59,7 @@ CASE("test_multio_with_event_trigger") {
     std::istringstream in(
         "{ \"sinks\" : [ {\"type\" : \"file\", \"path\" : \"/dev/null\"} ], "
         "\"triggers\" : [ "
+        "{ \"type\" : \"MetadataChange\", \"host\" : \"localhost\", \"port\" : 10000, \"retries_\" : 0, \"timeout\" : 1, \"key\" : \"step\", \"values\" : [\"0\", \"3\", \"6\", \"9\", \"12\", \"24\"] },"
         "{ \"type\" : \"MetadataChange\", \"file\" : \"tmp.1\", \"key\" : \"step\", \"values\" : [\"0\", \"3\", \"6\", \"9\", \"12\", \"24\"] },"
         "{ \"type\" : \"MetadataChange\", \"file\" : \"tmp.2\", \"key\" : \"step\", \"values\" : [\"1\", \"4\", \"5\", \"6\", \"10\"] }"
                        "] }");

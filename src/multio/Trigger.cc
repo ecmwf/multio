@@ -88,11 +88,13 @@ public: // methods
         if(config.has("file"))
             file_ = config.getString("file");
 
-        if(config.has("port"))
-            port_ = config.getInt("port");
-
         if(config.has("host"))
             host_ = config.getString("host");
+
+         port_    = config.getInt("port", 10000);
+         retries_ = config.getInt("retries", 5);
+         timeout_ = config.getInt("timeout", 60);
+
     }
 
 
@@ -156,7 +158,7 @@ private: // methods
 
         if(!host_.empty()) {
             TCPClient c;
-            c.connect(host_, port_);
+            c.connect(host_, port_, retries_, timeout_); // 5 retries, 60 secs timeout
             c.write(os.str().c_str(), os.str().size());
         }
 
@@ -171,6 +173,8 @@ private: // methods
 private: // members
 
     int port_;
+    int retries_;
+    int timeout_;
     std::string host_;
 
     std::string key_;

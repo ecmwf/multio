@@ -20,6 +20,7 @@
 #include "eckit/types/Metadata.h"
 #include "eckit/net/TCPClient.h"
 #include "eckit/parser/JSON.h"
+#include "eckit/config/YAMLConfiguration.h"
 
 using namespace eckit;
 
@@ -29,27 +30,48 @@ namespace multio {
 
 class Event {
 
-    std::string event_;
-    std::string app_;
+    std::string type_;
+
+    StringDict metadata_;
+    StringDict info_;
+
+public: // methods
+
+    Event(const std::string& event, StringDict info = StringDict()) :
+        type_(event),
+        info_(info)
+    {
+    }
+
+    void info(const std::string& k, const std::string& v) { info_[k] = v; }
+
+    void json(JSON& s) const {
+        s << "type" << type_;
+        s << "info"     << info_;
+    }
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+
+class MetadataChange : public Event {
 
     StringDict metadata_;
 
 public: // methods
 
-    Event(const std::string& event, const std::string& app) :
-        event_(event),
-        app_(app) {
+    static const char* eventType() { return "MetadataChange"; }
+
+    MetadataChange(StringDict info = StringDict(), StringDict metadata = StringDict()) :
+        Event(eventType(), info),
+        metadata_(metadata) {
     }
 
-    void set(const std::string& k, const std::string& v) { metadata_[k] = v; }
+    void metadata(const std::string& k, const std::string& v) { metadata_[k] = v; }
 
     void json(JSON& s) const {
         s.startObject();
-        s << "event" << event_;
-        s << "app"  << app_;
-        for(StringDict::const_iterator it = metadata_.begin(); it != metadata_.end(); ++it) {
-            s << it->first << it->second;
-        }
+        Event::json(s);
+        s << "metadata" << metadata_;
         s.endObject();
     }
 };
@@ -60,13 +82,28 @@ class EventTrigger {
 
 public: // methods
 
-    EventTrigger(const Configuration& config) {}
+    EventTrigger(const Configuration& config) {
+        info_["app"] = "multio";
+        if(config.has("info"))
+        {
+            LocalConfiguration info = config.getSubConfiguration("info");
+            std::vector<std::string> keys = info.keys();
+            for(std::vector<std::string>::const_iterator it = keys.begin(); it != keys.end(); ++it) {
+                info_[*it] = info.getString(*it);
+            }
+        }
+    }
 
     virtual ~EventTrigger() {}
 
     virtual void trigger(eckit::DataBlobPtr blob) const = 0;
 
     static EventTrigger* build(const Configuration& config);
+
+protected: // member
+
+    StringDict info_;
+
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -75,15 +112,13 @@ class MetadataChangeTrigger : public EventTrigger {
 
 public: // methods
 
-    static const char* eventType() { return "MetadataChange"; }
-
     MetadataChangeTrigger(const Configuration& config) : EventTrigger(config),
         key_(config.getString("key")),
         values_(config.getStringVector("values")),
         lastSeen_(values_.end()),
         issued_(values_.end())
     {
-        ASSERT(config.getString("type") == eventType());
+        ASSERT(config.getString("type") == MetadataChange::eventType());
 
         if(config.has("file"))
             file_ = config.getString("file");
@@ -147,8 +182,8 @@ private: // methods
         ASSERT(it != values_.end());
         std::string value = *it;
 
-        Event e(eventType(), "multio");
-        e.set(key_, value);
+        MetadataChange e(info_);
+        e.metadata(key_, value);
 
         std::ostringstream os;
         JSON msg(os);
@@ -204,10 +239,25 @@ EventTrigger* EventTrigger::build(const Configuration& config) {
 
 Trigger::Trigger(const Configuration& config) {
 
-    std::vector<LocalConfiguration> cfgs = config.getSubConfigurations("triggers");
+    if(config.has("triggers"))
+    {
+        std::vector<LocalConfiguration> cfgs = config.getSubConfigurations("triggers");
 
-    for(std::vector<LocalConfiguration>::const_iterator it = cfgs.begin(); it != cfgs.end(); ++it) {
-        triggers_.push_back(EventTrigger::build(*it));
+        for(std::vector<LocalConfiguration>::const_iterator it = cfgs.begin(); it != cfgs.end(); ++it) {
+            triggers_.push_back(EventTrigger::build(*it));
+        }
+    }
+
+    /// @note this doesnt quite work for reentrant MultIO objects (MultIO as a DataSink itself)
+    const char * conf = ::getenv("MULTIO_CONFIG_TRIGGERS");
+    if(conf) {
+        eckit::YAMLConfiguration econf((std::string(conf)));
+
+        std::vector<LocalConfiguration> cfgs = econf.getSubConfigurations("triggers");
+
+        for(std::vector<LocalConfiguration>::const_iterator it = cfgs.begin(); it != cfgs.end(); ++it) {
+            triggers_.push_back(EventTrigger::build(*it));
+        }
     }
 }
 

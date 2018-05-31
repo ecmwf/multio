@@ -57,10 +57,11 @@ CASE("test_multio_with_event_trigger") {
 
     PathName("tmp.1").unlink();
     PathName("tmp.2").unlink();
+    PathName("tmp.3").unlink();
 
     const char* tconf =
         "{ \"triggers\" : [ "
-        "{ \"type\" : \"MetadataChange\", \"host\" : \"localhost\", \"port\" : 10000, \"retries_\" : 0, \"timeout\" : 1, \"key\" : \"step\", \"values\" : [\"0\", \"3\", \"6\", \"9\", \"12\", \"24\"],"
+        "{ \"type\" : \"MetadataChange\", \"host\" : \"localhost\", \"port\" : 10000, \"retries\" : 0, \"timeout\" : 1, \"key\" : \"step\", \"values\" : [\"0\", \"3\", \"6\", \"9\", \"12\", \"24\"],"
         " \"info\" : { \"job\" : \"234\", \"app\" : \"foobar\" } },"
         "{ \"type\" : \"MetadataChange\", \"file\" : \"tmp.1\", \"key\" : \"step\", \"values\" : [\"0\", \"3\", \"6\", \"9\", \"12\", \"24\"],"
         " \"info\" : { \"job\" : \"234\", \"app\" : \"foobar\" } },"
@@ -70,7 +71,7 @@ CASE("test_multio_with_event_trigger") {
 
     ::setenv("MULTIO_CONFIG_TRIGGERS", tconf, 1);
 
-    std::string sinks("{ \"sinks\" : [ {\"type\" : \"file\", \"path\" : \"/dev/null\"} ] }");
+    std::string sinks("{ \"sinks\" : [ {\"type\" : \"file\", \"path\" : \"tmp.3\"} ] }");
     eckit::YAMLConfiguration config(sinks);
 
     eckit::ScopedPtr<MultIO> mio(new MultIO(config));

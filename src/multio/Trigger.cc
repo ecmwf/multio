@@ -14,6 +14,7 @@
 
 #include "multio/Trigger.h"
 
+#include "eckit/types/Types.h"
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
@@ -22,6 +23,8 @@
 #include "eckit/parser/JSON.h"
 #include "eckit/config/YAMLConfiguration.h"
 
+#include "multio/LibMultio.h"
+
 using namespace eckit;
 
 namespace multio {
@@ -29,6 +32,8 @@ namespace multio {
 //----------------------------------------------------------------------------------------------------------------------
 
 class Event {
+
+protected: // members
 
     std::string type_;
 
@@ -43,12 +48,21 @@ public: // methods
     {
     }
 
+    virtual ~Event() {}
+
     void info(const std::string& k, const std::string& v) { info_[k] = v; }
 
     void json(JSON& s) const {
         s << "type" << type_;
         s << "info"     << info_;
     }
+
+private: // methods
+
+    virtual void print(std::ostream& o) const = 0;
+
+    friend std::ostream& operator<<(std::ostream& s, const Event& o) { o.print(s); return s; }
+
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -73,6 +87,16 @@ public: // methods
         Event::json(s);
         s << "metadata" << metadata_;
         s.endObject();
+    }
+
+private: // methods
+
+    void print(std::ostream& o) const {
+        o << "MetadataChange("
+          << "type=" << type_
+          << ",info=" << info_
+          << ",metadata=" << metadata_
+          << ")";
     }
 };
 
@@ -126,10 +150,11 @@ public: // methods
         if(config.has("host"))
             host_ = config.getString("host");
 
-         port_    = config.getInt("port", 10000);
-         retries_ = config.getInt("retries", 5);
-         timeout_ = config.getInt("timeout", 60);
+        failOnRetry_ = config.getInt("failOnRetry", false);
 
+        port_    = config.getInt("port", 10000);
+        retries_ = config.getInt("retries", 5);
+        timeout_ = config.getInt("timeout", 60);
     }
 
 
@@ -182,21 +207,32 @@ private: // methods
         ASSERT(it != values_.end());
         std::string value = *it;
 
-        MetadataChange e(info_);
-        e.metadata(key_, value);
+        MetadataChange event(info_);
+        event.metadata(key_, value);
 
         std::ostringstream os;
         JSON msg(os);
-        e.json(msg);
+        event.json(msg);
 
-        Log::info() << "EVENT ISSUED -- Key " << key_ << " Value " << value << " : " << os.str() << std::endl;
+        Log::debug<LibMultio>() << "EVENT ISSUED -- Key " << key_ << " Value " << value << " : " << os.str() << std::endl;
 
         if(!host_.empty()) {
-            TCPClient c;
-            c.connect(host_, port_, retries_, timeout_); // 5 retries, 60 secs timeout
-            c.write(os.str().c_str(), os.str().size());
+            try {
+                TCPClient c;
+                c.connect(host_, port_, retries_, timeout_); // 5 retries, 60 secs timeout
+                c.write(os.str().c_str(), os.str().size());
+            } catch (eckit::TooManyRetries& e) {
+                if(failOnRetry_) {
+                    Log::error() << "Failed to send Event " << event
+                                 << " by TCP connection to host " << host_ << ":" << port_
+                                 << "-- Exception: " <<  e.what()
+                                 << std::endl;
+                    throw;
+                }
+            }
         }
 
+        /// this is for unit tests
         if(!file_.empty()) {
             std::ofstream f(PathName(file_).asString().c_str(), std::ios::app);
             f << os.str() << std::endl;
@@ -220,6 +256,7 @@ private: // members
 
     std::string file_;
 
+    bool failOnRetry_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

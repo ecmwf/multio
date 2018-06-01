@@ -46,20 +46,20 @@ std::string create_test_configuration(const eckit::PathName& file1, const eckit:
              ": 0, \"timeout\" : 1, \"key\" : \"step\", \"values\" : [\"0\", \"3\", \"6\", \"9\", "
              "\"12\", \"24\"],"
              " \"info\" : { \"job\" : \""
-          << jobId << "\", \"app\" : \"foobar\" } },"
+          << jobId << "\", \"job_name\" : \"epsnemo\" } },"
           << "{ \"type\" : \"MetadataChange\", \"file\" : \"" << file1.baseName()
           << "\", \"key\" : \"step\", "
              "\"values\" : "
              "[\"0\", \"3\", \"6\", \"9\", \"12\", \"24\"],"
              " \"info\" : { \"job\" : \""
-          << jobId << "\", \"app\" : \"foobar\" } },"
+          << jobId << "\", \"job_name\" : \"epsnemo\" } },"
           << "{ \"type\" : \"MetadataChange\", \"file\" : \"" << file2.baseName()
           << "\", \"key\" : \"step\", "
              "\"values\" : "
              "[\"1\", \"4\", \"5\", \"6\", \"10\"],"
              " \"info\" : { \"job\" : \""
           << jobId
-          << "\", \"app\" : \"foobar\" } }"
+          << "\", \"job_name\" : \"epsnemo\" } }"
              "] }";
 
     return ss.str();
@@ -69,9 +69,9 @@ std::string expected_file_content(const std::vector<int> steps_to_issue, const i
     std::ostringstream oss;
     for (std::vector<int>::const_iterator it = steps_to_issue.begin(); it != steps_to_issue.end();
          ++it) {
-        oss << "{\"type\":\"MetadataChange\",\"info\":{\"app\":\"foobar\",\"job\":\"" << jobId
-            << "\"},\"metadata\":{\"step\":\"" << *it
-            << "\"}}" << std::endl;
+        oss << "{\"type\":\"MetadataChange\",\"info\":{\"app\":\"multio\",\"job\":\"" << jobId
+            << "\",\"job_name\":\"epsnemo\"},\"metadata\":{\"step\":\"" << *it << "\"}}"
+            << std::endl;
     }
     return oss.str();
 }

@@ -99,14 +99,15 @@ void Journal::close() {
     }
 }
 
-
 void Journal::writeRecord(JournalRecord& record) {
+    // The journal must be open before we attempt writing to it
+    ASSERT(isOpen());
+
     if (record.utilised()) {
         AutoLock<Mutex> lock(mutex_);
         record.writeRecord(*handle_);
     }
 }
-
 
 /// Initialise a journal header struct with valid information for writing out
 void Journal::initHeader() {

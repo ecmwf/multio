@@ -77,8 +77,6 @@ public:  // methods
     //      way, from journaling the journal entries, which are specific to each of
     //      the data sinks.
 
-    void writeRecord(JournalRecord& record);
-
     bool isOpen() const;
 
 protected:  // methods
@@ -86,6 +84,8 @@ protected:  // methods
 
 private:  // methods
     void initHeader();
+
+    void writeRecord(JournalRecord& record);
 
     friend std::ostream& operator<<(std::ostream& s, const Journal& p) {
         p.print(s);

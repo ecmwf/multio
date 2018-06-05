@@ -8,6 +8,8 @@
  * does it submit to any jurisdiction.
  */
 
+#pragma once
+
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -23,7 +25,17 @@
 namespace multio {
 namespace test {
 
-namespace {
+auto make_configured_file_sink(const eckit::PathName& file_path) -> std::unique_ptr<DataSink> {
+    eckit::LocalConfiguration config;
+    config.set("path", file_path);
+    // NOTE: std::make_unique would be nicer but it doesn't work with the DataSinkFactory
+    return std::unique_ptr<DataSink>(DataSinkFactory::build("file", config));
+}
+
+auto file_content(const eckit::PathName& file_path) -> std::string {
+    std::fstream ifs(std::string(file_path.fullName()).c_str());
+    return std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+}
 
 // A trivial do-nothing metadata object
 class TestMetadata : public eckit::Metadata {
@@ -60,8 +72,6 @@ private:  // members
 };
 
 eckit::DataBlobBuilder<TestDataBlob> dbBuilder("test_blob");
-
-}  // namespace
 
 }  // namespace test
 }  // namespace multio

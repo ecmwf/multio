@@ -21,24 +21,6 @@
 namespace multio {
 namespace test {
 
-namespace {
-auto make_configured_file_sink(const eckit::PathName& file_path) -> std::unique_ptr<DataSink> {
-    eckit::LocalConfiguration config;
-    config.set("path", file_path);
-    // std::make_unique would be nice but it desn't work with the DataSinkFactory
-    return std::unique_ptr<DataSink>(DataSinkFactory::build("file", config));
-}
-
-auto file_content(const eckit::PathName& file_path, const size_t buff_size) -> std::string {
-    eckit::Buffer buff(buff_size);
-    eckit::DataHandle* dh = file_path.fileHandle();
-    dh->openForRead();
-    dh->read(buff, buff.size());
-    dh->close();
-    return std::string(buff);
-}
-}  // namespace
-
 CASE("test_contains_file_sink") {
     // DataSinkFactory::list appends the results to a ostream&, so we need to extract them.
     std::stringstream ss;
@@ -61,10 +43,11 @@ CASE("test_file_sink_writes_correctly") {
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
-    eckit::DataBlobPtr stringBlob(eckit::DataBlobFactory::build("test_blob", quote, sizeof(quote)));
+    eckit::DataBlobPtr stringBlob(
+        eckit::DataBlobFactory::build("test_blob", quote, sizeof(quote) - 1));
     sink->write(stringBlob);
 
-    EXPECT(file_content(file_path, sizeof(quote)) == std::string(quote));
+    EXPECT(file_content(file_path) == std::string(quote));
     file_path.unlink();
 }
 

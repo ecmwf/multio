@@ -101,8 +101,6 @@ Value MultIO::configValue() const {
 void MultIO::write(DataBlobPtr blob) {
     AutoLock<Mutex> lock(mutex_);
 
-    trigger_.events(blob);
-
     timer_.start();
 
     JournalRecordPtr record;
@@ -127,8 +125,10 @@ void MultIO::write(DataBlobPtr blob) {
         }
     }
 
-    // Log the write
     timer_.stop();
+
+    trigger_.events(blob);
+
     stats_.logWrite(blob->length(), timer_);
 }
 
@@ -337,8 +337,6 @@ void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string&
 void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
     AutoLock<Mutex> lock(mutex_);
 
-    trigger_.events(blob);
-
     timer_.start();
 
     for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
@@ -347,6 +345,9 @@ void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
     }
 
     timer_.stop();
+
+    trigger_.events(blob);
+
     stats_.logiwritefdb_(blob->length(), timer_);
 }
 

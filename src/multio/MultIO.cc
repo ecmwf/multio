@@ -34,20 +34,22 @@ namespace multio {
 MultIO::MultIO(const eckit::Configuration& config) :
     DataSink(config),
     journal_(config, this),
-    stats_(std::string("Multio ") + Main::hostname() + ":" + Translator<int,std::string>()(::getpid())),
-    journaled_(config.getBool("journaled", false)),
-    mutex_() {
+    stats_(std::string("Multio ") + Main::hostname() + ":" +
+           Translator<int, std::string>()(::getpid())),
+    trigger_(config),
+    mutex_(),
+    journaled_(config.getBool("journaled", false)) {
 
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 
-    for(std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end(); ++c) {
-
+    for (std::vector<LocalConfiguration>::const_iterator c = configs.begin(); c != configs.end();
+         ++c) {
         SinkStoreElem elem;
-        elem.sink_.reset(DataSinkFactory::build(c->getString("type"),*c));
-        elem.journalAlways_=  c->getBool("journalAlways", false);
+        elem.sink_.reset(DataSinkFactory::build(c->getString("type"), *c));
+        elem.journalAlways_ = c->getBool("journalAlways", false);
         elem.sink_->setId(sinks_.size());
 
-        sinks_.push_back( elem );
+        sinks_.push_back(elem);
     }
 
     // Must open after sinks are initialised, or the subsink configs won't exist yet.
@@ -56,10 +58,10 @@ MultIO::MultIO(const eckit::Configuration& config) :
 }
 
 MultIO::~MultIO() {
-
     // Ideally the Journal should be committed explicitly before we hit the destructors.
     if (journaled_ && journal_.isOpen()) {
-        Log::warning() << "[" << *this << "] Journal has not been committed prior to MultIO destruction"
+        Log::warning() << "[" << *this
+                       << "] Journal has not been committed prior to MultIO destruction"
                        << std::endl;
     }
 }
@@ -67,9 +69,9 @@ MultIO::~MultIO() {
 bool MultIO::ready() const {
     AutoLock<Mutex> lock(mutex_);
 
-    for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
-        if( ! it->sink_->ready() ) {
+    for (sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
+        if (!it->sink_->ready()) {
             return false;
         }
     }
@@ -87,7 +89,7 @@ Value MultIO::configValue() const {
     // not by default in the Configuration (e.g. stuff included in a Resource).
     std::vector<Value> sink_configs;
     for (sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+        ASSERT(it->sink_);
         sink_configs.push_back(it->sink_->configValue());
     }
     config["sinks"] = Value(sink_configs);
@@ -97,43 +99,46 @@ Value MultIO::configValue() const {
 
 
 void MultIO::write(DataBlobPtr blob) {
-
     AutoLock<Mutex> lock(mutex_);
+
     timer_.start();
 
     JournalRecordPtr record;
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-
-        ASSERT( it->sink_ );
+    for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         bool journal_entry = false;
 
         try {
             it->sink_->write(blob);
-            if (it->journalAlways_) journal_entry = true;
+            if (it->journalAlways_)
+                journal_entry = true;
         } catch (Exception& e) {
-            if (!journaled_) throw;
+            if (!journaled_)
+                throw;
             journal_entry = true;
         }
 
         if (journal_entry) {
-            if (!record) record.reset( new JournalRecord(journal_, JournalRecord::WriteEntry));
+            if (!record)
+                record.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
             record->addWriteEntry(blob, it->sink_->id());
         }
     }
 
-    // Log the write
     timer_.stop();
+
+    trigger_.events(blob);
+
     stats_.logWrite(blob->length(), timer_);
 }
 
 
 void MultIO::flush() {
-
     AutoLock<Mutex> lock(mutex_);
     timer_.start();
 
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+    for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         it->sink_->flush();
     }
 
@@ -148,8 +153,8 @@ void MultIO::replayRecord(const JournalRecord& record) {
 
     Log::info() << "[" << *this << "] Replaying journal record" << std::endl;
     Log::info() << "[" << *this << "]  - Record type: "
-                       << JournalRecord::RecordTypeName(JournalRecord::RecordType(record.head_.tag_))
-                       << std::endl;
+                << JournalRecord::RecordTypeName(JournalRecord::RecordType(record.head_.tag_))
+                << std::endl;
 
 
     // Provide a journal record so that failures that occur during playback
@@ -162,49 +167,48 @@ void MultIO::replayRecord(const JournalRecord& record) {
 
     int i = 0;
     for (std::list<JournalRecord::JournalEntry>::const_iterator it = record.entries_.begin();
-            it != record.entries_.end(); (++i, ++it) ) {
-
+         it != record.entries_.end(); (++i, ++it)) {
         Log::info() << "[" << *this << "]  * Entry: " << i << std::endl;
 
         switch (it->head_.tag_) {
+            case JournalRecord::JournalEntry::Data:
+                Log::info() << "[" << *this << "]    - Got data entry" << std::endl;
+                data.reset(it->data_);
+                break;
 
-        case JournalRecord::JournalEntry::Data:
-            Log::info() << "[" << *this << "]    - Got data entry" << std::endl;
-            data.reset(it->data_);
-            break;
+            case JournalRecord::JournalEntry::Write: {
+                Log::info() << "[" << *this << "]    - Write entry for journal: " << it->head_.id_
+                            << std::endl;
+                ASSERT(data);
+                ASSERT(it->head_.id_ < sinks_.size());
 
-        case JournalRecord::JournalEntry::Write: {
-            Log::info() << "[" << *this << "]    - Write entry for journal: " << it->head_.id_ << std::endl;
-            ASSERT(data);
-            ASSERT(it->head_.id_ < sinks_.size());
+                bool journal_entry = false;
 
-            bool journal_entry = false;
+                try {
+                    ASSERT(sinks_[it->head_.id_].sink_);
+                    sinks_[it->head_.id_].sink_->write(data);
+                } catch (Exception& e) {
+                    if (!journaled_)
+                        throw;
+                    journal_entry = true;
+                }
 
-            try {
-                ASSERT( sinks_[it->head_.id_].sink_ );
-                sinks_[it->head_.id_].sink_->write(data);
-            } catch (Exception& e) {
-                if (!journaled_) throw;
-                journal_entry = true;
+                if (journal_entry) {
+                    if (!newRecord)
+                        newRecord.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
+                    newRecord->addWriteEntry(data, id_);
+                }
+
+                break;
             }
 
-            if (journal_entry) {
-                if (!newRecord) newRecord.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
-                newRecord->addWriteEntry(data, id_);
-            }
-
-            break;
-        }
-
-        default:
-            Log::warning() << "[" << *this << "]    - Unrecognised entry type";
-
+            default:
+                Log::warning() << "[" << *this << "]    - Unrecognised entry type";
         }
     }
 }
 
-void MultIO::report(std::ostream& s)
-{
+void MultIO::report(std::ostream& s) {
     stats_.report(s);
 }
 
@@ -214,8 +218,8 @@ void MultIO::commitJournal() {
 
     Log::info() << "[" << *this << "] Committing MultIO journal" << std::endl;
     if (!journaled_ || !journal_.isOpen()) {
-        Log::warning() << "[" << *this << "] Attempting to commit a journal that has not been created"
-                       << std::endl;
+        Log::warning() << "[" << *this
+                       << "] Attempting to commit a journal that has not been created" << std::endl;
     } else
         journal_.close();
 }
@@ -224,8 +228,8 @@ void MultIO::commitJournal() {
 void MultIO::print(std::ostream& os) const {
     AutoLock<Mutex> lock(mutex_);
     os << "MultIO(";
-    for(sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+    for (sink_store_t::const_iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         os << *(it->sink_);
     }
     os << ")";
@@ -234,14 +238,13 @@ void MultIO::print(std::ostream& os) const {
 //----------------------------------------------------------------------------------------------------------------------
 
 void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {
-
     AutoLock<Mutex> lock(mutex_);
     timer_.start();
 
     Log::info() << "MultIO iopenfdb name=" << name << " mode=" << mode << std::endl;
 
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+    for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         /// NOTE: this does not quite work with multiple FDB4 since fdbaddr will be overwritten
         it->sink_->iopenfdb(name, fdbaddr, mode);
     }
@@ -251,12 +254,11 @@ void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& 
 }
 
 void MultIO::iclosefdb(int fdbaddr) {
-
     AutoLock<Mutex> lock(mutex_);
     timer_.start();
 
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+    for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         it->sink_->iclosefdb(fdbaddr);
     }
 
@@ -267,8 +269,8 @@ void MultIO::iclosefdb(int fdbaddr) {
 void MultIO::iinitfdb() {
     AutoLock<Mutex> lock(mutex_);
     timer_.start();
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+    for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         it->sink_->iinitfdb();
     }
 
@@ -278,35 +280,34 @@ void MultIO::iinitfdb() {
 
 void MultIO::isetcommfdb(int rank) {
     AutoLock<Mutex> lock(mutex_);
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+    for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         it->sink_->isetcommfdb(rank);
     }
 }
 
 void MultIO::isetrankfdb(int fdbaddr, int rank) {
     AutoLock<Mutex> lock(mutex_);
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+    for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         it->sink_->isetrankfdb(fdbaddr, rank);
     }
 }
 
 void MultIO::iset_fdb_root(int fdbaddr, const std::string& name) {
     AutoLock<Mutex> lock(mutex_);
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+    for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         it->sink_->iset_fdb_root(fdbaddr, name);
     }
 }
 
 void MultIO::iflushfdb(int fdbaddr) {
-
     AutoLock<Mutex> lock(mutex_);
     timer_.start();
 
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+    for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         it->sink_->iflushfdb(fdbaddr);
     }
 
@@ -316,8 +317,8 @@ void MultIO::iflushfdb(int fdbaddr) {
 
 void MultIO::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
     AutoLock<Mutex> lock(mutex_);
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+    for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         it->sink_->isetfieldcountfdb(fdbaddr, all_ranks, this_rank);
     }
 }
@@ -325,8 +326,8 @@ void MultIO::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
 void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {
     AutoLock<Mutex> lock(mutex_);
     timer_.start();
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+    for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         it->sink_->isetvalfdb(fdbaddr, name, value);
     }
     timer_.stop();
@@ -334,15 +335,19 @@ void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string&
 }
 
 void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
-
     AutoLock<Mutex> lock(mutex_);
 
-    for(sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
-        ASSERT( it->sink_ );
+    timer_.start();
+
+    for (sink_store_t::iterator it = sinks_.begin(); it != sinks_.end(); ++it) {
+        ASSERT(it->sink_);
         it->sink_->iwritefdb(fdbaddr, blob);
     }
 
     timer_.stop();
+
+    trigger_.events(blob);
+
     stats_.logiwritefdb_(blob->length(), timer_);
 }
 
@@ -351,4 +356,3 @@ static DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-

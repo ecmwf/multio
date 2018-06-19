@@ -9,12 +9,14 @@
  */
 
 
+#include <cstring>
+
 #include "eckit/log/Log.h"
-#include "multio/DataSink.h"
-#include "multio/FileSink.h"
+#include "eckit/parser/Tokenizer.h"
 #include "eckit/testing/Test.h"
 
-#include <cstring>
+#include "multio/DataSink.h"
+#include "multio/FileSink.h"
 
 using namespace eckit;
 using namespace eckit::testing;
@@ -24,22 +26,15 @@ namespace test {
 
 //-----------------------------------------------------------------------------
 class TestDataSink : public DataSink {
-
 public:
+    TestDataSink(const Configuration& config) : DataSink(config), config_(&config) {}
 
-    TestDataSink(const Configuration& config) :
-        DataSink(config),
-        config_(&config) {}
+    void write(eckit::DataBlobPtr blob) override {}
 
-    virtual ~TestDataSink() {}
-
-    virtual void write(eckit::DataBlobPtr blob) {}
-
-    Configuration const * config_;
+    Configuration const* config_;
 
 protected:
-
-    virtual void print(std::ostream& os) const { os << "tmp"; }
+    void print(std::ostream& os) const override { os << "tmp"; }
 };
 
 
@@ -47,37 +42,27 @@ static DataSinkBuilder<TestDataSink> testSinkBuilder("test");
 
 //-----------------------------------------------------------------------------
 
-CASE( "test_factory_generate" )
-{
+CASE("test_factory_generate") {
     LocalConfiguration config;
-    ScopedPtr<DataSink> sink(DataSinkFactory::build("test", config));
+    std::unique_ptr<DataSink> sink(DataSinkFactory::build("test", config));
 
     // Check that we generate a sink of the correct type (and implicitly that the factory
     // is correctly registered).
-    TestDataSink * testSink = dynamic_cast<TestDataSink*>(sink.get());
+    auto testSink = dynamic_cast<TestDataSink*>(sink.get());
     EXPECT(testSink);
 
     // Test that the configuration is passed through the builder/factory.
     EXPECT(testSink->config_ == &config);
 }
 
-CASE( "test_list_factories" )
-{
+CASE("test_list_factories") {
     // DataSinkFactory::list appends the results to a ostream&, so we need to extract them.
     std::stringstream ss;
     DataSinkFactory::list(ss);
 
-    // Copy the string, as strtok is destructive, and then split it into a vector.
-    std::string list_str = ss.str();
-    ScopedPtr<char> cstr(new char[list_str.length()+1]);
-    std::strcpy(cstr.get(), list_str.c_str());
-
+    // Extract the seperate components from the string stream into a vector
     std::vector<std::string> strings;
-    char * p = std::strtok(cstr.get(), ", ");
-    while (NULL != p) {
-        strings.push_back(std::string(p));
-        p = std::strtok(NULL, ", ");
-    }
+    eckit::Tokenizer(" ,")(ss.str(), strings);
 
     // We expect the file and MultIO factories to be in there too...
     EXPECT(std::find(strings.begin(), strings.end(), "file") != strings.end());
@@ -91,7 +76,6 @@ CASE( "test_list_factories" )
 }  // namespace test
 }  // namespace multio
 
-int main(int argc, char **argv)
-{
-    return run_tests ( argc, argv );
+int main(int argc, char** argv) {
+    return run_tests(argc, argv);
 }

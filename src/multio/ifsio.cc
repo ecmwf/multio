@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "eckit/config/LibEcKit.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
@@ -157,6 +158,23 @@ static bool traceme() {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+static int ifsio_handle_error(std::exception& e) {
+
+    eckit::Log::info()  << "FDB MultIO wrapper: " << e.what() << std::endl << std::flush;
+    eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl << std::flush;
+
+    static char* abort_on_error = ::getenv("MULTIO_ABORT_ON_ERROR");
+    if(abort_on_error) {
+        eckit::Log::info()  << "FDB MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
+        eckit::Log::error() << "FDB MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
+
+        eckit::LibEcKit::instance().abort();
+    }
+
+    return -2;
+}
+
+
 extern "C" {
 
     fortint iinitfdb_() {
@@ -171,8 +189,7 @@ extern "C" {
             MIO::instance().mio().iinitfdb();
 
         } catch (std::exception &e) {
-            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-            return -2;
+            return ifsio_handle_error(e);
         }
         return 0;
     }
@@ -191,8 +208,7 @@ extern "C" {
             MIO::instance().mio().iinitfdb();
 
         } catch (std::exception &e) {
-            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-            return -2;
+            return ifsio_handle_error(e);
         }
         return 0;
     }
@@ -218,8 +234,7 @@ extern "C" {
             MIO::instance().log(true);
 
         } catch (std::exception &e) {
-            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-            return -2;
+            return ifsio_handle_error(e);
         }
         return 0;
     }
@@ -240,8 +255,7 @@ extern "C" {
             MIO::instance().report();
 
         } catch (std::exception &e) {
-            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-            return -2;
+            return ifsio_handle_error(e);
         }
         return 0;
     }
@@ -258,8 +272,7 @@ extern "C" {
             MIO::instance().log(true);
 
         } catch (std::exception &e) {
-            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-            return -2;
+            return ifsio_handle_error(e);
         }
         return 0;
     }
@@ -280,8 +293,7 @@ extern "C" {
             MIO::instance().log(true);
 
         } catch (std::exception &e) {
-            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-            return -2;
+            return ifsio_handle_error(e);
         }
         return 0;
     }
@@ -302,8 +314,7 @@ extern "C" {
             MIO::instance().mio().iset_fdb_root(*addr, sname);
 
         } catch (std::exception &e) {
-            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-            return -2;
+            return ifsio_handle_error(e);
         }
         return 0;
     }
@@ -322,8 +333,7 @@ extern "C" {
             MIO::instance().mio().isetvalfdb(*addr, sname, svalue);
 
         } catch (std::exception &e) {
-            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-            return -2;
+            return ifsio_handle_error(e);
         }
         return 0;
     }
@@ -340,8 +350,7 @@ extern "C" {
             MIO::instance().mio().isetcommfdb(*comm);
 
         } catch (std::exception &e) {
-            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-            return -2;
+            return ifsio_handle_error(e);
         }
         return 0;
     }
@@ -357,8 +366,7 @@ extern "C" {
             MIO::instance().mio().isetrankfdb(*addr, *rank);
 
         } catch (std::exception &e) {
-            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-            return -2;
+            return ifsio_handle_error(e);
         }
         return 0;
     }
@@ -374,8 +382,7 @@ extern "C" {
             MIO::instance().mio().isetfieldcountfdb(*addr, *all_ranks, *this_rank);
 
         } catch (std::exception &e) {
-            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-            return -2;
+            return ifsio_handle_error(e);
         }
         return 0;
     }
@@ -389,8 +396,7 @@ extern "C" {
             NOTIMP;
 
         } catch (std::exception &e) {
-            eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl;
-            return -2;
+            return ifsio_handle_error(e);
         }
         return 0;
     }

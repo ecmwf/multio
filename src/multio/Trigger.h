@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996- ECMWF.
+ * (C) Copyright 1996-2015 ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -9,53 +9,54 @@
  */
 
 /// @author Tiago Quintino
-/// @author Simon Smart
-/// @date Dec 2015
+/// @author Domokos Sarmany
+/// @date   May 2018
 
-#ifndef multio_FileSink_H
-#define multio_FileSink_H
+#ifndef multio_Trigger_H
+#define multio_Trigger_H
 
-#include <iosfwd>
-#include <string>
 #include <vector>
 
-#include "eckit/io/Length.h"
 #include "eckit/memory/NonCopyable.h"
-#include "eckit/memory/ScopedPtr.h"
-#include "eckit/thread/Mutex.h"
-#include "eckit/filesystem/PathName.h"
-#include "multio/DataSink.h"
+#include "eckit/io/DataBlob.h"
+
 
 //----------------------------------------------------------------------------------------------------------------------
 
-namespace eckit { class FileHandle; }
+namespace eckit { class Configuration; }
 
 namespace multio {
 
-class FileSink : public DataSink {
 
-public:
+class EventTrigger;
 
-    FileSink(const eckit::Configuration& config);
+class Trigger : public eckit::NonCopyable {
 
-    virtual ~FileSink();
+public: // methods
+
+    Trigger(const eckit::Configuration& config);
+
+    ~Trigger();
+
+    void events(eckit::DataBlobPtr blob);
 
 private: // methods
 
-    virtual void write(eckit::DataBlobPtr blob);
+    void print(std::ostream&) const;
 
-    virtual void print(std::ostream&) const;
+    friend std::ostream& operator<<(std::ostream& s, const Trigger& p) { p.print(s); return s; }
+
 
 private: // members
 
-    eckit::PathName path_;
-    eckit::ScopedPtr<eckit::DataHandle> handle_;
-    eckit::Mutex mutex_;
+
+    std::vector<EventTrigger*> triggers_;
+
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
 
-#endif // multio_FileSink_H
+#endif
 

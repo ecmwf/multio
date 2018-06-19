@@ -25,7 +25,6 @@
 #include "eckit/thread/Mutex.h"
 #include "eckit/filesystem/PathName.h"
 #include "multio/DataSink.h"
-#include "multio/JournalRecord.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 

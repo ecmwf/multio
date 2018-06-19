@@ -15,10 +15,10 @@
 #ifndef multio_Journal_H
 #define multio_Journal_H
 
+#include <sys/time.h>
 #include <iosfwd>
 #include <string>
 #include <vector>
-#include <sys/time.h>
 
 #include "eckit/filesystem/PathName.h"
 #include "eckit/io/DataHandle.h"
@@ -31,7 +31,7 @@
 #include "multio/JournalRecord.h"
 
 namespace eckit {
-    class Configuration;
+class Configuration;
 }
 
 namespace multio {
@@ -42,33 +42,28 @@ class DataSink;
 
 
 class Journal : private eckit::NonCopyable {
-
     friend class JournalRecord;
 
-public: // constants
-
+public:  // constants
     const static eckit::FixedString<8> CurrentHeaderTag;
     const static unsigned char CurrentVersion;
 
-public: // types
-
+public:  // types
     struct Header {
+        eckit::FixedString<8> tag_;  // (8)   Magic tag (IOJOU999) [I/O Journal 999]
+        unsigned char tagVersion_;   // (1)   Identify journal version.
+        unsigned char unused_[3];    // (3)   Reserved for future use.
 
-        eckit::FixedString<8> tag_;             // (8)   Magic tag (IOJOU999) [I/O Journal 999]
-        unsigned char         tagVersion_;      // (1)   Identify journal version.
-        unsigned char         unused_[3];       // (3)   Reserved for future use. 
+        timeval timestamp_;  // (16) Time of creation of journal (in unix seconds)
 
-        timeval               timestamp_;       // (16) Time of creation of journal (in unix seconds)
-
-        unsigned char         unused2_[116];    // (116) reserved for future use.
+        unsigned char unused2_[116];  // (116) reserved for future use.
     } head_;
 
     JournalRecord configurationRecord_;
     JournalRecord footer_;
 
-public: // methods
-
-    Journal(const eckit::Configuration& config, DataSink * const dataSink = NULL);
+public:  // methods
+    Journal(const eckit::Configuration& config, DataSink* const dataSink = NULL);
 
     ~Journal();
 
@@ -82,30 +77,27 @@ public: // methods
     //      way, from journaling the journal entries, which are specific to each of
     //      the data sinks.
 
-    void writeRecord(JournalRecord& record);
-
     bool isOpen() const;
 
-protected: // methods
-
+protected:  // methods
     void print(std::ostream&) const;
 
-private: // methods
-
+private:  // methods
     void initHeader();
 
-    friend std::ostream &operator<<(std::ostream &s, const Journal &p) {
+    void writeRecord(JournalRecord& record);
+
+    friend std::ostream& operator<<(std::ostream& s, const Journal& p) {
         p.print(s);
         return s;
     }
 
-private: // members
-
+private:  // members
     eckit::PathName path_;
     eckit::ScopedPtr<eckit::DataHandle> handle_;
     eckit::Mutex mutex_;
 
-    DataSink * const dataSink_;
+    DataSink* const dataSink_;
 
     eckit::Configuration const& config_;
     bool isOpen_;
@@ -116,4 +108,3 @@ private: // members
 }  // namespace multio
 
 #endif
-

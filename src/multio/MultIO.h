@@ -19,23 +19,22 @@
 #include <string>
 #include <vector>
 
-#include "eckit/memory/NonCopyable.h"
-#include "eckit/memory/SharedPtr.h"
 #include "eckit/io/Length.h"
 #include "eckit/log/Timer.h"
+#include "eckit/memory/NonCopyable.h"
+#include "eckit/memory/SharedPtr.h"
 
 #include "multio/DataSink.h"
-#include "multio/JournalRecord.h"
 #include "multio/IOStats.h"
+#include "multio/JournalRecord.h"
+#include "multio/Trigger.h"
 
 namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
 class MultIO : public DataSink {
-
 public:
-
     MultIO(const eckit::Configuration& config);
 
     virtual ~MultIO();
@@ -77,8 +76,7 @@ public:
     // virtual int ireadfdb(void *data, int *words);
     virtual void iwritefdb(int fdbaddr, eckit::DataBlobPtr blob);
 
-protected: // types
-
+protected:  // types
     struct SinkStoreElem {
         eckit::SharedPtr<DataSink> sink_;
         bool journalAlways_;
@@ -87,29 +85,28 @@ protected: // types
     typedef std::vector<SinkStoreElem> sink_store_t;
 
 protected:
-
     virtual void print(std::ostream&) const;
 
-protected: // members
+protected:  // members
 
     Journal journal_;
     IOStats stats_;
 
     sink_store_t sinks_;
 
-    bool journaled_;
+    Trigger trigger_;
 
     mutable eckit::Mutex mutex_;
 
     eckit::Timer timer_;
 
-private: // methods
+    bool journaled_;
 
-    friend std::ostream &operator<<(std::ostream &s, const MultIO &p) {
+private:  // methods
+    friend std::ostream& operator<<(std::ostream& s, const MultIO& p) {
         p.print(s);
         return s;
     }
-
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -117,4 +114,3 @@ private: // methods
 }  // namespace multio
 
 #endif
-

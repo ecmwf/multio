@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996-2015 ECMWF.
+ * (C) Copyright 1996- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -37,15 +37,14 @@ const unsigned char Journal::CurrentVersion = 1;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-Journal::Journal(const Configuration& config, DataSink * const dataSink) :
+Journal::Journal(const Configuration& config, DataSink* const dataSink) :
     configurationRecord_(*this, JournalRecord::Uninitialised),
     footer_(*this, JournalRecord::Uninitialised),
     path_(config.getString("journalfile", "journal")),
     handle_(path_.fileHandle(false)),
     dataSink_(dataSink),
     config_(config),
-    isOpen_(false) {
-}
+    isOpen_(false) {}
 
 Journal::~Journal() {
     close();
@@ -54,15 +53,14 @@ Journal::~Journal() {
 
 /// Open a new journal file, and initialise it with header information
 void Journal::open() {
-
     Log::info() << "[" << *this << "] Opening the journal (for writing)" << std::endl;
     AutoLock<Mutex> lock(mutex_);
 
-    if (!isOpen_){
-
+    if (!isOpen_) {
         if (NULL == dataSink_) {
-            throw SeriousBug("Can only open a journal for writing if it is associated with a MultIO DataSink",
-                             Here());
+            throw SeriousBug(
+                "Can only open a journal for writing if it is associated with a MultIO DataSink",
+                Here());
         }
 
         handle_->openForWrite(0);
@@ -86,7 +84,6 @@ void Journal::open() {
 /// Finalise the journal by writing termination markers,
 /// and close the associated file.
 void Journal::close() {
-
     AutoLock<Mutex> lock(mutex_);
 
     if (isOpen_) {
@@ -96,31 +93,29 @@ void Journal::close() {
         // Initialise and write the footer information
         footer_.initialise(JournalRecord::EndOfJournal);
         footer_.writeRecord(*handle_);
-            
+
         handle_->close();
         isOpen_ = false;
     }
 }
 
-
 void Journal::writeRecord(JournalRecord& record) {
+    // The journal must be open before we attempt writing to it
+    ASSERT(isOpen());
 
-    if(record.utilised()) {
+    if (record.utilised()) {
         AutoLock<Mutex> lock(mutex_);
         record.writeRecord(*handle_);
     }
 }
 
-
 /// Initialise a journal header struct with valid information for writing out
 void Journal::initHeader() {
-
     zero(head_);
-    head_.tag_ = Journal::CurrentHeaderTag;
+    head_.tag_        = Journal::CurrentHeaderTag;
     head_.tagVersion_ = Journal::CurrentVersion;
 
     SYSCALL(::gettimeofday(&head_.timestamp_, NULL));
-
 }
 
 
@@ -129,12 +124,10 @@ bool Journal::isOpen() const {
 }
 
 
-void Journal::print(std::ostream& os) const
-{
+void Journal::print(std::ostream& os) const {
     os << "Journal()";
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-

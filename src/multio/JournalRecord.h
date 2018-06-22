@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996-2015 ECMWF.
+ * (C) Copyright 1996- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -15,11 +15,11 @@
 #ifndef multio_JournalRecord_H
 #define multio_JournalRecord_H
 
+#include <stdint.h>
+#include <sys/time.h>
 #include <iosfwd>
 #include <string>
 #include <vector>
-#include <sys/time.h>
-#include <stdint.h>
 
 #include "eckit/io/DataBlob.h"
 #include "eckit/io/DataHandle.h"
@@ -30,7 +30,7 @@
 
 
 namespace eckit {
-    class Value;
+class Value;
 }
 
 namespace multio {
@@ -40,9 +40,7 @@ namespace multio {
 class Journal;
 
 class JournalRecord : public eckit::OwnedLock {
-
-public: // Data types, and structural members.
-
+public:  // Data types, and structural members.
     // The journal has a certain file structure
     //
     // header
@@ -67,7 +65,8 @@ public: // Data types, and structural members.
     //        >> Code 'E'
     //   -- A termination marker for the record
 
-    enum RecordType {   // n.b. if we add types, update the ASSERT in JournalRecord::RecordTypeName
+    enum RecordType
+    {  // n.b. if we add types, update the ASSERT in JournalRecord::RecordTypeName
         Uninitialised,
         EndOfJournal,
         WriteEntry,
@@ -75,16 +74,15 @@ public: // Data types, and structural members.
     };
 
     struct Head {
+        unsigned char tag_;         /// (1)
+        unsigned char tagVersion_;  /// (1)
 
-        unsigned char   tag_;           /// (1)
-        unsigned char   tagVersion_;    /// (1)
+        uint16_t numEntries_;  /// (2) The number of JournalEntries contaitned
 
-        uint16_t        numEntries_;    /// (2) The number of JournalEntries contaitned
+        timeval timestamp_;  /// (16) date & time of entry (in Unix seconds)
 
-        timeval         timestamp_;     /// (16) date & time of entry (in Unix seconds)
-
-        char            unused2_[12];    /// (12) reserved for future use
-                                         /// TOTAL: 32
+        char unused2_[12];  /// (12) reserved for future use
+                            /// TOTAL: 32
     } head_;
 
     const static eckit::FixedString<4> TerminationMarker;
@@ -96,24 +94,23 @@ public: // Data types, and structural members.
     // Each of these starts with a (very brief) header, describing what it is.
 
     struct JournalEntry {
-
-        enum EntryType {
-            Data = 'D',
+        enum EntryType
+        {
+            Data  = 'D',
             Write = 'W',
-            End = 'E'
+            End   = 'E'
         };
 
         struct Header {
+            unsigned char tag_;        /// (1) - The EntryType
+            uint16_t id_;              /// (2) - The index of the DataSink (in a MultiIO)
+            unsigned char unused_[1];  /// (1)
 
-            unsigned char     tag_;             /// (1) - The EntryType
-            uint16_t          id_;              /// (2) - The index of the DataSink (in a MultiIO)
-            unsigned char     unused_[1];       /// (1)
+            timeval timestamp_;  /// (16)
 
-            timeval           timestamp_;       /// (16)
+            uint64_t payload_length_;  /// (8)
 
-            uint64_t          payload_length_;  /// (8)
-
-            char              unused2_[12];
+            char unused2_[12];
 
         } head_;
 
@@ -129,13 +126,12 @@ public: // Data types, and structural members.
     // Payload goes here (should depend on the specific type. Will be pointed to.
     // eckit::ScopedPtr<JournalRecordPayload> payload_
 
-    eckit::FixedString<4> marker_;           /// (4) Termination marker
+    eckit::FixedString<4> marker_;  /// (4) Termination marker
 
-public: // methods
-
+public:  // methods
     /// Create a (blank) journal record associated with a given journal. If
-    /// triggered this can then 
-    JournalRecord(Journal& journal, RecordType type=Uninitialised);
+    /// triggered this can then
+    JournalRecord(Journal& journal, RecordType type = Uninitialised);
 
     ~JournalRecord();
 
@@ -161,33 +157,29 @@ public: // methods
 
     static const std::string& RecordTypeName(RecordType type);
 
-    static const char * EntryTypeName(JournalEntry::EntryType type);
+    static const char* EntryTypeName(JournalEntry::EntryType type);
 
-    static const char * blobTypeName(RecordType type);
+    static const char* blobTypeName(RecordType type);
 
 
-protected: // methods
-
+protected:  // methods
     void print(std::ostream&) const;
 
-private: // methods
-
+private:  // methods
     void initHeader();
 
-    friend std::ostream &operator<<(std::ostream &s, const JournalRecord &p) {
+    friend std::ostream& operator<<(std::ostream& s, const JournalRecord& p) {
         p.print(s);
         return s;
     }
 
-private: // internal control elements
-
+private:  // internal control elements
     eckit::Mutex mutex_;
 
     Journal& journal_;
 
     bool utilised_;
     bool written_;
-
 };
 
 typedef eckit::SharedPtr<JournalRecord> JournalRecordPtr;
@@ -197,5 +189,4 @@ typedef eckit::SharedPtr<JournalRecord> JournalRecordPtr;
 
 }  // namespace multio
 
-#endif // multio_JournalRecord_H
-
+#endif  // multio_JournalRecord_H

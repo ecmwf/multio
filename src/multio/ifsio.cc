@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 1996-2013 ECMWF.
+ * (C) Copyright 1996- ECMWF.
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -147,9 +147,9 @@ static bool traceme() {
 }
 
 #ifdef  MULTIO_TRACE
-#define MULTIO_TRACE_FUNC()       if(traceme()) { fprintf(stdout,"MULTIO %s : %s()\n",MULTIO_VERSION,__FUNCTION__); }
-#define MULTIO_TRACE_FUNC1(p1)    if(traceme()) { fprintf(stdout,"MULTIO %s : %s(%s)\n",MULTIO_VERSION,__FUNCTION__,p1); }
-#define MULTIO_TRACE_FUNC2(p1,p2) if(traceme()) { fprintf(stdout,"MULTIO %s : %s(%s,%s)\n",MULTIO_VERSION,__FUNCTION__,p1,p2); }
+#define MULTIO_TRACE_FUNC()       if(traceme()) { fprintf(stdout,"MULTIO %s : %s()\n",MULTIO_VERSION,__func__); }
+#define MULTIO_TRACE_FUNC1(p1)    if(traceme()) { fprintf(stdout,"MULTIO %s : %s(%s)\n",MULTIO_VERSION,__func__,p1); }
+#define MULTIO_TRACE_FUNC2(p1,p2) if(traceme()) { fprintf(stdout,"MULTIO %s : %s(%s,%s)\n",MULTIO_VERSION,__func__,p1,p2); }
 #else
 #define MULTIO_TRACE_FUNC()
 #define MULTIO_TRACE_FUNC1(p1)
@@ -160,13 +160,13 @@ static bool traceme() {
 
 static int ifsio_handle_error(std::exception& e) {
 
-    eckit::Log::info()  << "FDB MultIO wrapper: " << e.what() << std::endl << std::flush;
-    eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl << std::flush;
+    std::cout << "FDB MultIO wrapper: " << e.what() << std::endl << std::flush;
+    std::cerr << "FDB MultIO wrapper: " << e.what() << std::endl << std::flush;
 
     static char* abort_on_error = ::getenv("MULTIO_ABORT_ON_ERROR");
     if(abort_on_error) {
-        eckit::Log::info()  << "FDB MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
-        eckit::Log::error() << "FDB MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
+        std::cout << "FDB MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
+        std::cerr << "FDB MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
 
         eckit::LibEcKit::instance().abort();
     }

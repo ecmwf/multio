@@ -160,13 +160,13 @@ static bool traceme() {
 
 static int ifsio_handle_error(std::exception& e) {
 
-    eckit::Log::info()  << "FDB MultIO wrapper: " << e.what() << std::endl << std::flush;
-    eckit::Log::error() << "FDB MultIO wrapper: " << e.what() << std::endl << std::flush;
+    std::cout << "FDB MultIO wrapper: " << e.what() << std::endl << std::flush;
+    std::cerr << "FDB MultIO wrapper: " << e.what() << std::endl << std::flush;
 
     static char* abort_on_error = ::getenv("MULTIO_ABORT_ON_ERROR");
     if(abort_on_error) {
-        eckit::Log::info()  << "FDB MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
-        eckit::Log::error() << "FDB MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
+        std::cout << "FDB MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
+        std::cerr << "FDB MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
 
         eckit::LibEcKit::instance().abort();
     }

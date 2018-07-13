@@ -17,13 +17,11 @@
 #define multio_FileSink_H
 
 #include <iosfwd>
+#include <mutex>
 #include <string>
 #include <vector>
 
 #include "eckit/filesystem/PathName.h"
-#include "eckit/io/Length.h"
-#include "eckit/memory/NonCopyable.h"
-#include "eckit/thread/Mutex.h"
 
 #include "multio/DataSink.h"
 
@@ -44,12 +42,14 @@ public:
 private:  // methods
     void write(eckit::DataBlobPtr blob) override;
 
+    void flush() override;
+
     void print(std::ostream&) const override;
 
 private:  // members
     eckit::PathName path_;
     std::unique_ptr<eckit::DataHandle> handle_;
-    eckit::Mutex mutex_;
+    std::mutex mutex_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

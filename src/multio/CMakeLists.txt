@@ -32,13 +32,14 @@ list( APPEND multio_srcs
     LibMultio.h
     MultIO.cc
     MultIO.h
+    PlainDataBlob.cc
+    PlainDataBlob.h
     Trigger.cc
     Trigger.h
     ifsio.cc
     ifsio.h
     multio_version.cc
 )
-
 
 ### multio library
 
@@ -66,3 +67,4 @@ ecbuild_add_library(
 
 add_subdirectory(fdb4)
 add_subdirectory(fdb5)
+add_subdirectory(server)

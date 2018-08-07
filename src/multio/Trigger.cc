@@ -44,18 +44,14 @@ public: // methods
 
     Event(const std::string& event, StringDict info = StringDict()) :
         type_(event),
-        info_(info)
-    {
+        info_(info) {
     }
 
     virtual ~Event() {}
 
     void info(const std::string& k, const std::string& v) { info_[k] = v; }
 
-    void json(JSON& s) const {
-        s << "type" << type_;
-        s << "info"     << info_;
-    }
+    virtual void json(JSON& s) const = 0;
 
 private: // methods
 
@@ -82,9 +78,10 @@ public: // methods
 
     void metadata(const std::string& k, const std::string& v) { metadata_[k] = v; }
 
-    void json(JSON& s) const {
+    virtual void json(JSON& s) const {
         s.startObject();
-        Event::json(s);
+        s << "type" << type_;
+        s << "info" << info_;
         s << "metadata" << metadata_;
         s.endObject();
     }
@@ -117,9 +114,10 @@ public: // methods
 
     void metadata(const std::string& k, const std::string& v) { metadata_[k] = v; }
 
-    void json(JSON& s) const {
+    virtual void json(JSON& s) const {
         s.startObject();
-        Event::json(s);
+        s << "type" << type_;
+        s << "info" << info_;
         s << "metadata" << metadata_;
         s.endObject();
     }

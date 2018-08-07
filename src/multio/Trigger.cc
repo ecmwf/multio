@@ -167,7 +167,7 @@ public: // methods
     }
 
     void send(Event& event) const {
-        
+
         std::ostringstream os;
         JSON msg(os);
         event.json(msg);
@@ -231,7 +231,6 @@ public: // methods
         lastSeen_(values_.end()),
         issued_(values_.end())
     {
-        ASSERT(config.getString("type") == MetadataChange::eventType());
     }
 
     ~MetadataChangeTrigger() {
@@ -308,7 +307,6 @@ public: // methods
     NotifyMetadataTrigger(const Configuration& config) : EventTrigger(config),
         key_(config.getString("key"))
     {
-        ASSERT(config.getString("type") == MetadataChange::eventType());
     }
 
 

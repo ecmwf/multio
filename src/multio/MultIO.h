@@ -50,6 +50,8 @@ public:
 
     virtual void flush();
 
+    virtual void trigger(const eckit::StringDict& metadata) const;
+
     virtual void replayRecord(const JournalRecord& record);
 
     void report(std::ostream&);

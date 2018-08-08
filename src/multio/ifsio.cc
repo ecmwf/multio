@@ -14,6 +14,7 @@
 #include <unistd.h>
 
 #include "eckit/config/LibEcKit.h"
+#include "eckit/types/Types.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
@@ -270,6 +271,26 @@ extern "C" {
 
             MIO::instance().mio().iflushfdb(*addr);
             MIO::instance().log(true);
+
+        } catch (std::exception &e) {
+            return ifsio_handle_error(e);
+        }
+        return 0;
+    }
+
+    fortint imultio_notify_step_(const fortint * step) {
+
+        try {
+
+            MULTIO_TRACE_FUNC();
+
+            ASSERT(step);
+
+            eckit::StringDict metadata;
+
+            metadata["step"] = eckit::Translator<fortint,std::string>()(*step);
+
+            MIO::instance().mio().trigger(metadata);
 
         } catch (std::exception &e) {
             return ifsio_handle_error(e);

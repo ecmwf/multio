@@ -132,6 +132,9 @@ void MultIO::write(DataBlobPtr blob) {
     stats_.logWrite(blob->length(), timer_);
 }
 
+void MultIO::trigger(const eckit::StringDict& metadata) const {
+    trigger_.events(metadata);
+}
 
 void MultIO::flush() {
     AutoLock<Mutex> lock(mutex_);

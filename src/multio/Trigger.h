@@ -17,6 +17,7 @@
 
 #include <vector>
 
+#include "eckit/types/Types.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/io/DataBlob.h"
 
@@ -38,7 +39,8 @@ public: // methods
 
     ~Trigger();
 
-    void events(eckit::DataBlobPtr blob);
+    void events(const eckit::StringDict& metadata) const;
+    void events(eckit::DataBlobPtr blob) const;
 
 private: // methods
 

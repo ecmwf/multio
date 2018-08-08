@@ -44,18 +44,14 @@ public: // methods
 
     Event(const std::string& event, StringDict info = StringDict()) :
         type_(event),
-        info_(info)
-    {
+        info_(info) {
     }
 
     virtual ~Event() {}
 
     void info(const std::string& k, const std::string& v) { info_[k] = v; }
 
-    void json(JSON& s) const {
-        s << "type" << type_;
-        s << "info"     << info_;
-    }
+    virtual void json(JSON& s) const = 0;
 
 private: // methods
 
@@ -82,9 +78,10 @@ public: // methods
 
     void metadata(const std::string& k, const std::string& v) { metadata_[k] = v; }
 
-    void json(JSON& s) const {
+    virtual void json(JSON& s) const {
         s.startObject();
-        Event::json(s);
+        s << "type" << type_;
+        s << "info" << info_;
         s << "metadata" << metadata_;
         s.endObject();
     }
@@ -92,7 +89,43 @@ public: // methods
 private: // methods
 
     void print(std::ostream& o) const {
-        o << "MetadataChange("
+        o << eventType() << "("
+          << "type=" << type_
+          << ",info=" << info_
+          << ",metadata=" << metadata_
+          << ")";
+    }
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+
+class NotifyMetadata : public Event {
+
+    StringDict metadata_;
+
+public: // methods
+
+    static const char* eventType() { return "NotifyMetadata"; }
+
+    NotifyMetadata(StringDict info = StringDict(), StringDict metadata = StringDict()) :
+        Event(eventType(), info),
+        metadata_(metadata) {
+    }
+
+    void metadata(const std::string& k, const std::string& v) { metadata_[k] = v; }
+
+    virtual void json(JSON& s) const {
+        s.startObject();
+        s << "type" << type_;
+        s << "info" << info_;
+        s << "metadata" << metadata_;
+        s.endObject();
+    }
+
+private: // methods
+
+    void print(std::ostream& o) const {
+        o << eventType() << "("
           << "type=" << type_
           << ",info=" << info_
           << ",metadata=" << metadata_
@@ -107,6 +140,19 @@ class EventTrigger {
 public: // methods
 
     EventTrigger(const Configuration& config) {
+
+        if(config.has("file"))
+           file_ = config.getString("file");
+
+        if(config.has("host"))
+            host_ = config.getString("host");
+
+        failOnRetry_ = config.getInt("failOnRetry", false);
+
+        port_    = config.getInt("port", 10000);
+        retries_ = config.getInt("retries", 5);
+        timeout_ = config.getInt("timeout", 60);
+
         info_["app"] = "multio";
         if(config.has("info"))
         {
@@ -118,103 +164,13 @@ public: // methods
         }
     }
 
-    virtual ~EventTrigger() {}
-
-    virtual void trigger(eckit::DataBlobPtr blob) const = 0;
-
-    static EventTrigger* build(const Configuration& config);
-
-protected: // member
-
-    StringDict info_;
-
-};
-
-//----------------------------------------------------------------------------------------------------------------------
-
-class MetadataChangeTrigger : public EventTrigger {
-
-public: // methods
-
-    MetadataChangeTrigger(const Configuration& config) : EventTrigger(config),
-        key_(config.getString("key")),
-        values_(config.getStringVector("values")),
-        lastSeen_(values_.end()),
-        issued_(values_.end())
-    {
-        ASSERT(config.getString("type") == MetadataChange::eventType());
-
-        if(config.has("file"))
-            file_ = config.getString("file");
-
-        if(config.has("host"))
-            host_ = config.getString("host");
-
-        failOnRetry_ = config.getInt("failOnRetry", false);
-
-        port_    = config.getInt("port", 10000);
-        retries_ = config.getInt("retries", 5);
-        timeout_ = config.getInt("timeout", 60);
-    }
-
-
-    ~MetadataChangeTrigger() {
-        updateEventsIssued();
-    }
-
-    virtual void trigger(eckit::DataBlobPtr blob) const {
-
-        const eckit::Metadata& md = blob->metadata();
-
-        std::string current;
-        md.get(key_, current);
-
-        std::vector<std::string>::const_iterator now = std::find(values_.begin(), values_.end(), current);
-
-        if(lastSeen_ == values_.end() && inValues(now)) { /* initial */
-            lastSeen_ = now;
-        }
-
-        if(lastSeen_ == now) return; /* no change => no event */
-
-        updateEventsIssued();
-
-        if(inValues(now)) {
-            lastSeen_ = now;
-        }
-    }
-
-private: // methods
-
-
-    bool inValues(const std::vector<std::string>::const_iterator& it) const { return it != values_.end(); }
-
-    /// Updates the events already issued
-    void updateEventsIssued() const {
-
-        if(issued_ == values_.end() && lastSeen_ != values_.end()) { /* initial */
-            issued_ = values_.begin();
-            issueEvent(issued_);
-        }
-
-        while(issued_ != lastSeen_) {
-            issued_++;
-            issueEvent(issued_);
-        }
-    }
-
-    void issueEvent(std::vector<std::string>::const_iterator it) const {
-        ASSERT(it != values_.end());
-        std::string value = *it;
-
-        MetadataChange event(info_);
-        event.metadata(key_, value);
+    void send(Event& event) const {
 
         std::ostringstream os;
         JSON msg(os);
         event.json(msg);
 
-        Log::debug<LibMultio>() << "EVENT ISSUED -- Key " << key_ << " Value " << value << " : " << os.str() << std::endl;
+        Log::debug<LibMultio>() << "SENDING EVENT -- " << os.str() << std::endl;
 
         if(!host_.empty()) {
             try {
@@ -240,35 +196,153 @@ private: // methods
         }
     }
 
+    virtual ~EventTrigger() {}
 
-private: // members
+    virtual void trigger(const StringDict& keys) const = 0;
+    virtual void trigger(eckit::DataBlobPtr blob) const = 0;
+
+    static EventTrigger* build(const Configuration& config);
+
+protected: // member
 
     int port_;
     int retries_;
     int timeout_;
     std::string host_;
 
+    std::string file_;
+
+    bool failOnRetry_;
+
+    StringDict info_;
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+
+class MetadataChangeTrigger : public EventTrigger {
+
+public: // methods
+
+    MetadataChangeTrigger(const Configuration& config) : EventTrigger(config),
+        key_(config.getString("key")),
+        values_(config.getStringVector("values")),
+        lastSeen_(values_.end()),
+        issued_(values_.end())
+    {
+    }
+
+    ~MetadataChangeTrigger() {
+        updateEventsIssued();
+    }
+
+    virtual void trigger(const StringDict& keys) const {}
+
+    virtual void trigger(eckit::DataBlobPtr blob) const {
+
+        const eckit::Metadata& md = blob->metadata();
+
+        std::string current;
+        md.get(key_, current);
+
+        std::vector<std::string>::const_iterator now = std::find(values_.begin(), values_.end(), current);
+
+        if(lastSeen_ == values_.end() && inValues(now)) { /* initial */
+            lastSeen_ = now;
+        }
+
+        if(lastSeen_ == now) return; /* no change => no event */
+
+        updateEventsIssued();
+
+        if(inValues(now)) {
+            lastSeen_ = now;
+        }
+    }
+
+private: // methods
+
+    bool inValues(const std::vector<std::string>::const_iterator& it) const { return it != values_.end(); }
+
+    /// Updates the events already issued
+    void updateEventsIssued() const {
+
+        if(issued_ == values_.end() && lastSeen_ != values_.end()) { /* initial */
+            issued_ = values_.begin();
+            issueEvent(issued_);
+        }
+
+        while(issued_ != lastSeen_) {
+            issued_++;
+            issueEvent(issued_);
+        }
+    }
+
+    void issueEvent(std::vector<std::string>::const_iterator it) const {
+        ASSERT(it != values_.end());
+        std::string value = *it;
+
+        MetadataChange event(info_);
+        event.metadata(key_, value);
+        send(event);
+    }
+
+
+private: // members
+
     std::string key_;
     std::vector<std::string> values_;
 
     mutable std::vector<std::string>::const_iterator lastSeen_;
     mutable std::vector<std::string>::const_iterator issued_;
+};
 
-    std::string file_;
 
-    bool failOnRetry_;
+
+class NotifyMetadataTrigger : public EventTrigger {
+
+public: // methods
+
+    NotifyMetadataTrigger(const Configuration& config) : EventTrigger(config),
+        key_(config.getString("key"))
+    {
+    }
+
+
+    ~NotifyMetadataTrigger() {
+    }
+
+    virtual void trigger(const eckit::StringDict& keys) const {
+        eckit::StringDict::const_iterator k = keys.find(key_);
+        if(k != keys.end()) {
+            NotifyMetadata event(info_);
+            event.metadata(key_, k->second);
+            send(event);
+        }
+    }
+
+    virtual void trigger(eckit::DataBlobPtr blob) const {}
+
+private:
+
+    std::string key_;
+
 };
 
 //----------------------------------------------------------------------------------------------------------------------
-
 
 EventTrigger* EventTrigger::build(const Configuration& config) {
 
     std::string type = config.getString("type");
 
-    ASSERT(type == "MetadataChange");
+    if(type == "MetadataChange") {
+        return new MetadataChangeTrigger(config);
+    }
 
-    return new MetadataChangeTrigger(config);
+    if(type == "NotifyMetadata") {
+        return new NotifyMetadataTrigger(config);
+    }
+
+    throw eckit::BadValue(std::string("Unknown event type ") + type, Here());
 }
 
 
@@ -304,7 +378,13 @@ Trigger::~Trigger() {
     }
 }
 
-void Trigger::events(eckit::DataBlobPtr blob) {
+void Trigger::events(const StringDict& keys) const {
+    for(std::vector<EventTrigger*>::const_iterator it = triggers_.begin(); it !=  triggers_.end(); ++it) {
+        (*it)->trigger(keys);
+    }
+}
+
+void Trigger::events(eckit::DataBlobPtr blob) const {
     for(std::vector<EventTrigger*>::const_iterator it = triggers_.begin(); it !=  triggers_.end(); ++it) {
         (*it)->trigger(blob);
     }

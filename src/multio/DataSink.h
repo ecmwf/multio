@@ -104,7 +104,7 @@ protected: // members
 class DataSinkFactory {
 
     std::string name_;
-    virtual DataSink* make(const eckit::Configuration& config) = 0;
+    virtual DataSink* make(const eckit::Configuration& config) const = 0;
 
 protected:
 
@@ -121,7 +121,7 @@ public:
 template< class T>
 class DataSinkBuilder : public DataSinkFactory {
 
-    virtual DataSink* make(const eckit::Configuration& config) {
+    virtual DataSink* make(const eckit::Configuration& config) const {
         return new T(config);
     }
 

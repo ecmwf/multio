@@ -26,11 +26,11 @@ namespace multio {
 //----------------------------------------------------------------------------------------------------------------------
 
 static Mutex *local_mutex = 0;
-static std::map<std::string, DataSinkFactory*> *m = 0;
+static std::map<std::string, const DataSinkFactory*> *m = 0;
 static pthread_once_t once = PTHREAD_ONCE_INIT;
 static void init() {
     local_mutex = new Mutex();
-    m = new std::map<std::string, DataSinkFactory*>();
+    m = new std::map<std::string, const DataSinkFactory*>();
 }
 
 DataSinkFactory::DataSinkFactory(const std::string &name) :
@@ -58,8 +58,8 @@ void DataSinkFactory::list(std::ostream& out) {
     AutoLock<Mutex> lock(local_mutex);
 
     const char* sep = "";
-    for (std::map<std::string, DataSinkFactory*>::const_iterator j = m->begin() ; j != m->end() ; ++j) {
-        out << sep << (*j).first;
+    for (auto const& sinkFactory : *m) {
+        out << sep << sinkFactory.first;
         sep = ", ";
     }
 }
@@ -73,7 +73,7 @@ DataSink* DataSinkFactory::build(const std::string &name, const Configuration& c
 
     Log::info() << "Looking for DataSinkFactory [" << name << "]" << std::endl;
 
-    std::map<std::string, DataSinkFactory *>::const_iterator j = m->find(name);
+    auto j = m->find(name);
     if (j == m->end()) {
         Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;
         Log::error() << "DataSinkFactories are:" << std::endl;
@@ -82,7 +82,7 @@ DataSink* DataSinkFactory::build(const std::string &name, const Configuration& c
         throw SeriousBug(std::string("No DataSinkFactory called ") + name);
     }
 
-    return (*j).second->make(config);
+    return j->second->make(config);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

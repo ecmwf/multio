@@ -26,11 +26,10 @@ namespace multio {
 //----------------------------------------------------------------------------------------------------------------------
 
 static Mutex *local_mutex = 0;
-static std::map<std::string, const DataSinkFactory*> *m = 0;
+static std::map<std::string, const DataSinkFactory*> sinkFactories;
 static pthread_once_t once = PTHREAD_ONCE_INIT;
 static void init() {
     local_mutex = new Mutex();
-    m = new std::map<std::string, const DataSinkFactory*>();
 }
 
 DataSinkFactory::DataSinkFactory(const std::string &name) :
@@ -40,14 +39,14 @@ DataSinkFactory::DataSinkFactory(const std::string &name) :
 
     AutoLock<Mutex> lock(local_mutex);
 
-    ASSERT(m->find(name) == m->end());
-    (*m)[name] = this;
+    ASSERT(sinkFactories.find(name) == sinkFactories.end());
+    sinkFactories[name] = this;
 }
 
 
 DataSinkFactory::~DataSinkFactory() {
     AutoLock<Mutex> lock(local_mutex);
-    m->erase(name_);
+    sinkFactories.erase(name_);
 }
 
 
@@ -58,7 +57,7 @@ void DataSinkFactory::list(std::ostream& out) {
     AutoLock<Mutex> lock(local_mutex);
 
     const char* sep = "";
-    for (auto const& sinkFactory : *m) {
+    for (auto const& sinkFactory : sinkFactories) {
         out << sep << sinkFactory.first;
         sep = ", ";
     }
@@ -73,16 +72,17 @@ DataSink* DataSinkFactory::build(const std::string &name, const Configuration& c
 
     Log::info() << "Looking for DataSinkFactory [" << name << "]" << std::endl;
 
-    auto j = m->find(name);
-    if (j == m->end()) {
-        Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;
-        Log::error() << "DataSinkFactories are:" << std::endl;
-        for (j = m->begin() ; j != m->end() ; ++j)
-            Log::error() << "   " << (*j).first << std::endl;
+    auto requiredFactory = sinkFactories.find(name);
+    if (requiredFactory == sinkFactories.end()) {
+       Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;
+       Log::error() << "DataSinkFactories are:" << std::endl;
+       for (auto const& sinkFactory : sinkFactories) {
+           Log::error() << "   " << sinkFactory.first << std::endl;
+       }
         throw SeriousBug(std::string("No DataSinkFactory called ") + name);
     }
 
-    return j->second->make(config);
+    return requiredFactory->second->make(config);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

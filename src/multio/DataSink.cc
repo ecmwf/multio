@@ -91,9 +91,6 @@ DataSink::DataSink(const Configuration& config) :
     id_(-1) {
 }
 
-DataSink::~DataSink() {
-}
-
 bool DataSink::ready() const
 {
     return true; // default for synchronous sinks

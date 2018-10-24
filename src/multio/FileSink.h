@@ -21,7 +21,6 @@
 
 #include "eckit/io/Length.h"
 #include "eckit/memory/NonCopyable.h"
-#include "eckit/memory/ScopedPtr.h"
 #include "eckit/thread/Mutex.h"
 #include "eckit/filesystem/PathName.h"
 #include "multio/DataSink.h"
@@ -32,24 +31,24 @@ namespace eckit { class FileHandle; }
 
 namespace multio {
 
-class FileSink : public DataSink {
+class FileSink final : public DataSink {
 
 public:
 
     FileSink(const eckit::Configuration& config);
 
-    virtual ~FileSink();
+    ~FileSink() override;
 
 private: // methods
 
-    virtual void write(eckit::DataBlobPtr blob);
+    void write(eckit::DataBlobPtr blob) override;
 
-    virtual void print(std::ostream&) const;
+    void print(std::ostream&) const override;
 
 private: // members
 
     eckit::PathName path_;
-    eckit::ScopedPtr<eckit::DataHandle> handle_;
+    std::unique_ptr<eckit::DataHandle> handle_;
     eckit::Mutex mutex_;
 };
 

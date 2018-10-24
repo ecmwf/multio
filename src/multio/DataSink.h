@@ -38,7 +38,7 @@ public: // methods
 
     DataSink(const eckit::Configuration& config);
 
-    virtual ~DataSink();
+    ~DataSink() override = default;
 
     virtual bool ready() const;
 
@@ -119,9 +119,9 @@ public:
 };
 
 template< class T>
-class DataSinkBuilder : public DataSinkFactory {
+class DataSinkBuilder final : public DataSinkFactory {
 
-    virtual DataSink* make(const eckit::Configuration& config) const {
+    DataSink* make(const eckit::Configuration& config) const override {
         return new T(config);
     }
 

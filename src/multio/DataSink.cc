@@ -25,39 +25,39 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-static Mutex *local_mutex = 0;
-static std::map<std::string, const DataSinkFactory*> sinkFactories;
-static pthread_once_t once = PTHREAD_ONCE_INIT;
-static void init() {
-    local_mutex = new Mutex();
+namespace {
+using SinkFactoryRegister = std::map<std::string, const DataSinkFactory*>;
+
+SinkFactoryRegister& sinkFactories() {
+    static auto reg = new SinkFactoryRegister{};
+    return *reg;
 }
+eckit::Mutex& local_mutex() {
+    static auto mutex = new eckit::Mutex{};
+    return *mutex;
+}
+}  // namespace
 
-DataSinkFactory::DataSinkFactory(const std::string &name) :
-    name_(name) {
+DataSinkFactory::DataSinkFactory(const std::string& name) : name_(name) {
+    AutoLock<Mutex> lock{local_mutex()};
 
-    pthread_once(&once, init);
-
-    AutoLock<Mutex> lock(local_mutex);
-
-    ASSERT(sinkFactories.find(name) == sinkFactories.end());
-    sinkFactories[name] = this;
+    ASSERT(sinkFactories().find(name) == sinkFactories().end());
+    sinkFactories()[name] = this;
 }
 
 
 DataSinkFactory::~DataSinkFactory() {
-    AutoLock<Mutex> lock(local_mutex);
-    sinkFactories.erase(name_);
+    AutoLock<Mutex> lock{local_mutex()};
+    sinkFactories().erase(name_);
 }
 
 
 void DataSinkFactory::list(std::ostream& out) {
 
-    pthread_once(&once, init);
-
-    AutoLock<Mutex> lock(local_mutex);
+    AutoLock<Mutex> lock{local_mutex()};
 
     const char* sep = "";
-    for (auto const& sinkFactory : sinkFactories) {
+    for (auto const& sinkFactory : sinkFactories()) {
         out << sep << sinkFactory.first;
         sep = ", ";
     }
@@ -66,19 +66,17 @@ void DataSinkFactory::list(std::ostream& out) {
 
 DataSink* DataSinkFactory::build(const std::string &name, const Configuration& config) {
 
-    pthread_once(&once, init);
-
-    AutoLock<Mutex> lock(local_mutex);
+    AutoLock<Mutex> lock{local_mutex()};
 
     Log::info() << "Looking for DataSinkFactory [" << name << "]" << std::endl;
 
-    auto requiredFactory = sinkFactories.find(name);
-    if (requiredFactory == sinkFactories.end()) {
-       Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;
-       Log::error() << "DataSinkFactories are:" << std::endl;
-       for (auto const& sinkFactory : sinkFactories) {
-           Log::error() << "   " << sinkFactory.first << std::endl;
-       }
+    auto requiredFactory = sinkFactories().find(name);
+    if (requiredFactory == sinkFactories().end()) {
+        Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;
+        Log::error() << "DataSinkFactories are:" << std::endl;
+        for (auto const& sinkFactory : sinkFactories()) {
+            Log::error() << "   " << sinkFactory.first << std::endl;
+        }
         throw SeriousBug(std::string("No DataSinkFactory called ") + name);
     }
 

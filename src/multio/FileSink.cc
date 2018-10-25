@@ -12,11 +12,11 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
-#include <iosfwd>
 #include <fstream>
+#include <iosfwd>
 
-#include "multio/FileSink.h"
 #include "multio/DataSink.h"
+#include "multio/FileSink.h"
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/DataHandle.h"
@@ -32,9 +32,8 @@ namespace multio {
 
 FileSink::FileSink(const Configuration& config) :
     DataSink(config),
-    path_( config.getString("path") ),
-    handle_( path_.fileHandle(false) )
-{
+    path_(config.getString("path")),
+    handle_(path_.fileHandle(false)) {
     handle_->openForWrite(0);
 }
 
@@ -43,7 +42,6 @@ FileSink::~FileSink() {
 }
 
 void FileSink::write(eckit::DataBlobPtr blob) {
-
     size_t length = blob->length();
 
     eckit::AutoLock<eckit::Mutex> lock(mutex_);
@@ -52,7 +50,6 @@ void FileSink::write(eckit::DataBlobPtr blob) {
         throw WriteError(std::string("Write error on file: ") + path_, Here());
     }
 }
-
 
 void FileSink::print(std::ostream& os) const {
     os << "FileSink(path=" << path_ << ")";

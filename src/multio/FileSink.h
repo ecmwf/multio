@@ -12,41 +12,39 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
-#ifndef multio_FileSink_H
-#define multio_FileSink_H
+#pragma once
+
+#include "multio/DataSink.h"
+
+#include "eckit/filesystem/PathName.h"
+#include "eckit/io/Length.h"
+#include "eckit/memory/NonCopyable.h"
+#include "eckit/thread/Mutex.h"
 
 #include <iosfwd>
 #include <string>
 #include <vector>
 
-#include "eckit/io/Length.h"
-#include "eckit/memory/NonCopyable.h"
-#include "eckit/thread/Mutex.h"
-#include "eckit/filesystem/PathName.h"
-#include "multio/DataSink.h"
-
 //----------------------------------------------------------------------------------------------------------------------
 
-namespace eckit { class FileHandle; }
+namespace eckit {
+class FileHandle;
+}
 
 namespace multio {
 
 class FileSink final : public DataSink {
-
 public:
-
     FileSink(const eckit::Configuration& config);
 
     ~FileSink() override;
 
-private: // methods
-
+private:  // methods
     void write(eckit::DataBlobPtr blob) override;
 
     void print(std::ostream&) const override;
 
-private: // members
-
+private:  // members
     eckit::PathName path_;
     std::unique_ptr<eckit::DataHandle> handle_;
     eckit::Mutex mutex_;
@@ -55,6 +53,3 @@ private: // members
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-
-#endif // multio_FileSink_H
-

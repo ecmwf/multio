@@ -45,15 +45,12 @@ DataSinkFactory::DataSinkFactory(const std::string& name) : name_(name) {
     sinkFactories()[name] = this;
 }
 
-
 DataSinkFactory::~DataSinkFactory() {
     AutoLock<Mutex> lock{local_mutex()};
     sinkFactories().erase(name_);
 }
 
-
 void DataSinkFactory::list(std::ostream& out) {
-
     AutoLock<Mutex> lock{local_mutex()};
 
     const char* sep = "";
@@ -63,9 +60,7 @@ void DataSinkFactory::list(std::ostream& out) {
     }
 }
 
-
-DataSink* DataSinkFactory::build(const std::string &name, const Configuration& config) {
-
+DataSink* DataSinkFactory::build(const std::string& name, const Configuration& config) {
     AutoLock<Mutex> lock{local_mutex()};
 
     Log::info() << "Looking for DataSinkFactory [" << name << "]" << std::endl;
@@ -86,24 +81,19 @@ DataSink* DataSinkFactory::build(const std::string &name, const Configuration& c
 //----------------------------------------------------------------------------------------------------------------------
 
 DataSink::DataSink(const Configuration& config) :
-    failOnError_( config.getBool("failOnError",true) ),
+    failOnError_(config.getBool("failOnError", true)),
     config_(config),
-    id_(-1) {
-}
+    id_(-1) {}
 
-bool DataSink::ready() const
-{
-    return true; // default for synchronous sinks
+bool DataSink::ready() const {
+    return true;  // default for synchronous sinks
 }
-
 
 Value DataSink::configValue() const {
     return config_.get();
 }
 
-
 void DataSink::flush() {}
-
 
 void DataSink::setId(int id) {
     id_ = id;
@@ -115,32 +105,23 @@ int DataSink::id() const {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-void DataSink::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {
-}
+void DataSink::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {}
 
-void DataSink::iclosefdb(int fdbaddr) {
-}
+void DataSink::iclosefdb(int fdbaddr) {}
 
-void DataSink::iinitfdb() {
-}
+void DataSink::iinitfdb() {}
 
-void DataSink::isetcommfdb(int rank) {
-}
+void DataSink::isetcommfdb(int rank) {}
 
-void DataSink::isetrankfdb(int fdbaddr, int rank) {
-}
+void DataSink::isetrankfdb(int fdbaddr, int rank) {}
 
-void DataSink::iset_fdb_root(int fdbaddr, const std::string& name) {
-}
+void DataSink::iset_fdb_root(int fdbaddr, const std::string& name) {}
 
-void DataSink::iflushfdb(int fdbaddr) {
-}
+void DataSink::iflushfdb(int fdbaddr) {}
 
-void DataSink::isetfieldcountfdb(int fdbaddr,int all_ranks, int this_rank) {
-}
+void DataSink::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {}
 
-void DataSink::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {
-}
+void DataSink::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {}
 
 void DataSink::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
     std::ostringstream msg;
@@ -151,4 +132,3 @@ void DataSink::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-

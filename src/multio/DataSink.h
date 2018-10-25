@@ -33,9 +33,7 @@ namespace multio {
 //----------------------------------------------------------------------------------------------------------------------
 
 class DataSink : public eckit::Owned {
-
-public: // methods
-
+public:  // methods
     DataSink(const eckit::Configuration& config);
 
     ~DataSink() override = default;
@@ -78,21 +76,18 @@ public: // methods
     // virtual int ireadfdb(void *data, int *words);
     virtual void iwritefdb(int fdbaddr, eckit::DataBlobPtr blob);
 
-protected: // methods
-
+protected:  // methods
     virtual void print(std::ostream&) const = 0;
 
     bool failOnError() { return failOnError_; }
 
-private: // methods
-
-    friend std::ostream &operator<<(std::ostream &s, const DataSink &p) {
+private:  // methods
+    friend std::ostream& operator<<(std::ostream& s, const DataSink& p) {
         p.print(s);
         return s;
     }
 
-protected: // members
-
+protected:  // members
     bool failOnError_;
 
     const eckit::LocalConfiguration config_;
@@ -102,31 +97,24 @@ protected: // members
 //----------------------------------------------------------------------------------------------------------------------
 
 class DataSinkFactory {
-
     std::string name_;
     virtual DataSink* make(const eckit::Configuration& config) const = 0;
 
 protected:
-
     DataSinkFactory(const std::string&);
     virtual ~DataSinkFactory();
 
 public:
-
-    static void list(std::ostream &);
+    static void list(std::ostream&);
     static DataSink* build(const std::string&, const eckit::Configuration& config);
-
 };
 
-template< class T>
+template <class T>
 class DataSinkBuilder final : public DataSinkFactory {
-
-    DataSink* make(const eckit::Configuration& config) const override {
-        return new T(config);
-    }
+    DataSink* make(const eckit::Configuration& config) const override { return new T(config); }
 
 public:
-    DataSinkBuilder(const std::string &name) : DataSinkFactory(name) {}
+    DataSinkBuilder(const std::string& name) : DataSinkFactory(name) {}
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -134,4 +122,3 @@ public:
 }  // namespace multio
 
 #endif
-

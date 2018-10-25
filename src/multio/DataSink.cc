@@ -16,12 +16,13 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/parser/JSON.h"
-#include "eckit/thread/AutoLock.h"
-#include "eckit/thread/Mutex.h"
 
-using namespace eckit;
+#include <mutex>
 
 namespace multio {
+
+using eckit::Configuration;
+using eckit::Log;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -32,26 +33,26 @@ SinkFactoryRegister& sinkFactories() {
     static auto reg = new SinkFactoryRegister{};
     return *reg;
 }
-eckit::Mutex& local_mutex() {
-    static auto mutex = new eckit::Mutex{};
+std::mutex& local_mutex() {
+    static auto mutex = new std::mutex{};
     return *mutex;
 }
 }  // namespace
 
 DataSinkFactory::DataSinkFactory(const std::string& name) : name_(name) {
-    AutoLock<Mutex> lock{local_mutex()};
+    std::lock_guard<std::mutex> lock{local_mutex()};
 
     ASSERT(sinkFactories().find(name) == sinkFactories().end());
     sinkFactories()[name] = this;
 }
 
 DataSinkFactory::~DataSinkFactory() {
-    AutoLock<Mutex> lock{local_mutex()};
+    std::lock_guard<std::mutex> lock{local_mutex()};
     sinkFactories().erase(name_);
 }
 
 void DataSinkFactory::list(std::ostream& out) {
-    AutoLock<Mutex> lock{local_mutex()};
+    std::lock_guard<std::mutex> lock{local_mutex()};
 
     const char* sep = "";
     for (auto const& sinkFactory : sinkFactories()) {
@@ -61,7 +62,7 @@ void DataSinkFactory::list(std::ostream& out) {
 }
 
 DataSink* DataSinkFactory::build(const std::string& name, const Configuration& config) {
-    AutoLock<Mutex> lock{local_mutex()};
+    std::lock_guard<std::mutex> lock{local_mutex()};
 
     Log::info() << "Looking for DataSinkFactory [" << name << "]" << std::endl;
 
@@ -72,7 +73,7 @@ DataSink* DataSinkFactory::build(const std::string& name, const Configuration& c
         for (auto const& sinkFactory : sinkFactories()) {
             Log::error() << "   " << sinkFactory.first << std::endl;
         }
-        throw SeriousBug(std::string("No DataSinkFactory called ") + name);
+        throw eckit::SeriousBug(std::string("No DataSinkFactory called ") + name);
     }
 
     return requiredFactory->second->make(config);
@@ -89,7 +90,7 @@ bool DataSink::ready() const {
     return true;  // default for synchronous sinks
 }
 
-Value DataSink::configValue() const {
+eckit::Value DataSink::configValue() const {
     return config_.get();
 }
 
@@ -126,7 +127,7 @@ void DataSink::isetvalfdb(int fdbaddr, const std::string& name, const std::strin
 void DataSink::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
     std::ostringstream msg;
     msg << "DataSink::iwritefdb() not implemented in derived class";
-    throw SeriousBug(msg.str());
+    throw eckit::SeriousBug(msg.str());
 }
 
 //----------------------------------------------------------------------------------------------------------------------

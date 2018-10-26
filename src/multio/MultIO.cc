@@ -27,6 +27,17 @@ using namespace eckit;
 
 namespace multio {
 
+namespace {
+// TODO: move this to eckit
+class ScopedTimer {
+    eckit::Timer& timer_;
+
+public:
+    explicit ScopedTimer(eckit::Timer& t) : timer_(t) { timer_.start(); }
+    ~ScopedTimer() { timer_.stop(); }
+};
+}  // namespace
+
 //----------------------------------------------------------------------------------------------------------------------
 
 MultIO::MultIO(const eckit::Configuration& config) :
@@ -97,31 +108,30 @@ Value MultIO::configValue() const {
 void MultIO::write(DataBlobPtr blob) {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    timer_.start();
+    {
+        ScopedTimer scTimer{timer_};
+        JournalRecordPtr record;
+        for (const auto& elem : sinks_) {
+            ASSERT(elem.sink_);
+            bool journal_entry = false;
 
-    JournalRecordPtr record;
-    for (const auto& elem : sinks_) {
-        ASSERT(elem.sink_);
-        bool journal_entry = false;
-
-        try {
-            elem.sink_->write(blob);
-            if (elem.journalAlways_)
+            try {
+                elem.sink_->write(blob);
+                if (elem.journalAlways_)
+                    journal_entry = true;
+            } catch (Exception& e) {
+                if (!journaled_)
+                    throw;
                 journal_entry = true;
-        } catch (Exception& e) {
-            if (!journaled_)
-                throw;
-            journal_entry = true;
-        }
+            }
 
-        if (journal_entry) {
-            if (!record)
-                record.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
-            record->addWriteEntry(blob, elem.sink_->id());
+            if (journal_entry) {
+                if (!record)
+                    record.reset(new JournalRecord(journal_, JournalRecord::WriteEntry));
+                record->addWriteEntry(blob, elem.sink_->id());
+            }
         }
     }
-
-    timer_.stop();
 
     trigger_.events(blob);
 
@@ -134,15 +144,16 @@ void MultIO::trigger(const eckit::StringDict& metadata) const {
 
 void MultIO::flush() {
     std::lock_guard<std::mutex> lock(mutex_);
-    timer_.start();
 
-    for (const auto& elem : sinks_) {
-        ASSERT(elem.sink_);
-        elem.sink_->flush();
+    {
+        ScopedTimer scTimer{timer_};
+        for (const auto& elem : sinks_) {
+            ASSERT(elem.sink_);
+            elem.sink_->flush();
+        }
     }
 
     // Log the flush
-    timer_.stop();
     stats_.logFlush(timer_);
 }
 
@@ -237,42 +248,41 @@ void MultIO::print(std::ostream& os) const {
 
 void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {
     std::lock_guard<std::mutex> lock(mutex_);
-    timer_.start();
 
     Log::info() << "MultIO iopenfdb name=" << name << " mode=" << mode << std::endl;
-
-    for (auto& elem : sinks_) {
-        ASSERT(elem.sink_);
-        /// NOTE: this does not quite work with multiple FDB4 since fdbaddr will be overwritten
-        elem.sink_->iopenfdb(name, fdbaddr, mode);
+    {
+        ScopedTimer scTimer{timer_};
+        for (auto& elem : sinks_) {
+            ASSERT(elem.sink_);
+            /// NOTE: this does not quite work with multiple FDB4 since fdbaddr will be overwritten
+            elem.sink_->iopenfdb(name, fdbaddr, mode);
+        }
     }
-
-    timer_.stop();
     stats_.logiopenfdb_(timer_);
 }
 
 void MultIO::iclosefdb(int fdbaddr) {
     std::lock_guard<std::mutex> lock(mutex_);
-    timer_.start();
 
-    for (auto& elem : sinks_) {
-        ASSERT(elem.sink_);
-        elem.sink_->iclosefdb(fdbaddr);
+    {
+        ScopedTimer scTimer{timer_};
+        for (auto& elem : sinks_) {
+            ASSERT(elem.sink_);
+            elem.sink_->iclosefdb(fdbaddr);
+        }
     }
-
-    timer_.stop();
     stats_.logiclosefdb_(timer_);
 }
 
 void MultIO::iinitfdb() {
     std::lock_guard<std::mutex> lock(mutex_);
-    timer_.start();
-    for (auto& elem : sinks_) {
-        ASSERT(elem.sink_);
-        elem.sink_->iinitfdb();
+    {
+        ScopedTimer scTimer{timer_};
+        for (auto& elem : sinks_) {
+            ASSERT(elem.sink_);
+            elem.sink_->iinitfdb();
+        }
     }
-
-    timer_.stop();
     stats_.logiinitfdb_(timer_);
 }
 
@@ -302,14 +312,13 @@ void MultIO::iset_fdb_root(int fdbaddr, const std::string& name) {
 
 void MultIO::iflushfdb(int fdbaddr) {
     std::lock_guard<std::mutex> lock(mutex_);
-    timer_.start();
-
-    for (auto& elem : sinks_) {
-        ASSERT(elem.sink_);
-        elem.sink_->iflushfdb(fdbaddr);
+    {
+        ScopedTimer scTimer{timer_};
+        for (auto& elem : sinks_) {
+            ASSERT(elem.sink_);
+            elem.sink_->iflushfdb(fdbaddr);
+        }
     }
-
-    timer_.stop();
     stats_.logiflushfdb_(timer_);
 }
 
@@ -323,26 +332,26 @@ void MultIO::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
 
 void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {
     std::lock_guard<std::mutex> lock(mutex_);
-    timer_.start();
-    for (auto& elem : sinks_) {
-        ASSERT(elem.sink_);
-        elem.sink_->isetvalfdb(fdbaddr, name, value);
+    {
+        ScopedTimer scTimer{timer_};
+        for (auto& elem : sinks_) {
+            ASSERT(elem.sink_);
+            elem.sink_->isetvalfdb(fdbaddr, name, value);
+        }
     }
-    timer_.stop();
     stats_.logisetvalfdb_(timer_);
 }
 
 void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    timer_.start();
-
-    for (auto& elem : sinks_) {
-        ASSERT(elem.sink_);
-        elem.sink_->iwritefdb(fdbaddr, blob);
+    {
+        ScopedTimer scTimer{timer_};
+        for (auto& elem : sinks_) {
+            ASSERT(elem.sink_);
+            elem.sink_->iwritefdb(fdbaddr, blob);
+        }
     }
-
-    timer_.stop();
 
     trigger_.events(blob);
 

@@ -84,8 +84,6 @@ protected:  // types
         bool journalAlways_;
     };
 
-    typedef std::vector<SinkStoreElem> sink_store_t;
-
 protected:
     void print(std::ostream&) const override;
 
@@ -94,7 +92,7 @@ protected:  // members
     Journal journal_;
     IOStats stats_;
 
-    sink_store_t sinks_;
+    std::vector<SinkStoreElem> sinks_;
 
     Trigger trigger_;
 

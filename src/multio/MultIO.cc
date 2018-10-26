@@ -21,8 +21,6 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/DataBlob.h"
 #include "eckit/runtime/Main.h"
-#include "eckit/thread/AutoLock.h"
-#include "eckit/thread/Mutex.h"
 #include "eckit/utils/Translator.h"
 
 using namespace eckit;
@@ -37,7 +35,6 @@ MultIO::MultIO(const eckit::Configuration& config) :
     stats_(std::string("Multio ") + Main::hostname() + ":" +
            Translator<int, std::string>()(::getpid())),
     trigger_(config),
-    mutex_(),
     journaled_(config.getBool("journaled", false)) {
 
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
@@ -66,7 +63,7 @@ MultIO::~MultIO() {
 }
 
 bool MultIO::ready() const {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     for (auto const& elem : sinks_) {
         ASSERT(elem.sink_);
@@ -79,7 +76,7 @@ bool MultIO::ready() const {
 
 
 Value MultIO::configValue() const {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     Value config(config_.get());
 
@@ -98,7 +95,7 @@ Value MultIO::configValue() const {
 
 
 void MultIO::write(DataBlobPtr blob) {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     timer_.start();
 
@@ -136,7 +133,7 @@ void MultIO::trigger(const eckit::StringDict& metadata) const {
 }
 
 void MultIO::flush() {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     timer_.start();
 
     for (const auto& elem : sinks_) {
@@ -151,7 +148,7 @@ void MultIO::flush() {
 
 
 void MultIO::replayRecord(const JournalRecord& record) {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     Log::info() << "[" << *this << "] Replaying journal record" << std::endl;
     Log::info() << "[" << *this << "]  - Record type: "
@@ -215,7 +212,7 @@ void MultIO::report(std::ostream& s) {
 
 
 void MultIO::commitJournal() {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     Log::info() << "[" << *this << "] Committing MultIO journal" << std::endl;
     if (!journaled_ || !journal_.isOpen()) {
@@ -227,7 +224,7 @@ void MultIO::commitJournal() {
 
 
 void MultIO::print(std::ostream& os) const {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     os << "MultIO(";
     for (const auto& elem : sinks_) {
         ASSERT(elem.sink_);
@@ -239,7 +236,7 @@ void MultIO::print(std::ostream& os) const {
 //----------------------------------------------------------------------------------------------------------------------
 
 void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     timer_.start();
 
     Log::info() << "MultIO iopenfdb name=" << name << " mode=" << mode << std::endl;
@@ -255,7 +252,7 @@ void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& 
 }
 
 void MultIO::iclosefdb(int fdbaddr) {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     timer_.start();
 
     for (auto& elem : sinks_) {
@@ -268,7 +265,7 @@ void MultIO::iclosefdb(int fdbaddr) {
 }
 
 void MultIO::iinitfdb() {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     timer_.start();
     for (auto& elem : sinks_) {
         ASSERT(elem.sink_);
@@ -280,7 +277,7 @@ void MultIO::iinitfdb() {
 }
 
 void MultIO::isetcommfdb(int rank) {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     for (auto& elem : sinks_) {
         ASSERT(elem.sink_);
         elem.sink_->isetcommfdb(rank);
@@ -288,7 +285,7 @@ void MultIO::isetcommfdb(int rank) {
 }
 
 void MultIO::isetrankfdb(int fdbaddr, int rank) {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     for (auto& elem : sinks_) {
         ASSERT(elem.sink_);
         elem.sink_->isetrankfdb(fdbaddr, rank);
@@ -296,7 +293,7 @@ void MultIO::isetrankfdb(int fdbaddr, int rank) {
 }
 
 void MultIO::iset_fdb_root(int fdbaddr, const std::string& name) {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     for (auto& elem : sinks_) {
         ASSERT(elem.sink_);
         elem.sink_->iset_fdb_root(fdbaddr, name);
@@ -304,7 +301,7 @@ void MultIO::iset_fdb_root(int fdbaddr, const std::string& name) {
 }
 
 void MultIO::iflushfdb(int fdbaddr) {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     timer_.start();
 
     for (auto& elem : sinks_) {
@@ -317,7 +314,7 @@ void MultIO::iflushfdb(int fdbaddr) {
 }
 
 void MultIO::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     for (auto& elem : sinks_) {
         ASSERT(elem.sink_);
         elem.sink_->isetfieldcountfdb(fdbaddr, all_ranks, this_rank);
@@ -325,7 +322,7 @@ void MultIO::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
 }
 
 void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     timer_.start();
     for (auto& elem : sinks_) {
         ASSERT(elem.sink_);
@@ -336,7 +333,7 @@ void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string&
 }
 
 void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
-    AutoLock<Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     timer_.start();
 

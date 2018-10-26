@@ -21,13 +21,14 @@
 
 #include "eckit/io/Length.h"
 #include "eckit/log/Timer.h"
-#include "eckit/memory/NonCopyable.h"
 #include "eckit/memory/SharedPtr.h"
 
 #include "multio/DataSink.h"
 #include "multio/IOStats.h"
 #include "multio/JournalRecord.h"
 #include "multio/Trigger.h"
+
+#include <mutex>
 
 namespace multio {
 
@@ -96,7 +97,7 @@ protected:  // members
 
     Trigger trigger_;
 
-    mutable eckit::Mutex mutex_;
+    mutable std::mutex mutex_;
 
     eckit::Timer timer_;
 

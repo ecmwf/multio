@@ -12,7 +12,9 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
-#pragma once
+
+#ifndef multio_FileSink_H
+#define multio_FileSink_H
 
 #include "multio/DataSink.h"
 
@@ -53,3 +55,5 @@ private:  // members
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
+
+#endif  // multio_FileSink_H

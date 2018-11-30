@@ -8,7 +8,8 @@
  * does it submit to any jurisdiction.
  */
 
-#pragma once
+#ifndef multio_TestHelpers_H
+#define multio_TestHelpers_H
 
 #include <cmath>
 #include <iostream>
@@ -75,3 +76,5 @@ eckit::DataBlobBuilder<TestDataBlob> dbBuilder("test_blob");
 
 }  // namespace test
 }  // namespace multio
+
+#endif  // multio_TestHelpers_H

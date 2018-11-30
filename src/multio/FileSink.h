@@ -16,16 +16,16 @@
 #ifndef multio_FileSink_H
 #define multio_FileSink_H
 
-#include "multio/DataSink.h"
+#include <iosfwd>
+#include <string>
+#include <vector>
 
 #include "eckit/filesystem/PathName.h"
 #include "eckit/io/Length.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/thread/Mutex.h"
 
-#include <iosfwd>
-#include <string>
-#include <vector>
+#include "multio/DataSink.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 

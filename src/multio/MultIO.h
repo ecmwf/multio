@@ -16,6 +16,7 @@
 #define multio_MultIO_H
 
 #include <iosfwd>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -27,8 +28,6 @@
 #include "multio/IOStats.h"
 #include "multio/JournalRecord.h"
 #include "multio/Trigger.h"
-
-#include <mutex>
 
 namespace multio {
 

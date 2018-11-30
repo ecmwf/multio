@@ -14,10 +14,10 @@
 
 #include "multio/DataSink.h"
 
+#include <mutex>
+
 #include "eckit/exception/Exceptions.h"
 #include "eckit/parser/JSON.h"
-
-#include <mutex>
 
 namespace multio {
 

@@ -19,64 +19,68 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/parser/JSON.h"
 
+#include "multio/LibMultio.h"
+
+
 namespace multio {
 
 using eckit::Configuration;
 using eckit::Log;
 
-//----------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
-namespace {
-using SinkFactoryRegister = std::map<std::string, const DataSinkFactory*>;
-
-SinkFactoryRegister& sinkFactories() {
-    static auto reg = new SinkFactoryRegister{};
-    return *reg;
-}
-std::mutex& local_mutex() {
-    static auto mutex = new std::mutex{};
-    return *mutex;
-}
-}  // namespace
-
-DataSinkFactory::DataSinkFactory(const std::string& name) : name_(name) {
-    std::lock_guard<std::mutex> lock{local_mutex()};
-
-    ASSERT(sinkFactories().find(name) == sinkFactories().end());
-    sinkFactories()[name] = this;
+DataSinkFactory&DataSinkFactory::instance() {
+    static DataSinkFactory singleton;
+    return singleton;
 }
 
-DataSinkFactory::~DataSinkFactory() {
-    std::lock_guard<std::mutex> lock{local_mutex()};
-    sinkFactories().erase(name_);
+void DataSinkFactory::add(const std::string& name, const DataSinkBuilderBase* builder) {
+    std::lock_guard<std::mutex> lock{mutex_};
+    ASSERT(factories_.find(name) == factories_.end());
+    factories_[name] = builder;
+}
+
+void DataSinkFactory::remove(const std::string& name) {
+    std::lock_guard<std::mutex> lock{mutex_};
+    ASSERT(factories_.find(name) != factories_.end());
+    factories_.erase(name);
 }
 
 void DataSinkFactory::list(std::ostream& out) {
-    std::lock_guard<std::mutex> lock{local_mutex()};
+    std::lock_guard<std::mutex> lock{mutex_};
 
     const char* sep = "";
-    for (auto const& sinkFactory : sinkFactories()) {
+    for (auto const& sinkFactory : factories_) {
         out << sep << sinkFactory.first;
         sep = ", ";
     }
 }
 
 DataSink* DataSinkFactory::build(const std::string& name, const Configuration& config) {
-    std::lock_guard<std::mutex> lock{local_mutex()};
+    std::lock_guard<std::mutex> lock{mutex_};
 
-    Log::info() << "Looking for DataSinkFactory [" << name << "]" << std::endl;
+    Log::debug<LibMultio>() << "Looking for DataSinkFactory [" << name << "]" << std::endl;
 
-    auto requiredFactory = sinkFactories().find(name);
-    if (requiredFactory == sinkFactories().end()) {
-        Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;
-        Log::error() << "DataSinkFactories are:" << std::endl;
-        for (auto const& sinkFactory : sinkFactories()) {
-            Log::error() << "   " << sinkFactory.first << std::endl;
-        }
-        throw eckit::SeriousBug(std::string("No DataSinkFactory called ") + name);
+    auto f = factories_.find(name);
+
+    if(f != factories_.end())
+        return f->second->make(config);
+
+    Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;
+    Log::error() << "DataSinkFactories are:" << std::endl;
+    for (auto const& factory : factories_) {
+        Log::error() << "   " << factory.first << std::endl;
     }
+    throw eckit::SeriousBug(std::string("No DataSinkFactory called ") + name);
+}
 
-    return requiredFactory->second->make(config);
+
+DataSinkBuilderBase::DataSinkBuilderBase(const std::string& name) : name_(name) {
+    DataSinkFactory::instance().add(name, this);
+}
+
+DataSinkBuilderBase::~DataSinkBuilderBase() {
+    DataSinkFactory::instance().remove(name_);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

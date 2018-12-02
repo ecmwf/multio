@@ -63,7 +63,7 @@ MultIO::MultIO(const eckit::Configuration& config) :
 
     for (const auto& config : configs) {
         SinkStoreElem elem;
-        elem.sink_.reset(DataSinkFactory::build(config.getString("type"), config));
+        elem.sink_.reset(DataSinkFactory::instance().build(config.getString("type"), config));
         elem.journalAlways_ = config.getBool("journalAlways", false);
         elem.sink_->setId(sinks_.size());
 

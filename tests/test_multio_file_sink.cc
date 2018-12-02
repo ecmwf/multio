@@ -24,7 +24,7 @@ namespace test {
 CASE("test_contains_file_sink") {
     // DataSinkFactory::list appends the results to a ostream&, so we need to extract them.
     std::stringstream ss;
-    DataSinkFactory::list(ss);
+    DataSinkFactory::instance().list(ss);
     EXPECT(ss.str().find("file") != std::string::npos);
 }
 

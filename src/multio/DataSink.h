@@ -12,7 +12,6 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
-
 #ifndef multio_DataSink_H
 #define multio_DataSink_H
 
@@ -99,13 +98,10 @@ protected:  // members
 class DataSinkBuilderBase;
 
 class DataSinkFactory : private eckit::NonCopyable {
-
-private: // methods
-
+private:  // methods
     DataSinkFactory() {}
 
-public: // methods
-
+public:  // methods
     static DataSinkFactory& instance();
 
     void add(const std::string& name, const DataSinkBuilderBase* builder);
@@ -116,22 +112,17 @@ public: // methods
 
     DataSink* build(const std::string&, const eckit::Configuration& config);
 
-private: // members
-
+private:  // members
     std::map<std::string, const DataSinkBuilderBase*> factories_;
 
     std::mutex mutex_;
-
 };
 
 class DataSinkBuilderBase : private eckit::NonCopyable {
-
-public: // methods
-
+public:  // methods
     virtual DataSink* make(const eckit::Configuration& config) const = 0;
 
-protected: // methods
-
+protected:  // methods
     DataSinkBuilderBase(const std::string&);
 
     virtual ~DataSinkBuilderBase();
@@ -141,11 +132,9 @@ protected: // methods
 
 template <class T>
 class DataSinkBuilder final : public DataSinkBuilderBase {
-
     DataSink* make(const eckit::Configuration& config) const override { return new T(config); }
 
 public:
-
     DataSinkBuilder(const std::string& name) : DataSinkBuilderBase(name) {}
 };
 

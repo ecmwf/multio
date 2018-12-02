@@ -29,7 +29,7 @@ using eckit::Log;
 
 //--------------------------------------------------------------------------------------------------
 
-DataSinkFactory&DataSinkFactory::instance() {
+DataSinkFactory& DataSinkFactory::instance() {
     static DataSinkFactory singleton;
     return singleton;
 }
@@ -63,7 +63,7 @@ DataSink* DataSinkFactory::build(const std::string& name, const Configuration& c
 
     auto f = factories_.find(name);
 
-    if(f != factories_.end())
+    if (f != factories_.end())
         return f->second->make(config);
 
     Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;

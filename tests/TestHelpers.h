@@ -8,7 +8,8 @@
  * does it submit to any jurisdiction.
  */
 
-#pragma once
+#ifndef multio_TestHelpers_H
+#define multio_TestHelpers_H
 
 #include <cmath>
 #include <iostream>
@@ -28,8 +29,7 @@ namespace test {
 auto make_configured_file_sink(const eckit::PathName& file_path) -> std::unique_ptr<DataSink> {
     eckit::LocalConfiguration config;
     config.set("path", file_path);
-    // NOTE: std::make_unique would be nicer but it doesn't work with the DataSinkFactory
-    return std::unique_ptr<DataSink>(DataSinkFactory::build("file", config));
+    return std::unique_ptr<DataSink>(DataSinkFactory::instance().build("file", config));
 }
 
 auto file_content(const eckit::PathName& file_path) -> std::string {
@@ -75,3 +75,5 @@ eckit::DataBlobBuilder<TestDataBlob> dbBuilder("test_blob");
 
 }  // namespace test
 }  // namespace multio
+
+#endif  // multio_TestHelpers_H

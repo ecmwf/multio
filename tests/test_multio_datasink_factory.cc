@@ -44,7 +44,7 @@ static DataSinkBuilder<TestDataSink> testSinkBuilder("test");
 
 CASE("test_factory_generate") {
     LocalConfiguration config;
-    std::unique_ptr<DataSink> sink(DataSinkFactory::build("test", config));
+    std::unique_ptr<DataSink> sink(DataSinkFactory::instance().build("test", config));
 
     // Check that we generate a sink of the correct type (and implicitly that the factory
     // is correctly registered).
@@ -58,7 +58,7 @@ CASE("test_factory_generate") {
 CASE("test_list_factories") {
     // DataSinkFactory::list appends the results to a ostream&, so we need to extract them.
     std::stringstream ss;
-    DataSinkFactory::list(ss);
+    DataSinkFactory::instance().list(ss);
 
     // Extract the seperate components from the string stream into a vector
     std::vector<std::string> strings;

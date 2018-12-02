@@ -12,7 +12,6 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
-
 #ifndef multio_DataSink_H
 #define multio_DataSink_H
 
@@ -33,12 +32,10 @@ namespace multio {
 //----------------------------------------------------------------------------------------------------------------------
 
 class DataSink : public eckit::Owned {
-
-public: // methods
-
+public:  // methods
     DataSink(const eckit::Configuration& config);
 
-    virtual ~DataSink();
+    ~DataSink() override = default;
 
     virtual bool ready() const;
 
@@ -78,60 +75,71 @@ public: // methods
     // virtual int ireadfdb(void *data, int *words);
     virtual void iwritefdb(int fdbaddr, eckit::DataBlobPtr blob);
 
-protected: // methods
-
+protected:  // methods
     virtual void print(std::ostream&) const = 0;
 
     bool failOnError() { return failOnError_; }
 
-private: // methods
-
-    friend std::ostream &operator<<(std::ostream &s, const DataSink &p) {
+private:  // methods
+    friend std::ostream& operator<<(std::ostream& s, const DataSink& p) {
         p.print(s);
         return s;
     }
 
-protected: // members
-
+protected:  // members
     bool failOnError_;
 
     const eckit::LocalConfiguration config_;
     int id_;
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
-class DataSinkFactory {
+class DataSinkBuilderBase;
+
+class DataSinkFactory : private eckit::NonCopyable {
+private:  // methods
+    DataSinkFactory() {}
+
+public:  // methods
+    static DataSinkFactory& instance();
+
+    void add(const std::string& name, const DataSinkBuilderBase* builder);
+
+    void remove(const std::string& name);
+
+    void list(std::ostream&);
+
+    DataSink* build(const std::string&, const eckit::Configuration& config);
+
+private:  // members
+    std::map<std::string, const DataSinkBuilderBase*> factories_;
+
+    std::mutex mutex_;
+};
+
+class DataSinkBuilderBase : private eckit::NonCopyable {
+public:  // methods
+    virtual DataSink* make(const eckit::Configuration& config) const = 0;
+
+protected:  // methods
+    DataSinkBuilderBase(const std::string&);
+
+    virtual ~DataSinkBuilderBase();
 
     std::string name_;
-    virtual DataSink* make(const eckit::Configuration& config) = 0;
-
-protected:
-
-    DataSinkFactory(const std::string&);
-    virtual ~DataSinkFactory();
-
-public:
-
-    static void list(std::ostream &);
-    static DataSink* build(const std::string&, const eckit::Configuration& config);
-
 };
 
-template< class T>
-class DataSinkBuilder : public DataSinkFactory {
-
-    virtual DataSink* make(const eckit::Configuration& config) {
-        return new T(config);
-    }
+template <class T>
+class DataSinkBuilder final : public DataSinkBuilderBase {
+    DataSink* make(const eckit::Configuration& config) const override { return new T(config); }
 
 public:
-    DataSinkBuilder(const std::string &name) : DataSinkFactory(name) {}
+    DataSinkBuilder(const std::string& name) : DataSinkBuilderBase(name) {}
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 }  // namespace multio
 
 #endif
-

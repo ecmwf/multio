@@ -15,7 +15,6 @@
 #include <sys/time.h>
 #include <sstream>
 
-#include "multio/DataSink.h"
 #include "multio/Journal.h"
 
 #include "eckit/config/Configuration.h"
@@ -24,6 +23,8 @@
 #include "eckit/log/Log.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
+
+#include "multio/DataSink.h"
 
 using namespace eckit;
 

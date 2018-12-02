@@ -18,7 +18,7 @@ CASE("test_multio_journal") {
     eckit::PathName file_path = eckit::TmpFile();
     eckit::LocalConfiguration config;
     config.set("path", file_path);
-    std::unique_ptr<DataSink> fileSink(DataSinkFactory::build("file", config));
+    std::unique_ptr<DataSink> fileSink(DataSinkFactory::instance().build("file", config));
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
     eckit::DataBlobPtr stringBlob(

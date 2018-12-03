@@ -18,6 +18,7 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
+#include <mutex>
 
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"

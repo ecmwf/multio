@@ -16,6 +16,7 @@
 #define multio_DataSink_H
 
 #include <iosfwd>
+#include <mutex>
 #include <string>
 #include <vector>
 

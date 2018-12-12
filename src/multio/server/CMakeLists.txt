@@ -3,6 +3,8 @@ ecbuild_add_library(
 
     TARGET multio-server
 
+    CONDITION HAVE_MULTIO_SERVER
+
     SOURCES
         Action.cc
         Action.h

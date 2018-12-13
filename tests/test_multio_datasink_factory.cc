@@ -9,6 +9,7 @@
  */
 
 
+#include <algorithm>
 #include <cstring>
 
 #include "eckit/log/Log.h"

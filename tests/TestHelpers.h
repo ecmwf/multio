@@ -14,6 +14,8 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <iomanip>
 
 #include "eckit/io/DataBlob.h"
 #include "eckit/io/DataHandle.h"

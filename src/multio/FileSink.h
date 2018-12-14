@@ -19,6 +19,7 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "eckit/filesystem/PathName.h"
 #include "eckit/io/Length.h"

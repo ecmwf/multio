@@ -43,7 +43,7 @@ CASE("test_file_sink_writes_correctly") {
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
-    eckit::DataBlobPtr stringBlob(eckit::DataBlobFactory::build("plain", quote, sizeof(quote) - 1));
+    eckit::DataBlobPtr stringBlob(eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
     sink->write(stringBlob);
 
     EXPECT(file_content(file_path) == std::string(quote));

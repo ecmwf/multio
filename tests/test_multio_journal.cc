@@ -19,7 +19,7 @@ CASE("test_multio_journal") {
     std::unique_ptr<DataSink> fileSink(DataSinkFactory::instance().build("file", config));
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
-    eckit::DataBlobPtr stringBlob(eckit::DataBlobFactory::build("plain", quote, sizeof(quote) - 1));
+    eckit::DataBlobPtr stringBlob(eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
 
     // Create journals
     eckit::PathName("journal").unlink();

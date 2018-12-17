@@ -32,8 +32,6 @@ list( APPEND multio_srcs
     LibMultio.h
     MultIO.cc
     MultIO.h
-    PlainDataBlob.cc
-    PlainDataBlob.h
     Trigger.cc
     Trigger.h
     ifsio.cc

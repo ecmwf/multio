@@ -9,7 +9,6 @@
 #include "atlas/field/Field.h"
 #include "atlas/util/Metadata.h"
 
-#include "multio/PlainDataBlob.h"
 #include "multio/server/Message.h"
 #include "multio/server/SerialisationHelpers.h"
 
@@ -28,7 +27,7 @@ void Sink::doExecute(const atlas::Field& field, int /*unused*/) const {
     Message msg(0, -1, msg_tag::field_data);
     atlas_field_to_message(field, msg);
 
-    eckit::DataBlobPtr blob(eckit::DataBlobFactory::build("plain", msg.data(), msg.size()));
+    eckit::DataBlobPtr blob(eckit::DataBlobFactory::build("test", msg.data(), msg.size()));
 
     dataSink_->write(blob);
 }

@@ -40,7 +40,7 @@ auto create_global_test_data() -> TestFieldMap {
 
 auto scatter_atlas_field(const TestField& gl_field) -> atlas::Field {
     if (trans.client()) {
-        auto idxmap = create_local_to_global(field_size(), trans.no_clients(), trans.client_rank());
+        auto idxmap = create_local_to_global(field_size(), trans.noClients(), trans.clientRank());
         return create_local_field(gl_field, idxmap, true);
     } else {
         return atlas::Field("dummy", atlas::array::DataType("real64"), make_shape(field_size()));
@@ -86,7 +86,7 @@ CASE("Test that atlas field is ") {
     }
 
     SECTION("serialised successfully") {
-        const auto no_client_proc = static_cast<int>(trans.no_clients());
+        const auto no_client_proc = static_cast<int>(trans.noClients());
         if (trans.client()) {
             // Send field_A as packed buffer
             auto dest = pack_atlas_field(field_A);
@@ -107,11 +107,11 @@ CASE("Test that atlas field is ") {
                 comm().receive<void>(local_data.data(), chunk_size, status.source(), status.tag());
 
                 unpack_and_aggregate(local_data.data(), chunk_size, received_field);
-            } while (++counter != trans.no_clients());
+            } while (++counter != trans.noClients());
 
             eckit::Log::info() << "Rank = " << comm().rank() << ",    Received field:  ";
             print_buffer(received_field, eckit::Log::info());
-            if (comm().rank() == trans.no_clients()) {
+            if (comm().rank() == trans.noClients()) {
                 EXPECT(gl_field.at("pi") == received_field);
             } else {
                 EXPECT(gl_field.at("exp") == received_field);

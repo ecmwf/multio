@@ -21,7 +21,7 @@ Sink::Sink(std::unique_ptr<DataSink>&& ds, const std::string& nm) :
     Action{nm},
     dataSink_{std::move(ds)} {}
 
-void Sink::do_execute(const atlas::Field& field, int /*unused*/) const {
+void Sink::doExecute(const atlas::Field& field, int /*unused*/) const {
 
     configure(field.metadata());
 
@@ -33,7 +33,7 @@ void Sink::do_execute(const atlas::Field& field, int /*unused*/) const {
     dataSink_->write(blob);
 }
 
-bool Sink::do_complete(atlas::Field& field) const {
+bool Sink::doComplete(atlas::Field& field) const {
     // no blocking condition -- is write blocking, anyway?
     return true;
 }

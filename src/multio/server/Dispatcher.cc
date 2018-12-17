@@ -15,36 +15,36 @@ namespace server {
 
 Dispatcher::Dispatcher(const Transport& trans) :
     transport_(trans),
-    planFactory(transport_.no_clients()) {}
+    planFactory_(transport_.noClients()) {}
 
 void Dispatcher::registerPlan(const Message& msg) {
     ASSERT(msg.tag() == msg_tag::plan_data);
     auto plan_name = fetch_metadata(msg).get<std::string>("name");
-    if (registered_plans_.find(plan_name) != end(registered_plans_)) {
+    if (registeredPlans_.find(plan_name) != end(registeredPlans_)) {
         // Plan exists already -- nothing to do
         return; // Or, better, throw an error?
     }
 
     // You'd want std::optional here
-    if (not planFactory.try_create(msg)) {
+    if (not planFactory_.tryCreate(msg)) {
         return; // Plan not yet complete -- nothing more to do
     }
 
-    registered_plans_.emplace(plan_name, planFactory.handOver(plan_name));
+    registeredPlans_.emplace(plan_name, planFactory_.handOver(plan_name));
 }
 
 void Dispatcher::feedPlan(const Message& msg) {
     auto plan_name = fetch_metadata(msg).get<std::string>("field_type");
-    if (registered_plans_.find(plan_name) == end(registered_plans_)) {
+    if (registeredPlans_.find(plan_name) == end(registeredPlans_)) {
         backlog_[plan_name].push_back(std::move(msg));
     } else {
         processBacklog(plan_name);
-        registered_plans_.at(plan_name).process(msg);
+        registeredPlans_.at(plan_name).process(msg);
     }
 }
 
 void Dispatcher::listen() {
-    eckit::Log::info() << "Rank: " << transport_.global_rank() << ", Started listening..."
+    eckit::Log::info() << "Rank: " << transport_.globalRank() << ", Started listening..."
                        << std::endl;
     auto counter = 0u;
     do {
@@ -64,7 +64,7 @@ void Dispatcher::listen() {
                 ASSERT(false);
         }
     } while (not allPartsArrived(counter));
-    eckit::Log::info() << "Rank: " << transport_.global_rank() << ", Done with listening..."
+    eckit::Log::info() << "Rank: " << transport_.globalRank() << ", Done with listening..."
                        << std::endl;
 }
 
@@ -73,14 +73,14 @@ void Dispatcher::listen() {
 void Dispatcher::processBacklog(const std::string& plan_name) {
     if (backlog_.find(plan_name) != end(backlog_)) {
         for (auto&& m : backlog_.at(plan_name)) {
-            registered_plans_.at(plan_name).process(std::move(m));
+            registeredPlans_.at(plan_name).process(std::move(m));
         }
         backlog_.erase(plan_name);
     }
 }
 
 bool Dispatcher::allPartsArrived(const unsigned counter) const {
-    return (counter == transport_.no_clients());
+    return (counter == transport_.noClients());
 }
 
 void Dispatcher::print(std::ostream& os) const {

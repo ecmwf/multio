@@ -32,7 +32,7 @@ CASE("Use plan factory to create plan") {
         Message msg(0, ii, msg_tag::plan_data);
         local_plan_to_message(test_plan, msg);
         msg.rewind();
-        EXPECT((++ii < maps.size()) ? !planFactory.try_create(msg) : planFactory.try_create(msg));
+        EXPECT((++ii < maps.size()) ? !planFactory.tryCreate(msg) : planFactory.tryCreate(msg));
     }
 
     auto plan = planFactory.handOver("atm_grid");

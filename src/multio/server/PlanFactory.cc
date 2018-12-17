@@ -20,9 +20,9 @@
 namespace multio {
 namespace server {
 
-PlanFactory::PlanFactory(size_t no_maps) : no_maps_(no_maps) {}
+PlanFactory::PlanFactory(size_t no_maps) : noMaps_(no_maps) {}
 
-bool PlanFactory::try_create(const Message& msg) {
+bool PlanFactory::tryCreate(const Message& msg) {
     ASSERT(msg.tag() == msg_tag::plan_data);
 
     // Query plan's metadata
@@ -40,13 +40,13 @@ bool PlanFactory::try_create(const Message& msg) {
         return true;
     }
 
-    if (plans_being_processed_.find(plan_name) == end(plans_being_processed_)) {
+    if (plansBeingProcessed_.find(plan_name) == end(plansBeingProcessed_)) {
         // Create new plan and, depending on the type of plan, return it or put it into
-        // plans_being_processed_;
-        plans_being_processed_[plan_name] = std::vector<std::vector<int>>(no_maps_);
+        // plansBeingProcessed_;
+        plansBeingProcessed_[plan_name] = std::vector<std::vector<int>>(noMaps_);
     }
     auto data_size = msg.size() - meta_size - sizeof(unsigned long);
-    auto& local_map = plans_being_processed_[plan_name][msg.peer()];
+    auto& local_map = plansBeingProcessed_[plan_name][msg.peer()];
     ASSERT(local_map.empty());
     local_map.resize(data_size / sizeof(int));
     ASSERT(!local_map.empty());
@@ -58,7 +58,7 @@ Plan PlanFactory::handOver(const std::string& plan_name) {
     ActionList actions;
 
     // Create aggregation
-    actions.emplace_back(new Aggregation{std::move(plans_being_processed_[plan_name]), "Indexed"});
+    actions.emplace_back(new Aggregation{std::move(plansBeingProcessed_[plan_name]), "Indexed"});
 
     actions.emplace_back(new Sink{nullptr});
 
@@ -68,7 +68,7 @@ Plan PlanFactory::handOver(const std::string& plan_name) {
 }
 
 bool PlanFactory::isComplete(const std::string& plan_name) const {
-    const auto& maps = plans_being_processed_.at(plan_name);
+    const auto& maps = plansBeingProcessed_.at(plan_name);
     return none_of(begin(maps), end(maps), mem_fn(&std::vector<int>::empty));
 }
 

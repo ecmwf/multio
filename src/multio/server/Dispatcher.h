@@ -26,10 +26,10 @@ private:
 
     const Transport& transport_;
 
-    PlanFactory planFactory;
+    PlanFactory planFactory_;
 
     std::unordered_map<std::string, std::vector<Message>> backlog_;
-    std::map<std::string, Plan> registered_plans_;
+    std::map<std::string, Plan> registeredPlans_;
 
 private:
     void processBacklog(const std::string& plan_name);

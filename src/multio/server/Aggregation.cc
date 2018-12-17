@@ -15,7 +15,7 @@ Aggregation::Aggregation(std::vector<std::vector<int>> maps, const std::string& 
     Action{nm},
     mappings_(std::move(maps)) {}
 
-void Aggregation::do_execute(const atlas::Field& local_field, int source) const {
+void Aggregation::doExecute(const atlas::Field& local_field, int source) const {
     auto local_view = atlas::array::make_view<double, 1>(local_field);
     ASSERT(static_cast<size_t>(local_view.size()) == mappings_[source].size());
 
@@ -24,7 +24,7 @@ void Aggregation::do_execute(const atlas::Field& local_field, int source) const 
     if (globals_.find(meta_str) == end(globals_)) {
         globals_[meta_str] = GlobalField{recreate_atlas_field(local_field.metadata())};
     }
-    globals_[meta_str].no_chunks++;
+    globals_[meta_str].noChunks++;
 
     // Aggregate
     auto view = atlas::array::make_view<double, 1>(globals_[meta_str].field);
@@ -34,11 +34,11 @@ void Aggregation::do_execute(const atlas::Field& local_field, int source) const 
     }
 }
 
-bool Aggregation::do_complete(atlas::Field& field) const {
+bool Aggregation::doComplete(atlas::Field& field) const {
     auto meta_str = pack_metadata(field.metadata());
-    ASSERT(globals_[meta_str].no_chunks <= mappings_.size());
+    ASSERT(globals_[meta_str].noChunks <= mappings_.size());
 
-    auto ret = (globals_.at(meta_str).no_chunks == mappings_.size());
+    auto ret = (globals_.at(meta_str).noChunks == mappings_.size());
     if (ret) {
         // Extract from map. What you really want is:
         // field = globals_.extract(meta_str); // Needs C++17

@@ -24,7 +24,7 @@ const Transport& transport = MpiTransport{"dispatcher test", nServers};
 auto scatter_atlas_field(const TestField& gl_field) -> atlas::Field {
     if (transport.client()) {
         auto idxmap =
-            create_local_to_global(field_size(), transport.no_clients(), transport.client_rank());
+            create_local_to_global(field_size(), transport.noClients(), transport.clientRank());
         return create_local_field(gl_field, idxmap);
     } else {
         return atlas::Field("dummy", atlas::array::DataType("real64"), make_shape(field_size()));
@@ -86,7 +86,7 @@ CASE("Test that distributor-dispatcher pair ") {
         }
 
         transport.synchronise();
-        if (transport.global_rank() == root()) {
+        if (transport.globalRank() == root()) {
             eckit::PathName file{"temperature::850::1"};
             auto actual = file_content(file);
             auto expected = pack_atlas_field(global_atlas_field);

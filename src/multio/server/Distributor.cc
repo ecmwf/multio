@@ -28,7 +28,7 @@ Distributor::Distributor(const Transport& trans) : transport_(trans) {}
 
 size_t Distributor::computeHash(const atlas::Field& field) const {
     auto meta_str = pack_metadata(field.metadata());
-    return (hash_val(meta_str) % transport_.no_servers() + transport_.no_clients());
+    return (hash_val(meta_str) % transport_.noServers() + transport_.noClients());
 }
 
 void Distributor::sendLocalPlan(const atlas::Field& field) const {
@@ -39,15 +39,15 @@ void Distributor::sendLocalPlan(const atlas::Field& field) const {
 
     // Register sending this plan
     distributed_plans[field_type] =
-        fetch_local_plan(field.metadata(), transport_.no_clients(), transport_.client_rank());
+        fetch_local_plan(field.metadata(), transport_.noClients(), transport_.clientRank());
 
     Message msg(0, -1, msg_tag::plan_data);
     local_plan_to_message(distributed_plans[field_type], msg);
 
     // TODO: create a sendToAllServers member function on the transport_. We can then get rid of
     // that awkward setter on the message class
-    for (auto ii = 0u; ii != transport_.no_servers(); ++ii) {
-        msg.peer(static_cast<int>(transport_.no_clients() + ii));
+    for (auto ii = 0u; ii != transport_.noServers(); ++ii) {
+        msg.peer(static_cast<int>(transport_.noClients() + ii));
         transport_.sendToServer(msg);
     }
 }
@@ -64,8 +64,8 @@ void Distributor::sendField(const atlas::Field& field) const {
 }
 
 void Distributor::sendForecastComplete() const {
-    for (auto ii = 0u; ii != transport_.no_servers(); ++ii) {
-        Message msg(0, static_cast<int>(transport_.no_clients() + ii), msg_tag::forecast_complete);
+    for (auto ii = 0u; ii != transport_.noServers(); ++ii) {
+        Message msg(0, static_cast<int>(transport_.noClients() + ii), msg_tag::forecast_complete);
         transport_.sendToServer(msg);
     }
 }

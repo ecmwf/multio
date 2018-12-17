@@ -17,12 +17,12 @@ public:
     explicit Aggregation(std::vector<std::vector<int>> maps, const std::string& nm = "Aggregation");
 
 private:  // methods
-    void do_execute(const atlas::Field& field, int) const override;
-    bool do_complete(atlas::Field& field) const override;
+    void doExecute(const atlas::Field& field, int) const override;
+    bool doComplete(atlas::Field& field) const override;
 
 private:  // members
     struct GlobalField {
-        unsigned no_chunks = 0;
+        unsigned noChunks = 0;
         atlas::Field field;
 
         GlobalField() = default;

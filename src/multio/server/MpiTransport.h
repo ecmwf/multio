@@ -29,18 +29,18 @@ private:
     bool server() const override;
     bool client() const override;
 
-    size_t global_rank() const override;
-    size_t client_rank() const override;
+    size_t globalRank() const override;
+    size_t clientRank() const override;
 
     void print(std::ostream &os) const override;
 
     void setClientCommAsDefault() const;
     void createCommunicators();
 
-    const eckit::mpi::Comm& global_comm;
+    const eckit::mpi::Comm& globalComm_;
 
-    const eckit::mpi::Comm* client_comm = nullptr;
-    const eckit::mpi::Comm* server_comm = nullptr;
+    const eckit::mpi::Comm* clientComm_ = nullptr;
+    const eckit::mpi::Comm* serverComm_ = nullptr;
 
 };
 

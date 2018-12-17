@@ -21,8 +21,8 @@ public:
 
 private:  // methods
 
-    virtual void do_execute(const atlas::Field& field, int source = -1) const = 0;
-    virtual bool do_complete(atlas::Field& field) const = 0;
+    virtual void doExecute(const atlas::Field& field, int source = -1) const = 0;
+    virtual bool doComplete(atlas::Field& field) const = 0;
 
     void print(std::ostream&) const;
     friend std::ostream& operator<<(std::ostream& os, const Action& action);

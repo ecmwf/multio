@@ -53,7 +53,7 @@ auto create_global_test_data(const size_t sz) -> TestFieldSet {
 auto scatter_atlas_field(const TestField& gl_field) -> atlas::Field {
     if (transport.client()) {
         auto idxmap =
-            create_local_to_global(field_size(), transport.no_clients(), transport.client_rank());
+            create_local_to_global(field_size(), transport.noClients(), transport.clientRank());
         return create_local_field(gl_field, idxmap);
     } else {
         return atlas::Field("dummy", atlas::array::DataType("real64"), make_shape(field_size()));
@@ -93,7 +93,7 @@ CASE("Test that fields ") {
         }
 
         transport.synchronise();
-        if (transport.global_rank() == root()) {
+        if (transport.globalRank() == root()) {
             for (const auto& field : global_fields) {
                 const auto& metadata = field.metadata();
                 eckit::PathName file{metadata.get<std::string>("name") +

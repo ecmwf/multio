@@ -25,17 +25,17 @@ public: // methods
     virtual bool server() const = 0;
     virtual bool client() const = 0;
 
-    virtual size_t global_rank() const = 0;
-    virtual size_t client_rank() const = 0;
+    virtual size_t globalRank() const = 0;
+    virtual size_t clientRank() const = 0;
 
     const std::string& title() const;
-    size_t no_servers() const;
-    size_t no_clients() const;
+    size_t noServers() const;
+    size_t noClients() const;
 
 protected:
 
     const std::string title_;
-    const size_t no_servers_;
+    const size_t noServers_;
 
 private: // methods
 

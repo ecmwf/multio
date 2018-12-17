@@ -15,11 +15,11 @@ Action::Action(const std::string& nm) : name_{nm} {
 }
 
 void Action::execute(const atlas::Field& field, const int source) const {
-    do_execute(field, source);
+    doExecute(field, source);
 }
 
 bool Action::complete(atlas::Field& field) const {
-    return do_complete(field);
+    return doComplete(field);
 }
 
 void Action::print(std::ostream& os) const {

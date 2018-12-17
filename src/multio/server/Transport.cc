@@ -6,7 +6,7 @@ namespace server {
 
 Transport::Transport(const std::string& title, const size_t no_serv) :
     title_(title),
-    no_servers_(no_serv) {}
+    noServers_(no_serv) {}
 
 Transport::~Transport() = default;
 
@@ -14,12 +14,12 @@ const std::string& Transport::title() const {
     return title_;
 }
 
-size_t Transport::no_servers() const {
-    return no_servers_;
+size_t Transport::noServers() const {
+    return noServers_;
 }
 
-size_t Transport::no_clients() const {
-    return size() - no_servers();
+size_t Transport::noClients() const {
+    return size() - noServers();
 }
 
 }  // namespace server

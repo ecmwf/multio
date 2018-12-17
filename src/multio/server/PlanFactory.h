@@ -15,12 +15,12 @@ class Plan;
 class PlanFactory {
 public:
     explicit PlanFactory(size_t no_maps);
-    bool try_create(const Message& msg);
+    bool tryCreate(const Message& msg);
     Plan handOver(const std::string& plan_name);
 
 private:
-    const size_t no_maps_;
-    std::unordered_map<std::string, std::vector<std::vector<int>>> plans_being_processed_;
+    const size_t noMaps_;
+    std::unordered_map<std::string, std::vector<std::vector<int>>> plansBeingProcessed_;
 
 private:
     bool isComplete(const std::string& plan_name) const;

@@ -13,7 +13,7 @@ namespace server {
 
 class Action {
 public:
-    explicit Action(std::string nm);
+    explicit Action(const std::string& nm);
     virtual ~Action() = default;
 
     void execute(const atlas::Field& field, int source = -1) const;

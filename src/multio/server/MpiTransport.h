@@ -13,7 +13,7 @@ namespace server {
 
 class MpiTransport final : public Transport {
 public:
-    MpiTransport(const std::string title, const size_t no_serv,
+    MpiTransport(const std::string& title, const size_t no_serv,
                  eckit::mpi::Comm& parent = eckit::mpi::comm("world"));
     ~MpiTransport() override;
 

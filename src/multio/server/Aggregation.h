@@ -14,7 +14,7 @@ namespace server {
 
 class Aggregation : public Action {
 public:
-    explicit Aggregation(std::vector<std::vector<int>> maps, std::string nm = "Aggregation");
+    explicit Aggregation(std::vector<std::vector<int>> maps, const std::string& nm = "Aggregation");
 
 private:  // methods
     void do_execute(const atlas::Field& field, int) const override;

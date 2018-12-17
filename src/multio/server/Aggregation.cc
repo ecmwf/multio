@@ -11,8 +11,8 @@
 namespace multio {
 namespace server {
 
-Aggregation::Aggregation(std::vector<std::vector<int>> maps, const std::string nm) :
-    Action{std::move(nm)},
+Aggregation::Aggregation(std::vector<std::vector<int>> maps, const std::string& nm) :
+    Action{nm},
     mappings_(std::move(maps)) {}
 
 void Aggregation::do_execute(const atlas::Field& local_field, int source) const {

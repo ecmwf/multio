@@ -10,7 +10,7 @@
 namespace multio {
 namespace server {
 
-Action::Action(const std::string nm) : name_(std::move(nm)) {
+Action::Action(const std::string& nm) : name_{nm} {
     ASSERT(!name_.empty());
 }
 

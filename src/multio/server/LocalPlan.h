@@ -11,8 +11,8 @@ namespace multio {
 namespace server {
 
 struct LocalPlan {
-    LocalPlan(const std::string name = "atm_grid", std::vector<int> idxmap = {}) :
-        mapping{std::move(idxmap)} {
+    LocalPlan(const std::string& name = "atm_grid", std::vector<int> idxmap = {}) :
+        mapping{idxmap} {
         metadata.set("name", std::move(name));
     }
     eckit::LocalConfiguration metadata;

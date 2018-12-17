@@ -16,8 +16,8 @@ namespace server {
 
 class Sink : public Action {
 public:
-    explicit Sink(DataSink * ds, std::string nm = "Sink");
-    explicit Sink(std::unique_ptr<DataSink>&& ds, std::string nm = "Sink");
+    explicit Sink(DataSink* ds, const std::string& nm = "Sink");
+    explicit Sink(std::unique_ptr<DataSink>&& ds, const std::string& nm = "Sink");
 
 private:  // overriding methods
     void do_execute(const atlas::Field& field, int) const override;

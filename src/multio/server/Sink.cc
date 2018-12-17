@@ -16,10 +16,10 @@
 namespace multio {
 namespace server {
 
-Sink::Sink(DataSink* ds, const std::string nm) : Action{std::move(nm)}, dataSink_(ds) {}
-Sink::Sink(std::unique_ptr<DataSink>&& ds, const std::string nm) :
-    Action{std::move(nm)},
-    dataSink_(std::move(ds)) {}
+Sink::Sink(DataSink* ds, const std::string& nm) : Action{nm}, dataSink_{ds} {}
+Sink::Sink(std::unique_ptr<DataSink>&& ds, const std::string& nm) :
+    Action{nm},
+    dataSink_{std::move(ds)} {}
 
 void Sink::do_execute(const atlas::Field& field, int /*unused*/) const {
 

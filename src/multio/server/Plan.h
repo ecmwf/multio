@@ -21,7 +21,7 @@ using ActionListIt = ActionList::const_iterator;
 
 class Plan {
 public:
-    explicit Plan(std::string nm, ActionList&& actions);
+    explicit Plan(const std::string& nm, ActionList&& actions);
 
     void process(const Message& msg) const;
 

@@ -12,9 +12,7 @@
 namespace multio {
 namespace server {
 
-Plan::Plan(const std::string nm, ActionList&& actions) :
-    name_(std::move(nm)),
-    actions_(std::move(actions)) {}
+Plan::Plan(const std::string& nm, ActionList&& actions) : name_(nm), actions_(std::move(actions)) {}
 
 void Plan::process(const Message& msg) const {
     ASSERT(msg.tag() != msg_tag::plan_data);

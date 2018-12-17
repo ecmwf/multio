@@ -14,7 +14,7 @@ class Message;
 class Transport : public eckit::NonCopyable {
 public: // methods
 
-    Transport(const std::string title, const size_t no_serv);
+    Transport(const std::string& title, const size_t no_serv);
     virtual ~Transport();
 
     virtual void receiveFromClient(Message& message) const = 0;

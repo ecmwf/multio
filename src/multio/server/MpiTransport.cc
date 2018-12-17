@@ -14,8 +14,8 @@ std::string prefix(const std::string& title) {
 }
 }  // namespace
 
-MpiTransport::MpiTransport(const std::string title, const size_t no_serv, Comm& parent) :
-    Transport(std::move(title), no_serv),
+MpiTransport::MpiTransport(const std::string& title, const size_t no_serv, Comm& parent) :
+    Transport(title, no_serv),
     global_comm(parent) {
     createCommunicators();
 }

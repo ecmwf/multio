@@ -76,7 +76,7 @@ CASE("Test that plan with two actions ") {
         for (auto&& map : maps) {
             auto fld = create_local_field(test_field, std::move(map));
             set_metadata(fld.metadata(), 850, 1);
-            atlas_fields.emplace_back(std::move(fld));
+            atlas_fields.push_back(std::move(fld));
         }
 
         // Carry out plan

@@ -37,14 +37,12 @@ CASE("Test that aggregation action executes correctly") {
     std::unique_ptr<Action> action{new Aggregation{maps}};
 
     field_size() = 8;
-    auto field_name = "temperature";
-    auto test_field = std::make_pair(field_name, create_random_data(field_name, field_size()));
+    auto test_field = set_up_atlas_test_field("temperature");
 
     auto atlas_field = atlas::Field{};
     auto ii = 0;
     do {
         atlas_field = create_local_field(test_field, maps[ii]);
-        set_metadata(atlas_field.metadata(), 850, 1);
         action->execute(atlas_field, ii++);
     } while (not action->complete(atlas_field));
 
@@ -52,20 +50,22 @@ CASE("Test that aggregation action executes correctly") {
     auto actual = std::vector<double>{};
     copy_n(view.data(), view.size(), back_inserter(actual));
 
-    EXPECT(actual == test_field.second);
+    view = atlas::array::make_view<double, 1>(atlas_field);
+    auto expected = std::vector<double>{};
+    copy_n(view.data(), view.size(), back_inserter(expected));
+
+    EXPECT(actual == expected);
 }
 
 CASE("Test that sink action executes correctly") {
     std::unique_ptr<Action> action{new Sink{nullptr}};
 
     field_size() = 29;
-    auto field_name = "temperature";
-    auto test_field = std::make_pair(field_name, create_random_data(field_name, field_size()));
+    auto test_field = set_up_atlas_test_field("temperature");
     std::vector<int> local_to_global(field_size());
     std::iota(begin(local_to_global), end(local_to_global), 0);
 
     auto atlas_field = create_local_field(test_field, local_to_global);
-    set_metadata(atlas_field.metadata(), 850, 1);
 
     action->execute(atlas_field);
 
@@ -82,14 +82,12 @@ CASE("Test that aggrigation and sink actions together execute correctly") {
     std::unique_ptr<Action> action(new Aggregation{maps});
 
     field_size() = 8;
-    auto field_name = "temperature";
-    auto test_field = std::make_pair(field_name, create_random_data(field_name, field_size()));
+    auto test_field = set_up_atlas_test_field("temperature");
 
     auto atlas_field = atlas::Field{};
     auto ii = 0;
     do {
         atlas_field = create_local_field(test_field, maps[ii]);
-        set_metadata(atlas_field.metadata(), 850, 1);
         action->execute(atlas_field, ii++);
     } while (not action->complete(atlas_field));
 

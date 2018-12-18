@@ -21,7 +21,7 @@ namespace {
 const auto nServers = 1u;
 const Transport& transport = MpiTransport{"dispatcher test", nServers};
 
-auto scatter_atlas_field(const TestField& gl_field) -> atlas::Field {
+auto scatter_atlas_field(const atlas::Field& gl_field) -> atlas::Field {
     if (transport.client()) {
         auto idxmap =
             create_local_to_global(field_size(), transport.noClients(), transport.clientRank());
@@ -55,18 +55,10 @@ CASE("Test that distributor-dispatcher pair ") {
         field_size() = 8;
 
         // Create test field
-        auto global_atlas_field =
-            atlas::Field("temperature", atlas::array::DataType("real64"), make_shape(0));
-        set_metadata(global_atlas_field.metadata(), 850, 1);
-        auto test_field = create_single_test_field(global_atlas_field.metadata(), field_size());
-
-        // Create global atlas field
-        global_atlas_field = create_atlas_field(test_field);
-        global_atlas_field.metadata() = unpack_metadata(test_field.first);
+        auto test_field = set_up_atlas_test_field("temperature");
 
         // Create local atlas field
         auto field = scatter_atlas_field(test_field);
-        field.metadata() = unpack_metadata(test_field.first);
 
         if (transport.client()) {
             Distributor distributor{transport};
@@ -89,7 +81,7 @@ CASE("Test that distributor-dispatcher pair ") {
         if (transport.globalRank() == root()) {
             eckit::PathName file{"temperature::850::1"};
             auto actual = file_content(file);
-            auto expected = pack_atlas_field(global_atlas_field);
+            auto expected = pack_atlas_field(test_field);
             file.unlink();
             EXPECT(actual == expected);
         }

@@ -38,8 +38,6 @@ using atlas::array::make_shape;
 using atlas::util::Metadata;
 using eckit::mpi::comm;
 
-using TestField = std::pair<std::string, std::vector<double>>;
-
 // Default global values, but each test is allowed to override them
 inline size_t& field_size() {
     static size_t val;
@@ -51,7 +49,8 @@ inline size_t& root() {
     return rt;
 }
 
-inline void set_metadata(Metadata& metadata, const int level, const int step) {
+inline void set_metadata(Metadata& metadata, const std::string& name, int level, int step) {
+    metadata.set("name", name);
     metadata.set("field_type", "atm_grid");
     metadata.set("gl_size", field_size());
     metadata.set("levels", level);
@@ -60,46 +59,45 @@ inline void set_metadata(Metadata& metadata, const int level, const int step) {
 
 // TODO: This function still assumes that MPI is used in the test for the transport layer. We will
 // have to change this if want to use it for testing other trnasport layers
-inline auto create_single_test_field(const Metadata& metadata, const size_t sz) -> TestField {
+inline auto create_global_test_field(const Metadata& metadata, const size_t sz) -> atlas::Field {
     auto name = metadata.get<std::string>("name");
     auto vals = (comm().rank() == root()) ? create_random_data(name, sz) : std::vector<double>(sz);
     comm().broadcast(vals, root());
-    auto key = pack_metadata(metadata);
-    return std::make_pair(key, vals);
-}
 
-inline auto create_atlas_field(const TestField& gl_field) -> atlas::Field {
-    auto field = atlas::Field("dummy", atlas::array::DataType("real64"), make_shape(field_size()));
+    auto field = atlas::Field(name, atlas::array::DataType("real64"), make_shape(field_size()));
     auto view = atlas::array::make_view<double, 1>(field);
-    copy(begin(gl_field.second), end(gl_field.second), view.data());
+    copy(begin(vals), end(vals), view.data());
+
+    field.metadata() = metadata;
     return field;
 }
 
 inline auto set_up_atlas_test_field(const std::string& name) -> atlas::Field {
-    auto metadata = atlas::Field{name, atlas::array::DataType("real64"), make_shape(0)}.metadata();
-    set_metadata(metadata, 850, 1);
+    atlas::util::Metadata metadata;
+    set_metadata(metadata, name, 850, 1);
 
-    auto gl_field = create_single_test_field(metadata, field_size());
+    auto field = create_global_test_field(metadata, field_size());
 
-    auto field = create_atlas_field(gl_field);
     field.metadata() = metadata;
 
     return field;
 }
 
-inline atlas::Field create_local_field(const TestField& glfl, const std::vector<int>& idxmap,
+inline atlas::Field create_local_field(const atlas::Field& gl_field, const std::vector<int>& idxmap,
                                        bool add_map_to_metadata = false) {
-    auto field =
-        atlas::Field(glfl.first, atlas::array::DataType("real64"), make_shape(idxmap.size()));
+    auto local_field =
+        atlas::Field(gl_field.name(), atlas::array::DataType("real64"), make_shape(idxmap.size()));
+    local_field.metadata() = gl_field.metadata();
     if (add_map_to_metadata) {
-        field.metadata().set("mapping", idxmap);
+        local_field.metadata().set("mapping", idxmap);
     }
-    auto view = atlas::array::make_view<double, 1>(field);
+    auto view_global = atlas::array::make_view<double, 1>(gl_field);
+    auto view_local = atlas::array::make_view<double, 1>(local_field);
     auto ii = 0;
     for (auto idx : idxmap) {
-        view(ii++) = (glfl.second)[static_cast<size_t>(idx)];
+        view_local(ii++) = view_global(idx);
     }
-    return field;
+    return local_field;
 }
 
 inline auto unpack_local_plan(Message& msg) -> LocalPlan {

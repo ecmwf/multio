@@ -90,7 +90,8 @@ CASE("Test identity after writing and reading atlas field") {
         comm().send<void>(msg.data(), msg.size(), msg.peer(), msg.tag());
 
         EXPECT(msg.tag() == msg_tag::field_data);
-        EXPECT(msg.size() == 288u);
+        std::cout << "Msg size = " << msg.size() << std::endl;
+        EXPECT(msg.size() == 274u);
     } else {
         EXPECT(comm().rank() == static_cast<size_t>(dest));
         auto status = comm().probe(comm().anySource(), comm().anyTag());

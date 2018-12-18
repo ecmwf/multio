@@ -25,7 +25,7 @@ namespace test {
 
 using atlas::array::make_shape;
 using eckit::mpi::comm;
-using TestFieldMap = std::map<std::string, std::vector<double>>;
+using TestFieldMap = std::map<std::string, atlas::Field>;
 
 namespace {
 // Set up global data
@@ -34,17 +34,40 @@ const auto nServers = 2u;
 const Transport& trans   = MpiTransport{"Test atlas field", nServers};
 
 auto create_global_test_data() -> TestFieldMap {
-    return {{"pi", {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9, 3, 2, 3, 8, 4, 6, 2, 6, 4}},
-            {"exp", {2, 7, 1, 8, 2, 8, 1, 8, 2, 8, 4, 5, 9, 0, 4, 5, 2, 3, 5, 3, 6, 0, 2, 8}}};
+    TestFieldMap test_fields;
+
+    std::vector<double> v{3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9, 3, 2, 3, 8, 4, 6, 2, 6, 4};
+    test_fields["pi"] = atlas::Field("pi", atlas::array::DataType("real64"), make_shape(v.size()));
+    auto view = atlas::array::make_view<double, 1>(test_fields["pi"]);
+    copy(begin(v), end(v), view.data());
+
+
+    v = {2, 7, 1, 8, 2, 8, 1, 8, 2, 8, 4, 5, 9, 0, 4, 5, 2, 3, 5, 3, 6, 0, 2, 8};
+    test_fields["exp"] =
+        atlas::Field("exp", atlas::array::DataType("real64"), make_shape(v.size()));
+    view = atlas::array::make_view<double, 1>(test_fields["exp"]);
+    copy(begin(v), end(v), view.data());
+
+    return test_fields;
 }
 
-auto scatter_atlas_field(const TestField& gl_field) -> atlas::Field {
+auto scatter_atlas_field(const atlas::Field& gl_field) -> atlas::Field {
     if (trans.client()) {
         auto idxmap = create_local_to_global(field_size(), trans.noClients(), trans.clientRank());
         return create_local_field(gl_field, idxmap, true);
-    } else {
+    }
+    else {
         return atlas::Field("dummy", atlas::array::DataType("real64"), make_shape(field_size()));
     }
+}
+
+inline auto get_data(const atlas::Field& field) -> std::vector<double> {
+    auto vec = std::vector<double>{};
+
+    auto view = atlas::array::make_view<double, 1>(field);
+    copy_n(view.data(), view.size(), back_inserter(vec));
+
+    return vec;
 }
 
 void unpack_and_aggregate(char* local_data, size_t sz, std::vector<double>& received_field) {
@@ -69,17 +92,18 @@ void unpack_and_aggregate(char* local_data, size_t sz, std::vector<double>& rece
 
 CASE("Test that atlas field is ") {
     auto gl_field = create_global_test_data();
-    field_size()    = gl_field.at("pi").size();
+    field_size() = gl_field.at("pi").size();
 
     // Create fields from global data
-    auto field_A = scatter_atlas_field(*gl_field.find("pi"));
-    auto field_B = scatter_atlas_field(*gl_field.find("exp"));
+    auto field_A = scatter_atlas_field(gl_field.at("pi"));
+    auto field_B = scatter_atlas_field(gl_field.at("exp"));
 
     SECTION("created correctly") {
         if (trans.client()) {
             EXPECT(field_A.metadata().get<std::vector<int>>("mapping").size() == 4);
             EXPECT(field_B.metadata().get<std::vector<int>>("mapping").size() == 4);
-        } else {
+        }
+        else {
             EXPECT_THROWS(field_A.metadata().get<std::vector<int>>("mapping"));
             EXPECT_THROWS(field_B.metadata().get<std::vector<int>>("mapping"));
         }
@@ -95,7 +119,8 @@ CASE("Test that atlas field is ") {
             // Send field_B as packed buffer
             dest = pack_atlas_field(field_B);
             comm().send<void>(dest.data(), dest.size(), no_client_proc + 1, msg_tag::field_data);
-        } else {
+        }
+        else {
             auto counter = 0u;
             std::vector<double> received_field(field_size());
             do {  // Probe for atlas field
@@ -109,12 +134,11 @@ CASE("Test that atlas field is ") {
                 unpack_and_aggregate(local_data.data(), chunk_size, received_field);
             } while (++counter != trans.noClients());
 
-            eckit::Log::info() << "Rank = " << comm().rank() << ",    Received field:  ";
-            print_buffer(received_field, eckit::Log::info());
             if (comm().rank() == trans.noClients()) {
-                EXPECT(gl_field.at("pi") == received_field);
-            } else {
-                EXPECT(gl_field.at("exp") == received_field);
+                EXPECT(get_data(gl_field.at("pi")) == received_field);
+            }
+            else {
+                EXPECT(get_data(gl_field.at("exp")) == received_field);
             }
         }
     }

@@ -21,8 +21,6 @@ namespace multio {
 namespace server {
 namespace test {
 
-using TestFieldSet = std::vector<TestField>;
-
 namespace {
 
 const auto nServers = 3u;
@@ -30,19 +28,15 @@ const Transport& transport = MpiTransport{"i/o server test", nServers};
 
 auto global_fields = std::vector<atlas::Field>{};
 
-auto create_global_test_data(const size_t sz) -> TestFieldSet {
-    TestFieldSet gl_fields;
+auto create_global_test_data(const size_t sz) -> std::vector<atlas::Field> {
+    std::vector<atlas::Field> gl_fields;
 
     for (auto step : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}) {
         for (auto level : {200, 300, 500, 750, 800, 850, 900, 925, 950, 1000}) {
             for (auto name : {"temperature", "geopotential", "rel_humidity"}) {
-                auto field = atlas::Field(name, atlas::array::DataType("real64"), make_shape(0));
-                set_metadata(field.metadata(), level, step);
-                auto single_test_field = create_single_test_field(field.metadata(), sz);
-                gl_fields.push_back(single_test_field);
-                auto atlas_field = create_atlas_field(single_test_field);
-                atlas_field.metadata() = field.metadata();
-                global_fields.push_back(std::move(atlas_field));
+                atlas::util::Metadata metadata;
+                set_metadata(metadata, name, level, step);
+                gl_fields.push_back(create_global_test_field(metadata, sz));
             }
         }
     }
@@ -50,7 +44,7 @@ auto create_global_test_data(const size_t sz) -> TestFieldSet {
     return gl_fields;
 }
 
-auto scatter_atlas_field(const TestField& gl_field) -> atlas::Field {
+auto scatter_atlas_field(const atlas::Field& gl_field) -> atlas::Field {
     if (transport.client()) {
         auto idxmap =
             create_local_to_global(field_size(), transport.noClients(), transport.clientRank());
@@ -70,9 +64,7 @@ CASE("Test that fields ") {
     // Create fields from global data
     auto fields = std::vector<atlas::Field>{};
     for (const auto& glfl : gl_field) {
-        auto field = scatter_atlas_field(glfl);
-        field.metadata() = unpack_metadata(glfl.first);
-        fields.push_back(std::move(field));
+        fields.push_back(scatter_atlas_field(glfl));
     }
 
     SECTION("are distributed and dispatched to correct plan") {

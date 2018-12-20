@@ -21,6 +21,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/DataBlob.h"
 #include "eckit/log/Log.h"
+#include "eckit/value/Value.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
 #include "eckit/memory/Zero.h"

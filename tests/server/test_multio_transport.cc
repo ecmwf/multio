@@ -42,14 +42,14 @@ CASE("Test that MPI transport layer") {
             // Send plan
             Message msg(0, dest, msg_tag::plan_data);
             local_plan_to_message(test_plan, msg);
-            transport.sendToServer(msg);
+            transport.send(msg);
 
             EXPECT(msg.tag() == msg_tag::plan_data);
 
             // Send field
             msg.reset(0, dest, msg_tag::field_data);
             atlas_field_to_message(test_field, msg);
-            transport.sendToServer(msg);
+            transport.send(msg);
 
             EXPECT(msg.tag() == msg_tag::field_data);
             EXPECT(msg.size() == 274u);
@@ -58,7 +58,7 @@ CASE("Test that MPI transport layer") {
 
             // Receive plan
             Message msg;
-            transport.receiveFromClient(msg);
+            transport.receive(msg);
             EXPECT(msg.tag() == msg_tag::plan_data);
 
             auto received_plan = unpack_local_plan(msg);
@@ -66,7 +66,7 @@ CASE("Test that MPI transport layer") {
 
             // Receive field
             msg.reset(0, -1, msg_tag::plan_data);
-            transport.receiveFromClient(msg);
+            transport.receive(msg);
             EXPECT(msg.tag() == msg_tag::field_data);
 
             auto received_field = unpack_atlas_field(msg);

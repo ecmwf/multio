@@ -14,11 +14,13 @@ class Message;
 class Transport : public eckit::NonCopyable {
 public: // methods
 
-    Transport(const std::string& title, const size_t no_serv);
+    Transport(const std::string& title, size_t no_serv);
     virtual ~Transport();
 
-    virtual void receiveFromClient(Message& message) const = 0;
-    virtual void sendToServer(const Message &message) const = 0;
+    virtual void notifyAllClients(const Message& msg) const = 0;
+
+    virtual void receive(Message &message) const = 0;
+    virtual void send(const Message &message) const = 0;
     virtual void synchronise() const = 0;
 
     virtual size_t size() const = 0;

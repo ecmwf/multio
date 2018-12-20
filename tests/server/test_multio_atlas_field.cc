@@ -41,7 +41,6 @@ auto create_global_test_data() -> TestFieldMap {
     auto view = atlas::array::make_view<double, 1>(test_fields["pi"]);
     copy(begin(v), end(v), view.data());
 
-
     v = {2, 7, 1, 8, 2, 8, 1, 8, 2, 8, 4, 5, 9, 0, 4, 5, 2, 3, 5, 3, 6, 0, 2, 8};
     test_fields["exp"] =
         atlas::Field("exp", atlas::array::DataType("real64"), make_shape(v.size()));

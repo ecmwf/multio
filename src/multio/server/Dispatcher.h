@@ -16,7 +16,7 @@ class Dispatcher {
 public:
     Dispatcher(const Transport& trans);
 
-    void registerPlan(const Message& msg);
+    std::string registerPlan(const Message& msg);
 
     void feedPlan(const Message& msg);
 
@@ -28,12 +28,9 @@ private:
 
     PlanFactory planFactory_;
 
-    std::unordered_map<std::string, std::vector<Message>> backlog_;
     std::map<std::string, Plan> registeredPlans_;
 
-private:
-    void processBacklog(const std::string& plan_name);
-
+private:  // methods
     bool allPartsArrived(unsigned counter) const;
 
     void print(std::ostream &os) const;

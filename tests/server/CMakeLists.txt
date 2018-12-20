@@ -13,20 +13,20 @@ ecbuild_add_test( TARGET   test_multio_transport
                   MPI      2
                   LIBS     multio multio-server)
 
- ecbuild_add_test( TARGET    test_multio_dispatcher
-                   SOURCES   test_multio_dispatcher.cc
-                   MPI       3
-                   LIBS      multio multio-server)
+ecbuild_add_test( TARGET   test_multio_atlas_field
+                  SOURCES  test_multio_atlas_field.cc
+                  MPI      8
+                  LIBS     multio multio-server)
 
- ecbuild_add_test( TARGET   test_multio_atlas_field
-                   SOURCES  test_multio_atlas_field.cc
-                   MPI      8
-                   LIBS     multio multio-server)
+ecbuild_add_test( TARGET   test_multio_dispatcher
+                  SOURCES  test_multio_dispatcher.cc
+                  MPI      3
+                  LIBS     multio multio-server)
 
- ecbuild_add_test( TARGET   test_multio_io_server_prototype
-                   SOURCES  test_multio_io_server_prototype.cc
-                   MPI      8
-                   LIBS     multio multio-server)
+ecbuild_add_test( TARGET   test_multio_io_server_prototype
+                  SOURCES  test_multio_io_server_prototype.cc
+                  MPI      8
+                  LIBS     multio multio-server)
 
 ecbuild_add_test( TARGET   test_multio_actions
                   SOURCES  test_multio_actions.cc

@@ -9,7 +9,8 @@ enum msg_tag
 {
     plan_data,
     field_data,
-    forecast_complete
+    forecast_complete,
+    plan_complete
 };
 
 

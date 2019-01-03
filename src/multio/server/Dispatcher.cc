@@ -2,6 +2,8 @@
 #include "Dispatcher.h"
 
 #include "eckit/io/Buffer.h"
+#include "eckit/log/Log.h"
+#include "eckit/exception/Exceptions.h"
 
 #include "atlas/field/Field.h"
 #include "atlas/util/Metadata.h"
@@ -44,8 +46,7 @@ void Dispatcher::feedPlan(const Message& msg) {
 }
 
 void Dispatcher::listen() {
-    eckit::Log::info() << "Rank: " << transport_.globalRank() << ", Started listening..."
-                       << std::endl;
+    eckit::Log::info() << "Rank: " << transport_.globalRank() << ", Started listening..." << std::endl;
     auto counter = 0u;
     do {
         Message msg(0);

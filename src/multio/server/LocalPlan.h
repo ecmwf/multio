@@ -2,10 +2,13 @@
 #ifndef multio_server_LocalPlan_H
 #define multio_server_LocalPlan_H
 
+#include "eckit/exception/Exceptions.h"
+
 #include "atlas/util/Metadata.h"
 
 #include <string>
 #include <vector>
+#include <numeric>
 
 namespace multio {
 namespace server {

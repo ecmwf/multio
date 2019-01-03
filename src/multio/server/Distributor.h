@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include "multio/server/LocalPlan.h"
 #include "multio/server/Transport.h"

@@ -8,6 +8,8 @@
  * does it submit to any jurisdiction.
  */
 
+#include <fstream>
+
 #include "multio/FileSink.h"
 #include "multio/MultIO.h"
 

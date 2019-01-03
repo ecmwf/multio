@@ -1,6 +1,8 @@
 
 #include "MpiTransport.h"
 
+#include "eckit/exception/Exceptions.h"
+
 #include "multio/server/Message.h"
 
 using eckit::mpi::Comm;

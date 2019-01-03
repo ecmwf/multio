@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include "eckit/exception/Exceptions.h"
+
 #include "atlas/array.h"
 #include "atlas/util/Metadata.h"
 

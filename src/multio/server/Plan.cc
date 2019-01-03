@@ -1,6 +1,8 @@
 
 #include "Plan.h"
 
+#include "eckit/exception/Exceptions.h"
+
 #include "atlas/array.h"
 #include "atlas/field/Field.h"
 #include "atlas/util/Metadata.h"

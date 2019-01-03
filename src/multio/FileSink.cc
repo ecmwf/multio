@@ -20,9 +20,6 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/DataHandle.h"
-#include "eckit/io/Length.h"
-#include "eckit/thread/AutoLock.h"
-#include "eckit/thread/Mutex.h"
 
 using namespace eckit;
 
@@ -44,11 +41,16 @@ FileSink::~FileSink() {
 void FileSink::write(eckit::DataBlobPtr blob) {
     size_t length = blob->length();
 
-    eckit::AutoLock<eckit::Mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     if (size_t(handle_->write(blob->buffer(), length)) != length) {
         throw WriteError(std::string("Write error on file: ") + path_, Here());
     }
+}
+
+void FileSink::flush() {
+    std::cout << "Flush is called..." << std::endl;
+    handle_->flush();
 }
 
 void FileSink::print(std::ostream& os) const {

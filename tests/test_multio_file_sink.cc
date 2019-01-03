@@ -8,15 +8,15 @@
  * does it submit to any jurisdiction.
  */
 
-#include <unistd.h>
+#include "TestHelpers.h"
+
 #include <cstring>
+#include <unistd.h>
+
+#include "multio/FileSink.h"
 
 #include "eckit/testing/Test.h"
 #include "eckit/filesystem/TmpFile.h"
-#include "multio/DataSink.h"
-#include "multio/FileSink.h"
-
-#include "TestHelpers.h"
 
 namespace multio {
 namespace test {
@@ -43,8 +43,7 @@ CASE("test_file_sink_writes_correctly") {
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
-    eckit::DataBlobPtr stringBlob(
-        eckit::DataBlobFactory::build("test_blob", quote, sizeof(quote) - 1));
+    eckit::DataBlobPtr stringBlob(eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
     sink->write(stringBlob);
 
     EXPECT(file_content(file_path) == std::string(quote));

@@ -38,6 +38,14 @@ ecbuild_add_option( FEATURE FDB5
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "PROJECT mars_server VERSION 7.10.7" )
 
+### multio-server
+
+ecbuild_add_option( FEATURE MULTIO_SERVER
+                    DEFAULT OFF
+                    DESCRIPTION "Multio server"
+                    REQUIRED_PACKAGES "PROJECT atlas VERSION 0.15" )
+
+
 ### export package info
 
 set( MULTIO_INCLUDE_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src )

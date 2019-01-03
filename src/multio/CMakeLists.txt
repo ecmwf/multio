@@ -39,7 +39,6 @@ list( APPEND multio_srcs
     multio_version.cc
 )
 
-
 ### multio library
 
 ecbuild_add_library(
@@ -66,3 +65,4 @@ ecbuild_add_library(
 
 add_subdirectory(fdb4)
 add_subdirectory(fdb5)
+add_subdirectory(server)

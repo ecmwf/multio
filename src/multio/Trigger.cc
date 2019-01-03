@@ -360,7 +360,7 @@ Trigger::Trigger(const Configuration& config) {
         }
     }
 
-    /// @note this doesnt quite work for reentrant MultIO objects (MultIO as a DataSink itself)
+    /// @note this doesn't quite work for reentrant MultIO objects (MultIO as a DataSink itself)
     const char * conf = ::getenv("MULTIO_CONFIG_TRIGGERS");
     if(conf) {
         eckit::YAMLConfiguration econf((std::string(conf)));

@@ -1,14 +1,12 @@
-#include <unistd.h>
-#include <cstring>
-
-#include "eckit/filesystem/TmpFile.h"
-#include "eckit/testing/Test.h"
-#include "multio/DataSink.h"
-#include "multio/FileSink.h"
 
 #include "TestHelpers.h"
 
-using namespace eckit;
+#include "multio/DataSink.h"
+#include "multio/FileSink.h"
+
+#include "eckit/filesystem/TmpFile.h"
+#include "eckit/testing/Test.h"
+
 using namespace eckit::testing;
 
 namespace multio {
@@ -21,8 +19,7 @@ CASE("test_multio_journal") {
     std::unique_ptr<DataSink> fileSink(DataSinkFactory::instance().build("file", config));
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
-    eckit::DataBlobPtr stringBlob(
-        eckit::DataBlobFactory::build("test_blob", quote, sizeof(quote) - 1));
+    eckit::DataBlobPtr stringBlob(eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
 
     // Create journals
     eckit::PathName("journal").unlink();

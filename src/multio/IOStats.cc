@@ -12,6 +12,9 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
+#include <cmath>
+#include <iomanip>
+
 #include "eckit/io/Length.h"
 #include "eckit/log/BigNum.h"
 #include "eckit/log/Bytes.h"
@@ -20,8 +23,6 @@
 
 #include "multio/IOStats.h"
 #include "multio/LibMultio.h"
-
-#include <cmath>
 
 static const int FORMAT_WIDTH = 42;
 

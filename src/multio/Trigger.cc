@@ -19,6 +19,7 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/types/Metadata.h"
+#include "eckit/filesystem/PathName.h"
 #include "eckit/net/TCPClient.h"
 #include "eckit/parser/JSON.h"
 #include "eckit/config/YAMLConfiguration.h"

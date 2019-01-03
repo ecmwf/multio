@@ -20,6 +20,7 @@
 #include <iosfwd>
 #include <string>
 #include <vector>
+#include <list>
 
 #include "eckit/io/DataBlob.h"
 #include "eckit/io/DataHandle.h"

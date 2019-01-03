@@ -16,6 +16,8 @@
 
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/io/DataBlob.h"
+#include "eckit/log/Log.h"
+#include "eckit/value/Value.h"
 
 #include "multio/Journal.h"
 #include "multio/JournalReader.h"

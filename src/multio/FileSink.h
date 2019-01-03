@@ -20,6 +20,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "eckit/filesystem/PathName.h"
 

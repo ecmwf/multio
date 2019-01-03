@@ -18,6 +18,7 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/parser/JSON.h"
+#include "eckit/value/Value.h"
 
 #include "multio/LibMultio.h"
 

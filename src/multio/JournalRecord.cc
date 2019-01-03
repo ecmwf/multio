@@ -19,6 +19,7 @@
 #include "eckit/parser/JSONDataBlob.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/value/Value.h"
+#include "eckit/memory/Zero.h"
 
 #include "multio/Journal.h"
 #include "multio/JournalRecord.h"

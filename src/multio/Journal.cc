@@ -12,17 +12,19 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
+#include "Journal.h"
+
 #include <sys/time.h>
 #include <sstream>
-
-#include "multio/Journal.h"
 
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/DataBlob.h"
 #include "eckit/log/Log.h"
+#include "eckit/value/Value.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
+#include "eckit/memory/Zero.h"
 
 #include "multio/DataSink.h"
 

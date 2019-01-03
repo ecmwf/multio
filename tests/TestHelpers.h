@@ -11,6 +11,12 @@
 #ifndef multio_TestHelpers_H
 #define multio_TestHelpers_H
 
+#include <cmath>
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <iomanip>
+
 #include "eckit/filesystem/TmpFile.h"
 #include "eckit/config/LocalConfiguration.h"
 

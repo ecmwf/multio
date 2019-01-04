@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <numeric>
+#include <algorithm>
 
 namespace multio {
 namespace server {
@@ -28,7 +29,8 @@ inline std::vector<int> create_local_to_global(size_t field_size, size_t n_proc,
 
     std::vector<int> local_to_global(chunk_size);
     std::iota(begin(local_to_global), end(local_to_global), 0);
-    std::for_each(begin(local_to_global), end(local_to_global),
+    std::for_each(begin(local_to_global),
+                  end(local_to_global),
                   [n_proc, rank](int& ii) { ii = ii * n_proc + rank; });
 
     return local_to_global;

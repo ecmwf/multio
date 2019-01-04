@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <algorithm>
 
 #include "atlas/array.h"
 #include "atlas/field/Field.h"
@@ -27,7 +28,7 @@ std::ostream& operator<<(std::ostream& ostrm, const fixed_width_val<T, width>& f
 template <typename T, int size>
 inline void print_buffer(const T (&buffer)[size], std::ostream& ostrm = std::cout,
                          const char delim[] = " ") {
-    copy(std::begin(buffer), std::end(buffer),
+    std::copy(std::begin(buffer), std::end(buffer),
          std::ostream_iterator<fixed_width_val<T, 3>>(ostrm, delim));
 }
 
@@ -48,7 +49,7 @@ void print_buffer(const std::vector<T>& vec, std::ostream& ostrm = std::cout,
 inline void print_atlas_info(const atlas::Field& field, std::ostream& ostrm = std::cout) {
     ostrm << "metadata = " << field.metadata() << ",    values: [";
     auto view = atlas::array::make_view<double, 1>(field);
-    copy_n(view.data(), view.size(), std::ostream_iterator<double>(ostrm, ", "));
+    std::copy_n(view.data(), view.size(), std::ostream_iterator<double>(ostrm, ", "));
     ostrm << "\b\b]";
 }
 

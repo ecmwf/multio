@@ -29,16 +29,15 @@ CASE("test_contains_file_sink") {
 }
 
 CASE("test_file_sink_is_created_successfully") {
-    eckit::PathName file_path = eckit::TmpFile();
+    const eckit::PathName& file_path = eckit::TmpFile();
     auto sink = make_configured_file_sink(file_path);
     auto fileSink = dynamic_cast<FileSink*>(sink.get());
     EXPECT(fileSink);
     EXPECT(file_path.exists());
-    file_path.unlink();
 }
 
 CASE("test_file_sink_writes_correctly") {
-    eckit::PathName file_path = eckit::TmpFile();
+    const eckit::PathName& file_path = eckit::TmpFile();
     auto sink = make_configured_file_sink(file_path);
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
@@ -47,7 +46,6 @@ CASE("test_file_sink_writes_correctly") {
     sink->write(stringBlob);
 
     EXPECT(file_content(file_path) == std::string(quote));
-    file_path.unlink();
 }
 
 }  // namespace test

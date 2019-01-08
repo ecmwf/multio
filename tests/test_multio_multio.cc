@@ -10,14 +10,16 @@
 
 #include <fstream>
 
-#include "multio/FileSink.h"
-#include "multio/MultIO.h"
-
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/parser/JSON.h"
 #include "eckit/parser/JSONDataBlob.h"
 #include "eckit/testing/Test.h"
 #include "eckit/utils/Translator.h"
+
+#include "multio/FileSink.h"
+#include "multio/MultIO.h"
+
+#include "TestHelpers.h"
 
 namespace multio {
 namespace test {
@@ -25,10 +27,6 @@ namespace test {
 namespace {
 std::string create_test_configuration(const eckit::PathName& file1, const eckit::PathName& file2,
                                       const eckit::PathName& file3, int jobId, int port) {
-    file1.unlink();
-    file2.unlink();
-    file3.unlink();
-
     std::stringstream ss;
     ss << "{ \"triggers\" : [ "
           "{ \"type\" : \"MetadataChange\", \"host\" : \"localhost\", \"port\" : "
@@ -86,9 +84,9 @@ bool trigger_executed_correctly(const eckit::PathName& file, const std::vector<i
 
 
 CASE("test_multio_with_event_trigger") {
-    eckit::PathName file1("tmp.1");
-    eckit::PathName file2("tmp.2");
-    eckit::PathName file3("tmp.3");
+    const eckit::PathName& file1 = eckit::TmpFile();
+    const eckit::PathName& file2 = eckit::TmpFile();
+    const eckit::PathName& file3 = eckit::TmpFile();
 
     // Set up
     int port = 10000;

@@ -26,8 +26,6 @@ namespace {
 const auto nServers = 3u;
 const Transport& transport = MpiTransport{"i/o server test", nServers};
 
-auto global_fields = std::vector<atlas::Field>{};
-
 auto create_global_test_data(const size_t sz) -> std::vector<atlas::Field> {
     std::vector<atlas::Field> gl_fields;
 
@@ -59,11 +57,12 @@ auto scatter_atlas_field(const atlas::Field& gl_field) -> atlas::Field {
 CASE("Test that fields ") {
     // Set up global data
     field_size() = 1999;
-    auto gl_field = create_global_test_data(field_size());
 
-    // Create fields from global data
+    auto global_fields = create_global_test_data(field_size());
+
+    // Create local fields from global data
     auto fields = std::vector<atlas::Field>{};
-    for (const auto& glfl : gl_field) {
+    for (const auto& glfl : global_fields) {
         fields.push_back(scatter_atlas_field(glfl));
     }
 
@@ -86,15 +85,16 @@ CASE("Test that fields ") {
 
         transport.synchronise();
         if (transport.globalRank() == root()) {
+            std::cout << "--- We are root... Start testing file contents..." << std::endl;
             for (const auto& field : global_fields) {
                 const auto& metadata = field.metadata();
-                eckit::PathName file{metadata.get<std::string>("name") +
+                multio::test::TestFile file{metadata.get<std::string>("name") +
                                      "::" + std::to_string(metadata.get<int>("levels")) +
                                      "::" + std::to_string(metadata.get<int>("steps"))};
 
-                auto actual = file_content(file);
+                auto actual = file_content(file.name());
                 auto expected = pack_atlas_field(field);
-                file.unlink();
+
                 EXPECT(actual == expected);
             }
         }

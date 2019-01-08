@@ -13,7 +13,7 @@ namespace multio {
 namespace test {
 
 CASE("test_multio_journal") {
-    eckit::PathName file_path = eckit::TmpFile();
+    const eckit::PathName& file_path = eckit::TmpFile();
     eckit::LocalConfiguration config;
     config.set("path", file_path);
     std::unique_ptr<DataSink> fileSink(DataSinkFactory::instance().build("file", config));
@@ -22,7 +22,6 @@ CASE("test_multio_journal") {
     eckit::DataBlobPtr stringBlob(eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
 
     // Create journals
-    eckit::PathName("journal").unlink();
     Journal journal_file_sink(config, fileSink.get());
     Journal journal_no_sink(config);
 
@@ -75,7 +74,7 @@ CASE("test_multio_journal") {
         EXPECT(file_content(file_path) == std::string(quote));
     }
 
-    file_path.unlink();
+    eckit::PathName("journal").unlink();
 }
 //-----------------------------------------------------------------------------
 

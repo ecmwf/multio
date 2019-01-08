@@ -79,10 +79,9 @@ CASE("Test that distributor-dispatcher pair ") {
 
         transport.synchronise();
         if (transport.globalRank() == root()) {
-            eckit::PathName file{"temperature::850::1"};
-            auto actual = file_content(file);
+            multio::test::TestFile file{"temperature::850::1"};
+            auto actual = file_content(file.name());
             auto expected = pack_atlas_field(test_field);
-            file.unlink();
             EXPECT(actual == expected);
         }
     }

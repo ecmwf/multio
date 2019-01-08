@@ -26,10 +26,8 @@ CASE("Test that aggregation action constructs successfully") {
 }
 
 CASE("Test that sink action constructs successfully") {
-    eckit::PathName file_path = eckit::TmpFile();
+    const eckit::PathName& file_path = eckit::TmpFile();
     std::unique_ptr<Action> action(new Sink{make_configured_file_sink(file_path)});
-
-    file_path.unlink();
 }
 
 CASE("Test that aggregation action executes correctly") {
@@ -69,12 +67,11 @@ CASE("Test that sink action executes correctly") {
 
     action->execute(atlas_field);
 
-    eckit::PathName file_path{"temperature::850::1"};
-    auto actual = file_content(file_path);
+    multio::test::TestFile file{"temperature::850::1"};
+    auto actual = file_content(file.name());
     auto expected = pack_atlas_field(atlas_field);
-    EXPECT(actual == expected);
 
-    file_path.unlink();
+    EXPECT(actual == expected);
 }
 
 CASE("Test that aggrigation and sink actions together execute correctly") {
@@ -91,15 +88,14 @@ CASE("Test that aggrigation and sink actions together execute correctly") {
         action->execute(atlas_field, ii++);
     } while (not action->complete(atlas_field));
 
-    eckit::PathName file_path{"temperature::850::1"};
-    action.reset(new Sink{make_configured_file_sink(file_path)});
+    multio::test::TestFile file{"temperature::850::1"};
+    action.reset(new Sink{make_configured_file_sink(file.name())});
     action->execute(atlas_field);
 
-    auto actual = file_content(file_path);
+    auto actual = file_content(file.name());
     auto expected = pack_atlas_field(atlas_field);
-    EXPECT(actual == expected);
 
-    file_path.unlink();
+    EXPECT(actual == expected);
 }
 
 }  // namespace server

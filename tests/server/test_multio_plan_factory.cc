@@ -55,11 +55,10 @@ CASE("Use plan factory to create plan") {
             plan.process(msg);
         }
 
-        eckit::PathName file{"temperature::850::1"};
-        auto actual = file_content(file);
+        multio::test::TestFile file{"temperature::850::1"};
+        auto actual = file_content(file.name());
         auto expected = pack_atlas_field(test_field);
         EXPECT(actual == expected);
-        file.unlink();
     }
 }
 

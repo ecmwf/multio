@@ -26,11 +26,14 @@ public:
     void sendField(const atlas::Field& field) const;
     void sendForecastComplete() const;
 
-private:
+private:  // members
     mutable std::map<std::string, LocalPlan> distributed_plans;
     const Transport& transport_;
 
-    void print(std::ostream &os) const;
+private:  // methods
+    void waitForPlan(const std::string& plan_name) const;
+
+    void print(std::ostream& os) const;
 
     friend std::ostream& operator<<(std::ostream& os, const Distributor& distr) {
         distr.print(os);

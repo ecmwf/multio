@@ -48,6 +48,7 @@ inline LocalPlan fetch_local_plan(const atlas::util::Metadata& config, size_t n_
     auto field_type = config.get<std::string>("field_type");
     local_plan.metadata.set("name", field_type);
     if (field_type == "atm_grid") {
+        local_plan.metadata.set("mapping", "scattered");
         local_plan.metadata.set("aggregation", "indexed");
         local_plan.metadata.set("encoding", "none");
         local_plan.metadata.set("multio_sink", "file");

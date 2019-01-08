@@ -51,18 +51,7 @@ void Distributor::sendLocalPlan(const atlas::Field& field) const {
         transport_.send(msg);
     }
 
-    auto counter = 0u;
-    do {
-        Message msg(0, -1, msg_tag::plan_complete);
-        transport_.receive(msg);
-        eckit::Buffer buffer{msg.size()};
-        msg.read(buffer, msg.size());
-        std::string str_buf(buffer);
-        str_buf.resize(buffer.size());
-        if (str_buf == plan.name()) {
-            ++counter;
-        }
-    } while (counter != transport_.noServers());
+    waitForPlan(plan.name());
 
     // Register sending this plan
     distributed_plans[field_type] = plan;
@@ -87,6 +76,21 @@ void Distributor::sendForecastComplete() const {
 }
 
 // Private members
+
+void Distributor::waitForPlan(const std::string& plan_name) const {
+    auto counter = 0u;
+    do {
+        Message msg(0, -1, msg_tag::plan_complete);
+        transport_.receive(msg);
+        eckit::Buffer buffer{msg.size()};
+        msg.read(buffer, msg.size());
+        std::string str_buf(buffer);
+        str_buf.resize(buffer.size());
+        if (str_buf == plan_name) {
+            ++counter;
+        }
+    } while (counter != transport_.noServers());
+}
 
 void Distributor::print(std::ostream& os) const {
     os << "Distributor initialised with " << transport_;

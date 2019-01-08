@@ -22,8 +22,7 @@ public:
 
     void listen();
 
-private:
-
+private:  // members
     const Transport& transport_;
 
     PlanFactory planFactory_;
@@ -33,7 +32,7 @@ private:
 private:  // methods
     bool allPartsArrived(unsigned counter) const;
 
-    void print(std::ostream &os) const;
+    void print(std::ostream& os) const;
 
     friend std::ostream& operator<<(std::ostream& os, const Dispatcher& dpatch) {
         dpatch.print(os);

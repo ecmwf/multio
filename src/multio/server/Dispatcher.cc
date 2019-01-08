@@ -36,7 +36,7 @@ std::string Dispatcher::registerPlan(const Message& msg) {
 }
 
 void Dispatcher::feedPlan(const Message& msg) {
-    auto plan_name = fetch_metadata(msg).get<std::string>("field_type");
+    auto plan_name = fetch_metadata(msg).get<std::string>("plan_name");
     registeredPlans_.at(plan_name).process(msg);
 }
 

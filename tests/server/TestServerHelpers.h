@@ -51,7 +51,7 @@ inline size_t& root() {
 
 inline void set_metadata(Metadata& metadata, const std::string& name, int level, int step) {
     metadata.set("name", name);
-    metadata.set("field_type", "atm_grid");
+    metadata.set("plan_name", "atm_grid");
     metadata.set("gl_size", field_size());
     metadata.set("levels", level);
     metadata.set("steps", step);

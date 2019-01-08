@@ -52,7 +52,7 @@ CASE("Test that MPI transport layer") {
             transport.send(msg);
 
             EXPECT(msg.tag() == msg_tag::field_data);
-            EXPECT(msg.size() == 274u);
+            EXPECT(msg.size() == 273u);
         } else {
             EXPECT(transport.server());
 

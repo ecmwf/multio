@@ -33,8 +33,8 @@ size_t Distributor::computeHash(const atlas::Field& field) const {
 }
 
 void Distributor::sendLocalPlan(const atlas::Field& field) const {
-    auto field_type = field.metadata().get<std::string>("field_type");
-    if (distributed_plans.find(field_type) != distributed_plans.end()) {
+    auto plan_name = field.metadata().get<std::string>("plan_name");
+    if (distributed_plans.find(plan_name) != distributed_plans.end()) {
         return;
     }
 
@@ -54,7 +54,7 @@ void Distributor::sendLocalPlan(const atlas::Field& field) const {
     waitForPlan(plan.name());
 
     // Register sending this plan
-    distributed_plans[field_type] = plan;
+    distributed_plans[plan_name] = plan;
 }
 
 void Distributor::sendField(const atlas::Field& field) const {

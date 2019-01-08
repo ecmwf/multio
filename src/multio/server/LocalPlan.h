@@ -43,11 +43,11 @@ inline std::vector<int> create_local_to_global(size_t field_size, size_t n_proc,
 
 inline LocalPlan fetch_local_plan(const atlas::util::Metadata& config, size_t n_proc, size_t rank) {
     auto local_plan = LocalPlan{};
-    local_plan.metadata.set("name", config.get<std::string>("field_type"));
+    local_plan.metadata.set("name", config.get<std::string>("plan_name"));
 
-    auto field_type = config.get<std::string>("field_type");
-    local_plan.metadata.set("name", field_type);
-    if (field_type == "atm_grid") {
+    auto plan_name = config.get<std::string>("plan_name");
+    local_plan.metadata.set("name", plan_name);
+    if (plan_name == "atm_grid") {
         local_plan.metadata.set("mapping", "scattered");
         local_plan.metadata.set("aggregation", "indexed");
         local_plan.metadata.set("encoding", "none");

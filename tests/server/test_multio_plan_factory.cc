@@ -24,11 +24,11 @@ CASE("Use plan factory to create plan") {
     field_size() = 8;
     auto maps = std::vector<std::vector<int>>{{1, 2, 5, 7}, {0, 3, 4, 6}};
 
-    auto planFactory = PlanFactory{maps.size()};
+    PlanFactory planFactory;
 
     for (auto ii = 0u; ii != maps.size();) {
         auto test_plan = LocalPlan{"atm_grid", maps[ii]};
-        test_plan.metadata.set("aggregation", "indexed");
+        test_plan.metadata.set("no_maps", maps.size());
         Message msg(0, ii, msg_tag::plan_data);
         local_plan_to_message(test_plan, msg);
         msg.rewind();

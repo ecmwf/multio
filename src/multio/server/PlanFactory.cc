@@ -1,6 +1,7 @@
 
 #include "PlanFactory.h"
 
+#include <fstream>
 #include <functional>
 
 #include "eckit/io/Buffer.h"
@@ -15,12 +16,13 @@
 
 #include "multio/server/Message.h"
 #include "multio/server/Plan.h"
+#include "multio/server/PlanConfigurations.h"
 #include "multio/server/SerialisationHelpers.h"
 
 namespace multio {
 namespace server {
 
-PlanFactory::PlanFactory(size_t no_maps) : noMaps_(no_maps) {}
+PlanFactory::PlanFactory() : planConfigs_{plan_configurations()} {}
 
 bool PlanFactory::tryCreate(const Message& msg) {
     ASSERT(msg.tag() == msg_tag::plan_data);
@@ -33,9 +35,13 @@ bool PlanFactory::tryCreate(const Message& msg) {
     msg.read(meta_buf, meta_size);
 
     auto metadata = atlas::util::Metadata{unpack_metadata(meta_buf)};
-    auto plan_name = metadata.get<std::string>("name");
+    auto plan_name = metadata.get<std::string>("plan_name");
+    if (!planConfigs_.has(plan_name)) {
+        ASSERT(false);
+    }
+    auto config = atlas::util::Metadata{planConfigs_.getSubConfiguration(plan_name)};
 
-    if (metadata.get<std::string>("aggregation") != "indexed") {
+    if (config.get<std::string>("aggregation") == "none") {
         // Nothing to cache in the factory -- delegate creation to the handOver method
         return true;
     }
@@ -43,8 +49,10 @@ bool PlanFactory::tryCreate(const Message& msg) {
     if (plansBeingProcessed_.find(plan_name) == end(plansBeingProcessed_)) {
         // Create new plan and, depending on the type of plan, return it or put it into
         // plansBeingProcessed_;
-        plansBeingProcessed_[plan_name] = std::vector<std::vector<int>>(noMaps_);
+        plansBeingProcessed_[plan_name] =
+            std::vector<std::vector<int>>(metadata.get<size_t>("no_maps"));
     }
+
     auto data_size = msg.size() - meta_size - sizeof(unsigned long);
     auto& local_map = plansBeingProcessed_[plan_name][msg.peer()];
     ASSERT(local_map.empty());
@@ -57,11 +65,23 @@ bool PlanFactory::tryCreate(const Message& msg) {
 Plan PlanFactory::handOver(const std::string& plan_name) {
     ActionList actions;
 
+    auto config = atlas::util::Metadata{planConfigs_.getSubConfiguration(plan_name)};
+
     // Create aggregation
-    actions.emplace_back(new Aggregation{std::move(plansBeingProcessed_[plan_name]), "Indexed"});
+    if (config.get<std::string>("aggregation") == "indexed") {
+        actions.emplace_back(
+            new Aggregation{std::move(plansBeingProcessed_[plan_name]), "Indexed"});
+    }
 
-    actions.emplace_back(new Sink{nullptr});
+    if (config.get<std::string>("encoding") != "none") {
+        ASSERT(false); // Not yet implemented
+    }
 
+    if (config.get<std::string>("multio_sink") == "file") {
+        eckit::LocalConfiguration config;
+        config.set("path", eckit::PathName{"/dev/null"}); // Default to black hole
+        actions.emplace_back(new Sink{DataSinkFactory::instance().build("file", config)});
+    }
     // Create further actions...
 
     return Plan{plan_name, std::move(actions)};

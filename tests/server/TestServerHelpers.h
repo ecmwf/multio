@@ -108,7 +108,7 @@ inline auto unpack_local_plan(Message& msg) -> LocalPlan {
     msg.read(meta_buf, meta_size);
 
     auto metadata = atlas::util::Metadata{unpack_metadata(meta_buf)};
-    auto local_plan = LocalPlan{metadata.get<std::string>("name")};
+    auto local_plan = LocalPlan{metadata.get<std::string>("plan_name")};
 
     auto data_size = msg.size() - meta_size - sizeof(long);
     std::vector<int> local_map(data_size / sizeof(int));

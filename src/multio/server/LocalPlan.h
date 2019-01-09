@@ -17,11 +17,11 @@ namespace server {
 struct LocalPlan {
     LocalPlan(const std::string& name = "atm_grid", std::vector<int> idxmap = {}) :
         mapping{idxmap} {
-        metadata.set("name", name);
+        metadata.set("plan_name", name);
     }
-    std::string name() {
+    std::string plan_name() {
         std::string name;
-        metadata.get("name", name);
+        metadata.get("plan_name", name);
         return name;
     }
     eckit::LocalConfiguration metadata;
@@ -42,22 +42,13 @@ inline std::vector<int> create_local_to_global(size_t field_size, size_t n_proc,
 }
 
 inline LocalPlan fetch_local_plan(const atlas::util::Metadata& config, size_t n_proc, size_t rank) {
-    auto local_plan = LocalPlan{};
-    local_plan.metadata.set("name", config.get<std::string>("plan_name"));
+    auto partial_mapping =
+        LocalPlan{config.get<std::string>("plan_name"),
+                  create_local_to_global(config.get<size_t>("gl_size"), n_proc, rank)};
 
-    auto plan_name = config.get<std::string>("plan_name");
-    local_plan.metadata.set("name", plan_name);
-    if (plan_name == "atm_grid") {
-        local_plan.metadata.set("mapping", "scattered");
-        local_plan.metadata.set("aggregation", "indexed");
-        local_plan.metadata.set("encoding", "none");
-        local_plan.metadata.set("multio_sink", "file");
-        local_plan.mapping = create_local_to_global(config.get<size_t>("gl_size"), n_proc, rank);
-        return local_plan;
-    }
+    partial_mapping.metadata.set("no_maps", n_proc);
 
-    ASSERT(false); // Nothing else is implemented as yet
-    return local_plan;
+    return partial_mapping;
 }
 
 }  // namespace server

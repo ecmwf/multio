@@ -51,7 +51,7 @@ void Distributor::sendLocalPlan(const atlas::Field& field) const {
         transport_.send(msg);
     }
 
-    waitForPlan(plan.name());
+    waitForPlan(plan.plan_name());
 
     // Register sending this plan
     distributed_plans[plan_name] = plan;

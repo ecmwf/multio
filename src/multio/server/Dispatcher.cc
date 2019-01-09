@@ -15,13 +15,11 @@
 namespace multio {
 namespace server {
 
-Dispatcher::Dispatcher(const Transport& trans) :
-    transport_(trans),
-    planFactory_(transport_.noClients()) {}
+Dispatcher::Dispatcher(const Transport& trans) : transport_(trans) {}
 
 std::string Dispatcher::registerPlan(const Message& msg) {
     ASSERT(msg.tag() == msg_tag::plan_data);
-    auto plan_name = fetch_metadata(msg).get<std::string>("name");
+    auto plan_name = fetch_metadata(msg).get<std::string>("plan_name");
     if (registeredPlans_.find(plan_name) != end(registeredPlans_)) {
         ASSERT(false);
     }

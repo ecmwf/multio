@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 
-#include "multio/server/LocalPlan.h"
+#include "multio/server/PartialMapping.h"
 #include "multio/server/Transport.h"
 
 namespace atlas {
@@ -22,12 +22,12 @@ public:
 
     size_t computeHash(const atlas::Field& field) const;
 
-    void sendLocalPlan(const atlas::Field& field) const;
+    void sendPartialMapping(const atlas::Field& field) const;
     void sendField(const atlas::Field& field) const;
     void sendForecastComplete() const;
 
 private:  // members
-    mutable std::map<std::string, LocalPlan> distributed_plans;
+    mutable std::map<std::string, PartialMapping> distributed_plans;
     const Transport& transport_;
 
 private:  // methods

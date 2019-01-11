@@ -24,7 +24,7 @@ const Transport& transport = MpiTransport{"dispatcher test", nServers};
 auto scatter_atlas_field(const atlas::Field& gl_field) -> atlas::Field {
     if (transport.client()) {
         auto idxmap =
-            create_local_to_global(field_size(), transport.noClients(), transport.clientRank());
+            create_partial_mapping(field_size(), transport.noClients(), transport.clientRank());
         return create_local_field(gl_field, idxmap);
     } else {
         return atlas::Field("dummy", atlas::array::DataType("real64"), make_shape(field_size()));

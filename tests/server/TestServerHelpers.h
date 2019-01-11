@@ -23,7 +23,7 @@
 #include "atlas/field/Field.h"
 #include "atlas/util/Metadata.h"
 
-#include "multio/server/LocalPlan.h"
+#include "multio/server/PartialMapping.h"
 #include "multio/server/Message.h"
 #include "multio/server/SerialisationHelpers.h"
 
@@ -100,7 +100,7 @@ inline atlas::Field create_local_field(const atlas::Field& gl_field, const std::
     return local_field;
 }
 
-inline auto unpack_local_plan(Message& msg) -> LocalPlan {
+inline auto unpack_local_plan(Message& msg) -> PartialMapping {
     auto meta_size = 0ul;
     msg.read(&meta_size, sizeof(unsigned long));
 
@@ -108,7 +108,7 @@ inline auto unpack_local_plan(Message& msg) -> LocalPlan {
     msg.read(meta_buf, meta_size);
 
     auto metadata = atlas::util::Metadata{unpack_metadata(meta_buf)};
-    auto local_plan = LocalPlan{metadata.get<std::string>("plan_name")};
+    auto local_plan = PartialMapping{metadata.get<std::string>("plan_name")};
 
     auto data_size = msg.size() - meta_size - sizeof(long);
     std::vector<int> local_map(data_size / sizeof(int));
@@ -119,7 +119,7 @@ inline auto unpack_local_plan(Message& msg) -> LocalPlan {
     return local_plan;
 }
 
-inline bool operator==(const LocalPlan& lhs, const LocalPlan& rhs) {
+inline bool operator==(const PartialMapping& lhs, const PartialMapping& rhs) {
     return (pack_metadata(lhs.metadata) == pack_metadata(rhs.metadata)) &&
            (lhs.mapping == rhs.mapping);
 }

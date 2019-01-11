@@ -21,15 +21,15 @@ class LocalConfiguration;
 namespace multio {
 
 // Forward declarations form multio
-struct LocalPlan;
+struct PartialMapping;
 class Message;
 
 namespace server {
 
 auto pack_metadata(const eckit::LocalConfiguration& config) -> std::string;
 
-auto pack_local_plan(const LocalPlan& plan) -> std::string;
-void local_plan_to_message(const LocalPlan& plan, Message& msg);
+auto pack_local_plan(const PartialMapping& plan) -> std::string;
+void local_plan_to_message(const PartialMapping& plan, Message& msg);
 
 auto pack_atlas_field(const atlas::Field& field) -> std::string;
 void atlas_field_to_message(const atlas::Field& field, Message& msg);

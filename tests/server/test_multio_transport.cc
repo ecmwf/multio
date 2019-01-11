@@ -3,7 +3,7 @@
 
 #include "atlas/field/Field.h"
 
-#include "multio/server/LocalPlan.h"
+#include "multio/server/PartialMapping.h"
 #include "multio/server/Message.h"
 #include "multio/server/MpiTransport.h"
 #include "multio/server/print_buffer.h"
@@ -33,7 +33,7 @@ CASE("Test that MPI transport layer") {
     SECTION(" reads and writes correctly") {
         ASSERT(transport.size() == 2);
 
-        auto test_plan = LocalPlan{"test_field", {7, 23, 43, 91}};
+        auto test_plan = PartialMapping{"test_field", {7, 23, 43, 91}};
         auto test_field = set_up_atlas_test_field("temperature");
 
         if (transport.client()) {

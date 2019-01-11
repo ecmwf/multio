@@ -8,7 +8,7 @@
 #include "atlas/array.h"
 #include "atlas/field/Field.h"
 
-#include "multio/server/LocalPlan.h"
+#include "multio/server/PartialMapping.h"
 #include "multio/server/Message.h"
 #include "multio/server/Plan.h"
 #include "multio/server/PlanFactory.h"
@@ -27,7 +27,7 @@ CASE("Use plan factory to create plan") {
     PlanFactory planFactory;
 
     for (auto ii = 0u; ii != maps.size();) {
-        auto test_plan = LocalPlan{"atm_grid", maps[ii]};
+        auto test_plan = PartialMapping{"atm_grid", maps[ii]};
         test_plan.metadata.set("no_maps", maps.size());
         Message msg(0, ii, msg_tag::plan_data);
         local_plan_to_message(test_plan, msg);

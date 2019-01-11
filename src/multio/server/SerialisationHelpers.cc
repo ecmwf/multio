@@ -11,7 +11,7 @@
 #include "atlas/field/Field.h"
 #include "atlas/util/Metadata.h"
 
-#include "multio/server/LocalPlan.h"
+#include "multio/server/PartialMapping.h"
 #include "multio/server/Message.h"
 
 namespace multio {
@@ -24,7 +24,7 @@ auto pack_metadata(const eckit::LocalConfiguration& config) -> std::string {
     return ss.str();
 }
 
-auto pack_local_plan(const LocalPlan& plan) -> std::string {
+auto pack_local_plan(const PartialMapping& plan) -> std::string {
     auto meta_str = pack_metadata(plan.metadata);
 
     auto sz = meta_str.size();
@@ -52,7 +52,7 @@ auto pack_local_plan(const LocalPlan& plan) -> std::string {
     return dest;
 }
 
-void local_plan_to_message(const LocalPlan& plan, Message& msg) {
+void local_plan_to_message(const PartialMapping& plan, Message& msg) {
     ASSERT(msg.tag() == msg_tag::plan_data);
 
     auto meta_str = pack_metadata(plan.metadata);

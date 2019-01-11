@@ -1,7 +1,7 @@
 
 #include "TestServerHelpers.h"
 
-#include "multio/server/LocalPlan.h"
+#include "multio/server/PartialMapping.h"
 #include "multio/server/Message.h"
 #include "multio/server/print_buffer.h"
 #include "multio/server/SerialisationHelpers.h"
@@ -21,7 +21,7 @@ using eckit::mpi::comm;
 
 CASE("Test message returns the same plan as string") {
 
-    auto test_plan = LocalPlan{"test_field", {7, 23, 43, 91}};
+    auto test_plan = PartialMapping{"test_field", {7, 23, 43, 91}};
 
     auto dest = pack_local_plan(test_plan);
 
@@ -49,7 +49,7 @@ CASE("Test message returns the same field as string") {
 CASE("Test identity after writing and reading plan") {
     ASSERT(comm().size() == 2);
 
-    auto test_plan = LocalPlan{"test_field", {7, 23, 43, 91}};
+    auto test_plan = PartialMapping{"test_field", {7, 23, 43, 91}};
 
     auto source = 0;
     auto dest = 1;

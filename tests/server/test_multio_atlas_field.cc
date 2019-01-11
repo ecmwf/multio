@@ -9,7 +9,7 @@
 #include "eckit/mpi/Parallel.h"
 #include "eckit/testing/Test.h"
 
-#include "multio/server/LocalPlan.h"
+#include "multio/server/PartialMapping.h"
 #include "multio/server/MpiTransport.h"
 #include "multio/server/msg_tag.h"
 #include "multio/server/print_buffer.h"
@@ -52,7 +52,7 @@ auto create_global_test_data() -> TestFieldMap {
 
 auto scatter_atlas_field(const atlas::Field& gl_field) -> atlas::Field {
     if (trans.client()) {
-        auto idxmap = create_local_to_global(field_size(), trans.noClients(), trans.clientRank());
+        auto idxmap = create_partial_mapping(field_size(), trans.noClients(), trans.clientRank());
         return create_local_field(gl_field, idxmap, true);
     }
     else {

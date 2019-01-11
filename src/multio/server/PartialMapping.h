@@ -1,6 +1,6 @@
 
-#ifndef multio_server_LocalPlan_H
-#define multio_server_LocalPlan_H
+#ifndef multio_server_PartialMapping_H
+#define multio_server_PartialMapping_H
 
 #include "eckit/exception/Exceptions.h"
 
@@ -14,8 +14,8 @@
 namespace multio {
 namespace server {
 
-struct LocalPlan {
-    LocalPlan(const std::string& name = "atm_grid", std::vector<int> idxmap = {}) :
+struct PartialMapping {
+    PartialMapping(const std::string& name = "atm_grid", std::vector<int> idxmap = {}) :
         mapping{idxmap} {
         metadata.set("plan_name", name);
     }
@@ -28,7 +28,7 @@ struct LocalPlan {
     std::vector<int> mapping;
 };
 
-inline std::vector<int> create_local_to_global(size_t field_size, size_t n_proc, size_t rank) {
+inline std::vector<int> create_partial_mapping(size_t field_size, size_t n_proc, size_t rank) {
     // Processors on the model side -- these will be sending chunks of data to the IO servers
     auto chunk_size = field_size / n_proc + ((rank < field_size % n_proc) ? 1 : 0);
 
@@ -41,10 +41,11 @@ inline std::vector<int> create_local_to_global(size_t field_size, size_t n_proc,
     return local_to_global;
 }
 
-inline LocalPlan fetch_local_plan(const atlas::util::Metadata& config, size_t n_proc, size_t rank) {
+inline PartialMapping fetch_mapping(const atlas::util::Metadata& config, size_t n_proc,
+                                    size_t rank) {
     auto partial_mapping =
-        LocalPlan{config.get<std::string>("plan_name"),
-                  create_local_to_global(config.get<size_t>("gl_size"), n_proc, rank)};
+        PartialMapping{config.get<std::string>("plan_name"),
+                       create_partial_mapping(config.get<size_t>("gl_size"), n_proc, rank)};
 
     partial_mapping.metadata.set("no_maps", n_proc);
 

@@ -7,7 +7,7 @@
 
 #include "multio/server/Dispatcher.h"
 #include "multio/server/Distributor.h"
-#include "multio/server/LocalPlan.h"
+#include "multio/server/PartialMapping.h"
 #include "multio/server/MpiTransport.h"
 #include "multio/server/SerialisationHelpers.h"
 
@@ -45,7 +45,7 @@ auto create_global_test_data(const size_t sz) -> std::vector<atlas::Field> {
 auto scatter_atlas_field(const atlas::Field& gl_field) -> atlas::Field {
     if (transport.client()) {
         auto idxmap =
-            create_local_to_global(field_size(), transport.noClients(), transport.clientRank());
+            create_partial_mapping(field_size(), transport.noClients(), transport.clientRank());
         return create_local_field(gl_field, idxmap);
     } else {
         return atlas::Field("dummy", atlas::array::DataType("real64"), make_shape(field_size()));

@@ -32,17 +32,17 @@ size_t Distributor::computeHash(const atlas::Field& field) const {
     return (hash_val(meta_str) % transport_.noServers() + transport_.noClients());
 }
 
-void Distributor::sendLocalPlan(const atlas::Field& field) const {
+void Distributor::sendPartialMapping(const atlas::Field& field) const {
     auto plan_name = field.metadata().get<std::string>("plan_name");
     if (distributed_plans.find(plan_name) != distributed_plans.end()) {
         return;
     }
 
     // Register sending this plan
-    auto plan = fetch_local_plan(field.metadata(), transport_.noClients(), transport_.clientRank());
+    auto mapping = fetch_mapping(field.metadata(), transport_.noClients(), transport_.clientRank());
 
     Message msg(0, -1, msg_tag::plan_data);
-    local_plan_to_message(plan, msg);
+    local_plan_to_message(mapping, msg);
 
     // TODO: create a sendToAllServers member function on the transport_. We can then get rid of
     // that awkward setter on the message class
@@ -51,14 +51,14 @@ void Distributor::sendLocalPlan(const atlas::Field& field) const {
         transport_.send(msg);
     }
 
-    waitForPlan(plan.plan_name());
+    waitForPlan(mapping.plan_name());
 
     // Register sending this plan
-    distributed_plans[plan_name] = plan;
+    distributed_plans[plan_name] = mapping;
 }
 
 void Distributor::sendField(const atlas::Field& field) const {
-    sendLocalPlan(field);
+    sendPartialMapping(field);
 
     auto server_rank = computeHash(field);
 

@@ -29,11 +29,11 @@ CASE("Test that plan with two actions ") {
     actions.emplace_back(new Sink{make_configured_file_sink(file.name())});
 
     SECTION("constructs correctly") {
-        auto plan = Plan{"test_plan", std::move(actions)};
+        auto plan = Plan{"test_map", std::move(actions)};
     }
 
     SECTION("processes message correctly") {
-        auto plan = Plan{"test_plan", std::move(actions)};
+        auto plan = Plan{"test_map", std::move(actions)};
 
         // Create global field to test against
         auto test_field = set_up_atlas_test_field("temperature");

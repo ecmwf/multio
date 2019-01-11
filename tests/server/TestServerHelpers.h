@@ -100,7 +100,7 @@ inline atlas::Field create_local_field(const atlas::Field& gl_field, const std::
     return local_field;
 }
 
-inline auto unpack_local_plan(Message& msg) -> PartialMapping {
+inline auto unpack_mapping(Message& msg) -> PartialMapping {
     auto meta_size = 0ul;
     msg.read(&meta_size, sizeof(unsigned long));
 
@@ -108,20 +108,20 @@ inline auto unpack_local_plan(Message& msg) -> PartialMapping {
     msg.read(meta_buf, meta_size);
 
     auto metadata = atlas::util::Metadata{unpack_metadata(meta_buf)};
-    auto local_plan = PartialMapping{metadata.get<std::string>("plan_name")};
+    auto mapping = PartialMapping{metadata.get<std::string>("plan_name")};
 
     auto data_size = msg.size() - meta_size - sizeof(long);
     std::vector<int> local_map(data_size / sizeof(int));
-    local_plan.mapping.resize(data_size / sizeof(int));
+    mapping.indices.resize(data_size / sizeof(int));
 
-    msg.read(local_plan.mapping.data(), data_size);
+    msg.read(mapping.indices.data(), data_size);
 
-    return local_plan;
+    return mapping;
 }
 
 inline bool operator==(const PartialMapping& lhs, const PartialMapping& rhs) {
     return (pack_metadata(lhs.metadata) == pack_metadata(rhs.metadata)) &&
-           (lhs.mapping == rhs.mapping);
+           (lhs.indices == rhs.indices);
 }
 
 }  // namespace server

@@ -16,7 +16,7 @@ namespace server {
 
 struct PartialMapping {
     PartialMapping(const std::string& name = "atm_grid", std::vector<int> idxmap = {}) :
-        mapping{idxmap} {
+        indices{idxmap} {
         metadata.set("plan_name", name);
     }
     std::string plan_name() {
@@ -25,7 +25,7 @@ struct PartialMapping {
         return name;
     }
     eckit::LocalConfiguration metadata;
-    std::vector<int> mapping;
+    std::vector<int> indices;
 };
 
 inline std::vector<int> create_partial_mapping(size_t field_size, size_t n_proc, size_t rank) {

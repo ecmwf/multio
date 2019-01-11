@@ -27,7 +27,7 @@ public:
     void sendForecastComplete() const;
 
 private:  // members
-    mutable std::map<std::string, PartialMapping> distributed_plans;
+    mutable std::map<std::string, PartialMapping> distributed_mappings;
     const Transport& transport_;
 
 private:  // methods

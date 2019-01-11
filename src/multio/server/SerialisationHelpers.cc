@@ -24,12 +24,12 @@ auto pack_metadata(const eckit::LocalConfiguration& config) -> std::string {
     return ss.str();
 }
 
-auto pack_local_plan(const PartialMapping& plan) -> std::string {
-    auto meta_str = pack_metadata(plan.metadata);
+auto pack_mapping(const PartialMapping& mapping) -> std::string {
+    auto meta_str = pack_metadata(mapping.metadata);
 
     auto sz = meta_str.size();
     auto sz_bm = sizeof(decltype(sz));
-    auto data_size = plan.mapping.size() * sizeof(decltype(plan.mapping)::value_type);
+    auto data_size = mapping.indices.size() * sizeof(decltype(mapping.indices)::value_type);
 
     // Create destination buffer
     auto tot_size = sz_bm + sz + data_size;
@@ -45,21 +45,21 @@ auto pack_local_plan(const PartialMapping& plan) -> std::string {
     pos += meta_str.size();
 
     // Copy field data to destination buffer
-    std::memcpy(&dest[pos], plan.mapping.data(), data_size);
+    std::memcpy(&dest[pos], mapping.indices.data(), data_size);
     pos += data_size;
     ASSERT(pos == dest.size());
 
     return dest;
 }
 
-void local_plan_to_message(const PartialMapping& plan, Message& msg) {
+void mapping_to_message(const PartialMapping& mapping, Message& msg) {
     ASSERT(msg.tag() == msg_tag::plan_data);
 
-    auto meta_str = pack_metadata(plan.metadata);
+    auto meta_str = pack_metadata(mapping.metadata);
 
     auto sz = meta_str.size();
     auto sz_bm = sizeof(decltype(sz));
-    auto data_size = plan.mapping.size() * sizeof(decltype(plan.mapping)::value_type);
+    auto data_size = mapping.indices.size() * sizeof(decltype(mapping.indices)::value_type);
 
     // Create destination buffer
     auto tot_size = sz_bm + sz + data_size;
@@ -72,7 +72,7 @@ void local_plan_to_message(const PartialMapping& plan, Message& msg) {
     msg.write(meta_str.data(), meta_str.size());
 
     // Copy field data to destination buffer
-    msg.write(plan.mapping.data(), data_size);
+    msg.write(mapping.indices.data(), data_size);
 }
 
 auto pack_atlas_field(const atlas::Field& field) -> std::string {

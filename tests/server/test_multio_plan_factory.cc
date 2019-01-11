@@ -27,10 +27,10 @@ CASE("Use plan factory to create plan") {
     PlanFactory planFactory;
 
     for (auto ii = 0u; ii != maps.size();) {
-        auto test_plan = PartialMapping{"atm_grid", maps[ii]};
-        test_plan.metadata.set("no_maps", maps.size());
+        auto test_map = PartialMapping{"atm_grid", maps[ii]};
+        test_map.metadata.set("no_maps", maps.size());
         Message msg(0, ii, msg_tag::plan_data);
-        local_plan_to_message(test_plan, msg);
+        mapping_to_message(test_map, msg);
         msg.rewind();
         EXPECT((++ii < maps.size()) ? !planFactory.tryCreate(msg) : planFactory.tryCreate(msg));
     }

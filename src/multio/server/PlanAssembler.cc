@@ -1,5 +1,5 @@
 
-#include "PlanFactory.h"
+#include "PlanAssembler.h"
 
 #include <fstream>
 #include <functional>
@@ -22,9 +22,9 @@
 namespace multio {
 namespace server {
 
-PlanFactory::PlanFactory() : planConfigs_{plan_configurations()} {}
+PlanAssembler::PlanAssembler() : planConfigs_{plan_configurations()} {}
 
-bool PlanFactory::tryCreate(const Message& msg) {
+bool PlanAssembler::tryCreate(const Message& msg) {
     ASSERT(msg.tag() == msg_tag::plan_data);
 
     // Query plan's metadata
@@ -62,7 +62,7 @@ bool PlanFactory::tryCreate(const Message& msg) {
     return isComplete(plan_name);
 }
 
-Plan PlanFactory::handOver(const std::string& plan_name) {
+Plan PlanAssembler::handOver(const std::string& plan_name) {
     ActionList actions;
 
     auto config = atlas::util::Metadata{planConfigs_.getSubConfiguration(plan_name)};
@@ -87,7 +87,7 @@ Plan PlanFactory::handOver(const std::string& plan_name) {
     return Plan{plan_name, std::move(actions)};
 }
 
-bool PlanFactory::isComplete(const std::string& plan_name) const {
+bool PlanAssembler::isComplete(const std::string& plan_name) const {
     const auto& maps = plansBeingProcessed_.at(plan_name);
     return none_of(begin(maps), end(maps), mem_fn(&std::vector<int>::empty));
 }

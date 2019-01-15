@@ -11,7 +11,7 @@
 #include "multio/server/PartialMapping.h"
 #include "multio/server/Message.h"
 #include "multio/server/Plan.h"
-#include "multio/server/PlanFactory.h"
+#include "multio/server/PlanAssembler.h"
 #include "multio/server/SerialisationHelpers.h"
 
 using multio::test::file_content;
@@ -24,7 +24,7 @@ CASE("Use plan factory to create plan") {
     field_size() = 8;
     auto maps = std::vector<std::vector<int>>{{1, 2, 5, 7}, {0, 3, 4, 6}};
 
-    PlanFactory planFactory;
+    PlanAssembler planAssembler;
 
     for (auto ii = 0u; ii != maps.size();) {
         auto test_map = PartialMapping{"atm_grid", maps[ii]};
@@ -32,10 +32,10 @@ CASE("Use plan factory to create plan") {
         Message msg(0, ii, msg_tag::plan_data);
         mapping_to_message(test_map, msg);
         msg.rewind();
-        EXPECT((++ii < maps.size()) ? !planFactory.tryCreate(msg) : planFactory.tryCreate(msg));
+        EXPECT((++ii < maps.size()) ? !planAssembler.tryCreate(msg) : planAssembler.tryCreate(msg));
     }
 
-    auto plan = planFactory.handOver("atm_grid");
+    auto plan = planAssembler.handOver("atm_grid");
 
     SECTION("Carry out plan") {
         // Create global field to test against

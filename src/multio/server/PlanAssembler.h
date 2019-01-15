@@ -1,6 +1,6 @@
 
-#ifndef multio_server_PlanFactory_H
-#define multio_server_PlanFactory_H
+#ifndef multio_server_PlanAssembler_H
+#define multio_server_PlanAssembler_H
 
 #include <string>
 #include <unordered_map>
@@ -14,9 +14,9 @@ namespace server {
 class Message;
 class Plan;
 
-class PlanFactory {
+class PlanAssembler {
 public:
-    PlanFactory();
+    PlanAssembler();
     bool tryCreate(const Message& msg);
     Plan handOver(const std::string& plan_name);
 

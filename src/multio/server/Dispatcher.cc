@@ -25,11 +25,11 @@ std::string Dispatcher::registerPlan(const Message& msg) {
     }
 
     // You'd want std::optional here
-    if (not planFactory_.tryCreate(msg)) {
+    if (not planAssembler_.tryCreate(msg)) {
         return std::string{}; // Plan not yet complete -- nothing more to do
     }
 
-    registeredPlans_.emplace(plan_name, planFactory_.handOver(plan_name));
+    registeredPlans_.emplace(plan_name, planAssembler_.handOver(plan_name));
     return plan_name;
 }
 

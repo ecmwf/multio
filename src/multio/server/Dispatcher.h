@@ -6,7 +6,7 @@
 
 #include "multio/server/Message.h"
 #include "multio/server/Plan.h"
-#include "multio/server/PlanFactory.h"
+#include "multio/server/PlanAssembler.h"
 #include "multio/server/Transport.h"
 
 namespace multio {
@@ -25,7 +25,7 @@ public:
 private:  // members
     const Transport& transport_;
 
-    PlanFactory planFactory_;
+    PlanAssembler planAssembler_;
 
     std::map<std::string, Plan> registeredPlans_;
 

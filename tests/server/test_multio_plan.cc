@@ -4,10 +4,10 @@
 #include "atlas/array.h"
 
 #include "multio/server/Aggregation.h"
+#include "multio/server/Message.h"
 #include "multio/server/Plan.h"
 #include "multio/server/SerialisationHelpers.h"
 #include "multio/server/Sink.h"
-#include "multio/server/Message.h"
 
 #include "create_random_data.h"
 #include "TestServerHelpers.h"
@@ -20,26 +20,23 @@ namespace server {
 namespace test {
 
 CASE("Test that plan with two actions ") {
-    ActionList actions;
     field_size() = 8;
+
     auto maps = std::vector<std::vector<int>>{{1, 2, 5, 7}, {0, 3, 4, 6}};
     multio::test::TestFile file{"temperature::850::1"};
 
-    actions.emplace_back(new Aggregation{maps});
-    actions.emplace_back(new Sink{make_configured_file_sink(file.name())});
+    std::unique_ptr<Action> root{new Aggregation{maps}};
+    root->add(std::unique_ptr<Action>{new Sink{make_configured_file_sink(file.name())}});
 
     SECTION("constructs correctly") {
-        auto plan = Plan{"test_map", std::move(actions)};
+        auto plan = Plan{"test_map", std::move(root)};
     }
 
     SECTION("processes message correctly") {
-        auto plan = Plan{"test_map", std::move(actions)};
+        auto plan = Plan{"test_map", std::move(root)};
 
         // Create global field to test against
         auto test_field = set_up_atlas_test_field("temperature");
-
-        std::vector<int> glbidx(field_size());
-        std::iota(begin(glbidx), end(glbidx), 0);
 
         // Create local messages
         auto ii = 0;
@@ -55,6 +52,7 @@ CASE("Test that plan with two actions ") {
 
         auto actual = file_content(file.name());
         auto expected = pack_atlas_field(test_field);
+
         EXPECT(actual == expected);
     }
 
@@ -62,9 +60,6 @@ CASE("Test that plan with two actions ") {
 
         // Create global field to test against
         auto test_field = set_up_atlas_test_field("temperature");
-
-        std::vector<int> glbidx(field_size());
-        std::iota(begin(glbidx), end(glbidx), 0);
 
         // Create local atlas fields
         auto atlas_fields = std::vector<atlas::Field>{};
@@ -75,19 +70,15 @@ CASE("Test that plan with two actions ") {
 
         // Carry out plan
         auto ii = 0;
-        for (auto& fld : atlas_fields) {
+        auto it = begin(atlas_fields);
+        do {
             ASSERT(static_cast<size_t>(ii) < atlas_fields.size());
-            auto it = begin(actions);
-            do {
-                (*it)->execute(fld, ii++);
-            } while ((*it)->complete(fld) && ++it != end(actions));
-        }
+        } while(not root->execute(*it++, ii++));
 
         auto actual = file_content(file.name());
         auto expected = pack_atlas_field(test_field);
         EXPECT(actual == expected);
     }
-
 }
 
 }  // namespace server

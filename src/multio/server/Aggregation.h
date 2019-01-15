@@ -17,8 +17,7 @@ public:
     explicit Aggregation(std::vector<std::vector<int>> maps, const std::string& nm = "Aggregation");
 
 private:  // methods
-    void doExecute(const atlas::Field& field, int) const override;
-    bool doComplete(atlas::Field& field) const override;
+    bool doExecute(atlas::Field& field, int) const override;
 
 private:  // members
     struct GlobalField {

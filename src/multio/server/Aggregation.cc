@@ -17,14 +17,14 @@ Aggregation::Aggregation(std::vector<std::vector<int>> maps, const std::string& 
     Action{nm},
     mappings_(std::move(maps)) {}
 
-void Aggregation::doExecute(const atlas::Field& local_field, int source) const {
-    auto local_view = atlas::array::make_view<double, 1>(local_field);
+bool Aggregation::doExecute(atlas::Field& field, int source) const {
+    auto local_view = atlas::array::make_view<double, 1>(field);
     ASSERT(static_cast<size_t>(local_view.size()) == mappings_[source].size());
 
     // If we are not processing this field already, create it
-    auto meta_str = pack_metadata(local_field.metadata());
+    auto meta_str = pack_metadata(field.metadata());
     if (globals_.find(meta_str) == end(globals_)) {
-        globals_[meta_str] = GlobalField{recreate_atlas_field(local_field.metadata())};
+        globals_[meta_str] = GlobalField{recreate_atlas_field(field.metadata())};
     }
     globals_[meta_str].noChunks++;
 
@@ -34,11 +34,6 @@ void Aggregation::doExecute(const atlas::Field& local_field, int source) const {
     for (auto idx : mappings_[source]) {
         view(idx) = local_view(ii++);
     }
-}
-
-bool Aggregation::doComplete(atlas::Field& field) const {
-    auto meta_str = pack_metadata(field.metadata());
-    ASSERT(globals_[meta_str].noChunks <= mappings_.size());
 
     auto ret = (globals_.at(meta_str).noChunks == mappings_.size());
     if (ret) {

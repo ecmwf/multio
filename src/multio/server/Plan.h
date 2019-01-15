@@ -16,27 +16,22 @@ namespace server {
 
 class Message;
 
-using ActionList = std::vector<std::unique_ptr<const Action>>;
-using ActionListIt = ActionList::const_iterator;
-
 class Plan {
 public:
-    explicit Plan(const std::string& nm, ActionList&& actions);
+    explicit Plan(const std::string& nm, std::unique_ptr<Action>&& root);
 
     void process(const Message& msg) const;
 
-private: // members
+private:  // members
     const std::string name_;
-    ActionList actions_;
+    std::unique_ptr<Action> root_;
 
-private: // methods
+private:  // methods
     void print(std::ostream&) const;
     friend std::ostream& operator<<(std::ostream& os, const Plan& plan) {
         plan.print(os);
         return os;
     }
-
-    bool moveOntoNextAction(ActionListIt& it, atlas::Field& field) const;
 };
 
 }  // namespace server

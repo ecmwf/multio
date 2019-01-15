@@ -14,20 +14,15 @@
 namespace multio {
 namespace server {
 
-Plan::Plan(const std::string& nm, ActionList&& actions) : name_(nm), actions_(std::move(actions)) {}
+Plan::Plan(const std::string& nm, std::unique_ptr<Action>&& root) :
+    name_(nm),
+    root_(std::move(root)) {}
 
 void Plan::process(const Message& msg) const {
     ASSERT(msg.tag() != msg_tag::plan_data);
     auto field = unpack_atlas_field(msg);
 
-    auto it = begin(actions_);
-    do {
-        (*it)->execute(field, msg.peer());
-    } while (moveOntoNextAction(it, field));
-}
-
-bool Plan::moveOntoNextAction(ActionListIt& it, atlas::Field& field) const {
-    return (*it)->complete(field) && ++it != end(actions_);
+    root_->execute(field, msg.peer());
 }
 
 }  // namespace server

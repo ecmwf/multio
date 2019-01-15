@@ -20,7 +20,7 @@ Sink::Sink(std::unique_ptr<DataSink>&& ds, const std::string& nm) :
     Action{nm},
     dataSink_{std::move(ds)} {}
 
-void Sink::doExecute(const atlas::Field& field, int /*unused*/) const {
+bool Sink::doExecute(atlas::Field& field, int /*unused*/) const {
 
     configure(field.metadata());
 
@@ -30,10 +30,7 @@ void Sink::doExecute(const atlas::Field& field, int /*unused*/) const {
     eckit::DataBlobPtr blob(eckit::DataBlobFactory::build("test", msg.data(), msg.size()));
 
     dataSink_->write(blob);
-}
 
-bool Sink::doComplete(atlas::Field& field) const {
-    // no blocking condition -- is write blocking, anyway?
     return true;
 }
 

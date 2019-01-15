@@ -63,28 +63,31 @@ bool PlanAssembler::tryCreate(const Message& msg) {
 }
 
 Plan PlanAssembler::handOver(const std::string& plan_name) {
-    ActionList actions;
-
+    std::unique_ptr<Action> root = nullptr;
     auto config = atlas::util::Metadata{planConfigs_.getSubConfiguration(plan_name)};
 
     // Create aggregation
     if (config.get<std::string>("aggregation") == "indexed") {
-        actions.emplace_back(
-            new Aggregation{std::move(plansBeingProcessed_[plan_name]), "Indexed"});
+        root.reset(
+            new Aggregation{std::move(plansBeingProcessed_[plan_name]), "Indexed aggregation"});
+    }
+    else {
+        ASSERT(false);
     }
 
     if (config.get<std::string>("encoding") != "none") {
-        ASSERT(false); // Not yet implemented
+        ASSERT(false);  // Not yet implemented
     }
 
     if (config.get<std::string>("multio_sink") == "file") {
         eckit::LocalConfiguration config;
-        config.set("path", eckit::PathName{"/dev/null"}); // Default to black hole
-        actions.emplace_back(new Sink{DataSinkFactory::instance().build("file", config)});
+        config.set("path", eckit::PathName{"/dev/null"});  // Default to black hole
+        root->add(
+            std::unique_ptr<Action>{new Sink{DataSinkFactory::instance().build("file", config)}});
     }
     // Create further actions...
 
-    return Plan{plan_name, std::move(actions)};
+    return Plan{plan_name, std::move(root)};
 }
 
 bool PlanAssembler::isComplete(const std::string& plan_name) const {

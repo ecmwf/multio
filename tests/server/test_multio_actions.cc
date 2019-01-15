@@ -41,8 +41,7 @@ CASE("Test that aggregation action executes correctly") {
     auto ii = 0;
     do {
         atlas_field = create_local_field(test_field, maps[ii]);
-        action->execute(atlas_field, ii++);
-    } while (not action->complete(atlas_field));
+    } while (not action->execute(atlas_field, ii++));
 
     auto view = atlas::array::make_view<double, 1>(atlas_field);
     auto actual = std::vector<double>{};
@@ -85,8 +84,7 @@ CASE("Test that aggrigation and sink actions together execute correctly") {
     auto ii = 0;
     do {
         atlas_field = create_local_field(test_field, maps[ii]);
-        action->execute(atlas_field, ii++);
-    } while (not action->complete(atlas_field));
+    } while (not action->execute(atlas_field, ii++));
 
     multio::test::TestFile file{"temperature::850::1"};
     action.reset(new Sink{make_configured_file_sink(file.name())});

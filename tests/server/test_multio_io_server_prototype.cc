@@ -70,7 +70,7 @@ CASE("Test that fields ") {
         if (transport.client()) {
             Distributor distributor{transport};
             for (auto field : fields) {
-                distributor.sendField(field);
+                distributor.sendPartialField(field);
             }
 
             distributor.sendForecastComplete();

@@ -57,7 +57,7 @@ void Distributor::sendPartialMapping(const atlas::Field& field) const {
     distributed_mappings[plan_name] = mapping;
 }
 
-void Distributor::sendField(const atlas::Field& field) const {
+void Distributor::sendPartialField(const atlas::Field& field) const {
     sendPartialMapping(field);
 
     auto server_rank = computeHash(field);

@@ -48,7 +48,7 @@ CASE("Test that distributor-aggregator pair ") {
             Distributor distributor{*transport};
 
             // Send field
-            distributor.sendField(test_field);
+            distributor.sendPartialField(test_field);
 
             // Notify server there is nothing more to send
             distributor.sendForecastComplete();

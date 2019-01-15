@@ -64,7 +64,7 @@ CASE("Test that distributor-dispatcher pair ") {
             Distributor distributor{transport};
 
             // Send field
-            distributor.sendField(field);
+            distributor.sendPartialField(field);
 
             // Notify server there is nothing more to send
             distributor.sendForecastComplete();

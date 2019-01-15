@@ -23,7 +23,7 @@ public:
     size_t computeHash(const atlas::Field& field) const;
 
     void sendPartialMapping(const atlas::Field& field) const;
-    void sendField(const atlas::Field& field) const;
+    void sendPartialField(const atlas::Field& field) const;
     void sendForecastComplete() const;
 
 private:  // members

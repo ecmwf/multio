@@ -7,6 +7,7 @@
 #include "multio/server/Message.h"
 #include "multio/server/Plan.h"
 #include "multio/server/SerialisationHelpers.h"
+#include "multio/server/Select.h"
 #include "multio/server/Sink.h"
 
 #include "create_random_data.h"
@@ -19,14 +20,16 @@ namespace multio {
 namespace server {
 namespace test {
 
-CASE("Test that plan with two actions ") {
+CASE("Test that plan with three actions ") {
     field_size() = 8;
 
     auto maps = std::vector<std::vector<int>>{{1, 2, 5, 7}, {0, 3, 4, 6}};
     multio::test::TestFile file{"temperature::850::1"};
 
-    std::unique_ptr<Action> root{new Aggregation{maps}};
-    root->add(std::unique_ptr<Action>{new Sink{make_configured_file_sink(file.name())}});
+    std::unique_ptr<Action> root{new Select{"atm_grid"}};
+    auto it = root.get();
+    it = it->add(std::unique_ptr<Action>{new Aggregation{maps}});
+    it->add(std::unique_ptr<Action>{new Sink{make_configured_file_sink(file.name())}});
 
     SECTION("constructs correctly") {
         auto plan = Plan{"test_map", std::move(root)};

@@ -12,6 +12,7 @@
 
 #include "multio/server/Action.h"
 #include "multio/server/Aggregation.h"
+#include "multio/server/Select.h"
 #include "multio/server/Sink.h"
 
 #include "multio/server/Message.h"
@@ -63,29 +64,31 @@ bool PlanAssembler::tryCreate(const Message& msg) {
 }
 
 Plan PlanAssembler::handOver(const std::string& plan_name) {
-    std::unique_ptr<Action> root = nullptr;
+
+    // Each plan has 'Select' as its first action
+    std::unique_ptr<Action> root{new Select{plan_name}};
+    auto it = root.get();
+
     auto config = atlas::util::Metadata{planConfigs_.getSubConfiguration(plan_name)};
 
-    // Create aggregation
+    // Add aggregation action if need be
     if (config.get<std::string>("aggregation") == "indexed") {
-        root.reset(
-            new Aggregation{std::move(plansBeingProcessed_[plan_name]), "Indexed aggregation"});
-    }
-    else {
-        ASSERT(false);
+        it = it->add(std::unique_ptr<Action>{
+            new Aggregation{std::move(plansBeingProcessed_[plan_name]), "Indexed aggregation"}});
     }
 
+    // Add encoding action if need be
     if (config.get<std::string>("encoding") != "none") {
         ASSERT(false);  // Not yet implemented
     }
 
+    // Add sink action if need be
     if (config.get<std::string>("multio_sink") == "file") {
         eckit::LocalConfiguration config;
         config.set("path", eckit::PathName{"/dev/null"});  // Default to black hole
-        root->add(
+        it = it->add(
             std::unique_ptr<Action>{new Sink{DataSinkFactory::instance().build("file", config)}});
     }
-    // Create further actions...
 
     return Plan{plan_name, std::move(root)};
 }

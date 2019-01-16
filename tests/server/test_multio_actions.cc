@@ -7,6 +7,7 @@
 #include "multio/server/Action.h"
 #include "multio/server/Aggregation.h"
 #include "multio/server/print_buffer.h"
+#include "multio/server/Select.h"
 #include "multio/server/SerialisationHelpers.h"
 #include "multio/server/Sink.h"
 
@@ -20,6 +21,10 @@ namespace multio {
 namespace server {
 namespace test {
 
+CASE("Test that select action constructs successfully") {
+    std::unique_ptr<Action> action(new Select{"test_plan"});
+}
+
 CASE("Test that aggregation action constructs successfully") {
     auto maps = std::vector<std::vector<int>>{{1, 2, 5, 7}, {0, 3, 4, 6}};
     std::unique_ptr<Action> action(new Aggregation{std::move(maps)});
@@ -28,6 +33,18 @@ CASE("Test that aggregation action constructs successfully") {
 CASE("Test that sink action constructs successfully") {
     const eckit::PathName& file_path = eckit::TmpFile();
     std::unique_ptr<Action> action(new Sink{make_configured_file_sink(file_path)});
+}
+
+CASE("Test that select action executes correctly") {
+    std::unique_ptr<Action> action{new Select{"test_plan"}};
+
+    field_size() = 8;
+    auto test_field = set_up_atlas_test_field("temperature");
+
+    EXPECT(not action->execute(test_field));
+
+    test_field.metadata().set<std::string>("plan_name", "test_plan");
+    EXPECT(action->execute(test_field));
 }
 
 CASE("Test that aggregation action executes correctly") {
@@ -73,7 +90,7 @@ CASE("Test that sink action executes correctly") {
     EXPECT(actual == expected);
 }
 
-CASE("Test that aggrigation and sink actions together execute correctly") {
+CASE("Test that aggregation and sink actions together execute correctly") {
     auto maps = std::vector<std::vector<int>>{{1, 2, 5, 7}, {0, 3, 4, 6}};
     std::unique_ptr<Action> action(new Aggregation{maps});
 

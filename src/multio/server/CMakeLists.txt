@@ -26,6 +26,8 @@ ecbuild_add_library(
         Transport.cc
         MpiTransport.h
         MpiTransport.cc
+        Select.cc
+        Select.h
         Sink.cc
         Sink.h
 

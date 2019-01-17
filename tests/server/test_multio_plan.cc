@@ -73,10 +73,13 @@ CASE("Test that plan with three actions ") {
 
         // Carry out plan
         auto ii = 0;
-        auto it = begin(atlas_fields);
+        Message msg;
         do {
             ASSERT(static_cast<size_t>(ii) < atlas_fields.size());
-        } while(not root->execute(*it++, ii++));
+            msg.reset(0, ii, msg_tag::field_data);
+            atlas_field_to_message(atlas_fields[ii++], msg);
+            msg.rewind();
+        } while(not root->execute(msg));
 
         auto actual = file_content(file.name());
         auto expected = pack_atlas_field(test_field);

@@ -4,10 +4,11 @@
 #include <iostream>
 
 #include "atlas/array.h"
-#include "atlas/field/Field.h"
 #include "atlas/util/Metadata.h"
 
 #include "eckit/exception/Exceptions.h"
+
+#include "multio/server/Message.h"
 
 namespace multio {
 namespace server {
@@ -21,10 +22,10 @@ Action* Action::add(std::unique_ptr<Action>&& action) {
     return next_.get();
 }
 
-bool Action::execute(atlas::Field& field, const int source) const {
-    auto ret = doExecute(field, source);
+bool Action::execute(Message& msg) const {
+    auto ret = doExecute(msg);
     if (ret && next_) {
-        ret = next_->execute(field, source);
+        ret = next_->execute(msg);
     }
     return ret;
 }

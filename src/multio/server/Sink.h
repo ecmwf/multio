@@ -20,7 +20,7 @@ public:
     explicit Sink(std::unique_ptr<DataSink>&& ds, const std::string& nm = "Sink");
 
 private:  // overriding methods
-    bool doExecute(atlas::Field& field, int) const override;
+    bool doExecute(Message& msg) const override;
 
 private:  // non-overriding methods
     void configure(const atlas::util::Metadata& metadata) const;

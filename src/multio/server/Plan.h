@@ -7,10 +7,6 @@
 
 #include "Action.h"
 
-namespace atlas {
-class Field;
-}
-
 namespace multio {
 namespace server {
 

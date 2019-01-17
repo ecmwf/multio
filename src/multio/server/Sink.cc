@@ -20,12 +20,9 @@ Sink::Sink(std::unique_ptr<DataSink>&& ds, const std::string& nm) :
     Action{nm},
     dataSink_{std::move(ds)} {}
 
-bool Sink::doExecute(atlas::Field& field, int /*unused*/) const {
+bool Sink::doExecute(Message& msg) const {
 
-    configure(field.metadata());
-
-    Message msg(0, -1, msg_tag::field_data);
-    atlas_field_to_message(field, msg);
+    configure(fetch_metadata(msg));
 
     eckit::DataBlobPtr blob(eckit::DataBlobFactory::build("test", msg.data(), msg.size()));
 

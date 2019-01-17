@@ -12,12 +12,14 @@
 namespace multio {
 namespace server {
 
+class Message;
+
 class Aggregation : public Action {
 public:
     explicit Aggregation(std::vector<std::vector<int>> maps, const std::string& nm = "Aggregation");
 
 private:  // methods
-    bool doExecute(atlas::Field& field, int) const override;
+    bool doExecute(Message& msg) const override;
 
 private:  // members
     struct GlobalField {

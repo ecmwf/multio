@@ -8,7 +8,8 @@
 #include "atlas/array.h"
 #include "atlas/util/Metadata.h"
 
-#include "SerialisationHelpers.h"
+#include "multio/server/Message.h"
+#include "multio/server/SerialisationHelpers.h"
 
 namespace multio {
 namespace server {
@@ -17,7 +18,11 @@ Aggregation::Aggregation(std::vector<std::vector<int>> maps, const std::string& 
     Action{nm},
     mappings_(std::move(maps)) {}
 
-bool Aggregation::doExecute(atlas::Field& field, int source) const {
+bool Aggregation::doExecute(Message& msg) const {
+
+    auto field = unpack_atlas_field(msg);
+    auto source = msg.peer();
+
     auto local_view = atlas::array::make_view<double, 1>(field);
     ASSERT(static_cast<size_t>(local_view.size()) == mappings_[source].size());
 
@@ -40,7 +45,13 @@ bool Aggregation::doExecute(atlas::Field& field, int source) const {
         // Extract from map. What you really want is:
         // field = globals_.extract(meta_str); // Needs C++17
         field = std::move(globals_[meta_str].field);
+
         globals_.erase(meta_str);
+
+        msg.rewind();
+        atlas_field_to_message(field, msg);
+
+        msg.rewind();
     }
 
     return ret;

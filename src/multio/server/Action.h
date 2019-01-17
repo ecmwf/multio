@@ -5,12 +5,10 @@
 #include <memory>
 #include <string>
 
-namespace atlas {
-class Field;
-}
-
 namespace multio {
 namespace server {
+
+class Message;
 
 class Action {
 public:
@@ -19,11 +17,11 @@ public:
 
     Action* add(std::unique_ptr<Action>&& action);
 
-    bool execute(atlas::Field& field, int source = -1) const;
+    bool execute(Message& msg) const;
 
 private:  // methods
 
-    virtual bool doExecute(atlas::Field& field, int source = -1) const = 0;
+    virtual bool doExecute(Message& msg) const = 0;
 
     void print(std::ostream&) const;
     friend std::ostream& operator<<(std::ostream& os, const Action& action);

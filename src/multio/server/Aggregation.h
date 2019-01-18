@@ -7,7 +7,8 @@
 
 #include "atlas/field/Field.h"
 
-#include "Action.h"
+#include "multio/server/Action.h"
+#include "multio/server/Message.h"
 
 namespace multio {
 namespace server {
@@ -20,17 +21,11 @@ public:
 
 private:  // methods
     bool doExecute(Message& msg) const override;
+    atlas::Field aggregate(const std::string& meta_str) const;
 
 private:  // members
-    struct GlobalField {
-        unsigned noChunks = 0;
-        atlas::Field field;
-
-        GlobalField() = default;
-        GlobalField(atlas::Field fld);
-    };
     const std::vector<std::vector<int>> mappings_;
-    mutable std::unordered_map<std::string, GlobalField> globals_;
+    mutable std::unordered_map<std::string, std::vector<Message>> messages_;
 };
 
 }  // namespace server

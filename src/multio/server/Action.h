@@ -17,11 +17,11 @@ public:
 
     Action* add(std::unique_ptr<Action>&& action);
 
-    bool execute(Message& msg) const;
+    bool execute(std::shared_ptr<Message> msg) const;
 
 private:  // methods
 
-    virtual bool doExecute(Message& msg) const = 0;
+    virtual bool doExecute(std::shared_ptr<Message> msg) const = 0;
 
     void print(std::ostream&) const;
     friend std::ostream& operator<<(std::ostream& os, const Action& action);

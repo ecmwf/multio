@@ -16,7 +16,7 @@ class Plan {
 public:
     explicit Plan(const std::string& nm, std::unique_ptr<Action>&& root);
 
-    void process(const Message& msg) const;
+    void process(std::shared_ptr<Message> msg) const;
 
 private:  // members
     const std::string name_;

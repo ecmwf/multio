@@ -41,17 +41,17 @@ CASE("Test that select action executes correctly") {
     field_size() = 8;
     auto test_field = set_up_atlas_test_field("temperature");
 
-    Message msg(0, -1, msg_tag::field_data);
-    atlas_field_to_message(test_field, msg);
+    auto msg = std::make_shared<Message>(0, -1, msg_tag::field_data);
+    atlas_field_to_message(test_field, *msg);
 
-    msg.rewind();
+    msg->rewind();
     EXPECT(not action->execute(msg));
 
     test_field.metadata().set<std::string>("plan_name", "test_plan");
-    msg.rewind();
-    atlas_field_to_message(test_field, msg);
+    msg->rewind();
+    atlas_field_to_message(test_field, *msg);
 
-    msg.rewind();
+    msg->rewind();
     EXPECT(action->execute(msg));
 }
 
@@ -62,16 +62,16 @@ CASE("Test that aggregation action executes correctly") {
     field_size() = 8;
     auto test_field = set_up_atlas_test_field("temperature");
 
-    Message msg;
+    auto msgs = std::vector<std::shared_ptr<Message>>(maps.size());
     auto ii = 0;
     do {
-        msg.reset(0, ii, msg_tag::field_data);
-        auto atlas_field = create_local_field(test_field, maps[ii++]);
-        atlas_field_to_message(atlas_field, msg);
-        msg.rewind();
-    } while (not action->execute(msg));
+        msgs[ii] = std::make_shared<Message>(0, ii, msg_tag::field_data);
+        auto atlas_field = create_local_field(test_field, maps[ii]);
+        atlas_field_to_message(atlas_field, *msgs[ii]);
+        msgs[ii]->rewind();
+    } while (not action->execute(msgs[ii++]));
 
-    auto atlas_field = unpack_atlas_field(msg);
+    auto atlas_field = unpack_atlas_field(*msgs[--ii]);
     auto view = atlas::array::make_view<double, 1>(atlas_field);
     auto actual = std::vector<double>{};
     copy_n(view.data(), view.size(), back_inserter(actual));
@@ -93,15 +93,15 @@ CASE("Test that sink action executes correctly") {
 
     auto atlas_field = create_local_field(test_field, local_to_global);
 
-    Message msg(0, -1, msg_tag::field_data);
-    atlas_field_to_message(atlas_field, msg);
+    auto msg = std::make_shared<Message>(0, -1, msg_tag::field_data);
+    atlas_field_to_message(atlas_field, *msg);
 
-    msg.rewind();
+    msg->rewind();
     action->execute(msg);
 
     multio::test::TestFile file{"temperature::850::1"};
     auto actual = file_content(file.name());
-    auto expected = pack_atlas_field(unpack_atlas_field(msg));
+    auto expected = pack_atlas_field(unpack_atlas_field(*msg));
 
     EXPECT(actual == expected);
 }
@@ -113,21 +113,21 @@ CASE("Test that aggregation and sink actions together execute correctly") {
     field_size() = 8;
     auto test_field = set_up_atlas_test_field("temperature");
 
-    Message msg;
+    auto msgs = std::vector<std::shared_ptr<Message>>(maps.size());
     auto ii = 0;
     do {
-        msg.reset(0, ii, msg_tag::field_data);
-        auto atlas_field = create_local_field(test_field, maps[ii++]);
-        atlas_field_to_message(atlas_field, msg);
-        msg.rewind();
-    } while (not action->execute(msg));
+        msgs[ii] = std::make_shared<Message>(0, ii, msg_tag::field_data);
+        auto atlas_field = create_local_field(test_field, maps[ii]);
+        atlas_field_to_message(atlas_field, *msgs[ii]);
+        msgs[ii]->rewind();
+    } while (not action->execute(msgs[ii++]));
 
     multio::test::TestFile file{"temperature::850::1"};
     action.reset(new Sink{make_configured_file_sink(file.name())});
-    action->execute(msg);
+    action->execute(msgs[--ii]);
 
     auto actual = file_content(file.name());
-    auto expected = pack_atlas_field(unpack_atlas_field(msg));
+    auto expected = pack_atlas_field(unpack_atlas_field(*msgs[ii]));
 
     EXPECT(actual == expected);
 }

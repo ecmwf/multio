@@ -33,9 +33,10 @@ std::string Dispatcher::registerPlan(const Message& msg) {
     return plan_name;
 }
 
-void Dispatcher::feedPlan(const Message& msg) {
-    auto plan_name = fetch_metadata(msg).get<std::string>("plan_name");
-    registeredPlans_.at(plan_name).process(msg);
+void Dispatcher::feedPlan(std::shared_ptr<Message> msg) {
+    for (const auto& plan : registeredPlans_) {
+        plan.second.process(msg);
+    }
 }
 
 void Dispatcher::listen() {
@@ -55,7 +56,7 @@ void Dispatcher::listen() {
                 }
             } break;
             case msg_tag::field_data:
-                feedPlan(std::move(msg));
+                feedPlan(std::make_shared<Message>(std::move(msg)));
                 break;
             case msg_tag::forecast_complete:
                 ++counter;

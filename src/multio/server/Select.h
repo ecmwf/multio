@@ -13,7 +13,7 @@ public:
     explicit Select(const std::string& plan_name, const std::string& nm = "Select");
 
 private:  // methods
-    bool doExecute(Message& msg) const override;
+    bool doExecute(std::shared_ptr<Message> msg) const override;
 
 private:  // members
     std::string plan_name_;

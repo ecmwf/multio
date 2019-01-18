@@ -46,10 +46,10 @@ CASE("Test that plan assembler creates plan correctly and ") {
         for (auto&& map : maps) {
             auto field = create_local_field(test_field, std::move(map));
 
-            Message msg(0, ii++, msg_tag::field_data);
-            atlas_field_to_message(field, msg);
+            auto msg = std::make_shared<Message>(0, ii++, msg_tag::field_data);
+            atlas_field_to_message(field, *msg);
 
-            msg.rewind();
+            msg->rewind();
             plan.process(msg);
         }
 
@@ -70,10 +70,10 @@ CASE("Test that plan assembler creates plan correctly and ") {
         for (auto&& map : maps) {
             auto field = create_local_field(test_field, std::move(map));
 
-            Message msg(0, ii++, msg_tag::field_data);
-            atlas_field_to_message(field, msg);
+            auto msg = std::make_shared<Message>(0, ii++, msg_tag::field_data);
+            atlas_field_to_message(field, *msg);
 
-            msg.rewind();
+            msg->rewind();
             plan.process(msg);
         }
 

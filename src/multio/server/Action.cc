@@ -22,7 +22,7 @@ Action* Action::add(std::unique_ptr<Action>&& action) {
     return next_.get();
 }
 
-bool Action::execute(Message& msg) const {
+bool Action::execute(std::shared_ptr<Message> msg) const {
     auto ret = doExecute(msg);
     if (ret && next_) {
         ret = next_->execute(msg);

@@ -20,11 +20,11 @@ Sink::Sink(std::unique_ptr<DataSink>&& ds, const std::string& nm) :
     Action{nm},
     dataSink_{std::move(ds)} {}
 
-bool Sink::doExecute(Message& msg) const {
+bool Sink::doExecute(std::shared_ptr<Message> msg) const {
 
-    configure(fetch_metadata(msg));
+    configure(fetch_metadata(*msg));
 
-    eckit::DataBlobPtr blob(eckit::DataBlobFactory::build("test", msg.data(), msg.size()));
+    eckit::DataBlobPtr blob(eckit::DataBlobFactory::build("test", msg->data(), msg->size()));
 
     dataSink_->write(blob);
 

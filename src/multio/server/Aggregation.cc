@@ -19,22 +19,22 @@ Aggregation::Aggregation(std::vector<std::vector<int>> maps, const std::string& 
     Action{nm},
     mappings_(std::move(maps)) {}
 
-bool Aggregation::doExecute(Message& msg) const {
+bool Aggregation::doExecute(std::shared_ptr<Message> msg) const {
 
-    auto meta_str = pack_metadata(fetch_metadata(msg));
+    auto meta_str = pack_metadata(fetch_metadata(*msg));
 
     messages_[meta_str].push_back(msg);
 
     auto ret = messages_.at(meta_str).size() == mappings_.size();
     if (ret) {
+
         auto global_field = aggregate(meta_str);
         messages_.erase(meta_str);
 
-        msg.rewind();
-        atlas_field_to_message(global_field, msg);
+        msg->rewind();
+        atlas_field_to_message(global_field, *msg);
 
-        msg.rewind();
-
+        msg->rewind();
     }
 
     return ret;
@@ -45,13 +45,13 @@ atlas::Field Aggregation::aggregate(const std::string& meta_str) const {
     auto global_field = recreate_atlas_field(atlas::util::Metadata{unpack_metadata(meta_str)});
 
     auto global_view = atlas::array::make_view<double, 1>(global_field);
-    for (const auto& msg : messages_.at(meta_str)) {
+    for (auto msg : messages_.at(meta_str)) {
 
-        auto local_field = unpack_atlas_field(msg);
+        auto local_field = unpack_atlas_field(*msg);
         auto local_view = atlas::array::make_view<double, 1>(local_field);
 
         auto ii = 0;
-        for (auto idx : mappings_[msg.peer()]) {
+        for (auto idx : mappings_[msg->peer()]) {
             global_view(idx) = local_view(ii++);
         }
     }

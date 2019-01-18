@@ -14,10 +14,17 @@ Plan::Plan(const std::string& nm, std::unique_ptr<Action>&& root) :
     name_(nm),
     root_(std::move(root)) {}
 
-void Plan::process(const Message& msg) const {
-    ASSERT(msg.tag() != msg_tag::plan_data);
+void Plan::process(std::shared_ptr<Message> msg) const {
+    ASSERT(msg->tag() != msg_tag::plan_data);
 
-    root_->execute(const_cast<Message&>(msg));
+    // Enque on one thread
+
+    // Deque and execute other potentially more threads
+
+    // Deque
+
+    // Execute
+    root_->execute(msg);
 }
 
 }  // namespace server

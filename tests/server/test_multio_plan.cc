@@ -46,10 +46,11 @@ CASE("Test that plan with three actions ") {
         for (auto&& map : maps) {
             auto field = create_local_field(test_field, std::move(map));
 
-            Message msg(0, ii++, msg_tag::field_data);
-            atlas_field_to_message(field, msg);
+            auto msg = std::make_shared<Message>(0, ii++, msg_tag::field_data);
 
-            msg.rewind();
+            atlas_field_to_message(field, *msg);
+
+            msg->rewind();
             plan.process(msg);
         }
 
@@ -72,14 +73,14 @@ CASE("Test that plan with three actions ") {
         }
 
         // Carry out plan
+        auto msgs = std::vector<std::shared_ptr<Message>>(maps.size());
         auto ii = 0;
-        Message msg;
         do {
-            ASSERT(static_cast<size_t>(ii) < atlas_fields.size());
-            msg.reset(0, ii, msg_tag::field_data);
-            atlas_field_to_message(atlas_fields[ii++], msg);
-            msg.rewind();
-        } while(not root->execute(msg));
+            msgs[ii] = std::make_shared<Message>(0, ii, msg_tag::field_data);
+            auto atlas_field = create_local_field(test_field, maps[ii]);
+            atlas_field_to_message(atlas_field, *msgs[ii]);
+            msgs[ii]->rewind();
+        } while (not root->execute(msgs[ii++]));
 
         auto actual = file_content(file.name());
         auto expected = pack_atlas_field(test_field);

@@ -63,7 +63,7 @@ bool PlanAssembler::tryCreate(const Message& msg) {
     return isComplete(plan_name);
 }
 
-Plan PlanAssembler::handOver(const std::string& plan_name) {
+std::unique_ptr<Action> PlanAssembler::handOver(const std::string& plan_name) {
 
     // Each plan has 'Select' as its first action
     std::unique_ptr<Action> root{new Select{plan_name}};
@@ -90,7 +90,7 @@ Plan PlanAssembler::handOver(const std::string& plan_name) {
             std::unique_ptr<Action>{new Sink{DataSinkFactory::instance().build("file", config)}});
     }
 
-    return Plan{plan_name, std::move(root)};
+    return std::move(root);
 }
 
 bool PlanAssembler::isComplete(const std::string& plan_name) const {

@@ -2,7 +2,7 @@
 #ifndef multio_server_Dispatcher_H
 #define multio_server_Dispatcher_H
 
-#include <map>
+#include <set>
 
 #include "multio/server/Message.h"
 #include "multio/server/Plan.h"
@@ -27,7 +27,7 @@ private:  // members
 
     PlanAssembler planAssembler_;
 
-    std::map<std::string, Plan> registeredPlans_;
+    std::set<Plan> registeredPlans_;
 
 private:  // methods
     bool allPartsArrived(unsigned counter) const;

@@ -20,7 +20,7 @@ Dispatcher::Dispatcher(const Transport& trans) : transport_(trans) {}
 std::string Dispatcher::registerPlan(const Message& msg) {
     ASSERT(msg.tag() == msg_tag::plan_data);
     auto plan_name = fetch_metadata(msg).get<std::string>("plan_name");
-    if (registeredPlans_.find(plan_name) != end(registeredPlans_)) {
+    if (registeredPlans_.find(Plan{plan_name, nullptr}) != end(registeredPlans_)) {
         ASSERT(false);
     }
 
@@ -35,7 +35,7 @@ std::string Dispatcher::registerPlan(const Message& msg) {
 
 void Dispatcher::feedPlan(std::shared_ptr<Message> msg) {
     for (const auto& plan : registeredPlans_) {
-        plan.second.process(msg);
+        plan.process(msg);
     }
 }
 

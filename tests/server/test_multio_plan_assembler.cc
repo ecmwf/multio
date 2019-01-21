@@ -35,7 +35,7 @@ CASE("Test that plan assembler creates plan correctly and ") {
         EXPECT((++ii < maps.size()) ? !planAssembler.tryCreate(msg) : planAssembler.tryCreate(msg));
     }
 
-    auto plan = planAssembler.handOver("atm_grid");
+    Plan plan{"atm_grid", planAssembler.handOver("atm_grid")};
 
     SECTION("carries out plan when corresponding message is passed") {
         // Create global field to test against

@@ -27,5 +27,29 @@ void Plan::process(std::shared_ptr<Message> msg) const {
     root_->execute(msg);
 }
 
+bool operator==(const Plan& lhs, const Plan& rhs) {
+    return lhs.name_ == rhs.name_;
+}
+
+bool operator!=(const Plan& lhs, const Plan& rhs) {
+    return lhs.name_ != rhs.name_;
+}
+
+bool operator<(const Plan& lhs, const Plan& rhs) {
+    return lhs.name_ < rhs.name_;
+}
+
+bool operator<=(const Plan& lhs, const Plan& rhs) {
+    return lhs.name_ <= rhs.name_;
+}
+
+bool operator>(const Plan& lhs, const Plan& rhs) {
+    return lhs.name_ >= rhs.name_;
+}
+
+bool operator>=(const Plan& lhs, const Plan& rhs) {
+    return lhs.name_ >= rhs.name_;
+}
+
 }  // namespace server
 }  // namespace multio

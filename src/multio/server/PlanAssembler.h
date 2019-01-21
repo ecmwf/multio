@@ -11,6 +11,7 @@
 namespace multio {
 namespace server {
 
+class Action;
 class Message;
 class Plan;
 
@@ -18,7 +19,7 @@ class PlanAssembler {
 public:
     PlanAssembler();
     bool tryCreate(const Message& msg);
-    Plan handOver(const std::string& plan_name);
+    std::unique_ptr<Action> handOver(const std::string& plan_name);
 
 private:
     eckit::YAMLConfiguration planConfigs_;

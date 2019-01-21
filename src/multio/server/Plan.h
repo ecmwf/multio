@@ -28,6 +28,14 @@ private:  // methods
         plan.print(os);
         return os;
     }
+
+    friend bool operator==(const Plan& lhs, const Plan& rhs);
+    friend bool operator!=(const Plan& lhs, const Plan& rhs);
+    friend bool operator<(const Plan& lhs, const Plan& rhs);
+    friend bool operator<=(const Plan& lhs, const Plan& rhs);
+    friend bool operator>(const Plan& lhs, const Plan& rhs);
+    friend bool operator>=(const Plan& lhs, const Plan& rhs);
+
 };
 
 }  // namespace server

@@ -18,7 +18,7 @@ public:
 
     std::string registerPlan(const Message& msg);
 
-    void feedPlan(std::shared_ptr<Message> msg);
+    void feedPlans(std::shared_ptr<Message> msg);
 
     void listen();
 

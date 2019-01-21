@@ -32,7 +32,7 @@ std::string Dispatcher::registerPlan(const Message& msg) {
     return plan_name;
 }
 
-void Dispatcher::feedPlan(std::shared_ptr<Message> msg) {
+void Dispatcher::feedPlans(std::shared_ptr<Message> msg) {
     for (const auto& plan : registeredPlans_) {
         plan.process(msg);
     }
@@ -55,7 +55,7 @@ void Dispatcher::listen() {
                 }
             } break;
             case msg_tag::field_data:
-                feedPlan(std::make_shared<Message>(std::move(msg)));
+                feedPlans(std::make_shared<Message>(std::move(msg)));
                 break;
             case msg_tag::forecast_complete:
                 ++counter;

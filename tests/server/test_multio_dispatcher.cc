@@ -67,7 +67,7 @@ CASE("Test that distributor-dispatcher pair ") {
             distributor.sendPartialField(field);
 
             // Notify server there is nothing more to send
-            distributor.sendForecastComplete();
+            distributor.sendNotification(msg_tag::forecast_complete);
         } else {
             EXPECT(transport.server());
 

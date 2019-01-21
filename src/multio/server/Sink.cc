@@ -21,14 +21,17 @@ Sink::Sink(std::unique_ptr<DataSink>&& ds, const std::string& nm) :
     dataSink_{std::move(ds)} {}
 
 bool Sink::doExecute(std::shared_ptr<Message> msg) const {
+    switch (msg->tag()) {
+        case msg_tag::field_data:
+            return write(*msg);
 
-    configure(fetch_metadata(*msg));
+        case msg_tag::step_complete:
+            return flush();
 
-    eckit::DataBlobPtr blob(eckit::DataBlobFactory::build("test", msg->data(), msg->size()));
-
-    dataSink_->write(blob);
-
-    return true;
+        default:
+            ASSERT(false);
+            return false;
+    }
 }
 
 void Sink::configure(const atlas::util::Metadata& metadata) const {
@@ -38,6 +41,22 @@ void Sink::configure(const atlas::util::Metadata& metadata) const {
                                        "::" + std::to_string(metadata.get<int>("steps"))});
     dataSink_.reset(DataSinkFactory::instance().build("file", config));
 }
+
+bool Sink::write(const Message& msg) const {
+    configure(fetch_metadata(msg));
+
+    eckit::DataBlobPtr blob(eckit::DataBlobFactory::build("test", msg.data(), msg.size()));
+
+    dataSink_->write(blob);
+
+    return true;
+}
+
+bool Sink::flush() const {
+    dataSink_->flush();
+    return true;
+}
+
 
 }  // namespace server
 }  // namespace multio

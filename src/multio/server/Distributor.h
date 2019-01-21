@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 
+#include "multio/server/msg_tag.h"
 #include "multio/server/PartialMapping.h"
 #include "multio/server/Transport.h"
 
@@ -24,7 +25,7 @@ public:
 
     void sendPartialMapping(const atlas::Field& field) const;
     void sendPartialField(const atlas::Field& field) const;
-    void sendForecastComplete() const;
+    void sendNotification(const msg_tag notification) const;
 
 private:  // members
     mutable std::map<std::string, PartialMapping> distributed_mappings;

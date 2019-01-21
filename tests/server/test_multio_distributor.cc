@@ -51,7 +51,7 @@ CASE("Test that distributor-aggregator pair ") {
             distributor.sendPartialField(test_field);
 
             // Notify server there is nothing more to send
-            distributor.sendForecastComplete();
+            distributor.sendNotification(msg_tag::forecast_complete);
         } else {
             EXPECT(transport->server());
 

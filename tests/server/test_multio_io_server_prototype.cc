@@ -26,12 +26,16 @@ namespace {
 const auto nServers = 3u;
 const Transport& transport = MpiTransport{"i/o server test", nServers};
 
+const auto steps = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+const auto levels = {200, 300, 500, 750, 800, 850, 900, 925, 950, 1000};
+const auto parameters = {"temperature", "geopotential", "rel_humidity"};
+
 auto create_global_test_data(const size_t sz) -> std::vector<atlas::Field> {
     std::vector<atlas::Field> gl_fields;
 
-    for (auto step : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}) {
-        for (auto level : {200, 300, 500, 750, 800, 850, 900, 925, 950, 1000}) {
-            for (auto name : {"temperature", "geopotential", "rel_humidity"}) {
+    for (auto step : steps) {
+        for (auto level : levels) {
+            for (auto name : parameters) {
                 atlas::util::Metadata metadata;
                 set_metadata(metadata, name, level, step);
                 gl_fields.push_back(create_global_test_field(metadata, sz));
@@ -52,6 +56,16 @@ auto scatter_atlas_field(const atlas::Field& gl_field) -> atlas::Field {
     }
 }
 
+auto create_partial_fields(const std::vector<atlas::Field>& global_fields)
+    -> std::vector<atlas::Field> {
+    auto partial_fields = std::vector<atlas::Field>{};
+    for (const auto& glfl : global_fields) {
+        partial_fields.push_back(scatter_atlas_field(glfl));
+    }
+
+    return partial_fields;
+}
+
 }  // namespace
 
 CASE("Test that fields ") {
@@ -59,21 +73,19 @@ CASE("Test that fields ") {
     field_size() = 1999;
 
     auto global_fields = create_global_test_data(field_size());
-
-    // Create local fields from global data
-    auto fields = std::vector<atlas::Field>{};
-    for (const auto& glfl : global_fields) {
-        fields.push_back(scatter_atlas_field(glfl));
-    }
+    auto partial_fields = create_partial_fields(global_fields);
 
     SECTION("are distributed and dispatched to correct plan") {
         if (transport.client()) {
             Distributor distributor{transport};
-            for (auto field : fields) {
-                distributor.sendPartialField(field);
+            for (auto ii = 0u; ii != partial_fields.size(); ++ii) {
+                distributor.sendPartialField(partial_fields[ii]);
+                if (partial_fields.size() % steps.size() == steps.size() - 1) {
+                    distributor.sendNotification(msg_tag::step_complete);
+                }
             }
 
-            distributor.sendForecastComplete();
+            distributor.sendNotification(msg_tag::forecast_complete);
         } else {
             EXPECT(transport.server());
 

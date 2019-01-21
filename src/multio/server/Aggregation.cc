@@ -21,6 +21,10 @@ Aggregation::Aggregation(std::vector<std::vector<int>> maps, const std::string& 
 
 bool Aggregation::doExecute(std::shared_ptr<Message> msg) const {
 
+    if(msg->tag() == msg_tag::step_complete) {
+        return true;
+    }
+
     auto meta_str = pack_metadata(fetch_metadata(*msg));
 
     messages_[meta_str].push_back(msg);

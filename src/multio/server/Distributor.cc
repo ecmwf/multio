@@ -68,9 +68,9 @@ void Distributor::sendPartialField(const atlas::Field& field) const {
     transport_.send(msg);
 }
 
-void Distributor::sendForecastComplete() const {
+void Distributor::sendNotification(const msg_tag notification) const {
     for (auto ii = 0u; ii != transport_.noServers(); ++ii) {
-        Message msg(0, static_cast<int>(transport_.noClients() + ii), msg_tag::forecast_complete);
+        Message msg(0, static_cast<int>(transport_.noClients() + ii), notification);
         transport_.send(msg);
     }
 }

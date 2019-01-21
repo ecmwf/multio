@@ -45,6 +45,7 @@ void Dispatcher::listen() {
     do {
         Message msg(0);
         transport_.receive(msg);
+
         switch (msg.tag()) {
             case msg_tag::plan_data: {
                 auto plan_name = registerPlan(msg);
@@ -54,12 +55,19 @@ void Dispatcher::listen() {
                     transport_.notifyAllClients(ack);
                 }
             } break;
+
             case msg_tag::field_data:
                 feedPlans(std::make_shared<Message>(std::move(msg)));
                 break;
+
+            case msg_tag::step_complete:
+                feedPlans(std::make_shared<Message>(std::move(msg)));
+                break;
+
             case msg_tag::forecast_complete:
                 ++counter;
                 break;
+
             default:
                 ASSERT(false);
         }

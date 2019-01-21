@@ -25,6 +25,10 @@ private:  // overriding methods
 private:  // non-overriding methods
     void configure(const atlas::util::Metadata& metadata) const;
 
+    bool write(const Message& msg) const;
+
+    bool flush() const;
+
 private:  // members
     mutable std::unique_ptr<DataSink> dataSink_;
 };

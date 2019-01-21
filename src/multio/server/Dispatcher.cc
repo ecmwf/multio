@@ -20,9 +20,8 @@ Dispatcher::Dispatcher(const Transport& trans) : transport_(trans) {}
 std::string Dispatcher::registerPlan(const Message& msg) {
     ASSERT(msg.tag() == msg_tag::plan_data);
     auto plan_name = fetch_metadata(msg).get<std::string>("plan_name");
-    if (registeredPlans_.find(Plan{plan_name, nullptr}) != end(registeredPlans_)) {
-        ASSERT(false);
-    }
+
+    ASSERT(not hasPlan(plan_name));
 
     // You'd want std::optional here
     if (not planAssembler_.tryCreate(msg)) {
@@ -73,6 +72,10 @@ void Dispatcher::listen() {
 
 bool Dispatcher::allPartsArrived(const unsigned counter) const {
     return (counter == transport_.noClients());
+}
+
+bool Dispatcher::hasPlan(const std::string& plan_name) const {
+    return registeredPlans_.find(Plan{plan_name, nullptr}) != end(registeredPlans_);
 }
 
 void Dispatcher::print(std::ostream& os) const {

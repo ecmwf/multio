@@ -32,6 +32,8 @@ private:  // members
 private:  // methods
     bool allPartsArrived(unsigned counter) const;
 
+    bool hasPlan(const std::string& plan_name) const;
+
     void print(std::ostream& os) const;
 
     friend std::ostream& operator<<(std::ostream& os, const Dispatcher& dpatch) {

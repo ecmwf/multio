@@ -21,8 +21,9 @@ public:
     const eckit::mpi::Comm& serverComm() const;
 
 private:
-    void receiveFromClient(Message& message) const override;
-    void sendToServer(const Message& message) const override;
+    void notifyAllClients(const Message& msg) const override;
+    void receive(Message& msg) const override;
+    void send(const Message& message) const override;
     void synchronise() const override;
 
     size_t size() const override;

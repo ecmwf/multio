@@ -7,6 +7,7 @@
 #include "multio/server/Action.h"
 #include "multio/server/Aggregation.h"
 #include "multio/server/print_buffer.h"
+#include "multio/server/Select.h"
 #include "multio/server/SerialisationHelpers.h"
 #include "multio/server/Sink.h"
 
@@ -20,16 +21,38 @@ namespace multio {
 namespace server {
 namespace test {
 
+CASE("Test that select action constructs successfully") {
+    std::unique_ptr<Action> action(new Select{"test_plan"});
+}
+
 CASE("Test that aggregation action constructs successfully") {
     auto maps = std::vector<std::vector<int>>{{1, 2, 5, 7}, {0, 3, 4, 6}};
     std::unique_ptr<Action> action(new Aggregation{std::move(maps)});
 }
 
 CASE("Test that sink action constructs successfully") {
-    eckit::PathName file_path = eckit::TmpFile();
+    const eckit::PathName& file_path = eckit::TmpFile();
     std::unique_ptr<Action> action(new Sink{make_configured_file_sink(file_path)});
+}
 
-    file_path.unlink();
+CASE("Test that select action executes correctly") {
+    std::unique_ptr<Action> action{new Select{"test_plan"}};
+
+    field_size() = 8;
+    auto test_field = set_up_atlas_test_field("temperature");
+
+    auto msg = std::make_shared<Message>(0, -1, msg_tag::field_data);
+    atlas_field_to_message(test_field, *msg);
+
+    msg->rewind();
+    EXPECT(not action->execute(msg));
+
+    test_field.metadata().set<std::string>("plan_name", "test_plan");
+    msg->rewind();
+    atlas_field_to_message(test_field, *msg);
+
+    msg->rewind();
+    EXPECT(action->execute(msg));
 }
 
 CASE("Test that aggregation action executes correctly") {
@@ -37,71 +60,76 @@ CASE("Test that aggregation action executes correctly") {
     std::unique_ptr<Action> action{new Aggregation{maps}};
 
     field_size() = 8;
-    auto field_name = "temperature";
-    auto test_field = std::make_pair(field_name, create_random_data(field_name, field_size()));
+    auto test_field = set_up_atlas_test_field("temperature");
 
-    auto atlas_field = atlas::Field{};
+    auto msgs = std::vector<std::shared_ptr<Message>>(maps.size());
     auto ii = 0;
     do {
-        atlas_field = create_local_field(test_field, maps[ii]);
-        set_metadata(atlas_field.metadata(), 850, 1);
-        action->execute(atlas_field, ii++);
-    } while (not action->complete(atlas_field));
+        msgs[ii] = std::make_shared<Message>(0, ii, msg_tag::field_data);
+        auto atlas_field = create_local_field(test_field, maps[ii]);
+        atlas_field_to_message(atlas_field, *msgs[ii]);
+        msgs[ii]->rewind();
+    } while (not action->execute(msgs[ii++]));
 
+    auto atlas_field = unpack_atlas_field(*msgs[--ii]);
     auto view = atlas::array::make_view<double, 1>(atlas_field);
     auto actual = std::vector<double>{};
     copy_n(view.data(), view.size(), back_inserter(actual));
 
-    EXPECT(actual == test_field.second);
+    view = atlas::array::make_view<double, 1>(test_field);
+    auto expected = std::vector<double>{};
+    copy_n(view.data(), view.size(), back_inserter(expected));
+
+    EXPECT(actual == expected);
 }
 
 CASE("Test that sink action executes correctly") {
     std::unique_ptr<Action> action{new Sink{nullptr}};
 
     field_size() = 29;
-    auto field_name = "temperature";
-    auto test_field = std::make_pair(field_name, create_random_data(field_name, field_size()));
+    auto test_field = set_up_atlas_test_field("temperature");
     std::vector<int> local_to_global(field_size());
     std::iota(begin(local_to_global), end(local_to_global), 0);
 
     auto atlas_field = create_local_field(test_field, local_to_global);
-    set_metadata(atlas_field.metadata(), 850, 1);
 
-    action->execute(atlas_field);
+    auto msg = std::make_shared<Message>(0, -1, msg_tag::field_data);
+    atlas_field_to_message(atlas_field, *msg);
 
-    eckit::PathName file_path{"temperature::850::1"};
-    auto actual = file_content(file_path);
-    auto expected = pack_atlas_field(atlas_field);
+    msg->rewind();
+    action->execute(msg);
+
+    multio::test::TestFile file{"temperature::850::1"};
+    auto actual = file_content(file.name());
+    auto expected = pack_atlas_field(unpack_atlas_field(*msg));
+
     EXPECT(actual == expected);
-
-    file_path.unlink();
 }
 
-CASE("Test that aggrigation and sink actions together execute correctly") {
+CASE("Test that aggregation and sink actions together execute correctly") {
     auto maps = std::vector<std::vector<int>>{{1, 2, 5, 7}, {0, 3, 4, 6}};
     std::unique_ptr<Action> action(new Aggregation{maps});
 
     field_size() = 8;
-    auto field_name = "temperature";
-    auto test_field = std::make_pair(field_name, create_random_data(field_name, field_size()));
+    auto test_field = set_up_atlas_test_field("temperature");
 
-    auto atlas_field = atlas::Field{};
+    auto msgs = std::vector<std::shared_ptr<Message>>(maps.size());
     auto ii = 0;
     do {
-        atlas_field = create_local_field(test_field, maps[ii]);
-        set_metadata(atlas_field.metadata(), 850, 1);
-        action->execute(atlas_field, ii++);
-    } while (not action->complete(atlas_field));
+        msgs[ii] = std::make_shared<Message>(0, ii, msg_tag::field_data);
+        auto atlas_field = create_local_field(test_field, maps[ii]);
+        atlas_field_to_message(atlas_field, *msgs[ii]);
+        msgs[ii]->rewind();
+    } while (not action->execute(msgs[ii++]));
 
-    eckit::PathName file_path{"temperature::850::1"};
-    action.reset(new Sink{make_configured_file_sink(file_path)});
-    action->execute(atlas_field);
+    multio::test::TestFile file{"temperature::850::1"};
+    action.reset(new Sink{make_configured_file_sink(file.name())});
+    action->execute(msgs[--ii]);
 
-    auto actual = file_content(file_path);
-    auto expected = pack_atlas_field(atlas_field);
+    auto actual = file_content(file.name());
+    auto expected = pack_atlas_field(unpack_atlas_field(*msgs[ii]));
+
     EXPECT(actual == expected);
-
-    file_path.unlink();
 }
 
 }  // namespace server

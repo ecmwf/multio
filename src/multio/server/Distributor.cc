@@ -1,6 +1,7 @@
 
 #include "Distributor.h"
 
+#include "eckit/io/Buffer.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/utils/RendezvousHash.h"
 #include "eckit/value/Value.h"
@@ -26,51 +27,71 @@ auto hash_val(const std::string& str) -> size_t {
 
 Distributor::Distributor(const Transport& trans) : transport_(trans) {}
 
-size_t Distributor::computeHash(const atlas::Field& field) const {
-    auto meta_str = pack_metadata(field.metadata());
-    return (hash_val(meta_str) % transport_.noServers() + transport_.noClients());
-}
-
-void Distributor::sendLocalPlan(const atlas::Field& field) const {
-    auto field_type = field.metadata().get<std::string>("field_type");
-    if (distributed_plans.find(field_type) != distributed_plans.end()) {
+void Distributor::sendPartialMapping(const atlas::Field& field) const {
+    auto plan_name = field.metadata().get<std::string>("plan_name");
+    if (distributed_mappings.find(plan_name) != distributed_mappings.end()) {
         return;
     }
 
     // Register sending this plan
-    distributed_plans[field_type] =
-        fetch_local_plan(field.metadata(), transport_.noClients(), transport_.clientRank());
+    auto mapping = fetch_mapping(field.metadata(), transport_.noClients(), transport_.clientRank());
 
     Message msg(0, -1, msg_tag::plan_data);
-    local_plan_to_message(distributed_plans[field_type], msg);
+    mapping_to_message(mapping, msg);
 
     // TODO: create a sendToAllServers member function on the transport_. We can then get rid of
     // that awkward setter on the message class
     for (auto ii = 0u; ii != transport_.noServers(); ++ii) {
         msg.peer(static_cast<int>(transport_.noClients() + ii));
-        transport_.sendToServer(msg);
+        transport_.send(msg);
     }
+
+    // Block until the plan is created on all servers
+    waitForPlan(mapping.plan_name());
+
+    // Register sending this plan
+    distributed_mappings[plan_name] = mapping;
 }
 
-void Distributor::sendField(const atlas::Field& field) const {
-    sendLocalPlan(field);
+void Distributor::sendPartialField(const atlas::Field& field) const {
+    sendPartialMapping(field);
 
     auto server_rank = computeHash(field);
 
     Message msg(0, static_cast<int>(server_rank), msg_tag::field_data);
     atlas_field_to_message(field, msg);
 
-    transport_.sendToServer(msg);
+    transport_.send(msg);
 }
 
-void Distributor::sendForecastComplete() const {
+void Distributor::sendNotification(const msg_tag notification) const {
     for (auto ii = 0u; ii != transport_.noServers(); ++ii) {
-        Message msg(0, static_cast<int>(transport_.noClients() + ii), msg_tag::forecast_complete);
-        transport_.sendToServer(msg);
+        Message msg(0, static_cast<int>(transport_.noClients() + ii), notification);
+        transport_.send(msg);
     }
 }
 
 // Private members
+
+size_t Distributor::computeHash(const atlas::Field& field) const {
+    auto meta_str = pack_metadata(field.metadata());
+    return (hash_val(meta_str) % transport_.noServers() + transport_.noClients());
+}
+
+void Distributor::waitForPlan(const std::string& plan_name) const {
+    auto counter = 0u;
+    do {
+        Message msg(0, -1, msg_tag::plan_complete);
+        transport_.receive(msg);
+        eckit::Buffer buffer{msg.size()};
+        msg.read(buffer, msg.size());
+        std::string str_buf(buffer);
+        str_buf.resize(buffer.size());
+        if (str_buf == plan_name) {
+            ++counter;
+        }
+    } while (counter != transport_.noServers());
+}
 
 void Distributor::print(std::ostream& os) const {
     os << "Distributor initialised with " << transport_;

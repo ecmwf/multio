@@ -2,11 +2,11 @@
 #ifndef multio_server_Dispatcher_H
 #define multio_server_Dispatcher_H
 
-#include <map>
+#include <set>
 
 #include "multio/server/Message.h"
 #include "multio/server/Plan.h"
-#include "multio/server/PlanFactory.h"
+#include "multio/server/PlanAssembler.h"
 #include "multio/server/Transport.h"
 
 namespace multio {
@@ -16,27 +16,25 @@ class Dispatcher {
 public:
     Dispatcher(const Transport& trans);
 
-    void registerPlan(const Message& msg);
+    std::string registerPlan(const Message& msg);
 
-    void feedPlan(const Message& msg);
+    void feedPlans(std::shared_ptr<Message> msg);
 
     void listen();
 
-private:
-
+private:  // members
     const Transport& transport_;
 
-    PlanFactory planFactory_;
+    PlanAssembler planAssembler_;
 
-    std::unordered_map<std::string, std::vector<Message>> backlog_;
-    std::map<std::string, Plan> registeredPlans_;
+    std::set<Plan> registeredPlans_;
 
-private:
-    void processBacklog(const std::string& plan_name);
-
+private:  // methods
     bool allPartsArrived(unsigned counter) const;
 
-    void print(std::ostream &os) const;
+    bool hasPlan(const std::string& plan_name) const;
+
+    void print(std::ostream& os) const;
 
     friend std::ostream& operator<<(std::ostream& os, const Dispatcher& dpatch) {
         dpatch.print(os);

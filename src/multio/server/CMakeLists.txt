@@ -18,14 +18,16 @@ ecbuild_add_library(
         Message.h
         Plan.cc
         Plan.h
-        PlanFactory.cc
-        PlanFactory.h
+        PlanAssembler.cc
+        PlanAssembler.h
         SerialisationHelpers.cc
         SerialisationHelpers.h
         Transport.h
         Transport.cc
         MpiTransport.h
         MpiTransport.cc
+        Select.cc
+        Select.h
         Sink.cc
         Sink.h
 

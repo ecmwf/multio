@@ -7,29 +7,25 @@
 
 #include "atlas/field/Field.h"
 
-#include "Action.h"
+#include "multio/server/Action.h"
+#include "multio/server/Message.h"
 
 namespace multio {
 namespace server {
+
+class Message;
 
 class Aggregation : public Action {
 public:
     explicit Aggregation(std::vector<std::vector<int>> maps, const std::string& nm = "Aggregation");
 
 private:  // methods
-    void doExecute(const atlas::Field& field, int) const override;
-    bool doComplete(atlas::Field& field) const override;
+    bool doExecute(std::shared_ptr<Message> msg) const override;
+    atlas::Field aggregate(const std::string& meta_str) const;
 
 private:  // members
-    struct GlobalField {
-        unsigned noChunks = 0;
-        atlas::Field field;
-
-        GlobalField() = default;
-        GlobalField(atlas::Field fld);
-    };
     const std::vector<std::vector<int>> mappings_;
-    mutable std::unordered_map<std::string, GlobalField> globals_;
+    mutable std::unordered_map<std::string, std::vector<std::shared_ptr<Message>>> messages_;
 };
 
 }  // namespace server

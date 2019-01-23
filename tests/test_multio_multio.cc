@@ -10,14 +10,16 @@
 
 #include <fstream>
 
-#include "multio/FileSink.h"
-#include "multio/MultIO.h"
-
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/parser/JSON.h"
 #include "eckit/parser/JSONDataBlob.h"
 #include "eckit/testing/Test.h"
 #include "eckit/utils/Translator.h"
+
+#include "multio/FileSink.h"
+#include "multio/MultIO.h"
+
+#include "TestHelpers.h"
 
 namespace multio {
 namespace test {
@@ -25,34 +27,40 @@ namespace test {
 namespace {
 std::string create_test_configuration(const eckit::PathName& file1, const eckit::PathName& file2,
                                       const eckit::PathName& file3, int jobId, int port) {
-    file1.unlink();
-    file2.unlink();
-    file3.unlink();
-
     std::stringstream ss;
-    ss << "{ \"triggers\" : [ "
-          "{ \"type\" : \"MetadataChange\", \"host\" : \"localhost\", \"port\" : "
-       << port
-       << ", "
-          "\"retries\" "
-          ": 0, \"timeout\" : 1, \"key\" : \"step\", \"values\" : [\"0\", \"3\", \"6\", \"9\", "
-          "\"12\", \"24\"],"
-          " \"info\" : { \"job\" : \""
-       << jobId << "\", \"job_name\" : \"epsnemo\" } },"
-       << "{ \"type\" : \"MetadataChange\", \"file\" : \"" << file1.baseName()
-       << "\", \"key\" : \"step\", "
-          "\"values\" : "
-          "[\"0\", \"3\", \"6\", \"9\", \"12\", \"24\"],"
-          " \"info\" : { \"job\" : \""
-       << jobId << "\", \"job_name\" : \"epsnemo\" } },"
-       << "{ \"type\" : \"MetadataChange\", \"file\" : \"" << file2.baseName()
-       << "\", \"key\" : \"step\", "
-          "\"values\" : "
-          "[\"1\", \"4\", \"5\", \"6\", \"10\"],"
-          " \"info\" : { \"job\" : \""
-       << jobId
-       << "\", \"job_name\" : \"epsnemo\" } }"
-          "] }";
+    ss << R"json(
+          {
+            "triggers" : [
+              { "type" : "MetadataChange",
+                "host" : "localhost",
+                "port" : )json" << port << R"json(,
+                "retries" : 0,
+                "timeout" : 1,
+                "key" : "step",
+                "values" : [0, 3, 6, 9, 12, 24],
+                "info" : { "job" : )json" << jobId << R"json(,
+                           "job_name" : "epsnemo"
+                }
+              },
+              { "type" : "MetadataChange",
+                "file" : ")json" << file1.baseName() << R"json(",
+                "key" : "step",
+                "values" : [0, 3, 6, 9, 12, 24],
+                "info" : { "job" : )json" << jobId << R"json(,
+                           "job_name" : "epsnemo"
+                }
+              },
+              { "type" : "MetadataChange",
+                "file" : ")json" << file2.baseName() << R"json(",
+                "key" : "step",
+                "values" : [1, 4, 5, 6, 10],
+                "info" : { "job" : )json" << jobId << R"json(,
+                           "job_name" : "epsnemo"
+                }
+              }
+            ]
+          }
+          )json";
 
     return ss.str();
 }
@@ -61,8 +69,9 @@ std::string expected_file_content(const std::vector<int> steps_to_issue, const i
     std::ostringstream oss;
     for (std::vector<int>::const_iterator it = steps_to_issue.begin(); it != steps_to_issue.end();
          ++it) {
-        oss << "{\"type\":\"MetadataChange\",\"info\":{\"app\":\"multio\",\"job\":\"" << jobId
-            << "\",\"job_name\":\"epsnemo\"},\"metadata\":{\"step\":\"" << *it << "\"}}"
+        oss << R"json({"type":"MetadataChange","info":{"app":"multio","job":")json" << jobId
+            << R"json(","job_name":"epsnemo"},"metadata":{"step":")json" << *it
+            << R"json("}})json"
             << std::endl;
     }
     return oss.str();
@@ -86,9 +95,9 @@ bool trigger_executed_correctly(const eckit::PathName& file, const std::vector<i
 
 
 CASE("test_multio_with_event_trigger") {
-    eckit::PathName file1("tmp.1");
-    eckit::PathName file2("tmp.2");
-    eckit::PathName file3("tmp.3");
+    const eckit::PathName& file1 = eckit::TmpFile();
+    const eckit::PathName& file2 = eckit::TmpFile();
+    const eckit::PathName& file3 = eckit::TmpFile();
 
     // Set up
     int port = 10000;
@@ -97,8 +106,14 @@ CASE("test_multio_with_event_trigger") {
     std::string tconf = create_test_configuration(file1, file2, file3, jobId, port);
     ::setenv("MULTIO_CONFIG_TRIGGERS", tconf.c_str(), 1);
 
-    std::string sinks("{ \"sinks\" : [ {\"type\" : \"file\", \"path\" : \"" + file3.baseName() +
-                      "\"} ] }");
+    std::string sinks(R"json({
+                  "sinks" : [ {
+                      "type" : "file",
+                      "path" : ")json" + file3.baseName() + R"json("
+                    } ]
+                }
+                )json");
+
     eckit::YAMLConfiguration config(sinks);
     {
         auto mio = std::unique_ptr<MultIO>(new MultIO{config});

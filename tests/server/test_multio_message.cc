@@ -1,7 +1,7 @@
 
 #include "TestServerHelpers.h"
 
-#include "multio/server/LocalPlan.h"
+#include "multio/server/PartialMapping.h"
 #include "multio/server/Message.h"
 #include "multio/server/print_buffer.h"
 #include "multio/server/SerialisationHelpers.h"
@@ -21,12 +21,12 @@ using eckit::mpi::comm;
 
 CASE("Test message returns the same plan as string") {
 
-    auto test_plan = LocalPlan{"test_field", {7, 23, 43, 91}};
+    auto test_map = PartialMapping{"test_field", {7, 23, 43, 91}};
 
-    auto dest = pack_local_plan(test_plan);
+    auto dest = pack_mapping(test_map);
 
     Message msg(0, -1, msg_tag::plan_data);
-    local_plan_to_message(test_plan, msg);
+    mapping_to_message(test_map, msg);
 
     EXPECT(dest.size() == msg.size());
     EXPECT(std::memcmp(&dest[0], msg.data(), msg.size()) == 0);
@@ -49,14 +49,14 @@ CASE("Test message returns the same field as string") {
 CASE("Test identity after writing and reading plan") {
     ASSERT(comm().size() == 2);
 
-    auto test_plan = LocalPlan{"test_field", {7, 23, 43, 91}};
+    auto test_map = PartialMapping{"test_field", {7, 23, 43, 91}};
 
     auto source = 0;
     auto dest = 1;
     if (comm().rank() == static_cast<size_t>(source)) {
 
         Message msg(0, dest, msg_tag::plan_data);
-        local_plan_to_message(test_plan, msg);
+        mapping_to_message(test_map, msg);
 
         comm().send<void>(msg.data(), msg.size(), msg.peer(), msg.tag());
 
@@ -69,8 +69,8 @@ CASE("Test identity after writing and reading plan") {
         Message msg(comm().getCount<void>(status), status.source(), status.tag());
         comm().receive<void>(msg.data(), msg.size(), msg.peer(), msg.tag());
 
-        auto received_plan = unpack_local_plan(msg);
-        EXPECT(test_plan == received_plan);
+        auto received_map = unpack_mapping(msg);
+        EXPECT(test_map == received_map);
     }
 }
 
@@ -90,7 +90,7 @@ CASE("Test identity after writing and reading atlas field") {
         comm().send<void>(msg.data(), msg.size(), msg.peer(), msg.tag());
 
         EXPECT(msg.tag() == msg_tag::field_data);
-        EXPECT(msg.size() == 288u);
+        EXPECT(msg.size() == 273u);
     } else {
         EXPECT(comm().rank() == static_cast<size_t>(dest));
         auto status = comm().probe(comm().anySource(), comm().anyTag());

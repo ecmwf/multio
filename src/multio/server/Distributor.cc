@@ -27,11 +27,6 @@ auto hash_val(const std::string& str) -> size_t {
 
 Distributor::Distributor(const Transport& trans) : transport_(trans) {}
 
-size_t Distributor::computeHash(const atlas::Field& field) const {
-    auto meta_str = pack_metadata(field.metadata());
-    return (hash_val(meta_str) % transport_.noServers() + transport_.noClients());
-}
-
 void Distributor::sendPartialMapping(const atlas::Field& field) const {
     auto plan_name = field.metadata().get<std::string>("plan_name");
     if (distributed_mappings.find(plan_name) != distributed_mappings.end()) {
@@ -51,6 +46,7 @@ void Distributor::sendPartialMapping(const atlas::Field& field) const {
         transport_.send(msg);
     }
 
+    // Block until the plan is created on all servers
     waitForPlan(mapping.plan_name());
 
     // Register sending this plan
@@ -76,6 +72,11 @@ void Distributor::sendNotification(const msg_tag notification) const {
 }
 
 // Private members
+
+size_t Distributor::computeHash(const atlas::Field& field) const {
+    auto meta_str = pack_metadata(field.metadata());
+    return (hash_val(meta_str) % transport_.noServers() + transport_.noClients());
+}
 
 void Distributor::waitForPlan(const std::string& plan_name) const {
     auto counter = 0u;

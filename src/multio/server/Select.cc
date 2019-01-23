@@ -16,7 +16,7 @@ Select::Select(const std::string& name, const std::string& nm) : Action{nm}, pla
 bool Select::doExecute(std::shared_ptr<Message> msg) const {
     switch (msg->tag()) {
         case msg_tag::field_data:
-            return plan_name_ == fetch_metadata(*msg).get<std::string>("plan_name");
+            return matchPlan(*msg);
 
         case msg_tag::step_complete:
             return true;
@@ -25,6 +25,10 @@ bool Select::doExecute(std::shared_ptr<Message> msg) const {
             ASSERT(false);
             return false;
     }
+}
+
+bool Select::matchPlan(const Message& msg) const {
+    return plan_name_ == fetch_metadata(msg).get<std::string>("plan_name");
 }
 
 }  // namespace server

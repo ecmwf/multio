@@ -37,9 +37,9 @@ bool PlanAssembler::tryCreate(const Message& msg) {
 
     auto metadata = atlas::util::Metadata{unpack_metadata(meta_buf)};
     auto plan_name = metadata.get<std::string>("plan_name");
-    if (!planConfigs_.has(plan_name)) {
-        ASSERT(false);
-    }
+
+    // Read plan's configuration
+    ASSERT(planConfigs_.has(plan_name));
     auto config = atlas::util::Metadata{planConfigs_.getSubConfiguration(plan_name)};
 
     if (config.get<std::string>("aggregation") == "none") {

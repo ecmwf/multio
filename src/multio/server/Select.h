@@ -15,6 +15,8 @@ public:
 private:  // methods
     bool doExecute(std::shared_ptr<Message> msg) const override;
 
+    bool matchPlan(const Message& msg) const;
+
 private:  // members
     std::string plan_name_;
 };

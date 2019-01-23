@@ -21,8 +21,6 @@ class Distributor {
 public:
     Distributor(const Transport& trans);
 
-    size_t computeHash(const atlas::Field& field) const;
-
     void sendPartialMapping(const atlas::Field& field) const;
     void sendPartialField(const atlas::Field& field) const;
     void sendNotification(const msg_tag notification) const;
@@ -32,6 +30,8 @@ private:  // members
     const Transport& transport_;
 
 private:  // methods
+    size_t computeHash(const atlas::Field& field) const;
+
     void waitForPlan(const std::string& plan_name) const;
 
     void print(std::ostream& os) const;

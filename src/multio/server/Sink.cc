@@ -37,8 +37,8 @@ bool Sink::doExecute(std::shared_ptr<Message> msg) const {
 void Sink::configure(const atlas::util::Metadata& metadata) const {
     eckit::LocalConfiguration config;
     config.set("path", eckit::PathName{metadata.get<std::string>("name") +
-                                       "::" + std::to_string(metadata.get<int>("levels")) +
-                                       "::" + std::to_string(metadata.get<int>("steps"))});
+                                       "::" + std::to_string(metadata.get<int>("level")) +
+                                       "::" + std::to_string(metadata.get<int>("step"))});
     dataSink_.reset(DataSinkFactory::instance().build("file", config));
 }
 

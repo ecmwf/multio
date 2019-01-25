@@ -40,11 +40,11 @@ CASE("Test that MPI transport layer") {
             auto dest = 1;
 
             // Send plan
-            Message msg(0, dest, msg_tag::plan_data);
+            Message msg(0, dest, msg_tag::message_data);
             mapping_to_message(test_map, msg);
             transport.send(msg);
 
-            EXPECT(msg.tag() == msg_tag::plan_data);
+            EXPECT(msg.tag() == msg_tag::message_data);
 
             // Send field
             msg.reset(0, dest, msg_tag::field_data);
@@ -52,20 +52,20 @@ CASE("Test that MPI transport layer") {
             transport.send(msg);
 
             EXPECT(msg.tag() == msg_tag::field_data);
-            EXPECT(msg.size() == 273u);
+            EXPECT(msg.size() == 307u);
         } else {
             EXPECT(transport.server());
 
             // Receive plan
             Message msg;
             transport.receive(msg);
-            EXPECT(msg.tag() == msg_tag::plan_data);
+            EXPECT(msg.tag() == msg_tag::message_data);
 
             auto received_map = unpack_mapping(msg);
             EXPECT(test_map == received_map);
 
             // Receive field
-            msg.reset(0, -1, msg_tag::plan_data);
+            msg.reset(0, -1, msg_tag::message_data);
             transport.receive(msg);
             EXPECT(msg.tag() == msg_tag::field_data);
 

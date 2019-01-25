@@ -17,14 +17,15 @@ class Message;
 
 class Aggregation : public Action {
 public:
-    explicit Aggregation(std::vector<std::vector<int>> maps, const std::string& nm = "Aggregation");
+    explicit Aggregation(const std::string& nm = "Aggregation");
 
 private:  // methods
     bool doExecute(std::shared_ptr<Message> msg) const override;
     atlas::Field aggregate(const std::string& meta_str) const;
 
 private:  // members
-    const std::vector<std::vector<int>> mappings_;
+    // const std::vector<std::vector<int>> mappings_;
+    mutable std::string map_name_;
     mutable std::unordered_map<std::string, std::vector<std::shared_ptr<Message>>> messages_;
 };
 

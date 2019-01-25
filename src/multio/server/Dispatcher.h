@@ -16,8 +16,6 @@ class Dispatcher {
 public:
     Dispatcher(const Transport& trans);
 
-    std::string registerPlan(const Message& msg);
-
     void feedPlans(std::shared_ptr<Message> msg);
 
     void listen();
@@ -25,14 +23,10 @@ public:
 private:  // members
     const Transport& transport_;
 
-    PlanAssembler planAssembler_;
-
     std::set<Plan> registeredPlans_;
 
 private:  // methods
     bool allPartsArrived(unsigned counter) const;
-
-    bool hasPlan(const std::string& plan_name) const;
 
     void print(std::ostream& os) const;
 

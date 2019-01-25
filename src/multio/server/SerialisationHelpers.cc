@@ -53,7 +53,7 @@ auto pack_mapping(const PartialMapping& mapping) -> std::string {
 }
 
 void mapping_to_message(const PartialMapping& mapping, Message& msg) {
-    ASSERT(msg.tag() == msg_tag::plan_data);
+    ASSERT(msg.tag() == msg_tag::message_data);
 
     auto meta_str = pack_metadata(mapping.metadata);
 
@@ -179,8 +179,8 @@ auto unpack_atlas_field(const Message& msg) -> atlas::Field {
 auto recreate_atlas_field(const atlas::util::Metadata& metadata) -> atlas::Field {
     auto field = atlas::Field{};
 
-    auto gl_size = metadata.get<size_t>("gl_size");
-    auto shape = atlas::array::make_shape(gl_size);
+    auto global_size = metadata.get<size_t>("global_size");
+    auto shape = atlas::array::make_shape(global_size);
 
     auto name = metadata.get<std::string>("name");
     field = atlas::Field(name, atlas::array::DataType("real64"), shape);

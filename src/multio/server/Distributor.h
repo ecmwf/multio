@@ -32,8 +32,6 @@ private:  // members
 private:  // methods
     size_t computeHash(const atlas::Field& field) const;
 
-    void waitForPlan(const std::string& plan_name) const;
-
     void print(std::ostream& os) const;
 
     friend std::ostream& operator<<(std::ostream& os, const Distributor& distr) {

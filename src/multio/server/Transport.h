@@ -17,8 +17,6 @@ public: // methods
     Transport(const std::string& title, size_t no_serv);
     virtual ~Transport();
 
-    virtual void notifyAllClients(const Message& msg) const = 0;
-
     virtual void receive(Message &message) const = 0;
     virtual void send(const Message &message) const = 0;
     virtual void synchronise() const = 0;

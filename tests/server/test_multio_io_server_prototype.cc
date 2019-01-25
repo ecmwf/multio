@@ -26,8 +26,10 @@ namespace {
 const auto nServers = 3u;
 const Transport& transport = MpiTransport{"i/o server test", nServers};
 
-const auto steps = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-const auto levels = {200, 300, 500, 750, 800, 850, 900, 925, 950, 1000};
+// const auto steps = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+// const auto levels = {200, 300, 500, 750, 800, 850, 900, 925, 950, 1000};
+const auto steps = {0, 1, 2, 3};
+const auto levels = {200, 300, 500};
 const auto parameters = {"temperature", "geopotential", "rel_humidity"};
 
 auto create_global_test_data(const size_t sz) -> std::vector<atlas::Field> {
@@ -41,6 +43,9 @@ auto create_global_test_data(const size_t sz) -> std::vector<atlas::Field> {
                 gl_fields.push_back(create_global_test_field(metadata, sz));
             }
         }
+        atlas::util::Metadata metadata;
+        set_metadata(metadata, "sst", 0, step);
+        gl_fields.push_back(create_global_test_field(metadata, sz));
     }
 
     return gl_fields;
@@ -70,7 +75,7 @@ auto create_partial_fields(const std::vector<atlas::Field>& global_fields)
 
 CASE("Test that fields ") {
     // Set up global data
-    field_size() = 1999;
+    field_size() = 19;
 
     auto global_fields = create_global_test_data(field_size());
     auto partial_fields = create_partial_fields(global_fields);
@@ -101,8 +106,8 @@ CASE("Test that fields ") {
             for (const auto& field : global_fields) {
                 const auto& metadata = field.metadata();
                 multio::test::TestFile file{metadata.get<std::string>("name") +
-                                     "::" + std::to_string(metadata.get<int>("levels")) +
-                                     "::" + std::to_string(metadata.get<int>("steps"))};
+                                     "::" + std::to_string(metadata.get<int>("level")) +
+                                     "::" + std::to_string(metadata.get<int>("step"))};
 
                 auto actual = file_content(file.name());
                 auto expected = pack_atlas_field(field);

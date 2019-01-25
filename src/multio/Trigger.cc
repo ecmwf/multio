@@ -230,6 +230,7 @@ public: // methods
         lastSeen_(values_.end()),
         issued_(values_.end())
     {
+        std::cout << "Config: " << config << std::endl;
     }
 
     ~MetadataChangeTrigger() {

@@ -49,12 +49,23 @@ inline size_t& root() {
     return rt;
 }
 
+inline std::string get_category(const std::string& name) {
+    if (name == "sst") {
+        return "surface";
+    }
+    return "prognostic";
+}
+
 inline void set_metadata(Metadata& metadata, const std::string& name, int level, int step) {
     metadata.set("name", name);
-    metadata.set("plan_name", "atm_grid");
-    metadata.set("gl_size", field_size());
-    metadata.set("levels", level);
-    metadata.set("steps", step);
+    metadata.set("type", msg_tag::field_data);
+    metadata.set("category", get_category(name));
+    metadata.set("global_size", field_size());
+    metadata.set("mapping", "scattered");
+
+    // MARS-type metadata
+    metadata.set("level", level);
+    metadata.set("step", step);
 }
 
 // TODO: This function still assumes that MPI is used in the test for the transport layer. We will
@@ -108,7 +119,7 @@ inline auto unpack_mapping(Message& msg) -> PartialMapping {
     msg.read(meta_buf, meta_size);
 
     auto metadata = atlas::util::Metadata{unpack_metadata(meta_buf)};
-    auto mapping = PartialMapping{metadata.get<std::string>("plan_name")};
+    auto mapping = PartialMapping{metadata.get<std::string>("name")};
 
     auto data_size = msg.size() - meta_size - sizeof(long);
     std::vector<int> local_map(data_size / sizeof(int));

@@ -25,7 +25,7 @@ CASE("Test message returns the same plan as string") {
 
     auto dest = pack_mapping(test_map);
 
-    Message msg(0, -1, msg_tag::plan_data);
+    Message msg(0, -1, msg_tag::message_data);
     mapping_to_message(test_map, msg);
 
     EXPECT(dest.size() == msg.size());
@@ -55,12 +55,12 @@ CASE("Test identity after writing and reading plan") {
     auto dest = 1;
     if (comm().rank() == static_cast<size_t>(source)) {
 
-        Message msg(0, dest, msg_tag::plan_data);
+        Message msg(0, dest, msg_tag::message_data);
         mapping_to_message(test_map, msg);
 
         comm().send<void>(msg.data(), msg.size(), msg.peer(), msg.tag());
 
-        EXPECT(msg.tag() == msg_tag::plan_data);
+        EXPECT(msg.tag() == msg_tag::message_data);
 
     } else {
         EXPECT(comm().rank() == static_cast<size_t>(dest));
@@ -90,7 +90,7 @@ CASE("Test identity after writing and reading atlas field") {
         comm().send<void>(msg.data(), msg.size(), msg.peer(), msg.tag());
 
         EXPECT(msg.tag() == msg_tag::field_data);
-        EXPECT(msg.size() == 273u);
+        EXPECT(msg.size() == 307u);
     } else {
         EXPECT(comm().rank() == static_cast<size_t>(dest));
         auto status = comm().probe(comm().anySource(), comm().anyTag());

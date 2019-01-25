@@ -24,15 +24,6 @@ MpiTransport::MpiTransport(const std::string& title, size_t no_serv, Comm& paren
 
 MpiTransport::~MpiTransport() = default;
 
-void MpiTransport::notifyAllClients(const Message& msg) const {
-    ASSERT(serverComm_);
-    auto peer = 0;
-    do {
-        globalComm_.synchronisedSend<char>(static_cast<const char*>(msg.data()), msg.size(), peer,
-                                           msg.tag());
-    } while (++peer < static_cast<int>(noClients()));
-}
-
 void MpiTransport::receive(Message& msg) const {
     auto status = globalComm_.probe(globalComm_.anySource(), globalComm_.anyTag());
     msg.reset(globalComm_.getCount<void>(status), status.source(), status.tag());

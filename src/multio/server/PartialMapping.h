@@ -15,14 +15,19 @@ namespace multio {
 namespace server {
 
 struct PartialMapping {
-    PartialMapping(const std::string& name = "atm_grid", std::vector<int> idxmap = {}) :
+    PartialMapping(const std::string& name = "scattered", std::vector<int> idxmap = {}) :
         indices{idxmap} {
-        metadata.set("plan_name", name);
+        metadata.set("name", name);
     }
-    std::string plan_name() {
+    std::string name() {
         std::string name;
-        metadata.get("plan_name", name);
+        metadata.get("name", name);
         return name;
+    }
+    size_t map_count() {
+        size_t count;
+        metadata.get("map_count", count);
+        return count;
     }
     eckit::LocalConfiguration metadata;
     std::vector<int> indices;
@@ -44,10 +49,10 @@ inline std::vector<int> create_partial_mapping(size_t field_size, size_t n_proc,
 inline PartialMapping fetch_mapping(const atlas::util::Metadata& config, size_t n_proc,
                                     size_t rank) {
     auto partial_mapping =
-        PartialMapping{config.get<std::string>("plan_name"),
-                       create_partial_mapping(config.get<size_t>("gl_size"), n_proc, rank)};
+        PartialMapping{config.get<std::string>("mapping"),
+                       create_partial_mapping(config.get<size_t>("global_size"), n_proc, rank)};
 
-    partial_mapping.metadata.set("no_maps", n_proc);
+    partial_mapping.metadata.set("map_count", n_proc);
 
     return partial_mapping;
 }

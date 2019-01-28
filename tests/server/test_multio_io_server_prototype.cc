@@ -97,7 +97,7 @@ CASE("Test that fields ") {
             Dispatcher dispatcher{transport};
 
             // Receive field
-            dispatcher.listen();
+            dispatcher.eventLoop();
         }
 
         transport.synchronise();

@@ -4,6 +4,8 @@
 
 #include <set>
 
+#include "eckit/container/Queue.h"
+
 #include "multio/server/Message.h"
 #include "multio/server/Plan.h"
 #include "multio/server/PlanAssembler.h"
@@ -18,15 +20,21 @@ public:
 
     void feedPlans(std::shared_ptr<Message> msg);
 
-    void listen();
+    void eventLoop();
 
 private:  // members
     const Transport& transport_;
 
     std::set<Plan> registeredPlans_;
 
+    eckit::Queue<std::shared_ptr<Message>> msgQueue_{1024};
+
+    bool allPartsArrived_;
+
 private:  // methods
-    bool allPartsArrived(unsigned counter) const;
+    void listen();
+
+    bool allPartsArrived(unsigned counter);
 
     void print(std::ostream& os) const;
 

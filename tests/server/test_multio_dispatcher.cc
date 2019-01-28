@@ -74,7 +74,7 @@ CASE("Test that distributor-dispatcher pair ") {
             Dispatcher dispatcher{transport};
 
             // Receive field
-            dispatcher.listen();
+            dispatcher.eventLoop();
         }
 
         transport.synchronise();

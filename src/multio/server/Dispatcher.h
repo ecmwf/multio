@@ -34,6 +34,8 @@ private:  // members
 private:  // methods
     void listen();
 
+    void dispatchNext();
+
     bool allPartsArrived(unsigned counter);
 
     void print(std::ostream& os) const;

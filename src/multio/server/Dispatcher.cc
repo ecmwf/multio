@@ -29,49 +29,23 @@ void Dispatcher::feedPlans(std::shared_ptr<Message> msg) {
 }
 
 void Dispatcher::eventLoop() {
+    // Start listening thread
     std::thread t([this] { this->listen(); });
 
-    // listen();
-
-    eckit::Log::info() << "Rank: " << transport_.globalRank() << ", Started listening..."
-                       << std::endl;
-
-    auto counter = 0u;
+    // Other thread does the dispatching
     do {
-        std::cout << "About to pop message... " << std::endl;
-        std::cout << "    Size of message queue: " << msgQueue_.size() << std::endl;
-        auto msg = msgQueue_.pop();
-        std::cout << "Popped message... " << std::endl;
-        switch (msg->tag()) {
-            case msg_tag::message_data: {
-                Mappings::instance().add(*msg);
-            } break;
+        dispatchNext();
+    } while (not(allPartsArrived_ && msgQueue_.empty()));
 
-            case msg_tag::field_data:
-                feedPlans(msg);
-                break;
-
-            case msg_tag::step_complete:
-                feedPlans(msg);
-                break;
-
-            case msg_tag::forecast_complete:
-                ++counter;
-                break;
-
-            default:
-                ASSERT(false);
-        }
-    } while (not (allPartsArrived_ && msgQueue_.empty()));
-    eckit::Log::info() << "Rank: " << transport_.globalRank() << ", Done with listening..."
-                       << std::endl;
     t.join();
-    std::cout << "Thread joined..." << std::endl;
 }
 
 // Private member functions
 
 void Dispatcher::listen() {
+    eckit::Log::info() << "Rank: " << transport_.globalRank() << ", Started listening..."
+                       << std::endl;
+
     auto counter = 0u;
     do {
         Message msg(0);
@@ -79,13 +53,35 @@ void Dispatcher::listen() {
 
         if (msg.tag() == msg_tag::forecast_complete) {
             ++counter;
-        } else {
+        }
+        else {
             msgQueue_.push(std::make_shared<Message>(std::move(msg)));
-            std::cout << "Just pushed a message... " << std::endl;
-            std::cout << "    Size of message queue: " << msgQueue_.size() << std::endl;
         }
 
     } while (not allPartsArrived(counter));
+
+    eckit::Log::info() << "Rank: " << transport_.globalRank() << ", Done with listening..."
+                       << std::endl;
+}
+
+void Dispatcher::dispatchNext() {
+    auto msg = msgQueue_.pop();
+    switch (msg->tag()) {
+        case msg_tag::message_data:
+            Mappings::instance().add(*msg);
+            break;
+
+        case msg_tag::field_data:
+            feedPlans(msg);
+            break;
+
+        case msg_tag::step_complete:
+            feedPlans(msg);
+            break;
+
+        default:
+            ASSERT(false);
+    }
 }
 
 bool Dispatcher::allPartsArrived(const unsigned counter) {

@@ -14,6 +14,7 @@
 #include "multio/server/Message.h"
 #include "multio/server/msg_tag.h"
 #include "multio/server/SerialisationHelpers.h"
+#include "multio/server/ScopedThread.h"
 
 namespace multio {
 namespace server {
@@ -30,14 +31,12 @@ void Dispatcher::feedPlans(std::shared_ptr<Message> msg) {
 
 void Dispatcher::eventLoop() {
     // Start listening thread
-    std::thread t([this] { this->listen(); });
+    ScopedThread scThread{std::thread{[this] { this->listen(); }}};
 
     // Other thread does the dispatching
     do {
         dispatchNext();
     } while (not(allPartsArrived_ && msgQueue_.empty()));
-
-    t.join();
 }
 
 // Private member functions

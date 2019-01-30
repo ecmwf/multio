@@ -32,6 +32,10 @@ ecbuild_add_library(
         Select.h
         Sink.cc
         Sink.h
+        sandbox/Transport.h
+        sandbox/Transport.cc
+        sandbox/DummyTransport.h
+        sandbox/DummyTransport.cc
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}

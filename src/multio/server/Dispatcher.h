@@ -2,6 +2,7 @@
 #ifndef multio_server_Dispatcher_H
 #define multio_server_Dispatcher_H
 
+#include <atomic>
 #include <set>
 
 #include "eckit/container/Queue.h"
@@ -29,14 +30,14 @@ private:  // members
 
     eckit::Queue<std::shared_ptr<Message>> msgQueue_{1024};
 
-    bool allPartsArrived_;
+    std::atomic<unsigned> counter_{0};
 
 private:  // methods
     void listen();
 
     void dispatchNext();
 
-    bool allPartsArrived(unsigned counter);
+    bool allPartsArrived();
 
     void print(std::ostream& os) const;
 

@@ -36,7 +36,7 @@ void Dispatcher::eventLoop() {
     // Other thread does the dispatching
     do {
         dispatchNext();
-    } while (not(allPartsArrived_ && msgQueue_.empty()));
+    } while (not (allPartsArrived() && msgQueue_.empty()) );
 }
 
 // Private member functions
@@ -45,19 +45,18 @@ void Dispatcher::listen() {
     eckit::Log::info() << "Rank: " << transport_.globalRank() << ", Started listening..."
                        << std::endl;
 
-    auto counter = 0u;
     do {
         Message msg(0);
         transport_.receive(msg);
 
         if (msg.tag() == msg_tag::forecast_complete) {
-            ++counter;
+            ++counter_;
         }
         else {
             msgQueue_.push(std::make_shared<Message>(std::move(msg)));
         }
 
-    } while (not allPartsArrived(counter));
+    } while (not allPartsArrived());
 
     eckit::Log::info() << "Rank: " << transport_.globalRank() << ", Done with listening..."
                        << std::endl;
@@ -83,9 +82,8 @@ void Dispatcher::dispatchNext() {
     }
 }
 
-bool Dispatcher::allPartsArrived(const unsigned counter) {
-    allPartsArrived_ = (counter == transport_.noClients());
-    return allPartsArrived_;
+bool Dispatcher::allPartsArrived() {
+    return (counter_ == transport_.noClients());
 }
 
 void Dispatcher::print(std::ostream& os) const {

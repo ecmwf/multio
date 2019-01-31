@@ -10,7 +10,9 @@ enum msg_tag
     message_data,
     field_data,
     step_complete,
-    forecast_complete
+    forecast_complete,
+    open,
+    close
 };
 
 }  // namespace server

@@ -5,6 +5,7 @@
 #include <queue>
 
 #include "Transport.h"
+#include "multio/server/Message.h"
 
 namespace multio {
 namespace server {

@@ -65,7 +65,7 @@ CASE("Test dummy transport layer") {
     { // Server
         sandbox::Listener listener(*transport);
 
-        listener.eventLoop();
+        listener.listen();
 
         multio::test::TestFile file{"test_output"};
         auto actual = multio::test::file_content(file.name());

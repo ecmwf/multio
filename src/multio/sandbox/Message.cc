@@ -8,7 +8,7 @@
 #include "eckit/log/ResourceUsage.h"
 #include "eckit/maths/Functions.h"
 
-#include "multio/server/print_buffer.h"
+#include "multio/sandbox/print_buffer.h"
 
 namespace multio {
 namespace sandbox {
@@ -88,7 +88,7 @@ std::string Message::name() const {
 void Message::print(std::ostream& out) const {
     out << "Message(tag = " << static_cast<int>(tag_) << ", peer = " << peer_
         << ", position = " << position_ << ", buffer = ";
-    multio::server::print_buffer(payload_, out, "");
+    print_buffer(payload_, out, "");
     out << ")" << std::endl;
 }
 

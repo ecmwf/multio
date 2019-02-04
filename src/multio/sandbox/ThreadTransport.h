@@ -7,7 +7,6 @@
 #include "multio/sandbox/Message.h"
 
 #include "Transport.h"
-#include "multio/server/Message.h"
 
 namespace multio {
 namespace sandbox {

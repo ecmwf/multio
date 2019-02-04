@@ -1,6 +1,7 @@
 
 #include <memory>
 
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/testing/Test.h"
 
 #include "multio/sandbox/Message.h"
@@ -13,7 +14,8 @@ namespace sandbox {
 namespace test {
 
 CASE("Test dummy transport layer") {
-    auto config = std::string{"dummy"};
+    eckit::LocalConfiguration config;
+    config.set("name", "dummy");
     std::unique_ptr<sandbox::Transport> transport{new sandbox::ThreadTransport{config}};
 
     std::ostringstream oss;

@@ -5,16 +5,23 @@
 #include <string>
 
 #include "eckit/memory/NonCopyable.h"
+#include "eckit/config/LocalConfiguration.h"
 
 #include "multio/sandbox/Message.h"
 
 namespace multio {
 namespace sandbox {
 
-class Transport : public eckit::NonCopyable {
-public: // methods
+template <typename ValueType>
+ValueType get_config_value(const eckit::LocalConfiguration& config, std::string value_name) {
+    ValueType val;
+    config.get("name", val);
+    return val;
+}
 
-    Transport(const std::string& title);
+class Transport {
+public:  // methods
+    Transport(const eckit::LocalConfiguration& config);
     virtual ~Transport();
 
     virtual void receive(Message &message) = 0;
@@ -22,7 +29,7 @@ public: // methods
 
 protected:
 
-    const std::string title_;
+    const eckit::LocalConfiguration& config_;
 
 private: // methods
 

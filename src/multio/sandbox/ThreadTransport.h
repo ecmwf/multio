@@ -2,7 +2,7 @@
 #ifndef multio_sandbox_ThreadTransport_H
 #define multio_sandbox_ThreadTransport_H
 
-#include <queue>
+#include "eckit/container/Queue.h"
 
 #include "multio/sandbox/Message.h"
 
@@ -13,7 +13,7 @@ namespace sandbox {
 
 class ThreadTransport final : public Transport {
 public:
-    ThreadTransport(const std::string& title);
+    ThreadTransport(const eckit::LocalConfiguration& config);
     ~ThreadTransport() override;
 
 private:
@@ -23,7 +23,7 @@ private:
     void print(std::ostream &os) const override;
 
 private:
-    std::queue<Message> internalBuffer_;
+    eckit::Queue<Message> internalBuffer_{1024};
 
 };
 

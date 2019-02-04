@@ -4,7 +4,10 @@
 namespace multio {
 namespace sandbox {
 
-Transport::Transport(const std::string& title) : title_(title) {}
+namespace {
+}  // namespace
+
+Transport::Transport(const eckit::LocalConfiguration& config) : config_(config) {}
 
 Transport::~Transport() = default;
 

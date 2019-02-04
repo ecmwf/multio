@@ -1,16 +1,14 @@
 
-#ifndef multio_server_sandbox_Transport_H
-#define multio_server_sandbox_Transport_H
-
-#include "eckit/memory/NonCopyable.h"
+#ifndef multio_sandbox_Transport_H
+#define multio_sandbox_Transport_H
 
 #include <string>
 
+#include "eckit/memory/NonCopyable.h"
+
+#include "multio/sandbox/Message.h"
+
 namespace multio {
-namespace server {
-
-class Message;
-
 namespace sandbox {
 
 class Transport : public eckit::NonCopyable {
@@ -37,7 +35,6 @@ private: // methods
 };
 
 }  // namespace sandbox
-}  // namespace server
 }  // namespace multio
 
 #endif

@@ -3,10 +3,7 @@
 
 #include "DummyTransport.h"
 
-#include "multio/server/Message.h"
-
 namespace multio {
-namespace server {
 namespace sandbox {
 
 DummyTransport::DummyTransport(const std::string& title) : Transport{title} {}
@@ -26,5 +23,4 @@ void DummyTransport::print(std::ostream& os) const {
 }
 
 }  // namespace sandbox
-}  // namespace server
 }  // namespace multio

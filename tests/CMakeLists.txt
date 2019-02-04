@@ -17,4 +17,5 @@ ecbuild_add_test( TARGET    test_multio_journal
                   SOURCES   test_multio_journal.cc
                   LIBS      multio )
 
+add_subdirectory(sandbox)
 add_subdirectory(server)

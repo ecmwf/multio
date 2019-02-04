@@ -1,16 +1,14 @@
 
-#ifndef multio_server_sandbox_Dispatcher_H
-#define multio_server_sandbox_Dispatcher_H
+#ifndef multio_sandbox_Dispatcher_H
+#define multio_sandbox_Dispatcher_H
 
 #include <memory>
 
 #include "eckit/container/Queue.h"
 
+#include "multio/sandbox/Message.h"
+
 namespace multio {
-namespace server {
-
-class Message;
-
 namespace sandbox {
 
 class Dispatcher {
@@ -21,7 +19,6 @@ public:
 };
 
 }  // namespace sandbox
-}  // namespace server
 }  // namespace multio
 
 #endif

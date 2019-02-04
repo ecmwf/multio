@@ -1,15 +1,14 @@
 
-#ifndef multio_server_sandbox_Listener_H
-#define multio_server_sandbox_Listener_H
+#ifndef multio_sandbox_Listener_H
+#define multio_sandbox_Listener_H
 
 #include <list>
 
 #include "eckit/container/Queue.h"
 
-#include "multio/server/sandbox/Transport.h"
+#include "multio/sandbox/Transport.h"
 
 namespace multio {
-namespace server {
 namespace sandbox {
 
 struct Connection {
@@ -34,7 +33,6 @@ private:
 };
 
 }  // namespace sandbox
-}  // namespace server
 }  // namespace multio
 
 #endif

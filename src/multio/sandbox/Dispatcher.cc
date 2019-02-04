@@ -1,15 +1,12 @@
 
-#ifndef multio_server_sandbox_Listener_H
-#define multio_server_sandbox_Listener_H
+#ifndef multio_sandbox_Listener_H
+#define multio_sandbox_Listener_H
 
 #include "Dispatcher.h"
 
 #include <fstream>
 
-#include "multio/server/Message.h"
-
 namespace multio {
-namespace server {
 namespace sandbox {
 
 namespace {
@@ -30,7 +27,6 @@ void Dispatcher::dispatch(eckit::Queue<std::shared_ptr<Message>>& queue) {
 }
 
 }  // namespace sandbox
-}  // namespace server
 }  // namespace multio
 
 #endif

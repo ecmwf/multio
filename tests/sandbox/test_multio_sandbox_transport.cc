@@ -1,18 +1,15 @@
 
+#include <memory>
+
 #include "eckit/testing/Test.h"
 
-#include "multio/server/Message.h"
-#include "multio/server/PartialMapping.h"
-#include "multio/server/SerialisationHelpers.h"
-
-#include "multio/server/sandbox/DummyTransport.h"
-
-#include "TestServerHelpers.h"
+#include "multio/sandbox/Message.h"
+#include "multio/sandbox/DummyTransport.h"
 
 using namespace eckit::testing;
 
 namespace multio {
-namespace server {
+namespace sandbox {
 namespace test {
 
 CASE("Test dummy transport layer") {
@@ -27,19 +24,17 @@ CASE("Test dummy transport layer") {
     { // Client
 
         auto test_data = std::string("{7, 23, 43, 91}");
-        auto msg = Message{0, 7, msg_tag::message_data};
+        auto msg = Message{0, 7, MsgTag::mapping_data};
         msg.write(test_data.data(), test_data.size());
         transport->send(msg);
-        msg.rewind();
 
         test_data = std::string("{19, 49, 67, 89}");
-        msg = Message{0, 11, msg_tag::message_data};
+        msg = Message{0, 11, MsgTag::mapping_data};
         msg.write(test_data.data(), test_data.size());
         transport->send(msg);
-        msg.rewind();
 
         test_data = std::string("{11, 17, 29, 41}");
-        msg = Message{0, 13, msg_tag::message_data};
+        msg = Message{0, 13, MsgTag::mapping_data};
         msg.write(test_data.data(), test_data.size());
         transport->send(msg);
 
@@ -70,7 +65,7 @@ CASE("Test dummy transport layer") {
     }
 }
 
-}  // namespace server
+}  // namespace sandbox
 }  // namespace test
 }  // namespace multio
 

@@ -1,14 +1,15 @@
 
-#ifndef multio_server_sandbox_DummyTransport_H
-#define multio_server_sandbox_DummyTransport_H
+#ifndef multio_sandbox_DummyTransport_H
+#define multio_sandbox_DummyTransport_H
 
 #include <queue>
+
+#include "multio/sandbox/Message.h"
 
 #include "Transport.h"
 #include "multio/server/Message.h"
 
 namespace multio {
-namespace server {
 namespace sandbox {
 
 class DummyTransport final : public Transport {
@@ -28,7 +29,6 @@ private:
 };
 
 }  // namespace sandbox
-}  // namespace server
 }  // namespace multio
 
 #endif

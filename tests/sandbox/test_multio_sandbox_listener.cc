@@ -2,7 +2,7 @@
 #include "eckit/testing/Test.h"
 
 #include "multio/sandbox/Message.h"
-#include "multio/sandbox/DummyTransport.h"
+#include "multio/sandbox/ThreadTransport.h"
 #include "multio/sandbox/Listener.h"
 
 #include "../TestHelpers.h"
@@ -15,12 +15,12 @@ namespace test {
 
 CASE("Test dummy transport layer") {
     auto config = std::string{"dummy"};
-    std::unique_ptr<sandbox::Transport> transport{new sandbox::DummyTransport{config}};
+    std::unique_ptr<sandbox::Transport> transport{new sandbox::ThreadTransport{config}};
 
     std::ostringstream oss;
     oss << *transport;
 
-    EXPECT(oss.str() == "DummyTransport[dummy]");
+    EXPECT(oss.str() == "ThreadTransport[dummy]");
 
     { // Client
         // Open connections

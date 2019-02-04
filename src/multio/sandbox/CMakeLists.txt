@@ -10,8 +10,8 @@ ecbuild_add_library(
         Message.h
         Transport.cc
         Transport.h
-        DummyTransport.cc
-        DummyTransport.h
+        ThreadTransport.cc
+        ThreadTransport.h
         Listener.cc
         Listener.h
         Dispatcher.cc

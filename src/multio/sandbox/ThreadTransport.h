@@ -1,6 +1,6 @@
 
-#ifndef multio_sandbox_DummyTransport_H
-#define multio_sandbox_DummyTransport_H
+#ifndef multio_sandbox_ThreadTransport_H
+#define multio_sandbox_ThreadTransport_H
 
 #include <queue>
 
@@ -12,10 +12,10 @@
 namespace multio {
 namespace sandbox {
 
-class DummyTransport final : public Transport {
+class ThreadTransport final : public Transport {
 public:
-    DummyTransport(const std::string& title);
-    ~DummyTransport() override;
+    ThreadTransport(const std::string& title);
+    ~ThreadTransport() override;
 
 private:
     void receive(Message& msg) override;

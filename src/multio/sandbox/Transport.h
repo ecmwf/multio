@@ -2,6 +2,7 @@
 #ifndef multio_sandbox_Transport_H
 #define multio_sandbox_Transport_H
 
+#include <iostream>
 #include <string>
 
 #include "eckit/memory/NonCopyable.h"
@@ -33,7 +34,7 @@ protected:
 
 private: // methods
 
-    virtual void print(std::ostream &os) const = 0;
+    void print(std::ostream &os) const;
 
     friend std::ostream& operator<<(std::ostream& os, const Transport& transport) {
         transport.print(os);

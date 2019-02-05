@@ -4,8 +4,7 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/testing/Test.h"
 
-#include "multio/sandbox/Message.h"
-#include "multio/sandbox/ThreadTransport.h"
+#include "multio/sandbox/SimpleTransport.h"
 
 using namespace eckit::testing;
 
@@ -13,15 +12,15 @@ namespace multio {
 namespace sandbox {
 namespace test {
 
-CASE("Test dummy transport layer") {
+CASE("Test simple transport layer") {
     eckit::LocalConfiguration config;
-    config.set("name", "dummy");
-    std::unique_ptr<sandbox::Transport> transport{new sandbox::ThreadTransport{config}};
+    config.set("name", "simple");
+    std::unique_ptr<sandbox::Transport> transport{new sandbox::SimpleTransport{config}};
 
     std::ostringstream oss;
     oss << *transport;
 
-    EXPECT(oss.str() == "ThreadTransport[dummy]");
+    EXPECT(oss.str() == "Transport[simple]");
 
     { // Client
 

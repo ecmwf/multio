@@ -12,6 +12,8 @@ ecbuild_add_library(
         Transport.h
         ThreadTransport.cc
         ThreadTransport.h
+        SimpleTransport.cc
+        SimpleTransport.h
         Listener.cc
         Listener.h
         Dispatcher.cc

@@ -3,6 +3,7 @@
 #define multio_sandbox_Message_H
 
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace multio {
@@ -18,18 +19,31 @@ enum class MsgTag
     close
 };
 
+struct Peer {
+    Peer(int id) { rank = id; }
+    Peer(std::thread::id id) { thread_id = id; }
+
+    operator int() { return rank; }
+    operator std::thread::id() { return thread_id; }
+
+    union {
+        std::thread::id thread_id;
+        int rank;
+    };
+};
+
 class Message {
 public:  // methods
-    Message(size_t size = 0, int peer = -1, MsgTag tag = MsgTag::field_data);
+    Message(size_t size = 0, Peer peer = -1, MsgTag tag = MsgTag::field_data);
 
     void* data();
     const void* data() const;
 
     size_t size() const;
-    int peer() const;
+    Peer peer() const;
     MsgTag tag() const;
 
-    void peer(const int new_peer);
+    void peer(Peer new_peer);
     void resize(size_t);
 
     size_t read(void* buffer, size_t length) const;
@@ -47,7 +61,7 @@ private: // methods
 private: // members
     std::vector<char> payload_;
 
-    int peer_;  // Source or destination depending on context
+    Peer peer_;  // Source or destination depending on context
     MsgTag tag_;
     mutable size_t position_;
 };

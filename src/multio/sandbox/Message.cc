@@ -13,7 +13,7 @@
 namespace multio {
 namespace sandbox {
 
-Message::Message(size_t size, int peer, MsgTag tag) :
+Message::Message(size_t size, Peer peer, MsgTag tag) :
     payload_(size),
     peer_(peer),
     tag_(tag),
@@ -35,12 +35,11 @@ MsgTag Message::tag() const {
     return tag_;
 }
 
-int Message::peer() const {
-    ASSERT(peer_ >= 0);
+Peer Message::peer() const {
     return peer_;
 }
 
-void Message::peer(const int new_peer) {
+void Message::peer(const Peer new_peer) {
     peer_ = new_peer;
 }
 
@@ -86,8 +85,7 @@ std::string Message::name() const {
 }
 
 void Message::print(std::ostream& out) const {
-    out << "Message(tag = " << static_cast<int>(tag_) << ", peer = " << peer_
-        << ", position = " << position_ << ", buffer = ";
+    out << "Message(tag = " << static_cast<int>(tag_) << ", buffer = ";
     print_buffer(payload_, out, "");
     out << ")" << std::endl;
 }

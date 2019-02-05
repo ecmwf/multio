@@ -3,7 +3,7 @@
 #include "eckit/testing/Test.h"
 
 #include "multio/sandbox/Message.h"
-#include "multio/sandbox/ThreadTransport.h"
+#include "multio/sandbox/SimpleTransport.h"
 #include "multio/sandbox/Listener.h"
 
 #include "../TestHelpers.h"
@@ -16,13 +16,13 @@ namespace test {
 
 CASE("Test dummy transport layer") {
     eckit::LocalConfiguration config;
-    config.set("name", "dummy");
-    std::unique_ptr<sandbox::Transport> transport{new sandbox::ThreadTransport{config}};
+    config.set("name", "simple");
+    std::unique_ptr<sandbox::Transport> transport{new sandbox::SimpleTransport{config}};
 
     std::ostringstream oss;
     oss << *transport;
 
-    EXPECT(oss.str() == "ThreadTransport[dummy]");
+    EXPECT(oss.str() == "Transport[simple]");
 
     { // Client
         // Open connections
@@ -66,9 +66,12 @@ CASE("Test dummy transport layer") {
 
         multio::test::TestFile file{"test_output"};
         auto actual = multio::test::file_content(file.name());
-        std::string expected = R"raw(Message(tag = 0, peer = 7, position = 15, buffer = {7, 23, 43, 91})
-Message(tag = 0, peer = 11, position = 16, buffer = {19, 49, 67, 89})
-Message(tag = 0, peer = 13, position = 16, buffer = {11, 17, 29, 41})
+
+        std::cout << "Actual: " << actual << std::endl;
+
+        std::string expected = R"raw(Message(tag = 0, buffer = {7, 23, 43, 91})
+Message(tag = 0, buffer = {19, 49, 67, 89})
+Message(tag = 0, buffer = {11, 17, 29, 41})
 )raw";
 
         EXPECT(actual == expected);

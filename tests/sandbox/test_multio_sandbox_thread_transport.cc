@@ -7,11 +7,14 @@ using namespace multio;
 
 int main(int argc, char** argv) {
     eckit::LocalConfiguration config;
-    config.set("name", "multiple threads");
+    config.set("name", "thread");
     config.set("no_clients", 7);
     config.set("no_servers", 3);
 
     std::unique_ptr<sandbox::Transport> transport{new sandbox::ThreadTransport{config}};
 
-    std::cout << *transport << std::endl;
+    std::ostringstream oss;
+    oss << *transport;
+
+    ASSERT(oss.str() == "Transport[thread]");
 }

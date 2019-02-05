@@ -16,13 +16,13 @@ namespace test {
 
 CASE("Test dummy transport layer") {
     eckit::LocalConfiguration config;
-    config.set("name", "simple");
+    config.set("name", "test");
     std::unique_ptr<sandbox::Transport> transport{new sandbox::SimpleTransport{config}};
 
     std::ostringstream oss;
     oss << *transport;
 
-    EXPECT(oss.str() == "Transport[simple]");
+    EXPECT(oss.str() == "SimpleTransport(name = test)");
 
     { // Client
         // Open connections

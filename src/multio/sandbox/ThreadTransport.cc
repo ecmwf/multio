@@ -4,34 +4,39 @@
 namespace multio {
 namespace sandbox {
 
-ThreadTransport::ThreadTransport(const eckit::LocalConfiguration& config) :
+ThreadTransport::ThreadTransport(const eckit::Configuration& config) :
     Transport{config},
-    no_servers_(get_config_value<int>(config_, "no_servers")) {}
+    no_servers_(get_config_value<int>(config, "no_servers")),
+    no_clients_(get_config_value<int>(config, "no_clients")) {}
 
 ThreadTransport::~ThreadTransport() = default;
 
 void ThreadTransport::receive(Message& msg) {
-    auto server_id = std::this_thread::get_id();
-    msg = internalBuffers_.at(server_id).pop();
-}
+    Peer local_peer = msg.peer();
+    while (buffers_.find(local_peer) == end(buffers_)) {}
+    msg = buffers_.at(local_peer).pop();
+ }
 
 void ThreadTransport::send(const Message& msg) {
-    auto server_id = msg.peer();
-    std::cout << "    server_id: " << server_id << std::endl;
-    std::cout << "    map size: " << internalBuffers_.size() << std::endl;
-    std::cout << "    no_servers_: " << no_servers_ << std::endl;
-    addNewQueueIfNeeded(server_id);
+    auto remote_peer = msg.peer();
+    addNewQueueIfNeeded(remote_peer);
 
     // Make a copy that is stored in the internal buffer
     auto msg_out = msg;
-    msg_out.peer(std::this_thread::get_id());
-    internalBuffers_.at(server_id).push(std::move(msg_out));
+    msg_out.peer();
+    buffers_.at(remote_peer).push(std::move(msg_out));
 }
 
-void ThreadTransport::addNewQueueIfNeeded(std::thread::id server_id) {
-    if (internalBuffers_.find(server_id) == end(internalBuffers_)) {
-        ASSERT(internalBuffers_.size() < no_servers_);
-        internalBuffers_.emplace(server_id, 1024);
+void ThreadTransport::print(std::ostream& os) const {
+    os << "ThreadTransport(name = " << name_ << ")";
+}
+
+void ThreadTransport::addNewQueueIfNeeded(Peer consumer) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (buffers_.find(consumer) == end(buffers_)) {
+        std::cout << "Adding queue..." << std::endl;
+        ASSERT(buffers_.size() < static_cast<size_t>(no_servers_));
+        buffers_.emplace(consumer, 1024);
     }
 }
 

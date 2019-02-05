@@ -3,6 +3,7 @@
 #define multio_sandbox_ThreadTransport_H
 
 #include <map>
+#include <mutex>
 #include <thread>
 
 #include "eckit/container/Queue.h"
@@ -16,19 +17,23 @@ namespace sandbox {
 
 class ThreadTransport final : public Transport {
 public:
-    ThreadTransport(const eckit::LocalConfiguration& config);
+    ThreadTransport(const eckit::Configuration& config);
     ~ThreadTransport() override;
+
+private:
+    std::map<Peer, eckit::Queue<Message>> buffers_;
+    int no_servers_;
+    int no_clients_;
+
+    std::mutex mutex_;
 
 private:
     void receive(Message& msg) override;
     void send(const Message& message) override;
 
-private:
-    void addNewQueueIfNeeded(std::thread::id server_id);
+    void print(std::ostream& os) const override;
 
-private:
-    std::map<std::thread::id, eckit::Queue<Message>> internalBuffers_;
-    size_t no_servers_;
+    void addNewQueueIfNeeded(Peer consumer);
 
 };
 

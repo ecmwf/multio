@@ -6,15 +6,19 @@
 namespace multio {
 namespace sandbox {
 
-SimpleTransport::SimpleTransport(const eckit::LocalConfiguration& config) : Transport{config} {}
+SimpleTransport::SimpleTransport(const eckit::Configuration& config) : Transport{config} {}
 SimpleTransport::~SimpleTransport() = default;
 
 void SimpleTransport::receive(Message& msg) {
-    msg = internalBuffer_.pop();
+    msg = buffer_.pop();
 }
 
 void SimpleTransport::send(const Message& msg) {
-    internalBuffer_.push(msg);
+    buffer_.push(msg);
+}
+
+void SimpleTransport::print(std::ostream& os) const {
+    os << "SimpleTransport(name = " << name_ << ")";
 }
 
 }  // namespace sandbox

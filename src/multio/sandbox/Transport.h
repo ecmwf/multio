@@ -14,7 +14,7 @@ namespace multio {
 namespace sandbox {
 
 template <typename ValueType>
-ValueType get_config_value(const eckit::LocalConfiguration& config, std::string value_name) {
+ValueType get_config_value(const eckit::Configuration& config, std::string value_name) {
     ValueType val;
     config.get(value_name, val);
     return val;
@@ -22,19 +22,18 @@ ValueType get_config_value(const eckit::LocalConfiguration& config, std::string 
 
 class Transport {
 public:  // methods
-    Transport(const eckit::LocalConfiguration& config);
+    Transport(const eckit::Configuration& config);
     virtual ~Transport();
 
     virtual void receive(Message &message) = 0;
     virtual void send(const Message &message) = 0;
 
 protected:
-
-    const eckit::LocalConfiguration& config_;
+    std::string name_;
 
 private: // methods
 
-    void print(std::ostream &os) const;
+    virtual void print(std::ostream &os) const = 0;
 
     friend std::ostream& operator<<(std::ostream& os, const Transport& transport) {
         transport.print(os);

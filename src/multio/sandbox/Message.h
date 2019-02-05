@@ -20,17 +20,34 @@ enum class MsgTag
 };
 
 struct Peer {
-    Peer(int id) { rank = id; }
-    Peer(std::thread::id id) { thread_id = id; }
-
-    operator int() { return rank; }
-    operator std::thread::id() { return thread_id; }
-
-    union {
-        std::thread::id thread_id;
-        int rank;
-    };
+    Peer(int id) { id_ = id; }
+    operator int() { return id_; }
+    int id_;
 };
+
+inline bool operator==(const Peer& lhs, const Peer& rhs) {
+    return lhs.id_ == rhs.id_;
+}
+
+inline bool operator!=(const Peer& lhs, const Peer& rhs) {
+    return lhs.id_ != rhs.id_;
+}
+
+inline bool operator<(const Peer& lhs, const Peer& rhs) {
+    return lhs.id_ < rhs.id_;
+}
+
+inline bool operator<=(const Peer& lhs, const Peer& rhs) {
+    return lhs.id_ <= rhs.id_;
+}
+
+inline bool operator>(const Peer& lhs, const Peer& rhs) {
+    return lhs.id_ >= rhs.id_;
+}
+
+inline bool operator>=(const Peer& lhs, const Peer& rhs) {
+    return lhs.id_ >= rhs.id_;
+}
 
 class Message {
 public:  // methods

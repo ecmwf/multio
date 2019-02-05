@@ -17,15 +17,15 @@ std::mutex mut;
 template <typename Printable>
 void print(Printable& val) {
     std::lock_guard<std::mutex> lock{mut};
-    std::cout << "thread: " << std::this_thread::get_id() << ", output: " << val << std::endl;
+    std::cout << val << std::endl;
 }
 }  // namespace
 
 int main(int argc, char** argv) {
     eckit::LocalConfiguration config;
-    config.set("name", "thread");
+    config.set("name", "test");
     auto no_clients = 7;
-    auto no_servers = 3;
+    auto no_servers = 1;
     config.set("no_clients", no_clients);
     config.set("no_servers", no_servers);
 
@@ -35,35 +35,47 @@ int main(int argc, char** argv) {
     std::ostringstream oss;
     oss << *transport;
 
-    ASSERT(oss.str() == "Transport[thread]");
+    ASSERT(oss.str() == "ThreadTransport(name = test)");
 
     auto sendString = [transport, no_clients, no_servers]() {
         std::string str = "Once upon a midnight dreary ";
         std::ostringstream os;
         os << str << std::this_thread::get_id();
-        auto server_id = std::hash<std::string>{}(os.str()) % no_servers + no_clients;
-        sandbox::Message msg{0, server_id, sandbox::MsgTag::mapping_data};
+
+        int peer = std::hash<std::string>{}(os.str()) % no_servers + no_clients;
+        sandbox::Message msg{0, peer, sandbox::MsgTag::mapping_data};
         msg.write(str.data(), str.size());
+        print(msg);
+        transport->send(msg);
+
+        msg = sandbox::Message{0, peer, sandbox::MsgTag::close};
         print(msg);
         transport->send(msg);
     };
 
+    // Spawn clients with sendString function
     std::vector<std::thread> clients;
     for (auto ii = 0; ii != no_clients; ++ii) {
         clients.emplace_back(std::thread{sendString});
     }
 
-    // auto listen = [transport]() {
-    //     sandbox::Message msg{};
-    //     transport->receive(msg);
-    //     std::cout << msg << std::endl;
-    // };
+    auto listen = [transport, no_clients]() {
+        auto counter = 0;
+        do {
+            sandbox::Message msg{0, no_clients, sandbox::MsgTag::mapping_data};
+            transport->receive(msg);
+            print(msg);
+            if (msg.tag() == sandbox::MsgTag::close)
+                ++counter;
+        } while (counter < no_clients);
+    };
 
-    // std::vector<std::thread> servers;
-    // for (auto ii = 0; ii != no_servers; ++ii) {
-    //     servers.emplace_back(std::thread{listen});
-    // }
+    // Spawn servers with listen function
+    std::vector<std::thread> servers;
+    for (auto ii = 0; ii != no_servers; ++ii) {
+        servers.emplace_back(std::thread{listen});
+    }
 
     std::for_each(begin(clients), end(clients), [](std::thread& t) { t.join(); });
-    // std::for_each(begin(servers), end(servers), [](std::thread& t) { t.join(); });
+    std::for_each(begin(servers), end(servers), [](std::thread& t) { t.join(); });
 }

@@ -13,15 +13,17 @@ namespace sandbox {
 
 class SimpleTransport final : public Transport {
 public:
-    SimpleTransport(const eckit::LocalConfiguration& config);
+    SimpleTransport(const eckit::Configuration& config);
     ~SimpleTransport() override;
+
+private:
+    eckit::Queue<Message> buffer_{1024};
 
 private:
     void receive(Message& msg) override;
     void send(const Message& message) override;
 
-private:
-    eckit::Queue<Message> internalBuffer_{1024};
+    void print(std::ostream& os) const override;
 
 };
 

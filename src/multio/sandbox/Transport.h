@@ -16,7 +16,7 @@ namespace sandbox {
 template <typename ValueType>
 ValueType get_config_value(const eckit::LocalConfiguration& config, std::string value_name) {
     ValueType val;
-    config.get("name", val);
+    config.get(value_name, val);
     return val;
 }
 

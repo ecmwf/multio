@@ -12,7 +12,7 @@ namespace sandbox {
 namespace {
 std::fstream fout("test_output", fout.out);
 void process(const Message& msg) {
-    fout << msg;
+    fout << msg << std::endl;
 }
 }
 

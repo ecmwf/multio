@@ -28,7 +28,7 @@ private:
 
 private:
     std::map<std::thread::id, eckit::Queue<Message>> internalBuffers_;
-    size_t no_servers;
+    size_t no_servers_;
 
 };
 

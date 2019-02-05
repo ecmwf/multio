@@ -61,8 +61,6 @@ size_t Message::write(const void* buffer, size_t length) {
     if (position_ + length > payload_.size()) {
         size_t newsize = position_ + length;
         payload_.resize(newsize);
-        eckit::Log::info() << "Message::write() resizing buffer to " << eckit::Bytes(newsize)
-                           << std::endl;
     }
 
     size_t left = payload_.size() - position_;
@@ -87,7 +85,7 @@ std::string Message::name() const {
 void Message::print(std::ostream& out) const {
     out << "Message(tag = " << static_cast<int>(tag_) << ", buffer = ";
     print_buffer(payload_, out, "");
-    out << ")" << std::endl;
+    out << ")";
 }
 
 }  // namespace sandbox

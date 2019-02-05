@@ -6,7 +6,7 @@ namespace sandbox {
 
 ThreadTransport::ThreadTransport(const eckit::LocalConfiguration& config) :
     Transport{config},
-    no_servers(get_config_value<int>(config_, "no_servers")) {}
+    no_servers_(get_config_value<int>(config_, "no_servers")) {}
 
 ThreadTransport::~ThreadTransport() = default;
 
@@ -17,6 +17,9 @@ void ThreadTransport::receive(Message& msg) {
 
 void ThreadTransport::send(const Message& msg) {
     auto server_id = msg.peer();
+    std::cout << "    server_id: " << server_id << std::endl;
+    std::cout << "    map size: " << internalBuffers_.size() << std::endl;
+    std::cout << "    no_servers_: " << no_servers_ << std::endl;
     addNewQueueIfNeeded(server_id);
 
     // Make a copy that is stored in the internal buffer
@@ -27,7 +30,7 @@ void ThreadTransport::send(const Message& msg) {
 
 void ThreadTransport::addNewQueueIfNeeded(std::thread::id server_id) {
     if (internalBuffers_.find(server_id) == end(internalBuffers_)) {
-        ASSERT(internalBuffers_.size() < no_servers);
+        ASSERT(internalBuffers_.size() < no_servers_);
         internalBuffers_.emplace(server_id, 1024);
     }
 }

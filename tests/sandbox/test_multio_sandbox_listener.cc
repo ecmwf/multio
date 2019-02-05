@@ -67,8 +67,6 @@ CASE("Test dummy transport layer") {
         multio::test::TestFile file{"test_output"};
         auto actual = multio::test::file_content(file.name());
 
-        std::cout << "Actual: " << actual << std::endl;
-
         std::string expected = R"raw(Message(tag = 0, buffer = {7, 23, 43, 91})
 Message(tag = 0, buffer = {19, 49, 67, 89})
 Message(tag = 0, buffer = {11, 17, 29, 41})

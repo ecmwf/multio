@@ -24,7 +24,7 @@ namespace sandbox {
 
 class Peer {
 public:
-    Peer(const std::string& domain, int id);
+    Peer(const std::string& domain, size_t id);
 
     operator std::string();
 
@@ -43,8 +43,7 @@ private:  // methods
     }
 
 private:
-    int id_;  //< MPI rank or TCP port
-
+    size_t id_;  //< MPI rank or TCP port
     std::string domain_;  //< for MPI it will be Communicator, for TCP the host
 };
 

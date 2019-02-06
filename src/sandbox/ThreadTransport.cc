@@ -10,43 +10,63 @@
 
 #include "ThreadTransport.h"
 
+#include "eckit/log/Log.h"
+#include "eckit/config/Resource.h"
+
 namespace multio {
 namespace sandbox {
 
-ThreadTransport::ThreadTransport(const eckit::Configuration& config) :
-    Transport{config},
-    no_servers_(configure_value<int>(config, "no_servers")),
-    no_clients_(configure_value<int>(config, "no_clients")) {}
+ThreadTransport::ThreadTransport(const eckit::Configuration& config) : Transport{config} {}
 
 ThreadTransport::~ThreadTransport() = default;
 
-void ThreadTransport::receive(Message& msg) {
-    Peer local_peer = msg.peer();
-    while (buffers_.find(local_peer) == end(buffers_)) {}
-    msg = buffers_.at(local_peer).pop();
- }
+Message ThreadTransport::receive() {
+
+    Peer receiver = localPeer();
+
+    auto& queue = receiveQueue(receiver);
+
+    Message msg = queue.pop();
+
+    ASSERT(msg.to() == receiver);
+
+    return msg;
+}
 
 void ThreadTransport::send(const Message& msg) {
-    auto remote_peer = msg.peer();
-    addNewQueueIfNeeded(remote_peer);
 
-    // Make a copy that is stored in the internal buffer
-    auto msg_out = msg;
-    msg_out.peer();
-    buffers_.at(remote_peer).push(std::move(msg_out));
+    Peer to = msg.to();
+
+    auto& queue = receiveQueue(to);
+
+    queue.push(msg);
 }
+
+Peer ThreadTransport::localPeer() const
+{
+    Peer peer("thread", std::hash<std::thread::id>{}(std::this_thread::get_id()));
+    return peer;
+}
+
 
 void ThreadTransport::print(std::ostream& os) const {
     os << "ThreadTransport(name = " << name_ << ")";
 }
 
-void ThreadTransport::addNewQueueIfNeeded(Peer consumer) {
+eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer to) {
+
     std::lock_guard<std::mutex> lock(mutex_);
-    if (buffers_.find(consumer) == end(buffers_)) {
-        std::cout << "Adding queue..." << std::endl;
-        ASSERT(buffers_.size() < static_cast<size_t>(no_servers_));
-        buffers_.emplace(consumer, 1024);
+
+    auto qitr = queues_.find(to);
+    if (qitr != end(queues_)) {
+        return qitr->second;
     }
+
+   eckit::Log::info() << "Adding queue..." << std::endl;
+
+   static size_t multioMessageQueueSize = eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024);
+
+   queues_.emplace(to, multioMessageQueueSize);
 }
 
 }  // namespace sandbox

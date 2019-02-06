@@ -65,12 +65,11 @@ private:  // methods
 
     void run() override;
 
-    std::map<Peer, std::thread> spawnServers(std::shared_ptr<Transport> transport, int nbServers, int nbClients /* to be removed */ );
-    std::map<Peer, std::thread> spawnClients(std::shared_ptr<Transport> transport, int nbClients, const std::map<Peer, std::thread>& servers);
-
-
+    std::vector<std::thread> spawnServers(std::shared_ptr<Transport> transport, int nbServers, int nbClients /* to be removed */, std::vector<Peer>& peerServers );
+    std::vector<std::thread> spawnClients(std::shared_ptr<Transport> transport, int nbClients, const std::vector<Peer>& servers);
 
 private:  // members
+
     int nbClients_ = 1;
     int nbServers_ = 1;
 };
@@ -109,9 +108,11 @@ void SandboxTool::run() {
     finish(args);
 }
 
-std::map<Peer, std::thread> SandboxTool::spawnServers(std::shared_ptr<Transport> transport, int nbServers, int nbClients)
+std::vector<std::thread> SandboxTool::spawnServers(std::shared_ptr<Transport> transport, int nbServers, int nbClients, std::vector<Peer>& peerServers)
 {
     auto listen = [transport, nbClients]() {
+        Peer server = transport->localPeer();
+
         auto counter = 0;
         do {
             Message msg = transport->receive();
@@ -124,115 +125,88 @@ std::map<Peer, std::thread> SandboxTool::spawnServers(std::shared_ptr<Transport>
         } while (counter < nbClients);
     };
 
-    std::map<Peer, std::thread> servers;
+    std::vector<std::thread> servers;
 
     for (auto i = 0; i != nbServers; ++i) {
 
-        Peer server {"thread", i};
+        std::thread t(listen);
 
-        servers.emplace(server, listen);
+        peerServers.push_back(Peer("thread", std::hash<std::thread::id>{}(t.get_id())));
+
+        servers.emplace_back(t);
     }
+
+    return servers;
 }
 
-std::map<Peer, std::thread> SandboxTool::spawnClients(std::shared_ptr<Transport> transport, int nbClients, const std::map<Peer, std::thread>& servers)
+std::vector<std::thread> SandboxTool::spawnClients(std::shared_ptr<Transport> transport, int nbClients, const std::vector<Peer>& servers)
 {
-    int nbServers = servers.size();
+    const int nmessages = 10;
 
-
-    std::map<Peer, std::thread> clients;
+    std::vector<std::thread> clients;
 
     for (auto i = 0; i != nbClients; ++i) {
 
-        Peer client {"thread", i};
+        auto sendMsg = [transport, servers]() {
 
-        auto sendMsg = [transport, servers](Peer& from) {
+            Peer client = transport->localPeer();
 
+            // open all servers
             for (auto& server: servers) {
-                Peer to = server.first;
-                Message msg {Message::Tag::open, from, to, std::string("opening")};
-                transport->send(msg);
+                Message open {Message::Tag::close, client, server, std::string("open")};
+                transport->send(open);
             }
 
+            // send N messages
+            for(int i = 0; i < nmessages; ++i) {
+                for (auto& server: servers) {
 
-            std::ostringstream oss;
-            oss << "Once upon a midnight dreary " << " + " << std::this_thread::get_id();
+                    std::ostringstream oss;
+                    oss << "Once upon a midnight dreary " << " + " << std::this_thread::get_id();
 
-            int peer = std::hash<std::string>{}(oss.str()) % nbServers;
+                    Message msg {Message::Tag::field_data, client, server, oss.str()};
 
-            Message msg {Message::Tag::mapping_data, from, to, oss.str()};
+                    transport->send(msg);
+                }
+            }
 
-            transport->send(msg);
-
-            msg = Message{0, peer, MsgTag::close};
-            print(msg);
-            transport->send(msg);
+            // close all servers
+            for (auto& server: servers) {
+                Message close {Message::Tag::close, client, server, std::string("close")};
+                transport->send(close);
+            }
         };
 
-
-
-        clients.emplace(client, sendMsg(i));
+        clients.emplace_back(sendMsg);
     }
+
+    return clients;
 }
 
 
-void SandboxTool::execute(const eckit::option::CmdArgs& args) {
+void SandboxTool::execute(const eckit::option::CmdArgs&) {
 
     eckit::LocalConfiguration config;
     config.set("name", "test");
     config.set("nbClients", nbClients_);
     config.set("nbServers", nbServers_);
 
-    std::shared_ptr<Transport> transport{
-        std::make_shared<ThreadTransport>(config)};
-
+    std::shared_ptr<Transport> transport {std::make_shared<ThreadTransport>(config)};
 
     // spawn servers
 
-    std::map<Peer, std::thread> servers = spawnServers(transport, nbServers_, nbClients_);
+    std::vector<Peer> peerServers;
+
+    std::vector<std::thread> servers = spawnServers(transport, nbServers_, nbClients_, peerServers);
 
 
     // spawn clients
 
-    std::map<Peer, std::thread> clients = spawnClients(transport, nbClients_, servers);
+    std::vector<std::thread> clients = spawnClients(transport, nbClients_, peerServers);
 
-
-    std::for_each(begin(clients), end(clients), [](std::pair<Peer, std::thread>& t) { t.second.join(); });
-    std::for_each(begin(servers), end(servers), [](std::pair<Peer, std::thread>& t) { t.second.join(); });
-
- # if 0
-
-
-    std::vector<Peer> peerClients;
-    std::vector<Peer> peerServers;
-
-    // Spawn clients with sendString function
-    std::vector<std::thread> clients;
-    for (auto ii = 0; ii != nbClients_; ++ii) {
-        clients.emplace_back(sendString);
-    }
-
-    auto listen = [transport, nbClients_]() {
-        auto counter = 0;
-        do {
-            Message msg{0, nbClients_, Message::Tag::mapping_data};
-            transport->receive(msg);
-            print(msg);
-            if (msg.tag() == MsgTag::close)
-                ++counter;
-        } while (counter < nbClients_);
-    };
-
-    // Spawn servers with listen function
-    std::vector<std::thread> servers;
-    for (auto ii = 0; ii != nbServers_; ++ii) {
-        servers.emplace_back(listen);
-    }
 
     std::for_each(begin(clients), end(clients), [](std::thread& t) { t.join(); });
     std::for_each(begin(servers), end(servers), [](std::thread& t) { t.join(); });
-
-#endif
-
 }
 
 //----------------------------------------------------------------------------------------------------------------------

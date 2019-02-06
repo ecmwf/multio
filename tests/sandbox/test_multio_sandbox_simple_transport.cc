@@ -13,6 +13,8 @@ namespace sandbox {
 namespace test {
 
 CASE("Test simple transport layer") {
+
+#if 0
     eckit::LocalConfiguration config;
     config.set("name", "test");
     std::unique_ptr<sandbox::Transport> transport{new sandbox::SimpleTransport{config}};
@@ -64,6 +66,8 @@ CASE("Test simple transport layer") {
         vals = oss.str().substr(oss.str().size() - msg.size() - 1, msg.size());
         EXPECT(vals == "{11, 17, 29, 41}");
     }
+
+#endif
 }
 
 }  // namespace sandbox

@@ -12,18 +12,31 @@
 
 #include "SimpleTransport.h"
 
+#include "eckit/config/Resource.h"
+
 namespace multio {
 namespace sandbox {
 
-SimpleTransport::SimpleTransport(const eckit::Configuration& config) : Transport{config} {}
+SimpleTransport::SimpleTransport(const eckit::Configuration& config) :
+    Transport{config},
+    queue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024))
+{
+}
+
 SimpleTransport::~SimpleTransport() = default;
 
-void SimpleTransport::receive(Message& msg) {
-    msg = buffer_.pop();
+Message SimpleTransport::receive() {
+    return queue_.pop();
 }
 
 void SimpleTransport::send(const Message& msg) {
-    buffer_.push(msg);
+    queue_.push(msg);
+}
+
+Peer SimpleTransport::localPeer() const
+{
+    Peer peer("thread", std::hash<std::thread::id>{}(std::this_thread::get_id()));
+    return peer;
 }
 
 void SimpleTransport::print(std::ostream& os) const {

@@ -31,16 +31,16 @@ Message::Message(Message::Tag tag, Peer from, Peer to, const eckit::Buffer& payl
     version_(protocolVersion()),
     from_(from),
     to_(to),
-    payload_(payload, payload.size())
+    payload_(new eckit::Buffer(payload, payload.size()))
 {
 }
 
 const void* Message::payload() const {
-    return payload_.data();
+    return payload_->data();
 }
 
 size_t Message::size() const {
-    return payload_.size();
+    return payload_->size();
 }
 
 void Message::print(std::ostream& out) const {

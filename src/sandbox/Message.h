@@ -20,6 +20,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <memory>
 
 #include "eckit/io/Buffer.h"
 
@@ -71,7 +72,7 @@ private:  // members
     Peer from_;
     Peer to_;
 
-    eckit::Buffer payload_;
+    std::shared_ptr<eckit::Buffer> payload_;
 };
 
 }  // namespace sandbox

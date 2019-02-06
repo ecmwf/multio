@@ -38,12 +38,15 @@ ValueType configure_value(const eckit::Configuration& config, std::string value_
 
 class Transport {
 public:  // methods
+
     Transport(const eckit::Configuration& config);
     virtual ~Transport();
 
     virtual Message receive() = 0;
 
-    virtual void send(const Message &message) = 0;
+    virtual void send(const Message& message) = 0;
+
+    virtual Peer localPeer() const = 0;
 
 protected:
     std::string name_;

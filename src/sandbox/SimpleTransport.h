@@ -32,14 +32,15 @@ public:
     ~SimpleTransport() override;
 
 private:
-    eckit::Queue<Message> buffer_{1024};
+    eckit::Queue<Message> queue_;
 
 private:
-    void receive(Message& msg) override;
+    Message receive() override;
     void send(const Message& message) override;
 
-    void print(std::ostream& os) const override;
+    Peer localPeer() const override;
 
+    void print(std::ostream& os) const override;
 };
 
 }  // namespace sandbox

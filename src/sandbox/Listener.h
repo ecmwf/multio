@@ -22,17 +22,10 @@
 #include "eckit/container/Queue.h"
 
 #include "sandbox/Transport.h"
+#include "sandbox/Peer.h"
 
 namespace multio {
 namespace sandbox {
-
-struct Connection {
-    Connection(int id) : id_(id) {}
-    int id_;
-};
-bool operator==(const Connection& lhs, const Connection& rhs) {
-    return lhs.id_ == rhs.id_;
-}
 
 class Listener {
 public:
@@ -41,10 +34,11 @@ public:
     void listen();
 
 private:
+
     Transport& transport_;
 
-    std::list<Connection> connections_;
-    eckit::Queue<std::shared_ptr<Message>> msgQueue_{1024};
+    std::list<Peer> connections_;
+    eckit::Queue<std::shared_ptr<Message>> msgQueue_;
 };
 
 }  // namespace sandbox

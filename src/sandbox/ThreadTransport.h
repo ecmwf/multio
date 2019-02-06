@@ -35,19 +35,21 @@ public:
     ~ThreadTransport() override;
 
 private:
-    std::map<Peer, eckit::Queue<Message>> buffers_;
-    int no_servers_;
-    int no_clients_;
+
+    std::map<Peer, eckit::Queue<Message>> queues_;
 
     std::mutex mutex_;
 
 private:
-    void receive(Message& msg) override;
+
+    Message receive() override;
     void send(const Message& message) override;
 
     void print(std::ostream& os) const override;
 
-    void addNewQueueIfNeeded(Peer consumer);
+    Peer localPeer() const override;
+
+    eckit::Queue<Message>& receiveQueue(Peer to);
 
 };
 

@@ -12,6 +12,8 @@
 
 #include <functional>
 
+#include "eckit/config/Resource.h"
+
 #include "sandbox/Message.h"
 #include "sandbox/ScopedThread.h"
 
@@ -21,23 +23,26 @@
 namespace multio {
 namespace sandbox {
 
-Listener::Listener(Transport& trans) : transport_(trans) {}
+Listener::Listener(Transport& trans) :
+    transport_(trans),
+    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024))
+{
+}
 
 void Listener::listen() {
     Dispatcher dispatcher;
     ScopedThread scThread{std::thread{&Dispatcher::dispatch, dispatcher, std::ref(msgQueue_)}};
 
     do {
-        Message msg(0);
-        transport_.receive(msg);
+        Message msg = transport_.receive();
 
         switch (msg.tag()) {
-            case MsgTag::open:
-                connections_.push_back(Connection{msg.peer()});
+            case Message::Tag::open:
+                connections_.push_back(msg.from());
                 break;
 
-            case MsgTag::close:
-                connections_.remove(Connection{msg.peer()});
+            case Message::Tag::close:
+                connections_.remove(msg.from());
                 break;
 
             default:

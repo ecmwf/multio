@@ -47,6 +47,10 @@ private:
     std::string domain_;  //< for MPI it will be Communicator, for TCP the host
 };
 
+inline bool operator<(const Peer& lhs, const Peer& rhs) {
+    return lhs < rhs;
+}
+
 }  // namespace sandbox
 }  // namespace multio
 

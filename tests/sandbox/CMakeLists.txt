@@ -14,4 +14,4 @@ ecbuild_add_test( TARGET   test_multio_sandbox_listener
 ecbuild_add_test( TARGET   test_multio_sandbox_thread_transport
                   SOURCES  test_multio_sandbox_thread_transport.cc
                   CONDITION HAVE_MULTIO_SERVER
-                  LIBS     multio multio-sandbox)
+                  LIBS     multio multio-sandbox eckit_option)

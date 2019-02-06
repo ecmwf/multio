@@ -54,7 +54,7 @@ protected:  // members
 
 protected:  // methods
     virtual void init(const eckit::option::CmdArgs& args);
-    virtual void finish(const eckit::option::CmdArgs& args);
+    virtual void finish(const eckit::option::CmdArgs& args) {}
 
 private:  // methods
 
@@ -70,25 +70,25 @@ private:  // methods
 
 private:  // members
 
-    int nbClients_ = 1;
-    int nbServers_ = 1;
+    size_t nbClients_ = 1;
+    size_t nbServers_ = 1;
 };
 
-static SandboxTool* instance_ = nullptr;
+//static SandboxTool* instance_ = nullptr;
 
 SandboxTool::SandboxTool(int argc, char** argv) : eckit::Tool(argc, argv, "MULTIO_HOME")
 {
-    ASSERT(instance_ == nullptr);
-    instance_ = this;
+//    ASSERT(instance_ == nullptr);
+//    instance_ = this;
 
-    options_.push_back(new eckit::option::SimpleOption<int>("nbclients", "Number of clients"));
-    options_.push_back(new eckit::option::SimpleOption<int>("nbservers", "Number of servers"));
+    options_.push_back(new eckit::option::SimpleOption<size_t>("nbclients", "Number of clients"));
+    options_.push_back(new eckit::option::SimpleOption<size_t>("nbservers", "Number of servers"));
 }
 
-static void usage(const std::string& tool) {
-    ASSERT(instance_);
-    instance_->usage(tool);
-}
+//static void usage(const std::string& tool) {
+//    ASSERT(instance_);
+//    instance_->usage(tool);
+//}
 
 void SandboxTool::init(const option::CmdArgs& args) {
     args.get("nbclients", nbClients_);
@@ -133,7 +133,7 @@ std::vector<std::thread> SandboxTool::spawnServers(std::shared_ptr<Transport> tr
 
         peerServers.push_back(Peer("thread", std::hash<std::thread::id>{}(t.get_id())));
 
-        servers.emplace_back(t);
+        servers.emplace_back(std::move(t));
     }
 
     return servers;

@@ -26,6 +26,5 @@ ecbuild_add_library(
 
     LIBS
         multio
-        eckit_mpi
-        atlas
+        eckit
 )

@@ -32,7 +32,12 @@ public:
 
     bool operator!=(const Peer& rhs) const { return not operator==(rhs); }
 
-    bool operator<(const Peer& rhs) const { return id_ < rhs.id_ && domain_ < rhs.domain_; }
+    bool operator<(const Peer& rhs) const {
+        if(id_ != rhs.id_) {
+            return id_ < rhs.id_;
+        }
+        return domain_ < rhs.domain_;
+    }
 
 private:  // methods
     void print(std::ostream& out) const;
@@ -46,10 +51,6 @@ private:
     size_t id_;  //< MPI rank or TCP port
     std::string domain_;  //< for MPI it will be Communicator, for TCP the host
 };
-
-// inline bool operator<(const Peer& lhs, const Peer& rhs) {
-//     return lhs < rhs;
-// }
 
 }  // namespace sandbox
 }  // namespace multio

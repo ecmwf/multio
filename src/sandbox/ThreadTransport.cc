@@ -28,6 +28,8 @@ Message ThreadTransport::receive() {
 
     Peer receiver = localPeer();
 
+    eckit::Log::info() << "RECEIVER " << receiver << std::endl;
+
     auto& queue = receiveQueue(receiver);
 
     Message msg = queue.pop();
@@ -61,18 +63,23 @@ void ThreadTransport::print(std::ostream& os) const {
 
 eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer to) {
 
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> locker(mutex_);
+
+    eckit::Log::info() << "FIND QUEUE for " << to << std::endl;
 
     auto qitr = queues_.find(to);
     if (qitr != end(queues_)) {
+        eckit::Log::info() << "FOUND QUEUE for " << to << " --- " << qitr->second << std::endl;
         return * qitr->second;
     }
 
-   eckit::Log::info() << "Adding queue..." << std::endl;
+    auto queue = new eckit::Queue<Message>(messageQueueSize_);
 
-   queues_.emplace(to, new eckit::Queue<Message>(messageQueueSize_));
+    eckit::Log::info() << "ADD QUEUE for " << to << " --- " << queue << std::endl;
 
-   return * queues_.find(to)->second;
+    queues_.emplace(to, queue);
+
+    return * queue;
 }
 
 }  // namespace sandbox

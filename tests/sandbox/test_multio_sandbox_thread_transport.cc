@@ -8,6 +8,7 @@
 #include <thread>
 
 #include "multio/sandbox/Message.h"
+#include "multio/sandbox/Peer.h"
 #include "multio/sandbox/ThreadTransport.h"
 
 using namespace multio;
@@ -32,11 +33,6 @@ int main(int argc, char** argv) {
     std::shared_ptr<sandbox::Transport> transport{
         std::make_shared<sandbox::ThreadTransport>(config)};
 
-    std::ostringstream oss;
-    oss << *transport;
-
-    ASSERT(oss.str() == "ThreadTransport(name = test)");
-
     auto sendString = [transport, no_clients, no_servers]() {
         std::string str = "Once upon a midnight dreary ";
         std::ostringstream os;
@@ -53,10 +49,14 @@ int main(int argc, char** argv) {
         transport->send(msg);
     };
 
+
+    std::vector<Peer> peerClients;
+    std::vector<Peer> peerServers;
+
     // Spawn clients with sendString function
     std::vector<std::thread> clients;
     for (auto ii = 0; ii != no_clients; ++ii) {
-        clients.emplace_back(std::thread{sendString});
+        clients.emplace_back(sendString);
     }
 
     auto listen = [transport, no_clients]() {
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
     // Spawn servers with listen function
     std::vector<std::thread> servers;
     for (auto ii = 0; ii != no_servers; ++ii) {
-        servers.emplace_back(std::thread{listen});
+        servers.emplace_back(listen);
     }
 
     std::for_each(begin(clients), end(clients), [](std::thread& t) { t.join(); });

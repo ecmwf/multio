@@ -19,35 +19,27 @@ enum class MsgTag
     close
 };
 
-struct Peer {
-    Peer(int id) { id_ = id; }
-    operator int() { return id_; }
+class Peer {
+
+    Peer(const std::string& domain, int id) { id_ = id; }
+
+    operator std::string() { return domain_ + ":" + std::to_string(id_); }
+
+    std::string domain_;
     int id_;
+
+    bool operator==(const Peer& lhs, const Peer& rhs) {
+        return lhs.id_ == rhs.id_ && lhs.domain_ == rhs.domain_;
+    }
+
+    bool operator!=(const Peer& lhs, const Peer& rhs) { return not operator==(lhs, rhs_); }
+
+    bool operator<(const Peer& lhs, const Peer& rhs) {
+        return lhs.id_ < rhs.id_ && lhs.domain_ < rhs.domain_;
+    }
+
 };
 
-inline bool operator==(const Peer& lhs, const Peer& rhs) {
-    return lhs.id_ == rhs.id_;
-}
-
-inline bool operator!=(const Peer& lhs, const Peer& rhs) {
-    return lhs.id_ != rhs.id_;
-}
-
-inline bool operator<(const Peer& lhs, const Peer& rhs) {
-    return lhs.id_ < rhs.id_;
-}
-
-inline bool operator<=(const Peer& lhs, const Peer& rhs) {
-    return lhs.id_ <= rhs.id_;
-}
-
-inline bool operator>(const Peer& lhs, const Peer& rhs) {
-    return lhs.id_ >= rhs.id_;
-}
-
-inline bool operator>=(const Peer& lhs, const Peer& rhs) {
-    return lhs.id_ >= rhs.id_;
-}
 
 class Message {
 public:  // methods

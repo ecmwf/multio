@@ -7,10 +7,16 @@
 #include <string>
 #include <thread>
 
-#include "multio/sandbox/Message.h"
-#include "multio/sandbox/Peer.h"
-#include "multio/sandbox/ThreadTransport.h"
+#include "eckit/log/Log.h"
+#include "eckit/runtime/Tool.h"
+#include "eckit/option/SimpleOption.h"
+#include "eckit/option/CmdArgs.h"
 
+#include "sandbox/Message.h"
+#include "sandbox/Peer.h"
+#include "sandbox/ThreadTransport.h"
+
+using namespace eckit;
 using namespace multio;
 
 namespace {
@@ -22,7 +28,77 @@ void print(Printable& val) {
 }
 }  // namespace
 
-int main(int argc, char** argv) {
+//----------------------------------------------------------------------------------------------------------------------
+
+class SandboxTool : public eckit::Tool {
+
+protected: // methods
+
+    SandboxTool(int argc, char **argv) :
+        eckit::Tool(argc, argv, "MULTIO_HOME")
+    {
+        options_.push_back(new eckit::option::SimpleOption<int>("nbclients", "Number of clients"));
+        options_.push_back(new eckit::option::SimpleOption<int>("nbservers", "Number of servers"));
+    }
+
+public: // methods
+
+    virtual void usage(const std::string &tool) const {
+        Log::info() << std::endl
+                    << "Usage: " << tool << " [options]" << std::endl
+                    << std::endl
+                    << std::endl
+                    << "Examples:" << std::endl
+                    << "=========" << std::endl << std::endl
+                    << tool << " --all" << std::endl
+                    << tool << " --version" << std::endl
+                    << tool << " --home" << std::endl
+                    << tool << " --schema" << std::endl
+                    << std::endl;
+
+    }
+
+protected: // members
+
+    std::vector<eckit::option::Option *> options_;
+
+protected: // methods
+
+    virtual void init(const eckit::option::CmdArgs& args);
+    virtual void finish(const eckit::option::CmdArgs& args);
+
+private: // methods
+
+    virtual int numberOfPositionalArguments() const { return -1; }
+    virtual int minimumPositionalArguments() const { return -1; }
+
+    virtual void run() override final;
+
+    virtual void execute() override;
+
+private: // members
+
+    int nbClients_;
+    int nbServers_;
+
+};
+
+
+//----------------------------------------------------------------------------------------------------------------------
+
+void SandboxTool::init(const option::CmdArgs& args)
+{
+    eckit::option::CmdArgs args(usage,
+        options_,
+        numberOfPositionalArguments(),
+        minimumPositionalArguments());
+
+    args.get("nbclients", nbClients_);
+    args.get("nbservers", nbServers_);
+}
+
+void SandboxTool::execute()  {
+
     eckit::LocalConfiguration config;
     config.set("name", "test");
     auto no_clients = 7;
@@ -78,4 +154,12 @@ int main(int argc, char** argv) {
 
     std::for_each(begin(clients), end(clients), [](std::thread& t) { t.join(); });
     std::for_each(begin(servers), end(servers), [](std::thread& t) { t.join(); });
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+
+int main(int argc, char** argv) {
+    SandboxTool tool(argc, argv);
+    return tool.start();
+
 }

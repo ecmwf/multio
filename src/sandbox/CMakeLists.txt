@@ -1,23 +1,24 @@
-
 ecbuild_add_library(
 
     TARGET multio-sandbox
 
-    CONDITION HAVE_MULTIO_SERVER
+    CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
 
     SOURCES
-        Message.cc
-        Message.h
-        Transport.cc
-        Transport.h
-        ThreadTransport.cc
-        ThreadTransport.h
-        SimpleTransport.cc
-        SimpleTransport.h
-        Listener.cc
-        Listener.h
         Dispatcher.cc
         Dispatcher.h
+        Listener.cc
+        Listener.h
+        Message.cc
+        Message.h
+        Peer.cc
+        Peer.h
+        SimpleTransport.cc
+        SimpleTransport.h
+        ThreadTransport.cc
+        ThreadTransport.h
+        Transport.cc
+        Transport.h
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}

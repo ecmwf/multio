@@ -2,9 +2,9 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/testing/Test.h"
 
-#include "multio/sandbox/Message.h"
-#include "multio/sandbox/SimpleTransport.h"
-#include "multio/sandbox/Listener.h"
+#include "sandbox/Message.h"
+#include "sandbox/SimpleTransport.h"
+#include "sandbox/Listener.h"
 
 #include "../TestHelpers.h"
 

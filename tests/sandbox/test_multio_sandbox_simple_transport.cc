@@ -4,7 +4,7 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/testing/Test.h"
 
-#include "multio/sandbox/SimpleTransport.h"
+#include "sandbox/SimpleTransport.h"
 
 using namespace eckit::testing;
 

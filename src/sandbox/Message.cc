@@ -26,14 +26,13 @@ int Message::protocolVersion() {
     return 1;
 }
 
-Message::Message(Message::Tag tag, Peer from, Peer to, const std::vector<char>& payload):
+Message::Message(Message::Tag tag, Peer from, Peer to, const eckit::Buffer& payload):
     tag_(tag),
     version_(protocolVersion()),
     from_(from),
     to_(to),
-    payload_(payload)
+    payload_(payload, payload.size())
 {
-
 }
 
 const void* Message::payload() const {

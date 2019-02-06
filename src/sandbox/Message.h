@@ -21,6 +21,8 @@
 #include <thread>
 #include <vector>
 
+#include "eckit/io/Buffer.h"
+
 #include "sandbox/Peer.h"
 
 namespace multio {
@@ -42,7 +44,7 @@ public:  // types
 public:  // methods
     static int protocolVersion();
 
-    Message(Tag tag, Peer from, Peer to, const std::vector<char>& payload);
+    Message(Tag tag, Peer from, Peer to, const eckit::Buffer& payload);
 
     const void* payload() const;
 
@@ -69,7 +71,7 @@ private:  // members
     Peer from_;
     Peer to_;
 
-    std::vector<char> payload_;
+    eckit::Buffer payload_;
 };
 
 }  // namespace sandbox

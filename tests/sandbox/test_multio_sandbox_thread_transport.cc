@@ -65,8 +65,8 @@ private:  // methods
 
     void run() override;
 
-    std::map<Peer, std::thread> spawnServers(std::shared_ptr<sandbox::Transport> transport, int nbServers, int nbClients /* to be removed */ );
-    std::map<Peer, std::thread> spawnClients(std::shared_ptr<sandbox::Transport> transport, int nbClients, const std::map<Peer, std::thread>& servers);
+    std::map<Peer, std::thread> spawnServers(std::shared_ptr<Transport> transport, int nbServers, int nbClients /* to be removed */ );
+    std::map<Peer, std::thread> spawnClients(std::shared_ptr<Transport> transport, int nbClients, const std::map<Peer, std::thread>& servers);
 
 
 
@@ -109,16 +109,16 @@ void SandboxTool::run() {
     finish(args);
 }
 
-std::map<Peer, std::thread> SandboxTool::spawnServers(std::shared_ptr<sandbox::Transport> transport, int nbServers, int nbClients)
+std::map<Peer, std::thread> SandboxTool::spawnServers(std::shared_ptr<Transport> transport, int nbServers, int nbClients)
 {
     auto listen = [transport, nbClients]() {
         auto counter = 0;
         do {
-            sandbox::Message msg = transport->receive();
+            Message msg = transport->receive();
 
             eckit::Log::info() << msg << std::endl;
 
-            if (msg.tag() == sandbox::Message::Tag::close)
+            if (msg.tag() == Message::Tag::close)
                 ++counter;
 
         } while (counter < nbClients);
@@ -134,13 +134,43 @@ std::map<Peer, std::thread> SandboxTool::spawnServers(std::shared_ptr<sandbox::T
     }
 }
 
-std::map<Peer, std::thread> SandboxTool::spawnClients(std::shared_ptr<sandbox::Transport> transport, int nbClients, const std::map<Peer, std::thread>& servers)
+std::map<Peer, std::thread> SandboxTool::spawnClients(std::shared_ptr<Transport> transport, int nbClients, const std::map<Peer, std::thread>& servers)
 {
-    for (auto i = 0; i != nbServers; ++i) {
+    int nbServers = servers.size();
 
-        Peer server {"thread", i};
 
-        servers.emplace(server, listen);
+    std::map<Peer, std::thread> clients;
+
+    for (auto i = 0; i != nbClients; ++i) {
+
+        Peer client {"thread", i};
+
+        auto sendMsg = [transport, servers](Peer& from) {
+
+            for (auto& server: servers) {
+                Peer to = server.first;
+                Message msg {Message::Tag::open, from, to, std::string("opening")};
+                transport->send(msg);
+            }
+
+
+            std::ostringstream oss;
+            oss << "Once upon a midnight dreary " << " + " << std::this_thread::get_id();
+
+            int peer = std::hash<std::string>{}(oss.str()) % nbServers;
+
+            Message msg {Message::Tag::mapping_data, from, to, oss.str()};
+
+            transport->send(msg);
+
+            msg = Message{0, peer, MsgTag::close};
+            print(msg);
+            transport->send(msg);
+        };
+
+
+
+        clients.emplace(client, sendMsg(i));
     }
 }
 
@@ -152,8 +182,8 @@ void SandboxTool::execute(const eckit::option::CmdArgs& args) {
     config.set("nbClients", nbClients_);
     config.set("nbServers", nbServers_);
 
-    std::shared_ptr<sandbox::Transport> transport{
-        std::make_shared<sandbox::ThreadTransport>(config)};
+    std::shared_ptr<Transport> transport{
+        std::make_shared<ThreadTransport>(config)};
 
 
     // spawn servers
@@ -171,21 +201,6 @@ void SandboxTool::execute(const eckit::option::CmdArgs& args) {
 
  # if 0
 
-    auto sendString = [transport, nbClients_, nbServers_]() {
-        std::string str = "Once upon a midnight dreary ";
-        std::ostringstream os;
-        os << str << std::this_thread::get_id();
-
-        int peer = std::hash<std::string>{}(os.str()) % nbServers_ + nbClients_;
-        sandbox::Message msg{0, peer, sandbox::MsgTag::mapping_data};
-        msg.write(str.data(), str.size());
-        print(msg);
-        transport->send(msg);
-
-        msg = sandbox::Message{0, peer, sandbox::MsgTag::close};
-        print(msg);
-        transport->send(msg);
-    };
 
     std::vector<Peer> peerClients;
     std::vector<Peer> peerServers;
@@ -199,10 +214,10 @@ void SandboxTool::execute(const eckit::option::CmdArgs& args) {
     auto listen = [transport, nbClients_]() {
         auto counter = 0;
         do {
-            sandbox::Message msg{0, nbClients_, sandbox::Message::Tag::mapping_data};
+            Message msg{0, nbClients_, Message::Tag::mapping_data};
             transport->receive(msg);
             print(msg);
-            if (msg.tag() == sandbox::MsgTag::close)
+            if (msg.tag() == MsgTag::close)
                 ++counter;
         } while (counter < nbClients_);
     };

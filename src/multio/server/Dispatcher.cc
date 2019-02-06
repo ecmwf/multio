@@ -31,7 +31,7 @@ void Dispatcher::feedPlans(std::shared_ptr<Message> msg) {
 
 void Dispatcher::eventLoop() {
     // Start listening thread
-    ScopedThread scThread{std::thread{[this] { this->listen(); }}};
+    ScopedThread scThread{std::thread{[this]() { this->listen(); }}};
 
     // Other thread does the dispatching
     do {

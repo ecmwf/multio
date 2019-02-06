@@ -28,11 +28,11 @@ public:
 
     operator std::string();
 
-    bool operator==(const Peer& rhs) { return id_ == rhs.id_ && domain_ == rhs.domain_; }
+    bool operator==(const Peer& rhs) const { return id_ == rhs.id_ && domain_ == rhs.domain_; }
 
-    bool operator!=(const Peer& rhs) { return not operator==(rhs); }
+    bool operator!=(const Peer& rhs) const { return not operator==(rhs); }
 
-    bool operator<(const Peer& rhs) { return id_ < rhs.id_ && domain_ < rhs.domain_; }
+    bool operator<(const Peer& rhs) const { return id_ < rhs.id_ && domain_ < rhs.domain_; }
 
 private:  // methods
     void print(std::ostream& out) const;
@@ -47,9 +47,9 @@ private:
     std::string domain_;  //< for MPI it will be Communicator, for TCP the host
 };
 
-inline bool operator<(const Peer& lhs, const Peer& rhs) {
-    return lhs < rhs;
-}
+// inline bool operator<(const Peer& lhs, const Peer& rhs) {
+//     return lhs < rhs;
+// }
 
 }  // namespace sandbox
 }  // namespace multio

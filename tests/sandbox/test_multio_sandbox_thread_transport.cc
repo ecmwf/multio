@@ -20,15 +20,6 @@ using namespace eckit;
 using namespace multio;
 using namespace multio::sandbox;
 
-namespace {
-std::mutex mut;
-template <typename Printable>
-void print(Printable& val) {
-    std::lock_guard<std::mutex> lock{mut};
-    std::cout << val << std::endl;
-}
-}  // namespace
-
 //----------------------------------------------------------------------------------------------------------------------
 
 class SandboxTool final : public eckit::Tool {
@@ -74,21 +65,11 @@ private:  // members
     size_t nbServers_ = 1;
 };
 
-//static SandboxTool* instance_ = nullptr;
-
 SandboxTool::SandboxTool(int argc, char** argv) : eckit::Tool(argc, argv, "MULTIO_HOME")
 {
-//    ASSERT(instance_ == nullptr);
-//    instance_ = this;
-
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbclients", "Number of clients"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbservers", "Number of servers"));
 }
-
-//static void usage(const std::string& tool) {
-//    ASSERT(instance_);
-//    instance_->usage(tool);
-//}
 
 void SandboxTool::init(const option::CmdArgs& args) {
     args.get("nbclients", nbClients_);
@@ -119,7 +100,7 @@ std::vector<std::thread> SandboxTool::spawnServers(std::shared_ptr<Transport> tr
 
             eckit::Log::info() << msg << std::endl;
 
-            if (msg.tag() == Message::Tag::close)
+            if (msg.tag() == Message::Tag::Close)
                 ++counter;
 
         } while (counter < nbClients);
@@ -153,7 +134,7 @@ std::vector<std::thread> SandboxTool::spawnClients(std::shared_ptr<Transport> tr
 
             // open all servers
             for (auto& server: servers) {
-                Message open {Message::Tag::close, client, server, std::string("open")};
+                Message open {Message::Tag::Open, client, server, std::string("open")};
                 transport->send(open);
             }
 
@@ -164,7 +145,7 @@ std::vector<std::thread> SandboxTool::spawnClients(std::shared_ptr<Transport> tr
                     std::ostringstream oss;
                     oss << "Once upon a midnight dreary " << " + " << std::this_thread::get_id();
 
-                    Message msg {Message::Tag::field_data, client, server, oss.str()};
+                    Message msg {Message::Tag::Field, client, server, oss.str()};
 
                     transport->send(msg);
                 }
@@ -172,7 +153,7 @@ std::vector<std::thread> SandboxTool::spawnClients(std::shared_ptr<Transport> tr
 
             // close all servers
             for (auto& server: servers) {
-                Message close {Message::Tag::close, client, server, std::string("close")};
+                Message close {Message::Tag::Close, client, server, std::string("close")};
                 transport->send(close);
             }
         };
@@ -190,6 +171,9 @@ void SandboxTool::execute(const eckit::option::CmdArgs&) {
     config.set("name", "test");
     config.set("nbClients", nbClients_);
     config.set("nbServers", nbServers_);
+
+
+    Log::info() << config << std::endl;
 
     std::shared_ptr<Transport> transport {std::make_shared<ThreadTransport>(config)};
 

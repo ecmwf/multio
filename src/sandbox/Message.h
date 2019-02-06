@@ -34,16 +34,17 @@ public:  // types
 
     enum class Tag
     {
-        mapping_data,
-        field_data,
-        step_complete,
-        forecast_complete,
-        open,
-        close
+        Open = 0,
+        Close,
+        Mapping,
+        Field,
+        ENDTAG
     };
 
 public:  // methods
+
     static int protocolVersion();
+    static std::string tag2str(Tag);
 
     Message(Tag tag, Peer from, Peer to, const eckit::Buffer& payload);
 

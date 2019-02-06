@@ -37,11 +37,11 @@ void Listener::listen() {
         Message msg = transport_.receive();
 
         switch (msg.tag()) {
-            case Message::Tag::open:
+            case Message::Tag::Open:
                 connections_.push_back(msg.from());
                 break;
 
-            case Message::Tag::close:
+            case Message::Tag::Close:
                 connections_.remove(msg.from());
                 break;
 

@@ -67,6 +67,8 @@ eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer to) {
    static size_t multioMessageQueueSize = eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024);
 
    queues_.emplace(to, multioMessageQueueSize);
+
+   return queues_.find(to)->second;
 }
 
 }  // namespace sandbox

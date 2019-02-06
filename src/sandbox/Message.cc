@@ -11,6 +11,7 @@
 #include "Message.h"
 
 #include <cstring>
+#include <map>
 
 #include "eckit/log/Bytes.h"
 #include "eckit/log/Log.h"
@@ -24,6 +25,15 @@ namespace sandbox {
 
 int Message::protocolVersion() {
     return 1;
+}
+
+std::string Message::tag2str(Message::Tag t)
+{
+    static std::map<unsigned, const char*> m = {
+        { unsigned(Tag::Open), "OPEN"}
+    };
+
+    return m.find(unsigned(t))->second;
 }
 
 Message::Message(Message::Tag tag, Peer from, Peer to, const eckit::Buffer& payload):
@@ -45,10 +55,10 @@ size_t Message::size() const {
 
 void Message::print(std::ostream& out) const {
     out << "Message("
-        << "version:" << version_
-        << ",tag:" << static_cast<int>(tag_)
-        << ",from:" << from_
-        << ",to:" << to_
+        << "version=" << version_
+        << ",tag=" << tag2str(tag_)
+        << ",from=" << from_
+        << ",to=" << to_
         << ")";
 }
 

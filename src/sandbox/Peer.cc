@@ -22,7 +22,7 @@ multio::sandbox::Peer::operator std::string() { return domain_ + ":" + std::to_s
 
 void Peer::print(std::ostream& out) const {
     out << "Peer(domain=" << domain_
-        << "id=" << id_
+        << ",id=" << id_
         << ")";
 }
 

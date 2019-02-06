@@ -28,6 +28,7 @@ namespace sandbox {
 
 class Message {
 public:  // types
+
     enum class Tag
     {
         mapping_data,

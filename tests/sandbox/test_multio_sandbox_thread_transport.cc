@@ -1,16 +1,16 @@
 
 #include <algorithm>
 #include <chrono>
-#include <iostream>
 #include <functional>
+#include <iostream>
 #include <mutex>
 #include <string>
 #include <thread>
 
 #include "eckit/log/Log.h"
-#include "eckit/runtime/Tool.h"
-#include "eckit/option/SimpleOption.h"
 #include "eckit/option/CmdArgs.h"
+#include "eckit/option/SimpleOption.h"
+#include "eckit/runtime/Tool.h"
 
 #include "sandbox/Message.h"
 #include "sandbox/Peer.h"
@@ -18,6 +18,7 @@
 
 using namespace eckit;
 using namespace multio;
+using namespace multio::sandbox;
 
 namespace {
 std::mutex mut;
@@ -32,14 +33,11 @@ void print(Printable& val) {
 
 class SandboxTool final : public eckit::Tool {
 
-protected: // methods
-    SandboxTool(int argc, char** argv) : eckit::Tool(argc, argv, "MULTIO_HOME") {
-        options_.push_back(new eckit::option::SimpleOption<int>("nbclients", "Number of clients"));
-        options_.push_back(new eckit::option::SimpleOption<int>("nbservers", "Number of servers"));
-    }
-
 public:  // methods
-    void usage(const std::string& tool) const {
+
+    SandboxTool(int argc, char** argv);
+
+    static void usage(const std::string& tool) {
         Log::info() << std::endl
                     << "Usage: " << tool << " [options]" << std::endl
                     << std::endl
@@ -47,63 +45,131 @@ public:  // methods
                     << "Examples:" << std::endl
                     << "=========" << std::endl
                     << std::endl
-                    << tool << " --all" << std::endl
-                    << tool << " --version" << std::endl
-                    << tool << " --home" << std::endl
-                    << tool << " --nbclients" << std::endl
-                    << tool << " --nbservers" << std::endl
+                    << tool << " --nbclients 10 --nbservers 4" << std::endl
                     << std::endl;
     }
 
-protected: // members
+protected:  // members
+    std::vector<eckit::option::Option*> options_;
 
-    std::vector<eckit::option::Option *> options_;
+protected:  // methods
+    virtual void init(const eckit::option::CmdArgs& args);
+    virtual void finish(const eckit::option::CmdArgs& args);
 
-protected: // methods
+private:  // methods
 
-    void init(const eckit::option::CmdArgs& args);
+    virtual void execute(const eckit::option::CmdArgs& args);
 
-private: // methods
-    int numberOfPositionalArguments() const { return -1; }
-    int minimumPositionalArguments() const { return -1; }
+    virtual int numberOfPositionalArguments() const { return -1; }
+    virtual int minimumPositionalArguments() const { return -1; }
 
-    void execute();
     void run() override;
 
-private: // members
+    std::map<Peer, std::thread> spawnServers(std::shared_ptr<sandbox::Transport> transport, int nbServers, int nbClients /* to be removed */ );
+    std::map<Peer, std::thread> spawnClients(std::shared_ptr<sandbox::Transport> transport, int nbClients, const std::map<Peer, std::thread>& servers);
 
-    int nbClients_;
-    int nbServers_;
 
+
+private:  // members
+    int nbClients_ = 1;
+    int nbServers_ = 1;
 };
 
+static SandboxTool* instance_ = nullptr;
 
-//----------------------------------------------------------------------------------------------------------------------
+SandboxTool::SandboxTool(int argc, char** argv) : eckit::Tool(argc, argv, "MULTIO_HOME")
+{
+    ASSERT(instance_ == nullptr);
+    instance_ = this;
 
-void SandboxTool::run() {
-    eckit::option::CmdArgs args([this]() { this->usage("multio-thread-transport"); }, options_,
-                                numberOfPositionalArguments(), minimumPositionalArguments());
-    init(args);
-    execute();
+    options_.push_back(new eckit::option::SimpleOption<int>("nbclients", "Number of clients"));
+    options_.push_back(new eckit::option::SimpleOption<int>("nbservers", "Number of servers"));
 }
 
-void SandboxTool::init(const option::CmdArgs& args)
-{
+static void usage(const std::string& tool) {
+    ASSERT(instance_);
+    instance_->usage(tool);
+}
+
+void SandboxTool::init(const option::CmdArgs& args) {
     args.get("nbclients", nbClients_);
     args.get("nbservers", nbServers_);
 }
 
-void SandboxTool::execute()  {
+//----------------------------------------------------------------------------------------------------------------------
+
+void SandboxTool::run() {
+    eckit::option::CmdArgs args(&SandboxTool::usage,
+                                options_,
+                                numberOfPositionalArguments(),
+                                minimumPositionalArguments());
+
+    init(args);
+    execute(args);
+    finish(args);
+}
+
+std::map<Peer, std::thread> SandboxTool::spawnServers(std::shared_ptr<sandbox::Transport> transport, int nbServers, int nbClients)
+{
+    auto listen = [transport, nbClients]() {
+        auto counter = 0;
+        do {
+            sandbox::Message msg = transport->receive();
+
+            eckit::Log::info() << msg << std::endl;
+
+            if (msg.tag() == sandbox::Message::Tag::close)
+                ++counter;
+
+        } while (counter < nbClients);
+    };
+
+    std::map<Peer, std::thread> servers;
+
+    for (auto i = 0; i != nbServers; ++i) {
+
+        Peer server {"thread", i};
+
+        servers.emplace(server, listen);
+    }
+}
+
+std::map<Peer, std::thread> SandboxTool::spawnClients(std::shared_ptr<sandbox::Transport> transport, int nbClients, const std::map<Peer, std::thread>& servers)
+{
+    for (auto i = 0; i != nbServers; ++i) {
+
+        Peer server {"thread", i};
+
+        servers.emplace(server, listen);
+    }
+}
+
+
+void SandboxTool::execute(const eckit::option::CmdArgs& args) {
 
     eckit::LocalConfiguration config;
     config.set("name", "test");
-    auto nbClients_ = 7;
-    auto nbServers_ = 1;
-    config.set("nbClients_", nbClients_);
-    config.set("nbServers_", nbServers_);
+    config.set("nbClients", nbClients_);
+    config.set("nbServers", nbServers_);
 
     std::shared_ptr<sandbox::Transport> transport{
         std::make_shared<sandbox::ThreadTransport>(config)};
+
+
+    // spawn servers
+
+    std::map<Peer, std::thread> servers = spawnServers(transport, nbServers_, nbClients_);
+
+
+    // spawn clients
+
+    std::map<Peer, std::thread> clients = spawnClients(transport, nbClients_, servers);
+
+
+    std::for_each(begin(clients), end(clients), [](std::pair<Peer, std::thread>& t) { t.second.join(); });
+    std::for_each(begin(servers), end(servers), [](std::pair<Peer, std::thread>& t) { t.second.join(); });
+
+ # if 0
 
     auto sendString = [transport, nbClients_, nbServers_]() {
         std::string str = "Once upon a midnight dreary ";
@@ -133,7 +199,7 @@ void SandboxTool::execute()  {
     auto listen = [transport, nbClients_]() {
         auto counter = 0;
         do {
-            sandbox::Message msg{0, nbClients_, sandbox::MsgTag::mapping_data};
+            sandbox::Message msg{0, nbClients_, sandbox::Message::Tag::mapping_data};
             transport->receive(msg);
             print(msg);
             if (msg.tag() == sandbox::MsgTag::close)
@@ -149,6 +215,9 @@ void SandboxTool::execute()  {
 
     std::for_each(begin(clients), end(clients), [](std::thread& t) { t.join(); });
     std::for_each(begin(servers), end(servers), [](std::thread& t) { t.join(); });
+
+#endif
+
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -156,5 +225,4 @@ void SandboxTool::execute()  {
 int main(int argc, char** argv) {
     SandboxTool tool(argc, argv);
     return tool.start();
-
 }

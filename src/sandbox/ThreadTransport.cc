@@ -15,8 +15,8 @@ namespace sandbox {
 
 ThreadTransport::ThreadTransport(const eckit::Configuration& config) :
     Transport{config},
-    no_servers_(get_config_value<int>(config, "no_servers")),
-    no_clients_(get_config_value<int>(config, "no_clients")) {}
+    no_servers_(configure_value<int>(config, "no_servers")),
+    no_clients_(configure_value<int>(config, "no_clients")) {}
 
 ThreadTransport::~ThreadTransport() = default;
 

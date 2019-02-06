@@ -30,8 +30,13 @@ int Message::protocolVersion() {
 std::string Message::tag2str(Message::Tag t)
 {
     static std::map<unsigned, const char*> m = {
-        { unsigned(Tag::Open), "OPEN"}
+        { unsigned(Tag::Open), "Open"},
+        { unsigned(Tag::Close), "Close"},
+        { unsigned(Tag::Mapping), "Mapping"},
+        { unsigned(Tag::Field), "Field"}
     };
+
+    ASSERT( unsigned(t) < unsigned(Tag::ENDTAG));
 
     return m.find(unsigned(t))->second;
 }

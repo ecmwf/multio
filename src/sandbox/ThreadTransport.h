@@ -36,9 +36,11 @@ public:
 
 private:
 
-    std::map<Peer, eckit::Queue<Message>> queues_;
+    std::map<Peer, eckit::Queue<Message>*> queues_;
 
     std::mutex mutex_;
+
+    size_t messageQueueSize_;
 
 private:
 

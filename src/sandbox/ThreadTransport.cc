@@ -16,7 +16,11 @@
 namespace multio {
 namespace sandbox {
 
-ThreadTransport::ThreadTransport(const eckit::Configuration& config) : Transport{config} {}
+ThreadTransport::ThreadTransport(const eckit::Configuration& config) :
+    Transport{config},
+    messageQueueSize_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024))
+{
+}
 
 ThreadTransport::~ThreadTransport() = default;
 
@@ -27,6 +31,8 @@ Message ThreadTransport::receive() {
     auto& queue = receiveQueue(receiver);
 
     Message msg = queue.pop();
+
+    eckit::Log::info() << "RECV " << msg << std::endl;
 
     ASSERT(msg.to() == receiver);
 
@@ -59,16 +65,14 @@ eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer to) {
 
     auto qitr = queues_.find(to);
     if (qitr != end(queues_)) {
-        return qitr->second;
+        return * qitr->second;
     }
 
    eckit::Log::info() << "Adding queue..." << std::endl;
 
-   static size_t multioMessageQueueSize = eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024);
+   queues_.emplace(to, new eckit::Queue<Message>(messageQueueSize_));
 
-   queues_.emplace(to, multioMessageQueueSize);
-
-   return queues_.find(to)->second;
+   return * queues_.find(to)->second;
 }
 
 }  // namespace sandbox

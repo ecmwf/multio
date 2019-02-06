@@ -92,7 +92,6 @@ void SandboxTool::run() {
 std::vector<std::thread> SandboxTool::spawnServers(std::shared_ptr<Transport> transport, int nbServers, int nbClients, std::vector<Peer>& peerServers)
 {
     auto listen = [transport, nbClients]() {
-        Peer server = transport->localPeer();
 
         auto counter = 0;
         do {
@@ -109,6 +108,8 @@ std::vector<std::thread> SandboxTool::spawnServers(std::shared_ptr<Transport> tr
     std::vector<std::thread> servers;
 
     for (auto i = 0; i != nbServers; ++i) {
+
+        eckit::Log::info() << "starting server " << i << std::endl;
 
         std::thread t(listen);
 

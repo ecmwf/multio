@@ -28,18 +28,10 @@
 namespace multio {
 namespace sandbox {
 
-template <typename ValueType>
-ValueType configure_value(const eckit::Configuration& config, std::string value_name) {
-    ValueType val;
-    config.get(value_name, val);
-    return val;
-}
-
-
 class Transport {
 public:  // methods
 
-    Transport(const eckit::Configuration& config);
+    Transport();
     virtual ~Transport();
 
     virtual Message receive() = 0;
@@ -47,9 +39,6 @@ public:  // methods
     virtual void send(const Message& message) = 0;
 
     virtual Peer localPeer() const = 0;
-
-protected:
-    std::string name_;
 
 private: // methods
 

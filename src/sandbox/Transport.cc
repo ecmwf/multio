@@ -13,8 +13,7 @@
 namespace multio {
 namespace sandbox {
 
-Transport::Transport(const eckit::Configuration& config) :
-    name_(configure_value<std::string>(config, "name")) {}
+Transport::Transport(){}
 
 Transport::~Transport() = default;
 

@@ -24,11 +24,9 @@ namespace multio {
 namespace sandbox {
 
 Listener::Listener(const eckit::Configuration& config, Transport& trans) :
-    transport_(trans),
     dispatcher_(std::make_shared<Dispatcher>(config)),
-    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024))
-{
-}
+    transport_(trans),
+    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
 
 void Listener::listen() {
 
@@ -36,8 +34,6 @@ void Listener::listen() {
 
     do {
         Message msg = transport_.receive();
-
-//        eckit::Log::info() << msg << std::endl;
 
         switch (msg.tag()) {
             case Message::Tag::Open:

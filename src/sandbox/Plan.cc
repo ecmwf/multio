@@ -27,7 +27,9 @@ namespace sandbox {
 Plan::Plan(const eckit::Configuration& config) {
 
     const LocalConfiguration cfg = config.getSubConfiguration("root");
+    eckit::Log::info() << cfg << std::endl;
     root_.reset(ActionFactory::instance().build(cfg.getString("type"), cfg));
+    eckit::Log::info() << "    Returning from plan constructor" << std::endl;
 
 //    const std::vector<LocalConfiguration> configs = config.getSubConfigurations("actions");
 //    for (const auto& cfg : configs) {

@@ -16,11 +16,9 @@
 namespace multio {
 namespace sandbox {
 
-ThreadTransport::ThreadTransport(const eckit::Configuration& config) :
-    Transport{config},
-    messageQueueSize_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024))
-{
-}
+ThreadTransport::ThreadTransport() :
+    messageQueueSize_(
+        eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
 
 ThreadTransport::~ThreadTransport() = default;
 
@@ -60,7 +58,7 @@ Peer ThreadTransport::localPeer() const
 
 
 void ThreadTransport::print(std::ostream& os) const {
-    os << "ThreadTransport(name = " << name_ << ")";
+    os << "ThreadTransport(number of queues = " << queues_.size() << ")";
 }
 
 eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer to) {

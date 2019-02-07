@@ -7,6 +7,7 @@
 #include <string>
 #include <thread>
 
+#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/log/Log.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
@@ -15,6 +16,7 @@
 #include "sandbox/Listener.h"
 #include "sandbox/Message.h"
 #include "sandbox/Peer.h"
+#include "sandbox/PlanConfigurations.h"
 #include "sandbox/ThreadTransport.h"
 
 using namespace eckit;
@@ -156,17 +158,12 @@ std::vector<std::thread> SandboxTool::spawnClients(std::shared_ptr<Transport> tr
 
 
 void SandboxTool::execute(const eckit::option::CmdArgs&) {
-    eckit::LocalConfiguration config;
-    config.set("name", "test");
-    config.set("nbClients", nbClients_);
-    config.set("nbServers", nbServers_);
 
-
-    Log::info() << config << std::endl;
-
-    std::shared_ptr<Transport> transport{std::make_shared<ThreadTransport>(config)};
+    std::shared_ptr<Transport> transport{std::make_shared<ThreadTransport>()};
 
     // spawn servers
+
+    eckit::YAMLConfiguration config{plan_configurations()};
 
     std::vector<Peer> peerServers;
 

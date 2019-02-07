@@ -87,8 +87,10 @@ ActionBuilderBase::~ActionBuilderBase() {
 //--------------------------------------------------------------------------------------------------
 
 Action::Action(const eckit::Configuration& config) {
-    const LocalConfiguration cfg = config.getSubConfiguration("next");
-    next_.reset(ActionFactory::instance().build(cfg.getString("type"), cfg));
+    if(config.has("next")) {
+       const LocalConfiguration cfg = config.getSubConfiguration("next");
+       next_.reset(ActionFactory::instance().build(cfg.getString("type"), cfg));
+    }
 }
 
 //--------------------------------------------------------------------------------------------------

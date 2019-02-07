@@ -31,7 +31,35 @@ std::string plan_configurations() {
        ]
      }
     )json";
+
+
+    return R"json(
+     {
+       "plans" : [
+         { "name" : "ocean",
+            "categories" : [ "surface", "deep" ],
+            "root" : {
+            "type" : "select",
+            "next" : {
+                 "type" : "IndexedAggregation",
+                     "next" : {
+                          "type" : "print",
+                     }
+                }
+            }
+         },
+         {
+           "name" : "atmosphere",
+           "categories" : [ "prognostic", "diagnostic" ],
+           "root" : {
+           }
+         }
+       ]
+     }
+    )json";
+
 }
+
 
 }  // namespace server
 }  // namespace multio

@@ -23,15 +23,16 @@
 namespace multio {
 namespace sandbox {
 
-Listener::Listener(Transport& trans) :
+Listener::Listener(const eckit::Configuration& config, Transport& trans) :
     transport_(trans),
+    dispatcher_(std::make_shared<Dispatcher>(config)),
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024))
 {
 }
 
 void Listener::listen() {
-    Dispatcher dispatcher;
-    ScopedThread scThread{std::thread{&Dispatcher::dispatch, dispatcher, std::ref(msgQueue_)}};
+
+    ScopedThread scThread{std::thread{&Dispatcher::dispatch, dispatcher_, std::ref(msgQueue_)}};
 
     do {
         Message msg = transport_.receive();

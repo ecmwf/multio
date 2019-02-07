@@ -11,39 +11,34 @@
 #ifndef multio_sandbox_Listener_H
 #define multio_sandbox_Listener_H
 
-#include "Dispatcher.h"
+#include "Plan.h"
 
+#include "eckit/log/Log.h"
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
-#include "eckit/log/Log.h"
 
-#include "sandbox/Plan.h"
+#include "sandbox/Action.h"
 
 using eckit::LocalConfiguration;
 
 namespace multio {
 namespace sandbox {
 
-Dispatcher::Dispatcher(const eckit::Configuration& config) {
-    const std::vector<LocalConfiguration> plans = config.getSubConfigurations("plans");
-    for (const auto& cfg : plans) {
-        plans_.emplace_back(new Plan(cfg));
-    }
+Plan::Plan(const eckit::Configuration& config) {
+
+    const LocalConfiguration cfg = config.getSubConfiguration("root");
+    root_.reset(ActionFactory::instance().build(cfg.getString("type"), cfg));
+
+//    const std::vector<LocalConfiguration> configs = config.getSubConfigurations("actions");
+//    for (const auto& cfg : configs) {
+//    }
 }
 
-Dispatcher::~Dispatcher() = default;
+Plan::~Plan() = default;
 
-void Dispatcher::dispatch(eckit::Queue<Message>& queue) {
-    while (true) {
-        Message msg;
-        if (queue.pop(msg) < 0) {
-            break;
-        }
-
-        for (const auto& plan : plans_) {
-            plan->process(msg);
-        }
-    }
+void Plan::process(Message msg)
+{
+    root_->execute(msg);
 }
 
 }  // namespace sandbox

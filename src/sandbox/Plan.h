@@ -14,39 +14,34 @@
 
 /// @date Jan 2019
 
-#ifndef multio_sandbox_Listener_H
-#define multio_sandbox_Listener_H
+#ifndef multio_sandbox_Plan_H
+#define multio_sandbox_Plan_H
 
-#include <list>
 #include <memory>
 
-#include "eckit/container/Queue.h"
+#include "eckit/memory/NonCopyable.h"
 
-#include "sandbox/Peer.h"
 #include "sandbox/Message.h"
+
 
 namespace eckit { class Configuration; }
 
 namespace multio {
 namespace sandbox {
 
-class Transport;
-class Dispatcher;
+class Action;
 
-class Listener {
+class Plan : eckit::NonCopyable {
 public:
-    Listener(const eckit::Configuration& config, Transport& trans);
+    Plan(const eckit::Configuration& config);
+    ~Plan();
 
-    void listen();
+    void process(Message msg);
 
 private:
 
-    Transport& transport_;
+    std::unique_ptr<Action> root_;
 
-    std::shared_ptr<Dispatcher> dispatcher_;
-
-    std::list<Peer> connections_;
-    eckit::Queue<Message> msgQueue_;
 };
 
 }  // namespace sandbox

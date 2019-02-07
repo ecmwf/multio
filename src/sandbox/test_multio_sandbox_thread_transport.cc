@@ -54,7 +54,8 @@ private:  // methods
 
     void run() override;
 
-    std::vector<std::thread> spawnServers(std::shared_ptr<Transport> transport, size_t nbServers,
+    std::vector<std::thread> spawnServers(const Configuration& config,
+                                          std::shared_ptr<Transport> transport, size_t nbServers,
                                           std::vector<Peer>& peerServers);
     std::vector<std::thread> spawnClients(std::shared_ptr<Transport> transport, size_t nbClients,
                                           const std::vector<Peer>& servers);
@@ -85,11 +86,12 @@ void SandboxTool::run() {
     finish(args);
 }
 
-std::vector<std::thread> SandboxTool::spawnServers(std::shared_ptr<Transport> transport,
+std::vector<std::thread> SandboxTool::spawnServers(const eckit::Configuration& config,
+                                                   std::shared_ptr<Transport> transport,
                                                    size_t nbServers,
                                                    std::vector<Peer>& peerServers) {
-    auto listen = [transport]() {
-        Listener listener(*transport);
+    auto listen = [&config, transport]() {
+        Listener listener(config, *transport);
 
         listener.listen();
     };
@@ -168,7 +170,7 @@ void SandboxTool::execute(const eckit::option::CmdArgs&) {
 
     std::vector<Peer> peerServers;
 
-    std::vector<std::thread> servers = spawnServers(transport, nbServers_, peerServers);
+    std::vector<std::thread> servers = spawnServers(config, transport, nbServers_, peerServers);
 
     // spawn clients
 

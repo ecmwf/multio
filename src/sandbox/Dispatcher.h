@@ -20,17 +20,31 @@
 #include <memory>
 
 #include "eckit/container/Queue.h"
+#include "eckit/memory/NonCopyable.h"
 
 #include "sandbox/Message.h"
+
+namespace eckit { class Configuration; }
 
 namespace multio {
 namespace sandbox {
 
-class Dispatcher {
+class Plan;
+
+class Dispatcher : private eckit::NonCopyable {
 public:
-    Dispatcher();
+    Dispatcher(const eckit::Configuration& config);
+    ~Dispatcher();
+
+    Dispatcher(Dispatcher&& rhs) = default;
+    Dispatcher& operator=(Dispatcher&& rhs) = default;
 
     void dispatch(eckit::Queue<Message>& queue);
+
+private:
+
+    std::vector<std::unique_ptr<Plan>> plans_;
+
 };
 
 }  // namespace sandbox

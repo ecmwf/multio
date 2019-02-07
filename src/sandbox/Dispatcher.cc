@@ -22,11 +22,13 @@ Dispatcher::Dispatcher() {
 }
 
 void Dispatcher::dispatch(eckit::Queue<Message>& queue) {
-    do {
+    while(true) {
         Message msg;
-        queue.pop(msg);
+        if(queue.pop(msg) < 0) {
+            break;
+        }
         eckit::Log::info() << static_cast<const char*>(msg.payload()) << std::endl;
-    } while(not queue.closed());
+    }
 }
 
 }  // namespace sandbox

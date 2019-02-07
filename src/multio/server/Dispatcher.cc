@@ -63,7 +63,8 @@ void Dispatcher::listen() {
 }
 
 void Dispatcher::dispatchNext() {
-    auto msg = msgQueue_.pop();
+    std::shared_ptr<Message> msg;
+    msgQueue_.pop(msg); /// @todo add cheking return value
     switch (msg->tag()) {
         case msg_tag::message_data:
             Mappings::instance().add(*msg);

@@ -32,7 +32,9 @@ Message ThreadTransport::receive() {
 
     auto& queue = receiveQueue(receiver);
 
-    Message msg = queue.pop();
+    Message msg;
+
+    ASSERT(queue.pop(msg) >= 0);
 
     eckit::Log::info() << "RECV " << msg << std::endl;
 

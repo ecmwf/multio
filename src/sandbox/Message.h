@@ -34,7 +34,8 @@ public:  // types
 
     enum class Tag
     {
-        Open = 0,
+        Empty = 0,
+        Open,
         Close,
         Mapping,
         Field,
@@ -46,6 +47,7 @@ public:  // methods
     static int protocolVersion();
     static std::string tag2str(Tag);
 
+    Message();
     Message(Tag tag, Peer from, Peer to, const eckit::Buffer& payload);
 
     const void* payload() const;

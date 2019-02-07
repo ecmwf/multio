@@ -30,7 +30,7 @@ class Dispatcher {
 public:
     Dispatcher();
 
-    void dispatch(eckit::Queue<std::shared_ptr<Message>>& queue);
+    void dispatch(eckit::Queue<Message>& queue);
 };
 
 }  // namespace sandbox

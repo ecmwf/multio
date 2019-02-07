@@ -13,25 +13,19 @@
 
 #include "Dispatcher.h"
 
-#include <fstream>
+#include "eckit/log/Log.h"
 
 namespace multio {
 namespace sandbox {
 
-namespace {
-std::fstream fout("test_output", fout.out);
-void process(const Message& msg) {
-    fout << msg << std::endl;
-}
-}
-
 Dispatcher::Dispatcher() {
 }
 
-void Dispatcher::dispatch(eckit::Queue<std::shared_ptr<Message>>& queue) {
+void Dispatcher::dispatch(eckit::Queue<Message>& queue) {
     do {
-        auto msg = queue.pop();
-        process(*msg);
+        Message msg;
+        queue.pop(msg);
+        eckit::Log::info() << static_cast<const char*>(msg.payload()) << std::endl;
     } while(not queue.closed());
 }
 

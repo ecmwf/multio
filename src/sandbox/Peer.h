@@ -24,6 +24,9 @@ namespace sandbox {
 
 class Peer {
 public:
+
+    Peer();
+
     Peer(const std::string& domain, size_t id);
 
     operator std::string();

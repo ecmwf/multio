@@ -36,17 +36,22 @@ void Listener::listen() {
     do {
         Message msg = transport_.receive();
 
+//        eckit::Log::info() << msg << std::endl;
+
         switch (msg.tag()) {
             case Message::Tag::Open:
                 connections_.push_back(msg.from());
+                eckit::Log::info() << "*** OPENING connection to " << msg.from() << std::endl;
                 break;
 
             case Message::Tag::Close:
                 connections_.remove(msg.from());
+                eckit::Log::info() << "*** CLOSING connection to " << msg.from() << std::endl;
                 break;
 
             default:
-                msgQueue_.push(std::make_shared<Message>(std::move(msg)));
+                eckit::Log::info() << "*** DISPATCH QUEUE " << msg << std::endl;
+                msgQueue_.push(std::move(msg));
         }
     } while (not(connections_.empty()));
 

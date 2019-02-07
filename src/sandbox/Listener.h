@@ -38,7 +38,7 @@ private:
     Transport& transport_;
 
     std::list<Peer> connections_;
-    eckit::Queue<std::shared_ptr<Message>> msgQueue_;
+    eckit::Queue<Message> msgQueue_;
 };
 
 }  // namespace sandbox

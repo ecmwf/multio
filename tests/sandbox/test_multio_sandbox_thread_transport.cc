@@ -13,6 +13,7 @@
 #include "eckit/runtime/Tool.h"
 
 #include "sandbox/Message.h"
+#include "sandbox/Listener.h"
 #include "sandbox/Peer.h"
 #include "sandbox/ThreadTransport.h"
 
@@ -45,7 +46,7 @@ protected:  // members
 
 protected:  // methods
     virtual void init(const eckit::option::CmdArgs& args);
-    virtual void finish(const eckit::option::CmdArgs& args) {}
+    virtual void finish(const eckit::option::CmdArgs& ) {}
 
 private:  // methods
 
@@ -56,8 +57,8 @@ private:  // methods
 
     void run() override;
 
-    std::vector<std::thread> spawnServers(std::shared_ptr<Transport> transport, int nbServers, int nbClients /* to be removed */, std::vector<Peer>& peerServers );
-    std::vector<std::thread> spawnClients(std::shared_ptr<Transport> transport, int nbClients, const std::vector<Peer>& servers);
+    std::vector<std::thread> spawnServers(std::shared_ptr<Transport> transport, size_t nbServers, std::vector<Peer>& peerServers );
+    std::vector<std::thread> spawnClients(std::shared_ptr<Transport> transport, size_t nbClients, const std::vector<Peer>& servers);
 
 private:  // members
 
@@ -89,25 +90,18 @@ void SandboxTool::run() {
     finish(args);
 }
 
-std::vector<std::thread> SandboxTool::spawnServers(std::shared_ptr<Transport> transport, int nbServers, int nbClients, std::vector<Peer>& peerServers)
+std::vector<std::thread> SandboxTool::spawnServers(std::shared_ptr<Transport> transport, size_t nbServers, std::vector<Peer>& peerServers)
 {
-    auto listen = [transport, nbClients]() {
+    auto listen = [transport]() {
 
-        auto counter = 0;
-        do {
-            Message msg = transport->receive();
+        Listener listener(*transport);
 
-            eckit::Log::info() << msg << std::endl;
-
-            if (msg.tag() == Message::Tag::Close)
-                ++counter;
-
-        } while (counter < nbClients);
+        listener.listen();
     };
 
     std::vector<std::thread> servers;
 
-    for (auto i = 0; i != nbServers; ++i) {
+    for (size_t i = 0; i != nbServers; ++i) {
 
         eckit::Log::info() << "starting server " << i << std::endl;
 
@@ -121,13 +115,13 @@ std::vector<std::thread> SandboxTool::spawnServers(std::shared_ptr<Transport> tr
     return servers;
 }
 
-std::vector<std::thread> SandboxTool::spawnClients(std::shared_ptr<Transport> transport, int nbClients, const std::vector<Peer>& servers)
+std::vector<std::thread> SandboxTool::spawnClients(std::shared_ptr<Transport> transport, size_t nbClients, const std::vector<Peer>& servers)
 {
     const int nmessages = 10;
 
     std::vector<std::thread> clients;
 
-    for (auto i = 0; i != nbClients; ++i) {
+    for (size_t i = 0; i != nbClients; ++i) {
 
         auto sendMsg = [transport, servers]() {
 
@@ -144,7 +138,7 @@ std::vector<std::thread> SandboxTool::spawnClients(std::shared_ptr<Transport> tr
                 for (auto& server: servers) {
 
                     std::ostringstream oss;
-                    oss << "Once upon a midnight dreary " << " + " << std::this_thread::get_id();
+                    oss << "Once upon a midnight dreary " << " + " << client;
 
                     Message msg {Message::Tag::Field, client, server, oss.str()};
 
@@ -182,7 +176,7 @@ void SandboxTool::execute(const eckit::option::CmdArgs&) {
 
     std::vector<Peer> peerServers;
 
-    std::vector<std::thread> servers = spawnServers(transport, nbServers_, nbClients_, peerServers);
+    std::vector<std::thread> servers = spawnServers(transport, nbServers_, peerServers);
 
 
     // spawn clients

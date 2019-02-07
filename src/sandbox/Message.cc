@@ -30,6 +30,7 @@ int Message::protocolVersion() {
 std::string Message::tag2str(Message::Tag t)
 {
     static std::map<unsigned, const char*> m = {
+        { unsigned(Tag::Empty), "Empty"},
         { unsigned(Tag::Open), "Open"},
         { unsigned(Tag::Close), "Close"},
         { unsigned(Tag::Mapping), "Mapping"},
@@ -39,6 +40,15 @@ std::string Message::tag2str(Message::Tag t)
     ASSERT( unsigned(t) < unsigned(Tag::ENDTAG));
 
     return m.find(unsigned(t))->second;
+}
+
+Message::Message():
+    tag_(Message::Tag::Empty),
+    version_(protocolVersion()),
+    from_(),
+    to_(),
+    payload_(new eckit::Buffer("\0", 1))
+{
 }
 
 Message::Message(Message::Tag tag, Peer from, Peer to, const eckit::Buffer& payload):

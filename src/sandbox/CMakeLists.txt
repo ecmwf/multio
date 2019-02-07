@@ -13,8 +13,6 @@ ecbuild_add_library(
         Message.h
         Peer.cc
         Peer.h
-        SimpleTransport.cc
-        SimpleTransport.h
         ThreadTransport.cc
         ThreadTransport.h
         Transport.cc

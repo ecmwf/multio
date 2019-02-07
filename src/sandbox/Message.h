@@ -17,10 +17,10 @@
 #ifndef multio_sandbox_Message_H
 #define multio_sandbox_Message_H
 
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
-#include <memory>
 
 #include "eckit/io/Buffer.h"
 
@@ -31,8 +31,7 @@ namespace sandbox {
 
 class Message {
 public:  // types
-
-    enum class Tag
+    enum class Tag : unsigned
     {
         Empty = 0,
         Open,
@@ -43,7 +42,6 @@ public:  // types
     };
 
 public:  // methods
-
     static int protocolVersion();
     static std::string tag2str(Tag);
 

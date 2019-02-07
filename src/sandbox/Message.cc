@@ -27,38 +27,31 @@ int Message::protocolVersion() {
     return 1;
 }
 
-std::string Message::tag2str(Message::Tag t)
-{
-    static std::map<unsigned, const char*> m = {
-        { unsigned(Tag::Empty), "Empty"},
-        { unsigned(Tag::Open), "Open"},
-        { unsigned(Tag::Close), "Close"},
-        { unsigned(Tag::Mapping), "Mapping"},
-        { unsigned(Tag::Field), "Field"}
-    };
+std::string Message::tag2str(Message::Tag t) {
+    static std::map<Tag, std::string> m = {{Tag::Empty, "Empty"},
+                                           {Tag::Open, "Open"},
+                                           {Tag::Close, "Close"},
+                                           {Tag::Mapping, "Mapping"},
+                                           {Tag::Field, "Field"}};
 
-    ASSERT( unsigned(t) < unsigned(Tag::ENDTAG));
+    ASSERT(t < Tag::ENDTAG);
 
-    return m.find(unsigned(t))->second;
+    return m.find(t)->second;
 }
 
-Message::Message():
+Message::Message() :
     tag_(Message::Tag::Empty),
     version_(protocolVersion()),
     from_(),
     to_(),
-    payload_(new eckit::Buffer("\0", 1))
-{
-}
+    payload_(new eckit::Buffer("\0", 1)) {}
 
-Message::Message(Message::Tag tag, Peer from, Peer to, const eckit::Buffer& payload):
+Message::Message(Message::Tag tag, Peer from, Peer to, const eckit::Buffer& payload) :
     tag_(tag),
     version_(protocolVersion()),
     from_(from),
     to_(to),
-    payload_(new eckit::Buffer(payload, payload.size()))
-{
-}
+    payload_(new eckit::Buffer(payload, payload.size())) {}
 
 const void* Message::payload() const {
     return payload_->data();
@@ -70,13 +63,9 @@ size_t Message::size() const {
 
 void Message::print(std::ostream& out) const {
     out << "Message("
-        << "version=" << version_
-        << ",tag=" << tag2str(tag_)
-        << ",from=" << from_
-        << ",to=" << to_
+        << "version=" << version_ << ",tag=" << tag2str(tag_) << ",from=" << from_ << ",to=" << to_
         << ")";
 }
-
 
 
 }  // namespace sandbox

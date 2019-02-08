@@ -168,6 +168,9 @@ std::string local_plan() {
                         "next" : {
                             "type" : "AppendToFile",
                             "path" : "messages.txt"
+                            "next" : {
+                                "type" : "Null",
+                            }
                         }
                     }
                 }

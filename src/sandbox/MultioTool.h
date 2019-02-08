@@ -3,23 +3,20 @@
 #define multio_sandbox_MultioTool_H
 
 #include <vector>
-#include <thread>
-#include <tuple>
 
-#include "eckit/log/Log.h"
-#include "eckit/option/CmdArgs.h"
 #include "eckit/runtime/Tool.h"
-
-#include "sandbox/Peer.h"
 
 namespace eckit {
 class Configuration;
-}
+
+namespace option {
+class CmdArgs;
+class Option;
+}  // namespace option
+}  // namespace eckit
 
 namespace multio {
 namespace sandbox {
-
-class Transport;
 
 class MultioTool : public eckit::Tool {
 public:  // methods
@@ -44,20 +41,6 @@ private:
     virtual int minimumPositionalArguments() const { return -1; }
 
     void run() override final;
-};
-
-class MultioThreadTool final : public MultioTool {
-public:
-    MultioThreadTool(int argc, char** argv);
-
-private:
-    void execute(const eckit::option::CmdArgs& args) override;
-
-    std::tuple<std::vector<Peer>, std::vector<std::thread>> spawnServers(
-        const eckit::Configuration& config, std::shared_ptr<Transport> transport, size_t nbServers);
-
-    std::vector<std::thread> spawnClients(std::shared_ptr<Transport> transport, size_t nbClients,
-                                          const std::vector<Peer>& serverPeers);
 };
 
 }  // namespace sandbox

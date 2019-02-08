@@ -16,7 +16,6 @@
 #include "sandbox/Listener.h"
 #include "sandbox/Message.h"
 #include "sandbox/Peer.h"
-#include "sandbox/PlanConfigurations.h"
 #include "sandbox/ThreadTransport.h"
 
 using namespace eckit;

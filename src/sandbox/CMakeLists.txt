@@ -28,6 +28,7 @@ ecbuild_add_library(
         ThreadTransport.h
         Transport.cc
         Transport.h
+        ScopedThread.h
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}

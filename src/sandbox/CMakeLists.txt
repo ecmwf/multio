@@ -24,6 +24,8 @@ ecbuild_add_library(
         Peer.h
         Plan.cc
         Plan.h
+        MultioTool.cc
+        MultioTool.h
         ThreadTransport.cc
         ThreadTransport.h
         Transport.cc

@@ -51,7 +51,7 @@ private:  // methods
     }
 
 private:
-    size_t id_;  //< MPI rank or TCP port
+    size_t id_;  //< MPI rank or TCP port or std::thread::id
     std::string domain_;  //< for MPI it will be Communicator, for TCP the host
 };
 

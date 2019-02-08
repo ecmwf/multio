@@ -40,12 +40,12 @@ public:
     void listen();
 
 private:
+    std::shared_ptr<Dispatcher> dispatcher_;
 
     Transport& transport_;
 
-    std::shared_ptr<Dispatcher> dispatcher_;
-
     std::list<Peer> connections_;
+
     eckit::Queue<Message> msgQueue_;
 };
 

@@ -23,7 +23,7 @@
 #include <mutex>
 
 #include "eckit/memory/NonCopyable.h"
-#include "eckit/config/LocalConfiguration.h"
+#include "eckit/config/Configuration.h"
 
 #include "sandbox/Message.h"
 
@@ -36,7 +36,7 @@ namespace sandbox {
 class Transport {
 public:  // methods
 
-    Transport();
+    Transport(const eckit::Configuration& config);
     virtual ~Transport();
 
     virtual Message receive() = 0;

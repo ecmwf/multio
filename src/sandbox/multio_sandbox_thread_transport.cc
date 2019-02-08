@@ -16,7 +16,7 @@
 #include "sandbox/Listener.h"
 #include "sandbox/Message.h"
 #include "sandbox/Peer.h"
-#include "sandbox/ThreadTransport.h"
+#include "sandbox/Transport.h"
 
 using namespace eckit;
 using namespace multio;
@@ -183,11 +183,12 @@ std::string local_plan() {
 //----------------------------------------------------------------------------------------------------------------------
 
 void SandboxTool::execute(const eckit::option::CmdArgs&) {
-    std::shared_ptr<Transport> transport{std::make_shared<ThreadTransport>()};
-
-    // spawn servers
 
     eckit::YAMLConfiguration config{local_plan()};
+
+    std::shared_ptr<Transport> transport(TransportFactory::instance().build("Thread", config));
+
+    // spawn servers
 
     std::vector<Peer> peerServers;
 

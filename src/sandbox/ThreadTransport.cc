@@ -16,9 +16,11 @@
 namespace multio {
 namespace sandbox {
 
-ThreadTransport::ThreadTransport() :
+ThreadTransport::ThreadTransport(const eckit::Configuration& cfg) :
+    Transport(cfg),
     messageQueueSize_(
-        eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
+        eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024))
+{}
 
 ThreadTransport::~ThreadTransport() = default;
 
@@ -81,6 +83,8 @@ eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer to) {
 
     return * queue;
 }
+
+static TransportBuilder<ThreadTransport> ThreadTransportBuilder("Thread");
 
 }  // namespace sandbox
 }  // namespace multio

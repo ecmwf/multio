@@ -23,7 +23,6 @@
 
 #include "eckit/container/Queue.h"
 
-#include "sandbox/Message.h"
 #include "sandbox/Transport.h"
 
 namespace multio {
@@ -31,7 +30,7 @@ namespace sandbox {
 
 class ThreadTransport final : public Transport {
 public:
-    ThreadTransport();
+    ThreadTransport(const eckit::Configuration& config);
     ~ThreadTransport() override;
 
 private:

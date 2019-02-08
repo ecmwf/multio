@@ -28,7 +28,7 @@ namespace sandbox {
 using eckit::Configuration;
 using eckit::Log;
 
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 ActionFactory& ActionFactory::instance() {
     static ActionFactory singleton;
@@ -36,19 +36,19 @@ ActionFactory& ActionFactory::instance() {
 }
 
 void ActionFactory::add(const std::string& name, const ActionBuilderBase* builder) {
-    std::lock_guard<std::mutex> lock{mutex_};
+    std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(factories_.find(name) == factories_.end());
     factories_[name] = builder;
 }
 
 void ActionFactory::remove(const std::string& name) {
-    std::lock_guard<std::mutex> lock{mutex_};
+    std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(factories_.find(name) != factories_.end());
     factories_.erase(name);
 }
 
 void ActionFactory::list(std::ostream& out) {
-    std::lock_guard<std::mutex> lock{mutex_};
+    std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     const char* sep = "";
     for (auto const& sinkFactory : factories_) {
@@ -58,7 +58,7 @@ void ActionFactory::list(std::ostream& out) {
 }
 
 Action* ActionFactory::build(const std::string& name, const Configuration& config) {
-    std::lock_guard<std::mutex> lock{mutex_};
+    std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     Log::debug<LibMultio>() << "Looking for ActionFactory [" << name << "]" << std::endl;
 
@@ -84,16 +84,18 @@ ActionBuilderBase::~ActionBuilderBase() {
     ActionFactory::instance().remove(name_);
 }
 
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 Action::Action(const eckit::Configuration& config) {
+    eckit::Log::info() << "Action configuration " << config << std::endl;
     if(config.has("next")) {
-       const LocalConfiguration cfg = config.getSubConfiguration("next");
-       next_.reset(ActionFactory::instance().build(cfg.getString("type"), cfg));
+       const LocalConfiguration next = config.getSubConfiguration("next");
+       eckit::Log::info() << "Next action configuration " << next << std::endl;
+       next_.reset(ActionFactory::instance().build(next.getString("type"), next));
     }
 }
 
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace sandbox
 }  // namespace multio

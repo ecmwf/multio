@@ -32,9 +32,8 @@ Plan::Plan(const eckit::Configuration& config) {
   if (not config.has("actions")) throw eckit::UserError("Plan config must define 'actions'");
   const LocalConfiguration actions = config.getSubConfiguration("actions");
 
-
+  if (not actions.has("root")) throw eckit::UserError("Plan actions must define 'root' action");
   const LocalConfiguration root = actions.getSubConfiguration("root");
-
   root_.reset(ActionFactory::instance().build(root.getString("type"), root));
 }
 

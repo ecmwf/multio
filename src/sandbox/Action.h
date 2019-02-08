@@ -31,7 +31,7 @@ namespace eckit { class Configuration; }
 namespace multio {
 namespace sandbox {
 
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 class Action : eckit::NonCopyable {
 public:
@@ -49,7 +49,7 @@ protected:
 
 };
 
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 class ActionBuilderBase;
 
@@ -71,7 +71,7 @@ public:  // methods
 private:  // members
     std::map<std::string, const ActionBuilderBase*> factories_;
 
-    std::mutex mutex_;
+    std::recursive_mutex mutex_;
 };
 
 class ActionBuilderBase : private eckit::NonCopyable {

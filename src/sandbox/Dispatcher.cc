@@ -26,8 +26,8 @@ namespace sandbox {
 
 Dispatcher::Dispatcher(const eckit::Configuration& config) {
     eckit::Log::info() << config << std::endl;
+
     const std::vector<LocalConfiguration> plans = config.getSubConfigurations("plans");
-    eckit::Log::info() << "Plan size: " << plans.size() << std::endl;
     for (const auto& cfg : plans) {
         eckit::Log::info() << cfg << std::endl;
         plans_.emplace_back(new Plan(cfg));
@@ -43,11 +43,9 @@ void Dispatcher::dispatch(eckit::Queue<Message>& queue) {
             break;
         }
 
-        eckit::Log::info() << msg << std::endl;
-
-        // for (const auto& plan : plans_) {
-        //     plan->process(msg);
-        // }
+        for (const auto& plan : plans_) {
+            plan->process(msg);
+        }
     }
 }
 

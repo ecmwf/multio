@@ -32,7 +32,7 @@ AppendToFile::AppendToFile(const eckit::Configuration& config) : Action(config) 
 
     datahandle_.reset(eckit::PathName(s).fileHandle());
 
-    datahandle_->close();
+    datahandle_->openForAppend(0);
 }
 
 AppendToFile::~AppendToFile() {

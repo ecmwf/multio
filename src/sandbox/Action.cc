@@ -95,6 +95,12 @@ Action::Action(const eckit::Configuration& config) {
     }
 }
 
+void Action::process(Message msg) {
+    execute(msg);
+    if(next_)
+        next_->process(msg);
+}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace sandbox

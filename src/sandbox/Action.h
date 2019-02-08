@@ -41,9 +41,13 @@ public:
     Action(Action&& rhs) = default;
     Action& operator=(Action&& rhs) = default;
 
+    virtual void process(Message msg);
+
+protected: // method
+
     virtual void execute(Message msg) = 0;
 
-protected:
+protected: // members
 
     std::unique_ptr<Action> next_;
 

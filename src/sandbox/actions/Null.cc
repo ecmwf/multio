@@ -20,9 +20,7 @@ namespace actions {
 Null::Null(const eckit::Configuration& config): Action(config) {
 }
 
-void Null::execute(Message msg)
-{
-    next_->execute(msg);
+void Null::execute(Message msg) {
 }
 
 static ActionBuilder<Null> NullBuilder("Null");

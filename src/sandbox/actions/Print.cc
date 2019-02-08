@@ -37,6 +37,8 @@ void Print::execute(Message msg)
 {
     ASSERT(os);
     (*os) << msg;
+
+
 }
 
 static ActionBuilder<Print> PrintBuilder("Print");

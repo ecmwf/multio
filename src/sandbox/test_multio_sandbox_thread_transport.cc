@@ -134,7 +134,7 @@ std::vector<std::thread> SandboxTool::spawnClients(std::shared_ptr<Transport> tr
                 for (auto& server : servers) {
                     std::ostringstream oss;
                     oss << "Once upon a midnight dreary "
-                        << " + " << client;
+                        << " + " << client << "\n";
 
                     Message msg{Message::Tag::Field, client, server, oss.str()};
 
@@ -180,7 +180,6 @@ std::string local_plan() {
 //----------------------------------------------------------------------------------------------------------------------
 
 void SandboxTool::execute(const eckit::option::CmdArgs&) {
-
     std::shared_ptr<Transport> transport{std::make_shared<ThreadTransport>()};
 
     // spawn servers

@@ -39,7 +39,7 @@ Plan::Plan(const eckit::Configuration& config) {
 
 Plan::~Plan() = default;
 
-void Plan::process(Message msg) { root_->execute(msg); }
+void Plan::process(Message msg) { root_->process(msg); }
 
 }  // namespace sandbox
 }  // namespace multio

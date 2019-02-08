@@ -38,14 +38,14 @@ Message ThreadTransport::receive() {
 
 //    eckit::Log::info() << "RECV " << msg << std::endl;
 
-    ASSERT(msg.to() == receiver);
+    ASSERT(msg.destination() == receiver);
 
     return msg;
 }
 
 void ThreadTransport::send(const Message& msg) {
 
-    Peer to = msg.to();
+    Peer to = msg.destination();
 
     auto& queue = receiveQueue(to);
 
@@ -71,8 +71,9 @@ eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer to) {
 
     auto qitr = queues_.find(to);
     if (qitr != end(queues_)) {
+
 //        eckit::Log::info() << "FOUND QUEUE for " << to << " --- " << qitr->second << std::endl;
-        return * qitr->second;
+        return *qitr->second;
     }
 
     auto queue = new eckit::Queue<Message>(messageQueueSize_);

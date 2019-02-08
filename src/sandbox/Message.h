@@ -46,15 +46,15 @@ public:  // methods
     static std::string tag2str(Tag);
 
     Message();
-    Message(Tag tag, Peer from, Peer to, const eckit::Buffer& payload);
+    Message(Tag tag, Peer source, Peer destination, const eckit::Buffer& payload);
 
     const void* payload() const;
 
     size_t size() const;
 
     Tag tag() const { return tag_; }
-    Peer to() const { return to_; }
-    Peer from() const { return from_; }
+    Peer destination() const { return destination_; }
+    Peer source() const { return source_; }
 
     int version() const { return version_; }
 
@@ -70,8 +70,8 @@ private:  // members
     Tag tag_;
     int version_;
 
-    Peer from_;
-    Peer to_;
+    Peer source_;
+    Peer destination_;
 
     std::shared_ptr<eckit::Buffer> payload_;
 };

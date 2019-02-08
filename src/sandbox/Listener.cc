@@ -37,13 +37,13 @@ void Listener::listen() {
 
         switch (msg.tag()) {
             case Message::Tag::Open:
-                connections_.push_back(msg.from());
-                eckit::Log::info() << "*** OPENING connection to " << msg.from() << std::endl;
+                connections_.push_back(msg.source());
+                eckit::Log::info() << "*** OPENING connection to " << msg.source() << std::endl;
                 break;
 
             case Message::Tag::Close:
-                connections_.remove(msg.from());
-                eckit::Log::info() << "*** CLOSING connection to " << msg.from() << std::endl;
+                connections_.remove(msg.source());
+                eckit::Log::info() << "*** CLOSING connection to " << msg.source() << std::endl;
                 break;
 
             default:

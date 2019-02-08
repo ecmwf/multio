@@ -40,16 +40,16 @@ std::string Message::tag2str(Message::Tag t) {
 Message::Message() :
     tag_(Message::Tag::Empty),
     version_(protocolVersion()),
-    from_(),
-    to_(),
-    payload_(new eckit::Buffer("\0", 1)) {}
+    source_(),
+    destination_(),
+    payload_(std::make_shared<eckit::Buffer>("\0", 1)) {}
 
-Message::Message(Message::Tag tag, Peer from, Peer to, const eckit::Buffer& payload) :
+Message::Message(Message::Tag tag, Peer source, Peer destination, const eckit::Buffer& payload) :
     tag_(tag),
     version_(protocolVersion()),
-    from_(from),
-    to_(to),
-    payload_(new eckit::Buffer(payload, payload.size())) {}
+    source_(source),
+    destination_(destination),
+    payload_(std::make_shared<eckit::Buffer>(payload, payload.size())) {}
 
 const void* Message::payload() const {
     return payload_->data();
@@ -61,8 +61,8 @@ size_t Message::size() const {
 
 void Message::print(std::ostream& out) const {
     out << "Message("
-        << "version=" << version_ << ",tag=" << tag2str(tag_) << ",from=" << from_ << ",to=" << to_
-        << ")";
+        << "version=" << version_ << ",tag=" << tag2str(tag_) << ",source=" << source_
+        << ",destination=" << destination_ << ")";
 }
 
 

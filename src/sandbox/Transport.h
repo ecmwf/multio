@@ -17,8 +17,10 @@
 #ifndef multio_sandbox_Transport_H
 #define multio_sandbox_Transport_H
 
-#include <iostream>
+#include <iosfwd>
 #include <string>
+#include <map>
+#include <mutex>
 
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/config/LocalConfiguration.h"
@@ -27,6 +29,9 @@
 
 namespace multio {
 namespace sandbox {
+
+
+//----------------------------------------------------------------------------------------------------------------------
 
 class Transport {
 public:  // methods
@@ -49,6 +54,53 @@ private: // methods
         return os;
     }
 };
+
+//----------------------------------------------------------------------------------------------------------------------
+
+class TransportBuilderBase;
+
+class TransportFactory : private eckit::NonCopyable {
+private:  // methods
+    TransportFactory() {}
+
+public:  // methods
+    static TransportFactory& instance();
+
+    void add(const std::string& name, const TransportBuilderBase* builder);
+
+    void remove(const std::string& name);
+
+    void list(std::ostream&);
+
+    Transport* build(const std::string&, const eckit::Configuration& config);
+
+private:  // members
+    std::map<std::string, const TransportBuilderBase*> factories_;
+
+    std::recursive_mutex mutex_;
+};
+
+class TransportBuilderBase : private eckit::NonCopyable {
+public:  // methods
+    virtual Transport* make(const eckit::Configuration& config) const = 0;
+
+protected:  // methods
+    TransportBuilderBase(const std::string&);
+
+    virtual ~TransportBuilderBase();
+
+    std::string name_;
+};
+
+template <class T>
+class TransportBuilder final : public TransportBuilderBase {
+    Transport* make(const eckit::Configuration& config) const override { return new T(config); }
+
+public:
+    TransportBuilder(const std::string& name) : TransportBuilderBase(name) {}
+};
+
+//----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace sandbox
 }  // namespace multio

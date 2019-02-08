@@ -23,9 +23,9 @@ namespace actions {
 
 Print::Print(const eckit::Configuration& config): Action(config) {
 
-    auto stream = config.getString("stream", "info");
+    stream_ = config.getString("stream", "info");
 
-    if(stream == "info") {
+    if(stream_ == "info") {
         os = &eckit::Log::info();
     }
     else {
@@ -37,9 +37,13 @@ void Print::execute(Message msg)
 {
     ASSERT(os);
     (*os) << msg;
-
-
 }
+
+void Print::print(std::ostream& os) const
+{
+    os << "Print(stream=" << stream_ << ")";
+}
+
 
 static ActionBuilder<Print> PrintBuilder("Print");
 

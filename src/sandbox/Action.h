@@ -51,6 +51,14 @@ protected: // members
 
     std::unique_ptr<Action> next_;
 
+private: // methods
+
+    virtual void print(std::ostream &os) const = 0;
+
+    friend std::ostream& operator<<(std::ostream& os, const Action& a) {
+        a.print(os);
+        return os;
+    }
 };
 
 //----------------------------------------------------------------------------------------------------------------------

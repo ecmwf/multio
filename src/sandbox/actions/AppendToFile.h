@@ -17,6 +17,9 @@
 #ifndef multio_sandbox_PrintAction_H
 #define multio_sandbox_PrintAction_H
 
+#include <memory>
+#include <string>
+
 #include "sandbox/Action.h"
 
 namespace eckit {
@@ -29,14 +32,23 @@ namespace sandbox {
 namespace actions {
 
 class AppendToFile : public Action {
-public:
+public: // methods
     AppendToFile(const eckit::Configuration& config);
 
     ~AppendToFile();
 
+protected: // methods
+
     virtual void execute(Message msg);
 
-private:
+private: // methods
+
+    virtual void print(std::ostream &os) const;
+
+private: // members
+
+    std::string path_;
+
     std::unique_ptr<eckit::DataHandle> datahandle_;
 };
 

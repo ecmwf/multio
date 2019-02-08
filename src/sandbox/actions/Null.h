@@ -30,7 +30,15 @@ class Null : public Action {
 public:
     Null(const eckit::Configuration& config);
 
+
+protected: // methods
+
     virtual void execute(Message msg);
+
+private: // methods
+
+    virtual void print(std::ostream &os) const;
+
 };
 
 }  // namespace actions

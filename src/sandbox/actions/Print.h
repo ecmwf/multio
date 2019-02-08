@@ -32,9 +32,17 @@ class Print : public Action {
 public:
     Print(const eckit::Configuration& config);
 
+protected: // methods
+
     virtual void execute(Message msg);
 
-private:
+private: // methods
+
+    virtual void print(std::ostream &os) const;
+
+private: // members
+
+    std::string stream_;
     std::ostream* os;
 };
 

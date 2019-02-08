@@ -23,6 +23,11 @@ Null::Null(const eckit::Configuration& config): Action(config) {
 void Null::execute(Message msg) {
 }
 
+
+void Null::print(std::ostream& os) const {
+}
+
+
 static ActionBuilder<Null> NullBuilder("Null");
 
 }  // namespace actions

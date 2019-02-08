@@ -167,9 +167,9 @@ std::string local_plan() {
                         "stream" : "error",
                         "next" : {
                             "type" : "AppendToFile",
-                            "path" : "messages.txt"
+                            "path" : "messages.txt",
                             "next" : {
-                                "type" : "Null",
+                                "type" : "Null"
                             }
                         }
                     }

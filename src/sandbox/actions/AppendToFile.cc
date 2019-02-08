@@ -27,10 +27,9 @@ AppendToFile::AppendToFile(const eckit::Configuration& config) : Action(config) 
     if (not config.has("path"))
         throw eckit::UserError("AppendToFile config must define 'path'");
 
-    std::string s;
-    config.get("path", s);
+    config.get("path", path_);
 
-    datahandle_.reset(eckit::PathName(s).fileHandle());
+    datahandle_.reset(eckit::PathName(path_).fileHandle());
 
     datahandle_->openForAppend(0);
 }
@@ -42,6 +41,11 @@ AppendToFile::~AppendToFile() {
 
 void AppendToFile::execute(Message msg) {
     datahandle_->write(msg.payload(), long(msg.size()));
+}
+
+void AppendToFile::print(std::ostream& os) const
+{
+    os << "AppendToFile(path=" << path_ << ")";
 }
 
 static ActionBuilder<AppendToFile> AppendToFileBuilder("AppendToFile");

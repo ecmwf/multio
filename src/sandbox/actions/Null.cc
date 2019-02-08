@@ -11,37 +11,23 @@
 #ifndef multio_sandbox_Listener_H
 #define multio_sandbox_Listener_H
 
-#include "PrintAction.h"
-
-#include "eckit/exception/Exceptions.h"
-#include "eckit/log/Log.h"
-#include "eckit/config/Configuration.h"
-
-#include "sandbox/PrintAction.h"
+#include "Null.h"
 
 namespace multio {
 namespace sandbox {
+namespace actions {
 
-PrintAction::PrintAction(const eckit::Configuration& config): Action(config) {
-
-    auto stream = config.getString("stream", "info");
-
-    if(stream == "info") {
-        os = &eckit::Log::info();
-    }
-    else {
-        os = &eckit::Log::error();
-    }
+Null::Null(const eckit::Configuration& config): Action(config) {
 }
 
-void PrintAction::execute(Message msg)
+void Null::execute(Message msg)
 {
-    ASSERT(os);
-    (*os) << msg;
+    next_->execute(msg);
 }
 
-static ActionBuilder<PrintAction> builderPrintAction("print");
+static ActionBuilder<Null> NullBuilder("Null");
 
+}  // namespace actions
 }  // namespace sandbox
 }  // namespace multio
 

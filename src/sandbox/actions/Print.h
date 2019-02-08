@@ -14,38 +14,31 @@
 
 /// @date Jan 2019
 
-#ifndef multio_sandbox_Plan_H
-#define multio_sandbox_Plan_H
+#ifndef multio_sandbox_PrintAction_H
+#define multio_sandbox_PrintAction_H
 
-#include <memory>
+#include <iosfwd>
 
-#include "eckit/memory/NonCopyable.h"
-
-#include "sandbox/Message.h"
+#include "sandbox/Action.h"
 
 
 namespace eckit { class Configuration; }
 
 namespace multio {
 namespace sandbox {
+namespace actions {
 
-class Action;
-
-class Plan : eckit::NonCopyable {
+class Print : public Action {
 public:
-    Plan(const eckit::Configuration& config);
-    ~Plan();
+    Print(const eckit::Configuration& config);
 
-    void process(Message msg);
+    virtual void execute(Message msg);
 
 private:
-
-    std::string name_;
-
-    std::unique_ptr<Action> root_;
-
+    std::ostream* os;
 };
 
+}  // namespace actions
 }  // namespace sandbox
 }  // namespace multio
 

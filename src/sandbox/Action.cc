@@ -58,9 +58,7 @@ void ActionFactory::list(std::ostream& out) {
 }
 
 Action* ActionFactory::build(const std::string& name, const Configuration& config) {
-    eckit::Log::info() << "    Building action " << name << std::endl;
     std::lock_guard<std::mutex> lock{mutex_};
-    eckit::Log::info() << "    Protected by a locked mutex" << std::endl;
 
     Log::debug<LibMultio>() << "Looking for ActionFactory [" << name << "]" << std::endl;
 

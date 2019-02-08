@@ -26,7 +26,7 @@ Message ThreadTransport::receive() {
 
     Peer receiver = localPeer();
 
-    eckit::Log::info() << "RECEIVER " << receiver << std::endl;
+//    eckit::Log::info() << "RECEIVER " << receiver << std::endl;
 
     auto& queue = receiveQueue(receiver);
 
@@ -34,7 +34,7 @@ Message ThreadTransport::receive() {
 
     ASSERT(queue.pop(msg) >= 0);
 
-    eckit::Log::info() << "RECV " << msg << std::endl;
+//    eckit::Log::info() << "RECV " << msg << std::endl;
 
     ASSERT(msg.to() == receiver);
 
@@ -65,11 +65,11 @@ eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer to) {
 
     std::unique_lock<std::mutex> locker(mutex_);
 
-    eckit::Log::info() << "FIND QUEUE for " << to << std::endl;
+//    eckit::Log::info() << "FIND QUEUE for " << to << std::endl;
 
     auto qitr = queues_.find(to);
     if (qitr != end(queues_)) {
-        eckit::Log::info() << "FOUND QUEUE for " << to << " --- " << qitr->second << std::endl;
+//        eckit::Log::info() << "FOUND QUEUE for " << to << " --- " << qitr->second << std::endl;
         return * qitr->second;
     }
 

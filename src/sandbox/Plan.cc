@@ -13,9 +13,10 @@
 
 #include "Plan.h"
 
-#include "eckit/log/Log.h"
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/exception/Exceptions.h"
+#include "eckit/log/Log.h"
 
 #include "sandbox/Action.h"
 
@@ -26,22 +27,20 @@ namespace sandbox {
 
 Plan::Plan(const eckit::Configuration& config) {
 
-    const LocalConfiguration cfg = config.getSubConfiguration("root");
-    eckit::Log::info() << cfg << std::endl;
-    root_.reset(ActionFactory::instance().build(cfg.getString("type"), cfg));
-    eckit::Log::info() << "    Returning from plan constructor" << std::endl;
+  name_ = config.getString("name", "anonymous");
 
-//    const std::vector<LocalConfiguration> configs = config.getSubConfigurations("actions");
-//    for (const auto& cfg : configs) {
-//    }
+  if (not config.has("actions")) throw eckit::UserError("Plan config must define 'actions'");
+  const LocalConfiguration actions = config.getSubConfiguration("actions");
+
+
+  const LocalConfiguration root = actions.getSubConfiguration("root");
+
+  root_.reset(ActionFactory::instance().build(root.getString("type"), root));
 }
 
 Plan::~Plan() = default;
 
-void Plan::process(Message msg)
-{
-    root_->execute(msg);
-}
+void Plan::process(Message msg) { root_->execute(msg); }
 
 }  // namespace sandbox
 }  // namespace multio

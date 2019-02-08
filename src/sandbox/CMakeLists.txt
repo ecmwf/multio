@@ -6,6 +6,12 @@ ecbuild_add_library(
     CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
 
     SOURCES
+        actions/AppendToFile.cc
+        actions/AppendToFile.h
+        actions/Print.cc
+        actions/Print.h
+        actions/Null.cc
+        actions/Null.h
         Action.cc
         Action.h
         Dispatcher.cc
@@ -18,8 +24,6 @@ ecbuild_add_library(
         Peer.h
         Plan.cc
         Plan.h
-        PrintAction.cc
-        PrintAction.h
         ThreadTransport.cc
         ThreadTransport.h
         Transport.cc

@@ -17,10 +17,6 @@
 #ifndef multio_sandbox_PrintAction_H
 #define multio_sandbox_PrintAction_H
 
-#include <iosfwd>
-
-#include "eckit/memory/NonCopyable.h"
-
 #include "sandbox/Action.h"
 
 
@@ -28,18 +24,16 @@ namespace eckit { class Configuration; }
 
 namespace multio {
 namespace sandbox {
+namespace actions {
 
-
-class PrintAction : public Action {
+class Null : public Action {
 public:
-    PrintAction(const eckit::Configuration& config);
+    Null(const eckit::Configuration& config);
 
     virtual void execute(Message msg);
-
-private:
-    std::ostream* os;
 };
 
+}  // namespace actions
 }  // namespace sandbox
 }  // namespace multio
 

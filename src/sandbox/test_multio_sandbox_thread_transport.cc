@@ -156,6 +156,29 @@ std::vector<std::thread> SandboxTool::spawnClients(std::shared_ptr<Transport> tr
     return clients;
 }
 
+std::string local_plan() {
+    return R"json(
+    {
+            "plans" : [
+                {
+                "name" : "ocean",
+                "actions" : {
+                    "root" : {
+                        "type" : "Print",
+                        "stream" : "error",
+                        "next" : {
+                            "type" : "AppendToFile",
+                            "path" : "messages.txt"
+                        }
+                    }
+                }
+             }
+           ]
+    }
+    )json";
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 
 void SandboxTool::execute(const eckit::option::CmdArgs&) {
 
@@ -163,7 +186,7 @@ void SandboxTool::execute(const eckit::option::CmdArgs&) {
 
     // spawn servers
 
-    eckit::YAMLConfiguration config{plan_configurations()};
+    eckit::YAMLConfiguration config{local_plan()};
 
     std::vector<Peer> peerServers;
 
@@ -172,7 +195,6 @@ void SandboxTool::execute(const eckit::option::CmdArgs&) {
     // spawn clients
 
     std::vector<std::thread> clients = spawnClients(transport, nbClients_, peerServers);
-
 
     std::for_each(begin(clients), end(clients), [](std::thread& t) { t.join(); });
     std::for_each(begin(servers), end(servers), [](std::thread& t) { t.join(); });

@@ -33,12 +33,15 @@ ecbuild_add_library(
         Transport.cc
         Transport.h
         ScopedThread.h
+        MultioServerTool.cc
+        MultioServerTool.h
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}
 
     LIBS
         multio
+        eckit_option
         eckit
 )
 
@@ -48,7 +51,7 @@ ecbuild_add_executable( TARGET   multio_sandbox_thread_transport
                 NOINSTALL
                 SOURCES  multio_sandbox_thread_transport.cc
                 CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
-                LIBS     multio-sandbox multio eckit_option)
+                LIBS     multio-sandbox multio)
 
 ecbuild_add_executable( TARGET   multio_sandbox_mpi_transport
                 NOINSTALL
@@ -60,4 +63,4 @@ ecbuild_add_executable( TARGET   multio_sandbox_tcp_transport
                 NOINSTALL
                 SOURCES  multio_sandbox_tcp_transport.cc
                 CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
-                LIBS     multio-sandbox multio eckit_option)
+                LIBS     multio-sandbox multio)

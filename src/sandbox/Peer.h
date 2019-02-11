@@ -42,6 +42,9 @@ public:
         return domain_ < rhs.domain_;
     }
 
+    size_t id_;  //< MPI rank or TCP port or std::thread::id
+    std::string domain_;  //< for MPI it will be Communicator, for TCP the host
+
 private:  // methods
     void print(std::ostream& out) const;
 
@@ -49,10 +52,6 @@ private:  // methods
         x.print(s);
         return s;
     }
-
-private:
-    size_t id_;  //< MPI rank or TCP port or std::thread::id
-    std::string domain_;  //< for MPI it will be Communicator, for TCP the host
 };
 
 }  // namespace sandbox

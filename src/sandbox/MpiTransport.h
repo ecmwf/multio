@@ -14,42 +14,31 @@
 
 /// @date Jan 2019
 
-#ifndef multio_sandbox_ThreadTransport_H
-#define multio_sandbox_ThreadTransport_H
+#ifndef multio_sandbox_MpiTransport_H
+#define multio_sandbox_MpiTransport_H
 
-#include <map>
-#include <mutex>
-#include <thread>
-
-#include "eckit/container/Queue.h"
+#include "eckit/mpi/Comm.h"
 
 #include "sandbox/Transport.h"
 
 namespace multio {
 namespace sandbox {
 
-class ThreadTransport final : public Transport {
+class MpiTransport final : public Transport {
 public:
-    ThreadTransport(const eckit::Configuration& config);
-    ~ThreadTransport() override;
-
-private:
-    std::map<Peer, eckit::Queue<Message>*> queues_;
-
-    std::mutex mutex_;
-
-    size_t messageQueueSize_;
+    MpiTransport(const eckit::Configuration& config, const std::string& name = "world");
+    ~MpiTransport() override;
 
 private:
     Message receive() override;
-
     void send(const Message& message) override;
 
     void print(std::ostream& os) const override;
 
     Peer localPeer() const override;
 
-    eckit::Queue<Message>& receiveQueue(Peer to);
+    const std::string& comm_name_;
+    const eckit::mpi::Comm& comm_;
 };
 
 }  // namespace sandbox

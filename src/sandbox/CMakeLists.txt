@@ -30,6 +30,8 @@ ecbuild_add_library(
         MultioTool.h
         ThreadTransport.cc
         ThreadTransport.h
+        MpiTransport.cc
+        MpiTransport.h
         Transport.cc
         Transport.h
         ScopedThread.h
@@ -41,6 +43,7 @@ ecbuild_add_library(
 
     LIBS
         multio
+        eckit_mpi
         eckit_option
         eckit
 )
@@ -57,7 +60,7 @@ ecbuild_add_executable( TARGET   multio_sandbox_mpi_transport
                 NOINSTALL
                 SOURCES  multio_sandbox_mpi_transport.cc
                 CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
-                LIBS     multio-sandbox multio eckit_mpi)
+                LIBS     multio-sandbox multio)
 
 ecbuild_add_executable( TARGET   multio_sandbox_tcp_transport
                 NOINSTALL

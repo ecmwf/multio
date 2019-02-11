@@ -19,12 +19,12 @@ namespace sandbox {
 Peer::Peer() : id_(0), domain_("null") {}
 Peer::Peer(const std::string& domain, size_t id) : id_(id), domain_(domain) {}
 
-multio::sandbox::Peer::operator std::string() { return domain_ + ":" + std::to_string(id_); }
+multio::sandbox::Peer::operator std::string() {
+    return domain_ + ":" + std::to_string(id_);
+}
 
 void Peer::print(std::ostream& out) const {
-    out << "Peer(domain=" << domain_
-        << ",id=" << id_
-        << ")";
+    out << "Peer(domain=" << domain_ << ",id=" << id_ << ")";
 }
 
 }  // namespace sandbox

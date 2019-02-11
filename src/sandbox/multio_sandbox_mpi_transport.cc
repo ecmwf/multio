@@ -1,4 +1,6 @@
 
+#include <algorithm>
+
 #include "eckit/mpi/Comm.h"
 
 #include "eckit/config/YAMLConfiguration.h"
@@ -23,7 +25,8 @@ public:  // methods
 
     MpiExample(int argc, char** argv);
 
-    virtual void usage(const std::string &tool) const {
+private:
+    void usage(const std::string &tool) const override {
         Log::info() << std::endl
                     << "Usage: " << tool << " [options]" << std::endl
                     << std::endl
@@ -35,16 +38,19 @@ public:  // methods
                     << std::endl;
     }
 
-protected:  // methods
-    virtual void init(const eckit::option::CmdArgs& args);
+    std::vector<Peer> spawnServers(const eckit::Configuration& config,
+                                   std::shared_ptr<Transport> transport);
 
-private:  // methods
+    void spawnClients(std::shared_ptr<Transport> transport, const std::vector<Peer>& serverPeers);
 
-    virtual void execute(const eckit::option::CmdArgs& args);
+    void init(const eckit::option::CmdArgs& args) override;
 
-private:  // members
+    void execute(const eckit::option::CmdArgs& args) override;
+
     size_t nbClients_ = 1;
 };
+
+//----------------------------------------------------------------------------------------------------------------------
 
 MpiExample::MpiExample(int argc, char** argv) : multio::sandbox::MultioServerTool(argc, argv) {}
 
@@ -54,6 +60,62 @@ void MpiExample::init(const eckit::option::CmdArgs& args) {
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+
+std::vector<Peer> MpiExample::spawnServers(const eckit::Configuration& config,
+                                           std::shared_ptr<Transport> transport) {
+    std::vector<Peer> serverPeers;
+
+    long size = eckit::mpi::comm("world").size();
+    for (long ii = size - nbServers_; ii != size; ++ii) {
+        serverPeers.push_back(Peer{"world", static_cast<size_t>(ii)});
+    }
+
+    auto it = std::find(begin(serverPeers), end(serverPeers), transport->localPeer());
+    if (it != end(serverPeers)) {
+        Listener listener(config, *transport);
+
+        listener.listen();
+    }
+
+    return serverPeers;
+}
+
+void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
+                              const std::vector<Peer>& serverPeers) {
+    auto it = std::find(begin(serverPeers), end(serverPeers), transport->localPeer());
+
+    if (it != end(serverPeers)) {
+        return;
+    }
+
+    Peer client = transport->localPeer();
+
+    // open all servers
+    for (auto& server : serverPeers) {
+        Message open{Message::Tag::Open, client, server, std::string("open")};
+        transport->send(open);
+    }
+
+    // send N messages
+    const int nmessages = 10;
+    for (int ii = 0; ii < nmessages; ++ii) {
+        for (auto& server : serverPeers) {
+            std::ostringstream oss;
+
+            oss << "Once upon a midnight dreary + " << client;
+
+            Message msg{Message::Tag::Field, client, server, oss.str()};
+
+            transport->send(msg);
+        }
+    }
+
+    // close all servers
+    for (auto& server : serverPeers) {
+        Message close{Message::Tag::Close, client, server, std::string("close")};
+        transport->send(close);
+    }
+}
 
 std::string local_plan() {
     return R"json(
@@ -90,6 +152,10 @@ void MpiExample::execute(const eckit::option::CmdArgs&) {
     std::shared_ptr<Transport> transport{TransportFactory::instance().build("Mpi", config)};
 
     std::cout << *transport << std::endl;
+
+    auto serverPeers = spawnServers(config, transport);
+
+    spawnClients(transport, serverPeers);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

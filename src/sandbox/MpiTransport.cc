@@ -21,23 +21,24 @@
 namespace multio {
 namespace sandbox {
 
-MpiTransport::MpiTransport(const eckit::Configuration& cfg, const std::string& name) :
-    Transport(cfg),
-    comm_name_(name),
-    comm_(eckit::mpi::comm(comm_name_.c_str())) {
-    eckit::mpi::setCommDefault(comm_name_.c_str());
-}
+MpiTransport::MpiTransport(const eckit::Configuration& cfg) : Transport(cfg) {}
 
 MpiTransport::~MpiTransport() = default;
 
 Message MpiTransport::receive() {
-    auto status = comm_.probe(comm_.anySource(), comm_.anyTag());
 
-    eckit::Buffer payload{comm_.getCount<void>(status)};
-    comm_.receive<void>(payload, payload.size(), status.source(), status.tag());
+    Peer receiver = localPeer();
+
+    const auto& domain_name = receiver.domain_.c_str();
+    const auto& comm = eckit::mpi::comm(domain_name);
+
+    auto status = comm.probe(comm.anySource(), comm.anyTag());
+
+    eckit::Buffer payload{comm.getCount<void>(status)};
+    comm.receive<void>(payload, payload.size(), status.source(), status.tag());
 
     auto msg_tag = static_cast<Message::Tag>(status.tag());
-    auto source = Peer{comm_name_, comm_.rank()};
+    auto source = Peer{domain_name, static_cast<size_t>(status.source())};
     auto dest = localPeer();
 
     return Message{msg_tag, source, dest, payload};
@@ -45,22 +46,22 @@ Message MpiTransport::receive() {
 
 void MpiTransport::send(const Message& msg) {
 
-    ASSERT(comm_name_ == msg.destination().domain_);
+    const auto& comm = eckit::mpi::comm(msg.destination().domain_.c_str());
 
     auto dest = msg.destination().id_;
     auto msg_tag = static_cast<int>(msg.tag());
 
-    comm_.send<void>(msg.payload(), msg.size(), dest, msg_tag);
+    comm.send<void>(msg.payload(), msg.size(), dest, msg_tag);
 }
 
 Peer MpiTransport::localPeer() const
 {
-    Peer peer{comm_name_, comm_.rank()};
+    Peer peer{"world", eckit::mpi::comm("world").rank()};
     return peer;
 }
 
 void MpiTransport::print(std::ostream& os) const {
-    os << "MpiTransport(size of the communicator = " << comm_.size() << ")";
+    os << "MpiTransport()";
 }
 
 static TransportBuilder<MpiTransport> MpiTransportBuilder("Mpi");

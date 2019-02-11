@@ -55,7 +55,7 @@ void MpiTransport::send(const Message& msg) {
 
 Peer MpiTransport::localPeer() const
 {
-    Peer peer{std::to_string(comm_.communicator()), comm_.rank()};
+    Peer peer{comm_name_, comm_.rank()};
     return peer;
 }
 

@@ -88,6 +88,8 @@ void MpiExample::execute(const eckit::option::CmdArgs&) {
     std::cout << "Clients: " << nbClients_ << std::endl << "Servers: " << nbServers_ << std::endl;
 
     std::shared_ptr<Transport> transport{TransportFactory::instance().build("Mpi", config)};
+
+    std::cout << *transport << std::endl;
 }
 
 //----------------------------------------------------------------------------------------------------------------------

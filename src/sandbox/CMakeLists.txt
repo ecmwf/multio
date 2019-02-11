@@ -57,7 +57,7 @@ ecbuild_add_executable( TARGET   multio_sandbox_mpi_transport
                 NOINSTALL
                 SOURCES  multio_sandbox_mpi_transport.cc
                 CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
-                LIBS     multio-sandbox multio eckit_option)
+                LIBS     multio-sandbox multio eckit_mpi)
 
 ecbuild_add_executable( TARGET   multio_sandbox_tcp_transport
                 NOINSTALL

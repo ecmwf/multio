@@ -63,6 +63,7 @@ ThreadExample::ThreadExample(int argc, char** argv) : MultioServerTool(argc, arg
 }
 
 void ThreadExample::init(const option::CmdArgs& args) {
+    MultioServerTool::init(args);
     args.get("nbclients", nbClients_);
 }
 

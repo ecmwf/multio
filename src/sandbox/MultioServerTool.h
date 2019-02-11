@@ -17,46 +17,44 @@
 #ifndef multio_sandbox_MultioServerTool_H
 #define multio_sandbox_MultioServerTool_H
 
-#include "eckit/option/SimpleOption.h"
+#include <vector>
+
 #include "eckit/runtime/Tool.h"
 
 namespace eckit {
-    class Configuration;
-    namespace option {
-        class CmdArgs;
-    }
-}
+class Configuration;
+
+namespace option {
+class CmdArgs;
+class Option;
+}  // namespace option
+}  // namespace eckit
 
 namespace multio {
 namespace sandbox {
 
 class MultioServerTool : public eckit::Tool {
-protected:  // methods
-
-    MultioServerTool(int argc, char** argv);
-    ~MultioServerTool() override;
-
-public:  // methods
+public:
 
     virtual void usage(const std::string &tool) const = 0;
 
-protected:  // members
+protected:
+
+    MultioServerTool(int argc, char** argv);
     std::vector<eckit::option::Option*> options_;
 
-protected:  // methods
     virtual void init(const eckit::option::CmdArgs& args);
     virtual void finish(const eckit::option::CmdArgs&);
 
-private:  // methods
+    size_t nbServers_ = 1;
+
+private:
     virtual void execute(const eckit::option::CmdArgs& args) = 0;
 
     virtual int numberOfPositionalArguments() const { return -1; }
     virtual int minimumPositionalArguments() const { return -1; }
 
-    void run() override;
-
-protected:  // members
-    size_t nbServers_ = 1;
+    void run() override final;
 };
 
 

@@ -8,12 +8,10 @@
  * does it submit to any jurisdiction.
  */
 
-#ifndef multio_sandbox_Listener_H
-#define multio_sandbox_Listener_H
-
 #include "MultioServerTool.h"
 
 #include "eckit/option/CmdArgs.h"
+#include "eckit/option/SimpleOption.h"
 
 #include "multio/LibMultio.h"
 
@@ -29,8 +27,6 @@ MultioServerTool::MultioServerTool(int argc, char** argv) : eckit::Tool(argc, ar
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbservers", "Number of servers"));
 }
 
-MultioServerTool::~MultioServerTool() = default;
-
 static void usage(const std::string &tool) {
    ASSERT(instance_);
    instance_->usage(tool);
@@ -40,8 +36,7 @@ void MultioServerTool::init(const eckit::option::CmdArgs& args) {
     args.get("nbservers", nbServers_);
 }
 
-void MultioServerTool::finish(const eckit::option::CmdArgs&) {
-}
+void MultioServerTool::finish(const eckit::option::CmdArgs&) {}
 
 void MultioServerTool::run() {
 
@@ -57,5 +52,3 @@ void MultioServerTool::run() {
 
 }  // namespace sandbox
 }  // namespace multio
-
-#endif

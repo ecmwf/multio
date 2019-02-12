@@ -8,9 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-#ifndef multio_sandbox_Listener_H
-#define multio_sandbox_Listener_H
-
 #include "Null.h"
 
 namespace multio {
@@ -33,5 +30,3 @@ static ActionBuilder<Null> NullBuilder("Null");
 }  // namespace actions
 }  // namespace sandbox
 }  // namespace multio
-
-#endif

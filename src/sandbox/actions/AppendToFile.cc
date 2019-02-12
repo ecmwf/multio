@@ -8,9 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-#ifndef multio_sandbox_Listener_H
-#define multio_sandbox_Listener_H
-
 #include "AppendToFile.h"
 
 #include "eckit/config/Configuration.h"
@@ -53,5 +50,3 @@ static ActionBuilder<AppendToFile> AppendToFileBuilder("AppendToFile");
 }  // namespace actions
 }  // namespace sandbox
 }  // namespace multio
-
-#endif

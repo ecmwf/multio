@@ -14,8 +14,8 @@
 
 /// @date Jan 2019
 
-#ifndef multio_sandbox_PrintAction_H
-#define multio_sandbox_PrintAction_H
+#ifndef multio_sandbox_actions_AppendToFile_H
+#define multio_sandbox_actions_AppendToFile_H
 
 #include <memory>
 #include <string>

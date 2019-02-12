@@ -14,8 +14,8 @@
 
 /// @date Jan 2019
 
-#ifndef multio_sandbox_PrintAction_H
-#define multio_sandbox_PrintAction_H
+#ifndef multio_sandbox_actions_Null_H
+#define multio_sandbox_actions_Null_H
 
 #include "sandbox/Action.h"
 

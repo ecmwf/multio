@@ -8,9 +8,11 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "sandbox/MultioServerTool.h"
+#include "sandbox/Field.h"
 #include "sandbox/Listener.h"
 #include "sandbox/Message.h"
+#include "sandbox/MultioServerTool.h"
+#include "sandbox/PlanConfigurations.h"
 #include "sandbox/Peer.h"
 #include "sandbox/Transport.h"
 
@@ -53,36 +55,9 @@ private:
 
 //----------------------------------------------------------------------------------------------------------------------
 
-std::string local_plan() {
-    return R"json(
-        {
-           "transport" : "mpi",
-           "domain" : "world",
-           "plans" : [
-              {
-                 "name" : "ocean",
-                 "actions" : {
-                    "root" : {
-                       "type" : "Print",
-                       "stream" : "error",
-                       "next" : {
-                          "type" : "AppendToFile",
-                          "path" : "messages.txt",
-                          "next" : {
-                             "type" : "Null"
-                          }
-                       }
-                    }
-                 }
-              }
-           ]
-        }
-    )json";
-}
-
 MpiExample::MpiExample(int argc, char** argv) :
     multio::sandbox::MultioServerTool(argc, argv),
-    config_(local_plan()) {}
+    config_(plan_configurations()) {}
 
 void MpiExample::init(const eckit::option::CmdArgs& args) {
     MultioServerTool::init(args);
@@ -132,11 +107,14 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
     const int nmessages = 10;
     for (int ii = 0; ii < nmessages; ++ii) {
         for (auto& server : serverPeers) {
-            std::ostringstream oss;
 
-            oss << "Once upon a midnight dreary + " << client;
+            multio::sandbox::Field<double> field;
+            field.data_ = {11.2, 13.4, 19.2, 4.5};
+            field.metadata_.set("name", "temperature");
+            field.metadata_.set("category", "prognostic");
+            field.metadata_.set("mapping", "scattered");
 
-            Message msg{Message::Tag::Field, client, server, oss.str()};
+            Message msg{Message::Tag::Field, client, server, field.to_payload()};
 
             transport->send(msg);
         }

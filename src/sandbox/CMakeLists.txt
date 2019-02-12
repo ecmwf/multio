@@ -10,12 +10,15 @@ ecbuild_add_library(
         actions/AppendToFile.h
         actions/Print.cc
         actions/Print.h
+        actions/Select.cc
+        actions/Select.h
         actions/Null.cc
         actions/Null.h
         Action.cc
         Action.h
         Dispatcher.cc
         Dispatcher.h
+        Field.h
         Listener.cc
         Listener.h
         Message.cc

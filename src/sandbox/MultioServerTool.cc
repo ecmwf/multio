@@ -18,19 +18,11 @@
 namespace multio {
 namespace sandbox {
 
-static MultioServerTool* instance_ = nullptr;
-
 MultioServerTool::MultioServerTool(int argc, char** argv) : eckit::Tool(argc, argv, "MULTIO_HOME") {
-   ASSERT(instance_ == nullptr);
-   instance_ = this;
-
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbservers", "Number of servers"));
 }
 
-static void usage(const std::string &tool) {
-   ASSERT(instance_);
-   instance_->usage(tool);
-}
+MultioServerTool::~MultioServerTool() = default;
 
 void MultioServerTool::init(const eckit::option::CmdArgs& args) {
     args.get("nbservers", nbServers_);
@@ -40,7 +32,11 @@ void MultioServerTool::finish(const eckit::option::CmdArgs&) {}
 
 void MultioServerTool::run() {
 
-    eckit::option::CmdArgs args(multio::sandbox::usage,
+    std::function<void(const std::string &)> usage = [&](const std::string & name) {
+        this->usage(name);
+    };
+
+    eckit::option::CmdArgs args(usage,
                                 options_,
                                 numberOfPositionalArguments(),
                                 minimumPositionalArguments());

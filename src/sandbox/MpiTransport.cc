@@ -21,42 +21,44 @@
 namespace multio {
 namespace sandbox {
 
-MpiTransport::MpiTransport(const eckit::Configuration& cfg) : Transport(cfg) {}
-
-MpiTransport::~MpiTransport() = default;
+MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
+    Transport(cfg),
+    comm_(eckit::mpi::comm(cfg.getString("domain").c_str())) {}
 
 Message MpiTransport::receive() {
 
     Peer receiver = localPeer();
+    const auto& domain_name = receiver.domain_;
 
-    const auto& domain_name = receiver.domain_.c_str();
-    const auto& comm = eckit::mpi::comm(domain_name);
+    ASSERT(comm_.communicator() == eckit::mpi::comm(domain_name.c_str()).communicator());
 
-    auto status = comm.probe(comm.anySource(), comm.anyTag());
-
-    eckit::Buffer payload{comm.getCount<void>(status)};
-    comm.receive<void>(payload, payload.size(), status.source(), status.tag());
+    auto status = comm_.probe(comm_.anySource(), comm_.anyTag());
 
     auto msg_tag = static_cast<Message::Tag>(status.tag());
+
     auto source = Peer{domain_name, static_cast<size_t>(status.source())};
+
     auto dest = localPeer();
+
+    eckit::Buffer payload{comm_.getCount<void>(status)};
+    comm_.receive<void>(payload, payload.size(), status.source(), status.tag());
 
     return Message{msg_tag, source, dest, payload};
 }
 
 void MpiTransport::send(const Message& msg) {
 
-    const auto& comm = eckit::mpi::comm(msg.destination().domain_.c_str());
+    ASSERT(comm_.communicator() == eckit::mpi::comm(localPeer().domain_.c_str()).communicator());
 
-    auto dest = msg.destination().id_;
     auto msg_tag = static_cast<int>(msg.tag());
 
-    comm.send<void>(msg.payload(), msg.size(), dest, msg_tag);
+    auto dest = msg.destination().id_;
+
+    comm_.send<void>(msg.payload(), msg.size(), dest, msg_tag);
 }
 
-Peer MpiTransport::localPeer() const
-{
-    Peer peer{"world", eckit::mpi::comm("world").rank()};
+Peer MpiTransport::localPeer() const {
+    Peer peer{"world", comm_.rank()};
     return peer;
 }
 

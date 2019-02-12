@@ -14,7 +14,6 @@
 #include "sandbox/Peer.h"
 #include "sandbox/Transport.h"
 
-
 using eckit::Log;
 using namespace multio::sandbox;
 
@@ -48,15 +47,46 @@ private:
     void execute(const eckit::option::CmdArgs& args) override;
 
     size_t nbClients_ = 1;
+
+    eckit::YAMLConfiguration config_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 
-MpiExample::MpiExample(int argc, char** argv) : multio::sandbox::MultioServerTool(argc, argv) {}
+std::string local_plan() {
+    return R"json(
+        {
+           "transport" : "mpi",
+           "domain" : "world",
+           "plans" : [
+              {
+                 "name" : "ocean",
+                 "actions" : {
+                    "root" : {
+                       "type" : "Print",
+                       "stream" : "error",
+                       "next" : {
+                          "type" : "AppendToFile",
+                          "path" : "messages.txt",
+                          "next" : {
+                             "type" : "Null"
+                          }
+                       }
+                    }
+                 }
+              }
+           ]
+        }
+    )json";
+}
+
+MpiExample::MpiExample(int argc, char** argv) :
+    multio::sandbox::MultioServerTool(argc, argv),
+    config_(local_plan()) {}
 
 void MpiExample::init(const eckit::option::CmdArgs& args) {
     MultioServerTool::init(args);
-    nbClients_ = eckit::mpi::comm("world").size() - nbServers_;
+    nbClients_ = eckit::mpi::comm(config_.getString("domain").c_str()).size() - nbServers_;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -65,9 +95,11 @@ std::vector<Peer> MpiExample::spawnServers(const eckit::Configuration& config,
                                            std::shared_ptr<Transport> transport) {
     std::vector<Peer> serverPeers;
 
-    long size = eckit::mpi::comm("world").size();
+    auto domain = config.getString("domain");
+
+    long size = eckit::mpi::comm(domain.c_str()).size();
     for (long ii = size - nbServers_; ii != size; ++ii) {
-        serverPeers.push_back(Peer{"world", static_cast<size_t>(ii)});
+        serverPeers.push_back(Peer{domain.c_str(), static_cast<size_t>(ii)});
     }
 
     auto it = std::find(begin(serverPeers), end(serverPeers), transport->localPeer());
@@ -117,43 +149,16 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
     }
 }
 
-std::string local_plan() {
-    return R"json(
-    {
-            "plans" : [
-                {
-                "name" : "ocean",
-                "actions" : {
-                    "root" : {
-                        "type" : "Print",
-                        "stream" : "error",
-                        "next" : {
-                            "type" : "AppendToFile",
-                            "path" : "messages.txt",
-                            "next" : {
-                                "type" : "Null"
-                            }
-                        }
-                    }
-                }
-             }
-           ]
-    }
-    )json";
-}
-
 //----------------------------------------------------------------------------------------------------------------------
 
 void MpiExample::execute(const eckit::option::CmdArgs&) {
-    eckit::YAMLConfiguration config{local_plan()};
-
     std::cout << "Clients: " << nbClients_ << std::endl << "Servers: " << nbServers_ << std::endl;
 
-    std::shared_ptr<Transport> transport{TransportFactory::instance().build("Mpi", config)};
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("Mpi", config_)};
 
     std::cout << *transport << std::endl;
 
-    auto serverPeers = spawnServers(config, transport);
+    auto serverPeers = spawnServers(config_, transport);
 
     spawnClients(transport, serverPeers);
 }

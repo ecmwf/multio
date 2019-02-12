@@ -82,7 +82,7 @@ TransportBuilderBase::~TransportBuilderBase() {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-Transport::Transport(const eckit::Configuration&){}
+Transport::Transport(const eckit::Configuration&) {}
 
 Transport::~Transport() = default;
 

@@ -27,15 +27,17 @@ namespace sandbox {
 class MpiTransport final : public Transport {
 public:
     MpiTransport(const eckit::Configuration& config);
-    ~MpiTransport() override;
 
 private:
     Message receive() override;
+
     void send(const Message& message) override;
 
     void print(std::ostream& os) const override;
 
     Peer localPeer() const override;
+
+    const eckit::mpi::Comm& comm_;
 };
 
 }  // namespace sandbox

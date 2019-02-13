@@ -16,7 +16,9 @@
 
 #include "MpiTransport.h"
 
+#include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/serialisation/MemoryStream.h"
 
 namespace multio {
 namespace sandbox {
@@ -26,6 +28,7 @@ MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     comm_(eckit::mpi::comm(cfg.getString("domain").c_str())) {}
 
 Message MpiTransport::receive() {
+    Message msg{};
 
     Peer receiver = localPeer();
     const auto& domain_name = receiver.domain_;
@@ -34,16 +37,12 @@ Message MpiTransport::receive() {
 
     auto status = comm_.probe(comm_.anySource(), comm_.anyTag());
 
-    auto msg_tag = static_cast<Message::Tag>(status.tag());
+    eckit::Buffer buffer{comm_.getCount<void>(status)};
+    comm_.receive<void>(buffer, buffer.size(), status.source(), status.tag());
 
-    auto source = Peer{domain_name, static_cast<size_t>(status.source())};
-
-    auto dest = localPeer();
-
-    eckit::Buffer payload{comm_.getCount<void>(status)};
-    comm_.receive<void>(payload, payload.size(), status.source(), status.tag());
-
-    return Message{msg_tag, source, dest, payload};
+    eckit::MemoryStream strm(buffer);
+    msg.decode(strm);
+    return msg;
 }
 
 void MpiTransport::send(const Message& msg) {
@@ -54,7 +53,12 @@ void MpiTransport::send(const Message& msg) {
 
     auto dest = msg.destination().id_;
 
-    comm_.send<void>(msg.payload(), msg.size(), dest, msg_tag);
+    eckit::Buffer buffer(
+        eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_SIZE", 1024 * 1024));
+    eckit::MemoryStream strm(buffer);
+    msg.encode(strm);
+
+    comm_.send<void>(buffer, strm.bytesWritten(), dest, msg_tag);
 }
 
 Peer MpiTransport::localPeer() const {

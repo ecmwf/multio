@@ -26,6 +26,10 @@
 
 #include "sandbox/Peer.h"
 
+namespace eckit {
+class Stream;
+}
+
 namespace multio {
 namespace sandbox {
 
@@ -46,7 +50,8 @@ public:  // methods
     static std::string tag2str(Tag);
 
     Message();
-    Message(Tag tag, Peer source, Peer destination, const eckit::Buffer& payload);
+    Message(Tag tag, Peer source, Peer destination, const eckit::Buffer& payload,
+            const std::string& cat = "", const std::string& repr = "");
 
     const void* payload() const;
 
@@ -57,6 +62,9 @@ public:  // methods
     Peer source() const { return source_; }
 
     int version() const { return version_; }
+
+    void encode(eckit::Stream& strm) const;
+    void decode(eckit::Stream& strm);
 
 private:  // methods
     void print(std::ostream& out) const;
@@ -74,6 +82,9 @@ private:  // members
     Peer destination_;
 
     std::shared_ptr<eckit::Buffer> payload_;
+
+    std::string category_;
+    std::string representation_;
 };
 
 }  // namespace sandbox

@@ -17,6 +17,7 @@
 #include "eckit/log/Log.h"
 #include "eckit/log/ResourceUsage.h"
 #include "eckit/maths/Functions.h"
+#include "eckit/serialisation/Stream.h"
 
 namespace multio {
 namespace sandbox {
@@ -44,12 +45,15 @@ Message::Message() :
     destination_(),
     payload_(std::make_shared<eckit::Buffer>("\0", 1)) {}
 
-Message::Message(Message::Tag tag, Peer source, Peer destination, const eckit::Buffer& payload) :
+Message::Message(Message::Tag tag, Peer source, Peer destination, const eckit::Buffer& payload,
+                 const std::string& cat, const std::string& repr) :
     tag_(tag),
     version_(protocolVersion()),
     source_(source),
     destination_(destination),
-    payload_(std::make_shared<eckit::Buffer>(payload, payload.size())) {}
+    payload_(std::make_shared<eckit::Buffer>(payload, payload.size())),
+    category_(cat),
+    representation_(repr) {}
 
 const void* Message::payload() const {
     return payload_->data();
@@ -59,12 +63,50 @@ size_t Message::size() const {
     return payload_->size();
 }
 
-void Message::print(std::ostream& out) const {
-    out << "Message("
-        << "version=" << version_ << ",tag=" << tag2str(tag_) << ",source=" << source_
-        << ",destination=" << destination_ << ")";
+void Message::encode(eckit::Stream& strm) const {
+    strm << version_;
+    strm << static_cast<unsigned>(tag_);
+    strm << source_.domain_;
+    strm << source_.id_;
+    strm << destination_.domain_;
+    strm << destination_.id_;
+    std::cout << "  ---  Encoding blob" << std::endl;
+    strm << payload_->size();
+    strm << *payload_;
+    strm << category_;
+    strm << representation_;
 }
 
+void Message::decode(eckit::Stream& strm) {
+    strm >> version_;
+
+    unsigned t;
+    strm >> t;
+    tag_ = static_cast<Message::Tag>(tag_);
+
+    strm >> source_.domain_;
+    strm >> source_.id_;
+    strm >> destination_.domain_;
+    strm >> destination_.id_;
+    std::cout << "  ---  Decoding blob" << std::endl;
+
+    unsigned long sz;
+    strm >> sz;
+    eckit::Buffer buffer(sz);
+    strm >> buffer;
+    payload_ = std::make_shared<eckit::Buffer>(buffer, buffer.size());
+
+    strm >> category_;
+    strm >> representation_;
+}
+
+
+void Message::print(std::ostream& out) const {
+    out << "Field("
+        << "version=" << version_ << ",tag=" << tag2str(tag_) << ",source=" << source_
+        << ",destination=" << destination_ << ", category=" << category_ << ", representation="
+        << representation_ << ")";
+}
 
 }  // namespace sandbox
 }  // namespace multio

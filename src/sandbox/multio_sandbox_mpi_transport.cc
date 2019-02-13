@@ -8,7 +8,6 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "sandbox/Field.h"
 #include "sandbox/Listener.h"
 #include "sandbox/Message.h"
 #include "sandbox/MultioServerTool.h"
@@ -104,17 +103,14 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
     }
 
     // send N messages
-    const int nmessages = 10;
+    const int nmessages = 2;
     for (int ii = 0; ii < nmessages; ++ii) {
         for (auto& server : serverPeers) {
+            std::ostringstream oss;
 
-            multio::sandbox::Field<double> field;
-            field.data_ = {11.2, 13.4, 19.2, 4.5};
-            field.metadata_.set("name", "temperature");
-            field.metadata_.set("category", "prognostic");
-            field.metadata_.set("mapping", "scattered");
+            oss << "Once upon a midnight dreary + " << client;
 
-            Message msg{Message::Tag::Field, client, server, field.to_payload()};
+            Message msg{Message::Tag::Field, client, server, oss.str(), "prognostic", "scattered"};
 
             transport->send(msg);
         }

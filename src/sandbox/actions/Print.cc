@@ -33,7 +33,7 @@ Print::Print(const eckit::Configuration& config): Action(config) {
 void Print::execute(Message msg)
 {
     ASSERT(os);
-    (*os) << msg;
+    (*os) << msg << std::endl;
 }
 
 void Print::print(std::ostream& os) const

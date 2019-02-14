@@ -18,11 +18,10 @@ namespace multio {
 namespace sandbox {
 namespace actions {
 
-Print::Print(const eckit::Configuration& config): Action(config) {
-
+Print::Print(const eckit::Configuration& config) : Action(config) {
     stream_ = config.getString("stream", "info");
 
-    if(stream_ == "info") {
+    if (stream_ == "info") {
         os = &eckit::Log::info();
     }
     else {
@@ -30,14 +29,13 @@ Print::Print(const eckit::Configuration& config): Action(config) {
     }
 }
 
-void Print::execute(Message msg)
-{
+bool Print::execute(Message msg) {
     ASSERT(os);
     (*os) << msg << std::endl;
+    return true;
 }
 
-void Print::print(std::ostream& os) const
-{
+void Print::print(std::ostream& os) const {
     os << "Print(stream=" << stream_ << ")";
 }
 

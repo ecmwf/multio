@@ -26,7 +26,7 @@ public:  // methods
     MpiExample(int argc, char** argv);
 
 private:
-    void usage(const std::string &tool) const override {
+    void usage(const std::string& tool) const override {
         Log::info() << std::endl
                     << "Usage: " << tool << " [options]" << std::endl
                     << std::endl
@@ -60,7 +60,9 @@ MpiExample::MpiExample(int argc, char** argv) :
 
 void MpiExample::init(const eckit::option::CmdArgs& args) {
     MultioServerTool::init(args);
-    nbClients_ = eckit::mpi::comm(config_.getString("domain").c_str()).size() - nbServers_;
+    auto domain_size = eckit::mpi::comm(config_.getString("domain").c_str()).size();
+    ASSERT(nbServers_ < domain_size);
+    nbClients_ = domain_size - nbServers_;
 }
 
 //----------------------------------------------------------------------------------------------------------------------

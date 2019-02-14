@@ -34,7 +34,7 @@ public:
 
 protected: // methods
 
-    virtual void execute(Message msg);
+    virtual bool execute(Message msg);
 
 private: // methods
 

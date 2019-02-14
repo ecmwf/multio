@@ -23,16 +23,12 @@ Select::Select(const eckit::Configuration& config) :
     Action(config),
     categories_(config.getStringVector("categories")) {}
 
-void Select::execute(Message msg) {
-    if (msg.tag() == Message::Tag::Field) {
-        ASSERT(matchPlan(msg));
-    }
+bool Select::execute(Message msg) {
+    return (msg.tag() == Message::Tag::Field) ? matchPlan(msg) : true;
 }
 
 bool Select::matchPlan(const Message& msg) const {
-    // auto category = fetch_metadata(msg).getString("category");
-    auto category = "prognostic";
-    auto it = find(begin(categories_), end(categories_), category);
+    auto it = find(begin(categories_), end(categories_), msg.category());
     return it != end(categories_);
 }
 

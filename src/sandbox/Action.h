@@ -45,7 +45,7 @@ public:
 
 protected: // method
 
-    virtual void execute(Message msg) = 0;
+    virtual bool execute(Message msg) = 0;
 
 protected: // members
 

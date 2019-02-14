@@ -87,18 +87,18 @@ ActionBuilderBase::~ActionBuilderBase() {
 //----------------------------------------------------------------------------------------------------------------------
 
 Action::Action(const eckit::Configuration& config) {
-    eckit::Log::info() << "Action configuration " << config << std::endl;
+    eckit::Log::info() << "Action configuration      : " << config << std::endl;
     if(config.has("next")) {
        const LocalConfiguration next = config.getSubConfiguration("next");
-       eckit::Log::info() << "Next action configuration " << next << std::endl;
+       eckit::Log::info() << "Next action configuration : " << next << std::endl;
        next_.reset(ActionFactory::instance().build(next.getString("type"), next));
     }
 }
 
 void Action::process(Message msg) {
-    execute(msg);
-    if(next_)
+    if (execute(msg) && next_) {
         next_->process(msg);
+    }
 }
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -39,16 +39,16 @@ std::string Message::tag2str(Message::Tag t) {
 }
 
 Message::Message() :
-    tag_(Message::Tag::Empty),
     version_(protocolVersion()),
+    tag_(Message::Tag::Empty),
     source_(),
     destination_(),
     payload_(std::make_shared<eckit::Buffer>("\0", 1)) {}
 
 Message::Message(Message::Tag tag, Peer source, Peer destination, const eckit::Buffer& payload,
                  const std::string& cat, const std::string& repr) :
-    tag_(tag),
     version_(protocolVersion()),
+    tag_(tag),
     source_(source),
     destination_(destination),
     payload_(std::make_shared<eckit::Buffer>(payload, payload.size())),
@@ -70,7 +70,6 @@ void Message::encode(eckit::Stream& strm) const {
     strm << source_.id_;
     strm << destination_.domain_;
     strm << destination_.id_;
-    std::cout << "  ---  Encoding blob" << std::endl;
     strm << payload_->size();
     strm << *payload_;
     strm << category_;
@@ -82,16 +81,16 @@ void Message::decode(eckit::Stream& strm) {
 
     unsigned t;
     strm >> t;
-    tag_ = static_cast<Message::Tag>(tag_);
+    tag_ = static_cast<Message::Tag>(t);
 
     strm >> source_.domain_;
     strm >> source_.id_;
     strm >> destination_.domain_;
     strm >> destination_.id_;
-    std::cout << "  ---  Decoding blob" << std::endl;
 
     unsigned long sz;
     strm >> sz;
+
     eckit::Buffer buffer(sz);
     strm >> buffer;
     payload_ = std::make_shared<eckit::Buffer>(buffer, buffer.size());

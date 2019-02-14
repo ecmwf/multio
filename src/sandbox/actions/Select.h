@@ -33,7 +33,7 @@ public:
 
 private:
 
-    void execute(Message msg) override;
+    bool execute(Message msg) override;
 
     bool matchPlan(const Message& msg) const;
 

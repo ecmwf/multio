@@ -19,8 +19,9 @@
 
 #include "sandbox/Action.h"
 
-
-namespace eckit { class Configuration; }
+namespace eckit {
+class Configuration;
+}
 
 namespace multio {
 namespace sandbox {
@@ -33,7 +34,7 @@ public:
 
 protected: // methods
 
-    virtual void execute(Message msg);
+    virtual bool execute(Message msg);
 
 private: // methods
 

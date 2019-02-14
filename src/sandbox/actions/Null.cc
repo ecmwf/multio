@@ -10,20 +10,21 @@
 
 #include "Null.h"
 
+#include <iostream>
+
 namespace multio {
 namespace sandbox {
 namespace actions {
 
-Null::Null(const eckit::Configuration& config): Action(config) {
-}
+Null::Null(const eckit::Configuration& config) : Action(config) {}
 
-void Null::execute(Message msg) {
+bool Null::execute(Message msg) {
+    return true;
 }
-
 
 void Null::print(std::ostream& os) const {
+    os << "Null()";
 }
-
 
 static ActionBuilder<Null> NullBuilder("Null");
 

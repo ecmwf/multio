@@ -51,7 +51,7 @@ public:  // methods
 
     Message();
     Message(Tag tag, Peer source, Peer destination, const eckit::Buffer& payload,
-            const std::string& cat = "", const std::string& repr = "");
+            const std::string& map = "", long cnt = -1, const std::string& cat = "");
 
     int version() const { return version_; }
 
@@ -63,8 +63,10 @@ public:  // methods
     size_t size() const;
     const void* payload() const;
 
+    const std::string& mapping() const { return mapping_;};
+    int map_count() const { return map_count_; }
+
     const std::string& category() const { return category_; };
-    const std::string& representation() const { return representation_;};
 
     void encode(eckit::Stream& strm) const;
     void decode(eckit::Stream& strm);
@@ -87,8 +89,14 @@ private:  // members
 
     std::shared_ptr<eckit::Buffer> payload_;
 
+    // For fields and mappings
+    std::string mapping_;
+
+    // For mappings only
+    long map_count_;
+
+    // For fields only
     std::string category_;
-    std::string representation_;
 };
 
 }  // namespace sandbox

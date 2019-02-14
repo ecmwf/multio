@@ -39,7 +39,7 @@ AppendToFile::~AppendToFile() {
 bool AppendToFile::execute(Message msg) {
     auto written = datahandle_->write(msg.payload(), long(msg.size()));
     written += datahandle_->write("\n", 1);
-    return written == msg.size();
+    return written == static_cast<long>(msg.size());
 }
 
 void AppendToFile::print(std::ostream& os) const

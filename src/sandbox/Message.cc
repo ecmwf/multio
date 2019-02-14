@@ -46,14 +46,15 @@ Message::Message() :
     payload_(std::make_shared<eckit::Buffer>("\0", 1)) {}
 
 Message::Message(Message::Tag tag, Peer source, Peer destination, const eckit::Buffer& payload,
-                 const std::string& cat, const std::string& repr) :
+                 const std::string& map, long cnt, const std::string& cat) :
     version_(protocolVersion()),
     tag_(tag),
     source_(source),
     destination_(destination),
     payload_(std::make_shared<eckit::Buffer>(payload, payload.size())),
-    category_(cat),
-    representation_(repr) {}
+    mapping_(map),
+    map_count_(cnt),
+    category_(cat) {}
 
 const void* Message::payload() const {
     return payload_->data();
@@ -72,8 +73,9 @@ void Message::encode(eckit::Stream& strm) const {
     strm << destination_.id_;
     strm << payload_->size();
     strm << *payload_;
+    strm << mapping_;
+    strm << map_count_;
     strm << category_;
-    strm << representation_;
 }
 
 void Message::decode(eckit::Stream& strm) {
@@ -95,17 +97,18 @@ void Message::decode(eckit::Stream& strm) {
     strm >> buffer;
     payload_ = std::make_shared<eckit::Buffer>(buffer, buffer.size());
 
+    strm >> mapping_;
+    strm >> map_count_;
     strm >> category_;
-    strm >> representation_;
-}
+ }
 
 
-void Message::print(std::ostream& out) const {
-    out << "Field("
-        << "version=" << version_ << ",tag=" << tag2str(tag_) << ",source=" << source_
-        << ",destination=" << destination_ << ", category=" << category_ << ", representation="
-        << representation_ << ")";
-}
+ void Message::print(std::ostream& out) const {
+     out << "Field("
+         << "version=" << version_ << ", tag=" << tag2str(tag_) << ", source=" << source_
+         << ", destination=" << destination_ << ", mapping=" << mapping_
+         << ", map_count=" << map_count_ << ", category=" << category_ << ")";
+ }
 
 }  // namespace sandbox
 }  // namespace multio

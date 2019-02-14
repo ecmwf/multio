@@ -14,10 +14,12 @@
 
 #include "eckit/config/Resource.h"
 
+#include "sandbox/Mappings.h"
 #include "sandbox/Message.h"
 #include "sandbox/ScopedThread.h"
 
 #include "sandbox/Dispatcher.h"
+#include "sandbox/print_buffer.h"
 #include "sandbox/Transport.h"
 
 namespace multio {
@@ -46,8 +48,19 @@ void Listener::listen() {
                 eckit::Log::info() << "*** CLOSING connection to " << msg.source() << std::endl;
                 break;
 
+            case Message::Tag::Mapping:
+                eckit::Log::info() << "*** MAPPING INDICES " << std::flush;
+                print_buffer((const int*)(msg.payload()), msg.size() / sizeof(int),
+                             eckit::Log::info());
+                eckit::Log::info() << std::endl;
+                Mappings::instance().add(msg);
+                break;
+
             default:
-                eckit::Log::info() << "*** DISPATCH QUEUE " << msg << std::endl;
+                eckit::Log::info() << "*** DISPATCH QUEUE " << std::flush;
+                print_buffer((const double*)(msg.payload()), msg.size() / sizeof(double),
+                             eckit::Log::info());
+                eckit::Log::info() << std::endl;
                 msgQueue_.push(std::move(msg));
         }
     } while (not(connections_.empty()));

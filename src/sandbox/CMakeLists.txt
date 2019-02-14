@@ -20,6 +20,8 @@ ecbuild_add_library(
         Dispatcher.h
         Listener.cc
         Listener.h
+        Mappings.cc
+        Mappings.h
         Message.cc
         Message.h
         Peer.cc

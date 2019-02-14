@@ -8,6 +8,7 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
+#include "sandbox/create_random_data.h"
 #include "sandbox/Listener.h"
 #include "sandbox/Message.h"
 #include "sandbox/MultioServerTool.h"
@@ -88,6 +89,10 @@ std::vector<Peer> MpiExample::spawnServers(const eckit::Configuration& config,
     return serverPeers;
 }
 
+namespace {
+auto maps = std::vector<std::vector<int>>{{2, 7, 0, 5}, {4, 6, 1, 3}};
+}
+
 void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
                               const std::vector<Peer>& serverPeers) {
     auto it = std::find(begin(serverPeers), end(serverPeers), transport->localPeer());
@@ -104,15 +109,27 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
         transport->send(open);
     }
 
+    // send partial mapping
+    ASSERT(maps.size() == nbClients_);
+    for (auto& server : serverPeers) {
+        auto idx = maps[client.id_];
+
+        eckit::Buffer buffer((const char*)(idx.data()), idx.size() * sizeof(int));
+
+        Message msg{Message::Tag::Mapping, client, server, buffer, "scattered", maps.size()};
+
+        transport->send(msg);
+    }
+
     // send N messages
     const int nmessages = 2;
     for (int ii = 0; ii < nmessages; ++ii) {
         for (auto& server : serverPeers) {
-            std::ostringstream oss;
+            std::vector<double> field = create_random_data(4);
 
-            oss << "Once upon a midnight dreary + " << client;
+            eckit::Buffer buffer((const char*)(field.data()), field.size() * sizeof(double));
 
-            Message msg{Message::Tag::Field, client, server, oss.str(), "prognostic", "scattered"};
+            Message msg{Message::Tag::Field, client, server, buffer, "scattered", maps.size(), "prognostic"};
 
             transport->send(msg);
         }

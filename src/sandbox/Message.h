@@ -51,7 +51,7 @@ public:  // methods
 
     Message();
     Message(Tag tag, Peer source, Peer destination, const eckit::Buffer& payload,
-            const std::string& map = "", long cnt = -1, const std::string& cat = "");
+            const std::string& map = "", size_t cnt = -1, const std::string& cat = "");
 
     int version() const { return version_; }
 

@@ -11,10 +11,11 @@ namespace multio {
 namespace sandbox {
 
 class Message;
+class Peer;
 
 class Mappings {
     using LocalIndices = std::vector<int>;
-    using Mapping = std::vector<LocalIndices>;
+    using Mapping = std::map<Peer, LocalIndices>;
 
 public:  // methods
     Mappings() = default;

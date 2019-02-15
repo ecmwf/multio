@@ -46,7 +46,7 @@ Message::Message() :
     payload_(std::make_shared<eckit::Buffer>("\0", 1)) {}
 
 Message::Message(Message::Tag tag, Peer source, Peer destination, const eckit::Buffer& payload,
-                 const std::string& map, long cnt, const std::string& cat) :
+                 const std::string& map, size_t cnt, const std::string& cat) :
     version_(protocolVersion()),
     tag_(tag),
     source_(source),

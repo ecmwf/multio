@@ -51,19 +51,19 @@ ecbuild_add_library(
 include_directories( ${ECKIT_INCLUDE_DIRS} )
 
 ecbuild_add_executable( TARGET   multio_sandbox_thread_transport
-                NOINSTALL
-                SOURCES  multio_sandbox_thread_transport.cc
-                CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
-                LIBS     multio-sandbox multio)
+                        NOINSTALL
+                        SOURCES  multio_sandbox_thread_transport.cc
+                        CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
+                        LIBS     multio-sandbox multio)
 
 ecbuild_add_executable( TARGET   multio_sandbox_mpi_transport
-                NOINSTALL
-                SOURCES  multio_sandbox_mpi_transport.cc
-                CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
-                LIBS     multio-sandbox multio)
+                        NOINSTALL
+                        SOURCES  multio_sandbox_mpi_transport.cc
+                        CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
+                        LIBS     multio-sandbox multio)
 
 ecbuild_add_executable( TARGET   multio_sandbox_tcp_transport
-                NOINSTALL
-                SOURCES  multio_sandbox_tcp_transport.cc
-                CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
-                LIBS     multio-sandbox multio)
+                        NOINSTALL
+                        SOURCES  multio_sandbox_tcp_transport.cc
+                        CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
+                        LIBS     multio-sandbox multio)

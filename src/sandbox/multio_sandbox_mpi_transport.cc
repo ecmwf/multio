@@ -90,14 +90,21 @@ std::vector<Peer> MpiExample::spawnServers(const eckit::Configuration& config,
 }
 
 namespace {
-auto maps = std::vector<std::vector<int>>{{2, 7, 0, 5}, {4, 6, 1, 3}};
+std::vector<int> generate_index_map(Peer peer, size_t nbclients) {
+    auto nbidx = 4u;
+    auto maps = std::vector<int>(nbidx);
+    auto ii = peer.id_; // OK for mpi; otherwise create a clientPeer list
+    for (auto jj = 0u; jj != nbidx; ++jj) {
+        maps[jj] = static_cast<int>(ii + jj * nbclients);
+    }
+    return maps;
 }
+}  // namespace
 
 void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
                               const std::vector<Peer>& serverPeers) {
-    auto it = std::find(begin(serverPeers), end(serverPeers), transport->localPeer());
-
-    if (it != end(serverPeers)) {
+    // Do nothing if current rank is a server rank
+    if (find(begin(serverPeers), end(serverPeers), transport->localPeer()) != end(serverPeers)) {
         return;
     }
 
@@ -110,13 +117,12 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
     }
 
     // send partial mapping
-    ASSERT(maps.size() == nbClients_);
     for (auto& server : serverPeers) {
-        auto idx = maps[client.id_];
+        auto idx = generate_index_map(client, nbClients_);
 
-        eckit::Buffer buffer((const char*)(idx.data()), idx.size() * sizeof(int));
+        eckit::Buffer buffer(reinterpret_cast<const char*>(idx.data()), idx.size() * sizeof(int));
 
-        Message msg{Message::Tag::Mapping, client, server, buffer, "scattered", maps.size()};
+        Message msg{Message::Tag::Mapping, client, server, buffer, "scattered", nbClients_};
 
         transport->send(msg);
     }
@@ -127,9 +133,9 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
         for (auto& server : serverPeers) {
             std::vector<double> field = create_random_data(4);
 
-            eckit::Buffer buffer((const char*)(field.data()), field.size() * sizeof(double));
+            eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()), field.size() * sizeof(double));
 
-            Message msg{Message::Tag::Field, client, server, buffer, "scattered", maps.size(), "prognostic"};
+            Message msg{Message::Tag::Field, client, server, buffer, "scattered", nbClients_, "prognostic"};
 
             transport->send(msg);
         }

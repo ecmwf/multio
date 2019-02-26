@@ -32,20 +32,15 @@ namespace sandbox {
 namespace actions {
 
 class AppendToFile : public Action {
-public: // methods
+public:
     AppendToFile(const eckit::Configuration& config);
 
     ~AppendToFile();
 
-protected: // methods
+private:
+    bool execute(Message msg) override;
 
-    virtual bool execute(Message msg);
-
-private: // methods
-
-    virtual void print(std::ostream &os) const;
-
-private: // members
+    void print(std::ostream& os) const override;
 
     std::string path_;
 

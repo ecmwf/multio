@@ -31,15 +31,10 @@ class Null : public Action {
 public:
     Null(const eckit::Configuration& config);
 
+private:
+    bool execute(Message msg) override;
 
-protected: // methods
-
-    virtual bool execute(Message msg);
-
-private: // methods
-
-    virtual void print(std::ostream &os) const;
-
+    void print(std::ostream& os) const override;
 };
 
 }  // namespace actions

@@ -30,6 +30,23 @@ using eckit::Log;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+Action::Action(const eckit::Configuration& config) {
+    eckit::Log::info() << "Action configuration      : " << config << std::endl;
+    if(config.has("next")) {
+       const LocalConfiguration next = config.getSubConfiguration("next");
+       eckit::Log::info() << "Next action configuration : " << next << std::endl;
+       next_.reset(ActionFactory::instance().build(next.getString("type"), next));
+    }
+}
+
+void Action::process(Message msg) {
+    if (execute(msg) && next_) {
+        next_->process(msg);
+    }
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+
 ActionFactory& ActionFactory::instance() {
     static ActionFactory singleton;
     return singleton;
@@ -82,23 +99,6 @@ ActionBuilderBase::ActionBuilderBase(const std::string& name) : name_(name) {
 
 ActionBuilderBase::~ActionBuilderBase() {
     ActionFactory::instance().remove(name_);
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-
-Action::Action(const eckit::Configuration& config) {
-    eckit::Log::info() << "Action configuration      : " << config << std::endl;
-    if(config.has("next")) {
-       const LocalConfiguration next = config.getSubConfiguration("next");
-       eckit::Log::info() << "Next action configuration : " << next << std::endl;
-       next_.reset(ActionFactory::instance().build(next.getString("type"), next));
-    }
-}
-
-void Action::process(Message msg) {
-    if (execute(msg) && next_) {
-        next_->process(msg);
-    }
 }
 
 //----------------------------------------------------------------------------------------------------------------------

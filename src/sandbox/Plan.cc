@@ -26,20 +26,26 @@ namespace multio {
 namespace sandbox {
 
 Plan::Plan(const eckit::Configuration& config) {
+    name_ = config.getString("name", "anonymous");
 
-  name_ = config.getString("name", "anonymous");
+    if (not config.has("actions")) {
+        throw eckit::UserError("Plan config must define 'actions'");
+    }
 
-  if (not config.has("actions")) throw eckit::UserError("Plan config must define 'actions'");
-  const LocalConfiguration actions = config.getSubConfiguration("actions");
+    const LocalConfiguration actions = config.getSubConfiguration("actions");
+    if (not actions.has("root")) {
+        throw eckit::UserError("Plan actions must define 'root' action");
+    }
 
-  if (not actions.has("root")) throw eckit::UserError("Plan actions must define 'root' action");
-  const LocalConfiguration root = actions.getSubConfiguration("root");
-  root_.reset(ActionFactory::instance().build(root.getString("type"), root));
+    const LocalConfiguration root = actions.getSubConfiguration("root");
+    root_.reset(ActionFactory::instance().build(root.getString("type"), root));
 }
 
 Plan::~Plan() = default;
 
-void Plan::process(Message msg) { root_->process(msg); }
+void Plan::process(Message msg) {
+    root_->process(msg);
+}
 
 }  // namespace sandbox
 }  // namespace multio

@@ -17,7 +17,9 @@
 #ifndef multio_sandbox_MpiTransport_H
 #define multio_sandbox_MpiTransport_H
 
+#include "eckit/io/ResizableBuffer.h"
 #include "eckit/mpi/Comm.h"
+#include "eckit/serialisation/ResizableMemoryStream.h"
 
 #include "sandbox/Transport.h"
 
@@ -38,6 +40,8 @@ private:
     Peer localPeer() const override;
 
     const eckit::mpi::Comm& comm_;
+
+    eckit::ResizableBuffer buffer_;
 };
 
 }  // namespace sandbox

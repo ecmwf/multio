@@ -90,8 +90,10 @@ std::vector<Peer> MpiExample::spawnServers(const eckit::Configuration& config,
 }
 
 namespace {
+
+static const auto nbidx = 19u;
+
 std::vector<int> generate_index_map(Peer peer, size_t nbclients) {
-    auto nbidx = 4u;
     auto maps = std::vector<int>(nbidx);
     auto ii = peer.id_; // OK for mpi; otherwise create a clientPeer list
     for (auto jj = 0u; jj != nbidx; ++jj) {
@@ -131,7 +133,7 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
     const int nmessages = 2;
     for (int ii = 0; ii < nmessages; ++ii) {
         for (auto& server : serverPeers) {
-            std::vector<double> field = create_random_data(4);
+            std::vector<double> field = create_random_data(static_cast<int>(nbidx));
 
             eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()), field.size() * sizeof(double));
 

@@ -15,15 +15,8 @@ Plan::Plan(const std::string& nm, std::unique_ptr<Action>&& root) :
     root_(std::move(root)) {}
 
 void Plan::process(std::shared_ptr<Message> msg) const {
-    ASSERT(msg->tag() != msg_tag::plan_data);
+    ASSERT(msg->tag() != msg_tag::message_data);
 
-    // Enque on one thread
-
-    // Deque and execute other potentially more threads
-
-    // Deque
-
-    // Execute
     root_->execute(msg);
 }
 

@@ -5,6 +5,8 @@
 
 #include "multio/server/Aggregation.h"
 #include "multio/server/Message.h"
+#include "multio/server/Mappings.h"
+#include "multio/server/PartialMapping.h"
 #include "multio/server/Plan.h"
 #include "multio/server/SerialisationHelpers.h"
 #include "multio/server/Select.h"
@@ -20,15 +22,28 @@ namespace multio {
 namespace server {
 namespace test {
 
+namespace {
+void registerMap(const std::vector<std::vector<int>>& maps) {
+    for (auto ii = 0u; ii != maps.size(); ++ii) {
+        auto test_map = PartialMapping{"scattered", maps[ii]};
+        test_map.metadata.set("map_count", maps.size());
+        Message msg(0, ii, msg_tag::message_data);
+        mapping_to_message(test_map, msg);
+        msg.rewind();
+        Mappings::instance().add(msg);
+    }
+}
+}  // namespace
+
 CASE("Test that plan with three actions ") {
     field_size() = 8;
 
     auto maps = std::vector<std::vector<int>>{{1, 2, 5, 7}, {0, 3, 4, 6}};
     multio::test::TestFile file{"temperature::850::1"};
 
-    std::unique_ptr<Action> root{new Select{"atm_grid"}};
+    std::unique_ptr<Action> root{new Select{{"prognostic"}}};
     auto it = root.get();
-    it = it->add(std::unique_ptr<Action>{new Aggregation{maps}});
+    it = it->add(std::unique_ptr<Action>{new Aggregation{}});
     it->add(std::unique_ptr<Action>{new Sink{make_configured_file_sink(file.name())}});
 
     SECTION("constructs correctly") {
@@ -37,6 +52,8 @@ CASE("Test that plan with three actions ") {
 
     SECTION("processes message correctly") {
         Plan plan{"test_map", std::move(root)};
+
+        registerMap(maps);
 
         // Create global field to test against
         auto test_field = set_up_atlas_test_field("temperature");

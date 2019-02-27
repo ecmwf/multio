@@ -8,6 +8,7 @@
 #include "atlas/array.h"
 #include "atlas/util/Metadata.h"
 
+#include "multio/server/Mappings.h"
 #include "multio/server/Message.h"
 #include "multio/server/print_buffer.h"
 #include "multio/server/SerialisationHelpers.h"
@@ -15,9 +16,7 @@
 namespace multio {
 namespace server {
 
-Aggregation::Aggregation(std::vector<std::vector<int>> maps, const std::string& nm) :
-    Action{nm},
-    mappings_(std::move(maps)) {}
+Aggregation::Aggregation(const std::string& nm) : Action{nm} {}
 
 bool Aggregation::doExecute(std::shared_ptr<Message> msg) const {
 
@@ -25,11 +24,15 @@ bool Aggregation::doExecute(std::shared_ptr<Message> msg) const {
         return true;
     }
 
-    auto meta_str = pack_metadata(fetch_metadata(*msg));
+    auto metadata = fetch_metadata(*msg);
+
+    map_name_ = metadata.get<std::string>("mapping");
+
+    auto meta_str = pack_metadata(metadata);
 
     messages_[meta_str].push_back(msg);
 
-    auto ret = messages_.at(meta_str).size() == mappings_.size();
+    auto ret = messages_.at(meta_str).size() == Mappings::instance().get(map_name_).size();
     if (ret) {
 
         auto global_field = aggregate(meta_str);
@@ -55,14 +58,13 @@ atlas::Field Aggregation::aggregate(const std::string& meta_str) const {
         auto local_view = atlas::array::make_view<double, 1>(local_field);
 
         auto ii = 0;
-        for (auto idx : mappings_[msg->peer()]) {
+        for (auto idx : Mappings::instance().get(map_name_)[msg->peer()]) {
             global_view(idx) = local_view(ii++);
         }
     }
 
     return global_field;
 }
-
 
 }  // namespace server
 }  // namespace multio

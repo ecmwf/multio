@@ -45,6 +45,12 @@ ecbuild_add_option( FEATURE MULTIO_SERVER
                     DESCRIPTION "Multio server"
                     REQUIRED_PACKAGES "PROJECT atlas VERSION 0.15" )
 
+### sandbox
+
+ecbuild_add_option( FEATURE SANDBOX
+                    DEFAULT OFF
+                    DESCRIPTION "Sanbox for exploring io server design" )
+
 
 ### export package info
 

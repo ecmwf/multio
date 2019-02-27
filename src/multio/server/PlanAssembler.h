@@ -2,11 +2,18 @@
 #ifndef multio_server_PlanAssembler_H
 #define multio_server_PlanAssembler_H
 
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "eckit/config/YAMLConfiguration.h"
+
+namespace atlas {
+namespace util {
+class Metadata;
+}
+}  // namespace atlas
 
 namespace multio {
 namespace server {
@@ -18,15 +25,14 @@ class Plan;
 class PlanAssembler {
 public:
     PlanAssembler();
-    bool tryCreate(const Message& msg);
-    std::unique_ptr<Action> handOver(const std::string& plan_name);
+    std::set<Plan> createAllPlans();
 
 private:
     eckit::YAMLConfiguration planConfigs_;
-    std::unordered_map<std::string, std::vector<std::vector<int>>> plansBeingProcessed_;
 
 private:
-    bool isComplete(const std::string& plan_name) const;
+
+    Plan createPlan(const atlas::util::Metadata& config);
 };
 
 }  // namespace server

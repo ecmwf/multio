@@ -40,4 +40,8 @@ ecbuild_add_test( TARGET   test_multio_plan_assembler
                   SOURCES  test_multio_plan_assembler.cc
                   LIBS     multio multio-server)
 
+ecbuild_add_test( TARGET   test_multio_create_all_plans
+                  SOURCES  test_multio_create_all_plans.cc
+                  LIBS     multio multio-server)
+
 endif(HAVE_MULTIO_SERVER)

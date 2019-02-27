@@ -28,15 +28,15 @@ auto hash_val(const std::string& str) -> size_t {
 Distributor::Distributor(const Transport& trans) : transport_(trans) {}
 
 void Distributor::sendPartialMapping(const atlas::Field& field) const {
-    auto plan_name = field.metadata().get<std::string>("plan_name");
-    if (distributed_mappings.find(plan_name) != distributed_mappings.end()) {
+    auto mapping_name = field.metadata().get<std::string>("mapping");
+    if (distributed_mappings.find(mapping_name) != distributed_mappings.end()) {
         return;
     }
 
     // Register sending this plan
     auto mapping = fetch_mapping(field.metadata(), transport_.noClients(), transport_.clientRank());
 
-    Message msg(0, -1, msg_tag::plan_data);
+    Message msg(0, -1, msg_tag::message_data);
     mapping_to_message(mapping, msg);
 
     // TODO: create a sendToAllServers member function on the transport_. We can then get rid of
@@ -46,11 +46,8 @@ void Distributor::sendPartialMapping(const atlas::Field& field) const {
         transport_.send(msg);
     }
 
-    // Block until the plan is created on all servers
-    waitForPlan(mapping.plan_name());
-
     // Register sending this plan
-    distributed_mappings[plan_name] = mapping;
+    distributed_mappings[mapping_name] = mapping;
 }
 
 void Distributor::sendPartialField(const atlas::Field& field) const {
@@ -76,21 +73,6 @@ void Distributor::sendNotification(const msg_tag notification) const {
 size_t Distributor::computeHash(const atlas::Field& field) const {
     auto meta_str = pack_metadata(field.metadata());
     return (hash_val(meta_str) % transport_.noServers() + transport_.noClients());
-}
-
-void Distributor::waitForPlan(const std::string& plan_name) const {
-    auto counter = 0u;
-    do {
-        Message msg(0, -1, msg_tag::plan_complete);
-        transport_.receive(msg);
-        eckit::Buffer buffer{msg.size()};
-        msg.read(buffer, msg.size());
-        std::string str_buf(buffer);
-        str_buf.resize(buffer.size());
-        if (str_buf == plan_name) {
-            ++counter;
-        }
-    } while (counter != transport_.noServers());
 }
 
 void Distributor::print(std::ostream& os) const {

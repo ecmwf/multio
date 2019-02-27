@@ -14,6 +14,8 @@ ecbuild_add_library(
         Dispatcher.h
         Distributor.cc
         Distributor.h
+        Mappings.cc
+        Mappings.h
         Message.cc
         Message.h
         Plan.cc

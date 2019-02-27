@@ -2,7 +2,10 @@
 #ifndef multio_server_Dispatcher_H
 #define multio_server_Dispatcher_H
 
+#include <atomic>
 #include <set>
+
+#include "eckit/container/Queue.h"
 
 #include "multio/server/Message.h"
 #include "multio/server/Plan.h"
@@ -16,23 +19,25 @@ class Dispatcher {
 public:
     Dispatcher(const Transport& trans);
 
-    std::string registerPlan(const Message& msg);
-
     void feedPlans(std::shared_ptr<Message> msg);
 
-    void listen();
+    void eventLoop();
 
 private:  // members
     const Transport& transport_;
 
-    PlanAssembler planAssembler_;
-
     std::set<Plan> registeredPlans_;
 
-private:  // methods
-    bool allPartsArrived(unsigned counter) const;
+    eckit::Queue<std::shared_ptr<Message>> msgQueue_{1024};
 
-    bool hasPlan(const std::string& plan_name) const;
+    std::atomic<unsigned> counter_{0};
+
+private:  // methods
+    void listen();
+
+    void dispatchNext();
+
+    bool allPartsArrived();
 
     void print(std::ostream& os) const;
 

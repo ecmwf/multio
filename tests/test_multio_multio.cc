@@ -95,21 +95,22 @@ bool trigger_executed_correctly(const eckit::PathName& file, const std::vector<i
 
 
 CASE("test_multio_with_event_trigger") {
-    const eckit::PathName& file1 = eckit::TmpFile();
-    const eckit::PathName& file2 = eckit::TmpFile();
-    const eckit::PathName& file3 = eckit::TmpFile();
+    TestFile file1{eckit::TmpFile().baseName()};
+    TestFile file2{eckit::TmpFile().baseName()};
+    TestFile file3{eckit::TmpFile().baseName()};
 
     // Set up
     int port = 10000;
     int jobId = 234;
 
-    std::string tconf = create_test_configuration(file1, file2, file3, jobId, port);
+    std::string tconf =
+        create_test_configuration(file1.name(), file2.name(), file3.name(), jobId, port);
     ::setenv("MULTIO_CONFIG_TRIGGERS", tconf.c_str(), 1);
 
     std::string sinks(R"json({
                   "sinks" : [ {
                       "type" : "file",
-                      "path" : ")json" + file3.baseName() + R"json("
+                      "path" : ")json" + file3.name() + R"json("
                     } ]
                 }
                 )json");
@@ -144,7 +145,7 @@ CASE("test_multio_with_event_trigger") {
         const int arr_sz = 6;
         int arr[arr_sz] = {0, 3, 6, 9, 12, 24};
         std::vector<int> steps_to_issue(&arr[0], &arr[arr_sz]);
-        EXPECT(trigger_executed_correctly(file1, steps_to_issue, jobId));
+        EXPECT(trigger_executed_correctly(file1.name(), steps_to_issue, jobId));
     }
 
     // Second list of triggers
@@ -152,7 +153,7 @@ CASE("test_multio_with_event_trigger") {
         const int arr_sz = 5;
         int arr[arr_sz] = {1, 4, 5, 6, 10};
         std::vector<int> steps_to_issue(&arr[0], &arr[arr_sz]);
-        EXPECT(trigger_executed_correctly(file2, steps_to_issue, jobId));
+        EXPECT(trigger_executed_correctly(file2.name(), steps_to_issue, jobId));
     }
 }
 

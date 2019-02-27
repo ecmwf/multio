@@ -7,13 +7,13 @@ namespace server {
 
 enum msg_tag
 {
-    plan_data,
+    message_data,
     field_data,
     step_complete,
     forecast_complete,
-    plan_complete
+    open,
+    close
 };
-
 
 }  // namespace server
 }  // namespace multio

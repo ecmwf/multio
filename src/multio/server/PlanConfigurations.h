@@ -9,23 +9,57 @@ namespace server {
 
 std::string plan_configurations() {
     return R"json(
-        {
-          "nemo_grid" : {
-            "mapping" : "range",
-            "aggregation" : "indexed",
-            "encoding" : "netcdf",
-            "multio_sink" : "file"
-          },
-
-          "atm_grid" : {
-            "mapping" : "scattered",
-            "aggregation" : "indexed",
-            "encoding" : "none",
-            "multio_sink" : "file"
-          }
-        }
+     {
+       "plans" : [
+         { "name" : "ocean",
+            "categories" : [ "surface", "deep" ],
+            "actions" : {
+              "aggregation" : "indexed",
+              "encoding" : "none",
+              "multio_sink" : "file"
+            }
+         },
+         {
+           "name" : "atmosphere",
+           "categories" : [ "prognostic", "diagnostic" ],
+           "actions" : {
+             "aggregation" : "indexed",
+             "encoding" : "none",
+             "multio_sink" : "file"
+           }
+         }
+       ]
+     }
     )json";
+
+
+    return R"json(
+     {
+       "plans" : [
+         { "name" : "ocean",
+            "categories" : [ "surface", "deep" ],
+            "root" : {
+            "type" : "select",
+            "next" : {
+                 "type" : "IndexedAggregation",
+                     "next" : {
+                          "type" : "print",
+                     }
+                }
+            }
+         },
+         {
+           "name" : "atmosphere",
+           "categories" : [ "prognostic", "diagnostic" ],
+           "root" : {
+           }
+         }
+       ]
+     }
+    )json";
+
 }
+
 
 }  // namespace server
 }  // namespace multio

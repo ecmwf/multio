@@ -14,32 +14,37 @@
 
 /// @date Jan 2019
 
-#ifndef multio_sandbox_actions_Print_H
-#define multio_sandbox_actions_Print_H
+#ifndef multio_sandbox_actions_Aggregation_H
+#define multio_sandbox_actions_Aggregation_H
 
 #include <iosfwd>
+#include <unordered_map>
+#include <vector>
 
 #include "sandbox/Action.h"
 
-
-namespace eckit { class Configuration; }
+namespace eckit {
+class Configuration;
+}
 
 namespace multio {
 namespace sandbox {
 namespace actions {
 
-class Print : public Action {
+class Aggregation : public Action {
 public:
-    Print(const eckit::Configuration& config);
+    Aggregation(const eckit::Configuration& config);
 
 private:
     bool execute(Message msg) override;
 
     void print(std::ostream& os) const override;
 
-    std::string stream_;
+    std::string map_name_;
+    std::string field_id_; // It could be the hash of the mars metadata in the future
 
-    std::ostream* os;
+    std::map<std::string, std::vector<Message>> messages_;
+
 };
 
 }  // namespace actions

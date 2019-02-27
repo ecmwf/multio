@@ -18,6 +18,7 @@
 
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/maths/Functions.h"
 #include "eckit/serialisation/MemoryStream.h"
 
 namespace multio {
@@ -25,7 +26,8 @@ namespace sandbox {
 
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
-    comm_(eckit::mpi::comm(cfg.getString("domain").c_str())) {}
+    comm_(eckit::mpi::comm(cfg.getString("domain").c_str())),
+    buffer_{0} {}
 
 Message MpiTransport::receive() {
     Message msg{};
@@ -37,11 +39,13 @@ Message MpiTransport::receive() {
 
     auto status = comm_.probe(comm_.anySource(), comm_.anyTag());
 
-    eckit::Buffer buffer{comm_.getCount<void>(status)};
-    comm_.receive<void>(buffer, buffer.size(), status.source(), status.tag());
+    buffer_.resize(eckit::round(comm_.getCount<void>(status), 8));
+    comm_.receive<void>(buffer_, buffer_.size(), status.source(), status.tag());
 
-    eckit::MemoryStream strm(buffer);
-    msg.decode(strm);
+    eckit::ResizableMemoryStream stream{buffer_};
+
+    msg.decode(stream);
+
     return msg;
 }
 
@@ -53,12 +57,14 @@ void MpiTransport::send(const Message& msg) {
 
     auto dest = msg.destination().id_;
 
-    eckit::Buffer buffer(
-        eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_SIZE", 1024 * 1024));
-    eckit::MemoryStream strm(buffer);
-    msg.encode(strm);
+    // Add 4K for header/footer etc. Should be plenty
+    buffer_.resize(eckit::round(msg.size(), 8) + 4096);
 
-    comm_.send<void>(buffer, strm.bytesWritten(), dest, msg_tag);
+    eckit::ResizableMemoryStream stream{buffer_};
+
+    msg.encode(stream);
+
+    comm_.send<void>(buffer_, stream.bytesWritten(), dest, msg_tag);
 }
 
 Peer MpiTransport::localPeer() const {

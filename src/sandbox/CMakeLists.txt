@@ -6,6 +6,8 @@ ecbuild_add_library(
     CONDITION HAVE_MULTIO_SERVER AND HAVE_SANDBOX
 
     SOURCES
+        actions/Aggregation.cc
+        actions/Aggregation.h
         actions/AppendToFile.cc
         actions/AppendToFile.h
         actions/Print.cc

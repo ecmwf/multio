@@ -35,9 +35,9 @@ private:
 
     bool execute(Message msg) override;
 
-    bool matchPlan(const Message& msg) const;
-
     void print(std::ostream &os) const override;
+
+    bool matchPlan(const Message& msg) const;
 
     std::vector<std::string> categories_;
 };

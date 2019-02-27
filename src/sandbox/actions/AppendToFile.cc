@@ -21,8 +21,9 @@ namespace sandbox {
 namespace actions {
 
 AppendToFile::AppendToFile(const eckit::Configuration& config) : Action(config) {
-    if (not config.has("path"))
+    if (not config.has("path")) {
         throw eckit::UserError("AppendToFile config must define 'path'");
+    }
 
     config.get("path", path_);
 
@@ -32,12 +33,13 @@ AppendToFile::AppendToFile(const eckit::Configuration& config) : Action(config) 
 }
 
 AppendToFile::~AppendToFile() {
-    if (datahandle_)
+    if (datahandle_) {
         datahandle_->close();
+    }
 }
 
 bool AppendToFile::execute(Message msg) {
-    auto written = datahandle_->write(msg.payload(), long(msg.size()));
+    auto written = datahandle_->write(msg.payload().data(), long(msg.size()));
     written += datahandle_->write("\n", 1);
     return written == static_cast<long>(msg.size());
 }

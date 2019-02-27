@@ -41,17 +41,15 @@ public:
     Action(Action&& rhs) = default;
     Action& operator=(Action&& rhs) = default;
 
-    virtual void process(Message msg);
+    void process(Message msg);
 
-protected: // method
-
-    virtual bool execute(Message msg) = 0;
-
-protected: // members
+protected:
 
     std::unique_ptr<Action> next_;
 
-private: // methods
+private:
+
+    virtual bool execute(Message msg) = 0;
 
     virtual void print(std::ostream &os) const = 0;
 

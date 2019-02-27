@@ -16,20 +16,22 @@ Mappings& Mappings::instance() {
     return singleton;
 }
 
-void Mappings::add(const Message& msg) {
+void Mappings::add(Message msg) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     eckit::Log::info() << "  ---  name = " << msg.mapping() << std::endl;
     eckit::Log::info() << "  ---  peer = " << msg.source() << std::endl;
 
     // Retrieve metadata
-    auto mapping = mappings_[msg.mapping()];
+    auto& mapping = mappings_[msg.mapping()];
     ASSERT(mapping.find(msg.source()) == end(mapping));
 
     auto& local_map = mapping[msg.source()];
     local_map.resize(msg.size() / sizeof(int));
 
-    std::memcpy(local_map.data(), msg.payload(), msg.size());
+    std::memcpy(local_map.data(), msg.payload().data(), msg.size());
+
+    eckit::Log::info() << "  ---  map size = " << mappings_.at("scattered").size() << std::endl;
 }
 
 void Mappings::list(std::ostream& out) const {

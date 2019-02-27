@@ -33,6 +33,8 @@ class Stream;
 namespace multio {
 namespace sandbox {
 
+// TODO: we may want to hash the payload (and the header?)
+
 class Message {
 public:  // types
     enum class Tag : unsigned
@@ -51,7 +53,8 @@ public:  // methods
 
     Message();
     Message(Tag tag, Peer source, Peer destination, const eckit::Buffer& payload,
-            const std::string& map = "", size_t cnt = -1, const std::string& cat = "");
+            const std::string& map = "", std::size_t mpcnt = 0, const std::string& cat = "",
+            const std::string& fid = "", std::size_t glsz = 0);
 
     int version() const { return version_; }
 
@@ -61,15 +64,18 @@ public:  // methods
     Peer source() const { return source_; }
 
     size_t size() const;
-    const void* payload() const;
 
     const std::string& mapping() const { return mapping_;};
     int map_count() const { return map_count_; }
 
     const std::string& category() const { return category_; };
+    const std::string& field_id() const { return field_id_; };
+    size_t field_size() const { return global_field_size_; };
 
     void encode(eckit::Stream& strm) const;
     void decode(eckit::Stream& strm);
+
+    eckit::Buffer& payload();
 
 private:  // methods
     void print(std::ostream& out) const;
@@ -97,6 +103,8 @@ private:  // members
 
     // For fields only
     std::string category_;
+    std::string field_id_; // Could also be the hash of MARS metadata
+    size_t global_field_size_;
 };
 
 }  // namespace sandbox

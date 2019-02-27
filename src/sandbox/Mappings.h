@@ -28,7 +28,7 @@ public:  // methods
 
     static Mappings& instance();
 
-    void add(const Message& msg);
+    void add(Message msg);
 
     void list(std::ostream&) const;
 

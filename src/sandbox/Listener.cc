@@ -50,7 +50,7 @@ void Listener::listen() {
 
             case Message::Tag::Mapping:
                 eckit::Log::info() << "*** MAPPING INDICES " << std::flush;
-                print_buffer((const int*)(msg.payload()), msg.size() / sizeof(int),
+                print_buffer((const int*)(msg.payload().data()), msg.size() / sizeof(int),
                              eckit::Log::info());
                 eckit::Log::info() << std::endl;
                 Mappings::instance().add(msg);
@@ -58,7 +58,7 @@ void Listener::listen() {
 
             default:
                 eckit::Log::info() << "*** DISPATCH QUEUE " << std::flush;
-                print_buffer((const double*)(msg.payload()), msg.size() / sizeof(double),
+                print_buffer((const double*)(msg.payload().data()), msg.size() / sizeof(double),
                              eckit::Log::info());
                 eckit::Log::info() << std::endl;
                 msgQueue_.push(std::move(msg));

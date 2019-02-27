@@ -45,20 +45,19 @@ Message::Message() :
     destination_(),
     payload_(std::make_shared<eckit::Buffer>("\0", 1)) {}
 
-Message::Message(Message::Tag tag, Peer source, Peer destination, const eckit::Buffer& payload,
-                 const std::string& map, size_t cnt, const std::string& cat) :
+Message::Message(Tag tag, Peer source, Peer destination, const eckit::Buffer& payload,
+                 const std::string& map, std::size_t mpcnt, const std::string& cat,
+                 const std::string& fid, std::size_t glsz) :
     version_(protocolVersion()),
     tag_(tag),
     source_(source),
     destination_(destination),
     payload_(std::make_shared<eckit::Buffer>(payload, payload.size())),
     mapping_(map),
-    map_count_(cnt),
-    category_(cat) {}
-
-const void* Message::payload() const {
-    return payload_->data();
-}
+    map_count_(mpcnt),
+    category_(cat),
+    field_id_(fid),
+    global_field_size_(glsz) {}
 
 size_t Message::size() const {
     return payload_->size();
@@ -76,6 +75,8 @@ void Message::encode(eckit::Stream& strm) const {
     strm << mapping_;
     strm << map_count_;
     strm << category_;
+    strm << field_id_;
+    strm << global_field_size_;
 }
 
 void Message::decode(eckit::Stream& strm) {
@@ -100,15 +101,23 @@ void Message::decode(eckit::Stream& strm) {
     strm >> mapping_;
     strm >> map_count_;
     strm >> category_;
- }
+
+    strm >> field_id_;
+    strm >> global_field_size_;
+}
 
 
- void Message::print(std::ostream& out) const {
-     out << "Field("
-         << "version=" << version_ << ", tag=" << tag2str(tag_) << ", source=" << source_
-         << ", destination=" << destination_ << ", mapping=" << mapping_
-         << ", map_count=" << map_count_ << ", category=" << category_ << ")";
- }
+eckit::Buffer& Message::payload() {
+    return *payload_;
+}
+
+void Message::print(std::ostream& out) const {
+    out << "Field("
+        << "version=" << version_ << ", tag=" << tag2str(tag_) << ", source=" << source_
+        << ", destination=" << destination_ << ", mapping=" << mapping_
+        << ", map_count=" << map_count_ << ", category=" << category_ << ", field_id=" << field_id_
+        << ", global size=" << global_field_size_ << ")";
+}
 
 }  // namespace sandbox
 }  // namespace multio

@@ -34,7 +34,6 @@ bool Aggregation::doExecute(std::shared_ptr<Message> msg) const {
 
     auto ret = messages_.at(meta_str).size() == Mappings::instance().get(map_name_).size();
     if (ret) {
-
         auto global_field = aggregate(meta_str);
         messages_.erase(meta_str);
 

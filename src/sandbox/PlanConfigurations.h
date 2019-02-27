@@ -36,10 +36,18 @@ std::string plan_configurations() {
                        "type" : "Select",
                        "categories" : [ "prognostic", "diagnostic" ],
                        "next" : {
-                          "type" : "Print",
-                          "stream" : "error",
+                          "type" : "Aggregation",
+                          "mapping" : "scattered",
                           "next" : {
-                             "type" : "Null"
+                             "type" : "encode",
+                             "format" : "grib",
+                             "next" : {
+                                "type" : "sink",
+                                "datasink" : "file",
+                                "next" : {
+                                   "type" : "Null"
+                                }
+                             }
                           }
                        }
                     }

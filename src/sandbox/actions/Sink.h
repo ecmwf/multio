@@ -26,6 +26,9 @@ class Configuration;
 }
 
 namespace multio {
+
+class DataSink;
+
 namespace sandbox {
 namespace actions {
 
@@ -38,7 +41,11 @@ private:
 
     void print(std::ostream& os) const override;
 
-    std::string data_sink_;
+    bool write(Message msg) const;
+
+    bool flush() const;
+
+    mutable std::unique_ptr<DataSink> dataSink_ = nullptr;
 };
 
 }  // namespace actions

@@ -44,6 +44,7 @@ public:  // types
         Close,
         Mapping,
         Field,
+        StepComplete,
         ENDTAG
     };
 

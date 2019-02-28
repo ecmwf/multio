@@ -14,23 +14,48 @@
 
 #include "eckit/config/Configuration.h"
 
+#include "multio/DataSink.h"
+#include "sandbox/PlainDataBlob.h"
+
 namespace multio {
 namespace sandbox {
 namespace actions {
 
-Sink::Sink(const eckit::Configuration& config) :
-    Action(config),
-    data_sink_(config.getString("datasink")) {}
+Sink::Sink(const eckit::Configuration& config) : Action(config) {}
 
-bool Sink::execute(Message /*message*/) {
-    if (data_sink_ == "file") {
-        // Sink to file;
+bool Sink::execute(Message msg) {
+    switch (msg.tag()) {
+        case Message::Tag::Field:
+            return write(msg);
+
+        case Message::Tag::StepComplete:
+            return flush();
+
+        default:
+            return false;
     }
+}
+
+bool Sink::write(Message msg) const {
+    eckit::LocalConfiguration config;
+    config.set("path", msg.field_id());
+
+    dataSink_.reset(DataSinkFactory::instance().build("file", config));
+
+    eckit::DataBlobPtr blob(eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
+
+    dataSink_->write(blob);
+
+    return true;
+}
+
+bool Sink::flush() const {
+    dataSink_->flush();
     return true;
 }
 
 void Sink::print(std::ostream& os) const {
-    os << "Sink(data_sink=" << data_sink_ << ")";
+    os << "Sink(DataSink=" << *dataSink_ << ")";
 }
 
 static ActionBuilder<Sink> SinkBuilder("Sink");

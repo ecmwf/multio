@@ -134,7 +134,7 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
     // send N messages
     const int nfields = 13;
     for (int ii = 0; ii < nfields; ++ii) {
-        auto field_id = std::string("temperature step ") + std::to_string(ii);
+        auto field_id = std::string("temperature::step::") + std::to_string(ii);
         std::vector<double> field =
             create_local_field(global_test_field(field_id, field_size()), idx);
 

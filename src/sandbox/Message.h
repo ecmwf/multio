@@ -65,12 +65,12 @@ public:  // methods
 
     size_t size() const;
 
-    const std::string& mapping() const { return mapping_;};
-    int map_count() const { return map_count_; }
+    const std::string& mapping() const { return mapping_;}
+    size_t map_count() const { return map_count_; }
 
-    const std::string& category() const { return category_; };
-    const std::string& field_id() const { return field_id_; };
-    size_t field_size() const { return global_field_size_; };
+    const std::string& category() const { return category_; }
+    const std::string& field_id() const { return field_id_; }
+    size_t field_size() const { return global_field_size_; }
 
     void encode(eckit::Stream& strm) const;
     void decode(eckit::Stream& strm);
@@ -99,7 +99,7 @@ private:  // members
     std::string mapping_;
 
     // For mappings only
-    long map_count_;
+    size_t map_count_;
 
     // For fields only
     std::string category_;

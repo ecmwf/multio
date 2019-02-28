@@ -75,9 +75,9 @@ std::vector<Peer> MpiExample::spawnServers(const eckit::Configuration& config,
 
     auto domain = config.getString("domain");
 
-    long size = eckit::mpi::comm(domain.c_str()).size();
-    for (long ii = size - nbServers_; ii != size; ++ii) {
-        serverPeers.push_back(Peer{domain.c_str(), static_cast<size_t>(ii)});
+    auto size = eckit::mpi::comm(domain.c_str()).size();
+    for (auto ii = size - nbServers_; ii != size; ++ii) {
+        serverPeers.push_back(Peer{domain.c_str(), ii});
     }
 
     auto it = std::find(begin(serverPeers), end(serverPeers), transport->localPeer());
@@ -132,26 +132,29 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
     }
 
     // send N messages
-    const int nmessages = 2;
-    for (int ii = 0; ii < nmessages; ++ii) {
-        for (auto& server : serverPeers) {
-            auto field_id = std::string("temperature step ") + std::to_string(ii);
+    const int nfields = 13;
+    for (int ii = 0; ii < nfields; ++ii) {
+        auto field_id = std::string("temperature step ") + std::to_string(ii);
+        std::vector<double> field =
+            create_local_field(global_test_field(field_id, field_size()), idx);
 
+        if (root() == eckit::mpi::comm(client.domain_.c_str()).rank()) {
             eckit::Log::info() << "   ---   Field: " << field_id << ", values: " << std::flush;
             print_buffer(global_test_field(field_id, field_size()), eckit::Log::info(), " ");
             eckit::Log::info() << std::endl;
-
-            std::vector<double> field =
-                create_local_field(global_test_field(field_id, field_size()), idx);
-
-            eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()),
-                                 field.size() * sizeof(double));
-
-            Message msg{Message::Tag::Field, client, server, buffer, "scattered", nbClients_,
-                "prognostic", field_id, field_size()};
-
-            transport->send(msg);
         }
+
+        // Chose server
+        auto idx = std::hash<std::string>{}(field_id) % nbServers_;
+        ASSERT(idx < serverPeers.size());
+
+        eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()),
+                             field.size() * sizeof(double));
+
+        Message msg{Message::Tag::Field, client, serverPeers[idx], buffer, "scattered", nbClients_,
+            "prognostic", field_id, field_size()};
+
+        transport->send(msg);
     }
 
     // close all servers
@@ -170,7 +173,7 @@ void MpiExample::execute(const eckit::option::CmdArgs&) {
 
     std::cout << *transport << std::endl;
 
-    field_size() = 11;
+    field_size() = 29;
 
     auto serverPeers = spawnServers(config_, transport);
 

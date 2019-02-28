@@ -4,6 +4,8 @@
 
 #include <random>
 
+#include "eckit/mpi/Comm.h"
+
 namespace multio {
 namespace sandbox {
 

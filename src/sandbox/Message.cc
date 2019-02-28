@@ -106,7 +106,6 @@ void Message::decode(eckit::Stream& strm) {
     strm >> global_field_size_;
 }
 
-
 eckit::Buffer& Message::payload() {
     return *payload_;
 }
@@ -116,7 +115,7 @@ void Message::print(std::ostream& out) const {
         << "version=" << version_ << ", tag=" << tag2str(tag_) << ", source=" << source_
         << ", destination=" << destination_ << ", mapping=" << mapping_
         << ", map_count=" << map_count_ << ", category=" << category_ << ", field_id=" << field_id_
-        << ", global size=" << global_field_size_ << ")";
+        << ", global_size=" << global_field_size_ << ")";
 }
 
 }  // namespace sandbox

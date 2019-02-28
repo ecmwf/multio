@@ -44,7 +44,7 @@ bool Aggregation::execute(Message message) {
             auto data_ptr = static_cast<double*>(msg.payload().data());
             std::vector<double> local_field(data_ptr, data_ptr + msg.size() / sizeof(double));
 
-            auto ii = 0;
+            auto ii = 0u;
             for (auto idx : Mappings::instance().get(map_name_).at(msg.source())) {
                 global_field[idx] = local_field[ii++];
             }

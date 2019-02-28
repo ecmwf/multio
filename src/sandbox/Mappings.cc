@@ -27,7 +27,7 @@ void Mappings::add(Message msg) {
     ASSERT(mapping.find(msg.source()) == end(mapping));
 
     auto& local_map = mapping[msg.source()];
-    local_map.resize(msg.size() / sizeof(int));
+    local_map.resize(msg.size() / sizeof(size_t));
 
     std::memcpy(local_map.data(), msg.payload().data(), msg.size());
 

@@ -14,7 +14,7 @@ class Message;
 class Peer;
 
 class Mappings {
-    using LocalIndices = std::vector<int>;
+    using LocalIndices = std::vector<size_t>;
     using Mapping = std::map<Peer, LocalIndices>;
 
 public:  // methods

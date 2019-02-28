@@ -49,7 +49,7 @@ inline std::vector<double>& global_test_field(const std::string& field_id, const
 }
 
 inline std::vector<double> create_local_field(const std::vector<double>& global_field,
-                                              const std::vector<int>& idxmap) {
+                                              const std::vector<size_t>& idxmap) {
     std::vector<double> local_field;
     for (auto idx : idxmap) {
         local_field.push_back(global_field[idx]);

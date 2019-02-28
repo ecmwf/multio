@@ -92,13 +92,13 @@ std::vector<Peer> MpiExample::spawnServers(const eckit::Configuration& config,
 
 namespace {
 
-std::vector<int> generate_index_map(Peer peer, size_t nbclients) {
+std::vector<size_t> generate_index_map(Peer peer, size_t nbclients) {
     auto id = peer.id_;  // OK for mpi; otherwise create a clientPeer list
     auto chunk_size = field_size() / nbclients + ((id < field_size() % nbclients) ? 1 : 0);
 
-    auto maps = std::vector<int>(chunk_size);
+    auto maps = std::vector<size_t>(chunk_size);
     for (auto jj = 0u; jj != chunk_size; ++jj) {
-        maps[jj] = static_cast<int>(id + jj * nbclients);
+        maps[jj] = static_cast<size_t>(id) + jj * nbclients;
     }
     return maps;
 }
@@ -124,7 +124,7 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
 
     // send partial mapping
     for (auto& server : serverPeers) {
-        eckit::Buffer buffer(reinterpret_cast<const char*>(idx.data()), idx.size() * sizeof(int));
+        eckit::Buffer buffer(reinterpret_cast<const char*>(idx.data()), idx.size() * sizeof(size_t));
 
         Message msg{Message::Tag::Mapping, client, server, buffer, "scattered", nbClients_};
 

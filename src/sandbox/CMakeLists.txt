@@ -10,10 +10,14 @@ ecbuild_add_library(
         actions/Aggregation.h
         actions/AppendToFile.cc
         actions/AppendToFile.h
+        actions/Encode.cc
+        actions/Encode.h
         actions/Print.cc
         actions/Print.h
         actions/Select.cc
         actions/Select.h
+        actions/Sink.cc
+        actions/Sink.h
         actions/Null.cc
         actions/Null.h
         Action.cc

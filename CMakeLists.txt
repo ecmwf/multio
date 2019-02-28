@@ -36,7 +36,7 @@ ecbuild_add_option( FEATURE FDB4
 ecbuild_add_option( FEATURE FDB5
                     DEFAULT ON
                     DESCRIPTION "Send data to FDB5"
-                    REQUIRED_PACKAGES "PROJECT mars_server VERSION 7.10.7" )
+                    REQUIRED_PACKAGES "PROJECT fdb5 VERSION 5.0" )
 
 ### multio-server
 

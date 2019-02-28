@@ -10,10 +10,10 @@ ecbuild_add_library(
         HAVE_FDB5
 
     PRIVATE_INCLUDES
-        ${MARS_SERVER_INCLUDE_DIRS}
+        ${FDB5_INCLUDE_DIRS}
         ${ECKIT_INCLUDE_DIRS}
 
     LIBS
         multio
-        mars-fdb5
+        fdb5
 )

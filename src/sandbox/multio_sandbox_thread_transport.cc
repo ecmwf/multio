@@ -42,9 +42,9 @@ private:
     void execute(const eckit::option::CmdArgs& args) override;
 
     std::tuple<std::vector<Peer>, std::vector<std::thread>> spawnServers(
-        const eckit::Configuration& config, std::shared_ptr<Transport> transport, size_t nbServers);
+        const eckit::Configuration& config, std::shared_ptr<Transport> transport);
 
-    std::vector<std::thread> spawnClients(std::shared_ptr<Transport> transport, size_t nbClients,
+    std::vector<std::thread> spawnClients(std::shared_ptr<Transport> transport,
                                           const std::vector<Peer>& serverPeers);
 
     size_t nbClients_ = 1;
@@ -62,7 +62,7 @@ void ThreadExample::init(const eckit::option::CmdArgs& args) {
 //----------------------------------------------------------------------------------------------------------------------
 
 std::tuple<std::vector<Peer>, std::vector<std::thread>> ThreadExample::spawnServers(
-    const eckit::Configuration& config, std::shared_ptr<Transport> transport, size_t nbServers) {
+    const eckit::Configuration& config, std::shared_ptr<Transport> transport) {
     auto listen = [&config, transport]() {
         Listener listener(config, *transport);
 
@@ -71,7 +71,7 @@ std::tuple<std::vector<Peer>, std::vector<std::thread>> ThreadExample::spawnServ
 
     std::vector<Peer> serverPeers;
     std::vector<std::thread> servers;
-    for (size_t i = 0; i != nbServers; ++i) {
+    for (size_t i = 0; i != nbServers_; ++i) {
         Log::info() << "starting server " << i << std::endl;
 
         std::thread t(listen);
@@ -85,7 +85,6 @@ std::tuple<std::vector<Peer>, std::vector<std::thread>> ThreadExample::spawnServ
 }
 
 std::vector<std::thread> ThreadExample::spawnClients(std::shared_ptr<Transport> transport,
-                                                     size_t nbClients,
                                                      const std::vector<Peer>& serverPeers) {
     auto sendMsg = [transport, serverPeers]() {
         Peer client = transport->localPeer();
@@ -118,7 +117,7 @@ std::vector<std::thread> ThreadExample::spawnClients(std::shared_ptr<Transport> 
 
     std::vector<std::thread> clients;
 
-    for (size_t ii = 0; ii != nbClients; ++ii) {
+    for (size_t ii = 0; ii != nbClients_; ++ii) {
         clients.emplace_back(sendMsg);
     }
 
@@ -158,9 +157,9 @@ void ThreadExample::execute(const eckit::option::CmdArgs&) {
 
     std::vector<Peer> serverPeers;
     std::vector<std::thread> servers;
-    std::tie(serverPeers, servers) = spawnServers(config, transport, nbServers_);
+    std::tie(serverPeers, servers) = spawnServers(config, transport);
 
-    std::vector<std::thread> clients = spawnClients(transport, nbClients_, serverPeers);
+    std::vector<std::thread> clients = spawnClients(transport, serverPeers);
 
     std::for_each(begin(clients), end(clients), [](std::thread& t) { t.join(); });
     std::for_each(begin(servers), end(servers), [](std::thread& t) { t.join(); });

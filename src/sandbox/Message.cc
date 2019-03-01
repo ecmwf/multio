@@ -82,7 +82,7 @@ std::string Message::tag2str(Message::Tag t) {
 
 Message::Message() : Message{{Message::Tag::Empty}, 0} {}
 
-Message::Message(Header&& header, const eckit::Buffer& payload) :
+Message::Message(const Header& header, const eckit::Buffer& payload) :
     version_{protocolVersion()},
     header_{header},
     payload_{std::make_shared<eckit::Buffer>(payload, payload.size())} {}
@@ -114,6 +114,10 @@ void Message::decode(eckit::Stream& strm) {
 }
 
 eckit::Buffer& Message::payload() {
+    return *payload_;
+}
+
+const eckit::Buffer& Message::payload() const {
     return *payload_;
 }
 

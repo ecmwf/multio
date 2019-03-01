@@ -22,6 +22,8 @@ ecbuild_add_library(
         actions/Null.h
         Action.cc
         Action.h
+        Aggregator.cc
+        Aggregator.h
         Dispatcher.cc
         Dispatcher.h
         Listener.cc

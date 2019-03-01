@@ -13,10 +13,10 @@ namespace sandbox {
 class Message;
 class Peer;
 
-class Mappings {
-    using LocalIndices = std::vector<size_t>;
-    using Mapping = std::map<Peer, LocalIndices>;
+using LocalIndices = std::vector<size_t>;
+using Mapping = std::map<Peer, LocalIndices>;
 
+class Mappings {
 public:  // methods
     Mappings() = default;
 

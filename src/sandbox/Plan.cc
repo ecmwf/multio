@@ -8,9 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-#ifndef multio_sandbox_Listener_H
-#define multio_sandbox_Listener_H
-
 #include "Plan.h"
 
 #include "eckit/config/Configuration.h"
@@ -49,5 +46,3 @@ void Plan::process(Message msg) {
 
 }  // namespace sandbox
 }  // namespace multio
-
-#endif

@@ -68,7 +68,9 @@ public:  // methods
     static std::string tag2str(Tag);
 
     Message();
-    Message(Header&& header, const eckit::Buffer& payload = 0);
+    Message(const Header& header, const eckit::Buffer& payload = 0);
+
+    const Header& header() const { return header_; }
 
     int version() const { return version_; }
 
@@ -90,6 +92,7 @@ public:  // methods
     void decode(eckit::Stream& strm);
 
     eckit::Buffer& payload();
+    const eckit::Buffer& payload() const;
 
 private:  // methods
     void print(std::ostream& out) const;

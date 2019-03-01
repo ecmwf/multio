@@ -15,6 +15,7 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 
+#include "sandbox/Aggregator.h"
 #include "sandbox/Mappings.h"
 #include "sandbox/print_buffer.h"
 
@@ -26,10 +27,10 @@ Aggregation::Aggregation(const eckit::Configuration& config) :
     Action(config),
     map_name_(config.getString("mapping")) {}
 
-bool Aggregation::execute(Message message) {
+bool Aggregation::execute(Message msg) {
 
-    auto field_id = message.field_id();
-    messages_[field_id].push_back(message);
+    auto field_id = msg.field_id();
+    messages_[field_id].push_back(msg);
 
     eckit::Log::info() << "  ---  Aggregation action is being executed" << std::endl
                        << "          -- no_maps: " << Mappings::instance().get(map_name_).size()
@@ -38,26 +39,19 @@ bool Aggregation::execute(Message message) {
     // All parts arrived?
     bool ret = messages_.at(field_id).size() == Mappings::instance().get(map_name_).size();
     if (ret) {
-        auto global_field_size = message.field_size();
-        std::vector<double> global_field(global_field_size);
-        for (auto msg : messages_.at(field_id)) {
-            auto data_ptr = static_cast<double*>(msg.payload().data());
-            std::vector<double> local_field(data_ptr, data_ptr + msg.size() / sizeof(double));
+        Aggregator agg{msg.field_size(), messages_.at(field_id).size()};
 
-            auto ii = 0u;
-            for (auto idx : Mappings::instance().get(map_name_).at(msg.source())) {
-                global_field[idx] = local_field[ii++];
-            }
-        }
+        msg.payload() = agg.aggregate(messages_.at(field_id), Mappings::instance().get(map_name_));
 
-        eckit::Log::info() << "          -- print aggregated field: " << std::flush;
-        print_buffer(global_field, eckit::Log::info(), " ");
-        eckit::Log::info() << std::endl;
-
-        // Yet another unnecessary copy
-        message.payload() = eckit::Buffer{reinterpret_cast<char*>(global_field.data()),
-                                          global_field_size * sizeof(double)};
+        messages_.erase(field_id);
     }
+
+    eckit::Log::info() << "          -- print aggregated field (size=" << msg.field_size()
+                       << "): " << std::flush;
+    print_buffer(reinterpret_cast<double*>(msg.payload().data()), msg.field_size(),
+                 eckit::Log::info(), " ");
+    eckit::Log::info() << std::endl;
+
     return ret;
 }
 

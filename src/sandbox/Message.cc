@@ -22,6 +22,48 @@
 namespace multio {
 namespace sandbox {
 
+namespace {
+eckit::Stream& operator<<(eckit::Stream& strm, const Message::Header& header) {
+    strm << static_cast<unsigned>(header.tag_);
+
+    strm << header.source_.domain_;
+    strm << header.source_.id_;
+
+    strm << header.destination_.domain_;
+    strm << header.destination_.id_;
+
+    strm << header.mapping_;
+    strm << header.map_count_;
+
+    strm << header.category_;
+    strm << header.field_id_;
+    strm << header.global_field_size_;
+
+    return strm;
+}
+
+eckit::Stream& operator>>(eckit::Stream& strm, Message::Header& header) {
+    unsigned t;
+    strm >> t;
+    header.tag_ = static_cast<Message::Tag>(t);
+
+    strm >> header.source_.domain_;
+    strm >> header.source_.id_;
+
+    strm >> header.destination_.domain_;
+    strm >> header.destination_.id_;
+
+    strm >> header.mapping_;
+    strm >> header.map_count_;
+
+    strm >> header.category_;
+    strm >> header.field_id_;
+    strm >> header.global_field_size_;
+
+    return strm;
+}
+}  // namespace
+
 int Message::protocolVersion() {
     return 1;
 }
@@ -38,26 +80,12 @@ std::string Message::tag2str(Message::Tag t) {
     return m.find(t)->second;
 }
 
-Message::Message() :
-    version_(protocolVersion()),
-    tag_(Message::Tag::Empty),
-    source_(),
-    destination_(),
-    payload_(std::make_shared<eckit::Buffer>("\0", 1)) {}
+Message::Message() : Message{{Message::Tag::Empty}, 0} {}
 
-Message::Message(Tag tag, Peer source, Peer destination, const eckit::Buffer& payload,
-                 const std::string& map, std::size_t mpcnt, const std::string& cat,
-                 const std::string& fid, std::size_t glsz) :
-    version_(protocolVersion()),
-    tag_(tag),
-    source_(source),
-    destination_(destination),
-    payload_(std::make_shared<eckit::Buffer>(payload, payload.size())),
-    mapping_(map),
-    map_count_(mpcnt),
-    category_(cat),
-    field_id_(fid),
-    global_field_size_(glsz) {}
+Message::Message(Header&& header, const eckit::Buffer& payload) :
+    version_{protocolVersion()},
+    header_{header},
+    payload_{std::make_shared<eckit::Buffer>(payload, payload.size())} {}
 
 size_t Message::size() const {
     return payload_->size();
@@ -65,31 +93,17 @@ size_t Message::size() const {
 
 void Message::encode(eckit::Stream& strm) const {
     strm << version_;
-    strm << static_cast<unsigned>(tag_);
-    strm << source_.domain_;
-    strm << source_.id_;
-    strm << destination_.domain_;
-    strm << destination_.id_;
+
+    strm << header_;
+
     strm << payload_->size();
     strm << *payload_;
-    strm << mapping_;
-    strm << map_count_;
-    strm << category_;
-    strm << field_id_;
-    strm << global_field_size_;
 }
 
 void Message::decode(eckit::Stream& strm) {
     strm >> version_;
 
-    unsigned t;
-    strm >> t;
-    tag_ = static_cast<Message::Tag>(t);
-
-    strm >> source_.domain_;
-    strm >> source_.id_;
-    strm >> destination_.domain_;
-    strm >> destination_.id_;
+    strm >> header_;
 
     unsigned long sz;
     strm >> sz;
@@ -97,13 +111,6 @@ void Message::decode(eckit::Stream& strm) {
     eckit::Buffer buffer(sz);
     strm >> buffer;
     payload_ = std::make_shared<eckit::Buffer>(buffer, buffer.size());
-
-    strm >> mapping_;
-    strm >> map_count_;
-    strm >> category_;
-
-    strm >> field_id_;
-    strm >> global_field_size_;
 }
 
 eckit::Buffer& Message::payload() {
@@ -112,10 +119,11 @@ eckit::Buffer& Message::payload() {
 
 void Message::print(std::ostream& out) const {
     out << "Field("
-        << "version=" << version_ << ", tag=" << tag2str(tag_) << ", source=" << source_
-        << ", destination=" << destination_ << ", mapping=" << mapping_
-        << ", map_count=" << map_count_ << ", category=" << category_ << ", field_id=" << field_id_
-        << ", global_size=" << global_field_size_ << ")";
+        << "version=" << version_ << ", tag=" << tag2str(header_.tag_)
+        << ", source=" << header_.source_ << ", destination=" << header_.destination_
+        << ", mapping=" << header_.mapping_ << ", map_count=" << header_.map_count_
+        << ", category=" << header_.category_ << ", field_id=" << header_.field_id_
+        << ", global_size=" << header_.global_field_size_ << ")";
 }
 
 }  // namespace sandbox

@@ -92,7 +92,7 @@ std::vector<std::thread> ThreadExample::spawnClients(std::shared_ptr<Transport> 
 
         // open all servers
         for (auto& server : serverPeers) {
-            Message open{Message::Tag::Open, client, server, std::string("open")};
+            Message open{{Message::Tag::Open, client, server}, std::string("open")};
             transport->send(open);
         }
 
@@ -103,7 +103,7 @@ std::vector<std::thread> ThreadExample::spawnClients(std::shared_ptr<Transport> 
                 std::ostringstream oss;
                 oss << "Once upon a midnight dreary " << " + " << client;
 
-                Message msg{Message::Tag::Field, client, server, oss.str()};
+                Message msg{{Message::Tag::Field, client, server}, oss.str()};
 
                 transport->send(msg);
             }
@@ -111,7 +111,7 @@ std::vector<std::thread> ThreadExample::spawnClients(std::shared_ptr<Transport> 
 
         // close all servers
         for (auto& server : serverPeers) {
-            Message close{Message::Tag::Close, client, server, std::string("close")};
+            Message close{{Message::Tag::Close, client, server}, std::string("close")};
             transport->send(close);
         }
     };

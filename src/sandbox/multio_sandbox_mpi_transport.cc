@@ -116,7 +116,7 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
 
     // open all servers
     for (auto& server : serverPeers) {
-        Message open{Message::Tag::Open, client, server, std::string("open")};
+        Message open{{Message::Tag::Open, client, server}, std::string("open")};
         transport->send(open);
     }
 
@@ -126,7 +126,7 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
     for (auto& server : serverPeers) {
         eckit::Buffer buffer(reinterpret_cast<const char*>(idx.data()), idx.size() * sizeof(size_t));
 
-        Message msg{Message::Tag::Mapping, client, server, buffer, "scattered", nbClients_};
+        Message msg{{Message::Tag::Mapping, client, server, "scattered", nbClients_}, buffer};
 
         transport->send(msg);
     }
@@ -151,15 +151,16 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
         eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()),
                              field.size() * sizeof(double));
 
-        Message msg{Message::Tag::Field, client, serverPeers[idx], buffer, "scattered", nbClients_,
-            "prognostic", field_id, field_size()};
+        Message msg{{Message::Tag::Field, client, serverPeers[idx], "scattered", nbClients_,
+                     "prognostic", field_id, field_size()},
+                    buffer};
 
         transport->send(msg);
     }
 
     // close all servers
     for (auto& server : serverPeers) {
-        Message close{Message::Tag::Close, client, server, std::string("close")};
+        Message close{{Message::Tag::Close, client, server}, std::string("close")};
         transport->send(close);
     }
 }

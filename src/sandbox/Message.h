@@ -48,30 +48,43 @@ public:  // types
         ENDTAG
     };
 
+    struct Header {
+        Tag tag_;
+
+        Peer source_;
+        Peer destination_;
+
+        std::string mapping_;  // For fields and mappings
+        size_t map_count_;     // For mappings only
+
+        // For fields only
+        std::string category_;
+        std::string field_id_;  // Could also be the hash of MARS metadata
+        size_t global_field_size_;
+    };
+
 public:  // methods
     static int protocolVersion();
     static std::string tag2str(Tag);
 
     Message();
-    Message(Tag tag, Peer source, Peer destination, const eckit::Buffer& payload,
-            const std::string& map = "", std::size_t mpcnt = 0, const std::string& cat = "",
-            const std::string& fid = "", std::size_t glsz = 0);
+    Message(Header&& header, const eckit::Buffer& payload = 0);
 
     int version() const { return version_; }
 
-    Tag tag() const { return tag_; }
+    Tag tag() const { return header_.tag_; }
 
-    Peer destination() const { return destination_; }
-    Peer source() const { return source_; }
+    Peer destination() const { return header_.destination_; }
+    Peer source() const { return header_.source_; }
 
     size_t size() const;
 
-    const std::string& mapping() const { return mapping_;}
-    size_t map_count() const { return map_count_; }
+    const std::string& mapping() const { return header_.mapping_;}
+    size_t map_count() const { return header_.map_count_; }
 
-    const std::string& category() const { return category_; }
-    const std::string& field_id() const { return field_id_; }
-    size_t field_size() const { return global_field_size_; }
+    const std::string& category() const { return header_.category_; }
+    const std::string& field_id() const { return header_.field_id_; }
+    size_t field_size() const { return header_.global_field_size_; }
 
     void encode(eckit::Stream& strm) const;
     void decode(eckit::Stream& strm);
@@ -88,24 +101,10 @@ private:  // methods
 
 private:  // members
     int version_;
-
-    Tag tag_;
-
-    Peer source_;
-    Peer destination_;
+    Header header_;
 
     std::shared_ptr<eckit::Buffer> payload_;
 
-    // For fields and mappings
-    std::string mapping_;
-
-    // For mappings only
-    size_t map_count_;
-
-    // For fields only
-    std::string category_;
-    std::string field_id_; // Could also be the hash of MARS metadata
-    size_t global_field_size_;
 };
 
 }  // namespace sandbox

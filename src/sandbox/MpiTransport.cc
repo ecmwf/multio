@@ -8,12 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Domokos Sarmany
-/// @author Simon Smart
-/// @author Tiago Quintino
-
-/// @date Feb 2019
-
 #include "MpiTransport.h"
 
 #include "eckit/config/Resource.h"
@@ -26,21 +20,19 @@ namespace sandbox {
 
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
-    comm_(eckit::mpi::comm(cfg.getString("domain").c_str())),
+    comm_name_(cfg.getString("domain")),
     buffer_{0} {}
 
 Message MpiTransport::receive() {
     Message msg{};
 
-    Peer receiver = localPeer();
-    const auto& domain_name = receiver.domain_;
+    const auto& comm = eckit::mpi::comm(comm_name_.c_str());
 
-    ASSERT(comm_.communicator() == eckit::mpi::comm(domain_name.c_str()).communicator());
+    auto status = comm.probe(comm.anySource(), comm.anyTag());
 
-    auto status = comm_.probe(comm_.anySource(), comm_.anyTag());
+    buffer_.resize(eckit::round(comm.getCount<void>(status), 8));
 
-    buffer_.resize(eckit::round(comm_.getCount<void>(status), 8));
-    comm_.receive<void>(buffer_, buffer_.size(), status.source(), status.tag());
+    comm.receive<void>(buffer_, buffer_.size(), status.source(), status.tag());
 
     eckit::ResizableMemoryStream stream{buffer_};
 
@@ -50,8 +42,6 @@ Message MpiTransport::receive() {
 }
 
 void MpiTransport::send(const Message& msg) {
-
-    ASSERT(comm_.communicator() == eckit::mpi::comm(localPeer().domain_.c_str()).communicator());
 
     auto msg_tag = static_cast<int>(msg.tag());
 
@@ -64,12 +54,11 @@ void MpiTransport::send(const Message& msg) {
 
     msg.encode(stream);
 
-    comm_.send<void>(buffer_, stream.bytesWritten(), dest, msg_tag);
+    eckit::mpi::comm(comm_name_.c_str()).send<void>(buffer_, stream.bytesWritten(), dest, msg_tag);
 }
 
 Peer MpiTransport::localPeer() const {
-    Peer peer{"world", comm_.rank()};
-    return peer;
+    return Peer{comm_name_, eckit::mpi::comm(comm_name_.c_str()).rank()};
 }
 
 void MpiTransport::print(std::ostream& os) const {

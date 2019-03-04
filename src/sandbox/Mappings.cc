@@ -6,6 +6,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/Buffer.h"
 
+#include "sandbox/LocalIndices.h"
 #include "sandbox/Message.h"
 
 namespace multio {
@@ -26,10 +27,13 @@ void Mappings::add(Message msg) {
     auto& mapping = mappings_[msg.mapping()];
     ASSERT(mapping.find(msg.source()) == end(mapping));
 
-    auto& local_map = mapping[msg.source()];
-    local_map.resize(msg.size() / sizeof(size_t));
+    std::vector<size_t> local_map(msg.size() / sizeof(size_t));
 
     std::memcpy(local_map.data(), msg.payload().data(), msg.size());
+
+    mapping.emplace(msg.source(), std::move(local_map));
+
+    eckit::Log::info() << "  ---  local-map size = " << local_map.size() << std::endl;
 
     eckit::Log::info() << "  ---  map size = " << mappings_.at("scattered").size() << std::endl;
 }

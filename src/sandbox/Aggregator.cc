@@ -10,6 +10,7 @@
 
 #include "Aggregator.h"
 
+#include "sandbox/LocalIndices.h"
 #include "sandbox/Message.h"
 
 #include "eckit/log/Log.h"
@@ -21,16 +22,13 @@ Aggregator::Aggregator(size_t gl_size, size_t nb_fields) :
     global_size_(gl_size),
     nb_fields_(nb_fields) {}
 
-eckit::Buffer Aggregator::aggregate(const std::vector<Message>& msgs, const Mapping& maps) {
+eckit::Buffer Aggregator::gather(const std::vector<Message>& msgs, const Mapping& maps) {
     std::vector<double> global_field(global_size_);
     for (auto msg : msgs) {
         auto data_ptr = static_cast<double*>(msg.payload().data());
         std::vector<double> local_field(data_ptr, data_ptr + msg.size() / sizeof(double));
 
-        auto ii = 0u;
-        for (auto idx : maps.at(msg.source())) {
-            global_field[idx] = local_field[ii++];
-        }
+        maps.at(msg.source()).to_global(local_field, global_field);
     }
 
     // Yet another unnecessary copy; you could work directly on the buffer above
@@ -38,7 +36,20 @@ eckit::Buffer Aggregator::aggregate(const std::vector<Message>& msgs, const Mapp
                          global_size_ * sizeof(double)};
 }
 
-std::vector<Message> scatter(const Message& msg, const Mapping& maps) {}
+std::vector<Message> scatter(const Message& msg, const Mapping& maps) {
+    std::vector<Message> msgs;
+
+    auto data_ptr = static_cast<const double*>(msg.payload().data());
+    std::vector<double> global_field(data_ptr, data_ptr + msg.size() / sizeof(double));
+    for (const auto& map : maps) {
+        std::vector<double> local_field;
+        map.second.to_local(global_field, local_field);
+        msgs.emplace_back(msg.header(), eckit::Buffer{reinterpret_cast<char*>(local_field.data()),
+                                                      local_field.size() * sizeof(double)});
+    }
+
+    return msgs;
+}
 
 }  // namespace sandbox
 }  // namespace multio

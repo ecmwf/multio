@@ -32,7 +32,7 @@ class Aggregator {
 public:
     Aggregator(size_t gL_size, size_t nb_fields);
 
-    eckit::Buffer aggregate(const std::vector<Message>& msg, const Mapping& maps);
+    eckit::Buffer gather(const std::vector<Message>& msg, const Mapping& maps);
 
     std::vector<Message> scatter(Message&& msg, const Mapping& maps);
 

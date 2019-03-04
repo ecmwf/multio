@@ -41,16 +41,16 @@ bool Aggregation::execute(Message msg) {
     if (ret) {
         Aggregator agg{msg.field_size(), messages_.at(field_id).size()};
 
-        msg.payload() = agg.aggregate(messages_.at(field_id), Mappings::instance().get(map_name_));
+        msg.payload() = agg.gather(messages_.at(field_id), Mappings::instance().get(map_name_));
 
         messages_.erase(field_id);
-    }
 
-    eckit::Log::info() << "          -- print aggregated field (size=" << msg.field_size()
-                       << "): " << std::flush;
-    print_buffer(reinterpret_cast<double*>(msg.payload().data()), msg.field_size(),
-                 eckit::Log::info(), " ");
-    eckit::Log::info() << std::endl;
+        eckit::Log::info() << "          -- print aggregated field " << msg.field_id()
+                           << " (size=" << msg.field_size() << "): " << std::flush;
+        print_buffer(reinterpret_cast<double*>(msg.payload().data()), msg.field_size(),
+                     eckit::Log::info(), " ");
+        eckit::Log::info() << std::endl;
+    }
 
     return ret;
 }

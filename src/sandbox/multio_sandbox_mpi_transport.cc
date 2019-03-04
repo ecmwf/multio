@@ -10,6 +10,7 @@
 
 #include "sandbox/TestData.h"
 #include "sandbox/Listener.h"
+#include "sandbox/LocalIndices.h"
 #include "sandbox/Message.h"
 #include "sandbox/MultioServerTool.h"
 #include "sandbox/PlanConfigurations.h"
@@ -92,16 +93,6 @@ std::vector<Peer> MpiExample::spawnServers(const eckit::Configuration& config,
 
 namespace {
 
-std::vector<size_t> generate_index_map(Peer peer, size_t nbclients) {
-    auto id = peer.id_;  // OK for mpi; otherwise create a clientPeer list
-    auto chunk_size = field_size() / nbclients + ((id < field_size() % nbclients) ? 1 : 0);
-
-    auto maps = std::vector<size_t>(chunk_size);
-    for (auto jj = 0u; jj != chunk_size; ++jj) {
-        maps[jj] = static_cast<size_t>(id) + jj * nbclients;
-    }
-    return maps;
-}
 
 }  // namespace
 
@@ -120,11 +111,12 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
         transport->send(open);
     }
 
-    auto idx = generate_index_map(client, nbClients_);
+    auto idxm = generate_index_map(client, nbClients_);
+    eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(size_t));
+    LocalIndices index_map{std::move(idxm)};
 
     // send partial mapping
     for (auto& server : serverPeers) {
-        eckit::Buffer buffer(reinterpret_cast<const char*>(idx.data()), idx.size() * sizeof(size_t));
 
         Message msg{{Message::Tag::Mapping, client, server, "scattered", nbClients_}, buffer};
 
@@ -135,8 +127,8 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
     const int nfields = 13;
     for (int ii = 0; ii < nfields; ++ii) {
         auto field_id = std::string("temperature::step::") + std::to_string(ii);
-        std::vector<double> field =
-            create_local_field(global_test_field(field_id, field_size()), idx);
+        std::vector<double> field;
+        index_map.to_local(global_test_field(field_id, field_size()), field);
 
         if (root() == eckit::mpi::comm(client.domain_.c_str()).rank()) {
             eckit::Log::info() << "   ---   Field: " << field_id << ", values: " << std::flush;
@@ -145,13 +137,13 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
         }
 
         // Chose server
-        auto idx = std::hash<std::string>{}(field_id) % nbServers_;
-        ASSERT(idx < serverPeers.size());
+        auto id = std::hash<std::string>{}(field_id) % nbServers_;
+        ASSERT(id < serverPeers.size());
 
         eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()),
                              field.size() * sizeof(double));
 
-        Message msg{{Message::Tag::Field, client, serverPeers[idx], "scattered", nbClients_,
+        Message msg{{Message::Tag::Field, client, serverPeers[id], "scattered", nbClients_,
                      "prognostic", field_id, field_size()},
                     buffer};
 

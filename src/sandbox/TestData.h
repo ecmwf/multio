@@ -6,6 +6,8 @@
 
 #include "eckit/mpi/Comm.h"
 
+#include "sandbox/Peer.h"
+
 namespace multio {
 namespace sandbox {
 
@@ -34,6 +36,17 @@ inline std::vector<double> create_random_data(const size_t sz) {
     return field;
 }
 
+inline std::vector<size_t> generate_index_map(Peer peer, size_t nbclients) {
+    auto id = peer.id_;  // OK for mpi; otherwise create a clientPeer list
+    auto chunk_size = field_size() / nbclients + ((id < field_size() % nbclients) ? 1 : 0);
+
+    auto maps = std::vector<size_t>(chunk_size);
+    for (auto jj = 0u; jj != chunk_size; ++jj) {
+        maps[jj] = static_cast<size_t>(id) + jj * nbclients;
+    }
+    return maps;
+}
+
 inline std::vector<double>& global_test_field(const std::string& field_id, const size_t sz) {
     using eckit::mpi::comm;
 
@@ -46,16 +59,6 @@ inline std::vector<double>& global_test_field(const std::string& field_id, const
     comm().broadcast(test_fields[field_id], root());
 
     return test_fields[field_id];
-}
-
-inline std::vector<double> create_local_field(const std::vector<double>& global_field,
-                                              const std::vector<size_t>& idxmap) {
-    std::vector<double> local_field;
-    for (auto idx : idxmap) {
-        local_field.push_back(global_field[idx]);
-    }
-
-    return local_field;
 }
 
 }  // namespace sandbox

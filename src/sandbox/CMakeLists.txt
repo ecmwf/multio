@@ -28,6 +28,8 @@ ecbuild_add_library(
         Dispatcher.h
         Listener.cc
         Listener.h
+        LocalIndices.cc
+        LocalIndices.h
         Mappings.cc
         Mappings.h
         Message.cc

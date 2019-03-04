@@ -58,8 +58,10 @@ void Listener::listen() {
 
             default:
                 eckit::Log::info() << "*** DISPATCH QUEUE " << std::flush;
-                print_buffer(static_cast<const double*>(msg.payload().data()),
-                             msg.size() / sizeof(double), eckit::Log::info());
+                print_buffer(static_cast<const char*>(msg.payload().data()), msg.size(),
+                             eckit::Log::info(), "");
+                // print_buffer(static_cast<const double*>(msg.payload().data()),
+                //              msg.size() / sizeof(double), eckit::Log::info());
                 eckit::Log::info() << std::endl;
                 msgQueue_.push(std::move(msg));
         }

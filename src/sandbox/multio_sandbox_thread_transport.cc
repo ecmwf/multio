@@ -100,7 +100,7 @@ std::vector<std::thread> ThreadExample::spawnClients(std::shared_ptr<Transport> 
         for (int ii = 0; ii < nmessages; ++ii) {
             for (auto& server : serverPeers) {
                 std::ostringstream oss;
-                oss << "Once upon a midnight dreary " << " + " << client;
+                oss << "Once upon a midnight dreary" << " + " << client;
 
                 Message msg{{Message::Tag::Field, client, server}, oss.str()};
 

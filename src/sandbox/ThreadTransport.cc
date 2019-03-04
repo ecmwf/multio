@@ -19,43 +19,29 @@ namespace sandbox {
 ThreadTransport::ThreadTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
     messageQueueSize_(
-        eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024))
-{}
+        eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
 
 ThreadTransport::~ThreadTransport() = default;
 
 Message ThreadTransport::receive() {
 
     Peer receiver = localPeer();
-
-//    eckit::Log::info() << "RECEIVER " << receiver << std::endl;
-
     auto& queue = receiveQueue(receiver);
 
     Message msg;
 
     ASSERT(queue.pop(msg) >= 0);
-
-//    eckit::Log::info() << "RECV " << msg << std::endl;
-
     ASSERT(msg.destination() == receiver);
 
     return msg;
 }
 
 void ThreadTransport::send(const Message& msg) {
-
-    Peer to = msg.destination();
-
-    auto& queue = receiveQueue(to);
-
-    queue.push(msg);
+    receiveQueue(msg.destination()).push(msg);
 }
 
-Peer ThreadTransport::localPeer() const
-{
-    Peer peer("thread", std::hash<std::thread::id>{}(std::this_thread::get_id()));
-    return peer;
+Peer ThreadTransport::localPeer() const {
+    return Peer{"thread", std::hash<std::thread::id>{}(std::this_thread::get_id())};
 }
 
 
@@ -63,26 +49,21 @@ void ThreadTransport::print(std::ostream& os) const {
     os << "ThreadTransport(number of queues = " << queues_.size() << ")";
 }
 
-eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer to) {
+eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer dest) {
 
     std::unique_lock<std::mutex> locker(mutex_);
 
-//    eckit::Log::info() << "FIND QUEUE for " << to << std::endl;
-
-    auto qitr = queues_.find(to);
+    auto qitr = queues_.find(dest);
     if (qitr != end(queues_)) {
-
-//        eckit::Log::info() << "FOUND QUEUE for " << to << " --- " << qitr->second << std::endl;
         return *qitr->second;
     }
 
-    auto queue = new eckit::Queue<Message>(messageQueueSize_);
+    queues_.emplace(dest, new eckit::Queue<Message>(messageQueueSize_));
 
-    eckit::Log::info() << "ADD QUEUE for " << to << " --- " << queue << std::endl;
+    eckit::Log::info() << "ADD QUEUE for " << dest << " --- " << queues_.at(dest).get()
+                       << std::endl;
 
-    queues_.emplace(to, queue);
-
-    return * queue;
+    return *queues_.at(dest);
 }
 
 static TransportBuilder<ThreadTransport> ThreadTransportBuilder("Thread");

@@ -34,13 +34,6 @@ public:
     ~ThreadTransport() override;
 
 private:
-    std::map<Peer, eckit::Queue<Message>*> queues_;
-
-    std::mutex mutex_;
-
-    size_t messageQueueSize_;
-
-private:
     Message receive() override;
 
     void send(const Message& message) override;
@@ -50,6 +43,12 @@ private:
     Peer localPeer() const override;
 
     eckit::Queue<Message>& receiveQueue(Peer to);
+
+    std::map<Peer, std::unique_ptr<eckit::Queue<Message>>> queues_;
+
+    std::mutex mutex_;
+
+    size_t messageQueueSize_;
 };
 
 }  // namespace sandbox

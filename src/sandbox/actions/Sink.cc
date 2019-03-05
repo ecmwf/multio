@@ -23,35 +23,36 @@ namespace actions {
 
 Sink::Sink(const eckit::Configuration& config) : Action(config) {}
 
-bool Sink::execute(Message msg) {
+void Sink::execute(Message msg) const {
     switch (msg.tag()) {
         case Message::Tag::Field:
-            return write(msg);
+            write(msg);
+            return;
 
         case Message::Tag::StepComplete:
-            return flush();
+            flush();
+            return;
+    }
 
-        default:
-            return false;
+    if (next_) {  // May want to assert not next_
+        next_->execute(msg);
     }
 }
 
-bool Sink::write(Message msg) const {
+void Sink::write(Message msg) const {
     eckit::LocalConfiguration config;
     config.set("path", msg.field_id());
 
     dataSink_.reset(DataSinkFactory::instance().build("file", config));
 
-    eckit::DataBlobPtr blob(eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
+    eckit::DataBlobPtr blob(
+        eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
 
     dataSink_->write(blob);
-
-    return true;
 }
 
-bool Sink::flush() const {
+void Sink::flush() const {
     dataSink_->flush();
-    return true;
 }
 
 void Sink::print(std::ostream& os) const {

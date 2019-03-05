@@ -36,14 +36,14 @@ public:
     Aggregation(const eckit::Configuration& config);
 
 private:
-    bool execute(Message msg) override;
+    void execute(Message msg) const override;
 
     void print(std::ostream& os) const override;
 
     std::string map_name_;
     std::string field_id_; // It could be the hash of the mars metadata in the future
 
-    std::map<std::string, std::vector<Message>> messages_;
+    mutable std::map<std::string, std::vector<Message>> messages_;
 
 };
 

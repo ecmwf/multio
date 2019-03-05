@@ -23,9 +23,9 @@
 #include "sandbox/Action.h"
 
 namespace eckit {
-    class Configuration;
-    class DataHandle;
-}
+class Configuration;
+class DataHandle;
+}  // namespace eckit
 
 namespace multio {
 namespace sandbox {
@@ -38,7 +38,7 @@ public:
     ~AppendToFile();
 
 private:
-    bool execute(Message msg) override;
+    void execute(Message msg) const override;
 
     void print(std::ostream& os) const override;
 

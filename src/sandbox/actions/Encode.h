@@ -34,7 +34,7 @@ public:
     Encode(const eckit::Configuration& config);
 
 private:
-    bool execute(Message msg) override;
+    void execute(Message msg) const override;
 
     void print(std::ostream& os) const override;
 

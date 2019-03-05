@@ -38,10 +38,15 @@ AppendToFile::~AppendToFile() {
     }
 }
 
-bool AppendToFile::execute(Message msg) {
+void AppendToFile::execute(Message msg) const {
     auto written = datahandle_->write(msg.payload().data(), long(msg.size()));
     written += datahandle_->write("\n", 1);
-    return written == static_cast<long>(msg.size());
+
+    ASSERT(written == static_cast<long>(msg.size() + 1));
+
+    if (next_) {  // May want to assert not next_
+        next_->execute(msg);
+    }
 }
 
 void AppendToFile::print(std::ostream& os) const

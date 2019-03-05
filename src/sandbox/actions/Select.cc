@@ -23,8 +23,12 @@ Select::Select(const eckit::Configuration& config) :
     Action(config),
     categories_(config.getStringVector("categories")) {}
 
-bool Select::execute(Message msg) {
-    return (msg.tag() == Message::Tag::Field) ? matchPlan(msg) : true;
+void Select::execute(Message msg) const {
+    bool passOn = (msg.tag() != Message::Tag::Field) || matchPlan(msg);
+
+    if (passOn && next_) { // May want to assert next_
+        next_->execute(msg);
+    }
 }
 
 bool Select::matchPlan(const Message& msg) const {

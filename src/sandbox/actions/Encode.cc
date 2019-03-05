@@ -22,12 +22,15 @@ Encode::Encode(const eckit::Configuration& config) :
     Action(config),
     format_(config.getString("format")) {}
 
-bool Encode::execute(Message /*message*/) {
+void Encode::execute(Message msg) const {
     // TODO: grib encoding not yet implemented
     if (format_ == "grib") {
         // Encode to grib;
     }
-    return true;
+
+    if (next_) {  // May want to assert next_
+        next_->execute(msg);
+    }
 }
 
 void Encode::print(std::ostream& os) const {

@@ -12,14 +12,16 @@
 
 #include <iostream>
 
+#include "eckit/exception/Exceptions.h"
+
 namespace multio {
 namespace sandbox {
 namespace actions {
 
 Null::Null(const eckit::Configuration& config) : Action(config) {}
 
-bool Null::execute(Message msg) {
-    return true;
+void Null::execute(Message msg) const {
+    ASSERT(!next_);
 }
 
 void Null::print(std::ostream& os) const {

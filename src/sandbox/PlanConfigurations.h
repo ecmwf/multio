@@ -21,10 +21,7 @@ std::string plan_configurations() {
                        "stream" : "error",
                        "next" : {
                           "type" : "AppendToFile",
-                          "path" : "messages.txt",
-                          "next" : {
-                             "type" : "Null"
-                          }
+                          "path" : "messages.txt"
                        }
                     }
                  }
@@ -43,10 +40,7 @@ std::string plan_configurations() {
                              "format" : "grib",
                              "next" : {
                                 "type" : "Sink",
-                                "datasink" : "file",
-                                "next" : {
-                                   "type" : "Null"
-                                }
+                                "datasink" : "file"
                              }
                           }
                        }

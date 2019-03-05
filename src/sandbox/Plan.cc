@@ -41,7 +41,7 @@ Plan::Plan(const eckit::Configuration& config) {
 Plan::~Plan() = default;
 
 void Plan::process(Message msg) {
-    root_->process(msg);
+    root_->execute(msg);
 }
 
 }  // namespace sandbox

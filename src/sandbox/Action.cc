@@ -39,12 +39,6 @@ Action::Action(const eckit::Configuration& config) {
     }
 }
 
-void Action::process(Message msg) {
-    if (execute(msg) && next_) {
-        next_->process(msg);
-    }
-}
-
 //----------------------------------------------------------------------------------------------------------------------
 
 ActionFactory& ActionFactory::instance() {

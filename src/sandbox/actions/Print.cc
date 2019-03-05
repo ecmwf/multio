@@ -29,10 +29,13 @@ Print::Print(const eckit::Configuration& config) : Action(config) {
     }
 }
 
-bool Print::execute(Message msg) {
+void Print::execute(Message msg) const {
     ASSERT(os);
     (*os) << msg << std::endl;
-    return true;
+
+    if (next_) {  // May want to assert not next_
+        next_->execute(msg);
+    }
 }
 
 void Print::print(std::ostream& os) const {

@@ -11,6 +11,8 @@
 #include "eckit/log/Log.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
+#include "eckit/net/TCPClient.h"
+#include "eckit/net/TCPServer.h"
 #include "eckit/runtime/Tool.h"
 
 #include "sandbox/MultioServerTool.h"
@@ -30,7 +32,8 @@ public:  // methods
 
     TcpExample(int argc, char** argv);
 
-    virtual void usage(const std::string &tool) const {
+private:
+    void usage(const std::string &tool) const override {
         Log::info() << std::endl
                     << "Usage: " << tool << " [options]" << std::endl
                     << std::endl
@@ -38,62 +41,103 @@ public:  // methods
                     << "Examples:" << std::endl
                     << "=========" << std::endl
                     << std::endl
-                    << tool << " --nbclients 10 --nbservers 4" << std::endl
+                    << tool << " --port=9771" << std::endl
                     << std::endl;
     }
 
-protected:  // methods
-    virtual void init(const eckit::option::CmdArgs& args);
+    void init(const eckit::option::CmdArgs& args) override;
 
-private:  // methods
+    void execute(const eckit::option::CmdArgs& args) override;
 
-    virtual void execute(const eckit::option::CmdArgs& args);
-
-private:  // members
     size_t nbClients_ = 1;
+    int port_ = 7777;
+
+    eckit::YAMLConfiguration config_;
 };
-
-TcpExample::TcpExample(int argc, char** argv) : multio::sandbox::MultioServerTool(argc, argv) {
-    options_.push_back(new eckit::option::SimpleOption<size_t>("nbclients", "Number of clients"));
-}
-
-void TcpExample::init(const option::CmdArgs& args) {
-    args.get("nbclients", nbClients_);
-}
 
 //----------------------------------------------------------------------------------------------------------------------
 
-std::string local_plan() {
+std::string plan_configurations() {
     return R"json(
-    {
-            "plans" : [
-                {
-                "name" : "ocean",
-                "actions" : {
+        {
+           "transport" : "tcp",
+           "host" : "skadi",
+           "ports" : [9771, 9772, 9773],
+           "plans" : [
+              {
+                 "name" : "ocean",
+                 "actions" : {
                     "root" : {
-                        "type" : "Print",
-                        "stream" : "error",
-                        "next" : {
-                            "type" : "AppendToFile",
-                            "path" : "messages.txt",
-                            "next" : {
-                                "type" : "Null"
-                            }
-                        }
+                       "type" : "Print",
+                       "stream" : "error",
+                       "next" : {
+                          "type" : "AppendToFile",
+                          "path" : "messages.txt",
+                          "next" : {
+                             "type" : "Null"
+                          }
+                       }
                     }
-                }
-             }
+                 }
+              },
+              {
+              }
            ]
-    }
+        }
     )json";
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 
+TcpExample::TcpExample(int argc, char** argv) :
+    multio::sandbox::MultioServerTool(argc, argv),
+    config_(plan_configurations()) {
+    options_.push_back(new eckit::option::SimpleOption<size_t>("port", "TCP port"));
+}
+
+void TcpExample::init(const option::CmdArgs& args) {
+    args.get("port", port_);
+}
+
 void TcpExample::execute(const eckit::option::CmdArgs&) {
+    auto host = config_.getString("host");
+    auto ports = config_.getIntVector("ports");
 
-    eckit::YAMLConfiguration config{local_plan()};
+    if (find(begin(ports), end(ports), port_) != end(ports)) {
+        eckit::Log::info() << "Starting server(host=" << host << ", port=" << port_ << ")"
+                           << std::endl;
 
+        std::unique_ptr<TCPServer> server{new eckit::TCPServer{port_}};
+        eckit::TCPSocket& incoming(server->accept());
+
+        size_t size;
+        incoming.read(&size, sizeof(size));
+
+        eckit::Log::info() << "Received size: " << size << std::endl;
+
+        std::string msg(size, ' ');
+        incoming.read(&msg[0], size);
+
+        eckit::Log::info() << "Received message: " << msg << std::endl;
+    }
+    else {
+        eckit::Log::info() << "Starting client(host=" << host << ", port=" << port_ << std::endl;
+        for (auto port : ports) {
+            TCPClient client;
+            eckit::Log::info() << "Connecting to server(host=" << host << ", port=" << port
+                               << ")" << std::endl;
+            client.connect(host, port, 5, 10);
+
+            std::string msg = "Once upon a midnight dreary + " + std::to_string(port);
+            auto size = msg.size();
+
+            eckit::Log::info() << "Sending size: " << size << std::endl;
+            client.write(&size, sizeof(size));
+
+            eckit::Log::info() << "Sending message: " << msg << std::endl;
+            client.write(msg.c_str(), msg.size());
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------------------------------------

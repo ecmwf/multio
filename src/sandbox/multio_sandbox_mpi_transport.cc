@@ -37,7 +37,7 @@ private:
                     << "Examples:" << std::endl
                     << "=========" << std::endl
                     << std::endl
-                    << tool << " --nbservers 4" << std::endl
+                    << tool << " --nbservers=4" << std::endl
                     << std::endl;
     }
 

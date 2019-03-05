@@ -42,6 +42,8 @@ ecbuild_add_library(
         ThreadTransport.h
         MpiTransport.cc
         MpiTransport.h
+        TcpTransport.cc
+        TcpTransport.h
         Transport.cc
         Transport.h
         ScopedThread.h

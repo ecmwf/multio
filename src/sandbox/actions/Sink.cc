@@ -32,6 +32,9 @@ void Sink::execute(Message msg) const {
         case Message::Tag::StepComplete:
             flush();
             return;
+
+        default:
+            ASSERT(false);
     }
 
     if (next_) {  // May want to assert not next_

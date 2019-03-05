@@ -61,7 +61,7 @@ std::string plan_configurations() {
     return R"json(
         {
            "transport" : "tcp",
-           "host" : "skadi",
+           "host" : "ubuntu-desktop",
            "ports" : [9771, 9772, 9773],
            "plans" : [
               {
@@ -100,42 +100,25 @@ void TcpExample::init(const option::CmdArgs& args) {
 }
 
 void TcpExample::execute(const eckit::option::CmdArgs&) {
+    eckit::LocalConfiguration config{config_};
+    config.set("local_port", port_);
+
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("Tcp", config)};
+
     auto host = config_.getString("host");
-    auto ports = config_.getIntVector("ports");
+    auto ports = config_.getUnsignedVector("ports");
 
     if (find(begin(ports), end(ports), port_) != end(ports)) {
-        eckit::Log::info() << "Starting server(host=" << host << ", port=" << port_ << ")"
-                           << std::endl;
+        auto msg = transport->receive();
 
-        std::unique_ptr<TCPServer> server{new eckit::TCPServer{port_}};
-        eckit::TCPSocket& incoming(server->accept());
-
-        size_t size;
-        incoming.read(&size, sizeof(size));
-
-        eckit::Log::info() << "Received size: " << size << std::endl;
-
-        std::string msg(size, ' ');
-        incoming.read(&msg[0], size);
-
-        eckit::Log::info() << "Received message: " << msg << std::endl;
+        eckit::Log::info() << msg << std::endl;
     }
     else {
         eckit::Log::info() << "Starting client(host=" << host << ", port=" << port_ << std::endl;
         for (auto port : ports) {
-            TCPClient client;
-            eckit::Log::info() << "Connecting to server(host=" << host << ", port=" << port
-                               << ")" << std::endl;
-            client.connect(host, port, 5, 10);
-
-            std::string msg = "Once upon a midnight dreary + " + std::to_string(port);
-            auto size = msg.size();
-
-            eckit::Log::info() << "Sending size: " << size << std::endl;
-            client.write(&size, sizeof(size));
-
-            eckit::Log::info() << "Sending message: " << msg << std::endl;
-            client.write(msg.c_str(), msg.size());
+            std::string str = "Once upon a midnight dreary + " + std::to_string(port);
+            Message msg{{Message::Tag::Field, transport->localPeer(), Peer{host, port}}, str};
+            transport->send(msg);
         }
     }
 }

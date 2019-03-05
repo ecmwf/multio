@@ -19,6 +19,8 @@
 
 #include <iosfwd>
 
+#include "eckit/net/TCPClient.h"
+#include "eckit/net/TCPServer.h"
 #include "eckit/net/TCPSocket.h"
 
 #include "sandbox/Transport.h"
@@ -44,8 +46,11 @@ private:
 
     Peer localPeer() const override;
 
-    std::vector<std::unique_ptr<eckit::TCPSocket>> connections_;
+    std::string local_host_;
+    size_t local_port_;
 
+    std::unique_ptr<eckit::TCPServer> server_;
+    eckit::TCPSocket socket_;
 };
 
 }  // namespace sandbox

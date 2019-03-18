@@ -13,7 +13,7 @@
 #include <cstring>
 
 #include "eckit/log/Log.h"
-#include "eckit/utils/Tokenizer.h"
+#include "eckit/parser/Tokenizer.h"
 #include "eckit/testing/Test.h"
 
 #include "multio/DataSink.h"

@@ -18,13 +18,15 @@ namespace server {
 namespace test {
 
 namespace {
-const auto nServers = 1u;
-const Transport& transport = MpiTransport{"dispatcher test", nServers};
+const Transport& transport() {
+    static const Transport& transport = MpiTransport{"dispatcher test", 1};
+    return transport;
+}
 
 auto scatter_atlas_field(const atlas::Field& gl_field) -> atlas::Field {
-    if (transport.client()) {
+    if (transport().client()) {
         auto idxmap =
-            create_partial_mapping(field_size(), transport.noClients(), transport.clientRank());
+            create_partial_mapping(field_size(), transport().noClients(), transport().clientRank());
         return create_local_field(gl_field, idxmap);
     } else {
         return atlas::Field("dummy", atlas::array::DataType("real64"), make_shape(field_size()));
@@ -35,15 +37,15 @@ auto scatter_atlas_field(const atlas::Field& gl_field) -> atlas::Field {
 CASE("Test that distributor-dispatcher pair ") {
 
     SECTION(" is created correctly") {
-        if(transport.client()) {
-            Distributor dist{transport};
+        if(transport().client()) {
+            Distributor dist{transport()};
             std::ostringstream oss;
             oss << dist;
             EXPECT(oss.str() == "Distributor initialised with MpiTransport[dispatcher test]");
         } else {
-            EXPECT(transport.server());
+            EXPECT(transport().server());
 
-            Dispatcher dispatcher{transport};
+            Dispatcher dispatcher{transport()};
             std::ostringstream oss;
             oss << dispatcher;
             EXPECT(oss.str() == "Dispatcher initialised with MpiTransport[dispatcher test]");
@@ -51,7 +53,7 @@ CASE("Test that distributor-dispatcher pair ") {
     }
 
     SECTION(" communicates correctly") {
-        ASSERT(transport.size() == 3);
+        ASSERT(transport().size() == 3);
         field_size() = 8;
 
         // Create test field
@@ -60,8 +62,8 @@ CASE("Test that distributor-dispatcher pair ") {
         // Create local atlas field
         auto field = scatter_atlas_field(test_field);
 
-        if (transport.client()) {
-            Distributor distributor{transport};
+        if (transport().client()) {
+            Distributor distributor{transport()};
 
             // Send field
             distributor.sendPartialField(field);
@@ -69,16 +71,16 @@ CASE("Test that distributor-dispatcher pair ") {
             // Notify server there is nothing more to send
             distributor.sendNotification(msg_tag::forecast_complete);
         } else {
-            EXPECT(transport.server());
+            EXPECT(transport().server());
 
-            Dispatcher dispatcher{transport};
+            Dispatcher dispatcher{transport()};
 
             // Receive field
             dispatcher.eventLoop();
         }
 
-        transport.synchronise();
-        if (transport.globalRank() == root()) {
+        transport().synchronise();
+        if (transport().globalRank() == root()) {
             multio::test::TestFile file{"temperature::850::1"};
             auto actual = file_content(file.name());
             auto expected = pack_atlas_field(test_field);

@@ -23,8 +23,10 @@ namespace test {
 
 namespace {
 
-const auto nServers = 3u;
-const Transport& transport = MpiTransport{"i/o server test", nServers};
+const Transport& transport() {
+    static const Transport& transport = MpiTransport{"i/o server test", 3};
+    return transport;
+}
 
 // const auto steps = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 // const auto levels = {200, 300, 500, 750, 800, 850, 900, 925, 950, 1000};
@@ -52,9 +54,9 @@ auto create_global_test_data(const size_t sz) -> std::vector<atlas::Field> {
 }
 
 auto scatter_atlas_field(const atlas::Field& gl_field) -> atlas::Field {
-    if (transport.client()) {
+    if (transport().client()) {
         auto idxmap =
-            create_partial_mapping(field_size(), transport.noClients(), transport.clientRank());
+            create_partial_mapping(field_size(), transport().noClients(), transport().clientRank());
         return create_local_field(gl_field, idxmap);
     } else {
         return atlas::Field("dummy", atlas::array::DataType("real64"), make_shape(field_size()));
@@ -81,8 +83,8 @@ CASE("Test that fields ") {
     auto partial_fields = create_partial_fields(global_fields);
 
     SECTION("are distributed and dispatched to correct plan") {
-        if (transport.client()) {
-            Distributor distributor{transport};
+        if (transport().client()) {
+            Distributor distributor{transport()};
             for (auto ii = 0u; ii != partial_fields.size(); ++ii) {
                 distributor.sendPartialField(partial_fields[ii]);
                 if (partial_fields.size() % steps.size() == steps.size() - 1) {
@@ -92,16 +94,16 @@ CASE("Test that fields ") {
 
             distributor.sendNotification(msg_tag::forecast_complete);
         } else {
-            EXPECT(transport.server());
+            EXPECT(transport().server());
 
-            Dispatcher dispatcher{transport};
+            Dispatcher dispatcher{transport()};
 
             // Receive field
             dispatcher.eventLoop();
         }
 
-        transport.synchronise();
-        if (transport.globalRank() == root()) {
+        transport().synchronise();
+        if (transport().globalRank() == root()) {
             std::cout << "--- We are root... Start testing file contents..." << std::endl;
             for (const auto& field : global_fields) {
                 const auto& metadata = field.metadata();

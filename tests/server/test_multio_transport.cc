@@ -18,47 +18,49 @@ namespace server {
 namespace test {
 
 namespace {
-const auto nServers = 1u;
-const Transport& transport = MpiTransport{"transport test", nServers};
+const Transport& transport() {
+    static const Transport& transport = MpiTransport{"transport test", 1};
+    return transport;
+}
 }  // namespace
 
 CASE("Test that MPI transport layer") {
     SECTION(" is created correctly") {
         std::ostringstream oss;
-        oss << transport;
+        oss << transport();
 
         EXPECT(oss.str() == "MpiTransport[transport test]");
     }
 
     SECTION(" reads and writes correctly") {
-        ASSERT(transport.size() == 2);
+        ASSERT(transport().size() == 2);
 
         auto test_map = PartialMapping{"test_field", {7, 23, 43, 91}};
         auto test_field = set_up_atlas_test_field("temperature");
 
-        if (transport.client()) {
+        if (transport().client()) {
             auto dest = 1;
 
             // Send plan
             Message msg(0, dest, msg_tag::message_data);
             mapping_to_message(test_map, msg);
-            transport.send(msg);
+            transport().send(msg);
 
             EXPECT(msg.tag() == msg_tag::message_data);
 
             // Send field
             msg.reset(0, dest, msg_tag::field_data);
             atlas_field_to_message(test_field, msg);
-            transport.send(msg);
+            transport().send(msg);
 
             EXPECT(msg.tag() == msg_tag::field_data);
             EXPECT(msg.size() == 307u);
         } else {
-            EXPECT(transport.server());
+            EXPECT(transport().server());
 
             // Receive plan
             Message msg;
-            transport.receive(msg);
+            transport().receive(msg);
             EXPECT(msg.tag() == msg_tag::message_data);
 
             auto received_map = unpack_mapping(msg);
@@ -66,7 +68,7 @@ CASE("Test that MPI transport layer") {
 
             // Receive field
             msg.reset(0, -1, msg_tag::message_data);
-            transport.receive(msg);
+            transport().receive(msg);
             EXPECT(msg.tag() == msg_tag::field_data);
 
             auto received_field = unpack_atlas_field(msg);

@@ -28,10 +28,13 @@ using eckit::mpi::comm;
 using TestFieldMap = std::map<std::string, atlas::Field>;
 
 namespace {
+
 // Set up global data
 
-const auto nServers = 2u;
-const Transport& trans   = MpiTransport{"Test atlas field", nServers};
+const Transport& transport() {
+    static const Transport& transport = MpiTransport{"Test atlas field", 2};
+    return transport;
+}
 
 auto create_global_test_data() -> TestFieldMap {
     TestFieldMap test_fields;
@@ -51,8 +54,9 @@ auto create_global_test_data() -> TestFieldMap {
 }
 
 auto scatter_atlas_field(const atlas::Field& gl_field) -> atlas::Field {
-    if (trans.client()) {
-        auto idxmap = create_partial_mapping(field_size(), trans.noClients(), trans.clientRank());
+    if (transport().client()) {
+        auto idxmap =
+            create_partial_mapping(field_size(), transport().noClients(), transport().clientRank());
         return create_local_field(gl_field, idxmap, true);
     }
     else {
@@ -98,7 +102,7 @@ CASE("Test that atlas field is ") {
     auto field_B = scatter_atlas_field(gl_field.at("exp"));
 
     SECTION("created correctly") {
-        if (trans.client()) {
+        if (transport().client()) {
             EXPECT(field_A.metadata().get<std::vector<int>>("mapping").size() == 4);
             EXPECT(field_B.metadata().get<std::vector<int>>("mapping").size() == 4);
         }
@@ -109,8 +113,8 @@ CASE("Test that atlas field is ") {
     }
 
     SECTION("serialised successfully") {
-        const auto no_client_proc = static_cast<int>(trans.noClients());
-        if (trans.client()) {
+        const auto no_client_proc = static_cast<int>(transport().noClients());
+        if (transport().client()) {
             // Send field_A as packed buffer
             auto dest = pack_atlas_field(field_A);
             comm().send<void>(dest.data(), dest.size(), no_client_proc, msg_tag::field_data);
@@ -131,9 +135,9 @@ CASE("Test that atlas field is ") {
                 comm().receive<void>(local_data.data(), chunk_size, status.source(), status.tag());
 
                 unpack_and_aggregate(local_data.data(), chunk_size, received_field);
-            } while (++counter != trans.noClients());
+            } while (++counter != transport().noClients());
 
-            if (comm().rank() == trans.noClients()) {
+            if (comm().rank() == transport().noClients()) {
                 EXPECT(get_data(gl_field.at("pi")) == received_field);
             }
             else {

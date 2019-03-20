@@ -105,7 +105,8 @@ CASE("Test actions execute correctly: ") {
         std::unique_ptr<Action> action{new Sink{nullptr}};
 
         field_size() = 29;
-        auto test_field = set_up_atlas_test_field("temperature");
+        auto field_name = eckit::TmpFile().baseName() + "::temperature";
+        auto test_field = set_up_atlas_test_field(field_name);
         std::vector<int> local_to_global(field_size());
         std::iota(begin(local_to_global), end(local_to_global), 0);
 
@@ -117,7 +118,7 @@ CASE("Test actions execute correctly: ") {
         msg->rewind();
         action->execute(msg);
 
-        multio::test::TestFile file{"temperature::850::1"};
+        multio::test::TestFile file{field_name + "::850::1"};
         auto actual = file_content(file.name());
         auto expected = pack_atlas_field(unpack_atlas_field(*msg));
 
@@ -129,7 +130,8 @@ CASE("Test actions execute correctly: ") {
         std::unique_ptr<Action> action(new Aggregation{});
 
         field_size() = 8;
-        auto test_field = set_up_atlas_test_field("temperature");
+        auto field_name = eckit::TmpFile().baseName() + "::temperature";
+        auto test_field = set_up_atlas_test_field(field_name);
 
         auto msgs = std::vector<std::shared_ptr<Message>>(maps.size());
         auto ii = 0;
@@ -140,7 +142,7 @@ CASE("Test actions execute correctly: ") {
             msgs[ii]->rewind();
         } while (not action->execute(msgs[ii++]));
 
-        multio::test::TestFile file{"temperature::850::1"};
+        multio::test::TestFile file{field_name + "::850::1"};
         action.reset(new Sink{make_configured_file_sink(file.name())});
         action->execute(msgs[--ii]);
 

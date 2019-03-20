@@ -39,7 +39,8 @@ CASE("Test that plan with three actions ") {
     field_size() = 8;
 
     auto maps = std::vector<std::vector<int>>{{1, 2, 5, 7}, {0, 3, 4, 6}};
-    multio::test::TestFile file{"temperature::850::1"};
+    auto field_name = eckit::TmpFile().baseName() + "::temperature";
+    multio::test::TestFile file{field_name + "::850::1"};
 
     std::unique_ptr<Action> root{new Select{{"prognostic"}}};
     auto it = root.get();
@@ -56,7 +57,7 @@ CASE("Test that plan with three actions ") {
         registerMap(maps);
 
         // Create global field to test against
-        auto test_field = set_up_atlas_test_field("temperature");
+        auto test_field = set_up_atlas_test_field(field_name);
 
         // Create local messages
         auto ii = 0;
@@ -80,7 +81,7 @@ CASE("Test that plan with three actions ") {
     SECTION("executes actions independently") {
 
         // Create global field to test against
-        auto test_field = set_up_atlas_test_field("temperature");
+        auto test_field = set_up_atlas_test_field(field_name);
 
         // Create local atlas fields
         auto atlas_fields = std::vector<atlas::Field>{};

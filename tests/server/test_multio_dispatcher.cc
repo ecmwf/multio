@@ -1,4 +1,6 @@
 
+#include <functional>
+
 #include "eckit/testing/Test.h"
 
 #include "multio/server/Dispatcher.h"
@@ -57,7 +59,8 @@ CASE("Test that distributor-dispatcher pair ") {
         field_size() = 8;
 
         // Create test field
-        auto test_field = set_up_atlas_test_field("temperature");
+        auto field_name = std::to_string(std::hash<std::string>{}(__FILE__)) + "::temperature";
+        auto test_field = set_up_atlas_test_field(field_name);
 
         // Create local atlas field
         auto field = scatter_atlas_field(test_field);
@@ -81,7 +84,7 @@ CASE("Test that distributor-dispatcher pair ") {
 
         transport().synchronise();
         if (transport().globalRank() == root()) {
-            multio::test::TestFile file{"temperature::850::1"};
+            multio::test::TestFile file{field_name + "::850::1"};
             auto actual = file_content(file.name());
             auto expected = pack_atlas_field(test_field);
             EXPECT(actual == expected);

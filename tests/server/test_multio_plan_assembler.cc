@@ -45,7 +45,8 @@ CASE("Test that plan assembler creates plan correctly and ") {
         registerMap(maps);
 
         // Create global field to test against
-        auto test_field = set_up_atlas_test_field("temperature");
+        auto field_name = eckit::TmpFile().baseName() + "::temperature";
+        auto test_field = set_up_atlas_test_field(field_name);
 
         // Create local messages
         auto ii = 0;
@@ -61,7 +62,7 @@ CASE("Test that plan assembler creates plan correctly and ") {
             }
         }
 
-        multio::test::TestFile file{"temperature::850::1"};
+        multio::test::TestFile file{field_name + "::850::1"};
 
         auto actual = file_content(file.name());
         auto expected = pack_atlas_field(test_field);
@@ -70,7 +71,8 @@ CASE("Test that plan assembler creates plan correctly and ") {
 
     SECTION("returns early when non-matching message is passed") {
         // Create global field to test against
-        auto test_field = set_up_atlas_test_field("temperature");
+        auto field_name = eckit::TmpFile().baseName() + "::temperature";
+        auto test_field = set_up_atlas_test_field(field_name);
         test_field.metadata().set("category", "dummy");
 
         // Create local messages
@@ -87,7 +89,7 @@ CASE("Test that plan assembler creates plan correctly and ") {
             }
         }
 
-        multio::test::TestFile file{"temperature::850::1"};
+        multio::test::TestFile file{field_name + "::850::1"};
         EXPECT(file_content(file.name()).empty());
     }
 }

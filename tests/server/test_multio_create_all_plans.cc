@@ -42,7 +42,8 @@ CASE("Test that when using singleton plan is created correctly") {
     PlanAssembler planAssembler;
     auto all_plans = planAssembler.createAllPlans();
 
-    auto test_field = set_up_atlas_test_field("temperature");
+    auto field_name = eckit::TmpFile().baseName() + "::temperature";
+    auto test_field = set_up_atlas_test_field(field_name);
 
     // Create local messages
     ii = 0;
@@ -58,7 +59,7 @@ CASE("Test that when using singleton plan is created correctly") {
         }
     }
 
-    multio::test::TestFile file{"temperature::850::1"};
+    multio::test::TestFile file{field_name + "::850::1"};
 
     auto actual = file_content(file.name());
     auto expected = pack_atlas_field(test_field);

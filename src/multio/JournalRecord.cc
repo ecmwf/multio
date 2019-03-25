@@ -160,7 +160,7 @@ void JournalRecord::addData(const DataBlobPtr& blob) {
         entry.head_.payload_length_ = blob->length();
         SYSCALL(::gettimeofday(&entry.head_.timestamp_, NULL));
 
-        entry.data_.reset(blob);
+        entry.data_ = blob;
 
         // Now that something has been added, we should certainly write this entry on exit!
         utilised_ = true;

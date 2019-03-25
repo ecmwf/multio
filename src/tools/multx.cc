@@ -141,7 +141,7 @@ void Multx::run()
 
     while( (len = file.read(buffer)) != 0 )
     {
-        eckit::SharedPtr<DataBlob> blob ( new metkit::grib::GribDataBlob(buffer, len) );
+        DataBlobPtr blob = std::make_shared<metkit::grib::GribDataBlob>(buffer, len);
 
         ASSERT((size_t)len < buffer.size());
 

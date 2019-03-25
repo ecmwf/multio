@@ -76,6 +76,10 @@ private:
     ~MIO() {}
 
     std::unique_ptr<MultIO> ptr_;
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     bool log_;
 };
 

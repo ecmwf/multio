@@ -54,43 +54,28 @@ using namespace std::placeholders;
 
 MultIO::MultIO(const eckit::Configuration& config) :
     DataSink(config),
-    journal_(config, this),
     stats_(std::string("Multio ") + Main::hostname() + ":" +
            Translator<int, std::string>()(::getpid())),
-    trigger_(config),
-    journaled_(config.getBool("journaled", false)) {
+    trigger_(config) {
 
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 
     for (const auto& config : configs) {
-        SinkStoreElem elem;
-        elem.sink_.reset(DataSinkFactory::instance().build(config.getString("type"), config));
-        elem.journalAlways_ = config.getBool("journalAlways", false);
-        elem.sink_->setId(sinks_.size());
-
-        sinks_.push_back(elem);
+        DataSink* sink = DataSinkFactory::instance().build(config.getString("type"), config);
+        ASSERT(sink);
+        sink->setId(sinks_.size());
+        sinks_.emplace_back(sink);
     }
-
-    // Must open after sinks are initialised, or the subsink configs won't exist yet.
-    if (journaled_)
-        journal_.open();
 }
 
 MultIO::~MultIO() {
-    // Ideally the Journal should be committed explicitly before we hit the destructors.
-    if (journaled_ && journal_.isOpen()) {
-        Log::warning() << "[" << *this
-                       << "] Journal has not been committed prior to MultIO destruction"
-                       << std::endl;
-    }
 }
 
 bool MultIO::ready() const {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    for (auto const& elem : sinks_) {
-        ASSERT(elem.sink_);
-        if (!elem.sink_->ready()) {
+    for (auto const& sink : sinks_) {
+        if (!sink.ready()) {
             return false;
         }
     }
@@ -161,6 +146,7 @@ void MultIO::flush() {
     }
 }
 
+<<<<<<< Updated upstream
 
 void MultIO::replayRecord(const JournalRecord& record) {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -221,22 +207,11 @@ void MultIO::replayRecord(const JournalRecord& record) {
     }
 }
 
+=======
+>>>>>>> Stashed changes
 void MultIO::report(std::ostream& s) {
     stats_.report(s);
 }
-
-
-void MultIO::commitJournal() {
-    std::lock_guard<std::mutex> lock(mutex_);
-
-    Log::info() << "[" << *this << "] Committing MultIO journal" << std::endl;
-    if (!journaled_ || !journal_.isOpen()) {
-        Log::warning() << "[" << *this
-                       << "] Attempting to commit a journal that has not been created" << std::endl;
-    } else
-        journal_.close();
-}
-
 
 void MultIO::print(std::ostream& os) const {
     std::lock_guard<std::mutex> lock(mutex_);

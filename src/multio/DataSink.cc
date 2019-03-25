@@ -91,6 +91,9 @@ DataSink::DataSink(const Configuration& config) :
     config_(config),
     id_(-1) {}
 
+DataSink::~DataSink() {
+}
+
 bool DataSink::ready() const {
     return true;  // default for synchronous sinks
 }
@@ -111,25 +114,25 @@ int DataSink::id() const {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-void DataSink::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {}
+void DataSink::iopenfdb(const std::string&, int&, const std::string&) {}
 
-void DataSink::iclosefdb(int fdbaddr) {}
+void DataSink::iclosefdb(int) {}
 
 void DataSink::iinitfdb() {}
 
-void DataSink::isetcommfdb(int rank) {}
+void DataSink::isetcommfdb(int) {}
 
-void DataSink::isetrankfdb(int fdbaddr, int rank) {}
+void DataSink::isetrankfdb(int, int) {}
 
-void DataSink::iset_fdb_root(int fdbaddr, const std::string& name) {}
+void DataSink::iset_fdb_root(int, const std::string&) {}
 
-void DataSink::iflushfdb(int fdbaddr) {}
+void DataSink::iflushfdb(int) {}
 
-void DataSink::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {}
+void DataSink::isetfieldcountfdb(int, int, int) {}
 
-void DataSink::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {}
+void DataSink::isetvalfdb(int, const std::string&, const std::string&) {}
 
-void DataSink::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
+void DataSink::iwritefdb(int, eckit::DataBlobPtr) {
     std::ostringstream msg;
     msg << "DataSink::iwritefdb() not implemented in derived class";
     throw eckit::SeriousBug(msg.str());

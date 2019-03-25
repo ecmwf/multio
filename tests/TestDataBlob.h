@@ -2,13 +2,14 @@
 #ifndef multio_TestDataBlob_H
 #define multio_TestDataBlob_H
 
-#include "eckit/io/DataBlob.h"
-#include "eckit/io/DataHandle.h"
-#include "eckit/types/Metadata.h"
-
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "eckit/io/DataBlob.h"
+#include "eckit/io/DataHandle.h"
+#include "eckit/types/Metadata.h"
+#include "eckit/exception/Exceptions.h"
 
 namespace multio {
 namespace test {

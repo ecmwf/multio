@@ -13,8 +13,4 @@ ecbuild_add_test( TARGET    test_multio_file_sink
                   SOURCES   test_multio_file_sink.cc
                   LIBS      multio )
 
-ecbuild_add_test( TARGET    test_multio_journal
-                  SOURCES   test_multio_journal.cc
-                  LIBS      multio )
-
 add_subdirectory(server)

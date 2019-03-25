@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include "eckit/config/Configuration.h"
+#include "eckit/exception/Exceptions.h"
 
 #include "multio/DataSink.h"
 #include "sandbox/PlainDataBlob.h"

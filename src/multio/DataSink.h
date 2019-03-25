@@ -25,11 +25,6 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/io/DataBlob.h"
 #include "eckit/memory/NonCopyable.h"
-<<<<<<< Updated upstream
-
-#include "multio/Journal.h"
-=======
->>>>>>> Stashed changes
 
 namespace multio {
 

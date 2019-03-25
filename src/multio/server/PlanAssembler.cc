@@ -5,6 +5,8 @@
 #include <functional>
 
 #include "eckit/io/Buffer.h"
+#include "eckit/exception/Exceptions.h"
+#include "eckit/filesystem/PathName.h"
 
 #include "atlas/util/Metadata.h"
 

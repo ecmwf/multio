@@ -11,6 +11,8 @@
 /// @author Tiago Quintino
 /// @date   Dec 2015
 
+#include <algorithm>
+
 #include "multio/fdb5/FDB5Sink.h"
 
 #include "eckit/exception/Exceptions.h"

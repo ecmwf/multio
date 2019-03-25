@@ -1,4 +1,6 @@
 
+#include <cstring>
+
 #include "TestServerHelpers.h"
 
 #include "multio/server/PartialMapping.h"

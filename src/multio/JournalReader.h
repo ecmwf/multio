@@ -21,7 +21,6 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/io/DataHandle.h"
-#include "eckit/memory/ScopedPtr.h"
 
 #include "multio/Journal.h"
 #include "multio/JournalRecord.h"
@@ -62,12 +61,12 @@ private: // methods
 private:
 
     eckit::PathName path_;
-    eckit::ScopedPtr<eckit::DataHandle> handle_;
+    std::unique_ptr<eckit::DataHandle> handle_;
 
     int nReadWriteRecords_; // This excludes the header and footer.
     int nReadEvents_;
 
-    eckit::ScopedPtr<eckit::YAMLConfiguration> config_;
+    std::unique_ptr<eckit::YAMLConfiguration> config_;
 };
 
 // -------------------------------------------------------------------------------------------------

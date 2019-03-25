@@ -17,16 +17,9 @@
 #include "eckit/io/DataBlob.h"
 #include "eckit/io/Offset.h"
 #include "eckit/log/Log.h"
-#include "eckit/memory/ScopedPtr.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 #include "eckit/runtime/Tool.h"
-
-//#include "eckit/option/Option.h"
-//#include "eckit/option/FactoryOption.h"
-//#include "eckit/option/Separator.h"
-//#include "eckit/option/SimpleOption.h"
-//#include "eckit/option/VectorOption.h"
 
 #include "metkit/grib/MetFile.h"
 #include "metkit/grib/GribDataBlob.h"
@@ -106,7 +99,7 @@ void Multx::run()
 
     // Which config should we use?
 
-    eckit::ScopedPtr<YAMLConfiguration> config;
+    std::unique_ptr<YAMLConfiguration> config;
     if (args.has("config")) {
         std::string configPath;
         args.get("config", configPath);

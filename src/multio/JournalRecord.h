@@ -25,7 +25,6 @@
 #include "eckit/io/DataBlob.h"
 #include "eckit/io/DataHandle.h"
 #include "eckit/memory/NonCopyable.h"
-#include "eckit/memory/ScopedPtr.h"
 #include "eckit/types/FixedString.h"
 
 
@@ -115,7 +114,7 @@ public:  // Data types, and structural members.
         } head_;
 
         // (Optional) additional data.
-        // It would be nicer to have a ScopetPtr, but no rvalue-refs...
+        // It would be nicer to have a std::unique_ptr...
         eckit::DataBlobPtr data_;
     };
 
@@ -124,7 +123,7 @@ public:  // Data types, and structural members.
     // Add a way to stream all the journal elements out.
 
     // Payload goes here (should depend on the specific type. Will be pointed to.
-    // eckit::ScopedPtr<JournalRecordPayload> payload_
+    // std::unique_ptr<JournalRecordPayload> payload_
 
     eckit::FixedString<4> marker_;  /// (4) Termination marker
 

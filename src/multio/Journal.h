@@ -24,7 +24,6 @@
 #include "eckit/io/DataHandle.h"
 #include "eckit/io/Length.h"
 #include "eckit/memory/NonCopyable.h"
-#include "eckit/memory/ScopedPtr.h"
 #include "eckit/thread/Mutex.h"
 #include "eckit/types/FixedString.h"
 
@@ -94,7 +93,7 @@ private:  // methods
 
 private:  // members
     eckit::PathName path_;
-    eckit::ScopedPtr<eckit::DataHandle> handle_;
+    std::unique_ptr<eckit::DataHandle> handle_;
     eckit::Mutex mutex_;
 
     DataSink* const dataSink_;

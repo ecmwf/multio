@@ -75,7 +75,7 @@ private:
 
     ~MIO() {}
 
-    eckit::ScopedPtr<MultIO> ptr_;
+    std::unique_ptr<MultIO> ptr_;
     bool log_;
 };
 

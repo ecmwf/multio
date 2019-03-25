@@ -26,7 +26,6 @@
 #include "eckit/io/DataHandle.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/memory/ScopedPtr.h"
-#include "eckit/memory/SharedPtr.h"
 #include "eckit/types/FixedString.h"
 
 
@@ -183,7 +182,7 @@ private:  // internal control elements
     bool written_;
 };
 
-typedef eckit::SharedPtr<JournalRecord> JournalRecordPtr;
+using JournalRecordPtr = std::shared_ptr<JournalRecord>;
 
 //----------------------------------------------------------------------------------------------------------------------
 

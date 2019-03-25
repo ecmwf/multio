@@ -62,7 +62,7 @@ CASE("test_multio_journal") {
             switch (entry.head_.tag_) {
 
             case JournalRecord::JournalEntry::Data:
-                stringBlob.reset(entry.data_);
+                stringBlob = entry.data_;
                 break;
 
             case JournalRecord::JournalEntry::Write:

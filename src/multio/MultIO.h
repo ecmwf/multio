@@ -22,7 +22,6 @@
 
 #include "eckit/io/Length.h"
 #include "eckit/log/Timer.h"
-#include "eckit/memory/SharedPtr.h"
 
 #include "multio/DataSink.h"
 #include "multio/IOStats.h"
@@ -80,7 +79,7 @@ public:
 
 protected:  // types
     struct SinkStoreElem {
-        eckit::SharedPtr<DataSink> sink_;
+        std::shared_ptr<DataSink> sink_;
         bool journalAlways_;
     };
 

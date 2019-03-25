@@ -186,7 +186,7 @@ void MultIO::replayRecord(const JournalRecord& record) {
         switch (entry.head_.tag_) {
             case JournalRecord::JournalEntry::Data:
                 Log::info() << "[" << *this << "]    - Got data entry" << std::endl;
-                data.reset(entry.data_);
+                data = entry.data_;
                 break;
 
             case JournalRecord::JournalEntry::Write: {

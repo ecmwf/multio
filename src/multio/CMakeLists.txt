@@ -22,12 +22,6 @@ list( APPEND multio_srcs
     FileSink.h
     IOStats.cc
     IOStats.h
-    Journal.cc
-    Journal.h
-    JournalReader.cc
-    JournalReader.h
-    JournalRecord.cc
-    JournalRecord.h
     LibMultio.cc
     LibMultio.h
     MultIO.cc

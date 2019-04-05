@@ -61,8 +61,8 @@ std::string plan_configurations() {
     return R"json(
         {
            "transport" : "tcp",
-           "host" : "ubuntu-desktop",
-           "ports" : [9771, 9772, 9773],
+           "host" : "skadi",
+           "ports" : [9773],
            "plans" : [
               {
                  "name" : "ocean",
@@ -79,8 +79,6 @@ std::string plan_configurations() {
                        }
                     }
                  }
-              },
-              {
               }
            ]
         }
@@ -109,15 +107,21 @@ void TcpExample::execute(const eckit::option::CmdArgs&) {
     auto ports = config_.getUnsignedVector("ports");
 
     if (find(begin(ports), end(ports), port_) != end(ports)) {
-        auto msg = transport->receive();
-
-        eckit::Log::info() << msg << std::endl;
+        Listener listener{config_, *transport};
+        listener.listen();
     }
     else {
-        eckit::Log::info() << "Starting client(host=" << host << ", port=" << port_ << std::endl;
         for (auto port : ports) {
+            Message msg{{Message::Tag::Open, transport->localPeer(), Peer{host, port}},
+                         std::string("open")};
+            transport->send(msg);
+
             std::string str = "Once upon a midnight dreary + " + std::to_string(port);
-            Message msg{{Message::Tag::Field, transport->localPeer(), Peer{host, port}}, str};
+            msg = Message{{Message::Tag::Field, transport->localPeer(), Peer{host, port}}, str};
+            transport->send(msg);
+
+            msg = Message{{Message::Tag::Close, transport->localPeer(), Peer{host, port}},
+                          std::string("close")};
             transport->send(msg);
         }
     }

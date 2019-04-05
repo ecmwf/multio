@@ -28,12 +28,24 @@ TcpTransport::TcpTransport(const eckit::Configuration& cfg) :
     auto host = cfg.getString("host");
     auto ports = cfg.getIntVector("ports");
 
-    eckit::Log::info() << "Starting server(host=" << local_host_ << ", port=" << local_port_ << ")"
-                       << std::endl;
-
     if (find(begin(ports), end(ports), local_port_) != end(ports) && host == local_host_) {
+        eckit::Log::info() << "Starting server(host=" << local_host_ << ", port=" << local_port_
+                           << ")" << std::endl;
+
         server_.reset(new eckit::TCPServer{static_cast<int>(local_port_)});
         socket_ = server_->accept();
+    }
+    else {
+        eckit::Log::info() << "Starting client(host=" << local_host_ << ", port=" << local_port_
+                           << ")" << std::endl;
+
+        for (const auto port : ports) {
+            eckit::Log::info() << "Connecting to server(host=" << host << ", port=" << port << ")"
+                               << std::endl;
+            eckit::TCPClient client;
+            connections_.emplace(Peer{host, static_cast<size_t>(port)},
+                                 new eckit::TCPSocket{client.connect(host, port, 5, 10)});
+        }
     }
 }
 
@@ -58,11 +70,8 @@ Message TcpTransport::receive() {
 
 void TcpTransport::send(const Message& msg) {
     auto dest = msg.destination();
-    eckit::Log::info() << "Connecting to server(host=" << dest.domain_ << ", port=" << dest.id_
-                       << ")" << std::endl;
 
-    eckit::TCPClient client;
-    client.connect(dest.domain_, static_cast<int>(dest.id_), 5, 10);
+    const auto& socket = connections_.at(msg.destination());
 
     // Add 4K for header/footer etc. Should be plenty
     eckit::Buffer buffer{eckit::round(msg.size(), 8) + 4096};
@@ -73,10 +82,10 @@ void TcpTransport::send(const Message& msg) {
 
     auto size = stream.bytesWritten();
     eckit::Log::info() << "Sending size: " << size << std::endl;
-    client.write(&size, sizeof(size));
+    socket->write(&size, sizeof(size));
 
     eckit::Log::info() << "Sending message: " << msg << std::endl;
-    client.write(buffer, static_cast<int>(size));
+    socket->write(buffer, static_cast<int>(size));
 }
 
 Peer TcpTransport::localPeer() const {

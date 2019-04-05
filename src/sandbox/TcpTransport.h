@@ -18,10 +18,10 @@
 #define multio_sandbox_TcpTransport_H
 
 #include <iosfwd>
+#include <map>
 
 #include "eckit/net/TCPClient.h"
 #include "eckit/net/TCPServer.h"
-#include "eckit/net/TCPSocket.h"
 
 #include "sandbox/Transport.h"
 
@@ -51,6 +51,8 @@ private:
 
     std::unique_ptr<eckit::TCPServer> server_;
     eckit::TCPSocket socket_;
+
+    std::map<Peer, const std::unique_ptr<eckit::TCPSocket>> connections_;
 };
 
 }  // namespace sandbox

@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <iostream>
 
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/maths/Functions.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/serialisation/MemoryStream.h"
@@ -20,31 +21,41 @@
 namespace multio {
 namespace sandbox {
 
-TcpTransport::TcpTransport(const eckit::Configuration& cfg) :
-    Transport(cfg),
+TcpTransport::TcpTransport(const eckit::Configuration& config) :
+    Transport(config),
     local_host_{eckit::Main::hostname()},
-    local_port_{cfg.getUnsigned("local_port")} {
-    // Set up servers
-    auto host = cfg.getString("host");
-    auto ports = cfg.getIntVector("ports");
+    local_port_{config.getUnsigned("local_port")} {
 
-    if (find(begin(ports), end(ports), local_port_) != end(ports) && host == local_host_) {
-        eckit::Log::info() << "Starting server(host=" << local_host_ << ", port=" << local_port_
-                           << ")" << std::endl;
+    auto serverConfigs = config.getSubConfigurations("servers");
 
-        server_.reset(new eckit::TCPServer{static_cast<int>(local_port_)});
-        socket_ = server_->accept();
-    }
-    else {
-        eckit::Log::info() << "Starting client(host=" << local_host_ << ", port=" << local_port_
-                           << ")" << std::endl;
+    for (auto cfg : serverConfigs) {
+        auto host = cfg.getString("host");
+        auto ports = cfg.getUnsignedVector("ports");
 
-        for (const auto port : ports) {
-            eckit::Log::info() << "Connecting to server(host=" << host << ", port=" << port << ")"
-                               << std::endl;
-            eckit::TCPClient client;
-            connections_.emplace(Peer{host, static_cast<size_t>(port)},
-                                 new eckit::TCPSocket{client.connect(host, port, 5, 10)});
+        if (host == local_host_ && find(begin(ports), end(ports), local_port_) != end(ports)) {
+            eckit::Log::info() << "Starting server(host=" << local_host_ << ", port=" << local_port_
+                               << ")" << std::endl;
+
+            server_.reset(new eckit::TCPServer{static_cast<int>(local_port_)});
+            socket_ = server_->accept();
+        }
+        else {
+            eckit::Log::info() << "Starting client(host=" << local_host_ << ", port=" << local_port_
+                               << ")" << std::endl;
+
+            for (const auto port : ports) {
+                eckit::Log::info() << "Connecting to server(host=" << host << ", port=" << port
+                                   << ")" << std::endl;
+                try {
+                    eckit::TCPClient client;
+                    connections_.emplace(Peer{host, static_cast<size_t>(port)},
+                                         new eckit::TCPSocket{client.connect(host, port, 5, 10)});
+                } catch (eckit::TooManyRetries& e) {
+                    eckit::Log::error() << "Failed to establish connection to host: " << host
+                                        << ", port: " << port << std::endl;
+                }
+                eckit::Log::info() << "Number of connections: " << connections_.size() << std::endl;
+            }
         }
     }
 }

@@ -41,14 +41,14 @@ private:
                     << std::endl;
     }
 
+    void init(const eckit::option::CmdArgs& args) override;
+
+    void execute(const eckit::option::CmdArgs& args) override;
+
     std::vector<Peer> spawnServers(const eckit::Configuration& config,
                                    std::shared_ptr<Transport> transport);
 
     void spawnClients(std::shared_ptr<Transport> transport, const std::vector<Peer>& serverPeers);
-
-    void init(const eckit::option::CmdArgs& args) override;
-
-    void execute(const eckit::option::CmdArgs& args) override;
 
     size_t nbClients_ = 1;
 
@@ -90,11 +90,6 @@ std::vector<Peer> MpiExample::spawnServers(const eckit::Configuration& config,
 
     return serverPeers;
 }
-
-namespace {
-
-
-}  // namespace
 
 void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
                               const std::vector<Peer>& serverPeers) {

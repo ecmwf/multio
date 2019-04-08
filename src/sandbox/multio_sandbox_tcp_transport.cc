@@ -49,6 +49,11 @@ private:
 
     void execute(const eckit::option::CmdArgs& args) override;
 
+    std::vector<Peer> spawnServers(const eckit::Configuration& config,
+                                   std::shared_ptr<Transport> transport);
+
+    void spawnClients(std::shared_ptr<Transport> transport, const std::vector<Peer>& serverPeers);
+
     size_t nbClients_ = 1;
     int port_ = 7777;
 
@@ -61,8 +66,12 @@ std::string plan_configurations() {
     return R"json(
         {
            "transport" : "tcp",
-           "host" : "skadi",
-           "ports" : [9773],
+           "servers" : [
+              {
+                 "host" : "skadi",
+                 "ports" : [9771, 9772, 9773]
+              }
+           ],
            "plans" : [
               {
                  "name" : "ocean",
@@ -97,34 +106,68 @@ void TcpExample::init(const option::CmdArgs& args) {
     args.get("port", port_);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
+
+std::vector<Peer> TcpExample::spawnServers(const eckit::Configuration& config,
+                                           std::shared_ptr<Transport> transport) {
+    std::vector<Peer> serverPeers;
+
+    auto serverConfigs = config.getSubConfigurations("servers");
+
+    for (auto cfg : serverConfigs) {
+        auto host = cfg.getString("host");
+        for (auto port : cfg.getUnsignedVector("ports")) {
+            serverPeers.push_back(Peer{host, port});
+        }
+    }
+
+    auto it = std::find(begin(serverPeers), end(serverPeers), transport->localPeer());
+    if (it != end(serverPeers)) {
+        Listener listener(config, *transport);
+
+        listener.listen();
+    }
+
+    return serverPeers;
+}
+
+void TcpExample::spawnClients(std::shared_ptr<Transport> transport,
+                              const std::vector<Peer>& serverPeers) {
+    // Do nothing if current rank is a server rank
+    if (find(begin(serverPeers), end(serverPeers), transport->localPeer()) != end(serverPeers)) {
+        return;
+    }
+
+    Peer client = transport->localPeer();
+
+    for (auto& server : serverPeers) {
+        Message msg{{Message::Tag::Open, client, server}, std::string("open")};
+        transport->send(msg);
+
+        std::string str = "Once upon a midnight dreary + " + std::to_string(server.id_);
+        msg = Message{{Message::Tag::Field, client, server}, str};
+        transport->send(msg);
+
+        msg = Message{{Message::Tag::Close, client, server}, std::string("close")};
+        transport->send(msg);
+    }
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+
 void TcpExample::execute(const eckit::option::CmdArgs&) {
+
     eckit::LocalConfiguration config{config_};
+
     config.set("local_port", port_);
 
     std::shared_ptr<Transport> transport{TransportFactory::instance().build("Tcp", config)};
 
-    auto host = config_.getString("host");
-    auto ports = config_.getUnsignedVector("ports");
+    eckit::Log::info() << *transport << std::endl;
 
-    if (find(begin(ports), end(ports), port_) != end(ports)) {
-        Listener listener{config_, *transport};
-        listener.listen();
-    }
-    else {
-        for (auto port : ports) {
-            Message msg{{Message::Tag::Open, transport->localPeer(), Peer{host, port}},
-                         std::string("open")};
-            transport->send(msg);
+    auto serverPeers = spawnServers(config_, transport);
 
-            std::string str = "Once upon a midnight dreary + " + std::to_string(port);
-            msg = Message{{Message::Tag::Field, transport->localPeer(), Peer{host, port}}, str};
-            transport->send(msg);
-
-            msg = Message{{Message::Tag::Close, transport->localPeer(), Peer{host, port}},
-                          std::string("close")};
-            transport->send(msg);
-        }
-    }
+    spawnClients(transport, serverPeers);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

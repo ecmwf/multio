@@ -122,7 +122,7 @@ const eckit::Buffer& Message::payload() const {
 }
 
 void Message::print(std::ostream& out) const {
-    out << "Field("
+    out << "Message("
         << "version=" << version_ << ", tag=" << tag2str(header_.tag_)
         << ", source=" << header_.source_ << ", destination=" << header_.destination_
         << ", mapping=" << header_.mapping_ << ", map_count=" << header_.map_count_

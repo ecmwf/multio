@@ -15,10 +15,14 @@
 #include "eckit/net/TCPServer.h"
 #include "eckit/runtime/Tool.h"
 
-#include "sandbox/MultioServerTool.h"
 #include "sandbox/Listener.h"
+#include "sandbox/LocalIndices.h"
 #include "sandbox/Message.h"
+#include "sandbox/MultioServerTool.h"
 #include "sandbox/Peer.h"
+#include "sandbox/PlanConfigurations.h"
+#include "sandbox/print_buffer.h"
+#include "sandbox/TestData.h"
 #include "sandbox/Transport.h"
 
 using namespace eckit;
@@ -41,7 +45,7 @@ private:
                     << "Examples:" << std::endl
                     << "=========" << std::endl
                     << std::endl
-                    << tool << " --port=9771" << std::endl
+                    << tool << " --nbclients=5 --port=9771" << std::endl
                     << std::endl;
     }
 
@@ -49,10 +53,14 @@ private:
 
     void execute(const eckit::option::CmdArgs& args) override;
 
-    std::vector<Peer> spawnServers(const eckit::Configuration& config,
-                                   std::shared_ptr<Transport> transport);
+    std::tuple<std::vector<Peer>, std::vector<Peer>> createPeerLists(
+        const eckit::Configuration& config);
 
-    void spawnClients(std::shared_ptr<Transport> transport, const std::vector<Peer>& serverPeers);
+    void spawnServers(const std::vector<Peer>& serverPeers, const eckit::Configuration& config,
+                      std::shared_ptr<Transport> transport);
+
+    void spawnClients(const std::vector<Peer>& clientPeers, const std::vector<Peer>& serverPeers,
+                      std::shared_ptr<Transport> transport);
 
     size_t nbClients_ = 1;
     int port_ = 7777;
@@ -62,43 +70,9 @@ private:
 
 //----------------------------------------------------------------------------------------------------------------------
 
-std::string plan_configurations() {
-    return R"json(
-        {
-           "transport" : "tcp",
-           "servers" : [
-              {
-                 "host" : "skadi",
-                 "ports" : [9771, 9772, 9773]
-              }
-           ],
-           "plans" : [
-              {
-                 "name" : "ocean",
-                 "actions" : {
-                    "root" : {
-                       "type" : "Print",
-                       "stream" : "error",
-                       "next" : {
-                          "type" : "AppendToFile",
-                          "path" : "messages.txt",
-                          "next" : {
-                             "type" : "Null"
-                          }
-                       }
-                    }
-                 }
-              }
-           ]
-        }
-    )json";
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-
 TcpExample::TcpExample(int argc, char** argv) :
     multio::sandbox::MultioServerTool(argc, argv),
-    config_(plan_configurations()) {
+    config_(tcp_plan_configurations()) {
     options_.push_back(new eckit::option::SimpleOption<size_t>("port", "TCP port"));
 }
 
@@ -108,48 +82,102 @@ void TcpExample::init(const option::CmdArgs& args) {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-std::vector<Peer> TcpExample::spawnServers(const eckit::Configuration& config,
-                                           std::shared_ptr<Transport> transport) {
+std::tuple<std::vector<Peer>, std::vector<Peer>> TcpExample::createPeerLists(
+    const eckit::Configuration& config) {
+    std::vector<Peer> clientPeers;
     std::vector<Peer> serverPeers;
 
-    auto serverConfigs = config.getSubConfigurations("servers");
-
-    for (auto cfg : serverConfigs) {
+    for (auto cfg : config.getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             serverPeers.push_back(Peer{host, port});
         }
     }
 
-    auto it = std::find(begin(serverPeers), end(serverPeers), transport->localPeer());
-    if (it != end(serverPeers)) {
-        Listener listener(config, *transport);
-
-        listener.listen();
+    for (auto cfg : config.getSubConfigurations("clients")) {
+        auto host = cfg.getString("host");
+        for (auto port : cfg.getUnsignedVector("ports")) {
+            clientPeers.push_back(Peer{host, port});
+        }
     }
 
-    return serverPeers;
+    nbClients_ = clientPeers.size();
+    nbServers_ = serverPeers.size();
+
+    return std::make_tuple(clientPeers, serverPeers);
 }
 
-void TcpExample::spawnClients(std::shared_ptr<Transport> transport,
-                              const std::vector<Peer>& serverPeers) {
-    // Do nothing if current rank is a server rank
-    if (find(begin(serverPeers), end(serverPeers), transport->localPeer()) != end(serverPeers)) {
+void TcpExample::spawnServers(const std::vector<Peer>& serverPeers,
+                              const eckit::Configuration& config,
+                              std::shared_ptr<Transport> transport) {
+    // Do nothing if current process is not in the list of servers
+    if (find(begin(serverPeers), end(serverPeers), transport->localPeer()) == end(serverPeers)) {
+        return;
+    }
+
+    Listener listener(config, *transport);
+    listener.listen();
+}
+
+void TcpExample::spawnClients(const std::vector<Peer>& clientPeers,
+                              const std::vector<Peer>& serverPeers,
+                              std::shared_ptr<Transport> transport) {
+    // Do nothing if current process is not in the list of clients
+    auto it = find(begin(clientPeers), end(clientPeers), transport->localPeer());
+    if (it == end(clientPeers)) {
         return;
     }
 
     Peer client = transport->localPeer();
 
+    // open all servers
     for (auto& server : serverPeers) {
-        Message msg{{Message::Tag::Open, client, server}, std::string("open")};
-        transport->send(msg);
+        Message open{{Message::Tag::Open, client, server}, std::string("open")};
+        transport->send(open);
+    }
 
-        std::string str = "Once upon a midnight dreary + " + std::to_string(server.id_);
-        msg = Message{{Message::Tag::Field, client, server}, str};
-        transport->send(msg);
+    auto idxm = generate_index_map(std::distance(begin(clientPeers), it), nbClients_);
+    eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(size_t));
+    LocalIndices index_map{std::move(idxm)};
 
-        msg = Message{{Message::Tag::Close, client, server}, std::string("close")};
+    // send partial mapping
+    for (auto& server : serverPeers) {
+        Message msg{{Message::Tag::Mapping, client, server, "scattered", nbClients_}, buffer};
+
         transport->send(msg);
+    }
+
+    // send N messages
+    const int nfields = 13;
+    for (int ii = 0; ii < nfields; ++ii) {
+        auto field_id = std::string("temperature::step::") + std::to_string(ii);
+        std::vector<double> field;
+        index_map.to_local(global_test_field(field_id, field_size()), field);
+
+        if (root() == std::distance(begin(clientPeers), it)) {
+            eckit::Log::info() << "   ---   Field: " << field_id << ", values: " << std::flush;
+            print_buffer(global_test_field(field_id, field_size()), eckit::Log::info(), " ");
+            eckit::Log::info() << std::endl;
+        }
+
+        // Choose server
+        auto id = std::hash<std::string>{}(field_id) % nbServers_;
+        ASSERT(id < serverPeers.size());
+
+        eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()),
+                             field.size() * sizeof(double));
+
+        Message msg{{Message::Tag::Field, client, serverPeers[id], "scattered", nbClients_,
+                     "prognostic", field_id, field_size()},
+                    buffer};
+
+        transport->send(msg);
+    }
+
+    // close all servers
+    for (auto& server : serverPeers) {
+        Message close{{Message::Tag::Close, client, server}, std::string("close")};
+        transport->send(close);
     }
 }
 
@@ -165,9 +193,14 @@ void TcpExample::execute(const eckit::option::CmdArgs&) {
 
     eckit::Log::info() << *transport << std::endl;
 
-    auto serverPeers = spawnServers(config_, transport);
+    field_size() = 29;
 
-    spawnClients(transport, serverPeers);
+    std::vector<Peer> clientPeers;
+    std::vector<Peer> serverPeers;
+    std::tie(clientPeers, serverPeers) = createPeerLists(config);
+
+    spawnServers(serverPeers, config, transport);
+    spawnClients(clientPeers, serverPeers, transport);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

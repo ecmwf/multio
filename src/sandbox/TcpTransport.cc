@@ -37,9 +37,9 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
                                << ")" << std::endl;
 
             server_.reset(new eckit::TCPServer{static_cast<int>(local_port_)});
-            socket_ = server_->accept();
         }
         else {
+            // TODO: assert that (local_host_, local_port_) is in the list of clients
             eckit::Log::info() << "Starting client(host=" << local_host_ << ", port=" << local_port_
                                << ")" << std::endl;
 
@@ -61,6 +61,11 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
 }
 
 Message TcpTransport::receive() {
+
+    if(not socket_.stillConnected()) {
+        socket_ = server_->accept();
+    }
+
     size_t size;
     socket_.read(&size, sizeof(size));
 
@@ -73,8 +78,11 @@ Message TcpTransport::receive() {
     Message msg;
     msg.decode(stream);
 
-    eckit::Log::info() << "Received message content: "
-                       << std::string(static_cast<char*>(msg.payload()), msg.size()) << std::endl;
+    eckit::Log::info() << "Received message: " << msg << std::endl;
+
+    if(msg.tag() == Message::Tag::Close) {
+        socket_.close();
+    }
 
     return msg;
 }
@@ -95,7 +103,7 @@ void TcpTransport::send(const Message& msg) {
     eckit::Log::info() << "Sending size: " << size << std::endl;
     socket->write(&size, sizeof(size));
 
-    eckit::Log::info() << "Sending message: " << msg << std::endl;
+    eckit::Log::info() << "Sending: " << msg << std::endl;
     socket->write(buffer, static_cast<int>(size));
 }
 

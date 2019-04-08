@@ -7,7 +7,7 @@
 namespace multio {
 namespace sandbox {
 
-std::string plan_configurations() {
+std::string mpi_plan_configurations() {
     return R"json(
         {
            "transport" : "mpi",
@@ -26,6 +26,49 @@ std::string plan_configurations() {
                     }
                  }
               },
+              {
+                 "name" : "atmosphere",
+                 "actions" : {
+                    "root" : {
+                       "type" : "Select",
+                       "categories" : [ "prognostic", "diagnostic" ],
+                       "next" : {
+                          "type" : "Aggregation",
+                          "mapping" : "scattered",
+                          "next" : {
+                             "type" : "Encode",
+                             "format" : "grib",
+                             "next" : {
+                                "type" : "Sink",
+                                "datasink" : "file"
+                             }
+                          }
+                       }
+                    }
+                 }
+              }
+           ]
+        }
+    )json";
+}
+
+std::string tcp_plan_configurations() {
+    return R"json(
+        {
+           "transport" : "tcp",
+           "clients" : [
+              {
+                 "host" : "skadi",
+                 "ports" : [4441, 4442, 4443, 4444, 4445]
+              }
+           ],
+           "servers" : [
+              {
+                 "host" : "skadi",
+                 "ports" : [7771, 7772, 7773]
+              }
+           ],
+           "plans" : [
               {
                  "name" : "atmosphere",
                  "actions" : {

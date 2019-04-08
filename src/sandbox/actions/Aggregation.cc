@@ -37,11 +37,11 @@ void Aggregation::execute(Message msg) const {
                        << ", no_fields: " << messages_.at(field_id).size() << std::endl;
 
     // All parts arrived?
-    bool ret = messages_.at(field_id).size() == Mappings::instance().get(map_name_).size();
+    bool ret = messages_.at(field_id).size() == msg.map_count();
+    ret &= Mappings::instance().get(map_name_).size() == msg.map_count();
     if (!ret) {
         return;
     }
-
 
     Aggregator agg{msg.field_size(), messages_.at(field_id).size()};
 
@@ -50,7 +50,7 @@ void Aggregation::execute(Message msg) const {
     messages_.erase(field_id);
 
     eckit::Log::info() << "          -- print aggregated field " << msg.field_id()
-                       << " (size=" << msg.field_size() << "): " << std::flush;
+                       << " (size=" << msg.field_size() << "): ";
     print_buffer(reinterpret_cast<double*>(msg.payload().data()), msg.field_size(),
                  eckit::Log::info(), " ");
     eckit::Log::info() << std::endl;

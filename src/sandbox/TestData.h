@@ -22,6 +22,11 @@ inline size_t& root() {
     return rt;
 }
 
+inline bool& new_random_data_each_run() {
+    static bool val = false;
+    return val;
+}
+
 inline std::vector<double> create_random_data(const size_t sz) {
     std::vector<double> field;
 
@@ -36,8 +41,7 @@ inline std::vector<double> create_random_data(const size_t sz) {
     return field;
 }
 
-inline std::vector<size_t> generate_index_map(Peer peer, size_t nbclients) {
-    auto id = peer.id_;  // OK for mpi; otherwise create a clientPeer list
+inline std::vector<size_t> generate_index_map(size_t id, size_t nbclients) {
     auto chunk_size = field_size() / nbclients + ((id < field_size() % nbclients) ? 1 : 0);
 
     auto maps = std::vector<size_t>(chunk_size);
@@ -54,9 +58,22 @@ inline std::vector<double>& global_test_field(const std::string& field_id, const
     if (test_fields.find(field_id) != end(test_fields)) {
         return test_fields[field_id];
     }
-    test_fields[field_id] =
-        (comm().rank() == root()) ? create_random_data(sz) : std::vector<double>(sz);
-    comm().broadcast(test_fields[field_id], root());
+
+    if (new_random_data_each_run()) {
+        test_fields[field_id] =
+            (comm().rank() == root()) ? create_random_data(sz) : std::vector<double>(sz);
+        comm().broadcast(test_fields[field_id], root());
+    }
+    else {
+        test_fields[field_id].resize(sz);
+        auto ii = 0;
+        generate(begin(test_fields[field_id]), end(test_fields[field_id]), [&ii, &field_id]() {
+            auto hash_val = std::hash<std::string>{}(field_id + std::to_string(ii++));
+            hash_val = static_cast<uint32_t>(hash_val >> 32);
+            return 13.0 + 17.0 * static_cast<double>(hash_val) /
+                              static_cast<double>(std::numeric_limits<uint32_t>::max());
+        });
+    }
 
     return test_fields[field_id];
 }

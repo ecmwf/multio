@@ -8,7 +8,6 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "sandbox/TestData.h"
 #include "sandbox/Listener.h"
 #include "sandbox/LocalIndices.h"
 #include "sandbox/Message.h"
@@ -16,6 +15,7 @@
 #include "sandbox/PlanConfigurations.h"
 #include "sandbox/Peer.h"
 #include "sandbox/print_buffer.h"
+#include "sandbox/TestData.h"
 #include "sandbox/Transport.h"
 
 using eckit::Log;
@@ -59,7 +59,7 @@ private:
 
 MpiExample::MpiExample(int argc, char** argv) :
     multio::sandbox::MultioServerTool(argc, argv),
-    config_(plan_configurations()) {}
+    config_(mpi_plan_configurations()) {}
 
 void MpiExample::init(const eckit::option::CmdArgs& args) {
     MultioServerTool::init(args);
@@ -106,7 +106,7 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
         transport->send(open);
     }
 
-    auto idxm = generate_index_map(client, nbClients_);
+    auto idxm = generate_index_map(client.id_, nbClients_);
     eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(size_t));
     LocalIndices index_map{std::move(idxm)};
 
@@ -131,7 +131,7 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
             eckit::Log::info() << std::endl;
         }
 
-        // Chose server
+        // Choose server
         auto id = std::hash<std::string>{}(field_id) % nbServers_;
         ASSERT(id < serverPeers.size());
 
@@ -162,6 +162,7 @@ void MpiExample::execute(const eckit::option::CmdArgs&) {
     std::cout << *transport << std::endl;
 
     field_size() = 29;
+    new_random_data_each_run() = true;
 
     auto serverPeers = spawnServers(config_, transport);
 

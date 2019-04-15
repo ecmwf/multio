@@ -77,27 +77,33 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
     }
 }
 
+Message TcpTransport::nextMessage(eckit::TCPSocket& socket) const {
+    Message msg;
+
+    size_t size;
+    socket.read(&size, sizeof(size));
+
+    eckit::Log::info() << "Received size: " << size << std::endl;
+
+    eckit::Buffer buffer{size};
+    socket.read(buffer, static_cast<long>(size));
+
+    eckit::MemoryStream stream{buffer};
+    msg.decode(stream);
+
+    return msg;
+}
+
 Message TcpTransport::receive() {
 
     waitForEvent();
 
     for (auto it = begin(incoming_); it != end(incoming_); ++it) {
-        auto& conn = *it;
-        if (!conn->ready()) {
+        if (not (*it)->ready()) {
             continue;
         }
 
-        size_t size;
-        conn->socket_.read(&size, sizeof(size));
-
-        eckit::Log::info() << "Received size: " << size << std::endl;
-
-        eckit::Buffer buffer{size};
-        conn->socket_.read(buffer, static_cast<long>(size));
-
-        eckit::MemoryStream stream{buffer};
-        Message msg;
-        msg.decode(stream);
+        auto msg = nextMessage((*it)->socket_);
 
         eckit::Log::info() << "Received message: " << msg << std::endl;
 

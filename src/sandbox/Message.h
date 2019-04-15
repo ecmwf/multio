@@ -19,8 +19,6 @@
 
 #include <memory>
 #include <string>
-#include <thread>
-#include <vector>
 
 #include "eckit/io/Buffer.h"
 
@@ -63,36 +61,43 @@ public:  // types
         size_t global_field_size_;
     };
 
+    struct Content {
+        Header header_;
+        eckit::Buffer payload_;
+
+        Content(const Header& header, const eckit::Buffer& payload = 0);
+        size_t size() const;
+    };
+
 public:  // methods
     static int protocolVersion();
-    static std::string tag2str(Tag);
+    static std::string tag2str(Tag t);
 
     Message();
     Message(const Header& header, const eckit::Buffer& payload = 0);
 
-    const Header& header() const { return header_; }
+    const Header& header() const;
 
-    int version() const { return version_; }
+    int version() const;
+    Tag tag() const;
 
-    Tag tag() const { return header_.tag_; }
-
-    Peer destination() const { return header_.destination_; }
-    Peer source() const { return header_.source_; }
+    Peer destination() const;
+    Peer source() const;
 
     size_t size() const;
 
-    const std::string& mapping() const { return header_.mapping_;}
-    size_t map_count() const { return header_.map_count_; }
+    const std::string& mapping() const;
+    size_t map_count() const;
 
-    const std::string& category() const { return header_.category_; }
-    const std::string& field_id() const { return header_.field_id_; }
-    size_t field_size() const { return header_.global_field_size_; }
-
-    void encode(eckit::Stream& strm) const;
-    void decode(eckit::Stream& strm);
+    const std::string& category() const;
+    const std::string& field_id() const;
+    size_t field_size() const;
 
     eckit::Buffer& payload();
     const eckit::Buffer& payload() const;
+
+    void encode(eckit::Stream& strm) const;
+    void decode(eckit::Stream& strm);
 
 private:  // methods
     void print(std::ostream& out) const;
@@ -104,9 +109,8 @@ private:  // methods
 
 private:  // members
     int version_;
-    Header header_;
 
-    std::shared_ptr<eckit::Buffer> payload_;
+    std::shared_ptr<Content> content_;
 
 };
 

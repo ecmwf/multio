@@ -68,7 +68,7 @@ int Message::protocolVersion() {
     return 1;
 }
 
-std::string Message::tag2str(Message::Tag t) {
+std::string Message::tag2str(Tag t) {
     static std::map<Tag, std::string> m = {{Tag::Empty, "Empty"},
                                            {Tag::Open, "Open"},
                                            {Tag::Close, "Close"},
@@ -80,54 +80,101 @@ std::string Message::tag2str(Message::Tag t) {
     return m.find(t)->second;
 }
 
+Message::Content::Content(const Header& header, const eckit::Buffer& payload) :
+    header_{header},
+    payload_{payload, payload.size()} {}
+
+size_t Message::Content::size() const {
+    return payload_.size();
+}
+
 Message::Message() : Message{{Message::Tag::Empty}, 0} {}
 
 Message::Message(const Header& header, const eckit::Buffer& payload) :
     version_{protocolVersion()},
-    header_{header},
-    payload_{std::make_shared<eckit::Buffer>(payload, payload.size())} {}
+    content_{std::make_shared<Content>(header, payload)} {}
+
+const Message::Header& Message::header() const {
+    return content_->header_;
+}
+
+int Message::version() const {
+    return version_;
+}
+
+Message::Tag Message::tag() const {
+    return content_->header_.tag_;
+}
+
+Peer Message::destination() const {
+    return content_->header_.destination_;
+}
+
+Peer Message::source() const {
+    return content_->header_.source_;
+}
 
 size_t Message::size() const {
-    return payload_->size();
+    return content_->size();
+}
+
+const std::string& Message::mapping() const {
+    return content_->header_.mapping_;
+}
+
+size_t Message::map_count() const {
+    return content_->header_.map_count_;
+}
+
+const std::string& Message::category() const {
+    return content_->header_.category_;
+}
+
+const std::string& Message::field_id() const {
+    return content_->header_.field_id_;
+}
+
+size_t Message::field_size() const {
+    return content_->header_.global_field_size_;
+}
+
+eckit::Buffer& Message::payload() {
+    return content_->payload_;
+}
+
+const eckit::Buffer& Message::payload() const {
+    return content_->payload_;
 }
 
 void Message::encode(eckit::Stream& strm) const {
     strm << version_;
 
-    strm << header_;
+    strm << content_->header_;
 
-    strm << payload_->size();
-    strm << *payload_;
+    strm << content_->size();
+
+    strm << content_->payload_;
 }
 
 void Message::decode(eckit::Stream& strm) {
     strm >> version_;
 
-    strm >> header_;
+    strm >> content_->header_;
 
     unsigned long sz;
     strm >> sz;
 
     eckit::Buffer buffer(sz);
     strm >> buffer;
-    payload_ = std::make_shared<eckit::Buffer>(buffer, buffer.size());
-}
-
-eckit::Buffer& Message::payload() {
-    return *payload_;
-}
-
-const eckit::Buffer& Message::payload() const {
-    return *payload_;
+    content_->payload_ = std::move(buffer);
 }
 
 void Message::print(std::ostream& out) const {
     out << "Message("
-        << "version=" << version_ << ", tag=" << tag2str(header_.tag_)
-        << ", source=" << header_.source_ << ", destination=" << header_.destination_
-        << ", mapping=" << header_.mapping_ << ", map_count=" << header_.map_count_
-        << ", category=" << header_.category_ << ", field_id=" << header_.field_id_
-        << ", global_size=" << header_.global_field_size_ << ")";
+        << "version=" << version() << ", tag=" << tag2str(tag()) << ", source=" << source()
+        << ", destination=" << destination() << ", mapping=" << mapping()
+        << ", map_count=" << map_count() << ", category=" << category()
+        << ", field_id=" << field_id() << ", global_size=" << field_size() << ")";
 }
 
 }  // namespace sandbox

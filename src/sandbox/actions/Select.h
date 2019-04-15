@@ -18,6 +18,7 @@
 #define multio_sandbox_actions_Select_H
 
 #include <iosfwd>
+#include <vector>
 
 #include "sandbox/Action.h"
 

@@ -19,9 +19,11 @@
 
 #include <iosfwd>
 #include <map>
+#include <vector>
 
 #include "eckit/net/TCPClient.h"
 #include "eckit/net/TCPServer.h"
+#include "eckit/io/Select.h"
 
 #include "sandbox/Transport.h"
 
@@ -33,6 +35,8 @@ class TCPSocket;
 namespace multio {
 namespace sandbox {
 
+struct Connection;
+
 class TcpTransport final : public Transport {
 public:
     TcpTransport(const eckit::Configuration& config);
@@ -42,17 +46,22 @@ private:
 
     void send(const Message& message) override;
 
+    Peer localPeer() const override;
+
     void print(std::ostream& os) const override;
 
-    Peer localPeer() const override;
+    bool acceptConnection();
+    void waitForEvent();
 
     std::string local_host_;
     size_t local_port_;
 
-    std::unique_ptr<eckit::TCPServer> server_;
-    eckit::TCPSocket socket_;
+    std::map<Peer, const std::unique_ptr<eckit::TCPSocket>> outgoing_;
 
-    std::map<Peer, const std::unique_ptr<eckit::TCPSocket>> connections_;
+    eckit::Select select_;
+
+    std::unique_ptr<eckit::TCPServer> server_;
+    std::vector<std::unique_ptr<Connection>> incoming_;
 };
 
 }  // namespace sandbox

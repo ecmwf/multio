@@ -14,6 +14,7 @@
 #include <iostream>
 
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/log/Plural.h"
 #include "eckit/maths/Functions.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/serialisation/MemoryStream.h"
@@ -21,11 +22,26 @@
 namespace multio {
 namespace sandbox {
 
+struct Connection {
+    eckit::Select& select_;
+    eckit::TCPSocket socket_;
+
+    Connection(eckit::Select& select, eckit::TCPSocket& socket) : select_{select}, socket_{socket} {
+        select_.add(socket_);
+    }
+
+    ~Connection() {
+        select_.remove(socket_);
+        socket_.close();
+    }
+
+    bool ready() { return select_.set(socket_); }
+};
+
 TcpTransport::TcpTransport(const eckit::Configuration& config) :
     Transport(config),
     local_host_{eckit::Main::hostname()},
     local_port_{config.getUnsigned("local_port")} {
-
     auto serverConfigs = config.getSubConfigurations("servers");
 
     for (auto cfg : serverConfigs) {
@@ -37,6 +53,7 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
                                << ")" << std::endl;
 
             server_.reset(new eckit::TCPServer{static_cast<int>(local_port_)});
+            select_.add(*server_);
         }
         else {
             // TODO: assert that (local_host_, local_port_) is in the list of clients
@@ -48,13 +65,13 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
                                    << ")" << std::endl;
                 try {
                     eckit::TCPClient client;
-                    connections_.emplace(Peer{host, static_cast<size_t>(port)},
+                    outgoing_.emplace(Peer{host, static_cast<size_t>(port)},
                                          new eckit::TCPSocket{client.connect(host, port, 5, 10)});
                 } catch (eckit::TooManyRetries& e) {
                     eckit::Log::error() << "Failed to establish connection to host: " << host
                                         << ", port: " << port << std::endl;
                 }
-                eckit::Log::info() << "Number of connections: " << connections_.size() << std::endl;
+                eckit::Log::info() << "Number of outgoing connections: " << outgoing_.size() << std::endl;
             }
         }
     }
@@ -62,35 +79,44 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
 
 Message TcpTransport::receive() {
 
-    if(not socket_.stillConnected()) {
-        socket_ = server_->accept();
+    waitForEvent();
+
+    for (auto it = begin(incoming_); it != end(incoming_); ++it) {
+        auto& conn = *it;
+        if (!conn->ready()) {
+            continue;
+        }
+
+        size_t size;
+        conn->socket_.read(&size, sizeof(size));
+
+        eckit::Log::info() << "Received size: " << size << std::endl;
+
+        eckit::Buffer buffer{size};
+        conn->socket_.read(buffer, static_cast<long>(size));
+
+        eckit::MemoryStream stream{buffer};
+        Message msg;
+        msg.decode(stream);
+
+        eckit::Log::info() << "Received message: " << msg << std::endl;
+
+        if(msg.tag() == Message::Tag::Close) {
+            incoming_.erase(it);
+        } else {
+            std::swap(*it, incoming_[incoming_.size() - 1]);
+        }
+
+        return msg;
     }
 
-    size_t size;
-    socket_.read(&size, sizeof(size));
-
-    eckit::Log::info() << "Received size: " << size << std::endl;
-
-    eckit::Buffer buffer{size};
-    socket_.read(buffer, static_cast<long>(size));
-
-    eckit::MemoryStream stream{buffer};
-    Message msg;
-    msg.decode(stream);
-
-    eckit::Log::info() << "Received message: " << msg << std::endl;
-
-    if(msg.tag() == Message::Tag::Close) {
-        socket_.close();
-    }
-
-    return msg;
+    throw eckit::SeriousBug("No message received");
 }
 
 void TcpTransport::send(const Message& msg) {
     auto dest = msg.destination();
 
-    const auto& socket = connections_.at(msg.destination());
+    const auto& socket = outgoing_.at(msg.destination());
 
     // Add 4K for header/footer etc. Should be plenty
     eckit::Buffer buffer{eckit::round(msg.size(), 8) + 4096};
@@ -113,6 +139,27 @@ Peer TcpTransport::localPeer() const {
 
 void TcpTransport::print(std::ostream& os) const {
     os << "TcpTransport()";
+}
+
+bool TcpTransport::acceptConnection() {
+    if (not select_.set(*server_)) {
+        return false;
+    }
+
+    eckit::TCPSocket socket{server_->accept()};
+    incoming_.emplace_back(new Connection{select_, socket});
+
+    return true;
+}
+
+void TcpTransport::waitForEvent() {
+    do {
+        while (not select_.ready(5)) {
+            eckit::Log::info() << "Waiting... There are "
+                               << eckit::Plural(incoming_.size(), "connection") << " still active"
+                               << std::endl;
+        }
+    } while (acceptConnection());
 }
 
 static TransportBuilder<TcpTransport> TcpTransportBuilder("Tcp");

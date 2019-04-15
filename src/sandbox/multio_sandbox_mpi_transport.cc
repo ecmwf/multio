@@ -123,11 +123,13 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
     for (int ii = 0; ii < nfields; ++ii) {
         auto field_id = std::string("temperature::step::") + std::to_string(ii);
         std::vector<double> field;
-        index_map.to_local(global_test_field(field_id, field_size()), field);
 
-        if (root() == eckit::mpi::comm(client.domain_.c_str()).rank()) {
+        auto& global_field = global_test_field(field_id, field_size(), "Mpi", client.id_);
+        index_map.to_local(global_field, field);
+
+        if (root() == client.id_) {
             eckit::Log::info() << "   ---   Field: " << field_id << ", values: " << std::flush;
-            print_buffer(global_test_field(field_id, field_size()), eckit::Log::info(), " ");
+            print_buffer(global_field, eckit::Log::info(), " ");
             eckit::Log::info() << std::endl;
         }
 

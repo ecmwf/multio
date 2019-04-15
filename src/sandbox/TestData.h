@@ -27,6 +27,20 @@ inline bool& new_random_data_each_run() {
     return val;
 }
 
+inline std::vector<double> create_hashed_data(const std::string& field_id, const size_t sz) {
+    std::vector<double> field(sz);
+
+    auto ii = 0;
+    generate(begin(field), end(field), [&ii, &field_id]() {
+        auto hash_val = std::hash<std::string>{}(field_id + std::to_string(ii++));
+        hash_val = static_cast<uint32_t>(hash_val >> 32);
+        return 13.0 + 17.0 * static_cast<double>(hash_val) /
+                          static_cast<double>(std::numeric_limits<uint32_t>::max());
+    });
+
+    return field;
+}
+
 inline std::vector<double> create_random_data(const size_t sz) {
     std::vector<double> field;
 
@@ -51,7 +65,8 @@ inline std::vector<size_t> generate_index_map(size_t id, size_t nbclients) {
     return maps;
 }
 
-inline std::vector<double>& global_test_field(const std::string& field_id, const size_t sz) {
+inline std::vector<double>& global_test_field(const std::string& field_id, const size_t sz,
+                                              const std::string& transport, const size_t list_id) {
     using eckit::mpi::comm;
 
     static std::map<std::string, std::vector<double>> test_fields;
@@ -59,21 +74,16 @@ inline std::vector<double>& global_test_field(const std::string& field_id, const
         return test_fields[field_id];
     }
 
-    if (new_random_data_each_run()) {
+    if (transport == "Mpi" && new_random_data_each_run()) {
         test_fields[field_id] =
-            (comm().rank() == root()) ? create_random_data(sz) : std::vector<double>(sz);
+            (root() == list_id) ? create_random_data(sz) : std::vector<double>(sz);
         comm().broadcast(test_fields[field_id], root());
+
+        return test_fields[field_id];
     }
-    else {
-        test_fields[field_id].resize(sz);
-        auto ii = 0;
-        generate(begin(test_fields[field_id]), end(test_fields[field_id]), [&ii, &field_id]() {
-            auto hash_val = std::hash<std::string>{}(field_id + std::to_string(ii++));
-            hash_val = static_cast<uint32_t>(hash_val >> 32);
-            return 13.0 + 17.0 * static_cast<double>(hash_val) /
-                              static_cast<double>(std::numeric_limits<uint32_t>::max());
-        });
-    }
+
+    test_fields[field_id] =
+        new_random_data_each_run() ? create_random_data(sz) : create_hashed_data(field_id, sz);
 
     return test_fields[field_id];
 }

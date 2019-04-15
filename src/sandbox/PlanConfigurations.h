@@ -7,6 +7,50 @@
 namespace multio {
 namespace sandbox {
 
+std::string thread_plan_configurations() {
+    return R"json(
+        {
+           "transport" : "thread",
+           "plans" : [
+              {
+                 "name" : "ocean",
+                 "actions" : {
+                    "root" : {
+                       "type" : "Print",
+                       "stream" : "error",
+                       "next" : {
+                          "type" : "AppendToFile",
+                          "path" : "messages.txt"
+                       }
+                    }
+                 }
+              },
+              {
+                 "name" : "atmosphere",
+                 "actions" : {
+                    "root" : {
+                       "type" : "Select",
+                       "categories" : [ "prognostic", "diagnostic" ],
+                       "next" : {
+                          "type" : "Aggregation",
+                          "mapping" : "scattered",
+                          "next" : {
+                             "type" : "Encode",
+                             "format" : "grib",
+                             "next" : {
+                                "type" : "Sink",
+                                "datasink" : "file"
+                             }
+                          }
+                       }
+                    }
+                 }
+              }
+           ]
+        }
+    )json";
+}
+
 std::string mpi_plan_configurations() {
     return R"json(
         {

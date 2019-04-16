@@ -60,3 +60,4 @@ ecbuild_add_library(
 add_subdirectory(fdb4)
 add_subdirectory(fdb5)
 add_subdirectory(attic)
+add_subdirectory(server)

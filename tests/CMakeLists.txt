@@ -13,4 +13,4 @@ ecbuild_add_test( TARGET    test_multio_file_sink
                   SOURCES   test_multio_file_sink.cc
                   LIBS      multio )
 
-add_subdirectory(server)
+add_subdirectory(attic)

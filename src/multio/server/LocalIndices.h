@@ -2,6 +2,7 @@
 #ifndef multio_server_LocalIndices_H
 #define multio_server_LocalIndices_H
 
+#include <cstddef>
 #include <vector>
 
 namespace multio {

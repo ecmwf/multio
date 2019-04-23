@@ -102,13 +102,13 @@ std::string tcp_plan_configurations() {
            "transport" : "tcp",
            "clients" : [
               {
-                 "host" : "class11",
+                 "host" : "skadi",
                  "ports" : [4441, 4442, 4443, 4444, 4445]
               }
            ],
            "servers" : [
               {
-                 "host" : "class11",
+                 "host" : "skadi",
                  "ports" : [7771, 7772, 7773]
               }
            ],

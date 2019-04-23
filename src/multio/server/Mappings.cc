@@ -40,7 +40,7 @@ void Mappings::add(Message msg) {
 
     eckit::Log::info() << "  ---  local-map size = " << local_map.size() << std::endl;
 
-    eckit::Log::info() << "  ---  map size = " << mappings_.at("scattered").size() << std::endl;
+    eckit::Log::info() << "  ---  map size = " << mappings_.at("unstructured").size() << std::endl;
 }
 
 void Mappings::list(std::ostream& out) const {

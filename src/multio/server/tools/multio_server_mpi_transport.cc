@@ -113,7 +113,7 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
     // send partial mapping
     for (auto& server : serverPeers) {
 
-        Message msg{{Message::Tag::Mapping, client, server, "scattered", nbClients_}, buffer};
+        Message msg{{Message::Tag::Mapping, client, server, "unstructured", nbClients_}, buffer};
 
         transport->send(msg);
     }
@@ -140,7 +140,7 @@ void MpiExample::spawnClients(std::shared_ptr<Transport> transport,
         eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()),
                              field.size() * sizeof(double));
 
-        Message msg{{Message::Tag::Field, client, serverPeers[id], "scattered", nbClients_,
+        Message msg{{Message::Tag::Field, client, serverPeers[id], "unstructured", nbClients_,
                      "prognostic", field_id, field_size()},
                     buffer};
 

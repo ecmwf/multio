@@ -33,7 +33,7 @@ std::string thread_plan_configurations() {
                        "categories" : [ "prognostic", "diagnostic" ],
                        "next" : {
                           "type" : "Aggregation",
-                          "mapping" : "scattered",
+                          "mapping" : "unstructured",
                           "next" : {
                              "type" : "Encode",
                              "format" : "grib",
@@ -78,7 +78,7 @@ std::string mpi_plan_configurations() {
                        "categories" : [ "prognostic", "diagnostic" ],
                        "next" : {
                           "type" : "Aggregation",
-                          "mapping" : "scattered",
+                          "mapping" : "unstructured",
                           "next" : {
                              "type" : "Encode",
                              "format" : "grib",
@@ -121,7 +121,7 @@ std::string tcp_plan_configurations() {
                        "categories" : [ "prognostic", "diagnostic" ],
                        "next" : {
                           "type" : "Aggregation",
-                          "mapping" : "scattered",
+                          "mapping" : "unstructured",
                           "next" : {
                              "type" : "Encode",
                              "format" : "grib",

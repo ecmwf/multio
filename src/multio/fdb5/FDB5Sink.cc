@@ -83,7 +83,7 @@ void FDB5Sink::iinitfdb()
 void FDB5Sink::iclosefdb(int fdbaddr)
 {
     Log::debug<LibMultio>() << "FDB5Sink::iclosefdb(" << fdbaddr << ")" << std::endl;
-    archiver_.release();
+    archiver_.reset();
 }
 
 void FDB5Sink::isetcommfdb(int comm)

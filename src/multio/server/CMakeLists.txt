@@ -68,14 +68,8 @@ ecbuild_add_executable( TARGET    multio_server_thread_transport
                         CONDITION HAVE_MULTIO_SERVER
                         LIBS      multio-server multio)
 
-ecbuild_add_executable( TARGET    multio_server_mpi_transport
+ecbuild_add_executable( TARGET    multio-hammer
                         NOINSTALL
-                        SOURCES   tools/multio_server_mpi_transport.cc
-                        CONDITION HAVE_MULTIO_SERVER
-                        LIBS      multio-server multio)
-
-ecbuild_add_executable( TARGET    multio_server_tcp_transport
-                        NOINSTALL
-                        SOURCES   tools/multio_server_tcp_transport.cc
+                        SOURCES   tools/multio-hammer.cc
                         CONDITION HAVE_MULTIO_SERVER
                         LIBS      multio-server multio)

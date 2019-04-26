@@ -139,6 +139,16 @@ std::string tcp_plan_configurations() {
     )json";
 }
 
+std::string plan_configurations(const std::string& type) {
+    std::cout << "Transport type: " << type << std::endl;
+    std::map<std::string, std::string> plan_configurations = {
+        {"mpi", mpi_plan_configurations()},
+        {"tcp", tcp_plan_configurations()},
+        {"thread", thread_plan_configurations()}};
+
+    return plan_configurations.at(type);
+}
+
 }  // namespace server
 }  // namespace multio
 

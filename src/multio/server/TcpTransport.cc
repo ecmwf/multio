@@ -168,7 +168,7 @@ void TcpTransport::waitForEvent() {
     } while (acceptConnection());
 }
 
-static TransportBuilder<TcpTransport> TcpTransportBuilder("Tcp");
+static TransportBuilder<TcpTransport> TcpTransportBuilder("tcp");
 
 }  // namespace server
 }  // namespace multio

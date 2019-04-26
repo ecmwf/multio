@@ -66,7 +66,7 @@ eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer dest) {
     return *queues_.at(dest);
 }
 
-static TransportBuilder<ThreadTransport> ThreadTransportBuilder("Thread");
+static TransportBuilder<ThreadTransport> ThreadTransportBuilder("thread");
 
 }  // namespace server
 }  // namespace multio

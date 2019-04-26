@@ -74,7 +74,7 @@ inline std::vector<double>& global_test_field(const std::string& field_id, const
         return test_fields[field_id];
     }
 
-    if (transport == "Mpi" && new_random_data_each_run()) {
+    if (transport == "mpi" && new_random_data_each_run()) {
         test_fields[field_id] =
             (root() == list_id) ? create_random_data(sz) : std::vector<double>(sz);
         comm().broadcast(test_fields[field_id], root());

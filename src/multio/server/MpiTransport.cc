@@ -65,7 +65,7 @@ void MpiTransport::print(std::ostream& os) const {
     os << "MpiTransport()";
 }
 
-static TransportBuilder<MpiTransport> MpiTransportBuilder("Mpi");
+static TransportBuilder<MpiTransport> MpiTransportBuilder("mpi");
 
 }  // namespace server
 }  // namespace multio

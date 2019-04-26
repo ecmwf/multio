@@ -21,6 +21,7 @@
 #include <string>
 
 #include "eckit/io/Buffer.h"
+#include "eckit/value/Value.h"
 
 #include "multio/server/Peer.h"
 
@@ -59,6 +60,8 @@ public:  // types
         std::string category_;
         std::string field_id_;  // Could also be the hash of MARS metadata
         size_t global_field_size_;
+
+        eckit::Value metadata_;
     };
 
     struct Content {

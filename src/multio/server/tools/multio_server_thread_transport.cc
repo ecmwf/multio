@@ -124,7 +124,7 @@ std::vector<std::thread> ThreadExample::spawnClients(std::shared_ptr<Transport> 
             {
                 std::lock_guard<std::mutex> lock{mut_};
                 auto& global_field =
-                    global_test_field(field_id, field_size(), "Thread", client_list_id);
+                    global_test_field(field_id, field_size(), "thread", client_list_id);
                 index_map.to_local(global_field, field);
 
                 if (root() == client_list_id) {
@@ -168,7 +168,7 @@ std::vector<std::thread> ThreadExample::spawnClients(std::shared_ptr<Transport> 
 void ThreadExample::execute(const eckit::option::CmdArgs&) {
     eckit::YAMLConfiguration config{thread_plan_configurations()};
 
-    std::shared_ptr<Transport> transport{TransportFactory::instance().build("Thread", config)};
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("thread", config)};
 
     eckit::Log::info() << *transport << std::endl;
 

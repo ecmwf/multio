@@ -2,6 +2,7 @@
 #ifndef multio_server_TestData_H
 #define multio_server_TestData_H
 
+#include <mutex>
 #include <random>
 
 #include "eckit/mpi/Comm.h"
@@ -25,6 +26,11 @@ inline size_t& root() {
 inline bool& new_random_data_each_run() {
     static bool val = false;
     return val;
+}
+
+inline std::mutex& mutex() {
+    static std::mutex mut;
+    return mut;
 }
 
 inline std::vector<double> create_hashed_data(const std::string& field_id, const size_t sz) {
@@ -68,6 +74,8 @@ inline std::vector<size_t> generate_index_map(size_t id, size_t nbclients) {
 inline std::vector<double>& global_test_field(const std::string& field_id, const size_t sz,
                                               const std::string& transport, const size_t list_id) {
     using eckit::mpi::comm;
+
+    std::lock_guard<std::mutex> lock{mutex()};
 
     static std::map<std::string, std::vector<double>> test_fields;
     if (test_fields.find(field_id) != end(test_fields)) {

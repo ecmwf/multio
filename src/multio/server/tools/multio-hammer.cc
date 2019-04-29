@@ -182,12 +182,6 @@ void MultioHammer::beamData(const std::vector<Peer>& serverPeers,
         auto& global_field = global_test_field(field_id, field_size(), trType_, client_list_id);
         index_map.to_local(global_field, field);
 
-        if (root() == client_list_id) {
-            eckit::Log::info() << "   ---   Field: " << field_id << ", values: " << std::flush;
-            print_buffer(global_field, eckit::Log::info(), " ");
-            eckit::Log::info() << std::endl;
-        }
-
         // Choose server
         auto id = std::hash<std::string>{}(field_id) % nbServers_;
         ASSERT(id < serverPeers.size());
@@ -231,38 +225,37 @@ void MultioHammer::execute(const eckit::option::CmdArgs&) {
 
     field_size() = 29;
 
-    if (trType_ == "mpi" || trType_ == "tcp") {
+    if (trType_ == "thread") {  // The case for the thread transport is slightly special
 
+        // Spawn servers
+        std::vector<Peer> serverPeers;
+        std::vector<std::thread> serverThreads;
+        for (size_t ii = 0; ii != nbServers_; ++ii) {
+            std::thread t{&MultioHammer::startListening, this, transport};
+
+            serverPeers.push_back(Peer{"thread", std::hash<std::thread::id>{}(t.get_id())});
+            serverThreads.push_back(std::move(t));
+        }
+
+        // Spawn clients
+        std::vector<std::thread> clientThreads;
+        for (size_t ii = 0; ii != nbClients_; ++ii) {
+            clientThreads.emplace_back(&MultioHammer::beamData, this, std::cref(serverPeers),
+                                       transport, ii);
+        }
+
+        // Join all threads
+        std::for_each(begin(clientThreads), end(clientThreads), [](std::thread& t) { t.join(); });
+        std::for_each(begin(serverThreads), end(serverThreads), [](std::thread& t) { t.join(); });
+    }
+    else {
         std::vector<Peer> clientPeers;
         std::vector<Peer> serverPeers;
         std::tie(clientPeers, serverPeers) = createPeerLists();
 
         spawnServers(serverPeers, transport);
         spawnClients(clientPeers, serverPeers, transport);
-
-        return;
     }
-
-    std::vector<Peer> serverPeers;
-    std::vector<std::thread> serverThreads;
-    for (size_t ii = 0; ii != nbServers_; ++ii) {
-        Log::info() << "Starting server " << ii << std::endl;
-
-        std::thread t{&MultioHammer::startListening, this, transport};
-
-        serverPeers.push_back(Peer{"thread", std::hash<std::thread::id>{}(t.get_id())});
-
-        serverThreads.push_back(std::move(t));
-    }
-
-    std::vector<std::thread> clientThreads;
-    for (size_t ii = 0; ii != nbClients_; ++ii) {
-        clientThreads.emplace_back(&MultioHammer::beamData, this, std::cref(serverPeers), transport,
-                                   ii);
-    }
-
-    std::for_each(begin(clientThreads), end(clientThreads), [](std::thread& t) { t.join(); });
-    std::for_each(begin(serverThreads), end(serverThreads), [](std::thread& t) { t.join(); });
 }
 
 //----------------------------------------------------------------------------------------------------------------------

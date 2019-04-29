@@ -62,12 +62,6 @@ ecbuild_add_library(
 
 include_directories( ${ECKIT_INCLUDE_DIRS} )
 
-ecbuild_add_executable( TARGET    multio_server_thread_transport
-                        NOINSTALL
-                        SOURCES   tools/multio_server_thread_transport.cc
-                        CONDITION HAVE_MULTIO_SERVER
-                        LIBS      multio-server multio)
-
 ecbuild_add_executable( TARGET    multio-hammer
                         NOINSTALL
                         SOURCES   tools/multio-hammer.cc

@@ -48,8 +48,11 @@ private:
 
     std::tuple<std::vector<Peer>, std::vector<Peer>> createPeerLists();
 
+    void startListening(std::shared_ptr<Transport> transport);
     void spawnServers(const std::vector<Peer>& serverPeers, std::shared_ptr<Transport> transport);
 
+    void beamData(const std::vector<Peer>& serverPeers, std::shared_ptr<Transport> transport,
+                  const size_t client_list_id) const;
     void spawnClients(const std::vector<Peer>& clientPeers, const std::vector<Peer>& serverPeers,
                       std::shared_ptr<Transport> transport);
 
@@ -133,6 +136,11 @@ std::tuple<std::vector<Peer>, std::vector<Peer>> MultioHammer::createPeerLists()
     return std::make_tuple(clientPeers, serverPeers);
 }
 
+void MultioHammer::startListening(std::shared_ptr<Transport> transport){
+    Listener listener(config_, *transport);
+    listener.listen();
+}
+
 void MultioHammer::spawnServers(const std::vector<Peer>& serverPeers,
                                 std::shared_ptr<Transport> transport) {
     // Do nothing if current process is not in the list of servers
@@ -140,19 +148,12 @@ void MultioHammer::spawnServers(const std::vector<Peer>& serverPeers,
         return;
     }
 
-    Listener listener(config_, *transport);
-    listener.listen();
+    startListening(transport);
 }
 
-void MultioHammer::spawnClients(const std::vector<Peer>& clientPeers,
-                                const std::vector<Peer>& serverPeers,
-                                std::shared_ptr<Transport> transport) {
-    // Do nothing if current process is not in the list of clients
-    auto it = find(begin(clientPeers), end(clientPeers), transport->localPeer());
-    if (it == end(clientPeers)) {
-        return;
-    }
-
+void MultioHammer::beamData(const std::vector<Peer>& serverPeers,
+                            std::shared_ptr<Transport> transport,
+                            const size_t client_list_id) const {
     Peer client = transport->localPeer();
 
     // open all servers
@@ -161,7 +162,6 @@ void MultioHammer::spawnClients(const std::vector<Peer>& clientPeers,
         transport->send(open);
     }
 
-    auto client_list_id = std::distance(begin(clientPeers), it);
     auto idxm = generate_index_map(client_list_id, nbClients_);
     eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(size_t));
     LocalIndices index_map{std::move(idxm)};
@@ -209,10 +209,21 @@ void MultioHammer::spawnClients(const std::vector<Peer>& clientPeers,
     }
 }
 
+void MultioHammer::spawnClients(const std::vector<Peer>& clientPeers,
+                                const std::vector<Peer>& serverPeers,
+                                std::shared_ptr<Transport> transport) {
+    // Do nothing if current process is not in the list of clients
+    auto it = find(begin(clientPeers), end(clientPeers), transport->localPeer());
+    if (it == end(clientPeers)) {
+        return;
+    }
+
+    beamData(serverPeers, transport, std::distance(begin(clientPeers), it));
+}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 void MultioHammer::execute(const eckit::option::CmdArgs&) {
-
     config_.set("local_port", port_);
     std::shared_ptr<Transport> transport{TransportFactory::instance().build(trType_, config_)};
 
@@ -220,12 +231,38 @@ void MultioHammer::execute(const eckit::option::CmdArgs&) {
 
     field_size() = 29;
 
-    std::vector<Peer> clientPeers;
-    std::vector<Peer> serverPeers;
-    std::tie(clientPeers, serverPeers) = createPeerLists();
+    if (trType_ == "mpi" || trType_ == "tcp") {
 
-    spawnServers(serverPeers, transport);
-    spawnClients(clientPeers, serverPeers, transport);
+        std::vector<Peer> clientPeers;
+        std::vector<Peer> serverPeers;
+        std::tie(clientPeers, serverPeers) = createPeerLists();
+
+        spawnServers(serverPeers, transport);
+        spawnClients(clientPeers, serverPeers, transport);
+
+        return;
+    }
+
+    std::vector<Peer> serverPeers;
+    std::vector<std::thread> serverThreads;
+    for (size_t ii = 0; ii != nbServers_; ++ii) {
+        Log::info() << "Starting server " << ii << std::endl;
+
+        std::thread t{&MultioHammer::startListening, this, transport};
+
+        serverPeers.push_back(Peer{"thread", std::hash<std::thread::id>{}(t.get_id())});
+
+        serverThreads.push_back(std::move(t));
+    }
+
+    std::vector<std::thread> clientThreads;
+    for (size_t ii = 0; ii != nbClients_; ++ii) {
+        clientThreads.emplace_back(&MultioHammer::beamData, this, std::cref(serverPeers), transport,
+                                   ii);
+    }
+
+    std::for_each(begin(clientThreads), end(clientThreads), [](std::thread& t) { t.join(); });
+    std::for_each(begin(serverThreads), end(serverThreads), [](std::thread& t) { t.join(); });
 }
 
 //----------------------------------------------------------------------------------------------------------------------

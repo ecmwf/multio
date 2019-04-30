@@ -15,11 +15,10 @@
 #ifndef multio_IOStats_H
 #define multio_IOStats_H
 
+#include <string>
 
 #include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
-
-#include <string>
 
 namespace eckit {
     class Length;

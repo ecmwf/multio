@@ -8,15 +8,15 @@
  * does it submit to any jurisdiction.
  */
 
-#include <unistd.h>
+#include "TestHelpers.h"
+
 #include <cstring>
+#include <unistd.h>
+
+#include "multio/FileSink.h"
 
 #include "eckit/testing/Test.h"
 #include "eckit/filesystem/TmpFile.h"
-#include "multio/DataSink.h"
-#include "multio/FileSink.h"
-
-#include "TestHelpers.h"
 
 namespace multio {
 namespace test {
@@ -29,26 +29,23 @@ CASE("test_contains_file_sink") {
 }
 
 CASE("test_file_sink_is_created_successfully") {
-    eckit::PathName file_path = eckit::TmpFile();
+    const eckit::PathName& file_path = eckit::TmpFile();
     auto sink = make_configured_file_sink(file_path);
     auto fileSink = dynamic_cast<FileSink*>(sink.get());
     EXPECT(fileSink);
     EXPECT(file_path.exists());
-    file_path.unlink();
 }
 
 CASE("test_file_sink_writes_correctly") {
-    eckit::PathName file_path = eckit::TmpFile();
+    const eckit::PathName& file_path = eckit::TmpFile();
     auto sink = make_configured_file_sink(file_path);
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
-    eckit::DataBlobPtr stringBlob(
-        eckit::DataBlobFactory::build("test_blob", quote, sizeof(quote) - 1));
+    eckit::DataBlobPtr stringBlob(eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
     sink->write(stringBlob);
 
     EXPECT(file_content(file_path) == std::string(quote));
-    file_path.unlink();
 }
 
 }  // namespace test

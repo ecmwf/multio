@@ -16,27 +16,25 @@
 #define multio_DataSink_H
 
 #include <iosfwd>
+#include <mutex>
 #include <string>
 #include <vector>
-#include <mutex>
+#include <map>
 
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/io/DataBlob.h"
 #include "eckit/memory/NonCopyable.h"
-#include "eckit/memory/SharedPtr.h"
-
-#include "multio/Journal.h"
 
 namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class DataSink : public eckit::Owned {
+class DataSink {
 public:  // methods
     DataSink(const eckit::Configuration& config);
 
-    ~DataSink() override = default;
+    virtual ~DataSink();
 
     virtual bool ready() const;
 

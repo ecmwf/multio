@@ -22,12 +22,6 @@ list( APPEND multio_srcs
     FileSink.h
     IOStats.cc
     IOStats.h
-    Journal.cc
-    Journal.h
-    JournalReader.cc
-    JournalReader.h
-    JournalRecord.cc
-    JournalRecord.h
     LibMultio.cc
     LibMultio.h
     MultIO.cc
@@ -38,7 +32,6 @@ list( APPEND multio_srcs
     ifsio.h
     multio_version.cc
 )
-
 
 ### multio library
 
@@ -66,3 +59,5 @@ ecbuild_add_library(
 
 add_subdirectory(fdb4)
 add_subdirectory(fdb5)
+add_subdirectory(attic)
+add_subdirectory(server)

@@ -19,7 +19,7 @@
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
-#include "eckit/parser/Tokenizer.h"
+#include "eckit/utils/Tokenizer.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/thread/AutoLock.h"
 
@@ -75,7 +75,8 @@ private:
 
     ~MIO() {}
 
-    eckit::ScopedPtr<MultIO> ptr_;
+    std::unique_ptr<MultIO> ptr_;
+
     bool log_;
 };
 

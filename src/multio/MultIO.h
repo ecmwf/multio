@@ -22,11 +22,10 @@
 
 #include "eckit/io/Length.h"
 #include "eckit/log/Timer.h"
-#include "eckit/memory/SharedPtr.h"
+#include "eckit/types/Types.h"
 
 #include "multio/DataSink.h"
 #include "multio/IOStats.h"
-#include "multio/JournalRecord.h"
 #include "multio/Trigger.h"
 
 namespace multio {
@@ -52,11 +51,7 @@ public:
 
     void trigger(const eckit::StringDict& metadata) const;
 
-    void replayRecord(const JournalRecord& record);
-
     void report(std::ostream&);
-
-    void commitJournal();
 
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
@@ -78,29 +73,21 @@ public:
     // virtual int ireadfdb(void *data, int *words);
     void iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) override;
 
-protected:  // types
-    struct SinkStoreElem {
-        eckit::SharedPtr<DataSink> sink_;
-        bool journalAlways_;
-    };
+protected:  // methods
 
-protected:
     void print(std::ostream&) const override;
 
 protected:  // members
 
-    Journal journal_;
     IOStats stats_;
 
-    std::vector<SinkStoreElem> sinks_;
+    std::vector<std::shared_ptr<DataSink>> sinks_;
 
     Trigger trigger_;
 
     mutable std::mutex mutex_;
 
     eckit::Timer timer_;
-
-    bool journaled_;
 
 private:  // methods
     friend std::ostream& operator<<(std::ostream& s, const MultIO& p) {

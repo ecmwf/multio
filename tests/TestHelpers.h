@@ -14,64 +14,41 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <iomanip>
 
-#include "eckit/io/DataBlob.h"
-#include "eckit/io/DataHandle.h"
-#include "eckit/memory/ScopedPtr.h"
-#include "eckit/parser/Tokenizer.h"
-#include "eckit/types/Metadata.h"
+#include "eckit/filesystem/TmpFile.h"
+#include "eckit/config/LocalConfiguration.h"
 
-#include "eckit/testing/Test.h"
+#include "multio/FileSink.h"
+
+#include "TestDataBlob.h"
 
 namespace multio {
 namespace test {
 
-auto make_configured_file_sink(const eckit::PathName& file_path) -> std::unique_ptr<DataSink> {
+class TestFile {
+    const eckit::PathName name_;
+
+public:
+    TestFile(eckit::PathName&& nm) : name_(std::move(nm)) { name_.touch(); }
+    ~TestFile() { name_.unlink(); }
+    eckit::PathName const& name() const { return name_; }
+};
+
+
+// Helpers for file-sink tests
+inline auto make_configured_file_sink(const eckit::PathName& file_path)
+    -> std::unique_ptr<DataSink> {
     eckit::LocalConfiguration config;
     config.set("path", file_path);
     return std::unique_ptr<DataSink>(DataSinkFactory::instance().build("file", config));
 }
 
-auto file_content(const eckit::PathName& file_path) -> std::string {
+inline auto file_content(const eckit::PathName& file_path) -> std::string {
     std::fstream ifs(std::string(file_path.fullName()).c_str());
     return std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
 }
-
-// A trivial do-nothing metadata object
-class TestMetadata : public eckit::Metadata {
-public:  // methods
-    TestMetadata() {}
-    std::vector<std::string> keywords() const final { NOTIMP; };
-    bool has(const std::string& name) const final { NOTIMP; }
-    void get(const std::string& name, std::string& value) const final { NOTIMP; }
-    void get(const std::string& name, long& value) const final { NOTIMP; }
-    void get(const std::string& name, double& value) const final { NOTIMP; }
-    friend std::ostream& operator<<(std::ostream& s, const TestMetadata& p) {
-        p.print(s);
-        return s;
-    }
-
-protected:  // methods
-    virtual void print(std::ostream& os) const final { os << "TestMetadata()"; }
-};
-
-//
-// A null datablob for testing the factories
-class TestDataBlob : public eckit::DataBlob {
-public:  // methods
-    TestDataBlob(const void* data, size_t length) : DataBlob(data, length) {}
-    TestDataBlob(eckit::DataHandle& dh, size_t length) : DataBlob(dh, length) {}
-
-    const eckit::Metadata& metadata() const final { return metadata_; }
-
-private:  // methods
-    virtual void print(std::ostream& os) const { os << "TestDataBlob()"; }
-
-private:  // members
-    TestMetadata metadata_;
-};
-
-eckit::DataBlobBuilder<TestDataBlob> dbBuilder("test_blob");
 
 }  // namespace test
 }  // namespace multio

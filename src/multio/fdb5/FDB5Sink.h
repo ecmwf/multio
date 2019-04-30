@@ -81,7 +81,7 @@ private:
         return s;
     }
 
-    eckit::ScopedPtr<fdb5::legacy::LegacyArchiver> archiver_;
+    std::unique_ptr<fdb5::legacy::LegacyArchiver> archiver_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

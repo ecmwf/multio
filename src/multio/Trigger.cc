@@ -19,6 +19,7 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/types/Metadata.h"
+#include "eckit/filesystem/PathName.h"
 #include "eckit/net/TCPClient.h"
 #include "eckit/parser/JSON.h"
 #include "eckit/config/YAMLConfiguration.h"
@@ -229,6 +230,7 @@ public: // methods
         lastSeen_(values_.end()),
         issued_(values_.end())
     {
+        std::cout << "Config: " << config << std::endl;
     }
 
     ~MetadataChangeTrigger() {
@@ -359,7 +361,7 @@ Trigger::Trigger(const Configuration& config) {
         }
     }
 
-    /// @note this doesnt quite work for reentrant MultIO objects (MultIO as a DataSink itself)
+    /// @note this doesn't quite work for reentrant MultIO objects (MultIO as a DataSink itself)
     const char * conf = ::getenv("MULTIO_CONFIG_TRIGGERS");
     if(conf) {
         eckit::YAMLConfiguration econf((std::string(conf)));

@@ -11,12 +11,15 @@
 /// @author Tiago Quintino
 /// @date   Dec 2015
 
+#include <algorithm>
+
 #include "multio/fdb5/FDB5Sink.h"
-#include "multio/LibMultio.h"
 
 #include "eckit/exception/Exceptions.h"
+
 #include "fdb5/config/UMask.h"
 
+#include "multio/LibMultio.h"
 
 using namespace eckit;
 using namespace multio;
@@ -61,12 +64,12 @@ void FDB5Sink::write(DataBlobPtr blob) {
     archiver_->archive(blob);
 }
 
-void FDB5Sink::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
+void FDB5Sink::iwritefdb(int, eckit::DataBlobPtr blob) {
     FDB5Sink::write(blob);
     dirty_ = true;
 }
 
-void FDB5Sink::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode)
+void FDB5Sink::iopenfdb(const std::string& name, int&, const std::string& mode)
 {
     Log::debug<LibMultio>() << "FDB5Sink::iopenfdb(" << name << "," << mode << ")" << std::endl;
     archiver_.reset( new fdb5::legacy::LegacyArchiver(config_) );
@@ -80,7 +83,7 @@ void FDB5Sink::iinitfdb()
 void FDB5Sink::iclosefdb(int fdbaddr)
 {
     Log::debug<LibMultio>() << "FDB5Sink::iclosefdb(" << fdbaddr << ")" << std::endl;
-    archiver_.reset(0);
+    archiver_.reset();
 }
 
 void FDB5Sink::isetcommfdb(int comm)

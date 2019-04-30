@@ -14,7 +14,7 @@
 #include "multio/fdb4/FDB4Sink.h"
 
 #include "eckit/exception/Exceptions.h"
-#include "eckit/parser/StringTools.h"
+#include "eckit/utils/StringTools.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 

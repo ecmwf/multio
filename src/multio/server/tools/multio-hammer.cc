@@ -6,6 +6,7 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
+#include "eckit/parser/JSON.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
@@ -19,7 +20,6 @@
 #include "multio/server/TestData.h"
 #include "multio/server/Transport.h"
 
-using eckit::Log;
 using namespace multio::server;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -31,15 +31,15 @@ public:  // methods
 
 private:
     void usage(const std::string& tool) const override {
-        Log::info() << std::endl
-                    << "Usage: " << tool << " [options]" << std::endl
-                    << std::endl
-                    << std::endl
-                    << "Examples:" << std::endl
-                    << "=========" << std::endl
-                    << std::endl
-                    << tool << " --transport=mpi --nbclients=10 --nbservers=4" << std::endl
-                    << std::endl;
+        eckit::Log::info() << std::endl
+                           << "Usage: " << tool << " [options]" << std::endl
+                           << std::endl
+                           << std::endl
+                           << "Examples:" << std::endl
+                           << "=========" << std::endl
+                           << std::endl
+                           << tool << " --transport=mpi --nbclients=10 --nbservers=4" << std::endl
+                           << std::endl;
     }
 
     void init(const eckit::option::CmdArgs& args) override;
@@ -106,11 +106,8 @@ std::tuple<std::vector<Peer>, std::vector<Peer>> MultioHammer::createPeerLists()
         while (ii != domain_size) {
             serverPeers.push_back(Peer{domain.c_str(), ii++});
         }
-
-        return std::make_tuple(clientPeers, serverPeers);
     }
-
-    if (trType_ == "tcp") {
+    else if (trType_ == "tcp") {
         for (auto cfg : config_.getSubConfigurations("servers")) {
             auto host = cfg.getString("host");
             for (auto port : cfg.getUnsignedVector("ports")) {
@@ -130,8 +127,9 @@ std::tuple<std::vector<Peer>, std::vector<Peer>> MultioHammer::createPeerLists()
 
         return std::make_tuple(clientPeers, serverPeers);
     }
-
-    ASSERT(trType_ == "thread"); // nothing else is supported
+    else {
+        ASSERT(trType_ == "thread");  // nothing else is supported
+    }
 
     return std::make_tuple(clientPeers, serverPeers);
 }
@@ -158,7 +156,7 @@ void MultioHammer::beamData(const std::vector<Peer>& serverPeers,
 
     // open all servers
     for (auto& server : serverPeers) {
-        Message open{{Message::Tag::Open, client, server}, std::string("open")};
+        Message open{Message::Header{Message::Tag::Open, client, server}, std::string("open")};
         transport->send(open);
     }
 
@@ -168,37 +166,51 @@ void MultioHammer::beamData(const std::vector<Peer>& serverPeers,
 
     // send partial mapping
     for (auto& server : serverPeers) {
-        Message msg{{Message::Tag::Mapping, client, server, "unstructured", nbClients_}, buffer};
+        Message msg{
+            Message::Header{Message::Tag::Mapping, client, server, "unstructured", nbClients_},
+            buffer};
 
         transport->send(msg);
     }
 
-    // send N messages
-    const int nfields = 13;
-    for (int ii = 0; ii < nfields; ++ii) {
-        auto field_id = std::string("temperature::step::") + std::to_string(ii);
-        std::vector<double> field;
+    // send messages
+    for (auto step : steps) {
+        for (auto level : levels) {
+            for (auto name : parameters) {
+                Metadata metadata;
+                metadata.set("param", name);
+                metadata.set("level", level);
+                metadata.set("step", step);
 
-        auto& global_field = global_test_field(field_id, field_size(), trType_, client_list_id);
-        index_map.to_local(global_field, field);
+                std::stringstream field_id;
+                eckit::JSON json(field_id);
+                json << metadata;
 
-        // Choose server
-        auto id = std::hash<std::string>{}(field_id) % nbServers_;
-        ASSERT(id < serverPeers.size());
+                std::vector<double> field;
+                auto& global_field =
+                    global_test_field(field_id.str(), field_size(), trType_, client_list_id);
+                index_map.to_local(global_field, field);
 
-        eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()),
-                             field.size() * sizeof(double));
+                // Choose server
+                auto id = std::hash<std::string>{}(field_id.str()) % nbServers_;
+                ASSERT(id < serverPeers.size());
 
-        Message msg{{Message::Tag::Field, client, serverPeers[id], "unstructured", nbClients_,
-                     "prognostic", field_id, field_size()},
+                eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()),
+                                     field.size() * sizeof(double));
+
+                Message msg{
+                    Message::Header{Message::Tag::Field, client, serverPeers[id], "unstructured",
+                                  nbClients_, "prognostic", field_id.str(), field_size()},
                     buffer};
 
-        transport->send(msg);
+                transport->send(msg);
+            }
+        }
     }
 
     // close all servers
     for (auto& server : serverPeers) {
-        Message close{{Message::Tag::Close, client, server}, std::string("close")};
+        Message close{Message::Header{Message::Tag::Close, client, server}, std::string("close")};
         transport->send(close);
     }
 }
@@ -255,6 +267,30 @@ void MultioHammer::execute(const eckit::option::CmdArgs&) {
 
         spawnServers(serverPeers, transport);
         spawnClients(clientPeers, serverPeers, transport);
+    }
+
+    // Test data
+    if (trType_ == "mpi") {
+        eckit::mpi::comm().barrier();
+    }
+
+    if ((trType_ == "thread") || (trType_ == "mpi" && eckit::mpi::comm().rank() == root())) {
+        for (auto step : steps) {
+            for (auto level : levels) {
+                for (auto name : parameters) {
+                    std::string file_name = name + std::string("::") + std::to_string(level) +
+                        std::string("::") + std::to_string(step);
+                    std::string field_id = R"({"level":)" + std::to_string(level) + R"(,"param":")" +
+                                           name + R"(","step":)" + std::to_string(step) + "}";
+                    auto expect = global_test_field(field_id);
+                    auto actual = file_content(file_name);
+
+                    ASSERT(expect == actual);
+
+                    std::remove(file_name.c_str());
+                }
+            }
+        }
     }
 }
 

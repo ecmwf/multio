@@ -2,6 +2,7 @@
 #ifndef multio_server_TestData_H
 #define multio_server_TestData_H
 
+#include <fstream>
 #include <mutex>
 #include <random>
 
@@ -11,6 +12,13 @@
 
 namespace multio {
 namespace server {
+
+// const auto steps = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+// const auto levels = {200, 300, 500, 750, 800, 850, 900, 925, 950, 1000};
+const auto steps = {0, 1, 2, 3};
+const auto levels = {200, 300, 500};
+const auto parameters = {"temperature", "geopotential", "moisture"};
+
 
 // Default global values, but each test is allowed to override them
 inline size_t& field_size() {
@@ -71,8 +79,9 @@ inline std::vector<size_t> generate_index_map(size_t id, size_t nbclients) {
     return maps;
 }
 
-inline std::vector<double>& global_test_field(const std::string& field_id, const size_t sz,
-                                              const std::string& transport, const size_t list_id) {
+inline std::vector<double>& global_test_field(const std::string& field_id, const size_t sz = -1,
+                                              const std::string& transport = "",
+                                              const size_t list_id = -1) {
     using eckit::mpi::comm;
 
     std::lock_guard<std::mutex> lock{mutex()};
@@ -94,6 +103,14 @@ inline std::vector<double>& global_test_field(const std::string& field_id, const
         new_random_data_each_run() ? create_random_data(sz) : create_hashed_data(field_id, sz);
 
     return test_fields[field_id];
+}
+
+inline auto file_content(const eckit::PathName& file_path) -> std::vector<double> {
+    std::fstream ifs(std::string(file_path.fullName()).c_str());
+    std::string str{std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>()};
+    auto beg = reinterpret_cast<const double*>(str.data());
+    std::vector<double> vec(beg, beg + str.size() / sizeof(double));
+    return vec;
 }
 
 }  // namespace server

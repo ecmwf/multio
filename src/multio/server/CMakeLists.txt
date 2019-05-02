@@ -34,6 +34,8 @@ ecbuild_add_library(
         Mappings.h
         Message.cc
         Message.h
+        MessageContent.cc
+        MessageHeader.cc
         Peer.cc
         Peer.h
         Plan.cc

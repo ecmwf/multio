@@ -10,6 +10,8 @@
 
 #include "Print.h"
 
+#include <fstream>
+
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 #include "eckit/config/Configuration.h"
@@ -24,8 +26,10 @@ Print::Print(const eckit::Configuration& config) : Action(config) {
     if (stream_ == "info") {
         os = &eckit::Log::info();
     }
-    else {
+    else if (stream_ == "error") {
         os = &eckit::Log::error();
+    } else {
+        os = &eckit::Log::debug();
     }
 }
 

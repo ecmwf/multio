@@ -17,7 +17,7 @@ std::string thread_plan_configurations() {
                  "actions" : {
                     "root" : {
                        "type" : "Print",
-                       "stream" : "error",
+                       "stream" : "debug",
                        "next" : {
                           "type" : "AppendToFile",
                           "path" : "messages.txt"
@@ -62,7 +62,7 @@ std::string mpi_plan_configurations() {
                  "actions" : {
                     "root" : {
                        "type" : "Print",
-                       "stream" : "error",
+                       "stream" : "debug",
                        "next" : {
                           "type" : "AppendToFile",
                           "path" : "messages.txt"

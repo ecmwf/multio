@@ -20,9 +20,6 @@ Mappings& Mappings::instance() {
 void Mappings::add(Message msg) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
-    eckit::Log::info() << "  ---  name = " << msg.mapping() << std::endl;
-    eckit::Log::info() << "  ---  peer = " << msg.source() << std::endl;
-
     // Retrieve metadata
     auto& mapping = mappings_[msg.mapping()];
 
@@ -37,10 +34,6 @@ void Mappings::add(Message msg) {
     std::memcpy(local_map.data(), msg.payload().data(), msg.size());
 
     mapping.emplace(msg.source(), std::move(local_map));
-
-    eckit::Log::info() << "  ---  local-map size = " << local_map.size() << std::endl;
-
-    eckit::Log::info() << "  ---  map size = " << mappings_.at("unstructured").size() << std::endl;
 }
 
 void Mappings::list(std::ostream& out) const {

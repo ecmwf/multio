@@ -50,21 +50,11 @@ void Listener::listen() {
                 break;
 
             case Message::Tag::Mapping:
-                eckit::Log::info() << "*** MAPPING INDICES " << std::flush;
                 nbMaps_ = msg.map_count();
-                print_buffer(static_cast<const size_t*>(msg.payload().data()),
-                             msg.size() / sizeof(size_t), eckit::Log::info());
-                eckit::Log::info() << std::endl;
                 Mappings::instance().add(msg);
                 break;
 
             default:
-                eckit::Log::info() << "*** DISPATCH QUEUE " << std::flush;
-                // print_buffer(static_cast<const char*>(msg.payload().data()), msg.size(),
-                //              eckit::Log::info(), "");
-                print_buffer(static_cast<const double*>(msg.payload().data()),
-                             msg.size() / sizeof(double), eckit::Log::info());
-                eckit::Log::info() << std::endl;
                 msgQueue_.push(std::move(msg));
         }
     } while (!connections_.empty() || nbClosedConnections_ != nbMaps_);

@@ -13,56 +13,12 @@
 #include <cstring>
 #include <map>
 
-#include "eckit/log/Bytes.h"
-#include "eckit/log/Log.h"
-#include "eckit/log/ResourceUsage.h"
-#include "eckit/maths/Functions.h"
+#include "eckit/config/YAMLConfiguration.h"
+#include "eckit/exception/Exceptions.h"
 #include "eckit/serialisation/Stream.h"
 
 namespace multio {
 namespace server {
-
-namespace {
-eckit::Stream& operator<<(eckit::Stream& strm, const Message::Header& header) {
-    strm << static_cast<unsigned>(header.tag_);
-
-    strm << header.source_.domain_;
-    strm << header.source_.id_;
-
-    strm << header.destination_.domain_;
-    strm << header.destination_.id_;
-
-    strm << header.mapping_;
-    strm << header.map_count_;
-
-    strm << header.category_;
-    strm << header.field_id_;
-    strm << header.global_field_size_;
-
-    return strm;
-}
-
-eckit::Stream& operator>>(eckit::Stream& strm, Message::Header& header) {
-    unsigned t;
-    strm >> t;
-    header.tag_ = static_cast<Message::Tag>(t);
-
-    strm >> header.source_.domain_;
-    strm >> header.source_.id_;
-
-    strm >> header.destination_.domain_;
-    strm >> header.destination_.id_;
-
-    strm >> header.mapping_;
-    strm >> header.map_count_;
-
-    strm >> header.category_;
-    strm >> header.field_id_;
-    strm >> header.global_field_size_;
-
-    return strm;
-}
-}  // namespace
 
 int Message::protocolVersion() {
     return 1;
@@ -80,22 +36,14 @@ std::string Message::tag2str(Tag t) {
     return m.find(t)->second;
 }
 
-Message::Content::Content(const Header& header, const eckit::Buffer& payload) :
-    header_{header},
-    payload_{payload, payload.size()} {}
-
-size_t Message::Content::size() const {
-    return payload_.size();
-}
-
-Message::Message() : Message{{Message::Tag::Empty}, 0} {}
+Message::Message() : Message{Message::Header{Message::Tag::Empty, Peer{}, Peer{}}, 0} {}
 
 Message::Message(const Header& header, const eckit::Buffer& payload) :
     version_{protocolVersion()},
     content_{std::make_shared<Content>(header, payload)} {}
 
 const Message::Header& Message::header() const {
-    return content_->header_;
+    return content_->header();
 }
 
 int Message::version() const {
@@ -103,15 +51,15 @@ int Message::version() const {
 }
 
 Message::Tag Message::tag() const {
-    return content_->header_.tag_;
+    return header().tag();
 }
 
 Peer Message::destination() const {
-    return content_->header_.destination_;
+    return header().destination();
 }
 
 Peer Message::source() const {
-    return content_->header_.source_;
+    return header().source();
 }
 
 size_t Message::size() const {
@@ -119,54 +67,58 @@ size_t Message::size() const {
 }
 
 const std::string& Message::mapping() const {
-    return content_->header_.mapping_;
+    return header().mapping();
 }
 
 size_t Message::map_count() const {
-    return content_->header_.map_count_;
+    return header().map_count();
 }
 
 const std::string& Message::category() const {
-    return content_->header_.category_;
+    return header().category();
 }
 
 const std::string& Message::field_id() const {
-    return content_->header_.field_id_;
+    return header().field_id();
+}
+
+const Metadata& Message::metadata() const {
+    return header().metadata();
 }
 
 size_t Message::field_size() const {
-    return content_->header_.global_field_size_;
+    return header().global_field_size();
 }
 
 eckit::Buffer& Message::payload() {
-    return content_->payload_;
+    return content_->payload();
 }
 
 const eckit::Buffer& Message::payload() const {
-    return content_->payload_;
+    return content_->payload();
 }
 
 void Message::encode(eckit::Stream& strm) const {
     strm << version_;
 
-    strm << content_->header_;
+    header().encode(strm);
 
     strm << content_->size();
 
-    strm << content_->payload_;
+    strm << content_->payload();
 }
 
 void Message::decode(eckit::Stream& strm) {
     strm >> version_;
 
-    strm >> content_->header_;
+    content_->header().decode(strm);
 
     unsigned long sz;
     strm >> sz;
 
     eckit::Buffer buffer(sz);
     strm >> buffer;
-    content_->payload_ = std::move(buffer);
+    content_->payload() = std::move(buffer);
 }
 
 void Message::print(std::ostream& out) const {

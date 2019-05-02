@@ -32,10 +32,6 @@ void Aggregation::execute(Message msg) const {
     auto field_id = msg.field_id();
     messages_[field_id].push_back(msg);
 
-    eckit::Log::info() << "  ---  Aggregation action is being executed" << std::endl
-                       << "          -- no_maps: " << Mappings::instance().get(map_name_).size()
-                       << ", no_fields: " << messages_.at(field_id).size() << std::endl;
-
     // All parts arrived?
     bool ret = messages_.at(field_id).size() == msg.map_count();
     ret &= Mappings::instance().get(map_name_).size() == msg.map_count();
@@ -48,12 +44,6 @@ void Aggregation::execute(Message msg) const {
     msg.payload() = agg.gather(messages_.at(field_id), Mappings::instance().get(map_name_));
 
     messages_.erase(field_id);
-
-    eckit::Log::info() << "          -- print aggregated field " << msg.field_id()
-                       << " (size=" << msg.field_size() << "): ";
-    print_buffer(reinterpret_cast<double*>(msg.payload().data()), msg.field_size(),
-                 eckit::Log::info(), " ");
-    eckit::Log::info() << std::endl;
 
     if (next_) {  // May want to assert next_
         next_->execute(msg);

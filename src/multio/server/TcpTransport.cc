@@ -49,20 +49,12 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
         auto ports = cfg.getUnsignedVector("ports");
 
         if (host == local_host_ && find(begin(ports), end(ports), local_port_) != end(ports)) {
-            eckit::Log::info() << "Starting server(host=" << local_host_ << ", port=" << local_port_
-                               << ")" << std::endl;
-
             server_.reset(new eckit::TCPServer{static_cast<int>(local_port_)});
             select_.add(*server_);
         }
         else {
             // TODO: assert that (local_host_, local_port_) is in the list of clients
-            eckit::Log::info() << "Starting client(host=" << local_host_ << ", port=" << local_port_
-                               << ")" << std::endl;
-
             for (const auto port : ports) {
-                eckit::Log::info() << "Connecting to server(host=" << host << ", port=" << port
-                                   << ")" << std::endl;
                 try {
                     eckit::TCPClient client;
                     outgoing_.emplace(Peer{host, static_cast<size_t>(port)},
@@ -71,7 +63,6 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
                     eckit::Log::error() << "Failed to establish connection to host: " << host
                                         << ", port: " << port << std::endl;
                 }
-                eckit::Log::info() << "Number of outgoing connections: " << outgoing_.size() << std::endl;
             }
         }
     }
@@ -82,8 +73,6 @@ Message TcpTransport::nextMessage(eckit::TCPSocket& socket) const {
 
     size_t size;
     socket.read(&size, sizeof(size));
-
-    eckit::Log::info() << "Received size: " << size << std::endl;
 
     eckit::Buffer buffer{size};
     socket.read(buffer, static_cast<long>(size));
@@ -104,8 +93,6 @@ Message TcpTransport::receive() {
         }
 
         auto msg = nextMessage((*it)->socket_);
-
-        eckit::Log::info() << "Received message: " << msg << std::endl;
 
         if(msg.tag() == Message::Tag::Close) {
             incoming_.erase(it);
@@ -132,10 +119,8 @@ void TcpTransport::send(const Message& msg) {
     msg.encode(stream);
 
     auto size = stream.bytesWritten();
-    eckit::Log::info() << "Sending size: " << size << std::endl;
     socket->write(&size, sizeof(size));
 
-    eckit::Log::info() << "Sending: " << msg << std::endl;
     socket->write(buffer, static_cast<int>(size));
 }
 

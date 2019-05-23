@@ -33,9 +33,9 @@ public:
     ThreadTransport(const eckit::Configuration& config);
     ~ThreadTransport() override;
 
-private:
     Message receive() override;
 
+private:
     void send(const Message& message) override;
 
     void print(std::ostream& os) const override;

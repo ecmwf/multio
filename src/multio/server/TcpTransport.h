@@ -50,7 +50,6 @@ private:
 
     void print(std::ostream& os) const override;
 
-
     Message nextMessage(eckit::TCPSocket& socket) const;
 
     bool acceptConnection();

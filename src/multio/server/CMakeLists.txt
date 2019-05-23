@@ -26,6 +26,8 @@ ecbuild_add_library(
         Aggregator.h
         Dispatcher.cc
         Dispatcher.h
+        IoTransport.cc
+        IoTransport.h
         Listener.cc
         Listener.h
         LocalIndices.cc
@@ -53,6 +55,7 @@ ecbuild_add_library(
         MultioServerTool.h
 
     PRIVATE_INCLUDES
+        ${ECCODES_INCLUDE_DIRS}
         ${ECKIT_INCLUDE_DIRS}
 
     LIBS
@@ -60,12 +63,21 @@ ecbuild_add_library(
         eckit_mpi
         eckit_option
         eckit
+        eccodes
+        eccodes_f90
 )
-
-include_directories( ${ECKIT_INCLUDE_DIRS} )
 
 ecbuild_add_executable( TARGET    multio-hammer
                         NOINSTALL
-                        SOURCES   tools/multio-hammer.cc
                         CONDITION HAVE_MULTIO_SERVER
+                        SOURCES   tools/multio-hammer.cc
+                        INCLUDES  ${ECKIT_INCLUDE_DIRS}
                         LIBS      multio-server multio)
+
+ecbuild_add_executable( TARGET    multio-grib
+                        NOINSTALL
+                        CONDITION HAVE_MULTIO_SERVER
+                        SOURCES   tools/multio-grib.cc
+                        INCLUDES  ${ECCODES_INCLUDE_DIRS} ${ECKIT_INCLUDE_DIRS}
+                        LIBS      multio-server multio)
+

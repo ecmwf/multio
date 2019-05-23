@@ -26,6 +26,7 @@ ThreadTransport::~ThreadTransport() = default;
 Message ThreadTransport::receive() {
 
     Peer receiver = localPeer();
+
     auto& queue = receiveQueue(receiver);
 
     Message msg;
@@ -37,7 +38,7 @@ Message ThreadTransport::receive() {
 }
 
 void ThreadTransport::send(const Message& msg) {
-    receiveQueue(msg.destination()).push(msg);
+    auto sz = receiveQueue(msg.destination()).push(msg);
 }
 
 Peer ThreadTransport::localPeer() const {

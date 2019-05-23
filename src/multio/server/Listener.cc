@@ -10,9 +10,12 @@
 
 #include "Listener.h"
 
+#include <fstream>
 #include <functional>
+#include <typeinfo>
 
 #include "eckit/config/Resource.h"
+#include "eckit/exception/Exceptions.h"
 
 #include "multio/server/Mappings.h"
 #include "multio/server/Message.h"
@@ -20,15 +23,16 @@
 
 #include "multio/server/Dispatcher.h"
 #include "multio/server/print_buffer.h"
-#include "multio/server/Transport.h"
+#include "multio/server/ThreadTransport.h"
 
 namespace multio {
 namespace server {
 
 Listener::Listener(const eckit::Configuration& config, Transport& trans) :
-    dispatcher_(std::make_shared<Dispatcher>(config)),
-    transport_(trans),
-    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
+    dispatcher_{std::make_shared<Dispatcher>(config)},
+    transport_{trans},
+    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {
+}
 
 void Listener::listen() {
 
@@ -47,6 +51,10 @@ void Listener::listen() {
                 connections_.remove(msg.source());
                 eckit::Log::info() << "*** CLOSING connection to " << msg.source() << std::endl;
                 ++nbClosedConnections_;
+                break;
+
+            case Message::Tag::GribTemplate:
+                eckit::Log::info() << "*** Size of grib template: " << msg.size() << std::endl;
                 break;
 
             case Message::Tag::Mapping:

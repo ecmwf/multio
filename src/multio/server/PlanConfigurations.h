@@ -2,6 +2,7 @@
 #ifndef multio_server_PlanConfiguration_H
 #define multio_server_PlanConfiguration_H
 
+#include <map>
 #include <string>
 
 namespace multio {

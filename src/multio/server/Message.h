@@ -43,6 +43,7 @@ public:  // types
         Empty = 0,
         Open,
         Close,
+        GribTemplate,
         Mapping,
         Field,
         StepComplete,

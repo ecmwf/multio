@@ -1,11 +1,10 @@
 
 #include <algorithm>
 
-#include "eckit/mpi/Comm.h"
-
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
+#include "eckit/mpi/Comm.h"
 #include "eckit/parser/JSON.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"

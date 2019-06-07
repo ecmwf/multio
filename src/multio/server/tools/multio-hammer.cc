@@ -50,12 +50,12 @@ private:
     void startListening(std::shared_ptr<Transport> transport);
     void spawnServers(const std::vector<Peer>& serverPeers, std::shared_ptr<Transport> transport);
 
-    void beamData(const std::vector<Peer>& serverPeers, std::shared_ptr<Transport> transport,
+    void sendData(const std::vector<Peer>& serverPeers, std::shared_ptr<Transport> transport,
                   const size_t client_list_id) const;
     void spawnClients(const std::vector<Peer>& clientPeers, const std::vector<Peer>& serverPeers,
                       std::shared_ptr<Transport> transport);
 
-    std::string trType_ = "none";
+    std::string transportType_ = "none";
     size_t nbClients_ = 1;
     int port_ = 7777;
 
@@ -73,13 +73,14 @@ MultioHammer::MultioHammer(int argc, char** argv) : multio::server::MultioServer
 
 void MultioHammer::init(const eckit::option::CmdArgs& args) {
     MultioServerTool::init(args);
-    args.get("transport", trType_);
+    args.get("transport", transportType_);
     args.get("nbclients", nbClients_);
     args.get("port", port_);
 
-    config_ = eckit::LocalConfiguration{eckit::YAMLConfiguration{plan_configurations(trType_)}};
+    config_ =
+        eckit::LocalConfiguration{eckit::YAMLConfiguration{plan_configurations(transportType_)}};
 
-    if (trType_ == "mpi") {
+    if (transportType_ == "mpi") {
         auto domain_size = eckit::mpi::comm(config_.getString("domain").c_str()).size();
         if (domain_size != nbClients_ + nbServers_) {
             throw eckit::SeriousBug(
@@ -94,19 +95,19 @@ std::tuple<std::vector<Peer>, std::vector<Peer>> MultioHammer::createPeerLists()
     std::vector<Peer> clientPeers;
     std::vector<Peer> serverPeers;
 
-    if (trType_ == "mpi") {
+    if (transportType_ == "mpi") {
         auto domain = config_.getString("domain");
 
         auto domain_size = nbClients_ + nbServers_;
-        auto ii = 0u;
-        while (ii != nbClients_) {
-            clientPeers.push_back(Peer{domain.c_str(), ii++});
+        auto i = 0u;
+        while (i != nbClients_) {
+            clientPeers.push_back(Peer{domain.c_str(), i++});
         }
-        while (ii != domain_size) {
-            serverPeers.push_back(Peer{domain.c_str(), ii++});
+        while (i != domain_size) {
+            serverPeers.push_back(Peer{domain.c_str(), i++});
         }
     }
-    else if (trType_ == "tcp") {
+    else if (transportType_ == "tcp") {
         for (auto cfg : config_.getSubConfigurations("servers")) {
             auto host = cfg.getString("host");
             for (auto port : cfg.getUnsignedVector("ports")) {
@@ -127,7 +128,7 @@ std::tuple<std::vector<Peer>, std::vector<Peer>> MultioHammer::createPeerLists()
         return std::make_tuple(clientPeers, serverPeers);
     }
     else {
-        ASSERT(trType_ == "thread");  // nothing else is supported
+        ASSERT(transportType_ == "thread");  // nothing else is supported
     }
 
     return std::make_tuple(clientPeers, serverPeers);
@@ -148,7 +149,7 @@ void MultioHammer::spawnServers(const std::vector<Peer>& serverPeers,
     startListening(transport);
 }
 
-void MultioHammer::beamData(const std::vector<Peer>& serverPeers,
+void MultioHammer::sendData(const std::vector<Peer>& serverPeers,
                             std::shared_ptr<Transport> transport,
                             const size_t client_list_id) const {
     Peer client = transport->localPeer();
@@ -187,7 +188,7 @@ void MultioHammer::beamData(const std::vector<Peer>& serverPeers,
 
                 std::vector<double> field;
                 auto& global_field =
-                    global_test_field(field_id.str(), field_size(), trType_, client_list_id);
+                    global_test_field(field_id.str(), field_size(), transportType_, client_list_id);
                 index_map.to_local(global_field, field);
 
                 // Choose server
@@ -223,25 +224,26 @@ void MultioHammer::spawnClients(const std::vector<Peer>& clientPeers,
         return;
     }
 
-    beamData(serverPeers, transport, std::distance(begin(clientPeers), it));
+    sendData(serverPeers, transport, std::distance(begin(clientPeers), it));
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 
 void MultioHammer::execute(const eckit::option::CmdArgs&) {
     config_.set("local_port", port_);
-    std::shared_ptr<Transport> transport{TransportFactory::instance().build(trType_, config_)};
+    std::shared_ptr<Transport> transport{
+        TransportFactory::instance().build(transportType_, config_)};
 
     std::cout << *transport << std::endl;
 
     field_size() = 29;
 
-    if (trType_ == "thread") {  // The case for the thread transport is slightly special
+    if (transportType_ == "thread") {  // The case for the thread transport is slightly special
 
         // Spawn servers
         std::vector<Peer> serverPeers;
         std::vector<std::thread> serverThreads;
-        for (size_t ii = 0; ii != nbServers_; ++ii) {
+        for (size_t i = 0; i != nbServers_; ++i) {
             std::thread t{&MultioHammer::startListening, this, transport};
 
             serverPeers.push_back(Peer{"thread", std::hash<std::thread::id>{}(t.get_id())});
@@ -250,9 +252,9 @@ void MultioHammer::execute(const eckit::option::CmdArgs&) {
 
         // Spawn clients
         std::vector<std::thread> clientThreads;
-        for (size_t ii = 0; ii != nbClients_; ++ii) {
-            clientThreads.emplace_back(&MultioHammer::beamData, this, std::cref(serverPeers),
-                                       transport, ii);
+        for (size_t i = 0; i != nbClients_; ++i) {
+            clientThreads.emplace_back(&MultioHammer::sendData, this, std::cref(serverPeers),
+                                       transport, i);
         }
 
         // Join all threads
@@ -269,18 +271,20 @@ void MultioHammer::execute(const eckit::option::CmdArgs&) {
     }
 
     // Test data
-    if (trType_ == "mpi") {
+    if (transportType_ == "mpi") {
         eckit::mpi::comm().barrier();
     }
 
-    if ((trType_ == "thread") || (trType_ == "mpi" && eckit::mpi::comm().rank() == root())) {
+    if ((transportType_ == "thread") ||
+        (transportType_ == "mpi" && eckit::mpi::comm().rank() == root())) {
         for (auto step : steps) {
             for (auto level : levels) {
                 for (auto name : parameters) {
                     std::string file_name = name + std::string("::") + std::to_string(level) +
                         std::string("::") + std::to_string(step);
-                    std::string field_id = R"({"level":)" + std::to_string(level) + R"(,"param":")" +
-                                           name + R"(","step":)" + std::to_string(step) + "}";
+                    std::string field_id = R"({"level":)" + std::to_string(level) +
+                                           R"(,"param":")" + name + R"(","step":)" +
+                                           std::to_string(step) + "}";
                     auto expect = global_test_field(field_id);
                     auto actual = file_content(file_name);
 

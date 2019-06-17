@@ -30,7 +30,7 @@ fortint print_grib_handle_(grib_handle* h);
 
 fortint open_io_connection_();
 fortint close_io_connection_();
-fortint send_grib_message_(const void* grib_msg, int* words);
+fortint send_grib_template_(const void* grib_msg, int* words);
 
 #ifdef __cplusplus
 }

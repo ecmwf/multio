@@ -45,7 +45,7 @@ private:
     Transport& transport_;
 
     size_t nbClosedConnections_ = 0;
-    size_t nbMaps_ = 1;
+    size_t nbMaps_ = 0;
 
     std::list<Peer> connections_;
 

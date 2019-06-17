@@ -58,6 +58,7 @@ void Listener::listen() {
                 break;
 
             case Message::Tag::Mapping:
+                eckit::Log::info() << "*** Setting number of maps: " << msg.map_count() << std::endl;
                 nbMaps_ = msg.map_count();
                 Mappings::instance().add(msg);
                 break;

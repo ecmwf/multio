@@ -36,7 +36,7 @@ class MultIO final : public DataSink {
 public:
     MultIO(const eckit::Configuration& config);
 
-    ~MultIO() override;
+    ~MultIO() override = default;
 
     bool ready() const override;
 

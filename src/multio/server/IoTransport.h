@@ -25,12 +25,12 @@ using fortint = int32_t;
 extern "C" {
 #endif
 
-fortint print_girb_id_(int* gid);
-fortint print_grib_handle_(grib_handle* h);
+void print_girb_id_(int* gid);
+void print_grib_handle_(grib_handle* h);
 
-fortint open_io_connection_();
-fortint close_io_connection_();
-fortint send_grib_template_(const void* grib_msg, int* words);
+void open_io_connection_();
+void close_io_connection_();
+void send_grib_template_(const void* grib_msg, int* words);
 
 #ifdef __cplusplus
 }

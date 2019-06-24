@@ -22,7 +22,16 @@ namespace multio {
 namespace server {
 namespace actions {
 
-Sink::Sink(const eckit::Configuration& config) : Action(config) {}
+Sink::Sink(const eckit::Configuration& config) : Action(config) {
+    auto configs = config.getSubConfigurations("sinks");
+    if (configs.size() == 1 && !configs[0].has("path")) {
+        ASSERT(configs[0].getString("type") == "file");
+        setFilePath_ = true;
+        return;
+    }
+
+    dataSink_.reset(DataSinkFactory::instance().build("multio", config));
+}
 
 void Sink::execute(Message msg) const {
     switch (msg.tag()) {
@@ -44,13 +53,15 @@ void Sink::execute(Message msg) const {
 }
 
 void Sink::write(Message msg) const {
-    std::ostringstream oss;
-    oss << msg.metadata().getString("param") << "::" << msg.metadata().getUnsigned("level")
-        << "::" << msg.metadata().getUnsigned("step");
-    eckit::LocalConfiguration config;
+    if (setFilePath_) {
+        std::ostringstream oss;
+        oss << msg.metadata().getString("param") << "::" << msg.metadata().getUnsigned("level")
+            << "::" << msg.metadata().getUnsigned("step");
+        eckit::LocalConfiguration config;
 
-    config.set("path", oss.str());
-    dataSink_.reset(DataSinkFactory::instance().build("file", config));
+        config.set("path", oss.str());
+        dataSink_.reset(DataSinkFactory::instance().build("file", config));
+    }
 
     eckit::DataBlobPtr blob(
         eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));

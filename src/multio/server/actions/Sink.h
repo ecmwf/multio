@@ -46,6 +46,7 @@ private:
     void flush() const;
 
     mutable std::unique_ptr<DataSink> dataSink_ = nullptr;
+    bool setFilePath_ = false; // Special case only for testing -- remove later
 };
 
 }  // namespace actions

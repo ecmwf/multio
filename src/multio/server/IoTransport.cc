@@ -78,7 +78,7 @@ using multio::server::Peer;
     extern "C" {
 #endif
 
-fortint print_grib_id_(int* gid) {
+void print_grib_id_(int* gid) {
     printf("  ==== Hello handle: %d\n", *gid);
 
     // grib_handle *h = get_handle(*gid);
@@ -86,14 +86,14 @@ fortint print_grib_id_(int* gid) {
     size_t len;
     grib_f_get_message_size_(gid, &len);
 
-    printf("  ==== Message size: %u\n", len);
+    printf("  ==== Message size: %zu\n", len);
 }
 
-fortint print_grib_handle_(grib_handle* h) {
+void print_grib_handle_(grib_handle* h) {
     printf("  ==== Hello handle: %p\n", h);
 }
 
-fortint open_io_connection_() {
+void open_io_connection_() {
     Peer client = IoTransport::instance().transport().localPeer();
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
@@ -102,7 +102,7 @@ fortint open_io_connection_() {
     IoTransport::instance().transport().send(open);
 }
 
-fortint close_io_connection_() {
+void close_io_connection_() {
     Peer client = IoTransport::instance().transport().localPeer();
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
@@ -111,7 +111,7 @@ fortint close_io_connection_() {
     IoTransport::instance().transport().send(close);
 }
 
-fortint send_grib_template_(const void* grib_msg, fortint *words) {
+void send_grib_template_(const void* grib_msg, fortint *words) {
 
     size_t len = (*words) * sizeof(fortint);
     eckit::Buffer buffer{(const char*)(grib_msg), len};
@@ -126,7 +126,7 @@ fortint send_grib_template_(const void* grib_msg, fortint *words) {
     IoTransport::instance().transport().send(msg);
 }
 
-fortint send_mapping_(const void* in_ptr, fortint* words, fortint* nb_clients,
+void send_mapping_(const void* in_ptr, fortint* words, fortint* nb_clients,
                       const char* name, int name_len) {
 
     std::string mapping_name{name, name + name_len};
@@ -157,34 +157,34 @@ fortint send_mapping_(const void* in_ptr, fortint* words, fortint* nb_clients,
     }
 }
 
-fortint open_multio_message_() {
+void open_multio_message_() {
     ASSERT(!IoTransport::instance().is_open_);
     IoTransport::instance().metadata_ = Metadata{};
     IoTransport::instance().is_open_ = true;
 }
 
-fortint close_multio_message_() {
+void close_multio_message_() {
     ASSERT(IoTransport::instance().is_open_);
     IoTransport::instance().is_open_ = false;
     std::cout << " ***** Field metadata = " << IoTransport::instance().metadata_ << std::endl;
 }
 
-fortint set_multio_bool_value_(const char* key, bool* value, int key_len) {
+void set_multio_bool_value_(const char* key, bool* value, int key_len) {
     std::string skey{key, key + key_len};
     IoTransport::instance().metadata_.set(skey, *value);
 }
 
-fortint set_multio_int_value_(const char* key, fortint* value, int key_len) {
+void set_multio_int_value_(const char* key, fortint* value, int key_len) {
     std::string skey{key, key + key_len};
     IoTransport::instance().metadata_.set(skey, *value);
 }
 
-fortint set_multio_real_value_(const char* key, double* value, int key_len) {
+void set_multio_real_value_(const char* key, double* value, int key_len) {
     std::string skey{key, key + key_len};
     IoTransport::instance().metadata_.set(skey, *value);
 }
 
-fortint set_multio_string_value_(const char* key, const char* value, int key_len, int val_len) {
+void set_multio_string_value_(const char* key, const char* value, int key_len, int val_len) {
     std::string skey{key, key + key_len};
     std::string svalue{value, value + val_len};
     IoTransport::instance().metadata_.set(skey, svalue);

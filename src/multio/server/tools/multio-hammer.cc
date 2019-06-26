@@ -1,13 +1,19 @@
 
 #include <algorithm>
 
+#include "eccodes.h"
+
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/io/StdFile.h"
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/parser/JSON.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
+
+#include "metkit/grib/GribDataBlob.h"
+#include "metkit/grib/GribHandle.h"
 
 #include "multio/server/Listener.h"
 #include "multio/server/LocalIndices.h"
@@ -15,6 +21,7 @@
 #include "multio/server/MultioServerTool.h"
 #include "multio/server/PlanConfigurations.h"
 #include "multio/server/Peer.h"
+#include "multio/server/Plan.h"
 #include "multio/server/print_buffer.h"
 #include "multio/server/TestData.h"
 #include "multio/server/Transport.h"
@@ -44,6 +51,7 @@ private:
     void init(const eckit::option::CmdArgs& args) override;
 
     void execute(const eckit::option::CmdArgs& args) override;
+    void executeWrite();
 
     std::tuple<std::vector<Peer>, std::vector<Peer>> createPeerLists();
 
@@ -230,6 +238,12 @@ void MultioHammer::spawnClients(const std::vector<Peer>& clientPeers,
 //----------------------------------------------------------------------------------------------------------------------
 
 void MultioHammer::execute(const eckit::option::CmdArgs&) {
+
+    if (transportType_ == "none") {
+        executeWrite();
+        return;
+    }
+
     config_.set("local_port", port_);
     std::shared_ptr<Transport> transport{
         TransportFactory::instance().build(transportType_, config_)};
@@ -295,6 +309,57 @@ void MultioHammer::execute(const eckit::option::CmdArgs&) {
             }
         }
     }
+}
+
+void MultioHammer::executeWrite() {
+    eckit::AutoStdFile fin("single-field.grib");
+
+    int err;
+    codes_handle* handle = codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err);
+    ASSERT(handle);
+
+    const char* buf = nullptr;
+    size_t sz = 0;
+
+    CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz), 0);
+
+    eckit::Buffer buffer{buf, sz};
+
+    std::vector<std::unique_ptr<Plan>> plans;
+    for (const auto& cfg : config_.getSubConfigurations("plans")) {
+        eckit::Log::info() << cfg << std::endl;
+        plans.emplace_back(new Plan(cfg));
+    }
+
+    for (auto step : steps) {
+
+        CODES_CHECK(codes_set_long(handle, "step", step), 0);
+
+        for (auto level : levels) {
+
+            CODES_CHECK(codes_set_long(handle, "level", level), 0);
+
+            for (auto param : {130, 133, 135, 138, 152}) {
+                CODES_CHECK(codes_set_long(handle, "param", param), 0);
+
+                CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buffer), &sz),
+                            0);
+
+                eckit::Log::info()
+                    << "Step: " << step << ", level: " << level << ", param: " << param
+                    << ", payload size: " << buffer.size() << std::endl;
+
+                Message msg{Message::Header{Message::Tag::GribTemplate, Peer{"", 0}, Peer{"", 0}},
+                            buffer};
+
+                for (const auto& plan : plans) {
+                    plan->process(msg);
+                }
+            }
+        }
+    }
+
+    codes_handle_delete(handle);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

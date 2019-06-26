@@ -8,6 +8,43 @@
 namespace multio {
 namespace server {
 
+std::string no_transport_plan_configurations() {
+    return R"json(
+        {
+            "transport" : "none",
+            "plans" : [
+                {
+                    "name" : "ocean",
+                    "actions" : {
+                        "root" : {
+                            "type" : "Print",
+                            "stream" : "debug",
+                            "next" : {
+                                "type" : "AppendToFile",
+                                "path" : "messages.txt"
+                            }
+                        }
+                    }
+                },
+                {
+                    "name" : "atmosphere",
+                    "actions" : {
+                        "root" : {
+                            "type" : "Sink",
+                            "sinks" : [
+                                {
+                                    "type" : "file",
+                                    "path" : "hammer-fields.grib"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    )json";
+}
+
 std::string thread_plan_configurations() {
     return R"json(
         {
@@ -157,7 +194,8 @@ std::string plan_configurations(const std::string& type) {
     std::map<std::string, std::string> plan_configurations = {
         {"mpi", mpi_plan_configurations()},
         {"tcp", tcp_plan_configurations()},
-        {"thread", thread_plan_configurations()}};
+        {"thread", thread_plan_configurations()},
+        {"none", no_transport_plan_configurations()}};
 
     return plan_configurations.at(type);
 }

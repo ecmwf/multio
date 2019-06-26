@@ -70,14 +70,14 @@ public:  // methods
 
     void remove(const std::string& name);
 
-    void list(std::ostream&);
+    void list(std::ostream&) const;
 
     Transport* build(const std::string&, const eckit::Configuration& config);
 
 private:  // members
     std::map<std::string, const TransportBuilderBase*> factories_;
 
-    std::recursive_mutex mutex_;
+    mutable std::recursive_mutex mutex_;
 };
 
 class TransportBuilderBase : private eckit::NonCopyable {

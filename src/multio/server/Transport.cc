@@ -43,7 +43,7 @@ void TransportFactory::remove(const std::string& name) {
     factories_.erase(name);
 }
 
-void TransportFactory::list(std::ostream& out) {
+void TransportFactory::list(std::ostream& out) const {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     const char* sep = "";

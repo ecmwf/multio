@@ -36,6 +36,7 @@ Sink::Sink(const eckit::Configuration& config) : Action(config) {
 void Sink::execute(Message msg) const {
     switch (msg.tag()) {
         case Message::Tag::Field:
+        case Message::Tag::GribTemplate:
             write(msg);
             return;
 
@@ -63,8 +64,19 @@ void Sink::write(Message msg) const {
         dataSink_.reset(DataSinkFactory::instance().build("file", config));
     }
 
-    eckit::DataBlobPtr blob(
-        eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
+    eckit::DataBlobPtr blob;
+    switch (msg.tag()) {
+        case Message::Tag::Field:
+            blob.reset(eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
+            break;
+
+        case Message::Tag::GribTemplate:
+            blob.reset(eckit::DataBlobFactory::build("grib", msg.payload().data(), msg.size()));
+            break;
+
+        default:
+            ASSERT(false);
+    }
 
     dataSink_->write(blob);
 }

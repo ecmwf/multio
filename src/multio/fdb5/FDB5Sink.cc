@@ -17,8 +17,6 @@
 
 #include "eckit/exception/Exceptions.h"
 
-#include "fdb5/config/UMask.h"
-
 #include "multio/LibMultio.h"
 
 using namespace eckit;
@@ -54,8 +52,6 @@ FDB5Sink::~FDB5Sink() {
 }
 
 void FDB5Sink::write(DataBlobPtr blob) {
-
-    fdb5::UMask umask(fdb5::UMask::defaultUMask());
 
     Log::debug<LibMultio>() << "FDB5Sink::write()" << std::endl;
 

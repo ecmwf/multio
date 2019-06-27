@@ -35,6 +35,10 @@ std::string no_transport_plan_configurations() {
                                 {
                                     "type" : "file",
                                     "path" : "hammer-fields.grib"
+                                },
+                                {
+                                    "type" : "fdb5-direct",
+                                    "config" : {}
                                 }
                             ]
                         }

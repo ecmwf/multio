@@ -60,6 +60,7 @@ ecbuild_add_library(
 
     LIBS
         multio
+        multio-fdb5
         eckit_mpi
         eckit_option
         eckit

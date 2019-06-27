@@ -3,8 +3,10 @@ ecbuild_add_library(
     TARGET multio-fdb5
 
     SOURCES
-        FDB5Sink.h
+        Fdb5DirectSink.cc
+        Fdb5DirectSink.h
         FDB5Sink.cc
+        FDB5Sink.h
 
     CONDITION
         HAVE_FDB5

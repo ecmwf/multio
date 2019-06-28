@@ -13,13 +13,6 @@
 namespace multio {
 namespace server {
 
-// const auto steps = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-// const auto levels = {200, 300, 500, 750, 800, 850, 900, 925, 950, 1000};
-const auto steps = {0, 1, 2, 3};
-const auto levels = {200, 300, 500};
-const auto parameters = {"temperature", "geopotential", "moisture"};
-
-
 // Default global values, but each test is allowed to override them
 inline size_t& field_size() {
     static size_t val;
@@ -39,6 +32,12 @@ inline bool& new_random_data_each_run() {
 inline std::mutex& mutex() {
     static std::mutex mut;
     return mut;
+}
+
+inline std::vector<long> metadata_vals(size_t sz) {
+    std::vector<long> vals(sz);
+    iota(begin(vals), end(vals), 1u);
+    return vals;
 }
 
 inline std::vector<double> create_hashed_data(const std::string& field_id, const size_t sz) {
@@ -83,10 +82,10 @@ inline std::vector<double>& global_test_field(const std::string& field_id, const
                                               const std::string& transport = "",
                                               const size_t list_id = -1) {
     using eckit::mpi::comm;
-
     std::lock_guard<std::mutex> lock{mutex()};
 
     static std::map<std::string, std::vector<double>> test_fields;
+
     if (test_fields.find(field_id) != end(test_fields)) {
         return test_fields[field_id];
     }

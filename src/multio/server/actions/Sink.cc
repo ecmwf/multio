@@ -24,8 +24,8 @@ namespace actions {
 
 Sink::Sink(const eckit::Configuration& config) : Action(config) {
     auto configs = config.getSubConfigurations("sinks");
-    if (configs.size() == 1 && !configs[0].has("path")) {
-        ASSERT(configs[0].getString("type") == "file");
+    if (configs[0].getString("type") == "file" && !configs[0].has("path")) {
+        ASSERT(configs.size() == 1);
         setFilePath_ = true;
         return;
     }

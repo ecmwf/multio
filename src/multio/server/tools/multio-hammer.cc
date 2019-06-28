@@ -64,8 +64,9 @@ private:
                       std::shared_ptr<Transport> transport);
 
     std::string transportType_ = "none";
-    size_t nbClients_ = 1;
     int port_ = 7777;
+
+    std::map<std::string, size_t> szOpts_;
 
     eckit::LocalConfiguration config_;
 };
@@ -77,20 +78,29 @@ MultioHammer::MultioHammer(int argc, char** argv) : multio::server::MultioServer
         new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbclients", "Number of clients"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("port", "TCP port"));
+    options_.push_back(new eckit::option::SimpleOption<size_t>("nbparams", "Number of parameters"));
+    options_.push_back(
+        new eckit::option::SimpleOption<size_t>("nblevels", "Number of model levels"));
+    options_.push_back(
+        new eckit::option::SimpleOption<size_t>("nbsteps", "Number of output time steps"));
 }
 
+
 void MultioHammer::init(const eckit::option::CmdArgs& args) {
-    MultioServerTool::init(args);
     args.get("transport", transportType_);
-    args.get("nbclients", nbClients_);
     args.get("port", port_);
+    ASSERT(args.get("nbclients", szOpts_["nbclients"]));
+    ASSERT(args.get("nbservers", szOpts_["nbservers"]));
+    ASSERT(args.get("nbsteps", szOpts_["nbsteps"]));
+    ASSERT(args.get("nblevels", szOpts_["nblevels"]));
+    ASSERT(args.get("nbparams", szOpts_["nbparams"]));
 
     config_ =
         eckit::LocalConfiguration{eckit::YAMLConfiguration{plan_configurations(transportType_)}};
 
     if (transportType_ == "mpi") {
         auto domain_size = eckit::mpi::comm(config_.getString("domain").c_str()).size();
-        if (domain_size != nbClients_ + nbServers_) {
+        if (domain_size != szOpts_["nbclients"] + szOpts_["nbservers"]) {
             throw eckit::SeriousBug(
                 "Number of MPI ranks does not match the number of clients and servers");
         }
@@ -106,9 +116,9 @@ std::tuple<std::vector<Peer>, std::vector<Peer>> MultioHammer::createPeerLists()
     if (transportType_ == "mpi") {
         auto domain = config_.getString("domain");
 
-        auto domain_size = nbClients_ + nbServers_;
+        auto domain_size = szOpts_["nbclients"] + szOpts_["nbservers"];
         auto i = 0u;
-        while (i != nbClients_) {
+        while (i != szOpts_["nbclients"]) {
             clientPeers.push_back(Peer{domain.c_str(), i++});
         }
         while (i != domain_size) {
@@ -130,8 +140,8 @@ std::tuple<std::vector<Peer>, std::vector<Peer>> MultioHammer::createPeerLists()
             }
         }
 
-        nbClients_ = clientPeers.size();
-        nbServers_ = serverPeers.size();
+        szOpts_["nbclients"] = clientPeers.size();
+        szOpts_["nbservers"] = serverPeers.size();
 
         return std::make_tuple(clientPeers, serverPeers);
     }
@@ -168,25 +178,25 @@ void MultioHammer::sendData(const std::vector<Peer>& serverPeers,
         transport->send(open);
     }
 
-    auto idxm = generate_index_map(client_list_id, nbClients_);
+    auto idxm = generate_index_map(client_list_id, szOpts_.at("nbclients"));
     eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(size_t));
     LocalIndices index_map{std::move(idxm)};
 
     // send partial mapping
     for (auto& server : serverPeers) {
         Message msg{
-            Message::Header{Message::Tag::Mapping, client, server, "unstructured", nbClients_},
+            Message::Header{Message::Tag::Mapping, client, server, "unstructured", szOpts_.at("nbclients")},
             buffer};
 
         transport->send(msg);
     }
 
     // send messages
-    for (auto step : steps) {
-        for (auto level : levels) {
-            for (auto name : parameters) {
+    for (auto step : metadata_vals(szOpts_.at("nbsteps"))) {
+        for (auto level : metadata_vals(szOpts_.at("nblevels"))) {
+            for (auto param : metadata_vals(szOpts_.at("nbparams"))) {
                 Metadata metadata;
-                metadata.set("param", name);
+                metadata.set("param", param);
                 metadata.set("level", level);
                 metadata.set("step", step);
 
@@ -200,16 +210,16 @@ void MultioHammer::sendData(const std::vector<Peer>& serverPeers,
                 index_map.to_local(global_field, field);
 
                 // Choose server
-                auto id = std::hash<std::string>{}(field_id.str()) % nbServers_;
+                auto id = std::hash<std::string>{}(field_id.str()) % szOpts_.at("nbservers");
                 ASSERT(id < serverPeers.size());
 
                 eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()),
                                      field.size() * sizeof(double));
 
-                Message msg{
-                    Message::Header{Message::Tag::Field, client, serverPeers[id], "unstructured",
-                                  nbClients_, "prognostic", field_id.str(), field_size()},
-                    buffer};
+                Message msg{Message::Header{Message::Tag::Field, client, serverPeers[id],
+                                            "unstructured", szOpts_.at("nbclients"), "prognostic",
+                                            field_id.str(), field_size()},
+                            buffer};
 
                 transport->send(msg);
             }
@@ -257,7 +267,7 @@ void MultioHammer::execute(const eckit::option::CmdArgs&) {
         // Spawn servers
         std::vector<Peer> serverPeers;
         std::vector<std::thread> serverThreads;
-        for (size_t i = 0; i != nbServers_; ++i) {
+        for (size_t i = 0; i != szOpts_["nbservers"]; ++i) {
             std::thread t{&MultioHammer::startListening, this, transport};
 
             serverPeers.push_back(Peer{"thread", std::hash<std::thread::id>{}(t.get_id())});
@@ -266,7 +276,7 @@ void MultioHammer::execute(const eckit::option::CmdArgs&) {
 
         // Spawn clients
         std::vector<std::thread> clientThreads;
-        for (size_t i = 0; i != nbClients_; ++i) {
+        for (size_t i = 0; i != szOpts_["nbclients"]; ++i) {
             clientThreads.emplace_back(&MultioHammer::sendData, this, std::cref(serverPeers),
                                        transport, i);
         }
@@ -291,13 +301,13 @@ void MultioHammer::execute(const eckit::option::CmdArgs&) {
 
     if ((transportType_ == "thread") ||
         (transportType_ == "mpi" && eckit::mpi::comm().rank() == root())) {
-        for (auto step : steps) {
-            for (auto level : levels) {
-                for (auto name : parameters) {
-                    std::string file_name = name + std::string("::") + std::to_string(level) +
+        for (auto step : metadata_vals(szOpts_.at("nbsteps"))) {
+            for (auto level : metadata_vals(szOpts_.at("nblevels"))) {
+                for (auto param : metadata_vals(szOpts_.at("nbparams"))) {
+                    std::string file_name = std::to_string(param) + std::string("::") + std::to_string(level) +
                         std::string("::") + std::to_string(step);
                     std::string field_id = R"({"level":)" + std::to_string(level) +
-                                           R"(,"param":")" + name + R"(","step":)" +
+                                           R"(,"param":)" + std::to_string(param) + R"(,"step":)" +
                                            std::to_string(step) + "}";
                     auto expect = global_test_field(field_id);
                     auto actual = file_content(file_name);
@@ -321,7 +331,7 @@ void MultioHammer::executeWrite() {
     const char* buf = nullptr;
     size_t sz = 0;
 
-    CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz), 0);
+    CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz), NULL);
 
     eckit::Buffer buffer{buf, sz};
 
@@ -331,19 +341,27 @@ void MultioHammer::executeWrite() {
         plans.emplace_back(new Plan(cfg));
     }
 
-    for (auto step : steps) {
+    std::string expver = "xxxx";
+    auto size = expver.size();
+    CODES_CHECK(codes_set_string(handle, "expver", expver.c_str(), &size), NULL);
+    std::string cls = "rd";
+    size = cls.size();
+    CODES_CHECK(codes_set_string(handle, "class", cls.c_str(), &size), NULL);
 
-        CODES_CHECK(codes_set_long(handle, "step", step), 0);
+    CODES_CHECK(codes_set_long(handle, "number", 13), NULL);
+    for (auto step : metadata_vals(szOpts_.at("nbsteps"))) {
 
-        for (auto level : levels) {
+        CODES_CHECK(codes_set_long(handle, "step", step), NULL);
 
-            CODES_CHECK(codes_set_long(handle, "level", level), 0);
+        for (auto level : metadata_vals(szOpts_.at("nblevels"))) {
 
-            for (auto param : {130, 133, 135, 138, 152}) {
-                CODES_CHECK(codes_set_long(handle, "param", param), 0);
+            CODES_CHECK(codes_set_long(handle, "level", level), NULL);
+
+            for (auto param : metadata_vals(szOpts_.at("nbparams"))) {
+                CODES_CHECK(codes_set_long(handle, "param", param), NULL);
 
                 CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buffer), &sz),
-                            0);
+                            NULL);
 
                 eckit::Log::info()
                     << "Step: " << step << ", level: " << level << ", param: " << param
@@ -365,6 +383,6 @@ void MultioHammer::executeWrite() {
 //----------------------------------------------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-    MultioHammer tool(argc, argv);
+    MultioHammer tool{argc, argv};
     return tool.start();
 }

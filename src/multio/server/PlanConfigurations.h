@@ -14,28 +14,11 @@ std::string no_transport_plan_configurations() {
             "transport" : "none",
             "plans" : [
                 {
-                    "name" : "ocean",
-                    "actions" : {
-                        "root" : {
-                            "type" : "Print",
-                            "stream" : "debug",
-                            "next" : {
-                                "type" : "AppendToFile",
-                                "path" : "messages.txt"
-                            }
-                        }
-                    }
-                },
-                {
                     "name" : "atmosphere",
                     "actions" : {
                         "root" : {
                             "type" : "Sink",
                             "sinks" : [
-                                {
-                                    "type" : "file",
-                                    "path" : "hammer-fields.grib"
-                                },
                                 {
                                     "type" : "fdb5-direct",
                                     "config" : {}

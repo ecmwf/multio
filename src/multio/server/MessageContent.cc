@@ -13,12 +13,12 @@
 namespace multio {
 namespace server {
 
-Message::Content::Content(const Header& header, const eckit::Buffer& payload) :
-    header_{header},
+Message::Content::Content(Header&& header, const eckit::Buffer& payload) :
+    header_{std::move(header)},
     payload_{payload, payload.size()} {}
 
-Message::Content::Content(const Header& header, eckit::Buffer&& payload) :
-    header_{header},
+Message::Content::Content(Header&& header, eckit::Buffer&& payload) :
+    header_{std::move(header)},
     payload_{std::move(payload)} {}
 
 Message::Header& Message::Content::header() {

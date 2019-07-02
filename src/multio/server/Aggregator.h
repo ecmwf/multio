@@ -34,7 +34,7 @@ public:
 
     eckit::Buffer gather(const std::vector<Message>& msg, const Mapping& maps);
 
-    std::vector<Message> scatter(Message&& msg, const Mapping& maps);
+    std::vector<Message> scatter(const Message& msg, const Mapping& maps);
 
 private:
     size_t global_size_;

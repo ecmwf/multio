@@ -55,8 +55,9 @@ private:
     bool acceptConnection();
     void waitForEvent();
 
-    std::string local_host_;
-    size_t local_port_;
+    bool amIServer(const std::string& host, std::vector<size_t> ports);
+
+    TcpPeer local_;
 
     std::map<Peer, const std::unique_ptr<eckit::TCPSocket>> outgoing_;
 

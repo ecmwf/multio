@@ -39,7 +39,7 @@ private:
 
     Peer localPeer() const override;
 
-    const std::string comm_name_;
+    MpiPeer local_;
 
     eckit::ResizableBuffer buffer_;
 };

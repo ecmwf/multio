@@ -22,6 +22,30 @@
 namespace multio {
 namespace server {
 
+namespace {
+Message decodeMessage(eckit::Stream& stream) {
+    unsigned t;
+    stream >> t;
+
+    std::string src_dom;
+    stream >> src_dom;
+    size_t src_id;
+    stream >> src_id;
+
+    std::string dest_dom;
+    stream >> dest_dom;
+    size_t dest_id;
+    stream >> dest_id;
+
+    Message msg{Message::Header{static_cast<Message::Tag>(t), TcpPeer{src_dom, src_id},
+                                TcpPeer{dest_dom, dest_id}}};
+    msg.decode(stream);
+
+    return msg;
+}
+}  // namespace
+
+
 struct Connection {
     eckit::Select& select_;
     eckit::TCPSocket socket_;
@@ -40,26 +64,26 @@ struct Connection {
 
 TcpTransport::TcpTransport(const eckit::Configuration& config) :
     Transport(config),
-    local_host_{"localhost"},
-    local_port_{config.getUnsigned("local_port")} {
+    local_{"localhost", config.getUnsigned("local_port")} {
     auto serverConfigs = config.getSubConfigurations("servers");
 
     for (auto cfg : serverConfigs) {
         auto host = cfg.getString("host");
         auto ports = cfg.getUnsignedVector("ports");
 
-        if (host == local_host_ && find(begin(ports), end(ports), local_port_) != end(ports)) {
-            server_.reset(new eckit::TCPServer{static_cast<int>(local_port_)});
+        if (amIServer(host, ports)) {
+            server_.reset(new eckit::TCPServer{static_cast<int>(local_.port())});
             select_.add(*server_);
         }
         else {
-            // TODO: assert that (local_host_, local_port_) is in the list of clients
+            // TODO: assert that (local_.host(), local_.port()) is in the list of clients
             for (const auto port : ports) {
                 try {
                     eckit::TCPClient client;
-                    outgoing_.emplace(Peer{host, static_cast<size_t>(port)},
-                                         new eckit::TCPSocket{client.connect(host, port, 5, 10)});
-                } catch (eckit::TooManyRetries& e) {
+                    outgoing_.emplace(TcpPeer{host, port},
+                                      new eckit::TCPSocket{client.connect(host, port, 5, 10)});
+                }
+                catch (eckit::TooManyRetries& e) {
                     eckit::Log::error() << "Failed to establish connection to host: " << host
                                         << ", port: " << port << std::endl;
                 }
@@ -68,9 +92,8 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
     }
 }
 
-Message TcpTransport::nextMessage(eckit::TCPSocket& socket) const {
-    Message msg;
 
+Message TcpTransport::nextMessage(eckit::TCPSocket& socket) const {
     size_t size;
     socket.read(&size, sizeof(size));
 
@@ -78,9 +101,8 @@ Message TcpTransport::nextMessage(eckit::TCPSocket& socket) const {
     socket.read(buffer, static_cast<long>(size));
 
     eckit::MemoryStream stream{buffer};
-    msg.decode(stream);
 
-    return msg;
+    return decodeMessage(stream);
 }
 
 Message TcpTransport::receive() {
@@ -107,8 +129,6 @@ Message TcpTransport::receive() {
 }
 
 void TcpTransport::send(const Message& msg) {
-    auto dest = msg.destination();
-
     const auto& socket = outgoing_.at(msg.destination());
 
     // Add 4K for header/footer etc. Should be plenty
@@ -125,7 +145,7 @@ void TcpTransport::send(const Message& msg) {
 }
 
 Peer TcpTransport::localPeer() const {
-    return Peer{local_host_, local_port_};
+    return local_;
 }
 
 void TcpTransport::print(std::ostream& os) const {
@@ -151,6 +171,11 @@ void TcpTransport::waitForEvent() {
                                << std::endl;
         }
     } while (acceptConnection());
+}
+
+bool TcpTransport::amIServer(const std::string& host, std::vector<size_t> ports) {
+    return ((host == "localhost") || (host == local_.host())) &&
+           (find(begin(ports), end(ports), local_.port()) != end(ports));
 }
 
 static TransportBuilder<TcpTransport> TcpTransportBuilder("tcp");

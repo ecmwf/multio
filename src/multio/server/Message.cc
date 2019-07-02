@@ -38,13 +38,13 @@ std::string Message::tag2str(Tag t) {
 
 Message::Message() : Message{Message::Header{Message::Tag::Empty, Peer{}, Peer{}}, 0} {}
 
-Message::Message(const Header& header, const eckit::Buffer& payload) :
+Message::Message(Header&& header, const eckit::Buffer& payload) :
     version_{protocolVersion()},
-    content_{std::make_shared<Content>(header, payload)} {}
+    content_{std::make_shared<Content>(std::move(header), payload)} {}
 
-Message::Message(const Header& header, eckit::Buffer&& payload) :
+Message::Message(Header&& header, eckit::Buffer&& payload) :
     version_{protocolVersion()},
-    content_{std::make_shared<Content>(header, std::move(payload))} {}
+    content_{std::make_shared<Content>(std::move(header), std::move(payload))} {}
 
 const Message::Header& Message::header() const {
     return content_->header();
@@ -103,9 +103,9 @@ const eckit::Buffer& Message::payload() const {
 }
 
 void Message::encode(eckit::Stream& strm) const {
-    strm << version_;
-
     header().encode(strm);
+
+    strm << version_;
 
     strm << content_->size();
 
@@ -113,9 +113,9 @@ void Message::encode(eckit::Stream& strm) const {
 }
 
 void Message::decode(eckit::Stream& strm) {
-    strm >> version_;
-
     content_->header().decode(strm);
+
+    strm >> version_;
 
     unsigned long sz;
     strm >> sz;

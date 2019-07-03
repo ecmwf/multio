@@ -31,7 +31,16 @@ Fdb5DirectSink::Fdb5DirectSink(const eckit::Configuration& config) :
     fdb_{fdb5_configuration(config)} {}
 
 void Fdb5DirectSink::write(eckit::DataBlobPtr blob) {
-    fdb_.archive(*blob);
+    const eckit::Metadata& md = blob->metadata();
+
+    fdb5::Key key;
+    std::string value;
+    for (const auto& kw : md.keywords()) {
+        md.get(kw, value);
+        key.set(kw, value);
+    }
+
+    fdb_.archive(key, blob->buffer(), blob->length());
 }
 
 void Fdb5DirectSink::flush() {

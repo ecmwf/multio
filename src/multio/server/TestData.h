@@ -34,9 +34,9 @@ inline std::mutex& mutex() {
     return mut;
 }
 
-inline std::vector<long> metadata_vals(size_t sz) {
+inline std::vector<long> sequence(size_t sz, size_t start) {
     std::vector<long> vals(sz);
-    iota(begin(vals), end(vals), 1u);
+    iota(begin(vals), end(vals), start);
     return vals;
 }
 

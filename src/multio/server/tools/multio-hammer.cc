@@ -1,5 +1,7 @@
 
 #include <algorithm>
+#include <fstream>
+#include <random>
 
 #include "eccodes.h"
 
@@ -19,14 +21,132 @@
 #include "multio/server/LocalIndices.h"
 #include "multio/server/Message.h"
 #include "multio/server/MultioServerTool.h"
-#include "multio/server/PlanConfigurations.h"
 #include "multio/server/Peer.h"
 #include "multio/server/Plan.h"
 #include "multio/server/print_buffer.h"
-#include "multio/server/TestData.h"
 #include "multio/server/Transport.h"
 
 using namespace multio::server;
+
+//----------------------------------------------------------------------------------------------------------------------
+
+namespace {
+size_t& field_size() {
+    static size_t val;
+    return (!val ? (val = 23) : val);
+}
+
+size_t& root() {
+    static size_t rt;  // = 0 if not set to another value
+    return rt;
+}
+
+bool& new_random_data_each_run() {
+    static bool val = false;
+    return val;
+}
+
+std::mutex& mutex() {
+    static std::mutex mut;
+    return mut;
+}
+
+std::vector<long> sequence(size_t sz, size_t start) {
+    std::vector<long> vals(sz);
+    iota(begin(vals), end(vals), start);
+    return vals;
+}
+
+std::vector<double> create_hashed_data(const std::string& field_id, const size_t sz) {
+    std::vector<double> field(sz);
+
+    auto ii = 0;
+    generate(begin(field), end(field), [&ii, &field_id]() {
+        auto hash_val = std::hash<std::string>{}(field_id + std::to_string(ii++));
+        hash_val = static_cast<uint32_t>(hash_val >> 32);
+        return 13.0 + 17.0 * static_cast<double>(hash_val) /
+                          static_cast<double>(std::numeric_limits<uint32_t>::max());
+    });
+
+    return field;
+}
+
+std::vector<double> create_random_data(const size_t sz) {
+    std::vector<double> field;
+
+    std::random_device rd;   // Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
+    std::uniform_real_distribution<double> dis(13.0, 30.0);
+
+    for (auto ii = 0u; ii != sz; ++ii) {
+        field.push_back(dis(gen));
+    }
+
+    return field;
+}
+
+std::vector<size_t> generate_index_map(size_t id, size_t nbclients) {
+    auto chunk_size = field_size() / nbclients + ((id < field_size() % nbclients) ? 1 : 0);
+
+    auto maps = std::vector<size_t>(chunk_size);
+    for (auto jj = 0u; jj != chunk_size; ++jj) {
+        maps[jj] = static_cast<size_t>(id) + jj * nbclients;
+    }
+    return maps;
+}
+
+std::vector<double>& global_test_field(const std::string& field_id, const size_t sz = -1,
+                                       const std::string& transport = "",
+                                       const size_t list_id = -1) {
+    using eckit::mpi::comm;
+    std::lock_guard<std::mutex> lock{mutex()};
+
+    static std::map<std::string, std::vector<double>> test_fields;
+
+    if (test_fields.find(field_id) != end(test_fields)) {
+        return test_fields[field_id];
+    }
+
+    if (transport == "mpi" && new_random_data_each_run()) {
+        test_fields[field_id] =
+            (root() == list_id) ? create_random_data(sz) : std::vector<double>(sz);
+        comm().broadcast(test_fields[field_id], root());
+
+        return test_fields[field_id];
+    }
+
+    test_fields[field_id] =
+        new_random_data_each_run() ? create_random_data(sz) : create_hashed_data(field_id, sz);
+
+    return test_fields[field_id];
+}
+
+std::vector<double> file_content(const eckit::PathName& file_path) {
+    std::fstream ifs(std::string(file_path.fullName()).c_str());
+    std::string str{std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>()};
+    auto beg = reinterpret_cast<const double*>(str.data());
+    std::vector<double> vec(beg, beg + str.size() / sizeof(double));
+    return vec;
+}
+
+eckit::PathName base() {
+    if (::getenv("MULTIO_SERVER_CONFIG_PATH")) {
+        return eckit::PathName{::getenv("MULTIO_SERVER_CONFIG_PATH")};
+    }
+    return eckit::PathName{""};
+}
+
+eckit::PathName test_configuration(const std::string& type) {
+    std::cout << "Transport type: " << type << std::endl;
+    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-config.json"},
+                                                  {"tcp", "tcp-test-config.json"},
+                                                  {"thread", "thread-test-config.json"},
+                                                  {"none", "no-transport-test-config.json"}};
+
+    return base() + eckit::PathName{configs.at(type)};
+}
+
+}  // namespace
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -51,7 +171,7 @@ private:
     void init(const eckit::option::CmdArgs& args) override;
 
     void execute(const eckit::option::CmdArgs& args) override;
-    void executeWrite();
+    void executePlans();
 
     std::tuple<std::vector<Peer>, std::vector<Peer>> createPeerLists();
 
@@ -101,7 +221,7 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
     args.get("nbparams", paramCount_);
 
     config_ =
-        eckit::LocalConfiguration{eckit::YAMLConfiguration{plan_configurations(transportType_)}};
+        eckit::LocalConfiguration{eckit::YAMLConfiguration{test_configuration(transportType_)}};
 
     if (transportType_ == "mpi") {
         auto domain_size = eckit::mpi::comm(config_.getString("domain").c_str()).size();
@@ -253,7 +373,7 @@ void MultioHammer::spawnClients(const std::vector<Peer>& clientPeers,
 void MultioHammer::execute(const eckit::option::CmdArgs&) {
 
     if (transportType_ == "none") {
-        executeWrite();
+        executePlans();
         return;
     }
 
@@ -324,7 +444,7 @@ void MultioHammer::execute(const eckit::option::CmdArgs&) {
     }
 }
 
-void MultioHammer::executeWrite() {
+void MultioHammer::executePlans() {
     eckit::AutoStdFile fin("single-field.grib");
 
     int err;

@@ -25,7 +25,7 @@ using fortint = int32_t;
 extern "C" {
 #endif
 
-void print_girb_id_(int* gid);
+void print_grib_id_(int* gid);
 void print_grib_handle_(grib_handle* h);
 
 void open_io_connection_();

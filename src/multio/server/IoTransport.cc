@@ -16,19 +16,35 @@
 #include "../../../../eccodes/fortran/grib_fortran_prototypes.h"
 
 #include "eckit/config/YAMLConfiguration.h"
+#include "eckit/filesystem/PathName.h"
 
 #include "multio/server/Listener.h"
-#include "multio/server/PlanConfigurations.h"
 #include "multio/server/print_buffer.h"
 #include "multio/server/ThreadTransport.h"
 
 using multio::server::Listener;
 using multio::server::Message;
 using multio::server::Metadata;
-using multio::server::plan_configurations;
 using multio::server::print_buffer;
 using multio::server::Transport;
 using multio::server::TransportFactory;
+
+namespace {
+eckit::PathName test_configuration(const std::string& type) {
+    std::cout << "Transport type: " << type << std::endl;
+    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-config.json"},
+                                                  {"tcp", "tcp-test-config.json"},
+                                                  {"thread", "thread-test-config.json"},
+                                                  {"none", "no-transport-test-config.json"}};
+
+    eckit::PathName base = (::getenv("MULTIO_SERVER_CONFIG_PATH"))
+                               ? eckit::PathName{::getenv("MULTIO_SERVER_CONFIG_PATH")}
+                               : eckit::PathName{""};
+
+    return base + eckit::PathName{configs.at(type)};
+}
+
+}  // namespace
 
 class IoTransport {
 public:
@@ -52,7 +68,7 @@ public:
 
 private:
     IoTransport() :
-        config_{eckit::YAMLConfiguration{plan_configurations("thread")}},
+        config_{eckit::YAMLConfiguration{test_configuration("thread")}},
         transport_{TransportFactory::instance().build("thread", config_)},
         listener_{config_, *transport_},
         listener_thread_{&Listener::listen, &listener_} {}

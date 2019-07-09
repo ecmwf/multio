@@ -114,7 +114,7 @@ public:  // methods
 private:  // members
     std::map<std::string, const DataSinkBuilderBase*> factories_;
 
-    std::mutex mutex_;
+    std::recursive_mutex mutex_;
 };
 
 class DataSinkBuilderBase : private eckit::NonCopyable {

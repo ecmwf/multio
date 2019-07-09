@@ -68,9 +68,6 @@ MultIO::MultIO(const eckit::Configuration& config) :
     }
 }
 
-MultIO::~MultIO() {
-}
-
 bool MultIO::ready() const {
     std::lock_guard<std::mutex> lock(mutex_);
 
@@ -144,7 +141,6 @@ void MultIO::print(std::ostream& os) const {
 void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    Log::info() << "MultIO iopenfdb name=" << name << " mode=" << mode << std::endl;
     StatsTimer stTimer{timer_, std::bind(&IOStats::logiopenfdb_, &stats_, _1)};
     for (auto& sink : sinks_) {
         /// NOTE: this does not quite work with multiple FDB4 since fdbaddr will be overwritten

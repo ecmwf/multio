@@ -37,12 +37,8 @@ Dispatcher::Dispatcher(const eckit::Configuration& config) {
 Dispatcher::~Dispatcher() = default;
 
 void Dispatcher::dispatch(eckit::Queue<Message>& queue) {
-    while (true) {
-        Message msg;
-        if (queue.pop(msg) < 0) {
-            break;
-        }
-
+    Message msg;
+    while (queue.pop(msg) >= 0) {
         for (const auto& plan : plans_) {
             plan->process(msg);
         }

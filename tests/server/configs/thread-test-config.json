@@ -1,0 +1,43 @@
+{
+    "transport" : "thread",
+    "plans" : [
+        {
+            "name" : "ocean",
+            "actions" : {
+                "root" : {
+                    "type" : "Print",
+                    "stream" : "debug",
+                    "next" : {
+                        "type" : "AppendToFile",
+                        "path" : "messages.txt"
+                    }
+                }
+            }
+        },
+        {
+            "name" : "atmosphere",
+            "actions" : {
+                "root" : {
+                    "type" : "Select",
+                    "categories" : [ "prognostic", "diagnostic" ],
+                    "next" : {
+                        "type" : "Aggregation",
+                        "mapping" : "unstructured",
+                        "next" : {
+                            "type" : "Encode",
+                            "format" : "grib",
+                            "next" : {
+                                "type" : "Sink",
+                                "sinks" : [
+                                    {
+                                        "type" : "file"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

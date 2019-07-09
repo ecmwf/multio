@@ -1,0 +1,23 @@
+{
+    "transport" : "none",
+    "plans" : [
+        {
+            "name" : "atmosphere",
+            "actions" : {
+                "root" : {
+                    "type" : "Sink",
+                    "sinks" : [
+                        {
+                            "type" : "fdb5-direct",
+                            "config" : {}
+                        },
+                        {
+                            "type" : "file",
+                            "path" : "hammer.grib"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

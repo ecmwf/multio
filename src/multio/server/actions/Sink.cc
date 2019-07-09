@@ -22,11 +22,21 @@ namespace multio {
 namespace server {
 namespace actions {
 
-Sink::Sink(const eckit::Configuration& config) : Action(config) {}
+Sink::Sink(const eckit::Configuration& config) : Action(config) {
+    auto configs = config.getSubConfigurations("sinks");
+    if (configs[0].getString("type") == "file" && !configs[0].has("path")) {
+        ASSERT(configs.size() == 1);
+        setFilePath_ = true;
+        return;
+    }
+
+    dataSink_.reset(DataSinkFactory::instance().build("multio", config));
+}
 
 void Sink::execute(Message msg) const {
     switch (msg.tag()) {
         case Message::Tag::Field:
+        case Message::Tag::GribTemplate:
             write(msg);
             return;
 
@@ -44,16 +54,29 @@ void Sink::execute(Message msg) const {
 }
 
 void Sink::write(Message msg) const {
-    std::ostringstream oss;
-    oss << msg.metadata().getString("param") << "::" << msg.metadata().getUnsigned("level")
-        << "::" << msg.metadata().getUnsigned("step");
-    eckit::LocalConfiguration config;
+    if (setFilePath_) {
+        std::ostringstream oss;
+        oss << msg.metadata().getString("param") << "::" << msg.metadata().getUnsigned("level")
+            << "::" << msg.metadata().getUnsigned("step");
+        eckit::LocalConfiguration config;
 
-    config.set("path", oss.str());
-    dataSink_.reset(DataSinkFactory::instance().build("file", config));
+        config.set("path", oss.str());
+        dataSink_.reset(DataSinkFactory::instance().build("file", config));
+    }
 
-    eckit::DataBlobPtr blob(
-        eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
+    eckit::DataBlobPtr blob;
+    switch (msg.tag()) {
+        case Message::Tag::Field:
+            blob.reset(eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
+            break;
+
+        case Message::Tag::GribTemplate:
+            blob.reset(eckit::DataBlobFactory::build("grib", msg.payload().data(), msg.size()));
+            break;
+
+        default:
+            ASSERT(false);
+    }
 
     dataSink_->write(blob);
 }

@@ -60,6 +60,7 @@ ecbuild_add_library(
 
     LIBS
         multio
+        multio-fdb5
         eckit_mpi
         eckit_option
         eckit
@@ -71,13 +72,13 @@ ecbuild_add_executable( TARGET    multio-hammer
                         NOINSTALL
                         CONDITION HAVE_MULTIO_SERVER
                         SOURCES   tools/multio-hammer.cc
-                        INCLUDES  ${ECKIT_INCLUDE_DIRS}
+                        INCLUDES  ${ECCODES_INCLUDE_DIRS}
                         LIBS      multio-server multio)
 
 ecbuild_add_executable( TARGET    multio-grib
                         NOINSTALL
                         CONDITION HAVE_MULTIO_SERVER
                         SOURCES   tools/multio-grib.cc
-                        INCLUDES  ${ECCODES_INCLUDE_DIRS} ${ECKIT_INCLUDE_DIRS}
+                        INCLUDES  ${ECCODES_INCLUDE_DIRS}
                         LIBS      multio-server multio)
 

@@ -97,10 +97,10 @@ std::vector<double> create_random_data(const size_t sz) {
     return field;
 }
 
-std::vector<size_t> generate_index_map(size_t id, size_t nbclients) {
+std::vector<int32_t> generate_index_map(size_t id, size_t nbclients) {
     auto chunk_size = field_size() / nbclients + ((id < field_size() % nbclients) ? 1 : 0);
 
-    auto maps = std::vector<size_t>(chunk_size);
+    auto maps = std::vector<int32_t>(chunk_size);
     for (auto jj = 0u; jj != chunk_size; ++jj) {
         maps[jj] = static_cast<size_t>(id) + jj * nbclients;
     }
@@ -283,13 +283,13 @@ void MultioHammer::sendData(const PeerList& serverPeers,
     }
 
     auto idxm = generate_index_map(client_list_id, clientCount_);
-    eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(size_t));
+    eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(int32_t));
     LocalIndices index_map{std::move(idxm)};
 
     // send partial mapping
     for (auto& server : serverPeers) {
         Message msg{
-            Message::Header{Message::Tag::Mapping, client, *server, "unstructured", clientCount_},
+            Message::Header{Message::Tag::Mapping, client, *server, "grid-point", clientCount_},
             buffer};
 
         transport->send(msg);
@@ -300,9 +300,9 @@ void MultioHammer::sendData(const PeerList& serverPeers,
         for (auto level : sequence(levelCount_, 1)) {
             for (auto param : sequence(paramCount_, 1)) {
                 Metadata metadata;
-                metadata.set("param", param);
-                metadata.set("level", level);
-                metadata.set("step", step);
+                metadata.set("igrib", param);
+                metadata.set("ilevg", level);
+                metadata.set("istep", step);
 
                 std::stringstream field_id;
                 eckit::JSON json(field_id);
@@ -321,8 +321,8 @@ void MultioHammer::sendData(const PeerList& serverPeers,
                                      field.size() * sizeof(double));
 
                 Message msg{
-                    Message::Header{Message::Tag::Field, client, *serverPeers[id], "unstructured",
-                                    clientCount_, "prognostic", field_id.str(), field_size()},
+                    Message::Header{Message::Tag::Field, client, *serverPeers[id], "grid-point",
+                                    clientCount_, "model-level", field_id.str(), field_size()},
                     buffer};
 
                 transport->send(msg);
@@ -412,8 +412,8 @@ void MultioHammer::testData() {
                 std::string file_name = std::to_string(param) + std::string("::") +
                                         std::to_string(level) + std::string("::") +
                                         std::to_string(step);
-                std::string field_id = R"({"level":)" + std::to_string(level) +
-                                       R"(,"param":)" + std::to_string(param) + R"(,"step":)" +
+                std::string field_id = R"({"igrib":)" + std::to_string(param) + R"(,"ilevg":)" +
+                                       std::to_string(level) + R"(,"istep":)" +
                                        std::to_string(step) + "}";
                 auto expect = global_test_field(field_id);
                 auto actual = file_content(file_name);

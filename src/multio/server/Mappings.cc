@@ -30,7 +30,7 @@ void Mappings::add(Message msg) {
     std::cout << "*** Add mapping for " << msg.mapping() << std::endl;
     ASSERT(mapping.find(msg.source()) == end(mapping));
 
-    std::vector<size_t> local_map(msg.size() / sizeof(size_t));
+    std::vector<int32_t> local_map(msg.size() / sizeof(int32_t));
 
     std::memcpy(local_map.data(), msg.payload().data(), msg.size());
 

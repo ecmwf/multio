@@ -73,6 +73,7 @@ ecbuild_add_executable( TARGET    multio-hammer
                         CONDITION HAVE_MULTIO_SERVER
                         SOURCES   tools/multio-hammer.cc
                         INCLUDES  ${ECCODES_INCLUDE_DIRS}
+                                  ${METKIT_INCLUDE_DIRS}
                         LIBS      multio-server multio)
 
 ecbuild_add_executable( TARGET    multio-grib
@@ -80,5 +81,6 @@ ecbuild_add_executable( TARGET    multio-grib
                         CONDITION HAVE_MULTIO_SERVER
                         SOURCES   tools/multio-grib.cc
                         INCLUDES  ${ECCODES_INCLUDE_DIRS}
+                                  ${ECKIT_INCLUDE_DIRS}
                         LIBS      multio-server multio)
 

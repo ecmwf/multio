@@ -40,7 +40,7 @@ struct Connection {
 
 TcpTransport::TcpTransport(const eckit::Configuration& config) :
     Transport(config),
-    local_host_{eckit::Main::hostname()},
+    local_host_{"localhost"},
     local_port_{config.getUnsigned("local_port")} {
     auto serverConfigs = config.getSubConfigurations("servers");
 

@@ -451,13 +451,6 @@ void MultioHammer::executePlans() {
     codes_handle* handle = codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err);
     ASSERT(handle);
 
-    const char* buf = nullptr;
-    size_t sz = 0;
-
-    CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz), NULL);
-
-    eckit::Buffer buffer{buf, sz};
-
     std::vector<std::unique_ptr<Plan>> plans;
     for (const auto& cfg : config_.getSubConfigurations("plans")) {
         eckit::Log::info() << cfg << std::endl;
@@ -471,6 +464,9 @@ void MultioHammer::executePlans() {
     size = cls.size();
     CODES_CHECK(codes_set_string(handle, "class", cls.c_str(), &size), NULL);
 
+    const char* buf = nullptr;
+    size_t sz = 0;
+
     CODES_CHECK(codes_set_long(handle, "number", 13), NULL);
     for (auto step : sequence(stepCount_, 1)) {
 
@@ -483,15 +479,15 @@ void MultioHammer::executePlans() {
             for (auto param : sequence(paramCount_, 1)) {
                 CODES_CHECK(codes_set_long(handle, "param", param), NULL);
 
-                CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buffer), &sz),
+                CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),
                             NULL);
 
                 eckit::Log::info()
                     << "Step: " << step << ", level: " << level << ", param: " << param
-                    << ", payload size: " << buffer.size() << std::endl;
+                    << ", payload size: " << sz << std::endl;
 
                 Message msg{Message::Header{Message::Tag::GribTemplate, Peer{"", 0}, Peer{"", 0}},
-                            buffer};
+                            eckit::Buffer{buf, sz}};
 
                 for (const auto& plan : plans) {
                     plan->process(msg);

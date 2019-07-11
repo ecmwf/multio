@@ -17,6 +17,10 @@ Message::Content::Content(const Header& header, const eckit::Buffer& payload) :
     header_{header},
     payload_{payload, payload.size()} {}
 
+Message::Content::Content(const Header& header, eckit::Buffer&& payload) :
+    header_{header},
+    payload_{std::move(payload)} {}
+
 Message::Header& Message::Content::header() {
     return header_;
 };

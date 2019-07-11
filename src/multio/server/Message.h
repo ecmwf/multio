@@ -94,6 +94,8 @@ public:  // types
     class Content {
     public:
         Content(const Header& header, const eckit::Buffer& payload = 0);
+        Content(const Header& header, eckit::Buffer&& payload);
+
         size_t size() const;
 
         Header& header();
@@ -112,6 +114,7 @@ public:  // methods
 
     Message();
     Message(const Header& header, const eckit::Buffer& payload = 0);
+    Message(const Header& header, eckit::Buffer&& payload);
 
     const Header& header() const;
 

@@ -42,6 +42,10 @@ Message::Message(const Header& header, const eckit::Buffer& payload) :
     version_{protocolVersion()},
     content_{std::make_shared<Content>(header, payload)} {}
 
+Message::Message(const Header& header, eckit::Buffer&& payload) :
+    version_{protocolVersion()},
+    content_{std::make_shared<Content>(header, std::move(payload))} {}
+
 const Message::Header& Message::header() const {
     return content_->header();
 }

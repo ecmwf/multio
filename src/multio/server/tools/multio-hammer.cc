@@ -57,6 +57,15 @@ std::vector<long> sequence(size_t sz, size_t start) {
     return vals;
 }
 
+std::vector<long> valid_parameters(size_t sz) {
+     // Read from configuration
+    std::vector<long> vals{130, 133, 135, 138, 155, 203, 246, 247, 248, 75, 76};
+    if (sz < vals.size()) {
+        vals.resize(sz);
+    }
+    return vals;
+}
+
 std::vector<double> create_hashed_data(const std::string& field_id, const size_t sz) {
     std::vector<double> field(sz);
 
@@ -191,6 +200,7 @@ private:
     size_t stepCount_ = 3;
     size_t levelCount_ = 3;
     size_t paramCount_ = 3;
+    size_t ensCount_ = 1;
 
     eckit::LocalConfiguration config_;
 };
@@ -207,6 +217,8 @@ MultioHammer::MultioHammer(int argc, char** argv) : multio::server::MultioServer
         new eckit::option::SimpleOption<size_t>("nblevels", "Number of model levels"));
     options_.push_back(
         new eckit::option::SimpleOption<size_t>("nbsteps", "Number of output time steps"));
+    options_.push_back(
+        new eckit::option::SimpleOption<size_t>("nbensembles", "Number of ensemble members"));
 }
 
 
@@ -219,6 +231,7 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
     args.get("nbsteps", stepCount_);
     args.get("nblevels", levelCount_);
     args.get("nbparams", paramCount_);
+    args.get("nbensembles", ensCount_);
 
     config_ =
         eckit::LocalConfiguration{eckit::YAMLConfiguration{test_configuration(transportType_)}};
@@ -469,28 +482,32 @@ void MultioHammer::executePlans() {
 
     CODES_CHECK(codes_set_long(handle, "number", 13), NULL);
     for (auto step : sequence(stepCount_, 1)) {
-
         CODES_CHECK(codes_set_long(handle, "step", step), NULL);
 
-        for (auto level : sequence(levelCount_, 1)) {
+        for (auto ens : sequence(ensCount_, 1)) {
 
-            CODES_CHECK(codes_set_long(handle, "level", level), NULL);
+            CODES_CHECK(codes_set_long(handle, "number", ens), NULL);
 
-            for (auto param : sequence(paramCount_, 1)) {
-                CODES_CHECK(codes_set_long(handle, "param", param), NULL);
+            for (auto level : sequence(levelCount_, 1)) {
+                CODES_CHECK(codes_set_long(handle, "level", level), NULL);
 
-                CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),
-                            NULL);
+                for (auto param : valid_parameters(paramCount_)) {
+                    CODES_CHECK(codes_set_long(handle, "param", param), NULL);
 
-                eckit::Log::info()
-                    << "Step: " << step << ", level: " << level << ", param: " << param
-                    << ", payload size: " << sz << std::endl;
+                    CODES_CHECK(
+                        codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz), NULL);
 
-                Message msg{Message::Header{Message::Tag::GribTemplate, Peer{"", 0}, Peer{"", 0}},
-                            eckit::Buffer{buf, sz}};
+                    eckit::Log::info()
+                        << "Step: " << step << ", level: " << level << ", param: " << param
+                        << ", payload size: " << sz << std::endl;
 
-                for (const auto& plan : plans) {
-                    plan->process(msg);
+                    Message msg{
+                        Message::Header{Message::Tag::GribTemplate, Peer{"", 0}, Peer{"", 0}},
+                        eckit::Buffer{buf, sz}};
+
+                    for (const auto& plan : plans) {
+                        plan->process(msg);
+                    }
                 }
             }
         }

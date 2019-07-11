@@ -68,9 +68,6 @@ void Listener::listen() {
         }
     } while (!connections_.empty() || nbClosedConnections_ != nbMaps_);
 
-    // Wait for queue to be emptied before closing it
-    while (not msgQueue_.empty()) {}
-
     msgQueue_.close();
 }
 

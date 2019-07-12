@@ -171,6 +171,7 @@ public: // methods
         JSON msg(os);
         event.json(msg);
 
+        Log::info() << "SENDING EVENT -- " << os.str() << std::endl;
         Log::debug<LibMultio>() << "SENDING EVENT -- " << os.str() << std::endl;
 
         if(!host_.empty()) {

@@ -15,14 +15,13 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 
-#include "multio/DataSink.h"
 #include "multio/server/PlainDataBlob.h"
 
 namespace multio {
 namespace server {
 namespace actions {
 
-Sink::Sink(const eckit::Configuration& config) : Action(config) {
+Sink::Sink(const eckit::Configuration& config) : Action(config), mio_{config} {
     auto configs = config.getSubConfigurations("sinks");
     if (configs[0].getString("type") == "file" && !configs[0].has("path")) {
         ASSERT(configs.size() == 1);
@@ -40,9 +39,18 @@ void Sink::execute(Message msg) const {
             write(msg);
             return;
 
-        case Message::Tag::StepComplete:
+        case Message::Tag::StepComplete: {
             flush();
+
+            eckit::StringDict metadata;
+
+            // Hijack the mapping string
+            metadata["step"] = msg.mapping();
+
+            eckit::Log::info() << "Trigger is called..." << std::endl;
+            mio_.trigger(metadata);
             return;
+        }
 
         default:
             ASSERT(false);

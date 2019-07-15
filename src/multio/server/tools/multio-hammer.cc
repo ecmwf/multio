@@ -57,9 +57,12 @@ std::vector<long> sequence(size_t sz, size_t start) {
     return vals;
 }
 
-std::vector<long> valid_parameters(size_t sz) {
-     // Read from configuration
-    std::vector<long> vals{130, 133, 135, 138, 155, 203, 246, 247, 248, 75, 76};
+std::vector<long> valid_parameters(size_t sz, const eckit::Configuration& config) {
+    // Read from configuration
+    std::vector<long> vals =
+        (config.has("parameters")
+             ? config.getInt64Vector("parameters")
+             : std::vector<long>{130, 133, 135, 138, 155, 203, 246, 247, 248, 75, 76});
     if (sz < vals.size()) {
         vals.resize(sz);
     }
@@ -487,15 +490,15 @@ void MultioHammer::executePlans() {
         for (auto level : sequence(levelCount_, 1)) {
              CODES_CHECK(codes_set_long(handle, "level", level), NULL);
 
-             for (auto param : valid_parameters(paramCount_)) {
+             for (auto param : valid_parameters(paramCount_, config_)) {
                  CODES_CHECK(codes_set_long(handle, "param", param), NULL);
 
-                 CODES_CHECK(
-                             codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz), NULL);
+                 CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),
+                             NULL);
 
                  eckit::Log::info()
-                     << "Step: " << step << ", level: " << level << ", param: " << param
-                     << ", payload size: " << sz << std::endl;
+                     << "Member: " << ensMember_ << ", step: " << step << ", level: " << level
+                     << ", param: " << param << ", payload size: " << sz << std::endl;
 
                  Message msg{
                      Message::Header{Message::Tag::GribTemplate, Peer{"", 0}, Peer{"", 0}},
@@ -507,6 +510,7 @@ void MultioHammer::executePlans() {
              }
         }
 
+        // TODO: Notification is different from flush -- consider where responsibility for this should be
         auto stepStr = eckit::Translator<long,std::string>()(step);
         Message msg{Message::Header{Message::Tag::StepComplete, Peer{"", 0}, Peer{"", 0}, stepStr}};
         for (const auto& plan : plans) {

@@ -1,5 +1,6 @@
 {
     "transport" : "none",
+    "parameters": [130, 133, 135, 138, 155, 203, 246, 247, 248, 75, 76],
     "plans" : [
         {
             "name" : "atmosphere",

@@ -60,8 +60,10 @@ MultIO::MultIO(const eckit::Configuration& config) :
 
     const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
 
-    for (const auto& config : configs) {
-        DataSink* sink = DataSinkFactory::instance().build(config.getString("type"), config);
+    std::vector<LocalConfiguration>::const_iterator it = configs.begin();
+    std::vector<LocalConfiguration>::const_iterator end = configs.end();
+    for (; it != end; ++it) {
+        DataSink* sink = DataSinkFactory::instance().build(it->getString("type"), *it);
         ASSERT(sink);
         sink->setId(sinks_.size());
         sinks_.emplace_back(sink);
@@ -71,8 +73,10 @@ MultIO::MultIO(const eckit::Configuration& config) :
 bool MultIO::ready() const {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    for (auto const& sink : sinks_) {
-        if (!sink->ready()) {
+    decltype(sinks_)::const_iterator it = sinks_.begin();
+    decltype(sinks_)::const_iterator end = sinks_.end();
+    for (; it != end; ++it) {
+        if (!(*it)->ready()) {
             return false;
         }
     }
@@ -142,9 +146,12 @@ void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& 
     std::lock_guard<std::mutex> lock(mutex_);
 
     StatsTimer stTimer{timer_, std::bind(&IOStats::logiopenfdb_, &stats_, _1)};
-    for (auto& sink : sinks_) {
+
+    decltype(sinks_)::const_iterator it = sinks_.begin();
+    decltype(sinks_)::const_iterator end = sinks_.end();
+    for (; it != end; ++it) {
         /// NOTE: this does not quite work with multiple FDB4 since fdbaddr will be overwritten
-        sink->iopenfdb(name, fdbaddr, mode);
+        (*it)->iopenfdb(name, fdbaddr, mode);
     }
 }
 

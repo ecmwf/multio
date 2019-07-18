@@ -12,14 +12,13 @@
 /// @author Simon Smart
 /// @author Tiago Quintino
 
-/// @date Jan 2019
+/// @date Jul 2019
 
-#ifndef multio_server_actions_Sink_H
-#define multio_server_actions_Sink_H
+#ifndef multio_server_actions_SingleFieldSink_H
+#define multio_server_actions_SingleFieldSink_H
 
 #include <iosfwd>
 
-#include "multio/MultIO.h"
 #include "multio/server/Action.h"
 
 namespace eckit {
@@ -33,9 +32,9 @@ class DataSink;
 namespace server {
 namespace actions {
 
-class Sink : public Action {
+class SingleFieldSink : public Action {
 public:
-    Sink(const eckit::Configuration& config);
+    SingleFieldSink(const eckit::Configuration& config);
 
 private:
     void execute(Message msg) const override;
@@ -46,7 +45,7 @@ private:
 
     void flush() const;
 
-    mutable MultIO mio_;
+    mutable std::unique_ptr<DataSink> dataSink_ = nullptr;
 };
 
 }  // namespace actions

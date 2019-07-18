@@ -28,12 +28,7 @@
                             "type" : "Encode",
                             "format" : "grib",
                             "next" : {
-                                "type" : "Sink",
-                                "sinks" : [
-                                    {
-                                        "type" : "file"
-                                    }
-                                ]
+                                "type" : "SingleFieldSink"
                             }
                         }
                     }

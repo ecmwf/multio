@@ -18,6 +18,8 @@ ecbuild_add_library(
         actions/Select.h
         actions/Sink.cc
         actions/Sink.h
+        actions/SingleFieldSink.cc
+        actions/SingleFieldSink.h
         actions/Null.cc
         actions/Null.h
         Action.cc
@@ -42,6 +44,8 @@ ecbuild_add_library(
         Peer.h
         Plan.cc
         Plan.h
+        PlainDataBlob.cc
+        PlainDataBlob.h
         ThreadTransport.cc
         ThreadTransport.h
         MpiTransport.cc

@@ -510,9 +510,15 @@ void MultioHammer::executePlans() {
              }
         }
 
-        // TODO: Notification is different from flush -- consider where responsibility for this should be
-        auto stepStr = eckit::Translator<long,std::string>()(step);
-        Message msg{Message::Header{Message::Tag::StepComplete, Peer{"", 0}, Peer{"", 0}, stepStr}};
+        Message msg{Message::Header{Message::Tag::StepComplete, Peer{"", 0}, Peer{"", 0}}};
+        for (const auto& plan : plans) {
+            plan->process(msg);
+        }
+
+        // This message need only be sent by one server per ENS. Some sort of synchronisation
+        // between the servers will be required -- OK for multio-hammmer for now.
+        auto stepStr = eckit::Translator<long, std::string>()(step);
+        msg = Message{Message::Header{Message::Tag::StepNotification, Peer{"", 0}, Peer{"", 0}, stepStr}};
         for (const auto& plan : plans) {
             plan->process(msg);
         }

@@ -47,6 +47,7 @@ public:  // types
         Mapping,
         Field,
         StepComplete,
+        StepNotification,
         ENDTAG
     };
 

@@ -30,9 +30,11 @@ void Sink::execute(Message msg) const {
             write(msg);
             return;
 
-        case Message::Tag::StepComplete: {
+        case Message::Tag::StepComplete:
             flush();
+            return;
 
+        case Message::Tag::StepNotification: {
             eckit::StringDict metadata;
 
             // Hijack the mapping string

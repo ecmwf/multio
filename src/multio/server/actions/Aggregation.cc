@@ -29,21 +29,33 @@ Aggregation::Aggregation(const eckit::Configuration& config) :
 
 void Aggregation::execute(Message msg) const {
 
-    auto field_id = msg.field_id();
-    messages_[field_id].push_back(msg);
+    if (msg.tag() == Message::Tag::Field) {
+        auto field_id = msg.field_id();
+        messages_[field_id].push_back(msg);
 
-    // All parts arrived?
-    bool ret = messages_.at(field_id).size() == msg.map_count();
-    ret &= Mappings::instance().get(map_name_).size() == msg.map_count();
-    if (!ret) {
-        return;
+        // All parts arrived?
+        bool ret = messages_.at(field_id).size() == msg.map_count();
+        ret &= Mappings::instance().get(map_name_).size() == msg.map_count();
+        if (!ret) {
+            return;
+        }
+
+        Aggregator agg{msg.field_size(), messages_.at(field_id).size()};
+
+        msg.payload() = agg.gather(messages_.at(field_id), Mappings::instance().get(map_name_));
+
+        messages_.erase(field_id);
     }
 
-    Aggregator agg{msg.field_size(), messages_.at(field_id).size()};
+    if (msg.tag() == Message::Tag::StepComplete) {
+        if(flushes_.find(msg.mapping()) == end(flushes_)) {
+            flushes_[msg.mapping()] = 0;
+        }
 
-    msg.payload() = agg.gather(messages_.at(field_id), Mappings::instance().get(map_name_));
-
-    messages_.erase(field_id);
+        if (++flushes_.at(msg.mapping()) != msg.map_count()) {
+            return;
+        }
+    }
 
     if (next_) {  // May want to assert next_
         next_->execute(msg);

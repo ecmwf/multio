@@ -10,9 +10,9 @@
 #include "eckit/io/StdFile.h"
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
-#include "eckit/parser/JSON.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
+#include "eckit/parser/JSON.h"
 
 #include "metkit/grib/GribDataBlob.h"
 #include "metkit/grib/GribHandle.h"
@@ -23,8 +23,8 @@
 #include "multio/server/MultioServerTool.h"
 #include "multio/server/Peer.h"
 #include "multio/server/Plan.h"
-#include "multio/server/print_buffer.h"
 #include "multio/server/Transport.h"
+#include "multio/server/print_buffer.h"
 
 using namespace multio::server;
 
@@ -164,7 +164,6 @@ eckit::PathName test_configuration(const std::string& type) {
 
 class MultioHammer final : public multio::server::MultioServerTool {
 public:  // methods
-
     MultioHammer(int argc, char** argv);
 
 private:
@@ -220,8 +219,7 @@ MultioHammer::MultioHammer(int argc, char** argv) : multio::server::MultioServer
         new eckit::option::SimpleOption<size_t>("nblevels", "Number of model levels"));
     options_.push_back(
         new eckit::option::SimpleOption<size_t>("nbsteps", "Number of output time steps"));
-    options_.push_back(
-        new eckit::option::SimpleOption<size_t>("member", "Ensemble member"));
+    options_.push_back(new eckit::option::SimpleOption<size_t>("member", "Ensemble member"));
 }
 
 
@@ -291,7 +289,7 @@ std::tuple<std::vector<Peer>, std::vector<Peer>> MultioHammer::createPeerLists()
     return std::make_tuple(clientPeers, serverPeers);
 }
 
-void MultioHammer::startListening(std::shared_ptr<Transport> transport){
+void MultioHammer::startListening(std::shared_ptr<Transport> transport) {
     Listener listener(config_, *transport);
     listener.listen();
 }
@@ -363,6 +361,14 @@ void MultioHammer::sendData(const std::vector<Peer>& serverPeers,
                 transport->send(msg);
             }
         }
+
+        // Send flush messages
+        for (auto& server : serverPeers) {
+            auto stepStr = eckit::Translator<long, std::string>()(step);
+            Message flush{
+                Message::Header{Message::Tag::StepComplete, client, server, stepStr, clientCount_}};
+            transport->send(flush);
+        }
     }
 
     // close all servers
@@ -387,7 +393,6 @@ void MultioHammer::spawnClients(const std::vector<Peer>& clientPeers,
 //----------------------------------------------------------------------------------------------------------------------
 
 void MultioHammer::execute(const eckit::option::CmdArgs&) {
-
     if (transportType_ == "none") {
         executePlans();
         return;
@@ -443,10 +448,11 @@ void MultioHammer::execute(const eckit::option::CmdArgs&) {
         for (auto step : sequence(stepCount_, 1)) {
             for (auto level : sequence(levelCount_, 1)) {
                 for (auto param : sequence(paramCount_, 1)) {
-                    std::string file_name = std::to_string(param) + std::string("::") + std::to_string(level) +
-                        std::string("::") + std::to_string(step);
-                    std::string field_id = R"({"level":)" + std::to_string(level) +
-                                           R"(,"param":)" + std::to_string(param) + R"(,"step":)" +
+                    std::string file_name = std::to_string(param) + std::string("::") +
+                                            std::to_string(level) + std::string("::") +
+                                            std::to_string(step);
+                    std::string field_id = R"({"level":)" + std::to_string(level) + R"(,"param":)" +
+                                           std::to_string(param) + R"(,"step":)" +
                                            std::to_string(step) + "}";
                     auto expect = global_test_field(field_id);
                     auto actual = file_content(file_name);
@@ -488,37 +494,40 @@ void MultioHammer::executePlans() {
         CODES_CHECK(codes_set_long(handle, "step", step), NULL);
 
         for (auto level : sequence(levelCount_, 1)) {
-             CODES_CHECK(codes_set_long(handle, "level", level), NULL);
+            CODES_CHECK(codes_set_long(handle, "level", level), NULL);
 
-             for (auto param : valid_parameters(paramCount_, config_)) {
-                 CODES_CHECK(codes_set_long(handle, "param", param), NULL);
+            for (auto param : valid_parameters(paramCount_, config_)) {
+                CODES_CHECK(codes_set_long(handle, "param", param), NULL);
 
-                 CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),
-                             NULL);
+                CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),
+                            NULL);
 
-                 eckit::Log::info()
-                     << "Member: " << ensMember_ << ", step: " << step << ", level: " << level
-                     << ", param: " << param << ", payload size: " << sz << std::endl;
+                eckit::Log::info()
+                    << "Member: " << ensMember_ << ", step: " << step << ", level: " << level
+                    << ", param: " << param << ", payload size: " << sz << std::endl;
 
-                 Message msg{
-                     Message::Header{Message::Tag::GribTemplate, Peer{"", 0}, Peer{"", 0}},
-                         eckit::Buffer{buf, sz}};
+                Message msg{Message::Header{Message::Tag::GribTemplate, Peer{"", 0}, Peer{"", 0}},
+                            eckit::Buffer{buf, sz}};
 
-                 for (const auto& plan : plans) {
-                     plan->process(msg);
-                 }
-             }
+                for (const auto& plan : plans) {
+                    plan->process(msg);
+                }
+            }
         }
 
-        Message msg{Message::Header{Message::Tag::StepComplete, Peer{"", 0}, Peer{"", 0}}};
+
+        auto stepStr = eckit::Translator<long, std::string>()(step);
+
+        Message msg{
+            Message::Header{Message::Tag::StepComplete, Peer{"", 0}, Peer{"", 0}, stepStr, 1}};
         for (const auto& plan : plans) {
             plan->process(msg);
         }
 
         // This message need only be sent by one server per ENS. Some sort of synchronisation
         // between the servers will be required -- OK for multio-hammmer for now.
-        auto stepStr = eckit::Translator<long, std::string>()(step);
-        msg = Message{Message::Header{Message::Tag::StepNotification, Peer{"", 0}, Peer{"", 0}, stepStr}};
+        msg = Message{
+            Message::Header{Message::Tag::StepNotification, Peer{"", 0}, Peer{"", 0}, stepStr, 1}};
         for (const auto& plan : plans) {
             plan->process(msg);
         }

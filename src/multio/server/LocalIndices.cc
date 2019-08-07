@@ -11,6 +11,9 @@ namespace server {
 LocalIndices::LocalIndices(std::vector<int32_t>&& idx) : indices_(std::move(idx)) {}
 
 void LocalIndices::to_global(const std::vector<double>& local, std::vector<double>& global) const {
+    std::cout << " *** Aggregator fields size:  " << local.size() << std::endl;
+    std::cout << " *** Aggregator indices size: " << indices_.size() << std::endl;
+
     ASSERT(local.size() == indices_.size());
 
     auto it = begin(local);

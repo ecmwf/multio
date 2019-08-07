@@ -17,6 +17,7 @@
 
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
+#include "eckit/parser/JSON.h"
 
 #include "multio/server/Listener.h"
 #include "multio/server/print_buffer.h"
@@ -47,10 +48,34 @@ eckit::PathName test_configuration(const std::string& type) {
 }  // namespace
 
 class IoTransport {
-public:
+private:
+    eckit::LocalConfiguration config_;
+    std::shared_ptr<Transport> transport_;
+    Listener listener_;
+    std::thread listenerThread_;
 
     Metadata metadata_;
-    bool is_open_ = false;
+    bool isOpen_ = false;
+
+    // Default values -- how we set them will depend on the transport layer
+    size_t clientCount_ = 1;
+    size_t serverCount_ = 1;
+    size_t globalSize_ = 2048;
+
+    IoTransport() :
+        config_{eckit::YAMLConfiguration{test_configuration("thread")}},
+        transport_{TransportFactory::instance().build("thread", config_)},
+        listener_{config_, *transport_},
+        listenerThread_{&Listener::listen, &listener_} {}
+
+    ~IoTransport() {
+        if (listenerThread_.joinable()) {
+            listenerThread_.join();
+            std::cout << "*** Joined thread" << std::endl;
+        }
+    }
+
+public:
 
     static IoTransport& instance() {
         static IoTransport transport;
@@ -63,27 +88,36 @@ public:
     }
 
     const std::thread& listenerThread() {
-        return listener_thread_;
+        return listenerThread_;
     }
 
-private:
-    IoTransport() :
-        config_{eckit::YAMLConfiguration{test_configuration("thread")}},
-        transport_{TransportFactory::instance().build("thread", config_)},
-        listener_{config_, *transport_},
-        listener_thread_{&Listener::listen, &listener_} {}
-
-    ~IoTransport() {
-        if (listener_thread_.joinable()) {
-            listener_thread_.join();
-            std::cout << "*** Joined thread" << std::endl;
-        }
+    Metadata& metadata() {
+        return metadata_;
     }
 
-    eckit::LocalConfiguration config_;
-    std::shared_ptr<Transport> transport_;
-    Listener listener_;
-    std::thread listener_thread_;
+    bool isOpen() const {
+        return isOpen_;
+    }
+
+    void open() {
+        isOpen_ = true;
+    }
+
+    void close() {
+        isOpen_ = false;
+    }
+
+    void setDimensions(size_t nClient, size_t nServer, size_t glFieldSize) {
+        clientCount_ = nClient;
+        serverCount_ = nServer;
+        globalSize_ = glFieldSize;
+    }
+
+    size_t clientCount() { return clientCount_; }
+
+    size_t serverCount() { return serverCount_; }
+
+    size_t globalSize() { return globalSize_; }
 };
 
 // C/Fortran nterface
@@ -109,7 +143,13 @@ void print_grib_handle_(grib_handle* h) {
     printf("  ==== Hello handle: %p\n", h);
 }
 
-void open_io_connection_() {
+void set_multio_dimensions_(fortint* clients, fortint* servers, fortint* glfields) {
+    IoTransport::instance().setDimensions(static_cast<size_t>(*clients),
+                                          static_cast<size_t>(*servers),
+                                          static_cast<size_t>(*glfields));
+}
+
+void open_multio_connection_() {
     Peer client = IoTransport::instance().transport().localPeer();
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
@@ -118,7 +158,7 @@ void open_io_connection_() {
     IoTransport::instance().transport().send(open);
 }
 
-void close_io_connection_() {
+void close_multio_connection_() {
     Peer client = IoTransport::instance().transport().localPeer();
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
@@ -127,7 +167,16 @@ void close_io_connection_() {
     IoTransport::instance().transport().send(close);
 }
 
-void send_grib_template_(const void* grib_msg, fortint *words) {
+void send_multio_step_complete_() {
+    Peer client = IoTransport::instance().transport().localPeer();
+    Peer server{"thread",
+                std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
+
+    Message close{Message::Header{Message::Tag::StepComplete, client, server}, std::string("flush")};
+    IoTransport::instance().transport().send(close);
+}
+
+void send_multio_grib_template_(const void* grib_msg, fortint *words) {
 
     size_t len = (*words) * sizeof(fortint);
     eckit::Buffer buffer{(const char*)(grib_msg), len};
@@ -142,17 +191,16 @@ void send_grib_template_(const void* grib_msg, fortint *words) {
     IoTransport::instance().transport().send(msg);
 }
 
-void send_mapping_(const void* in_ptr, fortint* words, fortint* nb_clients,
-                      const char* name, int name_len) {
-
+void send_multio_mapping_(const void* in_ptr, fortint* words, const char* name, int name_len) {
     std::string mapping_name{name, name + name_len};
     std::cout << " ***** Address: " << in_ptr << ", size = " << *words
-              << ", nb_clients = " << *nb_clients << ", mapping_name = " << mapping_name
-              << ", name_len = " << name_len << std::endl;
+              << ", mapping_name = " << mapping_name << ", name_len = " << name_len << std::endl;
+
+    auto nb_clients = IoTransport::instance().clientCount();
 
     const char* ptr = (const char*)(in_ptr);
-    auto len = ((*words) / (*nb_clients)) * sizeof(fortint);
-    for (int ii = 0; ii != *nb_clients; ++ii) {
+    auto len = ((*words) / nb_clients) * sizeof(fortint);
+    for (int ii = 0; ii != nb_clients; ++ii) {
         Peer client = IoTransport::instance().transport().localPeer();
         Peer server{"thread", std::hash<std::thread::id>{}(
                                   IoTransport::instance().listenerThread().get_id())};
@@ -160,7 +208,7 @@ void send_mapping_(const void* in_ptr, fortint* words, fortint* nb_clients,
         eckit::Buffer buffer{ptr, len};
 
         Message msg{
-            Message::Header{Message::Tag::Mapping, client, server, mapping_name, size_t(*nb_clients)},
+            Message::Header{Message::Tag::Mapping, client, server, mapping_name, nb_clients},
             buffer};
 
         std::cout << "Rank " << ii + 1 << ": local-to-global mapping = ";
@@ -174,36 +222,63 @@ void send_mapping_(const void* in_ptr, fortint* words, fortint* nb_clients,
 }
 
 void open_multio_message_() {
-    ASSERT(!IoTransport::instance().is_open_);
-    IoTransport::instance().metadata_ = Metadata{};
-    IoTransport::instance().is_open_ = true;
+    ASSERT(!IoTransport::instance().isOpen());
+    IoTransport::instance().metadata() = Metadata{};
+    IoTransport::instance().open();
 }
 
 void close_multio_message_() {
-    ASSERT(IoTransport::instance().is_open_);
-    IoTransport::instance().is_open_ = false;
-    std::cout << " ***** Field metadata = " << IoTransport::instance().metadata_ << std::endl;
+    ASSERT(IoTransport::instance().isOpen());
+    IoTransport::instance().close();
 }
 
 void set_multio_bool_value_(const char* key, bool* value, int key_len) {
     std::string skey{key, key + key_len};
-    IoTransport::instance().metadata_.set(skey, *value);
+    IoTransport::instance().metadata().set(skey, *value);
 }
 
 void set_multio_int_value_(const char* key, fortint* value, int key_len) {
     std::string skey{key, key + key_len};
-    IoTransport::instance().metadata_.set(skey, *value);
+    IoTransport::instance().metadata().set(skey, *value);
 }
 
 void set_multio_real_value_(const char* key, double* value, int key_len) {
     std::string skey{key, key + key_len};
-    IoTransport::instance().metadata_.set(skey, *value);
+    IoTransport::instance().metadata().set(skey, *value);
 }
 
 void set_multio_string_value_(const char* key, const char* value, int key_len, int val_len) {
     std::string skey{key, key + key_len};
     std::string svalue{value, value + val_len};
-    IoTransport::instance().metadata_.set(skey, svalue);
+    IoTransport::instance().metadata().set(skey, svalue);
+}
+
+void send_multio_field_(const double* data, fortint* size, const char* name, const char* cat,
+                        fortint name_len, fortint cat_len) {
+    std::cout << " ***** Field metadata = " << IoTransport::instance().metadata() << std::endl;
+
+    std::cout << " ***** Field data = ";
+    print_buffer(data, *size);
+    std::cout << std::endl;
+
+    Peer client = IoTransport::instance().transport().localPeer();
+    Peer server{"thread",
+                std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
+    std::string mapping_name{name, name + name_len};
+    std::string category{cat, cat + cat_len};
+
+    eckit::Buffer buffer{(const char*)(data), (*size) * sizeof(double)};
+
+    std::stringstream field_id;
+    eckit::JSON json(field_id);
+    json << IoTransport::instance().metadata();
+
+    Message msg{Message::Header{Message::Tag::Field, client, server, mapping_name,
+                                IoTransport::instance().clientCount(), category, field_id.str(),
+                                IoTransport::instance().globalSize()},
+                buffer};
+
+    IoTransport::instance().transport().send(msg);
 }
 
 #ifdef __cplusplus

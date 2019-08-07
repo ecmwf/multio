@@ -18,10 +18,10 @@
             "actions" : {
                 "root" : {
                     "type" : "Select",
-                    "categories" : [ "prognostic", "diagnostic" ],
+                    "categories" : [ "model-level", "pressure-level", "surface-level" ],
                     "next" : {
                         "type" : "Aggregation",
-                        "mapping" : "unstructured",
+                        "mapping" : "grid-point",
                         "next" : {
                             "type" : "Encode",
                             "format" : "grib",

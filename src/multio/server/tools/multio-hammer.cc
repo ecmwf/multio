@@ -97,10 +97,10 @@ std::vector<double> create_random_data(const size_t sz) {
     return field;
 }
 
-std::vector<size_t> generate_index_map(size_t id, size_t nbclients) {
+std::vector<int32_t> generate_index_map(size_t id, size_t nbclients) {
     auto chunk_size = field_size() / nbclients + ((id < field_size() % nbclients) ? 1 : 0);
 
-    auto maps = std::vector<size_t>(chunk_size);
+    auto maps = std::vector<int32_t>(chunk_size);
     for (auto jj = 0u; jj != chunk_size; ++jj) {
         maps[jj] = static_cast<size_t>(id) + jj * nbclients;
     }
@@ -167,6 +167,9 @@ public:  // methods
     MultioHammer(int argc, char** argv);
 
 private:
+
+    using PeerList = std::vector<std::unique_ptr<Peer>>;
+
     void usage(const std::string& tool) const override {
         eckit::Log::info() << std::endl
                            << "Usage: " << tool << " [options]" << std::endl
@@ -182,17 +185,22 @@ private:
     void init(const eckit::option::CmdArgs& args) override;
 
     void execute(const eckit::option::CmdArgs& args) override;
-    void executePlans();
 
-    std::tuple<std::vector<Peer>, std::vector<Peer>> createPeerLists();
+    void executePlans();
+    void executeMpi(std::shared_ptr<Transport> transport);
+    void executeTcp(std::shared_ptr<Transport> transport);
+    void executeThread(std::shared_ptr<Transport> transport);
 
     void startListening(std::shared_ptr<Transport> transport);
-    void spawnServers(const std::vector<Peer>& serverPeers, std::shared_ptr<Transport> transport);
+    void spawnServers(const PeerList& serverPeers, std::shared_ptr<Transport> transport);
 
-    void sendData(const std::vector<Peer>& serverPeers, std::shared_ptr<Transport> transport,
+    void sendData(const PeerList& serverPeers, std::shared_ptr<Transport> transport,
                   const size_t client_list_id) const;
-    void spawnClients(const std::vector<Peer>& clientPeers, const std::vector<Peer>& serverPeers,
+    void spawnClients(const PeerList& clientPeers, const PeerList& serverPeers,
                       std::shared_ptr<Transport> transport);
+
+    bool skipTest();
+    void testData();
 
     std::string transportType_ = "none";
     int port_ = 7777;
@@ -248,81 +256,40 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-std::tuple<std::vector<Peer>, std::vector<Peer>> MultioHammer::createPeerLists() {
-    std::vector<Peer> clientPeers;
-    std::vector<Peer> serverPeers;
-
-    if (transportType_ == "mpi") {
-        auto domain = config_.getString("domain");
-
-        auto domain_size = clientCount_ + serverCount_;
-        auto i = 0u;
-        while (i != clientCount_) {
-            clientPeers.push_back(Peer{domain.c_str(), i++});
-        }
-        while (i != domain_size) {
-            serverPeers.push_back(Peer{domain.c_str(), i++});
-        }
-    }
-    else if (transportType_ == "tcp") {
-        for (auto cfg : config_.getSubConfigurations("servers")) {
-            auto host = cfg.getString("host");
-            for (auto port : cfg.getUnsignedVector("ports")) {
-                serverPeers.push_back(Peer{host, port});
-            }
-        }
-
-        for (auto cfg : config_.getSubConfigurations("clients")) {
-            auto host = cfg.getString("host");
-            for (auto port : cfg.getUnsignedVector("ports")) {
-                clientPeers.push_back(Peer{host, port});
-            }
-        }
-
-        clientCount_ = clientPeers.size();
-        serverCount_ = serverPeers.size();
-    }
-    else {
-        ASSERT(transportType_ == "thread");  // nothing else is supported
-    }
-
-    return std::make_tuple(clientPeers, serverPeers);
-}
-
 void MultioHammer::startListening(std::shared_ptr<Transport> transport) {
     Listener listener(config_, *transport);
     listener.listen();
 }
 
-void MultioHammer::spawnServers(const std::vector<Peer>& serverPeers,
+void MultioHammer::spawnServers(const PeerList& serverPeers,
                                 std::shared_ptr<Transport> transport) {
-    // Do nothing if current process is not in the list of servers
-    if (find(begin(serverPeers), end(serverPeers), transport->localPeer()) == end(serverPeers)) {
-        return;
+    if (find_if(begin(serverPeers), end(serverPeers),
+                [&transport](const std::unique_ptr<Peer>& peer) {
+                    return *peer == transport->localPeer();
+                }) != end(serverPeers)) {
+        startListening(transport);
     }
-
-    startListening(transport);
 }
 
-void MultioHammer::sendData(const std::vector<Peer>& serverPeers,
+void MultioHammer::sendData(const PeerList& serverPeers,
                             std::shared_ptr<Transport> transport,
                             const size_t client_list_id) const {
     Peer client = transport->localPeer();
 
     // open all servers
     for (auto& server : serverPeers) {
-        Message open{Message::Header{Message::Tag::Open, client, server}, std::string("open")};
+        Message open{Message::Header{Message::Tag::Open, client, *server}, std::string("open")};
         transport->send(open);
     }
 
     auto idxm = generate_index_map(client_list_id, clientCount_);
-    eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(size_t));
+    eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(int32_t));
     LocalIndices index_map{std::move(idxm)};
 
     // send partial mapping
     for (auto& server : serverPeers) {
         Message msg{
-            Message::Header{Message::Tag::Mapping, client, server, "unstructured", clientCount_},
+            Message::Header{Message::Tag::Mapping, client, *server, "grid-point", clientCount_},
             buffer};
 
         transport->send(msg);
@@ -333,9 +300,9 @@ void MultioHammer::sendData(const std::vector<Peer>& serverPeers,
         for (auto level : sequence(levelCount_, 1)) {
             for (auto param : sequence(paramCount_, 1)) {
                 Metadata metadata;
-                metadata.set("param", param);
-                metadata.set("level", level);
-                metadata.set("step", step);
+                metadata.set("igrib", param);
+                metadata.set("ilevg", level);
+                metadata.set("istep", step);
 
                 std::stringstream field_id;
                 eckit::JSON json(field_id);
@@ -354,8 +321,8 @@ void MultioHammer::sendData(const std::vector<Peer>& serverPeers,
                                      field.size() * sizeof(double));
 
                 Message msg{
-                    Message::Header{Message::Tag::Field, client, serverPeers[id], "unstructured",
-                                    clientCount_, "prognostic", field_id.str(), field_size()},
+                    Message::Header{Message::Tag::Field, client, *serverPeers[id], "grid-point",
+                                    clientCount_, "model-level", field_id.str(), field_size()},
                     buffer};
 
                 transport->send(msg);
@@ -365,29 +332,29 @@ void MultioHammer::sendData(const std::vector<Peer>& serverPeers,
         // Send flush messages
         for (auto& server : serverPeers) {
             auto stepStr = eckit::Translator<long, std::string>()(step);
-            Message flush{
-                Message::Header{Message::Tag::StepComplete, client, server, stepStr, clientCount_}};
+            Message flush{Message::Header{Message::Tag::StepComplete, client, *server, stepStr,
+                                          clientCount_}};
             transport->send(flush);
         }
     }
 
     // close all servers
     for (auto& server : serverPeers) {
-        Message close{Message::Header{Message::Tag::Close, client, server}, std::string("close")};
+        Message close{Message::Header{Message::Tag::Close, client, *server}, std::string("close")};
         transport->send(close);
     }
 }
 
-void MultioHammer::spawnClients(const std::vector<Peer>& clientPeers,
-                                const std::vector<Peer>& serverPeers,
+void MultioHammer::spawnClients(const PeerList& clientPeers,
+                                const PeerList& serverPeers,
                                 std::shared_ptr<Transport> transport) {
-    // Do nothing if current process is not in the list of clients
-    auto it = find(begin(clientPeers), end(clientPeers), transport->localPeer());
-    if (it == end(clientPeers)) {
-        return;
+    auto it = find_if(begin(clientPeers), end(clientPeers),
+                      [&transport](const std::unique_ptr<Peer>& peer) {
+                          return *peer == transport->localPeer();
+                      });
+    if (it != end(clientPeers)) {
+        sendData(serverPeers, transport, std::distance(begin(clientPeers), it));
     }
-
-    sendData(serverPeers, transport, std::distance(begin(clientPeers), it));
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -406,63 +373,116 @@ void MultioHammer::execute(const eckit::option::CmdArgs&) {
 
     field_size() = 29;
 
-    if (transportType_ == "thread") {  // The case for the thread transport is slightly special
-
-        // Spawn servers
-        std::vector<Peer> serverPeers;
-        std::vector<std::thread> serverThreads;
-        for (size_t i = 0; i != serverCount_; ++i) {
-            std::thread t{&MultioHammer::startListening, this, transport};
-
-            serverPeers.push_back(Peer{"thread", std::hash<std::thread::id>{}(t.get_id())});
-            serverThreads.push_back(std::move(t));
-        }
-
-        // Spawn clients
-        std::vector<std::thread> clientThreads;
-        for (auto client : sequence(clientCount_, 0)) {
-            clientThreads.emplace_back(&MultioHammer::sendData, this, std::cref(serverPeers),
-                                       transport, client);
-        }
-
-        // Join all threads
-        std::for_each(begin(clientThreads), end(clientThreads), [](std::thread& t) { t.join(); });
-        std::for_each(begin(serverThreads), end(serverThreads), [](std::thread& t) { t.join(); });
+    if (transportType_ == "mpi") {
+        executeMpi(transport);
     }
-    else {
-        std::vector<Peer> clientPeers;
-        std::vector<Peer> serverPeers;
-        std::tie(clientPeers, serverPeers) = createPeerLists();
-
-        spawnServers(serverPeers, transport);
-        spawnClients(clientPeers, serverPeers, transport);
+    if (transportType_ == "tcp") {
+        executeTcp(transport);
+    }
+    if (transportType_ == "thread") {
+        executeThread(transport);
     }
 
-    // Test data
+    testData();
+}
+
+bool MultioHammer::skipTest() {
+    bool doTest = false;
+
+    if (transportType_ == "thread") {
+        doTest = true;
+    }
+
     if (transportType_ == "mpi") {
         eckit::mpi::comm().barrier();
+        doTest = (eckit::mpi::comm().rank() == root());
     }
 
-    if ((transportType_ == "thread") ||
-        (transportType_ == "mpi" && eckit::mpi::comm().rank() == root())) {
-        for (auto step : sequence(stepCount_, 1)) {
-            for (auto level : sequence(levelCount_, 1)) {
-                for (auto param : sequence(paramCount_, 1)) {
-                    std::string file_name = std::to_string(param) + std::string("::") +
-                                            std::to_string(level) + std::string("::") +
-                                            std::to_string(step);
-                    std::string field_id = R"({"level":)" + std::to_string(level) + R"(,"param":)" +
-                                           std::to_string(param) + R"(,"step":)" +
-                                           std::to_string(step) + "}";
-                    auto expect = global_test_field(field_id);
-                    auto actual = file_content(file_name);
+    return !doTest;
+}
 
-                    ASSERT(expect == actual);
+void MultioHammer::testData() {
+    if (skipTest()) {
+        return;
+    }
 
-                    std::remove(file_name.c_str());
-                }
+    for (auto step : sequence(stepCount_, 1)) {
+        for (auto level : sequence(levelCount_, 1)) {
+            for (auto param : sequence(paramCount_, 1)) {
+                std::string file_name = std::to_string(param) + std::string("::") +
+                                        std::to_string(level) + std::string("::") +
+                                        std::to_string(step);
+                std::string field_id = R"({"igrib":)" + std::to_string(param) + R"(,"ilevg":)" +
+                                       std::to_string(level) + R"(,"istep":)" +
+                                       std::to_string(step) + "}";
+                auto expect = global_test_field(field_id);
+                auto actual = file_content(file_name);
+
+                ASSERT(expect == actual);
+
+                std::remove(file_name.c_str());
             }
         }
+    }
+}
+
+
+void MultioHammer::executeMpi(std::shared_ptr<Transport> transport) {
+    auto domain = config_.getString("domain");
+
+    PeerList clientPeers;
+    auto i = 0u;
+    while (i != clientCount_) {
+        clientPeers.emplace_back(new MpiPeer{domain, i++});
+    }
+
+    PeerList serverPeers;
+    auto domain_size = clientCount_ + serverCount_;
+    while (i != domain_size) {
+        serverPeers.emplace_back(new MpiPeer{domain, i++});
+    }
+
+    spawnServers(serverPeers, transport);
+    spawnClients(clientPeers, serverPeers, transport);
+}
+
+void MultioHammer::executeTcp(std::shared_ptr<Transport> transport) {
+    PeerList serverPeers;
+    for (auto cfg : config_.getSubConfigurations("servers")) {
+        auto host = cfg.getString("host");
+        for (auto port : cfg.getUnsignedVector("ports")) {
+            serverPeers.emplace_back(new TcpPeer{host, port});
+        }
+    }
+
+    PeerList clientPeers;
+    for (auto cfg : config_.getSubConfigurations("clients")) {
+        auto host = cfg.getString("host");
+        for (auto port : cfg.getUnsignedVector("ports")) {
+            clientPeers.emplace_back(new TcpPeer{host, port});
+        }
+    }
+
+    clientCount_ = clientPeers.size();
+    serverCount_ = serverPeers.size();
+
+    spawnServers(serverPeers, transport);
+    spawnClients(clientPeers, serverPeers, transport);
+}
+
+void MultioHammer::executeThread(std::shared_ptr<Transport> transport) {
+    // Spawn servers
+    PeerList serverPeers;
+    for (size_t i = 0; i != serverCount_; ++i) {
+        serverPeers.emplace_back(
+            new ThreadPeer{std::thread{&MultioHammer::startListening, this, transport}});
+    }
+
+    // Spawn clients
+    PeerList clientPeers;
+    for (auto client : sequence(clientCount_, 0)) {
+        clientPeers.emplace_back(new ThreadPeer{
+            std::thread{&MultioHammer::sendData, this, std::cref(serverPeers), transport, client}});
     }
 }
 

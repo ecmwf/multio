@@ -2,10 +2,11 @@
 #ifndef multio_server_print_buffer_H
 #define multio_server_print_buffer_H
 
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
-#include <algorithm>
+#include <vector>
 
 namespace multio {
 namespace server {

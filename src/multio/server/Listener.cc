@@ -58,11 +58,17 @@ void Listener::listen() {
                 break;
 
             case Message::Tag::Mapping:
+                eckit::Log::info() << "*** Number of maps: " << msg.map_count() << std::endl;
                 nbMaps_ = msg.map_count();
                 Mappings::instance().add(msg);
                 break;
 
+            case Message::Tag::StepComplete:
+                eckit::Log::info() << "*** Flush received from: " << msg.source() << std::endl;
+                break;
+
             default:
+                eckit::Log::info() << "*** Field received from: " << msg.source() << std::endl;
                 msgQueue_.push(std::move(msg));
         }
     } while (!connections_.empty() || nbClosedConnections_ != nbMaps_);

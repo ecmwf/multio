@@ -23,14 +23,14 @@ void Mappings::add(Message msg) {
     // Retrieve metadata
     auto& mapping = mappings_[msg.mapping()];
 
-    if (msg.destination().domain_ == "thread" && mapping.find(msg.source()) != end(mapping)) {
+    if (msg.destination().domain() == "thread" && mapping.find(msg.source()) != end(mapping)) {
         // Map has been added already -- needed only for the thread transport
         return;
     }
     std::cout << "*** Add mapping for " << msg.mapping() << std::endl;
     ASSERT(mapping.find(msg.source()) == end(mapping));
 
-    std::vector<size_t> local_map(msg.size() / sizeof(size_t));
+    std::vector<int32_t> local_map(msg.size() / sizeof(int32_t));
 
     std::memcpy(local_map.data(), msg.payload().data(), msg.size());
 

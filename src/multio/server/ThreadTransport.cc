@@ -38,13 +38,12 @@ Message ThreadTransport::receive() {
 }
 
 void ThreadTransport::send(const Message& msg) {
-    auto sz = receiveQueue(msg.destination()).push(msg);
+    receiveQueue(msg.destination()).push(msg);
 }
 
 Peer ThreadTransport::localPeer() const {
     return Peer{"thread", std::hash<std::thread::id>{}(std::this_thread::get_id())};
 }
-
 
 void ThreadTransport::print(std::ostream& os) const {
     os << "ThreadTransport(number of queues = " << queues_.size() << ")";

@@ -42,12 +42,19 @@ void Aggregation::execute(Message msg) const {
 
         Aggregator agg{msg.field_size(), messages_.at(field_id).size()};
 
-        msg.payload() = agg.gather(messages_.at(field_id), Mappings::instance().get(map_name_));
+        Message outMsg{Message::Header{msg.tag(), Peer{}, Peer{}, msg.mapping(), msg.map_count(),
+                                       msg.category(), msg.field_id(), msg.field_size()},
+                       agg.gather(messages_.at(field_id), Mappings::instance().get(map_name_))};
 
         messages_.erase(field_id);
+
+        if (next_) {  // May want to assert next_
+            next_->execute(outMsg);
+        }
     }
 
     if (msg.tag() == Message::Tag::StepComplete) {
+        // Initialise
         if(flushes_.find(msg.mapping()) == end(flushes_)) {
             flushes_[msg.mapping()] = 0;
         }
@@ -55,11 +62,12 @@ void Aggregation::execute(Message msg) const {
         if (++flushes_.at(msg.mapping()) != msg.map_count()) {
             return;
         }
+
+        if (next_) {  // May want to assert next_
+            next_->execute(msg);
+        }
     }
 
-    if (next_) {  // May want to assert next_
-        next_->execute(msg);
-    }
 }
 
 void Aggregation::print(std::ostream& os) const {

@@ -46,8 +46,8 @@ void SingleFieldSink::execute(Message msg) const {
 
 void SingleFieldSink::write(Message msg) const {
     std::ostringstream oss;
-    oss << msg.metadata().getString("param") << "::" << msg.metadata().getUnsigned("level")
-        << "::" << msg.metadata().getUnsigned("step");
+    oss << msg.metadata().getString("igrib") << "::" << msg.metadata().getUnsigned("ilevg")
+        << "::" << msg.metadata().getUnsigned("istep");
     eckit::LocalConfiguration config;
 
     config.set("path", oss.str());

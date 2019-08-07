@@ -16,9 +16,6 @@
 namespace multio {
 namespace server {
 
-Peer::Peer() : id_(0), domain_("null") {}
-Peer::Peer(const std::string& domain, size_t id) : id_(id), domain_(domain) {}
-
 multio::server::Peer::operator std::string() {
     return domain_ + ":" + std::to_string(id_);
 }

@@ -44,8 +44,10 @@ std::vector<Message> scatter(const Message& msg, const Mapping& maps) {
     for (const auto& map : maps) {
         std::vector<double> local_field;
         map.second.to_local(global_field, local_field);
-        msgs.emplace_back(msg.header(), eckit::Buffer{reinterpret_cast<char*>(local_field.data()),
-                                                      local_field.size() * sizeof(double)});
+        msgs.emplace_back(Message::Header{msg.tag(), Peer{}, Peer{}, msg.mapping(), msg.map_count(),
+                                          msg.category(), msg.field_id(), msg.field_size()},
+                          eckit::Buffer{reinterpret_cast<char*>(local_field.data()),
+                                        local_field.size() * sizeof(double)});
     }
 
     return msgs;

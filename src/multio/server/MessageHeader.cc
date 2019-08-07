@@ -19,8 +19,8 @@ namespace server {
 Message::Header::Header(Tag tag, Peer src, Peer dst, const std::string& map, size_t cnt,
                         const std::string& cat, const std::string& fid, size_t fsz) :
     tag_{tag},
-    source_{src},
-    destination_{dst},
+    source_{std::move(src)},
+    destination_{std::move(dst)},
     mapping_{map},
     map_count_{cnt},
     category_{cat},
@@ -64,11 +64,11 @@ size_t Message::Header::global_field_size() const {
 void Message::Header::encode(eckit::Stream& strm) const {
     strm << static_cast<unsigned>(tag_);
 
-    strm << source_.domain_;
-    strm << source_.id_;
+    strm << source_.domain();
+    strm << source_.id();
 
-    strm << destination_.domain_;
-    strm << destination_.id_;
+    strm << destination_.domain();
+    strm << destination_.id();
 
     strm << mapping_;
     strm << map_count_;
@@ -79,16 +79,6 @@ void Message::Header::encode(eckit::Stream& strm) const {
 }
 
 void Message::Header::decode(eckit::Stream& strm) {
-    unsigned t;
-    strm >> t;
-    tag_ = static_cast<Message::Tag>(t);
-
-    strm >> source_.domain_;
-    strm >> source_.id_;
-
-    strm >> destination_.domain_;
-    strm >> destination_.id_;
-
     strm >> mapping_;
     strm >> map_count_;
 

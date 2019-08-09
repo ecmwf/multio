@@ -27,7 +27,7 @@ SingleFieldSink::SingleFieldSink(const eckit::Configuration &config) : Action(co
 void SingleFieldSink::execute(Message msg) const {
     switch (msg.tag()) {
         case Message::Tag::Field:
-        case Message::Tag::GribTemplate:
+        case Message::Tag::Grib:
             write(msg);
             return;
 
@@ -59,7 +59,7 @@ void SingleFieldSink::write(Message msg) const {
             blob.reset(eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
             break;
 
-        case Message::Tag::GribTemplate:
+        case Message::Tag::Grib:
             blob.reset(eckit::DataBlobFactory::build("grib", msg.payload().data(), msg.size()));
             break;
 

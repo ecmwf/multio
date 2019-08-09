@@ -526,7 +526,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
                     << "Member: " << ensMember_ << ", step: " << step << ", level: " << level
                     << ", param: " << param << ", payload size: " << sz << std::endl;
 
-                Message msg{Message::Header{Message::Tag::GribTemplate, Peer{"", 0}, Peer{"", 0}},
+                Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}},
                             eckit::Buffer{buf, sz}};
 
                 for (const auto& plan : plans) {

@@ -53,7 +53,7 @@ void Listener::listen() {
                 ++nbClosedConnections_;
                 break;
 
-            case Message::Tag::GribTemplate:
+            case Message::Tag::Grib:
                 eckit::Log::info() << "*** Size of grib template: " << msg.size() << std::endl;
                 break;
 

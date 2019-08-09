@@ -168,7 +168,7 @@ void send_multio_grib_template_(const void* grib_msg, fortint *words) {
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
-    Message msg{Message::Header{Message::Tag::GribTemplate, client, server}, buffer};
+    Message msg{Message::Header{Message::Tag::Grib, client, server}, buffer};
     std::cout << "*** Sending message from " << msg.source() << " to " << msg.destination()
               << std::endl;
     IoTransport::instance().transport().send(msg);

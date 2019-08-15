@@ -17,6 +17,7 @@
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/server/GribTemplate.h"
 #include "multio/server/Mappings.h"
 #include "multio/server/Message.h"
 #include "multio/server/ScopedThread.h"
@@ -55,6 +56,7 @@ void Listener::listen() {
 
             case Message::Tag::Grib:
                 eckit::Log::info() << "*** Size of grib template: " << msg.size() << std::endl;
+                GribTemplate::instance().add(msg);
                 break;
 
             case Message::Tag::Mapping:

@@ -23,9 +23,11 @@ Encode::Encode(const eckit::Configuration& config) :
     format_(config.getString("format")) {}
 
 void Encode::execute(Message msg) const {
-    // TODO: grib encoding not yet implemented
     if (format_ == "grib") {
-        // Encode to grib;
+        eckit::Log::info() << "*** " << *this << std::endl;
+
+        msg.metadata().getString("cpref");
+        // templates_.emplace_back(new metkit::grib::GribHandle{msg.payload()});
     }
 
     if (next_) {  // May want to assert next_

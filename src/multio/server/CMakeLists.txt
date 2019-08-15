@@ -28,6 +28,8 @@ ecbuild_add_library(
         Aggregator.h
         Dispatcher.cc
         Dispatcher.h
+        GribTemplate.h
+        GribTemplate.cc
         IoTransport.cc
         IoTransport.h
         Listener.cc

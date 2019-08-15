@@ -12,7 +12,30 @@
 
 #include <iostream>
 
+#include "eccodes.h"
 #include "eckit/config/Configuration.h"
+#include "metkit/grib/GribHandle.h"
+#include "multio/server/GribTemplate.h"
+
+namespace {
+class GribEncoder : public metkit::grib::GribHandle {
+    GribEncoder(const eckit::Buffer& buffer, bool copy = true) :
+        metkit::grib::GribHandle{buffer, copy} {}
+
+    void setValue(const std::string& key, long value) {
+        CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
+    }
+
+    void setValue(const std::string& key, double value) {
+        CODES_CHECK(codes_set_double(raw(), key.c_str(), value), NULL);
+    }
+
+    void setValue(const std::string& key, const std::string& value) {
+        size_t sz = value.size();
+        CODES_CHECK(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), NULL);
+    }
+};
+}  // namespace
 
 namespace multio {
 namespace server {
@@ -24,9 +47,12 @@ Encode::Encode(const eckit::Configuration& config) :
 
 void Encode::execute(Message msg) const {
     if (format_ == "grib") {
-        eckit::Log::info() << "*** " << *this << std::endl;
+        eckit::Log::info() << "*** Executing encoding: " << *this << std::endl;
 
-        msg.metadata().getString("cpref");
+        const Message& grib_tmpl = GribTemplate::instance().get(msg.metadata().getString("cpref"),
+                                                                msg.metadata().getBool("lspec"));
+
+        // metkit::grib::GribHandle handle{msg.payload()};
         // templates_.emplace_back(new metkit::grib::GribHandle{msg.payload()});
     }
 

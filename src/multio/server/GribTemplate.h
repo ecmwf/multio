@@ -11,6 +11,17 @@ namespace server {
 
 class Message;
 
+enum SampleId : unsigned
+{
+    GG = 0,
+    GG_ML,
+    SH_ML,
+    SH,
+    GG2// ,
+    // WAM_S,
+    // WAM_I
+};
+
 class GribTemplate {
 public:  // methods
     GribTemplate() = default;
@@ -27,7 +38,7 @@ public:  // methods
 
     void list(std::ostream&) const;
 
-    Message const& get(const size_t sample_id) const;
+    Message const& get(const std::string& fieldType, bool isSpectral) const;
 
 private:  // members
     // std::vector<const metkit::grib::GribHandle*> templates_;

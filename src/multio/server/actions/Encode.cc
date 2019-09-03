@@ -49,8 +49,8 @@ void Encode::execute(Message msg) const {
     if (format_ == "grib") {
         eckit::Log::info() << "*** Executing encoding: " << *this << std::endl;
 
-        const Message& grib_tmpl = GribTemplate::instance().get(msg.metadata().getString("cpref"),
-                                                                msg.metadata().getBool("lspec"));
+        // const Message& grib_tmpl = GribTemplate::instance().get(msg.metadata().getString("cpref"),
+        //                                                         msg.metadata().getBool("lspec"));
 
         // metkit::grib::GribHandle handle{msg.payload()};
         // templates_.emplace_back(new metkit::grib::GribHandle{msg.payload()});

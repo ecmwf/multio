@@ -65,13 +65,24 @@ void Listener::listen() {
                 Mappings::instance().add(msg);
                 break;
 
+            case Message::Tag::StepNotification:
+                eckit::Log::info()
+                    << "*** Step notification received from: " << msg.source() << std::endl;
+                break;
+
             case Message::Tag::StepComplete:
                 eckit::Log::info() << "*** Flush received from: " << msg.source() << std::endl;
+                msgQueue_.push(std::move(msg));
+                break;
+
+            case Message::Tag::Field:
+                eckit::Log::info() << "*** Field received from: " << msg.source() << std::endl;
+                msgQueue_.push(std::move(msg));
                 break;
 
             default:
-                eckit::Log::info() << "*** Field received from: " << msg.source() << std::endl;
-                msgQueue_.push(std::move(msg));
+                eckit::Log::info() << "*** Unhandled message: " << msg << std::endl;
+                ASSERT(false);
         }
     } while (!connections_.empty() || nbClosedConnections_ != nbMaps_);
 

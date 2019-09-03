@@ -54,6 +54,9 @@ void Aggregation::execute(Message msg) const {
     }
 
     if (msg.tag() == Message::Tag::StepComplete) {
+
+        eckit::Log::info() << "*** Aggregating flush messages: " << *this << std::endl;
+
         // Initialise
         if(flushes_.find(msg.mapping()) == end(flushes_)) {
             flushes_[msg.mapping()] = 0;

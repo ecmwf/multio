@@ -58,16 +58,13 @@ ecbuild_add_library(
         MultioServerTool.cc
         MultioServerTool.h
 
-    PRIVATE_INCLUDES
-        ${ECCODES_INCLUDE_DIRS}
-        ${ECKIT_INCLUDE_DIRS}
-
     LIBS
         multio
         multio-fdb5
         eckit_mpi
         eckit_option
         eckit
+        metkit
         eccodes
 )
 
@@ -75,6 +72,4 @@ ecbuild_add_executable( TARGET    multio-hammer
                         NOINSTALL
                         CONDITION HAVE_MULTIO_SERVER
                         SOURCES   tools/multio-hammer.cc
-                        INCLUDES  ${ECCODES_INCLUDE_DIRS}
-                                  ${METKIT_INCLUDE_DIRS}
                         LIBS      multio-server multio)

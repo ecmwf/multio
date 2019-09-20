@@ -4,7 +4,7 @@
 
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/io/Buffer.h"
-#include "eckit/parser/JSON.h"
+#include "eckit/log/JSON.h"
 #include "eckit/exception/Exceptions.h"
 
 #include "atlas/array.h"

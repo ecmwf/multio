@@ -21,7 +21,7 @@
 #include "eckit/types/Metadata.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/net/TCPClient.h"
-#include "eckit/parser/JSON.h"
+#include "eckit/log/JSON.h"
 #include "eckit/config/YAMLConfiguration.h"
 
 #include "multio/LibMultio.h"

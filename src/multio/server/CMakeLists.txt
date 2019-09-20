@@ -69,7 +69,6 @@ ecbuild_add_library(
         eckit_option
         eckit
         eccodes
-        eccodes_f90 # why do we link to eccodes_f90 ??
 )
 
 ecbuild_add_executable( TARGET    multio-hammer
@@ -78,12 +77,4 @@ ecbuild_add_executable( TARGET    multio-hammer
                         SOURCES   tools/multio-hammer.cc
                         INCLUDES  ${ECCODES_INCLUDE_DIRS}
                                   ${METKIT_INCLUDE_DIRS}
-                        LIBS      multio-server multio)
-
-ecbuild_add_executable( TARGET    multio-grib
-                        NOINSTALL
-                        CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   tools/multio-grib.cc
-                        INCLUDES  ${ECCODES_INCLUDE_DIRS}
-                                  ${ECKIT_INCLUDE_DIRS}
                         LIBS      multio-server multio)

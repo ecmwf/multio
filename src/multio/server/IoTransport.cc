@@ -13,8 +13,6 @@
 #include <memory>
 #include <typeinfo>
 
-#include "../../../../eccodes/fortran/grib_fortran_prototypes.h" /// PLEASE CHANGE THIS
-
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/JSON.h"
@@ -127,21 +125,6 @@ using multio::server::Peer;
 #ifdef __cplusplus
     extern "C" {
 #endif
-
-void print_grib_id_(int* gid) {
-    printf("  ==== Hello handle: %d\n", *gid);
-
-    // grib_handle *h = get_handle(*gid);
-
-    size_t len;
-    grib_f_get_message_size_(gid, &len);
-
-    printf("  ==== Message size: %zu\n", len);
-}
-
-void print_grib_handle_(grib_handle* h) {
-    printf("  ==== Hello handle: %p\n", h);
-}
 
 void set_multio_dimensions_(fortint* clients, fortint* servers, fortint* glfields) {
     IoTransport::instance().setDimensions(static_cast<size_t>(*clients),

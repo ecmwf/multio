@@ -12,7 +12,7 @@
 #include "eckit/mpi/Comm.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
-#include "eckit/parser/JSON.h"
+#include "eckit/log/JSON.h"
 
 #include "metkit/grib/GribDataBlob.h"
 #include "metkit/grib/GribHandle.h"
@@ -61,7 +61,7 @@ std::vector<long> valid_parameters(size_t sz, const eckit::Configuration& config
     // Read from configuration
     std::vector<long> vals =
         (config.has("parameters")
-             ? config.getInt64Vector("parameters")
+             ? config.getLongVector("parameters")
              : std::vector<long>{130, 133, 135, 138, 155, 203, 246, 247, 248, 75, 76});
     if (sz < vals.size()) {
         vals.resize(sz);

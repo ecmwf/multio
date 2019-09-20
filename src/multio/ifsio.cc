@@ -105,7 +105,7 @@ static void init() {
     eckit::Tokenizer parse(":");
 
     StringList sinks;
-    parse(::getenv("MULTIO_SINKS") ? ::getenv("MULTIO_SINKS") : "fdb4", sinks);
+    parse(::getenv("MULTIO_SINKS") ? ::getenv("MULTIO_SINKS") : "fdb5", sinks);
 
     ASSERT(sinks.size());
 
@@ -179,100 +179,11 @@ static int ifsio_handle_error(std::exception& e) {
 
 extern "C" {
 
-    fortint iinitfdb_() {
-
+    fortint imultio_flush_() {
         try {
-
             MULTIO_TRACE_FUNC();
-
-            pthread_once(&once, init);
-            eckit::AutoLock<eckit::Mutex> lock(local_mutex);
-
-            MIO::instance().mio().iinitfdb();
-
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
-    }
-
-    fortint iinitfdb_vpp_(const char *name, int name_len) {
-
-        try {
-
-            std::string sname(name, name + name_len);
-
-            MULTIO_TRACE_FUNC1(sname.c_str());
-
-            pthread_once(&once, init);
-            eckit::AutoLock<eckit::Mutex> lock(local_mutex);
-
-            MIO::instance().mio().iinitfdb();
-
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
-    }
-
-    fortint iopenfdb_(const char *name, fortint *addr, const char *mode, int name_len, int mode_len) {
-
-        try {
-
-            std::string sname(name, name + name_len);
-            std::string smode(mode, mode + mode_len);
-
-            MULTIO_TRACE_FUNC2(sname.c_str(), smode.c_str());
-
-            pthread_once(&once, init);
-            eckit::AutoLock<eckit::Mutex> lock(local_mutex);
-
-            ASSERT(addr);
-
-            int fdbaddr = 0;
-            MIO::instance().mio().iopenfdb(sname, fdbaddr, smode);
-            *addr = fdbaddr;
-
+            MIO::instance().mio().flush();
             MIO::instance().log(true);
-
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
-    }
-
-    fortint iclosefdb_(fortint *addr) {
-
-        try {
-
-            MULTIO_TRACE_FUNC();
-
-            pthread_once(&once, init);
-            eckit::AutoLock<eckit::Mutex> lock(local_mutex);
-
-            ASSERT(addr);
-
-            MIO::instance().mio().iclosefdb(*addr);
-
-            MIO::instance().report();
-
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
-    }
-
-    fortint iflushfdb_(const fortint *addr) {
-
-        try {
-
-            MULTIO_TRACE_FUNC();
-
-            ASSERT(addr);
-
-            MIO::instance().mio().iflushfdb(*addr);
-            MIO::instance().log(true);
-
         } catch (std::exception &e) {
             return ifsio_handle_error(e);
         }
@@ -280,142 +191,30 @@ extern "C" {
     }
 
     fortint imultio_notify_step_(const fortint * step) {
-
         try {
-
             MULTIO_TRACE_FUNC();
-
             ASSERT(step);
-
             eckit::StringDict metadata;
-
             metadata["step"] = eckit::Translator<fortint,std::string>()(*step);
-
             MIO::instance().mio().trigger(metadata);
-
         } catch (std::exception &e) {
             return ifsio_handle_error(e);
         }
         return 0;
     }
 
-    fortint iwritefdb_(const fortint *addr, const void *data, const fortint *words) {
-
+    fortint imultio_write_(const void *data, const fortint *words) {
         try {
-
             MULTIO_TRACE_FUNC();
+            ASSERT(data);
+            int ilen = (*words)*sizeof(fortint);
+            ASSERT(ilen > 0);
+            size_t len(ilen);
 
-            ASSERT(addr);
+            eckit::DataBlobPtr blob (new metkit::grib::GribDataBlob(data, len));
 
-            size_t len( (*words)*sizeof(fortint) );
-
-            eckit::DataBlobPtr blob ( new metkit::grib::GribDataBlob(data, len) );
-
-            MIO::instance().mio().iwritefdb(*addr, blob);
+            MIO::instance().mio().write(blob);
             MIO::instance().log(true);
-
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
-    }
-
-    fortint iset_fdb_root_(const fortint *addr, const char *name, int name_len) {
-
-        try {
-
-            std::string sname(name, name + name_len);
-
-            MULTIO_TRACE_FUNC1(sname.c_str());
-
-            pthread_once(&once, init);
-            eckit::AutoLock<eckit::Mutex> lock(local_mutex);
-
-            ASSERT(addr);
-
-            MIO::instance().mio().iset_fdb_root(*addr, sname);
-
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
-    }
-
-    fortint isetvalfdb_(const fortint *addr, const char *name, const char *value, int name_len, int value_len) {
-
-        try {
-
-            std::string sname(name, name + name_len);
-            std::string svalue(value, value + value_len);
-
-            MULTIO_TRACE_FUNC2(sname.c_str(), svalue.c_str());
-
-            ASSERT(addr);
-
-            MIO::instance().mio().isetvalfdb(*addr, sname, svalue);
-
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
-    }
-
-    int isetcommfdb_(const fortint *comm) {
-
-        try {
-
-            MULTIO_TRACE_FUNC();
-
-            pthread_once(&once, init);
-            eckit::AutoLock<eckit::Mutex> lock(local_mutex);
-
-            MIO::instance().mio().isetcommfdb(*comm);
-
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
-    }
-
-    int isetrankfdb_(const fortint *addr, const fortint *rank) {
-
-        try {
-
-            MULTIO_TRACE_FUNC();
-
-            ASSERT(addr);
-
-            MIO::instance().mio().isetrankfdb(*addr, *rank);
-
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
-    }
-
-    int isetfieldcountfdb_(const fortint *addr, const fortint *all_ranks, const fortint *this_rank) {
-
-        try {
-
-            MULTIO_TRACE_FUNC();
-
-            ASSERT(addr);
-
-            MIO::instance().mio().isetfieldcountfdb(*addr, *all_ranks, *this_rank);
-
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
-    }
-
-    fortint ireadfdb_(const fortint *addr, void *data, fortint *words) {
-
-        try {
-
-            MULTIO_TRACE_FUNC();
-
-            NOTIMP;
 
         } catch (std::exception &e) {
             return ifsio_handle_error(e);

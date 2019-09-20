@@ -11,7 +11,7 @@
 #include <fstream>
 
 #include "eckit/config/YAMLConfiguration.h"
-#include "eckit/parser/JSON.h"
+#include "eckit/log/JSON.h"
 #include "eckit/parser/JSONDataBlob.h"
 #include "eckit/testing/Test.h"
 #include "eckit/utils/Translator.h"

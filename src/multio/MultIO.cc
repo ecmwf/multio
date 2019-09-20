@@ -48,7 +48,7 @@ public:
 };
 }  // namespace
 
-//----------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 using namespace std::placeholders;
 
@@ -140,96 +140,6 @@ void MultIO::print(std::ostream& os) const {
     os << ")";
 }
 
-//----------------------------------------------------------------------------------------------------------------------
-
-void MultIO::iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) {
-    std::lock_guard<std::mutex> lock(mutex_);
-
-    StatsTimer stTimer{timer_, std::bind(&IOStats::logiopenfdb_, &stats_, _1)};
-
-    decltype(sinks_)::const_iterator it = sinks_.begin();
-    decltype(sinks_)::const_iterator end = sinks_.end();
-    for (; it != end; ++it) {
-        /// NOTE: this does not quite work with multiple FDB4 since fdbaddr will be overwritten
-        (*it)->iopenfdb(name, fdbaddr, mode);
-    }
-}
-
-void MultIO::iclosefdb(int fdbaddr) {
-    std::lock_guard<std::mutex> lock(mutex_);
-
-    StatsTimer stTimer{timer_, std::bind(&IOStats::logiclosefdb_, &stats_, _1)};
-    for (auto& sink : sinks_) {
-        sink->iclosefdb(fdbaddr);
-    }
-}
-
-void MultIO::iinitfdb() {
-    std::lock_guard<std::mutex> lock(mutex_);
-    StatsTimer stTimer{timer_, std::bind(&IOStats::logiinitfdb_, &stats_, _1)};
-    for (auto& sink : sinks_) {
-        sink->iinitfdb();
-    }
-}
-
-void MultIO::isetcommfdb(int rank) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    for (auto& sink : sinks_) {
-        sink->isetcommfdb(rank);
-    }
-}
-
-void MultIO::isetrankfdb(int fdbaddr, int rank) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    for (auto& sink : sinks_) {
-        sink->isetrankfdb(fdbaddr, rank);
-    }
-}
-
-void MultIO::iset_fdb_root(int fdbaddr, const std::string& name) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    for (auto& sink : sinks_) {
-        sink->iset_fdb_root(fdbaddr, name);
-    }
-}
-
-void MultIO::iflushfdb(int fdbaddr) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    StatsTimer stTimer{timer_, std::bind(&IOStats::logiflushfdb_, &stats_, _1)};
-    for (auto& sink : sinks_) {
-        sink->iflushfdb(fdbaddr);
-    }
-}
-
-void MultIO::isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    for (auto& sink : sinks_) {
-        sink->isetfieldcountfdb(fdbaddr, all_ranks, this_rank);
-    }
-}
-
-void MultIO::isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) {
-    std::lock_guard<std::mutex> lock(mutex_);
-
-    StatsTimer stTimer{timer_, std::bind(&IOStats::logisetvalfdb_, &stats_, _1)};
-    for (auto& sink : sinks_) {
-        sink->isetvalfdb(fdbaddr, name, value);
-    }
-}
-
-void MultIO::iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) {
-    std::lock_guard<std::mutex> lock(mutex_);
-
-    StatsTimer stTimer{timer_, std::bind(&IOStats::logiwritefdb_, &stats_, blob->length(), _1)};
-    for (auto& sink : sinks_) {
-        sink->iwritefdb(fdbaddr, blob);
-    }
-
-    trigger_.events(blob);
-}
-
 static DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");
-
-//----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio

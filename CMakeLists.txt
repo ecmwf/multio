@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.1 FATAL_ERROR )
+cmake_minimum_required( VERSION 3.6 FATAL_ERROR )
 
 project( multio C CXX )
 
@@ -6,7 +6,7 @@ set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} 
 
 include( ecbuild_system NO_POLICY_SCOPE )
 
-ecbuild_requires_macro_version( 2.9 )
+ecbuild_requires_macro_version( 3.0 )
 
 ecbuild_declare_project()
 
@@ -15,21 +15,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### dependencies
 
-ecbuild_use_package( PROJECT eckit VERSION  0.21.0 REQUIRED ) # 0.18.0 has correct YAML parser
-
-### metkit must be built with GRIB support for GribDataBlobs
-ecbuild_use_package( PROJECT metkit VERSION 0.11 REQUIRED )
+ecbuild_use_package( PROJECT eckit VERSION  1.4 REQUIRED )
+ecbuild_use_package( PROJECT metkit VERSION 1.2 REQUIRED )
 if( NOT METKIT_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
 endif()
-
-### fdb4 plugin
-
-ecbuild_add_option( FEATURE FDB4
-                    DEFAULT ON
-                    CONDITION FDB_HAVE_IFSIO
-                    DESCRIPTION "Send data to FDB4"
-                    REQUIRED_PACKAGES "PROJECT fdb VERSION 4.8" )
 
 ### fdb5 plugin
 

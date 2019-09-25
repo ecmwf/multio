@@ -23,37 +23,34 @@
 #include "eckit/io/Length.h"
 #include "eckit/types/Types.h"
 
-#include "multio/DataSink.h"
+#include "fdb5/api/FDB.h"
 
-#include "fdb5/legacy/LegacyArchiver.h"
+#include "multio/DataSink.h"
 
 //--------------------------------------------------------------------------------------------------
 
+namespace multio {
+
 class FDB5Sink : public multio::DataSink {
-
 public:
-
     FDB5Sink(const eckit::Configuration& config);
 
-    virtual ~FDB5Sink();
-
-    virtual void write(eckit::DataBlobPtr blob);
-    virtual void flush();
-
-protected:
-
-    virtual void print(std::ostream&) const;
-
 private:
+    void write(eckit::DataBlobPtr blob) override;
 
-    friend std::ostream &operator<<(std::ostream &s, const FDB5Sink &p) {
+    void flush() override;
+
+    void print(std::ostream&) const override;
+
+    friend std::ostream& operator<<(std::ostream& s, const FDB5Sink& p) {
         p.print(s);
         return s;
     }
 
-private: // members
-    fdb5::legacy::LegacyArchiver archiver_;
+    fdb5::FDB fdb_;
 };
+
+}  // namespace multio
 
 //--------------------------------------------------------------------------------------------------
 

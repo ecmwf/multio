@@ -8,45 +8,49 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Tiago Quintino
+/// @author Tiago Quintino, Domokos Sarmany
 /// @date   Dec 2015
-
-#include <algorithm>
 
 #include "multio/fdb5/FDB5Sink.h"
 
 #include "eckit/exception/Exceptions.h"
+#include "eckit/types/Metadata.h"
 
 #include "multio/LibMultio.h"
 
-using namespace eckit;
-using namespace multio;
+namespace multio {
 
-//--------------------------------------------------------------------------------------------------
+namespace {
+eckit::LocalConfiguration fdb5_configuration(const eckit::Configuration& cfg) {
+    return cfg.has("config") ? cfg.getSubConfiguration("config") : eckit::LocalConfiguration{};
+}
+}  // namespace
 
-FDB5Sink::FDB5Sink(const Configuration& config) :
+FDB5Sink::FDB5Sink(const eckit::Configuration& config) :
     DataSink(config),
-    archiver_(config){
+    fdb_{fdb5_configuration(config)} {}
+
+void FDB5Sink::write(eckit::DataBlobPtr blob) {
+    const eckit::Metadata& md = blob->metadata();
+
+    fdb5::Key key;
+    std::string value;
+    for (const auto& kw : md.keywords()) {
+        md.get(kw, value);
+        key.set(kw, value);
+    }
+
+    fdb_.archive(key, blob->buffer(), blob->length());
 }
 
-FDB5Sink::~FDB5Sink() {
-}
-
-void FDB5Sink::write(DataBlobPtr blob) {
-    Log::debug<LibMultio>() << "FDB5Sink::write()" << std::endl;
-    archiver_.archive(blob);
-}
-
-void FDB5Sink::flush()
-{
-    Log::debug<LibMultio>() << "FDB5Sink::flush()" << std::endl;
-    archiver_.flush();
+void FDB5Sink::flush() {
+    fdb_.flush();
 }
 
 void FDB5Sink::print(std::ostream& os) const {
-    os << "FDB5Sink(" << config_ << ")";
+    os << "FDB5Sink()";
 }
 
 static DataSinkBuilder<FDB5Sink> FDB5SinkBuilder("fdb5");
 
-//--------------------------------------------------------------------------------------------------
+}

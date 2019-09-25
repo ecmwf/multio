@@ -9,7 +9,7 @@
                     "type" : "Sink",
                     "sinks" : [
                         {
-                            "type" : "fdb5-direct",
+                            "type" : "fdb5",
                             "config" : {}
                         },
                         {

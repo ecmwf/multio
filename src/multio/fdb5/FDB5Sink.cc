@@ -8,7 +8,8 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Tiago Quintino, Domokos Sarmany
+/// @author Tiago Quintino
+/// @author Domokos Sarmany
 /// @date   Dec 2015
 
 #include "multio/fdb5/FDB5Sink.h"
@@ -31,6 +32,8 @@ FDB5Sink::FDB5Sink(const eckit::Configuration& config) :
     fdb_{fdb5_configuration(config)} {}
 
 void FDB5Sink::write(eckit::DataBlobPtr blob) {
+    eckit::Log::debug<LibMultio>() << "FDB5Sink::write()" << std::endl;
+
     const eckit::Metadata& md = blob->metadata();
 
     fdb5::Key key;
@@ -44,6 +47,8 @@ void FDB5Sink::write(eckit::DataBlobPtr blob) {
 }
 
 void FDB5Sink::flush() {
+    eckit::Log::debug<LibMultio>() << "FDB5Sink::flush()" << std::endl;
+
     fdb_.flush();
 }
 

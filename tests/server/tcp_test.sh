@@ -1,6 +1,6 @@
 
 function fork_tcp_transport {
-    local cmd="./multio/src/multio/server/multio-hammer --transport=\"tcp\" --port=$@ --nbclients=5 --nbservers=3"
+    local cmd="multio-hammer --transport=\"tcp\" --port=$@ --nbclients=5 --nbservers=3"
     eval $cmd
 }
 

@@ -35,20 +35,10 @@ typedef int32_t fortint;
 using namespace eckit;
 using namespace multio;
 
-static eckit::Mutex *local_mutex = 0;
-
-static pthread_once_t once = PTHREAD_ONCE_INIT;
-
 //----------------------------------------------------------------------------------------------------------------------
 
 class MIO {
 public:
-
-    static void initialise(const eckit::YAMLConfiguration& config) {
-        MIO& mio = instance();
-        if(mio.ptr_) return;
-        mio.ptr_.reset(new MultIO(config));
-    }
 
     static MIO& instance() {
         static MIO mio;
@@ -62,6 +52,7 @@ public:
     }
 
     void log(bool log) { log_ = log; }
+    void dirty(bool dirty) { dirty_ = dirty; }
 
     void report() {
         if(log_ && ptr_ && !::getenv("MULTIO_NO_REPORT")) {
@@ -69,72 +60,73 @@ public:
         }
     }
 
+    void lock()   { mutex_.lock(); }
+    void unlock() { mutex_.unlock(); }
+
 private:
 
-    MIO() : log_(false) {}
+    MIO() : log_(false), dirty_(false) {
+        static const char *argv[2] = {"ifsio", 0};
 
-    ~MIO() {}
+        eckit::Main::initialise(1, const_cast<char**>(argv));
+
+        if (::getenv("MULTIO_CONFIG_FILE")) {
+            PathName path(::getenv("MULTIO_CONFIG_FILE"));
+            std::cout << "MultIO initialising with file " << path << std::endl;
+            eckit::YAMLConfiguration config(path);
+            ptr_.reset(new MultIO(config));
+            return;
+        }
+
+        eckit::Tokenizer parse(":");
+
+        StringList sinks;
+        parse(::getenv("MULTIO_SINKS") ? ::getenv("MULTIO_SINKS") : "fdb5", sinks);
+
+        ASSERT(sinks.size());
+
+        std::ostringstream oss;
+
+        oss << "{ \"sinks\" : [";
+
+        const char *sep = "";
+        for (StringList::iterator i = sinks.begin(); i != sinks.end(); ++i) {
+            oss << sep << "{ \"type\" : \"" << *i << "\"";
+
+            // By default, when using the legacy interface, configure the fdb5 to use sub tocs
+            if (*i == "fdb5")
+                oss << ", \"useSubToc\": true";
+
+            oss << "}";
+            sep = ",";
+        }
+        oss << "] }";
+
+        std::cout << "MultIO initialising with $MULTIO_SINKS " << oss.str() << std::endl;
+
+        std::istringstream iss(oss.str());
+        eckit::YAMLConfiguration config(iss);
+        ptr_.reset(new MultIO(config));
+    }
+
+    ~MIO() {
+        if(dirty_) {
+            static char* abort_on_error = ::getenv("MULTIO_ABORT_ON_ERROR");
+            if(abort_on_error) {
+                std::cout << "ERROR - MultIO finished without a final call to imultio_flush" << std::endl;
+                std::cerr << "ERROR - MultIO finished without a final call to imultio_flush" << std::endl;
+                eckit::LibEcKit::instance().abort();
+            }
+            else
+                std::cout << "WARNING - MultIO finished without a final call to imultio_flush" << std::endl;
+        }
+    }
 
     std::unique_ptr<MultIO> ptr_;
-
+    eckit::Mutex mutex_;
     bool log_;
+    bool dirty_;
 };
-
-static void init() {
-
-    local_mutex = new eckit::Mutex();
-
-    static const char *argv[2] = {"ifsio", 0};
-
-    eckit::Main::initialise(1, const_cast<char**>(argv));
-
-    if (::getenv("MULTIO_CONFIG_FILE")) {
-
-        PathName path(::getenv("MULTIO_CONFIG_FILE"));
-
-        std::cout << "MultIO initialising with file " << path << std::endl;
-
-        eckit::YAMLConfiguration config(path);
-
-        MIO::initialise(config);
-
-        return;
-    }
-
-
-    eckit::Tokenizer parse(":");
-
-    StringList sinks;
-    parse(::getenv("MULTIO_SINKS") ? ::getenv("MULTIO_SINKS") : "fdb5", sinks);
-
-    ASSERT(sinks.size());
-
-    std::ostringstream oss;
-
-    oss << "{ \"sinks\" : [";
-
-    const char *sep = "";
-    for (StringList::iterator i = sinks.begin(); i != sinks.end(); ++i) {
-        oss << sep << "{ \"type\" : \"" << *i << "\"";
-
-        // By default, when using the legacy interface, configure the fdb5 to use sub tocs
-        if (*i == "fdb5")
-            oss << ", \"useSubToc\": true";
-
-        oss << "}";
-        sep = ",";
-    }
-    oss << "] }";
-
-    std::cout << "MultIO initialising with $MULTIO_SINKS " << oss.str() << std::endl;
-
-    std::istringstream iss(oss.str());
-
-    eckit::YAMLConfiguration config(iss);
-
-    MIO::initialise(config);
-
-}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -181,9 +173,12 @@ extern "C" {
 
     fortint imultio_flush_() {
         try {
+            eckit::AutoLock<MIO> lock(MIO::instance());
+
             MULTIO_TRACE_FUNC();
             MIO::instance().mio().flush();
             MIO::instance().log(true);
+            MIO::instance().dirty(false);
         } catch (std::exception &e) {
             return ifsio_handle_error(e);
         }
@@ -192,6 +187,8 @@ extern "C" {
 
     fortint imultio_notify_step_(const fortint * step) {
         try {
+            eckit::AutoLock<MIO> lock(MIO::instance());
+
             MULTIO_TRACE_FUNC();
             ASSERT(step);
             eckit::StringDict metadata;
@@ -205,6 +202,8 @@ extern "C" {
 
     fortint imultio_write_(const void *data, const fortint *words) {
         try {
+            eckit::AutoLock<MIO> lock(MIO::instance());
+
             MULTIO_TRACE_FUNC();
             ASSERT(data);
             int ilen = (*words)*sizeof(fortint);
@@ -215,7 +214,7 @@ extern "C" {
 
             MIO::instance().mio().write(blob);
             MIO::instance().log(true);
-
+            MIO::instance().dirty(true);
         } catch (std::exception &e) {
             return ifsio_handle_error(e);
         }

@@ -69,7 +69,6 @@ ecbuild_add_library(
 )
 
 ecbuild_add_executable( TARGET    multio-hammer
-                        NOINSTALL
                         CONDITION HAVE_MULTIO_SERVER
                         SOURCES   tools/multio-hammer.cc
                         LIBS      multio-server multio)

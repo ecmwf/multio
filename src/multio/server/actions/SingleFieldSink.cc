@@ -8,22 +8,23 @@
  * does it submit to any jurisdiction.
  */
 
-#include "Sink.h"
+#include "SingleFieldSink.h"
 
 #include <iostream>
 
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/DataSink.h"
 #include "multio/server/PlainDataBlob.h"
 
 namespace multio {
 namespace server {
 namespace actions {
 
-Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
+SingleFieldSink::SingleFieldSink(const eckit::Configuration &config) : Action(config) {}
 
-void Sink::execute(Message msg) const {
+void SingleFieldSink::execute(Message msg) const {
     switch (msg.tag()) {
         case Message::Tag::Field:
         case Message::Tag::GribTemplate:
@@ -34,17 +35,6 @@ void Sink::execute(Message msg) const {
             flush();
             return;
 
-        case Message::Tag::StepNotification: {
-            eckit::StringDict metadata;
-
-            // Hijack the mapping string
-            metadata["step"] = msg.mapping();
-
-            eckit::Log::info() << "Trigger is called..." << std::endl;
-            mio_.trigger(metadata);
-            return;
-        }
-
         default:
             ASSERT(false);
     }
@@ -54,7 +44,15 @@ void Sink::execute(Message msg) const {
     }
 }
 
-void Sink::write(Message msg) const {
+void SingleFieldSink::write(Message msg) const {
+    std::ostringstream oss;
+    oss << msg.metadata().getString("igrib") << "::" << msg.metadata().getUnsigned("ilevg")
+        << "::" << msg.metadata().getUnsigned("istep");
+    eckit::LocalConfiguration config;
+
+    config.set("path", oss.str());
+    dataSink_.reset(DataSinkFactory::instance().build("file", config));
+
     eckit::DataBlobPtr blob;
     switch (msg.tag()) {
         case Message::Tag::Field:
@@ -69,18 +67,18 @@ void Sink::write(Message msg) const {
             ASSERT(false);
     }
 
-    mio_.write(blob);
+    dataSink_->write(blob);
 }
 
-void Sink::flush() const {
-    mio_.flush();
+void SingleFieldSink::flush() const {
+    dataSink_->flush();
 }
 
-void Sink::print(std::ostream& os) const {
-    os << "Sink(DataSink=" << mio_ << ")";
+void SingleFieldSink::print(std::ostream& os) const {
+    os << "Sink(DataSink=" << *dataSink_ << ")";
 }
 
-static ActionBuilder<Sink> SinkBuilder("Sink");
+static ActionBuilder<SingleFieldSink> SinkBuilder("SingleFieldSink");
 
 }  // namespace actions
 }  // namespace server

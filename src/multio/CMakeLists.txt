@@ -57,7 +57,6 @@ ecbuild_add_library(
     LIBS
         metkit eckit )
 
-add_subdirectory(fdb4)
 add_subdirectory(fdb5)
 add_subdirectory(attic)
 add_subdirectory(server)

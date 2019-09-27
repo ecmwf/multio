@@ -8,7 +8,7 @@
 namespace multio {
 namespace server {
 
-    LocalIndices::LocalIndices(std::vector<size_t>&& idx) : indices_(std::move(idx)) {}
+LocalIndices::LocalIndices(std::vector<int32_t>&& idx) : indices_(std::move(idx)) {}
 
 void LocalIndices::to_global(const std::vector<double>& local, std::vector<double>& global) const {
     ASSERT(local.size() == indices_.size());
@@ -21,7 +21,7 @@ void LocalIndices::to_global(const std::vector<double>& local, std::vector<doubl
 
 void LocalIndices::to_local(const std::vector<double>& global, std::vector<double>& local) const {
     local.resize(0);
-    std::for_each(begin(indices_), end(indices_), [&](size_t id) { local.push_back(global[id]); });
+    std::for_each(begin(indices_), end(indices_), [&](int32_t id) { local.push_back(global[id]); });
 }
 
 

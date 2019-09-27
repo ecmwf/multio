@@ -12,38 +12,43 @@
 /// @author Simon Smart
 /// @author Tiago Quintino
 
-/// @date Jan 2019
+/// @date Jul 2019
 
-#ifndef multio_server_MpiTransport_H
-#define multio_server_MpiTransport_H
+#ifndef multio_server_actions_SingleFieldSink_H
+#define multio_server_actions_SingleFieldSink_H
 
-#include "eckit/io/ResizableBuffer.h"
-#include "eckit/mpi/Comm.h"
-#include "eckit/serialisation/ResizableMemoryStream.h"
+#include <iosfwd>
 
-#include "multio/server/Transport.h"
+#include "multio/server/Action.h"
+
+namespace eckit {
+class Configuration;
+}
 
 namespace multio {
-namespace server {
 
-class MpiTransport final : public Transport {
+class DataSink;
+
+namespace server {
+namespace actions {
+
+class SingleFieldSink : public Action {
 public:
-    MpiTransport(const eckit::Configuration& config);
+    SingleFieldSink(const eckit::Configuration& config);
 
 private:
-    Message receive() override;
-
-    void send(const Message& message) override;
+    void execute(Message msg) const override;
 
     void print(std::ostream& os) const override;
 
-    Peer localPeer() const override;
+    void write(Message msg) const;
 
-    MpiPeer local_;
+    void flush() const;
 
-    eckit::ResizableBuffer buffer_;
+    mutable std::unique_ptr<DataSink> dataSink_ = nullptr;
 };
 
+}  // namespace actions
 }  // namespace server
 }  // namespace multio
 

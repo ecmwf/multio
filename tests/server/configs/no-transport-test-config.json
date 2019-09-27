@@ -1,0 +1,24 @@
+{
+    "transport" : "none",
+    "parameters": [130, 133, 135, 138, 155, 203, 246, 247, 248, 75, 76],
+    "plans" : [
+        {
+            "name" : "atmosphere",
+            "actions" : {
+                "root" : {
+                    "type" : "Sink",
+                    "sinks" : [
+                        {
+                            "type" : "fdb5",
+                            "config" : {}
+                        },
+                        {
+                            "type" : "file",
+                            "path" : "hammer.grib"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

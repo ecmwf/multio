@@ -20,16 +20,19 @@
 #include <memory>
 #include <string>
 
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/io/Buffer.h"
 
 #include "multio/server/Peer.h"
 
 namespace eckit {
 class Stream;
-}
+}  // namespace eckit
 
 namespace multio {
 namespace server {
+
+using Metadata = eckit::LocalConfiguration;
 
 // TODO: we may want to hash the payload (and the header?)
 
@@ -40,13 +43,38 @@ public:  // types
         Empty = 0,
         Open,
         Close,
+        GribTemplate,
         Mapping,
         Field,
         StepComplete,
+        StepNotification,
         ENDTAG
     };
 
-    struct Header {
+    class Header {
+    public:
+        Header(Tag tag, Peer src, Peer dst, const std::string& map = "", size_t cnt = 0,
+               const std::string& cat = "", const std::string& fid = "", size_t fsz = 0);
+
+        Tag tag() const;
+
+        Peer source() const;
+        Peer destination() const;
+
+        const std::string& mapping() const; // For fields and mappings
+        size_t map_count() const;           // For mappings only
+
+        // For fields only
+        const std::string& category() const;
+        const std::string& field_id() const;
+        size_t global_field_size() const ;
+
+        void encode(eckit::Stream& strm) const;
+        void decode(eckit::Stream& strm);
+
+        const Metadata& metadata() const;
+
+    private:
         Tag tag_;
 
         Peer source_;
@@ -57,16 +85,28 @@ public:  // types
 
         // For fields only
         std::string category_;
-        std::string field_id_;  // Could also be the hash of MARS metadata
+        std::string field_id_;
         size_t global_field_size_;
+
+        Metadata metadata_;
+        void setMetadata();
     };
 
-    struct Content {
+    class Content {
+    public:
+        Content(Header&& header, const eckit::Buffer& payload = 0);
+        Content(Header&& header, eckit::Buffer&& payload);
+
+        size_t size() const;
+
+        Header& header();
+
+        eckit::Buffer& payload();
+        const eckit::Buffer& payload() const;
+
+    private:
         Header header_;
         eckit::Buffer payload_;
-
-        Content(const Header& header, const eckit::Buffer& payload = 0);
-        size_t size() const;
     };
 
 public:  // methods
@@ -74,7 +114,8 @@ public:  // methods
     static std::string tag2str(Tag t);
 
     Message();
-    Message(const Header& header, const eckit::Buffer& payload = 0);
+    Message(Header&& header, const eckit::Buffer& payload = 0);
+    Message(Header&& header, eckit::Buffer&& payload);
 
     const Header& header() const;
 
@@ -91,6 +132,7 @@ public:  // methods
 
     const std::string& category() const;
     const std::string& field_id() const;
+    const Metadata& metadata() const;
     size_t field_size() const;
 
     eckit::Buffer& payload();

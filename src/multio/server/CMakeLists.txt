@@ -18,6 +18,8 @@ ecbuild_add_library(
         actions/Select.h
         actions/Sink.cc
         actions/Sink.h
+        actions/SingleFieldSink.cc
+        actions/SingleFieldSink.h
         actions/Null.cc
         actions/Null.h
         Action.cc
@@ -26,6 +28,8 @@ ecbuild_add_library(
         Aggregator.h
         Dispatcher.cc
         Dispatcher.h
+        IoTransport.cc
+        IoTransport.h
         Listener.cc
         Listener.h
         LocalIndices.cc
@@ -34,10 +38,14 @@ ecbuild_add_library(
         Mappings.h
         Message.cc
         Message.h
+        MessageContent.cc
+        MessageHeader.cc
         Peer.cc
         Peer.h
         Plan.cc
         Plan.h
+        PlainDataBlob.cc
+        PlainDataBlob.h
         ThreadTransport.cc
         ThreadTransport.h
         MpiTransport.cc
@@ -50,32 +58,17 @@ ecbuild_add_library(
         MultioServerTool.cc
         MultioServerTool.h
 
-    PRIVATE_INCLUDES
-        ${ECKIT_INCLUDE_DIRS}
-
     LIBS
         multio
+        multio-fdb5
         eckit_mpi
         eckit_option
         eckit
+        metkit
+        eccodes
 )
 
-include_directories( ${ECKIT_INCLUDE_DIRS} )
-
-ecbuild_add_executable( TARGET    multio_server_thread_transport
-                        NOINSTALL
-                        SOURCES   tools/multio_server_thread_transport.cc
+ecbuild_add_executable( TARGET    multio-hammer
                         CONDITION HAVE_MULTIO_SERVER
-                        LIBS      multio-server multio)
-
-ecbuild_add_executable( TARGET    multio_server_mpi_transport
-                        NOINSTALL
-                        SOURCES   tools/multio_server_mpi_transport.cc
-                        CONDITION HAVE_MULTIO_SERVER
-                        LIBS      multio-server multio)
-
-ecbuild_add_executable( TARGET    multio_server_tcp_transport
-                        NOINSTALL
-                        SOURCES   tools/multio_server_tcp_transport.cc
-                        CONDITION HAVE_MULTIO_SERVER
+                        SOURCES   tools/multio-hammer.cc
                         LIBS      multio-server multio)

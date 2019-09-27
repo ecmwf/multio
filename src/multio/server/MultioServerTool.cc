@@ -22,9 +22,7 @@ MultioServerTool::MultioServerTool(int argc, char** argv) : eckit::Tool(argc, ar
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbservers", "Number of servers"));
 }
 
-void MultioServerTool::init(const eckit::option::CmdArgs& args) {
-    args.get("nbservers", nbServers_);
-}
+void MultioServerTool::init(const eckit::option::CmdArgs&) {}
 
 void MultioServerTool::finish(const eckit::option::CmdArgs&) {}
 

@@ -10,9 +10,12 @@
 
 #include "Listener.h"
 
+#include <fstream>
 #include <functional>
+#include <typeinfo>
 
 #include "eckit/config/Resource.h"
+#include "eckit/exception/Exceptions.h"
 
 #include "multio/server/Mappings.h"
 #include "multio/server/Message.h"
@@ -20,15 +23,16 @@
 
 #include "multio/server/Dispatcher.h"
 #include "multio/server/print_buffer.h"
-#include "multio/server/Transport.h"
+#include "multio/server/ThreadTransport.h"
 
 namespace multio {
 namespace server {
 
 Listener::Listener(const eckit::Configuration& config, Transport& trans) :
-    dispatcher_(std::make_shared<Dispatcher>(config)),
-    transport_(trans),
-    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
+    dispatcher_{std::make_shared<Dispatcher>(config)},
+    transport_{trans},
+    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {
+}
 
 void Listener::listen() {
 
@@ -49,28 +53,25 @@ void Listener::listen() {
                 ++nbClosedConnections_;
                 break;
 
+            case Message::Tag::GribTemplate:
+                eckit::Log::info() << "*** Size of grib template: " << msg.size() << std::endl;
+                break;
+
             case Message::Tag::Mapping:
-                eckit::Log::info() << "*** MAPPING INDICES " << std::flush;
+                eckit::Log::info() << "*** Number of maps: " << msg.map_count() << std::endl;
                 nbMaps_ = msg.map_count();
-                print_buffer(static_cast<const size_t*>(msg.payload().data()),
-                             msg.size() / sizeof(size_t), eckit::Log::info());
-                eckit::Log::info() << std::endl;
                 Mappings::instance().add(msg);
                 break;
 
+            case Message::Tag::StepComplete:
+                eckit::Log::info() << "*** Flush received from: " << msg.source() << std::endl;
+                break;
+
             default:
-                eckit::Log::info() << "*** DISPATCH QUEUE " << std::flush;
-                // print_buffer(static_cast<const char*>(msg.payload().data()), msg.size(),
-                //              eckit::Log::info(), "");
-                print_buffer(static_cast<const double*>(msg.payload().data()),
-                             msg.size() / sizeof(double), eckit::Log::info());
-                eckit::Log::info() << std::endl;
+                eckit::Log::info() << "*** Field received from: " << msg.source() << std::endl;
                 msgQueue_.push(std::move(msg));
         }
     } while (!connections_.empty() || nbClosedConnections_ != nbMaps_);
-
-    // Wait for queue to be emptied before closing it
-    while (not msgQueue_.empty()) {}
 
     msgQueue_.close();
 }

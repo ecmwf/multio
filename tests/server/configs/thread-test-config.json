@@ -1,0 +1,38 @@
+{
+    "transport" : "thread",
+    "plans" : [
+        {
+            "name" : "output-only",
+            "actions" : {
+                "root" : {
+                    "type" : "Print",
+                    "stream" : "debug",
+                    "next" : {
+                        "type" : "AppendToFile",
+                        "path" : "messages.txt"
+                    }
+                }
+            }
+        },
+        {
+            "name" : "atmosphere",
+            "actions" : {
+                "root" : {
+                    "type" : "Select",
+                    "categories" : [ "model-level", "pressure-level", "surface-level" ],
+                    "next" : {
+                        "type" : "Aggregation",
+                        "mapping" : "grid-point",
+                        "next" : {
+                            "type" : "Encode",
+                            "format" : "grib",
+                            "next" : {
+                                "type" : "SingleFieldSink"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

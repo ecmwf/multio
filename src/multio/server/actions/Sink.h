@@ -19,6 +19,7 @@
 
 #include <iosfwd>
 
+#include "multio/MultIO.h"
 #include "multio/server/Action.h"
 
 namespace eckit {
@@ -45,7 +46,7 @@ private:
 
     void flush() const;
 
-    mutable std::unique_ptr<DataSink> dataSink_ = nullptr;
+    mutable MultIO mio_;
 };
 
 }  // namespace actions

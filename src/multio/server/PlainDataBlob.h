@@ -2,14 +2,13 @@
 #ifndef multio_PlainDataBlob_H
 #define multio_PlainDataBlob_H
 
-#include "eckit/io/DataBlob.h"
-#include "eckit/io/DataHandle.h"
-#include "eckit/log/Bytes.h"
-#include "eckit/types/Metadata.h"
-
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "eckit/io/DataBlob.h"
+#include "eckit/types/Metadata.h"
+
 
 namespace multio {
 namespace server {
@@ -35,22 +34,17 @@ protected:  // methods
 // A null datablob for testing the factories
 class PlainDataBlob final : public eckit::DataBlob {
 public:  // methods
-    PlainDataBlob(const void* data, size_t length) : DataBlob(data, length) {}
-    PlainDataBlob(eckit::DataHandle& dh, size_t length) : DataBlob(dh, length) {}
+    PlainDataBlob(const void* data, size_t length);
+    PlainDataBlob(eckit::DataHandle& dh, size_t length);
 
-    const eckit::Metadata& metadata() const override { return metadata_; }
+    const eckit::Metadata& metadata() const override;
 
 private:  // methods
-    void print(std::ostream& os) const override {
-        os << "PlainDataBlob[size=" << eckit::Bytes(buffer_.size()) << ", metadata=" << metadata_
-           << "]";
-    }
+    void print(std::ostream& os) const override;
 
 private:  // members
     PlainMetadata metadata_;
 };
-
-static eckit::DataBlobBuilder<PlainDataBlob> plainDataBlobBuilder("plain");
 
 }  // namespace server
 }  // namespace multio

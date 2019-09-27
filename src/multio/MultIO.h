@@ -36,7 +36,7 @@ class MultIO final : public DataSink {
 public:
     MultIO(const eckit::Configuration& config);
 
-    ~MultIO() override;
+    ~MultIO() override = default;
 
     bool ready() const override;
 
@@ -52,26 +52,6 @@ public:
     void trigger(const eckit::StringDict& metadata) const;
 
     void report(std::ostream&);
-
-    ///
-    /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
-    ///
-
-    void iopenfdb(const std::string& name, int& fdbaddr, const std::string& mode) override;
-    void iinitfdb() override;
-    void iclosefdb(int fdbaddr) override;
-
-    void isetcommfdb(int rank) override;
-    void isetrankfdb(int fdbaddr, int rank) override;
-    void iset_fdb_root(int fdbaddr, const std::string& name) override;
-
-    void iflushfdb(int fdbaddr) override;
-
-    void isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank) override;
-    void isetvalfdb(int fdbaddr, const std::string& name, const std::string& value) override;
-
-    // virtual int ireadfdb(void *data, int *words);
-    void iwritefdb(int fdbaddr, eckit::DataBlobPtr blob) override;
 
 protected:  // methods
 

@@ -29,35 +29,45 @@ Aggregation::Aggregation(const eckit::Configuration& config) :
 
 void Aggregation::execute(Message msg) const {
 
-    auto field_id = msg.field_id();
-    messages_[field_id].push_back(msg);
+    if (msg.tag() == Message::Tag::Field) {
+        auto field_id = msg.field_id();
+        messages_[field_id].push_back(msg);
 
-    eckit::Log::info() << "  ---  Aggregation action is being executed" << std::endl
-                       << "          -- no_maps: " << Mappings::instance().get(map_name_).size()
-                       << ", no_fields: " << messages_.at(field_id).size() << std::endl;
+        // All parts arrived?
+        bool ret = messages_.at(field_id).size() == msg.map_count();
+        ret &= Mappings::instance().get(map_name_).size() == msg.map_count();
+        if (!ret) {
+            return;
+        }
 
-    // All parts arrived?
-    bool ret = messages_.at(field_id).size() == msg.map_count();
-    ret &= Mappings::instance().get(map_name_).size() == msg.map_count();
-    if (!ret) {
-        return;
+        Aggregator agg{msg.field_size(), messages_.at(field_id).size()};
+
+        Message outMsg{Message::Header{msg.tag(), Peer{}, Peer{}, msg.mapping(), msg.map_count(),
+                                       msg.category(), msg.field_id(), msg.field_size()},
+                       agg.gather(messages_.at(field_id), Mappings::instance().get(map_name_))};
+
+        messages_.erase(field_id);
+
+        if (next_) {  // May want to assert next_
+            next_->execute(outMsg);
+        }
     }
 
-    Aggregator agg{msg.field_size(), messages_.at(field_id).size()};
+    if (msg.tag() == Message::Tag::StepComplete) {
+        // Initialise
+        if(flushes_.find(msg.mapping()) == end(flushes_)) {
+            flushes_[msg.mapping()] = 0;
+        }
 
-    msg.payload() = agg.gather(messages_.at(field_id), Mappings::instance().get(map_name_));
+        if (++flushes_.at(msg.mapping()) != msg.map_count()) {
+            return;
+        }
 
-    messages_.erase(field_id);
-
-    eckit::Log::info() << "          -- print aggregated field " << msg.field_id()
-                       << " (size=" << msg.field_size() << "): ";
-    print_buffer(reinterpret_cast<double*>(msg.payload().data()), msg.field_size(),
-                 eckit::Log::info(), " ");
-    eckit::Log::info() << std::endl;
-
-    if (next_) {  // May want to assert next_
-        next_->execute(msg);
+        if (next_) {  // May want to assert next_
+            next_->execute(msg);
+        }
     }
+
 }
 
 void Aggregation::print(std::ostream& os) const {

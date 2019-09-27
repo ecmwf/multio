@@ -18,15 +18,38 @@
 namespace multio {
 namespace server {
 
+namespace {
+Message decodeMessage(eckit::Stream& stream) {
+    unsigned t;
+    stream >> t;
+
+    std::string src_dom;
+    stream >> src_dom;
+    size_t src_id;
+    stream >> src_id;
+
+    std::string dest_dom;
+    stream >> dest_dom;
+    size_t dest_id;
+    stream >> dest_id;
+
+    Message msg{Message::Header{static_cast<Message::Tag>(t), MpiPeer{src_dom, src_id},
+                                MpiPeer{dest_dom, dest_id}}};
+
+    msg.decode(stream);
+
+    return msg;
+}
+}  // namespace
+
+
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
-    comm_name_(cfg.getString("domain")),
+    local_{cfg.getString("domain"), eckit::mpi::comm(cfg.getString("domain").c_str()).rank()},
     buffer_{0} {}
 
 Message MpiTransport::receive() {
-    Message msg{};
-
-    const auto& comm = eckit::mpi::comm(comm_name_.c_str());
+    const auto& comm = eckit::mpi::comm(local_.domain().c_str());
 
     auto status = comm.probe(comm.anySource(), comm.anyTag());
 
@@ -36,16 +59,14 @@ Message MpiTransport::receive() {
 
     eckit::ResizableMemoryStream stream{buffer_};
 
-    msg.decode(stream);
-
-    return msg;
+    return decodeMessage(stream);
 }
 
 void MpiTransport::send(const Message& msg) {
 
     auto msg_tag = static_cast<int>(msg.tag());
 
-    auto dest = msg.destination().id_;
+    auto dest = msg.destination().id();
 
     // Add 4K for header/footer etc. Should be plenty
     buffer_.resize(eckit::round(msg.size(), 8) + 4096);
@@ -54,18 +75,19 @@ void MpiTransport::send(const Message& msg) {
 
     msg.encode(stream);
 
-    eckit::mpi::comm(comm_name_.c_str()).send<void>(buffer_, stream.bytesWritten(), dest, msg_tag);
+    eckit::mpi::comm(local_.domain().c_str())
+        .send<void>(buffer_, stream.bytesWritten(), dest, msg_tag);
 }
 
 Peer MpiTransport::localPeer() const {
-    return Peer{comm_name_, eckit::mpi::comm(comm_name_.c_str()).rank()};
+    return local_;
 }
 
 void MpiTransport::print(std::ostream& os) const {
     os << "MpiTransport()";
 }
 
-static TransportBuilder<MpiTransport> MpiTransportBuilder("Mpi");
+static TransportBuilder<MpiTransport> MpiTransportBuilder("mpi");
 
 }  // namespace server
 }  // namespace multio

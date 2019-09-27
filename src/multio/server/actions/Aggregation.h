@@ -44,7 +44,7 @@ private:
     std::string field_id_; // It could be the hash of the mars metadata in the future
 
     mutable std::map<std::string, std::vector<Message>> messages_;
-
+    mutable std::map<std::string, unsigned int> flushes_;
 };
 
 }  // namespace actions

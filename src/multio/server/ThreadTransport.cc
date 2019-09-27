@@ -26,6 +26,7 @@ ThreadTransport::~ThreadTransport() = default;
 Message ThreadTransport::receive() {
 
     Peer receiver = localPeer();
+
     auto& queue = receiveQueue(receiver);
 
     Message msg;
@@ -43,7 +44,6 @@ void ThreadTransport::send(const Message& msg) {
 Peer ThreadTransport::localPeer() const {
     return Peer{"thread", std::hash<std::thread::id>{}(std::this_thread::get_id())};
 }
-
 
 void ThreadTransport::print(std::ostream& os) const {
     os << "ThreadTransport(number of queues = " << queues_.size() << ")";
@@ -66,7 +66,7 @@ eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer dest) {
     return *queues_.at(dest);
 }
 
-static TransportBuilder<ThreadTransport> ThreadTransportBuilder("Thread");
+static TransportBuilder<ThreadTransport> ThreadTransportBuilder("thread");
 
 }  // namespace server
 }  // namespace multio

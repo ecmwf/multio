@@ -41,12 +41,11 @@ public:
 protected:
 
     MultioServerTool(int argc, char** argv);
-    std::vector<eckit::option::Option*> options_;
 
-    virtual void init(const eckit::option::CmdArgs& args);
+    virtual void init(const eckit::option::CmdArgs&);
     virtual void finish(const eckit::option::CmdArgs&);
 
-    size_t nbServers_ = 1;
+    std::vector<eckit::option::Option*> options_;
 
 private:
     virtual void execute(const eckit::option::CmdArgs& args) = 0;

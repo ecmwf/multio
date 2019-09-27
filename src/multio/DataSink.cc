@@ -17,7 +17,7 @@
 #include <mutex>
 
 #include "eckit/exception/Exceptions.h"
-#include "eckit/parser/JSON.h"
+#include "eckit/log/JSON.h"
 #include "eckit/value/Value.h"
 
 #include "multio/LibMultio.h"
@@ -36,19 +36,19 @@ DataSinkFactory& DataSinkFactory::instance() {
 }
 
 void DataSinkFactory::add(const std::string& name, const DataSinkBuilderBase* builder) {
-    std::lock_guard<std::mutex> lock{mutex_};
+    std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(factories_.find(name) == factories_.end());
     factories_[name] = builder;
 }
 
 void DataSinkFactory::remove(const std::string& name) {
-    std::lock_guard<std::mutex> lock{mutex_};
+    std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(factories_.find(name) != factories_.end());
     factories_.erase(name);
 }
 
 void DataSinkFactory::list(std::ostream& out) {
-    std::lock_guard<std::mutex> lock{mutex_};
+    std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     const char* sep = "";
     for (auto const& sinkFactory : factories_) {
@@ -58,7 +58,7 @@ void DataSinkFactory::list(std::ostream& out) {
 }
 
 DataSink* DataSinkFactory::build(const std::string& name, const Configuration& config) {
-    std::lock_guard<std::mutex> lock{mutex_};
+    std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     Log::debug<LibMultio>() << "Looking for DataSinkFactory [" << name << "]" << std::endl;
 

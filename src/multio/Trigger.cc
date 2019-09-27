@@ -21,7 +21,7 @@
 #include "eckit/types/Metadata.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/net/TCPClient.h"
-#include "eckit/parser/JSON.h"
+#include "eckit/log/JSON.h"
 #include "eckit/config/YAMLConfiguration.h"
 
 #include "multio/LibMultio.h"
@@ -171,6 +171,7 @@ public: // methods
         JSON msg(os);
         event.json(msg);
 
+        Log::info() << "SENDING EVENT -- " << os.str() << std::endl;
         Log::debug<LibMultio>() << "SENDING EVENT -- " << os.str() << std::endl;
 
         if(!host_.empty()) {

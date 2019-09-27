@@ -10,7 +10,8 @@ ecbuild_add_library(
         HAVE_FDB5
 
     PRIVATE_INCLUDES
-        ${ECKIT_INCLUDE_DIRS}
+      ${FDB5_INCLUDE_DIRS}
+      ${ECKIT_INCLUDE_DIRS}
 
     LIBS
         multio

@@ -13,4 +13,8 @@ ecbuild_add_test( TARGET    test_multio_file_sink
                   SOURCES   test_multio_file_sink.cc
                   LIBS      multio )
 
+# list( APPEND _test_data
+#   "rd.vod.grib"
+# )
+
 add_subdirectory(attic)

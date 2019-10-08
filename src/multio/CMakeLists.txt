@@ -63,4 +63,5 @@ add_subdirectory(server)
 
 ecbuild_add_executable( TARGET    multio-sink
                         SOURCES   tools/multio-sink.cc
+                        CONDITION HAVE_FDB5
                         LIBS      multio multio-fdb5 eckit_option)

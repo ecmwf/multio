@@ -32,3 +32,4 @@ ecbuild_add_test( TARGET test_multio_ifs_io
                   ENVIRONMENT "${_test_environment}" )
 
 add_subdirectory(attic)
+add_subdirectory(server)

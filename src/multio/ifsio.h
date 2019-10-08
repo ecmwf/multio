@@ -18,5 +18,14 @@
 #ifndef multio_ifsio_h
 #define multio_ifsio_h
 
+typedef int32_t fortint;
+
+extern "C" {
+
+fortint imultio_flush_();
+fortint imultio_notify_step_(const fortint* step);
+fortint imultio_write_(const void *data, const fortint *words);
+
+} // extern C
 
 #endif

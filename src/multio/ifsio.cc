@@ -30,8 +30,6 @@
 
 #include "metkit/grib/GribDataBlob.h"
 
-typedef int32_t fortint;
-
 using namespace eckit;
 using namespace multio;
 

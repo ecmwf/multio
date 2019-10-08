@@ -60,3 +60,7 @@ ecbuild_add_library(
 add_subdirectory(fdb5)
 add_subdirectory(attic)
 add_subdirectory(server)
+
+ecbuild_add_executable( TARGET    multio-sink
+                        SOURCES   tools/multio-sink.cc
+                        LIBS      multio multio-fdb5 eckit_option)

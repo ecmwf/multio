@@ -186,7 +186,7 @@ private:
 
     void execute(const eckit::option::CmdArgs& args) override;
 
-    void executePlans();
+    void executePlans(const eckit::option::CmdArgs& args);
     void executeMpi(std::shared_ptr<Transport> transport);
     void executeTcp(std::shared_ptr<Transport> transport);
     void executeThread(std::shared_ptr<Transport> transport);
@@ -359,9 +359,9 @@ void MultioHammer::spawnClients(const PeerList& clientPeers,
 
 //----------------------------------------------------------------------------------------------------------------------
 
-void MultioHammer::execute(const eckit::option::CmdArgs&) {
+void MultioHammer::execute(const eckit::option::CmdArgs& args) {
     if (transportType_ == "none") {
-        executePlans();
+        executePlans(args);
         return;
     }
 
@@ -486,8 +486,8 @@ void MultioHammer::executeThread(std::shared_ptr<Transport> transport) {
     }
 }
 
-void MultioHammer::executePlans() {
-    eckit::AutoStdFile fin("single-field.grib");
+void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
+    eckit::AutoStdFile fin(args(0));
 
     int err;
     codes_handle* handle = codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err);

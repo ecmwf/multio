@@ -15,6 +15,8 @@
 #include "eccodes.h"
 #include "eckit/config/Configuration.h"
 #include "metkit/grib/GribHandle.h"
+
+#include "multio/LibMultio.h"
 #include "multio/server/GribTemplate.h"
 
 namespace {
@@ -47,7 +49,7 @@ Encode::Encode(const eckit::Configuration& config) :
 
 void Encode::execute(Message msg) const {
     if (format_ == "grib") {
-        eckit::Log::info() << "*** Executing encoding: " << *this << std::endl;
+        eckit::Log::debug<LibMultio>() << "*** Executing encoding: " << *this << std::endl;
 
         // const Message& grib_tmpl = GribTemplate::instance().get(msg.metadata().getString("cpref"),
         //                                                         msg.metadata().getBool("lspec"));

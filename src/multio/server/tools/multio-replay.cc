@@ -11,10 +11,10 @@
 #include "eckit/option/SimpleOption.h"
 #include "eckit/log/JSON.h"
 
+#include "multio/LibMultio.h"
 #include "multio/server/Listener.h"
 #include "multio/server/MultioServerTool.h"
 #include "multio/server/Transport.h"
-#include "multio/server/print_buffer.h"
 
 using namespace multio::server;
 
@@ -29,7 +29,7 @@ eckit::PathName base() {
 }
 
 eckit::PathName test_configuration(const std::string& type) {
-    eckit::Log::info() << "Transport type: " << type << std::endl;
+    eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
     std::map<std::string, std::string> configs = {{"mpi", "mpi-test-config.json"},
                                                   {"tcp", "tcp-test-config.json"},
                                                   {"thread", "thread-test-config.json"},
@@ -233,8 +233,7 @@ eckit::Buffer MultioReplay::readGrid(const std::string& grid_type, size_t client
     std::string gtype;
     infile >> gtype;
     if (gtype != grid_type) {
-        throw eckit::SeriousBug(
-            "Wrong grid is being read");
+        throw eckit::SeriousBug("Wrong grid is being read");
     }
 
     std::vector<int32_t> domain_dims;

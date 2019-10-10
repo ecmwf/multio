@@ -6,6 +6,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/Buffer.h"
 
+#include "multio/LibMultio.h"
 #include "multio/server/LocalIndices.h"
 #include "multio/server/Message.h"
 #include "multio/server/print_buffer.h"
@@ -28,7 +29,7 @@ void Mappings::add(Message msg) {
         // Map has been added already -- needed only for the thread transport
         return;
     }
-    std::cout << "*** Add mapping for " << msg.mapping() << std::endl;
+    eckit::Log::debug<LibMultio>() << "*** Add mapping for " << msg.mapping() << std::endl;
 
     ASSERT(mapping.find(msg.source()) == end(mapping));
 
@@ -36,9 +37,9 @@ void Mappings::add(Message msg) {
 
     std::memcpy(local_map.data(), msg.payload().data(), msg.size());
 
-    std::cout << "***     values: [";
-    print_buffer(local_map);
-    std::cout << "]" << std::endl;
+    eckit::Log::debug<LibMultio>() << "***     values: [";
+    print_buffer(local_map, eckit::Log::debug<LibMultio>());
+    eckit::Log::debug<LibMultio>() << "]" << std::endl;
 
     if (msg.mapping() == "grid-point") {
         mapping.emplace(msg.source(), new Unstructured{std::move(local_map)});

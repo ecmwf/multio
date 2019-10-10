@@ -16,6 +16,7 @@
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/DataSink.h"
+#include "multio/LibMultio.h"
 #include "multio/server/PlainDataBlob.h"
 
 namespace multio {
@@ -71,11 +72,11 @@ void SingleFieldSink::write(Message msg) const {
 }
 
 void SingleFieldSink::flush() const {
-    eckit::Log::info() << "*** Executing single-field flush for data sink... " << std::endl;
-    if(dataSink_) {
+    eckit::Log::debug<LibMultio>()
+        << "*** Executing single-field flush for data sink... " << std::endl;
+    if (dataSink_) {
         dataSink_->flush();
     }
-    eckit::Log::info() << "*** Executed single-field flush for data sink... " << std::endl;
 }
 
 void SingleFieldSink::print(std::ostream& os) const {

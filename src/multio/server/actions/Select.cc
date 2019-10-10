@@ -13,7 +13,8 @@
 #include <algorithm>
 
 #include "eckit/config/Configuration.h"
-#include "eckit/exception/Exceptions.h"
+
+#include "multio/LibMultio.h"
 
 namespace multio {
 namespace server {
@@ -27,8 +28,9 @@ void Select::execute(Message msg) const {
     bool passOn = (msg.tag() != Message::Tag::Field) || matchPlan(msg);
 
     if (passOn && next_) { // May want to assert next_
-        eckit::Log::info() << " *** Category " << msg.category()
-                           << " is matched...  field size: " << msg.field_size() << std::endl;
+        eckit::Log::debug<LibMultio>()
+            << " *** Category " << msg.category()
+            << " is matched...  field size: " << msg.field_size() << std::endl;
         next_->execute(msg);
     }
 }

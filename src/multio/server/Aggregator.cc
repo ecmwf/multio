@@ -14,7 +14,6 @@
 
 #include "multio/server/LocalIndices.h"
 #include "multio/server/Message.h"
-#include "multio/server/print_buffer.h"
 
 #include "eckit/log/Log.h"
 

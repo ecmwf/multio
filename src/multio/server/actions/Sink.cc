@@ -15,6 +15,7 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/LibMultio.h"
 #include "multio/server/PlainDataBlob.h"
 
 namespace multio {
@@ -40,7 +41,7 @@ void Sink::execute(Message msg) const {
             // Hijack the mapping string
             metadata["step"] = msg.mapping();
 
-            eckit::Log::info() << "Trigger is called..." << std::endl;
+            eckit::Log::debug<LibMultio>() << "Trigger is called..." << std::endl;
             mio_.trigger(metadata);
             return;
         }

@@ -17,6 +17,8 @@
 #include "metkit/grib/GribDataBlob.h"
 #include "metkit/grib/GribHandle.h"
 
+#include "multio/LibMultio.h"
+
 #include "multio/server/Listener.h"
 #include "multio/server/LocalIndices.h"
 #include "multio/server/Message.h"
@@ -24,7 +26,6 @@
 #include "multio/server/Peer.h"
 #include "multio/server/Plan.h"
 #include "multio/server/Transport.h"
-#include "multio/server/print_buffer.h"
 
 using namespace multio::server;
 
@@ -149,7 +150,7 @@ eckit::PathName base() {
 }
 
 eckit::PathName test_configuration(const std::string& type) {
-    std::cout << "Transport type: " << type << std::endl;
+    eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
     std::map<std::string, std::string> configs = {{"mpi", "mpi-test-config.json"},
                                                   {"tcp", "tcp-test-config.json"},
                                                   {"thread", "thread-test-config.json"},
@@ -369,7 +370,7 @@ void MultioHammer::execute(const eckit::option::CmdArgs& args) {
     std::shared_ptr<Transport> transport{
         TransportFactory::instance().build(transportType_, config_)};
 
-    std::cout << *transport << std::endl;
+    eckit::Log::debug<multio::LibMultio>() << *transport << std::endl;
 
     field_size() = 29;
 
@@ -495,7 +496,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
     std::vector<std::unique_ptr<Plan>> plans;
     for (const auto& cfg : config_.getSubConfigurations("plans")) {
-        eckit::Log::info() << cfg << std::endl;
+        eckit::Log::debug<multio::LibMultio>() << cfg << std::endl;
         plans.emplace_back(new Plan(cfg));
     }
 
@@ -522,7 +523,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
                 CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),
                             NULL);
 
-                eckit::Log::info()
+                eckit::Log::debug<multio::LibMultio>()
                     << "Member: " << ensMember_ << ", step: " << step << ", level: " << level
                     << ", param: " << param << ", payload size: " << sz << std::endl;
 

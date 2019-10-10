@@ -15,9 +15,9 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/LibMultio.h"
 #include "multio/server/Aggregator.h"
 #include "multio/server/Mappings.h"
-#include "multio/server/print_buffer.h"
 
 namespace multio {
 namespace server {
@@ -54,7 +54,7 @@ void Aggregation::execute(Message msg) const {
 
     if (msg.tag() == Message::Tag::StepComplete) {
 
-        eckit::Log::info() << "*** Aggregating flush messages: " << *this << std::endl;
+        eckit::Log::debug<LibMultio>() << "*** Aggregating flush messages: " << *this << std::endl;
 
         // Initialise
         if(flushes_.find(msg.mapping()) == end(flushes_)) {

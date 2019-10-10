@@ -36,11 +36,11 @@ eckit::PathName test_configuration(const std::string& type) {
                                                   {"thread", "thread-test-config.json"},
                                                   {"none", "no-transport-test-config.json"}};
 
-    eckit::PathName base = (::getenv("MULTIO_SERVER_CONFIG_PATH"))
-                               ? eckit::PathName{::getenv("MULTIO_SERVER_CONFIG_PATH")}
+    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
+                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
                                : eckit::PathName{""};
 
-    return base + eckit::PathName{configs.at(type)};
+    return base + "/configs/" + eckit::PathName{configs.at(type)};
 }
 
 }  // namespace

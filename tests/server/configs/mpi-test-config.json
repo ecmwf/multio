@@ -23,13 +23,27 @@
                     "categories" : [ "model-level", "pressure-level", "surface-level" ],
                     "next" : {
                         "type" : "Aggregation",
-                        "mapping" : "grid-point",
                         "next" : {
                             "type" : "Encode",
                             "format" : "grib",
                             "next" : {
                                 "type" : "SingleFieldSink"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name" : "ocean",
+            "actions" : {
+                "root" : {
+                    "type" : "Select",
+                    "categories" : [ "ocean-surface" ],
+                    "next" : {
+                        "type" : "Aggregation",
+                        "next" : {
+                            "type" : "SingleFieldSink"
                         }
                     }
                 }

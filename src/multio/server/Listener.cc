@@ -77,6 +77,8 @@ void Listener::listen() {
 
             case Message::Tag::Field:
                 eckit::Log::info() << "*** Field received from: " << msg.source() << std::endl;
+                eckit::Log::info() << "    Size of payload: " << msg.size() << std::endl;
+                eckit::Log::info() << "    Size of   field: " << msg.size() / sizeof(double) << std::endl;
                 msgQueue_.push(std::move(msg));
                 break;
 

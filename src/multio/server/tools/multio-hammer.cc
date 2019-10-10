@@ -101,8 +101,8 @@ std::vector<int32_t> generate_index_map(size_t id, size_t nbclients) {
     auto chunk_size = field_size() / nbclients + ((id < field_size() % nbclients) ? 1 : 0);
 
     auto maps = std::vector<int32_t>(chunk_size);
-    for (auto jj = 0u; jj != chunk_size; ++jj) {
-        maps[jj] = static_cast<size_t>(id) + jj * nbclients;
+    for (size_t jj = 0; jj != chunk_size; ++jj) {
+        maps[jj] = static_cast<int32_t>(id + jj * nbclients);
     }
     return maps;
 }
@@ -142,8 +142,8 @@ std::vector<double> file_content(const eckit::PathName& file_path) {
 }
 
 eckit::PathName base() {
-    if (::getenv("MULTIO_SERVER_CONFIG_PATH")) {
-        return eckit::PathName{::getenv("MULTIO_SERVER_CONFIG_PATH")};
+    if (::getenv("MULTIO_SERVER_PATH")) {
+        return eckit::PathName{::getenv("MULTIO_SERVER_PATH")};
     }
     return eckit::PathName{""};
 }
@@ -155,7 +155,7 @@ eckit::PathName test_configuration(const std::string& type) {
                                                   {"thread", "thread-test-config.json"},
                                                   {"none", "no-transport-test-config.json"}};
 
-    return base() + eckit::PathName{configs.at(type)};
+    return base() + "/configs/" + eckit::PathName{configs.at(type)};
 }
 
 }  // namespace
@@ -284,7 +284,7 @@ void MultioHammer::sendData(const PeerList& serverPeers,
 
     auto idxm = generate_index_map(client_list_id, clientCount_);
     eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(int32_t));
-    LocalIndices index_map{std::move(idxm)};
+    std::unique_ptr<LocalIndices> index_map{new Unstructured{std::move(idxm)}};
 
     // send partial mapping
     for (auto& server : serverPeers) {
@@ -311,7 +311,7 @@ void MultioHammer::sendData(const PeerList& serverPeers,
                 std::vector<double> field;
                 auto& global_field =
                     global_test_field(field_id.str(), field_size(), transportType_, client_list_id);
-                index_map.to_local(global_field, field);
+                index_map->to_local(global_field, field);
 
                 // Choose server
                 auto id = std::hash<std::string>{}(field_id.str()) % serverCount_;

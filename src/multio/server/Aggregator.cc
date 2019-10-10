@@ -8,10 +8,13 @@
  * does it submit to any jurisdiction.
  */
 
+#include <fstream>
+
 #include "Aggregator.h"
 
 #include "multio/server/LocalIndices.h"
 #include "multio/server/Message.h"
+#include "multio/server/print_buffer.h"
 
 #include "eckit/log/Log.h"
 
@@ -25,10 +28,10 @@ Aggregator::Aggregator(size_t gl_size, size_t nb_fields) :
 eckit::Buffer Aggregator::gather(const std::vector<Message>& msgs, const Mapping& maps) {
     std::vector<double> global_field(global_size_);
     for (auto msg : msgs) {
-        auto data_ptr = static_cast<double*>(msg.payload().data());
+        auto data_ptr = static_cast<const double*>(msg.payload().data());
         std::vector<double> local_field(data_ptr, data_ptr + msg.size() / sizeof(double));
 
-        maps.at(msg.source()).to_global(local_field, global_field);
+        maps.at(msg.source())->to_global(local_field, global_field);
     }
 
     // Yet another unnecessary copy; you could work directly on the buffer above
@@ -43,7 +46,7 @@ std::vector<Message> scatter(const Message& msg, const Mapping& maps) {
     std::vector<double> global_field(data_ptr, data_ptr + msg.size() / sizeof(double));
     for (const auto& map : maps) {
         std::vector<double> local_field;
-        map.second.to_local(global_field, local_field);
+        map.second->to_local(global_field, local_field);
         msgs.emplace_back(Message::Header{msg.tag(), Peer{}, Peer{}, msg.mapping(), msg.map_count(),
                                           msg.category(), msg.field_id(), msg.field_size()},
                           eckit::Buffer{reinterpret_cast<char*>(local_field.data()),

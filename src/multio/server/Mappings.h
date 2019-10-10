@@ -3,9 +3,12 @@
 #define multio_server_Mappings_H
 
 #include <map>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
+
+#include "multio/server/LocalIndices.h"
 
 namespace multio {
 namespace server {
@@ -14,7 +17,7 @@ class LocalIndices;
 class Message;
 class Peer;
 
-using Mapping = std::map<Peer, LocalIndices>;
+using Mapping = std::map<Peer, std::unique_ptr<LocalIndices>>;
 
 class Mappings {
 public:  // methods

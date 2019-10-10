@@ -74,3 +74,8 @@ ecbuild_add_executable( TARGET    multio-hammer
                         CONDITION HAVE_MULTIO_SERVER
                         SOURCES   tools/multio-hammer.cc
                         LIBS      multio-server multio)
+
+ecbuild_add_executable( TARGET    multio-replay
+                        CONDITION HAVE_MULTIO_SERVER
+                        SOURCES   tools/multio-replay.cc
+                        LIBS      multio-server multio)

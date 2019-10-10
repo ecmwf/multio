@@ -71,11 +71,19 @@ void SingleFieldSink::write(Message msg) const {
 }
 
 void SingleFieldSink::flush() const {
-    dataSink_->flush();
+    eckit::Log::info() << "*** Executing single-field flush for data sink... " << std::endl;
+    if(dataSink_) {
+        dataSink_->flush();
+    }
+    eckit::Log::info() << "*** Executed single-field flush for data sink... " << std::endl;
 }
 
 void SingleFieldSink::print(std::ostream& os) const {
-    os << "Sink(DataSink=" << *dataSink_ << ")";
+    if (dataSink_) {
+        os << "Sink(DataSink=" << *dataSink_ << ")";
+    } else {
+        os << "Sink(DataSink=NULL)";
+    }
 }
 
 static ActionBuilder<SingleFieldSink> SinkBuilder("SingleFieldSink");

@@ -15,8 +15,8 @@
 
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
-#include "eckit/log/Log.h"
 
+#include "multio/LibMultio.h"
 #include "multio/server/Plan.h"
 
 using eckit::LocalConfiguration;
@@ -25,11 +25,11 @@ namespace multio {
 namespace server {
 
 Dispatcher::Dispatcher(const eckit::Configuration& config) {
-    eckit::Log::info() << config << std::endl;
+    eckit::Log::debug<LibMultio>() << config << std::endl;
 
     const std::vector<LocalConfiguration> plans = config.getSubConfigurations("plans");
     for (const auto& cfg : plans) {
-        eckit::Log::info() << cfg << std::endl;
+        eckit::Log::debug<LibMultio>() << cfg << std::endl;
         plans_.emplace_back(new Plan(cfg));
     }
 }

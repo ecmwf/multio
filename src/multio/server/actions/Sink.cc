@@ -15,6 +15,7 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/LibMultio.h"
 #include "multio/server/PlainDataBlob.h"
 
 namespace multio {
@@ -26,7 +27,7 @@ Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 void Sink::execute(Message msg) const {
     switch (msg.tag()) {
         case Message::Tag::Field:
-        case Message::Tag::GribTemplate:
+        case Message::Tag::Grib:
             write(msg);
             return;
 
@@ -40,7 +41,7 @@ void Sink::execute(Message msg) const {
             // Hijack the mapping string
             metadata["step"] = msg.mapping();
 
-            eckit::Log::info() << "Trigger is called..." << std::endl;
+            eckit::Log::debug<LibMultio>() << "Trigger is called..." << std::endl;
             mio_.trigger(metadata);
             return;
         }
@@ -61,7 +62,7 @@ void Sink::write(Message msg) const {
             blob.reset(eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
             break;
 
-        case Message::Tag::GribTemplate:
+        case Message::Tag::Grib:
             blob.reset(eckit::DataBlobFactory::build("grib", msg.payload().data(), msg.size()));
             break;
 

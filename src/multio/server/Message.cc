@@ -28,8 +28,11 @@ std::string Message::tag2str(Tag t) {
     static std::map<Tag, std::string> m = {{Tag::Empty, "Empty"},
                                            {Tag::Open, "Open"},
                                            {Tag::Close, "Close"},
+                                           {Tag::Grib, "Grib"},
                                            {Tag::Mapping, "Mapping"},
-                                           {Tag::Field, "Field"}};
+                                           {Tag::Field, "Field"},
+                                           {Tag::StepComplete, "StepComplete"},
+                                           {Tag::StepNotification, "StepNotification"}};
 
     ASSERT(t < Tag::ENDTAG);
 

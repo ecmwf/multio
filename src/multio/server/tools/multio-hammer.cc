@@ -17,6 +17,8 @@
 #include "metkit/grib/GribDataBlob.h"
 #include "metkit/grib/GribHandle.h"
 
+#include "multio/LibMultio.h"
+
 #include "multio/server/Listener.h"
 #include "multio/server/LocalIndices.h"
 #include "multio/server/Message.h"
@@ -24,7 +26,6 @@
 #include "multio/server/Peer.h"
 #include "multio/server/Plan.h"
 #include "multio/server/Transport.h"
-#include "multio/server/print_buffer.h"
 
 using namespace multio::server;
 
@@ -101,8 +102,8 @@ std::vector<int32_t> generate_index_map(size_t id, size_t nbclients) {
     auto chunk_size = field_size() / nbclients + ((id < field_size() % nbclients) ? 1 : 0);
 
     auto maps = std::vector<int32_t>(chunk_size);
-    for (auto jj = 0u; jj != chunk_size; ++jj) {
-        maps[jj] = static_cast<size_t>(id) + jj * nbclients;
+    for (size_t jj = 0; jj != chunk_size; ++jj) {
+        maps[jj] = static_cast<int32_t>(id + jj * nbclients);
     }
     return maps;
 }
@@ -142,20 +143,20 @@ std::vector<double> file_content(const eckit::PathName& file_path) {
 }
 
 eckit::PathName base() {
-    if (::getenv("MULTIO_SERVER_CONFIG_PATH")) {
-        return eckit::PathName{::getenv("MULTIO_SERVER_CONFIG_PATH")};
+    if (::getenv("MULTIO_SERVER_PATH")) {
+        return eckit::PathName{::getenv("MULTIO_SERVER_PATH")};
     }
     return eckit::PathName{""};
 }
 
 eckit::PathName test_configuration(const std::string& type) {
-    std::cout << "Transport type: " << type << std::endl;
+    eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
     std::map<std::string, std::string> configs = {{"mpi", "mpi-test-config.json"},
                                                   {"tcp", "tcp-test-config.json"},
                                                   {"thread", "thread-test-config.json"},
                                                   {"none", "no-transport-test-config.json"}};
 
-    return base() + eckit::PathName{configs.at(type)};
+    return base() + "/configs/" + eckit::PathName{configs.at(type)};
 }
 
 }  // namespace
@@ -284,7 +285,7 @@ void MultioHammer::sendData(const PeerList& serverPeers,
 
     auto idxm = generate_index_map(client_list_id, clientCount_);
     eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(int32_t));
-    LocalIndices index_map{std::move(idxm)};
+    std::unique_ptr<LocalIndices> index_map{new Unstructured{std::move(idxm)}};
 
     // send partial mapping
     for (auto& server : serverPeers) {
@@ -311,7 +312,7 @@ void MultioHammer::sendData(const PeerList& serverPeers,
                 std::vector<double> field;
                 auto& global_field =
                     global_test_field(field_id.str(), field_size(), transportType_, client_list_id);
-                index_map.to_local(global_field, field);
+                index_map->to_local(global_field, field);
 
                 // Choose server
                 auto id = std::hash<std::string>{}(field_id.str()) % serverCount_;
@@ -369,7 +370,7 @@ void MultioHammer::execute(const eckit::option::CmdArgs& args) {
     std::shared_ptr<Transport> transport{
         TransportFactory::instance().build(transportType_, config_)};
 
-    std::cout << *transport << std::endl;
+    eckit::Log::debug<multio::LibMultio>() << *transport << std::endl;
 
     field_size() = 29;
 
@@ -495,7 +496,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
     std::vector<std::unique_ptr<Plan>> plans;
     for (const auto& cfg : config_.getSubConfigurations("plans")) {
-        eckit::Log::info() << cfg << std::endl;
+        eckit::Log::debug<multio::LibMultio>() << cfg << std::endl;
         plans.emplace_back(new Plan(cfg));
     }
 
@@ -522,11 +523,11 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
                 CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),
                             NULL);
 
-                eckit::Log::info()
+                eckit::Log::debug<multio::LibMultio>()
                     << "Member: " << ensMember_ << ", step: " << step << ", level: " << level
                     << ", param: " << param << ", payload size: " << sz << std::endl;
 
-                Message msg{Message::Header{Message::Tag::GribTemplate, Peer{"", 0}, Peer{"", 0}},
+                Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}},
                             eckit::Buffer{buf, sz}};
 
                 for (const auto& plan : plans) {

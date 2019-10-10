@@ -17,12 +17,14 @@
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/LibMultio.h"
+
+#include "multio/server/GribTemplate.h"
 #include "multio/server/Mappings.h"
 #include "multio/server/Message.h"
 #include "multio/server/ScopedThread.h"
 
 #include "multio/server/Dispatcher.h"
-#include "multio/server/print_buffer.h"
 #include "multio/server/ThreadTransport.h"
 
 namespace multio {
@@ -31,11 +33,9 @@ namespace server {
 Listener::Listener(const eckit::Configuration& config, Transport& trans) :
     dispatcher_{std::make_shared<Dispatcher>(config)},
     transport_{trans},
-    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {
-}
+    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
 
 void Listener::listen() {
-
     ScopedThread scThread{std::thread{&Dispatcher::dispatch, dispatcher_, std::ref(msgQueue_)}};
 
     do {
@@ -44,32 +44,54 @@ void Listener::listen() {
         switch (msg.tag()) {
             case Message::Tag::Open:
                 connections_.push_back(msg.source());
-                eckit::Log::info() << "*** OPENING connection to " << msg.source() << std::endl;
+                eckit::Log::debug<LibMultio>()
+                    << "*** OPENING connection to " << msg.source() << std::endl;
                 break;
 
             case Message::Tag::Close:
                 connections_.remove(msg.source());
-                eckit::Log::info() << "*** CLOSING connection to " << msg.source() << std::endl;
+                eckit::Log::debug<LibMultio>()
+                    << "*** CLOSING connection to " << msg.source() << std::endl;
                 ++nbClosedConnections_;
                 break;
 
-            case Message::Tag::GribTemplate:
-                eckit::Log::info() << "*** Size of grib template: " << msg.size() << std::endl;
+            case Message::Tag::Grib:
+                eckit::Log::debug<LibMultio>()
+                    << "*** Size of grib template: " << msg.size() << std::endl;
+                GribTemplate::instance().add(msg);
                 break;
 
             case Message::Tag::Mapping:
-                eckit::Log::info() << "*** Number of maps: " << msg.map_count() << std::endl;
+                eckit::Log::debug<LibMultio>()
+                    << "*** Number of maps: " << msg.map_count() << std::endl;
                 nbMaps_ = msg.map_count();
                 Mappings::instance().add(msg);
                 break;
 
+            case Message::Tag::StepNotification:
+                eckit::Log::debug<LibMultio>()
+                    << "*** Step notification received from: " << msg.source() << std::endl;
+                break;
+
             case Message::Tag::StepComplete:
-                eckit::Log::info() << "*** Flush received from: " << msg.source() << std::endl;
+                eckit::Log::debug<LibMultio>()
+                    << "*** Flush received from: " << msg.source() << std::endl;
+                msgQueue_.push(std::move(msg));
+                break;
+
+            case Message::Tag::Field:
+                eckit::Log::debug<LibMultio>()
+                    << "*** Field received from: " << msg.source() << std::endl;
+                eckit::Log::debug<LibMultio>()
+                    << "    Size of payload: " << msg.size() << std::endl;
+                eckit::Log::debug<LibMultio>()
+                    << "    Size of   field: " << msg.size() / sizeof(double) << std::endl;
+                msgQueue_.push(std::move(msg));
                 break;
 
             default:
-                eckit::Log::info() << "*** Field received from: " << msg.source() << std::endl;
-                msgQueue_.push(std::move(msg));
+                std::ostringstream oss;
+                throw eckit::SeriousBug(oss.str());
         }
     } while (!connections_.empty() || nbClosedConnections_ != nbMaps_);
 

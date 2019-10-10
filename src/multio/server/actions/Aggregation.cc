@@ -15,27 +15,26 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/LibMultio.h"
 #include "multio/server/Aggregator.h"
 #include "multio/server/Mappings.h"
-#include "multio/server/print_buffer.h"
 
 namespace multio {
 namespace server {
 namespace actions {
 
-Aggregation::Aggregation(const eckit::Configuration& config) :
-    Action(config),
-    map_name_(config.getString("mapping")) {}
+Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 
 void Aggregation::execute(Message msg) const {
 
     if (msg.tag() == Message::Tag::Field) {
         auto field_id = msg.field_id();
+        auto map_name = msg.mapping();
         messages_[field_id].push_back(msg);
 
         // All parts arrived?
         bool ret = messages_.at(field_id).size() == msg.map_count();
-        ret &= Mappings::instance().get(map_name_).size() == msg.map_count();
+        ret &= Mappings::instance().get(map_name).size() == msg.map_count();
         if (!ret) {
             return;
         }
@@ -44,7 +43,7 @@ void Aggregation::execute(Message msg) const {
 
         Message outMsg{Message::Header{msg.tag(), Peer{}, Peer{}, msg.mapping(), msg.map_count(),
                                        msg.category(), msg.field_id(), msg.field_size()},
-                       agg.gather(messages_.at(field_id), Mappings::instance().get(map_name_))};
+                       agg.gather(messages_.at(field_id), Mappings::instance().get(map_name))};
 
         messages_.erase(field_id);
 
@@ -54,6 +53,9 @@ void Aggregation::execute(Message msg) const {
     }
 
     if (msg.tag() == Message::Tag::StepComplete) {
+
+        eckit::Log::debug<LibMultio>() << "*** Aggregating flush messages: " << *this << std::endl;
+
         // Initialise
         if(flushes_.find(msg.mapping()) == end(flushes_)) {
             flushes_[msg.mapping()] = 0;

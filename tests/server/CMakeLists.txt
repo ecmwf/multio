@@ -1,7 +1,7 @@
 if(HAVE_MULTIO_SERVER)
 
 list( APPEND _test_environment
-    MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/configs/
+    MULTIO_SERVER_PATH=${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 ecbuild_add_test( TARGET test_multio_hammer_thread
@@ -24,17 +24,30 @@ list( APPEND _test_environment
     FDB_DEBUG=1
 )
 
-list( APPEND _server_test_data
+list( APPEND _hammer_test_data
   "single-field.grib"
 )
 
-ecbuild_get_test_multidata( TARGET multio_server_get_test_data NAMES ${_server_test_data} )
+ecbuild_get_test_multidata( TARGET multio_hammer_get_test_data NAMES ${_hammer_test_data} )
 
 ecbuild_add_test( TARGET       test_multio_hammer_none
                   CONDITION    HAVE_FDB5
                   COMMAND      $<TARGET_FILE:multio-hammer>
-                  TEST_DEPENDS multio_server_get_test_data
-                  ARGS         ${_server_test_data} --transport=none
+                  TEST_DEPENDS multio_hammer_get_test_data
+                  ARGS         ${_hammer_test_data} --transport=none
+                  ENVIRONMENT  "${_test_environment}" )
+
+list( APPEND _nemo_test_data
+  "nemo.tar.gz"
+)
+
+ecbuild_get_test_multidata( EXTRACT TARGET multio_replay_get_test_data NAMES ${_nemo_test_data} )
+
+ecbuild_add_test( TARGET       test_multio_replay_nemo
+                  COMMAND      $<TARGET_FILE:multio-replay>
+                  TEST_DEPENDS multio_replay_get_test_data
+                  ARGS         --transport=mpi --nbclients=7 --nbservers=1
+                  MPI          8
                   ENVIRONMENT  "${_test_environment}" )
 
 endif(HAVE_MULTIO_SERVER)

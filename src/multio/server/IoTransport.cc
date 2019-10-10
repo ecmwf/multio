@@ -36,11 +36,11 @@ eckit::PathName test_configuration(const std::string& type) {
                                                   {"thread", "thread-test-config.json"},
                                                   {"none", "no-transport-test-config.json"}};
 
-    eckit::PathName base = (::getenv("MULTIO_SERVER_CONFIG_PATH"))
-                               ? eckit::PathName{::getenv("MULTIO_SERVER_CONFIG_PATH")}
+    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
+                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
                                : eckit::PathName{""};
 
-    return base + eckit::PathName{configs.at(type)};
+    return base + "/configs/" + eckit::PathName{configs.at(type)};
 }
 
 }  // namespace
@@ -159,6 +159,51 @@ void send_multio_step_complete_() {
     IoTransport::instance().transport().send(close);
 }
 
+void open_multio_message_() {
+    ASSERT(!IoTransport::instance().isOpen());
+    IoTransport::instance().metadata() = Metadata{};
+    IoTransport::instance().open();
+}
+
+void close_multio_message_() {
+    ASSERT(IoTransport::instance().isOpen());
+    IoTransport::instance().close();
+}
+
+void set_multio_bool_value_(const char* key, bool* value, int key_len) {
+    std::string skey{key, key + key_len};
+    IoTransport::instance().metadata().set(skey, *value);
+}
+
+void set_multio_int_value_(const char* key, fortint* value, int key_len) {
+    std::string skey{key, key + key_len};
+    IoTransport::instance().metadata().set(skey, *value);
+}
+
+void set_multio_int_array_value_(const char* key, fortint* data, fortint* size, int key_len) {
+    std::string skey{key, key + key_len};
+    static_assert(sizeof(int) == sizeof(fortint));
+    std::vector<int> vvalue{data, data + *size};
+    IoTransport::instance().metadata().set(skey, vvalue);
+}
+
+void set_multio_real_value_(const char* key, double* value, int key_len) {
+    std::string skey{key, key + key_len};
+    IoTransport::instance().metadata().set(skey, *value);
+}
+
+void set_multio_real_array_value_(const char* key, double* data, fortint* size, int key_len) {
+    std::string skey{key, key + key_len};
+    std::vector<double> vvalue{data, data + *size};
+    IoTransport::instance().metadata().set(skey, vvalue);
+}
+
+void set_multio_string_value_(const char* key, const char* value, int key_len, int val_len) {
+    std::string skey{key, key + key_len};
+    std::string svalue{value, value + val_len};
+    IoTransport::instance().metadata().set(skey, svalue);
+}
+
 void send_multio_grib_template_(const void* grib_msg, fortint *words) {
 
     size_t len = (*words) * sizeof(fortint);
@@ -168,9 +213,17 @@ void send_multio_grib_template_(const void* grib_msg, fortint *words) {
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
-    Message msg{Message::Header{Message::Tag::GribTemplate, client, server}, buffer};
+    std::stringstream field_id;
+    eckit::JSON json(field_id);
+    json << IoTransport::instance().metadata();
+
+    Message msg{Message::Header{Message::Tag::Grib, client, server, "",
+                                IoTransport::instance().clientCount(), "", field_id.str()},
+                buffer};
+
     std::cout << "*** Sending message from " << msg.source() << " to " << msg.destination()
               << std::endl;
+
     IoTransport::instance().transport().send(msg);
 }
 
@@ -202,38 +255,6 @@ void send_multio_mapping_(const void* in_ptr, fortint* words, const char* name, 
 
         ptr += len;
     }
-}
-
-void open_multio_message_() {
-    ASSERT(!IoTransport::instance().isOpen());
-    IoTransport::instance().metadata() = Metadata{};
-    IoTransport::instance().open();
-}
-
-void close_multio_message_() {
-    ASSERT(IoTransport::instance().isOpen());
-    IoTransport::instance().close();
-}
-
-void set_multio_bool_value_(const char* key, bool* value, int key_len) {
-    std::string skey{key, key + key_len};
-    IoTransport::instance().metadata().set(skey, *value);
-}
-
-void set_multio_int_value_(const char* key, fortint* value, int key_len) {
-    std::string skey{key, key + key_len};
-    IoTransport::instance().metadata().set(skey, *value);
-}
-
-void set_multio_real_value_(const char* key, double* value, int key_len) {
-    std::string skey{key, key + key_len};
-    IoTransport::instance().metadata().set(skey, *value);
-}
-
-void set_multio_string_value_(const char* key, const char* value, int key_len, int val_len) {
-    std::string skey{key, key + key_len};
-    std::string svalue{value, value + val_len};
-    IoTransport::instance().metadata().set(skey, svalue);
 }
 
 void send_multio_field_(const double* data, fortint* size, const char* name, const char* cat,

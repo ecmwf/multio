@@ -28,6 +28,8 @@ ecbuild_add_library(
         Aggregator.h
         Dispatcher.cc
         Dispatcher.h
+        GribTemplate.h
+        GribTemplate.cc
         IoTransport.cc
         IoTransport.h
         Listener.cc
@@ -71,4 +73,9 @@ ecbuild_add_library(
 ecbuild_add_executable( TARGET    multio-hammer
                         CONDITION HAVE_MULTIO_SERVER
                         SOURCES   tools/multio-hammer.cc
+                        LIBS      multio-server multio)
+
+ecbuild_add_executable( TARGET    multio-replay
+                        CONDITION HAVE_MULTIO_SERVER
+                        SOURCES   tools/multio-replay.cc
                         LIBS      multio-server multio)

@@ -16,6 +16,7 @@
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/DataSink.h"
+#include "multio/LibMultio.h"
 #include "multio/server/PlainDataBlob.h"
 
 namespace multio {
@@ -27,7 +28,7 @@ SingleFieldSink::SingleFieldSink(const eckit::Configuration &config) : Action(co
 void SingleFieldSink::execute(Message msg) const {
     switch (msg.tag()) {
         case Message::Tag::Field:
-        case Message::Tag::GribTemplate:
+        case Message::Tag::Grib:
             write(msg);
             return;
 
@@ -59,7 +60,7 @@ void SingleFieldSink::write(Message msg) const {
             blob.reset(eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
             break;
 
-        case Message::Tag::GribTemplate:
+        case Message::Tag::Grib:
             blob.reset(eckit::DataBlobFactory::build("grib", msg.payload().data(), msg.size()));
             break;
 
@@ -71,11 +72,19 @@ void SingleFieldSink::write(Message msg) const {
 }
 
 void SingleFieldSink::flush() const {
-    dataSink_->flush();
+    eckit::Log::debug<LibMultio>()
+        << "*** Executing single-field flush for data sink... " << std::endl;
+    if (dataSink_) {
+        dataSink_->flush();
+    }
 }
 
 void SingleFieldSink::print(std::ostream& os) const {
-    os << "Sink(DataSink=" << *dataSink_ << ")";
+    if (dataSink_) {
+        os << "Sink(DataSink=" << *dataSink_ << ")";
+    } else {
+        os << "Sink(DataSink=NULL)";
+    }
 }
 
 static ActionBuilder<SingleFieldSink> SinkBuilder("SingleFieldSink");

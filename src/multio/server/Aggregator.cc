@@ -12,7 +12,7 @@
 
 #include "Aggregator.h"
 
-#include "multio/server/LocalIndices.h"
+#include "multio/server/Domain.h"
 #include "multio/server/Message.h"
 
 #include "eckit/log/Log.h"

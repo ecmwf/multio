@@ -8,16 +8,16 @@
 #include <string>
 #include <vector>
 
-#include "multio/server/LocalIndices.h"
+#include "multio/server/Domain.h"
 
 namespace multio {
 namespace server {
 
-class LocalIndices;
+class Domain;
 class Message;
 class Peer;
 
-using Mapping = std::map<Peer, std::unique_ptr<LocalIndices>>;
+using Mapping = std::map<Peer, std::unique_ptr<Domain>>;
 
 class Mappings {
 public:  // methods

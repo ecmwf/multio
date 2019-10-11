@@ -19,8 +19,8 @@
 
 #include "multio/LibMultio.h"
 
+#include "multio/server/Domain.h"
 #include "multio/server/Listener.h"
-#include "multio/server/LocalIndices.h"
 #include "multio/server/Message.h"
 #include "multio/server/MultioServerTool.h"
 #include "multio/server/Peer.h"
@@ -285,7 +285,7 @@ void MultioHammer::sendData(const PeerList& serverPeers,
 
     auto idxm = generate_index_map(client_list_id, clientCount_);
     eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(int32_t));
-    std::unique_ptr<LocalIndices> index_map{new Unstructured{std::move(idxm)}};
+    std::unique_ptr<Domain> index_map{new Unstructured{std::move(idxm)}};
 
     // send partial mapping
     for (auto& server : serverPeers) {

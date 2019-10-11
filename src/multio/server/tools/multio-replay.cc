@@ -240,7 +240,7 @@ eckit::Buffer MultioReplay::readGrid(const std::string& grid_type, size_t client
     for (int32_t next; infile >> next;) {
         domain_dims.push_back(next);
     }
-    field_size_ = domain_dims[0] * domain_dims[1];
+    field_size_ = static_cast<size_t>(domain_dims[0] * domain_dims[1]);
 
     return eckit::Buffer{reinterpret_cast<const char*>(domain_dims.data()),
                          domain_dims.size() * sizeof(int32_t)};

@@ -1,5 +1,5 @@
 
-#include "LocalIndices.h"
+#include "Domain.h"
 
 #include <algorithm>
 
@@ -10,11 +10,11 @@
 namespace multio {
 namespace server {
 
-LocalIndices::LocalIndices(std::vector<int32_t>&& idx) : indices_(std::move(idx)) {}
+Domain::Domain(std::vector<int32_t>&& idx) : indices_(std::move(idx)) {}
 
 //------------------------------------------------------------------------------------------------------------
 
-Unstructured::Unstructured(std::vector<int32_t>&& idx) : LocalIndices{std::move(idx)} {}
+Unstructured::Unstructured(std::vector<int32_t>&& idx) : Domain{std::move(idx)} {}
 
 void Unstructured::to_global(const std::vector<double>& local, std::vector<double>& global) const {
     eckit::Log::debug<LibMultio>() << " *** Aggregator fields size:  " << local.size() << std::endl;
@@ -36,7 +36,7 @@ void Unstructured::to_local(const std::vector<double>& global, std::vector<doubl
 
 //------------------------------------------------------------------------------------------------------------
 
-Structured::Structured(std::vector<int32_t>&& idx) : LocalIndices{std::move(idx)} {}
+Structured::Structured(std::vector<int32_t>&& idx) : Domain{std::move(idx)} {}
 
 void Structured::to_global(const std::vector<double>& local, std::vector<double>& global) const {
     eckit::Log::debug<LibMultio>() << " *** Aggregator fields size:  " << local.size() << std::endl;

@@ -7,7 +7,6 @@
 #include "eckit/io/Buffer.h"
 
 #include "multio/LibMultio.h"
-#include "multio/server/LocalIndices.h"
 #include "multio/server/Message.h"
 #include "multio/server/print_buffer.h"
 

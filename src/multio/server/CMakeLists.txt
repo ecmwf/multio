@@ -28,14 +28,14 @@ ecbuild_add_library(
         Aggregator.h
         Dispatcher.cc
         Dispatcher.h
+        Domain.cc
+        Domain.h
         GribTemplate.h
         GribTemplate.cc
         IoTransport.cc
         IoTransport.h
         Listener.cc
         Listener.h
-        LocalIndices.cc
-        LocalIndices.h
         Mappings.cc
         Mappings.h
         Message.cc

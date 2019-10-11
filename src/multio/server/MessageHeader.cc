@@ -64,10 +64,10 @@ size_t Message::Header::global_field_size() const {
 void Message::Header::encode(eckit::Stream& strm) const {
     strm << static_cast<unsigned>(tag_);
 
-    strm << source_.domain();
+    strm << source_.group();
     strm << source_.id();
 
-    strm << destination_.domain();
+    strm << destination_.group();
     strm << destination_.id();
 
     strm << mapping_;

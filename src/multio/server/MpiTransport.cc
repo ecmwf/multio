@@ -49,7 +49,7 @@ MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     buffer_{0} {}
 
 Message MpiTransport::receive() {
-    const auto& comm = eckit::mpi::comm(local_.domain().c_str());
+    const auto& comm = eckit::mpi::comm(local_.group().c_str());
 
     auto status = comm.probe(comm.anySource(), comm.anyTag());
 
@@ -66,8 +66,6 @@ void MpiTransport::send(const Message& msg) {
 
     auto msg_tag = static_cast<int>(msg.tag());
 
-    auto dest = msg.destination().id();
-
     // Add 4K for header/footer etc. Should be plenty
     buffer_.resize(eckit::round(msg.size(), 8) + 4096);
 
@@ -75,8 +73,9 @@ void MpiTransport::send(const Message& msg) {
 
     msg.encode(stream);
 
-    eckit::mpi::comm(local_.domain().c_str())
-        .send<void>(buffer_, stream.bytesWritten(), dest, msg_tag);
+    auto sz = static_cast<size_t>(stream.bytesWritten());
+    auto dest = static_cast<int>(msg.destination().id());
+    eckit::mpi::comm(local_.group().c_str()).send<void>(buffer_, sz, dest, msg_tag);
 }
 
 Peer MpiTransport::localPeer() const {

@@ -26,12 +26,12 @@ namespace server {
 
 class Peer {
 public:
-    Peer(const std::string& domain = "null", size_t id = 0) : domain_{domain}, id_{id} {}
+    Peer(const std::string& group = "null", size_t id = 0) : group_{group}, id_{id} {}
     virtual ~Peer() = default;
 
     operator std::string();
 
-    bool operator==(const Peer& rhs) const { return id_ == rhs.id_ && domain_ == rhs.domain_; }
+    bool operator==(const Peer& rhs) const { return id_ == rhs.id_ && group_ == rhs.group_; }
 
     bool operator!=(const Peer& rhs) const { return not operator==(rhs); }
 
@@ -39,14 +39,14 @@ public:
         if(id_ != rhs.id_) {
             return id_ < rhs.id_;
         }
-        return domain_ < rhs.domain_;
+        return group_ < rhs.group_;
     }
 
-    const std::string& domain() const { return domain_; }
+    const std::string& group() const { return group_; }
     size_t id() const { return id_; }
 
 protected:
-    std::string domain_ ;
+    std::string group_;
     size_t id_;
 
 private:  // methods
@@ -83,7 +83,7 @@ public:
     TcpPeer(const std::string& host, size_t port) : Peer{host, port} {}
     TcpPeer(const std::string& host, int port) : Peer{host, static_cast<size_t>(port)} {}
 
-    const std::string& host() const { return domain_; }
+    const std::string& host() const { return group_; }
     size_t port() const { return id_; }
 };
 

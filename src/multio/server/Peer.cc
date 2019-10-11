@@ -16,12 +16,12 @@
 namespace multio {
 namespace server {
 
-multio::server::Peer::operator std::string() {
-    return domain_ + ":" + std::to_string(id_);
+Peer::operator std::string() {
+    return group_ + ":" + std::to_string(id_);
 }
 
 void Peer::print(std::ostream& out) const {
-    out << "Peer(domain=" << domain_ << ",id=" << id_ << ")";
+    out << "Peer(group=" << group_ << ",id=" << id_ << ")";
 }
 
 }  // namespace server

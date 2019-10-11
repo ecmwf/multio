@@ -24,7 +24,7 @@ void Mappings::add(Message msg) {
     // Retrieve metadata
     auto& mapping = mappings_[msg.mapping()];
 
-    if (msg.destination().domain() == "thread" && mapping.find(msg.source()) != end(mapping)) {
+    if (msg.destination().group() == "thread" && mapping.find(msg.source()) != end(mapping)) {
         // Map has been added already -- needed only for the thread transport
         return;
     }

@@ -1,3 +1,4 @@
+#!/bin/bash
 
 binary=${1:-multio-hammer}
 

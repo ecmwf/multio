@@ -108,9 +108,9 @@ std::vector<int32_t> generate_index_map(size_t id, size_t nbclients) {
     return maps;
 }
 
-std::vector<double>& global_test_field(const std::string& field_id, const size_t sz = -1,
+std::vector<double>& global_test_field(const std::string& field_id, const size_t sz = 0,
                                        const std::string& transport = "",
-                                       const size_t list_id = -1) {
+                                       const size_t list_id = 0) {
     using eckit::mpi::comm;
     std::lock_guard<std::mutex> lock{mutex()};
 
@@ -211,7 +211,7 @@ private:
     size_t stepCount_ = 3;
     size_t levelCount_ = 3;
     size_t paramCount_ = 3;
-    size_t ensMember_ = 1;
+    long ensMember_ = 1;
 
     eckit::LocalConfiguration config_;
 };
@@ -354,7 +354,8 @@ void MultioHammer::spawnClients(const PeerList& clientPeers,
                           return *peer == transport->localPeer();
                       });
     if (it != end(clientPeers)) {
-        sendData(serverPeers, transport, std::distance(begin(clientPeers), it));
+        auto client_id = static_cast<size_t>(std::distance(begin(clientPeers), it));
+        sendData(serverPeers, transport, client_id);
     }
 }
 
@@ -502,26 +503,26 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
     std::string expver = "xxxx";
     auto size = expver.size();
-    CODES_CHECK(codes_set_string(handle, "expver", expver.c_str(), &size), NULL);
+    CODES_CHECK(codes_set_string(handle, "expver", expver.c_str(), &size), nullptr);
     std::string cls = "rd";
     size = cls.size();
-    CODES_CHECK(codes_set_string(handle, "class", cls.c_str(), &size), NULL);
+    CODES_CHECK(codes_set_string(handle, "class", cls.c_str(), &size), nullptr);
 
     const char* buf = nullptr;
     size_t sz = 0;
 
-    CODES_CHECK(codes_set_long(handle, "number", ensMember_), NULL);
+    CODES_CHECK(codes_set_long(handle, "number", ensMember_), nullptr);
     for (auto step : sequence(stepCount_, 1)) {
-        CODES_CHECK(codes_set_long(handle, "step", step), NULL);
+        CODES_CHECK(codes_set_long(handle, "step", step), nullptr);
 
         for (auto level : sequence(levelCount_, 1)) {
-            CODES_CHECK(codes_set_long(handle, "level", level), NULL);
+            CODES_CHECK(codes_set_long(handle, "level", level), nullptr);
 
             for (auto param : valid_parameters(paramCount_, config_)) {
-                CODES_CHECK(codes_set_long(handle, "param", param), NULL);
+                CODES_CHECK(codes_set_long(handle, "param", param), nullptr);
 
                 CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),
-                            NULL);
+                            nullptr);
 
                 eckit::Log::debug<multio::LibMultio>()
                     << "Member: " << ensMember_ << ", step: " << step << ", level: " << level

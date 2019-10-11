@@ -182,7 +182,7 @@ void set_multio_int_value_(const char* key, fortint* value, int key_len) {
 
 void set_multio_int_array_value_(const char* key, fortint* data, fortint* size, int key_len) {
     std::string skey{key, key + key_len};
-    static_assert(sizeof(int) == sizeof(fortint));
+    static_assert(sizeof(int) == sizeof(fortint), "Type 'int' is not 32-bit long");
     std::vector<int> vvalue{data, data + *size};
     IoTransport::instance().metadata().set(skey, vvalue);
 }

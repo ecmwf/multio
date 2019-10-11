@@ -16,7 +16,6 @@
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
-#include "multio/server/Aggregator.h"
 #include "multio/server/Mappings.h"
 
 namespace multio {
@@ -39,16 +38,17 @@ void Aggregation::execute(Message msg) const {
             return;
         }
 
-        Aggregator agg{msg.field_size(), messages_.at(field_id).size()};
+        eckit::Buffer global_field(msg.field_size() * sizeof(double));
+        for (auto m : messages_.at(field_id)) {
+            Mappings::instance().get(map_name).at(m.source())->to_global(m.payload(), global_field);
+        }
 
-        Message outMsg{Message::Header{msg.tag(), Peer{}, Peer{}, msg.mapping(), msg.map_count(),
-                                       msg.category(), msg.field_id(), msg.field_size()},
-                       agg.gather(messages_.at(field_id), Mappings::instance().get(map_name))};
+        msg.payload() = std::move(global_field);
 
         messages_.erase(field_id);
 
         if (next_) {  // May want to assert next_
-            next_->execute(outMsg);
+            next_->execute(msg);
         }
     }
 

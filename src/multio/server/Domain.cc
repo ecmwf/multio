@@ -17,10 +17,6 @@ Domain::Domain(std::vector<int32_t>&& idx) : indices_(std::move(idx)) {}
 Unstructured::Unstructured(std::vector<int32_t>&& idx) : Domain{std::move(idx)} {}
 
 void Unstructured::to_global(const std::vector<double>& local, std::vector<double>& global) const {
-    eckit::Log::debug<LibMultio>() << " *** Aggregator fields size:  " << local.size() << std::endl;
-    eckit::Log::debug<LibMultio>()
-        << " *** Aggregator indices size: " << indices_.size() << std::endl;
-
     ASSERT(local.size() == indices_.size());
 
     auto it = begin(local);
@@ -29,9 +25,24 @@ void Unstructured::to_global(const std::vector<double>& local, std::vector<doubl
     }
 }
 
+void Unstructured::to_global(const eckit::Buffer& local, eckit::Buffer& global) const {
+    ASSERT(local.size() == indices_.size() * sizeof(double));
+
+    auto lit = static_cast<const double*>(local.data());
+    auto git = static_cast<double*>(global.data());
+    for (auto id : indices_) {
+        *(git + id) = *lit++;
+    }
+    eckit::Log::debug<LibMultio>() << " *** Aggregation completed..." << std::endl;
+}
+
 void Unstructured::to_local(const std::vector<double>& global, std::vector<double>& local) const {
     local.resize(0);
     std::for_each(begin(indices_), end(indices_), [&](int32_t id) { local.push_back(global[id]); });
+}
+
+void Unstructured::to_local(const eckit::Buffer&, eckit::Buffer&) const {
+    NOTIMP;
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -82,7 +93,41 @@ void Structured::to_global(const std::vector<double>& local, std::vector<double>
         << "Number of values having been put into global field: " << counter << std::endl;
 }
 
-void Structured::to_local(const std::vector<double>& global, std::vector<double>& local) const {
+void Structured::to_global(const eckit::Buffer& local, eckit::Buffer& global) const {
+    const auto& ni_global = indices_[0];
+    const auto& nj_global = indices_[1];
+    const auto& ibegin = indices_[2];
+    const auto& ni = indices_[3];
+    const auto& jbegin = indices_[4];
+    const auto& nj = indices_[5];
+
+    // const auto& data_dim = indices_[6]; -- Unused here
+    const auto& data_ibegin = indices_[7];
+    const auto& data_ni = indices_[8];
+    const auto& data_jbegin = indices_[9];
+    const auto& data_nj = indices_[10];
+
+    ASSERT(sizeof(double) * ni_global * nj_global == global.size());
+    ASSERT(sizeof(double) * data_ni * data_nj == local.size());
+
+    auto lit = static_cast<const double*>(local.data());
+    auto git = static_cast<double*>(global.data());
+    for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
+        for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
+            if ((i < 0) || (j < 0) || (ni <= i) || (nj <= j)) {
+                continue;  // Ghost data -- ignore
+            }
+            auto gidx = (jbegin + j) * ni_global + (ibegin + i);
+            *(git + gidx) = *lit;
+        }
+    }
+}
+
+void Structured::to_local(const std::vector<double>&, std::vector<double>&) const {
+    NOTIMP;
+}
+
+void Structured::to_local(const eckit::Buffer&, eckit::Buffer&) const {
     NOTIMP;
 }
 

@@ -10,102 +10,61 @@
 namespace multio {
 namespace server {
 
-Domain::Domain(std::vector<int32_t>&& idx) : indices_(std::move(idx)) {}
+Domain::Domain(std::vector<int32_t>&& def) : definition_(std::move(def)) {}
 
 //------------------------------------------------------------------------------------------------------------
 
-Unstructured::Unstructured(std::vector<int32_t>&& idx) : Domain{std::move(idx)} {}
+Unstructured::Unstructured(std::vector<int32_t>&& def) : Domain{std::move(def)} {}
 
-void Unstructured::to_global(const std::vector<double>& local, std::vector<double>& global) const {
-    ASSERT(local.size() == indices_.size());
-
-    auto it = begin(local);
-    for (auto id : indices_) {
-        global[id] = *it++;
-    }
+void Unstructured::to_local(const std::vector<double>& global, std::vector<double>& local) const {
+    local.resize(0);
+    std::for_each(begin(definition_), end(definition_),
+                  [&](int32_t id) { local.push_back(global[id]); });
 }
 
 void Unstructured::to_global(const eckit::Buffer& local, eckit::Buffer& global) const {
-    ASSERT(local.size() == indices_.size() * sizeof(double));
+    ASSERT(local.size() == definition_.size() * sizeof(double));
 
     auto lit = static_cast<const double*>(local.data());
     auto git = static_cast<double*>(global.data());
-    for (auto id : indices_) {
+    for (auto id : definition_) {
         *(git + id) = *lit++;
     }
     eckit::Log::debug<LibMultio>() << " *** Aggregation completed..." << std::endl;
 }
 
-void Unstructured::to_local(const std::vector<double>& global, std::vector<double>& local) const {
-    local.resize(0);
-    std::for_each(begin(indices_), end(indices_), [&](int32_t id) { local.push_back(global[id]); });
-}
+//------------------------------------------------------------------------------------------------------------
 
-void Unstructured::to_local(const eckit::Buffer&, eckit::Buffer&) const {
+namespace {
+constexpr bool inRange(int32_t val, int32_t low, int32_t upp) {
+    return (low <= val) && (val < upp);
+}
+}  // namespace
+
+
+Structured::Structured(std::vector<int32_t>&& def) : Domain{std::move(def)} {}
+
+void Structured::to_local(const std::vector<double>& global, std::vector<double>& local) const {
     NOTIMP;
 }
 
-//------------------------------------------------------------------------------------------------------------
-
-Structured::Structured(std::vector<int32_t>&& idx) : Domain{std::move(idx)} {}
-
-void Structured::to_global(const std::vector<double>& local, std::vector<double>& global) const {
-    eckit::Log::debug<LibMultio>() << " *** Aggregator fields size:  " << local.size() << std::endl;
-    eckit::Log::debug<LibMultio>()
-        << " *** Aggregator indices size: " << indices_.size() << std::endl;
-
-    const auto& ni_global = indices_[0];
-    const auto& nj_global = indices_[1];
-    const auto& ibegin = indices_[2];
-    const auto& ni = indices_[3];
-    const auto& jbegin = indices_[4];
-    const auto& nj = indices_[5];
-
-    // const auto& data_dim = indices_[6]; -- Unused here
-    const auto& data_ibegin = indices_[7];
-    const auto& data_ni = indices_[8];
-    const auto& data_jbegin = indices_[9];
-    const auto& data_nj = indices_[10];
-
-    ASSERT(ni_global * nj_global == global.size());
-    ASSERT(data_ni * data_nj == local.size());
-
-    auto it = begin(local);
-    auto counter = 0u;
-    eckit::Log::debug<LibMultio>() << "              ni = " << ni << std::endl;
-    eckit::Log::debug<LibMultio>() << "              nj = " << nj << std::endl;
-    eckit::Log::debug<LibMultio>() << "     data_ibegin = " << data_ibegin << std::endl;
-    eckit::Log::debug<LibMultio>() << "         data_ni = " << data_ni << std::endl;
-    eckit::Log::debug<LibMultio>() << "     data_jbegin = " << data_jbegin << std::endl;
-    eckit::Log::debug<LibMultio>() << "         data_nj = " << data_nj << std::endl;
-    for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
-        for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++it) {
-            if ((i < 0) || (j < 0) || (ni <= i) || (nj <= j)) {
-                continue;  // Ghost data -- ignore
-            }
-            ++counter;
-            auto gidx = (jbegin + j) * ni_global + (ibegin + i);
-            global[gidx] = *it;
-        }
-    }
-    ASSERT(counter == ni * nj);
-    eckit::Log::debug<LibMultio>()
-        << "Number of values having been put into global field: " << counter << std::endl;
-}
-
 void Structured::to_global(const eckit::Buffer& local, eckit::Buffer& global) const {
-    const auto& ni_global = indices_[0];
-    const auto& nj_global = indices_[1];
-    const auto& ibegin = indices_[2];
-    const auto& ni = indices_[3];
-    const auto& jbegin = indices_[4];
-    const auto& nj = indices_[5];
+    // Global domain's dimenstions
+    auto ni_global = definition_[0];
+    auto nj_global = definition_[1];
 
-    // const auto& data_dim = indices_[6]; -- Unused here
-    const auto& data_ibegin = indices_[7];
-    const auto& data_ni = indices_[8];
-    const auto& data_jbegin = indices_[9];
-    const auto& data_nj = indices_[10];
+    // Local domain's dimensions
+    auto ibegin = definition_[2];
+    auto ni = definition_[3];
+    auto jbegin = definition_[4];
+    auto nj = definition_[5];
+
+    // Data dimensions on local domain -- includes halo points
+    auto data_ibegin = definition_[7];
+    auto data_ni = definition_[8];
+    auto data_jbegin = definition_[9];
+    auto data_nj = definition_[10];
+    // auto data_dim = definition_[6]; -- Unused here
 
     ASSERT(sizeof(double) * ni_global * nj_global == global.size());
     ASSERT(sizeof(double) * data_ni * data_nj == local.size());
@@ -114,20 +73,23 @@ void Structured::to_global(const eckit::Buffer& local, eckit::Buffer& global) co
     auto git = static_cast<double*>(global.data());
     for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
         for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
-            if ((i < 0) || (j < 0) || (ni <= i) || (nj <= j)) {
-                continue;  // Ghost data -- ignore
+            if (inRange(i, 0, ni) && inRange(j, 0, nj)) {
+                auto gidx = (jbegin + j) * ni_global + (ibegin + i);
+                *(git + gidx) = *lit;
             }
-            auto gidx = (jbegin + j) * ni_global + (ibegin + i);
-            *(git + gidx) = *lit;
         }
     }
 }
 
-void Structured::to_local(const std::vector<double>&, std::vector<double>&) const {
+//------------------------------------------------------------------------------------------------------------
+
+Spectral::Spectral(std::vector<int32_t>&& def) : Domain{std::move(def)} {}
+
+void Spectral::to_local(const std::vector<double>& global, std::vector<double>& local) const {
     NOTIMP;
 }
 
-void Structured::to_local(const eckit::Buffer&, eckit::Buffer&) const {
+void Spectral::to_global(const eckit::Buffer&, eckit::Buffer&) const {
     NOTIMP;
 }
 

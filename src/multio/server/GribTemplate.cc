@@ -26,7 +26,7 @@ void GribTemplate::list(std::ostream& out) const {
     auto sep = "";
     for (auto const& tmpl : templates_) {
         // Print string here
-        out << sep << tmpl.mapping();
+        out << sep << tmpl.name();
         sep = ", ";
     }
 }

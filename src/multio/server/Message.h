@@ -53,21 +53,25 @@ public:  // types
 
     class Header {
     public:
-        Header(Tag tag, Peer src, Peer dst, const std::string& map = "", size_t cnt = 0,
-               const std::string& cat = "", const std::string& fid = "", size_t fsz = 0);
+        Header(Tag tag, Peer src, Peer dst, const std::string& nm = "", const std::string& cat = "",
+               size_t cnt = 0, size_t fsz = 0, const std::string& dom = "", const std::string& fid = "");
 
         Tag tag() const;
 
         Peer source() const;
         Peer destination() const;
 
-        const std::string& mapping() const; // For fields and mappings
-        size_t map_count() const;           // For mappings only
+        const std::string& name() const;
 
-        // For fields only
         const std::string& category() const;
-        const std::string& field_id() const;
-        size_t global_field_size() const ;
+
+        size_t domainCount() const;
+
+        size_t globalSize() const ;
+
+        const std::string& domain() const;
+
+        const std::string& fieldId() const;
 
         void encode(eckit::Stream& strm) const;
         void decode(eckit::Stream& strm);
@@ -80,14 +84,18 @@ public:  // types
         Peer source_;
         Peer destination_;
 
-        std::string mapping_;  // For fields and mappings
-        size_t map_count_;     // For mappings only
+        std::string name_;
+
+        std::string category_;
+
+        size_t domainCount_;
+
+        size_t globalSize_;
 
         // For fields only
-        std::string category_;
-        std::string field_id_;
-        size_t global_field_size_;
+        std::string domain_;
 
+        std::string fieldId_; // Make that a hash?
         Metadata metadata_;
         void setMetadata();
     };
@@ -122,21 +130,26 @@ public:  // methods
     int version() const;
     Tag tag() const;
 
-    Peer destination() const;
     Peer source() const;
+    Peer destination() const;
 
-    size_t size() const;
-
-    const std::string& mapping() const;
-    size_t map_count() const;
+    const std::string& name() const;
 
     const std::string& category() const;
-    const std::string& field_id() const;
+
+    size_t domainCount() const;
+
+    size_t globalSize() const ;
+
+    const std::string& domain() const;
+
+    const std::string& fieldId() const;
     const Metadata& metadata() const;
-    size_t field_size() const;
 
     eckit::Buffer& payload();
     const eckit::Buffer& payload() const;
+
+    size_t size() const;
 
     void encode(eckit::Stream& strm) const;
     void decode(eckit::Stream& strm);

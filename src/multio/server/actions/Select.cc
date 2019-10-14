@@ -30,7 +30,7 @@ void Select::execute(Message msg) const {
     if (passOn && next_) { // May want to assert next_
         eckit::Log::debug<LibMultio>()
             << " *** Category " << msg.category()
-            << " is matched...  field size: " << msg.field_size() << std::endl;
+            << " is matched...  field size: " << msg.globalSize() << std::endl;
         next_->execute(msg);
     }
 }

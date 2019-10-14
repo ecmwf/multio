@@ -217,8 +217,9 @@ void send_multio_grib_template_(const void* grib_msg, fortint *words) {
     eckit::JSON json(field_id);
     json << IoTransport::instance().metadata();
 
-    Message msg{Message::Header{Message::Tag::Grib, client, server, "",
-                                IoTransport::instance().clientCount(), "", field_id.str()},
+    Message msg{Message::Header{Message::Tag::Grib, client, server, "", "",
+                                IoTransport::instance().clientCount(),
+                                IoTransport::instance().globalSize(), "", field_id.str()},
                 buffer};
 
     std::cout << "*** Sending message from " << msg.source() << " to " << msg.destination()
@@ -243,9 +244,9 @@ void send_multio_mapping_(const void* in_ptr, fortint* words, const char* name, 
 
         eckit::Buffer buffer{ptr, len};
 
-        Message msg{
-            Message::Header{Message::Tag::Mapping, client, server, mapping_name, nb_clients},
-            buffer};
+        Message msg{Message::Header{Message::Tag::Mapping, client, server, mapping_name,
+                                    "unstructured", nb_clients},
+                    buffer};
 
         std::cout << "Rank " << ii + 1 << ": local-to-global mapping = ";
         print_buffer((int*)(ptr), len / sizeof(fortint));
@@ -268,7 +269,7 @@ void send_multio_field_(const double* data, fortint* size, const char* name, con
     Peer client = IoTransport::instance().transport().localPeer();
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
-    std::string mapping_name{name, name + name_len};
+    std::string domain_name{name, name + name_len};
     std::string category{cat, cat + cat_len};
 
     eckit::Buffer buffer{(const char*)(data), (*size) * sizeof(double)};
@@ -277,9 +278,10 @@ void send_multio_field_(const double* data, fortint* size, const char* name, con
     eckit::JSON json(field_id);
     json << IoTransport::instance().metadata();
 
-    Message msg{Message::Header{Message::Tag::Field, client, server, mapping_name,
-                                IoTransport::instance().clientCount(), category, field_id.str(),
-                                IoTransport::instance().globalSize()},
+    auto gribName = IoTransport::instance().metadata().getString("igrib");
+    Message msg{Message::Header{Message::Tag::Field, client, server, gribName, category,
+                                IoTransport::instance().clientCount(),
+                                IoTransport::instance().globalSize(), domain_name, field_id.str()},
                 buffer};
 
     IoTransport::instance().transport().send(msg);

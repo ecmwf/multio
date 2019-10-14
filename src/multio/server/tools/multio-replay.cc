@@ -173,7 +173,8 @@ void MultioReplay::sendDomain(Transport& transport) {
         for (auto id = clientCount_; id != commSize(); ++id) {
             Peer server = MpiPeer{config_.getString("domain"), id};
 
-            Message msg{Message::Header{Message::Tag::Mapping, client, server, repr, clientCount_},
+            Message msg{Message::Header{Message::Tag::Mapping, client, server, repr, "structured",
+                                        clientCount_},
                         buffer};
 
             transport.send(msg);
@@ -203,9 +204,10 @@ void MultioReplay::sendFields(Transport& transport) {
         auto global_id = server_id + clientCount_;
         Peer server = MpiPeer{config_.getString("domain"), global_id};
 
-        Message msg{Message::Header{Message::Tag::Field, client, server, param.second,
-                                    clientCount_, "ocean-surface", field_id.str(), field_size_},
-                    buffer};
+        Message msg{
+            Message::Header{Message::Tag::Field, client, server, param.first, "ocean-surface",
+                            clientCount_, field_size_, param.second, field_id.str()},
+            buffer};
 
         transport.send(msg);
     }

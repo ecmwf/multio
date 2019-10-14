@@ -39,7 +39,7 @@ void Sink::execute(Message msg) const {
             eckit::StringDict metadata;
 
             // Hijack the mapping string
-            metadata["step"] = msg.mapping();
+            metadata[msg.category()] = msg.name();
 
             eckit::Log::debug<LibMultio>() << "Trigger is called..." << std::endl;
             mio_.trigger(metadata);

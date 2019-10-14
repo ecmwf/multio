@@ -22,13 +22,13 @@ void Mappings::add(Message msg) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     // Retrieve metadata
-    auto& mapping = mappings_[msg.mapping()];
+    auto& mapping = mappings_[msg.name()];
 
     if (msg.destination().group() == "thread" && mapping.find(msg.source()) != end(mapping)) {
         // Map has been added already -- needed only for the thread transport
         return;
     }
-    eckit::Log::debug<LibMultio>() << "*** Add mapping for " << msg.mapping() << std::endl;
+    eckit::Log::debug<LibMultio>() << "*** Add mapping for " << msg.name() << std::endl;
 
     ASSERT(mapping.find(msg.source()) == end(mapping));
 
@@ -40,13 +40,12 @@ void Mappings::add(Message msg) {
     print_buffer(local_map, eckit::Log::debug<LibMultio>());
     eckit::Log::debug<LibMultio>() << "]" << std::endl;
 
-    if (msg.mapping() == "grid-point") {
+    if (msg.category() == "unstructured") {
         mapping.emplace(msg.source(), new Unstructured{std::move(local_map)});
         return;
     }
 
-    // This is hack. Create proper configuration categories
-    if (msg.mapping().substr(0,4) == "orca") {
+    if (msg.category() == "structured") {
         mapping.emplace(msg.source(), new Structured{std::move(local_map)});
         return;
     }

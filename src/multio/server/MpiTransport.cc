@@ -23,18 +23,18 @@ Message decodeMessage(eckit::Stream& stream) {
     unsigned t;
     stream >> t;
 
-    std::string src_dom;
-    stream >> src_dom;
+    std::string src_grp;
+    stream >> src_grp;
     size_t src_id;
     stream >> src_id;
 
-    std::string dest_dom;
-    stream >> dest_dom;
+    std::string dest_grp;
+    stream >> dest_grp;
     size_t dest_id;
     stream >> dest_id;
 
-    Message msg{Message::Header{static_cast<Message::Tag>(t), MpiPeer{src_dom, src_id},
-                                MpiPeer{dest_dom, dest_id}}};
+    Message msg{Message::Header{static_cast<Message::Tag>(t), MpiPeer{src_grp, src_id},
+                                MpiPeer{dest_grp, dest_id}}};
 
     msg.decode(stream);
 

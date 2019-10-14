@@ -38,10 +38,10 @@ void Sink::execute(Message msg) const {
         case Message::Tag::StepNotification: {
             eckit::StringDict metadata;
 
-            // Hijack the mapping string
-            metadata["step"] = msg.mapping();
+            metadata[msg.category()] = msg.name();
 
-            eckit::Log::debug<LibMultio>() << "Trigger is called..." << std::endl;
+            eckit::Log::debug<LibMultio>() << "Trigger " << msg.category() << " with value "
+                                           << msg.name() << " is being called..." << std::endl;
             mio_.trigger(metadata);
             return;
         }

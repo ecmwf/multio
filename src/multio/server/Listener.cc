@@ -63,8 +63,8 @@ void Listener::listen() {
 
             case Message::Tag::Mapping:
                 eckit::Log::debug<LibMultio>()
-                    << "*** Number of maps: " << msg.map_count() << std::endl;
-                nbMaps_ = msg.map_count();
+                    << "*** Number of maps: " << msg.domainCount() << std::endl;
+                nbMaps_ = msg.domainCount();
                 Mappings::instance().add(msg);
                 break;
 

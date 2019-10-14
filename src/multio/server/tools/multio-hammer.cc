@@ -289,9 +289,9 @@ void MultioHammer::sendData(const PeerList& serverPeers,
 
     // send partial mapping
     for (auto& server : serverPeers) {
-        Message msg{
-            Message::Header{Message::Tag::Mapping, client, *server, "grid-point", clientCount_},
-            buffer};
+        Message msg{Message::Header{Message::Tag::Mapping, client, *server, "grid-point",
+                                    "unstructured", clientCount_},
+                    buffer};
 
         transport->send(msg);
     }
@@ -321,10 +321,10 @@ void MultioHammer::sendData(const PeerList& serverPeers,
                 eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()),
                                      field.size() * sizeof(double));
 
-                Message msg{
-                    Message::Header{Message::Tag::Field, client, *serverPeers[id], "grid-point",
-                                    clientCount_, "model-level", field_id.str(), field_size()},
-                    buffer};
+                Message msg{Message::Header{Message::Tag::Field, client, *serverPeers[id],
+                                            std::to_string(param), "model-level", clientCount_,
+                                            field_size(), "grid-point", field_id.str()},
+                            buffer};
 
                 transport->send(msg);
             }
@@ -334,7 +334,7 @@ void MultioHammer::sendData(const PeerList& serverPeers,
         for (auto& server : serverPeers) {
             auto stepStr = eckit::Translator<long, std::string>()(step);
             Message flush{Message::Header{Message::Tag::StepComplete, client, *server, stepStr,
-                                          clientCount_}};
+                                          "step", clientCount_}};
             transport->send(flush);
         }
     }
@@ -540,16 +540,16 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
         auto stepStr = eckit::Translator<long, std::string>()(step);
 
-        Message msg{
-            Message::Header{Message::Tag::StepComplete, Peer{"", 0}, Peer{"", 0}, stepStr, 1}};
+        Message msg{Message::Header{Message::Tag::StepComplete, Peer{"", 0}, Peer{"", 0}, stepStr,
+                                    "step", 1}};
         for (const auto& plan : plans) {
             plan->process(msg);
         }
 
         // This message need only be sent by one server per ENS. Some sort of synchronisation
         // between the servers will be required -- OK for multio-hammmer for now.
-        msg = Message{
-            Message::Header{Message::Tag::StepNotification, Peer{"", 0}, Peer{"", 0}, stepStr, 1}};
+        msg = Message{Message::Header{Message::Tag::StepNotification, Peer{"", 0}, Peer{"", 0},
+                                      stepStr, "step", 1}};
         for (const auto& plan : plans) {
             plan->process(msg);
         }

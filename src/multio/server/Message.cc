@@ -61,40 +61,40 @@ Message::Tag Message::tag() const {
     return header().tag();
 }
 
-Peer Message::destination() const {
-    return header().destination();
-}
-
 Peer Message::source() const {
     return header().source();
 }
 
-size_t Message::size() const {
-    return content_->size();
+Peer Message::destination() const {
+    return header().destination();
 }
 
-const std::string& Message::mapping() const {
-    return header().mapping();
-}
-
-size_t Message::map_count() const {
-    return header().map_count();
+const std::string& Message::name() const {
+    return header().name();
 }
 
 const std::string& Message::category() const {
     return header().category();
 }
 
-const std::string& Message::field_id() const {
-    return header().field_id();
+size_t Message::domainCount() const {
+    return header().domainCount();
+}
+
+size_t Message::globalSize() const {
+    return header().globalSize();
+}
+
+const std::string& Message::domain() const {
+    return header().domain();
+}
+
+const std::string& Message::fieldId() const {
+    return header().fieldId();
 }
 
 const Metadata& Message::metadata() const {
     return header().metadata();
-}
-
-size_t Message::field_size() const {
-    return header().global_field_size();
 }
 
 eckit::Buffer& Message::payload() {
@@ -103,6 +103,10 @@ eckit::Buffer& Message::payload() {
 
 const eckit::Buffer& Message::payload() const {
     return content_->payload();
+}
+
+size_t Message::size() const {
+    return content_->size();
 }
 
 void Message::encode(eckit::Stream& strm) const {
@@ -131,9 +135,9 @@ void Message::decode(eckit::Stream& strm) {
 void Message::print(std::ostream& out) const {
     out << "Message("
         << "version=" << version() << ", tag=" << tag2str(tag()) << ", source=" << source()
-        << ", destination=" << destination() << ", mapping=" << mapping()
-        << ", map_count=" << map_count() << ", category=" << category()
-        << ", field_id=" << field_id() << ", global_size=" << field_size() << ")";
+        << ", destination=" << destination() << ", name=" << name() << ", category=" << category()
+        << ", domainCount=" << domainCount() << ", global_size=" << globalSize()
+        << ", domain=" << domain() << ", metadata=" << fieldId() << ")";
 }
 
 }  // namespace server

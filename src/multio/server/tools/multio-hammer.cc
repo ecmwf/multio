@@ -247,8 +247,8 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
         eckit::LocalConfiguration{eckit::YAMLConfiguration{test_configuration(transportType_)}};
 
     if (transportType_ == "mpi") {
-        auto domain_size = eckit::mpi::comm(config_.getString("domain").c_str()).size();
-        if (domain_size != clientCount_ + serverCount_) {
+        auto comm_size = eckit::mpi::comm(config_.getString("group").c_str()).size();
+        if (comm_size != clientCount_ + serverCount_) {
             throw eckit::SeriousBug(
                 "Number of MPI ranks does not match the number of clients and servers");
         }
@@ -430,18 +430,18 @@ void MultioHammer::testData() {
 
 
 void MultioHammer::executeMpi(std::shared_ptr<Transport> transport) {
-    auto domain = config_.getString("domain");
+    auto comm = config_.getString("group");
 
     PeerList clientPeers;
     auto i = 0u;
     while (i != clientCount_) {
-        clientPeers.emplace_back(new MpiPeer{domain, i++});
+        clientPeers.emplace_back(new MpiPeer{comm, i++});
     }
 
     PeerList serverPeers;
-    auto domain_size = clientCount_ + serverCount_;
-    while (i != domain_size) {
-        serverPeers.emplace_back(new MpiPeer{domain, i++});
+    auto comm_size = clientCount_ + serverCount_;
+    while (i != comm_size) {
+        serverPeers.emplace_back(new MpiPeer{comm, i++});
     }
 
     spawnServers(serverPeers, transport);

@@ -116,8 +116,8 @@ void MultioReplay::init(const eckit::option::CmdArgs& args) {
     config_ =
         eckit::LocalConfiguration{eckit::YAMLConfiguration{test_configuration(transportType_)}};
 
-    auto domain_size = eckit::mpi::comm(config_.getString("domain").c_str()).size();
-    if (domain_size != clientCount_ + serverCount_) {
+    auto comm_size = eckit::mpi::comm(config_.getString("group").c_str()).size();
+    if (comm_size != clientCount_ + serverCount_) {
         throw eckit::SeriousBug(
             "Number of MPI ranks does not match the number of clients and servers");
     }
@@ -155,7 +155,7 @@ void MultioReplay::runClients(Transport& transport) {
 void MultioReplay::openConnections(Transport& transport) {
     auto client = transport.localPeer();
     for (auto id = clientCount_; id != commSize(); ++id) {
-        Peer server = MpiPeer{config_.getString("domain"), id};
+        Peer server = MpiPeer{config_.getString("group"), id};
 
         Message open{Message::Header{Message::Tag::Open, client, server}, std::string("open")};
         transport.send(open);
@@ -171,7 +171,7 @@ void MultioReplay::sendDomain(Transport& transport) {
         // Send domain to each server
         auto repr = "orca_" + grid_type;
         for (auto id = clientCount_; id != commSize(); ++id) {
-            Peer server = MpiPeer{config_.getString("domain"), id};
+            Peer server = MpiPeer{config_.getString("group"), id};
 
             Message msg{Message::Header{Message::Tag::Mapping, client, server, repr, "structured",
                                         clientCount_},
@@ -202,7 +202,7 @@ void MultioReplay::sendFields(Transport& transport) {
         ASSERT(server_id < serverCount_);
 
         auto global_id = server_id + clientCount_;
-        Peer server = MpiPeer{config_.getString("domain"), global_id};
+        Peer server = MpiPeer{config_.getString("group"), global_id};
 
         Message msg{
             Message::Header{Message::Tag::Field, client, server, param.first, "ocean-surface",
@@ -216,7 +216,7 @@ void MultioReplay::sendFields(Transport& transport) {
 void MultioReplay::closeConnections(Transport& transport) {
     auto client = transport.localPeer();
     for (auto id = clientCount_; id != commSize(); ++id) {
-        Peer server = MpiPeer{config_.getString("domain"), id};
+        Peer server = MpiPeer{config_.getString("group"), id};
 
         Message close{Message::Header{Message::Tag::Close, client, server}, std::string("close")};
         transport.send(close);

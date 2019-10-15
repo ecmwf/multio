@@ -45,7 +45,7 @@ Message decodeMessage(eckit::Stream& stream) {
 
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
-    local_{cfg.getString("domain"), eckit::mpi::comm(cfg.getString("domain").c_str()).rank()},
+    local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
     buffer_{0} {}
 
 Message MpiTransport::receive() {

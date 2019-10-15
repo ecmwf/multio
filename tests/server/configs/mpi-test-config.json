@@ -1,6 +1,6 @@
 {
     "transport" : "mpi",
-    "domain" : "world",
+    "group" : "world",
     "plans" : [
         {
             "name" : "output-only",

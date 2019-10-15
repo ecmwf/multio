@@ -46,7 +46,7 @@ ecbuild_get_test_multidata( EXTRACT TARGET multio_replay_get_test_data NAMES ${_
 ecbuild_add_test( TARGET       test_multio_replay_nemo
                   COMMAND      $<TARGET_FILE:multio-replay>
                   TEST_DEPENDS multio_replay_get_test_data
-                  ARGS         --transport=mpi --nbclients=7 --nbservers=1
+                  ARGS         --nbclients=7 --nbservers=1
                   MPI          8
                   ENVIRONMENT  "${_test_environment}" )
 

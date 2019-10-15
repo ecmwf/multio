@@ -29,7 +29,7 @@ std::string Message::tag2str(Tag t) {
                                            {Tag::Open, "Open"},
                                            {Tag::Close, "Close"},
                                            {Tag::Grib, "Grib"},
-                                           {Tag::Mapping, "Mapping"},
+                                           {Tag::Domain, "Domain"},
                                            {Tag::Field, "Field"},
                                            {Tag::StepComplete, "StepComplete"},
                                            {Tag::StepNotification, "StepNotification"}};

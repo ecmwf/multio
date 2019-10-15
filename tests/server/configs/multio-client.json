@@ -1,0 +1,6 @@
+{
+    "transport" : "mpi",
+    "group" : "world",
+    "serverCount" : 3,
+    "clientCount" : 5
+}

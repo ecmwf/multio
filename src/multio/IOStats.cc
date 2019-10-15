@@ -50,23 +50,7 @@ IOStats::IOStats(const std::string& prefix) :
     sumBytesWrittenSquared_(0),
     sumWriteTimesSquared_(0),
     numFlush_(0),
-    sumFlushTimesSquared_(0),
-    numiinitfdb_(0),
-    numiopenfdb_(0),
-    numiclosefdb_(0),
-    numiflushfdb_(0),
-    numiwritefdb_(0),
-    numireadfdb_(0),
-    numisetvalfdb_(0),
-    sumTimingSquaresiinitfdb_(0),
-    sumTimingSquaresiopenfdb_(0),
-    sumTimingSquaresiclosefdb_(0),
-    sumTimingSquaresiflushfdb_(0),
-    sumTimingSquaresiwritefdb_(0),
-    sumTimingSquaresireadfdb_(0),
-    sumTimingSquaresisetvalfdb_(0),
-    iwritefdbBytesWritten_(0),
-    iwritefdbSumBytesWrittenSquared_(0) {
+    sumFlushTimesSquared_(0) {
 
     if (!prefix_.empty())
         prefix_ += std::string(" ");
@@ -126,106 +110,6 @@ void IOStats::logFlush(Timer& timer) {
 }
 
 
-void IOStats::logiinitfdb_(eckit::Timer& timer) {
-
-    numiinitfdb_++;
-    timingiinitfdb_ += timer;
-
-    double elapsed = timer.elapsed();
-    sumTimingSquaresiinitfdb_ += elapsed * elapsed;
-
-    Log::debug<LibMultio>() << "iinitfdb count: " << numiinitfdb_
-                            << ", time: " << elapsed << "s"
-                            << ", total: " << timingiinitfdb_.elapsed_ << "s" << std::endl;
-}
-
-
-void IOStats::logiopenfdb_(eckit::Timer& timer) {
-
-    numiopenfdb_++;
-    timingiopenfdb_ += timer;
-
-    double elapsed = timer.elapsed();
-    sumTimingSquaresiopenfdb_ += elapsed * elapsed;
-
-    Log::debug<LibMultio>() << "iopenfdb count: " << numiopenfdb_
-                            << ", time: " << elapsed << "s"
-                            << ", total: " << timingiopenfdb_.elapsed_ << "s" << std::endl;
-}
-
-
-void IOStats::logiclosefdb_(eckit::Timer& timer) {
-
-    numiclosefdb_++;
-    timingiclosefdb_ += timer;
-
-    double elapsed = timer.elapsed();
-    sumTimingSquaresiclosefdb_ += elapsed * elapsed;
-
-    Log::debug<LibMultio>() << "iclosefdb count: " << numiclosefdb_
-                            << ", time: " << elapsed << "s"
-                            << ", total: " << timingiclosefdb_.elapsed_ << "s" << std::endl;
-}
-
-
-void IOStats::logiflushfdb_(eckit::Timer& timer) {
-
-    numiflushfdb_++;
-    timingiflushfdb_ += timer;
-
-    double elapsed = timer.elapsed();
-    sumTimingSquaresiflushfdb_ += elapsed * elapsed;
-
-    Log::debug<LibMultio>() << "iflushfdb count: " << numiflushfdb_
-                            << ", time: " << elapsed << "s"
-                            << ", total: " << timingiflushfdb_.elapsed_ << "s" << std::endl;
-}
-
-
-void IOStats::logiwritefdb_(const eckit::Length& size, eckit::Timer& timer) {
-
-    numiwritefdb_++;
-    iwritefdbBytesWritten_ += size;
-    iwritefdbSumBytesWrittenSquared_ += (size * size);
-    timingiwritefdb_ += timer;
-
-    double elapsed = timer.elapsed();
-    sumTimingSquaresiwritefdb_ += elapsed * elapsed;
-
-    Log::debug<LibMultio>() << "iwritefdb count: " << numiwritefdb_
-                            << ", time: " << elapsed << "s"
-                            << ", total: " << timingiwritefdb_.elapsed_ << "s" << std::endl;
-}
-
-
-void IOStats::logireadfdb_(eckit::Timer& timer) {
-
-    numireadfdb_++;
-    timingireadfdb_ += timer;
-
-    double elapsed = timer.elapsed();
-    sumTimingSquaresireadfdb_ += elapsed * elapsed;
-
-    Log::debug<LibMultio>() << "ireadfdb count: " << numireadfdb_
-                            << ", time: " << elapsed << "s"
-                            << ", total: " << timingireadfdb_.elapsed_ << "s" << std::endl;
-}
-
-void IOStats::logisetvalfdb_(Timer &timer) {
-
-    numisetvalfdb_++;
-    timingisetvalfdb_ += timer;
-
-    double elapsed = timer.elapsed();
-    sumTimingSquaresisetvalfdb_ += elapsed * elapsed;
-
-    Log::debug<LibMultio>() << "isetfdb count: " << numisetvalfdb_
-                            << ", time: " << elapsed << "s"
-                            << ", total: " << timingisetvalfdb_.elapsed_ << "s" << std::endl;
-
-}
-
-
 void IOStats::report(std::ostream& s) const {
 
     // Write statistics
@@ -246,33 +130,6 @@ void IOStats::report(std::ostream& s) const {
 
     reportCount(s, "num flush", numFlush_);
     reportTimes(s, "flush time", numFlush_, flushTiming_, sumFlushTimesSquared_);
-
-    // Output for legacy interface statistics
-
-    reportCount(s, "num iinitfdb", numiinitfdb_);
-    reportTimes(s, "time iinitfdb", numiinitfdb_, timingiinitfdb_, sumTimingSquaresiinitfdb_);
-
-    reportCount(s, "num iopenfdb", numiopenfdb_);
-    reportTimes(s, "time iopenfdb", numiopenfdb_, timingiopenfdb_, sumTimingSquaresiopenfdb_);
-
-    reportCount(s, "num iclosefdb", numiclosefdb_);
-    reportTimes(s, "time iclosefdb", numiclosefdb_, timingiclosefdb_, sumTimingSquaresiclosefdb_);
-
-    reportCount(s, "num iflushfdb", numiflushfdb_);
-    reportTimes(s, "time iflushfdb", numiflushfdb_, timingiflushfdb_, sumTimingSquaresiflushfdb_);
-
-    reportCount(s, "num isetvalfdb", numisetvalfdb_);
-    reportTimes(s, "time isetvalfdb", numisetvalfdb_, timingisetvalfdb_, sumTimingSquaresisetvalfdb_);
-
-    reportCount(s, "num iwritefdb", numiwritefdb_);
-    reportBytes(s, "bytes iwritefdb", numiwritefdb_, iwritefdbBytesWritten_, iwritefdbSumBytesWrittenSquared_);
-    reportTimes(s, "time iwritefdb", numiwritefdb_, timingiwritefdb_, sumTimingSquaresiwritefdb_);
-    reportRate(s, "rate iwritefdb", iwritefdbBytesWritten_, timingiwritefdb_);
-
-//    reportCount(s, "num ireadfdb", numireadfdb_);
-//    reportBytes(s, "bytes ireadfdb", numireadfdb_, ireadfdbBytesWritten_, ireadfdbSumBytesWrittenSquared_);
-//    reportTimes(s, "time ireadfdb", numireadfdb_, timingireadfdb_, sumTimingSquaresireadfdb_);
-
 }
 
 

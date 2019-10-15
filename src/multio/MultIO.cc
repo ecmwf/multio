@@ -106,7 +106,7 @@ void MultIO::write(DataBlobPtr blob) {
 
     std::lock_guard<std::mutex> lock(mutex_);
 
-    StatsTimer stTimer{timer_, std::bind(&IOStats::logiwritefdb_, &stats_, blob->length(), _1)};
+    StatsTimer stTimer{timer_, std::bind(&IOStats::logWrite, &stats_, blob->length(), _1)};
     for (const auto& sink : sinks_) {
         sink->write(blob);
     }

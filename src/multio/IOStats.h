@@ -43,16 +43,6 @@ public:
     void logWrite(const eckit::Length& size, eckit::Timer& timer);
     void logFlush(eckit::Timer& timer);
 
-    // Log the legacy interfaces
-
-    void logiinitfdb_(eckit::Timer& timer);
-    void logiopenfdb_(eckit::Timer& timer);
-    void logiclosefdb_(eckit::Timer& timer);
-    void logiflushfdb_(eckit::Timer& timer);
-    void logiwritefdb_(const eckit::Length& size, eckit::Timer& timer);
-    void logireadfdb_(eckit::Timer& timer);
-    void logisetvalfdb_(eckit::Timer& timer);
-
 private: // methods
 
     void print(std::ostream& s) const;
@@ -87,35 +77,6 @@ private: // members
     size_t numFlush_;
     eckit::Timing flushTiming_;
     double sumFlushTimesSquared_;
-
-    // Log access counts for the legacy interface
-
-    size_t numiinitfdb_;
-    size_t numiopenfdb_;
-    size_t numiclosefdb_;
-    size_t numiflushfdb_;
-    size_t numiwritefdb_;
-    size_t numireadfdb_;
-    size_t numisetvalfdb_;
-
-    double sumTimingSquaresiinitfdb_;
-    double sumTimingSquaresiopenfdb_;
-    double sumTimingSquaresiclosefdb_;
-    double sumTimingSquaresiflushfdb_;
-    double sumTimingSquaresiwritefdb_;
-    double sumTimingSquaresireadfdb_;
-    double sumTimingSquaresisetvalfdb_;
-
-    eckit::Timing timingiinitfdb_;
-    eckit::Timing timingiopenfdb_;
-    eckit::Timing timingiclosefdb_;
-    eckit::Timing timingiflushfdb_;
-    eckit::Timing timingiwritefdb_;
-    eckit::Timing timingireadfdb_;
-    eckit::Timing timingisetvalfdb_;
-
-    size_t iwritefdbBytesWritten_;
-    size_t iwritefdbSumBytesWrittenSquared_;
 
 private: // methods
 

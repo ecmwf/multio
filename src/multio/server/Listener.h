@@ -40,12 +40,14 @@ public:
     void listen();
 
 private:
+    bool moreConnections() const;
+
     std::shared_ptr<Dispatcher> dispatcher_;
 
     Transport& transport_;
 
-    size_t nbClosedConnections_ = 0;
-    size_t nbMaps_ = 0;
+    size_t closedCount_ = 0;
+    size_t clientCount_ = 0;
 
     std::list<Peer> connections_;
 

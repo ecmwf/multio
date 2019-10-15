@@ -52,7 +52,7 @@ void Listener::listen() {
                 connections_.remove(msg.source());
                 eckit::Log::debug<LibMultio>()
                     << "*** CLOSING connection to " << msg.source() << std::endl;
-                ++nbClosedConnections_;
+                ++closedCount_;
                 break;
 
             case Message::Tag::Grib:
@@ -64,7 +64,7 @@ void Listener::listen() {
             case Message::Tag::Mapping:
                 eckit::Log::debug<LibMultio>()
                     << "*** Number of maps: " << msg.domainCount() << std::endl;
-                nbMaps_ = msg.domainCount();
+                clientCount_ = msg.domainCount();
                 Mappings::instance().add(msg);
                 break;
 
@@ -91,13 +91,17 @@ void Listener::listen() {
 
             default:
                 std::ostringstream oss;
+                oss << "Unhandled message: " << msg << std::endl;
                 throw eckit::SeriousBug(oss.str());
         }
-    } while (!connections_.empty() || nbClosedConnections_ != nbMaps_);
+    } while (moreConnections());
 
     msgQueue_.close();
 }
 
+bool Listener::moreConnections() const {
+    return !connections_.empty() || closedCount_ != clientCount_;
+}
 
 }  // namespace server
 }  // namespace multio

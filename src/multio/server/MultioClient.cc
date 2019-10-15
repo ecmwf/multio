@@ -35,7 +35,7 @@ void MultioClient::sendDomain(const std::string& name, const std::string& catego
     Peer client = transport_->localPeer();
     for (auto& server : serverPeers_) {
         Message msg{
-            Message::Header{Message::Tag::Mapping, client, *server, name, category, clientCount_},
+            Message::Header{Message::Tag::Domain, client, *server, name, category, clientCount_},
             std::move(domain)};
 
         transport_->send(msg);

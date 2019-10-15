@@ -61,7 +61,7 @@ void Listener::listen() {
                 GribTemplate::instance().add(msg);
                 break;
 
-            case Message::Tag::Mapping:
+            case Message::Tag::Domain:
                 eckit::Log::debug<LibMultio>()
                     << "*** Number of maps: " << msg.domainCount() << std::endl;
                 clientCount_ = msg.domainCount();

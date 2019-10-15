@@ -289,7 +289,7 @@ void MultioHammer::sendData(const PeerList& serverPeers,
 
     // send partial mapping
     for (auto& server : serverPeers) {
-        Message msg{Message::Header{Message::Tag::Mapping, client, *server, "grid-point",
+        Message msg{Message::Header{Message::Tag::Domain, client, *server, "grid-point",
                                     "unstructured", clientCount_},
                     buffer};
 

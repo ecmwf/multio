@@ -244,7 +244,7 @@ void send_multio_mapping_(const void* in_ptr, fortint* words, const char* name, 
 
         eckit::Buffer buffer{ptr, len};
 
-        Message msg{Message::Header{Message::Tag::Mapping, client, server, mapping_name,
+        Message msg{Message::Header{Message::Tag::Domain, client, server, mapping_name,
                                     "unstructured", nb_clients},
                     buffer};
 

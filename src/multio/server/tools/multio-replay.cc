@@ -173,7 +173,7 @@ void MultioReplay::sendDomain(Transport& transport) {
         for (auto id = clientCount_; id != commSize(); ++id) {
             Peer server = MpiPeer{config_.getString("group"), id};
 
-            Message msg{Message::Header{Message::Tag::Mapping, client, server, repr, "structured",
+            Message msg{Message::Header{Message::Tag::Domain, client, server, repr, "structured",
                                         clientCount_},
                         buffer};
 

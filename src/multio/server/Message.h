@@ -44,7 +44,7 @@ public:  // types
         Open,
         Close,
         Grib,
-        Mapping,
+        Domain,
         Field,
         StepComplete,
         StepNotification,

@@ -13,6 +13,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/server/Listener.h"
+#include "multio/server/MultioClient.h"
 #include "multio/server/MultioServerTool.h"
 #include "multio/server/Transport.h"
 
@@ -56,12 +57,10 @@ private:
     void execute(const eckit::option::CmdArgs& args) override;
 
     void runServers(Transport& transport);
-    void runClients(Transport& transport);
+    void runClient();
 
-    void openConnections(Transport& transport);
-    void sendDomain(Transport& transport);
-    void sendFields(Transport& transport);
-    void closeConnections(Transport& transport);
+    void sendDomain(MultioClient& multioClient);
+    void sendFields(MultioClient& multioClient);
 
     eckit::Buffer readGrid(const std::string& grid_type, size_t client_id);
     eckit::Buffer readField(const std::string& param, size_t client_id) const;
@@ -75,7 +74,7 @@ private:
 
     size_t clientCount_ = 1;
     size_t serverCount_ = 1;
-    size_t field_size_ = 1;
+    size_t fieldSize_ = 1;
     size_t level_ = 1;
     size_t step_ = 24;
     std::map<std::string, std::string> parameters_ = {{"sst", "orca_grid_T"},
@@ -84,6 +83,7 @@ private:
                                                       {"ssw", "orca_grid_W"}};
 
     eckit::LocalConfiguration config_;
+    size_t rank_ = 0;
 };
 
 //----------------------------------------------------------------------------------------------------------------
@@ -116,6 +116,8 @@ void MultioReplay::init(const eckit::option::CmdArgs& args) {
     config_ =
         eckit::LocalConfiguration{eckit::YAMLConfiguration{test_configuration(transportType_)}};
 
+    rank_ = eckit::mpi::comm(config_.getString("group").c_str()).rank();
+
     auto comm_size = eckit::mpi::comm(config_.getString("group").c_str()).size();
     if (comm_size != clientCount_ + serverCount_) {
         throw eckit::SeriousBug(
@@ -130,7 +132,7 @@ void MultioReplay::execute(const eckit::option::CmdArgs &) {
     if (isServer(transport->localPeer().id())) {
         runServers(*transport);
     } else {
-        runClients(*transport);
+        runClient();
     }
 
     testData();
@@ -141,91 +143,48 @@ void MultioReplay::runServers(Transport& transport) {
         listener.listen();
 }
 
-void MultioReplay::runClients(Transport& transport) {
+void MultioReplay::runClient() {
 
-    openConnections(transport);
+    config_.set("clientCount", clientCount_);
+    config_.set("serverCount", serverCount_);
 
-    sendDomain(transport);
+    MultioClient multioClient(config_);
 
-    sendFields(transport);
+    multioClient.openConnections();
 
-    closeConnections(transport);
+    sendDomain(multioClient);
+
+    sendFields(multioClient);
+
+    multioClient.closeConnections();
 }
 
-void MultioReplay::openConnections(Transport& transport) {
-    auto client = transport.localPeer();
-    for (auto id = clientCount_; id != commSize(); ++id) {
-        Peer server = MpiPeer{config_.getString("group"), id};
-
-        Message open{Message::Header{Message::Tag::Open, client, server}, std::string("open")};
-        transport.send(open);
-    }
-}
-
-void MultioReplay::sendDomain(Transport& transport) {
-    auto client = transport.localPeer();
-
+void MultioReplay::sendDomain(MultioClient& multioClient) {
     for (std::string grid_type : {"grid_T", "grid_U", "grid_V", "grid_W"}) {
-        auto buffer = readGrid(grid_type, client.id());
+        auto buffer = readGrid(grid_type, rank_);
 
         // Send domain to each server
         auto repr = "orca_" + grid_type;
-        for (auto id = clientCount_; id != commSize(); ++id) {
-            Peer server = MpiPeer{config_.getString("group"), id};
-
-            Message msg{Message::Header{Message::Tag::Domain, client, server, repr, "structured",
-                                        clientCount_},
-                        buffer};
-
-            transport.send(msg);
-        }
+        multioClient.sendDomain(repr, "structured", std::move(buffer));
     }
 }
 
-void MultioReplay::sendFields(Transport& transport) {
-    auto client = transport.localPeer();
-
+void MultioReplay::sendFields(MultioClient& multioClient) {
     for (const auto& param : parameters_) {
-        auto buffer = readField(param.first, client.id());
+        auto buffer = readField(param.first, rank_);
 
         Metadata metadata;
         metadata.set("igrib", param.first);
         metadata.set("ilevg", level_);
         metadata.set("istep", step_);
 
-        std::stringstream field_id;
-        eckit::JSON json(field_id);
-        json << metadata;
-
-        // Choose server
-        auto server_id = std::hash<std::string>{}(field_id.str()) % serverCount_;
-        ASSERT(server_id < serverCount_);
-
-        auto global_id = server_id + clientCount_;
-        Peer server = MpiPeer{config_.getString("group"), global_id};
-
-        Message msg{
-            Message::Header{Message::Tag::Field, client, server, param.first, "ocean-surface",
-                            clientCount_, field_size_, param.second, field_id.str()},
-            buffer};
-
-        transport.send(msg);
-    }
-}
-
-void MultioReplay::closeConnections(Transport& transport) {
-    auto client = transport.localPeer();
-    for (auto id = clientCount_; id != commSize(); ++id) {
-        Peer server = MpiPeer{config_.getString("group"), id};
-
-        Message close{Message::Header{Message::Tag::Close, client, server}, std::string("close")};
-        transport.send(close);
+        multioClient.sendField(param.first, "ocean-surface", fieldSize_, param.second, metadata,
+                               std::move(buffer));
     }
 }
 
 eckit::Buffer MultioReplay::readGrid(const std::string& grid_type, size_t client_id) {
     std::ostringstream oss;
-    // oss << "orca1-grids/" << grid_type << "_" << std::setfill('0') << std::setw(2) << client_id;
     oss << grid_type << "_" << std::setfill('0') << std::setw(2) << client_id;
 
     auto grid = eckit::PathName{pathToNemoData_ + oss.str()};
@@ -242,7 +201,7 @@ eckit::Buffer MultioReplay::readGrid(const std::string& grid_type, size_t client
     for (int32_t next; infile >> next;) {
         domain_dims.push_back(next);
     }
-    field_size_ = static_cast<size_t>(domain_dims[0] * domain_dims[1]);
+    fieldSize_ = static_cast<size_t>(domain_dims[0] * domain_dims[1]);
 
     return eckit::Buffer{reinterpret_cast<const char*>(domain_dims.data()),
                          domain_dims.size() * sizeof(int32_t)};

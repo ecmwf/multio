@@ -4,6 +4,7 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/log/JSON.h"
 
+#include "multio/LibMultio.h"
 #include "multio/server/Message.h"
 #include "multio/server/Transport.h"
 
@@ -11,13 +12,21 @@ namespace multio {
 namespace server {
 
 MultioClient::MultioClient(const eckit::Configuration& config) :
+    clientCount_{config.getUnsigned("clientCount")},
+    serverCount_{config.getUnsigned("serverCount")},
     transport_(createTransport(config)),
     serverPeers_{createServerPeers(config)} {}
+
+// MultioClient::MultioClient(const eckit::Configuration& config, std::shared_ptr<Transport> trans) :
+//     clientCount_{config.getUnsigned("clientCount")},
+//     serverCount_{config.getUnsigned("serverCount")},
+//     transport_{trans},
+//     serverPeers_{createServerPeers(config)} {}
 
 void MultioClient::openConnections() const {
     auto client = transport_->localPeer();
     for (auto& server : serverPeers_) {
-        Message msg{Message::Header{Message::Tag::Open, client, *server}, std::string("open")};
+        Message msg{Message::Header{Message::Tag::Open, client, *server}};
         transport_->send(msg);
     }
 }
@@ -25,7 +34,7 @@ void MultioClient::openConnections() const {
 void MultioClient::closeConnections() const {
     auto client = transport_->localPeer();
     for (auto& server : serverPeers_) {
-        Message msg{Message::Header{Message::Tag::Open, client, *server}, std::string("close")};
+        Message msg{Message::Header{Message::Tag::Close, client, *server}};
         transport_->send(msg);
     }
 }
@@ -72,6 +81,10 @@ MultioClient::PeerList MultioClient::createServerPeers(const eckit::Configuratio
     std::string transport = config.getString("transport");
     std::string group = config.getString("group");
 
+    eckit::Log::debug<multio::LibMultio>()
+        << "transport = " << transport << ", group = " << group << ", clients = " << clientCount_
+        << ", servers = " << serverCount_ << std::endl;
+
     // For MPI
     if (transport == "mpi") {
         auto comm_size = clientCount_ + serverCount_;
@@ -79,6 +92,10 @@ MultioClient::PeerList MultioClient::createServerPeers(const eckit::Configuratio
         while (rank != comm_size) {
             serverPeers.emplace_back(new MpiPeer{group, rank++});
         }
+
+        eckit::Log::debug<multio::LibMultio>()
+            << "Returning list of " << serverPeers.size() << " server"
+            << (serverPeers.size() > 1 ? "s" : "") << std::endl;
 
         return serverPeers;
     }

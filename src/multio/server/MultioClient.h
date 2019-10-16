@@ -29,7 +29,9 @@ class Peer;
 
 class MultioClient {
 public:
-    MultioClient(const eckit::Configuration& config);
+    explicit MultioClient(const eckit::Configuration& config);
+
+    MultioClient(const eckit::Configuration& config, std::shared_ptr<Transport> trans);
 
     void openConnections() const;
 
@@ -47,11 +49,12 @@ private:
 
     PeerList createServerPeers(const eckit::Configuration& config);
 
-    std::unique_ptr<Transport> transport_;
-    PeerList serverPeers_;
-
     size_t clientCount_;
     size_t serverCount_;
+
+    std::shared_ptr<Transport> transport_ = nullptr;
+    PeerList serverPeers_;
+
 };
 
 }  // namespace server

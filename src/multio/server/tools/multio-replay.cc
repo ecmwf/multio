@@ -129,11 +129,7 @@ void MultioReplay::execute(const eckit::option::CmdArgs &) {
     std::shared_ptr<Transport> transport{
         TransportFactory::instance().build(transportType_, config_)};
 
-    if (isServer(transport->localPeer().id())) {
-        runServers(*transport);
-    } else {
-        runClient();
-    }
+    runClient();
 
     testData();
  }

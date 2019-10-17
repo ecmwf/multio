@@ -65,6 +65,15 @@ void MultioClient::sendField(const std::string& name, const std::string& categor
     transport_->send(msg);
 }
 
+void MultioClient::sendStepComplete() const {
+    auto client = transport_->localPeer();
+    for (auto& server : serverPeers_) {
+        Message msg{Message::Header{Message::Tag::StepComplete, client, *server}};
+        transport_->send(msg);
+    }
+}
+
+
 Transport* MultioClient::createTransport(const eckit::Configuration& config) {
     return TransportFactory::instance().build(config.getString("transport"), config);
 }

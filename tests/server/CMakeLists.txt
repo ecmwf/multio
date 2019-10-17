@@ -10,7 +10,7 @@ ecbuild_add_test( TARGET test_multio_hammer_thread
                   ENVIRONMENT "${_test_environment}" )
 
 ecbuild_add_test( TARGET test_multio_hammer_tcp
-                  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tcp_test.sh
+                  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tcp-launch.sh
                   ARGS $<TARGET_FILE:multio-hammer>
                   ENVIRONMENT "${_test_environment}" )
 
@@ -44,10 +44,9 @@ list( APPEND _nemo_test_data
 ecbuild_get_test_multidata( EXTRACT TARGET multio_replay_get_test_data NAMES ${_nemo_test_data} )
 
 ecbuild_add_test( TARGET       test_multio_replay_nemo
-                  COMMAND      $<TARGET_FILE:multio-replay>
+                  COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh
                   TEST_DEPENDS multio_replay_get_test_data
-                  ARGS         --nbclients=7 --nbservers=1
-                  MPI          8
+                  ARGS         $<TARGET_FILE:multio-replay> $<TARGET_FILE:multio-probe>
                   ENVIRONMENT  "${_test_environment}" )
 
 endif(HAVE_MULTIO_SERVER)

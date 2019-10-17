@@ -1,6 +1,5 @@
 
-#include <fstream>
-#include <iomanip>
+#include <unistd.h>
 
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
@@ -56,8 +55,11 @@ private:
 
     void execute(const eckit::option::CmdArgs& args) override;
 
+    void testData() const;
+
     std::string transport_ = "mpi";
     int port_ = 7777;
+    bool test_ = false;
     eckit::LocalConfiguration config_;
 };
 
@@ -65,15 +67,30 @@ MultioServer::MultioServer(int argc, char** argv) : multio::server::MultioServer
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("port", "TCP port"));
+    options_.push_back(new eckit::option::SimpleOption<bool>("test", "Whether it runs as part of test"));
 }
 
 
 void MultioServer::init(const eckit::option::CmdArgs& args) {
     args.get("transport", transport_);
     args.get("port", port_);
+    args.get("test", test_);
 
     config_ = eckit::LocalConfiguration{eckit::YAMLConfiguration{test_configuration(transport_)}};
     config_.set("local_port", port_);
+}
+
+void MultioServer::testData() const {
+    if(not test_) {
+        return;
+    }
+
+    if(transport_ == "mpi") {
+        eckit::mpi::comm().barrier();
+        return;
+    }
+
+    ::sleep(1);
 }
 
 void MultioServer::execute(const eckit::option::CmdArgs &) {
@@ -81,6 +98,8 @@ void MultioServer::execute(const eckit::option::CmdArgs &) {
 
     Listener listener{config_, *transport};
     listener.listen();
+
+    testData();
 }
 
 int main(int argc, char** argv) {

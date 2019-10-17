@@ -41,7 +41,6 @@ Plan::Plan(const eckit::Configuration& config) {
 Plan::~Plan() = default;
 
 void Plan::process(Message msg) {
-    eckit::Log::info() << "*** Executing plan... " << std::endl;
     root_->execute(msg);
 }
 

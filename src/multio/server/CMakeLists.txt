@@ -38,8 +38,11 @@ ecbuild_add_library(
         Mappings.h
         Message.cc
         Message.h
+        Metadata.h
         MultioClient.cc
         MultioClient.h
+        MultioNemo.cc
+        MultioNemo.h
         MessageContent.cc
         MessageHeader.cc
         Peer.cc

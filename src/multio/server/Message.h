@@ -20,9 +20,9 @@
 #include <memory>
 #include <string>
 
-#include "eckit/config/LocalConfiguration.h"
 #include "eckit/io/Buffer.h"
 
+#include "multio/server/Metadata.h"
 #include "multio/server/Peer.h"
 
 namespace eckit {
@@ -31,8 +31,6 @@ class Stream;
 
 namespace multio {
 namespace server {
-
-using Metadata = eckit::LocalConfiguration;
 
 // TODO: we may want to hash the payload (and the header?)
 

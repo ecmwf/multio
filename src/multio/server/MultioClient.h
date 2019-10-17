@@ -14,6 +14,8 @@
 #include <memory>
 #include <vector>
 
+#include "multio/server/Peer.h"
+
 namespace eckit {
 class Buffer;
 class Configuration;
@@ -25,7 +27,7 @@ namespace server {
 
 using Metadata = eckit::LocalConfiguration;
 class Transport;
-class Peer;
+// class Peer;
 
 class MultioClient {
 public:

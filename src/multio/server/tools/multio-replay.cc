@@ -56,7 +56,6 @@ private:
 
     void execute(const eckit::option::CmdArgs& args) override;
 
-    void runServers(Transport& transport);
     void runClient();
 
     void sendDomain(MultioClient& multioClient);
@@ -126,18 +125,10 @@ void MultioReplay::init(const eckit::option::CmdArgs& args) {
 }
 
 void MultioReplay::execute(const eckit::option::CmdArgs &) {
-    std::shared_ptr<Transport> transport{
-        TransportFactory::instance().build(transportType_, config_)};
-
     runClient();
 
     testData();
  }
-
-void MultioReplay::runServers(Transport& transport) {
-        Listener listener{config_, transport};
-        listener.listen();
-}
 
 void MultioReplay::runClient() {
 

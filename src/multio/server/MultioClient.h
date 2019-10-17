@@ -31,8 +31,6 @@ class MultioClient {
 public:
     explicit MultioClient(const eckit::Configuration& config);
 
-    MultioClient(const eckit::Configuration& config, std::shared_ptr<Transport> trans);
-
     void openConnections() const;
 
     void closeConnections() const;

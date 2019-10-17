@@ -17,12 +17,6 @@ MultioClient::MultioClient(const eckit::Configuration& config) :
     transport_(createTransport(config)),
     serverPeers_{createServerPeers(config)} {}
 
-// MultioClient::MultioClient(const eckit::Configuration& config, std::shared_ptr<Transport> trans) :
-//     clientCount_{config.getUnsigned("clientCount")},
-//     serverCount_{config.getUnsigned("serverCount")},
-//     transport_{trans},
-//     serverPeers_{createServerPeers(config)} {}
-
 void MultioClient::openConnections() const {
     auto client = transport_->localPeer();
     for (auto& server : serverPeers_) {

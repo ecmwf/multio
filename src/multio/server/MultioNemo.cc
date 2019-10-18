@@ -23,6 +23,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
 
+#include "multio/LibMultio.h"
 #include "multio/server/Metadata.h"
 #include "multio/server/MultioClient.h"
 #include "multio/server/print_buffer.h"
@@ -53,6 +54,7 @@ class MultioNemo {
     size_t clientCount_ = 1;
     size_t serverCount_ = 1;
     size_t globalSize_ = 2048;
+    size_t depthLevel_ = 1; // normally infer it from field category and levelCount_;
     size_t writeFrequency_ = 6;
 
     MultioNemo() :
@@ -75,10 +77,16 @@ public:
         return metadata_;
     }
 
-    void setDimensions(size_t nClient, size_t nServer, size_t glFieldSize) {
+    void setDimensions(size_t nClient, size_t nServer, size_t glFieldSize, size_t level) {
         clientCount_ = nClient;
         serverCount_ = nServer;
         globalSize_ = glFieldSize;
+        depthLevel_ = level;
+
+        config_.set("clientCount", clientCount_);
+        config_.set("serverCount", serverCount_);
+
+        multioClient_.reset(new MultioClient{config_});
     }
 
     void setDomain(const std::string& dname, const fortint* data, size_t bytes) {
@@ -87,13 +95,17 @@ public:
     }
 
     void writeField(const std::string& fname, fortint tstep, const double* data, size_t bytes) {
-        if (tstep % writeFrequency_ == 0) {
+        eckit::Log::debug<multio::LibMultio>()
+            << "*** Writing field " << fname << ", step = " << tstep << std::endl;
+
+        if (tstep % writeFrequency_ != 0) {
             return;
         }
 
         Metadata metadata;
-        metadata.set("step", tstep);
-        metadata.set("param", fname);
+        metadata.set("igrib", fname);
+        metadata.set("istep", tstep);
+        metadata.set("ilevg", depthLevel_);
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 
@@ -103,13 +115,13 @@ public:
 };
 
 #ifdef __cplusplus
-    extern "C" {
+extern "C" {
 #endif
 
-void multio_set_dimensions_(fortint* clients, fortint* servers, fortint* glfields) {
-    MultioNemo::instance().setDimensions(static_cast<size_t>(*clients),
-                                         static_cast<size_t>(*servers),
-                                         static_cast<size_t>(*glfields));
+void multio_set_dimensions_(fortint* clients, fortint* servers, fortint* glfields, fortint* level) {
+    MultioNemo::instance().setDimensions(
+        static_cast<size_t>(*clients), static_cast<size_t>(*servers),
+        static_cast<size_t>(*glfields), static_cast<size_t>(*level));
 }
 
 void multio_open_connection_() {
@@ -130,10 +142,10 @@ void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint k
     MultioNemo::instance().setDomain(name, data, (*size) * sizeof(fortint));
 }
 
-void multio_write_field_(const char* fname, const double* data, fortint* timeStep, fortint fn_len,
-                         fortint data_sz) {
+void multio_write_field_(const char* fname, const double* data, fortint* size, fortint* timeStep,
+                         fortint fn_len) {
     std::string name{fname, fname + fn_len};
-    MultioNemo::instance().writeField(name, *timeStep, data, data_sz * sizeof(double));
+    MultioNemo::instance().writeField(name, *timeStep, data, (*size) * sizeof(double));
 }
 
 #ifdef __cplusplus

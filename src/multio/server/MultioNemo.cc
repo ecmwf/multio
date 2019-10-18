@@ -100,12 +100,6 @@ public:
         MultioNemo::instance().client().sendField(fname, "ocean-surface", globalSize_,
                                                   "orca_grid_T", metadata, std::move(field_vals));
     }
-
-    size_t clientCont() { return clientCount_; }
-
-    size_t serverCount() { return serverCount_; }
-
-    size_t globalSize() { return globalSize_; }
 };
 
 #ifdef __cplusplus

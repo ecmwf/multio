@@ -26,14 +26,16 @@
 #include "multio/server/Message.h"
 
 
-namespace eckit { class Configuration; }
+namespace eckit {
+class Configuration;
+}
 
 namespace multio {
 namespace server {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class Action : eckit::NonCopyable {
+class Action : private eckit::NonCopyable {
 public:
     Action(const eckit::Configuration& config);
     virtual ~Action() = default;

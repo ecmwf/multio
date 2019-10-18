@@ -33,7 +33,7 @@ namespace server {
 
 class Action;
 
-class Plan : eckit::NonCopyable {
+class Plan : private eckit::NonCopyable {
 public:
     Plan(const eckit::Configuration& config);
     ~Plan();

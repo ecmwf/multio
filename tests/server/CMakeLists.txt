@@ -22,6 +22,7 @@ ecbuild_add_test( TARGET      test_multio_hammer_mpi
 
 list( APPEND _test_environment
     FDB_DEBUG=1
+    MULTIO_DEBUG=1
 )
 
 list( APPEND _hammer_test_data

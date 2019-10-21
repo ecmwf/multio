@@ -12,41 +12,17 @@
 /// @author Simon Smart
 /// @author Tiago Quintino
 
-/// @date Jan 2019
+/// @date Oct 2019
 
-#ifndef multio_server_Plan_H
-#define multio_server_Plan_H
+#ifndef multio_server_Metadata_H
+#define multio_server_Metadata_H
 
-#include <memory>
-
-#include "eckit/memory/NonCopyable.h"
-
-#include "multio/server/Message.h"
-
-
-namespace eckit {
-class Configuration;
-}
+#include "eckit/config/LocalConfiguration.h"
 
 namespace multio {
 namespace server {
 
-class Action;
-
-class Plan : private eckit::NonCopyable {
-public:
-    Plan(const eckit::Configuration& config);
-    ~Plan();
-
-    void process(Message msg);
-
-private:
-
-    std::string name_;
-
-    std::unique_ptr<Action> root_;
-
-};
+using Metadata = eckit::LocalConfiguration;
 
 }  // namespace server
 }  // namespace multio

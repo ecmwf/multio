@@ -14,22 +14,23 @@
 #include <memory>
 #include <vector>
 
+#include "multio/server/Metadata.h"
+
 namespace eckit {
 class Buffer;
 class Configuration;
-class LocalConfiguration;
 }  // namespace eckit
 
 namespace multio {
 namespace server {
 
-using Metadata = eckit::LocalConfiguration;
 class Transport;
 class Peer;
 
 class MultioClient {
 public:
     explicit MultioClient(const eckit::Configuration& config);
+    ~MultioClient();
 
     void openConnections() const;
 
@@ -44,8 +45,6 @@ public:
 
 private:
     using PeerList = std::vector<std::unique_ptr<Peer>>;
-
-    Transport* createTransport(const eckit::Configuration& config);
 
     PeerList createServerPeers(const eckit::Configuration& config);
 

@@ -37,7 +37,7 @@ class Transport {
 public:  // methods
 
     Transport(const eckit::Configuration& config);
-    virtual ~Transport();
+    virtual ~Transport() = default;
 
     virtual Message receive() = 0;
 
@@ -60,10 +60,8 @@ private: // methods
 class TransportBuilderBase;
 
 class TransportFactory : private eckit::NonCopyable {
-private:  // methods
-    TransportFactory() {}
 
-public:  // methods
+public:
     static TransportFactory& instance();
 
     void add(const std::string& name, const TransportBuilderBase* builder);
@@ -74,7 +72,9 @@ public:  // methods
 
     Transport* build(const std::string&, const eckit::Configuration& config);
 
-private:  // members
+private:
+    TransportFactory() = default;
+
     std::map<std::string, const TransportBuilderBase*> factories_;
 
     mutable std::recursive_mutex mutex_;

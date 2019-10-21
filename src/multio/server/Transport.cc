@@ -24,7 +24,11 @@ namespace server {
 using eckit::Configuration;
 using eckit::Log;
 
-//----------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
+
+Transport::Transport(const eckit::Configuration&) {}
+
+//--------------------------------------------------------------------------------------------------
 
 TransportFactory& TransportFactory::instance() {
     static TransportFactory singleton;
@@ -80,13 +84,7 @@ TransportBuilderBase::~TransportBuilderBase() {
     TransportFactory::instance().remove(name_);
 }
 
-//----------------------------------------------------------------------------------------------------------------------
-
-Transport::Transport(const eckit::Configuration&) {}
-
-Transport::~Transport() = default;
-
-//----------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 }  // namespace server
 }  // namespace multio

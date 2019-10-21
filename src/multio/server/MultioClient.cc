@@ -14,8 +14,10 @@ namespace server {
 MultioClient::MultioClient(const eckit::Configuration& config) :
     clientCount_{config.getUnsigned("clientCount")},
     serverCount_{config.getUnsigned("serverCount")},
-    transport_(createTransport(config)),
+    transport_(TransportFactory::instance().build(config.getString("transport"), config)),
     serverPeers_{createServerPeers(config)} {}
+
+MultioClient::~MultioClient() = default;
 
 void MultioClient::openConnections() const {
     auto client = transport_->localPeer();
@@ -74,10 +76,6 @@ void MultioClient::sendStepComplete() const {
 }
 
 
-Transport* MultioClient::createTransport(const eckit::Configuration& config) {
-    return TransportFactory::instance().build(config.getString("transport"), config);
-}
-
 MultioClient::PeerList MultioClient::createServerPeers(const eckit::Configuration& config) {
     PeerList serverPeers;
 
@@ -87,6 +85,8 @@ MultioClient::PeerList MultioClient::createServerPeers(const eckit::Configuratio
     eckit::Log::debug<multio::LibMultio>()
         << "transport = " << transport << ", group = " << group << ", clients = " << clientCount_
         << ", servers = " << serverCount_ << std::endl;
+
+    // TODO: May want to move this part inside Transport to avoid these conditions
 
     // For MPI
     if (transport == "mpi") {

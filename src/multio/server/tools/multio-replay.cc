@@ -13,7 +13,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/server/Listener.h"
-#include "multio/server/MultioClient.h"
+#include "multio/server/MultioNemo.h"
 #include "multio/server/MultioServerTool.h"
 #include "multio/server/Transport.h"
 
@@ -21,29 +21,8 @@ using namespace multio::server;
 
 //----------------------------------------------------------------------------------------------------------------
 
-namespace {
-eckit::PathName base() {
-    if (::getenv("MULTIO_SERVER_PATH")) {
-        return eckit::PathName{::getenv("MULTIO_SERVER_PATH")};
-    }
-    return eckit::PathName{""};
-}
-
-eckit::PathName test_configuration(const std::string& type) {
-    eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
-    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-config.json"},
-                                                  {"tcp", "tcp-test-config.json"},
-                                                  {"thread", "thread-test-config.json"},
-                                                  {"none", "no-transport-test-config.json"}};
-
-    return base() + "/configs/" + eckit::PathName{configs.at(type)};
-}
-}  // namespace
-
-//----------------------------------------------------------------------------------------------------------------
-
 class MultioReplay final : public multio::server::MultioServerTool {
-public:  // methods
+public:
 
     MultioReplay(int argc, char** argv);
 
@@ -58,11 +37,11 @@ private:
 
     void runClient();
 
-    void sendDomain(MultioClient& multioClient);
-    void sendFields(MultioClient& multioClient);
+    void setDomains();
+    void writeFields();
 
-    eckit::Buffer readGrid(const std::string& grid_type, size_t client_id);
-    eckit::Buffer readField(const std::string& param, size_t client_id) const;
+    std::vector<int> readGrid(const std::string& grid_type, size_t client_id);
+    std::vector<double> readField(const std::string& param, size_t client_id) const;
 
     bool isServer(size_t rank) const;
     size_t commSize() const;
@@ -71,17 +50,16 @@ private:
     std::string transportType_ = "mpi";
     std::string pathToNemoData_ = "";
 
-    size_t clientCount_ = 1;
-    size_t serverCount_ = 1;
-    size_t fieldSize_ = 1;
-    size_t level_ = 1;
-    size_t step_ = 24;
+    int clientCount_ = 1;
+    int serverCount_ = 1;
+    int globalSize_ = 105704;
+    int level_ = 1;
+    int step_ = 24;
     std::map<std::string, std::string> parameters_ = {{"sst", "orca_grid_T"},
                                                       {"ssu", "orca_grid_U"},
                                                       {"ssv", "orca_grid_V"},
                                                       {"ssw", "orca_grid_W"}};
 
-    eckit::LocalConfiguration config_;
     size_t rank_ = 0;
 };
 
@@ -90,13 +68,11 @@ private:
 MultioReplay::MultioReplay(int argc, char** argv) : multio::server::MultioServerTool(argc, argv) {
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>("path", "Path to NEMO data"));
+    options_.push_back(new eckit::option::SimpleOption<long>("nbclients", "Number of clients"));
+    options_.push_back(new eckit::option::SimpleOption<long>("field", "Name of field to replay"));
     options_.push_back(
-        new eckit::option::SimpleOption<std::string>("path", "Path to NEMO data"));
-    options_.push_back(new eckit::option::SimpleOption<size_t>("nbclients", "Number of clients"));
-    options_.push_back(
-        new eckit::option::SimpleOption<size_t>("field", "Name of field to replay"));
-    options_.push_back(
-        new eckit::option::SimpleOption<size_t>("step", "Time counter for the field to replay"));
+        new eckit::option::SimpleOption<long>("step", "Time counter for the field to replay"));
 }
 
 void MultioReplay::init(const eckit::option::CmdArgs& args) {
@@ -112,12 +88,9 @@ void MultioReplay::init(const eckit::option::CmdArgs& args) {
         throw eckit::SeriousBug("Only MPI transport is supported for this tool");
     }
 
-    config_ =
-        eckit::LocalConfiguration{eckit::YAMLConfiguration{test_configuration(transportType_)}};
+    rank_ = eckit::mpi::comm("world").rank();
 
-    rank_ = eckit::mpi::comm(config_.getString("group").c_str()).rank();
-
-    auto comm_size = eckit::mpi::comm(config_.getString("group").c_str()).size();
+    auto comm_size = static_cast<int>(eckit::mpi::comm("world").size());
     if (comm_size != clientCount_ + serverCount_) {
         throw eckit::SeriousBug(
             "Number of MPI ranks does not match the number of clients and servers");
@@ -132,45 +105,40 @@ void MultioReplay::execute(const eckit::option::CmdArgs &) {
 
 void MultioReplay::runClient() {
 
-    config_.set("clientCount", clientCount_);
-    config_.set("serverCount", serverCount_);
+    multio_set_dimensions_(&clientCount_, &serverCount_, &globalSize_, &level_);
 
-    MultioClient multioClient(config_);
+    multio_open_connection_();
 
-    multioClient.openConnections();
+    setDomains();
 
-    sendDomain(multioClient);
+    writeFields();
 
-    sendFields(multioClient);
-
-    multioClient.closeConnections();
+    multio_close_connection_();
 }
 
-void MultioReplay::sendDomain(MultioClient& multioClient) {
+void MultioReplay::setDomains() {
     for (std::string grid_type : {"grid_T", "grid_U", "grid_V", "grid_W"}) {
-        auto buffer = readGrid(grid_type, rank_);
 
-        // Send domain to each server
-        auto repr = "orca_" + grid_type;
-        multioClient.sendDomain(repr, "structured", std::move(buffer));
+        auto dname = "orca_" + grid_type;
+
+        auto buffer = readGrid(grid_type, rank_);
+        auto sz = static_cast<int>(buffer.size());
+
+        multio_set_domain_(dname.c_str(), buffer.data(), &sz, static_cast<int>(dname.size()));
     }
 }
 
-void MultioReplay::sendFields(MultioClient& multioClient) {
+void MultioReplay::writeFields() {
     for (const auto& param : parameters_) {
         auto buffer = readField(param.first, rank_);
 
-        Metadata metadata;
-        metadata.set("igrib", param.first);
-        metadata.set("ilevg", level_);
-        metadata.set("istep", step_);
-
-        multioClient.sendField(param.first, "ocean-surface", fieldSize_, param.second, metadata,
-                               std::move(buffer));
+        auto sz = static_cast<int>(buffer.size());
+        multio_write_field_(param.first.c_str(), buffer.data(), &sz, &step_,
+                            static_cast<int>(param.first.size()));
     }
 }
 
-eckit::Buffer MultioReplay::readGrid(const std::string& grid_type, size_t client_id) {
+std::vector<int> MultioReplay::readGrid(const std::string& grid_type, size_t client_id) {
     std::ostringstream oss;
     oss << grid_type << "_" << std::setfill('0') << std::setw(2) << client_id;
 
@@ -184,17 +152,17 @@ eckit::Buffer MultioReplay::readGrid(const std::string& grid_type, size_t client
         throw eckit::SeriousBug("Wrong grid is being read");
     }
 
-    std::vector<int32_t> domain_dims;
-    for (int32_t next; infile >> next;) {
+    std::vector<int> domain_dims;
+    for (int next; infile >> next;) {
         domain_dims.push_back(next);
     }
-    fieldSize_ = static_cast<size_t>(domain_dims[0] * domain_dims[1]);
 
-    return eckit::Buffer{reinterpret_cast<const char*>(domain_dims.data()),
-                         domain_dims.size() * sizeof(int32_t)};
+    ASSERT(globalSize_ == (domain_dims[0] * domain_dims[1]));
+
+    return domain_dims;
 }
 
-eckit::Buffer MultioReplay::readField(const std::string& param, size_t client_id) const {
+std::vector<double> MultioReplay::readField(const std::string& param, size_t client_id) const {
     std::ostringstream oss;
     oss << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_" << std::setfill('0')
         << std::setw(2) << client_id;
@@ -202,9 +170,14 @@ eckit::Buffer MultioReplay::readField(const std::string& param, size_t client_id
     auto field = eckit::PathName{pathToNemoData_ + oss.str()};
 
     std::ifstream infile(std::string{field.fullName()}.c_str());
-    std::string str{std::istreambuf_iterator<char>(infile), std::istreambuf_iterator<char>()};
+    infile.seekg(0, infile.end);
+    auto bytes = infile.tellg();
+    infile.seekg(0, infile.beg);
 
-    return eckit::Buffer{str.data(), str.size()};
+    std::vector<double> vals(bytes / sizeof(double));
+    infile.read(reinterpret_cast<char*>(vals.data()), bytes);
+
+    return vals;
 }
 
 bool MultioReplay::isServer(size_t rank) const {

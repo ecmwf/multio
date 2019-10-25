@@ -52,7 +52,7 @@ class MultioNemo {
     // Default values -- how we set them will depend on the transport layer
 
     size_t clientCount_ = 1;
-    size_t serverCount_ = 1;
+    size_t serverCount_ = 0;
     size_t globalSize_ = 2048;
     size_t depthLevel_ = 1; // normally infer it from field category and levelCount_;
     size_t writeFrequency_ = 6;
@@ -112,6 +112,10 @@ public:
         MultioNemo::instance().client().sendField(fname, "ocean-surface", globalSize_,
                                                   "orca_grid_T", metadata, std::move(field_vals));
     }
+
+    bool useServer() const {
+        return serverCount_ > 0;
+    }
 };
 
 #ifdef __cplusplus
@@ -139,7 +143,15 @@ void multio_send_step_complete_() {
 void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint key_len) {
     std::string name{key, key + key_len};
     static_assert(sizeof(int) == sizeof(fortint), "Type 'int' is not 32-bit long");
-    MultioNemo::instance().setDomain(name, data, (*size) * sizeof(fortint));
+    if (MultioNemo::instance().useServer()) {
+        MultioNemo::instance().setDomain(name, data, (*size) * sizeof(fortint));
+    }
+    else {
+        std::cout << name << ":  " << std::flush;
+        std::vector<fortint> grid_data{data, data + *size};
+        print_buffer(grid_data);
+        std::cout << std::endl;
+    }
 }
 
 void multio_write_field_(const char* fname, const double* data, fortint* size, fortint* timeStep,

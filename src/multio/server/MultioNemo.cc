@@ -53,9 +53,8 @@ class MultioNemo {
 
     size_t clientCount_ = 1;
     size_t serverCount_ = 0;
-    size_t globalSize_ = 2048;
-    size_t depthLevel_ = 1; // normally infer it from field category and levelCount_;
-    size_t writeFrequency_ = 6;
+
+    size_t writeFrequency_ = 6; // TODO: coming from a configuration
 
     MultioNemo() :
         config_{eckit::YAMLConfiguration{configuration_path()}},
@@ -77,11 +76,9 @@ public:
         return metadata_;
     }
 
-    void setDimensions(size_t nClient, size_t nServer, size_t glFieldSize, size_t level) {
+    void initClient(size_t nClient, size_t nServer) {
         clientCount_ = nClient;
         serverCount_ = nServer;
-        globalSize_ = glFieldSize;
-        depthLevel_ = level;
 
         config_.set("clientCount", clientCount_);
         config_.set("serverCount", serverCount_);
@@ -94,39 +91,36 @@ public:
         client().sendDomain(dname, "structured", std::move(domain_def));
     }
 
-    void writeField(const std::string& fname, fortint tstep, const double* data, size_t bytes) {
-        eckit::Log::debug<multio::LibMultio>()
-            << "*** Writing field " << fname << ", step = " << tstep << std::endl;
-
-        if (tstep % writeFrequency_ != 0) {
+    void writeField(const std::string& fname, const double* data, size_t bytes) {
+        if (metadata_.getUnsigned("istep") % writeFrequency_ != 0) {
             return;
         }
 
-        Metadata metadata;
-        metadata.set("igrib", fname);
-        metadata.set("istep", tstep);
-        metadata.set("ilevg", depthLevel_);
+        metadata_.set("igrib", fname);
+        auto gl_size = static_cast<size_t>(metadata_.getInt("isizeg"));
+
+        eckit::Log::debug<multio::LibMultio>()
+            << "*** Writing field " << fname << ", step = " << metadata_.getInt("istep")
+            << ", level = " << metadata_.getInt("ilevg") << std::endl;
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 
-        MultioNemo::instance().client().sendField(fname, "ocean-surface", globalSize_,
-                                                  "orca_grid_T", metadata, std::move(field_vals));
+        MultioNemo::instance().client().sendField(fname, "ocean-surface", gl_size, "orca_grid_T",
+                                                  metadata_, std::move(field_vals));
     }
 
     bool useServer() const {
         return serverCount_ > 0;
+    }
+
+    bool isActive(const std::string& name) const {
+        return true; // Not yet implemented
     }
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-void multio_set_dimensions_(fortint* clients, fortint* servers, fortint* glfields, fortint* level) {
-    MultioNemo::instance().setDimensions(
-        static_cast<size_t>(*clients), static_cast<size_t>(*servers),
-        static_cast<size_t>(*glfields), static_cast<size_t>(*level));
-}
 
 void multio_open_connection_() {
     MultioNemo::instance().client().openConnections();
@@ -138,6 +132,15 @@ void multio_close_connection_() {
 
 void multio_send_step_complete_() {
     MultioNemo::instance().client().sendStepComplete();
+}
+
+void multio_metadata_set_int_value_(const char* key, fortint* value, int key_len) {
+    std::string skey{key, key + key_len};
+    MultioNemo::instance().metadata().set(skey, *value);
+}
+
+void multio_init_client_(fortint* clients, fortint* servers) {
+    MultioNemo::instance().initClient(static_cast<size_t>(*clients), static_cast<size_t>(*servers));
 }
 
 void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint key_len) {
@@ -154,10 +157,14 @@ void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint k
     }
 }
 
-void multio_write_field_(const char* fname, const double* data, fortint* size, fortint* timeStep,
-                         fortint fn_len) {
+void multio_write_field_(const char* fname, const double* data, fortint* size, fortint fn_len) {
     std::string name{fname, fname + fn_len};
-    MultioNemo::instance().writeField(name, *timeStep, data, (*size) * sizeof(double));
+    MultioNemo::instance().writeField(name, data, (*size) * sizeof(double));
+}
+
+bool multio_is_active_(const char* fname, fortint fn_len) {
+    std::string name{fname, fname + fn_len};
+    MultioNemo::instance().isActive(name);
 }
 
 #ifdef __cplusplus

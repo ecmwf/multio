@@ -37,6 +37,7 @@ private:
 
     void runClient();
 
+    void setMetadata();
     void setDomains();
     void writeFields();
 
@@ -105,7 +106,9 @@ void MultioReplay::execute(const eckit::option::CmdArgs &) {
 
 void MultioReplay::runClient() {
 
-    multio_set_dimensions_(&clientCount_, &serverCount_, &globalSize_, &level_);
+    multio_init_client_(&clientCount_, &serverCount_);
+
+    setMetadata();
 
     multio_open_connection_();
 
@@ -114,6 +117,17 @@ void MultioReplay::runClient() {
     writeFields();
 
     multio_close_connection_();
+}
+
+void MultioReplay::setMetadata() {
+    auto key = std::string{"isizeg"};
+    multio_metadata_set_int_value_(key.c_str(), &globalSize_, static_cast<int>(key.size()));
+
+    key = std::string{"ilevg"};
+    multio_metadata_set_int_value_(key.c_str(), &level_, static_cast<int>(key.size()));
+
+    key = std::string{"istep"};
+    multio_metadata_set_int_value_(key.c_str(), &step_, static_cast<int>(key.size()));
 }
 
 void MultioReplay::setDomains() {
@@ -133,7 +147,7 @@ void MultioReplay::writeFields() {
         auto buffer = readField(param.first, rank_);
 
         auto sz = static_cast<int>(buffer.size());
-        multio_write_field_(param.first.c_str(), buffer.data(), &sz, &step_,
+        multio_write_field_(param.first.c_str(), buffer.data(), &sz,
                             static_cast<int>(param.first.size()));
     }
 }

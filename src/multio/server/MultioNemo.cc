@@ -114,7 +114,7 @@ public:
     }
 
     bool isActive(const std::string& name) const {
-        return true; // Not yet implemented
+        return false; // Not yet implemented
     }
 };
 
@@ -162,9 +162,9 @@ void multio_write_field_(const char* fname, const double* data, fortint* size, f
     MultioNemo::instance().writeField(name, data, (*size) * sizeof(double));
 }
 
-bool multio_is_active_(const char* fname, fortint fn_len) {
+void multio_field_is_active_(const char* fname, bool* is_active, fortint fn_len) {
     std::string name{fname, fname + fn_len};
-    MultioNemo::instance().isActive(name);
+    *is_active = MultioNemo::instance().isActive(name);
 }
 
 #ifdef __cplusplus

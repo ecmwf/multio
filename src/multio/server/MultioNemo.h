@@ -32,7 +32,7 @@ void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint k
 
 void multio_write_field_(const char* fname, const double* data, fortint* size, fortint fn_len);
 
-bool multio_is_active_(const char* fname, fortint fn_len);
+void multio_field_is_active_(const char* fname, bool* is_active, fortint fn_len);
 
 #ifdef __cplusplus
 }

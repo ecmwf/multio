@@ -44,7 +44,6 @@ private:
     std::vector<int> readGrid(const std::string& grid_type, size_t client_id);
     std::vector<double> readField(const std::string& param, size_t client_id) const;
 
-    bool isServer(size_t rank) const;
     size_t commSize() const;
     void testData();
 
@@ -192,10 +191,6 @@ std::vector<double> MultioReplay::readField(const std::string& param, size_t cli
     infile.read(reinterpret_cast<char*>(vals.data()), bytes);
 
     return vals;
-}
-
-bool MultioReplay::isServer(size_t rank) const {
-    return clientCount_ - 1 < rank;
 }
 
 size_t MultioReplay::commSize() const {

@@ -159,7 +159,12 @@ void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint k
 
 void multio_write_field_(const char* fname, const double* data, fortint* size, fortint fn_len) {
     std::string name{fname, fname + fn_len};
-    MultioNemo::instance().writeField(name, data, (*size) * sizeof(double));
+    if (MultioNemo::instance().useServer()) {
+        MultioNemo::instance().writeField(name, data, (*size) * sizeof(double));
+    }
+    else {
+        std::cout << "Writing field " << name << std::endl;
+    }
 }
 
 void multio_field_is_active_(const char* fname, bool* is_active, fortint fn_len) {

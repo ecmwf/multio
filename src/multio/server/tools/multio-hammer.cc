@@ -188,9 +188,9 @@ private:
     void execute(const eckit::option::CmdArgs& args) override;
 
     void executePlans(const eckit::option::CmdArgs& args);
-    void executeMpi(std::shared_ptr<Transport> transport);
-    void executeTcp(std::shared_ptr<Transport> transport);
-    void executeThread(std::shared_ptr<Transport> transport);
+    void executeMpi();
+    void executeTcp();
+    void executeThread();
 
     void startListening(std::shared_ptr<Transport> transport);
     void spawnServers(const PeerList& serverPeers, std::shared_ptr<Transport> transport);
@@ -216,7 +216,7 @@ private:
     eckit::LocalConfiguration config_;
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------
 
 MultioHammer::MultioHammer(int argc, char** argv) : multio::server::MultioServerTool(argc, argv) {
     options_.push_back(
@@ -255,7 +255,7 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
     }
 }
 
-//----------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------
 
 void MultioHammer::startListening(std::shared_ptr<Transport> transport) {
     Listener listener(config_, *transport);
@@ -359,30 +359,22 @@ void MultioHammer::spawnClients(const PeerList& clientPeers,
     }
 }
 
-//----------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------
 
 void MultioHammer::execute(const eckit::option::CmdArgs& args) {
-    if (transportType_ == "none") {
-        executePlans(args);
-        return;
-    }
-
-    config_.set("local_port", port_);
-    std::shared_ptr<Transport> transport{
-        TransportFactory::instance().build(transportType_, config_)};
-
-    eckit::Log::debug<multio::LibMultio>() << *transport << std::endl;
-
     field_size() = 29;
 
+    if (transportType_ == "none") {
+        executePlans(args);
+    }
     if (transportType_ == "mpi") {
-        executeMpi(transport);
+        executeMpi();
     }
     if (transportType_ == "tcp") {
-        executeTcp(transport);
+        executeTcp();
     }
     if (transportType_ == "thread") {
-        executeThread(transport);
+        executeThread();
     }
 
     testData();
@@ -429,7 +421,9 @@ void MultioHammer::testData() {
 }
 
 
-void MultioHammer::executeMpi(std::shared_ptr<Transport> transport) {
+void MultioHammer::executeMpi() {
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("mpi", config_)};
+
     auto comm = config_.getString("group");
 
     PeerList clientPeers;
@@ -448,7 +442,10 @@ void MultioHammer::executeMpi(std::shared_ptr<Transport> transport) {
     spawnClients(clientPeers, serverPeers, transport);
 }
 
-void MultioHammer::executeTcp(std::shared_ptr<Transport> transport) {
+void MultioHammer::executeTcp() {
+    config_.set("local_port", port_);
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("tcp", config_)};
+
     PeerList serverPeers;
     for (auto cfg : config_.getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
@@ -472,7 +469,9 @@ void MultioHammer::executeTcp(std::shared_ptr<Transport> transport) {
     spawnClients(clientPeers, serverPeers, transport);
 }
 
-void MultioHammer::executeThread(std::shared_ptr<Transport> transport) {
+void MultioHammer::executeThread() {
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("thread", config_)};
+
     // Spawn servers
     PeerList serverPeers;
     for (size_t i = 0; i != serverCount_; ++i) {
@@ -558,7 +557,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
     codes_handle_delete(handle);
 }
 
-//----------------------------------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
     MultioHammer tool{argc, argv};

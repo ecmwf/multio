@@ -15,7 +15,9 @@ MultioClient::MultioClient(const eckit::Configuration& config) :
     clientCount_{config.getUnsigned("clientCount")},
     serverCount_{config.getUnsigned("serverCount")},
     transport_(TransportFactory::instance().build(config.getString("transport"), config)),
-    serverPeers_{createServerPeers(config)} {}
+    serverPeers_{createServerPeers(config)} {
+    eckit::Log::debug<multio::LibMultio>() << config << std::endl;
+}
 
 MultioClient::~MultioClient() = default;
 

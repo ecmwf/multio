@@ -78,6 +78,14 @@ void MultioServer::init(const eckit::option::CmdArgs& args) {
 
     config_ = eckit::LocalConfiguration{eckit::YAMLConfiguration{test_configuration(transport_)}};
     config_.set("local_port", port_);
+
+    if(transport_ == "mpi") {
+        int32_t gl_comm = eckit::mpi::comm().communicator();
+        if (!eckit::mpi::hasComm("nemo")) {
+            eckit::mpi::addComm("nemo", gl_comm);
+        }
+        eckit::mpi::comm("nemo").split(888, "server_comm");
+    }
 }
 
 void MultioServer::testData() const {

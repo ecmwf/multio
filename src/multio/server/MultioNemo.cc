@@ -22,6 +22,7 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
+#include "eckit/mpi/Comm.h"
 
 #include "multio/LibMultio.h"
 #include "multio/server/Metadata.h"
@@ -58,7 +59,7 @@ class MultioNemo {
 
     MultioNemo() :
         config_{eckit::YAMLConfiguration{configuration_path()}},
-        multioClient_{new MultioClient{config_}} {}
+        multioClient_{nullptr} {}
 
 public:
 
@@ -76,10 +77,11 @@ public:
         return metadata_;
     }
 
-    void initClient(size_t nClient, size_t nServer) {
+    void initClient(const std::string& group, size_t nClient, size_t nServer) {
         clientCount_ = nClient;
         serverCount_ = nServer;
 
+        config_.set("group", group);
         config_.set("clientCount", clientCount_);
         config_.set("serverCount", serverCount_);
 
@@ -139,8 +141,35 @@ void multio_metadata_set_int_value_(const char* key, fortint* value, int key_len
     MultioNemo::instance().metadata().set(skey, *value);
 }
 
-void multio_init_client_(fortint* clients, fortint* servers) {
-    MultioNemo::instance().initClient(static_cast<size_t>(*clients), static_cast<size_t>(*servers));
+void multio_init_client_(const char* name, fortint* ret_comm, fortint* gl_comm, int len) {
+    // if (config_.getString("transport") = "mpi") {}
+    if (!eckit::mpi::hasComm("nemo")) {
+        eckit::mpi::addComm("nemo", *gl_comm);
+    }
+    auto oce_str = std::string{name, name + len};
+    eckit::mpi::listComms();
+    std::cout << "Calling mpi split " << std::endl;
+    const eckit::mpi::Comm& chld = eckit::mpi::comm("nemo").split(777, oce_str);
+    std::cout << "Completed mpi split " << std::endl;
+    eckit::mpi::listComms();
+
+    *ret_comm = chld.communicator();
+
+    auto clientCount = eckit::mpi::comm(oce_str.c_str()).size();
+    auto serverCount = eckit::mpi::comm("nemo").size() - clientCount;
+
+    MultioNemo::instance().initClient("nemo", clientCount, serverCount);
+}
+
+void multio_init_server_(fortint* gl_comm) {
+    if (!eckit::mpi::hasComm("nemo")) {
+        eckit::mpi::addComm("nemo", *gl_comm);
+    }
+    std::cout << "Calling mpi split " << std::endl;
+    eckit::mpi::comm("nemo").split(888, "server_comm");
+    std::cout << "Completed mpi split " << std::endl;
+
+    eckit::mpi::listComms();
 }
 
 void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint key_len) {

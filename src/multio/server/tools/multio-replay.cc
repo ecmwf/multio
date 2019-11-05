@@ -45,6 +45,7 @@ private:
     std::vector<double> readField(const std::string& param, size_t client_id) const;
 
     size_t commSize() const;
+    void initClient();
     void testData();
 
     std::string transportType_ = "mpi";
@@ -84,17 +85,7 @@ void MultioReplay::init(const eckit::option::CmdArgs& args) {
 
     args.get("step", step_);
 
-    if (transportType_ != "mpi") {
-        throw eckit::SeriousBug("Only MPI transport is supported for this tool");
-    }
-
-    rank_ = eckit::mpi::comm("world").rank();
-
-    auto comm_size = static_cast<int>(eckit::mpi::comm("world").size());
-    if (comm_size != clientCount_ + serverCount_) {
-        throw eckit::SeriousBug(
-            "Number of MPI ranks does not match the number of clients and servers");
-    }
+    initClient();
 }
 
 void MultioReplay::execute(const eckit::option::CmdArgs &) {
@@ -103,20 +94,17 @@ void MultioReplay::execute(const eckit::option::CmdArgs &) {
     testData();
  }
 
-void MultioReplay::runClient() {
+ void MultioReplay::runClient() {
+     setMetadata();
 
-    multio_init_client_(&clientCount_, &serverCount_);
+     multio_open_connection_();
 
-    setMetadata();
+     setDomains();
 
-    multio_open_connection_();
+     writeFields();
 
-    setDomains();
-
-    writeFields();
-
-    multio_close_connection_();
-}
+     multio_close_connection_();
+ }
 
 void MultioReplay::setMetadata() {
     auto key = std::string{"isizeg"};
@@ -195,6 +183,25 @@ std::vector<double> MultioReplay::readField(const std::string& param, size_t cli
 
 size_t MultioReplay::commSize() const {
     return clientCount_ + serverCount_;
+}
+
+void MultioReplay::initClient() {
+    if (transportType_ != "mpi") {
+        throw eckit::SeriousBug("Only MPI transport is supported for this tool");
+    }
+
+    rank_ = eckit::mpi::comm("world").rank();
+
+    auto comm_size = static_cast<int>(eckit::mpi::comm("world").size());
+    if (comm_size != clientCount_ + serverCount_) {
+        throw eckit::SeriousBug(
+            "Number of MPI ranks does not match the number of clients and servers");
+    }
+
+    std::string comm_name = "oce";
+    int32_t ret_comm;
+    int32_t gl_comm = eckit::mpi::comm().communicator();
+    multio_init_client_(comm_name.c_str(), &ret_comm, &gl_comm, comm_name.size());
 }
 
 void MultioReplay::testData() {

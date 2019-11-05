@@ -26,7 +26,7 @@ void multio_send_step_complete_();
 
 void multio_metadata_set_int_value_(const char* key, fortint* value, int key_len);
 
-void multio_init_client_(fortint* clients, fortint* servers);
+void multio_init_client_(const char* name, fortint* ret_comm, fortint* gl_comm, int len);
 
 void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint key_len);
 

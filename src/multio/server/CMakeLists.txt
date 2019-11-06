@@ -85,5 +85,5 @@ ecbuild_add_executable( TARGET    multio-replay
 
 ecbuild_add_executable( TARGET    multio-probe
                         CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   tools/multio-server.cc
+                        SOURCES   tools/multio-probe.cc
                         LIBS      multio-server multio)

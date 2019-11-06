@@ -41,10 +41,10 @@ eckit::PathName test_configuration(const std::string& type) {
 
 //----------------------------------------------------------------------------------------------------------------
 
-class MultioServer final : public multio::server::MultioServerTool {
+class MultioProbe final : public multio::server::MultioServerTool {
 public:  // methods
 
-    MultioServer(int argc, char** argv);
+    MultioProbe(int argc, char** argv);
 
 private:
     void usage(const std::string& tool) const override {
@@ -63,7 +63,7 @@ private:
     eckit::LocalConfiguration config_;
 };
 
-MultioServer::MultioServer(int argc, char** argv) : multio::server::MultioServerTool(argc, argv) {
+MultioProbe::MultioProbe(int argc, char** argv) : multio::server::MultioServerTool(argc, argv) {
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("port", "TCP port"));
@@ -71,7 +71,7 @@ MultioServer::MultioServer(int argc, char** argv) : multio::server::MultioServer
 }
 
 
-void MultioServer::init(const eckit::option::CmdArgs& args) {
+void MultioProbe::init(const eckit::option::CmdArgs& args) {
     args.get("transport", transport_);
     args.get("port", port_);
     args.get("test", test_);
@@ -88,7 +88,7 @@ void MultioServer::init(const eckit::option::CmdArgs& args) {
     }
 }
 
-void MultioServer::testData() const {
+void MultioProbe::testData() const {
     if(not test_) {
         return;
     }
@@ -101,7 +101,7 @@ void MultioServer::testData() const {
     ::sleep(1);
 }
 
-void MultioServer::execute(const eckit::option::CmdArgs &) {
+void MultioProbe::execute(const eckit::option::CmdArgs &) {
     std::unique_ptr<Transport> transport{TransportFactory::instance().build(transport_, config_)};
 
     Listener listener{config_, *transport};
@@ -111,6 +111,6 @@ void MultioServer::execute(const eckit::option::CmdArgs &) {
 }
 
 int main(int argc, char** argv) {
-    MultioServer tool(argc, argv);
+    MultioProbe tool(argc, argv);
     return tool.start();
 }

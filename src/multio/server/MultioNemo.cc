@@ -27,11 +27,13 @@
 #include "multio/LibMultio.h"
 #include "multio/server/Metadata.h"
 #include "multio/server/MultioClient.h"
+#include "multio/server/MultioServer.h"
 #include "multio/server/print_buffer.h"
 
 using multio::server::Metadata;
 using multio::server::print_buffer;
 using multio::server::MultioClient;
+using multio::server::MultioServer;
 
 namespace {
 eckit::PathName configuration_path() {
@@ -49,6 +51,7 @@ class MultioNemo {
     Metadata metadata_;
 
     std::unique_ptr<MultioClient> multioClient_ = nullptr;
+    std::unique_ptr<MultioServer> multioServer_ = nullptr;
 
     // Default values -- how we set them will depend on the transport layer
 
@@ -87,6 +90,8 @@ public:
 
         multioClient_.reset(new MultioClient{config_});
     }
+
+    void initServer() { multioServer_.reset(new MultioServer{}); }
 
     void setDomain(const std::string& dname, const fortint* data, size_t bytes) {
         eckit::Buffer domain_def{reinterpret_cast<const char*>(data), bytes};
@@ -172,6 +177,8 @@ void multio_init_server_(fortint* gl_comm) {
     std::cout << "Completed mpi split " << std::endl;
 
     eckit::mpi::listComms();
+
+    MultioNemo::instance().initServer();
 }
 
 void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint key_len) {

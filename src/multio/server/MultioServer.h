@@ -26,11 +26,13 @@ class Transport;
 
 class MultioServer {
 public:
+    MultioServer();
     MultioServer(const eckit::Configuration& config);
+
     ~MultioServer();
 
 private:
-    std::unique_ptr<Transport> transport_ = nullptr;
+    std::shared_ptr<Transport> transport_ = nullptr;
     Listener listener_;
 };
 }  // namespace server

@@ -51,8 +51,6 @@ private:
     std::string transportType_ = "mpi";
     std::string pathToNemoData_ = "";
 
-    int clientCount_ = 1;
-    int serverCount_ = 1;
     int globalSize_ = 105704;
     int level_ = 1;
     int step_ = 24;
@@ -79,9 +77,6 @@ MultioReplay::MultioReplay(int argc, char** argv) : multio::server::MultioServer
 void MultioReplay::init(const eckit::option::CmdArgs& args) {
     args.get("transport", transportType_);
     args.get("path", pathToNemoData_);
-
-    args.get("nbclients", clientCount_);
-    args.get("nbservers", serverCount_);
 
     args.get("step", step_);
 
@@ -181,22 +176,12 @@ std::vector<double> MultioReplay::readField(const std::string& param, size_t cli
     return vals;
 }
 
-size_t MultioReplay::commSize() const {
-    return clientCount_ + serverCount_;
-}
-
 void MultioReplay::initClient() {
     if (transportType_ != "mpi") {
         throw eckit::SeriousBug("Only MPI transport is supported for this tool");
     }
 
     rank_ = eckit::mpi::comm("world").rank();
-
-    auto comm_size = static_cast<int>(eckit::mpi::comm("world").size());
-    if (comm_size != clientCount_ + serverCount_) {
-        throw eckit::SeriousBug(
-            "Number of MPI ranks does not match the number of clients and servers");
-    }
 
     std::string comm_name = "oce";
     int32_t ret_comm;

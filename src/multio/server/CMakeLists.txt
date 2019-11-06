@@ -41,6 +41,8 @@ ecbuild_add_library(
         Metadata.h
         MultioClient.cc
         MultioClient.h
+        MultioServer.cc
+        MultioServer.h
         MultioNemo.cc
         MultioNemo.h
         MessageContent.cc

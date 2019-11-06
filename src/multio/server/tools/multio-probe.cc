@@ -11,8 +11,7 @@
 #include "eckit/log/JSON.h"
 
 #include "multio/LibMultio.h"
-#include "multio/server/Listener.h"
-#include "multio/server/MultioClient.h"
+#include "multio/server/MultioServer.h"
 #include "multio/server/MultioServerTool.h"
 #include "multio/server/Transport.h"
 
@@ -80,10 +79,11 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
     config_.set("local_port", port_);
 
     if(transport_ == "mpi") {
-        int32_t gl_comm = eckit::mpi::comm().communicator();
         if (!eckit::mpi::hasComm("nemo")) {
+            int32_t gl_comm = eckit::mpi::comm().communicator();
             eckit::mpi::addComm("nemo", gl_comm);
         }
+        // TODO: find a way to come up with a unique 'colour'
         eckit::mpi::comm("nemo").split(888, "server_comm");
     }
 }
@@ -102,10 +102,8 @@ void MultioProbe::testData() const {
 }
 
 void MultioProbe::execute(const eckit::option::CmdArgs &) {
-    std::unique_ptr<Transport> transport{TransportFactory::instance().build(transport_, config_)};
 
-    Listener listener{config_, *transport};
-    listener.listen();
+    MultioServer server{config_};
 
     testData();
 }

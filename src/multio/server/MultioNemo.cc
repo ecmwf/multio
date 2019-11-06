@@ -149,6 +149,7 @@ void multio_init_client_(const char* name, fortint* ret_comm, fortint* gl_comm, 
     auto oce_str = std::string{name, name + len};
     eckit::mpi::listComms();
     std::cout << "Calling mpi split " << std::endl;
+    // TODO: find a way to come up with a unique 'colour'
     const eckit::mpi::Comm& chld = eckit::mpi::comm("nemo").split(777, oce_str);
     std::cout << "Completed mpi split " << std::endl;
     eckit::mpi::listComms();
@@ -166,6 +167,7 @@ void multio_init_server_(fortint* gl_comm) {
         eckit::mpi::addComm("nemo", *gl_comm);
     }
     std::cout << "Calling mpi split " << std::endl;
+    // TODO: find a way to come up with a unique 'colour'
     eckit::mpi::comm("nemo").split(888, "server_comm");
     std::cout << "Completed mpi split " << std::endl;
 

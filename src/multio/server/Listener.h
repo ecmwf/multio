@@ -25,7 +25,9 @@
 #include "multio/server/Peer.h"
 #include "multio/server/Message.h"
 
-namespace eckit { class Configuration; }
+namespace eckit {
+class Configuration;
+}
 
 namespace multio {
 namespace server {

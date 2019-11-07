@@ -22,6 +22,7 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
+#include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 
 #include "multio/LibMultio.h"
@@ -147,16 +148,14 @@ void multio_metadata_set_int_value_(const char* key, fortint* value, int key_len
 }
 
 void multio_init_client_(const char* name, fortint* ret_comm, fortint* gl_comm, int len) {
-    // if (config_.getString("transport") = "mpi") {}
-    if (!eckit::mpi::hasComm("nemo")) {
-        eckit::mpi::addComm("nemo", *gl_comm);
-    }
+    eckit::mpi::addComm("nemo", *gl_comm);
+
     auto oce_str = std::string{name, name + len};
+    eckit::Log::info() << "client: Calling mpi split --- ";
     eckit::mpi::listComms();
-    std::cout << "Calling mpi split " << std::endl;
     // TODO: find a way to come up with a unique 'colour'
     const eckit::mpi::Comm& chld = eckit::mpi::comm("nemo").split(777, oce_str);
-    std::cout << "Completed mpi split " << std::endl;
+    eckit::Log::info() << "client: Completed mpi split --- ";
     eckit::mpi::listComms();
 
     *ret_comm = chld.communicator();
@@ -167,15 +166,14 @@ void multio_init_client_(const char* name, fortint* ret_comm, fortint* gl_comm, 
     MultioNemo::instance().initClient("nemo", clientCount, serverCount);
 }
 
-void multio_init_server_(fortint* gl_comm) {
-    if (!eckit::mpi::hasComm("nemo")) {
-        eckit::mpi::addComm("nemo", *gl_comm);
-    }
-    std::cout << "Calling mpi split " << std::endl;
+void multio_init_server_(fortint* nemo_comm) {
+    eckit::mpi::addComm("nemo", *nemo_comm);
+
+    eckit::Log::info() << "server: Calling mpi split --- ";
+    eckit::mpi::listComms();
     // TODO: find a way to come up with a unique 'colour'
     eckit::mpi::comm("nemo").split(888, "server_comm");
-    std::cout << "Completed mpi split " << std::endl;
-
+    eckit::Log::info() << "server: Completed mpi split --- ";
     eckit::mpi::listComms();
 
     MultioNemo::instance().initServer();
@@ -188,10 +186,10 @@ void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint k
         MultioNemo::instance().setDomain(name, data, (*size) * sizeof(fortint));
     }
     else {
-        std::cout << name << ":  " << std::flush;
+        eckit::Log::info() << name << ":  " << std::flush;
         std::vector<fortint> grid_data{data, data + *size};
         print_buffer(grid_data);
-        std::cout << std::endl;
+        eckit::Log::info() << std::endl;
     }
 }
 
@@ -201,7 +199,7 @@ void multio_write_field_(const char* fname, const double* data, fortint* size, f
         MultioNemo::instance().writeField(name, data, (*size) * sizeof(double));
     }
     else {
-        std::cout << "Writing field " << name << std::endl;
+        eckit::Log::info() << "Writing field " << name << std::endl;
     }
 }
 

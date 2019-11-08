@@ -17,7 +17,7 @@
 #ifndef multio_server_Listener_H
 #define multio_server_Listener_H
 
-#include <list>
+#include <set>
 #include <memory>
 
 #include "eckit/container/Queue.h"
@@ -43,6 +43,7 @@ public:
 
 private:
     bool moreConnections() const;
+    void checkConnection(const Peer& conn) const;
 
     std::shared_ptr<Dispatcher> dispatcher_;
 
@@ -51,7 +52,7 @@ private:
     size_t closedCount_ = 0;
     size_t clientCount_ = 0;
 
-    std::list<Peer> connections_;
+    std::set<Peer> connections_;
 
     eckit::Queue<Message> msgQueue_;
 };

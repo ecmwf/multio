@@ -43,13 +43,13 @@ void Listener::listen() {
 
         switch (msg.tag()) {
             case Message::Tag::Open:
-                connections_.push_back(msg.source());
+                connections_.insert(msg.source());
                 eckit::Log::debug<LibMultio>()
                     << "*** OPENING connection to " << msg.source() << std::endl;
                 break;
 
             case Message::Tag::Close:
-                connections_.remove(msg.source());
+                connections_.erase(connections_.find(msg.source()));
                 eckit::Log::debug<LibMultio>()
                     << "*** CLOSING connection to " << msg.source() << std::endl;
                 ++closedCount_;
@@ -62,6 +62,7 @@ void Listener::listen() {
                 break;
 
             case Message::Tag::Domain:
+                checkConnection(msg.source());
                 eckit::Log::debug<LibMultio>()
                     << "*** Number of maps: " << msg.domainCount() << std::endl;
                 clientCount_ = msg.domainCount();
@@ -80,6 +81,7 @@ void Listener::listen() {
                 break;
 
             case Message::Tag::Field:
+                checkConnection(msg.source());
                 eckit::Log::debug<LibMultio>()
                     << "*** Field received from: " << msg.source() << std::endl;
                 eckit::Log::debug<LibMultio>()
@@ -101,6 +103,12 @@ void Listener::listen() {
 
 bool Listener::moreConnections() const {
     return !connections_.empty() || closedCount_ != clientCount_;
+}
+
+void Listener::checkConnection(const Peer& conn) const {
+    if (connections_.find(conn) == end(connections_)) {
+        throw eckit::SeriousBug("Connection is not open");
+    }
 }
 
 }  // namespace server

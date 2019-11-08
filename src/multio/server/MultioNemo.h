@@ -19,18 +19,21 @@ using fortint = int32_t;
 extern "C" {
 #endif
 
-void multio_set_dimensions_(fortint* clients, fortint* servers, fortint* glfields, fortint* level);
+void multio_open_connections_();
 
-void multio_open_connection_();
-
-void multio_close_connection_();
+void multio_close_connections_();
 
 void multio_send_step_complete_();
 
+void multio_metadata_set_int_value_(const char* key, fortint* value, int key_len);
+
+void multio_init_client_(const char* name, fortint* ret_comm, fortint* gl_comm, int len);
+
 void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint key_len);
 
-void multio_write_field_(const char* fname, const double* data, fortint* size, fortint* timeStep,
-                         fortint fn_len);
+void multio_write_field_(const char* fname, const double* data, fortint* size, fortint fn_len);
+
+void multio_field_is_active_(const char* fname, bool* is_active, fortint fn_len);
 
 #ifdef __cplusplus
 }

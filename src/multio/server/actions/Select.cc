@@ -21,8 +21,8 @@ namespace server {
 namespace actions {
 
 Select::Select(const eckit::Configuration& config) :
-    Action(config),
-    categories_(config.getStringVector("categories")) {}
+    Action{config},
+    categories_{config.getStringVector("categories")} {}
 
 void Select::execute(Message msg) const {
     bool passOn = (msg.tag() != Message::Tag::Field) || matchPlan(msg);

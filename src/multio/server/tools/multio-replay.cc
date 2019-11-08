@@ -37,21 +37,20 @@ private:
 
     void runClient();
 
+    void setMetadata();
     void setDomains();
     void writeFields();
 
     std::vector<int> readGrid(const std::string& grid_type, size_t client_id);
     std::vector<double> readField(const std::string& param, size_t client_id) const;
 
-    bool isServer(size_t rank) const;
     size_t commSize() const;
+    void initClient();
     void testData();
 
     std::string transportType_ = "mpi";
     std::string pathToNemoData_ = "";
 
-    int clientCount_ = 1;
-    int serverCount_ = 1;
     int globalSize_ = 105704;
     int level_ = 1;
     int step_ = 24;
@@ -79,22 +78,9 @@ void MultioReplay::init(const eckit::option::CmdArgs& args) {
     args.get("transport", transportType_);
     args.get("path", pathToNemoData_);
 
-    args.get("nbclients", clientCount_);
-    args.get("nbservers", serverCount_);
-
     args.get("step", step_);
 
-    if (transportType_ != "mpi") {
-        throw eckit::SeriousBug("Only MPI transport is supported for this tool");
-    }
-
-    rank_ = eckit::mpi::comm("world").rank();
-
-    auto comm_size = static_cast<int>(eckit::mpi::comm("world").size());
-    if (comm_size != clientCount_ + serverCount_) {
-        throw eckit::SeriousBug(
-            "Number of MPI ranks does not match the number of clients and servers");
-    }
+    initClient();
 }
 
 void MultioReplay::execute(const eckit::option::CmdArgs &) {
@@ -103,17 +89,27 @@ void MultioReplay::execute(const eckit::option::CmdArgs &) {
     testData();
  }
 
-void MultioReplay::runClient() {
+ void MultioReplay::runClient() {
+     setMetadata();
 
-    multio_set_dimensions_(&clientCount_, &serverCount_, &globalSize_, &level_);
+     multio_open_connections_();
 
-    multio_open_connection_();
+     setDomains();
 
-    setDomains();
+     writeFields();
 
-    writeFields();
+     multio_close_connections_();
+ }
 
-    multio_close_connection_();
+void MultioReplay::setMetadata() {
+    auto key = std::string{"isizeg"};
+    multio_metadata_set_int_value_(key.c_str(), &globalSize_, static_cast<int>(key.size()));
+
+    key = std::string{"ilevg"};
+    multio_metadata_set_int_value_(key.c_str(), &level_, static_cast<int>(key.size()));
+
+    key = std::string{"istep"};
+    multio_metadata_set_int_value_(key.c_str(), &step_, static_cast<int>(key.size()));
 }
 
 void MultioReplay::setDomains() {
@@ -133,7 +129,7 @@ void MultioReplay::writeFields() {
         auto buffer = readField(param.first, rank_);
 
         auto sz = static_cast<int>(buffer.size());
-        multio_write_field_(param.first.c_str(), buffer.data(), &sz, &step_,
+        multio_write_field_(param.first.c_str(), buffer.data(), &sz,
                             static_cast<int>(param.first.size()));
     }
 }
@@ -180,12 +176,17 @@ std::vector<double> MultioReplay::readField(const std::string& param, size_t cli
     return vals;
 }
 
-bool MultioReplay::isServer(size_t rank) const {
-    return clientCount_ - 1 < rank;
-}
+void MultioReplay::initClient() {
+    if (transportType_ != "mpi") {
+        throw eckit::SeriousBug("Only MPI transport is supported for this tool");
+    }
 
-size_t MultioReplay::commSize() const {
-    return clientCount_ + serverCount_;
+    rank_ = eckit::mpi::comm("world").rank();
+
+    std::string comm_name = "oce";
+    int32_t ret_comm;
+    int32_t gl_comm = eckit::mpi::comm().communicator();
+    multio_init_client_(comm_name.c_str(), &ret_comm, &gl_comm, comm_name.size());
 }
 
 void MultioReplay::testData() {

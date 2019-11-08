@@ -23,7 +23,9 @@ namespace multio {
 namespace server {
 namespace actions {
 
-SingleFieldSink::SingleFieldSink(const eckit::Configuration &config) : Action(config) {}
+SingleFieldSink::SingleFieldSink(const eckit::Configuration& config) :
+    Action{config},
+    rootPath_{config.has("root_path") ? config.getString("root_path") : ""} {}
 
 void SingleFieldSink::execute(Message msg) const {
     switch (msg.tag()) {
@@ -47,7 +49,8 @@ void SingleFieldSink::execute(Message msg) const {
 
 void SingleFieldSink::write(Message msg) const {
     std::ostringstream oss;
-    oss << msg.metadata().getString("igrib") << "::" << msg.metadata().getUnsigned("ilevg")
+    oss << rootPath_ << msg.metadata().getString("igrib")
+        << "::" << msg.metadata().getUnsigned("ilevg")
         << "::" << msg.metadata().getUnsigned("istep");
     eckit::LocalConfiguration config;
 

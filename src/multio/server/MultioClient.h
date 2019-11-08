@@ -29,14 +29,17 @@ class Peer;
 
 class MultioClient {
 public:
+    MultioClient();
     explicit MultioClient(const eckit::Configuration& config);
+
     ~MultioClient();
 
     void openConnections() const;
 
     void closeConnections() const;
 
-    void sendDomain(const std::string& name, const std::string& category, eckit::Buffer&& domain);
+    void sendDomain(const std::string& name, const std::string& category,
+                    const eckit::Buffer& domain);
 
     void sendField(const std::string& name, const std::string& category, size_t gl_size,
                    const std::string& domain, const Metadata& metadata, eckit::Buffer&& field);

@@ -1,0 +1,22 @@
+{
+    "transport" : "mpi",
+    "group" : "nemo",
+    "plans" : [
+        {
+            "name" : "ocean",
+            "actions" : {
+                "root" : {
+                    "type" : "Select",
+                    "categories" : [ "ocean-surface" ],
+                    "next" : {
+                        "type" : "Aggregation",
+                        "next" : {
+                            "type" : "SingleFieldSink",
+                            "root_path" : "/scratch/ma/masd/ocean-fields/"
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -28,7 +28,7 @@ void Mappings::add(Message msg) {
         // Map has been added already -- needed only for the thread transport
         return;
     }
-    eckit::Log::debug<LibMultio>() << "*** Add mapping for " << msg.name() << std::endl;
+    eckit::Log::debug<LibMultio>() << "*** Add mapping for " << msg.name();
 
     ASSERT(mapping.find(msg.source()) == end(mapping));
 
@@ -36,7 +36,7 @@ void Mappings::add(Message msg) {
 
     std::memcpy(local_map.data(), msg.payload().data(), msg.size());
 
-    eckit::Log::debug<LibMultio>() << "***     values: [";
+    eckit::Log::debug<LibMultio>() << ": [";
     print_buffer(local_map, eckit::Log::debug<LibMultio>());
     eckit::Log::debug<LibMultio>() << "]" << std::endl;
 
@@ -61,6 +61,7 @@ void Mappings::list(std::ostream& out) const {
 
 auto Mappings::get(const std::string& name) const -> const Mapping& {
     // Must exist
+    eckit::Log::debug<LibMultio>() << "*** Fetch mappings for " << name << std::endl;
     ASSERT(mappings_.find(name) != end(mappings_));
     return mappings_.at(name);
 }

@@ -11,7 +11,8 @@
                     "next" : {
                         "type" : "Aggregation",
                         "next" : {
-                            "type" : "SingleFieldSink"
+                            "type" : "SingleFieldSink",
+                            "root_path" : "/scratch/ma/masd/ocean-fields/"
                         }
                     }
                 }

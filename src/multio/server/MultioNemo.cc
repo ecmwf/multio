@@ -24,6 +24,7 @@
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
+#include "eckit/runtime/Main.h"
 
 #include "multio/LibMultio.h"
 #include "multio/server/Metadata.h"
@@ -61,9 +62,10 @@ class MultioNemo {
 
     size_t writeFrequency_ = 6; // TODO: coming from a configuration
 
-    MultioNemo() :
-        config_{eckit::YAMLConfiguration{configuration_path()}},
-        multioClient_{nullptr} {}
+    MultioNemo() : config_{eckit::YAMLConfiguration{configuration_path()}} {
+        static const char* argv[2] = {"MultioNemo", 0};
+        eckit::Main::initialise(1, const_cast<char**>(argv));
+    }
 
 public:
 
@@ -82,6 +84,7 @@ public:
     }
 
     void initClient(const std::string& group, size_t nClient, size_t nServer) {
+
         clientCount_ = nClient;
         serverCount_ = nServer;
 
@@ -180,7 +183,7 @@ void multio_init_server_(fortint* nemo_comm) {
 }
 
 void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint key_len) {
-    std::string name{key, key + key_len};
+    std::string name = std::string{key, key + key_len};
     static_assert(sizeof(int) == sizeof(fortint), "Type 'int' is not 32-bit long");
     if (MultioNemo::instance().useServer()) {
         MultioNemo::instance().setDomain(name, data, (*size) * sizeof(fortint));
@@ -206,6 +209,10 @@ void multio_write_field_(const char* fname, const double* data, fortint* size, f
 void multio_field_is_active_(const char* fname, bool* is_active, fortint fn_len) {
     std::string name{fname, fname + fn_len};
     *is_active = MultioNemo::instance().isActive(name);
+}
+
+void multio_finalize_() {
+    eckit::mpi::finaliseAllComms();
 }
 
 #ifdef __cplusplus

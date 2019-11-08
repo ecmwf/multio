@@ -44,8 +44,8 @@ namespace server {
 namespace actions {
 
 Encode::Encode(const eckit::Configuration& config) :
-    Action(config),
-    format_(config.getString("format")) {}
+    Action{config},
+    format_{config.getString("format")} {}
 
 void Encode::execute(Message msg) const {
     if (format_ == "grib") {

@@ -45,6 +45,8 @@ private:
 
     void flush() const;
 
+    std::string rootPath_;
+
     mutable std::unique_ptr<DataSink> dataSink_ = nullptr;
 };
 

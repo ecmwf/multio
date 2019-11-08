@@ -51,12 +51,12 @@ void MultioClient::closeConnections() const {
 }
 
 void MultioClient::sendDomain(const std::string& name, const std::string& category,
-                              eckit::Buffer&& domain) {
+                              const eckit::Buffer& domain) {
     Peer client = transport_->localPeer();
     for (auto& server : serverPeers_) {
         Message msg{
             Message::Header{Message::Tag::Domain, client, *server, name, category, clientCount_},
-            std::move(domain)};
+            domain};
 
         transport_->send(msg);
     }
@@ -103,7 +103,9 @@ MultioClient::PeerList MultioClient::createServerPeers(const eckit::Configuratio
 
     // TODO: May want to move this part inside Transport to avoid these conditions
 
-    // For MPI
+    // For MPI -- this is dangerous as it requires having the same logic as in NEMO or IFS
+    // Perhpas you want ot create an intercommunicator
+    // Move this to the transport layer -- that should create the peerList and pass it back
     if (transport == "mpi") {
         auto comm_size = clientCount_ + serverCount_;
         auto rank = clientCount_;

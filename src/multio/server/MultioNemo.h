@@ -19,9 +19,9 @@ using fortint = int32_t;
 extern "C" {
 #endif
 
-void multio_open_connection_();
+void multio_open_connections_();
 
-void multio_close_connection_();
+void multio_close_connections_();
 
 void multio_send_step_complete_();
 

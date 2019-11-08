@@ -92,13 +92,13 @@ void MultioReplay::execute(const eckit::option::CmdArgs &) {
  void MultioReplay::runClient() {
      setMetadata();
 
-     multio_open_connection_();
+     multio_open_connections_();
 
      setDomains();
 
      writeFields();
 
-     multio_close_connection_();
+     multio_close_connections_();
  }
 
 void MultioReplay::setMetadata() {

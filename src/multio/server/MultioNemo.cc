@@ -147,11 +147,11 @@ public:
 extern "C" {
 #endif
 
-void multio_open_connection_() {
+void multio_open_connections_() {
     MultioNemo::instance().client().openConnections();
 }
 
-void multio_close_connection_() {
+void multio_close_connections_() {
     MultioNemo::instance().client().closeConnections();
 }
 

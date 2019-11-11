@@ -31,6 +31,8 @@ list( APPEND multio_srcs
     ifsio_internals.cc
     ifsio.cc
     ifsio.h
+    ifsio_legacy.cc
+    ifsio_legacy.h
     multio_version.cc
 )
 

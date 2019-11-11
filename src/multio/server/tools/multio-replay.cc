@@ -92,24 +92,19 @@ void MultioReplay::execute(const eckit::option::CmdArgs &) {
  void MultioReplay::runClient() {
      setMetadata();
 
-     multio_open_connections_();
+     multio_open_connections();
 
      setDomains();
 
      writeFields();
 
-     multio_close_connections_();
+     multio_close_connections();
  }
 
 void MultioReplay::setMetadata() {
-    auto key = std::string{"isizeg"};
-    multio_metadata_set_int_value_(key.c_str(), &globalSize_, static_cast<int>(key.size()));
-
-    key = std::string{"ilevg"};
-    multio_metadata_set_int_value_(key.c_str(), &level_, static_cast<int>(key.size()));
-
-    key = std::string{"istep"};
-    multio_metadata_set_int_value_(key.c_str(), &step_, static_cast<int>(key.size()));
+    multio_metadata_set_int_value("isizeg", globalSize_);
+    multio_metadata_set_int_value("ilevg", level_);
+    multio_metadata_set_int_value("istep", step_);
 }
 
 void MultioReplay::setDomains() {
@@ -120,7 +115,7 @@ void MultioReplay::setDomains() {
         auto buffer = readGrid(grid_type, rank_);
         auto sz = static_cast<int>(buffer.size());
 
-        multio_set_domain_(dname.c_str(), buffer.data(), &sz, static_cast<int>(dname.size()));
+        multio_set_domain(dname.c_str(), buffer.data(), sz);
     }
 }
 
@@ -129,8 +124,7 @@ void MultioReplay::writeFields() {
         auto buffer = readField(param.first, rank_);
 
         auto sz = static_cast<int>(buffer.size());
-        multio_write_field_(param.first.c_str(), buffer.data(), &sz,
-                            static_cast<int>(param.first.size()));
+        multio_write_field(param.first.c_str(), buffer.data(), sz);
     }
 }
 
@@ -183,10 +177,7 @@ void MultioReplay::initClient() {
 
     rank_ = eckit::mpi::comm("world").rank();
 
-    std::string comm_name = "oce";
-    int32_t ret_comm;
-    int32_t gl_comm = eckit::mpi::comm().communicator();
-    multio_init_client_(comm_name.c_str(), &ret_comm, &gl_comm, comm_name.size());
+    multio_init_client("oce", eckit::mpi::comm().communicator());
 }
 
 void MultioReplay::testData() {

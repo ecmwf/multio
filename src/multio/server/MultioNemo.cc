@@ -83,14 +83,14 @@ public:
         return metadata_;
     }
 
-    void initClient(const std::string& oce_str, int& ret_comm, int gl_comm) {
+    int initClient(const std::string& oce_str, int glob_comm) {
 
-        eckit::mpi::addComm("nemo", gl_comm);
+        eckit::mpi::addComm("nemo", glob_comm);
 
-        // TODO: find a way to come up with a unique 'colour'
+        // TODO: find a way to come up with a unique 'colour' -- like getting application number
         const eckit::mpi::Comm& chld = eckit::mpi::comm("nemo").split(777, oce_str);
 
-        ret_comm = chld.communicator();
+        auto ret_comm = chld.communicator();
 
         clientCount_ = eckit::mpi::comm(oce_str.c_str()).size();
         serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
@@ -100,6 +100,8 @@ public:
         config_.set("serverCount", serverCount_);
 
         multioClient_.reset(new MultioClient{config_});
+
+        return ret_comm;
     }
 
     void initServer(int nemo_comm) {
@@ -111,7 +113,7 @@ public:
         multioServer_.reset(new MultioServer{});
     }
 
-    void setDomain(const std::string& dname, const fortint* data, size_t bytes) {
+    void setDomain(const std::string& dname, const int* data, size_t bytes) {
         eckit::Buffer domain_def{reinterpret_cast<const char*>(data), bytes};
         client().sendDomain(dname, "structured", domain_def);
     }
@@ -147,59 +149,54 @@ public:
 extern "C" {
 #endif
 
-void multio_open_connections_() {
+void multio_open_connections() {
     MultioNemo::instance().client().openConnections();
 }
 
-void multio_close_connections_() {
+void multio_close_connections() {
     MultioNemo::instance().client().closeConnections();
 }
 
-void multio_send_step_complete_() {
+void multio_write_step_complete() {
     MultioNemo::instance().client().sendStepComplete();
 }
 
-void multio_metadata_set_int_value_(const char* key, fortint* value, int key_len) {
-    std::string skey{key, key + key_len};
-    MultioNemo::instance().metadata().set(skey, *value);
+int multio_init_client(const char* name, int glob_comm) {
+    return MultioNemo::instance().initClient(name, glob_comm);
 }
 
-void multio_init_client_(const char* name, fortint* ret_comm, fortint* gl_comm, int len) {
-    MultioNemo::instance().initClient(std::string{name, name + len}, *ret_comm, *gl_comm);
+void multio_init_server(int nemo_comm) {
+    MultioNemo::instance().initServer(nemo_comm);
 }
 
-void multio_init_server_(fortint* nemo_comm) {
-    static_assert(sizeof(int) == sizeof(fortint), "Type 'int' is not 32-bit long");
-    MultioNemo::instance().initServer(*nemo_comm);
+void multio_metadata_set_int_value(const char* key, int value) {
+    std::string skey{key};
+    MultioNemo::instance().metadata().set(skey, value);
 }
 
-void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint key_len) {
-    std::string name = std::string{key, key + key_len};
-    static_assert(sizeof(int) == sizeof(fortint), "Type 'int' is not 32-bit long");
+void multio_set_domain(const char* name, int* data, int size) {
     if (MultioNemo::instance().useServer()) {
-        MultioNemo::instance().setDomain(name, data, (*size) * sizeof(fortint));
+        MultioNemo::instance().setDomain(name, data, size * sizeof(int));
     }
     else {
         eckit::Log::debug<multio::LibMultio>() << name << ":  " << std::flush;
-        std::vector<fortint> grid_data{data, data + *size};
+        std::vector<int> grid_data{data, data + size};
         print_buffer(grid_data, eckit::Log::debug<multio::LibMultio>());
         eckit::Log::debug<multio::LibMultio>() << std::endl;
     }
 }
 
-void multio_write_field_(const char* fname, const double* data, fortint* size, fortint fn_len) {
-    std::string name{fname, fname + fn_len};
+void multio_write_field(const char* name, const double* data, int size) {
     if (MultioNemo::instance().useServer()) {
-        MultioNemo::instance().writeField(name, data, (*size) * sizeof(double));
+        MultioNemo::instance().writeField(name, data, size * sizeof(double));
     }
     else {
         eckit::Log::debug<multio::LibMultio>() << "Writing field " << name << std::endl;
     }
 }
 
-void multio_field_is_active_(const char* fname, bool* is_active, fortint fn_len) {
-    std::string name{fname, fname + fn_len};
-    *is_active = MultioNemo::instance().isActive(name);
+bool multio_field_is_active(const char* name) {
+    return MultioNemo::instance().isActive(name);
 }
 
 #ifdef __cplusplus

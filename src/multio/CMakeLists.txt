@@ -28,6 +28,7 @@ list( APPEND multio_srcs
     MultIO.h
     Trigger.cc
     Trigger.h
+    ifsio_internals.cc
     ifsio.cc
     ifsio.h
     multio_version.cc

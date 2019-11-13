@@ -70,27 +70,6 @@ void MultioLegacy::execute(const eckit::option::CmdArgs& args) {
 
     codes_keys_iterator *iter = codes_keys_iterator_new(handle, 0, "mars");
 
-#define DOIT
-
-#ifndef DOIT
-    std::cout << "isetcommfdb_();" << std::endl;
-    std::cout << "iinitfdb_();" << std::endl;
-    std::cout << "iopenfdb_(\"fdb\", \"w\");" << std::endl;
-    std::cout << "isetfieldcountfdb_(" << fieldcount << ", " << fieldcount << ");" << std::endl;
-
-    while(codes_keys_iterator_next(iter)) {
-        const char *keyname = codes_keys_iterator_get_name(iter);
-        char keyval[1024];
-        size_t keylen = sizeof(keyval);
-        CODES_CHECK(codes_get_string(handle, keyname, keyval, &keylen), NULL);
-        std::cout << "isetvalfdb_(" << keyname << ", " << keyval << ");" << std::endl;
-    }
-
-    std::cout << "iwritefdb_();" << std::endl;
-    std::cout << "iflushfdb_();" << std::endl;
-    std::cout << "iclosefdb_();" << std::endl;
-
-#else
     fortint fdb_comm = 0;
     fortint fdb_addr;
     fortint fdb_fieldcount = static_cast<fortint>(fieldcount);
@@ -114,15 +93,6 @@ void MultioLegacy::execute(const eckit::option::CmdArgs& args) {
     iflushfdb_(&fdb_addr);
 
     iclosefdb_(&fdb_addr);
-#endif
-
-    /*
-    fortint iwords = static_cast<fortint>(words);
-
-    imultio_write_(buf, &iwords);
-
-    imultio_flush_();
-    */
 
     codes_keys_iterator_delete(iter);
     codes_handle_delete(handle);

@@ -26,57 +26,9 @@
 
 #include "multio/ifsio.h"
 
-namespace eckit {
-class Configuration;
-
-namespace option {
-class CmdArgs;
-class Option;
-}  // namespace option
-}  // namespace eckit
+#include "multio/tools/MultioTool.h"
 
 namespace multio {
-
-class MultioTool : public eckit::Tool {
-public:
-
-    virtual void usage(const std::string &tool) const = 0;
-
-protected:
-
-    MultioTool(int argc, char** argv);
-
-    std::vector<eckit::option::Option*> options_;
-
-private:
-    virtual void init(const eckit::option::CmdArgs&) = 0;
-    virtual void finish(const eckit::option::CmdArgs&) = 0;
-    virtual void execute(const eckit::option::CmdArgs& args) = 0;
-
-    virtual int numberOfPositionalArguments() const { return -1; }
-    virtual int minimumPositionalArguments() const { return -1; }
-
-    void run() override final;
-};
-
-//---------------------------------------------------------------------------------------------------------------
-
-MultioTool::MultioTool(int argc, char** argv) : eckit::Tool(argc, argv, "MULTIO_HOME") {}
-
-void MultioTool::run() {
-    std::function<void(const std::string&)> usage = [this](const std::string& name) {
-        this->usage(name);
-    };
-
-    eckit::option::CmdArgs args(usage, options_, numberOfPositionalArguments(),
-                                minimumPositionalArguments());
-
-    init(args);
-    execute(args);
-    finish(args);
-}
-
-//---------------------------------------------------------------------------------------------------------------
 
 class MultioSink final : public multio::MultioTool {
 public:  // methods

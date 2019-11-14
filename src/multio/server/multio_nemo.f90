@@ -47,11 +47,11 @@ module multio_nemo
             integer(c_int), intent(in), value :: val
         end subroutine c_multio_metadata_set_int_value
 
-        function c_multio_init_client(c_name, glob_comm) result(ret_comm) bind(c, name='multio_init_client')
+        function c_multio_init_client(c_name, parent_comm) result(ret_comm) bind(c, name='multio_init_client')
             use, intrinsic :: iso_c_binding
             implicit none
             character(c_char), intent(in) :: c_name(*)
-            integer(c_int), intent(in), value :: glob_comm
+            integer(c_int), intent(in), value :: parent_comm
             integer(c_int) :: ret_comm
         end function c_multio_init_client
 
@@ -100,13 +100,13 @@ module multio_nemo
 
         end subroutine multio_metadata_set_int_value
 
-        subroutine multio_init_client(name, ret_comm, glob_comm)
+        subroutine multio_init_client(name, ret_comm, parent_comm)
             implicit none
             character(*), intent(in) :: name
-            integer, intent(in)  :: glob_comm
+            integer, intent(in)  :: parent_comm
             integer, intent(out) :: ret_comm
 
-            ret_comm = c_multio_init_client(to_c_string(name), glob_comm)
+            ret_comm = c_multio_init_client(to_c_string(name), parent_comm)
 
         end subroutine multio_init_client
 

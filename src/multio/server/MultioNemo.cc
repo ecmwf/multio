@@ -83,9 +83,9 @@ public:
         return metadata_;
     }
 
-    int initClient(const std::string& oce_str, int glob_comm) {
+    int initClient(const std::string& oce_str, int parent_comm) {
 
-        eckit::mpi::addComm("nemo", glob_comm);
+        eckit::mpi::addComm("nemo", parent_comm);
 
         // TODO: find a way to come up with a unique 'colour' -- like getting application number
         const eckit::mpi::Comm& chld = eckit::mpi::comm("nemo").split(777, oce_str);
@@ -161,8 +161,8 @@ void multio_write_step_complete() {
     MultioNemo::instance().client().sendStepComplete();
 }
 
-int multio_init_client(const char* name, int glob_comm) {
-    return MultioNemo::instance().initClient(name, glob_comm);
+int multio_init_client(const char* name, int parent_comm) {
+    return MultioNemo::instance().initClient(name, parent_comm);
 }
 
 void multio_init_server(int nemo_comm) {

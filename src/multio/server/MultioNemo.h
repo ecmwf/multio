@@ -23,7 +23,7 @@ void multio_close_connections();
 
 void multio_write_step_complete();
 
-int multio_init_client(const char* name, int glob_comm);
+int multio_init_client(const char* name, int parent_comm);
 
 void multio_init_server(int nemo_comm);
 

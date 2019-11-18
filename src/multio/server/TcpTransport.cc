@@ -80,8 +80,8 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
             for (const auto port : ports) {
                 try {
                     eckit::TCPClient client;
-                    outgoing_.emplace(TcpPeer{host, port},
-                                      new eckit::TCPSocket{client.connect(host, port, 5, 10)});
+                    std::unique_ptr<eckit::TCPSocket> socket{new eckit::TCPSocket{client.connect(host, port, 5, 10)}};
+                    outgoing_.emplace(TcpPeer{host, port}, std::move(socket));
                 }
                 catch (eckit::TooManyRetries& e) {
                     eckit::Log::error() << "Failed to establish connection to host: " << host

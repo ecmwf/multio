@@ -31,10 +31,15 @@ list( APPEND multio_srcs
     ifsio_internals.cc
     ifsio.cc
     ifsio.h
-    ifsio_legacy.cc
-    ifsio_legacy.h
     multio_version.cc
 )
+
+if( HAVE_LEGACY_IFSIO )
+    list( APPEND multio_srcs
+        ifsio_legacy.cc
+        ifsio_legacy.h
+    )
+endif()
 
 ### multio library
 
@@ -71,5 +76,5 @@ ecbuild_add_executable( TARGET    multio-sink
 
 ecbuild_add_executable( TARGET    multio-legacy
                         SOURCES   tools/multio-legacy.cc tools/MultioTool.cc
-                        CONDITION HAVE_FDB5
+                        CONDITION HAVE_FDB5 AND HAVE_LEGACY_IFSIO
                         LIBS      multio multio-fdb5 eckit_option)

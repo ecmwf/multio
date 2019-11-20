@@ -21,14 +21,12 @@ extern "C" {
 
     fortint iinitfdb_() {
         MULTIO_TRACE_FUNC();
-        // MIO::instance();
         return 0;
     }
 
     fortint iinitfdb_vpp_(const char *name, int name_len) {
         std::string sname(name, name + name_len);
         MULTIO_TRACE_FUNC1(sname.c_str());
-        // MIO::instance();
         return 0;
     }
 
@@ -36,14 +34,12 @@ extern "C" {
         std::string sname(name, name + name_len);
         std::string smode(mode, mode + mode_len);
         MULTIO_TRACE_FUNC2(sname.c_str(), smode.c_str());
-        // MIO::instance().log(true);
         *addr = 0;
         return 0;
     }
 
     fortint iclosefdb_(fortint *addr) {
         MULTIO_TRACE_FUNC();
-        // MIO::instance().report();
         return 0;
     }
 

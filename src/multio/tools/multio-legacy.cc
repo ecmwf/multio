@@ -8,11 +8,12 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Domokos Sarmany
-/// @author Simon Smart
-/// @author Tiago Quintino
+/// @author Olivier Iffrig
 
-/// @date Oct 2019
+/// @date Nov 2019
+
+#include <iostream>
+#include <string.h>
 
 #include "eccodes.h"
 
@@ -24,15 +25,15 @@
 #include "eckit/option/SimpleOption.h"
 #include "eckit/runtime/Tool.h"
 
-#include "multio/ifsio.h"
+#include "multio/ifsio_legacy.h"
 
 #include "multio/tools/MultioTool.h"
 
 namespace multio {
 
-class MultioSink final : public multio::MultioTool {
+class MultioLegacy final : public multio::MultioTool {
 public:  // methods
-    MultioSink(int argc, char** argv);
+    MultioLegacy(int argc, char** argv);
 
 private:
     void usage(const std::string& tool) const override {
@@ -47,13 +48,13 @@ private:
 
 };
 
-MultioSink::MultioSink(int argc, char** argv) : multio::MultioTool(argc, argv) {}
+MultioLegacy::MultioLegacy(int argc, char** argv) : multio::MultioTool(argc, argv) {}
 
-void MultioSink::init(const eckit::option::CmdArgs& args) {}
+void MultioLegacy::init(const eckit::option::CmdArgs& args) {}
 
-void MultioSink::finish(const eckit::option::CmdArgs& args) {}
+void MultioLegacy::finish(const eckit::option::CmdArgs& args) {}
 
-void MultioSink::execute(const eckit::option::CmdArgs& args) {
+void MultioLegacy::execute(const eckit::option::CmdArgs& args) {
     eckit::AutoStdFile fin(args(0));
 
     int err;
@@ -65,13 +66,35 @@ void MultioSink::execute(const eckit::option::CmdArgs& args) {
     CODES_CHECK(codes_get_message(handle, &buf, &sz), NULL);
 
     size_t words = eckit::round(sz, sizeof(fortint)) / sizeof(fortint);
+    size_t fieldcount = 1;
 
+    codes_keys_iterator *iter = codes_keys_iterator_new(handle, 0, "mars");
+
+    fortint fdb_comm = 0;
+    fortint fdb_addr;
+    fortint fdb_fieldcount = static_cast<fortint>(fieldcount);
     fortint iwords = static_cast<fortint>(words);
 
-    imultio_write_(buf, &iwords);
+    isetcommfdb_(&fdb_comm);
+    iinitfdb_();
+    iopenfdb_("fdb", &fdb_addr, "w", 3, 1);
 
-    imultio_flush_();
+    isetfieldcountfdb_(&fdb_addr, &fdb_fieldcount, &fdb_fieldcount);
 
+    while(codes_keys_iterator_next(iter)) {
+        const char *keyname = codes_keys_iterator_get_name(iter);
+        char keyval[1024];
+        size_t keylen = sizeof(keyval);
+        CODES_CHECK(codes_get_string(handle, keyname, keyval, &keylen), NULL);
+        isetvalfdb_(&fdb_addr, keyname, keyval, strlen(keyname), strlen(keyval));
+    }
+
+    iwritefdb_(&fdb_addr, buf, &iwords);
+    iflushfdb_(&fdb_addr);
+
+    iclosefdb_(&fdb_addr);
+
+    codes_keys_iterator_delete(iter);
     codes_handle_delete(handle);
 }
 
@@ -82,6 +105,6 @@ void MultioSink::execute(const eckit::option::CmdArgs& args) {
 
 
 int main(int argc, char** argv) {
-    multio::MultioSink tool(argc, argv);
+    multio::MultioLegacy tool(argc, argv);
     return tool.start();
 }

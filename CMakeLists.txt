@@ -28,6 +28,12 @@ ecbuild_add_option( FEATURE FDB5
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "PROJECT fdb5 VERSION 5.0" )
 
+### legacy IFS I/O
+
+ecbuild_add_option( FEATURE LEGACY_IFSIO
+                    DEFAULT OFF
+                    DESCRIPTION "Legacy (FDB4) IFS I/O interface" )
+
 ### multio-server
 
 ecbuild_add_option( FEATURE MULTIO_SERVER

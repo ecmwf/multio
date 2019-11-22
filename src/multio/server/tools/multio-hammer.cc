@@ -151,10 +151,10 @@ eckit::PathName base() {
 
 eckit::PathName test_configuration(const std::string& type) {
     eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
-    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-config.json"},
-                                                  {"tcp", "tcp-test-config.json"},
-                                                  {"thread", "thread-test-config.json"},
-                                                  {"none", "no-transport-test-config.json"}};
+    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-config.yaml"},
+                                                  {"tcp", "tcp-test-config.yaml"},
+                                                  {"thread", "thread-test-config.yaml"},
+                                                  {"none", "no-transport-test-config.yaml"}};
 
     return base() + "/configs/" + eckit::PathName{configs.at(type)};
 }

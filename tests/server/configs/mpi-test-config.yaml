@@ -1,0 +1,26 @@
+---
+### test-configs
+
+transport : mpi
+group : world
+plans :
+  - name : atmosphere
+    actions :
+      - type : Select
+        categories : [model-level, pressure-level, surface-level]
+
+      - type : Aggregation
+
+      - type : Encode
+        format : grib
+
+      - type : SingleFieldSink
+
+  - name : ocean
+    actions :
+      - type : Select
+        categories : [ocean-surface]
+
+      - type : Aggregation
+
+      - type : SingleFieldSink

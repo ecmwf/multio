@@ -1,0 +1,24 @@
+---
+### test-configs
+
+transport : tcp
+clients :
+  - host : localhost
+    ports : [4441, 4442, 4443, 4444, 4445]
+
+servers :
+  - host : localhost
+    ports : [7771, 7772, 7773]
+
+plans :
+  - name : atmosphere
+    actions :
+      - type : Select
+        categories : [model-level, pressure-level, surface-level]
+
+      - type : Aggregation
+
+      - type : Encode
+        format : grib
+
+      - type : SingleFieldSink

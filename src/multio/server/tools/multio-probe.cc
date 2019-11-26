@@ -27,14 +27,16 @@ eckit::PathName base() {
     return eckit::PathName{""};
 }
 
-eckit::PathName test_configuration(const std::string& type) {
+eckit::LocalConfiguration test_configuration(const std::string& type) {
     eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
-    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-config.json"},
-                                                  {"tcp", "tcp-test-config.json"},
-                                                  {"thread", "thread-test-config.json"},
-                                                  {"none", "no-transport-test-config.json"}};
 
-    return base() + "/configs/" + eckit::PathName{configs.at(type)};
+    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-configuration"},
+                                                  {"tcp", "tcp-test-configuration"},
+                                                  {"thread", "thread-test-configuration"},
+                                                  {"none", "no-transport-test-configuration"}};
+
+    eckit::YAMLConfiguration testConfigs{base() + "/configs/test-configurations.yaml"};
+    return eckit::LocalConfiguration{testConfigs.getSubConfiguration(configs.at(type))};
 }
 }  // namespace
 
@@ -75,7 +77,7 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
     args.get("port", port_);
     args.get("test", test_);
 
-    config_ = eckit::LocalConfiguration{eckit::YAMLConfiguration{test_configuration(transport_)}};
+    config_ = test_configuration(transport_);
     config_.set("local_port", port_);
 
     if(transport_ == "mpi") {

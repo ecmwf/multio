@@ -149,14 +149,16 @@ eckit::PathName base() {
     return eckit::PathName{""};
 }
 
-eckit::PathName test_configuration(const std::string& type) {
+eckit::LocalConfiguration test_configuration(const std::string& type) {
     eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
-    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-config.yaml"},
-                                                  {"tcp", "tcp-test-config.yaml"},
-                                                  {"thread", "thread-test-config.yaml"},
-                                                  {"none", "no-transport-test-config.yaml"}};
 
-    return base() + "/configs/" + eckit::PathName{configs.at(type)};
+    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-configuration"},
+                                                  {"tcp", "tcp-test-configuration"},
+                                                  {"thread", "thread-test-configuration"},
+                                                  {"none", "no-transport-test-configuration"}};
+
+    eckit::YAMLConfiguration testConfigs{base() + "/configs/test-configurations.yaml"};
+    return eckit::LocalConfiguration{testConfigs.getSubConfiguration(configs.at(type))};
 }
 
 }  // namespace
@@ -243,8 +245,7 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
     args.get("nbparams", paramCount_);
     args.get("member", ensMember_);
 
-    config_ =
-        eckit::LocalConfiguration{eckit::YAMLConfiguration{test_configuration(transportType_)}};
+    config_ = test_configuration(transportType_);
 
     if (transportType_ == "mpi") {
         auto comm_size = eckit::mpi::comm(config_.getString("group").c_str()).size();

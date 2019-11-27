@@ -41,12 +41,12 @@ void Mappings::add(Message msg) {
     eckit::Log::debug<LibMultio>() << "]" << std::endl;
 
     if (msg.category() == "unstructured") {
-        mapping.emplace(msg.source(), new Unstructured{std::move(local_map)});
+        mapping.emplace(msg.source(), std::unique_ptr<Domain>{new Unstructured{std::move(local_map)}});
         return;
     }
 
     if (msg.category() == "structured") {
-        mapping.emplace(msg.source(), new Structured{std::move(local_map)});
+        mapping.emplace(msg.source(), std::unique_ptr<Domain>{new Structured{std::move(local_map)}});
         return;
     }
 }

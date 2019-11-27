@@ -64,6 +64,8 @@ ecbuild_add_library(
         ScopedThread.h
         MultioServerTool.cc
         MultioServerTool.h
+        multio_nemo.f90
+        multio.f90
 
     LIBS
         multio

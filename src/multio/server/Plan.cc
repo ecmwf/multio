@@ -16,25 +16,39 @@
 #include "eckit/log/Log.h"
 
 #include "multio/server/Action.h"
+#include "multio/LibMultio.h"
+
 
 using eckit::LocalConfiguration;
-
 namespace multio {
 namespace server {
+
+namespace {
+LocalConfiguration rootConfig(const LocalConfiguration& config) {
+    const auto actions = config.has("actions") ? config.getSubConfigurations("actions")
+                                               : std::vector<LocalConfiguration>{};
+
+    if (actions.empty()) {
+        throw eckit::UserError("Plan config must define at least one action");
+    }
+
+    auto rit = actions.rbegin();
+    auto current = *rit++;
+    while (rit != actions.rend()) {
+        eckit::Log::debug<LibMultio>() << " *** Current configuration: " << current << std::endl;
+        auto parent = *rit++;
+        parent.set("next", current);
+        current = parent;
+    }
+
+    return current;
+}
+}  // namespace
 
 Plan::Plan(const eckit::Configuration& config) {
     name_ = config.getString("name", "anonymous");
 
-    if (not config.has("actions")) {
-        throw eckit::UserError("Plan config must define 'actions'");
-    }
-
-    const LocalConfiguration actions = config.getSubConfiguration("actions");
-    if (not actions.has("root")) {
-        throw eckit::UserError("Plan actions must define 'root' action");
-    }
-
-    const LocalConfiguration root = actions.getSubConfiguration("root");
+    auto root = rootConfig(config);
     root_.reset(ActionFactory::instance().build(root.getString("type"), root));
 }
 

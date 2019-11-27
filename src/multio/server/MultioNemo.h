@@ -13,27 +13,27 @@
 
 #include <cstdint>
 
-using fortint = int32_t;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void multio_open_connections_();
+void multio_open_connections();
 
-void multio_close_connections_();
+void multio_close_connections();
 
-void multio_send_step_complete_();
+void multio_write_step_complete();
 
-void multio_metadata_set_int_value_(const char* key, fortint* value, int key_len);
+int multio_init_client(const char* name, int parent_comm);
 
-void multio_init_client_(const char* name, fortint* ret_comm, fortint* gl_comm, int len);
+void multio_init_server(int nemo_comm);
 
-void multio_set_domain_(const char* key, fortint* data, fortint* size, fortint key_len);
+void multio_metadata_set_int_value(const char* key, int value);
 
-void multio_write_field_(const char* fname, const double* data, fortint* size, fortint fn_len);
+void multio_set_domain(const char* key, int* data, int size);
 
-void multio_field_is_active_(const char* fname, bool* is_active, fortint fn_len);
+void multio_write_field(const char* fname, const double* data, int size);
+
+bool multio_field_is_active(const char* fname);
 
 #ifdef __cplusplus
 }

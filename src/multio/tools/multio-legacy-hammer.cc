@@ -12,9 +12,9 @@
 
 /// @date Nov 2019
 
+#include <cstring>
 #include <iostream>
 #include <string>
-#include <string.h>
 #include <unordered_set>
 
 #include "eccodes.h"
@@ -121,31 +121,30 @@ void MultioLegacyHammer::execute(const eckit::option::CmdArgs& args) {
         keyname = codes_keys_iterator_get_name(iter);
         char keyval[1024];
         size_t keylen = sizeof(keyval);
-        CODES_CHECK(codes_get_string(handle, keyname.c_str(), keyval, &keylen), NULL);
-        isetvalfdb_(&fdb_addr, keyname.c_str(), keyval, keyname.length(), strlen(keyval));
+        CODES_CHECK(codes_get_string(handle, keyname.c_str(), keyval, &keylen), nullptr);
+        isetvalfdb_(&fdb_addr, keyname.c_str(), keyval, keyname.length(), std::strlen(keyval));
     }
 
     bool notify = args.getBool("notify", false);
     std::string keyval;
-    eckit::Translator<size_t, std::string> to_string;
     for (size_t member = 0; member < nensembles; ++member) {
         if (args.has("nensembles")) {
             keyname = "number";
-            keyval = to_string(member + number);
-            CODES_CHECK(codes_set_long(handle, keyname.c_str(), member + number), 0);
+            keyval = std::to_string(member + number);
+            CODES_CHECK(codes_set_long(handle, keyname.c_str(), member + number), nullptr);
             isetvalfdb_(&fdb_addr, keyname.c_str(), keyval.c_str(), keyname.length(), keyval.length());
         }
 
         for (size_t step = 0; step < nsteps; ++step) {
             keyname = "step";
-            keyval = to_string(step);
-            CODES_CHECK(codes_set_long(handle, keyname.c_str(), step), 0);
+            keyval = std::to_string(step);
+            CODES_CHECK(codes_set_long(handle, keyname.c_str(), step), nullptr);
             isetvalfdb_(&fdb_addr, keyname.c_str(), keyval.c_str(), keyname.length(), keyval.length());
 
             for (size_t level = 1; level <= nlevels; ++level) {
                 keyname = "level";
-                keyval = to_string(level);
-                CODES_CHECK(codes_set_long(handle, keyname.c_str(), level), 0);
+                keyval = std::to_string(level);
+                CODES_CHECK(codes_set_long(handle, keyname.c_str(), level), nullptr);
                 isetvalfdb_(&fdb_addr, keyname.c_str(), keyval.c_str(), keyname.length(), keyval.length());
 
                 for (size_t param = 1, real_param = 1; param <= nparams; ++param, ++real_param) {
@@ -155,8 +154,8 @@ void MultioLegacyHammer::execute(const eckit::option::CmdArgs& args) {
                     }
 
                     keyname = "param";
-                    keyval = to_string(real_param);
-                    CODES_CHECK(codes_set_long(handle, keyname.c_str(), real_param), 0);
+                    keyval = std::to_string(real_param);
+                    CODES_CHECK(codes_set_long(handle, keyname.c_str(), real_param), nullptr);
                     isetvalfdb_(&fdb_addr, keyname.c_str(), keyval.c_str(), keyname.length(), keyval.length());
 
                     iwritefdb_(&fdb_addr, buf, &iwords);

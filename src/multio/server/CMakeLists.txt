@@ -91,3 +91,9 @@ ecbuild_add_executable( TARGET    multio-probe
                         CONDITION HAVE_MULTIO_SERVER
                         SOURCES   tools/multio-probe.cc
                         LIBS      multio-server multio)
+
+ecbuild_add_executable( TARGET    multio-encode-ocean
+                        CONDITION HAVE_MULTIO_SERVER
+                        SOURCES   tools/multio-encode-ocean.cc
+                        LIBS      multio-server multio)
+

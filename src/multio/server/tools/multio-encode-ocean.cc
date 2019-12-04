@@ -3,10 +3,10 @@
 
 #include "eccodes.h"
 
+#include "eckit/config/YAMLConfiguration.h"
+#include "eckit/io/StdFile.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
-#include "eckit/io/StdFile.h"
-#include "eckit/config/YAMLConfiguration.h"
 
 #include "multio/LibMultio.h"
 #include "multio/server/Message.h"
@@ -31,6 +31,15 @@ struct codes_iterator_deleter {
 void codes_check_set_string(codes_handle* handle, const std::string& key, const std::string& val) {
     auto size = val.size();
     CODES_CHECK(codes_set_string(handle, key.c_str(), val.c_str(), &size), nullptr);
+}
+
+void codes_set_latlon_dimensions(codes_handle* handle, const std::vector<int>& grid_def) {
+    long ret_val = -1;
+    CODES_CHECK(codes_get_long(handle, "gridDefinitionTemplateNumber", &ret_val), nullptr);
+    if (ret_val == 0) {  // Only set it for lat-lon; no meaning for unstructured
+        CODES_CHECK(codes_set_long(handle, "Ni", grid_def[0]), nullptr);
+        CODES_CHECK(codes_set_long(handle, "Nj", grid_def[1]), nullptr);
+    }
 }
 
 eckit::PathName base() {
@@ -80,7 +89,7 @@ private:
     std::string template_ = "GRIB1";
     std::string pathToNemoData_ = "";
     int globalSize_ = 105704;
-    int level_ = 1;
+    int level_ = 13;
     int step_ = 24;
 
     std::map<NemoKey, GribData> parameters_ = {{"sst", {151129, "orca_grid_T"}},
@@ -127,15 +136,14 @@ void MultioEncodeOcean::setCommonMetadata() {
     codes_check_set_string(handle(), "class", "rd");
     codes_check_set_string(handle(), "stream", "oper");
     codes_check_set_string(handle(), "type", "fc");
-    codes_check_set_string(handle(), "levtype", "ml");
+    CODES_CHECK(codes_set_long(handle(), "levtype", 168), nullptr);
     CODES_CHECK(codes_set_long(handle(), "step", step_), nullptr);
     CODES_CHECK(codes_set_long(handle(), "level", level_), nullptr);
 }
 
 void MultioEncodeOcean::setDomainDimensions(const GribData& gd) {
     auto grid_def = readGrid(gd.gridType.substr(5), 0);
-    CODES_CHECK(codes_set_long(handle(), "Ni", grid_def[0]), nullptr);
-    CODES_CHECK(codes_set_long(handle(), "Nj", grid_def[1]), nullptr);
+    codes_set_latlon_dimensions(handle(), grid_def);
 
     auto globalSize_ = grid_def[0] * grid_def[1];
     CODES_CHECK(codes_set_long(handle(), "numberOfDataPoints", globalSize_), nullptr);

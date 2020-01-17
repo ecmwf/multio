@@ -177,7 +177,7 @@ public: // methods
 
         if(!host_.empty()) {
             try {
-                TCPClient c;
+                net::TCPClient c;
                 c.connect(host_, port_, retries_, timeout_); // 5 retries, 60 secs timeout
                 c.write(os.str().c_str(), os.str().size());
             } catch (eckit::TooManyRetries& e) {

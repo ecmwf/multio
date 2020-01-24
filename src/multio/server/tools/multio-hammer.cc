@@ -547,7 +547,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
         }
 
         // This message need only be sent by one server per ENS. Some sort of synchronisation
-        // between the servers will be required -- OK for multio-hammmer for now.
+        // between the servers will be required -- OK for multio-hammer for now.
         msg = Message{Message::Header{Message::Tag::StepNotification, Peer{"", 0}, Peer{"", 0},
                                       stepStr, "step", 1}};
         for (const auto& plan : plans) {

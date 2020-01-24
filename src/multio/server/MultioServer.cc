@@ -13,7 +13,7 @@ eckit::PathName configuration_path() {
                                ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
                                : eckit::PathName{""};
 
-    return base + "/configs/multio-server.json";
+    return base + "/configs/multio-server.yaml";
 }
 }  // namespace
 

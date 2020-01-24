@@ -1,0 +1,13 @@
+transport : mpi
+group : nemo
+plans :
+
+  - name : ocean
+    actions :
+      - type : Select
+        categories : [ocean-surface]
+
+      - type : Aggregation
+
+      - type : SingleFieldSink
+        root_path : "/scratch/ma/masd/ocean-fields/"

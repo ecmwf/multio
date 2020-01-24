@@ -41,6 +41,7 @@ void FDB5Sink::write(eckit::DataBlobPtr blob) {
     for (const auto& kw : md.keywords()) {
         md.get(kw, value);
         key.set(kw, value);
+        eckit::Log::debug<multio::LibMultio>() << "=== key: " << kw << ", value: " << value << std::endl;
     }
 
     fdb_.archive(key, blob->buffer(), blob->length());

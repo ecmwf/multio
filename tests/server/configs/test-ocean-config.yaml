@@ -1,0 +1,15 @@
+### Test ocean encoding to grib
+
+---
+
+transport : none
+plans :
+  - name : ocean
+    actions :
+      - type : Sink
+        sinks :
+          - type : fdb5
+            config : {}
+
+          - type : file
+            path : ocean.grib

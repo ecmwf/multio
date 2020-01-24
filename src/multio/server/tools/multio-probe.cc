@@ -56,6 +56,9 @@ private:
 
     void execute(const eckit::option::CmdArgs& args) override;
 
+    void executeTest();
+    void executeLive();
+
     void testData() const;
 
     std::string transport_ = "mpi";
@@ -90,11 +93,28 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
     }
 }
 
-void MultioProbe::testData() const {
-    if(not test_) {
-        return;
+void MultioProbe::execute(const eckit::option::CmdArgs&) {
+    if (test_) {
+        executeTest();
     }
+    else {
+        executeLive();
+    }
+}
 
+//---------------------------------------------------------------------------------------------------------------
+
+void MultioProbe::executeLive() {
+    MultioServer server{};
+}
+
+void MultioProbe::executeTest() {
+    MultioServer server{config_};
+
+    testData();
+}
+
+void MultioProbe::testData() const {
     if(transport_ == "mpi") {
         eckit::mpi::comm().barrier();
         return;
@@ -103,12 +123,7 @@ void MultioProbe::testData() const {
     ::sleep(1);
 }
 
-void MultioProbe::execute(const eckit::option::CmdArgs &) {
-
-    MultioServer server{config_};
-
-    testData();
-}
+//---------------------------------------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
     MultioProbe tool(argc, argv);

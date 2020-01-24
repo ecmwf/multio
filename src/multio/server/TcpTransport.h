@@ -29,7 +29,9 @@
 
 namespace eckit {
 class Configuration;
+namespace net {
 class TCPSocket;
+}
 }  // namespace eckit
 
 namespace multio {
@@ -50,7 +52,7 @@ private:
 
     void print(std::ostream& os) const override;
 
-    Message nextMessage(eckit::TCPSocket& socket) const;
+    Message nextMessage(eckit::net::TCPSocket& socket) const;
 
     bool acceptConnection();
     void waitForEvent();
@@ -59,11 +61,11 @@ private:
 
     TcpPeer local_;
 
-    std::map<Peer, const std::unique_ptr<eckit::TCPSocket>> outgoing_;
+    std::map<Peer, const std::unique_ptr<eckit::net::TCPSocket>> outgoing_;
 
     eckit::Select select_;
 
-    std::unique_ptr<eckit::TCPServer> server_;
+    std::unique_ptr<eckit::net::TCPServer> server_;
     std::vector<std::unique_ptr<Connection>> incoming_;
 };
 

@@ -48,9 +48,11 @@ Message decodeMessage(eckit::Stream& stream) {
 
 struct Connection {
     eckit::Select& select_;
-    eckit::TCPSocket socket_;
+    eckit::net::TCPSocket socket_;
 
-    Connection(eckit::Select& select, eckit::TCPSocket& socket) : select_{select}, socket_{socket} {
+    Connection(eckit::Select& select, eckit::net::TCPSocket& socket) :
+        select_{select},
+        socket_{socket} {
         select_.add(socket_);
     }
 
@@ -72,15 +74,16 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
         auto ports = cfg.getUnsignedVector("ports");
 
         if (amIServer(host, ports)) {
-            server_.reset(new eckit::TCPServer{static_cast<int>(local_.port())});
+            server_.reset(new eckit::net::TCPServer{static_cast<int>(local_.port())});
             select_.add(*server_);
         }
         else {
             // TODO: assert that (local_.host(), local_.port()) is in the list of clients
             for (const auto port : ports) {
                 try {
-                    eckit::TCPClient client;
-                    std::unique_ptr<eckit::TCPSocket> socket{new eckit::TCPSocket{client.connect(host, port, 5, 10)}};
+                    eckit::net::TCPClient client;
+                    std::unique_ptr<eckit::net::TCPSocket> socket{
+                        new eckit::net::TCPSocket{client.connect(host, port, 5, 10)}};
                     outgoing_.emplace(TcpPeer{host, port}, std::move(socket));
                 }
                 catch (eckit::TooManyRetries& e) {
@@ -93,7 +96,7 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
 }
 
 
-Message TcpTransport::nextMessage(eckit::TCPSocket& socket) const {
+Message TcpTransport::nextMessage(eckit::net::TCPSocket& socket) const {
     size_t size;
     socket.read(&size, sizeof(size));
 
@@ -157,7 +160,7 @@ bool TcpTransport::acceptConnection() {
         return false;
     }
 
-    eckit::TCPSocket socket{server_->accept()};
+    eckit::net::TCPSocket socket{server_->accept()};
     incoming_.emplace_back(new Connection{select_, socket});
 
     return true;

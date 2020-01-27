@@ -17,6 +17,8 @@
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/JSON.h"
 
+#include "multio/LibMultio.h"
+
 #include "multio/server/Listener.h"
 #include "multio/server/print_buffer.h"
 #include "multio/server/ThreadTransport.h"
@@ -29,18 +31,24 @@ using multio::server::Transport;
 using multio::server::TransportFactory;
 
 namespace {
-eckit::PathName test_configuration(const std::string& type) {
-    std::cout << "Transport type: " << type << std::endl;
-    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-config.json"},
-                                                  {"tcp", "tcp-test-config.json"},
-                                                  {"thread", "thread-test-config.json"},
-                                                  {"none", "no-transport-test-config.json"}};
-
+eckit::PathName configuration_path() {
     eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
                                ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
                                : eckit::PathName{""};
 
-    return base + "/configs/" + eckit::PathName{configs.at(type)};
+    return base + "/configs/";
+}
+
+eckit::LocalConfiguration test_configuration(const std::string& type) {
+    eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
+
+    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-configuration"},
+                                                  {"tcp", "tcp-test-configuration"},
+                                                  {"thread", "thread-test-configuration"},
+                                                  {"none", "no-transport-test-configuration"}};
+
+    eckit::YAMLConfiguration testConfigs{configuration_path() + "test-configurations.yaml"};
+    return eckit::LocalConfiguration{testConfigs.getSubConfiguration(configs.at(type))};
 }
 
 }  // namespace
@@ -61,7 +69,7 @@ private:
     size_t globalSize_ = 2048;
 
     IoTransport() :
-        config_{eckit::YAMLConfiguration{test_configuration("thread")}},
+        config_{test_configuration("thread")},
         transport_{TransportFactory::instance().build("thread", config_)},
         listener_{config_, *transport_},
         listenerThread_{&Listener::listen, &listener_} {}

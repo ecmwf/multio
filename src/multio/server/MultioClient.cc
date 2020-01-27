@@ -9,20 +9,8 @@
 #include "multio/server/Message.h"
 #include "multio/server/Transport.h"
 
-namespace {
-eckit::PathName configuration_path() {
-    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
-                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
-                               : eckit::PathName{""};
-
-    return base + "/configs/multio-client.json";
-}
-}  // namespace
-
 namespace multio {
 namespace server {
-
-MultioClient::MultioClient() : MultioClient{eckit::YAMLConfiguration{configuration_path()}} {}
 
 MultioClient::MultioClient(const eckit::Configuration& config) :
     clientCount_{config.getUnsigned("clientCount")},

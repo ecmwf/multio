@@ -42,15 +42,16 @@ void codes_set_latlon_dimensions(codes_handle* handle, const std::vector<int>& g
     }
 }
 
-eckit::PathName base() {
-    if (::getenv("MULTIO_SERVER_PATH")) {
-        return eckit::PathName{::getenv("MULTIO_SERVER_PATH")};
-    }
-    return eckit::PathName{""};
+eckit::PathName configuration_path() {
+    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
+                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
+                               : eckit::PathName{""};
+
+    return base + "/configs/";
 }
 
 eckit::LocalConfiguration test_configuration() {
-    eckit::YAMLConfiguration testConfig{base() + "/configs/test-ocean-config.yaml"};
+    eckit::YAMLConfiguration testConfig{configuration_path() + "test-ocean-config.yaml"};
     return eckit::LocalConfiguration{testConfig};
 }
 
@@ -108,7 +109,7 @@ MultioEncodeOcean::MultioEncodeOcean(int argc, char** argv) :
 }
 
 void MultioEncodeOcean::init(const eckit::option::CmdArgs& args) {
-    eckit::AutoStdFile fin{base() + "/" + args(0)};
+    eckit::AutoStdFile fin{configuration_path() + args(0)};
 
     int err;
     handle_.reset(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err));

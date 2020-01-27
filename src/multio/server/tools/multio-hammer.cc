@@ -142,11 +142,12 @@ std::vector<double> file_content(const eckit::PathName& file_path) {
     return vec;
 }
 
-eckit::PathName base() {
-    if (::getenv("MULTIO_SERVER_PATH")) {
-        return eckit::PathName{::getenv("MULTIO_SERVER_PATH")};
-    }
-    return eckit::PathName{""};
+eckit::PathName configuration_path() {
+    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
+                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
+                               : eckit::PathName{""};
+
+    return base + "/configs/";
 }
 
 eckit::LocalConfiguration test_configuration(const std::string& type) {
@@ -157,7 +158,7 @@ eckit::LocalConfiguration test_configuration(const std::string& type) {
                                                   {"thread", "thread-test-configuration"},
                                                   {"none", "no-transport-test-configuration"}};
 
-    eckit::YAMLConfiguration testConfigs{base() + "/configs/test-configurations.yaml"};
+    eckit::YAMLConfiguration testConfigs{configuration_path() + "test-configurations.yaml"};
     return eckit::LocalConfiguration{testConfigs.getSubConfiguration(configs.at(type))};
 }
 

@@ -28,14 +28,14 @@ void Select::execute(Message msg) const {
     bool passOn = (msg.tag() != Message::Tag::Field) || matchPlan(msg);
 
     if (passOn && next_) { // May want to assert next_
-        eckit::Log::debug<LibMultio>()
-            << " *** Category " << msg.category()
-            << " is matched...  field size: " << msg.globalSize() << std::endl;
         next_->execute(msg);
     }
 }
 
 bool Select::matchPlan(const Message& msg) const {
+    eckit::Log::debug<LibMultio>()
+        << " *** Category " << msg.category() << " is matched...  field size: " << msg.globalSize()
+        << std::endl;
     auto it = find(begin(categories_), end(categories_), msg.category());
     return it != end(categories_);
 }

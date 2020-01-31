@@ -217,6 +217,30 @@ private:
     long ensMember_ = 1;
 
     eckit::LocalConfiguration config_;
+
+    class Connection {
+        std::shared_ptr<Transport> transport_;
+        Peer source_;
+        Peer destination_;
+
+    public:
+        Connection(std::shared_ptr<Transport> tprt, Peer src, Peer dest) :
+            transport_{tprt},
+            source_{src},
+            destination_{dest} {
+            transport_->send(Message{Message::Header{Message::Tag::Open, source_, destination_}});
+        }
+
+        ~Connection() {
+            transport_->send(Message{Message::Header{Message::Tag::Close, source_, destination_}});
+        }
+
+        Connection(const Connection& rhs) = delete;
+        Connection(Connection&& rhs) noexcept = delete;
+
+        Connection& operator=(const Connection& rhs) = delete;
+        Connection& operator=(Connection&& rhs) noexcept = delete;
+    };
 };
 
 //---------------------------------------------------------------------------------------------------------------
@@ -279,10 +303,10 @@ void MultioHammer::sendData(const PeerList& serverPeers,
                             const size_t client_list_id) const {
     Peer client = transport->localPeer();
 
-    // open all servers
+    // Open all servers and close them when going out of scope
+    std::vector<std::unique_ptr<Connection>> connections;
     for (auto& server : serverPeers) {
-        Message open{Message::Header{Message::Tag::Open, client, *server}, std::string("open")};
-        transport->send(open);
+        connections.emplace_back(new Connection{transport, client, *server});
     }
 
     auto idxm = generate_index_map(client_list_id, clientCount_);
@@ -339,12 +363,6 @@ void MultioHammer::sendData(const PeerList& serverPeers,
                                           "step", clientCount_}};
             transport->send(flush);
         }
-    }
-
-    // close all servers
-    for (auto& server : serverPeers) {
-        Message close{Message::Header{Message::Tag::Close, client, *server}, std::string("close")};
-        transport->send(close);
     }
 }
 

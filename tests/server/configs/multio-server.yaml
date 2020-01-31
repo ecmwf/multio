@@ -11,3 +11,15 @@ plans :
 
       - type : SingleFieldSink
         root_path : "/scratch/ma/masd/ocean-fields/"
+
+      # - type : Encode
+      #   format : grib
+      #   template : unstructured
+
+      # - type : Sink
+      #   sinks :
+      #     - type : fdb5
+      #       config : {}
+
+      #     - type : file
+      #       path : ocean.grib

@@ -17,6 +17,7 @@
 #include "MultioNemo.h"
 
 #include <memory>
+#include <set>
 #include <typeinfo>
 
 #include "eckit/config/YAMLConfiguration.h"
@@ -45,6 +46,9 @@ eckit::PathName configuration_path() {
 
     return base + "/configs/";
 }
+
+// Will come from the configuration
+std::set<std::string> active_fields{"sst", "ssu", "ssv", "ssh"};
 
 }  // namespace
 
@@ -120,6 +124,10 @@ public:
     }
 
     void writeField(const std::string& fname, const double* data, size_t bytes) {
+        if (not isActive(fname)) {
+            return;
+        }
+
         if (metadata_.getUnsigned("istep") % writeFrequency_ != 0) {
             return;
         }
@@ -142,7 +150,7 @@ public:
     }
 
     bool isActive(const std::string& name) const {
-        return false; // Not yet implemented
+        return (active_fields.find(name) != end(active_fields));
     }
 };
 

@@ -13,16 +13,27 @@
 #include <iostream>
 
 #include "eccodes.h"
+
 #include "eckit/config/Configuration.h"
+#include "eckit/io/StdFile.h"
+
 #include "metkit/grib/GribHandle.h"
 
 #include "multio/LibMultio.h"
 #include "multio/server/GribTemplate.h"
 
 namespace {
+eckit::PathName configuration_path() {
+    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
+                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
+                               : eckit::PathName{""};
+
+    return base + "/configs/";
+}
+
 class GribEncoder : public metkit::grib::GribHandle {
-    GribEncoder(const eckit::Buffer& buffer, bool copy = true) :
-        metkit::grib::GribHandle{buffer, copy} {}
+public:
+    GribEncoder(codes_handle* handle) : metkit::grib::GribHandle{handle} {}
 
     void setValue(const std::string& key, long value) {
         CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
@@ -45,17 +56,42 @@ namespace actions {
 
 Encode::Encode(const eckit::Configuration& config) :
     Action{config},
-    format_{config.getString("format")} {}
+    format_{config.getString("format")},
+    template_{config.has("template") ? config.getString("template") : ""} {}
 
 void Encode::execute(Message msg) const {
     if (format_ == "grib") {
         eckit::Log::debug<LibMultio>() << "*** Executing encoding: " << *this << std::endl;
 
-        // const Message& grib_tmpl = GribTemplate::instance().get(msg.metadata().getString("cpref"),
-        //                                                         msg.metadata().getBool("lspec"));
+        eckit::AutoStdFile fin{configuration_path() + template_};
+        int err;
+        GribEncoder encoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err)};
 
-        // metkit::grib::GribHandle handle{msg.payload()};
-        // templates_.emplace_back(new metkit::grib::GribHandle{msg.payload()});
+        const auto& md = msg.metadata();
+
+        // setCommonMetadata
+        encoder.setValue("expver", md.getString("expver"));
+        encoder.setValue("class", md.getString("class"));
+        encoder.setValue("stream", md.getString("stream"));
+        encoder.setValue("type", md.getString("type"));
+        encoder.setValue("levtype", md.getLong("levtype"));
+        encoder.setValue("step", md.getLong("step"));
+        encoder.setValue("level", md.getLong("level"));
+
+        // setDomainDimensions
+        encoder.setValue("numberOfDataPoints", md.getLong("globalSize"));
+        encoder.setValue("numberOfValues", md.getLong("globalSize"));
+
+        encoder.setValue("param", md.getLong("param"));
+
+        auto beg = reinterpret_cast<const double*>(msg.payload().data());
+        encoder.setDataValues(beg, msg.globalSize());
+    }
+    else if (format_ == "none") {
+        ; // leave in raw binary format
+    }
+    else {
+        throw eckit::SeriousBug("Encoding format <" + format_ + "> is not supported");
     }
 
     if (next_) {  // May want to assert next_
@@ -63,12 +99,10 @@ void Encode::execute(Message msg) const {
     }
 }
 
-void Encode::print(std::ostream& os) const {
-    os << "Encode(format=" << format_ << ")";
-}
+        void Encode::print(std::ostream & os) const { os << "Encode(format=" << format_ << ")"; }
 
-static ActionBuilder<Encode> EncodeBuilder("Encode");
+        static ActionBuilder<Encode> EncodeBuilder("Encode");
 
-}  // namespace actions
+    }  // namespace actions
 }  // namespace server
 }  // namespace multio

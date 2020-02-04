@@ -20,6 +20,8 @@ ecbuild_add_library(
         actions/Sink.h
         actions/SingleFieldSink.cc
         actions/SingleFieldSink.h
+        actions/Statistics.cc
+        actions/Statistics.h
         actions/Null.cc
         actions/Null.h
         Action.cc

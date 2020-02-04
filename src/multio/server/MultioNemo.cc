@@ -54,6 +54,7 @@ std::set<std::string> active_fields{"sst", "ssu", "ssv", "ssh"};
 
 class MultioNemo {
     eckit::LocalConfiguration config_;
+    std::set<std::string> activeFields_;
     Metadata metadata_;
 
     std::unique_ptr<MultioClient> multioClient_ = nullptr;
@@ -64,9 +65,10 @@ class MultioNemo {
     size_t clientCount_ = 1;
     size_t serverCount_ = 0;
 
-    size_t writeFrequency_ = 6; // TODO: coming from a configuration
+    MultioNemo() : config_{eckit::YAMLConfiguration{configuration_path() + "multio-server.yaml"}} {
+        const auto& vec = config_.getStringVector("activeFields");
+        activeFields_ = std::set<std::string>{begin(vec), end(vec)};
 
-    MultioNemo() : config_{eckit::YAMLConfiguration{configuration_path() + "multio-client.yaml"}} {
         static const char* argv[2] = {"MultioNemo", 0};
         eckit::Main::initialise(1, const_cast<char**>(argv));
     }
@@ -128,10 +130,6 @@ public:
             return;
         }
 
-        if (metadata_.getUnsigned("istep") % writeFrequency_ != 0) {
-            return;
-        }
-
         metadata_.set("igrib", fname);
         auto gl_size = static_cast<size_t>(metadata_.getInt("isizeg"));
 
@@ -150,7 +148,7 @@ public:
     }
 
     bool isActive(const std::string& name) const {
-        return (active_fields.find(name) != end(active_fields));
+        return activeFields_.find(name) != end(activeFields_);
     }
 };
 

@@ -1,11 +1,23 @@
+
 transport : mpi
-group : nemo
+group : world
+serverCount : 3
+clientCount : 5
+
+activeFields : [sst, ssu, ssv, ssh]
+
 plans :
 
-  - name : ocean
+  - name : ocean-instant
     actions :
       - type : Select
+        match : category
         categories : [ocean-surface]
+
+      - type : Statistics
+        output_frequency: 6
+        operations:
+          - instant
 
       - type : Aggregation
 

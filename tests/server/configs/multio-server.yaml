@@ -4,7 +4,7 @@ group : world
 serverCount : 3
 clientCount : 5
 
-activeFields : [sst, ssu, ssv, ssh]
+activeFields : [sst, ssu, ssv, ssw]
 
 plans :
 
@@ -15,23 +15,23 @@ plans :
         categories : [ocean-surface]
 
       - type : Statistics
-        output_frequency: 6
+        output_frequency: 1
         operations:
           - instant
 
       - type : Aggregation
 
-      - type : SingleFieldSink
-        root_path : "/scratch/ma/masd/ocean-fields/"
+      - type : Encode
+        format : grib
+        template : unstructured.tmpl
 
-      # - type : Encode
-      #   format : grib
-      #   template : unstructured
+      - type : Sink
+        sinks :
+          - type : fdb5
+            config : {}
 
-      # - type : Sink
-      #   sinks :
-      #     - type : fdb5
-      #       config : {}
+          - type : file
+            path : ocean.grib
 
-      #     - type : file
-      #       path : ocean.grib
+      # - type : SingleFieldSink
+      #   root_path : "/scratch/ma/masd/ocean-fields/"

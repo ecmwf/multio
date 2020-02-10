@@ -32,11 +32,11 @@ void SingleFieldSink::execute(Message msg) const {
         case Message::Tag::Field:
         case Message::Tag::Grib:
             write(msg);
-            return;
+            break;
 
         case Message::Tag::StepComplete:
             flush();
-            return;
+            break;
 
         default:
             ASSERT(false);

@@ -12,4 +12,5 @@ plans :
             config : {}
 
           - type : file
-            path : ocean.grib
+            append : true
+            path : ocean-alone.grib

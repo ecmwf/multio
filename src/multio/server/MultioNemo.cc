@@ -46,10 +46,6 @@ eckit::PathName configuration_path() {
 
     return base + "/configs/";
 }
-
-// Will come from the configuration
-std::set<std::string> active_fields{"sst", "ssu", "ssv", "ssh"};
-
 }  // namespace
 
 class MultioNemo {

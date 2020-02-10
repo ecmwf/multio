@@ -36,8 +36,11 @@ thread-test-configuration :
         - type : Print
           stream : debug
 
-        - type : AppendToFile
-          path : messages.txt
+        - type : Sink
+          sinks :
+            - type : file
+              append : true
+              path : messages.txt
 
     - name : atmosphere
       actions :

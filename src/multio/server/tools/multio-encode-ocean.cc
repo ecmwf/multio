@@ -90,13 +90,12 @@ private:
     std::string template_ = "GRIB1";
     std::string pathToNemoData_ = "";
     int globalSize_ = 105704;
-    int level_ = 13;
+    int level_ = 1;
     int step_ = 24;
 
     std::map<NemoKey, GribData> parameters_ = {{"sst", {151129, "orca_grid_T"}},
                                                {"ssu", {151131, "orca_grid_U"}},
-                                               {"ssv", {151132, "orca_grid_V"}},
-                                               {"ssw", {151133, "orca_grid_W"}}};
+                                               {"ssv", {151132, "orca_grid_V"}}};
 };
 
 //----------------------------------------------------------------------------------------------------------------

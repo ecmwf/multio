@@ -15,11 +15,14 @@ plans :
         categories : [ocean-surface]
 
       - type : Statistics
-        output_frequency: 1
+        output_frequency: 24
         operations:
           - instant
 
       - type : Aggregation
+
+      - type : SingleFieldSink
+        root_path : "/scratch/ma/masd/ocean-fields/"
 
       - type : Encode
         format : grib
@@ -31,7 +34,5 @@ plans :
             config : {}
 
           - type : file
-            path : ocean.grib
-
-      # - type : SingleFieldSink
-      #   root_path : "/scratch/ma/masd/ocean-fields/"
+            append : true
+            path : ocean-pipe.grib

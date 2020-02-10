@@ -31,6 +31,11 @@ FileSink::FileSink(const Configuration& config) :
     DataSink(config),
     path_(config.getString("path")),
     handle_(path_.fileHandle(false)) {
+    if (config_.has("append") && config_.getBool("append")) {
+        handle_->openForAppend(0);
+        return;
+    }
+
     handle_->openForWrite(0);
 }
 

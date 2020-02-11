@@ -26,7 +26,6 @@ class Transport;
 
 class MultioServer {
 public:
-    MultioServer();
     MultioServer(const eckit::Configuration& config);
 
     ~MultioServer();

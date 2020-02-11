@@ -24,14 +24,7 @@ namespace multio {
 namespace server {
 
 namespace {
-LocalConfiguration rootConfig(const LocalConfiguration& config) {
-    const auto actions = config.has("actions") ? config.getSubConfigurations("actions")
-                                               : std::vector<LocalConfiguration>{};
-
-    if (actions.empty()) {
-        throw eckit::UserError("Plan config must define at least one action");
-    }
-
+LocalConfiguration createActionList(std::vector<LocalConfiguration> actions) {
     auto rit = actions.rbegin();
     auto current = *rit++;
     while (rit != actions.rend()) {
@@ -43,6 +36,18 @@ LocalConfiguration rootConfig(const LocalConfiguration& config) {
 
     return current;
 }
+
+LocalConfiguration rootConfig(const LocalConfiguration& config) {
+    const auto actions = config.has("actions") ? config.getSubConfigurations("actions")
+                                               : std::vector<LocalConfiguration>{};
+
+    if (actions.empty()) {
+        throw eckit::UserError("Plan config must define at least one action");
+    }
+
+    return createActionList(actions);
+}
+
 }  // namespace
 
 Plan::Plan(const eckit::Configuration& config) {

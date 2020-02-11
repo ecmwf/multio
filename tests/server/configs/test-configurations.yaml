@@ -14,7 +14,7 @@ mpi-test-configuration :
         - type : Aggregation
 
         - type : Encode
-          format : grib
+          format : none
 
         - type : SingleFieldSink
 
@@ -50,7 +50,7 @@ thread-test-configuration :
         - type : Aggregation
 
         - type : Encode
-          format : grib
+          format : none
 
         - type : SingleFieldSink
 
@@ -74,7 +74,7 @@ tcp-test-configuration:
         - type : Aggregation
 
         - type : Encode
-          format : grib
+          format : none
 
         - type : SingleFieldSink
 

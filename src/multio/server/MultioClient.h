@@ -29,7 +29,6 @@ class Peer;
 
 class MultioClient {
 public:
-    MultioClient();
     explicit MultioClient(const eckit::Configuration& config);
 
     ~MultioClient();

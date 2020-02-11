@@ -17,6 +17,7 @@
 #include "MultioNemo.h"
 
 #include <memory>
+#include <set>
 #include <typeinfo>
 
 #include "eckit/config/YAMLConfiguration.h"
@@ -43,13 +44,13 @@ eckit::PathName configuration_path() {
                                ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
                                : eckit::PathName{""};
 
-    return base + "/configs/multio-client.json";
+    return base + "/configs/";
 }
-
 }  // namespace
 
 class MultioNemo {
     eckit::LocalConfiguration config_;
+    std::set<std::string> activeFields_;
     Metadata metadata_;
 
     std::unique_ptr<MultioClient> multioClient_ = nullptr;
@@ -60,9 +61,10 @@ class MultioNemo {
     size_t clientCount_ = 1;
     size_t serverCount_ = 0;
 
-    size_t writeFrequency_ = 6; // TODO: coming from a configuration
+    MultioNemo() : config_{eckit::YAMLConfiguration{configuration_path() + "multio-server.yaml"}} {
+        const auto& vec = config_.getStringVector("activeFields");
+        activeFields_ = std::set<std::string>{begin(vec), end(vec)};
 
-    MultioNemo() : config_{eckit::YAMLConfiguration{configuration_path()}} {
         static const char* argv[2] = {"MultioNemo", 0};
         eckit::Main::initialise(1, const_cast<char**>(argv));
     }
@@ -110,7 +112,8 @@ public:
         // TODO: find a way to come up with a unique 'colour'
         eckit::mpi::comm("nemo").split(888, "server_comm");
 
-        multioServer_.reset(new MultioServer{});
+        multioServer_.reset(new MultioServer{
+            eckit::YAMLConfiguration{configuration_path() + "multio-server.yaml"}});
     }
 
     void setDomain(const std::string& dname, const int* data, size_t bytes) {
@@ -119,7 +122,7 @@ public:
     }
 
     void writeField(const std::string& fname, const double* data, size_t bytes) {
-        if (metadata_.getUnsigned("istep") % writeFrequency_ != 0) {
+        if (not isActive(fname)) {
             return;
         }
 
@@ -141,7 +144,7 @@ public:
     }
 
     bool isActive(const std::string& name) const {
-        return false; // Not yet implemented
+        return activeFields_.find(name) != end(activeFields_);
     }
 };
 

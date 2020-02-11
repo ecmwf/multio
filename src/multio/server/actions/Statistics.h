@@ -9,37 +9,38 @@
  */
 
 /// @author Domokos Sarmany
-/// @author Simon Smart
 /// @author Tiago Quintino
 
 /// @date Jan 2019
 
-#ifndef multio_server_actions_Encode_H
-#define multio_server_actions_Encode_H
+#ifndef multio_server_actions_Statistics_H
+#define multio_server_actions_Statistics_H
 
 #include <iosfwd>
+#include <vector>
 
 #include "multio/server/Action.h"
 
-namespace eckit {
-class Configuration;
-}
+namespace eckit { class Configuration; }
 
 namespace multio {
 namespace server {
 namespace actions {
 
-class Encode : public Action {
+class Statistics : public Action {
 public:
-    explicit Encode(const eckit::Configuration& config);
+    Statistics(const eckit::Configuration& config);
 
 private:
+
     void execute(Message msg) const override;
 
-    void print(std::ostream& os) const override;
+    void print(std::ostream &os) const override;
 
-    std::string format_;
-    std::string template_;
+    void applyOperation(const std::string& ops) const;
+
+    size_t writeFrequency_; // Should support multiple units
+    std::vector<std::string> operations_;
 };
 
 }  // namespace actions

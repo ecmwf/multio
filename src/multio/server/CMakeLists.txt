@@ -8,8 +8,6 @@ ecbuild_add_library(
     SOURCES
         actions/Aggregation.cc
         actions/Aggregation.h
-        actions/AppendToFile.cc
-        actions/AppendToFile.h
         actions/Encode.cc
         actions/Encode.h
         actions/Print.cc

@@ -29,14 +29,14 @@ namespace multio {
 
 FileSink::FileSink(const Configuration& config) :
     DataSink(config),
-    path_(config.getString("path")),
+    path_(config_.getString("path")),
     handle_(path_.fileHandle(false)) {
-    if (config_.has("append") && config_.getBool("append")) {
+    if (config_.getBool("append", false)) {
         handle_->openForAppend(0);
-        return;
     }
-
-    handle_->openForWrite(0);
+    else {
+        handle_->openForWrite(0);
+    }
 }
 
 FileSink::~FileSink() {

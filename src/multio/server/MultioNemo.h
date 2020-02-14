@@ -35,6 +35,8 @@ void multio_write_field(const char* fname, const double* data, int size);
 
 bool multio_field_is_active(const char* fname);
 
+void multio_not_implemented(const char* message);
+
 #ifdef __cplusplus
 }
 #endif

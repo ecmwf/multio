@@ -33,18 +33,6 @@ eckit::PathName configuration_path() {
 }
 
 class GribEncoder : public metkit::grib::GribHandle {
-    using NemoKey = std::string;
-
-    struct GribData {
-        long param;
-        std::string gridType;
-    };
-
-    std::map<NemoKey, GribData> parameters_ = {{"sst", {151129, "orca_grid_T"}},
-                                               {"ssu", {151131, "orca_grid_U"}},
-                                               {"ssv", {151132, "orca_grid_V"}},
-                                               {"ssw", {151133, "orca_grid_W"}}};
-
 public:
     GribEncoder(codes_handle* handle) : metkit::grib::GribHandle{handle} {}
 
@@ -62,10 +50,6 @@ public:
         eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
         size_t sz = value.size();
         CODES_CHECK(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), NULL);
-    }
-
-    long getParam(const NemoKey& key) {
-        return parameters_[key].param;
     }
 };
 }  // namespace
@@ -104,7 +88,7 @@ void Encode::execute(Message msg) const {
         encoder.setValue("numberOfValues", md.getLong("isizeg"));
 
         // Setting parameter ID
-        encoder.setValue("param", encoder.getParam(md.getString("igrib")));
+        encoder.setValue("param", md.getLong("param"));
 
         // Setting field values
         auto beg = reinterpret_cast<const double*>(msg.payload().data());

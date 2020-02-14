@@ -38,6 +38,8 @@ using multio::server::print_buffer;
 using multio::server::MultioClient;
 using multio::server::MultioServer;
 
+using NemoKey = std::string;
+
 namespace {
 eckit::PathName configuration_path() {
     eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
@@ -46,11 +48,35 @@ eckit::PathName configuration_path() {
 
     return base + "/configs/";
 }
+
+std::set<std::string> fetch_active_fields(const eckit::Configuration& cfg) {
+    const auto& vec = cfg.getStringVector("activeFields");
+    return std::set<std::string>{begin(vec), end(vec)};
+}
+
+struct GribData {
+    long param;
+    std::string gridType;
+};
+
+std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& cfg) {
+    const auto& cfgList = cfg.getSubConfigurations("nemo-fields");
+    std::map<std::string, GribData> nemo_map;
+    for (auto const& cfg : cfgList) {
+        nemo_map[cfg.getString("nemo-id")] = {cfg.getLong("param-id"), cfg.getString("grid-type")};
+    }
+    return nemo_map;
+}
+
 }  // namespace
 
 class MultioNemo {
     eckit::LocalConfiguration config_;
-    std::set<std::string> activeFields_;
+    const std::set<std::string> activeFields_;
+
+    // Nemo to grib dictionary
+    std::map<NemoKey, GribData> parameters_;
+
     Metadata metadata_;
 
     std::unique_ptr<MultioClient> multioClient_ = nullptr;
@@ -61,10 +87,11 @@ class MultioNemo {
     size_t clientCount_ = 1;
     size_t serverCount_ = 0;
 
-    MultioNemo() : config_{eckit::YAMLConfiguration{configuration_path() + "multio-server.yaml"}} {
-        const auto& vec = config_.getStringVector("activeFields");
-        activeFields_ = std::set<std::string>{begin(vec), end(vec)};
-
+    MultioNemo() :
+        config_{eckit::YAMLConfiguration{configuration_path() + "multio-server.yaml"}},
+        activeFields_{fetch_active_fields(config_)},
+        parameters_{fetch_nemo_params(
+            eckit::YAMLConfiguration{configuration_path() + "nemo-to-grib.yaml"})} {
         static const char* argv[2] = {"MultioNemo", 0};
         eckit::Main::initialise(1, const_cast<char**>(argv));
     }
@@ -109,7 +136,7 @@ public:
     void initServer(int nemo_comm) {
         eckit::mpi::addComm("nemo", nemo_comm);
 
-        // TODO: find a way to come up with a unique 'colour'
+        // TODO: find a way to come up with a unique 'colour', such as using MPI_APPNUM
         eckit::mpi::comm("nemo").split(888, "server_comm");
 
         multioServer_.reset(new MultioServer{
@@ -122,11 +149,11 @@ public:
     }
 
     void writeField(const std::string& fname, const double* data, size_t bytes) {
-        if (not isActive(fname)) {
-            return;
-        }
+
+        ASSERT(isActive(fname));
 
         metadata_.set("igrib", fname);
+        metadata_.set("param", parameters_[fname].param);
         auto gl_size = static_cast<size_t>(metadata_.getInt("isizeg"));
 
         eckit::Log::debug<multio::LibMultio>()
@@ -135,8 +162,9 @@ public:
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 
-        MultioNemo::instance().client().sendField(fname, "ocean-surface", gl_size, "orca_grid_T",
-                                                  metadata_, std::move(field_vals));
+        MultioNemo::instance().client().sendField(fname, "ocean-model-level", gl_size,
+                                                  parameters_[fname].gridType, metadata_,
+                                                  std::move(field_vals));
     }
 
     bool useServer() const {
@@ -201,6 +229,11 @@ void multio_write_field(const char* name, const double* data, int size) {
 bool multio_field_is_active(const char* name) {
     return MultioNemo::instance().isActive(name);
 }
+
+void multio_not_implemented(const char* message) {
+    throw eckit::SeriousBug(std::string{message} + " is not currently implemented in MultIO");
+}
+
 
 #ifdef __cplusplus
 }

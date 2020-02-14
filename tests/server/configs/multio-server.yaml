@@ -4,7 +4,18 @@ group : world
 serverCount : 3
 clientCount : 5
 
-activeFields : [sst, ssu, ssv, ssw]
+activeFields :
+  - ssh
+  - toce
+  - sst
+  - soce
+  - sss
+  - uoce
+  - ssu
+  - voce
+  - ssv
+  - woce
+  - ssw
 
 plans :
 
@@ -12,17 +23,17 @@ plans :
     actions :
       - type : Select
         match : category
-        categories : [ocean-surface]
+        categories : [ocean-model-level]
 
       - type : Statistics
-        output_frequency: 24
+        output_frequency: 1
         operations:
           - instant
 
       - type : Aggregation
 
-      - type : SingleFieldSink
-        root_path : "/scratch/ma/masd/ocean-fields/"
+      # - type : SingleFieldSink
+      #   root_path : "/scratch/ma/masd/ocean-fields/"
 
       - type : Encode
         format : grib
@@ -33,6 +44,6 @@ plans :
           - type : fdb5
             config : {}
 
-          - type : file
-            append : true
-            path : ocean-pipe.grib
+      #     - type : file
+      #       append : true
+      #       path : ocean-pipe.grib

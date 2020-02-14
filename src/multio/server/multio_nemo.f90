@@ -12,6 +12,7 @@ module multio_nemo
     public multio_set_domain
     public multio_write_field
     public multio_field_is_active
+    public multio_not_implemented
 
     integer, private, parameter :: dp = selected_real_kind(15, 307)
 
@@ -38,7 +39,7 @@ module multio_nemo
             use, intrinsic :: iso_c_binding
             implicit none
             integer(c_int), intent(in), value :: nemo_comm
-        end Subroutine multio_init_server
+        end subroutine multio_init_server
 
         subroutine c_multio_metadata_set_int_value(key, val) bind(c, name='multio_metadata_set_int_value')
             use, intrinsic :: iso_c_binding
@@ -69,7 +70,7 @@ module multio_nemo
             character(c_char), intent(in) :: c_name(*)
             real(c_double), dimension(*), intent(in) :: data
             integer(c_int), intent(in), value :: size
-        end Subroutine c_multio_write_field
+        end subroutine c_multio_write_field
 
         function c_multio_field_is_active(c_name) result(is_active) bind(c, name='multio_field_is_active')
             use, intrinsic :: iso_c_binding
@@ -77,6 +78,12 @@ module multio_nemo
             character(c_char), intent(in) :: c_name(*)
             logical(c_bool) :: is_active
         end function c_multio_field_is_active
+
+        subroutine c_multio_not_implemented(c_message) bind(c, name='multio_not_implemented')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            character(c_char), intent(in) :: c_message(*)
+        end subroutine c_multio_not_implemented
 
     end interface
 
@@ -136,5 +143,14 @@ module multio_nemo
             is_active = c_multio_field_is_active(to_c_string(fname))
 
         end subroutine multio_field_is_active
+
+        subroutine multio_not_implemented(message)
+            implicit none
+            character(*), intent(in) :: message
+
+            call c_multio_not_implemented(to_c_string(message))
+
+        end subroutine multio_not_implemented
+
 
 end module multio_nemo

@@ -21,7 +21,7 @@ mpi-test-configuration :
     - name : ocean
       actions :
         - type : Select
-          categories : [ocean-surface]
+          categories : [ocean-model-level]
 
         - type : Aggregation
 

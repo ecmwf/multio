@@ -25,19 +25,28 @@ using eckit::LocalConfiguration;
 namespace multio {
 namespace server {
 
+namespace {
+
+}  // namespace
+
 using eckit::Configuration;
 using eckit::Log;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-Action::Action(const eckit::Configuration& config) {
-    if(config.has("next")) {
-       const LocalConfiguration next = config.getSubConfiguration("next");
-       next_.reset(ActionFactory::instance().build(next.getString("type"), next));
+Action::Action(const eckit::Configuration& config) : type_{config.getString("type")} {
+    if (config.has("next")) {
+        const LocalConfiguration next = config.getSubConfiguration("next");
+        next_.reset(ActionFactory::instance().build(next.getString("type"), next));
     }
 }
 
-//----------------------------------------------------------------------------------------------------------------------
+Action::~Action() {
+    eckit::Log::info() << " ******* Total wall-clock time spent on action <" << type_
+                       << ">: " << timing_.elapsed_ << "s" << std::endl;
+}
+
+//---------------------------------------------------------------------------------------------------------------
 
 ActionFactory& ActionFactory::instance() {
     static ActionFactory singleton;

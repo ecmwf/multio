@@ -25,31 +25,34 @@ namespace actions {
 Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 
 void Sink::execute(Message msg) const {
-    switch (msg.tag()) {
-        case Message::Tag::Field:
-        case Message::Tag::Grib:
-            write(msg);
-            return;
+    {
+        ScopedTimer timer{timing_};
 
-        case Message::Tag::StepComplete:
-            flush();
-            return;
+        switch (msg.tag()) {
+            case Message::Tag::Field:
+            case Message::Tag::Grib:
+                write(msg);
+                return;
 
-        case Message::Tag::StepNotification: {
-            eckit::StringDict metadata;
+            case Message::Tag::StepComplete:
+                flush();
+                return;
 
-            metadata[msg.category()] = msg.name();
+            case Message::Tag::StepNotification: {
+                eckit::StringDict metadata;
 
-            eckit::Log::debug<LibMultio>() << "Trigger " << msg.category() << " with value "
-                                           << msg.name() << " is being called..." << std::endl;
-            mio_.trigger(metadata);
-            return;
+                metadata[msg.category()] = msg.name();
+
+                eckit::Log::debug<LibMultio>() << "Trigger " << msg.category() << " with value "
+                                               << msg.name() << " is being called..." << std::endl;
+                mio_.trigger(metadata);
+                return;
+            }
+
+            default:
+                ASSERT(false);
         }
-
-        default:
-            ASSERT(false);
     }
-
     if (next_) {  // May want to assert not next_
         next_->execute(msg);
     }

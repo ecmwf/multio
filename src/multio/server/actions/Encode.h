@@ -32,6 +32,7 @@ namespace actions {
 class Encode : public Action {
 public:
     explicit Encode(const eckit::Configuration& config);
+    // ~Encode();
 
 private:
     void execute(Message msg) const override;

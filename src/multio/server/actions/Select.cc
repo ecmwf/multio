@@ -25,9 +25,13 @@ Select::Select(const eckit::Configuration& config) :
     categories_{config.getStringVector("categories")} {}
 
 void Select::execute(Message msg) const {
-    bool passOn = (msg.tag() != Message::Tag::Field) || matchPlan(msg);
+    bool passOn = false;
+    {
+        ScopedTimer timer{timing_};
+        passOn = (msg.tag() != Message::Tag::Field) || matchPlan(msg);
+    }
 
-    if (passOn && next_) { // May want to assert next_
+    if (passOn && next_) {  // May want to assert next_
         next_->execute(msg);
     }
 }

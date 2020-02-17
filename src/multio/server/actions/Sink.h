@@ -38,13 +38,15 @@ public:
     Sink(const eckit::Configuration& config);
 
 private:
-    void execute(Message msg) const override;
+    bool doExecute(Message& msg) const override;
 
     void print(std::ostream& os) const override;
 
     void write(Message msg) const;
 
     void flush() const;
+
+    void trigger(const Message& msg) const;
 
     mutable MultIO mio_;
 };

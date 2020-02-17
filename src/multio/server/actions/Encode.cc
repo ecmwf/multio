@@ -63,59 +63,51 @@ Encode::Encode(const eckit::Configuration& config) :
     format_{config.getString("format")},
     template_{config.has("template") ? config.getString("template") : ""} {}
 
-// Encode::~Encode() {
-//     eckit::Log::info() << " ******* Total wall-clock time spent on action " << *this << ": "
-//                        << timing_.elapsed_ << "s" << std::endl;
-// }
+bool Encode::doExecute(Message& msg) const {
+    ScopedTimer timer{timing_};
 
-void Encode::execute(Message msg) const {
-    {
-        ScopedTimer timer{timing_};
+    if (format_ == "grib") {
+        eckit::Log::debug<LibMultio>() << "*** Executing encoding: " << *this << std::endl;
 
-        if (format_ == "grib") {
-            eckit::Log::debug<LibMultio>() << "*** Executing encoding: " << *this << std::endl;
+        eckit::AutoStdFile fin{configuration_path() + template_};
+        int err;
+        GribEncoder encoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err)};
 
-            eckit::AutoStdFile fin{configuration_path() + template_};
-            int err;
-            GribEncoder encoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err)};
+        const auto& md = msg.metadata();
 
-            const auto& md = msg.metadata();
+        // setCommonMetadata
+        encoder.setValue("expver", "xxxx");
+        encoder.setValue("class", "rd");
+        encoder.setValue("stream", "oper");
+        encoder.setValue("type", "fc");
+        encoder.setValue("levtype", static_cast<long>(168));
+        encoder.setValue("step", md.getLong("istep"));
+        encoder.setValue("level", md.getLong("ilevg"));
 
-            // setCommonMetadata
-            encoder.setValue("expver", "xxxx");
-            encoder.setValue("class", "rd");
-            encoder.setValue("stream", "oper");
-            encoder.setValue("type", "fc");
-            encoder.setValue("levtype", static_cast<long>(168));
-            encoder.setValue("step", md.getLong("istep"));
-            encoder.setValue("level", md.getLong("ilevg"));
+        // setDomainDimensions
+        encoder.setValue("numberOfDataPoints", md.getLong("isizeg"));
+        encoder.setValue("numberOfValues", md.getLong("isizeg"));
 
-            // setDomainDimensions
-            encoder.setValue("numberOfDataPoints", md.getLong("isizeg"));
-            encoder.setValue("numberOfValues", md.getLong("isizeg"));
+        // Setting parameter ID
+        encoder.setValue("param", md.getLong("param"));
 
-            // Setting parameter ID
-            encoder.setValue("param", md.getLong("param"));
+        // Setting field values
+        auto beg = reinterpret_cast<const double*>(msg.payload().data());
+        encoder.setDataValues(beg, msg.globalSize());
 
-            // Setting field values
-            auto beg = reinterpret_cast<const double*>(msg.payload().data());
-            encoder.setDataValues(beg, msg.globalSize());
-
-            eckit::Buffer buf{encoder.message()->length()};
-            encoder.write(buf);
-            msg = Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}},
-                          std::move(buf)};
-        }
-        else if (format_ == "none") {
-            ;  // leave in raw binary format
-        }
-        else {
-            throw eckit::SeriousBug("Encoding format <" + format_ + "> is not supported");
-        }
+        eckit::Buffer buf{encoder.message()->length()};
+        encoder.write(buf);
+        msg =
+            Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
     }
-    if (next_) {  // May want to assert next_
-        next_->execute(msg);
+    else if (format_ == "none") {
+        ;  // leave message in raw binary format
     }
+    else {
+        throw eckit::SeriousBug("Encoding format <" + format_ + "> is not supported");
+    }
+
+    return true;
 }
 
 void Encode::print(std::ostream& os) const {

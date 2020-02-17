@@ -25,23 +25,18 @@ Statistics::Statistics(const eckit::Configuration& config) :
     writeFrequency_{config.getUnsigned("output_frequency")},
     operations_{config.getStringVector("operations")} {}
 
-void Statistics::execute(Message msg) const {
-    {
-        ScopedTimer timer{timing_};
+bool Statistics::doExecute(Message& msg) const {
+    ScopedTimer timer{timing_};
 
-        for (const auto& ops : operations_) {
-            applyOperation(ops);
-        }
-
-        if (msg.metadata().getUnsigned("istep") % writeFrequency_ != 0) {
-            return;
-        }
-
-        ASSERT(next_);
+    for (const auto& ops : operations_) {
+        applyOperation(ops);
     }
 
-    // TODO: For loop to return from all statistics
-    next_->execute(msg); // This is for instant operation only
+    if (msg.metadata().getUnsigned("istep") % writeFrequency_ != 0) {
+        return false;
+    }
+
+    return true;
 }
 
 void Statistics::print(std::ostream& os) const {

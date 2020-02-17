@@ -22,62 +22,58 @@ namespace multio {
 namespace server {
 namespace actions {
 
+
+namespace {
+const std::map<Message::Tag, std::string> to_blob = {{Message::Tag::Field, "plain"},
+                                                     {Message::Tag::Grib, "grib"}};
+}
+
 Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 
-void Sink::execute(Message msg) const {
-    {
-        ScopedTimer timer{timing_};
+bool Sink::doExecute(Message& msg) const {
+    ScopedTimer timer{timing_};
 
-        switch (msg.tag()) {
-            case Message::Tag::Field:
-            case Message::Tag::Grib:
-                write(msg);
-                return;
+    switch (msg.tag()) {
+        case Message::Tag::Field:
+        case Message::Tag::Grib:
+            write(msg);
+            return true;
 
-            case Message::Tag::StepComplete:
-                flush();
-                return;
+        case Message::Tag::StepComplete:
+            flush();
+            return true;
 
-            case Message::Tag::StepNotification: {
-                eckit::StringDict metadata;
+        case Message::Tag::StepNotification:
+            trigger(msg);
+            return true;
 
-                metadata[msg.category()] = msg.name();
-
-                eckit::Log::debug<LibMultio>() << "Trigger " << msg.category() << " with value "
-                                               << msg.name() << " is being called..." << std::endl;
-                mio_.trigger(metadata);
-                return;
-            }
-
-            default:
-                ASSERT(false);
-        }
-    }
-    if (next_) {  // May want to assert not next_
-        next_->execute(msg);
+        default:
+            throw eckit::SeriousBug("Cannot handle message <" + Message::tag2str(msg.tag()) + ">");
     }
 }
 
 void Sink::write(Message msg) const {
-    eckit::DataBlobPtr blob;
-    switch (msg.tag()) {
-        case Message::Tag::Field:
-            blob.reset(eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
-            break;
+    ASSERT(to_blob.find(msg.tag()) != to_blob.end());
 
-        case Message::Tag::Grib:
-            blob.reset(eckit::DataBlobFactory::build("grib", msg.payload().data(), msg.size()));
-            break;
-
-        default:
-            ASSERT(false);
-    }
+    eckit::DataBlobPtr blob{
+        eckit::DataBlobFactory::build(to_blob.at(msg.tag()), msg.payload().data(), msg.size())};
 
     mio_.write(blob);
 }
 
 void Sink::flush() const {
     mio_.flush();
+}
+
+void Sink::trigger(const Message& msg) const {
+    eckit::StringDict metadata;
+
+    metadata[msg.category()] = msg.name();
+
+    eckit::Log::debug<LibMultio>() << "Trigger " << msg.category() << " with value " << msg.name()
+                                   << " is being called..." << std::endl;
+
+    mio_.trigger(metadata);
 }
 
 void Sink::print(std::ostream& os) const {

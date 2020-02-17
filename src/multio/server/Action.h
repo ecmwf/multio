@@ -55,7 +55,7 @@ public:
     Action(Action&& rhs) = default;
     Action& operator=(Action&& rhs) = default;
 
-    virtual void execute(Message msg) const = 0;
+    void execute(Message msg) const;
 
 protected:
 
@@ -66,6 +66,8 @@ protected:
     mutable eckit::Timing timing_;
 
 private:
+
+    virtual bool doExecute(Message &msg) const = 0;
 
     virtual void print(std::ostream &os) const = 0;
 

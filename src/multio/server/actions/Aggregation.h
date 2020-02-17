@@ -40,8 +40,11 @@ private:
 
     void print(std::ostream& os) const override;
 
-    bool AggregateFields(Message msg) const;
-    bool AggregateFlushes(Message msg) const;
+    bool handleField(Message& msg) const;
+    bool handleFlush(const Message& msg) const;
+
+    bool createGlobalField(Message& msg) const;
+    bool allPartsArrived(const Message& msg) const;
 
     mutable std::map<std::string, std::vector<Message>> messages_;
     mutable std::map<std::string, unsigned int> flushes_;

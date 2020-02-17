@@ -46,6 +46,8 @@ private:
 
     void flush() const;
 
+    void trigger(const Message& msg) const;
+
     mutable MultIO mio_;
 };
 

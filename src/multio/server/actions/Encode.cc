@@ -101,7 +101,7 @@ bool Encode::doExecute(Message& msg) const {
             Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
     }
     else if (format_ == "none") {
-        ;  // leave in raw binary format
+        ;  // leave message in raw binary format
     }
     else {
         throw eckit::SeriousBug("Encoding format <" + format_ + "> is not supported");

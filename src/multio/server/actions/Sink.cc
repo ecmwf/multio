@@ -22,6 +22,12 @@ namespace multio {
 namespace server {
 namespace actions {
 
+
+namespace {
+const std::map<Message::Tag, std::string> to_blob = {{Message::Tag::Field, "plain"},
+                                                     {Message::Tag::Grib, "grib"}};
+}
+
 Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 
 bool Sink::doExecute(Message& msg) const {
@@ -37,43 +43,37 @@ bool Sink::doExecute(Message& msg) const {
             flush();
             return true;
 
-        case Message::Tag::StepNotification: {
-            eckit::StringDict metadata;
-
-            metadata[msg.category()] = msg.name();
-
-            eckit::Log::debug<LibMultio>() << "Trigger " << msg.category() << " with value "
-                                           << msg.name() << " is being called..." << std::endl;
-            mio_.trigger(metadata);
+        case Message::Tag::StepNotification:
+            trigger(msg);
             return true;
-        }
 
         default:
-            ASSERT(false);
+            throw eckit::SeriousBug("Cannot handle message <" + Message::tag2str(msg.tag()) + ">");
     }
 }
 
 void Sink::write(Message msg) const {
-    eckit::DataBlobPtr blob;
-    // Create a pure-function factory for this, called make_field_blob
-    switch (msg.tag()) {
-        case Message::Tag::Field:
-            blob.reset(eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
-            break;
+    ASSERT(to_blob.find(msg.tag()) != to_blob.end());
 
-        case Message::Tag::Grib:
-            blob.reset(eckit::DataBlobFactory::build("grib", msg.payload().data(), msg.size()));
-            break;
-
-        default:
-            ASSERT(false);
-    }
+    eckit::DataBlobPtr blob{
+        eckit::DataBlobFactory::build(to_blob.at(msg.tag()), msg.payload().data(), msg.size())};
 
     mio_.write(blob);
 }
 
 void Sink::flush() const {
     mio_.flush();
+}
+
+void Sink::trigger(const Message& msg) const {
+    eckit::StringDict metadata;
+
+    metadata[msg.category()] = msg.name();
+
+    eckit::Log::debug<LibMultio>() << "Trigger " << msg.category() << " with value " << msg.name()
+                                   << " is being called..." << std::endl;
+
+    mio_.trigger(metadata);
 }
 
 void Sink::print(std::ostream& os) const {

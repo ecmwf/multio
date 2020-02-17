@@ -25,9 +25,9 @@ namespace actions {
 
 SingleFieldSink::SingleFieldSink(const eckit::Configuration& config) :
     Action{config},
-    rootPath_{config.has("root_path") ? config.getString("root_path") : ""} {}
+    rootPath_{config.getString("root_path", "")} {}
 
-void SingleFieldSink::execute(Message msg) const {
+bool SingleFieldSink::doExecute(Message& msg) const {
     switch (msg.tag()) {
         case Message::Tag::Field:
         case Message::Tag::Grib:
@@ -42,9 +42,7 @@ void SingleFieldSink::execute(Message msg) const {
             ASSERT(false);
     }
 
-    if (next_) {  // May want to assert not next_
-        next_->execute(msg);
-    }
+    return true;
 }
 
 void SingleFieldSink::write(Message msg) const {

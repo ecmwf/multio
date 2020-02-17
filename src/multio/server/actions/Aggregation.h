@@ -36,9 +36,12 @@ public:
     Aggregation(const eckit::Configuration& config);
 
 private:
-    void execute(Message msg) const override;
+    bool doExecute(Message& msg) const override;
 
     void print(std::ostream& os) const override;
+
+    bool AggregateFields(Message msg) const;
+    bool AggregateFlushes(Message msg) const;
 
     mutable std::map<std::string, std::vector<Message>> messages_;
     mutable std::map<std::string, unsigned int> flushes_;

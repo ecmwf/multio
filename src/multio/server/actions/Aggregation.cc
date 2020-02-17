@@ -24,57 +24,84 @@ namespace actions {
 
 Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 
-void Aggregation::execute(Message msg) const {
-    {
-        ScopedTimer timer{timing_};
+bool Aggregation::doExecute(Message& msg) const {
+    ScopedTimer timer{timing_};
 
-        if (msg.tag() == Message::Tag::Field) {
-            auto field_id = msg.fieldId();
-            auto map_name = msg.domain();
-            messages_[field_id].push_back(msg);
+    if (msg.tag() == Message::Tag::Field) {
+        auto field_id = msg.fieldId();
+        auto map_name = msg.domain();
+        messages_[field_id].push_back(msg);
 
-            // All parts arrived?
-            bool ret = messages_.at(field_id).size() == msg.domainCount();
-            ret &= Mappings::instance().get(map_name).size() == msg.domainCount();
-            if (!ret) {
-                return;
-            }
-
-            eckit::Buffer global_field(msg.globalSize() * sizeof(double));
-            for (auto m : messages_.at(field_id)) {
-                Mappings::instance()
-                    .get(map_name)
-                    .at(m.source())
-                    ->to_global(m.payload(), global_field);
-            }
-
-            msg.payload() = std::move(global_field);
-
-            messages_.erase(field_id);
+        // All parts arrived?
+        bool ret = messages_.at(field_id).size() == msg.domainCount();
+        ret &= Mappings::instance().get(map_name).size() == msg.domainCount();
+        if (!ret) {
+            return false;
         }
 
-        if (msg.tag() == Message::Tag::StepComplete) {
-            eckit::Log::debug<LibMultio>()
-                << "*** Aggregating flush messages: " << *this << std::endl;
+        eckit::Buffer global_field(msg.globalSize() * sizeof(double));
+        for (auto m : messages_.at(field_id)) {
+            Mappings::instance().get(map_name).at(m.source())->to_global(m.payload(), global_field);
+        }
 
-            // Initialise
-            if (flushes_.find(msg.domain()) == end(flushes_)) {
-                flushes_[msg.domain()] = 0;
-            }
+        msg.payload() = std::move(global_field);
 
-            if (++flushes_.at(msg.domain()) != msg.domainCount()) {
-                return;
-            }
+        messages_.erase(field_id);
+    }
 
-            if (next_) {  // May want to assert next_
-                next_->execute(msg);
-            }
+    if (msg.tag() == Message::Tag::StepComplete) {
+        eckit::Log::debug<LibMultio>() << "*** Aggregating flush messages: " << *this << std::endl;
+
+        // Initialise
+        if (flushes_.find(msg.domain()) == end(flushes_)) {
+            flushes_[msg.domain()] = 0;
+        }
+
+        if (++flushes_.at(msg.domain()) != msg.domainCount()) {
+            return false;
         }
     }
 
-    if (next_) {  // May want to assert next_
-        next_->execute(msg);
+    return true;
+}
+
+bool Aggregation::AggregateFields(Message msg) const {
+    auto field_id = msg.fieldId();
+    auto map_name = msg.domain();
+    messages_[field_id].push_back(msg);
+
+    // All parts arrived?
+    bool ret = messages_.at(field_id).size() == msg.domainCount();
+    ret &= Mappings::instance().get(map_name).size() == msg.domainCount();
+    if (!ret) {
+        return false;
     }
+
+    eckit::Buffer global_field(msg.globalSize() * sizeof(double));
+    for (auto m : messages_.at(field_id)) {
+        Mappings::instance().get(map_name).at(m.source())->to_global(m.payload(), global_field);
+    }
+
+    msg.payload() = std::move(global_field);
+
+    messages_.erase(field_id);
+
+    return true;
+}
+
+bool Aggregation::AggregateFlushes(Message msg) const {
+    eckit::Log::debug<LibMultio>() << "*** Aggregating flush messages: " << *this << std::endl;
+
+    // Initialise
+    if (flushes_.find(msg.domain()) == end(flushes_)) {
+        flushes_[msg.domain()] = 0;
+    }
+
+    if (++flushes_.at(msg.domain()) != msg.domainCount()) {
+        return false;
+    }
+
+    return true;
 }
 
 void Aggregation::print(std::ostream& os) const {

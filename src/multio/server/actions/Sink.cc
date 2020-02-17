@@ -24,42 +24,38 @@ namespace actions {
 
 Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 
-void Sink::execute(Message msg) const {
-    {
-        ScopedTimer timer{timing_};
+bool Sink::doExecute(Message& msg) const {
+    ScopedTimer timer{timing_};
 
-        switch (msg.tag()) {
-            case Message::Tag::Field:
-            case Message::Tag::Grib:
-                write(msg);
-                return;
+    switch (msg.tag()) {
+        case Message::Tag::Field:
+        case Message::Tag::Grib:
+            write(msg);
+            return true;
 
-            case Message::Tag::StepComplete:
-                flush();
-                return;
+        case Message::Tag::StepComplete:
+            flush();
+            return true;
 
-            case Message::Tag::StepNotification: {
-                eckit::StringDict metadata;
+        case Message::Tag::StepNotification: {
+            eckit::StringDict metadata;
 
-                metadata[msg.category()] = msg.name();
+            metadata[msg.category()] = msg.name();
 
-                eckit::Log::debug<LibMultio>() << "Trigger " << msg.category() << " with value "
-                                               << msg.name() << " is being called..." << std::endl;
-                mio_.trigger(metadata);
-                return;
-            }
-
-            default:
-                ASSERT(false);
+            eckit::Log::debug<LibMultio>() << "Trigger " << msg.category() << " with value "
+                                           << msg.name() << " is being called..." << std::endl;
+            mio_.trigger(metadata);
+            return true;
         }
-    }
-    if (next_) {  // May want to assert not next_
-        next_->execute(msg);
+
+        default:
+            ASSERT(false);
     }
 }
 
 void Sink::write(Message msg) const {
     eckit::DataBlobPtr blob;
+    // Create a pure-function factory for this, called make_field_blob
     switch (msg.tag()) {
         case Message::Tag::Field:
             blob.reset(eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));

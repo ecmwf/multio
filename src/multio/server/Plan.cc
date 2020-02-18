@@ -53,7 +53,7 @@ LocalConfiguration rootConfig(const LocalConfiguration& config) {
 Plan::Plan(const eckit::Configuration& config) {
     name_ = config.getString("name", "anonymous");
 
-    auto root = rootConfig(config);
+    auto root = rootConfig(eckit::LocalConfiguration{config});
     root_.reset(ActionFactory::instance().build(root.getString("type"), root));
 }
 

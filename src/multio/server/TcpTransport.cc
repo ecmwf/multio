@@ -74,9 +74,8 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
         auto ports = cfg.getUnsignedVector("ports");
 
         if (amIServer(host, ports)) {
-            eckit::net::SocketOptions opts;
-            opts.reuseAddr();
-            server_.reset(new eckit::net::TCPServer{static_cast<int>(local_.port()), "", opts});
+            server_.reset(new eckit::net::TCPServer{static_cast<int>(local_.port()),
+                                                    eckit::net::SocketOptions::server()});
             select_.add(*server_);
         }
         else {

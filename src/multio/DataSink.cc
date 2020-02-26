@@ -60,7 +60,7 @@ void DataSinkFactory::list(std::ostream& out) {
 DataSink* DataSinkFactory::build(const std::string& name, const Configuration& config) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
-    Log::debug<LibMultio>() << "Looking for DataSinkFactory [" << name << "]" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Looking for DataSinkFactory [" << name << "]" << std::endl;
 
     auto f = factories_.find(name);
 

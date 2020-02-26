@@ -34,11 +34,11 @@ eckit::LocalConfiguration fdb5_configuration(const eckit::Configuration& cfg) {
 FDB5Sink::FDB5Sink(const eckit::Configuration& config) :
     DataSink(config),
     fdb_{fdb5_configuration(config)} {
-    eckit::Log::debug<LibMultio>() << "Config = " << config << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Config = " << config << std::endl;
 }
 
 void FDB5Sink::write(eckit::DataBlobPtr blob) {
-    eckit::Log::debug<LibMultio>() << "FDB5Sink::write()" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "FDB5Sink::write()" << std::endl;
 
     const eckit::Metadata& md = blob->metadata();
 
@@ -53,7 +53,7 @@ void FDB5Sink::write(eckit::DataBlobPtr blob) {
 }
 
 void FDB5Sink::flush() {
-    eckit::Log::debug<LibMultio>() << "FDB5Sink::flush()" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "FDB5Sink::flush()" << std::endl;
 
     fdb_.flush();
 }

@@ -93,7 +93,7 @@ private:
 
             // By default, when using the legacy interface, configure the fdb5 to use sub tocs
             if (*i == "fdb5")
-                oss << ", \"useSubToc\": true";
+                oss << ", \"config\": {\"useSubToc\": true}";
 
             oss << "}";
             sep = ",";

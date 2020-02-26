@@ -90,11 +90,6 @@ private:
         const char *sep = "";
         for (StringList::iterator i = sinks.begin(); i != sinks.end(); ++i) {
             oss << sep << "{ \"type\" : \"" << *i << "\"";
-
-            // By default, when using the legacy interface, configure the fdb5 to use sub tocs
-            if (*i == "fdb5")
-                oss << ", \"config\": {\"useSubToc\": true}";
-
             oss << "}";
             sep = ",";
         }

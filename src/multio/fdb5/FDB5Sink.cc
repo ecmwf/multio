@@ -23,13 +23,19 @@ namespace multio {
 
 namespace {
 eckit::LocalConfiguration fdb5_configuration(const eckit::Configuration& cfg) {
-    return cfg.has("config") ? cfg.getSubConfiguration("config") : eckit::LocalConfiguration{};
+    auto fdb_config = cfg.has("config") ? cfg.getSubConfiguration("config") : eckit::LocalConfiguration{};
+    if (not fdb_config.has("useSubToc")) {
+        fdb_config.set("useSubToc", true);
+    }
+    return fdb_config;
 }
 }  // namespace
 
 FDB5Sink::FDB5Sink(const eckit::Configuration& config) :
     DataSink(config),
-    fdb_{fdb5_configuration(config)} {}
+    fdb_{fdb5_configuration(config)} {
+    eckit::Log::debug<LibMultio>() << "Config = " << config << std::endl;
+}
 
 void FDB5Sink::write(eckit::DataBlobPtr blob) {
     eckit::Log::debug<LibMultio>() << "FDB5Sink::write()" << std::endl;

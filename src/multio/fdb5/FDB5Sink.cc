@@ -23,7 +23,7 @@ namespace multio {
 
 namespace {
 eckit::LocalConfiguration fdb5_configuration(const eckit::Configuration& cfg) {
-    auto fdb_config = cfg.has("config") ? cfg.getSubConfiguration("config") : eckit::LocalConfiguration{};
+    auto fdb_config = cfg.getSubConfiguration("config");
     if (not fdb_config.has("useSubToc")) {
         fdb_config.set("useSubToc", true);
     }

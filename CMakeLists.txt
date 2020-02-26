@@ -15,8 +15,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### dependencies
 
-ecbuild_use_package( PROJECT eckit VERSION  1.6 REQUIRED )
+ecbuild_use_package( PROJECT eckit VERSION  1.8 REQUIRED )
 ecbuild_use_package( PROJECT metkit VERSION 1.4 REQUIRED )
+
 if( NOT METKIT_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
 endif()

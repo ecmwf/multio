@@ -70,7 +70,7 @@ void IOStats::logRead(const Length &size, Timer& timer) {
     double elapsed = timer.elapsed();
     sumReadTimesSquared_ += elapsed * elapsed;
 
-    Log::debug<LibMultio>() << "Read count: " << numReads_
+    LOG_DEBUG_LIB(LibMultio) << "Read count: " << numReads_
                             << ", size: " << Bytes(size)
                             << ", total: " << Bytes(bytesRead_)
                             << ", time: " << elapsed << "s"
@@ -88,7 +88,7 @@ void IOStats::logWrite(const Length &size, Timer& timer) {
     double elapsed = timer.elapsed();
     sumWriteTimesSquared_ += elapsed * elapsed;
 
-    Log::debug<LibMultio>() << "Write count: " << numWrites_
+    LOG_DEBUG_LIB(LibMultio) << "Write count: " << numWrites_
                             << ", size: " << Bytes(size)
                             << ", total: " << Bytes(bytesWritten_)
                             << ", time: " << elapsed << "s"
@@ -104,7 +104,7 @@ void IOStats::logFlush(Timer& timer) {
     double elapsed = timer.elapsed();
     sumFlushTimesSquared_ += elapsed * elapsed;
 
-    Log::debug<LibMultio>() << "Flush count: " << numFlush_
+    LOG_DEBUG_LIB(LibMultio) << "Flush count: " << numFlush_
                             << ", time: " << elapsed << "s"
                             << ", total: " << flushTiming_.elapsed_ << "s" << std::endl;
 }

@@ -23,16 +23,22 @@ namespace multio {
 
 namespace {
 eckit::LocalConfiguration fdb5_configuration(const eckit::Configuration& cfg) {
-    return cfg.has("config") ? cfg.getSubConfiguration("config") : eckit::LocalConfiguration{};
+    auto fdb_config = cfg.has("config") ? cfg.getSubConfiguration("config") : eckit::LocalConfiguration{};
+    if (not fdb_config.has("useSubToc")) {
+        fdb_config.set("useSubToc", true);
+    }
+    return fdb_config;
 }
 }  // namespace
 
 FDB5Sink::FDB5Sink(const eckit::Configuration& config) :
     DataSink(config),
-    fdb_{fdb5_configuration(config)} {}
+    fdb_{fdb5_configuration(config)} {
+    LOG_DEBUG_LIB(LibMultio) << "Config = " << config << std::endl;
+}
 
 void FDB5Sink::write(eckit::DataBlobPtr blob) {
-    eckit::Log::debug<LibMultio>() << "FDB5Sink::write()" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "FDB5Sink::write()" << std::endl;
 
     const eckit::Metadata& md = blob->metadata();
 
@@ -41,14 +47,14 @@ void FDB5Sink::write(eckit::DataBlobPtr blob) {
     for (const auto& kw : md.keywords()) {
         md.get(kw, value);
         key.set(kw, value);
-        eckit::Log::debug<multio::LibMultio>() << "=== key: " << kw << ", value: " << value << std::endl;
+        LOG_DEBUG_LIB(LibMultio) << "=== key: " << kw << ", value: " << value << std::endl;
     }
 
     fdb_.archive(key, blob->buffer(), blob->length());
 }
 
 void FDB5Sink::flush() {
-    eckit::Log::debug<LibMultio>() << "FDB5Sink::flush()" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "FDB5Sink::flush()" << std::endl;
 
     fdb_.flush();
 }

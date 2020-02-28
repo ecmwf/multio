@@ -231,7 +231,7 @@ bool multio_field_is_active(const char* name) {
 }
 
 void multio_not_implemented(const char* message) {
-    throw eckit::SeriousBug(std::string{message} + " is not currently implemented in MultIO");
+    eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO";
 }
 
 

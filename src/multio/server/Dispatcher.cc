@@ -19,12 +19,16 @@
 #include "multio/LibMultio.h"
 #include "multio/server/Plan.h"
 
+#include "ScopedTimer.h"
+
 using eckit::LocalConfiguration;
 
 namespace multio {
 namespace server {
 
 Dispatcher::Dispatcher(const eckit::Configuration& config) {
+    timer_.start();
+
     eckit::Log::debug<LibMultio>() << config << std::endl;
 
     const std::vector<LocalConfiguration> plans = config.getSubConfigurations("plans");
@@ -34,9 +38,15 @@ Dispatcher::Dispatcher(const eckit::Configuration& config) {
     }
 }
 
-Dispatcher::~Dispatcher() = default;
+Dispatcher::~Dispatcher() {
+    eckit::Log::info() << " ******* Total wall-clock time spent in dispatcher "
+                       << eckit::Timing{timer_}.elapsed_ << "s" << std::endl
+                       << "         Total wall-clock time spent with dispatching " << timing_ << "s"
+                       << std::endl;
+}
 
 void Dispatcher::dispatch(eckit::Queue<Message>& queue) {
+    ScopedTimer timer{timing_};
     Message msg;
     while (queue.pop(msg) >= 0) {
         for (const auto& plan : plans_) {

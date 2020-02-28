@@ -57,9 +57,13 @@ Plan::Plan(const eckit::Configuration& config) {
     root_.reset(ActionFactory::instance().build(root.getString("type"), root));
 }
 
-Plan::~Plan() = default;
+Plan::~Plan() {
+    eckit::Log::info() << " ******* Total wall-clock time spent processing the plan " << timing_
+                       << "s" << std::endl;
+}
 
 void Plan::process(Message msg) {
+    ScopedTimer timer{timing_};
     root_->execute(msg);
 }
 

@@ -19,6 +19,7 @@
 
 #include <memory>
 
+#include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/server/Message.h"
@@ -45,7 +46,7 @@ private:
     std::string name_;
 
     std::unique_ptr<Action> root_;
-
+    eckit::Timing timing_;
 };
 
 }  // namespace server

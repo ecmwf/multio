@@ -42,7 +42,7 @@ Action::Action(const eckit::Configuration& config) : type_{config.getString("typ
 }
 
 Action::~Action() {
-    eckit::Log::info() << " ******* Total wall-clock time spent on action <" << type_
+    eckit::Log::info() << "         -- Total wall-clock time spent on action <" << type_
                        << ">: " << timing_.elapsed_ << "s" << std::endl;
 }
 

@@ -31,5 +31,12 @@ ecbuild_add_test( TARGET test_multio_ifs_io
                   ARGS ${_test_data}
                   ENVIRONMENT "${_test_environment}" )
 
+ecbuild_add_test( TARGET test_multio_subtoc
+                  CONDITION HAVE_FDB5
+                  COMMAND $<TARGET_FILE:multio-sink>
+                  TEST_DEPENDS multio_get_test_data
+                  ARGS ${_test_data} --test-subtoc
+                  ENVIRONMENT "${_test_environment}" )
+
 add_subdirectory(attic)
 add_subdirectory(server)

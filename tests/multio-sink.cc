@@ -32,6 +32,7 @@
 #include "multio/tools/MultioTool.h"
 
 namespace multio {
+namespace test {
 
 namespace {
 class TempFile {
@@ -123,12 +124,13 @@ bool MultioSink::subtocExists() const {
     return false;
 }
 
+}
 }  // namespace multio
 
 //---------------------------------------------------------------------------------------------------------------
 
 
 int main(int argc, char** argv) {
-    multio::MultioSink tool(argc, argv);
+    multio::test::MultioSink tool(argc, argv);
     return tool.start();
 }

@@ -22,6 +22,16 @@ list( APPEND _test_data
   "rd.vod.grib"
 )
 
+ecbuild_add_executable( TARGET    multio-sink
+                        SOURCES   multio-sink.cc ${CMAKE_CURRENT_SOURCE_DIR}/../src/multio/tools/MultioTool.cc
+                        CONDITION HAVE_FDB5
+                        LIBS      multio multio-fdb5 eckit_option)
+
+ecbuild_add_executable( TARGET    multio-legacy
+                        SOURCES   multio-legacy.cc ${CMAKE_CURRENT_SOURCE_DIR}/../src/multio/tools/MultioTool.cc
+                        CONDITION HAVE_FDB5 AND HAVE_LEGACY_IFSIO
+                        LIBS      multio multio-fdb5 eckit_option)
+
 ecbuild_get_test_multidata( TARGET multio_get_test_data DIRNAME fdb5/tests/fdb NAMES ${_test_data} )
 
 ecbuild_add_test( TARGET test_multio_ifs_io

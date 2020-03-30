@@ -45,6 +45,7 @@ void FDB5Sink::write(eckit::DataBlobPtr blob) {
 
     fdb5::Key key;
     std::string value;
+    LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
     for (const auto& kw : md.keywords()) {
         md.get(kw, value);
         key.set(kw, value);

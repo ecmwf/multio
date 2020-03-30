@@ -30,6 +30,7 @@
 #include "multio/tools/MultioTool.h"
 
 namespace multio {
+namespace test {
 
 class MultioLegacy final : public multio::MultioTool {
 public:  // methods
@@ -98,6 +99,7 @@ void MultioLegacy::execute(const eckit::option::CmdArgs& args) {
     codes_handle_delete(handle);
 }
 
+}  // namespace test
 }  // namespace multio
 
 
@@ -105,6 +107,6 @@ void MultioLegacy::execute(const eckit::option::CmdArgs& args) {
 
 
 int main(int argc, char** argv) {
-    multio::MultioLegacy tool(argc, argv);
+    multio::test::MultioLegacy tool(argc, argv);
     return tool.start();
 }

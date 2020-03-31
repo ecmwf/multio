@@ -2,7 +2,7 @@
 #ifndef multio_attic_Sink_H
 #define multio_attic_Sink_H
 
-#include "multio/DataSink.h"
+#include "multio/sink/DataSink.h"
 #include "multio/attic/Action.h"
 
 namespace atlas {

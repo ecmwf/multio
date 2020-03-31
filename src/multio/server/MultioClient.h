@@ -14,7 +14,7 @@
 #include <memory>
 #include <vector>
 
-#include "multio/server/Metadata.h"
+#include "multio/message/Metadata.h"
 
 namespace eckit {
 class Buffer;
@@ -22,10 +22,12 @@ class Configuration;
 }  // namespace eckit
 
 namespace multio {
+
+class Peer;
+
 namespace server {
 
 class Transport;
-class Peer;
 
 class MultioClient {
 public:

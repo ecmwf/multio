@@ -21,51 +21,20 @@ ecbuild_add_library(
     CONDITION HAVE_MULTIO_SERVER
 
     SOURCES
-        actions/Aggregation.cc
-        actions/Aggregation.h
-        actions/Encode.cc
-        actions/Encode.h
-        actions/Print.cc
-        actions/Print.h
-        actions/Select.cc
-        actions/Select.h
-        actions/Sink.cc
-        actions/Sink.h
-        actions/SingleFieldSink.cc
-        actions/SingleFieldSink.h
-        actions/Statistics.cc
-        actions/Statistics.h
-        actions/Null.cc
-        actions/Null.h
-        Action.cc
-        Action.h
         Dispatcher.cc
         Dispatcher.h
-        Domain.cc
-        Domain.h
         GribTemplate.h
         GribTemplate.cc
         IoTransport.cc
         IoTransport.h
         Listener.cc
         Listener.h
-        Mappings.cc
-        Mappings.h
-        Message.cc
-        Message.h
-        Metadata.h
         MultioClient.cc
         MultioClient.h
         MultioServer.cc
         MultioServer.h
         MultioNemo.cc
         MultioNemo.h
-        MessageContent.cc
-        MessageHeader.cc
-        Peer.cc
-        Peer.h
-        Plan.cc
-        Plan.h
         PlainDataBlob.cc
         PlainDataBlob.h
         ThreadTransport.cc
@@ -76,6 +45,8 @@ ecbuild_add_library(
         TcpTransport.h
         Transport.cc
         Transport.h
+        TransportPeer.cc
+        TransportPeer.h
         ScopedThread.h
         MultioServerTool.cc
         MultioServerTool.h

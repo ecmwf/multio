@@ -1,0 +1,12 @@
+#include "multio/library/multio_version.h"
+
+const char * multio_version()     { return MULTIO_VERSION; }
+const char * multio_version_str() { return MULTIO_VERSION_STR; }
+
+unsigned int multio_version_int()
+{
+  return 10000*MULTIO_MAJOR_VERSION + 100*MULTIO_MINOR_VERSION + 1*MULTIO_PATCH_VERSION;
+}
+
+const char * multio_git_sha1() { return "@MULTIO_GIT_SHA1@"; }
+

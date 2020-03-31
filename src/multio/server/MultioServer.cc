@@ -4,7 +4,7 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
 
-#include "multio/LibMultio.h"
+#include "multio/library/LibMultio.h"
 #include "multio/server/Transport.h"
 
 namespace multio {

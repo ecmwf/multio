@@ -25,7 +25,7 @@
 
 #include "fdb5/api/FDB.h"
 
-#include "multio/DataSink.h"
+#include "multio/sink/DataSink.h"
 
 //--------------------------------------------------------------------------------------------------
 

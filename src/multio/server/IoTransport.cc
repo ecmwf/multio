@@ -17,16 +17,15 @@
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/JSON.h"
 
-#include "multio/LibMultio.h"
-
+#include "multio/print_buffer.h"
+#include "multio/library/LibMultio.h"
 #include "multio/server/Listener.h"
-#include "multio/server/print_buffer.h"
 #include "multio/server/ThreadTransport.h"
 
 using multio::server::Listener;
-using multio::server::Message;
-using multio::server::Metadata;
-using multio::server::print_buffer;
+using multio::Message;
+using multio::Metadata;
+using multio::print_buffer;
 using multio::server::Transport;
 using multio::server::TransportFactory;
 
@@ -128,7 +127,7 @@ public:
 
 // C/Fortran nterface
 
-using multio::server::Peer;
+using multio::Peer;
 
 #ifdef __cplusplus
     extern "C" {

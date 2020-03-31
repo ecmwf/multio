@@ -8,11 +8,14 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "multio/LibMultio.h"
-#include "multio/server/Message.h"
+#include "multio/action/Plan.h"
+#include "multio/library/LibMultio.h"
+#include "multio/message/Message.h"
 #include "multio/server/MultioServerTool.h"
-#include "multio/server/Plan.h"
-#include "multio/server/print_buffer.h"
+#include "multio/print_buffer.h"
+
+using multio::Message;
+using multio::Peer;
 
 using namespace multio::server;
 

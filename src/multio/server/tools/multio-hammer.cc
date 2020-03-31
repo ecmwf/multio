@@ -17,15 +17,22 @@
 #include "metkit/grib/GribDataBlob.h"
 #include "metkit/grib/GribHandle.h"
 
-#include "multio/LibMultio.h"
+#include "multio/action/Plan.h"
+#include "multio/library/LibMultio.h"
 
-#include "multio/server/Domain.h"
+#include "multio/domain/Domain.h"
+#include "multio/message/Message.h"
+#include "multio/message/Peer.h"
 #include "multio/server/Listener.h"
-#include "multio/server/Message.h"
 #include "multio/server/MultioServerTool.h"
-#include "multio/server/Peer.h"
-#include "multio/server/Plan.h"
 #include "multio/server/Transport.h"
+#include "multio/server/TransportPeer.h"
+
+using multio::Message;
+using multio::Metadata;
+using multio::Domain;
+using multio::Unstructured;
+using multio::Peer;
 
 using namespace multio::server;
 

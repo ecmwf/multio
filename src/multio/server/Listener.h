@@ -22,8 +22,8 @@
 
 #include "eckit/container/Queue.h"
 
-#include "multio/server/Peer.h"
-#include "multio/server/Message.h"
+#include "multio/message/Peer.h"
+#include "multio/message/Message.h"
 
 namespace eckit {
 class Configuration;

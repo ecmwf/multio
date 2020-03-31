@@ -5,9 +5,11 @@
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/JSON.h"
 
-#include "multio/LibMultio.h"
-#include "multio/server/Message.h"
+#include "multio/library/LibMultio.h"
+#include "multio/message/Message.h"
 #include "multio/server/Transport.h"
+
+using multio::Peer;
 
 namespace multio {
 namespace server {

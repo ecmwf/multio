@@ -6,7 +6,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/Buffer.h"
 
-#include "multio/server/Message.h"
+#include "multio/message/Message.h"
 
 namespace multio {
 namespace server {

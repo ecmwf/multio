@@ -23,7 +23,7 @@
 #include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
-#include "multio/server/Message.h"
+#include "multio/message/Message.h"
 
 namespace eckit {
 class Configuration;

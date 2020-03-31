@@ -7,9 +7,10 @@
 #include <vector>
 
 namespace multio {
-namespace server {
 
 class Message;
+
+namespace server {
 
 enum SampleId : unsigned
 {

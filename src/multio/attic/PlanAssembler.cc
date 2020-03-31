@@ -10,7 +10,7 @@
 
 #include "atlas/util/Metadata.h"
 
-#include "multio/DataSink.h"
+#include "multio/sink/DataSink.h"
 
 #include "multio/attic/Action.h"
 #include "multio/attic/Aggregation.h"

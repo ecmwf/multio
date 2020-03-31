@@ -17,11 +17,11 @@
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
 
-#include "multio/LibMultio.h"
+#include "multio/domain/Mappings.h"
+#include "multio/library/LibMultio.h"
+#include "multio/message/Message.h"
 
 #include "multio/server/GribTemplate.h"
-#include "multio/server/Mappings.h"
-#include "multio/server/Message.h"
 #include "multio/server/ScopedThread.h"
 
 #include "multio/server/Dispatcher.h"

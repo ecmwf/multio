@@ -13,7 +13,7 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "multio/LibMultio.h"
+#include "multio/library/LibMultio.h"
 
 namespace multio {
 namespace server {

@@ -25,7 +25,8 @@
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/config/Configuration.h"
 
-#include "multio/server/Message.h"
+#include "multio/message/Message.h"
+#include "multio/server/TransportPeer.h"
 
 namespace multio {
 namespace server {

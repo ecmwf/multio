@@ -17,7 +17,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/types/Metadata.h"
 
-#include "multio/LibMultio.h"
+#include "multio/library/LibMultio.h"
 
 namespace multio {
 

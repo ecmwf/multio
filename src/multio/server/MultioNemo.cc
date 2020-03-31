@@ -27,14 +27,14 @@
 #include "eckit/mpi/Comm.h"
 #include "eckit/runtime/Main.h"
 
-#include "multio/LibMultio.h"
-#include "multio/server/Metadata.h"
+#include "multio/library/LibMultio.h"
+#include "multio/message/Metadata.h"
 #include "multio/server/MultioClient.h"
 #include "multio/server/MultioServer.h"
-#include "multio/server/print_buffer.h"
+#include "multio/print_buffer.h"
 
-using multio::server::Metadata;
-using multio::server::print_buffer;
+using multio::Metadata;
+using multio::print_buffer;
 using multio::server::MultioClient;
 using multio::server::MultioServer;
 

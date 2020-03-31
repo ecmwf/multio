@@ -13,7 +13,7 @@
 #include <cstring>
 #include <unistd.h>
 
-#include "multio/FileSink.h"
+#include "multio/sink/FileSink.h"
 
 #include "eckit/testing/Test.h"
 #include "eckit/filesystem/TmpFile.h"

@@ -42,6 +42,7 @@ ecbuild_add_test( TARGET test_multio_ifs_io
                   ENVIRONMENT "${_test_environment}" )
 
 ecbuild_add_test( TARGET test_multio_subtoc
+                  ENABLED 0
                   CONDITION HAVE_FDB5
                   COMMAND $<TARGET_FILE:multio-sink>
                   TEST_DEPENDS multio_get_test_data

@@ -15,7 +15,7 @@ configure_file( library/multio_version.cc.in  library/multio_version.cc )
 
 ### multio sources
 
-list( APPEND multio_srcs
+list( APPEND multio_action_srcs
     action/Aggregation.cc
     action/Aggregation.h
     action/Encode.cc
@@ -36,16 +36,35 @@ list( APPEND multio_srcs
     action/Action.h
     action/Plan.cc
     action/Plan.h
+)
+
+list( APPEND multio_ifsio_srcs
     ifsio/ifsio_internals.cc
     ifsio/ifsio.cc
     ifsio/ifsio.h
+)
+
+if( HAVE_LEGACY_IFSIO )
+    list( APPEND multio_ifsio_srcs
+        ifsio/ifsio_legacy.cc
+        ifsio/ifsio_legacy.h
+    )
+endif()
+
+list( APPEND multio_library_srcs
     library/LibMultio.cc
     library/LibMultio.h
     library/multio_version.cc
+)
+
+list( APPEND multio_domain_srcs
     domain/Domain.cc
     domain/Domain.h
     domain/Mappings.cc
     domain/Mappings.h
+)
+
+list( APPEND multio_message_srcs
     message/Message.cc
     message/MessageContent.cc
     message/MessageHeader.cc
@@ -53,6 +72,9 @@ list( APPEND multio_srcs
     message/Metadata.h
     message/Peer.cc
     message/Peer.h
+)
+
+list( APPEND multio_sink_srcs
     sink/DataSink.cc
     sink/DataSink.h
     sink/FileSink.cc
@@ -65,12 +87,14 @@ list( APPEND multio_srcs
     sink/Trigger.h
 )
 
-if( HAVE_LEGACY_IFSIO )
-    list( APPEND multio_srcs
-        ifsio_legacy.cc
-        ifsio_legacy.h
-    )
-endif()
+list( APPEND multio_srcs
+    ${multio_action_srcs}
+    ${multio_ifsio_srcs}
+    ${multio_library_srcs}
+    ${multio_domain_srcs}
+    ${multio_message_srcs}
+    ${multio_sink_srcs}
+)
 
 ### multio library
 

@@ -23,7 +23,7 @@
 using eckit::LocalConfiguration;
 
 namespace multio {
-namespace server {
+namespace action {
 
 namespace {
 
@@ -110,7 +110,7 @@ ActionBuilderBase::~ActionBuilderBase() {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace server
+}  // namespace action
 }  // namespace multio
 
 #endif

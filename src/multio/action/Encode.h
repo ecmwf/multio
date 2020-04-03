@@ -26,8 +26,7 @@ class Configuration;
 }
 
 namespace multio {
-namespace server {
-namespace actions {
+namespace action {
 
 class Encode : public Action {
 public:
@@ -42,8 +41,7 @@ private:
     std::string template_;
 };
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio
 
 #endif

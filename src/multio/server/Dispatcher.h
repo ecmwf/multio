@@ -31,9 +31,12 @@ class Timer;
 }  // namespace eckit
 
 namespace multio {
-namespace server {
 
+namespace action {
 class Plan;
+}
+
+namespace server {
 
 class Dispatcher : private eckit::NonCopyable {
 public:
@@ -47,7 +50,7 @@ public:
 
 private:
 
-    std::vector<std::unique_ptr<Plan>> plans_;
+    std::vector<std::unique_ptr<action::Plan>> plans_;
     eckit::Timing timing_;
     eckit::Timer timer_;
 

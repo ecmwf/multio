@@ -30,8 +30,7 @@ namespace multio {
 
 class DataSink;
 
-namespace server {
-namespace actions {
+namespace action {
 
 class Sink : public Action {
 public:
@@ -51,8 +50,7 @@ private:
     mutable MultIO mio_;
 };
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio
 
 #endif

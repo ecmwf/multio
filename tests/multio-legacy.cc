@@ -25,7 +25,7 @@
 #include "eckit/option/SimpleOption.h"
 #include "eckit/runtime/Tool.h"
 
-#include "multio/ifsio_legacy.h"
+#include "multio/ifsio/ifsio_legacy.h"
 
 #include "multio/tools/MultioTool.h"
 

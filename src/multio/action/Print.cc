@@ -17,8 +17,7 @@
 #include "eckit/config/Configuration.h"
 
 namespace multio {
-namespace server {
-namespace actions {
+namespace action {
 
 Print::Print(const eckit::Configuration& config) : Action(config) {
     stream_ = config.getString("stream", "info");
@@ -47,6 +46,5 @@ void Print::print(std::ostream& os) const {
 
 static ActionBuilder<Print> PrintBuilder("Print");
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio

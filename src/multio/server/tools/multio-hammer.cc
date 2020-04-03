@@ -33,6 +33,7 @@ using multio::Metadata;
 using multio::Domain;
 using multio::Unstructured;
 using multio::Peer;
+using multio::action::Plan;
 
 using namespace multio::server;
 

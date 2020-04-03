@@ -31,7 +31,7 @@ class Configuration;
 }
 
 namespace multio {
-namespace server {
+namespace action {
 
 class ScopedTimer {
     eckit::Timing& timing_;

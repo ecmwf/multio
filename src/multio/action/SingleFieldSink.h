@@ -29,8 +29,7 @@ namespace multio {
 
 class DataSink;
 
-namespace server {
-namespace actions {
+namespace action {
 
 class SingleFieldSink : public Action {
 public:
@@ -50,8 +49,7 @@ private:
     mutable std::unique_ptr<DataSink> dataSink_ = nullptr;
 };
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio
 
 #endif

@@ -17,8 +17,7 @@
 #include "multio/library/LibMultio.h"
 
 namespace multio {
-namespace server {
-namespace actions {
+namespace action {
 
 Select::Select(const eckit::Configuration& config) :
     Action{config},
@@ -55,6 +54,5 @@ void Select::print(std::ostream& os) const {
 
 static ActionBuilder<Select> SelectBuilder("Select");
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio

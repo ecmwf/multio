@@ -16,6 +16,7 @@
 
 using multio::Message;
 using multio::Peer;
+using multio::action::Plan;
 
 using namespace multio::server;
 

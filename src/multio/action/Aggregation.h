@@ -28,8 +28,7 @@ class Configuration;
 }
 
 namespace multio {
-namespace server {
-namespace actions {
+namespace action {
 
 class Aggregation : public Action {
 public:
@@ -50,8 +49,7 @@ private:
     mutable std::map<std::string, unsigned int> flushes_;
 };
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio
 
 #endif

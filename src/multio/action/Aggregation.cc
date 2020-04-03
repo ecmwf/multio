@@ -19,8 +19,7 @@
 #include "multio/domain/Mappings.h"
 
 namespace multio {
-namespace server {
-namespace actions {
+namespace action {
 
 Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 
@@ -81,6 +80,5 @@ void Aggregation::print(std::ostream& os) const {
 
 static ActionBuilder<Aggregation> AggregationBuilder("Aggregation");
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio

@@ -55,8 +55,7 @@ public:
 }  // namespace
 
 namespace multio {
-namespace server {
-namespace actions {
+namespace action {
 
 Encode::Encode(const eckit::Configuration& config) :
     Action{config},
@@ -116,6 +115,5 @@ void Encode::print(std::ostream& os) const {
 
 static ActionBuilder<Encode> EncodeBuilder("Encode");
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio

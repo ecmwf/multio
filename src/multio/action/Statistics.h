@@ -24,8 +24,7 @@
 namespace eckit { class Configuration; }
 
 namespace multio {
-namespace server {
-namespace actions {
+namespace action {
 
 class Statistics : public Action {
 public:
@@ -43,8 +42,7 @@ private:
     std::vector<std::string> operations_;
 };
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio
 
 #endif

@@ -15,8 +15,7 @@
 #include "eckit/exception/Exceptions.h"
 
 namespace multio {
-namespace server {
-namespace actions {
+namespace action {
 
 Null::Null(const eckit::Configuration& config) : Action(config) {}
 
@@ -32,5 +31,4 @@ void Null::print(std::ostream& os) const {
 static ActionBuilder<Null> NullBuilder("Null");
 
 }  // namespace actions
-}  // namespace server
 }  // namespace multio

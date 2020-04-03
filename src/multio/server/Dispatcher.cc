@@ -34,7 +34,7 @@ Dispatcher::Dispatcher(const eckit::Configuration& config) {
     const std::vector<LocalConfiguration> plans = config.getSubConfigurations("plans");
     for (const auto& cfg : plans) {
         eckit::Log::debug<LibMultio>() << cfg << std::endl;
-        plans_.emplace_back(new Plan(cfg));
+        plans_.emplace_back(new action::Plan(cfg));
     }
 }
 

@@ -29,7 +29,7 @@ class Configuration;
 }
 
 namespace multio {
-namespace server {
+namespace action {
 
 class Action;
 
@@ -48,7 +48,7 @@ private:
     eckit::Timing timing_;
 };
 
-}  // namespace server
+}  // namespace action
 }  // namespace multio
 
 #endif

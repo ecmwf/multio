@@ -17,8 +17,7 @@
 #include "multio/library/LibMultio.h"
 
 namespace multio {
-namespace server {
-namespace actions {
+namespace action {
 
 Statistics::Statistics(const eckit::Configuration& config) :
     Action{config},
@@ -58,6 +57,5 @@ void Statistics::applyOperation(const std::string& name) const {
 
 static ActionBuilder<Statistics> StatisticsBuilder("Statistics");
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio

@@ -20,8 +20,7 @@
 #include "multio/server/PlainDataBlob.h"
 
 namespace multio {
-namespace server {
-namespace actions {
+namespace action {
 
 SingleFieldSink::SingleFieldSink(const eckit::Configuration& config) :
     Action{config},
@@ -90,6 +89,5 @@ void SingleFieldSink::print(std::ostream& os) const {
 
 static ActionBuilder<SingleFieldSink> SinkBuilder("SingleFieldSink");
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio

@@ -18,10 +18,10 @@
 #include "multio/action/Action.h"
 #include "multio/library/LibMultio.h"
 
-
 using eckit::LocalConfiguration;
+
 namespace multio {
-namespace server {
+namespace action {
 
 namespace {
 LocalConfiguration createActionList(std::vector<LocalConfiguration> actions) {
@@ -67,5 +67,5 @@ void Plan::process(Message msg) {
     root_->execute(msg);
 }
 
-}  // namespace server
+}  // namespace action
 }  // namespace multio

@@ -25,8 +25,7 @@
 namespace eckit { class Configuration; }
 
 namespace multio {
-namespace server {
-namespace actions {
+namespace action {
 
 class Print : public Action {
 public:
@@ -42,8 +41,7 @@ private:
     std::ostream* os;
 };
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio
 
 #endif

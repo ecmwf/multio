@@ -12,9 +12,9 @@
 
 #include "eckit/exception/Exceptions.h"
 
-#include "multio/ifsio.h"
-#include "multio/ifsio_internals.h"
-#include "multio/ifsio_legacy.h"
+#include "multio/ifsio/ifsio.h"
+#include "multio/ifsio/ifsio_internals.h"
+#include "multio/ifsio/ifsio_legacy.h"
 
 
 extern "C" {

@@ -19,8 +19,7 @@
 #include "multio/server/PlainDataBlob.h"
 
 namespace multio {
-namespace server {
-namespace actions {
+namespace action {
 
 
 namespace {
@@ -82,6 +81,5 @@ void Sink::print(std::ostream& os) const {
 
 static ActionBuilder<Sink> SinkBuilder("Sink");
 
-}  // namespace actions
-}  // namespace server
+}  // namespace action
 }  // namespace multio

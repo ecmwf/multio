@@ -14,8 +14,9 @@ ecbuild_add_test( TARGET    test_multio_file_sink
                   LIBS      multio )
 
 list( APPEND _test_environment
+    FDB_HOME=${CMAKE_BINARY_DIR}/multio
     FDB_DEBUG=1
-    MULTIO_TRACE=1
+    MULTIO_DEBUG=1
 )
 
 list( APPEND _test_data
@@ -42,7 +43,6 @@ ecbuild_add_test( TARGET test_multio_ifs_io
                   ENVIRONMENT "${_test_environment}" )
 
 ecbuild_add_test( TARGET test_multio_subtoc
-                  ENABLED 0
                   CONDITION HAVE_FDB5
                   COMMAND $<TARGET_FILE:multio-sink>
                   TEST_DEPENDS multio_get_test_data
@@ -50,4 +50,5 @@ ecbuild_add_test( TARGET test_multio_subtoc
                   ENVIRONMENT "${_test_environment}" )
 
 add_subdirectory(attic)
+add_subdirectory(multio)
 add_subdirectory(server)

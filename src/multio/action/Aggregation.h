@@ -30,6 +30,8 @@ class Configuration;
 namespace multio {
 namespace action {
 
+using message::Message;
+
 class Aggregation : public Action {
 public:
     Aggregation(const eckit::Configuration& config);

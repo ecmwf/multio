@@ -20,6 +20,7 @@
 #include <string>
 
 namespace multio {
+namespace message {
 
 class Peer {
 public:
@@ -51,6 +52,7 @@ private:  // methods
     }
 };
 
+}  // namespace message
 }  // namespace multio
 
 #endif

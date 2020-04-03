@@ -17,6 +17,11 @@
 namespace multio {
 namespace server {
 
+ThreadPeer::ThreadPeer(std::thread t) :
+    Peer{"thread", std::hash<std::thread::id>{}(t.get_id())},
+    thread_{std::move(t)} {}
+
+
 ThreadTransport::ThreadTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
     messageQueueSize_(

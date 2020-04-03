@@ -45,8 +45,6 @@ ecbuild_add_library(
         TcpTransport.h
         Transport.cc
         Transport.h
-        TransportPeer.cc
-        TransportPeer.h
         ScopedThread.h
         MultioServerTool.cc
         MultioServerTool.h

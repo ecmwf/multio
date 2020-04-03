@@ -31,6 +31,8 @@ class DataSink;
 
 namespace action {
 
+using message::Message;
+
 class SingleFieldSink : public Action {
 public:
     SingleFieldSink(const eckit::Configuration& config);

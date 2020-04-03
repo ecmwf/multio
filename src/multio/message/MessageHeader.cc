@@ -14,6 +14,7 @@
 #include "eckit/serialisation/Stream.h"
 
 namespace multio {
+namespace message {
 
 Message::Header::Header(Tag tag, Peer src, Peer dst, const std::string& nm, const std::string& cat,
                         size_t cnt, size_t fsz, const std::string& dom, const std::string& fid) :
@@ -106,4 +107,5 @@ void Message::Header::setMetadata() {
     metadata_ = Metadata{config};
 }
 
+}  // namespace message
 }  // namespace multio

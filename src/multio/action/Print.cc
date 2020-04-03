@@ -32,7 +32,7 @@ Print::Print(const eckit::Configuration& config) : Action(config) {
     }
 }
 
-bool Print::doExecute(Message& msg) const {
+bool Print::doExecute(message::Message& msg) const {
     ASSERT(os);
     (*os) << msg << std::endl;
 

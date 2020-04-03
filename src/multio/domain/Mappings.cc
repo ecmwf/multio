@@ -18,7 +18,7 @@ Mappings& Mappings::instance() {
     return singleton;
 }
 
-void Mappings::add(Message msg) {
+void Mappings::add(message::Message msg) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     // Retrieve metadata

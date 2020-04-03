@@ -55,7 +55,7 @@ public:
     Action(Action&& rhs) = default;
     Action& operator=(Action&& rhs) = default;
 
-    void execute(Message msg) const;
+    void execute(message::Message msg) const;
 
 protected:
 
@@ -67,7 +67,7 @@ protected:
 
 private:
 
-    virtual bool doExecute(Message &msg) const = 0;
+    virtual bool doExecute(message::Message &msg) const = 0;
 
     virtual void print(std::ostream &os) const = 0;
 

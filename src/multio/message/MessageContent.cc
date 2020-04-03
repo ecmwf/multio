@@ -11,6 +11,7 @@
 #include "Message.h"
 
 namespace multio {
+namespace message {
 
 Message::Content::Content(Header&& header, const eckit::Buffer& payload) :
     header_{std::move(header)},
@@ -36,4 +37,5 @@ size_t Message::Content::size() const {
     return payload().size();
 }
 
+}  // namespace message
 }  // namespace multio

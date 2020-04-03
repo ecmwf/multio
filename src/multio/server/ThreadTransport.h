@@ -23,10 +23,20 @@
 
 #include "eckit/container/Queue.h"
 
+#include "multio/server/ScopedThread.h"
 #include "multio/server/Transport.h"
 
 namespace multio {
 namespace server {
+
+class ThreadPeer : public Peer {
+public:
+    ThreadPeer(std::thread t);
+
+private:
+
+    ScopedThread thread_;
+};
 
 class ThreadTransport final : public Transport {
 public:

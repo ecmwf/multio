@@ -8,7 +8,11 @@
 
 namespace multio {
 
+namespace message {
 class Message;
+}
+
+using message::Message;
 
 namespace server {
 

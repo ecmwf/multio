@@ -22,17 +22,17 @@
 
 #include "multio/domain/Domain.h"
 #include "multio/message/Message.h"
-#include "multio/message/Peer.h"
 #include "multio/server/Listener.h"
 #include "multio/server/MultioServerTool.h"
-#include "multio/server/Transport.h"
-#include "multio/server/TransportPeer.h"
+#include "multio/server/MpiTransport.h"
+#include "multio/server/ThreadTransport.h"
+#include "multio/server/TcpTransport.h"
 
-using multio::Message;
-using multio::Metadata;
+using multio::message::Message;
+using multio::message::Metadata;
 using multio::domain::Domain;
 using multio::domain::Unstructured;
-using multio::Peer;
+using multio::message::Peer;
 using multio::action::Plan;
 
 using namespace multio::server;

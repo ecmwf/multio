@@ -30,6 +30,7 @@ class Stream;
 }  // namespace eckit
 
 namespace multio {
+namespace message {
 
 // TODO: we may want to hash the payload (and the header?)
 
@@ -166,6 +167,7 @@ private:  // members
 
 };
 
+}  // namespace message
 }  // namespace multio
 
 #endif

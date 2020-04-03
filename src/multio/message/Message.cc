@@ -18,6 +18,7 @@
 #include "eckit/serialisation/Stream.h"
 
 namespace multio {
+namespace message {
 
 int Message::protocolVersion() {
     return 1;
@@ -139,4 +140,5 @@ void Message::print(std::ostream& out) const {
         << ", domain=" << domain() << ", metadata=" << fieldId() << ")";
 }
 
+}  // namespace message
 }  // namespace multio

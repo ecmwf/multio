@@ -57,6 +57,9 @@ public:
 namespace multio {
 namespace action {
 
+using message::Message;
+using message::Peer;
+
 Encode::Encode(const eckit::Configuration& config) :
     Action{config},
     format_{config.getString("format")},

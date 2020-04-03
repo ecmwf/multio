@@ -20,9 +20,11 @@
 #include "eckit/config/LocalConfiguration.h"
 
 namespace multio {
+namespace message {
 
 using Metadata = eckit::LocalConfiguration;
 
+}  // namespace message
 }  // namespace multio
 
 #endif

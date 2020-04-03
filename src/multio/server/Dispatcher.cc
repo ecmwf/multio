@@ -45,9 +45,9 @@ Dispatcher::~Dispatcher() {
                        << std::endl;
 }
 
-void Dispatcher::dispatch(eckit::Queue<Message>& queue) {
+void Dispatcher::dispatch(eckit::Queue<message::Message>& queue) {
     ScopedTimer timer{timing_};
-    Message msg;
+    message::Message msg;
     while (queue.pop(msg) >= 0) {
         for (const auto& plan : plans_) {
             plan->process(msg);

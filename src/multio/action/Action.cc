@@ -46,7 +46,7 @@ Action::~Action() {
                        << ">: " << timing_.elapsed_ << "s" << std::endl;
 }
 
-void Action::execute(Message msg) const {
+void Action::execute(message::Message msg) const {
     if (doExecute(msg) && next_) {
         next_->execute(msg);
     }

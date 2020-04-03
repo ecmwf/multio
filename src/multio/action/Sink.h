@@ -32,6 +32,8 @@ class DataSink;
 
 namespace action {
 
+using message::Message;
+
 class Sink : public Action {
 public:
     Sink(const eckit::Configuration& config);

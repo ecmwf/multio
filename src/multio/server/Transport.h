@@ -26,11 +26,12 @@
 #include "eckit/config/Configuration.h"
 
 #include "multio/message/Message.h"
-#include "multio/server/TransportPeer.h"
 
 namespace multio {
 namespace server {
 
+using message::Message;
+using message::Peer;
 
 //----------------------------------------------------------------------------------------------------------------------
 

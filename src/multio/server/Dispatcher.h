@@ -46,7 +46,7 @@ public:
     Dispatcher(Dispatcher&& rhs) = default;
     Dispatcher& operator=(Dispatcher&& rhs) = default;
 
-    void dispatch(eckit::Queue<Message>& queue);
+    void dispatch(eckit::Queue<message::Message>& queue);
 
 private:
 

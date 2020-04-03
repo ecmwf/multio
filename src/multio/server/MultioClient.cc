@@ -7,9 +7,10 @@
 
 #include "multio/library/LibMultio.h"
 #include "multio/message/Message.h"
-#include "multio/server/Transport.h"
+#include "multio/server/MpiTransport.h"
+#include "multio/server/TcpTransport.h"
 
-using multio::Peer;
+using multio::message::Peer;
 
 namespace multio {
 namespace server {
@@ -53,7 +54,7 @@ void MultioClient::sendDomain(const std::string& name, const std::string& catego
 }
 
 void MultioClient::sendField(const std::string& name, const std::string& category, size_t gl_size,
-                             const std::string& domain, const Metadata& metadata,
+                             const std::string& domain, const message::Metadata& metadata,
                              eckit::Buffer&& field) {
     Peer client = transport_->localPeer();
 

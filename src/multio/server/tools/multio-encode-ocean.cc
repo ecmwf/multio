@@ -14,8 +14,8 @@
 #include "multio/server/MultioServerTool.h"
 #include "multio/print_buffer.h"
 
-using multio::Message;
-using multio::Peer;
+using multio::message::Message;
+using multio::message::Peer;
 using multio::action::Plan;
 
 using namespace multio::server;

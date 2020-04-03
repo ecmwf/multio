@@ -38,7 +38,7 @@ public:
     Plan(const eckit::Configuration& config);
     ~Plan();
 
-    void process(Message msg);
+    void process(message::Message msg);
 
 private:
 

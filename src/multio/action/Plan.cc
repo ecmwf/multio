@@ -62,7 +62,7 @@ Plan::~Plan() {
                        << "s" << std::endl;
 }
 
-void Plan::process(Message msg) {
+void Plan::process(message::Message msg) {
     ScopedTimer timer{timing_};
     root_->execute(msg);
 }

@@ -19,7 +19,7 @@ namespace action {
 
 Null::Null(const eckit::Configuration& config) : Action(config) {}
 
-bool Null::doExecute(Message& msg) const {
+bool Null::doExecute(message::Message& msg) const {
     ASSERT(!next_);
     return false;
 }

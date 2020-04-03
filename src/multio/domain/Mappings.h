@@ -12,12 +12,14 @@
 
 namespace multio {
 
+namespace message {
 class Message;
 class Peer;
+}
 
 namespace domain {
 
-using Mapping = std::map<Peer, std::unique_ptr<Domain>>;
+using Mapping = std::map<message::Peer, std::unique_ptr<Domain>>;
 
 class Mappings {
 public:  // methods
@@ -31,7 +33,7 @@ public:  // methods
 
     static Mappings& instance();
 
-    void add(Message msg);
+    void add(message::Message msg);
 
     void list(std::ostream&) const;
 

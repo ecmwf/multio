@@ -30,6 +30,8 @@
 namespace multio {
 namespace server {
 
+using message::Message;
+
 Listener::Listener(const eckit::Configuration& config, Transport& trans) :
     dispatcher_{std::make_shared<Dispatcher>(config)},
     transport_{trans},

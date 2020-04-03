@@ -43,6 +43,8 @@ Message decodeMessage(eckit::Stream& stream) {
 }  // namespace
 
 
+MpiPeer::MpiPeer(const std::string& comm, size_t rank) : Peer{comm, rank} {}
+
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
     local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},

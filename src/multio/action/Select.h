@@ -27,6 +27,8 @@ namespace eckit { class Configuration; }
 namespace multio {
 namespace action {
 
+using message::Message;
+
 class Select : public Action {
 public:
     Select(const eckit::Configuration& config);

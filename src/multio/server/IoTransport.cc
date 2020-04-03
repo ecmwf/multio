@@ -23,8 +23,8 @@
 #include "multio/server/ThreadTransport.h"
 
 using multio::server::Listener;
-using multio::Message;
-using multio::Metadata;
+using multio::message::Message;
+using multio::message::Metadata;
 using multio::print_buffer;
 using multio::server::Transport;
 using multio::server::TransportFactory;
@@ -127,7 +127,7 @@ public:
 
 // C/Fortran nterface
 
-using multio::Peer;
+using multio::message::Peer;
 
 #ifdef __cplusplus
     extern "C" {

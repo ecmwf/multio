@@ -1,0 +1,64 @@
+
+# Simple schemas for use in multio tests only
+
+# * Format of the rules is:
+
+# [a1, a2, a3 ...[b1, b2, b3... [c1, c2, c3...]]]
+
+# - The first level (a) defines which attributes are used to name the top level directory
+# - The second level (b) defines which attributes are used to name the data files
+# - The third level (c) defines which attributes are used as index keys
+
+# * Rules can be grouped
+
+# [a1, a2, a3 ...
+#   [b1, b2, b3... [c1, c2, c3...]]
+#   [B1, B2, B3... [C1, C2, C3...]]
+# ]
+
+# Default types
+
+param:      Param;
+step:       Step;
+date:       Date;
+hdate:      Date;
+refdate:    Date;
+latitude:   Double;
+longitude:  Double;
+levelist:   Double;
+grid:       Grid;
+expver:     Expver;
+
+time:       Time;
+fcmonth:    Integer;
+
+number:     Integer;
+frequency:  Integer;
+direction:  Integer;
+channel:    Integer;
+
+instrument: Integer;
+ident:      Integer;
+
+diagnostic: Integer;
+iteration:  Integer;
+system:     Integer;
+method:     Integer;
+
+########################################################
+
+# oper
+[ class, expver, stream=oper, date, time, domain
+
+       [ type, levtype
+               [ step, levelist?, param ]]
+
+]
+
+# enfo
+[ class, expver, stream=enfo/efov, date, time, domain
+
+       [ type, levtype
+               [ step, quantile?, number?, levelist?, param ]]
+
+]

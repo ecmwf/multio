@@ -1,4 +1,19 @@
 
+list (APPEND multio_server_deps
+    multio
+    eckit_mpi
+    eckit_option
+    eckit
+    metkit
+    eccodes
+)
+
+if( HAVE_FDB5 )
+    list( APPEND multio_server_deps
+        multio-fdb5
+    )
+endif()
+
 ecbuild_add_library(
 
     TARGET multio-server
@@ -68,13 +83,7 @@ ecbuild_add_library(
         multio.f90
 
     LIBS
-        multio
-        multio-fdb5
-        eckit_mpi
-        eckit_option
-        eckit
-        metkit
-        eccodes
+        ${multio_server_deps}
 )
 
 ecbuild_add_executable( TARGET    multio-hammer

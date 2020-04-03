@@ -30,8 +30,8 @@
 
 using multio::Message;
 using multio::Metadata;
-using multio::Domain;
-using multio::Unstructured;
+using multio::domain::Domain;
+using multio::domain::Unstructured;
 using multio::Peer;
 using multio::action::Plan;
 

@@ -11,6 +11,7 @@
 #include "multio/print_buffer.h"
 
 namespace multio {
+namespace domain {
 
 Mappings& Mappings::instance() {
     static Mappings singleton;
@@ -40,12 +41,14 @@ void Mappings::add(Message msg) {
     eckit::Log::debug<LibMultio>() << "]" << std::endl;
 
     if (msg.category() == "unstructured") {
-        mapping.emplace(msg.source(), std::unique_ptr<Domain>{new Unstructured{std::move(local_map)}});
+        mapping.emplace(msg.source(),
+                        std::unique_ptr<Domain>{new Unstructured{std::move(local_map)}});
         return;
     }
 
     if (msg.category() == "structured") {
-        mapping.emplace(msg.source(), std::unique_ptr<Domain>{new Structured{std::move(local_map)}});
+        mapping.emplace(msg.source(),
+                        std::unique_ptr<Domain>{new Structured{std::move(local_map)}});
         return;
     }
 }
@@ -65,4 +68,5 @@ auto Mappings::get(const std::string& name) const -> const Mapping& {
     return mappings_.at(name);
 }
 
+}  // namespace domain
 }  // namespace multio

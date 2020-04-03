@@ -8,6 +8,7 @@
 #include "multio/library/LibMultio.h"
 
 namespace multio {
+namespace domain {
 
 Domain::Domain(std::vector<int32_t>&& def) : definition_(std::move(def)) {}
 
@@ -92,4 +93,5 @@ void Spectral::to_global(const eckit::Buffer&, eckit::Buffer&) const {
     NOTIMP;
 }
 
+}  // namespace domain
 }  // namespace multio

@@ -66,7 +66,7 @@ void Listener::listen() {
                 eckit::Log::debug<LibMultio>()
                     << "*** Number of maps: " << msg.domainCount() << std::endl;
                 clientCount_ = msg.domainCount();
-                Mappings::instance().add(msg);
+                domain::Mappings::instance().add(msg);
                 break;
 
             case Message::Tag::StepNotification:

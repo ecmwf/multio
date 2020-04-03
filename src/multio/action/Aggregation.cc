@@ -55,7 +55,7 @@ bool Aggregation::handleFlush(const Message& msg) const {
 
 bool Aggregation::allPartsArrived(const Message& msg) const {
     return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
-           (msg.domainCount() == Mappings::instance().get(msg.domain()).size());
+           (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
 }
 
 bool Aggregation::createGlobalField(Message& msgOut) const {
@@ -63,7 +63,10 @@ bool Aggregation::createGlobalField(Message& msgOut) const {
 
     eckit::Buffer glField{msgOut.globalSize() * sizeof(double)};
     for (auto msg : messages_.at(fid)) {
-        Mappings::instance().get(msg.domain()).at(msg.source())->to_global(msg.payload(), glField);
+        domain::Mappings::instance()
+            .get(msg.domain())
+            .at(msg.source())
+            ->to_global(msg.payload(), glField);
     }
 
     msgOut.payload() = std::move(glField);

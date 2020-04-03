@@ -9,6 +9,7 @@
 #include <eckit/io/Buffer.h>
 
 namespace multio {
+namespace domain {
 
 class Domain {
 public:
@@ -50,6 +51,7 @@ private:
     void to_global(const eckit::Buffer& local, eckit::Buffer& global) const override;
 };
 
+}  // namespace domain
 }  // namespace multio
 
 #endif

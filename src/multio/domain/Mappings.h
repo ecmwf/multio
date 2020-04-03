@@ -15,6 +15,8 @@ namespace multio {
 class Message;
 class Peer;
 
+namespace domain {
+
 using Mapping = std::map<Peer, std::unique_ptr<Domain>>;
 
 class Mappings {
@@ -41,6 +43,7 @@ private:  // members
     mutable std::recursive_mutex mutex_;
 };
 
+}  // namespace domain
 }  // namespace multio
 
 #endif

@@ -8,7 +8,7 @@
 
 #include "multio/library/LibMultio.h"
 #include "multio/message/Message.h"
-#include "multio/print_buffer.h"
+#include "multio/util/print_buffer.h"
 
 namespace multio {
 namespace domain {

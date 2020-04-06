@@ -19,7 +19,7 @@
 #include "multio/library/LibMultio.h"
 #include "multio/action/Plan.h"
 
-#include "ScopedTimer.h"
+#include "multio/util/ScopedTimer.h"
 
 using eckit::LocalConfiguration;
 

@@ -17,7 +17,7 @@
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/JSON.h"
 
-#include "multio/print_buffer.h"
+#include "multio/util/print_buffer.h"
 #include "multio/library/LibMultio.h"
 #include "multio/server/Listener.h"
 #include "multio/server/ThreadTransport.h"

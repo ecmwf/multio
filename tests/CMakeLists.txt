@@ -56,6 +56,5 @@ ecbuild_add_test( TARGET test_multio_legacy_interface
                   ARGS ${_test_data}
                   ENVIRONMENT "${_test_environment}" )
 
-add_subdirectory(attic)
 add_subdirectory(multio)
 add_subdirectory(server)

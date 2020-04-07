@@ -121,5 +121,4 @@ ecbuild_add_library(
         metkit eckit )
 
 add_subdirectory(fdb5)
-add_subdirectory(attic)
 add_subdirectory(server)

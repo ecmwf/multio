@@ -46,32 +46,9 @@ ecbuild_add_library(
         Transport.cc
         Transport.h
         ScopedThread.h
-        MultioServerTool.cc
-        MultioServerTool.h
         multio_nemo.f90
         multio.f90
 
     LIBS
         ${multio_server_deps}
 )
-
-ecbuild_add_executable( TARGET    multio-hammer
-                        CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   tools/multio-hammer.cc
-                        LIBS      multio-server multio)
-
-ecbuild_add_executable( TARGET    multio-replay
-                        CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   tools/multio-replay.cc
-                        LIBS      multio-server multio)
-
-ecbuild_add_executable( TARGET    multio-probe
-                        CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   tools/multio-probe.cc
-                        LIBS      multio-server multio)
-
-ecbuild_add_executable( TARGET    multio-encode-ocean
-                        CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   tools/multio-encode-ocean.cc
-                        LIBS      multio-server multio)
-

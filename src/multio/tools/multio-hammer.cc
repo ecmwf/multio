@@ -23,10 +23,10 @@
 #include "multio/domain/Domain.h"
 #include "multio/message/Message.h"
 #include "multio/server/Listener.h"
-#include "multio/server/MultioServerTool.h"
 #include "multio/server/MpiTransport.h"
 #include "multio/server/ThreadTransport.h"
 #include "multio/server/TcpTransport.h"
+#include "multio/tools/MultioTool.h"
 
 using multio::message::Message;
 using multio::message::Metadata;
@@ -174,7 +174,7 @@ eckit::LocalConfiguration test_configuration(const std::string& type) {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class MultioHammer final : public multio::server::MultioServerTool {
+class MultioHammer final : public multio::MultioTool {
 public:  // methods
     MultioHammer(int argc, char** argv);
 
@@ -195,6 +195,8 @@ private:
     }
 
     void init(const eckit::option::CmdArgs& args) override;
+
+    void finish(const eckit::option::CmdArgs& args) override;
 
     void execute(const eckit::option::CmdArgs& args) override;
 
@@ -253,10 +255,11 @@ private:
 
 //---------------------------------------------------------------------------------------------------------------
 
-MultioHammer::MultioHammer(int argc, char** argv) : multio::server::MultioServerTool(argc, argv) {
+MultioHammer::MultioHammer(int argc, char** argv) : multio::MultioTool(argc, argv) {
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbclients", "Number of clients"));
+    options_.push_back(new eckit::option::SimpleOption<size_t>("nbservers", "Number of servers"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("port", "TCP port"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbparams", "Number of parameters"));
     options_.push_back(
@@ -288,6 +291,8 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
         }
     }
 }
+
+void MultioHammer::finish(const eckit::option::CmdArgs&) {}
 
 //---------------------------------------------------------------------------------------------------------------
 

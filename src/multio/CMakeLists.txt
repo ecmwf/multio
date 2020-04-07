@@ -122,3 +122,4 @@ ecbuild_add_library(
 
 add_subdirectory(fdb5)
 add_subdirectory(server)
+add_subdirectory(tools)

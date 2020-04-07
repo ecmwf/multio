@@ -25,10 +25,8 @@
 #include "eckit/maths/Functions.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
-#include "eckit/runtime/Tool.h"
 
 #include "multio/ifsio/ifsio.h"
-
 #include "multio/tools/MultioTool.h"
 
 namespace multio {

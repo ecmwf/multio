@@ -14,14 +14,14 @@
 #include "multio/library/LibMultio.h"
 #include "multio/server/Listener.h"
 #include "multio/server/MultioNemo.h"
-#include "multio/server/MultioServerTool.h"
 #include "multio/server/Transport.h"
+#include "multio/tools/MultioTool.h"
 
 using namespace multio::server;
 
 //----------------------------------------------------------------------------------------------------------------
 
-class MultioReplay final : public multio::server::MultioServerTool {
+class MultioReplay final : public multio::MultioTool {
 public:
 
     MultioReplay(int argc, char** argv);
@@ -32,6 +32,8 @@ private:
     }
 
     void init(const eckit::option::CmdArgs& args) override;
+
+    void finish(const eckit::option::CmdArgs& args) override;
 
     void execute(const eckit::option::CmdArgs& args) override;
 
@@ -64,7 +66,7 @@ private:
 
 //----------------------------------------------------------------------------------------------------------------
 
-MultioReplay::MultioReplay(int argc, char** argv) : multio::server::MultioServerTool(argc, argv) {
+MultioReplay::MultioReplay(int argc, char** argv) : multio::MultioTool(argc, argv) {
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("path", "Path to NEMO data"));
@@ -82,6 +84,8 @@ void MultioReplay::init(const eckit::option::CmdArgs& args) {
 
     initClient();
 }
+
+void MultioReplay::finish(const eckit::option::CmdArgs&) {}
 
 void MultioReplay::execute(const eckit::option::CmdArgs &) {
     runClient();

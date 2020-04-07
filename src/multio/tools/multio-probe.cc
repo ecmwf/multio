@@ -12,8 +12,8 @@
 
 #include "multio/library/LibMultio.h"
 #include "multio/server/MultioServer.h"
-#include "multio/server/MultioServerTool.h"
 #include "multio/server/Transport.h"
+#include "multio/tools/MultioTool.h"
 
 using namespace multio::server;
 
@@ -43,7 +43,7 @@ eckit::LocalConfiguration test_configuration(const std::string& type) {
 
 //----------------------------------------------------------------------------------------------------------------
 
-class MultioProbe final : public multio::server::MultioServerTool {
+class MultioProbe final : public multio::MultioTool {
 public:  // methods
 
     MultioProbe(int argc, char** argv);
@@ -54,6 +54,8 @@ private:
     }
 
     void init(const eckit::option::CmdArgs& args) override;
+
+    void finish(const eckit::option::CmdArgs& args) override;
 
     void execute(const eckit::option::CmdArgs& args) override;
 
@@ -68,7 +70,7 @@ private:
     eckit::LocalConfiguration config_;
 };
 
-MultioProbe::MultioProbe(int argc, char** argv) : multio::server::MultioServerTool(argc, argv) {
+MultioProbe::MultioProbe(int argc, char** argv) : multio::MultioTool(argc, argv) {
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("port", "TCP port"));
@@ -93,6 +95,8 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
         eckit::mpi::comm("nemo").split(888, "server_comm");
     }
 }
+
+void MultioProbe::finish(const eckit::option::CmdArgs&) {}
 
 void MultioProbe::execute(const eckit::option::CmdArgs&) {
     if (test_) {

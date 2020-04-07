@@ -11,14 +11,12 @@
 #include "multio/action/Plan.h"
 #include "multio/library/LibMultio.h"
 #include "multio/message/Message.h"
-#include "multio/server/MultioServerTool.h"
+#include "multio/tools/MultioTool.h"
 #include "multio/util/print_buffer.h"
 
 using multio::message::Message;
 using multio::message::Peer;
 using multio::action::Plan;
-
-using namespace multio::server;
 
 //----------------------------------------------------------------------------------------------------------------
 
@@ -61,7 +59,7 @@ eckit::LocalConfiguration test_configuration() {
 
 }  // namespace
 
-class MultioEncodeOcean final : public multio::server::MultioServerTool {
+class MultioEncodeOcean final : public multio::MultioTool {
 public:
     MultioEncodeOcean(int argc, char** artv);
 
@@ -71,6 +69,8 @@ private:
     }
 
     void init(const eckit::option::CmdArgs& args) override;
+
+    void finish(const eckit::option::CmdArgs& args) override;
 
     void execute(const eckit::option::CmdArgs& args) override;
 
@@ -104,8 +104,7 @@ private:
 
 //----------------------------------------------------------------------------------------------------------------
 
-MultioEncodeOcean::MultioEncodeOcean(int argc, char** argv) :
-    multio::server::MultioServerTool(argc, argv) {
+MultioEncodeOcean::MultioEncodeOcean(int argc, char** argv) : multio::MultioTool(argc, argv) {
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("template", "Name of grib template"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("path", "Path to NEMO data"));
@@ -123,7 +122,9 @@ void MultioEncodeOcean::init(const eckit::option::CmdArgs& args) {
     args.get("step", step_);
 }
 
-void MultioEncodeOcean::execute(const eckit::option::CmdArgs& args) {
+void MultioEncodeOcean::finish(const eckit::option::CmdArgs&) {}
+
+void MultioEncodeOcean::execute(const eckit::option::CmdArgs&) {
     setCommonMetadata();
 
     for (const auto& prm : parameters_) {

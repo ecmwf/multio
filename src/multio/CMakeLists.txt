@@ -2,8 +2,8 @@
 
 ecbuild_generate_config_headers( DESTINATION ${INSTALL_INCLUDE_DIR}/multio )
 
-configure_file( library/multio_config.h.in   library/multio_config.h  )
-configure_file( library/multio_version.h.in  library/multio_version.h )
+configure_file( multio_config.h.in  multio_config.h  )
+configure_file( multio_version.h.in  multio_version.h )
 
 install(FILES
             ${CMAKE_CURRENT_BINARY_DIR}/library/multio_config.h
@@ -11,9 +11,15 @@ install(FILES
         DESTINATION
             ${INSTALL_INCLUDE_DIR}/multio/library )
 
-configure_file( library/multio_version.cc.in  library/multio_version.cc )
+configure_file( multio_version.cc.in  multio_version.cc )
 
 ### multio sources
+
+list( APPEND multio_library_srcs
+    LibMultio.cc
+    LibMultio.h
+    multio_version.cc
+)
 
 list( APPEND multio_action_srcs
     action/Aggregation.cc
@@ -51,12 +57,6 @@ if( HAVE_LEGACY_IFSIO )
     )
 endif()
 
-list( APPEND multio_library_srcs
-    library/LibMultio.cc
-    library/LibMultio.h
-    library/multio_version.cc
-)
-
 list( APPEND multio_domain_srcs
     domain/Domain.cc
     domain/Domain.h
@@ -88,9 +88,9 @@ list( APPEND multio_sink_srcs
 )
 
 list( APPEND multio_srcs
+    ${multio_library_srcs}
     ${multio_action_srcs}
     ${multio_ifsio_srcs}
-    ${multio_library_srcs}
     ${multio_domain_srcs}
     ${multio_message_srcs}
     ${multio_sink_srcs}
@@ -111,7 +111,7 @@ ecbuild_add_library(
         ${multio_srcs}
 
     GENERATED
-        library/multio_version.cc
+        multio_version.cc
 
     PRIVATE_INCLUDES
       ${METKIT_INCLUDE_DIRS}

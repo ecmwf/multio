@@ -18,7 +18,7 @@
 #include "metkit/grib/GribHandle.h"
 
 #include "multio/action/Plan.h"
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 
 #include "multio/domain/Domain.h"
 #include "multio/message/Message.h"

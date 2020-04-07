@@ -21,7 +21,7 @@
 #include "metkit/grib/GribDataBlob.h"
 #include "metkit/grib/GribHandle.h"
 
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 
 namespace {
 eckit::PathName configuration_path() {

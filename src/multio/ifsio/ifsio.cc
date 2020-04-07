@@ -23,7 +23,7 @@
 #include "eckit/runtime/Main.h"
 #include "eckit/thread/AutoLock.h"
 
-#include "multio/library/multio_version.h"
+#include "multio/multio_version.h"
 #include "multio/ifsio/ifsio.h"
 #include "multio/ifsio/ifsio_internals.h"
 

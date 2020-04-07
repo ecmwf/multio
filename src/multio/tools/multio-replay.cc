@@ -11,7 +11,7 @@
 #include "eckit/option/SimpleOption.h"
 #include "eckit/log/JSON.h"
 
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 #include "multio/server/Listener.h"
 #include "multio/server/MultioNemo.h"
 #include "multio/server/Transport.h"

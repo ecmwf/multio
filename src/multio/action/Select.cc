@@ -14,7 +14,7 @@
 
 #include "eckit/config/Configuration.h"
 
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 
 namespace multio {
 namespace action {

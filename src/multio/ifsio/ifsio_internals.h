@@ -19,7 +19,7 @@
 #include <exception>
 #include <stdio.h>
 
-#include "multio/library/multio_version.h"
+#include "multio/multio_version.h"
 
 bool traceme();
 

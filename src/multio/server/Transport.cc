@@ -16,7 +16,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 
 namespace multio {
 namespace server {

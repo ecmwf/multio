@@ -27,7 +27,7 @@
 #include "eckit/mpi/Comm.h"
 #include "eckit/runtime/Main.h"
 
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 #include "multio/message/Metadata.h"
 #include "multio/server/MultioClient.h"
 #include "multio/server/MultioServer.h"

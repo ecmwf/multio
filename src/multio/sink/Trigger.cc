@@ -24,7 +24,7 @@
 #include "eckit/log/JSON.h"
 #include "eckit/config/YAMLConfiguration.h"
 
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 
 using namespace eckit;
 using namespace eckit::net;

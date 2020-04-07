@@ -9,7 +9,7 @@
 #include "eckit/option/SimpleOption.h"
 
 #include "multio/action/Plan.h"
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 #include "multio/tools/MultioTool.h"
 #include "multio/util/print_buffer.h"

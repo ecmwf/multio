@@ -20,7 +20,7 @@
 #include "eckit/log/JSON.h"
 #include "eckit/value/Value.h"
 
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 
 namespace multio {
 

@@ -1,4 +1,4 @@
-#include "multio/library/multio_version.h"
+#include "multio/multio_version.h"
 
 const char * multio_version()     { return MULTIO_VERSION; }
 const char * multio_version_str() { return MULTIO_VERSION_STR; }

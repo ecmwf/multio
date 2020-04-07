@@ -15,7 +15,7 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 #include "multio/domain/Mappings.h"
 
 namespace multio {

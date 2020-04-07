@@ -5,7 +5,7 @@
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/JSON.h"
 
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 #include "multio/server/MpiTransport.h"
 #include "multio/server/TcpTransport.h"

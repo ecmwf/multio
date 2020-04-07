@@ -22,7 +22,7 @@
 #include "eckit/thread/AutoLock.h"
 
 #include "multio/sink/IOStats.h"
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 
 static const int FORMAT_WIDTH = 42;
 

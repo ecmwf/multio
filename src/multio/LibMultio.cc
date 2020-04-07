@@ -16,8 +16,8 @@
 #include <algorithm>
 #include <string>
 
-#include "multio/library/LibMultio.h"
-#include "multio/library/multio_version.h"
+#include "multio/LibMultio.h"
+#include "multio/multio_version.h"
 
 namespace multio {
 

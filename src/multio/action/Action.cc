@@ -18,7 +18,7 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
 
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 
 using eckit::LocalConfiguration;
 

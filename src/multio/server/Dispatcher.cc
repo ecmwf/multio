@@ -16,7 +16,7 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
 
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 #include "multio/action/Plan.h"
 
 #include "multio/util/ScopedTimer.h"

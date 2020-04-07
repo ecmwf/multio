@@ -16,7 +16,7 @@
 #include "eckit/log/Log.h"
 
 #include "multio/action/Action.h"
-#include "multio/library/LibMultio.h"
+#include "multio/LibMultio.h"
 
 using eckit::LocalConfiguration;
 

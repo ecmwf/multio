@@ -23,7 +23,7 @@
 #include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
-#include "multio/server/Message.h"
+#include "multio/message/Message.h"
 
 namespace eckit {
 class Configuration;
@@ -31,9 +31,12 @@ class Timer;
 }  // namespace eckit
 
 namespace multio {
-namespace server {
 
+namespace action {
 class Plan;
+}
+
+namespace server {
 
 class Dispatcher : private eckit::NonCopyable {
 public:
@@ -43,11 +46,11 @@ public:
     Dispatcher(Dispatcher&& rhs) = default;
     Dispatcher& operator=(Dispatcher&& rhs) = default;
 
-    void dispatch(eckit::Queue<Message>& queue);
+    void dispatch(eckit::Queue<message::Message>& queue);
 
 private:
 
-    std::vector<std::unique_ptr<Plan>> plans_;
+    std::vector<std::unique_ptr<action::Plan>> plans_;
     eckit::Timing timing_;
     eckit::Timer timer_;
 

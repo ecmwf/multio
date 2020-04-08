@@ -14,7 +14,7 @@
 #include <memory>
 #include <vector>
 
-#include "multio/server/Metadata.h"
+#include "multio/message/Metadata.h"
 
 namespace eckit {
 class Buffer;
@@ -22,10 +22,14 @@ class Configuration;
 }  // namespace eckit
 
 namespace multio {
+
+namespace message {
+class Peer;
+}
+
 namespace server {
 
 class Transport;
-class Peer;
 
 class MultioClient {
 public:
@@ -41,12 +45,13 @@ public:
                     const eckit::Buffer& domain);
 
     void sendField(const std::string& name, const std::string& category, size_t gl_size,
-                   const std::string& domain, const Metadata& metadata, eckit::Buffer&& field);
+                   const std::string& domain, const message::Metadata& metadata,
+                   eckit::Buffer&& field);
 
     void sendStepComplete() const;
 
 private:
-    using PeerList = std::vector<std::unique_ptr<Peer>>;
+    using PeerList = std::vector<std::unique_ptr<message::Peer>>;
 
     PeerList createServerPeers(const eckit::Configuration& config);
 

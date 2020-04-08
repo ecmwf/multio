@@ -37,6 +37,15 @@ class TCPSocket;
 namespace multio {
 namespace server {
 
+class TcpPeer : public Peer {
+public:
+    TcpPeer(const std::string& host, size_t port);
+    TcpPeer(const std::string& host, int port);
+
+    const std::string& host() const;
+    size_t port() const;
+};
+
 struct Connection;
 
 class TcpTransport final : public Transport {

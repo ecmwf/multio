@@ -26,6 +26,12 @@
 namespace multio {
 namespace server {
 
+class MpiPeer : public Peer {
+public:
+    MpiPeer(const std::string& comm, size_t rank);
+};
+
+
 class MpiTransport final : public Transport {
 public:
     MpiTransport(const eckit::Configuration& config);

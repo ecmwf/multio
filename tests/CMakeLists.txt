@@ -49,6 +49,12 @@ ecbuild_add_test( TARGET test_multio_subtoc
                   ARGS ${_test_data} --test-subtoc
                   ENVIRONMENT "${_test_environment}" )
 
-add_subdirectory(attic)
+ecbuild_add_test( TARGET test_multio_legacy_interface
+                  CONDITION HAVE_FDB5 AND HAVE_LEGACY_IFSIO
+                  COMMAND $<TARGET_FILE:multio-legacy>
+                  TEST_DEPENDS multio_get_test_data
+                  ARGS ${_test_data}
+                  ENVIRONMENT "${_test_environment}" )
+
 add_subdirectory(multio)
 add_subdirectory(server)

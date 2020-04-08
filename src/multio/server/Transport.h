@@ -25,11 +25,13 @@
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/config/Configuration.h"
 
-#include "multio/server/Message.h"
+#include "multio/message/Message.h"
 
 namespace multio {
 namespace server {
 
+using message::Message;
+using message::Peer;
 
 //----------------------------------------------------------------------------------------------------------------------
 

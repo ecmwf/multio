@@ -25,10 +25,8 @@
 #include "eckit/maths/Functions.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
-#include "eckit/runtime/Tool.h"
 
-#include "multio/ifsio.h"
-
+#include "multio/ifsio/ifsio.h"
 #include "multio/tools/MultioTool.h"
 
 namespace multio {
@@ -75,7 +73,7 @@ void MultioSink::init(const eckit::option::CmdArgs& args) {
     args.get("test-subtoc", testSubtoc_);
 }
 
-void MultioSink::finish(const eckit::option::CmdArgs& args) {}
+void MultioSink::finish(const eckit::option::CmdArgs&) {}
 
 void MultioSink::execute(const eckit::option::CmdArgs& args) {
     eckit::AutoStdFile fin(args(0));

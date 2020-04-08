@@ -20,7 +20,7 @@
 #include "eckit/filesystem/TmpFile.h"
 #include "eckit/config/LocalConfiguration.h"
 
-#include "multio/FileSink.h"
+#include "multio/sink/FileSink.h"
 
 #include "TestDataBlob.h"
 

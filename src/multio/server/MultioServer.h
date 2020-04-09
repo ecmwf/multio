@@ -8,46 +8,32 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Domokos Sarmany
-/// @author Simon Smart
-/// @author Tiago Quintino
-
-/// @date Jan 2019
-
-#ifndef multio_server_actions_AppendToFile_H
-#define multio_server_actions_AppendToFile_H
+#ifndef multio_server_MultioServer_H
+#define multio_server_MultioServer_H
 
 #include <memory>
-#include <string>
 
-#include "multio/server/Action.h"
+#include "multio/server/Listener.h"
 
 namespace eckit {
 class Configuration;
-class DataHandle;
 }  // namespace eckit
 
 namespace multio {
 namespace server {
-namespace actions {
 
-class AppendToFile : public Action {
+class Transport;
+
+class MultioServer {
 public:
-    AppendToFile(const eckit::Configuration& config);
+    MultioServer(const eckit::Configuration& config);
 
-    ~AppendToFile();
+    ~MultioServer();
 
 private:
-    void execute(Message msg) const override;
-
-    void print(std::ostream& os) const override;
-
-    std::string path_;
-
-    std::unique_ptr<eckit::DataHandle> datahandle_;
+    std::shared_ptr<Transport> transport_ = nullptr;
+    Listener listener_;
 };
-
-}  // namespace actions
 }  // namespace server
 }  // namespace multio
 

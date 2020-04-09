@@ -15,9 +15,11 @@
 
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
-#include "eckit/log/Log.h"
 
+#include "multio/LibMultio.h"
 #include "multio/server/Plan.h"
+
+#include "ScopedTimer.h"
 
 using eckit::LocalConfiguration;
 
@@ -25,18 +27,26 @@ namespace multio {
 namespace server {
 
 Dispatcher::Dispatcher(const eckit::Configuration& config) {
-    eckit::Log::info() << config << std::endl;
+    timer_.start();
+
+    eckit::Log::debug<LibMultio>() << config << std::endl;
 
     const std::vector<LocalConfiguration> plans = config.getSubConfigurations("plans");
     for (const auto& cfg : plans) {
-        eckit::Log::info() << cfg << std::endl;
+        eckit::Log::debug<LibMultio>() << cfg << std::endl;
         plans_.emplace_back(new Plan(cfg));
     }
 }
 
-Dispatcher::~Dispatcher() = default;
+Dispatcher::~Dispatcher() {
+    eckit::Log::info() << " ******* Total wall-clock time spent in dispatcher "
+                       << eckit::Timing{timer_}.elapsed_ << "s" << std::endl
+                       << "         Total wall-clock time spent with dispatching " << timing_ << "s"
+                       << std::endl;
+}
 
 void Dispatcher::dispatch(eckit::Queue<Message>& queue) {
+    ScopedTimer timer{timing_};
     Message msg;
     while (queue.pop(msg) >= 0) {
         for (const auto& plan : plans_) {

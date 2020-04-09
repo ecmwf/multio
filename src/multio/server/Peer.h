@@ -26,27 +26,22 @@ namespace server {
 
 class Peer {
 public:
-    Peer(const std::string& domain = "null", size_t id = 0) : domain_{domain}, id_{id} {}
+    Peer(const std::string& group = "null", size_t id = 0);
     virtual ~Peer() = default;
 
     operator std::string();
 
-    bool operator==(const Peer& rhs) const { return id_ == rhs.id_ && domain_ == rhs.domain_; }
+    bool operator==(const Peer& rhs) const;
 
-    bool operator!=(const Peer& rhs) const { return not operator==(rhs); }
+    bool operator!=(const Peer& rhs) const;
 
-    bool operator<(const Peer& rhs) const {
-        if(id_ != rhs.id_) {
-            return id_ < rhs.id_;
-        }
-        return domain_ < rhs.domain_;
-    }
+    bool operator<(const Peer& rhs) const;
 
-    const std::string& domain() const { return domain_; }
-    size_t id() const { return id_; }
+    const std::string& group() const;
+    size_t id() const;
 
 protected:
-    std::string domain_ ;
+    std::string group_;
     size_t id_;
 
 private:  // methods
@@ -62,9 +57,7 @@ private:  // methods
 
 class ThreadPeer : public Peer {
 public:
-    ThreadPeer(std::thread t) :
-        Peer{"thread", std::hash<std::thread::id>{}(t.get_id())},
-        thread_{std::move(t)} {}
+    ThreadPeer(std::thread t);
 
 private:
 
@@ -74,17 +67,17 @@ private:
 
 class MpiPeer : public Peer {
 public:
-    MpiPeer(const std::string& comm, size_t rank) : Peer{comm, rank} {}
+    MpiPeer(const std::string& comm, size_t rank);
 };
 
 
 class TcpPeer : public Peer {
 public:
-    TcpPeer(const std::string& host, size_t port) : Peer{host, port} {}
-    TcpPeer(const std::string& host, int port) : Peer{host, static_cast<size_t>(port)} {}
+    TcpPeer(const std::string& host, size_t port);
+    TcpPeer(const std::string& host, int port);
 
-    const std::string& host() const { return domain_; }
-    size_t port() const { return id_; }
+    const std::string& host() const;
+    size_t port() const;
 };
 
 

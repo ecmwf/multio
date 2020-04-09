@@ -31,14 +31,15 @@ namespace actions {
 
 class Encode : public Action {
 public:
-    Encode(const eckit::Configuration& config);
+    explicit Encode(const eckit::Configuration& config);
 
 private:
-    void execute(Message msg) const override;
+    bool doExecute(Message& msg) const override;
 
     void print(std::ostream& os) const override;
 
     std::string format_;
+    std::string template_;
 };
 
 }  // namespace actions

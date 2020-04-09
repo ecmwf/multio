@@ -16,6 +16,9 @@
 
 #include "eccodes.h"
 
+#include <fstream>
+#include <regex>
+
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
 #include "eckit/log/Log.h"
@@ -26,57 +29,22 @@
 
 #include "multio/ifsio.h"
 
-namespace eckit {
-class Configuration;
-
-namespace option {
-class CmdArgs;
-class Option;
-}  // namespace option
-}  // namespace eckit
+#include "multio/tools/MultioTool.h"
 
 namespace multio {
+namespace test {
 
-class MultioTool : public eckit::Tool {
+namespace {
+class TempFile {
+    const std::string path_;
+
 public:
+    TempFile(std::string&& path) : path_{std::move(path)} {}
+    ~TempFile() { std::remove(path_.c_str()); }
 
-    virtual void usage(const std::string &tool) const = 0;
-
-protected:
-
-    MultioTool(int argc, char** argv);
-
-    std::vector<eckit::option::Option*> options_;
-
-private:
-    virtual void init(const eckit::option::CmdArgs&) = 0;
-    virtual void finish(const eckit::option::CmdArgs&) = 0;
-    virtual void execute(const eckit::option::CmdArgs& args) = 0;
-
-    virtual int numberOfPositionalArguments() const { return -1; }
-    virtual int minimumPositionalArguments() const { return -1; }
-
-    void run() override final;
+    const std::string& path() const { return path_; }
 };
-
-//---------------------------------------------------------------------------------------------------------------
-
-MultioTool::MultioTool(int argc, char** argv) : eckit::Tool(argc, argv, "MULTIO_HOME") {}
-
-void MultioTool::run() {
-    std::function<void(const std::string&)> usage = [this](const std::string& name) {
-        this->usage(name);
-    };
-
-    eckit::option::CmdArgs args(usage, options_, numberOfPositionalArguments(),
-                                minimumPositionalArguments());
-
-    init(args);
-    execute(args);
-    finish(args);
-}
-
-//---------------------------------------------------------------------------------------------------------------
+}  // namespace
 
 class MultioSink final : public multio::MultioTool {
 public:  // methods
@@ -93,11 +61,19 @@ private:
 
     void execute(const eckit::option::CmdArgs& args) override;
 
+    bool subtocExists() const;
+
+    bool testSubtoc_ = false;
 };
 
-MultioSink::MultioSink(int argc, char** argv) : multio::MultioTool(argc, argv) {}
+MultioSink::MultioSink(int argc, char** argv) : multio::MultioTool(argc, argv) {
+    options_.push_back(
+        new eckit::option::SimpleOption<bool>("test-subtoc", "Test if subtoc has been created"));
+}
 
-void MultioSink::init(const eckit::option::CmdArgs& args) {}
+void MultioSink::init(const eckit::option::CmdArgs& args) {
+    args.get("test-subtoc", testSubtoc_);
+}
 
 void MultioSink::finish(const eckit::option::CmdArgs& args) {}
 
@@ -121,15 +97,40 @@ void MultioSink::execute(const eckit::option::CmdArgs& args) {
     imultio_flush_();
 
     codes_handle_delete(handle);
+
+    if(testSubtoc_) {
+        ASSERT(subtocExists());
+    }
 }
 
-}  // namespace multio
+bool MultioSink::subtocExists() const {
+    eckit::PathName fdb_root_path{"~fdb/tests/fdb/root"};
 
+    TempFile file{"tmp.out"};
+
+    std::string cmd{"find " + fdb_root_path.asString() + " -name toc* > " + file.path()};
+    std::system(cmd.c_str());
+
+    const std::regex subtoc{"^toc\\.[0-9]{8}\\.[0-9]{6}\\..*", std::regex_constants::egrep};
+
+    std::ifstream ifstrm{file.path().c_str()};
+    std::string line;
+    while (std::getline(ifstrm, line)) {
+        auto fname = line.substr(line.rfind("/") + 1);
+        if (std::regex_match(fname, subtoc)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+}
+}  // namespace multio
 
 //---------------------------------------------------------------------------------------------------------------
 
 
 int main(int argc, char** argv) {
-    multio::MultioSink tool(argc, argv);
+    multio::test::MultioSink tool(argc, argv);
     return tool.start();
 }

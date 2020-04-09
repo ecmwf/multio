@@ -25,6 +25,7 @@
 
 #include "multio/multio_version.h"
 #include "multio/ifsio.h"
+#include "multio/ifsio_internals.h"
 
 #include "multio/MultIO.h"
 
@@ -122,44 +123,6 @@ private:
 };
 
 //----------------------------------------------------------------------------------------------------------------------
-
-#define MULTIO_TRACE
-
-static bool traceme() {
-    static char* trace = ::getenv("MULTIO_TRACE");
-    if(trace == 0) {
-        return false;
-    }
-    return true;
-}
-
-#ifdef  MULTIO_TRACE
-#define MULTIO_TRACE_FUNC()       if(traceme()) { fprintf(stdout,"MULTIO %s : %s()\n",MULTIO_VERSION,__func__); }
-#define MULTIO_TRACE_FUNC1(p1)    if(traceme()) { fprintf(stdout,"MULTIO %s : %s(%s)\n",MULTIO_VERSION,__func__,p1); }
-#define MULTIO_TRACE_FUNC2(p1,p2) if(traceme()) { fprintf(stdout,"MULTIO %s : %s(%s,%s)\n",MULTIO_VERSION,__func__,p1,p2); }
-#else
-#define MULTIO_TRACE_FUNC()
-#define MULTIO_TRACE_FUNC1(p1)
-#define MULTIO_TRACE_FUNC2(p1,p2)
-#endif
-
-//----------------------------------------------------------------------------------------------------------------------
-
-static int ifsio_handle_error(std::exception& e) {
-
-    std::cout << "FDB MultIO wrapper: " << e.what() << std::endl << std::flush;
-    std::cerr << "FDB MultIO wrapper: " << e.what() << std::endl << std::flush;
-
-    static char* abort_on_error = ::getenv("MULTIO_ABORT_ON_ERROR");
-    if(abort_on_error) {
-        std::cout << "FDB MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
-        std::cerr << "FDB MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
-
-        eckit::LibEcKit::instance().abort();
-    }
-
-    return -2;
-}
 
 
 extern "C" {

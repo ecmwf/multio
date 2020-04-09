@@ -16,12 +16,58 @@
 namespace multio {
 namespace server {
 
-multio::server::Peer::operator std::string() {
-    return domain_ + ":" + std::to_string(id_);
+Peer::Peer(const std::string& group, size_t id) : group_{group}, id_{id} {}
+
+bool Peer::operator==(const Peer& rhs) const {
+    return id_ == rhs.id_ && group_ == rhs.group_;
+}
+
+bool Peer::operator!=(const Peer& rhs) const {
+    return not operator==(rhs);
+}
+
+bool Peer::operator<(const Peer& rhs) const {
+    return (id_ != rhs.id_) ? (id_ < rhs.id_) : (group_ < rhs.group_);
+}
+
+const std::string& Peer::group() const {
+    return group_;
+}
+size_t Peer::id() const {
+    return id_;
+}
+
+Peer::operator std::string() {
+    return group_ + ":" + std::to_string(id_);
 }
 
 void Peer::print(std::ostream& out) const {
-    out << "Peer(domain=" << domain_ << ",id=" << id_ << ")";
+    out << "Peer(group=" << group_ << ",id=" << id_ << ")";
+}
+
+
+//--------------------------------------------------------------------------------------------------
+
+ThreadPeer::ThreadPeer(std::thread t) :
+    Peer{"thread", std::hash<std::thread::id>{}(t.get_id())},
+    thread_{std::move(t)} {}
+
+
+//--------------------------------------------------------------------------------------------------
+
+MpiPeer::MpiPeer(const std::string& comm, size_t rank) : Peer{comm, rank} {}
+
+//--------------------------------------------------------------------------------------------------
+
+TcpPeer::TcpPeer(const std::string& host, size_t port) : Peer{host, port} {}
+TcpPeer::TcpPeer(const std::string& host, int port) : Peer{host, static_cast<size_t>(port)} {}
+
+const std::string& TcpPeer::host() const {
+    return group_;
+}
+
+size_t TcpPeer::port() const {
+    return id_;
 }
 
 }  // namespace server

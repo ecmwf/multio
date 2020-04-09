@@ -28,10 +28,18 @@ list( APPEND multio_srcs
     MultIO.h
     Trigger.cc
     Trigger.h
+    ifsio_internals.cc
     ifsio.cc
     ifsio.h
     multio_version.cc
 )
+
+if( HAVE_LEGACY_IFSIO )
+    list( APPEND multio_srcs
+        ifsio_legacy.cc
+        ifsio_legacy.h
+    )
+endif()
 
 ### multio library
 
@@ -60,8 +68,3 @@ ecbuild_add_library(
 add_subdirectory(fdb5)
 add_subdirectory(attic)
 add_subdirectory(server)
-
-ecbuild_add_executable( TARGET    multio-sink
-                        SOURCES   tools/multio-sink.cc
-                        CONDITION HAVE_FDB5
-                        LIBS      multio multio-fdb5 eckit_option)

@@ -13,25 +13,30 @@
 #include <algorithm>
 
 #include "eckit/config/Configuration.h"
-#include "eckit/exception/Exceptions.h"
+
+#include "multio/LibMultio.h"
 
 namespace multio {
 namespace server {
 namespace actions {
 
 Select::Select(const eckit::Configuration& config) :
-    Action(config),
-    categories_(config.getStringVector("categories")) {}
+    Action{config},
+    categories_{config.getStringVector("categories")} {}
 
-void Select::execute(Message msg) const {
-    bool passOn = (msg.tag() != Message::Tag::Field) || matchPlan(msg);
+bool Select::doExecute(Message& msg) const {
+    ScopedTimer timer{timing_};
+    return isMatched(msg);
+}
 
-    if (passOn && next_) { // May want to assert next_
-        next_->execute(msg);
-    }
+bool Select::isMatched(const Message& msg) const {
+    return (msg.tag() != Message::Tag::Field) || matchPlan(msg);
 }
 
 bool Select::matchPlan(const Message& msg) const {
+    eckit::Log::debug<LibMultio>()
+        << " *** Category " << msg.category() << " is matched...  field size: " << msg.globalSize()
+        << std::endl;
     auto it = find(begin(categories_), end(categories_), msg.category());
     return it != end(categories_);
 }

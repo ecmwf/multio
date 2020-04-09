@@ -21,33 +21,53 @@
 #include <map>
 #include <mutex>
 
+#include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/server/Message.h"
 
-
-namespace eckit { class Configuration; }
+namespace eckit {
+class Configuration;
+}
 
 namespace multio {
 namespace server {
 
-//----------------------------------------------------------------------------------------------------------------------
+class ScopedTimer {
+    eckit::Timing& timing_;
+    eckit::Timer timer_;
 
-class Action : eckit::NonCopyable {
+public:
+    explicit ScopedTimer(eckit::Timing& t) : timing_{t} { timer_.start(); }
+    ~ScopedTimer() {
+        timer_.stop();
+        timing_ += timer_;
+    }
+};
+
+//--------------------------------------------------------------------------------------------------
+
+class Action : private eckit::NonCopyable {
 public:
     Action(const eckit::Configuration& config);
-    virtual ~Action() = default;
+    virtual ~Action();
 
     Action(Action&& rhs) = default;
     Action& operator=(Action&& rhs) = default;
 
-    virtual void execute(Message msg) const = 0;
+    void execute(Message msg) const;
 
 protected:
 
+    std::string type_;
+
     std::unique_ptr<Action> next_;
 
+    mutable eckit::Timing timing_;
+
 private:
+
+    virtual bool doExecute(Message &msg) const = 0;
 
     virtual void print(std::ostream &os) const = 0;
 
@@ -57,7 +77,7 @@ private:
     }
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 
 class ActionBuilderBase;
 

@@ -20,13 +20,15 @@
 #include <memory>
 
 #include "eckit/container/Queue.h"
+#include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/server/Message.h"
 
 namespace eckit {
 class Configuration;
-}
+class Timer;
+}  // namespace eckit
 
 namespace multio {
 namespace server {
@@ -46,6 +48,8 @@ public:
 private:
 
     std::vector<std::unique_ptr<Plan>> plans_;
+    eckit::Timing timing_;
+    eckit::Timer timer_;
 
 };
 

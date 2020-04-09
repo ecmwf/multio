@@ -31,7 +31,6 @@ namespace server {
 class ThreadTransport final : public Transport {
 public:
     ThreadTransport(const eckit::Configuration& config);
-    ~ThreadTransport() override;
 
     Message receive() override;
 

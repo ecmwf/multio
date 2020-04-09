@@ -19,6 +19,7 @@
 
 #include <memory>
 
+#include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/server/Message.h"
@@ -33,7 +34,7 @@ namespace server {
 
 class Action;
 
-class Plan : eckit::NonCopyable {
+class Plan : private eckit::NonCopyable {
 public:
     Plan(const eckit::Configuration& config);
     ~Plan();
@@ -45,7 +46,7 @@ private:
     std::string name_;
 
     std::unique_ptr<Action> root_;
-
+    eckit::Timing timing_;
 };
 
 }  // namespace server

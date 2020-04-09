@@ -10,8 +10,9 @@
 
 #include "ThreadTransport.h"
 
-#include "eckit/log/Log.h"
 #include "eckit/config/Resource.h"
+
+#include "multio/LibMultio.h"
 
 namespace multio {
 namespace server {
@@ -20,8 +21,6 @@ ThreadTransport::ThreadTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
     messageQueueSize_(
         eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
-
-ThreadTransport::~ThreadTransport() = default;
 
 Message ThreadTransport::receive() {
 
@@ -58,10 +57,10 @@ eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer dest) {
         return *qitr->second;
     }
 
-    queues_.emplace(dest, new eckit::Queue<Message>(messageQueueSize_));
+    queues_.emplace(dest, std::unique_ptr<eckit::Queue<Message>>{new eckit::Queue<Message>(messageQueueSize_)});
 
-    eckit::Log::info() << "ADD QUEUE for " << dest << " --- " << queues_.at(dest).get()
-                       << std::endl;
+    eckit::Log::debug<LibMultio>()
+        << "ADD QUEUE for " << dest << " --- " << queues_.at(dest).get() << std::endl;
 
     return *queues_.at(dest);
 }

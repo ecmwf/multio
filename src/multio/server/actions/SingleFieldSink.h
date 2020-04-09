@@ -37,13 +37,15 @@ public:
     SingleFieldSink(const eckit::Configuration& config);
 
 private:
-    void execute(Message msg) const override;
+    bool doExecute(Message& msg) const override;
 
     void print(std::ostream& os) const override;
 
     void write(Message msg) const;
 
     void flush() const;
+
+    std::string rootPath_;
 
     mutable std::unique_ptr<DataSink> dataSink_ = nullptr;
 };

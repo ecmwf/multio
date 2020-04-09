@@ -8,8 +8,6 @@ ecbuild_add_library(
     SOURCES
         actions/Aggregation.cc
         actions/Aggregation.h
-        actions/AppendToFile.cc
-        actions/AppendToFile.h
         actions/Encode.cc
         actions/Encode.h
         actions/Print.cc
@@ -20,24 +18,33 @@ ecbuild_add_library(
         actions/Sink.h
         actions/SingleFieldSink.cc
         actions/SingleFieldSink.h
+        actions/Statistics.cc
+        actions/Statistics.h
         actions/Null.cc
         actions/Null.h
         Action.cc
         Action.h
-        Aggregator.cc
-        Aggregator.h
         Dispatcher.cc
         Dispatcher.h
+        Domain.cc
+        Domain.h
+        GribTemplate.h
+        GribTemplate.cc
         IoTransport.cc
         IoTransport.h
         Listener.cc
         Listener.h
-        LocalIndices.cc
-        LocalIndices.h
         Mappings.cc
         Mappings.h
         Message.cc
         Message.h
+        Metadata.h
+        MultioClient.cc
+        MultioClient.h
+        MultioServer.cc
+        MultioServer.h
+        MultioNemo.cc
+        MultioNemo.h
         MessageContent.cc
         MessageHeader.cc
         Peer.cc
@@ -57,6 +64,8 @@ ecbuild_add_library(
         ScopedThread.h
         MultioServerTool.cc
         MultioServerTool.h
+        multio_nemo.f90
+        multio.f90
 
     LIBS
         multio
@@ -72,3 +81,19 @@ ecbuild_add_executable( TARGET    multio-hammer
                         CONDITION HAVE_MULTIO_SERVER
                         SOURCES   tools/multio-hammer.cc
                         LIBS      multio-server multio)
+
+ecbuild_add_executable( TARGET    multio-replay
+                        CONDITION HAVE_MULTIO_SERVER
+                        SOURCES   tools/multio-replay.cc
+                        LIBS      multio-server multio)
+
+ecbuild_add_executable( TARGET    multio-probe
+                        CONDITION HAVE_MULTIO_SERVER
+                        SOURCES   tools/multio-probe.cc
+                        LIBS      multio-server multio)
+
+ecbuild_add_executable( TARGET    multio-encode-ocean
+                        CONDITION HAVE_MULTIO_SERVER
+                        SOURCES   tools/multio-encode-ocean.cc
+                        LIBS      multio-server multio)
+

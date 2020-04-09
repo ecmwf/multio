@@ -48,6 +48,73 @@ CASE("test_file_sink_writes_correctly") {
     EXPECT(file_content(file_path) == std::string(quote));
 }
 
+CASE("test_file_sink_creates_new_file_by_default") {
+    const eckit::PathName& file_path = eckit::TmpFile();
+    const char quote[] =
+        "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
+
+    {
+        auto sink = make_configured_file_sink(file_path);
+        eckit::DataBlobPtr stringBlob(
+            eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
+        sink->write(stringBlob);
+    }
+
+    {
+        auto sink = make_configured_file_sink(file_path);
+        eckit::DataBlobPtr stringBlob(
+            eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
+        sink->write(stringBlob);
+    }
+
+    EXPECT(file_content(file_path) == std::string(quote));
+}
+
+
+CASE("test_file_sink_creates_new_file_by_explicit_request") {
+    const eckit::PathName& file_path = eckit::TmpFile();
+    const char quote[] =
+        "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
+
+    {
+        auto sink = make_configured_file_sink(file_path);
+        eckit::DataBlobPtr stringBlob(
+            eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
+        sink->write(stringBlob);
+    }
+
+    {
+        auto sink = make_configured_file_sink(file_path, false);
+        eckit::DataBlobPtr stringBlob(
+            eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
+        sink->write(stringBlob);
+    }
+
+    EXPECT(file_content(file_path) == std::string(quote));
+}
+
+CASE("test_file_sink_appends_to_existing_file") {
+    const eckit::PathName& file_path = eckit::TmpFile();
+    const char quote[] =
+        "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
+
+    {
+        auto sink = make_configured_file_sink(file_path);
+        eckit::DataBlobPtr stringBlob(
+            eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
+        sink->write(stringBlob);
+    }
+
+    {
+        auto sink = make_configured_file_sink(file_path, true);
+        eckit::DataBlobPtr stringBlob(
+            eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
+        sink->write(stringBlob);
+    }
+
+    EXPECT(file_content(file_path) == std::string{quote} + std::string{quote});
+}
+
 }  // namespace test
 }  // namespace multio
 

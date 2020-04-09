@@ -27,6 +27,7 @@
 #include "multio/LibMultio.h"
 
 using namespace eckit;
+using namespace eckit::net;
 
 namespace multio {
 

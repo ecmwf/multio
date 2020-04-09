@@ -23,18 +23,18 @@ Message decodeMessage(eckit::Stream& stream) {
     unsigned t;
     stream >> t;
 
-    std::string src_dom;
-    stream >> src_dom;
+    std::string src_grp;
+    stream >> src_grp;
     size_t src_id;
     stream >> src_id;
 
-    std::string dest_dom;
-    stream >> dest_dom;
+    std::string dest_grp;
+    stream >> dest_grp;
     size_t dest_id;
     stream >> dest_id;
 
-    Message msg{Message::Header{static_cast<Message::Tag>(t), MpiPeer{src_dom, src_id},
-                                MpiPeer{dest_dom, dest_id}}};
+    Message msg{Message::Header{static_cast<Message::Tag>(t), MpiPeer{src_grp, src_id},
+                                MpiPeer{dest_grp, dest_id}}};
 
     msg.decode(stream);
 
@@ -45,11 +45,11 @@ Message decodeMessage(eckit::Stream& stream) {
 
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
-    local_{cfg.getString("domain"), eckit::mpi::comm(cfg.getString("domain").c_str()).rank()},
+    local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
     buffer_{0} {}
 
 Message MpiTransport::receive() {
-    const auto& comm = eckit::mpi::comm(local_.domain().c_str());
+    const auto& comm = eckit::mpi::comm(local_.group().c_str());
 
     auto status = comm.probe(comm.anySource(), comm.anyTag());
 
@@ -66,8 +66,6 @@ void MpiTransport::send(const Message& msg) {
 
     auto msg_tag = static_cast<int>(msg.tag());
 
-    auto dest = msg.destination().id();
-
     // Add 4K for header/footer etc. Should be plenty
     buffer_.resize(eckit::round(msg.size(), 8) + 4096);
 
@@ -75,8 +73,9 @@ void MpiTransport::send(const Message& msg) {
 
     msg.encode(stream);
 
-    eckit::mpi::comm(local_.domain().c_str())
-        .send<void>(buffer_, stream.bytesWritten(), dest, msg_tag);
+    auto sz = static_cast<size_t>(stream.bytesWritten());
+    auto dest = static_cast<int>(msg.destination().id());
+    eckit::mpi::comm(local_.group().c_str()).send<void>(buffer_, sz, dest, msg_tag);
 }
 
 Peer MpiTransport::localPeer() const {

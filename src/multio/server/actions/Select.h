@@ -34,9 +34,11 @@ public:
 
 private:
 
-    void execute(Message msg) const override;
+    bool doExecute(Message& msg) const override;
 
     void print(std::ostream &os) const override;
+
+    bool isMatched(const Message& msg) const;
 
     bool matchPlan(const Message& msg) const;
 

@@ -15,59 +15,63 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 
-#include "multio/server/Aggregator.h"
+#include "multio/LibMultio.h"
 #include "multio/server/Mappings.h"
-#include "multio/server/print_buffer.h"
 
 namespace multio {
 namespace server {
 namespace actions {
 
-Aggregation::Aggregation(const eckit::Configuration& config) :
-    Action(config),
-    map_name_(config.getString("mapping")) {}
+Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 
-void Aggregation::execute(Message msg) const {
+bool Aggregation::doExecute(Message& msg) const {
+    ScopedTimer timer{timing_};
 
     if (msg.tag() == Message::Tag::Field) {
-        auto field_id = msg.field_id();
-        messages_[field_id].push_back(msg);
-
-        // All parts arrived?
-        bool ret = messages_.at(field_id).size() == msg.map_count();
-        ret &= Mappings::instance().get(map_name_).size() == msg.map_count();
-        if (!ret) {
-            return;
-        }
-
-        Aggregator agg{msg.field_size(), messages_.at(field_id).size()};
-
-        Message outMsg{Message::Header{msg.tag(), Peer{}, Peer{}, msg.mapping(), msg.map_count(),
-                                       msg.category(), msg.field_id(), msg.field_size()},
-                       agg.gather(messages_.at(field_id), Mappings::instance().get(map_name_))};
-
-        messages_.erase(field_id);
-
-        if (next_) {  // May want to assert next_
-            next_->execute(outMsg);
-        }
+        return handleField(msg);
     }
 
     if (msg.tag() == Message::Tag::StepComplete) {
-        // Initialise
-        if(flushes_.find(msg.mapping()) == end(flushes_)) {
-            flushes_[msg.mapping()] = 0;
-        }
-
-        if (++flushes_.at(msg.mapping()) != msg.map_count()) {
-            return;
-        }
-
-        if (next_) {  // May want to assert next_
-            next_->execute(msg);
-        }
+        return handleFlush(msg);
     }
 
+    return true;
+}
+
+bool Aggregation::handleField(Message& msg) const {
+    messages_[msg.fieldId()].push_back(msg);
+    return allPartsArrived(msg) ? createGlobalField(msg) : false;
+}
+
+bool Aggregation::handleFlush(const Message& msg) const {
+    eckit::Log::debug<LibMultio>() << "*** Aggregating flush messages: " << *this << std::endl;
+
+    // Initialise if need be
+    if (flushes_.find(msg.domain()) == end(flushes_)) {
+        flushes_[msg.domain()] = 0;
+    }
+
+    return ++flushes_.at(msg.domain()) == msg.domainCount();
+}
+
+bool Aggregation::allPartsArrived(const Message& msg) const {
+    return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
+           (msg.domainCount() == Mappings::instance().get(msg.domain()).size());
+}
+
+bool Aggregation::createGlobalField(Message& msgOut) const {
+    const auto& fid = msgOut.fieldId();
+
+    eckit::Buffer glField{msgOut.globalSize() * sizeof(double)};
+    for (auto msg : messages_.at(fid)) {
+        Mappings::instance().get(msg.domain()).at(msg.source())->to_global(msg.payload(), glField);
+    }
+
+    msgOut.payload() = std::move(glField);
+
+    messages_.erase(fid);
+
+    return true;
 }
 
 void Aggregation::print(std::ostream& os) const {

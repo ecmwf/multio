@@ -17,6 +17,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ecbuild_use_package( PROJECT eckit VERSION  1.8 REQUIRED )
 ecbuild_use_package( PROJECT metkit VERSION 1.4 REQUIRED )
+
 if( NOT METKIT_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
 endif()
@@ -27,6 +28,12 @@ ecbuild_add_option( FEATURE FDB5
                     DEFAULT ON
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "PROJECT fdb5 VERSION 5.0" )
+
+### legacy IFS I/O
+
+ecbuild_add_option( FEATURE LEGACY_IFSIO
+                    DEFAULT OFF
+                    DESCRIPTION "Legacy (FDB4) IFS I/O interface" )
 
 ### multio-server
 

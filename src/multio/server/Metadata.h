@@ -12,34 +12,17 @@
 /// @author Simon Smart
 /// @author Tiago Quintino
 
-/// @date Mar 2019
+/// @date Oct 2019
 
-#ifndef multio_server_Aggregator_H
-#define multio_server_Aggregator_H
+#ifndef multio_server_Metadata_H
+#define multio_server_Metadata_H
 
-#include <vector>
-
-#include "multio/server/Mappings.h"
-
-namespace eckit {
-class Buffer;
-}
+#include "eckit/config/LocalConfiguration.h"
 
 namespace multio {
 namespace server {
 
-class Aggregator {
-public:
-    Aggregator(size_t gL_size, size_t nb_fields);
-
-    eckit::Buffer gather(const std::vector<Message>& msg, const Mapping& maps);
-
-    std::vector<Message> scatter(const Message& msg, const Mapping& maps);
-
-private:
-    size_t global_size_;
-    size_t nb_fields_;
-};
+using Metadata = eckit::LocalConfiguration;
 
 }  // namespace server
 }  // namespace multio

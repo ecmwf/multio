@@ -17,7 +17,7 @@
 #ifndef multio_server_Listener_H
 #define multio_server_Listener_H
 
-#include <list>
+#include <set>
 #include <memory>
 
 #include "eckit/container/Queue.h"
@@ -25,7 +25,9 @@
 #include "multio/server/Peer.h"
 #include "multio/server/Message.h"
 
-namespace eckit { class Configuration; }
+namespace eckit {
+class Configuration;
+}
 
 namespace multio {
 namespace server {
@@ -40,14 +42,17 @@ public:
     void listen();
 
 private:
+    bool moreConnections() const;
+    void checkConnection(const Peer& conn) const;
+
     std::shared_ptr<Dispatcher> dispatcher_;
 
     Transport& transport_;
 
-    size_t nbClosedConnections_ = 0;
-    size_t nbMaps_ = 0;
+    size_t closedCount_ = 0;
+    size_t clientCount_ = 0;
 
-    std::list<Peer> connections_;
+    std::set<Peer> connections_;
 
     eckit::Queue<Message> msgQueue_;
 };

@@ -52,9 +52,6 @@ public:
     Action(const eckit::Configuration& config);
     virtual ~Action();
 
-    Action(Action&& rhs) = default;
-    Action& operator=(Action&& rhs) = default;
-
     void execute(message::Message msg) const;
 
 protected:

@@ -43,9 +43,6 @@ public:
     Dispatcher(const eckit::Configuration& config);
     ~Dispatcher();
 
-    Dispatcher(Dispatcher&& rhs) = default;
-    Dispatcher& operator=(Dispatcher&& rhs) = default;
-
     void dispatch(eckit::Queue<message::Message>& queue);
 
 private:

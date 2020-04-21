@@ -100,3 +100,6 @@ no-transport-test-configuration :
 
 #            - type : file
 #              path : hammer.grib
+
+            - type : maestro
+              config : {}

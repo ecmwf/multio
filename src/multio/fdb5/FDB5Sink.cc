@@ -66,4 +66,4 @@ void FDB5Sink::print(std::ostream& os) const {
 
 static DataSinkBuilder<FDB5Sink> FDB5SinkBuilder("fdb5");
 
-}
+}  // namespace multio

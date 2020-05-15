@@ -100,7 +100,7 @@ public:  // types
 
     class Content {
     public:
-        Content(Header&& header, const eckit::Buffer& payload = 0);
+        Content(Header&& header, const eckit::Buffer& payload = eckit::Buffer(0));
         Content(Header&& header, eckit::Buffer&& payload);
 
         size_t size() const;
@@ -120,7 +120,7 @@ public:  // methods
     static std::string tag2str(Tag t);
 
     Message();
-    Message(Header&& header, const eckit::Buffer& payload = 0);
+    Message(Header&& header, const eckit::Buffer& payload = eckit::Buffer(0));
     Message(Header&& header, eckit::Buffer&& payload);
 
     const Header& header() const;

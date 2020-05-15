@@ -39,11 +39,10 @@ std::string Message::tag2str(Tag t) {
     return m.find(t)->second;
 }
 
-Message::Message() : Message{Message::Header{Message::Tag::Empty, Peer{}, Peer{}}, 0} {}
+Message::Message() : Message(Message::Header{Message::Tag::Empty, Peer{}, Peer{}}) {}
 
 Message::Message(Header&& header, const eckit::Buffer& payload) :
-    version_{protocolVersion()},
-    content_{std::make_shared<Content>(std::move(header), payload)} {}
+    version_{protocolVersion()}, content_{std::make_shared<Content>(std::move(header), payload)} {}
 
 Message::Message(Header&& header, eckit::Buffer&& payload) :
     version_{protocolVersion()},

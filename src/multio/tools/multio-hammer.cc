@@ -22,11 +22,13 @@
 
 #include "multio/domain/Domain.h"
 #include "multio/message/Message.h"
+#include "multio/server/ConfigurationPath.h"
 #include "multio/server/Listener.h"
 #include "multio/server/MpiTransport.h"
 #include "multio/server/ThreadTransport.h"
 #include "multio/server/TcpTransport.h"
 #include "multio/tools/MultioTool.h"
+#include "multio/util/print_buffer.h"
 
 using multio::message::Message;
 using multio::message::Metadata;
@@ -148,14 +150,6 @@ std::vector<double> file_content(const eckit::PathName& file_path) {
     auto beg = reinterpret_cast<const double*>(str.data());
     std::vector<double> vec(beg, beg + str.size() / sizeof(double));
     return vec;
-}
-
-eckit::PathName configuration_path() {
-    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
-                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
-                               : eckit::PathName{""};
-
-    return base + "/configs/";
 }
 
 eckit::LocalConfiguration test_configuration(const std::string& type) {
@@ -337,12 +331,12 @@ void MultioHammer::sendData(const PeerList& serverPeers,
 
     // send messages
     for (auto step : sequence(stepCount_, 1)) {
-        for (auto level : sequence(levelCount_, 1)) {
-            for (auto param : sequence(paramCount_, 1)) {
+        for (auto param : sequence(paramCount_, 1)) {
+            for (auto level : sequence(levelCount_, 1)) {
                 Metadata metadata;
-                metadata.set("igrib", param);
-                metadata.set("ilevg", level);
-                metadata.set("istep", step);
+                metadata.set("level", level);
+                metadata.set("param", param);
+                metadata.set("step", step);
 
                 std::stringstream field_id;
                 eckit::JSON json(field_id);
@@ -434,16 +428,25 @@ void MultioHammer::testData() {
     }
 
     for (auto step : sequence(stepCount_, 1)) {
-        for (auto level : sequence(levelCount_, 1)) {
-            for (auto param : sequence(paramCount_, 1)) {
-                std::string file_name = std::to_string(param) + std::string("::") +
-                                        std::to_string(level) + std::string("::") +
+        for (auto param : sequence(paramCount_, 1)) {
+            for (auto level : sequence(levelCount_, 1)) {
+                std::string file_name = std::to_string(level) + std::string("::") +
+                                        std::to_string(param) + std::string("::") +
                                         std::to_string(step);
-                std::string field_id = R"({"igrib":)" + std::to_string(param) + R"(,"ilevg":)" +
-                                       std::to_string(level) + R"(,"istep":)" +
+                std::string field_id = R"({"level":)" + std::to_string(level) + R"(,"param":)" +
+                                       std::to_string(param) + R"(,"step":)" +
                                        std::to_string(step) + "}";
                 auto expect = global_test_field(field_id);
                 auto actual = file_content(file_name);
+
+                eckit::Log::info() << "field id = " << field_id << std::endl;
+                eckit::Log::info() << "file_name = " << file_name << std::endl;
+
+                eckit::Log::debug<multio::LibMultio>() << std::endl << "Expect = ";
+                multio::print_buffer(expect, eckit::Log::info());
+                eckit::Log::debug<multio::LibMultio>() << std::endl << "Actual = ";
+                multio::print_buffer(actual, eckit::Log::info());
+                eckit::Log::debug<multio::LibMultio>() << std::endl;
 
                 ASSERT(expect == actual);
 

@@ -31,7 +31,7 @@ bool Statistics::doExecute(message::Message& msg) const {
         applyOperation(ops);
     }
 
-    if (msg.metadata().getUnsigned("istep") % writeFrequency_ != 0) {
+    if (msg.metadata().getUnsigned("step") % writeFrequency_ != 0) {
         return false;
     }
 

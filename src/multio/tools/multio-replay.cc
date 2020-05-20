@@ -2,7 +2,6 @@
 #include <fstream>
 #include <iomanip>
 
-#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
 #include "eckit/log/Log.h"
@@ -14,6 +13,7 @@
 #include "multio/LibMultio.h"
 #include "multio/server/Listener.h"
 #include "multio/server/MultioNemo.h"
+#include "multio/server/NemoToGrib.h"
 #include "multio/server/Transport.h"
 #include "multio/tools/MultioTool.h"
 
@@ -50,17 +50,15 @@ private:
     void initClient();
     void testData();
 
+    const NemoToGrib paramMap_;
+    const std::vector<std::string> parameters_{"sst", "ssu", "ssv", "ssw"};
+
     std::string transportType_ = "mpi";
     std::string pathToNemoData_ = "";
 
     int globalSize_ = 105704;
     int level_ = 1;
     int step_ = 24;
-    std::map<std::string, std::string> parameters_ = {{"sst", "orca_grid_T"},
-                                                      {"ssu", "orca_grid_U"},
-                                                      {"ssv", "orca_grid_V"},
-                                                      {"ssw", "orca_grid_W"}};
-
     size_t rank_ = 0;
 };
 
@@ -106,9 +104,9 @@ void MultioReplay::execute(const eckit::option::CmdArgs &) {
  }
 
 void MultioReplay::setMetadata() {
-    multio_metadata_set_int_value("isizeg", globalSize_);
-    multio_metadata_set_int_value("ilevg", level_);
-    multio_metadata_set_int_value("istep", step_);
+    multio_metadata_set_int_value("globalSize", globalSize_);
+    multio_metadata_set_int_value("level", level_);
+    multio_metadata_set_int_value("step", step_);
 }
 
 void MultioReplay::setDomains() {
@@ -125,10 +123,10 @@ void MultioReplay::setDomains() {
 
 void MultioReplay::writeFields() {
     for (const auto& param : parameters_) {
-        auto buffer = readField(param.first, rank_);
+        auto buffer = readField(param, rank_);
 
         auto sz = static_cast<int>(buffer.size());
-        multio_write_field(param.first.c_str(), buffer.data(), sz);
+        multio_write_field(param.c_str(), buffer.data(), sz);
     }
 }
 
@@ -143,7 +141,7 @@ std::vector<int> MultioReplay::readGrid(const std::string& grid_type, size_t cli
     std::string gtype;
     infile >> gtype;
     if (gtype != grid_type) {
-        throw eckit::SeriousBug("Wrong grid is being read");
+        throw eckit::SeriousBug{"Wrong grid is being read: " + grid.fullName()};
     }
 
     std::vector<int> domain_dims;
@@ -191,13 +189,14 @@ void MultioReplay::testData() {
     }
 
     for (const auto& param : parameters_) {
-        std::ifstream infile{param.first + "::" + std::to_string(level_) +
+        std::ifstream infile{std::to_string(level_) +
+                             "::" + std::to_string(paramMap_.get(param).param) +
                              "::" + std::to_string(step_)};
         std::string actual{std::istreambuf_iterator<char>(infile),
                            std::istreambuf_iterator<char>()};
         infile.close();
 
-        auto path = eckit::PathName{std::string{pathToNemoData_ + param.first + "_" +
+        auto path = eckit::PathName{std::string{pathToNemoData_ + param + "_" +
                                                 std::to_string(step_) + "_reference"}};
 
         infile.open(std::string{path.fullName()}.c_str());

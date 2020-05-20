@@ -11,6 +11,7 @@
 #include "multio/action/Plan.h"
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
+#include "multio/server/ConfigurationPath.h"
 #include "multio/tools/MultioTool.h"
 #include "multio/util/print_buffer.h"
 
@@ -42,14 +43,6 @@ void codes_set_latlon_dimensions(codes_handle* handle, const std::vector<int>& g
         CODES_CHECK(codes_set_long(handle, "Ni", grid_def[0]), nullptr);
         CODES_CHECK(codes_set_long(handle, "Nj", grid_def[1]), nullptr);
     }
-}
-
-eckit::PathName configuration_path() {
-    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
-                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
-                               : eckit::PathName{""};
-
-    return base + "/configs/";
 }
 
 eckit::LocalConfiguration test_configuration() {

@@ -11,6 +11,7 @@
 #include "eckit/log/JSON.h"
 
 #include "multio/LibMultio.h"
+#include "multio/server/ConfigurationPath.h"
 #include "multio/server/MultioServer.h"
 #include "multio/server/Transport.h"
 #include "multio/tools/MultioTool.h"
@@ -20,14 +21,6 @@ using namespace multio::server;
 //----------------------------------------------------------------------------------------------------------------
 
 namespace {
-eckit::PathName configuration_path() {
-    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
-                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
-                               : eckit::PathName{""};
-
-    return base + "/configs/";
-}
-
 eckit::LocalConfiguration test_configuration(const std::string& type) {
     eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
 

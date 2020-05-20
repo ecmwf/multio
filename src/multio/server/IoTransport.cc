@@ -14,12 +14,12 @@
 #include <typeinfo>
 
 #include "eckit/config/YAMLConfiguration.h"
-#include "eckit/filesystem/PathName.h"
 #include "eckit/log/JSON.h"
 
 #include "multio/util/print_buffer.h"
 #include "multio/LibMultio.h"
 #include "multio/server/Listener.h"
+#include "multio/server/ConfigurationPath.h"
 #include "multio/server/ThreadTransport.h"
 
 using multio::server::Listener;
@@ -30,14 +30,6 @@ using multio::server::Transport;
 using multio::server::TransportFactory;
 
 namespace {
-eckit::PathName configuration_path() {
-    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
-                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
-                               : eckit::PathName{""};
-
-    return base + "/configs/";
-}
-
 eckit::LocalConfiguration test_configuration(const std::string& type) {
     eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
 
@@ -285,7 +277,7 @@ void send_multio_field_(const double* data, fortint* size, const char* name, con
     eckit::JSON json(field_id);
     json << IoTransport::instance().metadata();
 
-    auto gribName = IoTransport::instance().metadata().getString("igrib");
+    auto gribName = IoTransport::instance().metadata().getString("param");
     Message msg{Message::Header{Message::Tag::Field, client, server, gribName, category,
                                 IoTransport::instance().clientCount(),
                                 IoTransport::instance().globalSize(), domain_name, field_id.str()},

@@ -21,6 +21,7 @@ ecbuild_add_library(
     CONDITION HAVE_MULTIO_SERVER
 
     SOURCES
+        ConfigurationPath.h
         Dispatcher.cc
         Dispatcher.h
         GribTemplate.h
@@ -33,6 +34,8 @@ ecbuild_add_library(
         MultioClient.h
         MultioServer.cc
         MultioServer.h
+        NemoToGrib.cc
+        NemoToGrib.h
         MultioNemo.cc
         MultioNemo.h
         PlainDataBlob.cc

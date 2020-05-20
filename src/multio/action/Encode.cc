@@ -14,7 +14,6 @@
 
 #include "eccodes.h"
 
-#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
 
@@ -22,16 +21,9 @@
 #include "metkit/grib/GribHandle.h"
 
 #include "multio/LibMultio.h"
+#include "multio/server/ConfigurationPath.h"
 
 namespace {
-eckit::PathName configuration_path() {
-    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
-                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
-                               : eckit::PathName{""};
-
-    return base + "/configs/";
-}
-
 class GribEncoder : public metkit::grib::GribHandle {
 public:
     GribEncoder(codes_handle* handle) : metkit::grib::GribHandle{handle} {}
@@ -83,12 +75,12 @@ bool Encode::doExecute(Message& msg) const {
         encoder.setValue("stream", "oper");
         encoder.setValue("type", "fc");
         encoder.setValue("levtype", static_cast<long>(168));
-        encoder.setValue("step", md.getLong("istep"));
-        encoder.setValue("level", md.getLong("ilevg"));
+        encoder.setValue("step", md.getLong("step"));
+        encoder.setValue("level", md.getLong("level"));
 
         // setDomainDimensions
-        encoder.setValue("numberOfDataPoints", md.getLong("isizeg"));
-        encoder.setValue("numberOfValues", md.getLong("isizeg"));
+        encoder.setValue("numberOfDataPoints", md.getLong("globalSize"));
+        encoder.setValue("numberOfValues", md.getLong("globalSize"));
 
         // Setting parameter ID
         encoder.setValue("param", md.getLong("param"));

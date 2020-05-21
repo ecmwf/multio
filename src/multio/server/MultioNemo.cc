@@ -187,6 +187,11 @@ void multio_metadata_set_int_value(const char* key, int value) {
     MultioNemo::instance().metadata().set(skey, value);
 }
 
+void multio_metadata_set_string_value(const char* key, const char* value) {
+    std::string skey{key}, svalue{value};
+    MultioNemo::instance().metadata().set(skey, svalue);
+}
+
 void multio_set_domain(const char* name, int* data, int size) {
     if (MultioNemo::instance().useServer()) {
         MultioNemo::instance().setDomain(name, data, size * sizeof(int));

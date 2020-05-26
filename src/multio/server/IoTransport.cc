@@ -136,7 +136,7 @@ void open_multio_connection_() {
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
-    Message open{Message::Header{Message::Tag::Open, client, server}, std::string("open")};
+    Message open{Message::Header{Message::Tag::Open, client, server}, eckit::Buffer{"open"}};
     IoTransport::instance().transport().send(open);
 }
 
@@ -145,7 +145,7 @@ void close_multio_connection_() {
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
-    Message close{Message::Header{Message::Tag::Close, client, server}, std::string("close")};
+    Message close{Message::Header{Message::Tag::Close, client, server}, eckit::Buffer{"close"}};
     IoTransport::instance().transport().send(close);
 }
 
@@ -154,7 +154,7 @@ void send_multio_step_complete_() {
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
-    Message close{Message::Header{Message::Tag::StepComplete, client, server}, std::string("flush")};
+    Message close{Message::Header{Message::Tag::StepComplete, client, server}, eckit::Buffer{"flush"}};
     IoTransport::instance().transport().send(close);
 }
 

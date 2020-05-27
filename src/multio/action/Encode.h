@@ -19,6 +19,9 @@
 
 #include <iosfwd>
 
+#include "eccodes.h"
+
+#include "metkit/grib/GribHandle.h"
 #include "multio/action/Action.h"
 
 namespace eckit {
@@ -27,6 +30,19 @@ class Configuration;
 
 namespace multio {
 namespace action {
+
+class GribEncoder : public metkit::grib::GribHandle {
+public:
+    GribEncoder(codes_handle* handle);
+
+    void setOceanValues(const message::Metadata& md);
+
+private:
+    void setValue(const std::string& key, long value);
+    void setValue(const std::string& key, double value);
+    void setValue(const std::string& key, const std::string& value);
+};
+
 
 class Encode : public Action {
 public:
@@ -37,8 +53,9 @@ private:
 
     void print(std::ostream& os) const override;
 
-    std::string format_;
-    std::string template_;
+    const std::string format_;
+
+    const std::unique_ptr<GribEncoder> encoder_ = nullptr;
 };
 
 }  // namespace action

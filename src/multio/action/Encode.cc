@@ -12,94 +12,101 @@
 
 #include <iostream>
 
-#include "eccodes.h"
-
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
 
 #include "metkit/grib/GribDataBlob.h"
-#include "metkit/grib/GribHandle.h"
 
 #include "multio/LibMultio.h"
 #include "multio/server/ConfigurationPath.h"
 
-namespace {
-class GribEncoder : public metkit::grib::GribHandle {
-public:
-    GribEncoder(codes_handle* handle) : metkit::grib::GribHandle{handle} {}
-
-    void setValue(const std::string& key, long value) {
-        eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
-        CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
-    }
-
-    void setValue(const std::string& key, double value) {
-        eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
-        CODES_CHECK(codes_set_double(raw(), key.c_str(), value), NULL);
-    }
-
-    void setValue(const std::string& key, const std::string& value) {
-        eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
-        size_t sz = value.size();
-        CODES_CHECK(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), NULL);
-    }
-};
-}  // namespace
-
 namespace multio {
 namespace action {
+
+GribEncoder::GribEncoder(codes_handle* handle) : metkit::grib::GribHandle{handle} {}
+
+void GribEncoder::setOceanValues(const message::Metadata& md) {
+    // setCommonMetadata
+    setValue("expver", "xxxx");
+    setValue("class", "rd");
+    setValue("stream", "oper");
+    setValue("type", "fc");
+    setValue("levtype", static_cast<long>(168));
+    setValue("step", md.getLong("step"));
+    setValue("level", md.getLong("level"));
+
+    // setDomainDimensions
+    setValue("numberOfDataPoints", md.getLong("globalSize"));
+    setValue("numberOfValues", md.getLong("globalSize"));
+
+    // Setting parameter ID
+    setValue("param", md.getLong("param"));
+
+}
+
+void GribEncoder::setValue(const std::string& key, long value) {
+    eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
+    CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
+}
+
+void GribEncoder::setValue(const std::string& key, double value) {
+    eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
+    CODES_CHECK(codes_set_double(raw(), key.c_str(), value), NULL);
+}
+
+void GribEncoder::setValue(const std::string& key, const std::string& value) {
+    eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
+    size_t sz = value.size();
+    CODES_CHECK(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), NULL);
+}
+
+namespace {
+
+std::unique_ptr<GribEncoder> make_encoder(const eckit::Configuration& config) {
+    auto format = config.getString("format");
+
+    if (format == "grib") {
+        ASSERT(config.has("template"));
+        eckit::AutoStdFile fin{configuration_path() + config.getString("template")};
+        int err;
+        return std::unique_ptr<GribEncoder>{
+            new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err)}};
+    }
+    else if (format == "none") {
+        return nullptr;  // leave message in raw binary format
+    }
+    else {
+        throw eckit::SeriousBug("Encoding format <" + format + "> is not supported");
+    }
+}
+}  // namespace
 
 using message::Message;
 using message::Peer;
 
 Encode::Encode(const eckit::Configuration& config) :
-    Action{config},
-    format_{config.getString("format")},
-    template_{config.has("template") ? config.getString("template") : ""} {}
+    Action{config}, format_{config.getString("format")}, encoder_{make_encoder(config)} {}
 
 bool Encode::doExecute(Message& msg) const {
     ScopedTimer timer{timing_};
 
-    if (format_ == "grib") {
-        eckit::Log::debug<LibMultio>() << "*** Executing encoding: " << *this << std::endl;
+    eckit::Log::debug<LibMultio>() << "*** Executing encoding: " << *this << std::endl;
 
-        eckit::AutoStdFile fin{configuration_path() + template_};
-        int err;
-        GribEncoder encoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err)};
-
-        const auto& md = msg.metadata();
-
-        // setCommonMetadata
-        encoder.setValue("expver", "xxxx");
-        encoder.setValue("class", "rd");
-        encoder.setValue("stream", "oper");
-        encoder.setValue("type", "fc");
-        encoder.setValue("levtype", static_cast<long>(168));
-        encoder.setValue("step", md.getLong("step"));
-        encoder.setValue("level", md.getLong("level"));
-
-        // setDomainDimensions
-        encoder.setValue("numberOfDataPoints", md.getLong("globalSize"));
-        encoder.setValue("numberOfValues", md.getLong("globalSize"));
-
-        // Setting parameter ID
-        encoder.setValue("param", md.getLong("param"));
-
-        // Setting field values
-        auto beg = reinterpret_cast<const double*>(msg.payload().data());
-        encoder.setDataValues(beg, msg.globalSize());
-
-        eckit::Buffer buf{encoder.message()->length()};
-        encoder.write(buf);
-        msg =
-            Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
+    if (not encoder_) {
+        return true;
     }
-    else if (format_ == "none") {
-        ;  // leave message in raw binary format
-    }
-    else {
-        throw eckit::SeriousBug("Encoding format <" + format_ + "> is not supported");
-    }
+
+    ASSERT(format_ == "grib");
+
+    encoder_->setOceanValues(msg.metadata());
+
+    // Setting field values
+    auto beg = reinterpret_cast<const double*>(msg.payload().data());
+    encoder_->setDataValues(beg, msg.globalSize());
+
+    eckit::Buffer buf{encoder_->message()->length()};
+    encoder_->write(buf);
+    msg = Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
 
     return true;
 }

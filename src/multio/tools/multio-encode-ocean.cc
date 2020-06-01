@@ -90,9 +90,9 @@ private:
     int level_ = 1;
     int step_ = 24;
 
-    std::map<NemoKey, GribData> parameters_ = {{"sst", {151129, "orca_grid_T"}},
-                                               {"ssu", {151131, "orca_grid_U"}},
-                                               {"ssv", {151132, "orca_grid_V"}}};
+    std::map<NemoKey, GribData> parameters_ = {{"sst", {151129, "T grid"}},
+                                               {"ssu", {151131, "U grid"}},
+                                               {"ssv", {151132, "V grid"}}};
 };
 
 //----------------------------------------------------------------------------------------------------------------

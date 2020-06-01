@@ -41,7 +41,6 @@ void GribEncoder::setOceanValues(const message::Metadata& md) {
 
     // Setting parameter ID
     setValue("param", md.getLong("param"));
-
 }
 
 void GribEncoder::setValue(const std::string& key, long value) {
@@ -55,7 +54,8 @@ void GribEncoder::setValue(const std::string& key, double value) {
 }
 
 void GribEncoder::setValue(const std::string& key, const std::string& value) {
-    eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
+    eckit::Log::debug<multio::LibMultio>()
+        << "Setting value " << value << " for key " << key << std::endl;
     size_t sz = value.size();
     CODES_CHECK(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), NULL);
 }
@@ -85,7 +85,10 @@ using message::Message;
 using message::Peer;
 
 Encode::Encode(const eckit::Configuration& config) :
-    Action{config}, format_{config.getString("format")}, encoder_{make_encoder(config)} {}
+    Action{config},
+    format_{config.getString("format")},
+    gridType_{config.getString("grid-type", "ORCA1")},
+    encoder_{make_encoder(config)} {}
 
 bool Encode::doExecute(Message& msg) const {
     ScopedTimer timer{timing_};
@@ -98,7 +101,8 @@ bool Encode::doExecute(Message& msg) const {
 
     ASSERT(format_ == "grib");
 
-    encoder_->setOceanValues(msg.metadata());
+    encoder_->setValue("unstructuredGridType", gridType_);
+    encoder_->setValue("unstructuredGridSubtype", msg.domain());
 
     // Setting field values
     auto beg = reinterpret_cast<const double*>(msg.payload().data());

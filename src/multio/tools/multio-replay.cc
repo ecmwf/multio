@@ -110,14 +110,15 @@ void MultioReplay::setMetadata() {
 }
 
 void MultioReplay::setDomains() {
-    for (std::string grid_type : {"grid_T", "grid_U", "grid_V", "grid_W"}) {
+    const std::map<std::string, std::string> grid_type = {
+        {"T grid", "grid_T"}, {"U grid", "grid_U"}, {"V grid", "grid_V"}, {"W grid", "grid_W"}};
 
-        auto dname = "orca_" + grid_type;
+    for (auto const& grid : grid_type) {
 
-        auto buffer = readGrid(grid_type, rank_);
+        auto buffer = readGrid(grid.second, rank_);
         auto sz = static_cast<int>(buffer.size());
 
-        multio_set_domain(dname.c_str(), buffer.data(), sz);
+        multio_set_domain(grid.first.c_str(), buffer.data(), sz);
     }
 }
 

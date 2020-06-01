@@ -134,7 +134,7 @@ public:
 
         ASSERT(isActive(fname));
 
-        metadata_.set("param", fname);
+        metadata_.set("nemoParam", fname);
         metadata_.set("param", paramMap_.get(fname).param);
         auto gl_size = static_cast<size_t>(metadata_.getInt("globalSize"));
 

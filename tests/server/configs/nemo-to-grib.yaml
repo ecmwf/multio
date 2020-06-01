@@ -2,44 +2,44 @@
 nemo-fields :
   - nemo-id : ssh
     param-id : 151145
-    grid-type : orca_grid_T
+    grid-type : "T grid"
 
   - nemo-id : toce
     param-id : 151129
-    grid-type : orca_grid_T
+    grid-type : "T grid"
 
   - nemo-id : sst
     param-id : 151129
-    grid-type : orca_grid_T
+    grid-type : "T grid"
 
   - nemo-id : soce
     param-id : 151130
-    grid-type : orca_grid_T
+    grid-type : "T grid"
 
   - nemo-id : sss
     param-id : 151130
-    grid-type : orca_grid_T
+    grid-type : "T grid"
 
   - nemo-id : uoce
     param-id : 151131
-    grid-type : orca_grid_U
+    grid-type : "U grid"
 
   - nemo-id : ssu
     param-id : 151131
-    grid-type : orca_grid_U
+    grid-type : "U grid"
 
   - nemo-id : voce
     param-id : 151132
-    grid-type : orca_grid_V
+    grid-type : "V grid"
 
   - nemo-id : ssv
     param-id : 151132
-    grid-type : orca_grid_V
+    grid-type : "V grid"
 
   - nemo-id : woce
     param-id : 151133
-    grid-type : orca_grid_W
+    grid-type : "W grid"
 
   - nemo-id : ssw
     param-id : 151133
-    grid-type : orca_grid_W
+    grid-type : "W grid"

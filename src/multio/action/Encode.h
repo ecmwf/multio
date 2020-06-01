@@ -37,7 +37,6 @@ public:
 
     void setOceanValues(const message::Metadata& md);
 
-private:
     void setValue(const std::string& key, long value);
     void setValue(const std::string& key, double value);
     void setValue(const std::string& key, const std::string& value);
@@ -54,6 +53,8 @@ private:
     void print(std::ostream& os) const override;
 
     const std::string format_;
+
+    const std::string gridType_;
 
     const std::unique_ptr<GribEncoder> encoder_ = nullptr;
 };

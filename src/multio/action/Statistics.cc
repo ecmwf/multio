@@ -49,7 +49,7 @@ void Statistics::print(std::ostream& os) const {
     os << ")";
 }
 
-void Statistics::applyOperation(const std::string& name) const {
+void Statistics::applyOperation(const std::string&) const {
     [](){}(); // TODO: Call a dictionary of functions;
     return;
 }

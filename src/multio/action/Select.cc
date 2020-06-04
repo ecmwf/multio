@@ -19,9 +19,15 @@
 namespace multio {
 namespace action {
 
+namespace {
+std::vector<std::string> fetch_items(const std::string& match, const eckit::Configuration& config) {
+    return (match == "category") ? config.getStringVector("categories")
+                                 : config.getStringVector("fields");
+}
+}  // namespace
+
 Select::Select(const eckit::Configuration& config) :
-    Action{config},
-    categories_{config.getStringVector("categories")} {}
+    Action{config}, match_{config.getString("match")}, items_{fetch_items(match_, config)} {}
 
 bool Select::doExecute(Message& msg) const {
     ScopedTimer timer{timing_};
@@ -33,17 +39,20 @@ bool Select::isMatched(const Message& msg) const {
 }
 
 bool Select::matchPlan(const Message& msg) const {
+    auto item = (match_ == "category") ? msg.category() : msg.name();
+
     eckit::Log::debug<LibMultio>()
-        << " *** Category " << msg.category() << " is matched...  field size: " << msg.globalSize()
+        << " *** Item " << item << " is being matched...  field size: " << msg.globalSize()
         << std::endl;
-    auto it = find(begin(categories_), end(categories_), msg.category());
-    return it != end(categories_);
+
+    auto it = find(begin(items_), end(items_), item);
+    return it != end(items_);
 }
 
 void Select::print(std::ostream& os) const {
     os << "Select(categories=";
     bool first = true;
-    for(const auto& cat : categories_) {
+    for(const auto& cat : items_) {
         os << (first ? "" : ", ");
         os << cat;
         first = false;

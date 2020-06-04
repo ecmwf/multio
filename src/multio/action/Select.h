@@ -43,7 +43,9 @@ private:
 
     bool matchPlan(const Message& msg) const;
 
-    std::vector<std::string> categories_;
+    std::string match_;
+    std::vector<std::string> items_;
+
 };
 
 }  // namespace action

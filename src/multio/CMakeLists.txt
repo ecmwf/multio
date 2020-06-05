@@ -42,6 +42,8 @@ list( APPEND multio_action_srcs
     action/Action.h
     action/Plan.cc
     action/Plan.h
+    action/TemporalStatistics.cc
+    action/TemporalStatistics.h
 )
 
 list( APPEND multio_ifsio_srcs

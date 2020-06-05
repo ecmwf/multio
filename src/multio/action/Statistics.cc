@@ -13,15 +13,42 @@
 #include <algorithm>
 
 #include "eckit/config/Configuration.h"
+#include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
 
 namespace multio {
 namespace action {
 
+namespace  {
+std::string set_unit(std::string const& output_freq) {
+    const auto& unit = output_freq.back();
+
+    if (unit == 'h') {
+        return "hour";
+    }
+
+    if (unit == 'd') {
+        return "day";
+    }
+
+    if (unit == 'm') {
+        return "month";
+    }
+
+    throw eckit::SeriousBug{"Time unit " + std::string{unit} + " is not supported"};
+}
+
+long set_frequency(const std::string& output_freq) {
+    auto freq = output_freq.substr(0, output_freq.size() - 1);
+    return std::stol(freq);
+}
+}  // namespace
+
 Statistics::Statistics(const eckit::Configuration& config) :
     Action{config},
-    writeFrequency_{config.getUnsigned("output_frequency")},
+    timeUnit_{set_unit(config.getString("output_frequency"))},
+    writeFrequency_{set_frequency(config.getString("output_frequency"))},
     operations_{config.getStringVector("operations")} {}
 
 bool Statistics::doExecute(message::Message& msg) const {

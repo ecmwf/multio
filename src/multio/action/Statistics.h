@@ -38,7 +38,9 @@ private:
 
     void applyOperation(const std::string& ops) const;
 
-    size_t writeFrequency_; // Should support multiple units
+    std::string timeUnit_;
+    long writeFrequency_; // Should support multiple units
+
     std::vector<std::string> operations_;
 };
 

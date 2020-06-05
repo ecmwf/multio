@@ -26,7 +26,7 @@ plans :
         categories : [ocean-model-level]
 
       - type : Statistics
-        output_frequency: 1
+        output_frequency: 1h
         operations:
           - instant
 

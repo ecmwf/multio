@@ -104,6 +104,8 @@ bool Encode::doExecute(Message& msg) const {
     encoder_->setValue("unstructuredGridType", gridType_);
     encoder_->setValue("unstructuredGridSubtype", msg.domain());
 
+    encoder_->setOceanValues(msg.metadata());
+
     // Setting field values
     auto beg = reinterpret_cast<const double*>(msg.payload().data());
     encoder_->setDataValues(beg, msg.globalSize());

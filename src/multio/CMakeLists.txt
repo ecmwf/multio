@@ -120,6 +120,7 @@ ecbuild_add_library(
     LIBS
         metkit eckit )
 
+add_subdirectory(grib)
 add_subdirectory(fdb5)
 add_subdirectory(server)
 add_subdirectory(tools)

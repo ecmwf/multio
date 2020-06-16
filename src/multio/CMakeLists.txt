@@ -26,6 +26,8 @@ list( APPEND multio_action_srcs
     action/Aggregation.h
     action/Encode.cc
     action/Encode.h
+    action/Operation.cc
+    action/Operation.h
     action/Print.cc
     action/Print.h
     action/Select.cc

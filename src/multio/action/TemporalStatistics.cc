@@ -29,7 +29,8 @@ void MonthlyStatistics::process_next(message::Message msg) {
     ASSERT(name_ == msg.name());
 
     if (sameYearMonth(current_, eckit::Date{msg.metadata().getString("date")})) {
-
+        for(auto const& stat : statistics_) {
+        }
     }
 }
 

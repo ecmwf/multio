@@ -4,11 +4,11 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "eckit/types/Date.h"
 
-#include "message/Message.h"
+#include "multio/action/Operation.h"
+#include "multio/message/Message.h"
 
 namespace multio {
 namespace action {
@@ -19,7 +19,7 @@ public:
     virtual ~TemporalStatistics() = default;
 
 protected:
-    std::map<std::string, std::vector<double>> statistics_;
+    std::map<std::string, std::unique_ptr<Operation>> statistics_;
     long count_ = 0;
 
 private:

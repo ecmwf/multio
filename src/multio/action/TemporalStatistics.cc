@@ -9,8 +9,8 @@ namespace multio {
 namespace action {
 
 TemporalStatistics::TemporalStatistics(const std::vector<std::string> operations, long fld_sz) {
-    for (const auto& ops : operations) {
-        statistics_[ops] = std::vector<double>(fld_sz);
+    for (const auto& op : operations) {
+        statistics_[op] = make_operation(op, fld_sz);
     }
 }
 

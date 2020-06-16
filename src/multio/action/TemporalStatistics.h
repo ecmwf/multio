@@ -2,7 +2,6 @@
 #ifndef multio_server_actions_TemporalStatistics_H
 #define multio_server_actions_TemporalStatistics_H
 
-#include <map>
 #include <string>
 
 #include "eckit/types/Date.h"
@@ -15,11 +14,11 @@ namespace action {
 
 class TemporalStatistics {
 public:
-    TemporalStatistics(const std::vector<std::string> operations, long fld_sz);
+    TemporalStatistics(const std::vector<std::string>& operations, long fld_sz);
     virtual ~TemporalStatistics() = default;
 
 protected:
-    std::map<std::string, std::unique_ptr<Operation>> statistics_;
+    std::vector<std::unique_ptr<Operation>> statistics_;
     long count_ = 0;
 
 private:

@@ -3,7 +3,6 @@
 
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
-#include "eckit/log/JSON.h"
 
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
@@ -58,16 +57,14 @@ void MultioClient::sendField(const std::string& name, const std::string& categor
                              eckit::Buffer&& field) {
     Peer client = transport_->localPeer();
 
-    std::stringstream field_id;
-    eckit::JSON json(field_id);
-    json << metadata;
+    std::string field_id = message::to_string(metadata);
 
     // Choose server
-    auto id = std::hash<std::string>{}(field_id.str()) % serverCount_;
+    auto id = std::hash<std::string>{}(field_id) % serverCount_;
     ASSERT(id < serverPeers_.size());
 
     Message msg{Message::Header{Message::Tag::Field, client, *serverPeers_[id], name, category,
-                                clientCount_, gl_size, domain, field_id.str()},
+                                clientCount_, gl_size, domain, field_id},
                 std::move(field)};
 
     transport_->send(msg);

@@ -52,6 +52,10 @@ void Average::update(const double* val, long sz) {
 
 Minimum::Minimum(long sz) : Operation{sz} {}
 
+const std::vector<double>& Minimum::compute() {
+    return values_;
+}
+
 void Minimum::update(const double* val, long sz) {
     ASSERT(values_.size() == static_cast<size_t>(sz));
 
@@ -65,6 +69,10 @@ void Minimum::update(const double* val, long sz) {
 
 Maximum::Maximum(long sz) : Operation{sz} {}
 
+const std::vector<double>& Maximum::compute() {
+    return values_;
+}
+
 void Maximum::update(const double* val, long sz) {
     ASSERT(values_.size() == static_cast<size_t>(sz));
 
@@ -77,6 +85,10 @@ void Maximum::update(const double* val, long sz) {
 //===============================================================================
 
 Accumulate::Accumulate(long sz) : Operation{sz} {}
+
+const std::vector<double>& Accumulate::compute() {
+    return values_;
+}
 
 void Accumulate::update(const double* val, long sz) {
     ASSERT(values_.size() == static_cast<size_t>(sz));

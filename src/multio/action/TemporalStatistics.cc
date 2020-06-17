@@ -3,13 +3,15 @@
 
 #include "eckit/exception/Exceptions.h"
 
+#include <cstring>
 #include <iostream>
 
 namespace multio {
 namespace action {
 
-TemporalStatistics::TemporalStatistics(const std::vector<std::string>& operations, long fld_sz) {
-    for (const auto& op : operations) {
+TemporalStatistics::TemporalStatistics(const std::vector<std::string>& operations, long fld_sz) :
+    opNames_{operations} {
+    for (const auto& op : opNames_) {
         statistics_.push_back(make_operation(op, fld_sz));
     }
 }
@@ -25,7 +27,7 @@ bool sameYearMonth(const eckit::Date& date1, const eckit::Date& date2) {
 MonthlyStatistics::MonthlyStatistics(const std::vector<std::string> operations, long fld_sz) :
     TemporalStatistics(operations, fld_sz) {}
 
-void MonthlyStatistics::process_next(message::Message msg) {
+void MonthlyStatistics::process_next(message::Message& msg) {
     ASSERT(name_ == msg.name());
 
     double* data_ptr = static_cast<double*>(msg.payload().data());
@@ -35,10 +37,14 @@ void MonthlyStatistics::process_next(message::Message msg) {
             stat->update(data_ptr, msg.size() / sizeof(double));
         }
     } else {
+        eckit::Buffer buf{msg.size() * statistics_.size()};
         for(auto const& stat : statistics_) {
-            stat->compute();
-            // Place them into payload
+            auto const& res = stat->compute();
+            std::memcpy(buf.data(), res.data(), msg.size());
         }
+        auto metadata{msg.metadata()};
+        metadata.set("operations", opNames_);
+        message::Message outMsg{};
         // Reset operations
     }
 }

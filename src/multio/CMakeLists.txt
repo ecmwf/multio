@@ -73,6 +73,7 @@ list( APPEND multio_message_srcs
     message/MessageContent.cc
     message/MessageHeader.cc
     message/Message.h
+    message/Metadata.cc
     message/Metadata.h
     message/Peer.cc
     message/Peer.h

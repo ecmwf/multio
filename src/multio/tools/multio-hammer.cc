@@ -12,7 +12,6 @@
 #include "eckit/mpi/Comm.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
-#include "eckit/log/JSON.h"
 
 #include "metkit/grib/GribDataBlob.h"
 #include "metkit/grib/GribHandle.h"
@@ -338,17 +337,15 @@ void MultioHammer::sendData(const PeerList& serverPeers,
                 metadata.set("param", param);
                 metadata.set("step", step);
 
-                std::stringstream field_id;
-                eckit::JSON json(field_id);
-                json << metadata;
+                std::string field_id = multio::message::to_string(metadata);
 
                 std::vector<double> field;
                 auto& global_field =
-                    global_test_field(field_id.str(), field_size(), transportType_, client_list_id);
+                    global_test_field(field_id, field_size(), transportType_, client_list_id);
                 index_map->to_local(global_field, field);
 
                 // Choose server
-                auto id = std::hash<std::string>{}(field_id.str()) % serverCount_;
+                auto id = std::hash<std::string>{}(field_id) % serverCount_;
                 ASSERT(id < serverPeers.size());
 
                 eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()),
@@ -356,7 +353,7 @@ void MultioHammer::sendData(const PeerList& serverPeers,
 
                 Message msg{Message::Header{Message::Tag::Field, client, *serverPeers[id],
                                             std::to_string(param), "model-level", clientCount_,
-                                            field_size(), "grid-point", field_id.str()},
+                                            field_size(), "grid-point", field_id},
                             buffer};
 
                 transport->send(msg);

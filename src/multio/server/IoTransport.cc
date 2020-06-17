@@ -14,7 +14,6 @@
 #include <typeinfo>
 
 #include "eckit/config/YAMLConfiguration.h"
-#include "eckit/log/JSON.h"
 
 #include "multio/util/print_buffer.h"
 #include "multio/LibMultio.h"
@@ -212,13 +211,11 @@ void send_multio_grib_template_(const void* grib_msg, fortint *words) {
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
-    std::stringstream field_id;
-    eckit::JSON json(field_id);
-    json << IoTransport::instance().metadata();
+    std::string field_id = multio::message::to_string(IoTransport::instance().metadata());
 
     Message msg{Message::Header{Message::Tag::Grib, client, server, "", "",
                                 IoTransport::instance().clientCount(),
-                                IoTransport::instance().globalSize(), "", field_id.str()},
+                                IoTransport::instance().globalSize(), "", field_id},
                 buffer};
 
     std::cout << "*** Sending message from " << msg.source() << " to " << msg.destination()
@@ -273,14 +270,12 @@ void send_multio_field_(const double* data, fortint* size, const char* name, con
 
     eckit::Buffer buffer{(const char*)(data), (*size) * sizeof(double)};
 
-    std::stringstream field_id;
-    eckit::JSON json(field_id);
-    json << IoTransport::instance().metadata();
+    std::string field_id = multio::message::to_string(IoTransport::instance().metadata());
 
     auto gribName = IoTransport::instance().metadata().getString("param");
     Message msg{Message::Header{Message::Tag::Field, client, server, gribName, category,
                                 IoTransport::instance().clientCount(),
-                                IoTransport::instance().globalSize(), domain_name, field_id.str()},
+                                IoTransport::instance().globalSize(), domain_name, field_id},
                 buffer};
 
     IoTransport::instance().transport().send(msg);

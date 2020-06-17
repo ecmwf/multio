@@ -21,6 +21,9 @@ protected:
     std::vector<std::string> opNames_;
     std::vector<std::unique_ptr<Operation>> statistics_;
 
+    void updateStatistics(const message::Message& msg);
+    eckit::Buffer retrieveStatistics(const message::Message& msg);
+
 private:
     virtual void process_next(message::Message& msg) = 0;
 

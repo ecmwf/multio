@@ -9,11 +9,38 @@
 namespace multio {
 namespace action {
 
-TemporalStatistics::TemporalStatistics(const std::vector<std::string>& operations, long fld_sz) :
-    opNames_{operations} {
-    for (const auto& op : opNames_) {
-        statistics_.push_back(make_operation(op, fld_sz));
+namespace  {
+std::vector<std::unique_ptr<Operation>> reset_statistics(const std::vector<std::string>& opNames,
+                                                          long sz) {
+    std::vector<std::unique_ptr<Operation>> stats;
+    for (const auto& op : opNames) {
+        stats.push_back(make_operation(op, sz));
     }
+    return stats;
+}
+}
+
+TemporalStatistics::TemporalStatistics(const std::vector<std::string>& operations, long fld_sz) :
+    opNames_{operations}, statistics_{reset_statistics(opNames_, fld_sz)} {}
+
+void TemporalStatistics::updateStatistics(const message::Message& msg) {
+    auto data_ptr = static_cast<const double*>(msg.payload().data());
+    for(auto const& stat : statistics_) {
+        stat->update(data_ptr, msg.size() / sizeof(double));
+    }
+}
+
+eckit::Buffer TemporalStatistics::retrieveStatistics(const message::Message& msg) {
+    // Place all statistics into a new buffer
+    eckit::Buffer buf{msg.size() * statistics_.size()};
+    char* ptr = buf;
+    for(auto const& stat : statistics_) {
+        auto const& res = stat->compute();
+        std::memcpy(ptr, res.data(), msg.size());
+        ptr += msg.size();
+    }
+
+    return buf;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -30,22 +57,29 @@ MonthlyStatistics::MonthlyStatistics(const std::vector<std::string> operations, 
 void MonthlyStatistics::process_next(message::Message& msg) {
     ASSERT(name_ == msg.name());
 
-    double* data_ptr = static_cast<double*>(msg.payload().data());
-
     if (sameYearMonth(current_, eckit::Date{msg.metadata().getString("date")})) {
-        for(auto const& stat : statistics_) {
-            stat->update(data_ptr, msg.size() / sizeof(double));
-        }
-    } else {
-        eckit::Buffer buf{msg.size() * statistics_.size()};
-        for(auto const& stat : statistics_) {
-            auto const& res = stat->compute();
-            std::memcpy(buf.data(), res.data(), msg.size());
-        }
+        updateStatistics(msg);
+    } else { // We start a new month
+
+        // Place all statistics into a new buffer
+        eckit::Buffer buf{retrieveStatistics(msg)};
+
+        // Reset operations
+        statistics_ = reset_statistics(opNames_, msg.size());
+
+        // Update it with incoming fields
+        updateStatistics(msg);
+
+        // Update metadata
         auto metadata{msg.metadata()};
         metadata.set("operations", opNames_);
-        message::Message outMsg{};
-        // Reset operations
+
+        // Reset message
+        msg = message::Message{message::Message::Header{
+                                   message::Message::Tag::Statistics, msg.source(),
+                                   msg.destination(), msg.name(), msg.category(), msg.domainCount(),
+                                   msg.globalSize(), msg.domain(), message::to_string(metadata)},
+                               std::move(buf)};
     }
 }
 

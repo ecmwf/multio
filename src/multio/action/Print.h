@@ -31,9 +31,9 @@ class Print : public Action {
 public:
     Print(const eckit::Configuration& config);
 
-private:
-    bool doExecute(message::Message& msg) const override;
+    void execute(message::Message msg) const override;
 
+private:
     void print(std::ostream& os) const override;
 
     std::string stream_;

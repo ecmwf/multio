@@ -29,9 +29,11 @@ std::vector<std::string> fetch_items(const std::string& match, const eckit::Conf
 Select::Select(const eckit::Configuration& config) :
     Action{config}, match_{config.getString("match")}, items_{fetch_items(match_, config)} {}
 
-bool Select::doExecute(Message& msg) const {
+void Select::execute(Message msg) const {
     ScopedTimer timer{timing_};
-    return isMatched(msg);
+    if (isMatched(msg)) {
+        executeNext(msg);
+    }
 }
 
 bool Select::isMatched(const Message& msg) const {

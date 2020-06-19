@@ -90,13 +90,14 @@ Encode::Encode(const eckit::Configuration& config) :
     gridType_{config.getString("grid-type", "ORCA1")},
     encoder_{make_encoder(config)} {}
 
-bool Encode::doExecute(Message& msg) const {
+void Encode::execute(Message msg) const {
     ScopedTimer timer{timing_};
 
     eckit::Log::debug<LibMultio>() << "*** Executing encoding: " << *this << std::endl;
 
     if (not encoder_) {
-        return true;
+        executeNext(msg);
+        return;
     }
 
     ASSERT(format_ == "grib");
@@ -114,7 +115,7 @@ bool Encode::doExecute(Message& msg) const {
     encoder_->write(buf);
     msg = Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
 
-    return true;
+    executeNext(msg);
 }
 
 void Encode::print(std::ostream& os) const {

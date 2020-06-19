@@ -33,10 +33,9 @@ class Select : public Action {
 public:
     Select(const eckit::Configuration& config);
 
+    void execute(Message msg) const override;
+
 private:
-
-    bool doExecute(Message& msg) const override;
-
     void print(std::ostream &os) const override;
 
     bool isMatched(const Message& msg) const;

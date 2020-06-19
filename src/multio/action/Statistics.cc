@@ -51,7 +51,7 @@ Statistics::Statistics(const eckit::Configuration& config) :
     writeFrequency_{set_frequency(config.getString("output_frequency"))},
     operations_{config.getStringVector("operations")} {}
 
-bool Statistics::doExecute(message::Message& msg) const {
+void Statistics::execute(message::Message msg) const {
     ScopedTimer timer{timing_};
 
     for (const auto& ops : operations_) {
@@ -59,10 +59,10 @@ bool Statistics::doExecute(message::Message& msg) const {
     }
 
     if (msg.metadata().getUnsigned("step") % writeFrequency_ != 0) {
-        return false;
+        return;
     }
 
-    return true;
+    executeNext(msg);
 }
 
 void Statistics::print(std::ostream& os) const {

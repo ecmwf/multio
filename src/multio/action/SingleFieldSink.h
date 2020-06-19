@@ -37,9 +37,9 @@ class SingleFieldSink : public Action {
 public:
     SingleFieldSink(const eckit::Configuration& config);
 
-private:
-    bool doExecute(Message& msg) const override;
+    void execute(message::Message msg) const override;
 
+private:
     void print(std::ostream& os) const override;
 
     void write(Message msg) const;

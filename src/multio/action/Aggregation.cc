@@ -33,8 +33,6 @@ void Aggregation::execute(Message msg) const {
     if ((msg.tag() == Message::Tag::StepComplete) && handleFlush(msg)) {
         executeNext(msg);
     }
-
-    executeNext(msg);
 }
 
 bool Aggregation::handleField(Message& msg) const {

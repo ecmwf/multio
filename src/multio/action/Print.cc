@@ -32,11 +32,11 @@ Print::Print(const eckit::Configuration& config) : Action(config) {
     }
 }
 
-bool Print::doExecute(message::Message& msg) const {
+void Print::doExecute(message::Message msg) const {
     ASSERT(os);
     (*os) << msg << std::endl;
 
-    return true;
+    executeNext(msg);
 }
 
 void Print::print(std::ostream& os) const {

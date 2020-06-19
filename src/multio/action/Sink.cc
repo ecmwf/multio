@@ -29,22 +29,25 @@ const std::map<Message::Tag, std::string> to_blob = {{Message::Tag::Field, "plai
 
 Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 
-bool Sink::doExecute(Message& msg) const {
+void Sink::doExecute(Message msg) const {
     ScopedTimer timer{timing_};
 
     switch (msg.tag()) {
         case Message::Tag::Field:
         case Message::Tag::Grib:
             write(msg);
-            return true;
+            executeNext(msg);
+            return;
 
         case Message::Tag::StepComplete:
             flush();
-            return true;
+            executeNext(msg);
+            return;
 
         case Message::Tag::StepNotification:
             trigger(msg);
-            return true;
+            executeNext(msg);
+            return;
 
         default:
             throw eckit::SeriousBug("Cannot handle message <" + Message::tag2str(msg.tag()) + ">");

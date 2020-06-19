@@ -32,7 +32,7 @@ public:
 
 private:
 
-    bool doExecute(message::Message& msg) const override;
+    void doExecute(message::Message msg) const override;
 
     void print(std::ostream &os) const override;
 

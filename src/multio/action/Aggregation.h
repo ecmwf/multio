@@ -37,7 +37,7 @@ public:
     Aggregation(const eckit::Configuration& config);
 
 private:
-    bool doExecute(Message& msg) const override;
+    void doExecute(Message msg) const override;
 
     void print(std::ostream& os) const override;
 

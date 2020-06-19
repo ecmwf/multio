@@ -39,7 +39,7 @@ public:
     Sink(const eckit::Configuration& config);
 
 private:
-    bool doExecute(Message& msg) const override;
+    void doExecute(message::Message msg) const override;
 
     void print(std::ostream& os) const override;
 

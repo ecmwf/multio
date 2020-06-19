@@ -51,7 +51,7 @@ Statistics::Statistics(const eckit::Configuration& config) :
     writeFrequency_{set_frequency(config.getString("output_frequency"))},
     operations_{config.getStringVector("operations")} {}
 
-void Statistics::doExecute(message::Message msg) const {
+void Statistics::execute(message::Message msg) const {
     ScopedTimer timer{timing_};
 
     for (const auto& ops : operations_) {

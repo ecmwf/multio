@@ -29,7 +29,7 @@ const std::map<Message::Tag, std::string> to_blob = {{Message::Tag::Field, "plai
 
 Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 
-void Sink::doExecute(Message msg) const {
+void Sink::execute(Message msg) const {
     ScopedTimer timer{timing_};
 
     switch (msg.tag()) {

@@ -52,10 +52,6 @@ void Action::executeNext(message::Message msg) const {
     }
 }
 
-void Action::execute(message::Message msg) const {
-    doExecute(msg);
-}
-
 //---------------------------------------------------------------------------------------------------------------
 
 ActionFactory& ActionFactory::instance() {

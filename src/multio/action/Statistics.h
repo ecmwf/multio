@@ -30,10 +30,9 @@ class Statistics : public Action {
 public:
     Statistics(const eckit::Configuration& config);
 
+    void execute(message::Message msg) const override;
+
 private:
-
-    void doExecute(message::Message msg) const override;
-
     void print(std::ostream &os) const override;
 
     void applyOperation(const std::string& ops) const;

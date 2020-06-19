@@ -38,9 +38,9 @@ class Sink : public Action {
 public:
     Sink(const eckit::Configuration& config);
 
-private:
-    void doExecute(message::Message msg) const override;
+    void execute(message::Message msg) const override;
 
+private:
     void print(std::ostream& os) const override;
 
     void write(Message msg) const;

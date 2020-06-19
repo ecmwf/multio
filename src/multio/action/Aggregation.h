@@ -36,9 +36,9 @@ class Aggregation : public Action {
 public:
     Aggregation(const eckit::Configuration& config);
 
-private:
-    void doExecute(Message msg) const override;
+    void execute(Message msg) const override;
 
+private:
     void print(std::ostream& os) const override;
 
     bool handleField(Message& msg) const;

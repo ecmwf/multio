@@ -26,7 +26,7 @@ SingleFieldSink::SingleFieldSink(const eckit::Configuration& config) :
     Action{config},
     rootPath_{config.getString("root_path", "")} {}
 
-void SingleFieldSink::doExecute(Message msg) const {
+void SingleFieldSink::execute(Message msg) const {
     switch (msg.tag()) {
         case Message::Tag::Field:
         case Message::Tag::Grib:

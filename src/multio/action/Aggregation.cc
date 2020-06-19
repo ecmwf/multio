@@ -23,7 +23,7 @@ namespace action {
 
 Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 
-void Aggregation::doExecute(Message msg) const {
+void Aggregation::execute(Message msg) const {
     ScopedTimer timer{timing_};
 
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {

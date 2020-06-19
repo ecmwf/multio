@@ -54,7 +54,7 @@ public:
 
     void executeNext(message::Message msg) const;
 
-    void execute(message::Message msg) const;
+    virtual void execute(message::Message msg) const = 0;
 
 protected:
 
@@ -65,8 +65,6 @@ protected:
     mutable eckit::Timing timing_;
 
 private:
-
-    virtual void doExecute(message::Message msg) const = 0;
 
     virtual void print(std::ostream &os) const = 0;
 

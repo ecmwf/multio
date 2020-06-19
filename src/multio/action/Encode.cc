@@ -90,7 +90,7 @@ Encode::Encode(const eckit::Configuration& config) :
     gridType_{config.getString("grid-type", "ORCA1")},
     encoder_{make_encoder(config)} {}
 
-void Encode::doExecute(Message msg) const {
+void Encode::execute(Message msg) const {
     ScopedTimer timer{timing_};
 
     eckit::Log::debug<LibMultio>() << "*** Executing encoding: " << *this << std::endl;

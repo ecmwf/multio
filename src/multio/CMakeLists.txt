@@ -28,6 +28,8 @@ list( APPEND multio_srcs
     MultIO.h
     Trigger.cc
     Trigger.h
+    EncodeBitsPerValue.cc
+    EncodeBitsPerValue.h
     ifsio_internals.cc
     ifsio.cc
     ifsio.h

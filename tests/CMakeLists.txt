@@ -13,6 +13,11 @@ ecbuild_add_test( TARGET    test_multio_file_sink
                   SOURCES   test_multio_file_sink.cc
                   LIBS      multio )
 
+ecbuild_add_test( TARGET    test_multio_encode_bitspervalue
+                  SOURCES   test_multio_encode_bitspervalue.cc
+                  LIBS      multio )
+
+
 list( APPEND _test_environment
     FDB_HOME=${CMAKE_BINARY_DIR}/multio
     FDB_DEBUG=1

@@ -28,6 +28,7 @@
 #include "multio/ifsio_internals.h"
 
 #include "multio/MultIO.h"
+#include "multio/EncodeBitsPerValue.h"
 
 #include "metkit/grib/GribDataBlob.h"
 
@@ -62,18 +63,36 @@ public:
     void lock()   { mutex_.lock(); }
     void unlock() { mutex_.unlock(); }
 
+    int encodeBitsPerValue(int paramid, const std::string& levtype) {
+      ASSERT(bpv_);
+      return bpv_->findBitsPerValue(paramid, levtype);
+    }
+
 private:
+
+    void init(Configuration& config) {
+      ptr_.reset(new MultIO(config));
+      bpv_.reset(new EncodeBitsPerValue(config));
+    }
 
     MIO() : log_(false), dirty_(false) {
         static const char *argv[2] = {"ifsio", 0};
 
         eckit::Main::initialise(1, const_cast<char**>(argv));
 
+        if (::getenv("MULTIO_CONFIG")) {
+            std::string cfg(::getenv("MULTIO_CONFIG"));
+            std::cout << "MultIO initialising with config " << cfg << std::endl;
+            eckit::YAMLConfiguration config(cfg);
+            init(config);
+            return;
+        }
+
         if (::getenv("MULTIO_CONFIG_FILE")) {
             PathName path(::getenv("MULTIO_CONFIG_FILE"));
             std::cout << "MultIO initialising with file " << path << std::endl;
             eckit::YAMLConfiguration config(path);
-            ptr_.reset(new MultIO(config));
+            init(config);
             return;
         }
 
@@ -100,7 +119,7 @@ private:
 
         std::istringstream iss(oss.str());
         eckit::YAMLConfiguration config(iss);
-        ptr_.reset(new MultIO(config));
+        init(config);
     }
 
     ~MIO() {
@@ -117,6 +136,7 @@ private:
     }
 
     std::unique_ptr<MultIO> ptr_;
+    std::unique_ptr<EncodeBitsPerValue> bpv_;
     eckit::Mutex mutex_;
     bool log_;
     bool dirty_;
@@ -171,6 +191,17 @@ extern "C" {
             MIO::instance().mio().write(blob);
             MIO::instance().log(true);
             MIO::instance().dirty(true);
+        } catch (std::exception &e) {
+            return ifsio_handle_error(e);
+        }
+        return 0;
+    }
+
+    fortint imultio_encode_bitspervalue_(fortint *bitspervalue, const fortint *paramid, const char* levtype, int levtype_len) {
+        try {
+            std::string slevtype(levtype, levtype + levtype_len);
+            eckit::AutoLock<MIO> lock(MIO::instance());
+            *bitspervalue = MIO::instance().encodeBitsPerValue(*paramid, slevtype);
         } catch (std::exception &e) {
             return ifsio_handle_error(e);
         }

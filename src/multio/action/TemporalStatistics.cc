@@ -71,7 +71,7 @@ void MonthlyStatistics::process_next(message::Message& msg) {
         updateStatistics(msg);
 
         // Update metadata
-        auto metadata{msg.metadata()};
+        message::Metadata metadata{msg.metadata()};
         metadata.set("operations", opNames_);
 
         // Reset message

@@ -14,20 +14,135 @@
 #include <cstdlib>
 #include <fstream>
 #include <iosfwd>
+#include <tuple>
 
-#include "multio/DataSink.h"
 #include "multio/EncodeBitsPerValue.h"
 
+#include "eckit/config/LocalConfiguration.h"
+#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/filesystem/PathName.h"
 #include "eckit/io/DataHandle.h"
+#include "eckit/log/Colour.h"
+#include "eckit/log/JSON.h"
+#include "eckit/log/Log.h"
+
+#include "multio/LibMultio.h"
 
 using namespace eckit;
 
-//----------------------------------------------------------------------------------------------------------------------
-
 namespace multio {
 
-EncodeBitsPerValue::EncodeBitsPerValue(const Configuration& config) {}
+//----------------------------------------------------------------------------------------------------------------------
+
+struct Encoding {
+    Encoding() {}
+
+    Encoding(const Configuration& cfg) {
+        bitsPerValue = cfg.getInt("bitsPerValue", 0);
+        decimalScaleFactor = cfg.getInt("decimalScaleFactor", 0);
+        if (bitsPerValue <= 0 and decimalScaleFactor <= 0) {
+            throw BadValue("Invalid bitsPerValue or decimalScaleFactor", Here());
+        }
+    }
+
+    int bitsPerValue = 0;
+    int decimalScaleFactor = 0;
+
+    void print(std::ostream& s) const {
+        s << "Encoding(bitsPerValue=" << bitsPerValue
+          << ",decimalScaleFactor=" << decimalScaleFactor << ")";
+    }
+
+    friend std::ostream& operator<<(std::ostream& s, const Encoding& v) {
+        v.print(s);
+        return s;
+    }
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+
+class EncodingTable {
+public:
+    EncodingTable(const Configuration& cfg) {
+        std::cerr << Colour::yellow << "TABLE " << cfg << Colour::reset << std::endl;  ///< FINDME
+
+        for (auto k : cfg.keys()) {
+            LocalConfiguration section = cfg.getSubConfiguration(k);
+            std::cerr << Colour::yellow << "Section " << section << Colour::reset
+                      << std::endl;  ///< FINDME
+
+            Encoding encode(section);
+
+            std::vector<int> paramIDs = section.getIntVector("paramIDs");
+
+            for (auto paramid : paramIDs) {
+                bool added;
+                std::tie(std::ignore, added) = table_.insert(std::make_pair(paramid, encode));
+                if (not added) {
+                    std::ostringstream oss;
+                    oss << "Encoding entry already exists for paramid " << paramid;
+                    throw BadValue(oss.str(), Here());
+                }
+            }
+        }
+    }
+
+    Encoding operator()(int paramid) {
+        auto e = table_.find(paramid);
+        if (e != table_.end())
+            return e->second;
+        else
+            return Encoding{};
+    }
+
+private:
+    std::map<int, Encoding> table_;
+
+    void print(std::ostream& s) const { s << "EncodingTable(" << table_ << ")"; }
+
+    friend std::ostream& operator<<(std::ostream& s, const EncodingTable& v) {
+        v.print(s);
+        return s;
+    }
+};
+
+
+//----------------------------------------------------------------------------------------------------------------------
+
+EncodeBitsPerValue::EncodeBitsPerValue(const Configuration& config) {
+    std::string path;
+    char* envtable = ::getenv("ENCODING_BITSPERVALUE_TABLE");
+    if (envtable) {
+        path = envtable;
+    }
+    else {
+        config.get("EncodingBitsPerValueTable", path);
+    }
+
+    if (path.empty()) {
+        Log::warning()
+            << "Path for Encoding BitsPerValue table not configured, MultIO config "
+               "key EncodingBitsPerValueTable or env variable ENCODING_BITSPERVALUE_TABLE"
+            << std::endl;
+    }
+    else {
+        YAMLConfiguration tablecfg{PathName{path}};
+        for (auto k : tablecfg.keys()) {
+            LocalConfiguration cfg = tablecfg.getSubConfiguration(k);
+            tables_[k] = new EncodingTable(cfg);
+
+            std::cerr << Colour::yellow << "Built TABLE --> " << *tables_[k] << Colour::reset
+                      << std::endl;  ///< FINDME
+        }
+    }
+}
+
+EncodeBitsPerValue::~EncodeBitsPerValue() {
+    for (auto v : tables_) {
+        delete v.second;
+    }
+}
 
 static std::string fix_levtype(const std::string& levtype) {
     std::string result(levtype);
@@ -47,7 +162,13 @@ static std::string fix_levtype(const std::string& levtype) {
 
 static bool getenv_COMPR_FC_GP_ML() {
     static char* env = ::getenv("COMPR_FC_GP_ML");
+
     if (env) {
+
+        std::cerr << Colour::bold
+                  << "COMPR_FC_GP_ML " << env << " - " << (bool)std::atoi(env)
+                  << Colour::reset << std::endl;  ///< FINDME
+
         return (bool)std::atoi(env);
     }
     return false;
@@ -111,6 +232,11 @@ int EncodeBitsPerValue::hack(int paramid, const std::string& levtype) {
 int EncodeBitsPerValue::getCachedBitsPerValue(int paramid, const std::string& lv) {
     auto got = cache_[lv].find(paramid);
     if (got != cache_[lv].end()) {
+
+        std::cerr << Colour::green
+                  << "FOUND in CACHE " << got->second
+                  << Colour::reset << std::endl;  ///< FINDME
+
         return got->second;
     }
     return 0;
@@ -120,28 +246,61 @@ void EncodeBitsPerValue::cacheBitsPerValue(int paramid, const std::string& levty
     cache_[levtype][paramid] = bpv;
 }
 
+int EncodeBitsPerValue::tabulatedBitsPerValue(int paramid, const std::string& levtype) {
+    auto tableitr = tables_.find(levtype);
+    if (tableitr == tables_.end())
+        return 0;
+
+    EncodingTable& table = *tableitr->second;
+
+    Encoding encode = table(paramid);
+
+    return encode.bitsPerValue;
+}
+
 int EncodeBitsPerValue::computeBitsPerValue(int paramid, const std::string& levtype) {
     return hack(paramid, levtype);
 }
 
 int EncodeBitsPerValue::getBitsPerValue(int paramid, const std::string& lv, double min,
                                         double max) {
-    int bpv = 0;
+    int bitspervalue = 0;
 
     // sanitise input
     ASSERT(paramid != 0);
     const std::string levtype = fix_levtype(lv);
 
-    // check we tables cache
-    if ((bpv = getCachedBitsPerValue(paramid, levtype))) {
-        return bpv;
+    std::cerr << Colour::green
+              << "QUERY levtype " << levtype
+              << " paramid " << paramid
+              << Colour::reset << std::endl;  ///< FINDME
+
+    // check cache
+    if ((bitspervalue = getCachedBitsPerValue(paramid, levtype))) {
+            std::cerr << Colour::green
+                      << "FOUND in CACHE " << bitspervalue
+                      << Colour::reset << std::endl;  ///< FINDME
+        return bitspervalue;
     }
 
-    bpv = computeBitsPerValue(paramid, levtype);
+    // check the tables
+    if ((bitspervalue = tabulatedBitsPerValue(paramid, levtype))) {
+        std::cerr << Colour::green
+                  << "FOUND in TABLE " << bitspervalue
+                  << Colour::reset << std::endl;  ///< FINDME
+        return bitspervalue;
+    }
 
-    cacheBitsPerValue(paramid, levtype, bpv);
+    // compute from hacked code or default values
+    bitspervalue = computeBitsPerValue(paramid, levtype);
 
-    return bpv;
+    std::cerr << Colour::green
+              << "COMPUTED from CODE " << bitspervalue
+              << Colour::reset << std::endl;  ///< FINDME
+
+    cacheBitsPerValue(paramid, levtype, bitspervalue);
+
+    return bitspervalue;
 }
 
 }  // namespace multio

@@ -10,21 +10,68 @@
 
 #include <fstream>
 
-#include "eckit/config/YAMLConfiguration.h"
-#include "eckit/log/JSON.h"
 #include "eckit/testing/Test.h"
+#include "eckit/filesystem/TmpFile.h"
+#include "eckit/io/DataHandle.h"
 
 #include "multio/ifsio.h"
 
 namespace multio {
 namespace test {
 
+std::string create_table() {
+    std::stringstream ss;
+    ss << R"json(
+          {
+            "pl": {
+                "precipitation": {
+                    "bitsPerValue": 18,
+                    "paramIDs": [123, 124]
+                },
+                "clouds": {
+                    "bitsPerValue": 14,
+                    "paramIDs": [150139, 150138, 150137]
+                }
+            },
+            "ml": {
+                "precipitation": {
+                    "bitsPerValue": 8,
+                    "paramIDs": [124]
+                }
+            }
+          }
+          )json";
+    return ss.str();
+}
+
+
+struct TestHarness {
+    TestHarness(){
+
+        std::string tablestr = create_table();
+
+        std::unique_ptr<eckit::DataHandle> dh(table.fileHandle(true));
+        dh->openForWrite(0);
+        dh->write(tablestr.data(), tablestr.size());
+        dh->close();
+
+        path = table;
+
+        ::setenv("MULTIO_CONFIG", "{sinks:[]}", 1);
+        ::setenv("COMPR_FC_GP_ML", "1", 1);
+        ::setenv("ENCODING_BITSPERVALUE_TABLE", path.c_str(), 1);
+    }
+
+    eckit::TmpFile table;
+    std::string path;
+};
+
+
 //----------------------------------------------------------------------------------------------------------------------
 
 CASE("default bitspervalue") {
 
-    eckit::testing::SetEnv env1("MULTIO_CONFIG", "{sinks:[]}");
-    eckit::testing::SetEnv env2("COMPR_FC_GP_ML", "1");
+    TestHarness test;
 
     int bpv = 0;
     int paramid = 0;
@@ -51,17 +98,16 @@ CASE("default bitspervalue") {
         EXPECT_EQUAL(bpv, 16);
     }
 
+    SECTION("from table, paramid = 150139") {
+        paramid = 150139;
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT_EQUAL(bpv, 14);
+    }
+
     SECTION("Cloud cover [cc] 248") {
       paramid = 248;
       EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
       EXPECT_EQUAL(bpv, 8);
-    }
-
-    SECTION("Cloud liquid water content [clwc] 246") {
-      paramid = 246;
-      std::string levtype = "PL";
-      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
-      EXPECT_EQUAL(bpv, 12);
     }
 
     SECTION("Cloud liquid water content [clwc] 246 and Cloud ice water content [ciwc] 247") {
@@ -107,8 +153,7 @@ CASE("default bitspervalue") {
 
 CASE("repeated queries use cache") {
 
-    eckit::testing::SetEnv env1("MULTIO_CONFIG", "{sinks:[]}");
-    eckit::testing::SetEnv env2("COMPR_FC_GP_ML", "1");
+    TestHarness test;
 
     int bpv = 0;
     int paramid = 0;

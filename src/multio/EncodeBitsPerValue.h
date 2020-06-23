@@ -17,6 +17,7 @@
 
 #include "eckit/config/Configuration.h"
 #include "eckit/memory/NonCopyable.h"
+#include "eckit/value/Value.h"
 
 #ifndef multio_EncodeBitsPerValue_H
 #define multio_EncodeBitsPerValue_H
@@ -25,9 +26,12 @@
 
 namespace multio {
 
+class EncodingTable;
+
 class EncodeBitsPerValue : private eckit::NonCopyable {
 public:
     EncodeBitsPerValue(const eckit::Configuration& config);
+    ~EncodeBitsPerValue();
 
     int getBitsPerValue(int paramid, const std::string& levtype, double min, double max);
 
@@ -38,10 +42,14 @@ private:
 
     int computeBitsPerValue(int paramid, const std::string& levtype);
 
+    int tabulatedBitsPerValue(int paramid, const std::string& levtype);
+
     int hack(int paramid, const std::string& levtype);
 
 private:
     std::map<std::string, std::unordered_map<int, int>> cache_;
+
+    std::map<std::string, EncodingTable*> tables_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

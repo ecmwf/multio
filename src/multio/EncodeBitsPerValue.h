@@ -11,12 +11,15 @@
 /// @author Tiago Quintino
 /// @date June 2020
 
-#include "eckit/memory/NonCopyable.h"
+#include <map>
+#include <unordered_map>
+#include <utility>
+
 #include "eckit/config/Configuration.h"
+#include "eckit/memory/NonCopyable.h"
 
 #ifndef multio_EncodeBitsPerValue_H
 #define multio_EncodeBitsPerValue_H
-
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -24,11 +27,21 @@ namespace multio {
 
 class EncodeBitsPerValue : private eckit::NonCopyable {
 public:
-
     EncodeBitsPerValue(const eckit::Configuration& config);
 
-    int findBitsPerValue(int paramid, const std::string& levtype);
+    int getBitsPerValue(int paramid, const std::string& levtype, double min, double max);
 
+private:
+    int getCachedBitsPerValue(int paramid, const std::string& levtype);
+
+    void cacheBitsPerValue(int paramid, const std::string& levtype, int bpv);
+
+    int computeBitsPerValue(int paramid, const std::string& levtype);
+
+    int hack(int paramid, const std::string& levtype);
+
+private:
+    std::map<std::string, std::unordered_map<int, int>> cache_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

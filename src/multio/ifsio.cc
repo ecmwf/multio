@@ -63,9 +63,9 @@ public:
     void lock()   { mutex_.lock(); }
     void unlock() { mutex_.unlock(); }
 
-    int encodeBitsPerValue(int paramid, const std::string& levtype) {
+    int encodeBitsPerValue(int paramid, const std::string& levtype, double min, double max) {
       ASSERT(bpv_);
-      return bpv_->findBitsPerValue(paramid, levtype);
+      return bpv_->getBitsPerValue(paramid, levtype, min, max);
     }
 
 private:
@@ -197,11 +197,11 @@ extern "C" {
         return 0;
     }
 
-    fortint imultio_encode_bitspervalue_(fortint *bitspervalue, const fortint *paramid, const char* levtype, int levtype_len) {
+    fortint imultio_encode_bitspervalue_(fortint *bitspervalue, const fortint *paramid, const char* levtype, int levtype_len,  const double *min,  const double *max) {
         try {
             std::string slevtype(levtype, levtype + levtype_len);
             eckit::AutoLock<MIO> lock(MIO::instance());
-            *bitspervalue = MIO::instance().encodeBitsPerValue(*paramid, slevtype);
+            *bitspervalue = MIO::instance().encodeBitsPerValue(*paramid, slevtype, *min, *max);
         } catch (std::exception &e) {
             return ifsio_handle_error(e);
         }

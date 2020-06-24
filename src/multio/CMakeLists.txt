@@ -52,6 +52,8 @@ list( APPEND multio_ifsio_srcs
     ifsio/ifsio_internals.cc
     ifsio/ifsio.cc
     ifsio/ifsio.h
+    ifsio/EncodeBitsPerValue.cc
+    ifsio/EncodeBitsPerValue.h
 )
 
 if( HAVE_LEGACY_IFSIO )

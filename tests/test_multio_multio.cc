@@ -25,6 +25,7 @@ namespace multio {
 namespace test {
 
 namespace {
+
 std::string create_test_configuration(const eckit::PathName& file1, const eckit::PathName& file2,
                                       const eckit::PathName& file3, int jobId, int port) {
     std::stringstream ss;

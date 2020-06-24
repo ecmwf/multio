@@ -22,32 +22,89 @@
 #ifndef multio_EncodeBitsPerValue_H
 #define multio_EncodeBitsPerValue_H
 
+namespace multio {
+
 //----------------------------------------------------------------------------------------------------------------------
 
-namespace multio {
+/// Class todescribe the encoding per field type paramid + levtype
+/// This behaves as a POD
+///
+class Encoding {
+public:
+    explicit Encoding(int bpv = 0, int dsf = 0) : bitsPerValue_(bpv), decimalScaleFactor_(dsf) {}
+
+    explicit Encoding(const eckit::Configuration& cfg) {
+        bitsPerValue_ = cfg.getInt("bitsPerValue", 0);
+        decimalScaleFactor_ = cfg.getInt("decimalScaleFactor", 0);
+        if (bitsPerValue_ <= 0 and decimalScaleFactor_ <= 0) {
+            throw eckit::BadValue("Invalid bitsPerValue or decimalScaleFactor", Here());
+        }
+    }
+
+    int computeBitsPerValue(double min, double max) const {
+        if (bitsPerValue_)
+            return bitsPerValue_;
+
+        const int& p = decimalScaleFactor_;
+
+        double range = (max - min) * std::pow(10., p);
+        int nbits = static_cast<int>(std::ceil(std::log2(range)));
+        return nbits;
+    }
+
+    // All zeros mean this Encoding is undefined
+    bool defined() const { return (bitsPerValue_ || decimalScaleFactor_);  }
+
+private:
+
+    void print(std::ostream& s) const {
+        s << "Encoding(bitsPerValue=" << bitsPerValue_
+          << ",decimalScaleFactor=" << decimalScaleFactor_ << ")";
+    }
+
+    friend std::ostream& operator<<(std::ostream& s, const Encoding& v) {
+        v.print(s);
+        return s;
+    }
+
+private:
+
+    int bitsPerValue_ = 0;
+    int decimalScaleFactor_ = 0;
+
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+
 
 class EncodingTable;
 
 class EncodeBitsPerValue : private eckit::NonCopyable {
 public:
-    EncodeBitsPerValue(const eckit::Configuration& config);
+
+    explicit EncodeBitsPerValue(const eckit::Configuration& config);
+
     ~EncodeBitsPerValue();
 
     int getBitsPerValue(int paramid, const std::string& levtype, double min, double max);
 
 private:
-    int getCachedBitsPerValue(int paramid, const std::string& levtype);
 
-    void cacheBitsPerValue(int paramid, const std::string& levtype, int bpv);
+    Encoding getEncoding(int paramid, const std::string& levtype);
 
-    int computeBitsPerValue(int paramid, const std::string& levtype);
+    void cacheBitsPerValue(int paramid, const std::string& levtype, Encoding e);
 
-    int tabulatedBitsPerValue(int paramid, const std::string& levtype);
+    Encoding getCachedBitsPerValue(int paramid, const std::string& levtype);
 
+    Encoding computeBitsPerValue(int paramid, const std::string& levtype);
+
+    Encoding tabulatedBitsPerValue(int paramid, const std::string& levtype);
+
+    /// @todo Remove this hack that was ported from IFS
     int hack(int paramid, const std::string& levtype);
 
 private:
-    std::map<std::string, std::unordered_map<int, int>> cache_;
+    std::map<std::string, std::unordered_map<int, Encoding>> cache_;
 
     std::map<std::string, EncodingTable*> tables_;
 };

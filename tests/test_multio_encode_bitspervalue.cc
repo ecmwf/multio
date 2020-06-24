@@ -19,12 +19,24 @@
 namespace multio {
 namespace test {
 
+/// NOTE: the paramids used in this test are absolutely artificial and invented and do not represent actual codes
+
 std::string create_table() {
     std::stringstream ss;
     ss << R"json(
           {
-            "pl": {
+            "sfc": {
                 "precipitation": {
+                    "decimalScaleFactor": 1,
+                    "paramIDs": [128144]
+                },
+                "whatever": {
+                    "precision": 0.25,
+                    "paramIDs": [128144]
+                }
+            },
+            "pl": {
+                "chems": {
                     "bitsPerValue": 18,
                     "paramIDs": [123, 124]
                 },
@@ -59,7 +71,7 @@ struct TestHarness {
 
         ::setenv("MULTIO_CONFIG", "{sinks:[]}", 1);
         ::setenv("COMPR_FC_GP_ML", "1", 1);
-        ::setenv("ENCODING_BITSPERVALUE_TABLE", path.c_str(), 1);
+        ::setenv("MULTIO_ENCODING_BITSPERVALUE_TABLE", path.c_str(), 1);
     }
 
     eckit::TmpFile table;
@@ -76,8 +88,8 @@ CASE("default bitspervalue") {
     int bpv = 0;
     int paramid = 0;
 
-    double min = 10.;
-    double max = 50.;
+    double min = 200.;
+    double max = 300.;
 
     std::string levtype{"p"};
 
@@ -98,10 +110,17 @@ CASE("default bitspervalue") {
         EXPECT_EQUAL(bpv, 16);
     }
 
-    SECTION("from table, paramid = 150139") {
+    SECTION("from table, paramid = 150139 with bitsPerValue") {
         paramid = 150139;
         EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
         EXPECT_EQUAL(bpv, 14);
+    }
+
+    SECTION("from table, paramid = 128144 with decimalScaleFactor") {
+        std::string levtype = "SFC";
+        paramid = 128144;
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT_EQUAL(bpv, 10);
     }
 
     SECTION("Cloud cover [cc] 248") {

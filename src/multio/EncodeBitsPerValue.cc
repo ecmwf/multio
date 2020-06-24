@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iosfwd>
 #include <tuple>
+#include <cmath>
 
 #include "multio/EncodeBitsPerValue.h"
 
@@ -32,33 +33,6 @@
 using namespace eckit;
 
 namespace multio {
-
-//----------------------------------------------------------------------------------------------------------------------
-
-struct Encoding {
-    Encoding() {}
-
-    Encoding(const Configuration& cfg) {
-        bitsPerValue = cfg.getInt("bitsPerValue", 0);
-        decimalScaleFactor = cfg.getInt("decimalScaleFactor", 0);
-        if (bitsPerValue <= 0 and decimalScaleFactor <= 0) {
-            throw BadValue("Invalid bitsPerValue or decimalScaleFactor", Here());
-        }
-    }
-
-    int bitsPerValue = 0;
-    int decimalScaleFactor = 0;
-
-    void print(std::ostream& s) const {
-        s << "Encoding(bitsPerValue=" << bitsPerValue
-          << ",decimalScaleFactor=" << decimalScaleFactor << ")";
-    }
-
-    friend std::ostream& operator<<(std::ostream& s, const Encoding& v) {
-        v.print(s);
-        return s;
-    }
-};
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -112,7 +86,7 @@ private:
 
 EncodeBitsPerValue::EncodeBitsPerValue(const Configuration& config) {
     std::string path;
-    char* envtable = ::getenv("ENCODING_BITSPERVALUE_TABLE");
+    char* envtable = ::getenv("MULTIO_ENCODING_BITSPERVALUE_TABLE");
     if (envtable) {
         path = envtable;
     }
@@ -154,7 +128,7 @@ static std::string fix_levtype(const std::string& levtype) {
         result = "ml";
     if (result == "p")
         result = "pl";
-    if (result == "s")
+    if (result == "s" or result == "sf")
         result = "sfc";
 
     return result;
@@ -229,7 +203,7 @@ int EncodeBitsPerValue::hack(int paramid, const std::string& levtype) {
     return 16;
 }
 
-int EncodeBitsPerValue::getCachedBitsPerValue(int paramid, const std::string& lv) {
+Encoding EncodeBitsPerValue::getCachedBitsPerValue(int paramid, const std::string& lv) {
     auto got = cache_[lv].find(paramid);
     if (got != cache_[lv].end()) {
 
@@ -239,68 +213,74 @@ int EncodeBitsPerValue::getCachedBitsPerValue(int paramid, const std::string& lv
 
         return got->second;
     }
-    return 0;
+    return Encoding();
 }
 
-void EncodeBitsPerValue::cacheBitsPerValue(int paramid, const std::string& levtype, int bpv) {
-    cache_[levtype][paramid] = bpv;
+void EncodeBitsPerValue::cacheBitsPerValue(int paramid, const std::string& levtype, Encoding e) {
+    cache_[levtype][paramid] = e;
 }
 
-int EncodeBitsPerValue::tabulatedBitsPerValue(int paramid, const std::string& levtype) {
+Encoding EncodeBitsPerValue::tabulatedBitsPerValue(int paramid, const std::string& levtype) {
     auto tableitr = tables_.find(levtype);
     if (tableitr == tables_.end())
-        return 0;
+        return Encoding();
 
     EncodingTable& table = *tableitr->second;
 
     Encoding encode = table(paramid);
 
-    return encode.bitsPerValue;
+    return encode;
 }
 
-int EncodeBitsPerValue::computeBitsPerValue(int paramid, const std::string& levtype) {
-    return hack(paramid, levtype);
+Encoding EncodeBitsPerValue::computeBitsPerValue(int paramid, const std::string& levtype) {
+    int bpv = hack(paramid, levtype);
+    return Encoding(bpv);
 }
 
-int EncodeBitsPerValue::getBitsPerValue(int paramid, const std::string& lv, double min,
-                                        double max) {
-    int bitspervalue = 0;
+Encoding EncodeBitsPerValue::getEncoding(int paramid, const std::string& lv) {
+    Encoding encode;
 
     // sanitise input
     ASSERT(paramid != 0);
     const std::string levtype = fix_levtype(lv);
 
-    std::cerr << Colour::green
-              << "QUERY levtype " << levtype
-              << " paramid " << paramid
+    std::cerr << Colour::green << "QUERY levtype " << levtype << " paramid " << paramid
               << Colour::reset << std::endl;  ///< FINDME
 
     // check cache
-    if ((bitspervalue = getCachedBitsPerValue(paramid, levtype))) {
-            std::cerr << Colour::green
-                      << "FOUND in CACHE " << bitspervalue
-                      << Colour::reset << std::endl;  ///< FINDME
-        return bitspervalue;
+    encode = getCachedBitsPerValue(paramid, levtype);
+    if (encode.defined()) {
+        std::cerr << Colour::green << "FOUND in CACHE " << encode << Colour::reset
+                  << std::endl;  ///< FINDME
+        return encode;
     }
 
     // check the tables
-    if ((bitspervalue = tabulatedBitsPerValue(paramid, levtype))) {
+    encode = tabulatedBitsPerValue(paramid, levtype);
+    if (encode.defined()) {
         std::cerr << Colour::green
-                  << "FOUND in TABLE " << bitspervalue
+                  << "FOUND in TABLE " << encode
                   << Colour::reset << std::endl;  ///< FINDME
-        return bitspervalue;
+        return encode;
     }
 
     // compute from hacked code or default values
-    bitspervalue = computeBitsPerValue(paramid, levtype);
+    encode = computeBitsPerValue(paramid, levtype);
 
     std::cerr << Colour::green
-              << "COMPUTED from CODE " << bitspervalue
+              << "COMPUTED from CODE " << encode
               << Colour::reset << std::endl;  ///< FINDME
 
-    cacheBitsPerValue(paramid, levtype, bitspervalue);
+    cacheBitsPerValue(paramid, levtype, encode);
 
-    return bitspervalue;
+    return encode;
+}
+
+
+int EncodeBitsPerValue::getBitsPerValue(int paramid, const std::string& lv, double min,
+                                        double max) {
+    Encoding encode = getEncoding(paramid, lv);
+    return encode.computeBitsPerValue(min, max);
 }
 
 }  // namespace multio

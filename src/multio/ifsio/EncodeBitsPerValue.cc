@@ -16,8 +16,9 @@
 #include <iosfwd>
 #include <tuple>
 #include <cmath>
+#include <algorithm>
 
-#include "multio/EncodeBitsPerValue.h"
+#include "EncodeBitsPerValue.h"
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/YAMLConfiguration.h"

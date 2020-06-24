@@ -14,8 +14,8 @@
 #include "eckit/filesystem/TmpFile.h"
 #include "eckit/io/DataHandle.h"
 
-#include "multio/ifsio.h"
-#include "multio/EncodeBitsPerValue.h"
+#include "multio/ifsio/ifsio.h"
+#include "multio/ifsio/EncodeBitsPerValue.h"
 
 namespace multio {
 namespace test {

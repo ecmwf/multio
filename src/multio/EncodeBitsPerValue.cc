@@ -86,7 +86,7 @@ private:
 
 EncodeBitsPerValue::EncodeBitsPerValue(const Configuration& config) {
     std::string path;
-    char* envtable = ::getenv("MULTIO_ENCODING_BITSPERVALUE_TABLE");
+    char* envtable = ::getenv("MULTIO_ENCODING_TABLE");
     if (envtable) {
         path = envtable;
     }
@@ -97,7 +97,7 @@ EncodeBitsPerValue::EncodeBitsPerValue(const Configuration& config) {
     if (path.empty()) {
         Log::warning()
             << "Path for Encoding BitsPerValue table not configured, MultIO config "
-               "key EncodingBitsPerValueTable or env variable ENCODING_BITSPERVALUE_TABLE"
+               "key EncodingBitsPerValueTable or env variable MULTIO_ENCODING_TABLE"
             << std::endl;
     }
     else {

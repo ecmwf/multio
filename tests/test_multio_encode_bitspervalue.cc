@@ -15,6 +15,7 @@
 #include "eckit/io/DataHandle.h"
 
 #include "multio/ifsio.h"
+#include "multio/EncodeBitsPerValue.h"
 
 namespace multio {
 namespace test {
@@ -28,10 +29,6 @@ std::string create_table() {
             "sfc": {
                 "precipitation": {
                     "decimalScaleFactor": 1,
-                    "paramIDs": [128144]
-                },
-                "whatever": {
-                    "precision": 0.25,
                     "paramIDs": [128144]
                 }
             },
@@ -71,7 +68,7 @@ struct TestHarness {
 
         ::setenv("MULTIO_CONFIG", "{sinks:[]}", 1);
         ::setenv("COMPR_FC_GP_ML", "1", 1);
-        ::setenv("MULTIO_ENCODING_BITSPERVALUE_TABLE", path.c_str(), 1);
+        ::setenv("MULTIO_ENCODING_TABLE", path.c_str(), 1);
     }
 
     eckit::TmpFile table;
@@ -241,6 +238,29 @@ CASE("repeated queries use cache") {
         EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
         EXPECT_EQUAL(bpv, 10);
     }
+}
+
+//----------------------------------------------------------------------------------------------------------------------
+
+CASE("Encode") {
+    SECTION("Bits per value") {
+        multio::Encoding encode;
+        encode.bitsPerValue = 13;
+        EXPECT_EQUAL(encode.computeBitsPerValue(200, 300), 13);
+    }
+
+    SECTION("Decimal Scale Factor") {
+        multio::Encoding encode;
+        encode.decimalScaleFactor = 1;
+        EXPECT_EQUAL(encode.computeBitsPerValue(200, 300), 10);
+    }
+
+    SECTION("Precision") {
+        multio::Encoding encode;
+        encode.precision = 0.25;
+        EXPECT_EQUAL(encode.computeBitsPerValue(200, 300), 9);
+    }
+
 }
 
 //----------------------------------------------------------------------------------------------------------------------

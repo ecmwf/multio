@@ -11,6 +11,8 @@
 /// @author Tiago Quintino
 /// @date June 2020
 
+#include <cmath>
+#include <limits>
 #include <map>
 #include <unordered_map>
 #include <utility>
@@ -27,51 +29,62 @@ namespace multio {
 //----------------------------------------------------------------------------------------------------------------------
 
 /// Class todescribe the encoding per field type paramid + levtype
-/// This behaves as a POD
-///
-class Encoding {
+/// Behaves as a POD
+struct Encoding {
+
+    int bitsPerValue = 0;
+    int decimalScaleFactor = 0;
+    float precision = 0;
+
+    /// indentifier for missing decimal scale factor
+    static constexpr int marker() { return std::numeric_limits<int>::min(); }
+
 public:
-    explicit Encoding(int bpv = 0, int dsf = 0) : bitsPerValue_(bpv), decimalScaleFactor_(dsf) {}
+    explicit Encoding(int bpv = 0, int dsf = marker(), float p = 0) :
+        bitsPerValue(bpv), decimalScaleFactor(dsf), precision(p) {}
 
     explicit Encoding(const eckit::Configuration& cfg) {
-        bitsPerValue_ = cfg.getInt("bitsPerValue", 0);
-        decimalScaleFactor_ = cfg.getInt("decimalScaleFactor", 0);
-        if (bitsPerValue_ <= 0 and decimalScaleFactor_ <= 0) {
-            throw eckit::BadValue("Invalid bitsPerValue or decimalScaleFactor", Here());
+        bitsPerValue = cfg.getInt("bitsPerValue", 0);
+        decimalScaleFactor = cfg.getInt("decimalScaleFactor", marker());
+        precision = cfg.getFloat("precision", 0.);
+        if (bitsPerValue <= 0 and decimalScaleFactor == marker() and precision <= 0) {
+            throw eckit::BadValue("Invalid bitsPerValue or decimalScaleFactor or precision",
+                                  Here());
         }
     }
 
     int computeBitsPerValue(double min, double max) const {
-        if (bitsPerValue_)
-            return bitsPerValue_;
+        if (bitsPerValue)
+            return bitsPerValue;
 
-        const int& p = decimalScaleFactor_;
+        if (decimalScaleFactor != marker()) {
+            const int& p = decimalScaleFactor;
 
-        double range = (max - min) * std::pow(10., p);
-        int nbits = static_cast<int>(std::ceil(std::log2(range)));
-        return nbits;
+            double range = (max - min) * std::pow(10., p);
+            int nbits = static_cast<int>(std::ceil(std::log2(range)));
+            return nbits;
+        }
+        else {
+            double increments = (max - min) / static_cast<double>(precision);
+            int nbits = static_cast<int>(std::ceil(std::log2(increments)));
+            return nbits;
+        }
     }
 
-    // All zeros mean this Encoding is undefined
-    bool defined() const { return (bitsPerValue_ || decimalScaleFactor_);  }
+    bool defined() const {
+        return (bitsPerValue || decimalScaleFactor != marker() || precision > 0);
+    }
 
 private:
-
     void print(std::ostream& s) const {
-        s << "Encoding(bitsPerValue=" << bitsPerValue_
-          << ",decimalScaleFactor=" << decimalScaleFactor_ << ")";
+        s << "Encoding(bitsPerValue=" << bitsPerValue
+          << ",decimalScaleFactor=" << decimalScaleFactor << ",precision=" << precision << ")";
     }
 
     friend std::ostream& operator<<(std::ostream& s, const Encoding& v) {
         v.print(s);
         return s;
     }
-
-private:
-
-    int bitsPerValue_ = 0;
-    int decimalScaleFactor_ = 0;
-
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -81,7 +94,6 @@ class EncodingTable;
 
 class EncodeBitsPerValue : private eckit::NonCopyable {
 public:
-
     explicit EncodeBitsPerValue(const eckit::Configuration& config);
 
     ~EncodeBitsPerValue();
@@ -89,7 +101,6 @@ public:
     int getBitsPerValue(int paramid, const std::string& levtype, double min, double max);
 
 private:
-
     Encoding getEncoding(int paramid, const std::string& levtype);
 
     void cacheBitsPerValue(int paramid, const std::string& levtype, Encoding e);

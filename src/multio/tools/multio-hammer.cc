@@ -67,15 +67,10 @@ std::vector<long> sequence(size_t sz, size_t start) {
     return vals;
 }
 
-std::vector<long> valid_parameters(size_t sz, const eckit::Configuration& config) {
+std::vector<std::string> valid_parameters(const eckit::Configuration& pcnf, const std::string& ltype) {
     // Read from configuration
-    std::vector<long> vals =
-        (config.has("parameters")
-             ? config.getLongVector("parameters")
-             : std::vector<long>{130, 133, 135, 138, 155, 203, 246, 247, 248, 75, 76});
-    if (sz < vals.size()) {
-        vals.resize(sz);
-    }
+    std::vector<std::string> vals =
+        (pcnf.has(ltype) ? pcnf.getStringVector(ltype) : std::vector<std::string>{});
     return vals;
 }
 
@@ -544,31 +539,36 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
     size_t sz = 0;
 
     CODES_CHECK(codes_set_long(handle, "number", ensMember_), nullptr);
+
     for (auto step : sequence(stepCount_, 1)) {
         CODES_CHECK(codes_set_long(handle, "step", step), nullptr);
 
         for (auto level : sequence(levelCount_, 1)) {
             CODES_CHECK(codes_set_long(handle, "level", level), nullptr);
 
-            for (auto param : valid_parameters(paramCount_, config_)) {
-                CODES_CHECK(codes_set_long(handle, "param", param), nullptr);
+            const auto& paramList = config_.getSubConfiguration("parameters");
+            for(const auto& levtype : {"ml", "pl", "sfc"}) {
+                for (auto param : valid_parameters(paramList, levtype)) {
+                    sz = param.size();
+                    CODES_CHECK(codes_set_string(handle, "param", param.c_str(), &sz), nullptr);
 
-                CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),
-                            nullptr);
+                    CODES_CHECK(
+                        codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),
+                        nullptr);
 
-                eckit::Log::debug<multio::LibMultio>()
-                    << "Member: " << ensMember_ << ", step: " << step << ", level: " << level
-                    << ", param: " << param << ", payload size: " << sz << std::endl;
+                    eckit::Log::debug<multio::LibMultio>()
+                        << "Member: " << ensMember_ << ", step: " << step << ", level: " << level
+                        << ", param: " << param << ", payload size: " << sz << std::endl;
 
-                Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}},
-                            eckit::Buffer{buf, sz}};
+                    Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}},
+                                eckit::Buffer{buf, sz}};
 
-                for (const auto& plan : plans) {
-                    plan->process(msg);
+                    for (const auto& plan : plans) {
+                        plan->process(msg);
+                    }
                 }
             }
         }
-
 
         auto stepStr = eckit::Translator<long, std::string>()(step);
 

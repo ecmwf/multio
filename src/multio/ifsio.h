@@ -26,6 +26,12 @@ fortint imultio_flush_();
 fortint imultio_notify_step_(const fortint* step);
 fortint imultio_write_(const void *data, const fortint *words);
 
+fortint imultio_encode_bitspervalue_(fortint *bitspervalue,
+  const fortint *paramid,
+  const char* levtype, int levtype_len,
+  const double *min,
+  const double *max);
+
 } // extern C
 
 #endif

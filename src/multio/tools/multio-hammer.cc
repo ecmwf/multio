@@ -67,11 +67,28 @@ std::vector<long> sequence(size_t sz, size_t start) {
     return vals;
 }
 
-std::vector<std::string> valid_parameters(const eckit::Configuration& pcnf, const std::string& ltype) {
+std::vector<long> valid_levlist(const std::string& ltype, size_t sz = 91, size_t start = 1) {
+
+    std::vector<long> levels;
+    if (ltype == "ml") {
+        levels = sequence(sz, start);
+    }
+    if (ltype == "pl") {
+        levels = {1,   2,   3,   5,   7,   10,  20,  30,  50,  70,  100,
+                  150, 200, 250, 300, 400, 500, 600, 700, 850, 925, 1000};
+    }
+    if (ltype == "sfc") {
+        levels = {1};
+    }
+    if (sz < levels.size()) {
+        levels.resize(sz);
+    }
+    return levels;
+}
+
+std::vector<long> valid_parameters(const eckit::Configuration& pcnf, const std::string& ltype) {
     // Read from configuration
-    std::vector<std::string> vals =
-        (pcnf.has(ltype) ? pcnf.getStringVector(ltype) : std::vector<std::string>{});
-    return vals;
+    return (pcnf.has(ltype) ? pcnf.getLongVector(ltype) : std::vector<long>{});
 }
 
 std::vector<double> create_hashed_data(const std::string& field_id, const size_t sz) {
@@ -543,22 +560,26 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
     for (auto step : sequence(stepCount_, 1)) {
         CODES_CHECK(codes_set_long(handle, "step", step), nullptr);
 
-        for (auto level : sequence(levelCount_, 1)) {
-            CODES_CHECK(codes_set_long(handle, "level", level), nullptr);
+        const auto& paramList = config_.getSubConfiguration("parameters");
 
-            const auto& paramList = config_.getSubConfiguration("parameters");
-            for(const auto& levtype : {"ml", "pl", "sfc"}) {
-                for (auto param : valid_parameters(paramList, levtype)) {
-                    sz = param.size();
-                    CODES_CHECK(codes_set_string(handle, "param", param.c_str(), &sz), nullptr);
+        for (const auto& levtype : {"ml", "pl", "sfc"}) {
+            size = std::strlen(levtype);
+            CODES_CHECK(codes_set_string(handle, "levtype", levtype, &size), nullptr);
+
+            for (auto param : valid_parameters(paramList, levtype)) {
+                CODES_CHECK(codes_set_long(handle, "param", param), nullptr);
+
+                for (auto level : valid_levlist(levtype, levelCount_, 1)) {
+                    CODES_CHECK(codes_set_long(handle, "level", level), nullptr);
+
+                    eckit::Log::debug<multio::LibMultio>()
+                        << "Member: " << ensMember_ << ", step: " << step
+                        << ", levtype: " << levtype << ", level: " << level << ", param: " << param
+                        << ", payload size: " << sz << std::endl;
 
                     CODES_CHECK(
                         codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),
                         nullptr);
-
-                    eckit::Log::debug<multio::LibMultio>()
-                        << "Member: " << ensMember_ << ", step: " << step << ", level: " << level
-                        << ", param: " << param << ", payload size: " << sz << std::endl;
 
                     Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}},
                                 eckit::Buffer{buf, sz}};

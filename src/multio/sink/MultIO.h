@@ -24,6 +24,8 @@
 #include "eckit/log/Timer.h"
 #include "eckit/types/Types.h"
 
+#include "metkit/data/Message.h"
+
 #include "multio/sink/DataSink.h"
 #include "multio/sink/IOStats.h"
 #include "multio/sink/Trigger.h"
@@ -34,7 +36,7 @@ namespace multio {
 
 class MultIO final : public DataSink {
 public:
-    MultIO(const eckit::Configuration& config);
+    explicit MultIO(const eckit::Configuration& config);
 
     ~MultIO() override = default;
 
@@ -46,6 +48,7 @@ public:
     eckit::Value configValue() const override;
 
     void write(eckit::DataBlobPtr blob) override;
+    void write(metkit::data::Message message) override;
 
     void flush() override;
 

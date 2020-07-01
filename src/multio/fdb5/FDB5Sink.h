@@ -19,24 +19,25 @@
 #include <string>
 #include <vector>
 
-#include "eckit/memory/NonCopyable.h"
 #include "eckit/io/Length.h"
+#include "eckit/memory/NonCopyable.h"
 #include "eckit/types/Types.h"
 
 #include "fdb5/api/FDB.h"
 
 #include "multio/sink/DataSink.h"
 
-//--------------------------------------------------------------------------------------------------
-
 namespace multio {
+
+//----------------------------------------------------------------------------------------------------------------------
 
 class FDB5Sink : public multio::DataSink {
 public:
-    FDB5Sink(const eckit::Configuration& config);
+    explicit FDB5Sink(const eckit::Configuration& config);
 
 private:
     void write(eckit::DataBlobPtr blob) override;
+    void write(metkit::data::Message msg) override;
 
     void flush() override;
 
@@ -52,6 +53,6 @@ private:
 
 }  // namespace multio
 
-//--------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 #endif

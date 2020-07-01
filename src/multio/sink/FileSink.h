@@ -42,6 +42,7 @@ public:
 
 private:  // methods
     void write(eckit::DataBlobPtr blob) override;
+    void write(metkit::data::Message msg) override;
 
     void flush() override;
 

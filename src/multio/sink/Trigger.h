@@ -21,6 +21,7 @@
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/io/DataBlob.h"
 
+#include "metkit/data/Message.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -41,6 +42,7 @@ public: // methods
 
     void events(const eckit::StringDict& metadata) const;
     void events(eckit::DataBlobPtr blob) const;
+    void events(metkit::data::Message msg) const;
 
 private: // methods
 

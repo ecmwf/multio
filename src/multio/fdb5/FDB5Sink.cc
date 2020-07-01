@@ -33,8 +33,7 @@ eckit::LocalConfiguration fdb5_configuration(const eckit::Configuration& cfg) {
 }  // namespace
 
 FDB5Sink::FDB5Sink(const eckit::Configuration& config) :
-    DataSink(config),
-    fdb_{fdb5_configuration(config)} {
+    DataSink(config), fdb_{fdb5_configuration(config)} {
     LOG_DEBUG_LIB(LibMultio) << "Config = " << config << std::endl;
 }
 
@@ -54,6 +53,25 @@ void FDB5Sink::write(eckit::DataBlobPtr blob) {
     fdb_.archive(key, blob->buffer(), blob->length());
 }
 
+void FDB5Sink::write(metkit::data::Message msg) {
+    LOG_DEBUG_LIB(LibMultio) << "FDB5Sink::write()" << std::endl;
+
+    NOTIMP;
+#if 0
+    const eckit::Metadata& md = blob->metadata();
+
+    fdb5::Key key;
+    std::string value;
+    LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
+    for (const auto& kw : md.keywords()) {
+        md.get(kw, value);
+        key.set(kw, value);
+    }
+
+    fdb_.archive(key, blob->buffer(), blob->length());
+#endif
+}
+
 void FDB5Sink::flush() {
     LOG_DEBUG_LIB(LibMultio) << "FDB5Sink::flush()" << std::endl;
 
@@ -66,4 +84,4 @@ void FDB5Sink::print(std::ostream& os) const {
 
 static DataSinkBuilder<FDB5Sink> FDB5SinkBuilder("fdb5");
 
-}
+}  // namespace multio

@@ -26,6 +26,8 @@
 #include "eckit/io/DataBlob.h"
 #include "eckit/memory/NonCopyable.h"
 
+#include "metkit/data/Message.h"
+
 namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -39,6 +41,8 @@ public:  // methods
     virtual bool ready() const;
 
     virtual void write(eckit::DataBlobPtr blob) = 0;
+
+    virtual void write(metkit::data::Message message) = 0;
 
     /// No further writes to this sink
     virtual void flush();

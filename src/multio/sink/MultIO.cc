@@ -114,6 +114,18 @@ void MultIO::write(DataBlobPtr blob) {
     trigger_.events(blob);
 }
 
+void MultIO::write(metkit::data::Message message) {
+
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    StatsTimer stTimer{timer_, std::bind(&IOStats::logWrite, &stats_, message.length(), _1)};
+    for (const auto& sink : sinks_) {
+        sink->write(message);
+    }
+
+    trigger_.events(message);
+}
+
 void MultIO::trigger(const eckit::StringDict& metadata) const {
     trigger_.events(metadata);
 }

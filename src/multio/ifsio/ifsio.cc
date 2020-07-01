@@ -31,8 +31,11 @@
 #include "multio/sink/MultIO.h"
 
 #include "metkit/grib/GribDataBlob.h"
+#include "metkit/data/Message.h"
+#include "metkit/codes/UserDataContent.h"
 
 using namespace eckit;
+using namespace metkit;
 using namespace multio;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -186,9 +189,9 @@ extern "C" {
             ASSERT(ilen > 0);
             size_t len(ilen);
 
-            eckit::DataBlobPtr blob (new metkit::grib::GribDataBlob(data, len));
+            data::Message message(new codes::UserDataContent(data, len));
 
-            MIO::instance().mio().write(blob);
+            MIO::instance().mio().write(message);
             MIO::instance().log(true);
             MIO::instance().dirty(true);
         } catch (std::exception &e) {

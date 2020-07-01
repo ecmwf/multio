@@ -14,7 +14,6 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
-
 #include "metkit/grib/GribDataBlob.h"
 
 #include "multio/LibMultio.h"

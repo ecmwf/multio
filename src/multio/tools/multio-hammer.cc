@@ -13,7 +13,6 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "metkit/grib/GribDataBlob.h"
 #include "metkit/grib/GribHandle.h"
 
 #include "multio/action/Plan.h"

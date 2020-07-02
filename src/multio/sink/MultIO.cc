@@ -82,7 +82,7 @@ bool MultIO::ready() const {
     return true;
 }
 
-void MultIO::write(metkit::data::Message message) {
+void MultIO::write(eckit::message::Message message) {
 
     std::lock_guard<std::mutex> lock(mutex_);
 

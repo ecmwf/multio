@@ -41,7 +41,7 @@ public:
     ~FileSink() override;
 
 private:  // methods
-    void write(metkit::data::Message msg) override;
+    void write(eckit::message::Message msg) override;
 
     void flush() override;
 

@@ -31,7 +31,7 @@ class TestDataSink : public DataSink {
 public:
     TestDataSink(const Configuration& config) : DataSink(config), config_(&config) {}
 
-    void write(metkit::data::Message) override {}
+    void write(eckit::message::Message) override {}
 
     Configuration const* config_;
 

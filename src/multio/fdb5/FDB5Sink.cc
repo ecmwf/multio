@@ -36,7 +36,7 @@ FDB5Sink::FDB5Sink(const eckit::Configuration& config) :
     LOG_DEBUG_LIB(LibMultio) << "Config = " << config << std::endl;
 }
 
-void FDB5Sink::write(metkit::data::Message msg) {
+void FDB5Sink::write(eckit::message::Message msg) {
     LOG_DEBUG_LIB(LibMultio) << "FDB5Sink::write()" << std::endl;
 
     NOTIMP;

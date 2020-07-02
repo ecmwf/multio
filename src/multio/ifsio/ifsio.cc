@@ -30,7 +30,7 @@
 
 #include "multio/sink/MultIO.h"
 
-#include "metkit/data/Message.h"
+#include "eckit/message/Message.h"
 #include "metkit/codes/UserDataContent.h"
 
 using namespace eckit;
@@ -188,7 +188,7 @@ extern "C" {
             ASSERT(ilen > 0);
             size_t len(ilen);
 
-            data::Message message(new codes::UserDataContent(data, len));
+            eckit::message::Message message(new codes::UserDataContent(data, len));
 
             MIO::instance().mio().write(message);
             MIO::instance().log(true);

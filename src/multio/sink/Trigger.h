@@ -20,7 +20,7 @@
 #include "eckit/types/Types.h"
 #include "eckit/memory/NonCopyable.h"
 
-#include "metkit/data/Message.h"
+#include "eckit/message/Message.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ public: // methods
     ~Trigger();
 
     void events(const eckit::StringDict& metadata) const;
-    void events(metkit::data::Message msg) const;
+    void events(eckit::message::Message msg) const;
 
 private: // methods
 

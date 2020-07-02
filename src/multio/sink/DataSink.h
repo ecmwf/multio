@@ -25,7 +25,7 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/memory/NonCopyable.h"
 
-#include "metkit/data/Message.h"
+#include "eckit/message/Message.h"
 
 namespace multio {
 
@@ -39,7 +39,7 @@ public:  // methods
 
     virtual bool ready() const;
 
-    virtual void write(metkit::data::Message message) = 0;
+    virtual void write(eckit::message::Message message) = 0;
 
     /// No further writes to this sink
     virtual void flush();

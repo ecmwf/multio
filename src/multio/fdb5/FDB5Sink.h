@@ -36,7 +36,7 @@ public:
     explicit FDB5Sink(const eckit::Configuration& config);
 
 private:
-    void write(metkit::data::Message msg) override;
+    void write(eckit::message::Message msg) override;
 
     void flush() override;
 

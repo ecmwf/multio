@@ -201,7 +201,7 @@ public: // methods
     virtual ~EventTrigger() {}
 
     virtual void trigger(const StringDict& keys) const = 0;
-    virtual void trigger(metkit::data::Message msg) const = 0;
+    virtual void trigger(eckit::message::Message msg) const = 0;
 
     static EventTrigger* build(const Configuration& config);
 
@@ -241,7 +241,7 @@ public: // methods
 
     virtual void trigger(const StringDict&) const override {}
 
-    virtual void trigger(metkit::data::Message msg) const override {
+    virtual void trigger(eckit::message::Message msg) const override {
         NOTIMP;
 #if 0 // FINDME
         const eckit::Metadata& md = msg.metadata();
@@ -327,7 +327,7 @@ public: // methods
         }
     }
 
-    virtual void trigger(metkit::data::Message) const override {}
+    virtual void trigger(eckit::message::Message) const override {}
 
 private:
 
@@ -391,7 +391,7 @@ void Trigger::events(const StringDict& keys) const {
     }
 }
 
-void Trigger::events(metkit::data::Message msg) const {
+void Trigger::events(eckit::message::Message msg) const {
     for(std::vector<EventTrigger*>::const_iterator it = triggers_.begin(); it !=  triggers_.end(); ++it) {
         (*it)->trigger(msg);
     }

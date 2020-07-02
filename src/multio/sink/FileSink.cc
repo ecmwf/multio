@@ -41,7 +41,7 @@ FileSink::~FileSink() {
     handle_->close();
 }
 
-void FileSink::write(metkit::data::Message msg) {
+void FileSink::write(eckit::message::Message msg) {
     std::lock_guard<std::mutex> lock(mutex_);
     msg.write(*handle_);
 }

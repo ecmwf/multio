@@ -24,7 +24,7 @@
 #include "eckit/log/Timer.h"
 #include "eckit/types/Types.h"
 
-#include "metkit/data/Message.h"
+#include "eckit/message/Message.h"
 
 #include "multio/sink/DataSink.h"
 #include "multio/sink/IOStats.h"
@@ -42,7 +42,7 @@ public:
 
     bool ready() const override;
 
-    void write(metkit::data::Message message) override;
+    void write(eckit::message::Message message) override;
 
     void flush() override;
 

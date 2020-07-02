@@ -23,7 +23,6 @@
 
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
-#include "eckit/io/DataBlob.h"
 #include "eckit/memory/NonCopyable.h"
 
 #include "metkit/data/Message.h"
@@ -40,8 +39,6 @@ public:  // methods
 
     virtual bool ready() const;
 
-    virtual void write(eckit::DataBlobPtr blob) = 0;
-
     virtual void write(metkit::data::Message message) = 0;
 
     /// No further writes to this sink
@@ -51,12 +48,6 @@ public:  // methods
     /// In particular, it labels which sink within a MultIO this one is.
     void setId(int id);
     int id() const;
-
-    /// Return the value that is serialised to produce the json() in the journal.
-    /// Not necessarily equal to the supplied config as other sources of
-    /// configuration may be used. By default this just returns the supplied
-    /// Configuration.
-    virtual eckit::Value configValue() const;
 
     ///
     /// LEGACY INTERFACE TO REMOVE AFTER IFS CHANGED TO SIMPLE WRITE() INTERFACE
@@ -74,9 +65,6 @@ public:  // methods
 
     virtual void isetfieldcountfdb(int fdbaddr, int all_ranks, int this_rank);
     virtual void isetvalfdb(int fdbaddr, const std::string& name, const std::string& value);
-
-    // virtual int ireadfdb(void *data, int *words);
-    virtual void iwritefdb(int fdbaddr, eckit::DataBlobPtr blob);
 
 protected:  // methods
     virtual void print(std::ostream&) const = 0;

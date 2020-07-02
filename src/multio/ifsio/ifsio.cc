@@ -30,7 +30,6 @@
 
 #include "multio/sink/MultIO.h"
 
-// #include "metkit/grib/GribDataBlob.h"
 #include "metkit/data/Message.h"
 #include "metkit/codes/UserDataContent.h"
 

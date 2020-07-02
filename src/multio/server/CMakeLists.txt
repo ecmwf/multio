@@ -38,8 +38,6 @@ ecbuild_add_library(
         NemoToGrib.h
         MultioNemo.cc
         MultioNemo.h
-        PlainDataBlob.cc
-        PlainDataBlob.h
         ThreadTransport.cc
         ThreadTransport.h
         MpiTransport.cc

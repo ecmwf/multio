@@ -97,10 +97,6 @@ bool DataSink::ready() const {
     return true;  // default for synchronous sinks
 }
 
-eckit::Value DataSink::configValue() const {
-    return config_.get();
-}
-
 void DataSink::flush() {}
 
 void DataSink::setId(int id) {

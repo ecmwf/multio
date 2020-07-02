@@ -17,7 +17,6 @@
 
 #include "multio/sink/DataSink.h"
 #include "multio/LibMultio.h"
-#include "multio/server/PlainDataBlob.h"
 
 namespace multio {
 namespace action {

@@ -36,12 +36,11 @@ namespace multio {
 
 class FileSink final : public DataSink {
 public:
-    FileSink(const eckit::Configuration& config);
+    explicit FileSink(const eckit::Configuration& config);
 
     ~FileSink() override;
 
 private:  // methods
-    void write(eckit::DataBlobPtr blob) override;
     void write(metkit::data::Message msg) override;
 
     void flush() override;

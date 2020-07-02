@@ -41,16 +41,6 @@ FileSink::~FileSink() {
     handle_->close();
 }
 
-void FileSink::write(eckit::DataBlobPtr blob) {
-    size_t length = blob->length();
-
-    std::lock_guard<std::mutex> lock(mutex_);
-
-    if (size_t(handle_->write(blob->buffer(), length)) != length) {
-        throw WriteError(std::string("Write error on file: ") + path_, Here());
-    }
-}
-
 void FileSink::write(metkit::data::Message msg) {
     std::lock_guard<std::mutex> lock(mutex_);
     msg.write(*handle_);

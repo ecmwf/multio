@@ -14,7 +14,6 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
-#include "metkit/grib/GribDataBlob.h"
 
 #include "multio/LibMultio.h"
 #include "multio/server/ConfigurationPath.h"
@@ -110,7 +109,7 @@ void Encode::execute(Message msg) const {
     auto beg = reinterpret_cast<const double*>(msg.payload().data());
     encoder_->setDataValues(beg, msg.globalSize());
 
-    eckit::Buffer buf{encoder_->message()->length()};
+    eckit::Buffer buf{encoder_ ->length()};
     encoder_->write(buf);
     msg = Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
 

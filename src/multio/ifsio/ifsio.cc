@@ -14,23 +14,23 @@
 #include <unistd.h>
 
 #include "eckit/config/LibEcKit.h"
-#include "eckit/types/Types.h"
-#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/config/Resource.h"
+#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
-#include "eckit/utils/Tokenizer.h"
+#include "eckit/message/Message.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/thread/AutoLock.h"
+#include "eckit/types/Types.h"
+#include "eckit/utils/Tokenizer.h"
 
-#include "multio/multio_version.h"
+#include "multio/ifsio/EncodeBitsPerValue.h"
 #include "multio/ifsio/ifsio.h"
 #include "multio/ifsio/ifsio_internals.h"
-#include "multio/ifsio/EncodeBitsPerValue.h"
+#include "multio/multio_version.h"
 
 #include "multio/sink/MultIO.h"
 
-#include "eckit/message/Message.h"
 #include "metkit/codes/UserDataContent.h"
 
 using namespace eckit;
@@ -41,7 +41,6 @@ using namespace multio;
 
 class MIO {
 public:
-
     static MIO& instance() {
         static MIO mio;
         return mio;
@@ -57,28 +56,27 @@ public:
     void dirty(bool dirty) { dirty_ = dirty; }
 
     void report() {
-        if(log_ && ptr_ && !::getenv("MULTIO_NO_REPORT")) {
+        if (log_ && ptr_ && !::getenv("MULTIO_NO_REPORT")) {
             ptr_->report(std::cout);
         }
     }
 
-    void lock()   { mutex_.lock(); }
+    void lock() { mutex_.lock(); }
     void unlock() { mutex_.unlock(); }
 
     int encodeBitsPerValue(int paramid, const std::string& levtype, double min, double max) {
-      ASSERT(bpv_);
-      return bpv_->getBitsPerValue(paramid, levtype, min, max);
+        ASSERT(bpv_);
+        return bpv_->getBitsPerValue(paramid, levtype, min, max);
     }
 
 private:
-
     void init(Configuration& config) {
-      ptr_.reset(new MultIO(config));
-      bpv_.reset(new EncodeBitsPerValue(config));
+        ptr_.reset(new MultIO(config));
+        bpv_.reset(new EncodeBitsPerValue(config));
     }
 
     MIO() : log_(false), dirty_(false) {
-        static const char *argv[2] = {"ifsio", nullptr};
+        static const char* argv[2] = {"ifsio", nullptr};
 
         eckit::Main::initialise(1, const_cast<char**>(argv));
 
@@ -109,7 +107,7 @@ private:
 
         oss << "{ \"sinks\" : [";
 
-        const char *sep = "";
+        const char* sep = "";
         for (StringList::iterator i = sinks.begin(); i != sinks.end(); ++i) {
             oss << sep << "{ \"type\" : \"" << *i << "\"";
             oss << "}";
@@ -125,15 +123,18 @@ private:
     }
 
     ~MIO() {
-        if(dirty_) {
+        if (dirty_) {
             static char* abort_on_error = ::getenv("MULTIO_ABORT_ON_ERROR");
-            if(abort_on_error) {
-                std::cout << "ERROR - MultIO finished without a final call to imultio_flush" << std::endl;
-                std::cerr << "ERROR - MultIO finished without a final call to imultio_flush" << std::endl;
+            if (abort_on_error) {
+                std::cout << "ERROR - MultIO finished without a final call to imultio_flush"
+                          << std::endl;
+                std::cerr << "ERROR - MultIO finished without a final call to imultio_flush"
+                          << std::endl;
                 eckit::LibEcKit::instance().abort();
             }
             else
-                std::cout << "WARNING - MultIO finished without a final call to imultio_flush" << std::endl;
+                std::cout << "WARNING - MultIO finished without a final call to imultio_flush"
+                          << std::endl;
         }
     }
 
@@ -149,65 +150,71 @@ private:
 
 extern "C" {
 
-    fortint imultio_flush_() {
-        try {
-            eckit::AutoLock<MIO> lock(MIO::instance());
+fortint imultio_flush_() {
+    try {
+        eckit::AutoLock<MIO> lock(MIO::instance());
 
-            MULTIO_TRACE_FUNC();
-            MIO::instance().mio().flush();
-            MIO::instance().log(true);
-            MIO::instance().dirty(false);
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
+        MULTIO_TRACE_FUNC();
+        MIO::instance().mio().flush();
+        MIO::instance().log(true);
+        MIO::instance().dirty(false);
     }
-
-    fortint imultio_notify_step_(const fortint * step) {
-        try {
-            eckit::AutoLock<MIO> lock(MIO::instance());
-
-            MULTIO_TRACE_FUNC();
-            ASSERT(step);
-            eckit::StringDict metadata;
-            metadata["step"] = eckit::Translator<fortint,std::string>()(*step);
-            MIO::instance().mio().trigger(metadata);
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
+    catch (std::exception& e) {
+        return ifsio_handle_error(e);
     }
+    return 0;
+}
 
-    fortint imultio_write_(const void *data, const fortint *words) {
-        try {
-            eckit::AutoLock<MIO> lock(MIO::instance());
+fortint imultio_notify_step_(const fortint* step) {
+    try {
+        eckit::AutoLock<MIO> lock(MIO::instance());
 
-            MULTIO_TRACE_FUNC();
-            ASSERT(data);
-            int ilen = (*words)*sizeof(fortint);
-            ASSERT(ilen > 0);
-            size_t len(ilen);
-
-            eckit::message::Message message(new codes::UserDataContent(data, len));
-
-            MIO::instance().mio().write(message);
-            MIO::instance().log(true);
-            MIO::instance().dirty(true);
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
+        MULTIO_TRACE_FUNC();
+        ASSERT(step);
+        eckit::StringDict metadata;
+        metadata["step"] = eckit::Translator<fortint, std::string>()(*step);
+        MIO::instance().mio().trigger(metadata);
     }
-
-    fortint imultio_encode_bitspervalue_(fortint *bitspervalue, const fortint *paramid, const char* levtype, int levtype_len,  const double *min,  const double *max) {
-        try {
-            std::string slevtype(levtype, levtype + levtype_len);
-            eckit::AutoLock<MIO> lock(MIO::instance());
-            *bitspervalue = MIO::instance().encodeBitsPerValue(*paramid, slevtype, *min, *max);
-        } catch (std::exception &e) {
-            return ifsio_handle_error(e);
-        }
-        return 0;
+    catch (std::exception& e) {
+        return ifsio_handle_error(e);
     }
+    return 0;
+}
 
-} // extern C
+fortint imultio_write_(const void* data, const fortint* words) {
+    try {
+        eckit::AutoLock<MIO> lock(MIO::instance());
+
+        MULTIO_TRACE_FUNC();
+        ASSERT(data);
+        int ilen = (*words) * sizeof(fortint);
+        ASSERT(ilen > 0);
+        size_t len(ilen);
+
+        eckit::message::Message message(new codes::UserDataContent(data, len));
+
+        MIO::instance().mio().write(message);
+        MIO::instance().log(true);
+        MIO::instance().dirty(true);
+    }
+    catch (std::exception& e) {
+        return ifsio_handle_error(e);
+    }
+    return 0;
+}
+
+fortint imultio_encode_bitspervalue_(fortint* bitspervalue, const fortint* paramid,
+                                     const char* levtype, int levtype_len, const double* min,
+                                     const double* max) {
+    try {
+        std::string slevtype(levtype, levtype + levtype_len);
+        eckit::AutoLock<MIO> lock(MIO::instance());
+        *bitspervalue = MIO::instance().encodeBitsPerValue(*paramid, slevtype, *min, *max);
+    }
+    catch (std::exception& e) {
+        return ifsio_handle_error(e);
+    }
+    return 0;
+}
+
+}  // extern C

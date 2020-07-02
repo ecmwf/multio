@@ -23,7 +23,6 @@
 #include "eckit/io/Length.h"
 #include "eckit/log/Timer.h"
 #include "eckit/types/Types.h"
-
 #include "eckit/message/Message.h"
 
 #include "multio/sink/DataSink.h"

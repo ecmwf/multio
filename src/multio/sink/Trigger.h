@@ -40,7 +40,7 @@ public: // methods
     ~Trigger();
 
     void events(const eckit::StringDict& metadata) const;
-    void events(eckit::message::Message msg) const;
+    void events(eckit::message::Message message) const;
 
 private: // methods
 
@@ -61,4 +61,3 @@ private: // members
 }  // namespace multio
 
 #endif
-

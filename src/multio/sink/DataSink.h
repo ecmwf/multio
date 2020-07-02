@@ -24,7 +24,6 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/memory/NonCopyable.h"
-
 #include "eckit/message/Message.h"
 
 namespace multio {

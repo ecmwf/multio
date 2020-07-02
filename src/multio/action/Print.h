@@ -29,7 +29,7 @@ namespace action {
 
 class Print : public Action {
 public:
-    Print(const eckit::Configuration& config);
+    explicit Print(const eckit::Configuration& config);
 
     void execute(message::Message msg) const override;
 

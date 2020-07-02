@@ -31,9 +31,10 @@ class Configuration;
 namespace multio {
 namespace action {
 
+
 class GribEncoder : public metkit::grib::GribHandle {
 public:
-    GribEncoder(codes_handle* handle);
+    explicit GribEncoder(codes_handle* handle);
 
     void setOceanValues(const message::Metadata& md);
 

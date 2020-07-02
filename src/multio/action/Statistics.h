@@ -28,7 +28,7 @@ namespace action {
 
 class Statistics : public Action {
 public:
-    Statistics(const eckit::Configuration& config);
+    explicit Statistics(const eckit::Configuration& config);
 
     void execute(message::Message msg) const override;
 

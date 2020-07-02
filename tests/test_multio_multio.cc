@@ -12,7 +12,6 @@
 
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/log/JSON.h"
-#include "eckit/parser/JSONDataBlob.h"
 #include "eckit/testing/Test.h"
 #include "eckit/utils/Translator.h"
 
@@ -134,9 +133,12 @@ CASE("test_multio_with_event_trigger") {
                     json.endObject();
                 }(msg);
 
+                NOTIMP;
+#if 0 // FINDME
                 eckit::DataBlobPtr blob(new eckit::JSONDataBlob(os.str().c_str(), os.str().size()));
 
                 mio->write(blob);
+#endif
             }
         }
     }  // mio is destroyed

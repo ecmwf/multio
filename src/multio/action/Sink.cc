@@ -56,10 +56,15 @@ void Sink::execute(Message msg) const {
 void Sink::write(Message msg) const {
     ASSERT(to_blob.find(msg.tag()) != to_blob.end());
 
+    /// translate multio::Message to eckit::message::Message
+
+NOTIMP;
+#if 0 // FINDME
     eckit::DataBlobPtr blob{
         eckit::DataBlobFactory::build(to_blob.at(msg.tag()), msg.payload().data(), msg.size())};
 
     mio_.write(blob);
+#endif
 }
 
 void Sink::flush() const {

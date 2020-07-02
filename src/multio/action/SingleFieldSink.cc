@@ -50,6 +50,8 @@ void SingleFieldSink::write(Message msg) const {
         << "::" << msg.metadata().getUnsigned("step");
     eckit::LocalConfiguration config;
 
+    NOTIMP;
+#if 0 // FINDME
     config.set("path", oss.str());
     dataSink_.reset(DataSinkFactory::instance().build("file", config));
 
@@ -68,6 +70,7 @@ void SingleFieldSink::write(Message msg) const {
     }
 
     dataSink_->write(blob);
+#endif
 }
 
 void SingleFieldSink::flush() const {

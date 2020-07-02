@@ -201,7 +201,6 @@ public: // methods
     virtual ~EventTrigger() {}
 
     virtual void trigger(const StringDict& keys) const = 0;
-    virtual void trigger(eckit::DataBlobPtr blob) const = 0;
     virtual void trigger(metkit::data::Message msg) const = 0;
 
     static EventTrigger* build(const Configuration& config);
@@ -242,32 +241,9 @@ public: // methods
 
     virtual void trigger(const StringDict&) const override {}
 
-    virtual void trigger(eckit::DataBlobPtr blob) const override {
-
-        const eckit::Metadata& md = blob->metadata();
-
-        std::string current;
-        md.get(key_, current);
-
-        std::vector<std::string>::const_iterator now = std::find(values_.begin(), values_.end(), current);
-
-        if(lastSeen_ == values_.end() && inValues(now)) { /* initial */
-            lastSeen_ = now;
-        }
-
-        if(lastSeen_ == now) return; /* no change => no event */
-
-        updateEventsIssued();
-
-        if(inValues(now)) {
-            lastSeen_ = now;
-        }
-    }
-
     virtual void trigger(metkit::data::Message msg) const override {
         NOTIMP;
-
-#if 0
+#if 0 // FINDME
         const eckit::Metadata& md = msg.metadata();
 
         std::string current;
@@ -351,7 +327,6 @@ public: // methods
         }
     }
 
-    virtual void trigger(eckit::DataBlobPtr) const override {}
     virtual void trigger(metkit::data::Message) const override {}
 
 private:
@@ -413,12 +388,6 @@ Trigger::~Trigger() {
 void Trigger::events(const StringDict& keys) const {
     for(std::vector<EventTrigger*>::const_iterator it = triggers_.begin(); it !=  triggers_.end(); ++it) {
         (*it)->trigger(keys);
-    }
-}
-
-void Trigger::events(eckit::DataBlobPtr blob) const {
-    for(std::vector<EventTrigger*>::const_iterator it = triggers_.begin(); it !=  triggers_.end(); ++it) {
-        (*it)->trigger(blob);
     }
 }
 

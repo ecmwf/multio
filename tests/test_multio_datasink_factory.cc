@@ -31,7 +31,6 @@ class TestDataSink : public DataSink {
 public:
     TestDataSink(const Configuration& config) : DataSink(config), config_(&config) {}
 
-    void write(eckit::DataBlobPtr) override {}
     void write(metkit::data::Message) override {}
 
     Configuration const* config_;

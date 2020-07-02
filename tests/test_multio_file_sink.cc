@@ -13,22 +13,23 @@
 #include <cstring>
 #include <unistd.h>
 
-#include "multio/sink/FileSink.h"
-
 #include "eckit/testing/Test.h"
 #include "eckit/filesystem/TmpFile.h"
+#include "eckit/message/Message.h"
+
+#include "multio/sink/FileSink.h"
 
 namespace multio {
 namespace test {
 
-CASE("test_contains_file_sink") {
+CASE("FileSink exists in factory") {
     // DataSinkFactory::list appends the results to a ostream&, so we need to extract them.
     std::stringstream ss;
     DataSinkFactory::instance().list(ss);
     EXPECT(ss.str().find("file") != std::string::npos);
 }
 
-CASE("test_file_sink_is_created_successfully") {
+CASE("FileSink is created successfully") {
     const eckit::PathName& file_path = eckit::TmpFile();
     auto sink = make_configured_file_sink(file_path);
     auto fileSink = dynamic_cast<FileSink*>(sink.get());
@@ -36,23 +37,28 @@ CASE("test_file_sink_is_created_successfully") {
     EXPECT(file_path.exists());
 }
 
-CASE("test_file_sink_writes_correctly") {
+CASE("FileSink writes correctly") {
     const eckit::PathName& file_path = eckit::TmpFile();
     auto sink = make_configured_file_sink(file_path);
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
+
+NOTIMP;
+#if 0 // FINDME
     eckit::DataBlobPtr stringBlob(eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
     sink->write(stringBlob);
-
+#endif
     EXPECT(file_content(file_path) == std::string(quote));
 }
 
-CASE("test_file_sink_creates_new_file_by_default") {
+CASE("FileSink creates new file by default") {
     const eckit::PathName& file_path = eckit::TmpFile();
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
+NOTIMP;
+#if 0 // FINDME
     {
         auto sink = make_configured_file_sink(file_path);
         eckit::DataBlobPtr stringBlob(
@@ -66,15 +72,18 @@ CASE("test_file_sink_creates_new_file_by_default") {
             eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
         sink->write(stringBlob);
     }
-
+#endif
     EXPECT(file_content(file_path) == std::string(quote));
 }
 
 
-CASE("test_file_sink_creates_new_file_by_explicit_request") {
+CASE("FileSink creates new file by explicit request") {
     const eckit::PathName& file_path = eckit::TmpFile();
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
+
+    NOTIMP;
+#if 0 // FINDME
 
     {
         auto sink = make_configured_file_sink(file_path);
@@ -89,14 +98,16 @@ CASE("test_file_sink_creates_new_file_by_explicit_request") {
             eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
         sink->write(stringBlob);
     }
-
+#endif
     EXPECT(file_content(file_path) == std::string(quote));
 }
 
-CASE("test_file_sink_appends_to_existing_file") {
+CASE("FileSink appends to existing file") {
     const eckit::PathName& file_path = eckit::TmpFile();
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
+    NOTIMP;
+#if 0 // FINDME
 
     {
         auto sink = make_configured_file_sink(file_path);
@@ -111,7 +122,7 @@ CASE("test_file_sink_appends_to_existing_file") {
             eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
         sink->write(stringBlob);
     }
-
+#endif
     EXPECT(file_content(file_path) == std::string{quote} + std::string{quote});
 }
 

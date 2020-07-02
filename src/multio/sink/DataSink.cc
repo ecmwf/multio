@@ -127,12 +127,6 @@ void DataSink::isetfieldcountfdb(int, int, int) {}
 
 void DataSink::isetvalfdb(int, const std::string&, const std::string&) {}
 
-void DataSink::iwritefdb(int, eckit::DataBlobPtr) {
-    std::ostringstream msg;
-    msg << "DataSink::iwritefdb() not implemented in derived class";
-    throw eckit::SeriousBug(msg.str());
-}
-
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio

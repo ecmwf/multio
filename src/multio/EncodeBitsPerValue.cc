@@ -16,6 +16,7 @@
 #include <iosfwd>
 #include <tuple>
 #include <cmath>
+#include <algorithm>
 
 #include "multio/EncodeBitsPerValue.h"
 

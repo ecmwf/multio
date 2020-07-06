@@ -35,17 +35,22 @@ using namespace eckit;
 
 namespace multio {
 
+namespace {
+  static bool multio_debug;
+}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 class EncodingTable {
 public:
     EncodingTable(const Configuration& cfg) {
-        std::cerr << Colour::yellow << "TABLE " << cfg << Colour::reset << std::endl;  ///< FINDME
+
+        LOG_DEBUG(multio_debug, LibMultio) << "Encoding Table " << cfg << std::endl;
 
         for (auto k : cfg.keys()) {
             LocalConfiguration section = cfg.getSubConfiguration(k);
-            std::cerr << Colour::yellow << "Section " << section << Colour::reset
-                      << std::endl;  ///< FINDME
+
+            LOG_DEBUG(multio_debug, LibMultio) << "Encoding Section " << std::endl;
 
             Encoding encode(section);
 
@@ -86,6 +91,9 @@ private:
 //----------------------------------------------------------------------------------------------------------------------
 
 EncodeBitsPerValue::EncodeBitsPerValue(const Configuration& config) {
+
+    multio_debug = LibMultio::instance().debug();
+
     std::string path;
     char* envtable = ::getenv("MULTIO_ENCODING_TABLE");
     if (envtable) {
@@ -106,9 +114,7 @@ EncodeBitsPerValue::EncodeBitsPerValue(const Configuration& config) {
         for (auto k : tablecfg.keys()) {
             LocalConfiguration cfg = tablecfg.getSubConfiguration(k);
             tables_[k] = new EncodingTable(cfg);
-
-            std::cerr << Colour::yellow << "Built TABLE --> " << *tables_[k] << Colour::reset
-                      << std::endl;  ///< FINDME
+            LOG_DEBUG(multio_debug, LibMultio) << "Encoding table built: " << *tables_[k] << std::endl;
         }
     }
 }
@@ -137,13 +143,8 @@ static std::string fix_levtype(const std::string& levtype) {
 
 static bool getenv_COMPR_FC_GP_ML() {
     static char* env = ::getenv("COMPR_FC_GP_ML");
-
     if (env) {
-
-        std::cerr << Colour::bold
-                  << "COMPR_FC_GP_ML " << env << " - " << (bool)std::atoi(env)
-                  << Colour::reset << std::endl;  ///< FINDME
-
+        LOG_DEBUG(multio_debug, LibMultio) << "Found env var COMPR_FC_GP_ML: " << env << " - " << (bool)std::atoi(env) << std::endl;
         return (bool)std::atoi(env);
     }
     return false;
@@ -207,11 +208,6 @@ int EncodeBitsPerValue::hack(int paramid, const std::string& levtype) {
 Encoding EncodeBitsPerValue::getCachedBitsPerValue(int paramid, const std::string& lv) {
     auto got = cache_[lv].find(paramid);
     if (got != cache_[lv].end()) {
-
-        std::cerr << Colour::green
-                  << "FOUND in CACHE " << got->second
-                  << Colour::reset << std::endl;  ///< FINDME
-
         return got->second;
     }
     return Encoding();
@@ -245,32 +241,26 @@ Encoding EncodeBitsPerValue::getEncoding(int paramid, const std::string& lv) {
     ASSERT(paramid != 0);
     const std::string levtype = fix_levtype(lv);
 
-    std::cerr << Colour::green << "QUERY levtype " << levtype << " paramid " << paramid
-              << Colour::reset << std::endl;  ///< FINDME
+    LOG_DEBUG(multio_debug, LibMultio) << "EncodeBitsPerValue QUERY : paramid " << paramid << " levtype " << levtype << std::endl;
 
     // check cache
     encode = getCachedBitsPerValue(paramid, levtype);
     if (encode.defined()) {
-        std::cerr << Colour::green << "FOUND in CACHE " << encode << Colour::reset
-                  << std::endl;  ///< FINDME
+        LOG_DEBUG(multio_debug, LibMultio) << "EncodeBitsPerValue FOUND in CACHE " << encode << std::endl;
         return encode;
     }
 
     // check the tables
     encode = tabulatedBitsPerValue(paramid, levtype);
     if (encode.defined()) {
-        std::cerr << Colour::green
-                  << "FOUND in TABLE " << encode
-                  << Colour::reset << std::endl;  ///< FINDME
+        LOG_DEBUG(multio_debug, LibMultio) << "EncodeBitsPerValue FOUND in TABLE " << encode << std::endl;
         return encode;
     }
 
     // compute from hacked code or default values
     encode = computeBitsPerValue(paramid, levtype);
 
-    std::cerr << Colour::green
-              << "COMPUTED from CODE " << encode
-              << Colour::reset << std::endl;  ///< FINDME
+    LOG_DEBUG(multio_debug, LibMultio) << "EncodeBitsPerValue COMPUTED from CODE " << encode << std::endl;
 
     cacheBitsPerValue(paramid, levtype, encode);
 

@@ -118,6 +118,7 @@ private:
     std::map<std::string, std::unordered_map<int, Encoding>> cache_;
 
     std::map<std::string, EncodingTable*> tables_;
+
 };
 
 //----------------------------------------------------------------------------------------------------------------------

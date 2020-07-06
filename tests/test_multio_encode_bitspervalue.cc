@@ -92,77 +92,77 @@ CASE("default bitspervalue") {
 
     SECTION("0") {
       paramid = 0;  // returns error
-      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == -2);
+      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == -2);
     }
 
     SECTION("paramid = 130") {
         paramid = 130;
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 16);
     }
 
     SECTION("paramid = 128130") {
         paramid = 128130;
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 16);
     }
 
     SECTION("from table, paramid = 150139 with bitsPerValue") {
         paramid = 150139;
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 14);
     }
 
     SECTION("from table, paramid = 128144 with decimalScaleFactor") {
         std::string levtype = "SFC";
         paramid = 128144;
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 10);
     }
 
     SECTION("Cloud cover [cc] 248") {
       paramid = 248;
-      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
       EXPECT_EQUAL(bpv, 8);
     }
 
     SECTION("Cloud liquid water content [clwc] 246 and Cloud ice water content [ciwc] 247") {
       std::string levtype = "PL";
       paramid = 246;
-      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
       EXPECT_EQUAL(bpv, 12);
       paramid = 247;
-      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
       EXPECT_EQUAL(bpv, 12);
     }
 
     SECTION("210000 < paramid < 228000") {
       paramid = 210100;
-      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
       EXPECT_EQUAL(bpv, 24);
       paramid = 227130;
-      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
       EXPECT_EQUAL(bpv, 24);
     }
 
     SECTION("Cloudy brightness temperature [clbt] 260510 and Clear-sky brightness temperature [csbt] 260511") {
       paramid = 260510;
-      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
       EXPECT_EQUAL(bpv, 10);
       paramid = 260511;
-      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
       EXPECT_EQUAL(bpv, 10);
     }
 
     SECTION("Presence of env variable COMPR_FC_GP_ML for ML fields") {
       levtype = "p";
       paramid = 128130;
-      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
       EXPECT_EQUAL(bpv, 16);
 
       levtype = "ML";
       paramid = 128130;
-      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+      EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
       EXPECT_EQUAL(bpv, 10);
     }
 }
@@ -181,61 +181,61 @@ CASE("repeated queries use cache") {
 
     SECTION("calling after error") {
         paramid = 0;  // returns error
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == -2);
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == -2);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == -2);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == -2);
     }
 
     SECTION("Repeat 3x -- paramid = 128131") {
         paramid = 128131;
 
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 16);
 
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 16);
 
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 16);
     }
 
 
     SECTION("Repeat 2x -- 210000 < paramid < 228000") {
         paramid = 210100;
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 24);
 
         paramid = 227130;
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 24);
 
         paramid = 210100;
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 24);
 
         paramid = 227130;
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 24);
     }
 
     SECTION("Repeat 2x -- Presence of env variable COMPR_FC_GP_ML for ML fields") {
         levtype = "p";
         paramid = 128130;
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 16);
 
         levtype = "ML";
         paramid = 128130;
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 10);
 
         levtype = "PL";
         paramid = 128130;
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 16);
 
         levtype = "m";
         paramid = 128130;
-        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), levtype.size(), &min, &max) == 0);
+        EXPECT(imultio_encode_bitspervalue_(&bpv, &paramid, levtype.c_str(), &min, &max, levtype.size()) == 0);
         EXPECT_EQUAL(bpv, 10);
     }
 }

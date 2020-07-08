@@ -67,7 +67,26 @@ std::vector<long> sequence(size_t sz, size_t start) {
     return vals;
 }
 
-std::vector<long> valid_levlist(const std::string& ltype, size_t sz = 91, size_t start = 1) {
+struct Chunks {
+    size_t offset;
+    size_t size;
+};
+
+std::vector<Chunks> create_chunks(size_t sz) {
+
+    auto quotient = sz / eckit::mpi::comm().size();
+    auto remainder = sz % eckit::mpi::comm().size();
+
+    std::vector<Chunks> chunks;
+    for(auto rank = 0ul, offset = 0ul; rank != eckit::mpi::comm().size(); ++rank) {
+        auto chunk_size = quotient + static_cast<size_t>((rank < remainder) ? 1 : 0);
+        chunks.push_back({offset, chunk_size});
+        offset += chunk_size;
+    }
+    return chunks;
+}
+
+std::vector<long> create_levlist(const std::string& ltype, size_t sz = 91, size_t start = 1) {
 
     std::vector<long> levels;
     if (ltype == "ml") {
@@ -83,7 +102,13 @@ std::vector<long> valid_levlist(const std::string& ltype, size_t sz = 91, size_t
     if (sz < levels.size()) {
         levels.resize(sz);
     }
-    return levels;
+
+    auto chunk = create_chunks(levels.size());
+
+    auto beg = std::begin(levels) + chunk[eckit::mpi::comm().rank()].offset;
+    auto levs = std::vector<long>{beg, beg + chunk[eckit::mpi::comm().rank()].size};
+
+    return levs;
 }
 
 std::vector<long> valid_parameters(const eckit::Configuration& pcnf, const std::string& ltype) {
@@ -465,7 +490,6 @@ void MultioHammer::testData() {
     }
 }
 
-
 void MultioHammer::executeMpi() {
     std::shared_ptr<Transport> transport{TransportFactory::instance().build("mpi", config_)};
 
@@ -566,11 +590,11 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
             size = std::strlen(levtype);
             CODES_CHECK(codes_set_string(handle, "levtype", levtype, &size), nullptr);
 
-            for (auto param : valid_parameters(paramList, levtype)) {
-                CODES_CHECK(codes_set_long(handle, "param", param), nullptr);
+            for (auto level : create_levlist(levtype, levelCount_)) {
+                CODES_CHECK(codes_set_long(handle, "level", level), nullptr);
 
-                for (auto level : valid_levlist(levtype, levelCount_, 1)) {
-                    CODES_CHECK(codes_set_long(handle, "level", level), nullptr);
+                for (auto param : valid_parameters(paramList, levtype)) {
+                    CODES_CHECK(codes_set_long(handle, "param", param), nullptr);
 
                     eckit::Log::debug<multio::LibMultio>()
                         << "Member: " << ensMember_ << ", step: " << step

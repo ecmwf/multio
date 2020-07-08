@@ -197,7 +197,7 @@ extern "C" {
         return 0;
     }
 
-    fortint imultio_encode_bitspervalue_(fortint *bitspervalue, const fortint *paramid, const char* levtype, int levtype_len,  const double *min,  const double *max) {
+    fortint imultio_encode_bitspervalue_(fortint *bitspervalue, const fortint *paramid, const char* levtype,  const double *min,  const double *max, int levtype_len) {
         try {
             std::string slevtype(levtype, levtype + levtype_len);
             eckit::AutoLock<MIO> lock(MIO::instance());

@@ -95,11 +95,8 @@ no-transport-test-configuration :
       actions :
         - type : Sink
           sinks :
-            # - type : fdb5
-            #   config : {}
-
-           # - type : file
-           #   path : hammer.grib
-
-            - type : maestro
+            - type : fdb5
               config : {}
+
+            - type : file
+              path : hammer.grib

@@ -15,6 +15,12 @@
 #ifndef multio_MaestroSink_H
 #define multio_MaestroSink_H
 
+#include <deque>
+
+extern "C" {
+#include <maestro.h>
+}
+
 #include "multio/sink/DataSink.h"
 
 //--------------------------------------------------------------------------------------------------
@@ -39,6 +45,7 @@ private:
     }
 
     std::size_t cdoCount_;
+    std::deque<mstro_cdo> offered_cdos_;
 };
 
 }  // namespace multio

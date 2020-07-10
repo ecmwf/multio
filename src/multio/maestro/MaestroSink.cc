@@ -13,12 +13,9 @@
 
 #include "multio/maestro/MaestroSink.h"
 
-#include <thread>
+#include <algorithm>
 #include <string>
-
-extern "C" {
-#include <maestro.h>
-}
+#include <thread>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/types/Metadata.h"
@@ -32,7 +29,8 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
 
     LOG_DEBUG_LIB(LibMultio) << *this << std::endl;
 
-    mstro_status s = mstro_init("Maestro ECMWF Demo Workflow", "MaestroSink", 0);
+    mstro_status s =
+        mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0);
     ASSERT(s == MSTRO_OK);
 }
 
@@ -72,12 +70,18 @@ void MaestroSink::write(eckit::DataBlobPtr blob) {
 
     s = mstro_cdo_offer(cdo); // Submit field
 
-    s = mstro_cdo_withdraw(cdo);
-    s = mstro_cdo_dispose(cdo);
+    offered_cdos_.push_back(cdo);
 }
 
 void MaestroSink::flush() {
     LOG_DEBUG_LIB(LibMultio) << "MaestroSink::flush()" << std::endl;
+
+    std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo){
+        mstro_status s = mstro_cdo_withdraw(cdo);
+        s = mstro_cdo_dispose(cdo);
+    });
+
+    offered_cdos_.clear();
 }
 
 void MaestroSink::print(std::ostream& os) const {

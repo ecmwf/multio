@@ -1,17 +1,21 @@
 
-list (APPEND multio_server_deps
-    multio
-    eckit_mpi
-    eckit_option
-    eckit
-    metkit
-    eccodes
-)
+if( HAVE_MULTIO_SERVER )
+    list (APPEND multio_server_deps
+        multio
+        eckit_mpi
+        eckit_option
+        eckit
+        metkit
+        eccodes
+    )
+endif()
 
 if( HAVE_FDB5 )
-    list( APPEND multio_server_deps
-        multio-fdb5
-    )
+    list( APPEND multio_server_deps multio-fdb5 )
+endif()
+
+if( HAVE_MAESTRO )
+    list( APPEND multio_server_deps multio-maestro )
 endif()
 
 ecbuild_add_library(

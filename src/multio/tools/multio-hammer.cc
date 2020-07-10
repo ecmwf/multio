@@ -246,6 +246,7 @@ private:
     bool skipTest();
     void testData();
 
+    std::string configPath_ = "";
     std::string transportType_ = "none";
     int port_ = 7777;
 
@@ -287,6 +288,8 @@ private:
 
 MultioHammer::MultioHammer(int argc, char** argv) : multio::MultioTool(argc, argv) {
     options_.push_back(
+        new eckit::option::SimpleOption<std::string>("config", "Path to configuration"));
+    options_.push_back(
         new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbclients", "Number of clients"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbservers", "Number of servers"));
@@ -301,6 +304,7 @@ MultioHammer::MultioHammer(int argc, char** argv) : multio::MultioTool(argc, arg
 
 
 void MultioHammer::init(const eckit::option::CmdArgs& args) {
+    args.get("config", configPath_);
     args.get("transport", transportType_);
     args.get("port", port_);
 
@@ -311,8 +315,12 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
     args.get("nbparams", paramCount_);
     args.get("member", ensMember_);
 
-    config_ = test_configuration(transportType_);
+    config_ =
+        (configPath_.empty())
+            ? test_configuration(transportType_)
+            : eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{configPath_}}};
 
+    transportType_ = config_.getString("transport");
     if (transportType_ == "mpi") {
         auto comm_size = eckit::mpi::comm(config_.getString("group").c_str()).size();
         if (comm_size != clientCount_ + serverCount_) {

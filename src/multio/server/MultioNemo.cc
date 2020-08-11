@@ -136,11 +136,12 @@ public:
 
         metadata_.set("nemoParam", fname);
         metadata_.set("param", paramMap_.get(fname).param);
-        auto gl_size = static_cast<size_t>(metadata_.getInt("globalSize"));
 
         eckit::Log::debug<multio::LibMultio>()
             << "*** Writing field " << fname << ", step = " << metadata_.getInt("step")
             << ", level = " << metadata_.getInt("level") << std::endl;
+
+        auto gl_size = static_cast<size_t>(metadata_.getInt("globalSize"));
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 

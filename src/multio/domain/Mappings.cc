@@ -64,7 +64,7 @@ void Mappings::list(std::ostream& out) const {
 auto Mappings::get(const std::string& name) const -> const Mapping& {
     // Must exist
     eckit::Log::debug<LibMultio>() << "*** Fetch mappings for " << name << std::endl;
-    ASSERT(mappings_.find(name) != end(mappings_));
+    ASSERT_MSG(mappings_.find(name) != end(mappings_), "Cannot find mappings for " + name);
     return mappings_.at(name);
 }
 

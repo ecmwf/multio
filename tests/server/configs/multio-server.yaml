@@ -38,6 +38,7 @@ plans :
       - type : Encode
         format : grib
         template : unstructured.tmpl
+        grid-type : eORCA1
 
       - type : Sink
         sinks :

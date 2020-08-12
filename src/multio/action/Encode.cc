@@ -35,6 +35,9 @@ void GribEncoder::setOceanValues(const message::Metadata& md) {
     setValue("step", md.getLong("step"));
     setValue("level", md.getLong("level"));
 
+    // TODO: Nemo should set this at the beginning of the run
+    setValue("date", 20170906l);
+
     // setDomainDimensions
     setValue("numberOfDataPoints", md.getLong("globalSize"));
     setValue("numberOfValues", md.getLong("globalSize"));

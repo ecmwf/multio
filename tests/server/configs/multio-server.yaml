@@ -5,19 +5,25 @@ serverCount : 3
 clientCount : 5
 
 activeFields :
-  - lon_T
   - lat_T
+  - lon_T
+  - lat_U
+  - lon_U
+  - lat_V
+  - lon_V
+  - lat_W
+  - lon_W
   # - ssh
   # - toce
   - sst
   # - soce
   # - sss
   # - uoce
-  # - ssu
+  - ssu
   # - voce
-  # - ssv
+  - ssv
   # - woce
-  # - ssw
+  - ssw
 
 plans :
 

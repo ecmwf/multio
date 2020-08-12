@@ -5,17 +5,19 @@ serverCount : 3
 clientCount : 5
 
 activeFields :
-  - ssh
-  - toce
+  - lon_T
+  - lat_T
+  # - ssh
+  # - toce
   - sst
-  - soce
-  - sss
-  - uoce
-  - ssu
-  - voce
-  - ssv
-  - woce
-  - ssw
+  # - soce
+  # - sss
+  # - uoce
+  # - ssu
+  # - voce
+  # - ssv
+  # - woce
+  # - ssw
 
 plans :
 
@@ -26,7 +28,7 @@ plans :
         categories : [ocean-model-level]
 
       - type : Statistics
-        output_frequency: 1h
+        output_frequency: 6h
         operations:
           - instant
 

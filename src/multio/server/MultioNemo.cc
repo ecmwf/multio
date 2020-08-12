@@ -210,7 +210,9 @@ void multio_write_field(const char* name, const double* data, int size) {
         MultioNemo::instance().writeField(name, data, size * sizeof(double));
     }
     else {
-        eckit::Log::debug<multio::LibMultio>() << "Writing field " << name << std::endl;
+        eckit::Log::debug<multio::LibMultio>()
+            << "*** Writing field " << name << ", local size = " << size << ", global size = "
+            << MultioNemo::instance().metadata().getInt("globalSize") << std::endl;
     }
 }
 

@@ -23,46 +23,6 @@
 namespace multio {
 namespace action {
 
-GribEncoder::GribEncoder(codes_handle* handle) : metkit::grib::GribHandle{handle} {}
-
-void GribEncoder::setOceanValues(const message::Metadata& md) {
-    // setCommonMetadata
-    setValue("expver", "xxxx");
-    setValue("class", "rd");
-    setValue("stream", "oper");
-    setValue("type", "fc");
-    setValue("levtype", static_cast<long>(168));
-    setValue("step", md.getLong("step"));
-    setValue("level", md.getLong("level"));
-
-    // TODO: Nemo should set this at the beginning of the run
-    setValue("date", 20170906l);
-
-    // setDomainDimensions
-    setValue("numberOfDataPoints", md.getLong("globalSize"));
-    setValue("numberOfValues", md.getLong("globalSize"));
-
-    // Setting parameter ID
-    setValue("param", md.getLong("param"));
-}
-
-void GribEncoder::setValue(const std::string& key, long value) {
-    eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
-    CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
-}
-
-void GribEncoder::setValue(const std::string& key, double value) {
-    eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
-    CODES_CHECK(codes_set_double(raw(), key.c_str(), value), NULL);
-}
-
-void GribEncoder::setValue(const std::string& key, const std::string& value) {
-    eckit::Log::debug<multio::LibMultio>()
-        << "Setting value " << value << " for key " << key << std::endl;
-    size_t sz = value.size();
-    CODES_CHECK(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), NULL);
-}
-
 namespace {
 
 std::unique_ptr<GribEncoder> make_encoder(const eckit::Configuration& config) {

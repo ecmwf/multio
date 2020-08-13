@@ -18,7 +18,7 @@
 #include "eccodes.h"
 
 #include "metkit/grib/GribHandle.h"
-#include "multio/message/Message.h"
+#include "multio/action/GridInfo.h"
 
 namespace multio {
 namespace action {
@@ -27,11 +27,30 @@ class GribEncoder : public metkit::grib::GribHandle {
 public:
     GribEncoder(codes_handle* handle);
 
-    void setOceanValues(const message::Metadata& md);
+    bool gridInfoReady(const std::string& subtype) const;
+    bool setGridInfo(message::Message msg);
+    void setOceanValues(const message::Metadata& md, const std::string& subtype);
 
     void setValue(const std::string& key, long value);
     void setValue(const std::string& key, double value);
     void setValue(const std::string& key, const std::string& value);
+    void setValue(const std::string& key, const unsigned char* value);
+
+    message::Message encodeLatitudes(const std::string& subtype);
+    message::Message encodeLongitudes(const std::string& subtype);
+
+private:
+
+    void setCoordinateMetadata(const  message::Metadata& md);
+
+    std::map<std::string, GridInfo> grids_{{"T grid", GridInfo{}},
+                                           {"U grid", GridInfo{}},
+                                           {"V grid", GridInfo{}},
+                                           {"W grid", GridInfo{}},
+                                           {"F grid", GridInfo{}}};
+
+    std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",
+                                    "lon_V", "lat_W", "lon_W", "lat_F", "lon_F"};
 };
 
 }  // namespace action

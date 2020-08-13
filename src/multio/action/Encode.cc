@@ -65,20 +65,29 @@ void Encode::execute(Message msg) const {
 
     ASSERT(format_ == "grib");
 
-    encoder_->setValue("unstructuredGridType", gridType_);
-    encoder_->setValue("unstructuredGridSubtype", msg.domain());
+    if (encoder_->gridInfoReady(msg.domain())) {
+        encoder_->setValue("unstructuredGridType", gridType_);
+        encoder_->setValue("unstructuredGridSubtype", msg.domain());
 
-    encoder_->setOceanValues(msg.metadata());
+        encoder_->setOceanValues(msg.metadata(), msg.domain());
 
-    // Setting field values
-    auto beg = reinterpret_cast<const double*>(msg.payload().data());
-    encoder_->setDataValues(beg, msg.globalSize());
+        // Setting field values
+        auto beg = reinterpret_cast<const double*>(msg.payload().data());
+        encoder_->setDataValues(beg, msg.globalSize());
 
-    eckit::Buffer buf{encoder_->message()->length()};
-    encoder_->write(buf);
-    msg = Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
+        eckit::Buffer buf{encoder_->message()->length()};
+        encoder_->write(buf);
+        msg =
+            Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
 
-    executeNext(msg);
+        executeNext(msg);
+    }
+    else {
+        if (encoder_->setGridInfo(msg)) {
+            executeNext(encoder_->encodeLatitudes(msg.domain()));
+            executeNext(encoder_->encodeLongitudes(msg.domain()));
+        }
+    }
 }
 
 void Encode::print(std::ostream& os) const {

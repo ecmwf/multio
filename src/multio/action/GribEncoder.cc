@@ -31,11 +31,11 @@ using message::Peer;
 GribEncoder::GribEncoder(codes_handle* handle) : metkit::grib::GribHandle{handle} {}
 
 bool GribEncoder::gridInfoReady(const std::string& subtype) const {
-    return grids_.at(subtype).hash();
+    return not grids_.at(subtype).strHash().empty();
 }
 
 bool GribEncoder::setGridInfo(message::Message msg) {
-    ASSERT(not grids_.at(msg.domain()).hash()); // Panic check during development
+    ASSERT(grids_.at(msg.domain()).strHash().empty()); // Panic check during development
 
     grids_.at(msg.domain()).setSubtype(msg.domain());
 
@@ -70,29 +70,31 @@ void GribEncoder::setOceanValues(const message::Metadata& md, const std::string&
     // Setting parameter ID
     setValue("param", md.getLong("param"));
 
-    setValue("uuidOfHGrid", grids_.at(subtype).hash());
+    setValue("uuidOfHGrid", grids_.at(subtype).byteHash());
 }
 
 void GribEncoder::setValue(const std::string& key, long value) {
-    eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
+    eckit::Log::info()
+        << "*** Setting value " << value << " for key " << key << std::endl;
     CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
 }
 
 void GribEncoder::setValue(const std::string& key, double value) {
-    eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
+    eckit::Log::info()
+        << "*** Setting value " << value << " for key " << key << std::endl;
     CODES_CHECK(codes_set_double(raw(), key.c_str(), value), NULL);
 }
 
 void GribEncoder::setValue(const std::string& key, const std::string& value) {
-    eckit::Log::debug<multio::LibMultio>()
-        << "Setting value " << value << " for key " << key << std::endl;
+    eckit::Log::info()
+        << "*** Setting value " << value << " for key " << key << std::endl;
     size_t sz = value.size();
     CODES_CHECK(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), NULL);
 }
 
 void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
-    eckit::Log::debug<multio::LibMultio>()
-        << "Setting value " << value << " for key " << key << std::endl;
+    eckit::Log::info()
+        << "*** Setting value " << value << " for key " << key << std::endl;
     size_t sz = std::strlen(reinterpret_cast<const char*>(value));
     CODES_CHECK(codes_set_bytes(raw(), key.c_str(), value, &sz), NULL);
 }
@@ -102,7 +104,7 @@ message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
 
     setCoordinateMetadata(msg.metadata());
 
-    setValue("uuidOfHGrid", grids_.at(subtype).hash());
+    setValue("uuidOfHGrid", grids_.at(subtype).byteHash());
 
     // Setting field values -- common to all fields, extract it
     auto beg = reinterpret_cast<const double*>(msg.payload().data());
@@ -119,7 +121,7 @@ message::Message GribEncoder::encodeLongitudes(const std::string& subtype) {
 
     setCoordinateMetadata(msg.metadata());
 
-    setValue("uuidOfHGrid", grids_.at(subtype).hash());
+    setValue("uuidOfHGrid", grids_.at(subtype).byteHash());
 
     // Setting field values -- common to all fields, extract it
     auto beg = reinterpret_cast<const double*>(msg.payload().data());

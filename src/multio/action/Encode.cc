@@ -56,7 +56,7 @@ Encode::Encode(const eckit::Configuration& config) :
 void Encode::execute(Message msg) const {
     ScopedTimer timer{timing_};
 
-    eckit::Log::debug<LibMultio>() << "*** Executing encoding: " << *this << std::endl;
+    eckit::Log::info() << "*** Executing encoding: " << *this << std::endl;
 
     if (not encoder_) {
         executeNext(msg);
@@ -83,6 +83,7 @@ void Encode::execute(Message msg) const {
         executeNext(msg);
     }
     else {
+        eckit::Log::info() << "*** Grid metadata: " << msg.metadata() << std::endl;
         if (encoder_->setGridInfo(msg)) {
             executeNext(encoder_->encodeLatitudes(msg.domain()));
             executeNext(encoder_->encodeLongitudes(msg.domain()));

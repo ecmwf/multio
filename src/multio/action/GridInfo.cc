@@ -14,6 +14,8 @@
 
 #include "GridInfo.h"
 
+#include <cstring>
+
 #include "eckit/exception/Exceptions.h"
 
 namespace multio {
@@ -23,8 +25,8 @@ GridInfo::GridInfo() {}
 
 void GridInfo::setSubtype(const std::string& subtype) {
     if (gridSubtype_.empty()) {
+        eckit::Log::info() << "*** Setting subtype " << std::endl;
         gridSubtype_ = subtype;
-        return;
     }
 
     ASSERT(gridSubtype_ == subtype);
@@ -33,11 +35,15 @@ void GridInfo::setSubtype(const std::string& subtype) {
 void GridInfo::setLatitudes(message::Message msg) {
     ASSERT(latitudes_.size() == 0);
 
+    eckit::Log::info() << "*** Setting latitudes " << std::endl;
+
     latitudes_ = msg;
 }
 
 void GridInfo::setLongitudes(message::Message msg) {
     ASSERT(longitudes_.size() == 0);
+
+    eckit::Log::info() << "*** Setting longitudes " << std::endl;
 
     longitudes_ = msg;
 }
@@ -58,11 +64,17 @@ bool GridInfo::computeHashIfCan() {
     ASSERT(not gridSubtype_.empty()); // Paranoia -- this should never happen
 
     // TODO: compute md5 hash here
-    hash_ = reinterpret_cast<const unsigned char*>((gridSubtype_ + "a1b2c3d4e5").c_str());
+    hash_ = gridSubtype_ + std::string{"a1b2c3d4e5"};
+
+    return true;
 }
 
-const unsigned char* GridInfo::hash() const {
+const std::string& GridInfo::strHash() const {
     return hash_;
+}
+
+const unsigned char* GridInfo::byteHash() const {
+    return reinterpret_cast<const unsigned char*>(hash_.c_str());
 }
 
 }  // namespace action

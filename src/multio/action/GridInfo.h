@@ -32,7 +32,9 @@ public:
     const message::Message& longitudes() const;
 
     bool computeHashIfCan();
-    const unsigned char* hash() const;
+
+    const std::string& strHash() const;
+    const unsigned char* byteHash() const;
 
 private:
 
@@ -40,7 +42,8 @@ private:
     message::Message longitudes_;
     std::string gridSubtype_;
 
-    const unsigned char* hash_ = nullptr;
+    std::string hash_;
+
 };
 
 }  // namespace action

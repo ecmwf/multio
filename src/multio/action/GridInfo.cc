@@ -63,18 +63,26 @@ bool GridInfo::computeHashIfCan() {
 
     ASSERT(not gridSubtype_.empty()); // Paranoia -- this should never happen
 
-    // TODO: compute md5 hash here
-    hash_ = gridSubtype_ + std::string{"a1b2c3d4e5"};
+    // TODO: ensure hash computation is always little endian independent of architecture
+    hashFunction_.add(latitudes_.payload(), latitudes_.payload().size());
+    hashFunction_.add(longitudes_.payload(), longitudes_.payload().size());
+    hashFunction_.add(gridSubtype_.c_str(), gridSubtype_.size());
+
+    hashFunction_.numericalDigest(hashValue_);
+
+    eckit::Log::info() << "*** Setting hash value " << hashValue_ << " with supposed size "
+                       << DIGEST_LENGTH << " and with actual size "
+                       << std::strlen(reinterpret_cast<const char*>(hashValue_)) << std::endl;
 
     return true;
 }
 
-const std::string& GridInfo::strHash() const {
-    return hash_;
+bool GridInfo::hashExists() const {
+    return  static_cast<bool>(hashValue_[0]);
 }
 
-const unsigned char* GridInfo::byteHash() const {
-    return reinterpret_cast<const unsigned char*>(hash_.c_str());
+const unsigned char* GridInfo::hashValue() const {
+    return &hashValue_[0];
 }
 
 }  // namespace action

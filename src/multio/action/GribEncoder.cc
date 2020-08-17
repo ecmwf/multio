@@ -28,26 +28,32 @@ namespace action {
 using message::Message;
 using message::Peer;
 
-GribEncoder::GribEncoder(codes_handle* handle) : metkit::grib::GribHandle{handle} {}
+GribEncoder::GribEncoder(codes_handle* handle) : metkit::grib::GribHandle{handle} {
+    for (auto const& subtype : {"T grid", "U grid", "V grid", "W grid", "F grid"}) {
+        grids_.emplace(subtype, new GridInfo{});
+    }
+}
 
 bool GribEncoder::gridInfoReady(const std::string& subtype) const {
-    return not grids_.at(subtype).strHash().empty();
+    return grids_.at(subtype)->hashExists();
 }
 
 bool GribEncoder::setGridInfo(message::Message msg) {
-    ASSERT(grids_.at(msg.domain()).strHash().empty()); // Panic check during development
+    ASSERT(not gridInfoReady(msg.domain())); // Panic check during development
 
-    grids_.at(msg.domain()).setSubtype(msg.domain());
+    ASSERT(coordSet_.find(msg.metadata().getString("nemoParam")) != end(coordSet_));
+
+    grids_.at(msg.domain())->setSubtype(msg.domain());
 
     if (msg.metadata().getString("nemoParam").substr(0, 3) == "lat") {
-        grids_.at(msg.domain()).setLatitudes(msg);
+        grids_.at(msg.domain())->setLatitudes(msg);
     }
 
     if (msg.metadata().getString("nemoParam").substr(0, 3) == "lon") {
-        grids_.at(msg.domain()).setLongitudes(msg);
+        grids_.at(msg.domain())->setLongitudes(msg);
     }
 
-    return grids_.at(msg.domain()).computeHashIfCan();
+    return grids_.at(msg.domain())->computeHashIfCan();
 }
 
 void GribEncoder::setOceanValues(const message::Metadata& md, const std::string& subtype) {
@@ -70,7 +76,7 @@ void GribEncoder::setOceanValues(const message::Metadata& md, const std::string&
     // Setting parameter ID
     setValue("param", md.getLong("param"));
 
-    setValue("uuidOfHGrid", grids_.at(subtype).byteHash());
+    setValue("uuidOfHGrid", grids_.at(subtype)->hashValue());
 }
 
 void GribEncoder::setValue(const std::string& key, long value) {
@@ -95,16 +101,18 @@ void GribEncoder::setValue(const std::string& key, const std::string& value) {
 void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
     eckit::Log::info()
         << "*** Setting value " << value << " for key " << key << std::endl;
-    size_t sz = std::strlen(reinterpret_cast<const char*>(value));
+    size_t sz = DIGEST_LENGTH;
+    eckit::Log::info() << "*** Setting value " << value << " with size " << sz << " for key " << key
+                       << std::endl;
     CODES_CHECK(codes_set_bytes(raw(), key.c_str(), value, &sz), NULL);
 }
 
 message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
-    auto msg = grids_.at(subtype).latitudes();
+    auto msg = grids_.at(subtype)->latitudes();
 
     setCoordinateMetadata(msg.metadata());
 
-    setValue("uuidOfHGrid", grids_.at(subtype).byteHash());
+    setValue("uuidOfHGrid", grids_.at(subtype)->hashValue());
 
     // Setting field values -- common to all fields, extract it
     auto beg = reinterpret_cast<const double*>(msg.payload().data());
@@ -117,11 +125,11 @@ message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
 }
 
 message::Message GribEncoder::encodeLongitudes(const std::string& subtype) {
-    auto msg = grids_.at(subtype).longitudes();
+    auto msg = grids_.at(subtype)->longitudes();
 
     setCoordinateMetadata(msg.metadata());
 
-    setValue("uuidOfHGrid", grids_.at(subtype).byteHash());
+    setValue("uuidOfHGrid", grids_.at(subtype)->hashValue());
 
     // Setting field values -- common to all fields, extract it
     auto beg = reinterpret_cast<const double*>(msg.payload().data());

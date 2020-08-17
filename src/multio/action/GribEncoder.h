@@ -43,11 +43,7 @@ private:
 
     void setCoordinateMetadata(const  message::Metadata& md);
 
-    std::map<std::string, GridInfo> grids_{{"T grid", GridInfo{}},
-                                           {"U grid", GridInfo{}},
-                                           {"V grid", GridInfo{}},
-                                           {"W grid", GridInfo{}},
-                                           {"F grid", GridInfo{}}};
+    std::map<std::string, std::unique_ptr<GridInfo>> grids_;
 
     std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",
                                     "lon_V", "lat_W", "lon_W", "lat_F", "lon_F"};

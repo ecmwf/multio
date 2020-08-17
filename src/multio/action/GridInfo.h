@@ -15,10 +15,14 @@
 #ifndef multio_server_actions_GridInfo_H
 #define multio_server_actions_GridInfo_H
 
+#include "eckit/utils/MD5.h"
+
 #include "multio/message/Message.h"
 
 namespace multio {
 namespace action {
+
+#define DIGEST_LENGTH MD5_DIGEST_LENGTH
 
 class GridInfo {
 public:
@@ -33,8 +37,8 @@ public:
 
     bool computeHashIfCan();
 
-    const std::string& strHash() const;
-    const unsigned char* byteHash() const;
+    bool hashExists() const;
+    const unsigned char* hashValue() const;
 
 private:
 
@@ -42,8 +46,8 @@ private:
     message::Message longitudes_;
     std::string gridSubtype_;
 
-    std::string hash_;
-
+    unsigned char hashValue_[DIGEST_LENGTH]{};
+    eckit::MD5 hashFunction_;
 };
 
 }  // namespace action

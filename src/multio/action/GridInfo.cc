@@ -17,6 +17,7 @@
 #include <cstring>
 
 #include "eckit/exception/Exceptions.h"
+#include "multio/action/Endian.h"
 
 namespace multio {
 namespace action {
@@ -63,9 +64,8 @@ bool GridInfo::computeHashIfCan() {
 
     ASSERT(not gridSubtype_.empty()); // Paranoia -- this should never happen
 
-    // TODO: ensure hash computation is always little endian independent of architecture
-    hashFunction_.add(latitudes_.payload(), latitudes_.payload().size());
-    hashFunction_.add(longitudes_.payload(), longitudes_.payload().size());
+    addToHash(latitudes_.payload());
+    addToHash(longitudes_.payload());
     hashFunction_.add(gridSubtype_.c_str(), gridSubtype_.size());
 
     hashFunction_.numericalDigest(hashValue_);
@@ -83,6 +83,14 @@ bool GridInfo::hashExists() const {
 
 const unsigned char* GridInfo::hashValue() const {
     return &hashValue_[0];
+}
+
+void GridInfo::addToHash(const eckit::Buffer& buf) {
+    auto ptr = reinterpret_cast<const double*>(buf.data());
+    auto sz = buf.size() / sizeof(double);
+    for (size_t it = 0; it != sz; ++it) {
+        hashFunction_.add(Endian<double>::to_little_endian(*ptr++));
+    }
 }
 
 }  // namespace action

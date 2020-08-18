@@ -42,6 +42,8 @@ public:
 
 private:
 
+    void addToHash(const eckit::Buffer& buf);
+
     message::Message latitudes_;
     message::Message longitudes_;
     std::string gridSubtype_;

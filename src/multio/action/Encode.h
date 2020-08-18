@@ -38,8 +38,6 @@ private:
 
     const std::string format_;
 
-    const std::string gridType_;
-
     const std::unique_ptr<GribEncoder> encoder_ = nullptr;
 };
 

@@ -25,11 +25,10 @@ namespace action {
 
 class GribEncoder : public metkit::grib::GribHandle {
 public:
-    GribEncoder(codes_handle* handle);
+    GribEncoder(codes_handle* handle, const std::string& gridType);
 
     bool gridInfoReady(const std::string& subtype) const;
     bool setGridInfo(message::Message msg);
-    void setOceanValues(const message::Metadata& md, const std::string& subtype);
 
     void setValue(const std::string& key, long value);
     void setValue(const std::string& key, double value);
@@ -39,10 +38,14 @@ public:
     message::Message encodeLatitudes(const std::string& subtype);
     message::Message encodeLongitudes(const std::string& subtype);
 
+    message::Message encodeField(const message::Message& msg);
+
 private:
 
-    void setCoordinateMetadata(const  message::Metadata& md);
+    void setOceanMetadata(const message::Message& msg);
+    message::Message setFieldValues(const  message::Message& msg);
 
+    const std::string gridType_;
     std::map<std::string, std::unique_ptr<GridInfo>> grids_;
 
     std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",

@@ -33,7 +33,8 @@ std::unique_ptr<GribEncoder> make_encoder(const eckit::Configuration& config) {
         eckit::AutoStdFile fin{configuration_path() + config.getString("template")};
         int err;
         return std::unique_ptr<GribEncoder>{
-            new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err)}};
+            new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err),
+                            config.getString("grid-type", "ORCA1")}};
     }
     else if (format == "none") {
         return nullptr;  // leave message in raw binary format
@@ -48,10 +49,7 @@ using message::Message;
 using message::Peer;
 
 Encode::Encode(const eckit::Configuration& config) :
-    Action{config},
-    format_{config.getString("format")},
-    gridType_{config.getString("grid-type", "ORCA1")},
-    encoder_{make_encoder(config)} {}
+    Action{config}, format_{config.getString("format")}, encoder_{make_encoder(config)} {}
 
 void Encode::execute(Message msg) const {
     ScopedTimer timer{timing_};
@@ -66,21 +64,7 @@ void Encode::execute(Message msg) const {
     ASSERT(format_ == "grib");
 
     if (encoder_->gridInfoReady(msg.domain())) {
-        encoder_->setValue("unstructuredGridType", gridType_);
-        encoder_->setValue("unstructuredGridSubtype", msg.domain());
-
-        encoder_->setOceanValues(msg.metadata(), msg.domain());
-
-        // Setting field values
-        auto beg = reinterpret_cast<const double*>(msg.payload().data());
-        encoder_->setDataValues(beg, msg.globalSize());
-
-        eckit::Buffer buf{encoder_->message()->length()};
-        encoder_->write(buf);
-        msg =
-            Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
-
-        executeNext(msg);
+        executeNext(encoder_->encodeField(msg));
     }
     else {
         eckit::Log::info() << "*** Grid metadata: " << msg.metadata() << std::endl;

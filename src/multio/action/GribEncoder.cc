@@ -28,7 +28,8 @@ namespace action {
 using message::Message;
 using message::Peer;
 
-GribEncoder::GribEncoder(codes_handle* handle) : metkit::grib::GribHandle{handle} {
+GribEncoder::GribEncoder(codes_handle* handle, const std::string& gridType) :
+    metkit::grib::GribHandle{handle}, gridType_{gridType} {
     for (auto const& subtype : {"T grid", "U grid", "V grid", "W grid", "F grid"}) {
         grids_.emplace(subtype, new GridInfo{});
     }
@@ -56,27 +57,30 @@ bool GribEncoder::setGridInfo(message::Message msg) {
     return grids_.at(msg.domain())->computeHashIfCan();
 }
 
-void GribEncoder::setOceanValues(const message::Metadata& md, const std::string& subtype) {
+void GribEncoder::setOceanMetadata(const message::Message& msg) {
     // setCommonMetadata
     setValue("expver", "xxxx");
     setValue("class", "rd");
     setValue("stream", "oper");
     setValue("type", "fc");
     setValue("levtype", static_cast<long>(168));
-    setValue("step", md.getLong("step"));
-    setValue("level", md.getLong("level"));
+    setValue("step", msg.metadata().getLong("step"));
+    setValue("level", msg.metadata().getLong("level"));
 
     // TODO: Nemo should set this at the beginning of the run
     setValue("date", 20170906l);
 
     // setDomainDimensions
-    setValue("numberOfDataPoints", md.getLong("globalSize"));
-    setValue("numberOfValues", md.getLong("globalSize"));
+    setValue("numberOfDataPoints", msg.metadata().getLong("globalSize"));
+    setValue("numberOfValues", msg.metadata().getLong("globalSize"));
 
     // Setting parameter ID
-    setValue("param", md.getLong("param"));
+    setValue("param", msg.metadata().getLong("param"));
 
-    setValue("uuidOfHGrid", grids_.at(subtype)->hashValue());
+    // Set ocean grid information
+    setValue("unstructuredGridType", gridType_);
+    setValue("unstructuredGridSubtype", msg.domain());
+    setValue("uuidOfHGrid", grids_.at(msg.domain())->hashValue());
 }
 
 void GribEncoder::setValue(const std::string& key, long value) {
@@ -110,28 +114,26 @@ void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
 message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
     auto msg = grids_.at(subtype)->latitudes();
 
-    setCoordinateMetadata(msg.metadata());
+    setOceanMetadata(msg);
 
-    setValue("uuidOfHGrid", grids_.at(subtype)->hashValue());
-
-    // Setting field values -- common to all fields, extract it
-    auto beg = reinterpret_cast<const double*>(msg.payload().data());
-    this->setDataValues(beg, msg.globalSize());
-
-    eckit::Buffer buf{this->message()->length()};
-    this->write(buf);
-
-    return Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
+    return setFieldValues(msg);
 }
 
 message::Message GribEncoder::encodeLongitudes(const std::string& subtype) {
     auto msg = grids_.at(subtype)->longitudes();
 
-    setCoordinateMetadata(msg.metadata());
+    setOceanMetadata(msg);
 
-    setValue("uuidOfHGrid", grids_.at(subtype)->hashValue());
+    return setFieldValues(msg);
+}
 
-    // Setting field values -- common to all fields, extract it
+message::Message GribEncoder::encodeField(const message::Message& msg) {
+    setOceanMetadata(msg);
+
+    return setFieldValues(msg);
+}
+
+message::Message GribEncoder::setFieldValues(const message::Message& msg) {
     auto beg = reinterpret_cast<const double*>(msg.payload().data());
     this->setDataValues(beg, msg.globalSize());
 
@@ -139,23 +141,6 @@ message::Message GribEncoder::encodeLongitudes(const std::string& subtype) {
     this->write(buf);
 
     return Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
-}
-
-void GribEncoder::setCoordinateMetadata(const message::Metadata& md) {
-    setValue("expver", "xxxx");
-    setValue("class", "rd");
-    setValue("stream", "oper");
-    setValue("type", "fc");
-
-    // TODO: Nemo should set this at the beginning of the run
-    setValue("date", 20170906l);
-
-    // setDomainDimensions
-    setValue("numberOfDataPoints", md.getLong("globalSize"));
-    setValue("numberOfValues", md.getLong("globalSize"));
-
-    // Setting parameter ID
-    setValue("param", md.getLong("param"));
 }
 
 }  // namespace action

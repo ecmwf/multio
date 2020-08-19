@@ -1,12 +1,12 @@
 cmake_minimum_required( VERSION 3.6 FATAL_ERROR )
 
-project( multio C CXX )
+project( multio VERSION 1.1.3 LANGUAGES C CXX )
 
 set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild/cmake")
 
 include( ecbuild_system NO_POLICY_SCOPE )
 
-ecbuild_requires_macro_version( 3.0 )
+ecbuild_requires_macro_version( 3.4 )
 
 ecbuild_declare_project()
 

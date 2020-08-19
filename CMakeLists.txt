@@ -27,7 +27,7 @@ endif()
 ecbuild_add_option( FEATURE FDB5
                     DEFAULT ON
                     DESCRIPTION "Send data to FDB5"
-                    REQUIRED_PACKAGES "PROJECT fdb5 VERSION 5.0" )
+                    REQUIRED_PACKAGES "NAME fdb5 VERSION 5.0" )
 
 ### legacy IFS I/O
 
@@ -40,7 +40,7 @@ ecbuild_add_option( FEATURE LEGACY_IFSIO
 ecbuild_add_option( FEATURE MULTIO_SERVER
                     DEFAULT OFF
                     DESCRIPTION "Multio server"
-                    REQUIRED_PACKAGES "PROJECT atlas VERSION 0.15" )
+                    REQUIRED_PACKAGES "NAME atlas VERSION 0.15" )
 
 ### sandbox
 

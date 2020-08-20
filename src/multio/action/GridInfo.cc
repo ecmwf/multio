@@ -64,9 +64,9 @@ bool GridInfo::computeHashIfCan() {
 
     ASSERT(not gridSubtype_.empty()); // Paranoia -- this should never happen
 
+    hashFunction_.add(gridSubtype_.c_str(), gridSubtype_.size());
     addToHash(latitudes_.payload());
     addToHash(longitudes_.payload());
-    hashFunction_.add(gridSubtype_.c_str(), gridSubtype_.size());
 
     hashFunction_.numericalDigest(hashValue_);
 

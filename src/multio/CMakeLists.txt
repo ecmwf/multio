@@ -120,11 +120,15 @@ ecbuild_add_library(
     GENERATED
         multio_version.cc
 
+    PUBLIC_INCLUDES
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+
     PRIVATE_INCLUDES
       ${METKIT_INCLUDE_DIRS}
       ${ECKIT_INCLUDE_DIRS}
 
-    LIBS
+    PUBLIC_LIBS
         metkit eckit )
 
 add_subdirectory(grib)

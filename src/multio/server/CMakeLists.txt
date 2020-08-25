@@ -1,15 +1,5 @@
-
-list (APPEND multio_server_deps
-    multio
-    eckit_mpi
-    eckit_option
-    eckit
-    metkit
-    eccodes
-)
-
 if( HAVE_FDB5 )
-    list( APPEND multio_server_deps
+    list( APPEND multio_server_plugins
         multio-fdb5
     )
 endif()
@@ -50,6 +40,12 @@ ecbuild_add_library(
         multio_nemo.f90
         multio.f90
 
-    LIBS
-        ${multio_server_deps}
+    PUBLIC_LIBS
+        ${multio_server_plugins}
+        multio
+        eckit_mpi
+        eckit_option
+        eckit
+        metkit
+        eccodes
 )

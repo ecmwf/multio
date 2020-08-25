@@ -1,22 +1,17 @@
-cmake_minimum_required( VERSION 3.6 FATAL_ERROR )
+cmake_minimum_required( VERSION 3.12 FATAL_ERROR )
 
-project( multio VERSION 1.1.3 LANGUAGES C CXX )
+find_package( ecbuild 3.4 REQUIRED )
 
-set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild/cmake")
-
-include( ecbuild_system NO_POLICY_SCOPE )
-
-ecbuild_requires_macro_version( 3.4 )
-
-ecbuild_declare_project()
+project( multio LANGUAGES CXX )
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### dependencies
 
-ecbuild_find_package( NAME eckit VERSION  1.8 REQUIRED )
-ecbuild_find_package( NAME metkit VERSION 1.4 REQUIRED )
+ecbuild_find_package( NAME eccodes VERSION  2.18  REQUIRED )
+ecbuild_find_package( NAME eckit   VERSION  1.13 REQUIRED )
+ecbuild_find_package( NAME metkit  VERSION  1.4  REQUIRED )
 
 if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
@@ -39,6 +34,7 @@ ecbuild_add_option( FEATURE LEGACY_IFSIO
 
 ecbuild_add_option( FEATURE MULTIO_SERVER
                     DEFAULT OFF
+                    CONDITION eckit_HAVE_MPI
                     DESCRIPTION "Multio server"
                     REQUIRED_PACKAGES "NAME atlas VERSION 0.15" )
 

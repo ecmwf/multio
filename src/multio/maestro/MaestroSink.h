@@ -21,6 +21,7 @@ extern "C" {
 #include <maestro.h>
 }
 
+#include "multio/action/Action.h"
 #include "multio/sink/DataSink.h"
 
 //--------------------------------------------------------------------------------------------------
@@ -46,6 +47,8 @@ private:
 
     std::size_t cdoCount_;
     std::deque<mstro_cdo> offered_cdos_;
+
+    eckit::Timing timing_;
 };
 
 }  // namespace multio

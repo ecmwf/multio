@@ -51,12 +51,14 @@ MaestroSink::~MaestroSink() {
 }
 
 void MaestroSink::write(eckit::DataBlobPtr blob) {
-    action::ScopedTimer timer{timing_};
-
-    LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
 
     auto name = std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())) +
                 "-" + std::to_string(cdoCount_++);
+
+    LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
+
+    action::ScopedTimer timer{timing_};
+
     mstro_cdo cdo = nullptr;
     mstro_status s = mstro_cdo_declare(name.c_str(), MSTRO_ATTR_DEFAULT, &cdo);
 

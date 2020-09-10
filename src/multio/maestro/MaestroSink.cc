@@ -29,20 +29,36 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
 
     LOG_DEBUG_LIB(LibMultio) << *this << std::endl;
 
-    mstro_status s =
-        mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0);
-    ASSERT(s == MSTRO_OK);
+    eckit::Timing timing;
+    {
+        action::ScopedTimer timer{timing};
+        mstro_status s =
+            mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0);
+        ASSERT(s == MSTRO_OK);
+    }
+    eckit::Log::info() << " MaestroSink: initialising Maestro has taken " << timing.elapsed_ << "s"
+                       << std::endl;
 }
 
 MaestroSink::~MaestroSink() {
-    mstro_finalize();
+    eckit::Timing timing;
+    {
+        action::ScopedTimer timer{timing};
+        mstro_finalize();
+    }
+    eckit::Log::info() << " MaestroSink: finalising Maestro has taken " << timing.elapsed_ << "s"
+                       << std::endl;
 }
 
 void MaestroSink::write(eckit::DataBlobPtr blob) {
-    LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
 
     auto name = std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())) +
                 "-" + std::to_string(cdoCount_++);
+
+    LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
+
+    action::ScopedTimer timer{timing_};
+
     mstro_cdo cdo = nullptr;
     mstro_status s = mstro_cdo_declare(name.c_str(), MSTRO_ATTR_DEFAULT, &cdo);
 
@@ -74,14 +90,21 @@ void MaestroSink::write(eckit::DataBlobPtr blob) {
 }
 
 void MaestroSink::flush() {
-    LOG_DEBUG_LIB(LibMultio) << "MaestroSink::flush()" << std::endl;
+    {
+        action::ScopedTimer timer{timing_};
+        LOG_DEBUG_LIB(LibMultio) << "MaestroSink::flush()" << std::endl;
 
-    std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo){
-        mstro_status s = mstro_cdo_withdraw(cdo);
-        s = mstro_cdo_dispose(cdo);
-    });
+        std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo) {
+            mstro_status s = mstro_cdo_withdraw(cdo);
+            s = mstro_cdo_dispose(cdo);
+        });
 
-    offered_cdos_.clear();
+        offered_cdos_.clear();
+    }
+    eckit::Log::info() << " MaestroSink: CDO count = " << cdoCount_
+                       << " -- writing the last step has taken " << timing_.elapsed_ << "s"
+                       << std::endl;
+    timing_ = eckit::Timing{}; // Resetting
 }
 
 void MaestroSink::print(std::ostream& os) const {

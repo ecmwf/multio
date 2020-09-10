@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <fstream>
 #include <random>
+#include "unistd.h"
 
 #include "eccodes.h"
 
@@ -255,7 +256,9 @@ private:
     size_t stepCount_ = 3;
     size_t levelCount_ = 3;
     size_t paramCount_ = 3;
+
     long ensMember_ = 1;
+    long sleep_ = 0;
 
     eckit::LocalConfiguration config_;
 
@@ -300,6 +303,7 @@ MultioHammer::MultioHammer(int argc, char** argv) : multio::MultioTool(argc, arg
     options_.push_back(
         new eckit::option::SimpleOption<size_t>("nbsteps", "Number of output time steps"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("member", "Ensemble member"));
+    options_.push_back(new eckit::option::SimpleOption<long>("sleep", "Seconds of simulated work per step"));
 }
 
 
@@ -314,6 +318,7 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
     args.get("nblevels", levelCount_);
     args.get("nbparams", paramCount_);
     args.get("member", ensMember_);
+    args.get("sleep", sleep_);
 
     config_ =
         (configPath_.empty())
@@ -590,6 +595,8 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
     CODES_CHECK(codes_set_long(handle, "number", ensMember_), nullptr);
 
     for (auto step : sequence(stepCount_, 1)) {
+        ::sleep(sleep_);
+
         CODES_CHECK(codes_set_long(handle, "step", step), nullptr);
 
         const auto& paramList = config_.getSubConfiguration("parameters");

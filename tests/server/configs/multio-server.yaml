@@ -26,7 +26,7 @@ plans :
         categories : [ocean-model-level]
 
       - type : Statistics
-        output_frequency: 1
+        output_frequency: 1h
         operations:
           - instant
 
@@ -47,3 +47,31 @@ plans :
       #     - type : file
       #       append : true
       #       path : ocean-pipe.grib
+
+
+  # - name : ocean-hourly
+  #   actions :
+  #     - type : Select
+  #       match : field
+  #       items : [sst, sss]
+
+  #     - type : Statistics
+  #       output_frequency: 1h
+  #       operations:
+  #         - average
+  #         - minimum
+  #         - maximum
+
+  #     - type : Aggregation
+
+  #     # - type : SingleFieldSink
+  #     #   root_path : "/scratch/ma/masd/ocean-fields/"
+
+  #     - type : Encode
+  #       format : grib
+  #       template : unstructured.tmpl
+
+  #     - type : Sink
+  #       sinks :
+  #         - type : fdb5
+  #           config : {}

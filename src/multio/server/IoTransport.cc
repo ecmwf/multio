@@ -14,31 +14,21 @@
 #include <typeinfo>
 
 #include "eckit/config/YAMLConfiguration.h"
-#include "eckit/filesystem/PathName.h"
-#include "eckit/log/JSON.h"
 
+#include "multio/util/print_buffer.h"
 #include "multio/LibMultio.h"
-
 #include "multio/server/Listener.h"
-#include "multio/server/print_buffer.h"
+#include "multio/server/ConfigurationPath.h"
 #include "multio/server/ThreadTransport.h"
 
 using multio::server::Listener;
-using multio::server::Message;
-using multio::server::Metadata;
-using multio::server::print_buffer;
+using multio::message::Message;
+using multio::message::Metadata;
+using multio::print_buffer;
 using multio::server::Transport;
 using multio::server::TransportFactory;
 
 namespace {
-eckit::PathName configuration_path() {
-    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
-                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
-                               : eckit::PathName{""};
-
-    return base + "/configs/";
-}
-
 eckit::LocalConfiguration test_configuration(const std::string& type) {
     eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
 
@@ -128,7 +118,7 @@ public:
 
 // C/Fortran nterface
 
-using multio::server::Peer;
+using multio::message::Peer;
 
 #ifdef __cplusplus
     extern "C" {
@@ -145,7 +135,7 @@ void open_multio_connection_() {
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
-    Message open{Message::Header{Message::Tag::Open, client, server}, std::string("open")};
+    Message open{Message::Header{Message::Tag::Open, client, server}, eckit::Buffer{"open"}};
     IoTransport::instance().transport().send(open);
 }
 
@@ -154,7 +144,7 @@ void close_multio_connection_() {
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
-    Message close{Message::Header{Message::Tag::Close, client, server}, std::string("close")};
+    Message close{Message::Header{Message::Tag::Close, client, server}, eckit::Buffer{"close"}};
     IoTransport::instance().transport().send(close);
 }
 
@@ -163,7 +153,7 @@ void send_multio_step_complete_() {
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
-    Message close{Message::Header{Message::Tag::StepComplete, client, server}, std::string("flush")};
+    Message close{Message::Header{Message::Tag::StepComplete, client, server}, eckit::Buffer{"flush"}};
     IoTransport::instance().transport().send(close);
 }
 
@@ -221,13 +211,11 @@ void send_multio_grib_template_(const void* grib_msg, fortint *words) {
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
-    std::stringstream field_id;
-    eckit::JSON json(field_id);
-    json << IoTransport::instance().metadata();
+    std::string field_id = multio::message::to_string(IoTransport::instance().metadata());
 
     Message msg{Message::Header{Message::Tag::Grib, client, server, "", "",
                                 IoTransport::instance().clientCount(),
-                                IoTransport::instance().globalSize(), "", field_id.str()},
+                                IoTransport::instance().globalSize(), "", field_id},
                 buffer};
 
     std::cout << "*** Sending message from " << msg.source() << " to " << msg.destination()
@@ -282,14 +270,12 @@ void send_multio_field_(const double* data, fortint* size, const char* name, con
 
     eckit::Buffer buffer{(const char*)(data), (*size) * sizeof(double)};
 
-    std::stringstream field_id;
-    eckit::JSON json(field_id);
-    json << IoTransport::instance().metadata();
+    std::string field_id = multio::message::to_string(IoTransport::instance().metadata());
 
-    auto gribName = IoTransport::instance().metadata().getString("igrib");
+    auto gribName = IoTransport::instance().metadata().getString("param");
     Message msg{Message::Header{Message::Tag::Field, client, server, gribName, category,
                                 IoTransport::instance().clientCount(),
-                                IoTransport::instance().globalSize(), domain_name, field_id.str()},
+                                IoTransport::instance().globalSize(), domain_name, field_id},
                 buffer};
 
     IoTransport::instance().transport().send(msg);

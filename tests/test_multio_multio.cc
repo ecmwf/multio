@@ -16,8 +16,8 @@
 #include "eckit/testing/Test.h"
 #include "eckit/utils/Translator.h"
 
-#include "multio/FileSink.h"
-#include "multio/MultIO.h"
+#include "multio/sink/FileSink.h"
+#include "multio/sink/MultIO.h"
 
 #include "TestHelpers.h"
 

@@ -16,8 +16,8 @@
 #include "eckit/utils/Tokenizer.h"
 #include "eckit/testing/Test.h"
 
-#include "multio/DataSink.h"
-#include "multio/FileSink.h"
+#include "multio/sink/DataSink.h"
+#include "multio/sink/FileSink.h"
 
 using namespace eckit;
 using namespace eckit::testing;

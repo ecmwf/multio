@@ -9,6 +9,7 @@ mpi-test-configuration :
     - name : atmosphere
       actions :
         - type : Select
+          match : category
           categories : [model-level, pressure-level, surface-level]
 
         - type : Aggregation
@@ -21,6 +22,7 @@ mpi-test-configuration :
     - name : ocean
       actions :
         - type : Select
+          match : category
           categories : [ocean-model-level]
 
         - type : Aggregation
@@ -45,6 +47,7 @@ thread-test-configuration :
     - name : atmosphere
       actions :
         - type : Select
+          match : category
           categories : [model-level, pressure-level, surface-level]
 
         - type : Aggregation
@@ -69,6 +72,7 @@ tcp-test-configuration:
     - name : atmosphere
       actions :
         - type : Select
+          match : category
           categories : [model-level, pressure-level, surface-level]
 
         - type : Aggregation
@@ -81,7 +85,11 @@ tcp-test-configuration:
 
 no-transport-test-configuration :
   transport : none
-  parameters : [130, 133, 135, 138, 155, 203, 246, 247, 248, 75, 76]
+  parameters :
+    ml : [130, 133, 135, 138, 155, 203, 246, 247, 248, 75, 76]
+    pl : [60, 129, 130, 133, 135, 138, 155, 157, 203]
+    sfc : [228001, 228010, 228011, 228012, 129, 228013, 130, 131, 132, 134, 136, 137, 139, 228014, 142, 144, 145, 148, 151, 159, 164, 170, 172, 178, 180, 181, 182, 183, 186, 187, 188, 195, 196, 197, 198, 3017, 3063, 3066]
+
   plans :
     - name : atmosphere
       actions :

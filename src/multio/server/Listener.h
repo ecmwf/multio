@@ -22,8 +22,8 @@
 
 #include "eckit/container/Queue.h"
 
-#include "multio/server/Peer.h"
-#include "multio/server/Message.h"
+#include "multio/message/Peer.h"
+#include "multio/message/Message.h"
 
 namespace eckit {
 class Configuration;
@@ -43,7 +43,7 @@ public:
 
 private:
     bool moreConnections() const;
-    void checkConnection(const Peer& conn) const;
+    void checkConnection(const message::Peer& conn) const;
 
     std::shared_ptr<Dispatcher> dispatcher_;
 
@@ -52,9 +52,9 @@ private:
     size_t closedCount_ = 0;
     size_t clientCount_ = 0;
 
-    std::set<Peer> connections_;
+    std::set<message::Peer> connections_;
 
-    eckit::Queue<Message> msgQueue_;
+    eckit::Queue<message::Message> msgQueue_;
 };
 
 }  // namespace server

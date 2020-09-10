@@ -22,33 +22,26 @@
 
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
-#include "eckit/filesystem/PathName.h"
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/runtime/Main.h"
 
 #include "multio/LibMultio.h"
-#include "multio/server/Metadata.h"
+#include "multio/message/Metadata.h"
+#include "multio/server/ConfigurationPath.h"
 #include "multio/server/MultioClient.h"
 #include "multio/server/MultioServer.h"
-#include "multio/server/print_buffer.h"
+#include "multio/server/NemoToGrib.h"
+#include "multio/util/print_buffer.h"
 
-using multio::server::Metadata;
-using multio::server::print_buffer;
+using multio::message::Metadata;
+using multio::print_buffer;
 using multio::server::MultioClient;
 using multio::server::MultioServer;
 
 using NemoKey = std::string;
 
 namespace {
-eckit::PathName configuration_path() {
-    eckit::PathName base = (::getenv("MULTIO_SERVER_PATH"))
-                               ? eckit::PathName{::getenv("MULTIO_SERVER_PATH")}
-                               : eckit::PathName{""};
-
-    return base + "/configs/";
-}
-
 std::set<std::string> fetch_active_fields(const eckit::Configuration& cfg) {
     const auto& vec = cfg.getStringVector("activeFields");
     return std::set<std::string>{begin(vec), end(vec)};
@@ -59,15 +52,6 @@ struct GribData {
     std::string gridType;
 };
 
-std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& cfg) {
-    const auto& cfgList = cfg.getSubConfigurations("nemo-fields");
-    std::map<std::string, GribData> nemo_map;
-    for (auto const& cfg : cfgList) {
-        nemo_map[cfg.getString("nemo-id")] = {cfg.getLong("param-id"), cfg.getString("grid-type")};
-    }
-    return nemo_map;
-}
-
 }  // namespace
 
 class MultioNemo {
@@ -75,7 +59,7 @@ class MultioNemo {
     const std::set<std::string> activeFields_;
 
     // Nemo to grib dictionary
-    std::map<NemoKey, GribData> parameters_;
+    NemoToGrib paramMap_;
 
     Metadata metadata_;
 
@@ -89,9 +73,7 @@ class MultioNemo {
 
     MultioNemo() :
         config_{eckit::YAMLConfiguration{configuration_path() + "multio-server.yaml"}},
-        activeFields_{fetch_active_fields(config_)},
-        parameters_{fetch_nemo_params(
-            eckit::YAMLConfiguration{configuration_path() + "nemo-to-grib.yaml"})} {
+        activeFields_{fetch_active_fields(config_)} {
         static const char* argv[2] = {"MultioNemo", 0};
         eckit::Main::initialise(1, const_cast<char**>(argv));
     }
@@ -152,18 +134,19 @@ public:
 
         ASSERT(isActive(fname));
 
-        metadata_.set("igrib", fname);
-        metadata_.set("param", parameters_[fname].param);
-        auto gl_size = static_cast<size_t>(metadata_.getInt("isizeg"));
+        metadata_.set("nemoParam", fname);
+        metadata_.set("param", paramMap_.get(fname).param);
 
         eckit::Log::debug<multio::LibMultio>()
-            << "*** Writing field " << fname << ", step = " << metadata_.getInt("istep")
-            << ", level = " << metadata_.getInt("ilevg") << std::endl;
+            << "*** Writing field " << fname << ", step = " << metadata_.getInt("step")
+            << ", level = " << metadata_.getInt("level") << std::endl;
+
+        auto gl_size = static_cast<size_t>(metadata_.getInt("globalSize"));
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 
         MultioNemo::instance().client().sendField(fname, "ocean-model-level", gl_size,
-                                                  parameters_[fname].gridType, metadata_,
+                                                  paramMap_.get(fname).gridType, metadata_,
                                                   std::move(field_vals));
     }
 
@@ -203,6 +186,11 @@ void multio_init_server(int nemo_comm) {
 void multio_metadata_set_int_value(const char* key, int value) {
     std::string skey{key};
     MultioNemo::instance().metadata().set(skey, value);
+}
+
+void multio_metadata_set_string_value(const char* key, const char* value) {
+    std::string skey{key}, svalue{value};
+    MultioNemo::instance().metadata().set(skey, svalue);
 }
 
 void multio_set_domain(const char* name, int* data, int size) {

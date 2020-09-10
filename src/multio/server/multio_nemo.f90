@@ -8,6 +8,7 @@ module multio_nemo
     public multio_write_step_complete
     public multio_init_server
     public multio_metadata_set_int_value
+    public multio_metadata_set_string_value
     public multio_init_client
     public multio_set_domain
     public multio_write_field
@@ -47,6 +48,13 @@ module multio_nemo
             character(c_char), intent(in) :: key(*)
             integer(c_int), intent(in), value :: val
         end subroutine c_multio_metadata_set_int_value
+
+        subroutine c_multio_metadata_set_string_value(key, val) bind(c, name='multio_metadata_set_string_value')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            character(c_char), intent(in) :: key(*)
+            character(c_char), intent(in) :: val(*)
+        end subroutine c_multio_metadata_set_string_value
 
         function c_multio_init_client(c_name, parent_comm) result(ret_comm) bind(c, name='multio_init_client')
             use, intrinsic :: iso_c_binding
@@ -106,6 +114,15 @@ module multio_nemo
             call c_multio_metadata_set_int_value(to_c_string(key), val)
 
         end subroutine multio_metadata_set_int_value
+
+        subroutine multio_metadata_set_string_value(key, val)
+            implicit none
+            character(*), intent(in) :: key
+            character(*), intent(in) :: val
+
+            call c_multio_metadata_set_string_value(to_c_string(key), to_c_string(val))
+
+        end subroutine multio_metadata_set_string_value
 
         subroutine multio_init_client(name, ret_comm, parent_comm)
             implicit none

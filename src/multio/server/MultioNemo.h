@@ -29,6 +29,8 @@ void multio_init_server(int nemo_comm);
 
 void multio_metadata_set_int_value(const char* key, int value);
 
+void multio_metadata_set_string_value(const char* key, const char* value);
+
 void multio_set_domain(const char* key, int* data, int size);
 
 void multio_write_field(const char* fname, const double* data, int size);

@@ -46,6 +46,17 @@ Message decodeMessage(eckit::Stream& stream) {
 }  // namespace
 
 
+TcpPeer::TcpPeer(const std::string& host, size_t port) : Peer{host, port} {}
+TcpPeer::TcpPeer(const std::string& host, int port) : Peer{host, static_cast<size_t>(port)} {}
+
+const std::string& TcpPeer::host() const {
+    return group_;
+}
+
+size_t TcpPeer::port() const {
+    return id_;
+}
+
 struct Connection {
     eckit::Select& select_;
     eckit::net::TCPSocket socket_;

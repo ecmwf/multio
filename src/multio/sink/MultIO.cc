@@ -91,6 +91,8 @@ void MultIO::write(eckit::message::Message message) {
         sink->write(message);
     }
 
+    std::cout << "Trigger events for message " << message << std::endl;
+
     trigger_.events(message);
 }
 

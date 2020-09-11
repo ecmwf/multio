@@ -17,6 +17,7 @@
 
 #include "multio/sink/FileSink.h"
 #include "multio/sink/MultIO.h"
+#include "multio/message/DataContent.h"
 
 #include "TestHelpers.h"
 
@@ -122,7 +123,7 @@ CASE("test_multio_with_event_trigger") {
         for (int step = 0; step <= 24; step++) {
             for (int level = 1; level <= 5; level++) {
                 std::ostringstream os;
-                eckit::JSON msg(os);
+                eckit::JSON json(os);
 
                 auto stream = "oper";
                 [step, level, stream](eckit::JSON& json) {
@@ -131,14 +132,15 @@ CASE("test_multio_with_event_trigger") {
                     json << "step" << eckit::Translator<long, std::string>{}(step);
                     json << "level" << eckit::Translator<long, std::string>{}(level);
                     json.endObject();
-                }(msg);
+                }(json);
 
-                NOTIMP;
-#if 0 // FINDME
-                eckit::DataBlobPtr blob(new eckit::JSONDataBlob(os.str().c_str(), os.str().size()));
+                std::cout << "JSON content: " << os.str() << std::endl;
 
-                mio->write(blob);
-#endif
+                message::Metadata md{eckit::YAMLConfiguration{os.str()}};
+                eckit::message::Message msg{
+                    new message::DataContent{os.str().c_str(), os.str().length(), md}};
+
+                mio->write(msg);
             }
         }
     }  // mio is destroyed

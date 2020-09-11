@@ -77,6 +77,8 @@ list( APPEND multio_message_srcs
     message/Message.h
     message/Metadata.cc
     message/Metadata.h
+    message/DataContent.cc
+    message/DataContent.h
     message/Peer.cc
     message/Peer.h
 )

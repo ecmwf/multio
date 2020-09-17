@@ -12,14 +12,33 @@
 
 #include <iostream>
 
+#include "eccodes.h"
+
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/message/Message.h"
+
+#include "metkit/codes/CodesContent.h"
 
 #include "multio/sink/DataSink.h"
 #include "multio/LibMultio.h"
+#include "multio/message/DataContent.h"
 
 namespace multio {
 namespace action {
+
+namespace {
+eckit::message::MessageContent* to_msg_content(Message msg) {
+    if(msg.tag() == Message::Tag::Grib) {
+        codes_handle* h = codes_handle_new_from_message(nullptr, msg.payload().data(), msg.size());
+        return new metkit::codes::CodesContent{h, true};
+    }
+
+    ASSERT(msg.tag() == Message::Tag::Field);
+    return new message::DataContent(msg.payload().data(), msg.size());
+}
+
+}  // namespace
 
 SingleFieldSink::SingleFieldSink(const eckit::Configuration& config) :
     Action{config},
@@ -50,27 +69,12 @@ void SingleFieldSink::write(Message msg) const {
         << "::" << msg.metadata().getUnsigned("step");
     eckit::LocalConfiguration config;
 
-    NOTIMP;
-#if 0 // FINDME
     config.set("path", oss.str());
     dataSink_.reset(DataSinkFactory::instance().build("file", config));
 
-    eckit::DataBlobPtr blob;
-    switch (msg.tag()) {
-        case Message::Tag::Field:
-            blob.reset(eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
-            break;
-
-        case Message::Tag::Grib:
-            blob.reset(eckit::DataBlobFactory::build("grib", msg.payload().data(), msg.size()));
-            break;
-
-        default:
-            ASSERT(false);
-    }
+    eckit::message::Message blob(to_msg_content(msg));
 
     dataSink_->write(blob);
-#endif
 }
 
 void SingleFieldSink::flush() const {

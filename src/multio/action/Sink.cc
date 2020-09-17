@@ -12,19 +12,34 @@
 
 #include <iostream>
 
+#include "eccodes.h"
+
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/message/Message.h"
+
+#include "metkit/codes/CodesContent.h"
 
 #include "multio/LibMultio.h"
+#include "multio/message/DataContent.h"
+
 
 namespace multio {
 namespace action {
 
 
 namespace {
-const std::map<Message::Tag, std::string> to_blob = {{Message::Tag::Field, "plain"},
-                                                     {Message::Tag::Grib, "grib"}};
+eckit::message::MessageContent* to_msg_content(Message msg) {
+    if(msg.tag() == Message::Tag::Grib) {
+        codes_handle* h = codes_handle_new_from_message(nullptr, msg.payload().data(), msg.size());
+        return new metkit::codes::CodesContent{h, true};
+    }
+
+    ASSERT(msg.tag() == Message::Tag::Field);
+    return new message::DataContent(msg.payload().data(), msg.size());
 }
+
+}  // namespace
 
 Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 
@@ -54,17 +69,9 @@ void Sink::execute(Message msg) const {
 }
 
 void Sink::write(Message msg) const {
-    ASSERT(to_blob.find(msg.tag()) != to_blob.end());
-
-    /// translate multio::Message to eckit::message::Message
-
-NOTIMP;
-#if 0 // FINDME
-    eckit::DataBlobPtr blob{
-        eckit::DataBlobFactory::build(to_blob.at(msg.tag()), msg.payload().data(), msg.size())};
+    eckit::message::Message blob(to_msg_content(msg));
 
     mio_.write(blob);
-#endif
 }
 
 void Sink::flush() const {

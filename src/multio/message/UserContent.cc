@@ -1,5 +1,5 @@
 
-#include "DataContent.h"
+#include "UserContent.h"
 
 #include <sstream>
 
@@ -9,20 +9,20 @@
 namespace multio {
 namespace message {
 
-DataContent::DataContent(const void* data, size_t size) : data_{data}, size_{size} {}
+UserContent::UserContent(const void* data, size_t size) : data_{data}, size_{size} {}
 
-DataContent::DataContent(const void* data, size_t size, const Metadata& metadata) :
+UserContent::UserContent(const void* data, size_t size, const Metadata& metadata) :
     data_{data}, size_{size}, metadata_{metadata} {}
 
-eckit::DataHandle* DataContent::readHandle() const {
+eckit::DataHandle* UserContent::readHandle() const {
     return new eckit::MemoryHandle{data_, size_};
 }
 
-size_t DataContent::length() const {
+size_t UserContent::length() const {
     return size_;
 }
 
-void DataContent::write(eckit::DataHandle& handle) const {
+void UserContent::write(eckit::DataHandle& handle) const {
     if (handle.write(data_, size_) != static_cast<long>(size_)) {
         std::ostringstream oss;
         oss << "Write error to data handle " << handle;
@@ -30,19 +30,19 @@ void DataContent::write(eckit::DataHandle& handle) const {
     }
 }
 
-void DataContent::print(std::ostream& os) const {
-    os << "multio::message::DataContent";
+void UserContent::print(std::ostream& os) const {
+    os << "multio::message::UserContent";
 }
 
-std::string DataContent::getString(const std::string& key) const {
+std::string UserContent::getString(const std::string& key) const {
     return metadata_.getString(key);
 }
 
-long DataContent::getLong(const std::string &key) const {
+long UserContent::getLong(const std::string &key) const {
     return metadata_.getLong(key);
 }
 
-double DataContent::getDouble(const std::string &key) const {
+double UserContent::getDouble(const std::string &key) const {
     return metadata_.getDouble(key);
 }
 

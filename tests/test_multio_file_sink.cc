@@ -17,7 +17,7 @@
 #include "eckit/filesystem/TmpFile.h"
 #include "eckit/message/Message.h"
 
-#include "multio/message/DataContent.h"
+#include "multio/message/UserContent.h"
 #include "multio/sink/FileSink.h"
 
 namespace multio {
@@ -44,7 +44,7 @@ CASE("FileSink writes correctly") {
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
-    eckit::message::Message msg{new message::DataContent{quote, sizeof(quote) - 1}};
+    eckit::message::Message msg{new message::UserContent{quote, sizeof(quote) - 1}};
     sink->write(msg);
 
     EXPECT(file_content(file_path) == std::string(quote));
@@ -57,13 +57,13 @@ CASE("FileSink creates new file by default") {
 
     {
         auto sink = make_configured_file_sink(file_path);
-        eckit::message::Message msg{new message::DataContent{quote, sizeof(quote) - 1}};
+        eckit::message::Message msg{new message::UserContent{quote, sizeof(quote) - 1}};
         sink->write(msg);
     }
 
     {
         auto sink = make_configured_file_sink(file_path);
-        eckit::message::Message msg{new message::DataContent{quote, sizeof(quote) - 1}};
+        eckit::message::Message msg{new message::UserContent{quote, sizeof(quote) - 1}};
         sink->write(msg);
     }
 
@@ -78,13 +78,13 @@ CASE("FileSink creates new file by explicit request") {
 
     {
         auto sink = make_configured_file_sink(file_path);
-        eckit::message::Message msg{new message::DataContent{quote, sizeof(quote) - 1}};
+        eckit::message::Message msg{new message::UserContent{quote, sizeof(quote) - 1}};
         sink->write(msg);
     }
 
     {
         auto sink = make_configured_file_sink(file_path, false);
-        eckit::message::Message msg{new message::DataContent{quote, sizeof(quote) - 1}};
+        eckit::message::Message msg{new message::UserContent{quote, sizeof(quote) - 1}};
         sink->write(msg);
     }
 
@@ -98,13 +98,13 @@ CASE("FileSink appends to existing file") {
 
     {
         auto sink = make_configured_file_sink(file_path);
-        eckit::message::Message msg{new message::DataContent{quote, sizeof(quote) - 1}};
+        eckit::message::Message msg{new message::UserContent{quote, sizeof(quote) - 1}};
         sink->write(msg);
     }
 
     {
         auto sink = make_configured_file_sink(file_path, true);
-        eckit::message::Message msg{new message::DataContent{quote, sizeof(quote) - 1}};
+        eckit::message::Message msg{new message::UserContent{quote, sizeof(quote) - 1}};
         sink->write(msg);
     }
 

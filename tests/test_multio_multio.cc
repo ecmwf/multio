@@ -17,7 +17,7 @@
 
 #include "multio/sink/FileSink.h"
 #include "multio/sink/MultIO.h"
-#include "multio/message/DataContent.h"
+#include "multio/message/UserContent.h"
 
 #include "TestHelpers.h"
 
@@ -138,7 +138,7 @@ CASE("test_multio_with_event_trigger") {
 
                 message::Metadata md{eckit::YAMLConfiguration{os.str()}};
                 eckit::message::Message msg{
-                    new message::DataContent{os.str().c_str(), os.str().length(), md}};
+                    new message::UserContent{os.str().c_str(), os.str().length(), md}};
 
                 mio->write(msg);
             }

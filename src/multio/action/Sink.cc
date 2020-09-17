@@ -21,7 +21,7 @@
 #include "metkit/codes/CodesContent.h"
 
 #include "multio/LibMultio.h"
-#include "multio/message/DataContent.h"
+#include "multio/message/UserContent.h"
 
 
 namespace multio {
@@ -36,7 +36,7 @@ eckit::message::MessageContent* to_msg_content(Message msg) {
     }
 
     ASSERT(msg.tag() == Message::Tag::Field);
-    return new message::DataContent(msg.payload().data(), msg.size());
+    return new message::UserContent(msg.payload().data(), msg.size());
 }
 
 }  // namespace

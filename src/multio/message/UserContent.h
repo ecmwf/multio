@@ -14,8 +14,8 @@
 
 /// @date Sep 2020
 
-#ifndef multio_message_DataContent_H
-#define multio_message_DataContent_H
+#ifndef multio_message_UserContent_H
+#define multio_message_UserContent_H
 
 #include "eckit/message/MessageContent.h"
 
@@ -24,10 +24,10 @@
 namespace multio {
 namespace message {
 
-class DataContent : public eckit::message::MessageContent {
+class UserContent : public eckit::message::MessageContent {
 public:
-    DataContent(const void*, size_t size);
-    DataContent(const void*, size_t size, const Metadata& metadata);
+    UserContent(const void*, size_t size);
+    UserContent(const void*, size_t size, const Metadata& metadata);
 
 private:
     const void* data_;

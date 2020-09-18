@@ -29,21 +29,23 @@ public:
     UserContent(const void*, size_t size);
     UserContent(const void*, size_t size, const Metadata& metadata);
 
+    void write(eckit::DataHandle &) const override;
+    eckit::DataHandle* readHandle() const override;
+
+    size_t length() const override;
+    const void* data() const override;
+
+    std::string getString(const std::string &key) const override;
+    long getLong(const std::string &key) const override;
+    double getDouble(const std::string &key) const override;
+
 private:
     const void* data_;
     const size_t size_;
 
     const Metadata metadata_;
 
-    eckit::DataHandle* readHandle() const override;
-    size_t length() const override;
-    void write(eckit::DataHandle &) const override;
-
     void print(std::ostream &) const override;
-
-    std::string getString(const std::string &key) const override;
-    long getLong(const std::string &key) const override;
-    double getDouble(const std::string &key) const override;
 };
 
 }  // namespace message

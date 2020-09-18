@@ -14,20 +14,24 @@ UserContent::UserContent(const void* data, size_t size) : data_{data}, size_{siz
 UserContent::UserContent(const void* data, size_t size, const Metadata& metadata) :
     data_{data}, size_{size}, metadata_{metadata} {}
 
-eckit::DataHandle* UserContent::readHandle() const {
-    return new eckit::MemoryHandle{data_, size_};
-}
-
-size_t UserContent::length() const {
-    return size_;
-}
-
 void UserContent::write(eckit::DataHandle& handle) const {
     if (handle.write(data_, size_) != static_cast<long>(size_)) {
         std::ostringstream oss;
         oss << "Write error to data handle " << handle;
         throw eckit::WriteError{oss.str(), Here()};
     }
+}
+
+eckit::DataHandle* UserContent::readHandle() const {
+    return new eckit::MemoryHandle{data_, size_};
+}
+
+const void* UserContent::data() const {
+    return data_;
+}
+
+size_t UserContent::length() const {
+    return size_;
 }
 
 void UserContent::print(std::ostream& os) const {

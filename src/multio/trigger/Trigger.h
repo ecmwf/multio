@@ -15,6 +15,7 @@
 #ifndef multio_Trigger_H
 #define multio_Trigger_H
 
+#include <memory>
 #include <vector>
 
 #include "eckit/types/Types.h"
@@ -50,7 +51,7 @@ private: // methods
 
 private: // members
 
-    std::vector<EventTrigger*> triggers_;
+    std::vector<std::unique_ptr<EventTrigger>> triggers_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

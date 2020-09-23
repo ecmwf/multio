@@ -35,7 +35,7 @@ Trigger::Trigger(const Configuration& config) {
         auto cfgs = config.getSubConfigurations("triggers");
 
         for(const auto& cfg : cfgs) {
-            triggers_.push_back(EventTrigger::build(cfg));
+            triggers_.emplace_back(EventTrigger::build(cfg));
         }
     }
 
@@ -47,22 +47,23 @@ Trigger::Trigger(const Configuration& config) {
         auto cfgs = econf.getSubConfigurations("triggers");
 
         for(const auto& cfg : cfgs) {
-            triggers_.push_back(EventTrigger::build(cfg));
+            triggers_.emplace_back(EventTrigger::build(cfg));
         }
     }
 }
 
-Trigger::~Trigger() {
-    std::for_each(begin(triggers_), end(triggers_), [](EventTrigger* it) { delete it; });
-}
+Trigger::~Trigger() = default;
 
 void Trigger::events(const StringDict& keys) const {
-    std::for_each(begin(triggers_), end(triggers_),
-                  [&keys](EventTrigger* it) { it->trigger(keys); });
+    for(const auto& trigger : triggers_) {
+        trigger->trigger(keys);
+    }
 }
 
 void Trigger::events(eckit::message::Message msg) const {
-    std::for_each(begin(triggers_), end(triggers_), [msg](EventTrigger* it) { it->trigger(msg); });
+    for(const auto& trigger : triggers_) {
+        trigger->trigger(msg);
+    }
 }
 
 void Trigger::print(std::ostream& os) const {

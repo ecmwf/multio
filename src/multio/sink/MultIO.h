@@ -27,7 +27,7 @@
 
 #include "multio/sink/DataSink.h"
 #include "multio/sink/IOStats.h"
-#include "multio/sink/Trigger.h"
+#include "multio/trigger/Trigger.h"
 
 namespace multio {
 

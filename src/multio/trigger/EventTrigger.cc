@@ -14,7 +14,7 @@
 #include "eckit/net/TCPClient.h"
 
 #include "multio/LibMultio.h"
-#include "multio/sink/Event.h"
+#include "multio/trigger/Event.h"
 
 namespace multio {
 

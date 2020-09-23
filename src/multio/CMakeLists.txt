@@ -98,18 +98,21 @@ list( APPEND multio_message_srcs
 list( APPEND multio_sink_srcs
     sink/DataSink.cc
     sink/DataSink.h
-    sink/Event.cc
-    sink/Event.h
-    sink/EventTrigger.cc
-    sink/EventTrigger.h
     sink/FileSink.cc
     sink/FileSink.h
     sink/IOStats.cc
     sink/IOStats.h
     sink/MultIO.cc
     sink/MultIO.h
-    sink/Trigger.cc
-    sink/Trigger.h
+)
+
+list( APPEND multio_trigger_srcs
+    trigger/Event.cc
+    trigger/Event.h
+    trigger/EventTrigger.cc
+    trigger/EventTrigger.h
+    trigger/Trigger.cc
+    trigger/Trigger.h
 )
 
 list( APPEND multio_transport_srcs
@@ -141,6 +144,7 @@ list( APPEND multio_srcs
     ${multio_message_srcs}
     ${multio_sink_srcs}
     ${multio_transport_srcs}
+    ${multio_trigger_srcs}
 )
 
 ### multio library

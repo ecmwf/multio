@@ -8,12 +8,12 @@
  * does it submit to any jurisdiction.
  */
 
-#include "multio/sink/Trigger.h"
+#include "Trigger.h"
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/YAMLConfiguration.h"
 
-#include "multio/sink/EventTrigger.h"
+#include "multio/trigger/EventTrigger.h"
 
 using namespace eckit;
 

@@ -98,6 +98,10 @@ list( APPEND multio_message_srcs
 list( APPEND multio_sink_srcs
     sink/DataSink.cc
     sink/DataSink.h
+    sink/Event.cc
+    sink/Event.h
+    sink/EventTrigger.cc
+    sink/EventTrigger.h
     sink/FileSink.cc
     sink/FileSink.h
     sink/IOStats.cc

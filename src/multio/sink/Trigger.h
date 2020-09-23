@@ -46,14 +46,11 @@ private: // methods
 
     void print(std::ostream&) const;
 
-    friend std::ostream& operator<<(std::ostream& s, const Trigger& p) { p.print(s); return s; }
-
+    friend std::ostream& operator<<(std::ostream& s, const Trigger& p);
 
 private: // members
 
-
     std::vector<EventTrigger*> triggers_;
-
 };
 
 //----------------------------------------------------------------------------------------------------------------------

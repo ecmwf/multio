@@ -8,6 +8,8 @@
  * does it submit to any jurisdiction.
  */
 
+#include <algorithm>
+
 #include "Trigger.h"
 
 #include "eckit/config/LocalConfiguration.h"
@@ -30,42 +32,37 @@ Trigger::Trigger(const Configuration& config) {
 
     if(config.has("triggers"))
     {
-        std::vector<LocalConfiguration> cfgs = config.getSubConfigurations("triggers");
+        auto cfgs = config.getSubConfigurations("triggers");
 
-        for(std::vector<LocalConfiguration>::const_iterator it = cfgs.begin(); it != cfgs.end(); ++it) {
-            triggers_.push_back(EventTrigger::build(*it));
+        for(const auto& cfg : cfgs) {
+            triggers_.push_back(EventTrigger::build(cfg));
         }
     }
 
     /// @note this doesn't quite work for reentrant MultIO objects (MultIO as a DataSink itself)
     const char * conf = ::getenv("MULTIO_CONFIG_TRIGGERS");
     if(conf) {
-        eckit::YAMLConfiguration econf((std::string(conf)));
+        eckit::YAMLConfiguration econf{std::string{conf}};
 
-        std::vector<LocalConfiguration> cfgs = econf.getSubConfigurations("triggers");
+        auto cfgs = econf.getSubConfigurations("triggers");
 
-        for(std::vector<LocalConfiguration>::const_iterator it = cfgs.begin(); it != cfgs.end(); ++it) {
-            triggers_.push_back(EventTrigger::build(*it));
+        for(const auto& cfg : cfgs) {
+            triggers_.push_back(EventTrigger::build(cfg));
         }
     }
 }
 
 Trigger::~Trigger() {
-    for(std::vector<EventTrigger*>::iterator it = triggers_.begin(); it !=  triggers_.end(); ++it) {
-        delete *it;
-    }
+    std::for_each(begin(triggers_), end(triggers_), [](EventTrigger* it) { delete it; });
 }
 
 void Trigger::events(const StringDict& keys) const {
-    for(std::vector<EventTrigger*>::const_iterator it = triggers_.begin(); it !=  triggers_.end(); ++it) {
-        (*it)->trigger(keys);
-    }
+    std::for_each(begin(triggers_), end(triggers_),
+                  [&keys](EventTrigger* it) { it->trigger(keys); });
 }
 
 void Trigger::events(eckit::message::Message msg) const {
-    for(std::vector<EventTrigger*>::const_iterator it = triggers_.begin(); it !=  triggers_.end(); ++it) {
-        (*it)->trigger(msg);
-    }
+    std::for_each(begin(triggers_), end(triggers_), [msg](EventTrigger* it) { it->trigger(msg); });
 }
 
 void Trigger::print(std::ostream& os) const {

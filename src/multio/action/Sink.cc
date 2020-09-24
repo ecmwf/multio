@@ -12,34 +12,15 @@
 
 #include <iostream>
 
-#include "eccodes.h"
-
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/message/Message.h"
 
-#include "metkit/codes/CodesContent.h"
-
 #include "multio/LibMultio.h"
-#include "multio/message/UserContent.h"
 
 
 namespace multio {
 namespace action {
-
-
-namespace {
-eckit::message::MessageContent* to_msg_content(Message msg) {
-    if(msg.tag() == Message::Tag::Grib) {
-        codes_handle* h = codes_handle_new_from_message(nullptr, msg.payload().data(), msg.size());
-        return new metkit::codes::CodesContent{h, true};
-    }
-
-    ASSERT(msg.tag() == Message::Tag::Field);
-    return new message::UserContent(msg.payload().data(), msg.size());
-}
-
-}  // namespace
 
 Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 
@@ -69,7 +50,7 @@ void Sink::execute(Message msg) const {
 }
 
 void Sink::write(Message msg) const {
-    eckit::message::Message blob(to_msg_content(msg));
+    eckit::message::Message blob = to_eckit_message(msg);
 
     mio_.write(blob);
 }

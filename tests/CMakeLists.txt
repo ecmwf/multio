@@ -6,11 +6,11 @@ ecbuild_add_test( TARGET    test_multio_datasink_factory
                   LIBS      multio )
 
 ecbuild_add_test( TARGET    test_multio_multio
-                  SOURCES   test_multio_multio.cc
+                  SOURCES   test_multio_multio.cc TestDataContent.cc TestDataContent.h
                   LIBS      multio )
 
 ecbuild_add_test( TARGET    test_multio_file_sink
-                  SOURCES   test_multio_file_sink.cc
+                  SOURCES   test_multio_file_sink.cc TestDataContent.cc TestDataContent.h
                   LIBS      multio )
 
 ecbuild_add_test( TARGET    test_multio_encode_bitspervalue

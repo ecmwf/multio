@@ -27,6 +27,10 @@
 
 namespace eckit {
 class Stream;
+
+namespace message {
+class Message;
+}
 }  // namespace eckit
 
 namespace multio {
@@ -167,6 +171,8 @@ private:  // members
     std::shared_ptr<Content> content_;
 
 };
+
+eckit::message::Message to_eckit_message(const Message& msg);
 
 }  // namespace message
 }  // namespace multio

@@ -17,8 +17,8 @@
 
 #include "multio/sink/FileSink.h"
 #include "multio/sink/MultIO.h"
-#include "multio/message/UserContent.h"
 
+#include "TestDataContent.h"
 #include "TestHelpers.h"
 
 namespace multio {
@@ -138,7 +138,7 @@ CASE("test_multio_with_event_trigger") {
 
                 message::Metadata md{eckit::YAMLConfiguration{os.str()}};
                 eckit::message::Message msg{
-                    new message::UserContent{os.str().c_str(), os.str().length(), md}};
+                    new TestDataContent{os.str().c_str(), os.str().length(), md}};
 
                 mio->write(msg);
             }

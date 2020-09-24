@@ -24,6 +24,8 @@
 #include "eckit/value/Value.h"
 #include "eckit/utils/Translator.h"
 
+#include <multio/LibMultio.h>
+
 using namespace eckit;
 
 namespace multio {
@@ -91,7 +93,7 @@ void MultIO::write(eckit::message::Message message) {
         sink->write(message);
     }
 
-    std::cout << "Trigger events for message " << message << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Trigger events for message " << message << std::endl;
 
     trigger_.events(message);
 }

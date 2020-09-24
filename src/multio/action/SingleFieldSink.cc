@@ -12,33 +12,15 @@
 
 #include <iostream>
 
-#include "eccodes.h"
-
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/message/Message.h"
 
-#include "metkit/codes/CodesContent.h"
-
 #include "multio/sink/DataSink.h"
 #include "multio/LibMultio.h"
-#include "multio/message/UserContent.h"
 
 namespace multio {
 namespace action {
-
-namespace {
-eckit::message::MessageContent* to_msg_content(Message msg) {
-    if(msg.tag() == Message::Tag::Grib) {
-        codes_handle* h = codes_handle_new_from_message(nullptr, msg.payload().data(), msg.size());
-        return new metkit::codes::CodesContent{h, true};
-    }
-
-    ASSERT(msg.tag() == Message::Tag::Field);
-    return new message::UserContent(msg.payload().data(), msg.size());
-}
-
-}  // namespace
 
 SingleFieldSink::SingleFieldSink(const eckit::Configuration& config) :
     Action{config},
@@ -72,7 +54,7 @@ void SingleFieldSink::write(Message msg) const {
     config.set("path", oss.str());
     dataSink_.reset(DataSinkFactory::instance().build("file", config));
 
-    eckit::message::Message blob(to_msg_content(msg));
+    eckit::message::Message blob = to_eckit_message(msg);
 
     dataSink_->write(blob);
 }

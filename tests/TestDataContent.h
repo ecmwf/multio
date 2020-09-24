@@ -14,20 +14,20 @@
 
 /// @date Sep 2020
 
-#ifndef multio_message_UserContent_H
-#define multio_message_UserContent_H
+#ifndef multio_test_TestDataContent_H
+#define multio_test_TestDataContent_H
 
 #include "eckit/message/MessageContent.h"
 
 #include "multio/message/Metadata.h"
 
 namespace multio {
-namespace message {
+namespace test {
 
-class UserContent : public eckit::message::MessageContent {
+class TestDataContent : public eckit::message::MessageContent {
 public:
-    UserContent(const void*, size_t size);
-    UserContent(const void*, size_t size, const Metadata& metadata);
+    TestDataContent(const void*, size_t size);
+    TestDataContent(const void*, size_t size, const message::Metadata& metadata);
 
     void write(eckit::DataHandle &) const override;
     eckit::DataHandle* readHandle() const override;
@@ -43,7 +43,7 @@ private:
     const void* data_;
     const size_t size_;
 
-    const Metadata metadata_;
+    const message::Metadata metadata_;
 
     void print(std::ostream &) const override;
 };
@@ -51,4 +51,4 @@ private:
 }  // namespace message
 }  // namespace multio
 
-#endif
+#endif // multio_test_TestDataContent_H

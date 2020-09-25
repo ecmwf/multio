@@ -1,5 +1,39 @@
 
 nemo-fields :
+  # Co-ordinates
+  - nemo-id: lat_T
+    param-id: 250003
+    grid-type : "T grid"
+
+  - nemo-id: lon_T
+    param-id: 250004
+    grid-type : "T grid"
+
+  - nemo-id: lat_U
+    param-id: 250005
+    grid-type : "U grid"
+
+  - nemo-id: lon_U
+    param-id: 250006
+    grid-type : "U grid"
+
+  - nemo-id: lat_V
+    param-id: 250007
+    grid-type : "V grid"
+
+  - nemo-id: lon_V
+    param-id: 250008
+    grid-type : "V grid"
+
+  - nemo-id: lat_W
+    param-id: 250009
+    grid-type : "W grid"
+
+  - nemo-id: lon_W
+    param-id: 250010
+    grid-type : "W grid"
+
+  # Physical parameters
   - nemo-id : ssh
     param-id : 151145
     grid-type : "T grid"

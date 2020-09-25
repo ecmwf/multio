@@ -5,16 +5,24 @@ serverCount : 3
 clientCount : 5
 
 activeFields :
-  - ssh
-  - toce
+  - lat_T
+  - lon_T
+  - lat_U
+  - lon_U
+  - lat_V
+  - lon_V
+  - lat_W
+  - lon_W
+  # - ssh
+  # - toce
   - sst
-  - soce
-  - sss
-  - uoce
+  # - soce
+  # - sss
+  # - uoce
   - ssu
-  - voce
+  # - voce
   - ssv
-  - woce
+  # - woce
   - ssw
 
 plans :
@@ -26,7 +34,7 @@ plans :
         categories : [ocean-model-level]
 
       - type : Statistics
-        output_frequency: 1h
+        output_frequency: 6h
         operations:
           - instant
 
@@ -38,6 +46,7 @@ plans :
       - type : Encode
         format : grib
         template : unstructured.tmpl
+        grid-type : eORCA1
 
       - type : Sink
         sinks :

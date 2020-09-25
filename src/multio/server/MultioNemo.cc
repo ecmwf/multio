@@ -210,7 +210,9 @@ void multio_write_field(const char* name, const double* data, int size) {
         MultioNemo::instance().writeField(name, data, size * sizeof(double));
     }
     else {
-        eckit::Log::debug<multio::LibMultio>() << "Writing field " << name << std::endl;
+        eckit::Log::debug<multio::LibMultio>()
+            << "*** Writing field " << name << ", local size = " << size << ", global size = "
+            << MultioNemo::instance().metadata().getInt("globalSize") << std::endl;
     }
 }
 
@@ -219,7 +221,7 @@ bool multio_field_is_active(const char* name) {
 }
 
 void multio_not_implemented(const char* message) {
-    eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO";
+    eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO" << std::endl;
 }
 
 

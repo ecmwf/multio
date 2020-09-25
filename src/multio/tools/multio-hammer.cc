@@ -608,12 +608,13 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
                 CODES_CHECK(codes_set_long(handle, "level", level), nullptr);
 
                 for (auto param : valid_parameters(paramList, levtype)) {
-                    CODES_CHECK(codes_set_long(handle, "param", param), nullptr);
 
                     eckit::Log::debug<multio::LibMultio>()
                         << "Member: " << ensMember_ << ", step: " << step
                         << ", levtype: " << levtype << ", level: " << level << ", param: " << param
                         << ", payload size: " << sz << std::endl;
+
+                    CODES_CHECK(codes_set_long(handle, "param", param), nullptr);
 
                     CODES_CHECK(
                         codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),

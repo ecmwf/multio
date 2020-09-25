@@ -30,7 +30,7 @@ using message::Peer;
 GribEncoder::GribEncoder(codes_handle* handle, const std::string& gridType) :
     metkit::grib::GribHandle{handle}, gridType_{gridType} {
     for (auto const& subtype : {"T grid", "U grid", "V grid", "W grid", "F grid"}) {
-        grids_.emplace(subtype, new GridInfo{});
+        grids_.insert(std::make_pair(subtype, new GridInfo{}));
     }
 }
 

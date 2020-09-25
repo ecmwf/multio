@@ -13,6 +13,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "eccodes.h"
+
 #include "eckit/config/LibEcKit.h"
 #include "eckit/config/Resource.h"
 #include "eckit/config/YAMLConfiguration.h"
@@ -31,7 +33,7 @@
 
 #include "multio/sink/MultIO.h"
 
-#include "metkit/codes/UserDataContent.h"
+#include "metkit/codes/CodesContent.h"
 
 using namespace eckit;
 using namespace metkit;
@@ -45,7 +47,6 @@ public:
         static MIO mio;
         return mio;
     }
-
 
     MultIO& mio() {
         ASSERT(ptr_);
@@ -191,7 +192,8 @@ fortint imultio_write_(const void* data, const fortint* words) {
         ASSERT(ilen > 0);
         size_t len(ilen);
 
-        eckit::message::Message message(new codes::UserDataContent(data, len));
+        codes_handle* h = codes_handle_new_from_message(nullptr, data, len);
+        eckit::message::Message message{new metkit::codes::CodesContent{h, true}};
 
         MIO::instance().mio().write(message);
         MIO::instance().log(true);

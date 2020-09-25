@@ -39,20 +39,7 @@ FDB5Sink::FDB5Sink(const eckit::Configuration& config) :
 void FDB5Sink::write(eckit::message::Message msg) {
     LOG_DEBUG_LIB(LibMultio) << "FDB5Sink::write()" << std::endl;
 
-    NOTIMP;
-#if 0
-    const eckit::Metadata& md = blob->metadata();
-
-    fdb5::Key key;
-    std::string value;
-    LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
-    for (const auto& kw : md.keywords()) {
-        md.get(kw, value);
-        key.set(kw, value);
-    }
-
-    fdb_.archive(key, blob->buffer(), blob->length());
-#endif
+    fdb_.archive(msg);
 }
 
 void FDB5Sink::flush() {

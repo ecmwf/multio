@@ -137,7 +137,7 @@ std::vector<int> MultioReplay::readGrid(const std::string& grid_type, size_t cli
 
     auto grid = eckit::PathName{pathToNemoData_ + oss.str()};
 
-    std::ifstream infile(std::string{grid.fullName()}.c_str());
+    std::ifstream infile(std::string(grid.fullName()).c_str());
 
     std::string gtype;
     infile >> gtype;
@@ -162,7 +162,7 @@ std::vector<double> MultioReplay::readField(const std::string& param, size_t cli
 
     auto field = eckit::PathName{pathToNemoData_ + oss.str()};
 
-    std::ifstream infile(std::string{field.fullName()}.c_str());
+    std::ifstream infile(std::string(field.fullName()).c_str());
     infile.seekg(0, infile.end);
     auto bytes = infile.tellg();
     infile.seekg(0, infile.beg);
@@ -200,7 +200,7 @@ void MultioReplay::testData() {
         auto path = eckit::PathName{std::string{pathToNemoData_ + param + "_" +
                                                 std::to_string(step_) + "_reference"}};
 
-        infile.open(std::string{path.fullName()}.c_str());
+        infile.open(std::string(path.fullName()).c_str());
         std::string expected{std::istreambuf_iterator<char>(infile),
                              std::istreambuf_iterator<char>()};
 

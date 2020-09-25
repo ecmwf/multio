@@ -25,11 +25,11 @@ class Endian {
 public:
 
     static T to_little_endian(T val) {
-        return (eckit::system::SystemInfo::isBigEndian) ? transform(val) : val;
+        return (eckit::system::SystemInfo::isBigEndian()) ? transform(val) : val;
     }
 
     static T to_big_endian(T val) {
-        return (eckit::system::SystemInfo::isLittleEndian) ? transform(val) : val;
+        return (eckit::system::SystemInfo::isLittleEndian()) ? transform(val) : val;
     }
 
 private:

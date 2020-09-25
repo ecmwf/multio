@@ -19,7 +19,6 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
-#include "metkit/grib/GribDataBlob.h"
 #include "multio/LibMultio.h"
 
 namespace multio {
@@ -137,7 +136,7 @@ message::Message GribEncoder::setFieldValues(const message::Message& msg) {
     auto beg = reinterpret_cast<const double*>(msg.payload().data());
     this->setDataValues(beg, msg.globalSize());
 
-    eckit::Buffer buf{this->message()->length()};
+    eckit::Buffer buf{this->length()};
     this->write(buf);
 
     return Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};

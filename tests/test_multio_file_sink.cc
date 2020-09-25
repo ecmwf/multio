@@ -8,8 +8,6 @@
  * does it submit to any jurisdiction.
  */
 
-#include "TestHelpers.h"
-
 #include <cstring>
 #include <unistd.h>
 
@@ -18,6 +16,9 @@
 #include "eckit/message/Message.h"
 
 #include "multio/sink/FileSink.h"
+
+#include "TestDataContent.h"
+#include "TestHelpers.h"
 
 namespace multio {
 namespace test {
@@ -43,12 +44,9 @@ CASE("FileSink writes correctly") {
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
+    eckit::message::Message msg{new TestDataContent{quote, sizeof(quote) - 1}};
+    sink->write(msg);
 
-NOTIMP;
-#if 0 // FINDME
-    eckit::DataBlobPtr stringBlob(eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
-    sink->write(stringBlob);
-#endif
     EXPECT(file_content(file_path) == std::string(quote));
 }
 
@@ -57,22 +55,18 @@ CASE("FileSink creates new file by default") {
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
-NOTIMP;
-#if 0 // FINDME
     {
         auto sink = make_configured_file_sink(file_path);
-        eckit::DataBlobPtr stringBlob(
-            eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
-        sink->write(stringBlob);
+        eckit::message::Message msg{new TestDataContent{quote, sizeof(quote) - 1}};
+        sink->write(msg);
     }
 
     {
         auto sink = make_configured_file_sink(file_path);
-        eckit::DataBlobPtr stringBlob(
-            eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
-        sink->write(stringBlob);
+        eckit::message::Message msg{new TestDataContent{quote, sizeof(quote) - 1}};
+        sink->write(msg);
     }
-#endif
+
     EXPECT(file_content(file_path) == std::string(quote));
 }
 
@@ -82,23 +76,18 @@ CASE("FileSink creates new file by explicit request") {
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
-    NOTIMP;
-#if 0 // FINDME
-
     {
         auto sink = make_configured_file_sink(file_path);
-        eckit::DataBlobPtr stringBlob(
-            eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
-        sink->write(stringBlob);
+        eckit::message::Message msg{new TestDataContent{quote, sizeof(quote) - 1}};
+        sink->write(msg);
     }
 
     {
         auto sink = make_configured_file_sink(file_path, false);
-        eckit::DataBlobPtr stringBlob(
-            eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
-        sink->write(stringBlob);
+        eckit::message::Message msg{new TestDataContent{quote, sizeof(quote) - 1}};
+        sink->write(msg);
     }
-#endif
+
     EXPECT(file_content(file_path) == std::string(quote));
 }
 
@@ -106,23 +95,19 @@ CASE("FileSink appends to existing file") {
     const eckit::PathName& file_path = eckit::TmpFile();
     const char quote[] =
         "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
-    NOTIMP;
-#if 0 // FINDME
 
     {
         auto sink = make_configured_file_sink(file_path);
-        eckit::DataBlobPtr stringBlob(
-            eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
-        sink->write(stringBlob);
+        eckit::message::Message msg{new TestDataContent{quote, sizeof(quote) - 1}};
+        sink->write(msg);
     }
 
     {
         auto sink = make_configured_file_sink(file_path, true);
-        eckit::DataBlobPtr stringBlob(
-            eckit::DataBlobFactory::build("test", quote, sizeof(quote) - 1));
-        sink->write(stringBlob);
+        eckit::message::Message msg{new TestDataContent{quote, sizeof(quote) - 1}};
+        sink->write(msg);
     }
-#endif
+
     EXPECT(file_content(file_path) == std::string{quote} + std::string{quote});
 }
 

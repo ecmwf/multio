@@ -136,11 +136,12 @@ public:
 
         metadata_.set("nemoParam", fname);
         metadata_.set("param", paramMap_.get(fname).param);
-        auto gl_size = static_cast<size_t>(metadata_.getInt("globalSize"));
 
         eckit::Log::debug<multio::LibMultio>()
             << "*** Writing field " << fname << ", step = " << metadata_.getInt("step")
             << ", level = " << metadata_.getInt("level") << std::endl;
+
+        auto gl_size = static_cast<size_t>(metadata_.getInt("globalSize"));
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 
@@ -209,7 +210,9 @@ void multio_write_field(const char* name, const double* data, int size) {
         MultioNemo::instance().writeField(name, data, size * sizeof(double));
     }
     else {
-        eckit::Log::debug<multio::LibMultio>() << "Writing field " << name << std::endl;
+        eckit::Log::debug<multio::LibMultio>()
+            << "*** Writing field " << name << ", local size = " << size << ", global size = "
+            << MultioNemo::instance().metadata().getInt("globalSize") << std::endl;
     }
 }
 
@@ -218,7 +221,7 @@ bool multio_field_is_active(const char* name) {
 }
 
 void multio_not_implemented(const char* message) {
-    eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO";
+    eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO" << std::endl;
 }
 
 

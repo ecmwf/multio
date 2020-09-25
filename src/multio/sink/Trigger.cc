@@ -242,12 +242,7 @@ public: // methods
     virtual void trigger(const StringDict&) const override {}
 
     virtual void trigger(eckit::message::Message msg) const override {
-        NOTIMP;
-#if 0 // FINDME
-        const eckit::Metadata& md = msg.metadata();
-
-        std::string current;
-        md.get(key_, current);
+        std::string current = msg.getString(key_);
 
         std::vector<std::string>::const_iterator now = std::find(values_.begin(), values_.end(), current);
 
@@ -262,7 +257,6 @@ public: // methods
         if(inValues(now)) {
             lastSeen_ = now;
         }
-#endif
     }
 
 

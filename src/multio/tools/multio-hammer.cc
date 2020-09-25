@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <fstream>
 #include <random>
+#include "unistd.h"
 
 #include "eccodes.h"
 
@@ -66,7 +67,26 @@ std::vector<long> sequence(size_t sz, size_t start) {
     return vals;
 }
 
-std::vector<long> valid_levlist(const std::string& ltype, size_t sz = 91, size_t start = 1) {
+struct Chunks {
+    size_t offset;
+    size_t size;
+};
+
+std::vector<Chunks> create_chunks(size_t sz) {
+
+    auto quotient = sz / eckit::mpi::comm().size();
+    auto remainder = sz % eckit::mpi::comm().size();
+
+    std::vector<Chunks> chunks;
+    for(auto rank = 0ul, offset = 0ul; rank != eckit::mpi::comm().size(); ++rank) {
+        auto chunk_size = quotient + static_cast<size_t>((rank < remainder) ? 1 : 0);
+        chunks.push_back({offset, chunk_size});
+        offset += chunk_size;
+    }
+    return chunks;
+}
+
+std::vector<long> create_levlist(const std::string& ltype, size_t sz = 91, size_t start = 1) {
 
     std::vector<long> levels;
     if (ltype == "ml") {
@@ -82,7 +102,13 @@ std::vector<long> valid_levlist(const std::string& ltype, size_t sz = 91, size_t
     if (sz < levels.size()) {
         levels.resize(sz);
     }
-    return levels;
+
+    auto chunk = create_chunks(levels.size());
+
+    auto beg = std::begin(levels) + chunk[eckit::mpi::comm().rank()].offset;
+    auto levs = std::vector<long>{beg, beg + chunk[eckit::mpi::comm().rank()].size};
+
+    return levs;
 }
 
 std::vector<long> valid_parameters(const eckit::Configuration& pcnf, const std::string& ltype) {
@@ -220,6 +246,7 @@ private:
     bool skipTest();
     void testData();
 
+    std::string configPath_ = "";
     std::string transportType_ = "none";
     int port_ = 7777;
 
@@ -228,7 +255,9 @@ private:
     size_t stepCount_ = 3;
     size_t levelCount_ = 3;
     size_t paramCount_ = 3;
+
     long ensMember_ = 1;
+    long sleep_ = 0;
 
     eckit::LocalConfiguration config_;
 
@@ -261,6 +290,8 @@ private:
 
 MultioHammer::MultioHammer(int argc, char** argv) : multio::MultioTool(argc, argv) {
     options_.push_back(
+        new eckit::option::SimpleOption<std::string>("config", "Path to configuration"));
+    options_.push_back(
         new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbclients", "Number of clients"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbservers", "Number of servers"));
@@ -271,10 +302,12 @@ MultioHammer::MultioHammer(int argc, char** argv) : multio::MultioTool(argc, arg
     options_.push_back(
         new eckit::option::SimpleOption<size_t>("nbsteps", "Number of output time steps"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("member", "Ensemble member"));
+    options_.push_back(new eckit::option::SimpleOption<long>("sleep", "Seconds of simulated work per step"));
 }
 
 
 void MultioHammer::init(const eckit::option::CmdArgs& args) {
+    args.get("config", configPath_);
     args.get("transport", transportType_);
     args.get("port", port_);
 
@@ -284,9 +317,14 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
     args.get("nblevels", levelCount_);
     args.get("nbparams", paramCount_);
     args.get("member", ensMember_);
+    args.get("sleep", sleep_);
 
-    config_ = test_configuration(transportType_);
+    config_ =
+        (configPath_.empty())
+            ? test_configuration(transportType_)
+            : eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{configPath_}}};
 
+    transportType_ = config_.getString("transport");
     if (transportType_ == "mpi") {
         auto comm_size = eckit::mpi::comm(config_.getString("group").c_str()).size();
         if (comm_size != clientCount_ + serverCount_) {
@@ -464,7 +502,6 @@ void MultioHammer::testData() {
     }
 }
 
-
 void MultioHammer::executeMpi() {
     std::shared_ptr<Transport> transport{TransportFactory::instance().build("mpi", config_)};
 
@@ -557,6 +594,8 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
     CODES_CHECK(codes_set_long(handle, "number", ensMember_), nullptr);
 
     for (auto step : sequence(stepCount_, 1)) {
+        ::sleep(sleep_);
+
         CODES_CHECK(codes_set_long(handle, "step", step), nullptr);
 
         const auto& paramList = config_.getSubConfiguration("parameters");
@@ -565,16 +604,17 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
             size = std::strlen(levtype);
             CODES_CHECK(codes_set_string(handle, "levtype", levtype, &size), nullptr);
 
-            for (auto param : valid_parameters(paramList, levtype)) {
-                CODES_CHECK(codes_set_long(handle, "param", param), nullptr);
+            for (auto level : create_levlist(levtype, levelCount_)) {
+                CODES_CHECK(codes_set_long(handle, "level", level), nullptr);
 
-                for (auto level : valid_levlist(levtype, levelCount_, 1)) {
-                    CODES_CHECK(codes_set_long(handle, "level", level), nullptr);
+                for (auto param : valid_parameters(paramList, levtype)) {
 
                     eckit::Log::debug<multio::LibMultio>()
                         << "Member: " << ensMember_ << ", step: " << step
                         << ", levtype: " << levtype << ", level: " << level << ", param: " << param
                         << ", payload size: " << sz << std::endl;
+
+                    CODES_CHECK(codes_set_long(handle, "param", param), nullptr);
 
                     CODES_CHECK(
                         codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),

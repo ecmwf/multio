@@ -4,6 +4,12 @@ if( HAVE_FDB5 )
     )
 endif()
 
+if( HAVE_MAESTRO )
+    list( APPEND multio_server_plugins
+        multio-maestro
+    )
+endif()
+
 ecbuild_add_library(
 
     TARGET multio-server

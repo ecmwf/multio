@@ -24,6 +24,12 @@ ecbuild_add_option( FEATURE FDB5
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "NAME fdb5 VERSION 5.0" )
 
+### fdb5 plugin
+
+ecbuild_add_option( FEATURE MAESTRO
+                    DEFAULT OFF
+                    DESCRIPTION "Sink data to Maestro" )
+
 ### legacy IFS I/O
 
 ecbuild_add_option( FEATURE LEGACY_IFSIO

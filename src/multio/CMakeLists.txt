@@ -26,6 +26,11 @@ list( APPEND multio_action_srcs
     action/Aggregation.h
     action/Encode.cc
     action/Encode.h
+    action/Endian.h
+    action/GribEncoder.cc
+    action/GribEncoder.h
+    action/GridInfo.cc
+    action/GridInfo.h
     action/Operation.cc
     action/Operation.h
     action/Print.cc
@@ -133,5 +138,6 @@ ecbuild_add_library(
 
 add_subdirectory(grib)
 add_subdirectory(fdb5)
+add_subdirectory(maestro)
 add_subdirectory(server)
 add_subdirectory(tools)

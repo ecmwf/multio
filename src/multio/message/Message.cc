@@ -13,9 +13,15 @@
 #include <cstring>
 #include <map>
 
+#include "eccodes.h"
+
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/message/Message.h"
 #include "eckit/serialisation/Stream.h"
+
+#include "metkit/codes/CodesContent.h"
+#include "metkit/codes/UserDataContent.h"
 
 namespace multio {
 namespace message {
@@ -137,6 +143,17 @@ void Message::print(std::ostream& out) const {
         << ", destination=" << destination() << ", name=" << name() << ", category=" << category()
         << ", domainCount=" << domainCount() << ", global_size=" << globalSize()
         << ", domain=" << domain() << ", metadata=" << fieldId() << ")";
+}
+
+eckit::message::Message to_eckit_message(const Message& msg) {
+    if(msg.tag() == Message::Tag::Grib) {
+        codes_handle* h = codes_handle_new_from_message(nullptr, msg.payload().data(), msg.size());
+        return eckit::message::Message{new metkit::codes::CodesContent{h, true}};
+    }
+
+    ASSERT(msg.tag() == Message::Tag::Field);
+    return eckit::message::Message{
+        new metkit::codes::UserDataContent(msg.payload().data(), msg.size())};
 }
 
 }  // namespace message

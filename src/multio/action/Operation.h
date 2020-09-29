@@ -11,14 +11,16 @@ namespace action {
 
 class Operation {
 public:
-    Operation(long sz);
-    virtual ~Operation() = default;
+    Operation(const std::string& name, long sz);
+    const std::string& name();
 
     virtual const std::vector<double>& compute() = 0;
-
     virtual void update(const double* val, long sz) = 0;
 
+    virtual ~Operation() = default;
+
 protected:
+    std::string name_;
     std::vector<double> values_;
 };
 
@@ -26,7 +28,7 @@ protected:
 
 class Instant final : public Operation {
 public:
-    Instant(long sz);
+    Instant(const std::string& name, long sz = 0);
 
     const std::vector<double>& compute() override;
 
@@ -37,7 +39,7 @@ class Average final : public Operation {
     long count_;
 
 public:
-    Average(long sz);
+    Average(const std::string& name, long sz = 0);
 
     const std::vector<double>& compute() override;
 
@@ -46,7 +48,7 @@ public:
 
 class Minimum final : public Operation {
 public:
-    Minimum(long sz);
+    Minimum(const std::string& name, long sz = 0);
 
     const std::vector<double>& compute() override;
 
@@ -55,7 +57,7 @@ public:
 
 class Maximum final : public Operation {
 public:
-    Maximum(long sz);
+    Maximum(const std::string& name, long sz = 0);
 
     const std::vector<double>& compute() override;
 
@@ -64,7 +66,7 @@ public:
 
 class Accumulate final : public Operation {
 public:
-    Accumulate(long sz);
+    Accumulate(const std::string& name, long sz = 0);
 
     const std::vector<double>& compute() override;
 

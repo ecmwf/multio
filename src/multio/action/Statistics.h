@@ -26,6 +26,8 @@ namespace eckit { class Configuration; }
 namespace multio {
 namespace action {
 
+class TemporalStatistics;
+
 class Statistics : public Action {
 public:
     explicit Statistics(const eckit::Configuration& config);
@@ -35,12 +37,12 @@ public:
 private:
     void print(std::ostream &os) const override;
 
-    void applyOperation(const std::string& ops) const;
+    const std::string timeUnit_;
+    const long writeFrequency_; // Should support multiple units
 
-    std::string timeUnit_;
-    long writeFrequency_; // Should support multiple units
+    const std::vector<std::string> operations_;
 
-    std::vector<std::string> operations_;
+    mutable std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 };
 
 }  // namespace action

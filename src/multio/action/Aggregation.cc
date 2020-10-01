@@ -26,6 +26,8 @@ Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 void Aggregation::execute(Message msg) const {
     ScopedTimer timer{timing_};
 
+    LOG_DEBUG_LIB(LibMultio) << " *** Executing aggregation " << *this << std::endl;
+
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
         executeNext(msg);
     }
@@ -52,8 +54,10 @@ bool Aggregation::handleFlush(const Message& msg) const {
 }
 
 bool Aggregation::allPartsArrived(const Message& msg) const {
-    return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
-           (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
+  LOG_DEBUG_LIB(LibMultio) << " *** Number of messages for field " << msg.fieldId()
+                           << " are " << messages_.at(msg.fieldId()).size() << std::endl;
+  return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
+         (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
 }
 
 bool Aggregation::createGlobalField(Message& msgOut) const {

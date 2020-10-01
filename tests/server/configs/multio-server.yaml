@@ -53,9 +53,9 @@ plans :
           - type : fdb5
             config : {}
 
-      #     - type : file
-      #       append : true
-      #       path : ocean-pipe.grib
+          - type : file
+            append : true
+            path : ocean-pipe.grib
 
 
   # - name : ocean-hourly

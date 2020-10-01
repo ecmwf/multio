@@ -74,7 +74,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     setValue("numberOfValues", msg.metadata().getLong("globalSize"));
 
     // Setting parameter ID
-    setValue("param", msg.metadata().getLong("param"));
+    setValue("paramId", msg.metadata().getLong("param"));
 
     // Set ocean grid information
     setValue("unstructuredGridType", gridType_);

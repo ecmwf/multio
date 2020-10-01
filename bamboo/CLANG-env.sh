@@ -15,6 +15,6 @@ module unload libemos
 module unload metview
 module unload netcdf4
 
-module load cmake/3.10.2
+module load cmake
 
 module switch gnu clang

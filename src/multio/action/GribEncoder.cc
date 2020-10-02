@@ -15,6 +15,7 @@
 #include "GribEncoder.h"
 
 #include <cstring>
+#include <iomanip>
 #include <iostream>
 
 #include "eckit/exception/Exceptions.h"
@@ -83,30 +84,30 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 }
 
 void GribEncoder::setValue(const std::string& key, long value) {
-    eckit::Log::info()
-        << "*** Setting value " << value << " for key " << key << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
     CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
 }
 
 void GribEncoder::setValue(const std::string& key, double value) {
-    eckit::Log::info()
-        << "*** Setting value " << value << " for key " << key << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
     CODES_CHECK(codes_set_double(raw(), key.c_str(), value), NULL);
 }
 
 void GribEncoder::setValue(const std::string& key, const std::string& value) {
-    eckit::Log::info()
-        << "*** Setting value " << value << " for key " << key << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
     size_t sz = value.size();
     CODES_CHECK(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), NULL);
 }
 
 void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
-    eckit::Log::info()
-        << "*** Setting value " << value << " for key " << key << std::endl;
+    std::ostringstream oss;
+    for (int i = 0; i < DIGEST_LENGTH; ++i) {
+        oss << ((i == 0) ? "" : "-") << std::hex << std::setfill('0') << std::setw(2)
+            << static_cast<short>(value[i]);
+    }
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << oss.str() << " for key " << key
+                             << std::endl;
     size_t sz = DIGEST_LENGTH;
-    eckit::Log::info() << "*** Setting value " << value << " with size " << sz << " for key " << key
-                       << std::endl;
     CODES_CHECK(codes_set_bytes(raw(), key.c_str(), value, &sz), NULL);
 }
 

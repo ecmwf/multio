@@ -103,8 +103,8 @@ class MonthlyStatistics : public TemporalStatistics {
     DatePeriod current_;
 
 public:
-    MonthlyStatistics(const std::vector<std::string> operations, const std::string& name,
-                    const std::string& date, long span);
+    MonthlyStatistics(const std::vector<std::string> operations, const std::string& name, long date,
+                      long span);
 
     bool process_next(message::Message &msg) override;
 
@@ -121,8 +121,8 @@ class DailyStatistics : public TemporalStatistics {
     DatePeriod current_;
 
 public:
-    DailyStatistics(const std::vector<std::string> operations, const std::string& name,
-                    const std::string& date, long span);
+    DailyStatistics(const std::vector<std::string> operations, const std::string& name, long date,
+                    long span);
 
     bool process_next(message::Message& msg) override;
 
@@ -139,8 +139,8 @@ class HourlyStatistics : public TemporalStatistics {
     DateTimePeriod current_;
 
 public:
-    HourlyStatistics(const std::vector<std::string> operations, const std::string& name,
-                    const std::string& date, long span);
+    HourlyStatistics(const std::vector<std::string> operations, const std::string& name, long date,
+                     long span);
 
     bool process_next(message::Message& msg) override;
 

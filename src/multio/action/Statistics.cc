@@ -52,6 +52,7 @@ void Statistics::execute(message::Message msg) const {
     ScopedTimer timer{timing_};
 
     LOG_DEBUG_LIB(LibMultio) << " *** Executing statistics " << *this << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "     Metadata: " << msg.metadata() << std::endl;
 
     if(fieldStats_.find(msg.name()) == end(fieldStats_)) {
         fieldStats_[msg.name()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);

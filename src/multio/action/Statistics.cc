@@ -45,7 +45,7 @@ long set_frequency(const std::string& output_freq) {
 Statistics::Statistics(const eckit::Configuration& config) :
     Action{config},
     timeUnit_{set_unit(config.getString("output_frequency"))},
-    writeFrequency_{set_frequency(config.getString("output_frequency"))},
+    timeSpan_{set_frequency(config.getString("output_frequency"))},
     operations_{config.getStringVector("operations")} {}
 
 void Statistics::execute(message::Message msg) const {
@@ -54,7 +54,7 @@ void Statistics::execute(message::Message msg) const {
     LOG_DEBUG_LIB(LibMultio) << " *** Executing statistics " << *this << std::endl;
 
     if(fieldStats_.find(msg.name()) == end(fieldStats_)) {
-        fieldStats_[msg.name()] = TemporalStatistics::build(timeUnit_, operations_, msg);
+        fieldStats_[msg.name()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
     }
 
     if(fieldStats_.at(msg.name())->process(msg)) {
@@ -77,7 +77,7 @@ void Statistics::execute(message::Message msg) const {
 }
 
 void Statistics::print(std::ostream& os) const {
-    os << "Statistics(output frequency = " << writeFrequency_ << ", operations = ";
+    os << "Statistics(output frequency = " << timeSpan_ << ", operations = ";
     bool first = true;
     for (const auto& ops : operations_) {
         os << (first ? "" : ", ");

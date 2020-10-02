@@ -13,9 +13,59 @@
 namespace multio {
 namespace action {
 
+class DatePeriod {
+    eckit::Date startPoint_;
+    long duration_;
+    eckit::Date endPoint() const {
+        return startPoint_ + duration_;
+    }
+    void print(std::ostream& os) const {
+        os << "Period(" << startPoint_ << " to " << endPoint() << ")";
+    }
+    friend std::ostream& operator<<(std::ostream& os, const DatePeriod& a) {
+        a.print(os);
+        return os;
+    }
+
+public:
+    DatePeriod(const eckit::Date& startPoint, long duration) :
+        startPoint_{startPoint}, duration_{duration} {}
+    void reset(const eckit::Date& startPoint) { startPoint_ = startPoint; }
+    bool samePeriod(const eckit::Date& dt) {
+        ASSERT(startPoint_ <= dt);
+        return dt < endPoint();
+    }
+};
+
+class DateTimePeriod {
+    eckit::DateTime startPoint_;
+    eckit::Second duration_;
+    eckit::DateTime endPoint() const {
+        return startPoint_ + duration_;
+    }
+    void print(std::ostream& os) const {
+        os << "Period(" << startPoint_ << " to " << endPoint() << ")";
+    }
+    friend std::ostream& operator<<(std::ostream& os, const DateTimePeriod& a) {
+        a.print(os);
+        return os;
+    }
+
+public:
+    DateTimePeriod(const eckit::DateTime& startPoint, eckit::Second duration) :
+        startPoint_{startPoint}, duration_{duration} {}
+    void reset(const eckit::DateTime& startPoint) {
+        startPoint_ = startPoint;
+    }
+    bool samePeriod(const eckit::DateTime& dt) {
+        ASSERT(startPoint_ <= dt);
+        return dt < endPoint();
+    }
+};
+
 class TemporalStatistics {
 public:
-    static std::unique_ptr<TemporalStatistics> build(const std::string& unit,
+    static std::unique_ptr<TemporalStatistics> build(const std::string& unit, long span,
                                                      const std::vector<std::string>& operations,
                                                      const message::Message& msg);
 
@@ -35,6 +85,8 @@ protected:
 private:
     virtual bool process_next(message::Message& msg) = 0;
 
+    virtual void resetPeriod(const message::Message& msg) = 0;
+
     virtual void print(std::ostream& os) const = 0;
 
     friend std::ostream& operator<<(std::ostream& os, const TemporalStatistics& a) {
@@ -48,13 +100,15 @@ private:
 class MonthlyStatistics : public TemporalStatistics {
 
     std::string name_;
-    eckit::Date current_;
+    DatePeriod current_;
 
 public:
     MonthlyStatistics(const std::vector<std::string> operations, const std::string& name,
-                    const std::string& date);
+                    const std::string& date, long span);
 
     bool process_next(message::Message &msg) override;
+
+    void resetPeriod(const message::Message& msg) override;
 
     void print(std::ostream &os) const override;
 };
@@ -64,13 +118,15 @@ public:
 class DailyStatistics : public TemporalStatistics {
 
     std::string name_;
-    eckit::Date current_;
+    DatePeriod current_;
 
 public:
     DailyStatistics(const std::vector<std::string> operations, const std::string& name,
-                    const std::string& date);
+                    const std::string& date, long span);
 
     bool process_next(message::Message& msg) override;
+
+    void resetPeriod(const message::Message& msg) override;
 
     void print(std::ostream &os) const override;
 };
@@ -80,13 +136,15 @@ public:
 class HourlyStatistics : public TemporalStatistics {
 
     std::string name_;
-    eckit::DateTime current_;
+    DateTimePeriod current_;
 
 public:
     HourlyStatistics(const std::vector<std::string> operations, const std::string& name,
-                    const std::string& date);
+                    const std::string& date, long span);
 
     bool process_next(message::Message& msg) override;
+
+    void resetPeriod(const message::Message& msg) override;
 
     void print(std::ostream &os) const override;
 };

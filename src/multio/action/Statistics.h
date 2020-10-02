@@ -38,7 +38,7 @@ private:
     void print(std::ostream &os) const override;
 
     const std::string timeUnit_;
-    const long writeFrequency_; // Should support multiple units
+    const long timeSpan_;
 
     const std::vector<std::string> operations_;
 

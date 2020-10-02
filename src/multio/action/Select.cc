@@ -32,7 +32,7 @@ Select::Select(const eckit::Configuration& config) :
 void Select::execute(Message msg) const {
     ScopedTimer timer{timing_};
 
-    LOG_DEBUG_LIB(LibMultio) << " *** Executing aggregation " << *this << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " *** Executing select " << *this << std::endl;
 
     if (isMatched(msg)) {
         executeNext(msg);
@@ -46,12 +46,13 @@ bool Select::isMatched(const Message& msg) const {
 bool Select::matchPlan(const Message& msg) const {
     auto item = (match_ == "category") ? msg.category() : msg.name();
 
-    eckit::Log::debug<LibMultio>()
-        << " *** Item " << item << " is being matched...  field size: " << msg.globalSize()
-        << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " *** Item " << item << " is being matched... ";
 
-    auto it = find(begin(items_), end(items_), item);
-    return it != end(items_);
+    bool ret = find(begin(items_), end(items_), item) != end(items_);
+
+    LOG_DEBUG_LIB(LibMultio) << (ret ? "found" : "not found") << std::endl;
+
+    return ret;
 }
 
 void Select::print(std::ostream& os) const {

@@ -30,8 +30,8 @@ plans :
   - name : ocean-grids
     actions:
       - type : Select
-        match : field
-        fields : [lat_T, lon_T, lat_U, lon_U, lat_V, lon_V, lat_W, lon_W]
+        match : category
+        categories : [ocean-grid-coordinate]
 
       - type : Aggregation
 

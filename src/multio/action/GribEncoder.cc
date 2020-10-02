@@ -21,6 +21,8 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 #include "multio/LibMultio.h"
+#include "multio/action/GridInfo.h"
+
 
 namespace multio {
 namespace action {
@@ -28,15 +30,23 @@ namespace action {
 using message::Message;
 using message::Peer;
 
+namespace  {
+// TODO: perhaps move this to Mappings as that is already a singleton
+std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
+    static std::map<std::string, std::unique_ptr<GridInfo>> grids_;
+    return grids_;
+}
+}  // namespace
+
 GribEncoder::GribEncoder(codes_handle* handle, const std::string& gridType) :
     metkit::grib::GribHandle{handle}, gridType_{gridType} {
     for (auto const& subtype : {"T grid", "U grid", "V grid", "W grid", "F grid"}) {
-        grids_.insert(std::make_pair(subtype, std::unique_ptr<GridInfo>{new GridInfo{}}));
+        grids().insert(std::make_pair(subtype, std::unique_ptr<GridInfo>{new GridInfo{}}));
     }
 }
 
 bool GribEncoder::gridInfoReady(const std::string& subtype) const {
-    return grids_.at(subtype)->hashExists();
+    return grids().at(subtype)->hashExists();
 }
 
 bool GribEncoder::setGridInfo(message::Message msg) {
@@ -44,17 +54,17 @@ bool GribEncoder::setGridInfo(message::Message msg) {
 
     ASSERT(coordSet_.find(msg.metadata().getString("nemoParam")) != end(coordSet_));
 
-    grids_.at(msg.domain())->setSubtype(msg.domain());
+    grids().at(msg.domain())->setSubtype(msg.domain());
 
     if (msg.metadata().getString("nemoParam").substr(0, 3) == "lat") {
-        grids_.at(msg.domain())->setLatitudes(msg);
+        grids().at(msg.domain())->setLatitudes(msg);
     }
 
     if (msg.metadata().getString("nemoParam").substr(0, 3) == "lon") {
-        grids_.at(msg.domain())->setLongitudes(msg);
+        grids().at(msg.domain())->setLongitudes(msg);
     }
 
-    return grids_.at(msg.domain())->computeHashIfCan();
+    return grids().at(msg.domain())->computeHashIfCan();
 }
 
 void GribEncoder::setOceanMetadata(const message::Message& msg) {
@@ -80,7 +90,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     // Set ocean grid information
     setValue("unstructuredGridType", gridType_);
     setValue("unstructuredGridSubtype", msg.domain());
-    setValue("uuidOfHGrid", grids_.at(msg.domain())->hashValue());
+    setValue("uuidOfHGrid", grids().at(msg.domain())->hashValue());
 }
 
 void GribEncoder::setValue(const std::string& key, long value) {
@@ -112,7 +122,7 @@ void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
 }
 
 message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
-    auto msg = grids_.at(subtype)->latitudes();
+    auto msg = grids().at(subtype)->latitudes();
 
     setOceanMetadata(msg);
 
@@ -120,7 +130,7 @@ message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
 }
 
 message::Message GribEncoder::encodeLongitudes(const std::string& subtype) {
-    auto msg = grids_.at(subtype)->longitudes();
+    auto msg = grids().at(subtype)->longitudes();
 
     setOceanMetadata(msg);
 

@@ -29,6 +29,7 @@ void Sink::execute(Message msg) const {
 
     switch (msg.tag()) {
         case Message::Tag::Field:
+        case Message::Tag::Statistics:
         case Message::Tag::Grib:
             write(msg);
             executeNext(msg);

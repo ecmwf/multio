@@ -1,4 +1,4 @@
-#ifndef multio_server_actions_Operation_H
+﻿#ifndef multio_server_actions_Operation_H
 #define multio_server_actions_Operation_H
 
 #include <memory>
@@ -20,8 +20,15 @@ public:
     virtual ~Operation() = default;
 
 protected:
+    virtual void print(std::ostream& os) const = 0;
+
     std::string name_;
     std::vector<double> values_;
+
+    friend std::ostream& operator<<(std::ostream& os, const Operation& a) {
+        a.print(os);
+        return os;
+    }
 };
 
 //==== Derived classes ============================
@@ -33,6 +40,9 @@ public:
     const std::vector<double>& compute() override;
 
     void update(const double* val, long sz) override;
+
+private:
+    void print(std::ostream &os) const override;
 };
 
 class Average final : public Operation {
@@ -44,6 +54,9 @@ public:
     const std::vector<double>& compute() override;
 
     void update(const double* val, long sz) override;
+
+private:
+    void print(std::ostream &os) const override;
 };
 
 class Minimum final : public Operation {
@@ -53,6 +66,9 @@ public:
     const std::vector<double>& compute() override;
 
     void update(const double* val, long sz) override;
+
+private:
+    void print(std::ostream &os) const override;
 };
 
 class Maximum final : public Operation {
@@ -62,6 +78,9 @@ public:
     const std::vector<double>& compute() override;
 
     void update(const double* val, long sz) override;
+
+private:
+    void print(std::ostream &os) const override;
 };
 
 class Accumulate final : public Operation {
@@ -71,6 +90,9 @@ public:
     const std::vector<double>& compute() override;
 
     void update(const double* val, long sz) override;
+
+private:
+    void print(std::ostream &os) const override;
 };
 
 //==== Factory function ============================

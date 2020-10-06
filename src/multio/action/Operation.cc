@@ -32,6 +32,10 @@ void Instant::update(const double* val, long sz) {
     std::memcpy(values_.data(), val, sz);
 }
 
+void Instant::print(std::ostream& os) const {
+    os << "Operation(instant)";
+}
+
 //===============================================================================
 
 Average::Average(const std::string& name, long sz) : Operation{name, sz} {}
@@ -53,6 +57,10 @@ void Average::update(const double* val, long sz) {
     }
 }
 
+void Average::print(std::ostream& os) const {
+    os << "Operation(average)";
+}
+
 //===============================================================================
 
 Minimum::Minimum(const std::string& name, long sz) : Operation{name, sz} {}
@@ -68,6 +76,10 @@ void Minimum::update(const double* val, long sz) {
         v = (v > *val) ? *val : v;
         ++val;
     }
+}
+
+void Minimum::print(std::ostream& os) const {
+    os << "Operation(minimum)";
 }
 
 //===============================================================================
@@ -87,6 +99,10 @@ void Maximum::update(const double* val, long sz) {
     }
 }
 
+void Maximum::print(std::ostream& os) const {
+    os << "Operation(maximum)";
+}
+
 //===============================================================================
 
 Accumulate::Accumulate(const std::string& name, long sz) : Operation{name, sz} {}
@@ -101,6 +117,10 @@ void Accumulate::update(const double* val, long sz) {
     for (auto& v : values_) {
         v += *val++;
     }
+}
+
+void Accumulate::print(std::ostream& os) const {
+    os << "Operation(accumulate)";
 }
 
 //===============================================================================

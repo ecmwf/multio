@@ -52,19 +52,27 @@ void Statistics::execute(message::Message msg) const {
     ScopedTimer timer{timing_};
 
     LOG_DEBUG_LIB(LibMultio) << " *** Executing statistics " << *this << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << "     Metadata: " << msg.metadata() << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "         Metadata: " << msg.metadata() << std::endl;
 
     if(fieldStats_.find(msg.name()) == end(fieldStats_)) {
+        LOG_DEBUG_LIB(LibMultio) << " ======== Building new statistics for " << msg.name()
+                                 << std::endl;
         fieldStats_[msg.name()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
     }
 
-    if(fieldStats_.at(msg.name())->process(msg)) {
+    auto skipCompute = fieldStats_.at(msg.name())->process(msg);
+
+    std::cout << " ======== Compute next for " << msg.name() << " -- "
+              << ((skipCompute) ? "no" : "yes") << std::endl;
+
+    if(skipCompute) {
         return;
     }
 
     auto md = msg.metadata();
     for (auto&& stat : fieldStats_.at(msg.name())->compute(msg)) {
         md.set("operation", stat.first);
+        std::cout << " ======== Setting field -- " << stat.first << std::endl;
         message::Message newMsg{
             message::Message::Header{message::Message::Tag::Statistics, message::Peer{},
                                      message::Peer{}, msg.name(), msg.category(), msg.domainCount(),
@@ -78,7 +86,8 @@ void Statistics::execute(message::Message msg) const {
 }
 
 void Statistics::print(std::ostream& os) const {
-    os << "Statistics(output frequency = " << timeSpan_ << ", operations = ";
+    os << "Statistics(output frequency = " << timeSpan_ << ", unit = " << timeUnit_
+       << ", operations = ";
     bool first = true;
     for (const auto& ops : operations_) {
         os << (first ? "" : ", ");

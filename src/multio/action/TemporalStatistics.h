@@ -33,13 +33,13 @@ public:
     void reset(const eckit::Date& startPoint) { startPoint_ = startPoint; }
     bool samePeriod(const eckit::Date& dt) {
         ASSERT(startPoint_ <= dt);
-        return dt < endPoint();
+        return dt <= endPoint();
     }
 };
 
 class DateTimePeriod {
     eckit::DateTime startPoint_;
-    eckit::Second duration_;
+    const eckit::Second duration_;
     eckit::DateTime endPoint() const {
         return startPoint_ + duration_;
     }
@@ -53,13 +53,16 @@ class DateTimePeriod {
 
 public:
     DateTimePeriod(const eckit::DateTime& startPoint, eckit::Second duration) :
-        startPoint_{startPoint}, duration_{duration} {}
-    void reset(const eckit::DateTime& startPoint) {
-        startPoint_ = startPoint;
+        startPoint_{startPoint}, duration_{duration} {
+        std::cout << " ======== Date-time period created with duration " << duration_ << std::endl;
+    }
+    void reset(const eckit::DateTime& current) {
+        startPoint_ = current;
     }
     bool samePeriod(const eckit::DateTime& dt) {
+        std::cout << "Comparing current: " << dt << " with end point: " << endPoint() << std::endl;
         ASSERT(startPoint_ <= dt);
-        return dt < endPoint();
+        return dt <= endPoint();
     }
 };
 
@@ -69,7 +72,7 @@ public:
                                                      const std::vector<std::string>& operations,
                                                      const message::Message& msg);
 
-    TemporalStatistics(const std::vector<std::string>& operations);
+    TemporalStatistics(const std::vector<std::string>& operations, size_t sz);
     virtual ~TemporalStatistics() = default;
 
     bool process(message::Message& msg);
@@ -103,8 +106,7 @@ class MonthlyStatistics : public TemporalStatistics {
     DatePeriod current_;
 
 public:
-    MonthlyStatistics(const std::vector<std::string> operations, const std::string& name, long date,
-                      long span);
+    MonthlyStatistics(const std::vector<std::string> operations, long span, message::Message msg);
 
     bool process_next(message::Message &msg) override;
 
@@ -121,8 +123,7 @@ class DailyStatistics : public TemporalStatistics {
     DatePeriod current_;
 
 public:
-    DailyStatistics(const std::vector<std::string> operations, const std::string& name, long date,
-                    long span);
+    DailyStatistics(const std::vector<std::string> operations, long span, message::Message msg);
 
     bool process_next(message::Message& msg) override;
 
@@ -139,8 +140,7 @@ class HourlyStatistics : public TemporalStatistics {
     DateTimePeriod current_;
 
 public:
-    HourlyStatistics(const std::vector<std::string> operations, const std::string& name, long date,
-                     long span);
+    HourlyStatistics(const std::vector<std::string> operations, long span, message::Message msg);
 
     bool process_next(message::Message& msg) override;
 

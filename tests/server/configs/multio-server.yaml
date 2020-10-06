@@ -58,10 +58,10 @@ plans :
       # - type : SingleFieldSink
       #   root_path : "/scratch/ma/masd/ocean-fields/"
 
-      # - type : Statistics
-      #   output_frequency: 6h
-      #   operations:
-      #     - instant
+      - type : Statistics
+        output_frequency: 6h
+        operations:
+          - average
 
       - type : Encode
         format : grib

@@ -61,7 +61,11 @@ plans :
       - type : Statistics
         output_frequency: 6h
         operations:
+          - instant
           - average
+          - minimum
+          - maximum
+          - accumulate
 
       - type : Encode
         format : grib

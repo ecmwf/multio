@@ -1,10 +1,13 @@
 #include "Operation.h"
 
+#include <algorithm>
 #include <cstring>
 #include <functional>
 #include <map>
 
 #include "eckit/exception/Exceptions.h"
+
+#include "multio/LibMultio.h"
 
 namespace multio {
 namespace action {
@@ -30,6 +33,11 @@ void Instant::update(const double* val, long sz) {
     ASSERT(values_.size() == static_cast<size_t>(sz));
 
     std::memcpy(values_.data(), val, sz);
+
+    LOG_DEBUG_LIB(LibMultio) << " ======== " << *this
+                             << ": minimum: " << *std::min_element(begin(values_), end(values_))
+                             << ", maximum: " << *std::max_element(begin(values_), end(values_))
+                             << std::endl;
 }
 
 void Instant::print(std::ostream& os) const {
@@ -44,7 +52,10 @@ const std::vector<double>& Average::compute() {
     for(auto& val : values_) {
         val /= static_cast<double>(count_);
     }
-    count_ = 0;
+    LOG_DEBUG_LIB(LibMultio) << " ======== " << *this
+                             << ": minimum: " << *std::min_element(begin(values_), end(values_))
+                             << ", maximum: " << *std::max_element(begin(values_), end(values_))
+                             << ", count: " << count_ << std::endl;
 
     return values_;
 }
@@ -55,6 +66,7 @@ void Average::update(const double* val, long sz) {
     for (auto& v : values_) {
         v += *val++;
     }
+    ++count_;
 }
 
 void Average::print(std::ostream& os) const {
@@ -76,6 +88,10 @@ void Minimum::update(const double* val, long sz) {
         v = (v > *val) ? *val : v;
         ++val;
     }
+    LOG_DEBUG_LIB(LibMultio) << " ======== " << *this
+                             << ": minimum: " << *std::min_element(begin(values_), end(values_))
+                             << ", maximum: " << *std::max_element(begin(values_), end(values_))
+                             << std::endl;
 }
 
 void Minimum::print(std::ostream& os) const {
@@ -97,6 +113,10 @@ void Maximum::update(const double* val, long sz) {
         v = (v < *val) ? *val : v;
         ++val;
     }
+    LOG_DEBUG_LIB(LibMultio) << " ======== " << *this
+                             << ": minimum: " << *std::min_element(begin(values_), end(values_))
+                             << ", maximum: " << *std::max_element(begin(values_), end(values_))
+                             << std::endl;
 }
 
 void Maximum::print(std::ostream& os) const {
@@ -117,6 +137,10 @@ void Accumulate::update(const double* val, long sz) {
     for (auto& v : values_) {
         v += *val++;
     }
+    LOG_DEBUG_LIB(LibMultio) << " ======== " << *this
+                             << ": minimum: " << *std::min_element(begin(values_), end(values_))
+                             << ", maximum: " << *std::max_element(begin(values_), end(values_))
+                             << std::endl;
 }
 
 void Accumulate::print(std::ostream& os) const {

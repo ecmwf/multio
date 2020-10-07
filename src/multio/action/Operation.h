@@ -46,7 +46,7 @@ private:
 };
 
 class Average final : public Operation {
-    long count_;
+    long count_ = 0;
 
 public:
     Average(const std::string& name, long sz = 0);

@@ -9,62 +9,10 @@
 
 #include "multio/action/Operation.h"
 #include "multio/message/Message.h"
+#include "multio/action/Period.h"
 
 namespace multio {
 namespace action {
-
-class DatePeriod {
-    eckit::Date startPoint_;
-    long duration_;
-    eckit::Date endPoint() const {
-        return startPoint_ + duration_;
-    }
-    void print(std::ostream& os) const {
-        os << "Period(" << startPoint_ << " to " << endPoint() << ")";
-    }
-    friend std::ostream& operator<<(std::ostream& os, const DatePeriod& a) {
-        a.print(os);
-        return os;
-    }
-
-public:
-    DatePeriod(const eckit::Date& startPoint, long duration) :
-        startPoint_{startPoint}, duration_{duration} {}
-    void reset(const eckit::Date& startPoint) { startPoint_ = startPoint; }
-    bool samePeriod(const eckit::Date& dt) {
-        ASSERT(startPoint_ <= dt);
-        return dt <= endPoint();
-    }
-};
-
-class DateTimePeriod {
-    eckit::DateTime startPoint_;
-    const eckit::Second duration_;
-    eckit::DateTime endPoint() const {
-        return startPoint_ + duration_;
-    }
-    void print(std::ostream& os) const {
-        os << "Period(" << startPoint_ << " to " << endPoint() << ")";
-    }
-    friend std::ostream& operator<<(std::ostream& os, const DateTimePeriod& a) {
-        a.print(os);
-        return os;
-    }
-
-public:
-    DateTimePeriod(const eckit::DateTime& startPoint, eckit::Second duration) :
-        startPoint_{startPoint}, duration_{duration} {
-        std::cout << " ======== Date-time period created with duration " << duration_ << std::endl;
-    }
-    void reset(const eckit::DateTime& current) {
-        startPoint_ = current;
-    }
-    bool samePeriod(const eckit::DateTime& dt) {
-        std::cout << "Comparing current: " << dt << " with end point: " << endPoint() << std::endl;
-        ASSERT(startPoint_ <= dt);
-        return dt <= endPoint();
-    }
-};
 
 class TemporalStatistics {
 public:
@@ -152,4 +100,4 @@ public:
 }
 }  // namespace multio
 
-#endif // TEMPORALSTATISTICS_H
+#endif // multio_server_actions_TemporalStatistics_H

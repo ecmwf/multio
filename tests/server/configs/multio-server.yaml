@@ -55,9 +55,6 @@ plans :
 
       - type : Aggregation
 
-      # - type : SingleFieldSink
-      #   root_path : "/scratch/ma/masd/ocean-fields/"
-
       - type : Statistics
         output_frequency: 6h
         operations:
@@ -79,29 +76,5 @@ plans :
             append : true
             path : /var/tmp/ocean-pipe.grib
 
-  # - name : ocean-hourly
-  #   actions :
-  #     - type : Select
-  #       match : field
-  #       items : [sst, sss]
-
-  #     - type : Statistics
-  #       output_frequency: 1h
-  #       operations:
-  #         - average
-  #         - minimum
-  #         - maximum
-
-  #     - type : Aggregation
-
-  #     # - type : SingleFieldSink
-  #     #   root_path : "/scratch/ma/masd/ocean-fields/"
-
-  #     - type : Encode
-  #       format : grib
-  #       template : unstructured.tmpl
-
-  #     - type : Sink
-  #       sinks :
-  #         - type : fdb5
-  #           config : {}
+          - type : fdb5
+            config : {}

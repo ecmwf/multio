@@ -15,7 +15,6 @@ std::vector<std::unique_ptr<Operation>> reset_statistics(const std::vector<std::
                                                          long sz) {
     std::vector<std::unique_ptr<Operation>> stats;
     for (const auto& op : opNames) {
-        std::cout << " ======== Resetting statistics for operation " << op << std::endl;
         stats.push_back(make_operation(op, sz));
     }
     return stats;
@@ -24,12 +23,10 @@ std::vector<std::unique_ptr<Operation>> reset_statistics(const std::vector<std::
 eckit::DateTime currentDateTime(const message::Message& msg) {
     eckit::Date startDate{eckit::Date{msg.metadata().getLong("date")}};
     eckit::DateTime startDateTime{startDate, eckit::Time{0}};
-    auto cur = startDateTime + static_cast<eckit::Second>(msg.metadata().getLong("step") *
+    return startDateTime + static_cast<eckit::Second>(msg.metadata().getLong("step") *
                                                       msg.metadata().getLong("timeStep"));
-    std::cout << " ======== Current date and time: " << cur << std::endl;
-    return cur;
 }
-}
+}  // namespace
 
 std::unique_ptr<TemporalStatistics> TemporalStatistics::build(
     const std::string& unit, long span, const std::vector<std::string>& operations,
@@ -66,10 +63,7 @@ void TemporalStatistics::updateStatistics(const message::Message& msg) {
 
 std::map<std::string, eckit::Buffer> TemporalStatistics::compute(const message::Message& msg) {
     std::map<std::string, eckit::Buffer> retStats;
-    std::cout << " ======== Creating buffer map for " << statistics_.size() << " statistatistics "
-              << std::endl;
     for (auto const& stat : statistics_) {
-        std::cout << " ======== Computing statistics for " << *stat << std::endl;
         eckit::Buffer buf{msg.size()};
         const auto& res = stat->compute();
         std::memcpy(buf, res.data(), msg.size());
@@ -81,7 +75,8 @@ std::map<std::string, eckit::Buffer> TemporalStatistics::compute(const message::
 void TemporalStatistics::reset(const message::Message& msg) {
     statistics_ = reset_statistics(opNames_, msg.globalSize());
     resetPeriod(msg);
-    std::cout << " ======== Resetting statistics for temporal type " << *this << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " ======== Resetting statistics for temporal type " << *this
+                             << std::endl;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -97,13 +92,13 @@ bool MonthlyStatistics::process_next(message::Message& msg) {
 
     auto dateTime = currentDateTime(msg);
 
-    ASSERT(current_.samePeriod(dateTime.date()));
+    ASSERT(current_.isWithin(dateTime.date()));
 
     updateStatistics(msg);
 
     dateTime = dateTime + static_cast<eckit::Second>(msg.metadata().getLong("timeStep"));
 
-    return current_.samePeriod(dateTime.date());
+    return current_.isWithin(dateTime.date());
 }
 
 void MonthlyStatistics::resetPeriod(const message::Message& msg) {
@@ -127,13 +122,13 @@ bool DailyStatistics::process_next(message::Message& msg) {
 
     auto dateTime = currentDateTime(msg);
 
-    ASSERT(current_.samePeriod(dateTime.date()));
+    ASSERT(current_.isWithin(dateTime.date()));
 
     updateStatistics(msg);
 
     dateTime = dateTime + static_cast<eckit::Second>(msg.metadata().getLong("timeStep"));
 
-    return current_.samePeriod(dateTime.date());
+    return current_.isWithin(dateTime.date());
 }
 
 void DailyStatistics::resetPeriod(const message::Message& msg) {
@@ -160,13 +155,13 @@ bool HourlyStatistics::process_next(message::Message &msg) {
 
     auto dateTime = currentDateTime(msg);
 
-    ASSERT(current_.samePeriod(dateTime));
+    ASSERT(current_.isWithin(dateTime));
 
     updateStatistics(msg);
 
     dateTime = dateTime + static_cast<eckit::Second>(msg.metadata().getLong("timeStep"));
 
-    return current_.samePeriod(dateTime);
+    return current_.isWithin(dateTime);
 }
 
 void HourlyStatistics::resetPeriod(const message::Message& msg) {

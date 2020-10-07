@@ -8,21 +8,31 @@ namespace multio {
 namespace action {
 
 class DatePeriod {
-    eckit::Date startPoint_;
-    long duration_;
+public:
+    DatePeriod(const eckit::Date& startPoint, long duration);
 
+    void reset(const eckit::Date& startPoint);
+    bool isWithin(const eckit::Date& dt);
+
+private:
     eckit::Date endPoint() const;
     void print(std::ostream& os) const;
 
+    eckit::Date startPoint_;
+    long duration_;
+
     friend std::ostream& operator<<(std::ostream& os, const DatePeriod& a);
 
-public:
-    DatePeriod(const eckit::Date& startPoint, long duration);
-    void reset(const eckit::Date& startPoint);
-    bool samePeriod(const eckit::Date& dt);
 };
 
 class DateTimePeriod {
+public:
+    DateTimePeriod(const eckit::DateTime& startPoint, eckit::Second duration);
+
+    void reset(const eckit::DateTime& current);
+    bool isWithin(const eckit::DateTime& dt);
+
+private:
     eckit::DateTime startPoint_;
     const eckit::Second duration_;
 
@@ -30,11 +40,6 @@ class DateTimePeriod {
     void print(std::ostream& os) const;
 
     friend std::ostream& operator<<(std::ostream& os, const DateTimePeriod& a);
-
-public:
-    DateTimePeriod(const eckit::DateTime& startPoint, eckit::Second duration);
-    void reset(const eckit::DateTime& current);
-    bool samePeriod(const eckit::DateTime& dt);
 };
 
 }

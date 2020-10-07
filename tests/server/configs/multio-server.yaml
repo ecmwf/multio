@@ -27,21 +27,13 @@ activeFields :
 
 plans :
 
-  - name : ocean-instant
-    actions :
+  - name : ocean-grids
+    actions:
       - type : Select
         match : category
-        categories : [ocean-model-level]
-
-      - type : Statistics
-        output_frequency: 6h
-        operations:
-          - instant
+        categories : [ocean-grid-coordinate]
 
       - type : Aggregation
-
-      # - type : SingleFieldSink
-      #   root_path : "/scratch/ma/masd/ocean-fields/"
 
       - type : Encode
         format : grib
@@ -50,37 +42,39 @@ plans :
 
       - type : Sink
         sinks :
-          - type : fdb5
-            config : {}
+
+          - type : file
+            append : false
+            path : /var/tmp/ocean-pipe.grib
+
+  - name : ocean-instant
+    actions :
+      - type : Select
+        match : category
+        categories : [ocean-model-level]
+
+      - type : Aggregation
+
+      - type : Statistics
+        output_frequency: 6h
+        operations:
+          - instant
+          - average
+          - minimum
+          - maximum
+          - accumulate
+
+      - type : Encode
+        format : grib
+        template : unstructured.tmpl
+        grid-type : eORCA1
+
+      - type : Sink
+        sinks :
 
           - type : file
             append : true
-            path : ocean-pipe.grib
+            path : /var/tmp/ocean-pipe.grib
 
-
-  # - name : ocean-hourly
-  #   actions :
-  #     - type : Select
-  #       match : field
-  #       items : [sst, sss]
-
-  #     - type : Statistics
-  #       output_frequency: 1h
-  #       operations:
-  #         - average
-  #         - minimum
-  #         - maximum
-
-  #     - type : Aggregation
-
-  #     # - type : SingleFieldSink
-  #     #   root_path : "/scratch/ma/masd/ocean-fields/"
-
-  #     - type : Encode
-  #       format : grib
-  #       template : unstructured.tmpl
-
-  #     - type : Sink
-  #       sinks :
-  #         - type : fdb5
-  #           config : {}
+          - type : fdb5
+            config : {}

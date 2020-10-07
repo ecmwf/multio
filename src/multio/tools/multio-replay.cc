@@ -104,6 +104,7 @@ void MultioReplay::execute(const eckit::option::CmdArgs &) {
  }
 
 void MultioReplay::setMetadata() {
+    multio_metadata_set_string_value("category", "ocean-model-level");
     multio_metadata_set_int_value("globalSize", globalSize_);
     multio_metadata_set_int_value("level", level_);
     multio_metadata_set_int_value("step", step_);

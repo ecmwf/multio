@@ -145,7 +145,7 @@ public:
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 
-        MultioNemo::instance().client().sendField(fname, "ocean-model-level", gl_size,
+        MultioNemo::instance().client().sendField(fname, metadata_.getString("category"), gl_size,
                                                   paramMap_.get(fname).gridType, metadata_,
                                                   std::move(field_vals));
     }

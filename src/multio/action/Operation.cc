@@ -1,21 +1,29 @@
 #include "Operation.h"
 
+#include <algorithm>
 #include <cstring>
 #include <functional>
 #include <map>
 
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/LibMultio.h"
+
 namespace multio {
 namespace action {
 
-Operation::Operation(long sz) : values_{std::vector<double>(sz)} {}
+Operation::Operation(const std::string& name, long sz) :
+    name_{name}, values_{std::vector<double>(sz)} {}
+
+const std::string& Operation::name() {
+    return name_;
+}
 
 //===============================================================================
 
 // May never be needed -- just creates an unnecessarily copy
 
-Instant::Instant(long sz) : Operation{sz} {}
+Instant::Instant(const std::string& name, long sz) : Operation{name, sz} {}
 
 const std::vector<double>& Instant::compute() {
     return values_;
@@ -25,17 +33,29 @@ void Instant::update(const double* val, long sz) {
     ASSERT(values_.size() == static_cast<size_t>(sz));
 
     std::memcpy(values_.data(), val, sz);
+
+    LOG_DEBUG_LIB(LibMultio) << " ======== " << *this
+                             << ": minimum: " << *std::min_element(begin(values_), end(values_))
+                             << ", maximum: " << *std::max_element(begin(values_), end(values_))
+                             << std::endl;
+}
+
+void Instant::print(std::ostream& os) const {
+    os << "Operation(instant)";
 }
 
 //===============================================================================
 
-Average::Average(long sz) : Operation{sz} {}
+Average::Average(const std::string& name, long sz) : Operation{name, sz} {}
 
 const std::vector<double>& Average::compute() {
     for(auto& val : values_) {
         val /= static_cast<double>(count_);
     }
-    count_ = 0;
+    LOG_DEBUG_LIB(LibMultio) << " ======== " << *this
+                             << ": minimum: " << *std::min_element(begin(values_), end(values_))
+                             << ", maximum: " << *std::max_element(begin(values_), end(values_))
+                             << ", count: " << count_ << std::endl;
 
     return values_;
 }
@@ -46,11 +66,16 @@ void Average::update(const double* val, long sz) {
     for (auto& v : values_) {
         v += *val++;
     }
+    ++count_;
+}
+
+void Average::print(std::ostream& os) const {
+    os << "Operation(average)";
 }
 
 //===============================================================================
 
-Minimum::Minimum(long sz) : Operation{sz} {}
+Minimum::Minimum(const std::string& name, long sz) : Operation{name, sz} {}
 
 const std::vector<double>& Minimum::compute() {
     return values_;
@@ -63,11 +88,19 @@ void Minimum::update(const double* val, long sz) {
         v = (v > *val) ? *val : v;
         ++val;
     }
+    LOG_DEBUG_LIB(LibMultio) << " ======== " << *this
+                             << ": minimum: " << *std::min_element(begin(values_), end(values_))
+                             << ", maximum: " << *std::max_element(begin(values_), end(values_))
+                             << std::endl;
+}
+
+void Minimum::print(std::ostream& os) const {
+    os << "Operation(minimum)";
 }
 
 //===============================================================================
 
-Maximum::Maximum(long sz) : Operation{sz} {}
+Maximum::Maximum(const std::string& name, long sz) : Operation{name, sz} {}
 
 const std::vector<double>& Maximum::compute() {
     return values_;
@@ -80,11 +113,19 @@ void Maximum::update(const double* val, long sz) {
         v = (v < *val) ? *val : v;
         ++val;
     }
+    LOG_DEBUG_LIB(LibMultio) << " ======== " << *this
+                             << ": minimum: " << *std::min_element(begin(values_), end(values_))
+                             << ", maximum: " << *std::max_element(begin(values_), end(values_))
+                             << std::endl;
+}
+
+void Maximum::print(std::ostream& os) const {
+    os << "Operation(maximum)";
 }
 
 //===============================================================================
 
-Accumulate::Accumulate(long sz) : Operation{sz} {}
+Accumulate::Accumulate(const std::string& name, long sz) : Operation{name, sz} {}
 
 const std::vector<double>& Accumulate::compute() {
     return values_;
@@ -96,32 +137,40 @@ void Accumulate::update(const double* val, long sz) {
     for (auto& v : values_) {
         v += *val++;
     }
+    LOG_DEBUG_LIB(LibMultio) << " ======== " << *this
+                             << ": minimum: " << *std::min_element(begin(values_), end(values_))
+                             << ", maximum: " << *std::max_element(begin(values_), end(values_))
+                             << std::endl;
+}
+
+void Accumulate::print(std::ostream& os) const {
+    os << "Operation(accumulate)";
 }
 
 //===============================================================================
 
 namespace {
 
-using make_oper_type = std::function<std::unique_ptr<Operation>(long)>;
+using make_oper_type = std::function<std::unique_ptr<Operation>(const std::string&, long)>;
 
-std::unique_ptr<Operation> make_instant(long sz) {
-    return std::unique_ptr<Instant>{new Instant{sz}};
+std::unique_ptr<Operation> make_instant(const std::string& nm, long sz) {
+    return std::unique_ptr<Instant>{new Instant{nm, sz}};
 }
 
-std::unique_ptr<Operation> make_average(long sz) {
-    return std::unique_ptr<Average>{new Average{sz}};
+std::unique_ptr<Operation> make_average(const std::string& nm, long sz) {
+    return std::unique_ptr<Average>{new Average{nm, sz}};
 }
 
-std::unique_ptr<Operation> make_minimum(long sz) {
-    return std::unique_ptr<Minimum>{new Minimum{sz}};
+std::unique_ptr<Operation> make_minimum(const std::string& nm, long sz) {
+    return std::unique_ptr<Minimum>{new Minimum{nm, sz}};
 }
 
-std::unique_ptr<Operation> make_maximum(long sz) {
-    return std::unique_ptr<Maximum>{new Maximum{sz}};
+std::unique_ptr<Operation> make_maximum(const std::string& nm, long sz) {
+    return std::unique_ptr<Maximum>{new Maximum{nm, sz}};
 }
 
-std::unique_ptr<Operation> make_accumulate(long sz) {
-    return std::unique_ptr<Accumulate>{new Accumulate{sz}};
+std::unique_ptr<Operation> make_accumulate(const std::string& nm, long sz) {
+    return std::unique_ptr<Accumulate>{new Accumulate{nm, sz}};
 }
 
 const std::map<std::string, make_oper_type> defined_operations{
@@ -140,7 +189,7 @@ std::unique_ptr<Operation> make_operation(const std::string& opname, long sz) {
         throw eckit::SeriousBug{"Operation " + opname + " is not defined"};
     }
 
-    return defined_operations.at(opname)(sz);
+    return defined_operations.at(opname)(opname, sz);
 }
 
 }  // namespace action

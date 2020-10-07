@@ -61,6 +61,9 @@ void Encode::execute(Message msg) const {
 
     ASSERT(format_ == "grib");
 
+    LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain()
+                             << std::endl;
+
     if (encoder_->gridInfoReady(msg.domain())) {
         executeNext(encoder_->encodeField(msg));
     }

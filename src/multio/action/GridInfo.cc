@@ -15,8 +15,11 @@
 #include "GridInfo.h"
 
 #include <cstring>
+#include <iomanip>
+#include <sstream>
 
 #include "eckit/exception/Exceptions.h"
+#include "multio/LibMultio.h"
 #include "multio/action/Endian.h"
 
 namespace multio {
@@ -70,9 +73,13 @@ bool GridInfo::computeHashIfCan() {
 
     hashFunction_.numericalDigest(hashValue_);
 
-    eckit::Log::info() << "*** Setting hash value " << hashValue_ << " with supposed size "
-                       << DIGEST_LENGTH << " and with actual size "
-                       << std::strlen(reinterpret_cast<const char*>(hashValue_)) << std::endl;
+    std::ostringstream oss;
+    oss << "*** Computed hash value: ";
+    for (int i = 0; i < DIGEST_LENGTH; ++i) {
+        oss << ((i == 0) ? "" : "-") << std::hex << std::setfill('0') << std::setw(2)
+            << static_cast<short>(hashValue_[i]);
+    }
+    LOG_DEBUG_LIB(LibMultio) << oss.str() << std::endl;
 
     return true;
 }

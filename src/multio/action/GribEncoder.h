@@ -18,7 +18,7 @@
 #include "eccodes.h"
 
 #include "metkit/grib/GribHandle.h"
-#include "multio/action/GridInfo.h"
+#include "multio/message/Message.h"
 
 namespace multio {
 namespace action {
@@ -46,7 +46,6 @@ private:
     message::Message setFieldValues(const  message::Message& msg);
 
     const std::string gridType_;
-    std::map<std::string, std::unique_ptr<GridInfo>> grids_;
 
     std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",
                                     "lon_V", "lat_W", "lon_W", "lat_F", "lon_F"};

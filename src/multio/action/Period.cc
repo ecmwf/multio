@@ -39,7 +39,6 @@ void DateTimePeriod::reset(const eckit::DateTime& current) {
 }
 
 bool DateTimePeriod::isWithin(const eckit::DateTime& dt) {
-    std::cout << "Comparing current: " << dt << " with end point: " << endPoint() << std::endl;
     ASSERT(startPoint_ <= dt);
     return dt <= endPoint();
 }

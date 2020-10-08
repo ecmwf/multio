@@ -154,23 +154,23 @@ namespace {
 using make_oper_type = std::function<std::unique_ptr<Operation>(const std::string&, long)>;
 
 std::unique_ptr<Operation> make_instant(const std::string& nm, long sz) {
-    return std::unique_ptr<Instant>{new Instant{nm, sz}};
+    return std::unique_ptr<Operation>{new Instant{nm, sz}};
 }
 
 std::unique_ptr<Operation> make_average(const std::string& nm, long sz) {
-    return std::unique_ptr<Average>{new Average{nm, sz}};
+    return std::unique_ptr<Operation>{new Average{nm, sz}};
 }
 
 std::unique_ptr<Operation> make_minimum(const std::string& nm, long sz) {
-    return std::unique_ptr<Minimum>{new Minimum{nm, sz}};
+    return std::unique_ptr<Operation>{new Minimum{nm, sz}};
 }
 
 std::unique_ptr<Operation> make_maximum(const std::string& nm, long sz) {
-    return std::unique_ptr<Maximum>{new Maximum{nm, sz}};
+    return std::unique_ptr<Operation>{new Maximum{nm, sz}};
 }
 
 std::unique_ptr<Operation> make_accumulate(const std::string& nm, long sz) {
-    return std::unique_ptr<Accumulate>{new Accumulate{nm, sz}};
+    return std::unique_ptr<Operation>{new Accumulate{nm, sz}};
 }
 
 const std::map<std::string, make_oper_type> defined_operations{

@@ -2,6 +2,7 @@
 #define multio_server_actions_Operation_H
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace multio {
@@ -25,10 +26,7 @@ protected:
     std::string name_;
     std::vector<double> values_;
 
-    friend std::ostream& operator<<(std::ostream& os, const Operation& a) {
-        a.print(os);
-        return os;
-    }
+    friend std::ostream& operator<<(std::ostream& os, const Operation& a);
 };
 
 //==== Derived classes ============================

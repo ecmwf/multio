@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstring>
 #include <functional>
+#include <iostream>
 #include <map>
 
 #include "eckit/exception/Exceptions.h"
@@ -19,9 +20,12 @@ const std::string& Operation::name() {
     return name_;
 }
 
-//===============================================================================
+std::ostream& operator<<(std::ostream& os, const Operation& a) {
+    a.print(os);
+    return os;
+}
 
-// May never be needed -- just creates an unnecessarily copy
+//===============================================================================
 
 Instant::Instant(const std::string& name, long sz) : Operation{name, sz} {}
 
@@ -32,8 +36,8 @@ const std::vector<double>& Instant::compute() {
 void Instant::update(const double* val, long sz) {
     ASSERT(values_.size() == static_cast<size_t>(sz));
 
-    std::memcpy(values_.data(), val, sz);
-
+    // May never be needed -- just creates an unnecessarily copy
+    std::copy(val, val + sz, values_.begin());
     LOG_DEBUG_LIB(LibMultio) << " ======== " << *this
                              << ": minimum: " << *std::min_element(begin(values_), end(values_))
                              << ", maximum: " << *std::max_element(begin(values_), end(values_))

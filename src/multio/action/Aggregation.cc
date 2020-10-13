@@ -26,8 +26,6 @@ Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 void Aggregation::execute(Message msg) const {
     ScopedTimer timer{timing_};
 
-    LOG_DEBUG_LIB(LibMultio) << " *** Executing aggregation " << *this << std::endl;
-
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
         executeNext(msg);
     }
@@ -79,7 +77,7 @@ bool Aggregation::createGlobalField(Message& msgOut) const {
 }
 
 void Aggregation::print(std::ostream& os) const {
-    os << "Aggregation()";
+    os << "Aggregation(number of fields = " << messages_.size() << ")";
 }
 
 

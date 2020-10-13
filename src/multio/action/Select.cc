@@ -32,8 +32,6 @@ Select::Select(const eckit::Configuration& config) :
 void Select::execute(Message msg) const {
     ScopedTimer timer{timing_};
 
-    LOG_DEBUG_LIB(LibMultio) << " *** Executing select " << *this << std::endl;
-
     if (isMatched(msg)) {
         executeNext(msg);
     }

@@ -47,6 +47,9 @@ plans :
             append : false
             path : /var/tmp/ocean-pipe.grib
 
+          - type : fdb5
+            config : {}
+
   - name : ocean-instant
     actions :
       - type : Select

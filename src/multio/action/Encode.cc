@@ -52,8 +52,6 @@ Encode::Encode(const eckit::Configuration& config) :
 void Encode::execute(Message msg) const {
     ScopedTimer timer{timing_};
 
-    eckit::Log::info() << "*** Executing encoding: " << *this << std::endl;
-
     if (not encoder_) {
         executeNext(msg);
         return;

@@ -51,7 +51,6 @@ Statistics::Statistics(const eckit::Configuration& config) :
 void Statistics::execute(message::Message msg) const {
     ScopedTimer timer{timing_};
 
-    LOG_DEBUG_LIB(LibMultio) << " *** Executing statistics " << *this << std::endl;
     LOG_DEBUG_LIB(LibMultio) << "         Metadata: " << msg.metadata() << std::endl;
 
     if(fieldStats_.find(msg.name()) == end(fieldStats_)) {

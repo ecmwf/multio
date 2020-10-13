@@ -19,11 +19,27 @@
 #include <sstream>
 
 #include "eckit/exception/Exceptions.h"
+#include "eckit/system/SystemInfo.h"
+#include "eckit/utils/ByteSwap.h"
+
 #include "multio/LibMultio.h"
-#include "multio/action/Endian.h"
 
 namespace multio {
 namespace action {
+
+namespace  {
+template <typename T>
+eckit::Buffer byteswap(const eckit::Buffer& buf) {
+    eckit::Buffer ret{static_cast<const char*>(buf), buf.size()};  // Create a local copy
+
+    auto ret_ptr = reinterpret_cast<T*>(ret.data());
+    auto ret_sz = buf.size() / sizeof(T);
+
+    eckit::byteswap(ret_ptr, ret_sz);
+
+    return ret;
+}
+}  // namespace
 
 GridInfo::GridInfo() {}
 
@@ -93,10 +109,12 @@ const unsigned char* GridInfo::hashValue() const {
 }
 
 void GridInfo::addToHash(const eckit::Buffer& buf) {
-    auto ptr = reinterpret_cast<const double*>(buf.data());
-    auto sz = buf.size() / sizeof(double);
-    for (size_t it = 0; it != sz; ++it) {
-        hashFunction_.add(Endian<double>::to_little_endian(*ptr++));
+    if (eckit::system::SystemInfo::isBigEndian()) {
+        auto swappedBuf = byteswap<double>(buf);
+
+        hashFunction_.add(swappedBuf.data(), swappedBuf.size());
+    } else {
+        hashFunction_.add(buf.data(), buf.size());
     }
 }
 

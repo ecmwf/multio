@@ -26,7 +26,6 @@ list( APPEND multio_action_srcs
     action/Aggregation.h
     action/Encode.cc
     action/Encode.h
-    action/Endian.h
     action/GribEncoder.cc
     action/GribEncoder.h
     action/GridInfo.cc

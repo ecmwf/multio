@@ -14,18 +14,13 @@
 
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/message/Message.h"
 
 #include "multio/LibMultio.h"
-#include "multio/server/PlainDataBlob.h"
+
 
 namespace multio {
 namespace action {
-
-
-namespace {
-const std::map<Message::Tag, std::string> to_blob = {{Message::Tag::Field, "plain"},
-                                                     {Message::Tag::Grib, "grib"}};
-}
 
 Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 
@@ -55,10 +50,7 @@ void Sink::execute(Message msg) const {
 }
 
 void Sink::write(Message msg) const {
-    ASSERT(to_blob.find(msg.tag()) != to_blob.end());
-
-    eckit::DataBlobPtr blob{
-        eckit::DataBlobFactory::build(to_blob.at(msg.tag()), msg.payload().data(), msg.size())};
+    eckit::message::Message blob = to_eckit_message(msg);
 
     mio_.write(blob);
 }

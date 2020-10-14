@@ -22,8 +22,6 @@
 
 #include "multio/sink/FileSink.h"
 
-#include "TestDataBlob.h"
-
 namespace multio {
 namespace test {
 

@@ -20,10 +20,11 @@
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
-#include "eckit/io/DataBlob.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/value/Value.h"
 #include "eckit/utils/Translator.h"
+
+#include <multio/LibMultio.h>
 
 using namespace eckit;
 
@@ -83,35 +84,18 @@ bool MultIO::ready() const {
     return true;
 }
 
-
-Value MultIO::configValue() const {
-    std::lock_guard<std::mutex> lock(mutex_);
-
-    Value config(config_.get());
-
-    // Overwrite the "sinks" component of the configuration with that returned by the
-    // instantiated sinks. This allows them to include additional information that is
-    // not by default in the Configuration (e.g. stuff included in a Resource).
-    std::vector<Value> sink_configs;
-    for (const auto& sink : sinks_) {
-        sink_configs.push_back(sink->configValue());
-    }
-    config["sinks"] = Value(sink_configs);
-
-    return config;
-}
-
-
-void MultIO::write(DataBlobPtr blob) {
+void MultIO::write(eckit::message::Message message) {
 
     std::lock_guard<std::mutex> lock(mutex_);
 
-    StatsTimer stTimer{timer_, std::bind(&IOStats::logWrite, &stats_, blob->length(), _1)};
+    StatsTimer stTimer{timer_, std::bind(&IOStats::logWrite, &stats_, message.length(), _1)};
     for (const auto& sink : sinks_) {
-        sink->write(blob);
+        sink->write(message);
     }
 
-    trigger_.events(blob);
+    LOG_DEBUG_LIB(LibMultio) << "Trigger events for message " << message << std::endl;
+
+    trigger_.events(message);
 }
 
 void MultIO::trigger(const eckit::StringDict& metadata) const {

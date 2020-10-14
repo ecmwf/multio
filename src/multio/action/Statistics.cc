@@ -58,9 +58,13 @@ void Statistics::execute(message::Message msg) const {
         applyOperation(ops);
     }
 
+    LOG_DEBUG_LIB(LibMultio) << " *** Executing statistics " << *this << std::endl;
+
     if (msg.metadata().getUnsigned("step") % writeFrequency_ != 0) {
         return;
     }
+
+    LOG_DEBUG_LIB(LibMultio) << "Passed six-hourly filter statistics " << std::endl;
 
     executeNext(msg);
 }

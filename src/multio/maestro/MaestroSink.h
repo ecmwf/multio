@@ -34,7 +34,7 @@ public:
     ~MaestroSink() override;
 
 private:
-    void write(eckit::DataBlobPtr blob) override;
+    void write(eckit::message::Message blob) override;
 
     void flush() override;
 

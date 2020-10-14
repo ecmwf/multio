@@ -12,6 +12,6 @@ ecbuild_add_library(
     PRIVATE_INCLUDES
       ${ECKIT_INCLUDE_DIRS}
 
-    LIBS
+    PUBLIC_LIBS
         multio
 )

@@ -25,12 +25,13 @@ using namespace eckit::testing;
 namespace multio {
 namespace test {
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
+
 class TestDataSink : public DataSink {
 public:
     TestDataSink(const Configuration& config) : DataSink(config), config_(&config) {}
 
-    void write(eckit::DataBlobPtr blob) override {}
+    void write(eckit::message::Message) override {}
 
     Configuration const* config_;
 
@@ -41,7 +42,7 @@ protected:
 
 static DataSinkBuilder<TestDataSink> testSinkBuilder("test");
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 CASE("test_factory_generate") {
     LocalConfiguration config;

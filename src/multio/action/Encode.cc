@@ -15,50 +15,11 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
 
-#include "metkit/grib/GribDataBlob.h"
-
 #include "multio/LibMultio.h"
 #include "multio/server/ConfigurationPath.h"
 
 namespace multio {
 namespace action {
-
-GribEncoder::GribEncoder(codes_handle* handle) : metkit::grib::GribHandle{handle} {}
-
-void GribEncoder::setOceanValues(const message::Metadata& md) {
-    // setCommonMetadata
-    setValue("expver", "xxxx");
-    setValue("class", "rd");
-    setValue("stream", "oper");
-    setValue("type", "fc");
-    setValue("levtype", static_cast<long>(168));
-    setValue("step", md.getLong("step"));
-    setValue("level", md.getLong("level"));
-
-    // setDomainDimensions
-    setValue("numberOfDataPoints", md.getLong("globalSize"));
-    setValue("numberOfValues", md.getLong("globalSize"));
-
-    // Setting parameter ID
-    setValue("param", md.getLong("param"));
-}
-
-void GribEncoder::setValue(const std::string& key, long value) {
-    eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
-    CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
-}
-
-void GribEncoder::setValue(const std::string& key, double value) {
-    eckit::Log::debug<multio::LibMultio>() << "Setting value for key " << key << std::endl;
-    CODES_CHECK(codes_set_double(raw(), key.c_str(), value), NULL);
-}
-
-void GribEncoder::setValue(const std::string& key, const std::string& value) {
-    eckit::Log::debug<multio::LibMultio>()
-        << "Setting value " << value << " for key " << key << std::endl;
-    size_t sz = value.size();
-    CODES_CHECK(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), NULL);
-}
 
 namespace {
 
@@ -70,7 +31,8 @@ std::unique_ptr<GribEncoder> make_encoder(const eckit::Configuration& config) {
         eckit::AutoStdFile fin{configuration_path() + config.getString("template")};
         int err;
         return std::unique_ptr<GribEncoder>{
-            new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err)}};
+            new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err),
+                            config.getString("grid-type", "ORCA1")}};
     }
     else if (format == "none") {
         return nullptr;  // leave message in raw binary format
@@ -85,15 +47,12 @@ using message::Message;
 using message::Peer;
 
 Encode::Encode(const eckit::Configuration& config) :
-    Action{config},
-    format_{config.getString("format")},
-    gridType_{config.getString("grid-type", "ORCA1")},
-    encoder_{make_encoder(config)} {}
+    Action{config}, format_{config.getString("format")}, encoder_{make_encoder(config)} {}
 
 void Encode::execute(Message msg) const {
     ScopedTimer timer{timing_};
 
-    eckit::Log::debug<LibMultio>() << "*** Executing encoding: " << *this << std::endl;
+    eckit::Log::info() << "*** Executing encoding: " << *this << std::endl;
 
     if (not encoder_) {
         executeNext(msg);
@@ -102,20 +61,16 @@ void Encode::execute(Message msg) const {
 
     ASSERT(format_ == "grib");
 
-    encoder_->setValue("unstructuredGridType", gridType_);
-    encoder_->setValue("unstructuredGridSubtype", msg.domain());
-
-    encoder_->setOceanValues(msg.metadata());
-
-    // Setting field values
-    auto beg = reinterpret_cast<const double*>(msg.payload().data());
-    encoder_->setDataValues(beg, msg.globalSize());
-
-    eckit::Buffer buf{encoder_->message()->length()};
-    encoder_->write(buf);
-    msg = Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
-
-    executeNext(msg);
+    if (encoder_->gridInfoReady(msg.domain())) {
+        executeNext(encoder_->encodeField(msg));
+    }
+    else {
+        eckit::Log::info() << "*** Grid metadata: " << msg.metadata() << std::endl;
+        if (encoder_->setGridInfo(msg)) {
+            executeNext(encoder_->encodeLatitudes(msg.domain()));
+            executeNext(encoder_->encodeLongitudes(msg.domain()));
+        }
+    }
 }
 
 void Encode::print(std::ostream& os) const {

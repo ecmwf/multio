@@ -28,7 +28,7 @@ namespace action {
 
 class Null : public Action {
 public:
-    Null(const eckit::Configuration& config);
+    explicit Null(const eckit::Configuration& config);
 
     void execute(message::Message msg) const override;
 

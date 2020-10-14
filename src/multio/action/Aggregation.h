@@ -34,7 +34,7 @@ using message::Message;
 
 class Aggregation : public Action {
 public:
-    Aggregation(const eckit::Configuration& config);
+    explicit Aggregation(const eckit::Configuration& config);
 
     void execute(Message msg) const override;
 

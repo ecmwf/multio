@@ -31,7 +31,7 @@ using message::Message;
 
 class Select : public Action {
 public:
-    Select(const eckit::Configuration& config);
+    explicit Select(const eckit::Configuration& config);
 
     void execute(Message msg) const override;
 

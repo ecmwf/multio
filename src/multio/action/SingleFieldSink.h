@@ -35,7 +35,7 @@ using message::Message;
 
 class SingleFieldSink : public Action {
 public:
-    SingleFieldSink(const eckit::Configuration& config);
+    explicit SingleFieldSink(const eckit::Configuration& config);
 
     void execute(message::Message msg) const override;
 

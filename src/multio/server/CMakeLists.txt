@@ -1,21 +1,13 @@
-
-if( HAVE_MULTIO_SERVER )
-    list (APPEND multio_server_deps
-        multio
-        eckit_mpi
-        eckit_option
-        eckit
-        metkit
-        eccodes
+if( HAVE_FDB5 )
+    list( APPEND multio_server_plugins
+        multio-fdb5
     )
 endif()
 
-if( HAVE_FDB5 )
-    list( APPEND multio_server_deps multio-fdb5 )
-endif()
-
 if( HAVE_MAESTRO )
-    list( APPEND multio_server_deps multio-maestro )
+    list( APPEND multio_server_plugins
+        multio-maestro
+    )
 endif()
 
 ecbuild_add_library(
@@ -42,8 +34,6 @@ ecbuild_add_library(
         NemoToGrib.h
         MultioNemo.cc
         MultioNemo.h
-        PlainDataBlob.cc
-        PlainDataBlob.h
         ThreadTransport.cc
         ThreadTransport.h
         MpiTransport.cc
@@ -56,6 +46,12 @@ ecbuild_add_library(
         multio_nemo.f90
         multio.f90
 
-    LIBS
-        ${multio_server_deps}
+    PUBLIC_LIBS
+        ${multio_server_plugins}
+        multio
+        eckit_mpi
+        eckit_option
+        eckit
+        metkit
+        eccodes
 )

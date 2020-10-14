@@ -18,11 +18,40 @@
 #include <thread>
 
 #include "eckit/exception/Exceptions.h"
-#include "eckit/types/Metadata.h"
 
 #include "multio/LibMultio.h"
 
 namespace multio {
+
+namespace  {
+class Metadata {
+    eckit::LocalConfiguration local_;
+    void print(std::ostream& os) const {
+        os << local_ << std::endl;
+    }
+    friend std::ostream& operator<<(std::ostream& os, const Metadata& md) {
+        md.print(os);
+        return os;
+    }
+
+public:
+    template <typename T>
+    void setValue(const std::string& key, const T& value) {
+        local_.set(key, value);
+    }
+
+    template <typename T>
+    T get(const std::string& key) {
+        T value;
+        local_.get(key, value);
+        return value;
+    }
+
+    std::vector<std::string> keys() {
+        return local_.keys();
+    }
+};
+}
 
 MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) {
     LOG_DEBUG_LIB(LibMultio) << "Config = " << config << std::endl;
@@ -50,7 +79,7 @@ MaestroSink::~MaestroSink() {
                        << std::endl;
 }
 
-void MaestroSink::write(eckit::DataBlobPtr blob) {
+void MaestroSink::write(eckit::message::Message blob) {
 
     auto name = std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())) +
                 "-" + std::to_string(cdoCount_++);
@@ -62,19 +91,22 @@ void MaestroSink::write(eckit::DataBlobPtr blob) {
     mstro_cdo cdo = nullptr;
     mstro_status s = mstro_cdo_declare(name.c_str(), MSTRO_ATTR_DEFAULT, &cdo);
 
-    const void *cbuf = blob->buffer();
+    const void *cbuf = blob.data();
     void * buf = const_cast<void*>(cbuf);
     s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.raw-ptr", buf);
 
-    auto sz = blob->length();
+    auto sz = blob.length();
     s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.scope.local-size", &sz);
 
-    const eckit::Metadata& md = blob->metadata();
+    Metadata md;
 
-    std::string value;
+    eckit::message::TypedSetter<Metadata> setter{md};
+    blob.getMetadata(setter);
+
     LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
-    for (const auto& kw : md.keywords()) {
-        md.get(kw, value);
+
+    for (const auto& kw : md.keys()) {
+        auto value = md.get<std::string>(kw);
 
         auto mkey = ".maestro.ecmwf." + kw;
         auto mvalue = const_cast<char*>(value.c_str());

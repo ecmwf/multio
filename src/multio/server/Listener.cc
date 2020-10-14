@@ -47,14 +47,18 @@ void Listener::listen() {
             case Message::Tag::Open:
                 connections_.insert(msg.source());
                 eckit::Log::debug<LibMultio>()
-                    << "*** OPENING connection to " << msg.source() << std::endl;
+                    << "*** OPENING connection to " << msg.source()
+                    << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
+                    << ", connections = " << connections_.size() << std::endl;
                 break;
 
             case Message::Tag::Close:
                 connections_.erase(connections_.find(msg.source()));
-                eckit::Log::debug<LibMultio>()
-                    << "*** CLOSING connection to " << msg.source() << std::endl;
                 ++closedCount_;
+                eckit::Log::debug<LibMultio>()
+                    << "*** CLOSING connection to " << msg.source()
+                    << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
+                    << ", connections = " << connections_.size() << std::endl;
                 break;
 
             case Message::Tag::Grib:
@@ -100,7 +104,11 @@ void Listener::listen() {
         }
     } while (moreConnections());
 
+    eckit::Log::debug<LibMultio>() << "*** STOPPED listening loop " << std::endl;
+
     msgQueue_.close();
+
+    eckit::Log::debug<LibMultio>() << "*** CLOSED message queue " << std::endl;
 }
 
 bool Listener::moreConnections() const {

@@ -28,9 +28,7 @@ using namespace eckit;
 namespace multio {
 
 FileSink::FileSink(const Configuration& config) :
-    DataSink(config),
-    path_(config_.getString("path")),
-    handle_(path_.fileHandle(false)) {
+    DataSink(config), path_(config_.getString("path")), handle_(path_.fileHandle(false)) {
     if (config_.getBool("append", false)) {
         handle_->openForAppend(0);
     }
@@ -43,14 +41,9 @@ FileSink::~FileSink() {
     handle_->close();
 }
 
-void FileSink::write(eckit::DataBlobPtr blob) {
-    size_t length = blob->length();
-
+void FileSink::write(eckit::message::Message msg) {
     std::lock_guard<std::mutex> lock(mutex_);
-
-    if (size_t(handle_->write(blob->buffer(), length)) != length) {
-        throw WriteError(std::string("Write error on file: ") + path_, Here());
-    }
+    msg.write(*handle_);
 }
 
 void FileSink::flush() {

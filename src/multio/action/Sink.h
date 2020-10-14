@@ -36,7 +36,7 @@ using message::Message;
 
 class Sink : public Action {
 public:
-    Sink(const eckit::Configuration& config);
+    explicit Sink(const eckit::Configuration& config);
 
     void execute(message::Message msg) const override;
 

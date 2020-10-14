@@ -13,7 +13,7 @@ ecbuild_add_library(
       ${FDB5_INCLUDE_DIRS}
       ${ECKIT_INCLUDE_DIRS}
 
-    LIBS
+    PUBLIC_LIBS
         multio
         fdb5
 )

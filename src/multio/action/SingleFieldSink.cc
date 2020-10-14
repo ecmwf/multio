@@ -14,10 +14,10 @@
 
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/message/Message.h"
 
 #include "multio/sink/DataSink.h"
 #include "multio/LibMultio.h"
-#include "multio/server/PlainDataBlob.h"
 
 namespace multio {
 namespace action {
@@ -54,19 +54,7 @@ void SingleFieldSink::write(Message msg) const {
     config.set("path", oss.str());
     dataSink_.reset(DataSinkFactory::instance().build("file", config));
 
-    eckit::DataBlobPtr blob;
-    switch (msg.tag()) {
-        case Message::Tag::Field:
-            blob.reset(eckit::DataBlobFactory::build("plain", msg.payload().data(), msg.size()));
-            break;
-
-        case Message::Tag::Grib:
-            blob.reset(eckit::DataBlobFactory::build("grib", msg.payload().data(), msg.size()));
-            break;
-
-        default:
-            ASSERT(false);
-    }
+    eckit::message::Message blob = to_eckit_message(msg);
 
     dataSink_->write(blob);
 }

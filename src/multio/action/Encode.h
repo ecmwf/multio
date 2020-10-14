@@ -12,16 +12,12 @@
 /// @author Simon Smart
 /// @author Tiago Quintino
 
-/// @date Jan 2019
+/// @date Oct 2019
 
 #ifndef multio_server_actions_Encode_H
 #define multio_server_actions_Encode_H
 
-#include <iosfwd>
-
-#include "eccodes.h"
-
-#include "metkit/grib/GribHandle.h"
+#include "multio/action/GribEncoder.h"
 #include "multio/action/Action.h"
 
 namespace eckit {
@@ -30,18 +26,6 @@ class Configuration;
 
 namespace multio {
 namespace action {
-
-class GribEncoder : public metkit::grib::GribHandle {
-public:
-    GribEncoder(codes_handle* handle);
-
-    void setOceanValues(const message::Metadata& md);
-
-    void setValue(const std::string& key, long value);
-    void setValue(const std::string& key, double value);
-    void setValue(const std::string& key, const std::string& value);
-};
-
 
 class Encode : public Action {
 public:
@@ -53,8 +37,6 @@ private:
     void print(std::ostream& os) const override;
 
     const std::string format_;
-
-    const std::string gridType_;
 
     const std::unique_ptr<GribEncoder> encoder_ = nullptr;
 };

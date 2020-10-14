@@ -19,8 +19,8 @@
 
 #include "eckit/types/Types.h"
 #include "eckit/memory/NonCopyable.h"
-#include "eckit/io/DataBlob.h"
 
+#include "eckit/message/Message.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ public: // methods
     ~Trigger();
 
     void events(const eckit::StringDict& metadata) const;
-    void events(eckit::DataBlobPtr blob) const;
+    void events(eckit::message::Message message) const;
 
 private: // methods
 
@@ -61,4 +61,3 @@ private: // members
 }  // namespace multio
 
 #endif
-

@@ -97,10 +97,6 @@ bool DataSink::ready() const {
     return true;  // default for synchronous sinks
 }
 
-eckit::Value DataSink::configValue() const {
-    return config_.get();
-}
-
 void DataSink::flush() {}
 
 void DataSink::setId(int id) {
@@ -130,12 +126,6 @@ void DataSink::iflushfdb(int) {}
 void DataSink::isetfieldcountfdb(int, int, int) {}
 
 void DataSink::isetvalfdb(int, const std::string&, const std::string&) {}
-
-void DataSink::iwritefdb(int, eckit::DataBlobPtr) {
-    std::ostringstream msg;
-    msg << "DataSink::iwritefdb() not implemented in derived class";
-    throw eckit::SeriousBug(msg.str());
-}
 
 //----------------------------------------------------------------------------------------------------------------------
 

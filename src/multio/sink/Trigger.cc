@@ -18,7 +18,6 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
-#include "eckit/types/Metadata.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/net/TCPClient.h"
 #include "eckit/log/JSON.h"
@@ -80,7 +79,7 @@ public: // methods
 
     void metadata(const std::string& k, const std::string& v) { metadata_[k] = v; }
 
-    virtual void json(JSON& s) const {
+    virtual void json(JSON& s) const override {
         s.startObject();
         s << "type" << type_;
         s << "info" << info_;
@@ -90,7 +89,7 @@ public: // methods
 
 private: // methods
 
-    void print(std::ostream& o) const {
+    void print(std::ostream& o) const override {
         o << eventType() << "("
           << "type=" << type_
           << ",info=" << info_
@@ -116,7 +115,7 @@ public: // methods
 
     void metadata(const std::string& k, const std::string& v) { metadata_[k] = v; }
 
-    virtual void json(JSON& s) const {
+    virtual void json(JSON& s) const override {
         s.startObject();
         s << "type" << type_;
         s << "info" << info_;
@@ -126,7 +125,7 @@ public: // methods
 
 private: // methods
 
-    void print(std::ostream& o) const {
+    void print(std::ostream& o) const override {
         o << eventType() << "("
           << "type=" << type_
           << ",info=" << info_
@@ -166,7 +165,7 @@ public: // methods
         }
     }
 
-    void send(Event& event) const {
+    void send(const Event& event) const {
 
         std::ostringstream os;
         JSON msg(os);
@@ -202,7 +201,7 @@ public: // methods
     virtual ~EventTrigger() {}
 
     virtual void trigger(const StringDict& keys) const = 0;
-    virtual void trigger(eckit::DataBlobPtr blob) const = 0;
+    virtual void trigger(eckit::message::Message msg) const = 0;
 
     static EventTrigger* build(const Configuration& config);
 
@@ -211,13 +210,14 @@ protected: // member
     int port_;
     int retries_;
     int timeout_;
+
     std::string host_;
 
     std::string file_;
 
-    bool failOnRetry_;
-
     StringDict info_;
+
+    bool failOnRetry_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -226,7 +226,7 @@ class MetadataChangeTrigger : public EventTrigger {
 
 public: // methods
 
-    MetadataChangeTrigger(const Configuration& config) : EventTrigger(config),
+    explicit MetadataChangeTrigger(const Configuration& config) : EventTrigger(config),
         key_(config.getString("key")),
         values_(config.getStringVector("values")),
         lastSeen_(values_.end()),
@@ -235,18 +235,14 @@ public: // methods
         std::cout << "Config: " << config << std::endl;
     }
 
-    ~MetadataChangeTrigger() {
+    ~MetadataChangeTrigger() override {
         updateEventsIssued();
     }
 
-    virtual void trigger(const StringDict& keys) const {}
+    virtual void trigger(const StringDict&) const override {}
 
-    virtual void trigger(eckit::DataBlobPtr blob) const {
-
-        const eckit::Metadata& md = blob->metadata();
-
-        std::string current;
-        md.get(key_, current);
+    virtual void trigger(eckit::message::Message msg) const override {
+        std::string current = msg.getString(key_);
 
         std::vector<std::string>::const_iterator now = std::find(values_.begin(), values_.end(), current);
 
@@ -263,6 +259,7 @@ public: // methods
         }
     }
 
+
 private: // methods
 
     bool inValues(const std::vector<std::string>::const_iterator& it) const { return it != values_.end(); }
@@ -276,7 +273,7 @@ private: // methods
         }
 
         while(issued_ != lastSeen_) {
-            issued_++;
+            ++issued_;
             issueEvent(issued_);
         }
     }
@@ -315,7 +312,7 @@ public: // methods
     ~NotifyMetadataTrigger() {
     }
 
-    virtual void trigger(const eckit::StringDict& keys) const {
+    virtual void trigger(const eckit::StringDict& keys) const override {
         eckit::StringDict::const_iterator k = keys.find(key_);
         if(k != keys.end()) {
             NotifyMetadata event(info_);
@@ -324,7 +321,7 @@ public: // methods
         }
     }
 
-    virtual void trigger(eckit::DataBlobPtr blob) const {}
+    virtual void trigger(eckit::message::Message) const override {}
 
 private:
 
@@ -388,9 +385,9 @@ void Trigger::events(const StringDict& keys) const {
     }
 }
 
-void Trigger::events(eckit::DataBlobPtr blob) const {
+void Trigger::events(eckit::message::Message msg) const {
     for(std::vector<EventTrigger*>::const_iterator it = triggers_.begin(); it !=  triggers_.end(); ++it) {
-        (*it)->trigger(blob);
+        (*it)->trigger(msg);
     }
 }
 

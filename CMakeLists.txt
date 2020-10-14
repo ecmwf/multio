@@ -1,24 +1,29 @@
-cmake_minimum_required( VERSION 3.6 FATAL_ERROR )
+# (C) Copyright 2011- ECMWF.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation nor
+# does it submit to any jurisdiction.
 
-project( multio C CXX )
+########################################################################################################################
 
-set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild/cmake")
+cmake_minimum_required( VERSION 3.12 FATAL_ERROR )
 
-include( ecbuild_system NO_POLICY_SCOPE )
+find_package( ecbuild 3.4 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild)
 
-ecbuild_requires_macro_version( 3.0 )
-
-ecbuild_declare_project()
+project( multio LANGUAGES CXX )
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### dependencies
 
-ecbuild_use_package( PROJECT eckit VERSION  1.8 REQUIRED )
-ecbuild_use_package( PROJECT metkit VERSION 1.4 REQUIRED )
+ecbuild_find_package( NAME eccodes VERSION  2.18  REQUIRED )
+ecbuild_find_package( NAME eckit   VERSION  1.13 REQUIRED )
+ecbuild_find_package( NAME metkit  VERSION  1.4  REQUIRED )
 
-if( NOT METKIT_HAVE_GRIB )
+if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
 endif()
 
@@ -27,7 +32,7 @@ endif()
 ecbuild_add_option( FEATURE FDB5
                     DEFAULT ON
                     DESCRIPTION "Send data to FDB5"
-                    REQUIRED_PACKAGES "PROJECT fdb5 VERSION 5.0" )
+                    REQUIRED_PACKAGES "NAME fdb5 VERSION 5.0" )
 
 ### fdb5 plugin
 
@@ -45,8 +50,9 @@ ecbuild_add_option( FEATURE LEGACY_IFSIO
 
 ecbuild_add_option( FEATURE MULTIO_SERVER
                     DEFAULT OFF
+                    CONDITION eckit_HAVE_MPI
                     DESCRIPTION "Multio server"
-                    REQUIRED_PACKAGES "PROJECT atlas VERSION 0.15" )
+                    REQUIRED_PACKAGES "NAME atlas VERSION 0.15" )
 
 ### sandbox
 

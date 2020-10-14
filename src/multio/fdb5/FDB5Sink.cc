@@ -15,7 +15,6 @@
 #include "multio/fdb5/FDB5Sink.h"
 
 #include "eckit/exception/Exceptions.h"
-#include "eckit/types/Metadata.h"
 
 #include "multio/LibMultio.h"
 
@@ -33,25 +32,14 @@ eckit::LocalConfiguration fdb5_configuration(const eckit::Configuration& cfg) {
 }  // namespace
 
 FDB5Sink::FDB5Sink(const eckit::Configuration& config) :
-    DataSink(config),
-    fdb_{fdb5_configuration(config)} {
+    DataSink(config), fdb_{fdb5_configuration(config)} {
     LOG_DEBUG_LIB(LibMultio) << "Config = " << config << std::endl;
 }
 
-void FDB5Sink::write(eckit::DataBlobPtr blob) {
+void FDB5Sink::write(eckit::message::Message msg) {
     LOG_DEBUG_LIB(LibMultio) << "FDB5Sink::write()" << std::endl;
 
-    const eckit::Metadata& md = blob->metadata();
-
-    fdb5::Key key;
-    std::string value;
-    LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
-    for (const auto& kw : md.keywords()) {
-        md.get(kw, value);
-        key.set(kw, value);
-    }
-
-    fdb_.archive(key, blob->buffer(), blob->length());
+    fdb_.archive(msg);
 }
 
 void FDB5Sink::flush() {

@@ -1,12 +1,18 @@
 #include "multio/multio_version.h"
 
-const char * multio_version()     { return MULTIO_VERSION; }
-const char * multio_version_str() { return MULTIO_VERSION_STR; }
+#define multio_VERSION_STR "@multio_VERSION_STR@"
+#define multio_VERSION     "@multio_VERSION@"
+
+#define multio_VERSION_MAJOR @multio_VERSION_MAJOR_VERSION@
+#define multio_VERSION_MINOR @multio_VERSION_MINOR@
+#define multio_VERSION_PATCH @multio_VERSION_PATCH@
+
+const char * multio_version()     { return multio_VERSION; }
+const char * multio_version_str() { return multio_VERSION_STR; }
 
 unsigned int multio_version_int()
 {
-  return 10000*MULTIO_MAJOR_VERSION + 100*MULTIO_MINOR_VERSION + 1*MULTIO_PATCH_VERSION;
+  return 10000*multio_VERSION_MAJOR + 100*multio_VERSION_MINOR + 1*multio_VERSION_PATCH;
 }
 
-const char * multio_git_sha1() { return "@MULTIO_GIT_SHA1@"; }
-
+const char * multio_git_sha1() { return "@multio_GIT_SHA1@"; }

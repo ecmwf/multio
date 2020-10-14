@@ -44,7 +44,7 @@ constexpr bool inRange(int32_t val, int32_t low, int32_t upp) {
 
 Structured::Structured(std::vector<int32_t>&& def) : Domain{std::move(def)} {}
 
-void Structured::to_local(const std::vector<double>& global, std::vector<double>& local) const {
+void Structured::to_local(const std::vector<double>&, std::vector<double>&) const {
     NOTIMP;
 }
 
@@ -67,7 +67,10 @@ void Structured::to_global(const eckit::Buffer& local, eckit::Buffer& global) co
     // auto data_dim = definition_[6]; -- Unused here
 
     ASSERT(sizeof(double) * ni_global * nj_global == global.size());
-    ASSERT(sizeof(double) * data_ni * data_nj == local.size());
+    std::ostringstream os;
+    os << "Local size is " << local.size() / sizeof(double) << " while it is expected to equal "
+       << data_ni << " times " << data_nj << std::endl;
+    ASSERT_MSG(sizeof(double) * data_ni * data_nj == local.size(), os.str());
 
     auto lit = static_cast<const double*>(local.data());
     auto git = static_cast<double*>(global.data());
@@ -85,7 +88,7 @@ void Structured::to_global(const eckit::Buffer& local, eckit::Buffer& global) co
 
 Spectral::Spectral(std::vector<int32_t>&& def) : Domain{std::move(def)} {}
 
-void Spectral::to_local(const std::vector<double>& global, std::vector<double>& local) const {
+void Spectral::to_local(const std::vector<double>&, std::vector<double>&) const {
     NOTIMP;
 }
 

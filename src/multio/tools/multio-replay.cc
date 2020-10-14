@@ -128,7 +128,7 @@ void MultioReplay::writeFields() {
         auto buffer = readField(param, rank_);
 
         auto sz = static_cast<int>(buffer.size());
-        multio_write_field(param.c_str(), buffer.data(), sz);
+        multio_write_field(param.c_str(), buffer.data(), sz, false);
     }
 }
 

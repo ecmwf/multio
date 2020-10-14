@@ -130,8 +130,8 @@ public:
         client().sendDomain(dname, "structured", domain_def);
     }
 
-    void writeField(const std::string& fname, const double* data, size_t bytes) {
-
+    void writeField(const std::string& fname, const double* data, size_t bytes,
+                    bool to_all_servers = false) {
         ASSERT(isActive(fname));
 
         metadata_.set("nemoParam", fname);
@@ -147,7 +147,7 @@ public:
 
         MultioNemo::instance().client().sendField(fname, metadata_.getString("category"), gl_size,
                                                   paramMap_.get(fname).gridType, metadata_,
-                                                  std::move(field_vals));
+                                                  std::move(field_vals), to_all_servers);
     }
 
     bool useServer() const {
@@ -205,9 +205,9 @@ void multio_set_domain(const char* name, int* data, int size) {
     }
 }
 
-void multio_write_field(const char* name, const double* data, int size) {
+void multio_write_field(const char* name, const double* data, int size, bool to_all_servers) {
     if (MultioNemo::instance().useServer()) {
-        MultioNemo::instance().writeField(name, data, size * sizeof(double));
+        MultioNemo::instance().writeField(name, data, size * sizeof(double), to_all_servers);
     }
     else {
         eckit::Log::debug<multio::LibMultio>()

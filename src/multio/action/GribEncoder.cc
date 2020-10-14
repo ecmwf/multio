@@ -150,7 +150,8 @@ message::Message GribEncoder::setFieldValues(const message::Message& msg) {
     eckit::Buffer buf{this->length()};
     this->write(buf);
 
-    return Message{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, std::move(buf)};
+    return Message{Message::Header{Message::Tag::Grib, msg.source(), msg.destination()},
+                   std::move(buf)};
 }
 
 }  // namespace action

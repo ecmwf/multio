@@ -40,7 +40,10 @@ void DateTimePeriod::reset(const eckit::DateTime& current) {
 
 bool DateTimePeriod::isWithin(const eckit::DateTime& dt) {
     ASSERT(startPoint_ <= dt);
-    return dt <= endPoint();
+    auto ret = (dt <= endPoint() + eckit::Second{1.0});
+    std::cout << " ======== Is " << dt << " within " << *this << "? -- " << (ret ? "yes" : "no")
+              << std::endl;
+    return ret;
 }
 
 eckit::DateTime DateTimePeriod::endPoint() const {

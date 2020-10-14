@@ -155,7 +155,9 @@ bool HourlyStatistics::process_next(message::Message &msg) {
 
     auto dateTime = currentDateTime(msg);
 
-    ASSERT(current_.isWithin(dateTime));
+    std::ostringstream os;
+    os << dateTime << " is outside of current period " << current_ << std::endl;
+    ASSERT_MSG(current_.isWithin(dateTime), os.str());
 
     updateStatistics(msg);
 

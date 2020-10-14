@@ -54,20 +54,33 @@ void MultioClient::sendDomain(const std::string& name, const std::string& catego
 
 void MultioClient::sendField(const std::string& name, const std::string& category, size_t gl_size,
                              const std::string& domain, const message::Metadata& metadata,
-                             eckit::Buffer&& field) {
+                             eckit::Buffer&& field, bool to_all_servers) {
     Peer client = transport_->localPeer();
-
     std::string field_id = message::to_string(metadata);
 
-    // Choose server
-    auto id = std::hash<std::string>{}(field_id) % serverCount_;
-    ASSERT(id < serverPeers_.size());
+    if (to_all_servers) {
+        for (auto& server : serverPeers_) {
+            Message msg{Message::Header{Message::Tag::Field, client, *server, name, category,
+                                        clientCount_, gl_size, domain, field_id},
+                        field};
 
-    Message msg{Message::Header{Message::Tag::Field, client, *serverPeers_[id], name, category,
-                                clientCount_, gl_size, domain, field_id},
-                std::move(field)};
+            transport_->send(msg);
+        }
+    }
+    else {
+        // Choose server
+        std::ostringstream os;
+        os << metadata.getString("category") << metadata.getString("nemoParam")
+           << metadata.getString("param") << metadata.getLong("level");
+        auto id = std::hash<std::string>{}(os.str()) % serverCount_;
+        ASSERT(id < serverPeers_.size());
 
-    transport_->send(msg);
+        Message msg{Message::Header{Message::Tag::Field, client, *serverPeers_[id], name, category,
+                                    clientCount_, gl_size, domain, field_id},
+                    std::move(field)};
+
+        transport_->send(msg);
+    }
 }
 
 void MultioClient::sendStepComplete() const {

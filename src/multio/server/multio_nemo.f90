@@ -72,12 +72,13 @@ module multio_nemo
             integer(c_int), intent(in), value :: size
         end subroutine c_multio_set_domain
 
-        subroutine c_multio_write_field(c_name, data, size) bind(c, name='multio_write_field')
+        subroutine c_multio_write_field(c_name, data, sz, toall) bind(c, name='multio_write_field')
             use, intrinsic :: iso_c_binding
             implicit none
             character(c_char), intent(in) :: c_name(*)
             real(c_double), dimension(*), intent(in) :: data
-            integer(c_int), intent(in), value :: size
+            integer(c_int), intent(in), value :: sz
+            logical(c_bool), intent(in) :: toall
         end subroutine c_multio_write_field
 
         function c_multio_field_is_active(c_name) result(is_active) bind(c, name='multio_field_is_active')
@@ -143,12 +144,16 @@ module multio_nemo
 
         end subroutine multio_set_domain
 
-        subroutine multio_write_field(fname, data)
+        subroutine multio_write_field(fname, data, toall)
             implicit none
             character(*), intent(in) :: fname
             real(dp), dimension(:,:), intent(in) :: data
+            logical(c_bool), optional, intent(in) :: toall
+            logical(c_bool) :: c_toall = .false.
 
-            call c_multio_write_field(to_c_string(fname), data, size(data))
+            if (present(toall)) c_toall = toall
+
+            call c_multio_write_field(to_c_string(fname), data, size(data), toall)
 
         end subroutine multio_write_field
 

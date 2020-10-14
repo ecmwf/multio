@@ -46,7 +46,7 @@ public:
 
     void sendField(const std::string& name, const std::string& category, size_t gl_size,
                    const std::string& domain, const message::Metadata& metadata,
-                   eckit::Buffer&& field);
+                   eckit::Buffer&& field, bool to_all_servers = false);
 
     void sendStepComplete() const;
 

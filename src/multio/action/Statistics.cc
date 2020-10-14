@@ -51,9 +51,12 @@ Statistics::Statistics(const eckit::Configuration& config) :
 void Statistics::execute(message::Message msg) const {
     ScopedTimer timer{timing_};
 
-    LOG_DEBUG_LIB(LibMultio) << "         Metadata: " << msg.metadata() << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << msg.metadata()
+                             << std::endl;
 
-    if(fieldStats_.find(msg.name()) == end(fieldStats_)) {
+    // TODO: msg.name() may not be unique enough if we are computing statistics for different levels
+    // on different servers
+    if (fieldStats_.find(msg.name()) == end(fieldStats_)) {
         fieldStats_[msg.name()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
     }
 
@@ -65,9 +68,10 @@ void Statistics::execute(message::Message msg) const {
     for (auto&& stat : fieldStats_.at(msg.name())->compute(msg)) {
         md.set("operation", stat.first);
         message::Message newMsg{
-            message::Message::Header{message::Message::Tag::Statistics, message::Peer{},
-                                     message::Peer{}, msg.name(), msg.category(), msg.domainCount(),
-                                     msg.globalSize(), msg.domain(), message::to_string(md)},
+            message::Message::Header{message::Message::Tag::Statistics, msg.source(),
+                                     msg.destination(), msg.name(), msg.category(),
+                                     msg.domainCount(), msg.globalSize(), msg.domain(),
+                                     message::to_string(md)},
             std::move(stat.second)};
 
         executeNext(newMsg);

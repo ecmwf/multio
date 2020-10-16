@@ -51,8 +51,7 @@ ecbuild_add_option( FEATURE LEGACY_IFSIO
 ecbuild_add_option( FEATURE MULTIO_SERVER
                     DEFAULT OFF
                     CONDITION eckit_HAVE_MPI
-                    DESCRIPTION "Multio server"
-                    REQUIRED_PACKAGES "NAME atlas VERSION 0.15" )
+                    DESCRIPTION "Multio server" )
 
 ### sandbox
 

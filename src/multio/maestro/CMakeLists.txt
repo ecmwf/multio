@@ -12,7 +12,7 @@ ecbuild_add_library(
     CONDITION
         HAVE_MAESTRO
 
-    LIBS
+    PUBLIC_LIBS
         multio
         maestro
 )

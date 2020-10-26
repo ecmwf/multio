@@ -50,7 +50,7 @@ plans :
           - type : fdb5
             config : {}
 
-  - name : ocean-instant
+  - name : ocean-surface
     actions :
       - type : Select
         match : category
@@ -59,13 +59,9 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 6h
+        output_frequency: 3h
         operations:
-          - instant
           - average
-          - minimum
-          - maximum
-          - accumulate
 
       - type : Encode
         format : grib

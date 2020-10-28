@@ -254,7 +254,7 @@ nemo-fields :
     grid-type : "V grid"
 
   #=================================
-  # Physical parameters -- V grid
+  # Physical parameters -- W grid
   #=================================
 
   - nemo-id : woce

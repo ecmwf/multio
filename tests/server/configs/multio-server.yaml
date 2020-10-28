@@ -31,7 +31,7 @@ plans :
     actions :
       - type : Select
         match : category
-        categories : [ocean-surface, ocean-model-level]
+        categories : [ocean-model-level]
 
       - type : Aggregation
 
@@ -55,7 +55,7 @@ plans :
     actions :
       - type : Select
         match : category
-        categories : [ocean-surface, ocean-model-level]
+        categories : [ocean-model-level]
 
       - type : Aggregation
 

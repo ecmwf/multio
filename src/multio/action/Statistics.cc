@@ -54,18 +54,21 @@ void Statistics::execute(message::Message msg) const {
     LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << msg.metadata()
                              << std::endl;
 
-    // TODO: msg.name() may not be unique enough if we are computing statistics for different levels
-    // on different servers
-    if (fieldStats_.find(msg.name()) == end(fieldStats_)) {
-        fieldStats_[msg.name()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
+    // Create a unique key for the fieldStats_ map
+    std::ostringstream os;
+    os << msg.metadata().getString("category") << msg.metadata().getString("nemoParam")
+       << msg.metadata().getString("param") << msg.metadata().getLong("level");
+
+    if (fieldStats_.find(os.str()) == end(fieldStats_)) {
+        fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
     }
 
-    if(fieldStats_.at(msg.name())->process(msg)) {
+    if(fieldStats_.at(os.str())->process(msg)) {
         return;
     }
 
     auto md = msg.metadata();
-    for (auto&& stat : fieldStats_.at(msg.name())->compute(msg)) {
+    for (auto&& stat : fieldStats_.at(os.str())->compute(msg)) {
         md.set("operation", stat.first);
         message::Message newMsg{
             message::Message::Header{message::Message::Tag::Statistics, msg.source(),
@@ -77,7 +80,7 @@ void Statistics::execute(message::Message msg) const {
         executeNext(newMsg);
     }
 
-    fieldStats_.at(msg.name())->reset(msg);
+    fieldStats_.at(os.str())->reset(msg);
 }
 
 void Statistics::print(std::ostream& os) const {

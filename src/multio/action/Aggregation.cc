@@ -27,7 +27,7 @@ void Aggregation::execute(Message msg) const {
     ScopedTimer timer{timing_};
 
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
-        executeNext(msg);
+        executeNext(createGlobalField(msg));
     }
 
     if ((msg.tag() == Message::Tag::StepComplete) && handleFlush(msg)) {
@@ -35,9 +35,9 @@ void Aggregation::execute(Message msg) const {
     }
 }
 
-bool Aggregation::handleField(Message& msg) const {
+bool Aggregation::handleField(const Message& msg) const {
     messages_[msg.fieldId()].push_back(msg);
-    return allPartsArrived(msg) ? createGlobalField(msg) : false;
+    return allPartsArrived(msg);
 }
 
 bool Aggregation::handleFlush(const Message& msg) const {
@@ -58,22 +58,23 @@ bool Aggregation::allPartsArrived(const Message& msg) const {
          (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
 }
 
-bool Aggregation::createGlobalField(Message& msgOut) const {
-    const auto& fid = msgOut.fieldId();
+Message Aggregation::createGlobalField(const Message& msg) const {
 
-    eckit::Buffer glField{msgOut.globalSize() * sizeof(double)};
-    for (auto msg : messages_.at(fid)) {
+    const auto& fid = msg.fieldId();
+
+    eckit::Buffer glField{msg.globalSize() * sizeof(double)};
+    for (const auto& msg : messages_.at(fid)) {
         domain::Mappings::instance()
             .get(msg.domain())
             .at(msg.source())
             ->to_global(msg.payload(), glField);
     }
 
-    msgOut.payload() = std::move(glField);
+    Message msgOut{Message::Header{msg.header()}, std::move(glField)};
 
     messages_.erase(fid);
 
-    return true;
+    return msgOut;
 }
 
 void Aggregation::print(std::ostream& os) const {

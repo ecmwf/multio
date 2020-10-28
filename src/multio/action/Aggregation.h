@@ -41,10 +41,10 @@ public:
 private:
     void print(std::ostream& os) const override;
 
-    bool handleField(Message& msg) const;
+    bool handleField(const Message& msg) const;
     bool handleFlush(const Message& msg) const;
 
-    bool createGlobalField(Message& msg) const;
+    Message createGlobalField(const Message& msg) const;
     bool allPartsArrived(const Message& msg) const;
 
     mutable std::map<std::string, std::vector<Message>> messages_;

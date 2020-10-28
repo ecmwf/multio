@@ -4,7 +4,7 @@ group : world
 serverCount : 3
 clientCount : 5
 
-activeFields : [lat_T, lon_T, lat_U, lon_U, lat_V, lon_V, lat_W, lon_W, toce, soce, sigmat, sst, sss, ssh, hst, hbp, mpmr, runoffs, saltfix, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, taum, spd, dn10, qrp, erp, mlkdz25, 14d, 17d, 20d, 26d, 28d, hc300, sal300, hc700, sal700, hcbtm, salbtm, precip, uocee, vocen, uocees, vocens, utaue, vtaun, hc26c, thetaodmp, sodmp, ssu, uoce, utau, ssv, voce, vtau, woce, ssw ]
+activeFields : [lat_T, lon_T, lat_U, lon_U, lat_V, lon_V, lat_W, lon_W, toce, soce, sigmat, sst, sss, ssh, hst, hbp, mpmr, saltfix, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, taum, spd, dn10, qrp, erp, mlkdz25, 14d, 17d, 20d, 26d, 28d, hc300, sal300, hc700, sal700, hcbtm, salbtm, uocee, vocen, uocees, vocens, utaue, vtaun, hc26c, thetaodmp, sodmp, ssu, uoce, utau, ssv, voce, vtau, woce, ssw ]
 
 plans :
 

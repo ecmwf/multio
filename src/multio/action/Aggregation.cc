@@ -61,6 +61,7 @@ bool Aggregation::allPartsArrived(const Message& msg) const {
 Message Aggregation::createGlobalField(const Message& msg) const {
 
     const auto& fid = msg.fieldId();
+    eckit::Log::info() << " *** Creating global field for " << fid << std::endl;
 
     eckit::Buffer glField{msg.globalSize() * sizeof(double)};
     for (const auto& msg : messages_.at(fid)) {
@@ -78,7 +79,13 @@ Message Aggregation::createGlobalField(const Message& msg) const {
 }
 
 void Aggregation::print(std::ostream& os) const {
-    os << "Aggregation(number of fields = " << messages_.size() << ")";
+    os << "Aggregation(for fields = [";
+    bool first = true;
+    for (const auto& msg : messages_) {
+        os << (first ? msg.first : ", " + msg.first);
+        first = false;
+    }
+    os << "])";
 }
 
 

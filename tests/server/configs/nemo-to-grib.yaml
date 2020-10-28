@@ -33,47 +33,234 @@ nemo-fields :
     param-id: 250010
     grid-type : "W grid"
 
-  # Physical parameters
-  - nemo-id : ssh
-    param-id : 151145
-    grid-type : "T grid"
+  #=================================
+  # Physical parameters -- T grid
+  #=================================
 
   - nemo-id : toce
-    param-id : 151129
-    grid-type : "T grid"
-
-  - nemo-id : sst
-    param-id : 151129
+    param-id : 212001
     grid-type : "T grid"
 
   - nemo-id : soce
-    param-id : 151130
+    param-id : 212002
+    grid-type : "T grid"
+
+  - nemo-id : sigmat
+    param-id : 212003
+    grid-type : "T grid"
+
+  - nemo-id : sst
+    param-id : 212004
     grid-type : "T grid"
 
   - nemo-id : sss
-    param-id : 151130
+    param-id : 212005
     grid-type : "T grid"
 
-  - nemo-id : uoce
-    param-id : 151131
-    grid-type : "U grid"
+  - nemo-id : ssh
+    param-id : 212006
+    grid-type : "T grid"
+
+  - nemo-id : hst
+    param-id : 212007
+    grid-type : "T grid"
+
+  - nemo-id : hbp
+    param-id : 212008
+    grid-type : "T grid"
+
+  - nemo-id : empmr
+    param-id : 212009
+    grid-type : "T grid"
+
+  - nemo-id : runoffs
+    param-id : 212010
+    grid-type : "T grid"
+
+  - nemo-id : saltfix
+    param-id : 212011
+    grid-type : "T grid"
+
+  - nemo-id : qt
+    param-id : 212012
+    grid-type : "T grid"
+
+  - nemo-id : qsr
+    param-id : 212013
+    grid-type : "T grid"
+
+  - nemo-id : mldr10_1
+    param-id : 212014
+    grid-type : "T grid"
+
+  - nemo-id : mldkr125
+    param-id : 212015
+    grid-type : "T grid"
+
+  - nemo-id : mldkr03
+    param-id : 212016
+    grid-type : "T grid"
+
+  - nemo-id : mldt05
+    param-id : 212017
+    grid-type : "T grid"
+
+  - nemo-id : mldt02
+    param-id : 212018
+    grid-type : "T grid"
+
+  - nemo-id : ice_cover
+    param-id : 212019
+    grid-type : "T grid"
+
+  - nemo-id : taum
+    param-id : 212020
+    grid-type : "T grid"
+
+  - nemo-id : wspd
+    param-id : 212021
+    grid-type : "T grid"
+
+  - nemo-id : cdn10
+    param-id : 212022
+    grid-type : "T grid"
+
+  - nemo-id : qrp
+    param-id : 212023
+    grid-type : "T grid"
+
+  - nemo-id : erp
+    param-id : 212024
+    grid-type : "T grid"
+
+  - nemo-id : mlkdz25
+    param-id : 212025
+    grid-type : "T grid"
+
+  - nemo-id : 14d
+    param-id : 212026
+    grid-type : "T grid"
+
+  - nemo-id : 17d
+    param-id : 212027
+    grid-type : "T grid"
+
+  - nemo-id : 20d
+    param-id : 212028
+    grid-type : "T grid"
+
+  - nemo-id : 26d
+    param-id : 212029
+    grid-type : "T grid"
+
+  - nemo-id : 28d
+    param-id : 212030
+    grid-type : "T grid"
+
+  - nemo-id : hc300
+    param-id : 212031
+    grid-type : "T grid"
+
+  - nemo-id : sal300
+    param-id : 212032
+    grid-type : "T grid"
+
+  - nemo-id : hc700
+    param-id : 212033
+    grid-type : "T grid"
+
+  - nemo-id : sal700
+    param-id : 212034
+    grid-type : "T grid"
+
+  - nemo-id : hcbtm
+    param-id : 212035
+    grid-type : "T grid"
+
+  - nemo-id : salbtm
+    param-id : 212035
+    grid-type : "T grid"
+
+  - nemo-id : precip
+    param-id : 212036
+    grid-type : "T grid"
+
+  - nemo-id : uocee
+    param-id : 212037
+    grid-type : "T grid"
+
+  - nemo-id : vocen
+    param-id : 212038
+    grid-type : "T grid"
+
+  - nemo-id : uocees
+    param-id : 212039
+    grid-type : "T grid"
+
+  - nemo-id : vocens
+    param-id : 212040
+    grid-type : "T grid"
+
+  - nemo-id : utaue
+    param-id : 212041
+    grid-type : "T grid"
+
+  - nemo-id : vtaun
+    param-id : 212042
+    grid-type : "T grid"
+
+  - nemo-id : hc26c
+    param-id : 212043
+    grid-type : "T grid"
+
+  - nemo-id : thetaodmp
+    param-id : 212044
+    grid-type : "T grid"
+
+  - nemo-id : sodmp
+    param-id : 212045
+    grid-type : "T grid"
+
+  #=================================
+  # Physical parameters -- U grid
+  #=================================
 
   - nemo-id : ssu
-    param-id : 151131
+    param-id : 212101
     grid-type : "U grid"
 
-  - nemo-id : voce
-    param-id : 151132
-    grid-type : "V grid"
+  - nemo-id : uoce
+    param-id : 212102
+    grid-type : "U grid"
+
+  - nemo-id : utau
+    param-id : 212103
+    grid-type : "U grid"
+
+  #=================================
+  # Physical parameters -- V grid
+  #=================================
 
   - nemo-id : ssv
-    param-id : 151132
+    param-id : 212151
     grid-type : "V grid"
 
+  - nemo-id : voce
+    param-id : 212152
+    grid-type : "V grid"
+
+  - nemo-id : vtau
+    param-id : 212153
+    grid-type : "V grid"
+
+  #=================================
+  # Physical parameters -- V grid
+  #=================================
+
   - nemo-id : woce
-    param-id : 151133
+    param-id : 212201
     grid-type : "W grid"
 
   - nemo-id : ssw
-    param-id : 151133
+    param-id : 212202
     grid-type : "W grid"

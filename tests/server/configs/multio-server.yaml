@@ -4,26 +4,7 @@ group : world
 serverCount : 3
 clientCount : 5
 
-activeFields :
-  - lat_T
-  - lon_T
-  - lat_U
-  - lon_U
-  - lat_V
-  - lon_V
-  - lat_W
-  - lon_W
-  # - ssh
-  # - toce
-  - sst
-  # - soce
-  # - sss
-  # - uoce
-  - ssu
-  # - voce
-  - ssv
-  # - woce
-  - ssw
+activeFields : [lat_T, lon_T, lat_U, lon_U, lat_V, lon_V, lat_W, lon_W, toce, soce, sigmat, sst, sss, ssh, hst, hbp, mpmr, runoffs, saltfix, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, taum, spd, dn10, qrp, erp, mlkdz25, 14d, 17d, 20d, 26d, 28d, hc300, sal300, hc700, sal700, hcbtm, salbtm, precip, uocee, vocen, uocees, vocens, utaue, vtaun, hc26c, thetaodmp, sodmp, ssu, uoce, utau, ssv, voce, vtau, woce, ssw ]
 
 plans :
 
@@ -43,23 +24,43 @@ plans :
       - type : Sink
         sinks :
 
-          - type : file
-            append : false
-            path : /var/tmp/ocean-pipe.grib
-
           - type : fdb5
             config : {}
 
-  - name : ocean-surface
+  - name : ocean-hourly
     actions :
       - type : Select
         match : category
-        categories : [ocean-model-level]
+        categories : [ocean-surface, ocean-model-level]
 
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 3h
+        output_frequency: 1h
+        operations:
+          - instant
+
+      - type : Encode
+        format : grib
+        template : unstructured.tmpl
+        grid-type : eORCA1
+
+      - type : Sink
+        sinks :
+
+          - type : fdb5
+            config : {}
+
+  - name : ocean-daily
+    actions :
+      - type : Select
+        match : category
+        categories : [ocean-surface, ocean-model-level]
+
+      - type : Aggregation
+
+      - type : Statistics
+        output_frequency: 24h
         operations:
           - average
 
@@ -71,9 +72,29 @@ plans :
       - type : Sink
         sinks :
 
-          - type : file
-            append : true
-            path : /var/tmp/ocean-pipe.grib
-
           - type : fdb5
             config : {}
+
+  # - name : ocean-monthly
+  #   actions :
+  #     - type : Select
+  #       match : category
+  #       categories : [ocean-surface, ocean-model-level]
+
+  #     - type : Aggregation
+
+  #     - type : Statistics
+  #       output_frequency: 31d
+  #       operations:
+  #         - average
+
+  #     - type : Encode
+  #       format : grib
+  #       template : unstructured.tmpl
+  #       grid-type : eORCA1
+
+  #     - type : Sink
+  #       sinks :
+
+  #         - type : fdb5
+  #           config : {}

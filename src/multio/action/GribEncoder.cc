@@ -46,6 +46,11 @@ GribEncoder::GribEncoder(codes_handle* handle, const std::string& gridType) :
 }
 
 bool GribEncoder::gridInfoReady(const std::string& subtype) const {
+    eckit::Log::info() << " -------- List of existing grid infos: " << std::endl;
+    for(const auto& grid : grids()) {
+        eckit::Log::info() << grid.first << " --> " << grid.second.get() << std::endl;
+    }
+
     return grids().at(subtype)->hashExists();
 }
 

@@ -48,7 +48,7 @@ private:
     message::Message longitudes_;
     std::string gridSubtype_;
 
-    unsigned char hashValue_[DIGEST_LENGTH]{};
+    std::unique_ptr<unsigned char[]> hashValue_ = nullptr;
     eckit::MD5 hashFunction_;
 };
 

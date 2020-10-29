@@ -87,7 +87,8 @@ bool GridInfo::computeHashIfCan() {
     addToHash(latitudes_.payload());
     addToHash(longitudes_.payload());
 
-    hashFunction_.numericalDigest(hashValue_);
+    hashValue_.reset(new unsigned char[DIGEST_LENGTH]);
+    hashFunction_.numericalDigest(hashValue_.get());
 
     std::ostringstream oss;
     oss << "*** Computed hash value: ";
@@ -101,11 +102,11 @@ bool GridInfo::computeHashIfCan() {
 }
 
 bool GridInfo::hashExists() const {
-    return  static_cast<bool>(hashValue_[0]);
+    return static_cast<bool>(hashValue_);
 }
 
 const unsigned char* GridInfo::hashValue() const {
-    return &hashValue_[0];
+    return hashValue_.get();
 }
 
 void GridInfo::addToHash(const eckit::Buffer& buf) {

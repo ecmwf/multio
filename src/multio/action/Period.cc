@@ -1,6 +1,8 @@
 
 #include "Period.h"
 
+#include "multio/LibMultio.h"
+
 namespace multio {
 namespace action {
 
@@ -41,8 +43,8 @@ void DateTimePeriod::reset(const eckit::DateTime& current) {
 bool DateTimePeriod::isWithin(const eckit::DateTime& dt) {
     ASSERT(startPoint_ <= dt);
     auto ret = (dt <= endPoint() + eckit::Second{1.0});
-    std::cout << " ======== Is " << dt << " within " << *this << "? -- " << (ret ? "yes" : "no")
-              << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " ======== Is " << dt << " within " << *this << "? -- "
+                             << (ret ? "yes" : "no") << std::endl;
     return ret;
 }
 

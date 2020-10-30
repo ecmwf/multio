@@ -1,6 +1,3 @@
-
-find_package( Maestro )
-
 ecbuild_add_library(
 
     TARGET multio-maestro

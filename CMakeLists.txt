@@ -34,12 +34,6 @@ ecbuild_add_option( FEATURE FDB5
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "NAME fdb5 VERSION 5.0" )
 
-### fdb5 plugin
-
-ecbuild_add_option( FEATURE MAESTRO
-                    DEFAULT OFF
-                    DESCRIPTION "Sink data to Maestro" )
-
 ### legacy IFS I/O
 
 ecbuild_add_option( FEATURE LEGACY_IFSIO
@@ -52,6 +46,13 @@ ecbuild_add_option( FEATURE MULTIO_SERVER
                     DEFAULT OFF
                     CONDITION eckit_HAVE_MPI
                     DESCRIPTION "Multio server" )
+
+### Maestro plugin
+
+ecbuild_add_option( FEATURE MAESTRO
+                    DEFAULT OFF
+                    DESCRIPTION "Pass data to Maestro middleware"
+                    REQUIRED_PACKAGES "NAME Maestro" )
 
 ### sandbox
 

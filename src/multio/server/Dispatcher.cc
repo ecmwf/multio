@@ -40,8 +40,8 @@ Dispatcher::Dispatcher(const eckit::Configuration& config) {
 
 Dispatcher::~Dispatcher() {
     eckit::Log::info() << " ******* Total wall-clock time spent in dispatcher "
-                       << eckit::Timing{timer_}.elapsed_ << "s" << std::endl
-                       << "         Total wall-clock time spent with dispatching " << timing_ << "s"
+                       << eckit::Timing{timer_}.elapsed_
+                       << "s -- of which time spent with dispatching " << timing_ << "s"
                        << std::endl;
 }
 

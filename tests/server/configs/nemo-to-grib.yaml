@@ -264,3 +264,88 @@ nemo-fields :
   - nemo-id : ssw
     param-id : 212202
     grid-type : "W grid"
+
+  #=================================
+  # Ice variables -- T,U,V grid
+  #=================================
+
+  - nemo-id : icevolu
+    param-id : 212211
+    grid-type : "T grid"
+
+  - nemo-id : ice_cover
+    param-id : 212212
+    grid-type : "T grid"
+
+  - nemo-id : iceconc_cat
+    param-id : 212213
+    grid-type : "T grid"
+
+  - nemo-id : icethic
+    param-id : 212214
+    grid-type : "T grid"
+
+  - nemo-id : icethick_cat
+    param-id : 212215
+    grid-type : "T grid"
+
+  - nemo-id : snwthic
+    param-id : 212216
+    grid-type : "T grid"
+
+  - nemo-id : snwthic_cat
+    param-id : 212217
+    grid-type : "T grid"
+
+  - nemo-id : uice
+    param-id : 212218
+    grid-type : "U grid"
+
+  - nemo-id : vice
+    param-id : 212219
+    grid-type : "V grid"
+
+  - nemo-id : iicevelur
+    param-id : 212220
+    grid-type : "U grid"
+
+  - nemo-id : iicevelvr
+    param-id : 212221
+    grid-type : "V grid"
+
+  - nemo-id : utau_ai
+    param-id : 212222
+    grid-type : "U grid"
+
+  - nemo-id : vtau_ai
+    param-id : 212223
+    grid-type : "V grid"
+
+  - nemo-id : iocestrur
+    param-id : 212224
+    grid-type : "U grid"
+
+  - nemo-id : iocestrvr
+    param-id : 212225
+    grid-type : "V grid"
+
+  - nemo-id : snowpre
+    param-id : 212226
+    grid-type : "T grid"
+
+  - nemo-id : icesalt
+    param-id : 212227
+    grid-type : "T grid"
+
+  - nemo-id : icetemp
+    param-id : 212228
+    grid-type : "T grid"
+
+  - nemo-id : icettop
+    param-id : 212229
+    grid-type : "T grid"
+
+  - nemo-id : icesalt_cat
+    param-id : 212230
+    grid-type : "T grid"
+

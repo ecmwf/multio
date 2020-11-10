@@ -4,87 +4,87 @@ group : world
 serverCount : 3
 clientCount : 5
 
-activeFields : [lat_T, lon_T, lat_U, lon_U, lat_V, lon_V, lat_W, lon_W, toce, soce, sigmat, sst, sss, ssh, hst, hbp, mpmr, runoffs, saltfix, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, taum, spd, dn10, qrp, erp, mlkdz25, 14d, 17d, 20d, 26d, 28d, hc300, sal300, hc700, sal700, hcbtm, salbtm, precip, uocee, vocen, uocees, vocens, utaue, vtaun, hc26c, thetaodmp, sodmp, ssu, uoce, utau, ssv, voce, vtau, woce, ssw ]
+activeFields : [ lat_T, lon_T, lat_U, lon_U, lat_V, lon_V, lat_W, lon_W, toce, soce, sigmat, sst, sss, ssh, hst, hbp, empmr, runoffs, saltfix, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, taum, wspd, dn10, qrp, erp, mlkdz25, 14d, 17d, 20d, 26d, 28d, hc300, sal300, hc700, sal700, hcbtm, salbtm, precip, uocee, vocen, uocees, vocens, utaue, vtaun, hc26c, thetaodmp, sodmp, ssu, uoce, utau, ssv, voce, vtau, woce, ssw, icevolu, ice_cover, iceconc_cat, icethic, icethick_cat, snwthic, snwthic_cat, uice, vice, iicevelur, iicevelvr, utau_ai, vtau_ai, iocestrur, iocestrvr, snowpre, icesalt, icetemp, icettop, icesalt_cat ]
 
 plans :
 
-  - name : ocean-grids
-    actions:
-      - type : Select
-        match : category
-        categories : [ocean-grid-coordinate]
-
-      - type : Aggregation
-
-      - type : Encode
-        format : grib
-        template : unstructured.tmpl
-        grid-type : eORCA1
-
-      - type : Sink
-        sinks :
-
-          - type : fdb5
-            config : {}
-
-  - name : ocean-hourly
-    actions :
-      - type : Select
-        match : category
-        categories : [ocean-surface, ocean-model-level]
-
-      - type : Aggregation
-
-      - type : Statistics
-        output_frequency: 1h
-        operations:
-          - instant
-
-      - type : Encode
-        format : grib
-        template : unstructured.tmpl
-        grid-type : eORCA1
-
-      - type : Sink
-        sinks :
-
-          - type : fdb5
-            config : {}
-
-  - name : ocean-daily
-    actions :
-      - type : Select
-        match : category
-        categories : [ocean-surface, ocean-model-level]
-
-      - type : Aggregation
-
-      - type : Statistics
-        output_frequency: 24h
-        operations:
-          - average
-
-      - type : Encode
-        format : grib
-        template : unstructured.tmpl
-        grid-type : eORCA1
-
-      - type : Sink
-        sinks :
-
-          - type : fdb5
-            config : {}
-
-  # - name : ocean-monthly
-  #   actions :
+  # - name : ocean-grids
+  #   actions:
   #     - type : Select
   #       match : category
-  #       categories : [ocean-surface, ocean-model-level]
+  #       categories : [ocean-grid-coordinate]
+
+  #     - type : Aggregation
+
+  #     - type : Encode
+  #       format : grib
+  #       template : unstructured.tmpl
+  #       grid-type : eORCA1
+
+  #     - type : Sink
+  #       sinks :
+
+  #         - type : fdb5
+  #           config : {}
+
+  - name : ocean-monthly # stream 2
+    actions :
+      - type : Select
+        match : category
+        categories : [ocean-surface, ocean-model-level]
+
+      # - type : Aggregation
+
+      # - type : Statistics
+      #   output_frequency: 31d
+      #   operations:
+      #     - average
+
+      # - type : Encode
+      #   format : grib
+      #   template : unstructured.tmpl
+      #   grid-type : eORCA1
+
+      # - type : Sink
+      #   sinks :
+
+      #     - type : fdb5
+      #       config : {}
+
+  # - name : ocean-daily # stream 3
+  #   actions :
+  #     - type : Select
+  #       match : field
+  #       fields : [sst, sss, ssh, empmr, saltfix, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, wspd, taum, mlkdz25, 14d, 17d, 20d, 26d, 28d, hc300, sal300, precip, uocees, vocens, utaue, vtaun, hc26c, ssu, utau, ssv, vtau ]
 
   #     - type : Aggregation
 
   #     - type : Statistics
-  #       output_frequency: 31d
+  #       output_frequency: 24h
+  #       operations:
+  #         - average
+
+  #     - type : Encode
+  #       format : grib
+  #       template : unstructured.tmpl
+  #       grid-type : eORCA1
+
+  #     - type : Sink
+  #       sinks :
+
+  #         - type : fdb5
+  #           config : {}
+
+  # - name : sea-ice-daily # stream 10
+  #   actions :
+  #     - type : Select
+  #       match : field
+  #       fields : [ icevolu, ice_cover, iceconc_cat, icethic, icethick_cat, snwthic, snwthic_cat, uice, vice, iicevelur, iicevelvr, utau_ai, vtau_ai, iocestrur, iocestrvr, snowpre, icesalt, icetemp, icettop, icesalt_cat ]
+
+  #     - type : Aggregation
+
+  #     - type : Statistics
+  #       output_frequency: 24h
   #       operations:
   #         - average
 

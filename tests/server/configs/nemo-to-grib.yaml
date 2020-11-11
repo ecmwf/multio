@@ -77,7 +77,7 @@ nemo-fields :
     param-id : 212010
     grid-type : "T grid"
 
-  - nemo-id : saltfix
+  - nemo-id : saltflx
     param-id : 212011
     grid-type : "T grid"
 
@@ -133,7 +133,7 @@ nemo-fields :
     param-id : 212024
     grid-type : "T grid"
 
-  - nemo-id : mlkdz25
+  - nemo-id : mldkz5
     param-id : 212025
     grid-type : "T grid"
 

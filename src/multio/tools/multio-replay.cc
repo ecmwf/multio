@@ -191,9 +191,10 @@ void MultioReplay::testData() {
     }
 
     for (const auto& param : parameters_) {
-        std::ifstream infile{std::to_string(level_) +
-                             "::" + std::to_string(paramMap_.get(param).param) +
-                             "::" + std::to_string(step_)};
+        std::string actual_file_path{std::to_string(level_) +
+                                     "::" + std::to_string(paramMap_.get(param).param) +
+                                     "::" + std::to_string(step_)};
+        std::ifstream infile{actual_file_path.c_str()};
         std::string actual{std::istreambuf_iterator<char>(infile),
                            std::istreambuf_iterator<char>()};
         infile.close();
@@ -206,6 +207,8 @@ void MultioReplay::testData() {
                              std::istreambuf_iterator<char>()};
 
         ASSERT(actual == expected);
+
+        std::remove(actual_file_path.c_str());
     }
 }
 

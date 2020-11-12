@@ -1,0 +1,52 @@
+
+transport : mpi
+group : world
+serverCount : 3
+clientCount : 5
+
+activeFields : [ lat_T, lon_T, lat_U, lon_U, lat_V, lon_V, lat_W, lon_W, toce, sst ]
+
+plans :
+
+  - name : ocean-grids
+    actions:
+      - type : Select
+        match : category
+        categories : [ocean-grid-coordinate]
+
+      - type : Aggregation
+
+      - type : Encode
+        format : grib
+        template : unstructured.tmpl
+        grid-type : eORCA1
+
+      - type : Sink
+        sinks :
+
+          - type : fdb5
+            config : {}
+
+  - name : ocean-monthly # stream 2
+    actions :
+      - type : Select
+        match : field
+        fields : [ toce, soce, sigmat, sst, sss, ssh, hst, hbp, empmr, runoffs, saltflx, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, taum, wspd, cdn10, qrp, erp, mldkz5, 14d, 17d, 20d, 26d, 28d, hc300, sal300, hc700, sal700, hcbtm, salbtm, precip, uocee, vocen, uocees, vocens, utaue, vtaun, hc26c, thetaodmp, sodmp, ssu, uoce, utau, ssv, voce, vtau, woce ]
+
+      - type : Aggregation
+
+      - type : Statistics
+        output_frequency: 1h
+        operations:
+          - average
+
+      - type : Encode
+        format : grib
+        template : unstructured.tmpl
+        grid-type : eORCA1
+
+      - type : Sink
+        sinks :
+
+          - type : fdb5
+            config : {}

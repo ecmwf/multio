@@ -28,13 +28,16 @@ private:
 class DateTimePeriod {
 public:
     DateTimePeriod(const eckit::DateTime& startPoint, eckit::Second duration);
+    DateTimePeriod(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
 
     void reset(const eckit::DateTime& current);
+    void reset(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
+
     bool isWithin(const eckit::DateTime& dt);
 
 private:
     eckit::DateTime startPoint_;
-    const eckit::Second duration_;
+    eckit::DateTime endPoint_;
 
     eckit::DateTime endPoint() const;
     void print(std::ostream& os) const;

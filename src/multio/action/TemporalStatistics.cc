@@ -103,8 +103,7 @@ std::map<std::string, eckit::Buffer> TemporalStatistics::compute(const message::
 void TemporalStatistics::reset(const message::Message& msg) {
     statistics_ = reset_statistics(opNames_, msg.globalSize());
     resetPeriod(msg);
-    eckit::Log::info() << " ======== Resetting statistics for temporal type " << *this
-                             << std::endl;
+    eckit::Log::info() << " ------ Resetting statistics for temporal type " << *this << std::endl;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -136,6 +135,29 @@ void DailyStatistics::print(std::ostream &os) const {
 }
 
 //-------------------------------------------------------------------------------------------------
+
+namespace  {
+DateTimePeriod setMonthlyPeriod(long span, const message::Message& msg) {
+    eckit::DateTime startPoint{eckit::Date{msg.metadata().getString("date")}, eckit::Time{0}};
+
+    auto totalSpan = startPoint.date().month() + span - 1; // Make it zero-based
+
+    auto endYear = startPoint.date().year() + totalSpan / 12;
+    auto endMonth = totalSpan % 12 + 1;
+    auto endDay = startPoint.date().day();
+
+    ASSERT_MSG(endDay < 29, "No support for monthly period starting beyond day 28");
+
+    eckit::DateTime endPoint{eckit::Date{endYear, endMonth, endDay}, eckit::Time{0}};
+
+    return DateTimePeriod{startPoint, endPoint};
+}
+}  // namespace
+
+MonthlyStatistics::MonthlyStatistics(const std::vector<std::string> operations, long span,
+                                     message::Message msg) :
+    TemporalStatistics{msg.name(), setMonthlyPeriod(span, msg), operations,
+                       msg.size() / sizeof(double)} {}
 
 void MonthlyStatistics::print(std::ostream& os) const {
     os << "Monthly Statistics(" << current_ << ")";

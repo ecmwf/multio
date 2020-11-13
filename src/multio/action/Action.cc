@@ -86,7 +86,7 @@ void ActionFactory::list(std::ostream& out) {
 Action* ActionFactory::build(const std::string& name, const Configuration& config) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
-    Log::debug<LibMultio>() << "Looking for ActionFactory [" << name << "]" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Looking for ActionFactory [" << name << "]" << std::endl;
 
     auto f = factories_.find(name);
 

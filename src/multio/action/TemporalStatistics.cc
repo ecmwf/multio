@@ -47,8 +47,12 @@ std::unique_ptr<TemporalStatistics> TemporalStatistics::build(
     throw eckit::SeriousBug{"Temporal statistics for base period " + unit + " is not defined"};
 }
 
-TemporalStatistics::TemporalStatistics(const std::vector<std::string>& operations, size_t sz) :
-    opNames_{operations}, statistics_{reset_statistics(operations, sz)} {}
+TemporalStatistics::TemporalStatistics(const std::string& name, const DateTimePeriod& period,
+                                       const std::vector<std::string>& operations, size_t sz) :
+    name_{name},
+    current_{period},
+    opNames_{operations},
+    statistics_{reset_statistics(operations, sz)} {}
 
 bool TemporalStatistics::process(message::Message& msg) {
     return process_next(msg);
@@ -59,6 +63,30 @@ void TemporalStatistics::updateStatistics(const message::Message& msg) {
     for(auto const& stat : statistics_) {
         stat->update(data_ptr, msg.size() / sizeof(double));
     }
+}
+
+bool TemporalStatistics::process_next(message::Message& msg) {
+    ASSERT(name_ == msg.name());
+
+    LOG_DEBUG_LIB(LibMultio) << *this << std::endl;
+
+    auto dateTime = currentDateTime(msg);
+
+    std::ostringstream os;
+    os << dateTime << " is outside of current period " << current_ << std::endl;
+    eckit::Log::info() << " *** Current ";
+    ASSERT_MSG(current_.isWithin(dateTime), os.str());
+
+    updateStatistics(msg);
+
+    dateTime = dateTime + static_cast<eckit::Second>(msg.metadata().getLong("timeStep"));
+
+    eckit::Log::info() << " *** Next    ";
+    return current_.isWithin(dateTime);
+}
+
+void TemporalStatistics::resetPeriod(const message::Message& msg) {
+    current_.reset(currentDateTime(msg));
 }
 
 std::map<std::string, eckit::Buffer> TemporalStatistics::compute(const message::Message& msg) {
@@ -75,65 +103,33 @@ std::map<std::string, eckit::Buffer> TemporalStatistics::compute(const message::
 void TemporalStatistics::reset(const message::Message& msg) {
     statistics_ = reset_statistics(opNames_, msg.globalSize());
     resetPeriod(msg);
-    LOG_DEBUG_LIB(LibMultio) << " ======== Resetting statistics for temporal type " << *this
+    eckit::Log::info() << " ======== Resetting statistics for temporal type " << *this
                              << std::endl;
 }
 
 //-------------------------------------------------------------------------------------------------
 
-MonthlyStatistics::MonthlyStatistics(const std::vector<std::string> operations, long span,
-                                     message::Message msg) :
-    TemporalStatistics{operations, msg.size() / sizeof(double)},
-    name_{msg.name()},
-    current_{eckit::Date{msg.metadata().getString("date")}, span} {}
+HourlyStatistics::HourlyStatistics(const std::vector<std::string> operations, long span,
+                                   message::Message msg) :
+    TemporalStatistics{msg.name(),
+                       DateTimePeriod{eckit::DateTime{eckit::Date{msg.metadata().getString("date")},
+                                                      eckit::Time{0}},
+                                      static_cast<eckit::Second>(3600 * span)},
+                       operations, msg.size() / sizeof(double)} {}
 
-bool MonthlyStatistics::process_next(message::Message& msg) {
-    ASSERT(name_ == msg.name());
-
-    auto dateTime = currentDateTime(msg);
-
-    ASSERT(current_.isWithin(dateTime.date()));
-
-    updateStatistics(msg);
-
-    dateTime = dateTime + static_cast<eckit::Second>(msg.metadata().getLong("timeStep"));
-
-    return current_.isWithin(dateTime.date());
-}
-
-void MonthlyStatistics::resetPeriod(const message::Message& msg) {
-    current_.reset(currentDateTime(msg).date());
-}
-
-void MonthlyStatistics::print(std::ostream& os) const {
-    os << "Monthly Statistics(" << current_ << ")";
+void HourlyStatistics::print(std::ostream &os) const {
+    os << "Hourly Statistics(" << current_ << ")";
 }
 
 //-------------------------------------------------------------------------------------------------
 
 DailyStatistics::DailyStatistics(const std::vector<std::string> operations, long span,
                                  message::Message msg) :
-    TemporalStatistics{operations, msg.size() / sizeof(double)},
-    name_{msg.name()},
-    current_{eckit::Date{msg.metadata().getString("date")}, span} {}
-
-bool DailyStatistics::process_next(message::Message& msg) {
-    ASSERT(name_ == msg.name());
-
-    auto dateTime = currentDateTime(msg);
-
-    ASSERT(current_.isWithin(dateTime.date()));
-
-    updateStatistics(msg);
-
-    dateTime = dateTime + static_cast<eckit::Second>(msg.metadata().getLong("timeStep"));
-
-    return current_.isWithin(dateTime.date());
-}
-
-void DailyStatistics::resetPeriod(const message::Message& msg) {
-    current_.reset(currentDateTime(msg).date());
-}
+    TemporalStatistics{msg.name(),
+                       DateTimePeriod{eckit::DateTime{eckit::Date{msg.metadata().getString("date")},
+                                                      eckit::Time{0}},
+                                      static_cast<eckit::Second>(24 * 3600 * span)},
+                       operations, msg.size() / sizeof(double)} {}
 
 void DailyStatistics::print(std::ostream &os) const {
     os << "Daily Statistics(" << current_ << ")";
@@ -141,37 +137,8 @@ void DailyStatistics::print(std::ostream &os) const {
 
 //-------------------------------------------------------------------------------------------------
 
-HourlyStatistics::HourlyStatistics(const std::vector<std::string> operations, long span,
-                                   message::Message msg) :
-    TemporalStatistics{operations, msg.size() / sizeof(double)},
-    name_{msg.name()},
-    current_{eckit::DateTime{eckit::Date{msg.metadata().getString("date")}, eckit::Time{0}},
-             3600 * static_cast<eckit::Second>(span)} {}
-
-bool HourlyStatistics::process_next(message::Message &msg) {
-    ASSERT(name_ == msg.name());
-
-    LOG_DEBUG_LIB(LibMultio) << *this << std::endl;
-
-    auto dateTime = currentDateTime(msg);
-
-    std::ostringstream os;
-    os << dateTime << " is outside of current period " << current_ << std::endl;
-    ASSERT_MSG(current_.isWithin(dateTime), os.str());
-
-    updateStatistics(msg);
-
-    dateTime = dateTime + static_cast<eckit::Second>(msg.metadata().getLong("timeStep"));
-
-    return current_.isWithin(dateTime);
-}
-
-void HourlyStatistics::resetPeriod(const message::Message& msg) {
-    current_.reset(currentDateTime(msg));
-}
-
-void HourlyStatistics::print(std::ostream &os) const {
-    os << "Hourly Statistics(" << current_ << ")";
+void MonthlyStatistics::print(std::ostream& os) const {
+    os << "Monthly Statistics(" << current_ << ")";
 }
 
 //-------------------------------------------------------------------------------------------------

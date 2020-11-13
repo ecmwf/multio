@@ -20,7 +20,8 @@ public:
                                                      const std::vector<std::string>& operations,
                                                      const message::Message& msg);
 
-    TemporalStatistics(const std::vector<std::string>& operations, size_t sz);
+    TemporalStatistics(const std::string& name, const DateTimePeriod& period,
+                       const std::vector<std::string>& operations, size_t sz);
     virtual ~TemporalStatistics() = default;
 
     bool process(message::Message& msg);
@@ -28,15 +29,16 @@ public:
     void reset(const message::Message& msg);
 
 protected:
-    std::vector<std::string> opNames_;
-    std::vector<std::unique_ptr<Operation>> statistics_;
+
+    std::string name_;
+    DateTimePeriod current_;
 
     void updateStatistics(const message::Message& msg);
 
 private:
-    virtual bool process_next(message::Message& msg) = 0;
+    virtual bool process_next(message::Message& msg);
 
-    virtual void resetPeriod(const message::Message& msg) = 0;
+    virtual void resetPeriod(const message::Message& msg);
 
     virtual void print(std::ostream& os) const = 0;
 
@@ -44,21 +46,17 @@ private:
         a.print(os);
         return os;
     }
+
+    std::vector<std::string> opNames_;
+    std::vector<std::unique_ptr<Operation>> statistics_;
 };
 
 //-------------------------------------------------------------------------------------------------
 
-class MonthlyStatistics : public TemporalStatistics {
-
-    std::string name_;
-    DatePeriod current_;
+class HourlyStatistics : public TemporalStatistics {
 
 public:
-    MonthlyStatistics(const std::vector<std::string> operations, long span, message::Message msg);
-
-    bool process_next(message::Message &msg) override;
-
-    void resetPeriod(const message::Message& msg) override;
+    HourlyStatistics(const std::vector<std::string> operations, long span, message::Message msg);
 
     void print(std::ostream &os) const override;
 };
@@ -67,35 +65,23 @@ public:
 
 class DailyStatistics : public TemporalStatistics {
 
-    std::string name_;
-    DatePeriod current_;
-
 public:
     DailyStatistics(const std::vector<std::string> operations, long span, message::Message msg);
-
-    bool process_next(message::Message& msg) override;
-
-    void resetPeriod(const message::Message& msg) override;
 
     void print(std::ostream &os) const override;
 };
 
 //-------------------------------------------------------------------------------------------------
 
-class HourlyStatistics : public TemporalStatistics {
-
-    std::string name_;
-    DateTimePeriod current_;
+class MonthlyStatistics : public TemporalStatistics {
 
 public:
-    HourlyStatistics(const std::vector<std::string> operations, long span, message::Message msg);
-
-    bool process_next(message::Message& msg) override;
-
-    void resetPeriod(const message::Message& msg) override;
+    MonthlyStatistics(const std::vector<std::string> operations, long span, message::Message msg);
 
     void print(std::ostream &os) const override;
 };
+
+//-------------------------------------------------------------------------------------------------
 
 }
 }  // namespace multio

@@ -36,7 +36,7 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 1h
+        output_frequency: 1d
         operations:
           - average
 

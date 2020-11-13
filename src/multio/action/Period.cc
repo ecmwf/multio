@@ -15,7 +15,10 @@ void DatePeriod::reset(const eckit::Date& startPoint) {
 
 bool DatePeriod::isWithin(const eckit::Date& dt) {
     ASSERT(startPoint_ <= dt);
-    return dt <= endPoint();
+    auto ret = (dt <= endPoint());
+    eckit::Log::info() << " ======== Is " << dt << " within " << *this << "? -- "
+                             << (ret ? "yes" : "no") << std::endl;
+    return ret;
 }
 
 eckit::Date DatePeriod::endPoint() const {
@@ -43,7 +46,7 @@ void DateTimePeriod::reset(const eckit::DateTime& current) {
 bool DateTimePeriod::isWithin(const eckit::DateTime& dt) {
     ASSERT(startPoint_ <= dt);
     auto ret = (dt <= endPoint() + eckit::Second{1.0});
-    LOG_DEBUG_LIB(LibMultio) << " ======== Is " << dt << " within " << *this << "? -- "
+    eckit::Log::info() << " ======== Is " << dt << " within " << *this << "? -- "
                              << (ret ? "yes" : "no") << std::endl;
     return ret;
 }

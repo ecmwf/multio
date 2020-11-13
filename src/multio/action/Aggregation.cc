@@ -80,10 +80,8 @@ Message Aggregation::createGlobalField(const Message& msg) const {
 
 void Aggregation::print(std::ostream& os) const {
     os << "Aggregation(for " << messages_.size() << " fields = [";
-    bool first = true;
     for (const auto& msg : messages_) {
-        os << (first ? msg.first : ", " + msg.first);
-        first = false;
+        os << '\n' << "  --->  " << msg.first;
     }
     os << "])";
 }

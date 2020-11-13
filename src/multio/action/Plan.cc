@@ -59,7 +59,7 @@ Plan::Plan(const eckit::Configuration& config) {
 
 Plan::~Plan() {
     eckit::Log::info() << " ******* Plan " << name_
-                       << "-- total wall-clock time spent processing: " << timing_ << "s"
+                       << " -- total wall-clock time spent processing: " << timing_ << "s"
                        << std::endl;
 }
 

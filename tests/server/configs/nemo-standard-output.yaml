@@ -27,7 +27,7 @@ plans :
           - type : fdb5
             config : {}
 
-  - name : ocean-monthly # stream 2
+  - name : stream-2 # mainly 3d fields output monthly (standard) or daily (highout)
     actions :
       - type : Select
         match : field
@@ -36,7 +36,7 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 744h
+        output_frequency: 31d
         operations:
           - average
 
@@ -51,7 +51,7 @@ plans :
           - type : fdb5
             config : {}
 
-  - name : ocean-daily # stream 3
+  - name : stream-3 # mainly 2d fields output daily (standard) or hourly (highout)
     actions :
       - type : Select
         match : field
@@ -60,7 +60,7 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 24h
+        output_frequency: 1d
         operations:
           - average
 
@@ -75,7 +75,7 @@ plans :
           - type : fdb5
             config : {}
 
-  - name : sea-ice-daily # stream 10
+  - name : stream-10 # sea-ice fields output daily (standard) or hourly (highout)
     actions :
       - type : Select
         match : field
@@ -84,7 +84,7 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 24h
+        output_frequency: 1d
         operations:
           - average
 

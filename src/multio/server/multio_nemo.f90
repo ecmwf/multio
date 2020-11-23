@@ -18,6 +18,13 @@ module multio_nemo
     integer, private, parameter :: dp = selected_real_kind(15, 307)
 
     private to_c_string
+    private multio_write_field_2d
+    private multio_write_field_3d
+
+
+    interface multio_write_field
+        module procedure multio_write_field_2d, multio_write_field_3d
+    end interface
 
     interface
 
@@ -144,7 +151,7 @@ module multio_nemo
 
         end subroutine multio_set_domain
 
-        subroutine multio_write_field(fname, data, toall)
+        subroutine multio_write_field_2d(fname, data, toall)
             implicit none
             character(*), intent(in) :: fname
             real(dp), dimension(:,:), intent(in) :: data
@@ -155,7 +162,17 @@ module multio_nemo
 
             call c_multio_write_field(to_c_string(fname), data, size(data), toall)
 
-        end subroutine multio_write_field
+        end subroutine multio_write_field_2d
+
+        subroutine multio_write_field_3d(fname, data)
+            implicit none
+            character(*), intent(in) :: fname
+            real(dp), dimension(:,:,:), intent(in) :: data
+            logical(c_bool) :: c_toall = .false.
+
+            call c_multio_write_field(to_c_string(fname), data, size(data), c_toall)
+
+        end subroutine multio_write_field_3d
 
         subroutine multio_field_is_active(fname, is_active)
             implicit none

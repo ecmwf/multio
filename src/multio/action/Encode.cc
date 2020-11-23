@@ -17,6 +17,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/server/ConfigurationPath.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
@@ -50,7 +51,7 @@ Encode::Encode(const eckit::Configuration& config) :
     Action{config}, format_{config.getString("format")}, encoder_{make_encoder(config)} {}
 
 void Encode::execute(Message msg) const {
-    ScopedTimer timer{timing_};
+    util::ScopedTimer timer{timing_};
 
     if (not encoder_) {
         executeNext(msg);

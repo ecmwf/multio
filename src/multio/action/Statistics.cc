@@ -17,6 +17,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/action/TemporalStatistics.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
@@ -49,7 +50,7 @@ Statistics::Statistics(const eckit::Configuration& config) :
     operations_{config.getStringVector("operations")} {}
 
 void Statistics::execute(message::Message msg) const {
-    ScopedTimer timer{timing_};
+    util::ScopedTimer timer{timing_};
 
     LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << msg.metadata()
                              << std::endl;

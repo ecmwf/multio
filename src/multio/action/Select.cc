@@ -15,6 +15,7 @@
 #include "eckit/config/Configuration.h"
 
 #include "multio/LibMultio.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
@@ -30,7 +31,7 @@ Select::Select(const eckit::Configuration& config) :
     Action{config}, match_{config.getString("match")}, items_{fetch_items(match_, config)} {}
 
 void Select::execute(Message msg) const {
-    ScopedTimer timer{timing_};
+    util::ScopedTimer timer{timing_};
 
     if (isMatched(msg)) {
         executeNext(msg);

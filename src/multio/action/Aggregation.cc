@@ -17,6 +17,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/domain/Mappings.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
@@ -24,7 +25,7 @@ namespace action {
 Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 
 void Aggregation::execute(Message msg) const {
-    ScopedTimer timer{timing_};
+    util::ScopedTimer timer{timing_};
 
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
         executeNext(createGlobalField(msg));

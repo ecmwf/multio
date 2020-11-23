@@ -74,14 +74,14 @@ bool TemporalStatistics::process_next(message::Message& msg) {
 
     std::ostringstream os;
     os << dateTime << " is outside of current period " << current_ << std::endl;
-    eckit::Log::info() << " *** Current ";
+    LOG_DEBUG_LIB(LibMultio) << " *** Current ";
     ASSERT_MSG(current_.isWithin(dateTime), os.str());
 
     updateStatistics(msg);
 
     dateTime = dateTime + static_cast<eckit::Second>(msg.metadata().getLong("timeStep"));
 
-    eckit::Log::info() << " *** Next    ";
+    LOG_DEBUG_LIB(LibMultio) << " *** Next    ";
     return current_.isWithin(dateTime);
 }
 
@@ -103,7 +103,8 @@ std::map<std::string, eckit::Buffer> TemporalStatistics::compute(const message::
 void TemporalStatistics::reset(const message::Message& msg) {
     statistics_ = reset_statistics(opNames_, msg.globalSize());
     resetPeriod(msg);
-    eckit::Log::info() << " ------ Resetting statistics for temporal type " << *this << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " ------ Resetting statistics for temporal type " << *this
+                             << std::endl;
 }
 
 //-------------------------------------------------------------------------------------------------

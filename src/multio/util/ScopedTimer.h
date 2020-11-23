@@ -1,11 +1,11 @@
 
-#ifndef multio_server_ScopedTimer_H
-#define multio_server_ScopedTimer_H
+#ifndef multio_util_ScopedTimer_H
+#define multio_util_ScopedTimer_H
 
 #include "eckit/log/Statistics.h"
 
 namespace multio {
-namespace server {
+namespace util {
 
 class ScopedTimer {
     eckit::Timing& timing_;
@@ -19,7 +19,7 @@ public:
     }
 };
 
-}  // namespace server
+}  // namespace util
 }  // namespace multio
 
 #endif

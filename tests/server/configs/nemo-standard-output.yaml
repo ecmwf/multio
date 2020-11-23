@@ -4,7 +4,7 @@ group : world
 serverCount : 3
 clientCount : 5
 
-activeFields : [ lat_T, lon_T, lat_U, lon_U, lat_V, lon_V, lat_W, lon_W ]
+activeFields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethick_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
 
 plans :
 
@@ -55,7 +55,7 @@ plans :
     actions :
       - type : Select
         match : field
-        fields : [sst, sss, ssh, empmr, saltflx, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, wspd, taum, mldkz5, 14d, 17d, 20d, 26d, 28d, hc300, sal300, precip, uocees, vocens, utaue, vtaun, hc26c, ssu, utau, ssv, vtau ]
+        fields : [ sst, sss, ssh, empmr, saltflx, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, wspd, taum, mldkz5, 14d, 17d, 20d, 26d, 28d, hc300, sal300, precip, uocees, vocens, utaue, vtaun, hc26c, ssu, utau, ssv, vtau ]
 
       - type : Aggregation
 

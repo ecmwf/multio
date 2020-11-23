@@ -33,6 +33,14 @@ nemo-fields :
     param-id: 250010
     grid-type : "W grid"
 
+  - nemo-id: lat_F
+    param-id: 250011
+    grid-type : "F grid"
+
+  - nemo-id: lon_F
+    param-id: 250012
+    grid-type : "F grid"
+
   #=================================
   # Physical parameters -- T grid
   #=================================

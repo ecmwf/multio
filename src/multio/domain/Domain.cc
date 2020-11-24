@@ -5,6 +5,7 @@
 
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/message/Message.h"
 #include "multio/LibMultio.h"
 
 namespace multio {
@@ -22,14 +23,19 @@ void Unstructured::to_local(const std::vector<double>& global, std::vector<doubl
                   [&](int32_t id) { local.push_back(global[id]); });
 }
 
-void Unstructured::to_global(const eckit::Buffer& local, eckit::Buffer& global) const {
-    ASSERT(local.size() == definition_.size() * sizeof(double));
+void Unstructured::to_global(const message::Message& local, message::Message& global) const {
+    auto levelCount = local.metadata().getLong("levelCount", 1);
+    ASSERT(local.payload().size() == definition_.size() * levelCount * sizeof(double));
 
-    auto lit = static_cast<const double*>(local.data());
-    auto git = static_cast<double*>(global.data());
-    for (auto id : definition_) {
-        *(git + id) = *lit++;
+    auto lit = static_cast<const double*>(local.payload().data());
+    auto git = static_cast<double*>(global.payload().data());
+    for (long lev = 0; lev != levelCount; ++lev) {
+        for (auto id : definition_) {
+            auto offset = id + lev * local.globalSize();
+            *(git + offset) = *lit++;
+        }
     }
+
     eckit::Log::debug<LibMultio>() << " *** Aggregation completed..." << std::endl;
 }
 
@@ -48,7 +54,9 @@ void Structured::to_local(const std::vector<double>&, std::vector<double>&) cons
     NOTIMP;
 }
 
-void Structured::to_global(const eckit::Buffer& local, eckit::Buffer& global) const {
+void Structured::to_global(const message::Message& local, message::Message& global) const {
+    auto levelCount = local.metadata().getLong("levelCount", 1);
+
     // Global domain's dimenstions
     auto ni_global = definition_[0];
     auto nj_global = definition_[1];
@@ -68,20 +76,24 @@ void Structured::to_global(const eckit::Buffer& local, eckit::Buffer& global) co
 
     ASSERT(sizeof(double) * ni_global * nj_global == global.size());
     std::ostringstream os;
-    os << "Local size is " << local.size() / sizeof(double) << " while it is expected to equal "
-       << data_ni << " times " << data_nj << std::endl;
-    ASSERT_MSG(sizeof(double) * data_ni * data_nj == local.size(), os.str());
+    os << "Local size is " << local.payload().size() / levelCount / sizeof(double)
+       << " while it is expected to equal " << data_ni << " times " << data_nj << std::endl;
+    ASSERT_MSG(sizeof(double) * data_ni * data_nj == local.payload().size(), os.str());
 
-    auto lit = static_cast<const double*>(local.data());
-    auto git = static_cast<double*>(global.data());
-    for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
-        for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
-            if (inRange(i, 0, ni) && inRange(j, 0, nj)) {
-                auto gidx = (jbegin + j) * ni_global + (ibegin + i);
-                *(git + gidx) = *lit;
+    auto lit = static_cast<const double*>(local.payload().data());
+    auto git = static_cast<double*>(global.payload().data());
+    for (long lev = 0; lev != levelCount; ++lev) {
+        auto offset = lev * local.globalSize();
+        for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
+            for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
+                if (inRange(i, 0, ni) && inRange(j, 0, nj)) {
+                    auto gidx = offset + (jbegin + j) * ni_global + (ibegin + i);
+                    *(git + gidx) = *lit;
+                }
             }
         }
     }
+
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -92,7 +104,7 @@ void Spectral::to_local(const std::vector<double>&, std::vector<double>&) const 
     NOTIMP;
 }
 
-void Spectral::to_global(const eckit::Buffer&, eckit::Buffer&) const {
+void Spectral::to_global(const message::Message&, message::Message&) const {
     NOTIMP;
 }
 

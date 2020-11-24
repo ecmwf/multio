@@ -64,15 +64,14 @@ Message Aggregation::createGlobalField(const Message& msg) const {
     const auto& fid = msg.fieldId();
     LOG_DEBUG_LIB(LibMultio) << " *** Creating global field for " << fid << std::endl;
 
-    eckit::Buffer glField{msg.globalSize() * sizeof(double)};
-    for (const auto& msg : messages_.at(fid)) {
-        domain::Mappings::instance()
-            .get(msg.domain())
-            .at(msg.source())
-            ->to_global(msg.payload(), glField);
-    }
+    auto levelCount = msg.metadata().getLong("levelCount", 1);
 
-    Message msgOut{Message::Header{msg.header()}, std::move(glField)};
+    Message msgOut{Message::Header{msg.header()},
+                   eckit::Buffer{msg.globalSize() * levelCount * sizeof(double)}};
+
+    for (const auto& msg : messages_.at(fid)) {
+        domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_global(msg, msgOut);
+    }
 
     messages_.erase(fid);
 

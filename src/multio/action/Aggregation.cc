@@ -17,6 +17,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/domain/Mappings.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
@@ -24,7 +25,7 @@ namespace action {
 Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 
 void Aggregation::execute(Message msg) const {
-    ScopedTimer timer{timing_};
+    util::ScopedTimer timer{timing_};
 
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
         executeNext(createGlobalField(msg));
@@ -63,15 +64,14 @@ Message Aggregation::createGlobalField(const Message& msg) const {
     const auto& fid = msg.fieldId();
     LOG_DEBUG_LIB(LibMultio) << " *** Creating global field for " << fid << std::endl;
 
-    eckit::Buffer glField{msg.globalSize() * sizeof(double)};
-    for (const auto& msg : messages_.at(fid)) {
-        domain::Mappings::instance()
-            .get(msg.domain())
-            .at(msg.source())
-            ->to_global(msg.payload(), glField);
-    }
+    auto levelCount = msg.metadata().getLong("levelCount", 1);
 
-    Message msgOut{Message::Header{msg.header()}, std::move(glField)};
+    Message msgOut{Message::Header{msg.header()},
+                   eckit::Buffer{msg.globalSize() * levelCount * sizeof(double)}};
+
+    for (const auto& msg : messages_.at(fid)) {
+        domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_global(msg, msgOut);
+    }
 
     messages_.erase(fid);
 

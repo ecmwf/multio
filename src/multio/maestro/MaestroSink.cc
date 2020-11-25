@@ -20,6 +20,7 @@
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 
@@ -60,7 +61,7 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
 
     eckit::Timing timing;
     {
-        action::ScopedTimer timer{timing};
+        util::ScopedTimer timer{timing};
         mstro_status s =
             mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0);
         ASSERT(s == MSTRO_OK);
@@ -72,7 +73,7 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
 MaestroSink::~MaestroSink() {
     eckit::Timing timing;
     {
-        action::ScopedTimer timer{timing};
+        util::ScopedTimer timer{timing};
         mstro_finalize();
     }
     eckit::Log::info() << " MaestroSink: finalising Maestro has taken " << timing.elapsed_ << "s"
@@ -86,7 +87,7 @@ void MaestroSink::write(eckit::message::Message blob) {
 
     LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
 
-    action::ScopedTimer timer{timing_};
+    util::ScopedTimer timer{timing_};
 
     mstro_cdo cdo = nullptr;
     mstro_status s = mstro_cdo_declare(name.c_str(), MSTRO_ATTR_DEFAULT, &cdo);
@@ -123,7 +124,7 @@ void MaestroSink::write(eckit::message::Message blob) {
 
 void MaestroSink::flush() {
     {
-        action::ScopedTimer timer{timing_};
+        util::ScopedTimer timer{timing_};
         LOG_DEBUG_LIB(LibMultio) << "MaestroSink::flush()" << std::endl;
 
         std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo) {

@@ -17,6 +17,7 @@
 #include "eckit/message/Message.h"
 
 #include "multio/LibMultio.h"
+#include "multio/util/ScopedTimer.h"
 
 
 namespace multio {
@@ -25,7 +26,7 @@ namespace action {
 Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 
 void Sink::execute(Message msg) const {
-    ScopedTimer timer{timing_};
+    util::ScopedTimer timer{timing_};
 
     switch (msg.tag()) {
         case Message::Tag::Field:

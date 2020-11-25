@@ -67,30 +67,32 @@ bool GribEncoder::setGridInfo(message::Message msg) {
     return grids().at(msg.domain())->computeHashIfCan();
 }
 
-void GribEncoder::setOceanMetadata(const message::Message& msg) {
+void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     // setCommonMetadata
     setValue("expver", "xxxx");
     setValue("class", "rd");
     setValue("stream", "oper");
     setValue("type", "fc");
     setValue("levtype", static_cast<long>(168));
-    setValue("step", msg.metadata().getLong("step"));
-    setValue("level", msg.metadata().getLong("level"));
+    setValue("step", metadata.getLong("step"));
+    setValue("level", metadata.getLong("level"));
 
     // TODO: Nemo should set this at the beginning of the run
-    setValue("date", 20170906l);
+    setValue("date", metadata.getLong("date"));
 
     // setDomainDimensions
-    setValue("numberOfDataPoints", msg.metadata().getLong("globalSize"));
-    setValue("numberOfValues", msg.metadata().getLong("globalSize"));
+    setValue("numberOfDataPoints", metadata.getLong("globalSize"));
+    setValue("numberOfValues", metadata.getLong("globalSize"));
 
     // Setting parameter ID
-    setValue("paramId", msg.metadata().getLong("param"));
+    setValue("paramId", metadata.getLong("param"));
 
     // Set ocean grid information
     setValue("unstructuredGridType", gridType_);
-    setValue("unstructuredGridSubtype", msg.domain());
-    setValue("uuidOfHGrid", grids().at(msg.domain())->hashValue());
+
+    const auto& gridSubtype = metadata.getString("gridSubtype");
+    setValue("unstructuredGridSubtype", gridSubtype);
+    setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
 }
 
 void GribEncoder::setValue(const std::string& key, long value) {
@@ -124,7 +126,7 @@ void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
 message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
     auto msg = grids().at(subtype)->latitudes();
 
-    setOceanMetadata(msg);
+    setOceanMetadata(msg.metadata());
 
     return setFieldValues(msg);
 }
@@ -132,15 +134,20 @@ message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
 message::Message GribEncoder::encodeLongitudes(const std::string& subtype) {
     auto msg = grids().at(subtype)->longitudes();
 
-    setOceanMetadata(msg);
+    setOceanMetadata(msg.metadata());
 
     return setFieldValues(msg);
 }
 
 message::Message GribEncoder::encodeField(const message::Message& msg) {
-    setOceanMetadata(msg);
+        setOceanMetadata(msg.metadata());
+        return setFieldValues(msg);
+}
 
-    return setFieldValues(msg);
+message::Message GribEncoder::encodeField(const message::Metadata& md, const double* data,
+                                          size_t sz) {
+    setOceanMetadata(md);
+    return setFieldValues(data, sz);
 }
 
 message::Message GribEncoder::setFieldValues(const message::Message& msg) {
@@ -150,8 +157,16 @@ message::Message GribEncoder::setFieldValues(const message::Message& msg) {
     eckit::Buffer buf{this->length()};
     this->write(buf);
 
-    return Message{Message::Header{Message::Tag::Grib, msg.source(), msg.destination()},
-                   std::move(buf)};
+    return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
+}
+
+message::Message GribEncoder::setFieldValues(const double* values, size_t count) {
+    this->setDataValues(values, count);
+
+    eckit::Buffer buf{this->length()};
+    this->write(buf);
+
+    return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
 }
 
 }  // namespace action

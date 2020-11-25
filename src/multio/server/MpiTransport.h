@@ -18,6 +18,7 @@
 #define multio_server_MpiTransport_H
 
 #include "eckit/io/ResizableBuffer.h"
+#include "eckit/log/Statistics.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
@@ -35,6 +36,7 @@ public:
 class MpiTransport final : public Transport {
 public:
     MpiTransport(const eckit::Configuration& config);
+    ~MpiTransport();
 
 private:
     Message receive() override;
@@ -48,6 +50,9 @@ private:
     MpiPeer local_;
 
     eckit::ResizableBuffer buffer_;
+
+    eckit::Timing sendTiming_;
+    eckit::Timing receiveTiming_;
 };
 
 }  // namespace server

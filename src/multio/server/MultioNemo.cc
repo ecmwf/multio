@@ -136,10 +136,7 @@ public:
 
         metadata_.set("nemoParam", fname);
         metadata_.set("param", paramMap_.get(fname).param);
-
-        eckit::Log::debug<multio::LibMultio>()
-            << "*** Writing field " << fname << ", step = " << metadata_.getInt("step")
-            << ", level = " << metadata_.getInt("level") << std::endl;
+        metadata_.set("gridSubtype", paramMap_.get(fname).gridType);
 
         auto gl_size = static_cast<size_t>(metadata_.getInt("globalSize"));
 

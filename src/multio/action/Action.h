@@ -33,18 +33,6 @@ class Configuration;
 namespace multio {
 namespace action {
 
-class ScopedTimer {
-    eckit::Timing& timing_;
-    eckit::Timer timer_;
-
-public:
-    explicit ScopedTimer(eckit::Timing& t) : timing_{t} { timer_.start(); }
-    ~ScopedTimer() {
-        timer_.stop();
-        timing_ += timer_;
-    }
-};
-
 //--------------------------------------------------------------------------------------------------
 
 class Action : private eckit::NonCopyable {

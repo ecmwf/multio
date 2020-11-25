@@ -4,7 +4,7 @@ group : world
 serverCount : 3
 clientCount : 5
 
-activeFields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethick_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
+activeFields : [ lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, runoffs, soce, ssh, sss, sst, ssu, ssv, ssw, toce, uoce, voce, woce ]
 
 plans :
 
@@ -36,7 +36,7 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 31d
+        output_frequency: 1d
         operations:
           - average
 
@@ -60,7 +60,7 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 1d
+        output_frequency: 3h
         operations:
           - average
 
@@ -84,7 +84,7 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 1d
+        output_frequency: 3h
         operations:
           - average
 

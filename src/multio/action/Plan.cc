@@ -17,6 +17,7 @@
 
 #include "multio/action/Action.h"
 #include "multio/LibMultio.h"
+#include "multio/util/ScopedTimer.h"
 
 using eckit::LocalConfiguration;
 
@@ -64,7 +65,7 @@ Plan::~Plan() {
 }
 
 void Plan::process(message::Message msg) {
-    ScopedTimer timer{timing_};
+    util::ScopedTimer timer{timing_};
     root_->execute(msg);
 }
 

@@ -21,7 +21,8 @@ extern "C" {
 #include <maestro.h>
 }
 
-#include "multio/action/Action.h"
+#include "eckit/log/Statistics.h"
+
 #include "multio/sink/DataSink.h"
 
 //--------------------------------------------------------------------------------------------------

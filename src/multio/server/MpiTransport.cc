@@ -15,6 +15,8 @@
 #include "eckit/maths/Functions.h"
 #include "eckit/serialisation/MemoryStream.h"
 
+#include "multio/util/ScopedTimer.h"
+
 namespace multio {
 namespace server {
 
@@ -50,7 +52,19 @@ MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
     buffer_{0} {}
 
+MpiTransport::~MpiTransport() {
+    std::ostringstream os;
+    os << " ******* " << *this << std::endl
+       << "         -- Total wall-clock time spent sending data: " << sendTiming_ << "s"
+       << std::endl
+       << "         -- Total wall-clock time spent receiving data: " << receiveTiming_ << "s"
+       << std::endl;
+    eckit::Log::info() << os.str();
+}
+
 Message MpiTransport::receive() {
+    util::ScopedTimer scTimer{receiveTiming_};
+
     const auto& comm = eckit::mpi::comm(local_.group().c_str());
 
     auto status = comm.probe(comm.anySource(), comm.anyTag());
@@ -65,6 +79,7 @@ Message MpiTransport::receive() {
 }
 
 void MpiTransport::send(const Message& msg) {
+    util::ScopedTimer scTimer{sendTiming_};
 
     auto msg_tag = static_cast<int>(msg.tag());
 
@@ -85,7 +100,7 @@ Peer MpiTransport::localPeer() const {
 }
 
 void MpiTransport::print(std::ostream& os) const {
-    os << "MpiTransport()";
+    os << "MpiTransport(" << local_ << ")";
 }
 
 static TransportBuilder<MpiTransport> MpiTransportBuilder("mpi");

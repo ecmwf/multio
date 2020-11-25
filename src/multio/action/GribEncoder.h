@@ -39,11 +39,12 @@ public:
     message::Message encodeLongitudes(const std::string& subtype);
 
     message::Message encodeField(const message::Message& msg);
+    message::Message encodeField(const message::Metadata& md, const double* data, size_t sz);
 
 private:
-
-    void setOceanMetadata(const message::Message& msg);
+    void setOceanMetadata(const message::Metadata& metadata);
     message::Message setFieldValues(const  message::Message& msg);
+    message::Message setFieldValues(const double* values, size_t count);
 
     const std::string gridType_;
 

@@ -64,7 +64,18 @@ void Encode::execute(Message msg) const {
                              << std::endl;
 
     if (encoder_->gridInfoReady(msg.domain())) {
-        executeNext(encoder_->encodeField(msg));
+        auto levelCount = msg.metadata().getLong("levelCount", 1);
+        if (levelCount == 1) {
+            executeNext(encoder_->encodeField(msg));
+        } else {
+            auto metadata = msg.metadata();
+            auto data = reinterpret_cast<const double*>(msg.payload().data());
+            for (auto lev = 0; lev != levelCount;) {
+                metadata.set("level", ++lev);
+                executeNext(encoder_->encodeField(metadata, data, msg.globalSize()));
+                data += msg.globalSize();
+            }
+        }
     }
     else {
         eckit::Log::info() << "*** Grid metadata: " << msg.metadata() << std::endl;

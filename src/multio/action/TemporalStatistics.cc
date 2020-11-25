@@ -101,10 +101,9 @@ std::map<std::string, eckit::Buffer> TemporalStatistics::compute(const message::
 }
 
 void TemporalStatistics::reset(const message::Message& msg) {
-    statistics_ = reset_statistics(opNames_, msg.globalSize());
+    statistics_ = reset_statistics(opNames_, msg.size() / sizeof(double));
     resetPeriod(msg);
-    LOG_DEBUG_LIB(LibMultio) << " ------ Resetting statistics for temporal type " << *this
-                             << std::endl;
+    eckit::Log::info() << " ------ Resetting statistics for temporal type " << *this << std::endl;
 }
 
 //-------------------------------------------------------------------------------------------------

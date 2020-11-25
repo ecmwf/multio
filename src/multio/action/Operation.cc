@@ -50,7 +50,9 @@ void Instant::print(std::ostream& os) const {
 
 //===============================================================================
 
-Average::Average(const std::string& name, long sz) : Operation{name, sz} {}
+Average::Average(const std::string& name, long sz) : Operation{name, sz} {
+    eckit::Log::info() << *this << " is created with size " << sz << std::endl;
+}
 
 const std::vector<double>& Average::compute() {
     for(auto& val : values_) {
@@ -65,7 +67,9 @@ const std::vector<double>& Average::compute() {
 }
 
 void Average::update(const double* val, long sz) {
-    ASSERT(values_.size() == static_cast<size_t>(sz));
+    std::ostringstream os;
+    os << "Expected size: " << values_.size() << " -- actual size: " << sz << std::endl;
+    ASSERT_MSG(values_.size() == static_cast<size_t>(sz), os.str());
 
     for (auto& v : values_) {
         v += *val++;

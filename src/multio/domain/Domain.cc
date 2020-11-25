@@ -74,11 +74,11 @@ void Structured::to_global(const message::Message& local, message::Message& glob
     auto data_nj = definition_[10];
     // auto data_dim = definition_[6]; -- Unused here
 
-    ASSERT(sizeof(double) * ni_global * nj_global == global.size());
+    ASSERT(sizeof(double) * ni_global * nj_global * levelCount == global.size());
     std::ostringstream os;
     os << "Local size is " << local.payload().size() / levelCount / sizeof(double)
        << " while it is expected to equal " << data_ni << " times " << data_nj << std::endl;
-    ASSERT_MSG(sizeof(double) * data_ni * data_nj == local.payload().size(), os.str());
+    ASSERT_MSG(sizeof(double) * data_ni * data_nj * levelCount == local.size(), os.str());
 
     auto lit = static_cast<const double*>(local.payload().data());
     auto git = static_cast<double*>(global.payload().data());

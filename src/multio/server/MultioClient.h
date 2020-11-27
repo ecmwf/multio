@@ -41,12 +41,9 @@ public:
 
     void closeConnections() const;
 
-    void sendDomain(const std::string& name, const std::string& category,
-                    const eckit::Buffer& domain);
+    void sendDomain(message::Metadata metadata, eckit::Buffer&& domain);
 
-    void sendField(const std::string& name, const std::string& category, size_t gl_size,
-                   const std::string& domain, const message::Metadata& metadata,
-                   eckit::Buffer&& field, bool to_all_servers = false);
+    void sendField(message::Metadata metadata, eckit::Buffer&& field, bool to_all_servers = false);
 
     void sendStepComplete() const;
 

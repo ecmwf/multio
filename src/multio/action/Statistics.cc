@@ -73,9 +73,7 @@ void Statistics::execute(message::Message msg) const {
         md.set("operation", stat.first);
         message::Message newMsg{
             message::Message::Header{message::Message::Tag::Statistics, msg.source(),
-                                     msg.destination(), msg.name(), msg.category(),
-                                     msg.domainCount(), msg.globalSize(), msg.domain(),
-                                     message::to_string(md)},
+                                     msg.destination(), message::Metadata{md}},
             std::move(stat.second)};
 
         executeNext(newMsg);

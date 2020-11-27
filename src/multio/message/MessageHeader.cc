@@ -16,19 +16,19 @@
 namespace multio {
 namespace message {
 
-Message::Header::Header(Tag tag, Peer src, Peer dst, const std::string& nm, const std::string& cat,
-                        size_t cnt, size_t fsz, const std::string& dom, const std::string& fid) :
+Message::Header::Header(Tag tag, Peer src, Peer dst, std::string&& fieldId) :
+    tag_{tag},
+        source_{std::move(src)},
+        destination_{std::move(dst)},
+        metadata_{message::to_metadata(fieldId)},
+        fieldId_{std::move(fieldId)} {}
+
+Message::Header::Header(Tag tag, Peer src, Peer dst, Metadata&& md) :
     tag_{tag},
     source_{std::move(src)},
     destination_{std::move(dst)},
-    name_{nm},
-    category_{cat},
-    domainCount_{cnt},
-    globalSize_{fsz},
-    domain_{dom},
-    fieldId_{fid} {
-    setMetadata();
-}
+    metadata_{std::move(md)},
+    fieldId_{message::to_string(metadata_)} {}
 
 Message::Tag Message::Header::tag() const {
     return tag_;
@@ -42,24 +42,28 @@ Peer Message::Header::destination() const {
     return destination_;
 }
 
-const std::string& Message::Header::name() const {
-    return name_;
+const Metadata& Message::Header::metadata() const {
+    return metadata_;
 }
 
-const std::string& Message::Header::category() const {
-    return category_;
+std::string Message::Header::name() const {
+    return metadata_.getString("name");
+}
+
+std::string Message::Header::category() const {
+    return metadata_.getString("category");
 }
 
 size_t Message::Header::domainCount() const {
-    return domainCount_;
+    return metadata_.getUnsigned("domainCount");
 }
 
-size_t Message::Header::globalSize() const {
-    return globalSize_;
+long Message::Header::globalSize() const {
+    return metadata_.getLong("globalSize");
 }
 
-const std::string& Message::Header::domain() const {
-    return domain_;
+std::string Message::Header::domain() const {
+    return metadata_.getString("domain");
 }
 
 const std::string& Message::Header::fieldId() const {
@@ -75,36 +79,7 @@ void Message::Header::encode(eckit::Stream& strm) const {
     strm << destination_.group();
     strm << destination_.id();
 
-    strm << name_;
-    strm << category_;
-
-    strm << domainCount_;
-    strm << globalSize_;
-
-    strm << domain_;
     strm << fieldId_;
-}
-
-void Message::Header::decode(eckit::Stream& strm) {
-    strm >> name_;
-    strm >> category_;
-
-    strm >> domainCount_;
-    strm >> globalSize_;
-
-    strm >> domain_;
-    strm >> fieldId_;
-
-    setMetadata();
-}
-
-const Metadata& Message::Header::metadata() const {
-    return metadata_;
-}
-
-void Message::Header::setMetadata() {
-    const eckit::Configuration& config = eckit::YAMLConfiguration{fieldId_};
-    metadata_ = Metadata{config};
 }
 
 }  // namespace message

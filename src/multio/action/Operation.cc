@@ -50,9 +50,7 @@ void Instant::print(std::ostream& os) const {
 
 //===============================================================================
 
-Average::Average(const std::string& name, long sz) : Operation{name, sz} {
-    eckit::Log::info() << *this << " is created with size " << sz << std::endl;
-}
+Average::Average(const std::string& name, long sz) : Operation{name, sz} {}
 
 const std::vector<double>& Average::compute() {
     for(auto& val : values_) {

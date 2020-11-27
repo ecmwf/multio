@@ -127,24 +127,27 @@ public:
 
     void setDomain(const std::string& dname, const int* data, size_t bytes) {
         eckit::Buffer domain_def{reinterpret_cast<const char*>(data), bytes};
-        client().sendDomain(dname, "structured", domain_def);
+        Metadata md;
+        md.set("name", dname);
+        md.set("category", "structured");
+        md.set("domainCount", clientCount_);
+        client().sendDomain(std::move(md), std::move(domain_def));
     }
 
     void writeField(const std::string& fname, const double* data, size_t bytes,
                     bool to_all_servers = false) {
         ASSERT(isActive(fname));
 
+        metadata_.set("name", fname);
         metadata_.set("nemoParam", fname);
         metadata_.set("param", paramMap_.get(fname).param);
         metadata_.set("gridSubtype", paramMap_.get(fname).gridType);
-
-        auto gl_size = static_cast<size_t>(metadata_.getInt("globalSize"));
+        metadata_.set("domainCount", clientCount_);
+        metadata_.set("domain", paramMap_.get(fname).gridType);
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 
-        MultioNemo::instance().client().sendField(fname, metadata_.getString("category"), gl_size,
-                                                  paramMap_.get(fname).gridType, metadata_,
-                                                  std::move(field_vals), to_all_servers);
+        MultioNemo::instance().client().sendField(metadata_, std::move(field_vals), to_all_servers);
     }
 
     bool useServer() const {

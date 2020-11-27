@@ -54,6 +54,11 @@ void Action::executeNext(message::Message msg) const {
     }
 }
 
+std::ostream& operator<<(std::ostream& os, const Action& a) {
+    a.print(os);
+    return os;
+}
+
 //---------------------------------------------------------------------------------------------------------------
 
 ActionFactory& ActionFactory::instance() {

@@ -40,29 +40,25 @@ void MultioClient::closeConnections() const {
     }
 }
 
-void MultioClient::sendDomain(const std::string& name, const std::string& category,
-                              const eckit::Buffer& domain) {
+void MultioClient::sendDomain(message::Metadata metadata, eckit::Buffer&& domain) {
     Peer client = transport_->localPeer();
     for (auto& server : serverPeers_) {
-        Message msg{
-            Message::Header{Message::Tag::Domain, client, *server, name, category, clientCount_},
-            domain};
+        Message msg{Message::Header{Message::Tag::Domain, client, *server, std::move(metadata)},
+                    std::move(domain)};
 
         transport_->send(msg);
     }
 }
 
-void MultioClient::sendField(const std::string& name, const std::string& category, size_t gl_size,
-                             const std::string& domain, const message::Metadata& metadata,
-                             eckit::Buffer&& field, bool to_all_servers) {
+void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,
+                             bool to_all_servers) {
     Peer client = transport_->localPeer();
     std::string field_id = message::to_string(metadata);
 
     if (to_all_servers) {
         for (auto& server : serverPeers_) {
-            Message msg{Message::Header{Message::Tag::Field, client, *server, name, category,
-                                        clientCount_, gl_size, domain, field_id},
-                        field};
+            Message msg{Message::Header{Message::Tag::Field, client, *server, std::move(metadata)},
+                        std::move(field)};
 
             transport_->send(msg);
         }
@@ -75,9 +71,9 @@ void MultioClient::sendField(const std::string& name, const std::string& categor
         auto id = std::hash<std::string>{}(os.str()) % serverCount_;
         ASSERT(id < serverPeers_.size());
 
-        Message msg{Message::Header{Message::Tag::Field, client, *serverPeers_[id], name, category,
-                                    clientCount_, gl_size, domain, field_id},
-                    std::move(field)};
+        Message msg{
+            Message::Header{Message::Tag::Field, client, *serverPeers_[id], std::move(metadata)},
+            std::move(field)};
 
         transport_->send(msg);
     }

@@ -47,7 +47,7 @@ void FileSink::write(eckit::message::Message msg) {
 }
 
 void FileSink::flush() {
-    std::cout << "Flush is called..." << std::endl;
+    eckit::Log::info() << "Flush is called..." << std::endl;
     handle_->flush();
 }
 

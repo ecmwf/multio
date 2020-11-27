@@ -45,7 +45,6 @@ GridInfo::GridInfo() {}
 
 void GridInfo::setSubtype(const std::string& subtype) {
     if (gridSubtype_.empty()) {
-        eckit::Log::info() << "*** Setting subtype " << std::endl;
         gridSubtype_ = subtype;
     }
 
@@ -55,15 +54,11 @@ void GridInfo::setSubtype(const std::string& subtype) {
 void GridInfo::setLatitudes(message::Message msg) {
     ASSERT(latitudes_.size() == 0);
 
-    eckit::Log::info() << "*** Setting latitudes " << std::endl;
-
     latitudes_ = msg;
 }
 
 void GridInfo::setLongitudes(message::Message msg) {
     ASSERT(longitudes_.size() == 0);
-
-    eckit::Log::info() << "*** Setting longitudes " << std::endl;
 
     longitudes_ = msg;
 }

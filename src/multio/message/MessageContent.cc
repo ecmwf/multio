@@ -21,7 +21,7 @@ Message::Content::Content(Header&& header, eckit::Buffer&& payload) :
     header_{std::move(header)},
     payload_{std::move(payload)} {}
 
-Message::Header& Message::Content::header() {
+const Message::Header& Message::Content::header() {
     return header_;
 };
 

@@ -134,7 +134,7 @@ CASE("test_multio_with_event_trigger") {
                     json.endObject();
                 }(json);
 
-                std::cout << "JSON content: " << os.str() << std::endl;
+                eckit::Log::info() << "JSON content: " << os.str() << std::endl;
 
                 message::Metadata md{eckit::YAMLConfiguration{os.str()}};
                 eckit::message::Message msg{

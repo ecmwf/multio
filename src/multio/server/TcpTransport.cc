@@ -37,11 +37,18 @@ Message decodeMessage(eckit::Stream& stream) {
     size_t dest_id;
     stream >> dest_id;
 
-    Message msg{Message::Header{static_cast<Message::Tag>(t), TcpPeer{src_grp, src_id},
-                                TcpPeer{dest_grp, dest_id}}};
-    msg.decode(stream);
+    std::string fieldId;
+    stream >> fieldId;
 
-    return msg;
+    unsigned long sz;
+    stream >> sz;
+
+    eckit::Buffer buffer(sz);
+    stream >> buffer;
+
+    return Message{Message::Header{static_cast<Message::Tag>(t), TcpPeer{src_grp, src_id},
+                                TcpPeer{dest_grp, dest_id}, std::move(fieldId)},
+                std::move(buffer)};
 }
 }  // namespace
 

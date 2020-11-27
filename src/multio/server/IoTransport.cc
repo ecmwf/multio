@@ -21,6 +21,7 @@
 #include "multio/server/ConfigurationPath.h"
 #include "multio/server/ThreadTransport.h"
 
+using multio::LibMultio;
 using multio::server::Listener;
 using multio::message::Message;
 using multio::message::Metadata;
@@ -67,7 +68,7 @@ private:
     ~IoTransport() {
         if (listenerThread_.joinable()) {
             listenerThread_.join();
-            std::cout << "*** Joined thread" << std::endl;
+            LOG_DEBUG_LIB(LibMultio) << "*** Joined thread" << std::endl;
         }
     }
 
@@ -103,7 +104,7 @@ public:
         isOpen_ = false;
     }
 
-    void setDimensions(size_t nClient, size_t nServer, size_t glFieldSize) {
+    void setDimensions(size_t nClient, size_t nServer, long glFieldSize) {
         clientCount_ = nClient;
         serverCount_ = nServer;
         globalSize_ = glFieldSize;
@@ -211,14 +212,13 @@ void send_multio_grib_template_(const void* grib_msg, fortint *words) {
     Peer server{"thread",
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
-    std::string field_id = multio::message::to_string(IoTransport::instance().metadata());
+    Metadata md{IoTransport::instance().metadata()};
+    md.set("domainCount", IoTransport::instance().clientCount());
+    md.set("globalSize", IoTransport::instance().globalSize());
+    Message msg{Message::Header{Message::Tag::Grib, client, server, std::move(md)},
+                std::move(buffer)};
 
-    Message msg{Message::Header{Message::Tag::Grib, client, server, "", "",
-                                IoTransport::instance().clientCount(),
-                                IoTransport::instance().globalSize(), "", field_id},
-                buffer};
-
-    std::cout << "*** Sending message from " << msg.source() << " to " << msg.destination()
+    LOG_DEBUG_LIB(LibMultio) << "*** Sending message from " << msg.source() << " to " << msg.destination()
               << std::endl;
 
     IoTransport::instance().transport().send(msg);
@@ -226,27 +226,30 @@ void send_multio_grib_template_(const void* grib_msg, fortint *words) {
 
 void send_multio_mapping_(const void* in_ptr, fortint* words, const char* name, int name_len) {
     std::string mapping_name{name, name + name_len};
-    std::cout << " ***** Address: " << in_ptr << ", size = " << *words
+    LOG_DEBUG_LIB(LibMultio) << " ***** Address: " << in_ptr << ", size = " << *words
               << ", mapping_name = " << mapping_name << ", name_len = " << name_len << std::endl;
 
     auto nb_clients = IoTransport::instance().clientCount();
 
     const char* ptr = (const char*)(in_ptr);
     auto len = ((*words) / nb_clients) * sizeof(fortint);
-    for (int ii = 0; ii != nb_clients; ++ii) {
+    for (size_t ii = 0; ii != nb_clients; ++ii) {
         Peer client = IoTransport::instance().transport().localPeer();
         Peer server{"thread", std::hash<std::thread::id>{}(
                                   IoTransport::instance().listenerThread().get_id())};
 
         eckit::Buffer buffer{ptr, len};
 
-        Message msg{Message::Header{Message::Tag::Domain, client, server, mapping_name,
-                                    "unstructured", nb_clients},
-                    buffer};
-
-        std::cout << "Rank " << ii + 1 << ": local-to-global mapping = ";
+        LOG_DEBUG_LIB(LibMultio) << "Rank " << ii + 1 << ": local-to-global mapping = ";
         print_buffer((int*)(ptr), len / sizeof(fortint));
-        std::cout << std::endl;
+        LOG_DEBUG_LIB(LibMultio) << std::endl;
+
+        Metadata md;
+        md.set("name", mapping_name);
+        md.set("category", "unstructured");
+        md.set("domainCount", nb_clients);
+        Message msg{Message::Header{Message::Tag::Domain, client, server, std::move(md)},
+                    std::move(buffer)};
 
         IoTransport::instance().transport().send(msg);
 
@@ -256,11 +259,11 @@ void send_multio_mapping_(const void* in_ptr, fortint* words, const char* name, 
 
 void send_multio_field_(const double* data, fortint* size, const char* name, const char* cat,
                         fortint name_len, fortint cat_len) {
-    std::cout << " ***** Field metadata = " << IoTransport::instance().metadata() << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " ***** Field metadata = " << IoTransport::instance().metadata() << std::endl;
 
-    std::cout << " ***** Field data = ";
+    LOG_DEBUG_LIB(LibMultio) << " ***** Field data = ";
     print_buffer(data, *size);
-    std::cout << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << std::endl;
 
     Peer client = IoTransport::instance().transport().localPeer();
     Peer server{"thread",
@@ -273,10 +276,16 @@ void send_multio_field_(const double* data, fortint* size, const char* name, con
     std::string field_id = multio::message::to_string(IoTransport::instance().metadata());
 
     auto gribName = IoTransport::instance().metadata().getString("param");
-    Message msg{Message::Header{Message::Tag::Field, client, server, gribName, category,
-                                IoTransport::instance().clientCount(),
-                                IoTransport::instance().globalSize(), domain_name, field_id},
-                buffer};
+
+
+    Metadata md{IoTransport::instance().metadata()};
+    md.set("name", md.getString("param"));
+    md.set("category", category);
+    md.set("globalSize", IoTransport::instance().globalSize());
+    md.set("domainCount", IoTransport::instance().clientCount());
+    md.set("domain", domain_name);
+    Message msg{Message::Header{Message::Tag::Field, client, server, std::move(md)},
+                std::move(buffer)};
 
     IoTransport::instance().transport().send(msg);
 }

@@ -56,10 +56,7 @@ private:
 
     virtual void print(std::ostream &os) const = 0;
 
-    friend std::ostream& operator<<(std::ostream& os, const Action& a) {
-        a.print(os);
-        return os;
-    }
+    friend std::ostream& operator<<(std::ostream& os, const Action& a);
 };
 
 //--------------------------------------------------------------------------------------------------

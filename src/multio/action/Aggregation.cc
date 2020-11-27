@@ -42,8 +42,6 @@ bool Aggregation::handleField(const Message& msg) const {
 }
 
 bool Aggregation::handleFlush(const Message& msg) const {
-    eckit::Log::debug<LibMultio>() << "*** Aggregating flush messages: " << *this << std::endl;
-
     // Initialise if need be
     if (flushes_.find(msg.domain()) == end(flushes_)) {
         flushes_[msg.domain()] = 0;
@@ -55,6 +53,7 @@ bool Aggregation::handleFlush(const Message& msg) const {
 bool Aggregation::allPartsArrived(const Message& msg) const {
   LOG_DEBUG_LIB(LibMultio) << " *** Number of messages for field " << msg.fieldId()
                            << " are " << messages_.at(msg.fieldId()).size() << std::endl;
+
   return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
          (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
 }

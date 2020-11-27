@@ -21,6 +21,7 @@
 #include "multio/server/ConfigurationPath.h"
 #include "multio/server/ThreadTransport.h"
 
+using multio::LibMultio;
 using multio::server::Listener;
 using multio::message::Message;
 using multio::message::Metadata;
@@ -67,7 +68,7 @@ private:
     ~IoTransport() {
         if (listenerThread_.joinable()) {
             listenerThread_.join();
-            std::cout << "*** Joined thread" << std::endl;
+            LOG_DEBUG_LIB(LibMultio) << "*** Joined thread" << std::endl;
         }
     }
 
@@ -103,7 +104,7 @@ public:
         isOpen_ = false;
     }
 
-    void setDimensions(size_t nClient, size_t nServer, size_t glFieldSize) {
+    void setDimensions(size_t nClient, size_t nServer, long glFieldSize) {
         clientCount_ = nClient;
         serverCount_ = nServer;
         globalSize_ = glFieldSize;
@@ -218,7 +219,7 @@ void send_multio_grib_template_(const void* grib_msg, fortint *words) {
                                 IoTransport::instance().globalSize(), "", field_id},
                 buffer};
 
-    std::cout << "*** Sending message from " << msg.source() << " to " << msg.destination()
+    LOG_DEBUG_LIB(LibMultio) << "*** Sending message from " << msg.source() << " to " << msg.destination()
               << std::endl;
 
     IoTransport::instance().transport().send(msg);
@@ -226,7 +227,7 @@ void send_multio_grib_template_(const void* grib_msg, fortint *words) {
 
 void send_multio_mapping_(const void* in_ptr, fortint* words, const char* name, int name_len) {
     std::string mapping_name{name, name + name_len};
-    std::cout << " ***** Address: " << in_ptr << ", size = " << *words
+    LOG_DEBUG_LIB(LibMultio) << " ***** Address: " << in_ptr << ", size = " << *words
               << ", mapping_name = " << mapping_name << ", name_len = " << name_len << std::endl;
 
     auto nb_clients = IoTransport::instance().clientCount();
@@ -256,11 +257,11 @@ void send_multio_mapping_(const void* in_ptr, fortint* words, const char* name, 
 
 void send_multio_field_(const double* data, fortint* size, const char* name, const char* cat,
                         fortint name_len, fortint cat_len) {
-    std::cout << " ***** Field metadata = " << IoTransport::instance().metadata() << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " ***** Field metadata = " << IoTransport::instance().metadata() << std::endl;
 
-    std::cout << " ***** Field data = ";
+    LOG_DEBUG_LIB(LibMultio) << " ***** Field data = ";
     print_buffer(data, *size);
-    std::cout << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << std::endl;
 
     Peer client = IoTransport::instance().transport().localPeer();
     Peer server{"thread",

@@ -51,6 +51,10 @@ void Mappings::add(message::Message msg) {
                         std::unique_ptr<Domain>{new Structured{std::move(local_map)}});
         return;
     }
+
+    std::ostringstream os;
+    os << "Unsupported domain category" << msg.category();
+    ASSERT_MSG(false, os.str());
 }
 
 void Mappings::list(std::ostream& out) const {

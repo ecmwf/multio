@@ -29,6 +29,7 @@
 #include "multio/tools/MultioTool.h"
 #include "multio/util/print_buffer.h"
 
+using multio::LibMultio;
 using multio::message::Message;
 using multio::message::Metadata;
 using multio::domain::Domain;
@@ -485,14 +486,14 @@ void MultioHammer::testData() {
                 auto expect = global_test_field(field_id);
                 auto actual = file_content(file_name);
 
-                eckit::Log::info() << "field id = " << field_id << std::endl;
-                eckit::Log::info() << "file_name = " << file_name << std::endl;
+                LOG_DEBUG_LIB(LibMultio) << "field id = " << field_id << std::endl;
+                LOG_DEBUG_LIB(LibMultio) << "file_name = " << file_name << std::endl;
 
-                eckit::Log::debug<multio::LibMultio>() << std::endl << "Expect = ";
-                multio::print_buffer(expect, eckit::Log::info());
-                eckit::Log::debug<multio::LibMultio>() << std::endl << "Actual = ";
-                multio::print_buffer(actual, eckit::Log::info());
-                eckit::Log::debug<multio::LibMultio>() << std::endl;
+                LOG_DEBUG_LIB(LibMultio) << "Expect = ";
+                multio::print_buffer(expect, eckit::Log::debug<LibMultio>());
+                LOG_DEBUG_LIB(LibMultio) << "\nActual = ";
+                multio::print_buffer(actual, eckit::Log::debug<LibMultio>());
+                LOG_DEBUG_LIB(LibMultio) << std::endl << std::endl;
 
                 ASSERT(expect == actual);
 

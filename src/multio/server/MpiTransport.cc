@@ -53,21 +53,18 @@ MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     buffer_{0} {}
 
 MpiTransport::~MpiTransport() {
-    std::ostringstream os;
-    os << " ******* " << *this << std::endl
-       << "         -- Total wall-clock time spent sending data: " << sendTiming_ << "s"
-       << std::endl
-       << "         -- Total wall-clock time spent receiving data: " << receiveTiming_ << "s"
-       << std::endl;
-    eckit::Log::info() << os.str();
+    eckit::Log::info() << " ******* " << *this
+                       << "\n         -- Total wall-clock time spent sending data: " << sendTiming_
+                       << "s\n         -- Total wall-clock time spent receiving data: "
+                       << receiveTiming_ << "s" << std::endl;
 }
 
 Message MpiTransport::receive() {
-    util::ScopedTimer scTimer{receiveTiming_};
-
     const auto& comm = eckit::mpi::comm(local_.group().c_str());
 
     auto status = comm.probe(comm.anySource(), comm.anyTag());
+
+    util::ScopedTimer scTimer{receiveTiming_};
 
     buffer_.resize(eckit::round(comm.getCount<void>(status), 8));
 
@@ -79,8 +76,6 @@ Message MpiTransport::receive() {
 }
 
 void MpiTransport::send(const Message& msg) {
-    util::ScopedTimer scTimer{sendTiming_};
-
     auto msg_tag = static_cast<int>(msg.tag());
 
     // Add 4K for header/footer etc. Should be plenty
@@ -92,6 +87,9 @@ void MpiTransport::send(const Message& msg) {
 
     auto sz = static_cast<size_t>(stream.bytesWritten());
     auto dest = static_cast<int>(msg.destination().id());
+
+    util::ScopedTimer scTimer{sendTiming_};
+
     eckit::mpi::comm(local_.group().c_str()).send<void>(buffer_, sz, dest, msg_tag);
 }
 

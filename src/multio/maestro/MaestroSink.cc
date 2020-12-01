@@ -141,7 +141,7 @@ void MaestroSink::flush() {
 }
 
 void MaestroSink::print(std::ostream& os) const {
-    os << "MaestroSink using libmaestro version: " << mstro_version();
+    os << "MaestroSink(libmaestro version " << mstro_version() << ")";
 }
 
 static DataSinkBuilder<MaestroSink> MaestroSinkBuilder("maestro");

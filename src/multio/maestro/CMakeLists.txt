@@ -5,6 +5,10 @@ ecbuild_add_library(
     SOURCES
         MaestroSink.cc
         MaestroSink.h
+        MaestroSelector.cc
+        MaestroSelector.h
+        MaestroSubscription.cc
+        MaestroSubscription.h
 
     CONDITION
         HAVE_MAESTRO

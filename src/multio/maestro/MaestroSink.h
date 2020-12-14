@@ -11,7 +11,6 @@
 /// @author Domokos Sarmany
 /// @date   Apr 2020
 
-
 #ifndef multio_MaestroSink_H
 #define multio_MaestroSink_H
 

@@ -137,7 +137,6 @@ ecbuild_add_library(
     PUBLIC_LIBS
         metkit eckit )
 
-add_subdirectory(grib)
 add_subdirectory(fdb5)
 add_subdirectory(maestro)
 add_subdirectory(server)

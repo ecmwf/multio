@@ -17,7 +17,7 @@
 # If found, the maestro target will be created.
 
 find_path(MAESTRO_INCLUDE_DIR
-    NAMES maestro-core/maestro.h
+    NAMES maestro/maestro.h
     HINTS
         ${MAESTRO_ROOT}
         ${MAESTRO_DIR}
@@ -28,7 +28,7 @@ find_path(MAESTRO_INCLUDE_DIR
     PATH_SUFFIXES include
 )
 
-set( MAESTRO_INCLUDE_DIR ${MAESTRO_INCLUDE_DIR}/maestro-core )
+set( MAESTRO_INCLUDE_DIR ${MAESTRO_INCLUDE_DIR}/maestro )
 
 find_library(MAESTRO_LIBRARY
     NAMES maestro

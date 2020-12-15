@@ -36,6 +36,7 @@ ecbuild_add_test( TARGET       test_multio_hammer_none
                   COMMAND      $<TARGET_FILE:multio-hammer>
                   TEST_DEPENDS multio_hammer_get_test_data
                   ARGS         ${_hammer_test_data} --transport=none
+                  MPI          1
                   ENVIRONMENT  "${_test_environment}" )
 
 list( APPEND _nemo_test_data

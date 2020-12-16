@@ -7,8 +7,10 @@ extern "C" {
 
 #include "eckit/log/Log.h"
 #include "eckit/option/SimpleOption.h"
+#include "eckit/log/Statistics.h"
 
 #include "multio/tools/MultioTool.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 
@@ -29,6 +31,8 @@ private:
 
     std::string reqFile_ = "";
     std::vector<mstro_cdo> requiredCdos_;
+    unsigned cdoEventCount_ = 0;
+    eckit::Timing timing_;
 };
 
 MaestroSyphon::MaestroSyphon(int argc, char** argv) : multio::MultioTool(argc, argv) {
@@ -108,28 +112,30 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
             ASSERT(s == MSTRO_OK);
             // eckit::Log::info() << " *** Polling CDO events" << std::endl;
             if(event) {
-                eckit::Log::info() << " *** CDO event occured " << std::endl;
+                ++cdoEventCount_;
+                util::ScopedTimer timer{timing_};
+                // eckit::Log::info() << " *** CDO event occured " << std::endl;
                 mstro_pool_event tmp = event;
                 while (tmp) {
                     switch(tmp->kind) {
                     case MSTRO_POOL_EVENT_OFFER: {
-                        eckit::Log::info()
-                            << " *** CDO event " << mstro_pool_event_description(tmp->kind)
-                            << " require is being posted for " << tmp->offer.cdo_name << std::endl;
+                        // eckit::Log::info()
+                        //     << " *** CDO event " << mstro_pool_event_description(tmp->kind)
+                        //     << " require is being posted for " << tmp->offer.cdo_name << std::endl;
                         mstro_cdo cdo = nullptr;
                         s = mstro_cdo_declare(tmp->offer.cdo_name, MSTRO_ATTR_DEFAULT, &cdo);
                         ASSERT(s == MSTRO_OK);
-                        eckit::Log::info() << " *** Require " << std::endl;
-//                        s = mstro_cdo_require(cdo);
-//                        ASSERT(s == MSTRO_OK);
+                        // eckit::Log::info() << " *** Require " << std::endl;
+                        // s = mstro_cdo_require(cdo);
+                        // ASSERT(s == MSTRO_OK);
 //                        requiredCdos_.push_back(cdo);
 //                        eckit::Log::info() << " *** Demand " << std::endl;
 //                        s = mstro_cdo_demand(cdo);
 //                        ASSERT(s == MSTRO_OK);
 
-//                        eckit::Log::info() << " *** Retract " << std::endl;
-//                        s = mstro_cdo_retract(cdo);
-//                        ASSERT(s == MSTRO_OK);
+                        // eckit::Log::info() << " *** Retract " << std::endl;
+                        // s = mstro_cdo_retract(cdo);
+                        // ASSERT(s == MSTRO_OK);
 
 //                        eckit::Log::info() << " *** Attribute get " << std::endl;
 
@@ -157,6 +163,9 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
             }
         }
     }
+
+    eckit::Log::info() << " MaestroSyphon: detected " << cdoEventCount_
+                       << " cdo events -- it has taken " << timing_.elapsed_ << "s" << std::endl;
 
 //    std::for_each(begin(requiredCdos_), end(requiredCdos_), [](mstro_cdo cdo) {
 //        mstro_status s = mstro_cdo_retract(cdo);

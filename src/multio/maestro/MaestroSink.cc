@@ -90,8 +90,6 @@ void MaestroSink::write(eckit::message::Message blob) {
 
 LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
 
-util::ScopedTimer timer{timing_};
-
 Metadata md;
 
 eckit::message::TypedSetter<Metadata> setter{md};
@@ -100,14 +98,19 @@ blob.getMetadata(setter);
 std::ostringstream os;
 os << md;
 
+util::ScopedTimer timer{timing_};
+
 mstro_cdo cdo = nullptr;
-mstro_status s = mstro_cdo_declare(os.str().c_str(), MSTRO_ATTR_DEFAULT, &cdo);
+mstro_status s;
+s = mstro_cdo_declare(os.str().c_str(), MSTRO_ATTR_DEFAULT, &cdo);
 
 const void* cbuf = blob.data();
 void* buf = const_cast<void*>(cbuf);
+
 s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.raw-ptr", buf);
 
 auto sz = blob.length();
+
 s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.scope.local-size", &sz);
 
 LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
@@ -122,9 +125,10 @@ for (const auto& kw : md.keys()) {
     s = mstro_cdo_attribute_set(cdo, mkey.c_str(), &mvalue);
 }
 
-s = mstro_cdo_declaration_seal(cdo);  // Seal it after setting all attributes
+s = mstro_cdo_seal(cdo);  // Seal it after setting all attributes
 
-std::cout << " *** Offer cdo " << os.str().c_str() << std::endl;
+// std::cout << " *** Offer cdo " << os.str().c_str() << std::endl;
+
 s = mstro_cdo_offer(cdo);  // Submit field
 
 offered_cdos_.push_back(cdo);
@@ -132,13 +136,12 @@ offered_cdos_.push_back(cdo);
 
 void MaestroSink::flush() {
     {
-        util::ScopedTimer timer{timing_};
         LOG_DEBUG_LIB(LibMultio) << "MaestroSink::flush()" << std::endl;
 
+        util::ScopedTimer timer{timing_};
         std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo) {
-            mstro_status s = mstro_cdo_withdraw(cdo);
-//            s = mstro_cdo_dispose(cdo);
-            ASSERT(s == MSTRO_OK);
+            mstro_cdo_withdraw(cdo);
+            mstro_cdo_dispose(cdo);
         });
 
         offered_cdos_.clear();

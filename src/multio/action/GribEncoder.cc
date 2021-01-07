@@ -91,7 +91,8 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("unstructuredGridType", gridType_);
 
     const auto& gridSubtype = metadata.getString("gridSubtype");
-    setValue("unstructuredGridSubtype", gridSubtype);
+    setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
+
     setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
 }
 

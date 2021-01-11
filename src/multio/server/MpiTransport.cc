@@ -75,11 +75,13 @@ Message MpiTransport::receive() {
 
     auto status = comm.probe(comm.anySource(), comm.anyTag());
 
-    util::ScopedTimer scTimer{receiveTiming_};
 
     buffer_.resize(eckit::round(comm.getCount<void>(status), 8));
 
-    comm.receive<void>(buffer_, buffer_.size(), status.source(), status.tag());
+    {
+        util::ScopedTimer scTimer{receiveTiming_};
+        comm.receive<void>(buffer_, buffer_.size(), status.source(), status.tag());
+    }
 
     eckit::ResizableMemoryStream stream{buffer_};
 

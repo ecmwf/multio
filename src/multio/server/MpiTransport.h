@@ -27,6 +27,22 @@
 namespace multio {
 namespace server {
 
+inline std::vector<eckit::ResizableBuffer> makeBuffers(std::size_t sz) {
+    std::vector<eckit::ResizableBuffer> bufs;
+    for (auto ii = 0u; ii < sz; ++ii) {
+        bufs.emplace_back(eckit::ResizableBuffer{0});
+    }
+    return bufs;
+}
+
+struct BufferList{
+    explicit BufferList(std::size_t sz) : size_{sz}, request(size_), buffer{makeBuffers(size_)} {}
+
+    std::size_t size_;
+    std::vector<eckit::mpi::Request> request;
+    std::vector<eckit::ResizableBuffer> buffer;
+};
+
 class MpiPeer : public Peer {
 public:
     MpiPeer(const std::string& comm, size_t rank);
@@ -41,15 +57,19 @@ public:
 private:
     Message receive() override;
 
-    void send(const Message& message) override;
+    void send(const Message& msg) override;
 
     void print(std::ostream& os) const override;
 
     Peer localPeer() const override;
 
+    void nonBlockingSend(const Message& msg);
+
     MpiPeer local_;
 
     eckit::ResizableBuffer buffer_;
+
+    BufferList bufList_;
 
     eckit::Timing sendTiming_;
     eckit::Timing receiveTiming_;

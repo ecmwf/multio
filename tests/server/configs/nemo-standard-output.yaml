@@ -1,6 +1,6 @@
 
 transport : mpi
-group : world
+group : nemo
 serverCount : 3
 clientCount : 5
 

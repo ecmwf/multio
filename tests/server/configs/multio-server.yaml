@@ -36,7 +36,7 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 1d
+        output_frequency: 31d
         operations:
           - average
 
@@ -60,7 +60,7 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 3h
+        output_frequency: 1d
         operations:
           - average
 
@@ -84,7 +84,7 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 3h
+        output_frequency: 1d
         operations:
           - average
 

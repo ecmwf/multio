@@ -68,8 +68,8 @@ MpiTransport::~MpiTransport() {
     std::ostringstream os;
     os << " ******* " << *this
        << "\n         -- Waiting for buffers: " << bufferWaitTiming_
-       << "s\n         -- Sending data:        " << bytesSent_ << " MiB, " << sendTiming_
-       << "s\n         -- Receiving data:      " << bytesReceived_ << " MiB, " << receiveTiming_
+       << "s\n         -- Sending data:        " << bytesSent_ / scale << " MiB, " << sendTiming_
+       << "s\n         -- Receiving data:      " << bytesReceived_ / scale << " MiB, " << receiveTiming_
        << "s" << std::endl;
 
     std::cout << os.str();

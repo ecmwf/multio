@@ -73,6 +73,10 @@ private:
 
     eckit::Timing sendTiming_;
     eckit::Timing receiveTiming_;
+    eckit::Timing bufferWaitTiming_;
+
+    std::size_t bytesSent_ = 0;
+    std::size_t bytesReceived_ = 0;
 };
 
 }  // namespace server

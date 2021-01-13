@@ -44,7 +44,7 @@ void MultioClient::sendDomain(message::Metadata metadata, eckit::Buffer&& domain
     Peer client = transport_->localPeer();
     for (auto& server : serverPeers_) {
         Message msg{Message::Header{Message::Tag::Domain, client, *server, std::move(metadata)},
-                    std::move(domain)};
+                    domain};
 
         transport_->send(msg);
     }
@@ -58,7 +58,7 @@ void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,
     if (to_all_servers) {
         for (auto& server : serverPeers_) {
             Message msg{Message::Header{Message::Tag::Field, client, *server, std::move(metadata)},
-                        std::move(field)};
+                        field};
 
             transport_->send(msg);
         }

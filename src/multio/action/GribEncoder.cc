@@ -36,6 +36,9 @@ std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
     static std::map<std::string, std::unique_ptr<GridInfo>> grids_;
     return grids_;
 }
+
+const std::map<const std::string, const long> ops_to_code{
+    {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
 }  // namespace
 
 GribEncoder::GribEncoder(codes_handle* handle, const std::string& gridType) :
@@ -79,6 +82,14 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
 
     // TODO: Nemo should set this at the beginning of the run
     setValue("date", metadata.getLong("date"));
+
+    // Statistics field
+    if (metadata.has("operation") and metadata.getString("operation") != "instant") {
+        setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));
+        setValue("typeOfTimeIncrement", 2l);
+        setValue("indicatorOfUnitForTimeRange", 1l);  // hour
+        setValue("lengthOfTimeRange", metadata.getLong("timeSpan"));
+    }
 
     // setDomainDimensions
     setValue("numberOfDataPoints", metadata.getLong("globalSize"));

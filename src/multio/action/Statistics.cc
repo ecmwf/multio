@@ -71,6 +71,8 @@ void Statistics::execute(message::Message msg) const {
     auto md = msg.metadata();
     for (auto&& stat : fieldStats_.at(os.str())->compute(msg)) {
         md.set("operation", stat.first);
+        md.set("timeUnit", timeUnit_);
+        md.set("timeSpan", timeSpan_);
         message::Message newMsg{
             message::Message::Header{message::Message::Tag::Statistics, msg.source(),
                                      msg.destination(), message::Metadata{md}},

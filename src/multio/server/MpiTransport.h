@@ -27,24 +27,25 @@
 namespace multio {
 namespace server {
 
-inline std::vector<eckit::ResizableBuffer> makeBuffers(std::size_t sz) {
+inline std::vector<eckit::ResizableBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
     std::vector<eckit::ResizableBuffer> bufs;
-    for (auto ii = 0u; ii < sz; ++ii) {
-        bufs.emplace_back(eckit::ResizableBuffer{0});
+    for (auto ii = 0u; ii < poolSize; ++ii) {
+        bufs.emplace_back(eckit::ResizableBuffer{maxBufSize});
     }
     return bufs;
 }
 
-struct BufferList{
-    explicit BufferList(std::size_t sz) : size_{sz}, request(size_), buffer{makeBuffers(size_)} {}
+struct BufferPool{
+    explicit BufferPool(size_t poolSize, size_t maxBufSize) :
+        request(poolSize), buffer{makeBuffers(poolSize, maxBufSize)} {}
 
-    std::size_t size_;
     std::vector<eckit::mpi::Request> request;
     std::vector<eckit::ResizableBuffer> buffer;
 };
 
 class MpiPeer : public Peer {
 public:
+    MpiPeer(Peer peer);
     MpiPeer(const std::string& comm, size_t rank);
 };
 
@@ -65,11 +66,25 @@ private:
 
     void nonBlockingSend(const Message& msg);
 
+    size_t findAvailableBuffer(const eckit::mpi::Comm& comm);
+
     MpiPeer local_;
 
     eckit::ResizableBuffer buffer_;
 
-    BufferList bufList_;
+    BufferPool pool_;
+
+    struct MpiStream : public eckit::ResizableMemoryStream {
+        MpiStream(eckit::mpi::Request& req, eckit::ResizableBuffer& buf) :
+            eckit::ResizableMemoryStream{buf}, req_{req}, buf_{buf} {}
+        eckit::mpi::Request& req() { return req_; }
+        eckit::ResizableBuffer& buf() const { return buf_; }
+
+        eckit::mpi::Request& req_;
+        eckit::ResizableBuffer& buf_;
+    };
+    std::map<MpiPeer, MpiStream> streams_;
+
 
     eckit::Timing sendTiming_;
     eckit::Timing receiveTiming_;

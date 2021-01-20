@@ -60,7 +60,7 @@ MpiPeer::MpiPeer(Peer peer) : Peer{peer} {}
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
     local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
-    buffer_{0},
+    buffer_{64*1024*1024},
     pool_{128, 64*1024*1024} {} // TODO: use eckit::Resource
 
 MpiTransport::~MpiTransport() {
@@ -77,21 +77,40 @@ MpiTransport::~MpiTransport() {
 }
 
 Message MpiTransport::receive() {
+
+    while (not msgPack_.empty()) {
+        auto msg = msgPack_.front();
+        msgPack_.pop();
+        return msg;
+    }
     const auto& comm = eckit::mpi::comm(local_.group().c_str());
 
     auto status = comm.probe(comm.anySource(), comm.anyTag());
 
-    buffer_.resize(eckit::round(comm.getCount<void>(status), 8));
+    auto sz = comm.getCount<void>(status);
+    ASSERT(sz < buffer_.size());
+
+    eckit::Log::info() << " *** Number of bytes received: " << sz << " to put into buffer sized "
+                       << buffer_.size() << std::endl;
 
     {
         util::ScopedTimer scTimer{receiveTiming_};
-        comm.receive<void>(buffer_, buffer_.size(), status.source(), status.tag());
+        comm.receive<void>(buffer_, sz, status.source(), status.tag());
     }
 
-    bytesReceived_ += buffer_.size();
+    bytesReceived_ += sz;
+
     eckit::ResizableMemoryStream stream{buffer_};
 
-    return decodeMessage(stream);
+    while (stream.position() < sz) {
+        auto msg = decodeMessage(stream);
+        eckit::Log::info() << " *** Next: " << msg << std::endl;
+        msgPack_.push(decodeMessage(stream));
+    }
+
+    auto msg = msgPack_.front();
+    msgPack_.pop();
+    return msg;
 }
 
 void MpiTransport::send(const Message& msg) {
@@ -127,26 +146,37 @@ void MpiTransport::nonBlockingSend(const Message& msg) {
     if (streams_.find(msg.destination()) == std::end(streams_)) {
         // Find an available buffer
         auto idx = findAvailableBuffer(comm);
-        streams_.emplace(msg.destination(), MpiStream{pool_.request[idx], pool_.buffer[idx]});
+        streams_.emplace(msg.destination(), pool_.buffer[idx]);
+        streams_.at(msg.destination()).setRequest(pool_.request[idx]);
     }
 
     auto& strm = streams_.at(msg.destination());
-    if (strm.buf().size() < strm.position() + msg.size() + 4096) {
+    if (strm.buffer().size() < strm.position() + msg.size() + 4096) {
         util::ScopedTimer scTimer{sendTiming_};
 
         auto sz = static_cast<size_t>(strm.bytesWritten());
         auto dest = static_cast<int>(msg.destination().id());
-        strm.req() = comm.iSend<void>(strm.buf(), sz, dest, msg_tag);
+        strm.request() = comm.iSend<void>(strm.buffer(), sz, dest, msg_tag);
 
         bytesSent_ += sz;
 
         streams_.erase(msg.destination());
 
         auto idx = findAvailableBuffer(comm);
-        streams_.emplace(msg.destination(), MpiStream{pool_.request[idx], pool_.buffer[idx]});
+        streams_.emplace(msg.destination(), pool_.buffer[idx]);
+        streams_.at(msg.destination()).setRequest(pool_.request[idx]);
     }
 
     msg.encode(streams_.at(msg.destination()));
+    if (msg.tag() == Message::Tag::Close) {
+        util::ScopedTimer scTimer{sendTiming_};
+        // Shadow on purpuse
+        auto& strm = streams_.at(msg.destination());
+        auto sz = static_cast<size_t>(strm.bytesWritten());
+        auto dest = static_cast<int>(msg.destination().id());
+        comm.send<void>(strm.buffer(), sz, dest, msg_tag);
+        bytesSent_ += sz;
+    }
 }
 
 size_t MpiTransport::findAvailableBuffer(const eckit::mpi::Comm& comm) {
@@ -164,6 +194,7 @@ size_t MpiTransport::findAvailableBuffer(const eckit::mpi::Comm& comm) {
         // eckit::Log::info() << " *** " << *this << " *** use available buffer idx = " << idx << std::endl;
     }
 
+    eckit::Log::info() << " *** Found available buffer with idx = " << idx << std::endl;
     return static_cast<size_t>(idx);
 }
 

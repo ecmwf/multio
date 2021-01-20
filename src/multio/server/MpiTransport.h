@@ -17,6 +17,8 @@
 #ifndef multio_server_MpiTransport_H
 #define multio_server_MpiTransport_H
 
+#include <queue>
+
 #include "eckit/io/ResizableBuffer.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/mpi/Comm.h"
@@ -75,16 +77,17 @@ private:
     BufferPool pool_;
 
     struct MpiStream : public eckit::ResizableMemoryStream {
-        MpiStream(eckit::mpi::Request& req, eckit::ResizableBuffer& buf) :
-            eckit::ResizableMemoryStream{buf}, req_{req}, buf_{buf} {}
-        eckit::mpi::Request& req() { return req_; }
-        eckit::ResizableBuffer& buf() const { return buf_; }
+        MpiStream(eckit::ResizableBuffer& buf) : eckit::ResizableMemoryStream{buf}, buf_{buf} {}
+        void setRequest(eckit::mpi::Request& req) {req_ = &req;}
+        eckit::mpi::Request& request() { return *req_; }
+        eckit::ResizableBuffer& buffer() const { return buf_; }
 
-        eckit::mpi::Request& req_;
+        eckit::mpi::Request* req_;
         eckit::ResizableBuffer& buf_;
     };
     std::map<MpiPeer, MpiStream> streams_;
 
+    std::queue<Message> msgPack_;
 
     eckit::Timing sendTiming_;
     eckit::Timing receiveTiming_;

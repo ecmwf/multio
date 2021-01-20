@@ -46,7 +46,8 @@ void Listener::listen() {
         switch (msg.tag()) {
             case Message::Tag::Open:
                 connections_.insert(msg.source());
-                LOG_DEBUG_LIB(LibMultio)
+                eckit::Log::info()
+ //               LOG_DEBUG_LIB(LibMultio)
                     << "*** OPENING connection to " << msg.source()
                     << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
                     << ", connections = " << connections_.size() << std::endl;
@@ -55,45 +56,48 @@ void Listener::listen() {
             case Message::Tag::Close:
                 connections_.erase(connections_.find(msg.source()));
                 ++closedCount_;
-                LOG_DEBUG_LIB(LibMultio)
+                eckit::Log::info()
+ //               LOG_DEBUG_LIB(LibMultio)
                     << "*** CLOSING connection to " << msg.source()
                     << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
                     << ", connections = " << connections_.size() << std::endl;
                 break;
 
             case Message::Tag::Grib:
-                LOG_DEBUG_LIB(LibMultio)
+                eckit::Log::info()
+ //               LOG_DEBUG_LIB(LibMultio)
                     << "*** Size of grib template: " << msg.size() << std::endl;
                 GribTemplate::instance().add(msg);
                 break;
 
             case Message::Tag::Domain:
-                checkConnection(msg.source());
-                LOG_DEBUG_LIB(LibMultio)
+                eckit::Log::info()
+//                LOG_DEBUG_LIB(LibMultio)
                     << "*** Number of maps: " << msg.domainCount() << std::endl;
+                checkConnection(msg.source());
                 clientCount_ = msg.domainCount();
                 domain::Mappings::instance().add(msg);
                 break;
 
             case Message::Tag::StepNotification:
-                LOG_DEBUG_LIB(LibMultio)
+                eckit::Log::info()
+//                LOG_DEBUG_LIB(LibMultio)
                     << "*** Step notification received from: " << msg.source() << std::endl;
                 break;
 
             case Message::Tag::StepComplete:
-                LOG_DEBUG_LIB(LibMultio)
+                eckit::Log::info()
+//                LOG_DEBUG_LIB(LibMultio)
                     << "*** Flush received from: " << msg.source() << std::endl;
                 msgQueue_.push(std::move(msg));
                 break;
 
             case Message::Tag::Field:
                 checkConnection(msg.source());
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Field received from: " << msg.source() << std::endl;
-                LOG_DEBUG_LIB(LibMultio)
-                    << "    Size of payload: " << msg.size() << std::endl;
-                LOG_DEBUG_LIB(LibMultio)
-                    << "    Size of   field: " << msg.size() / sizeof(double) << std::endl;
+                eckit::Log::info()
+//                LOG_DEBUG_LIB(LibMultio)
+                    << "*** Field received from: " << msg.source() << " with size "
+                    << msg.size() / sizeof(double) << std::endl;
                 msgQueue_.push(std::move(msg));
                 break;
 

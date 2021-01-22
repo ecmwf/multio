@@ -194,24 +194,14 @@ void MpiTransport::nonBlockingSend(const Message& msg) {
 }
 
 size_t MpiTransport::findAvailableBuffer() {
-    auto it = std::find_if(std::begin(pool_.status), std::end(pool_.status),
-                           [](BufferStatus st) { return st == BufferStatus::available; });
-
+    util::ScopedTimer scTimer{bufferWaitTiming_};
     int idx;
-    if (it == std::end(pool_.status)) {
-        util::ScopedTimer scTimer{bufferWaitTiming_};
-        for (auto ii = 0u; ; ++ii) {
-            idx = ii % pool_.buffer.size();
-            if (pool_.status[idx] == BufferStatus::inTransit && pool_.request[idx].test()) {
-                break;
-            }
+    for (auto ii = 0u;; ++ii) {
+        idx = ii % pool_.buffer.size();
+        if (pool_.status[idx] == BufferStatus::available ||
+            (pool_.status[idx] == BufferStatus::inTransit && pool_.request[idx].test())) {
+            break;
         }
-        pool_.status[idx] = BufferStatus::available;
-        // eckit::Log::info() << " *** " << *this << " *** use just-freed buffer idx = " << idx << std::endl;
-    }
-    else {
-        idx = std::distance(std::begin(pool_.status), it);
-        // eckit::Log::info() << " *** " << *this << " *** use available buffer idx = " << idx << std::endl;
     }
 
     eckit::Log::info() << " *** " << local_ << " -- Found available buffer with idx = " << idx

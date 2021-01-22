@@ -64,14 +64,11 @@ MpiPeer::MpiPeer(Peer peer) : Peer{peer} {}
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
     local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
-    buffer_{64*1024*1024},
-    pool_{128, 64*1024*1024} {} // TODO: use eckit::Resource
-//     buffer_{
-//         eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024)},
-//     pool_{
-//         eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", 64 * 1024 * 1024),
-//         eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024)} {
-// }  // TODO: use eckit::Resource
+    buffer_{
+        eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024)},
+    pool_{
+        eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", 128),
+        eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024)} {}
 
 MpiTransport::~MpiTransport() {
     // TODO: check why eckit::Log::info() crashes here for the clients
@@ -131,24 +128,7 @@ Message MpiTransport::receive() {
 }
 
 void MpiTransport::send(const Message& msg) {
-
     nonBlockingSend(msg);
-
-//    auto msg_tag = static_cast<int>(msg.tag());
-
-//    // Add 4K for header/footer etc. Should be plenty
-//    buffer_.resize(eckit::round(msg.size(), 8) + 4096);
-
-//    eckit::ResizableMemoryStream stream{buffer_};
-
-//    msg.encode(stream);
-
-//    auto sz = static_cast<size_t>(stream.bytesWritten());
-//    auto dest = static_cast<int>(msg.destination().id());
-
-//    util::ScopedTimer scTimer{sendTiming_};
-
-//    eckit::mpi::comm(local_.group().c_str()).send<void>(buffer_, sz, dest, msg_tag);
 }
 
 Peer MpiTransport::localPeer() const {

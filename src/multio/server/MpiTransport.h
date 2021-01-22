@@ -29,14 +29,6 @@
 namespace multio {
 namespace server {
 
-inline std::vector<eckit::ResizableBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
-    std::vector<eckit::ResizableBuffer> bufs;
-    for (auto ii = 0u; ii < poolSize; ++ii) {
-        bufs.emplace_back(eckit::ResizableBuffer{maxBufSize});
-    }
-    return bufs;
-}
-
 enum class BufferStatus : uint8_t
 {
     available,
@@ -44,13 +36,25 @@ enum class BufferStatus : uint8_t
     inTransit
 };
 
+struct MpiBuffer {
+    explicit MpiBuffer(size_t maxBufSize) : buffer{maxBufSize} {};
+    BufferStatus status = BufferStatus::available;
+    eckit::mpi::Request request;
+    eckit::ResizableBuffer buffer;
+};
+
+inline std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
+    std::vector<MpiBuffer> bufs;
+    for (auto ii = 0u; ii < poolSize; ++ii) {
+        bufs.emplace_back(maxBufSize);
+    }
+    return bufs;
+}
+
 struct BufferPool {
     explicit BufferPool(size_t poolSize, size_t maxBufSize) :
-        status(poolSize), request(poolSize), buffer{makeBuffers(poolSize, maxBufSize)} {}
-
-    std::vector<BufferStatus> status;
-    std::vector<eckit::mpi::Request> request;
-    std::vector<eckit::ResizableBuffer> buffer;
+        buffers_(makeBuffers(poolSize, maxBufSize)) {}
+    std::vector<MpiBuffer> buffers_;
 };
 
 class MpiPeer : public Peer {

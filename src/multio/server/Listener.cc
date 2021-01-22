@@ -41,7 +41,7 @@ Listener::Listener(const eckit::Configuration& config, Transport& trans) :
 void Listener::listen() {
     ScopedThread scThread{std::thread{&Dispatcher::dispatch, dispatcher_, std::ref(msgQueue_)}};
 
-    ::sleep(2);
+//    ::sleep(2);
     do {
         Message msg = transport_.receive();
 

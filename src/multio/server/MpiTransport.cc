@@ -141,7 +141,7 @@ void MpiTransport::nonBlockingSend(const Message& msg) {
     const auto& comm = eckit::mpi::comm(local_.group().c_str());
 
     std::for_each(std::begin(pool_.request), std::end(pool_.request), [](eckit::mpi::Request& req) {
-        eckit::Log::info() << (req.test() ? "free" : "used") << " ";
+        eckit::Log::info() << (req.test() ? "0" : "1");
     });
     eckit::Log::info() << std::endl;
 

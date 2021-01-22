@@ -195,14 +195,18 @@ void MpiTransport::nonBlockingSend(const Message& msg) {
 
 size_t MpiTransport::findAvailableBuffer() {
     util::ScopedTimer scTimer{bufferWaitTiming_};
-    auto it =
-        std::find_if(std::begin(pool_.buffers_), std::end(pool_.buffers_), [](MpiBuffer& buf) {
+
+    auto it = std::end(pool_.buffers_);
+    while (it == std::end(pool_.buffers_)) {
+        it = std::find_if(std::begin(pool_.buffers_), std::end(pool_.buffers_), [](MpiBuffer& buf) {
             return buf.status == BufferStatus::available ||
                    (buf.status == BufferStatus::inTransit && buf.request.test());
         });
+    }
 
-        auto idx = static_cast<size_t>(std::distance(std::begin(pool_.buffers_), it));
-        eckit::Log::info() << " *** " << local_ << " -- Found available buffer with idx = " << idx
+    auto idx = static_cast<size_t>(std::distance(std::begin(pool_.buffers_), it));
+
+    eckit::Log::info() << " *** " << local_ << " -- Found available buffer with idx = " << idx
                        << std::endl;
 
     return idx;

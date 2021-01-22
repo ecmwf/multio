@@ -78,7 +78,7 @@ private:
 
     Peer localPeer() const override;
 
-    void nonBlockingSend(const Message& msg);
+    void blockingSend(const Message& msg);
 
     size_t findAvailableBuffer();
 

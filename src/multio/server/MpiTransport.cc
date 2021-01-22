@@ -128,14 +128,6 @@ Message MpiTransport::receive() {
 }
 
 void MpiTransport::send(const Message& msg) {
-    nonBlockingSend(msg);
-}
-
-Peer MpiTransport::localPeer() const {
-    return local_;
-}
-
-void MpiTransport::nonBlockingSend(const Message& msg) {
     auto msg_tag = static_cast<int>(msg.tag());
 
     const auto& comm = eckit::mpi::comm(local_.group().c_str());
@@ -180,17 +172,26 @@ void MpiTransport::nonBlockingSend(const Message& msg) {
     eckit::Log::info() << " *** Encode " << msg << " into stream for " << msg.destination()
                        << std::endl;
     msg.encode(streams_.at(msg.destination()));
-    if (msg.tag() == Message::Tag::Close) {
-        util::ScopedTimer scTimer{sendTiming_};
-        // Shadow on purpuse
-        auto& strm = streams_.at(msg.destination());
-        auto sz = static_cast<size_t>(strm.bytesWritten());
-        auto dest = static_cast<int>(msg.destination().id());
-        eckit::Log::info() << " *** " << local_ << " -- Sending " << sz << " bytes to destination "
-                           << msg.destination() << std::endl;
-        comm.send<void>(strm.buffer(), sz, dest, msg_tag);
-        bytesSent_ += sz;
+    if (msg.tag() == Message::Tag::Close) {  // Send it now
+        blockingSend(msg);
     }
+}
+
+Peer MpiTransport::localPeer() const {
+    return local_;
+}
+
+void MpiTransport::blockingSend(const Message& msg) {
+    util::ScopedTimer scTimer{sendTiming_};
+    // Shadow on purpuse
+    auto& strm = streams_.at(msg.destination());
+    auto sz = static_cast<size_t>(strm.bytesWritten());
+    auto dest = static_cast<int>(msg.destination().id());
+    eckit::Log::info() << " *** " << local_ << " -- Sending " << sz << " bytes to destination "
+                       << msg.destination() << std::endl;
+    eckit::mpi::comm(local_.group().c_str())
+        .send<void>(strm.buffer(), sz, dest, static_cast<int>(msg.tag()));
+    bytesSent_ += sz;
 }
 
 size_t MpiTransport::findAvailableBuffer() {

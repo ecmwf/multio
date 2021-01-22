@@ -37,11 +37,18 @@ inline std::vector<eckit::ResizableBuffer> makeBuffers(size_t poolSize, size_t m
     return bufs;
 }
 
-struct BufferPool{
-    explicit BufferPool(size_t poolSize, size_t maxBufSize) :
-        mask(poolSize), request(poolSize), buffer{makeBuffers(poolSize, maxBufSize)} {}
+enum class BufferStatus : uint8_t
+{
+    available,
+    inUse,
+    inTransit
+};
 
-    std::vector<uint8_t> mask;
+struct BufferPool {
+    explicit BufferPool(size_t poolSize, size_t maxBufSize) :
+        status(poolSize), request(poolSize), buffer{makeBuffers(poolSize, maxBufSize)} {}
+
+    std::vector<BufferStatus> status;
     std::vector<eckit::mpi::Request> request;
     std::vector<eckit::ResizableBuffer> buffer;
 };
@@ -69,7 +76,7 @@ private:
 
     void nonBlockingSend(const Message& msg);
 
-    size_t findAvailableBuffer(const eckit::mpi::Comm& comm);
+    size_t findAvailableBuffer();
 
     MpiPeer local_;
 
@@ -79,11 +86,12 @@ private:
 
     struct MpiStream : public eckit::ResizableMemoryStream {
         MpiStream(eckit::ResizableBuffer& buf) : eckit::ResizableMemoryStream{buf}, buf_{buf} {}
-        void setRequest(eckit::mpi::Request& req) {req_ = &req;}
-        eckit::mpi::Request& request() { return *req_; }
+        void id(size_t i) { id_ = i; }
+        size_t id() { return id_;}
         eckit::ResizableBuffer& buffer() const { return buf_; }
 
-        eckit::mpi::Request* req_;
+    private:
+        size_t id_ = -1;
         eckit::ResizableBuffer& buf_;
     };
     std::map<MpiPeer, MpiStream> streams_;

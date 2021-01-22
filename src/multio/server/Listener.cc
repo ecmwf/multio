@@ -13,6 +13,7 @@
 #include <fstream>
 #include <functional>
 #include <typeinfo>
+#include "unistd.h"
 
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
@@ -40,6 +41,7 @@ Listener::Listener(const eckit::Configuration& config, Transport& trans) :
 void Listener::listen() {
     ScopedThread scThread{std::thread{&Dispatcher::dispatch, dispatcher_, std::ref(msgQueue_)}};
 
+    ::sleep(2);
     do {
         Message msg = transport_.receive();
 

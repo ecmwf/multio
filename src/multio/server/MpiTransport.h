@@ -39,8 +39,9 @@ inline std::vector<eckit::ResizableBuffer> makeBuffers(size_t poolSize, size_t m
 
 struct BufferPool{
     explicit BufferPool(size_t poolSize, size_t maxBufSize) :
-        request(poolSize), buffer{makeBuffers(poolSize, maxBufSize)} {}
+        mask(poolSize), request(poolSize), buffer{makeBuffers(poolSize, maxBufSize)} {}
 
+    std::vector<uint8_t> mask;
     std::vector<eckit::mpi::Request> request;
     std::vector<eckit::ResizableBuffer> buffer;
 };

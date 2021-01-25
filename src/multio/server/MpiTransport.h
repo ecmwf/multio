@@ -78,6 +78,8 @@ private:
 
     void blockingSend(const Message& msg);
 
+    void createNewStream(const message::Peer& dest);
+
     MpiPeer local_;
 
     eckit::ResizableBuffer buffer_;

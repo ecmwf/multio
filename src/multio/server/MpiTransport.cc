@@ -180,10 +180,7 @@ void MpiTransport::send(const Message& msg) {
 
     if (streams_.find(msg.destination()) == std::end(streams_)) {
         // Find an available buffer
-        auto idx = pool_.findAvailableBuffer();
-        streams_.emplace(msg.destination(), pool_.buffer(idx).conent);
-        streams_.at(msg.destination()).id(idx);
-        pool_.buffer(idx).status = BufferStatus::inUse;
+        createNewStream(msg.destination());
     }
 
     auto& strm = streams_.at(msg.destination());
@@ -201,10 +198,7 @@ void MpiTransport::send(const Message& msg) {
 
         streams_.erase(msg.destination());
 
-        auto idx = pool_.findAvailableBuffer();
-        streams_.emplace(msg.destination(), pool_.buffer(idx).conent);
-        streams_.at(msg.destination()).id(idx);
-        pool_.buffer(idx).status = BufferStatus::inUse;
+        createNewStream(msg.destination());
     }
 
     eckit::Log::info() << " *** Encode " << msg << " into stream for " << msg.destination()
@@ -230,6 +224,13 @@ void MpiTransport::blockingSend(const Message& msg) {
     eckit::mpi::comm(local_.group().c_str())
         .send<void>(strm.buffer(), sz, dest, static_cast<int>(msg.tag()));
     bytesSent_ += sz;
+}
+
+void MpiTransport::createNewStream(const message::Peer& dest) {
+    auto idx = pool_.findAvailableBuffer();
+    streams_.emplace(dest, pool_.buffer(idx).content);
+    streams_.at(dest).id(idx);
+    pool_.buffer(idx).status = BufferStatus::inUse;
 }
 
 void MpiTransport::print(std::ostream& os) const {

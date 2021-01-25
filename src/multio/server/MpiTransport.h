@@ -37,10 +37,10 @@ enum class BufferStatus : uint8_t
 };
 
 struct MpiBuffer {
-    explicit MpiBuffer(size_t maxBufSize) : buffer{maxBufSize} {};
+    explicit MpiBuffer(size_t maxBufSize) : conent{maxBufSize} {};
     BufferStatus status = BufferStatus::available;
     eckit::mpi::Request request;
-    eckit::ResizableBuffer buffer;
+    eckit::ResizableBuffer conent;
 };
 
 inline std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
@@ -52,8 +52,14 @@ inline std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
 }
 
 struct BufferPool {
-    explicit BufferPool(size_t poolSize, size_t maxBufSize) :
-        buffers_(makeBuffers(poolSize, maxBufSize)) {}
+    explicit BufferPool(size_t poolSize, size_t maxBufSize);
+
+    MpiBuffer& buffer(size_t idx);
+
+    size_t findAvailableBuffer();
+    void printPoolStatus() const;
+
+private:
     std::vector<MpiBuffer> buffers_;
 };
 
@@ -79,8 +85,6 @@ private:
     Peer localPeer() const override;
 
     void blockingSend(const Message& msg);
-
-    size_t findAvailableBuffer();
 
     MpiPeer local_;
 

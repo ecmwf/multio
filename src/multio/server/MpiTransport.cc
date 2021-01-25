@@ -139,13 +139,9 @@ Message MpiTransport::receive() {
     auto sz = comm.getCount<void>(status);
     ASSERT(sz < buffer_.size());
 
-//    ::sleep(1);
-
     eckit::Log::info() << " *** " << local_ << " -- Received " << sz
                        << " bytes (to put into buffer sized " << buffer_.size() << ") from source "
                        << status.source() << std::endl;
-
-//    ::sleep(1);
 
     {
         util::ScopedTimer scTimer{receiveTiming_};

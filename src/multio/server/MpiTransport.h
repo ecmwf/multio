@@ -55,6 +55,17 @@ private:
     std::vector<MpiBuffer> buffers_;
 };
 
+struct MpiStream : public eckit::ResizableMemoryStream {
+    MpiStream(eckit::ResizableBuffer& buf) : eckit::ResizableMemoryStream{buf}, buf_{buf} {}
+    void id(size_t i) { id_ = i; }
+    size_t id() { return id_;}
+    eckit::ResizableBuffer& buffer() const { return buf_; }
+
+private:
+    size_t id_ = -1;
+    eckit::ResizableBuffer& buf_;
+};
+
 class MpiPeer : public Peer {
 public:
     MpiPeer(Peer peer);
@@ -86,16 +97,6 @@ private:
 
     BufferPool pool_;
 
-    struct MpiStream : public eckit::ResizableMemoryStream {
-        MpiStream(eckit::ResizableBuffer& buf) : eckit::ResizableMemoryStream{buf}, buf_{buf} {}
-        void id(size_t i) { id_ = i; }
-        size_t id() { return id_;}
-        eckit::ResizableBuffer& buffer() const { return buf_; }
-
-    private:
-        size_t id_ = -1;
-        eckit::ResizableBuffer& buf_;
-    };
     std::map<MpiPeer, MpiStream> streams_;
 
     std::queue<Message> msgPack_;

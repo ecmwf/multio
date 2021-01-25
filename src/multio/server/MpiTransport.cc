@@ -55,6 +55,15 @@ Message decodeMessage(eckit::Stream& stream) {
                                 MpiPeer{dest_grp, dest_id}, std::move(fieldId)},
                 std::move(buffer)};
 }
+
+std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
+    std::vector<MpiBuffer> bufs;
+    for (auto ii = 0u; ii < poolSize; ++ii) {
+        bufs.emplace_back(maxBufSize);
+    }
+    return bufs;
+}
+
 }  // namespace
 
 

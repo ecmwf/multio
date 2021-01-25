@@ -75,8 +75,6 @@ MpiBuffer& BufferPool::buffer(size_t idx) {
 }
 
 size_t BufferPool::findAvailableBuffer() {
-    // util::ScopedTimer scTimer{bufferWaitTiming_};
-
     auto it = std::end(buffers_);
     while (it == std::end(buffers_)) {
         it = std::find_if(std::begin(buffers_), std::end(buffers_), [](MpiBuffer& buf) {
@@ -227,6 +225,8 @@ void MpiTransport::blockingSend(const Message& msg) {
 }
 
 void MpiTransport::createNewStream(const message::Peer& dest) {
+    util::ScopedTimer scTimer{bufferWaitTiming_};
+
     auto idx = pool_.findAvailableBuffer();
     streams_.emplace(dest, pool_.buffer(idx).content);
     streams_.at(dest).id(idx);

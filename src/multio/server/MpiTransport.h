@@ -37,10 +37,10 @@ enum class BufferStatus : uint8_t
 };
 
 struct MpiBuffer {
-    explicit MpiBuffer(size_t maxBufSize) : conent{maxBufSize} {};
+    explicit MpiBuffer(size_t maxBufSize) : content{maxBufSize} {};
     BufferStatus status = BufferStatus::available;
     eckit::mpi::Request request;
-    eckit::ResizableBuffer conent;
+    eckit::ResizableBuffer content;
 };
 
 struct BufferPool {

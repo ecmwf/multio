@@ -46,9 +46,16 @@ struct StreamPool {
 
     MpiBuffer& findAvailableBuffer();
 
-    void printPoolStatus() const;
-
 private:
+    void print(std::ostream& os) const;
+
+    friend std::ostream& operator<<(std::ostream& os, const StreamPool& transport) {
+        transport.print(os);
+        return os;
+    }
+
+    void printPoolStatus(std::ostream& os) const;
+
     std::vector<MpiBuffer> buffers_;
     std::map<MpiPeer, MpiStream> streams_;
 };

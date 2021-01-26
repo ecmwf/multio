@@ -102,14 +102,20 @@ MpiBuffer& StreamPool::findAvailableBuffer() {
     return *it;
 }
 
-void StreamPool::printPoolStatus() const {
-    std::for_each(std::begin(buffers_), std::end(buffers_), [](const MpiBuffer& buf) {
-        const std::map<BufferStatus, std::string> st2str{{BufferStatus::available, "0"},
-                                                         {BufferStatus::fillingUp, "1"},
-                                                         {BufferStatus::transmitting, "2"}};
-        eckit::Log::info() << st2str.at(buf.status);
+void StreamPool::print(std::ostream& os) const {
+    os << "StreamPool(size=" << buffers_.size() << ",status=";
+    printPoolStatus(os);
+    os << ")";
+}
+
+void StreamPool::printPoolStatus(std::ostream& os) const {
+    static const std::map<BufferStatus, std::string> st2str{{BufferStatus::available, "0"},
+                                                             {BufferStatus::fillingUp, "1"},
+                                                             {BufferStatus::transmitting, "2"}};
+
+    std::for_each(std::begin(buffers_), std::end(buffers_), [&os](const MpiBuffer& buf) {
+        os << st2str.at(buf.status);
     });
-    eckit::Log::info() << std::endl;
 }
 
 MpiPeer::MpiPeer(const std::string& comm, size_t rank) : Peer{comm, rank} {}
@@ -182,7 +188,7 @@ void MpiTransport::send(const Message& msg) {
 
     const auto& comm = eckit::mpi::comm(local_.group().c_str());
 
-    pool_.printPoolStatus();
+    eckit::Log::info() << pool_ << std::endl;
 
     // Send buffer if need be
     auto& strm = pool_.getStream(msg.destination());

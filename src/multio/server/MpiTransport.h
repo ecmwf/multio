@@ -38,6 +38,12 @@ enum class BufferStatus : uint8_t
 
 struct MpiBuffer {
     explicit MpiBuffer(size_t maxBufSize) : content{maxBufSize} {};
+
+    bool isFree() {
+        return status == BufferStatus::available ||
+               (status == BufferStatus::inTransit && request.test());
+    };
+
     BufferStatus status = BufferStatus::available;
     eckit::mpi::Request request;
     eckit::ResizableBuffer content;

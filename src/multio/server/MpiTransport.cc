@@ -77,10 +77,8 @@ MpiBuffer& BufferPool::buffer(size_t idx) {
 size_t BufferPool::findAvailableBuffer() {
     auto it = std::end(buffers_);
     while (it == std::end(buffers_)) {
-        it = std::find_if(std::begin(buffers_), std::end(buffers_), [](MpiBuffer& buf) {
-            return buf.status == BufferStatus::available ||
-                   (buf.status == BufferStatus::inTransit && buf.request.test());
-        });
+        it = std::find_if(std::begin(buffers_), std::end(buffers_),
+                          [](MpiBuffer& buf) { return buf.isFree(); });
     }
 
     auto idx = static_cast<size_t>(std::distance(std::begin(buffers_), it));

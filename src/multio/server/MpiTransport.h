@@ -36,6 +36,12 @@ enum class BufferStatus : uint8_t
     inTransit
 };
 
+class MpiPeer : public Peer {
+public:
+    MpiPeer(Peer peer);
+    MpiPeer(const std::string& comm, size_t rank);
+};
+
 struct MpiBuffer {
     explicit MpiBuffer(size_t maxBufSize) : content{maxBufSize} {};
 
@@ -49,33 +55,35 @@ struct MpiBuffer {
     eckit::ResizableBuffer content;
 };
 
-struct BufferPool {
-    explicit BufferPool(size_t poolSize, size_t maxBufSize);
+struct MpiStream : public eckit::ResizableMemoryStream {
+    MpiStream(MpiBuffer& buf) : eckit::ResizableMemoryStream{buf.content}, buf_{buf} {}
+
+    void id(size_t i) { id_ = i; }
+    size_t id() { return id_;}
+
+    bool readyToSend(size_t sz) { return (position() + sz + 4096 > buf_.content.size()); }
+    MpiBuffer& buffer() const { return buf_; }
+
+private:
+    size_t id_ = -1;
+    MpiBuffer& buf_;
+};
+
+struct StreamPool {
+    explicit StreamPool(size_t poolSize, size_t maxBufSize);
 
     MpiBuffer& buffer(size_t idx);
 
-    size_t findAvailableBuffer();
+    MpiStream& getStream(const message::Peer& dest);
+    void removeStream(const message::Peer& dest);
+
+    MpiBuffer& findAvailableBuffer();
+
     void printPoolStatus() const;
 
 private:
     std::vector<MpiBuffer> buffers_;
-};
-
-struct MpiStream : public eckit::ResizableMemoryStream {
-    MpiStream(eckit::ResizableBuffer& buf) : eckit::ResizableMemoryStream{buf}, buf_{buf} {}
-    void id(size_t i) { id_ = i; }
-    size_t id() { return id_;}
-    eckit::ResizableBuffer& buffer() const { return buf_; }
-
-private:
-    size_t id_ = -1;
-    eckit::ResizableBuffer& buf_;
-};
-
-class MpiPeer : public Peer {
-public:
-    MpiPeer(Peer peer);
-    MpiPeer(const std::string& comm, size_t rank);
+    std::map<MpiPeer, MpiStream> streams_;
 };
 
 
@@ -95,15 +103,11 @@ private:
 
     void blockingSend(const Message& msg);
 
-    void createNewStream(const message::Peer& dest);
-
     MpiPeer local_;
 
     eckit::ResizableBuffer buffer_;
 
-    BufferPool pool_;
-
-    std::map<MpiPeer, MpiStream> streams_;
+    StreamPool pool_;
 
     std::queue<Message> msgPack_;
 

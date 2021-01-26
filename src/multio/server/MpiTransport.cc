@@ -67,28 +67,43 @@ std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
 }  // namespace
 
 
-BufferPool::BufferPool(size_t poolSize, size_t maxBufSize) :
+StreamPool::StreamPool(size_t poolSize, size_t maxBufSize) :
     buffers_(makeBuffers(poolSize, maxBufSize)) {}
 
-MpiBuffer& BufferPool::buffer(size_t idx) {
+MpiBuffer& StreamPool::buffer(size_t idx) {
     return buffers_[idx];
 }
 
-size_t BufferPool::findAvailableBuffer() {
+MpiStream& StreamPool::getStream(const message::Peer& dest) {
+    if (streams_.find(dest) != std::end(streams_)) {
+        return streams_.at(dest);
+    }
+
+    auto& buf = findAvailableBuffer();
+    streams_.emplace(dest, buf);
+    buf.status = BufferStatus::inUse;
+
+    return streams_.at(dest);
+}
+
+void StreamPool::removeStream(const message::Peer& dest) {
+    streams_.erase(dest);
+}
+
+MpiBuffer& StreamPool::findAvailableBuffer() {
     auto it = std::end(buffers_);
     while (it == std::end(buffers_)) {
         it = std::find_if(std::begin(buffers_), std::end(buffers_),
                           [](MpiBuffer& buf) { return buf.isFree(); });
     }
 
-    auto idx = static_cast<size_t>(std::distance(std::begin(buffers_), it));
+    eckit::Log::info() << " *** -- Found available buffer with idx = "
+                       << static_cast<size_t>(std::distance(std::begin(buffers_), it)) << std::endl;
 
-    eckit::Log::info() << " *** -- Found available buffer with idx = " << idx << std::endl;
-
-    return idx;
+    return *it;
 }
 
-void BufferPool::printPoolStatus() const {
+void StreamPool::printPoolStatus() const {
     std::for_each(std::begin(buffers_), std::end(buffers_), [](const MpiBuffer& buf) {
         const std::map<BufferStatus, std::string> st2str{{BufferStatus::available, "0"},
                                                          {BufferStatus::inUse, "1"},
@@ -170,32 +185,27 @@ void MpiTransport::send(const Message& msg) {
 
     pool_.printPoolStatus();
 
-    if (streams_.find(msg.destination()) == std::end(streams_)) {
-        // Find an available buffer
-        createNewStream(msg.destination());
-    }
-
-    auto& strm = streams_.at(msg.destination());
-    if (strm.buffer().size() < strm.position() + msg.size() + 4096) {
+    // Send buffer if need be
+    auto& strm = pool_.getStream(msg.destination());
+    if (strm.readyToSend(msg.size())) {
         util::ScopedTimer scTimer{sendTiming_};
 
         auto sz = static_cast<size_t>(strm.bytesWritten());
         auto dest = static_cast<int>(msg.destination().id());
         eckit::Log::info() << " *** " << local_ << " -- Sending " << sz << " bytes to destination "
                            << msg.destination() << std::endl;
-        pool_.buffer(strm.id()).request = comm.iSend<void>(strm.buffer(), sz, dest, msg_tag);
-        pool_.buffer(strm.id()).status = BufferStatus::inTransit;
+        strm.buffer().request = comm.iSend<void>(strm.buffer().content, sz, dest, msg_tag);
+        strm.buffer().status = BufferStatus::inTransit;
 
         bytesSent_ += sz;
 
-        streams_.erase(msg.destination());
-
-        createNewStream(msg.destination());
+        pool_.removeStream(msg.destination());
     }
 
     eckit::Log::info() << " *** Encode " << msg << " into stream for " << msg.destination()
                        << std::endl;
-    msg.encode(streams_.at(msg.destination()));
+
+    msg.encode(pool_.getStream(msg.destination()));
     if (msg.tag() == Message::Tag::Close) {  // Send it now
         blockingSend(msg);
     }
@@ -208,23 +218,14 @@ Peer MpiTransport::localPeer() const {
 void MpiTransport::blockingSend(const Message& msg) {
     util::ScopedTimer scTimer{sendTiming_};
     // Shadow on purpuse
-    auto& strm = streams_.at(msg.destination());
+    auto& strm = pool_.getStream(msg.destination());
     auto sz = static_cast<size_t>(strm.bytesWritten());
     auto dest = static_cast<int>(msg.destination().id());
     eckit::Log::info() << " *** " << local_ << " -- Sending " << sz << " bytes to destination "
                        << msg.destination() << std::endl;
     eckit::mpi::comm(local_.group().c_str())
-        .send<void>(strm.buffer(), sz, dest, static_cast<int>(msg.tag()));
+        .send<void>(strm.buffer().content, sz, dest, static_cast<int>(msg.tag()));
     bytesSent_ += sz;
-}
-
-void MpiTransport::createNewStream(const message::Peer& dest) {
-    util::ScopedTimer scTimer{bufferWaitTiming_};
-
-    auto idx = pool_.findAvailableBuffer();
-    streams_.emplace(dest, pool_.buffer(idx).content);
-    streams_.at(dest).id(idx);
-    pool_.buffer(idx).status = BufferStatus::inUse;
 }
 
 void MpiTransport::print(std::ostream& os) const {

@@ -20,5 +20,14 @@ bool MpiStream::readyToSend(size_t sz) {
 MpiBuffer& MpiStream::buffer() const {
     return buf_;
 }
+
+std::string MpiStream::name() const {
+    static const std::map<BufferStatus, std::string> st2str{
+        {BufferStatus::available, "available"},
+        {BufferStatus::fillingUp, "fillingUp"},
+        {BufferStatus::transmitting, "transmitting"}};
+
+    return "MpiStream(" + st2str.at(buf_.status) + ")";
+}
 }
 }  // namespace multio

@@ -36,7 +36,8 @@ public:
     MpiPeer(const std::string& comm, size_t rank);
 };
 
-struct StreamPool {
+class StreamPool {
+public:
     explicit StreamPool(size_t poolSize, size_t maxBufSize);
 
     MpiBuffer& buffer(size_t idx);

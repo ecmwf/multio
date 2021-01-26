@@ -21,7 +21,8 @@ enum class BufferStatus : uint8_t
     transmitting
 };
 
-struct MpiBuffer {
+class MpiBuffer {
+public:
     explicit MpiBuffer(size_t maxBufSize);
 
     bool isFree();
@@ -31,13 +32,16 @@ struct MpiBuffer {
     eckit::ResizableBuffer content;
 };
 
-struct MpiStream : public eckit::ResizableMemoryStream {
+class MpiStream : public eckit::ResizableMemoryStream {
+public:
     MpiStream(MpiBuffer& buf);
 
     bool readyToSend(size_t sz);
     MpiBuffer& buffer() const;
 
 private:
+    std::string name() const override;
+
     MpiBuffer& buf_;
 };
 

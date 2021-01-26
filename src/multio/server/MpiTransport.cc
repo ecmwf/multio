@@ -11,7 +11,6 @@
 #include "MpiTransport.h"
 
 #include <algorithm>
-#include "unistd.h"
 
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"

@@ -25,44 +25,15 @@
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
 #include "multio/server/Transport.h"
+#include "multio/server/MpiStream.h"
 
 namespace multio {
 namespace server {
-
-enum class BufferStatus : uint8_t
-{
-    available,
-    inUse,
-    inTransit
-};
 
 class MpiPeer : public Peer {
 public:
     MpiPeer(Peer peer);
     MpiPeer(const std::string& comm, size_t rank);
-};
-
-struct MpiBuffer {
-    explicit MpiBuffer(size_t maxBufSize) : content{maxBufSize} {};
-
-    bool isFree() {
-        return status == BufferStatus::available ||
-               (status == BufferStatus::inTransit && request.test());
-    };
-
-    BufferStatus status = BufferStatus::available;
-    eckit::mpi::Request request;
-    eckit::ResizableBuffer content;
-};
-
-struct MpiStream : public eckit::ResizableMemoryStream {
-    MpiStream(MpiBuffer& buf) : eckit::ResizableMemoryStream{buf.content}, buf_{buf} {}
-
-    bool readyToSend(size_t sz) { return (position() + sz + 4096 > buf_.content.size()); }
-    MpiBuffer& buffer() const { return buf_; }
-
-private:
-    MpiBuffer& buf_;
 };
 
 struct StreamPool {

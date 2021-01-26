@@ -17,8 +17,8 @@ namespace server {
 enum class BufferStatus : uint8_t
 {
     available,
-    inUse,
-    inTransit
+    fillingUp,
+    transmitting
 };
 
 struct MpiBuffer {

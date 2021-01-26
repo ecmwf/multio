@@ -8,7 +8,7 @@ MpiBuffer::MpiBuffer(size_t maxBufSize) : content{maxBufSize} {}
 
 bool MpiBuffer::isFree() {
     return status == BufferStatus::available ||
-            (status == BufferStatus::inTransit && request.test());
+            (status == BufferStatus::transmitting && request.test());
 }
 
 MpiStream::MpiStream(MpiBuffer& buf) : eckit::ResizableMemoryStream{buf.content}, buf_{buf} {}

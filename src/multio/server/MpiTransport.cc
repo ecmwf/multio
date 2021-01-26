@@ -80,7 +80,7 @@ MpiStream& StreamPool::getStream(const message::Peer& dest) {
 
     auto& buf = findAvailableBuffer();
     streams_.emplace(dest, buf);
-    buf.status = BufferStatus::inUse;
+    buf.status = BufferStatus::fillingUp;
 
     return streams_.at(dest);
 }
@@ -105,8 +105,8 @@ MpiBuffer& StreamPool::findAvailableBuffer() {
 void StreamPool::printPoolStatus() const {
     std::for_each(std::begin(buffers_), std::end(buffers_), [](const MpiBuffer& buf) {
         const std::map<BufferStatus, std::string> st2str{{BufferStatus::available, "0"},
-                                                         {BufferStatus::inUse, "1"},
-                                                         {BufferStatus::inTransit, "2"}};
+                                                         {BufferStatus::fillingUp, "1"},
+                                                         {BufferStatus::transmitting, "2"}};
         eckit::Log::info() << st2str.at(buf.status);
     });
     eckit::Log::info() << std::endl;
@@ -194,7 +194,7 @@ void MpiTransport::send(const Message& msg) {
         eckit::Log::info() << " *** " << local_ << " -- Sending " << sz << " bytes to destination "
                            << msg.destination() << std::endl;
         strm.buffer().request = comm.iSend<void>(strm.buffer().content, sz, dest, msg_tag);
-        strm.buffer().status = BufferStatus::inTransit;
+        strm.buffer().status = BufferStatus::transmitting;
 
         bytesSent_ += sz;
 

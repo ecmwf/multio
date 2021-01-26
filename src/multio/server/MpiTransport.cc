@@ -66,6 +66,9 @@ std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
 }  // namespace
 
 
+MpiPeer::MpiPeer(const std::string& comm, size_t rank) : Peer{comm, rank} {}
+MpiPeer::MpiPeer(Peer peer) : Peer{peer} {}
+
 StreamPool::StreamPool(size_t poolSize, size_t maxBufSize) :
     buffers_(makeBuffers(poolSize, maxBufSize)) {}
 
@@ -104,22 +107,10 @@ MpiBuffer& StreamPool::findAvailableBuffer() {
 
 void StreamPool::print(std::ostream& os) const {
     os << "StreamPool(size=" << buffers_.size() << ",status=";
-    printPoolStatus(os);
+    std::for_each(std::begin(buffers_), std::end(buffers_),
+                  [&os](const MpiBuffer& buf) { os << static_cast<unsigned>(buf.status); });
     os << ")";
 }
-
-void StreamPool::printPoolStatus(std::ostream& os) const {
-    static const std::map<BufferStatus, std::string> st2str{{BufferStatus::available, "0"},
-                                                             {BufferStatus::fillingUp, "1"},
-                                                             {BufferStatus::transmitting, "2"}};
-
-    std::for_each(std::begin(buffers_), std::end(buffers_), [&os](const MpiBuffer& buf) {
-        os << st2str.at(buf.status);
-    });
-}
-
-MpiPeer::MpiPeer(const std::string& comm, size_t rank) : Peer{comm, rank} {}
-MpiPeer::MpiPeer(Peer peer) : Peer{peer} {}
 
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),

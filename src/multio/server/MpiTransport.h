@@ -55,8 +55,6 @@ private:
         return os;
     }
 
-    void printPoolStatus(std::ostream& os) const;
-
     std::vector<MpiBuffer> buffers_;
     std::map<MpiPeer, MpiStream> streams_;
 };

@@ -58,14 +58,10 @@ struct MpiBuffer {
 struct MpiStream : public eckit::ResizableMemoryStream {
     MpiStream(MpiBuffer& buf) : eckit::ResizableMemoryStream{buf.content}, buf_{buf} {}
 
-    void id(size_t i) { id_ = i; }
-    size_t id() { return id_;}
-
     bool readyToSend(size_t sz) { return (position() + sz + 4096 > buf_.content.size()); }
     MpiBuffer& buffer() const { return buf_; }
 
 private:
-    size_t id_ = -1;
     MpiBuffer& buf_;
 };
 

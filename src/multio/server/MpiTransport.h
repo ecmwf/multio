@@ -17,35 +17,46 @@
 #ifndef multio_server_MpiTransport_H
 #define multio_server_MpiTransport_H
 
+#include <queue>
+
 #include "eckit/io/ResizableBuffer.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
 #include "multio/server/Transport.h"
+#include "multio/server/MpiStream.h"
 
 namespace multio {
 namespace server {
 
-inline std::vector<eckit::ResizableBuffer> makeBuffers(std::size_t sz) {
-    std::vector<eckit::ResizableBuffer> bufs;
-    for (auto ii = 0u; ii < sz; ++ii) {
-        bufs.emplace_back(eckit::ResizableBuffer{0});
-    }
-    return bufs;
-}
-
-struct BufferList{
-    explicit BufferList(std::size_t sz) : size_{sz}, request(size_), buffer{makeBuffers(size_)} {}
-
-    std::size_t size_;
-    std::vector<eckit::mpi::Request> request;
-    std::vector<eckit::ResizableBuffer> buffer;
-};
-
 class MpiPeer : public Peer {
 public:
+    MpiPeer(Peer peer);
     MpiPeer(const std::string& comm, size_t rank);
+};
+
+class StreamPool {
+public:
+    explicit StreamPool(size_t poolSize, size_t maxBufSize);
+
+    MpiBuffer& buffer(size_t idx);
+
+    MpiStream& getStream(const message::Peer& dest);
+    void removeStream(const message::Peer& dest);
+
+    MpiBuffer& findAvailableBuffer();
+
+private:
+    void print(std::ostream& os) const;
+
+    friend std::ostream& operator<<(std::ostream& os, const StreamPool& transport) {
+        transport.print(os);
+        return os;
+    }
+
+    std::vector<MpiBuffer> buffers_;
+    std::map<MpiPeer, MpiStream> streams_;
 };
 
 
@@ -63,13 +74,15 @@ private:
 
     Peer localPeer() const override;
 
-    void nonBlockingSend(const Message& msg);
+    void blockingSend(const Message& msg);
 
     MpiPeer local_;
 
     eckit::ResizableBuffer buffer_;
 
-    BufferList bufList_;
+    StreamPool pool_;
+
+    std::queue<Message> msgPack_;
 
     eckit::Timing sendTiming_;
     eckit::Timing receiveTiming_;

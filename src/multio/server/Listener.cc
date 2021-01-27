@@ -13,6 +13,7 @@
 #include <fstream>
 #include <functional>
 #include <typeinfo>
+#include "unistd.h"
 
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
@@ -68,9 +69,9 @@ void Listener::listen() {
                 break;
 
             case Message::Tag::Domain:
-                checkConnection(msg.source());
                 LOG_DEBUG_LIB(LibMultio)
                     << "*** Number of maps: " << msg.domainCount() << std::endl;
+                checkConnection(msg.source());
                 clientCount_ = msg.domainCount();
                 domain::Mappings::instance().add(msg);
                 break;
@@ -89,11 +90,8 @@ void Listener::listen() {
             case Message::Tag::Field:
                 checkConnection(msg.source());
                 LOG_DEBUG_LIB(LibMultio)
-                    << "*** Field received from: " << msg.source() << std::endl;
-                LOG_DEBUG_LIB(LibMultio)
-                    << "    Size of payload: " << msg.size() << std::endl;
-                LOG_DEBUG_LIB(LibMultio)
-                    << "    Size of   field: " << msg.size() / sizeof(double) << std::endl;
+                    << "*** Field received from: " << msg.source() << " with size "
+                    << msg.size() / sizeof(double) << std::endl;
                 msgQueue_.push(std::move(msg));
                 break;
 

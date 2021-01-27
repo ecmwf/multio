@@ -81,6 +81,8 @@ MpiStream& StreamPool::getStream(const message::Peer& dest) {
         return streams_.at(dest);
     }
 
+    ASSERT_MSG(streams_.size() < buffers_.size(), "Too few buffers to cover all MPI destinations");
+
     auto& buf = findAvailableBuffer();
     streams_.emplace(dest, buf);
     buf.status = BufferStatus::fillingUp;
@@ -181,7 +183,9 @@ void MpiTransport::send(const Message& msg) {
 
     eckit::Log::info() << pool_ << std::endl;
 
-    // Send buffer if need be
+    // Note: it would be more elegant to wait until *after* we have encoded to message to make the
+    // decision on whether to send the buffer or not -- but then we don't yet
+    // have the information about whether the next message will fit in the buffer at all
     auto& strm = pool_.getStream(msg.destination());
     if (strm.readyToSend(msg.size())) {
         util::ScopedTimer scTimer{sendTiming_};

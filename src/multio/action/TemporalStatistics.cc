@@ -100,6 +100,13 @@ std::map<std::string, eckit::Buffer> TemporalStatistics::compute(const message::
     return retStats;
 }
 
+std::string TemporalStatistics::stepRange(long step) {
+    auto ret = std::to_string(prevStep_) + "-" + std::to_string(step);
+    prevStep_ = step;
+    eckit::Log::info() << " *** Setting step range: " << ret << std::endl;
+    return ret;
+}
+
 void TemporalStatistics::reset(const message::Message& msg) {
     statistics_ = reset_statistics(opNames_, msg.size() / sizeof(double));
     resetPeriod(msg);

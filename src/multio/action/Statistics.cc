@@ -41,6 +41,7 @@ long set_frequency(const std::string& output_freq) {
     auto freq = output_freq.substr(0, output_freq.size() - 1);
     return std::stol(freq);
 }
+
 }  // namespace
 
 Statistics::Statistics(const eckit::Configuration& config) :
@@ -69,10 +70,11 @@ void Statistics::execute(message::Message msg) const {
     }
 
     auto md = msg.metadata();
+    md.set("timeUnit", timeUnit_);
+    md.set("timeSpan", timeSpan_);
+    md.set("stepRange", fieldStats_.at(os.str())->stepRange(md.getLong("step")));
     for (auto&& stat : fieldStats_.at(os.str())->compute(msg)) {
         md.set("operation", stat.first);
-        md.set("timeUnit", timeUnit_);
-        md.set("timeSpan", timeSpan_);
         message::Message newMsg{
             message::Message::Header{message::Message::Tag::Statistics, msg.source(),
                                      msg.destination(), message::Metadata{md}},

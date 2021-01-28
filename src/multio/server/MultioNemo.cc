@@ -136,6 +136,10 @@ public:
 
     void writeField(const std::string& fname, const double* data, size_t bytes,
                     bool to_all_servers = false) {
+        if(metadata_.getString("category") != "ocean-grid-coordinate") {
+            ASSERT(not to_all_servers); // Sanity check for now -- to remove later
+        }
+
         ASSERT(isActive(fname));
 
         metadata_.set("name", fname);

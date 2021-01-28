@@ -29,19 +29,16 @@ Message decodeMessage(eckit::Stream& stream) {
     stream >> t;
 
     std::string src_grp;
-    eckit::Log::info() << " *** Tag = " << t << " -- Reading source group" << std::endl;
     stream >> src_grp;
     size_t src_id;
     stream >> src_id;
 
     std::string dest_grp;
-    eckit::Log::info() << " *** Reading dest group" << std::endl;
     stream >> dest_grp;
     size_t dest_id;
     stream >> dest_id;
 
     std::string fieldId;
-    eckit::Log::info() << " *** Reading field id" << std::endl;
     stream >> fieldId;
 
     unsigned long sz;
@@ -100,10 +97,6 @@ MpiBuffer& StreamPool::findAvailableBuffer() {
         it = std::find_if(std::begin(buffers_), std::end(buffers_),
                           [](MpiBuffer& buf) { return buf.isFree(); });
     }
-
-    eckit::Log::info() << " *** -- Found available buffer with idx = "
-                       << static_cast<size_t>(std::distance(std::begin(buffers_), it)) << std::endl;
-
     return *it;
 }
 
@@ -150,10 +143,6 @@ Message MpiTransport::receive() {
     auto sz = comm.getCount<void>(status);
     ASSERT(sz < buffer_.size());
 
-    eckit::Log::info() << " *** " << local_ << " -- Received " << sz
-                       << " bytes (to put into buffer sized " << buffer_.size() << ") from source "
-                       << status.source() << std::endl;
-
     {
         util::ScopedTimer scTimer{receiveTiming_};
         comm.receive<void>(buffer_, sz, status.source(), status.tag());
@@ -165,10 +154,7 @@ Message MpiTransport::receive() {
 
     while (stream.position() < sz) {
         auto msg = decodeMessage(stream);
-        eckit::Log::info() << " *** " << local_ << " -- " << msg << std::endl;
         msgPack_.push(msg);
-        eckit::Log::info() << " *** " << local_ << " -- position = " << stream.position()
-                           << ", size = " << sz << std::endl;
     }
 
     auto msg = msgPack_.front();
@@ -181,8 +167,6 @@ void MpiTransport::send(const Message& msg) {
 
     const auto& comm = eckit::mpi::comm(local_.group().c_str());
 
-    eckit::Log::info() << pool_ << std::endl;
-
     // Note: it would be more elegant to wait until *after* we have encoded to message to make the
     // decision on whether to send the buffer or not -- but then we don't yet
     // have the information about whether the next message will fit in the buffer at all
@@ -192,8 +176,6 @@ void MpiTransport::send(const Message& msg) {
 
         auto sz = static_cast<size_t>(strm.bytesWritten());
         auto dest = static_cast<int>(msg.destination().id());
-        eckit::Log::info() << " *** " << local_ << " -- Sending " << sz << " bytes to destination "
-                           << msg.destination() << std::endl;
         strm.buffer().request = comm.iSend<void>(strm.buffer().content, sz, dest, msg_tag);
         strm.buffer().status = BufferStatus::transmitting;
 
@@ -201,9 +183,6 @@ void MpiTransport::send(const Message& msg) {
 
         pool_.removeStream(msg.destination());
     }
-
-    eckit::Log::info() << " *** Encode " << msg << " into stream for " << msg.destination()
-                       << std::endl;
 
     msg.encode(pool_.getStream(msg.destination()));
     if (msg.tag() == Message::Tag::Close) {  // Send it now
@@ -221,8 +200,6 @@ void MpiTransport::blockingSend(const Message& msg) {
     auto& strm = pool_.getStream(msg.destination());
     auto sz = static_cast<size_t>(strm.bytesWritten());
     auto dest = static_cast<int>(msg.destination().id());
-    eckit::Log::info() << " *** " << local_ << " -- Sending " << sz << " bytes to destination "
-                       << msg.destination() << std::endl;
     eckit::mpi::comm(local_.group().c_str())
         .send<void>(strm.buffer().content, sz, dest, static_cast<int>(msg.tag()));
     bytesSent_ += sz;

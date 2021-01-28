@@ -103,7 +103,7 @@ std::map<std::string, eckit::Buffer> TemporalStatistics::compute(const message::
 std::string TemporalStatistics::stepRange(long step) {
     auto ret = std::to_string(prevStep_) + "-" + std::to_string(step);
     prevStep_ = step;
-    eckit::Log::info() << " *** Setting step range: " << ret << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " *** Setting step range: " << ret << std::endl;
     return ret;
 }
 

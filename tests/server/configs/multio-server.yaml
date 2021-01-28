@@ -51,9 +51,6 @@ plans :
           - type : fdb5
             config : {}
 
-          - type : file
-            path : daily-ocean.grib
-
   - name : stream-3 # mainly 2d fields output daily (standard) or hourly (highout)
     actions :
       - type : Select
@@ -78,9 +75,6 @@ plans :
           - type : fdb5
             config : {}
 
-          - type : file
-            path : three-hourly-ocean.grib
-
   - name : stream-10 # sea-ice fields output daily (standard) or hourly (highout)
     actions :
       - type : Select
@@ -104,6 +98,3 @@ plans :
 
           - type : fdb5
             config : {}
-
-          - type : file
-            path : three-hourly-ice.grib

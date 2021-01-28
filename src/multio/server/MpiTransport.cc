@@ -81,7 +81,9 @@ MpiStream& StreamPool::getStream(const message::Peer& dest) {
         return streams_.at(dest);
     }
 
-    ASSERT_MSG(streams_.size() < buffers_.size(), "Too few buffers to cover all MPI destinations");
+    if (buffers_.size() <= streams_.size()) {
+        throw eckit::BadValue("Too few buffers to cover all MPI destinations", Here());
+    }
 
     auto& buf = findAvailableBuffer();
     streams_.emplace(dest, buf);

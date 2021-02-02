@@ -36,7 +36,7 @@ class MpiStream : public eckit::ResizableMemoryStream {
 public:
     MpiStream(MpiBuffer& buf);
 
-    bool readyToSend(size_t sz);
+    bool canFitMessage(size_t sz);
     MpiBuffer& buffer() const;
 
 private:

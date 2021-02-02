@@ -48,11 +48,11 @@ public:
     void emptyStreamIfNeeded(const message::Message& msg);
     void send(const message::Message& msg);
 
-    MpiBuffer& findAvailableBuffer();
-
     void timings(std::ostream& os) const;
 
 private:
+    MpiBuffer& findAvailableBuffer();
+
     MpiStream& createNewStream(const message::Peer& dest);
 
     void print(std::ostream& os) const;

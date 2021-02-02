@@ -90,23 +90,22 @@ void StreamPool::removeStream(const message::Peer& dest) {
 
 void StreamPool::emptyStreamIfNeeded(const message::Message& msg)
 {
-    // Note: it would be more elegant to wait until *after* we have encoded to message to make the
-    // decision on whether to send the buffer or not -- but then we don't yet
-    // have the information about whether the next message will fit in the buffer at all
-    auto msg_tag = static_cast<int>(msg.tag());
     auto& strm = getStream(msg.destination());
-    if (strm.readyToSend(msg.size())) {
-        util::ScopedTimer scTimer{sendTiming_};
-
-        auto sz = static_cast<size_t>(strm.bytesWritten());
-        auto dest = static_cast<int>(msg.destination().id());
-        strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, dest, msg_tag);
-        strm.buffer().status = BufferStatus::transmitting;
-
-        bytesSent_ += sz;
-
-        removeStream(msg.destination());
+    if (strm.canFitMessage(msg.size())) {
+        return;
     }
+
+    util::ScopedTimer scTimer{sendTiming_};
+
+    auto sz = static_cast<size_t>(strm.bytesWritten());
+    auto dest = static_cast<int>(msg.destination().id());
+    auto msg_tag = static_cast<int>(msg.tag());
+    strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, dest, msg_tag);
+    strm.buffer().status = BufferStatus::transmitting;
+
+    bytesSent_ += sz;
+
+    removeStream(msg.destination());
 }
 
 void StreamPool::send(const message::Message &msg)

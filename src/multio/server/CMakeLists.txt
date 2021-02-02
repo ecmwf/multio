@@ -45,6 +45,8 @@ ecbuild_add_library(
         Transport.cc
         Transport.h
         ScopedThread.h
+        StreamPool.cc
+        StreamPool.h
         multio_nemo.f90
         multio.f90
 

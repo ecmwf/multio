@@ -76,6 +76,8 @@ private:
 
     void blockingSend(const Message& msg);
 
+    const eckit::mpi::Comm& comm() const;
+
     MpiPeer local_;
 
     eckit::ResizableBuffer buffer_;

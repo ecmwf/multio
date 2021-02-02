@@ -145,11 +145,10 @@ Message MpiTransport::receive() {
         msgPack_.pop();
         return msg;
     }
-    const auto& comm = eckit::mpi::comm(local_.group().c_str());
 
-    auto status = comm.probe(comm.anySource(), comm.anyTag());
+    auto status = comm().probe(comm().anySource(), comm().anyTag());
 
-    auto sz = comm.getCount<void>(status);
+    auto sz = comm().getCount<void>(status);
     ASSERT(sz < buffer_.size());
 
     eckit::Log::info() << " *** " << local_ << " -- Received " << sz
@@ -158,7 +157,7 @@ Message MpiTransport::receive() {
 
     {
         util::ScopedTimer scTimer{receiveTiming_};
-        comm.receive<void>(buffer_, sz, status.source(), status.tag());
+        comm().receive<void>(buffer_, sz, status.source(), status.tag());
     }
 
     bytesReceived_ += sz;
@@ -181,8 +180,6 @@ Message MpiTransport::receive() {
 void MpiTransport::send(const Message& msg) {
     auto msg_tag = static_cast<int>(msg.tag());
 
-    const auto& comm = eckit::mpi::comm(local_.group().c_str());
-
     eckit::Log::info() << pool_ << std::endl;
 
     // Note: it would be more elegant to wait until *after* we have encoded to message to make the
@@ -196,7 +193,7 @@ void MpiTransport::send(const Message& msg) {
         auto dest = static_cast<int>(msg.destination().id());
         eckit::Log::info() << " *** " << local_ << " -- Sending " << sz << " bytes to destination "
                            << msg.destination() << std::endl;
-        strm.buffer().request = comm.iSend<void>(strm.buffer().content, sz, dest, msg_tag);
+        strm.buffer().request = comm().iSend<void>(strm.buffer().content, sz, dest, msg_tag);
         strm.buffer().status = BufferStatus::transmitting;
 
         bytesSent_ += sz;
@@ -228,6 +225,10 @@ void MpiTransport::blockingSend(const Message& msg) {
     eckit::mpi::comm(local_.group().c_str())
         .send<void>(strm.buffer().content, sz, dest, static_cast<int>(msg.tag()));
     bytesSent_ += sz;
+}
+
+const eckit::mpi::Comm& MpiTransport::comm() const {
+    return eckit::mpi::comm(local_.group().c_str());
 }
 
 void MpiTransport::print(std::ostream& os) const {

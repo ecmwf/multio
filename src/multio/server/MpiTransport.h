@@ -43,7 +43,6 @@ public:
     MpiBuffer& buffer(size_t idx);
 
     MpiStream& getStream(const message::Message& msg);
-    void removeStream(const message::Peer& dest);
 
     void send(const message::Message& msg);
 
@@ -53,6 +52,7 @@ private:
     MpiBuffer& findAvailableBuffer();
 
     MpiStream& createNewStream(const message::Peer& dest);
+    MpiStream& removeStream(const message::Peer& dest);
 
     void print(std::ostream& os) const;
 

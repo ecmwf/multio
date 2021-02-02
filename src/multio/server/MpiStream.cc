@@ -13,8 +13,8 @@ bool MpiBuffer::isFree() {
 
 MpiStream::MpiStream(MpiBuffer& buf) : eckit::ResizableMemoryStream{buf.content}, buf_{buf} {}
 
-bool MpiStream::readyToSend(size_t sz) {
-    return (position() + sz + 4096 > buf_.content.size());
+bool MpiStream::canFitMessage(size_t sz) {
+    return (position() + sz + 4096 < buf_.content.size());
 }
 
 MpiBuffer& MpiStream::buffer() const {

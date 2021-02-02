@@ -25,40 +25,10 @@
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
 #include "multio/server/Transport.h"
-#include "multio/server/MpiStream.h"
+#include "multio/server/StreamPool.h"
 
 namespace multio {
 namespace server {
-
-class MpiPeer : public Peer {
-public:
-    MpiPeer(Peer peer);
-    MpiPeer(const std::string& comm, size_t rank);
-};
-
-class StreamPool {
-public:
-    explicit StreamPool(size_t poolSize, size_t maxBufSize);
-
-    MpiBuffer& buffer(size_t idx);
-
-    MpiStream& getStream(const message::Peer& dest);
-    void removeStream(const message::Peer& dest);
-
-    MpiBuffer& findAvailableBuffer();
-
-private:
-    void print(std::ostream& os) const;
-
-    friend std::ostream& operator<<(std::ostream& os, const StreamPool& transport) {
-        transport.print(os);
-        return os;
-    }
-
-    std::vector<MpiBuffer> buffers_;
-    std::map<MpiPeer, MpiStream> streams_;
-};
-
 
 class MpiTransport final : public Transport {
 public:
@@ -74,7 +44,7 @@ private:
 
     Peer localPeer() const override;
 
-    void blockingSend(const Message& msg);
+    const eckit::mpi::Comm& comm() const;
 
     MpiPeer local_;
 
@@ -84,11 +54,8 @@ private:
 
     std::queue<Message> msgPack_;
 
-    eckit::Timing sendTiming_;
     eckit::Timing receiveTiming_;
-    eckit::Timing bufferWaitTiming_;
 
-    std::size_t bytesSent_ = 0;
     std::size_t bytesReceived_ = 0;
 };
 

@@ -98,10 +98,10 @@ MpiStream& StreamPool::getStream(const message::Message& msg) {
 
     bytesSent_ += sz;
 
-    return removeStream(dest);
+    return replaceStream(dest);
 }
 
-MpiStream& StreamPool::removeStream(const message::Peer& dest) {
+MpiStream& StreamPool::replaceStream(const message::Peer& dest) {
     streams_.erase(dest);
     return createNewStream(dest);
 }

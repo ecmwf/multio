@@ -52,7 +52,7 @@ private:
     MpiBuffer& findAvailableBuffer();
 
     MpiStream& createNewStream(const message::Peer& dest);
-    MpiStream& removeStream(const message::Peer& dest);
+    MpiStream& replaceStream(const message::Peer& dest);
 
     void print(std::ostream& os) const;
 

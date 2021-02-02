@@ -69,8 +69,8 @@ std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
 MpiPeer::MpiPeer(const std::string& comm, size_t rank) : Peer{comm, rank} {}
 MpiPeer::MpiPeer(Peer peer) : Peer{peer} {}
 
-StreamPool::StreamPool(size_t poolSize, size_t maxBufSize) :
-    buffers_(makeBuffers(poolSize, maxBufSize)) {}
+StreamPool::StreamPool(size_t poolSize, size_t maxBufSize, const eckit::mpi::Comm& comm) :
+    comm_{comm}, buffers_(makeBuffers(poolSize, maxBufSize)) {}
 
 MpiBuffer& StreamPool::buffer(size_t idx) {
     return buffers_[idx];
@@ -81,19 +81,43 @@ MpiStream& StreamPool::getStream(const message::Peer& dest) {
         return streams_.at(dest);
     }
 
-    if (buffers_.size() <= streams_.size()) {
-        throw eckit::BadValue("Too few buffers to cover all MPI destinations", Here());
-    }
-
-    auto& buf = findAvailableBuffer();
-    streams_.emplace(dest, buf);
-    buf.status = BufferStatus::fillingUp;
-
-    return streams_.at(dest);
+    return createNewStream(dest);
 }
 
 void StreamPool::removeStream(const message::Peer& dest) {
     streams_.erase(dest);
+}
+
+void StreamPool::emptyStreamIfNeeded(const message::Message& msg)
+{
+    // Note: it would be more elegant to wait until *after* we have encoded to message to make the
+    // decision on whether to send the buffer or not -- but then we don't yet
+    // have the information about whether the next message will fit in the buffer at all
+    auto msg_tag = static_cast<int>(msg.tag());
+    auto& strm = getStream(msg.destination());
+    if (strm.readyToSend(msg.size())) {
+        util::ScopedTimer scTimer{sendTiming_};
+
+        auto sz = static_cast<size_t>(strm.bytesWritten());
+        auto dest = static_cast<int>(msg.destination().id());
+        strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, dest, msg_tag);
+        strm.buffer().status = BufferStatus::transmitting;
+
+        bytesSent_ += sz;
+
+        removeStream(msg.destination());
+    }
+}
+
+void StreamPool::send(const message::Message &msg)
+{
+    util::ScopedTimer scTimer{sendTiming_};
+    // Shadow on purpuse
+    auto& strm = getStream(msg.destination());
+    auto sz = static_cast<size_t>(strm.bytesWritten());
+    auto dest = static_cast<int>(msg.destination().id());
+    comm_.send<void>(strm.buffer().content, sz, dest, static_cast<int>(msg.tag()));
+    bytesSent_ += sz;
 }
 
 MpiBuffer& StreamPool::findAvailableBuffer() {
@@ -109,6 +133,26 @@ MpiBuffer& StreamPool::findAvailableBuffer() {
     return *it;
 }
 
+void StreamPool::timings(std::ostream &os) const
+{
+    const std::size_t scale = 1024*1024;
+    os << "         -- Waiting for buffer: " << waitTiming_ << "s\n"
+       << "         -- Sending data:       " << bytesSent_ / scale << " MiB, " << sendTiming_
+       << "s";
+}
+
+MpiStream& StreamPool::createNewStream(const message::Peer& dest) {
+    if (buffers_.size() <= streams_.size()) {
+        throw eckit::BadValue("Too few buffers to cover all MPI destinations", Here());
+    }
+
+    auto& buf = findAvailableBuffer();
+    streams_.emplace(dest, buf);
+    buf.status = BufferStatus::fillingUp;
+
+    return streams_.at(dest);
+}
+
 void StreamPool::print(std::ostream& os) const {
     os << "StreamPool(size=" << buffers_.size() << ",status=";
     std::for_each(std::begin(buffers_), std::end(buffers_),
@@ -121,19 +165,18 @@ MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
     buffer_{
         eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024)},
-    pool_{
-        eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", 128),
-        eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024)} {}
+    pool_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", 128),
+          eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024),
+          comm()} {}
 
 MpiTransport::~MpiTransport() {
     // TODO: check why eckit::Log::info() crashes here for the clients
     const std::size_t scale = 1024*1024;
     std::ostringstream os;
-    os << " ******* " << *this
-       << "\n         -- Waiting for buffers: " << bufferWaitTiming_
-       << "s\n         -- Sending data:        " << bytesSent_ / scale << " MiB, " << sendTiming_
-       << "s\n         -- Receiving data:      " << bytesReceived_ / scale << " MiB, " << receiveTiming_
-       << "s" << std::endl;
+    os << " ******* " << *this << "\n";
+    pool_.timings(os);
+    os << "\n         -- Receiving data:      " << bytesReceived_ / scale << " MiB, "
+       << receiveTiming_ << "s" << std::endl;
 
     std::cout << os.str();
 }
@@ -178,53 +221,21 @@ Message MpiTransport::receive() {
 }
 
 void MpiTransport::send(const Message& msg) {
-    auto msg_tag = static_cast<int>(msg.tag());
-
     eckit::Log::info() << pool_ << std::endl;
 
-    // Note: it would be more elegant to wait until *after* we have encoded to message to make the
-    // decision on whether to send the buffer or not -- but then we don't yet
-    // have the information about whether the next message will fit in the buffer at all
-    auto& strm = pool_.getStream(msg.destination());
-    if (strm.readyToSend(msg.size())) {
-        util::ScopedTimer scTimer{sendTiming_};
-
-        auto sz = static_cast<size_t>(strm.bytesWritten());
-        auto dest = static_cast<int>(msg.destination().id());
-        eckit::Log::info() << " *** " << local_ << " -- Sending " << sz << " bytes to destination "
-                           << msg.destination() << std::endl;
-        strm.buffer().request = comm().iSend<void>(strm.buffer().content, sz, dest, msg_tag);
-        strm.buffer().status = BufferStatus::transmitting;
-
-        bytesSent_ += sz;
-
-        pool_.removeStream(msg.destination());
-    }
+    pool_.emptyStreamIfNeeded(msg);
 
     eckit::Log::info() << " *** Encode " << msg << " into stream for " << msg.destination()
                        << std::endl;
 
     msg.encode(pool_.getStream(msg.destination()));
     if (msg.tag() == Message::Tag::Close) {  // Send it now
-        blockingSend(msg);
+        pool_.send(msg);
     }
 }
 
 Peer MpiTransport::localPeer() const {
     return local_;
-}
-
-void MpiTransport::blockingSend(const Message& msg) {
-    util::ScopedTimer scTimer{sendTiming_};
-    // Shadow on purpuse
-    auto& strm = pool_.getStream(msg.destination());
-    auto sz = static_cast<size_t>(strm.bytesWritten());
-    auto dest = static_cast<int>(msg.destination().id());
-    eckit::Log::info() << " *** " << local_ << " -- Sending " << sz << " bytes to destination "
-                       << msg.destination() << std::endl;
-    eckit::mpi::comm(local_.group().c_str())
-        .send<void>(strm.buffer().content, sz, dest, static_cast<int>(msg.tag()));
-    bytesSent_ += sz;
 }
 
 const eckit::mpi::Comm& MpiTransport::comm() const {

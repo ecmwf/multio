@@ -38,16 +38,23 @@ public:
 
 class StreamPool {
 public:
-    explicit StreamPool(size_t poolSize, size_t maxBufSize);
+    explicit StreamPool(size_t poolSize, size_t maxBufSize, const eckit::mpi::Comm& comm);
 
     MpiBuffer& buffer(size_t idx);
 
     MpiStream& getStream(const message::Peer& dest);
     void removeStream(const message::Peer& dest);
 
+    void emptyStreamIfNeeded(const message::Message& msg);
+    void send(const message::Message& msg);
+
     MpiBuffer& findAvailableBuffer();
 
+    void timings(std::ostream& os) const;
+
 private:
+    MpiStream& createNewStream(const message::Peer& dest);
+
     void print(std::ostream& os) const;
 
     friend std::ostream& operator<<(std::ostream& os, const StreamPool& transport) {
@@ -55,8 +62,14 @@ private:
         return os;
     }
 
+    const eckit::mpi::Comm& comm_;
     std::vector<MpiBuffer> buffers_;
     std::map<MpiPeer, MpiStream> streams_;
+
+    eckit::Timing sendTiming_;
+    eckit::Timing waitTiming_;
+
+    std::size_t bytesSent_ = 0;
 };
 
 
@@ -74,8 +87,6 @@ private:
 
     Peer localPeer() const override;
 
-    void blockingSend(const Message& msg);
-
     const eckit::mpi::Comm& comm() const;
 
     MpiPeer local_;
@@ -86,11 +97,8 @@ private:
 
     std::queue<Message> msgPack_;
 
-    eckit::Timing sendTiming_;
     eckit::Timing receiveTiming_;
-    eckit::Timing bufferWaitTiming_;
 
-    std::size_t bytesSent_ = 0;
     std::size_t bytesReceived_ = 0;
 };
 

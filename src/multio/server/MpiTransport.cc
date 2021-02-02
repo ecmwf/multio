@@ -76,10 +76,29 @@ MpiBuffer& StreamPool::buffer(size_t idx) {
     return buffers_[idx];
 }
 
-MpiStream& StreamPool::getStream(const message::Peer& dest) {
-    if (streams_.find(dest) != std::end(streams_)) {
-        return streams_.at(dest);
+MpiStream& StreamPool::getStream(const message::Message& msg) {
+    auto dest = msg.destination();
+
+    if (streams_.find(dest) == std::end(streams_)) {
+        return createNewStream(dest);
     }
+
+    auto& strm = streams_.at(dest);
+    if (strm.canFitMessage(msg.size())) {
+        return strm;
+    }
+
+    util::ScopedTimer scTimer{sendTiming_};
+
+    auto sz = static_cast<size_t>(strm.bytesWritten());
+    auto destId = static_cast<int>(dest.id());
+    auto msg_tag = static_cast<int>(msg.tag());
+    strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
+    strm.buffer().status = BufferStatus::transmitting;
+
+    bytesSent_ += sz;
+
+    removeStream(dest);
 
     return createNewStream(dest);
 }
@@ -88,34 +107,13 @@ void StreamPool::removeStream(const message::Peer& dest) {
     streams_.erase(dest);
 }
 
-void StreamPool::emptyStreamIfNeeded(const message::Message& msg)
-{
-    auto& strm = getStream(msg.destination());
-    if (strm.canFitMessage(msg.size())) {
-        return;
-    }
-
+void StreamPool::send(const message::Message& msg) {
     util::ScopedTimer scTimer{sendTiming_};
 
+    auto& strm = getStream(msg);
     auto sz = static_cast<size_t>(strm.bytesWritten());
-    auto dest = static_cast<int>(msg.destination().id());
-    auto msg_tag = static_cast<int>(msg.tag());
-    strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, dest, msg_tag);
-    strm.buffer().status = BufferStatus::transmitting;
-
-    bytesSent_ += sz;
-
-    removeStream(msg.destination());
-}
-
-void StreamPool::send(const message::Message &msg)
-{
-    util::ScopedTimer scTimer{sendTiming_};
-    // Shadow on purpuse
-    auto& strm = getStream(msg.destination());
-    auto sz = static_cast<size_t>(strm.bytesWritten());
-    auto dest = static_cast<int>(msg.destination().id());
-    comm_.send<void>(strm.buffer().content, sz, dest, static_cast<int>(msg.tag()));
+    auto destId = static_cast<int>(msg.destination().id());
+    comm_.send<void>(strm.buffer().content, sz, destId, static_cast<int>(msg.tag()));
     bytesSent_ += sz;
 }
 
@@ -222,12 +220,11 @@ Message MpiTransport::receive() {
 void MpiTransport::send(const Message& msg) {
     eckit::Log::info() << pool_ << std::endl;
 
-    pool_.emptyStreamIfNeeded(msg);
-
     eckit::Log::info() << " *** Encode " << msg << " into stream for " << msg.destination()
                        << std::endl;
 
-    msg.encode(pool_.getStream(msg.destination()));
+    msg.encode(pool_.getStream(msg));
+
     if (msg.tag() == Message::Tag::Close) {  // Send it now
         pool_.send(msg);
     }

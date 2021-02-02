@@ -42,10 +42,9 @@ public:
 
     MpiBuffer& buffer(size_t idx);
 
-    MpiStream& getStream(const message::Peer& dest);
+    MpiStream& getStream(const message::Message& msg);
     void removeStream(const message::Peer& dest);
 
-    void emptyStreamIfNeeded(const message::Message& msg);
     void send(const message::Message& msg);
 
     void timings(std::ostream& os) const;

@@ -124,7 +124,7 @@ for (const auto& kw : md.keys()) {
 
 s = mstro_cdo_declaration_seal(cdo);  // Seal it after setting all attributes
 
-std::cout << " *** Offer cdo " << os.str().c_str() << std::endl;
+eckit::Log::info() << " *** Offer cdo " << os.str().c_str() << std::endl;
 s = mstro_cdo_offer(cdo);  // Submit field
 
 offered_cdos_.push_back(cdo);

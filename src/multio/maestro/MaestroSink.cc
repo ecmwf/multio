@@ -18,6 +18,7 @@
 #include <thread>
 
 #include "eckit/exception/Exceptions.h"
+#include "eckit/mpi/Comm.h"
 #include "eckit/value/Value.h"
 
 #include "multio/LibMultio.h"
@@ -62,8 +63,9 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
     eckit::Timing timing;
     {
         util::ScopedTimer timer{timing};
-        mstro_status s =
-            mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0);
+        auto componentName = std::string{::getenv("MSTRO_COMPONENT_NAME")} + " -- " +
+                             std::to_string(eckit::mpi::comm().rank());
+        mstro_status s = mstro_init(::getenv("MSTRO_WORKFLOW_NAME"),componentName.c_str(), 0);
         ASSERT(s == MSTRO_OK);
     }
     eckit::Log::info() << " MaestroSink: initialising Maestro has taken " << timing.elapsed_ << "s"

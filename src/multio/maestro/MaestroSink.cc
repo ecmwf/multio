@@ -121,7 +121,6 @@ for (const auto& kw : md.keys()) {
     auto value = md.get<std::string>(kw);
 
     auto mkey = ".maestro.ecmwf." + kw;
-    //auto mvalue = const_cast<char*>(value.c_str());
     auto intvalue = std::stoi(value);
     auto mvalue = static_cast<void *>(&intvalue);
     s = mstro_cdo_attribute_set(cdo, mkey.c_str(), &mvalue);
@@ -129,7 +128,7 @@ for (const auto& kw : md.keys()) {
 
 s = mstro_cdo_seal(cdo);  // Seal it after setting all attributes
 
-// std::cout << " *** Offer cdo " << os.str().c_str() << std::endl;
+eckit::Log::info() << " *** Offer cdo " << os.str().c_str() << std::endl;
 
 s = mstro_cdo_offer(cdo);  // Submit field
 

@@ -56,10 +56,8 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
 
     mstro_cdo_selector selector = nullptr;
 
-//    mstro_status s =
-//        mstro_cdo_selector_create(nullptr, nullptr, "(.maestro.ecmwf.step = 2)", &selector);
     mstro_status s =
-        mstro_cdo_selector_create(nullptr, nullptr, "(has .maestro.ecmwf.step)", &selector);
+        mstro_cdo_selector_create(nullptr, nullptr, "(.maestro.ecmwf.step = 2)", &selector);
     ASSERT(s == MSTRO_OK);
 
     mstro_subscription offer_subscription;
@@ -75,6 +73,7 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
         (MSTRO_POOL_EVENT_APP_JOIN | MSTRO_POOL_EVENT_APP_LEAVE));
     mstro_subscribe(nullptr, flag, MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK, &join_leave_subscription);
 
+    eckit::Log::info() << " *** Start polling" << std::endl;
     bool done = false;
     while(not done) {
         mstro_pool_event event = nullptr;

@@ -30,7 +30,6 @@ private:
     void execute(const eckit::option::CmdArgs& args) override;
 
     std::string reqFile_ = "";
-    std::vector<mstro_cdo> requiredCdos_;
     unsigned cdoEventCount_ = 0;
     eckit::Timing timing_;
 };
@@ -56,8 +55,10 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
 
     mstro_cdo_selector selector = nullptr;
 
+//    mstro_status s =
+//        mstro_cdo_selector_create(nullptr, nullptr, "(.maestro.ecmwf.step = 2)", &selector);
     mstro_status s =
-        mstro_cdo_selector_create(nullptr, nullptr, "(.maestro.ecmwf.step = 2)", &selector);
+        mstro_cdo_selector_create(nullptr, nullptr, "(has .maestro.ecmwf.step)", &selector);
     ASSERT(s == MSTRO_OK);
 
     mstro_subscription offer_subscription;
@@ -124,27 +125,27 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
                         mstro_cdo cdo = nullptr;
                         s = mstro_cdo_declare(tmp->offer.cdo_name, MSTRO_ATTR_DEFAULT, &cdo);
                         ASSERT(s == MSTRO_OK);
-//                         eckit::Log::info() << " *** Require " << std::endl;
-//                         s = mstro_cdo_require(cdo);
-//                         ASSERT(s == MSTRO_OK);
-//                        requiredCdos_.push_back(cdo);
-//                        eckit::Log::info() << " *** Demand " << std::endl;
-//                        s = mstro_cdo_demand(cdo);
+                        eckit::Log::info() << " *** Require " << std::endl;
+                        s = mstro_cdo_require(cdo);
+                        ASSERT(s == MSTRO_OK);
+
+//                        eckit::Log::info() << " *** Retract " << std::endl;
+//                        s = mstro_cdo_retract(cdo);
 //                        ASSERT(s == MSTRO_OK);
 
-                        // eckit::Log::info() << " *** Retract " << std::endl;
-                        // s = mstro_cdo_retract(cdo);
-                        // ASSERT(s == MSTRO_OK);
+                        eckit::Log::info() << " *** Demand " << std::endl;
+                        s = mstro_cdo_demand(cdo);
+                        ASSERT(s == MSTRO_OK);
 
-//                        eckit::Log::info() << " *** Attribute get " << std::endl;
+                        eckit::Log::info() << " *** Attribute get " << std::endl;
 
-//                        auto valType = MSTRO_CDO_ATTR_VALUE_uint64;
-//                        const size_t* sz;
-//                        s = mstro_cdo_attribute_get(cdo, ".maestro.core.cdo.scope.local-size",
-//                                                    &valType, reinterpret_cast<const void**>(&sz));
+                        auto valType = MSTRO_CDO_ATTR_VALUE_uint64;
+                        const size_t* sz;
+                        s = mstro_cdo_attribute_get(cdo, ".maestro.core.cdo.scope.local-size",
+                                                    &valType, reinterpret_cast<const void**>(&sz));
 
-//                        eckit::Log::info()
-//                            << " *** CDO with size " << *sz << " has been demanded" << std::endl;
+                        eckit::Log::info()
+                            << " *** CDO with size " << *sz << " has been demanded " << std::endl;
 
                         // FileSink here
                         break;

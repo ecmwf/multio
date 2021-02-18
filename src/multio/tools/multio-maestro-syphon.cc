@@ -144,8 +144,12 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
                         s = mstro_cdo_attribute_get(cdo, ".maestro.core.cdo.scope.local-size",
                                                     &valType, reinterpret_cast<const void**>(&sz));
 
-                        eckit::Log::info()
-                            << " *** CDO with size " << *sz << " has been demanded " << std::endl;
+                        valType = MSTRO_CDO_ATTR_VALUE_pointer;
+                        const void* buf = std::malloc(*sz);
+                        s = mstro_cdo_attribute_get(cdo, ".mstro.core.cdo.raw-ptr", &valType, &buf);
+
+                        eckit::Log::info() << " *** CDO with size " << *sz << " and buffer pointer "
+                                           << buf << " has been demanded " << std::endl;
 
                         // FileSink here
                         break;

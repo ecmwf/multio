@@ -14,8 +14,10 @@
 #include "multio/maestro/MaestroSink.h"
 
 #include <algorithm>
+#include <cstring>
 #include <string>
 #include <thread>
+#include "unistd.h"
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/mpi/Comm.h"
@@ -84,11 +86,12 @@ MaestroSink::~MaestroSink() {
 
 void MaestroSink::write(eckit::message::Message blob) {
 
+// ++cdoCount_;
+
 //    auto name = std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())) +
 //                "-" + std::to_string(cdoCount_++);
-++cdoCount_;
 
-//auto name = std::string("multio-hammer-cdo -- ") + std::to_string(cdoCount_++);
+auto name = std::string("multio-hammer-cdo--") + std::to_string(cdoCount_++);
 
 LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
 
@@ -104,16 +107,21 @@ util::ScopedTimer timer{timing_};
 
 mstro_cdo cdo = nullptr;
 mstro_status s;
-s = mstro_cdo_declare(os.str().c_str(), MSTRO_ATTR_DEFAULT, &cdo);
+s = mstro_cdo_declare(name.c_str(), MSTRO_ATTR_DEFAULT, &cdo);
+//s = mstro_cdo_declare(os.str().c_str(), MSTRO_ATTR_DEFAULT, &cdo);
 
-const void* cbuf = blob.data();
-void* buf = const_cast<void*>(cbuf);
+//const void* cbuf = blob.data();
+//void* buf = const_cast<void*>(cbuf);
 
-s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.raw-ptr", buf);
-
+auto buf = static_cast<void*>(new char[blob.length()]);
 auto sz = blob.length();
 
+::memcpy(buf, blob.data(), sz);
+
+s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.raw-ptr", buf);
 s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.scope.local-size", &sz);
+
+eckit::Log::info() << " *** MaestroSink *** buffer " << buf << " with size " << sz << std::endl;
 
 LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
 
@@ -128,7 +136,7 @@ for (const auto& kw : md.keys()) {
 
 s = mstro_cdo_seal(cdo);  // Seal it after setting all attributes
 
-eckit::Log::info() << " *** Offer cdo " << os.str().c_str() << std::endl;
+eckit::Log::info() << " *** Offer cdo " << name.c_str() << std::endl;
 
 s = mstro_cdo_offer(cdo);  // Submit field
 
@@ -137,12 +145,13 @@ offered_cdos_.push_back(cdo);
 
 void MaestroSink::flush() {
     {
-        LOG_DEBUG_LIB(LibMultio) << "MaestroSink::flush()" << std::endl;
+        eckit::Log::info() << "MaestroSink::flush()" << std::endl;
 
         util::ScopedTimer timer{timing_};
+        ::sleep(15);
         std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo) {
-            mstro_cdo_withdraw(cdo);
-            mstro_cdo_dispose(cdo);
+            //            mstro_cdo_withdraw(cdo);
+            //            mstro_cdo_dispose(cdo);
         });
 
         offered_cdos_.clear();

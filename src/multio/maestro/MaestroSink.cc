@@ -114,7 +114,7 @@ s = mstro_cdo_declare(name.c_str(), MSTRO_ATTR_DEFAULT, &cdo);
 //void* buf = const_cast<void*>(cbuf);
 
 auto buf = static_cast<void*>(new char[blob.length()]);
-auto sz = blob.length();
+uint64_t sz = blob.length();
 
 ::memcpy(buf, blob.data(), sz);
 

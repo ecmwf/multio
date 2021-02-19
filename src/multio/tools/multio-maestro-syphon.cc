@@ -140,18 +140,21 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
                         eckit::Log::info() << " *** Attribute get " << std::endl;
 
                         auto valType = MSTRO_CDO_ATTR_VALUE_uint64;
-                        const size_t* sz;
+                        const uint64_t* sz;
                         s = mstro_cdo_attribute_get(cdo, ".maestro.core.cdo.scope.local-size",
                                                     &valType, reinterpret_cast<const void**>(&sz));
 
-                        valType = MSTRO_CDO_ATTR_VALUE_pointer;
-                        const void* buf = std::malloc(*sz);
-                        s = mstro_cdo_attribute_get(cdo, ".mstro.core.cdo.raw-ptr", &valType, &buf);
+                        mmbArray *mamba_ptr=NULL;
+                        s = mstro_cdo_access_mamba_array(cdo, &mamba_ptr);
 
-                        eckit::Log::info() << " *** CDO with size " << *sz << " and buffer pointer "
-                                           << buf << " has been demanded " << std::endl;
+                        eckit::Log::info() << " *** CDO with size " << *sz << " and mamba pointer "
+                                           << mamba_ptr << " has been demanded " << std::endl;
 
                         // FileSink here
+
+                        s = mstro_cdo_dispose(cdo);
+                        ASSERT(s == MSTRO_OK);
+
                         break;
                     }
                     default:

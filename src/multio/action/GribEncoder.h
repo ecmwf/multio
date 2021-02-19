@@ -17,7 +17,7 @@
 
 #include "eccodes.h"
 
-#include "metkit/grib/GribHandle.h"
+#include "metkit/codes/GribHandle.h"
 #include "multio/message/Message.h"
 
 namespace multio {

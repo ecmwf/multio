@@ -51,108 +51,81 @@ Message decodeMessage(eckit::Stream& stream) {
                                 MpiPeer{dest_grp, dest_id}, std::move(fieldId)},
                 std::move(buffer)};
 }
+
 }  // namespace
-
-
-MpiPeer::MpiPeer(const std::string& comm, size_t rank) : Peer{comm, rank} {}
 
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
     local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
-    buffer_{0},
-    bufList_{128} {} // TODO: use eckit::Resource
+    buffer_{
+        eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024)},
+    pool_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", 128),
+          eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024),
+          comm()} {}
 
 MpiTransport::~MpiTransport() {
     // TODO: check why eckit::Log::info() crashes here for the clients
     const std::size_t scale = 1024*1024;
     std::ostringstream os;
-    os << " ******* " << *this
-       << "\n         -- Waiting for buffers: " << bufferWaitTiming_
-       << "s\n         -- Sending data:        " << bytesSent_ / scale << " MiB, " << sendTiming_
-       << "s\n         -- Receiving data:      " << bytesReceived_ / scale << " MiB, " << receiveTiming_
-       << "s" << std::endl;
+    os << " ******* " << *this << "\n";
+    pool_.timings(os);
+    os << "\n         -- Receiving data:      " << bytesReceived_ / scale << " MiB, "
+       << receiveTiming_ << "s" << std::endl;
 
     std::cout << os.str();
 }
 
 Message MpiTransport::receive() {
-    const auto& comm = eckit::mpi::comm(local_.group().c_str());
 
-    auto status = comm.probe(comm.anySource(), comm.anyTag());
+    while (not msgPack_.empty()) {
+        auto msg = msgPack_.front();
+        msgPack_.pop();
+        return msg;
+    }
 
-    buffer_.resize(eckit::round(comm.getCount<void>(status), 8));
+    auto status = comm().probe(comm().anySource(), comm().anyTag());
+
+    auto sz = comm().getCount<void>(status);
+    ASSERT(sz < buffer_.size());
 
     {
         util::ScopedTimer scTimer{receiveTiming_};
-        comm.receive<void>(buffer_, buffer_.size(), status.source(), status.tag());
+        comm().receive<void>(buffer_, sz, status.source(), status.tag());
     }
 
-    bytesReceived_ += buffer_.size();
+    bytesReceived_ += sz;
+
     eckit::ResizableMemoryStream stream{buffer_};
 
-    return decodeMessage(stream);
+    while (stream.position() < sz) {
+        auto msg = decodeMessage(stream);
+        msgPack_.push(msg);
+    }
+
+    auto msg = msgPack_.front();
+    msgPack_.pop();
+    return msg;
 }
 
 void MpiTransport::send(const Message& msg) {
+    eckit::Log::info() << pool_ << std::endl;
 
-    nonBlockingSend(msg);
+    eckit::Log::info() << " *** Encode " << msg << " into stream for " << msg.destination()
+                       << std::endl;
 
-//    auto msg_tag = static_cast<int>(msg.tag());
+    msg.encode(pool_.getStream(msg));
 
-//    // Add 4K for header/footer etc. Should be plenty
-//    buffer_.resize(eckit::round(msg.size(), 8) + 4096);
-
-//    eckit::ResizableMemoryStream stream{buffer_};
-
-//    msg.encode(stream);
-
-//    auto sz = static_cast<size_t>(stream.bytesWritten());
-//    auto dest = static_cast<int>(msg.destination().id());
-
-//    util::ScopedTimer scTimer{sendTiming_};
-
-//    eckit::mpi::comm(local_.group().c_str()).send<void>(buffer_, sz, dest, msg_tag);
+    if (msg.tag() == Message::Tag::Close) {  // Send it now
+        pool_.send(msg);
+    }
 }
 
 Peer MpiTransport::localPeer() const {
     return local_;
 }
 
-void MpiTransport::nonBlockingSend(const Message& msg) {
-    auto msg_tag = static_cast<int>(msg.tag());
-
-    const auto& comm = eckit::mpi::comm(local_.group().c_str());
-
-    auto it = std::find_if(std::begin(bufList_.request), std::end(bufList_.request),
-                           [](eckit::mpi::Request& req) { return req.test(); });
-
-    int idx;
-    if (it == std::end(bufList_.request)) {
-        util::ScopedTimer scTimer{bufferWaitTiming_};
-        auto status = comm.waitAny(bufList_.request, idx);
-        // eckit::Log::info() << " *** " << *this << " *** use just-freed buffer idx = " << idx << std::endl;
-    }
-    else {
-        idx = std::distance(std::begin(bufList_.request), it);
-        // eckit::Log::info() << " *** " << *this << " *** use available buffer idx = " << idx << std::endl;
-    }
-
-    util::ScopedTimer scTimer{sendTiming_};
-
-    // Add 4K for header/footer etc. Should be plenty
-    auto& buf = bufList_.buffer[idx];
-
-    buf.resize(eckit::round(msg.size(), 8) + 4096);
-
-    bytesSent_ += buf.size();
-    eckit::ResizableMemoryStream stream{buf};
-
-    msg.encode(stream);
-
-    auto sz = static_cast<size_t>(stream.bytesWritten());
-    auto dest = static_cast<int>(msg.destination().id());
-
-    bufList_.request[idx] = comm.iSend<void>(buf, sz, dest, msg_tag);
+const eckit::mpi::Comm& MpiTransport::comm() const {
+    return eckit::mpi::comm(local_.group().c_str());
 }
 
 void MpiTransport::print(std::ostream& os) const {

@@ -186,47 +186,47 @@ nemo-fields :
     grid-type : "T grid"
 
   - nemo-id : salbtm
-    param-id : 212035
-    grid-type : "T grid"
-
-  - nemo-id : precip
     param-id : 212036
     grid-type : "T grid"
 
-  - nemo-id : uocee
+  - nemo-id : precip
     param-id : 212037
     grid-type : "T grid"
 
-  - nemo-id : vocen
+  - nemo-id : uocee
     param-id : 212038
     grid-type : "T grid"
 
-  - nemo-id : uocees
+  - nemo-id : vocen
     param-id : 212039
     grid-type : "T grid"
 
-  - nemo-id : vocens
+  - nemo-id : uocees
     param-id : 212040
     grid-type : "T grid"
 
-  - nemo-id : utaue
+  - nemo-id : vocens
     param-id : 212041
     grid-type : "T grid"
 
-  - nemo-id : vtaun
+  - nemo-id : utaue
     param-id : 212042
     grid-type : "T grid"
 
-  - nemo-id : hc26c
+  - nemo-id : vtaun
     param-id : 212043
     grid-type : "T grid"
 
-  - nemo-id : thetaodmp
+  - nemo-id : hc26c
     param-id : 212044
     grid-type : "T grid"
 
-  - nemo-id : sodmp
+  - nemo-id : thetaodmp
     param-id : 212045
+    grid-type : "T grid"
+
+  - nemo-id : sodmp
+    param-id : 212046
     grid-type : "T grid"
 
   #=================================

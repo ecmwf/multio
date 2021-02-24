@@ -36,6 +36,8 @@ ecbuild_add_library(
         MultioNemo.h
         ThreadTransport.cc
         ThreadTransport.h
+        MpiStream.cc
+        MpiStream.h
         MpiTransport.cc
         MpiTransport.h
         TcpTransport.cc
@@ -43,6 +45,8 @@ ecbuild_add_library(
         Transport.cc
         Transport.h
         ScopedThread.h
+        StreamPool.cc
+        StreamPool.h
         multio_nemo.f90
         multio.f90
 

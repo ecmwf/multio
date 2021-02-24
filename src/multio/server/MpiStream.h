@@ -8,7 +8,7 @@
 #define multio_server_MpiStream_H
 
 #include "eckit/mpi/Comm.h"
-#include "eckit/io/ResizableBuffer.h"
+#include "eckit/io/Buffer.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
 namespace multio {
@@ -29,7 +29,7 @@ public:
 
     BufferStatus status = BufferStatus::available;
     eckit::mpi::Request request;
-    eckit::ResizableBuffer content;
+    eckit::Buffer content;
 };
 
 class MpiStream : public eckit::ResizableMemoryStream {

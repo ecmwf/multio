@@ -19,7 +19,7 @@
 
 #include <queue>
 
-#include "eckit/io/ResizableBuffer.h"
+#include "eckit/io/Buffer.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
@@ -48,7 +48,7 @@ private:
 
     MpiPeer local_;
 
-    eckit::ResizableBuffer buffer_;
+    eckit::Buffer buffer_;
 
     StreamPool pool_;
 

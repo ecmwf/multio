@@ -17,7 +17,7 @@
 #ifndef multio_server_MpiTransport_H
 #define multio_server_MpiTransport_H
 
-#include "eckit/io/Buffer.h"
+#include "eckit/io/ResizableBuffer.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
@@ -27,10 +27,10 @@
 namespace multio {
 namespace server {
 
-inline std::vector<eckit::Buffer> makeBuffers(std::size_t sz) {
-    std::vector<eckit::Buffer> bufs;
+inline std::vector<eckit::ResizableBuffer> makeBuffers(std::size_t sz) {
+    std::vector<eckit::ResizableBuffer> bufs;
     for (auto ii = 0u; ii < sz; ++ii) {
-        bufs.emplace_back(eckit::Buffer{0});
+        bufs.emplace_back(eckit::ResizableBuffer{0});
     }
     return bufs;
 }
@@ -40,7 +40,7 @@ struct BufferList{
 
     std::size_t size_;
     std::vector<eckit::mpi::Request> request;
-    std::vector<eckit::Buffer> buffer;
+    std::vector<eckit::ResizableBuffer> buffer;
 };
 
 class MpiPeer : public Peer {
@@ -67,7 +67,7 @@ private:
 
     MpiPeer local_;
 
-    eckit::Buffer buffer_;
+    eckit::ResizableBuffer buffer_;
 
     BufferList bufList_;
 

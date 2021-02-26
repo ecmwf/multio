@@ -10,10 +10,11 @@
 
 #include "Listener.h"
 
+#include <unistd.h>
+
 #include <fstream>
 #include <functional>
 #include <typeinfo>
-#include "unistd.h"
 
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"

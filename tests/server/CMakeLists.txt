@@ -47,7 +47,7 @@ ecbuild_get_test_multidata( EXTRACT TARGET multio_replay_get_test_data NAMES ${_
 ecbuild_add_test( TARGET       test_multio_replay_nemo
                   COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh
                   TEST_DEPENDS multio_replay_get_test_data
-                  ARGS         $<TARGET_FILE:multio-replay> $<TARGET_FILE:multio-probe> ${MPI_ARGS}
+                  ARGS         $<TARGET_FILE:multio-replay> $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
                   ENVIRONMENT  "${_test_environment}" )
 
 endif(HAVE_MULTIO_SERVER)

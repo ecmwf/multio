@@ -71,3 +71,11 @@ ecbuild_add_library(
     PUBLIC_LIBS
         multio-server
 )
+# set_target_properties( multio PROPERTIES Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
+# target_include_directories( multio PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module> )
+
+# target_fortran_module_directory(
+#   TARGET multio
+#   MODULE_DIRECTORY  ${PROJECT_BINARY_DIR}/module/multio
+#   INSTALL_DIRECTORY module/multio
+# )

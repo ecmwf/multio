@@ -47,8 +47,6 @@ ecbuild_add_library(
         ScopedThread.h
         StreamPool.cc
         StreamPool.h
-        multio_nemo.f90
-        multio.f90
 
     PUBLIC_LIBS
         ${multio_server_plugins}
@@ -59,3 +57,25 @@ ecbuild_add_library(
         metkit
         eccodes
 )
+
+ecbuild_add_library(
+
+    TARGET multio-server-fapi
+
+    CONDITION HAVE_MULTIO_SERVER
+
+    SOURCES
+        multio_nemo.f90
+        multio.f90
+
+    PUBLIC_LIBS
+        multio-server
+)
+# set_target_properties( multio PROPERTIES Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
+# target_include_directories( multio PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module> )
+
+# target_fortran_module_directory(
+#   TARGET multio
+#   MODULE_DIRECTORY  ${PROJECT_BINARY_DIR}/module/multio
+#   INSTALL_DIRECTORY module/multio
+# )

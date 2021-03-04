@@ -47,8 +47,6 @@ ecbuild_add_library(
         ScopedThread.h
         StreamPool.cc
         StreamPool.h
-        multio_nemo.f90
-        multio.f90
 
     PUBLIC_LIBS
         ${multio_server_plugins}
@@ -58,4 +56,18 @@ ecbuild_add_library(
         eckit
         metkit
         eccodes
+)
+
+ecbuild_add_library(
+
+    TARGET multio-server-fapi
+
+    CONDITION HAVE_MULTIO_SERVER
+
+    SOURCES
+        multio_nemo.f90
+        multio.f90
+
+    PUBLIC_LIBS
+        multio-server
 )

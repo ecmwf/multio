@@ -28,26 +28,34 @@ module multio_nemo
 
     interface
 
-        subroutine multio_open_connections() bind(c)
+        subroutine c_multio_open_connections() bind(c, name="multio_open_connections")
             use, intrinsic :: iso_c_binding
             implicit none
-        end subroutine multio_open_connections
+        end subroutine c_multio_open_connections
 
-        subroutine multio_close_connections() bind(c)
+        subroutine c_multio_close_connections() bind(c, name="multio_close_connections")
             use, intrinsic :: iso_c_binding
             implicit none
-        end subroutine multio_close_connections
+        end subroutine c_multio_close_connections
 
-        subroutine multio_write_step_complete() bind(c)
+        subroutine c_multio_write_step_complete() bind(c, name="multio_write_step_complete")
             use, intrinsic :: iso_c_binding
             implicit none
-        end subroutine multio_write_step_complete
+        end subroutine c_multio_write_step_complete
 
-        subroutine multio_init_server(nemo_comm) bind(c)
+        function c_multio_init_client(c_name, parent_comm) result(ret_comm) bind(c, name='multio_init_client')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            character(c_char), intent(in) :: c_name(*)
+            integer(c_int), intent(in), value :: parent_comm
+            integer(c_int) :: ret_comm
+        end function c_multio_init_client
+
+        subroutine c_multio_init_server(nemo_comm) bind(c, name='multio_init_server')
             use, intrinsic :: iso_c_binding
             implicit none
             integer(c_int), intent(in), value :: nemo_comm
-        end subroutine multio_init_server
+        end subroutine c_multio_init_server
 
         subroutine c_multio_metadata_set_int_value(key, val) bind(c, name='multio_metadata_set_int_value')
             use, intrinsic :: iso_c_binding
@@ -62,14 +70,6 @@ module multio_nemo
             character(c_char), intent(in) :: key(*)
             character(c_char), intent(in) :: val(*)
         end subroutine c_multio_metadata_set_string_value
-
-        function c_multio_init_client(c_name, parent_comm) result(ret_comm) bind(c, name='multio_init_client')
-            use, intrinsic :: iso_c_binding
-            implicit none
-            character(c_char), intent(in) :: c_name(*)
-            integer(c_int), intent(in), value :: parent_comm
-            integer(c_int) :: ret_comm
-        end function c_multio_init_client
 
         subroutine c_multio_set_domain(c_key, data, size) bind(c, name='multio_set_domain')
             use, intrinsic :: iso_c_binding
@@ -114,6 +114,45 @@ module multio_nemo
 
         end function to_c_string
 
+        subroutine multio_open_connections()
+            implicit none
+
+            call c_multio_open_connections()
+
+        end subroutine multio_open_connections
+
+        subroutine multio_close_connections()
+            implicit none
+
+            call c_multio_close_connections()
+
+        end subroutine multio_close_connections
+
+        subroutine multio_write_step_complete()
+            implicit none
+
+            call c_multio_write_step_complete()
+
+        end subroutine multio_write_step_complete
+
+        subroutine multio_init_client(name, ret_comm, parent_comm)
+            implicit none
+            character(*), intent(in) :: name
+            integer, intent(in)  :: parent_comm
+            integer, intent(out) :: ret_comm
+
+            ret_comm = c_multio_init_client(to_c_string(name), parent_comm)
+
+        end subroutine multio_init_client
+
+        subroutine multio_init_server(nemo_comm)
+            implicit none
+            integer, intent(in)  :: nemo_comm
+
+            call c_multio_init_server(nemo_comm)
+
+        end subroutine multio_init_server
+
         subroutine multio_metadata_set_int_value(key, val)
             implicit none
             character(*), intent(in) :: key
@@ -131,16 +170,6 @@ module multio_nemo
             call c_multio_metadata_set_string_value(to_c_string(key), to_c_string(val))
 
         end subroutine multio_metadata_set_string_value
-
-        subroutine multio_init_client(name, ret_comm, parent_comm)
-            implicit none
-            character(*), intent(in) :: name
-            integer, intent(in)  :: parent_comm
-            integer, intent(out) :: ret_comm
-
-            ret_comm = c_multio_init_client(to_c_string(name), parent_comm)
-
-        end subroutine multio_init_client
 
         subroutine multio_set_domain(key, data)
             implicit none

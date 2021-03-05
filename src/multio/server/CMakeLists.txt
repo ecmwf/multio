@@ -72,11 +72,15 @@ ecbuild_add_library(
         multio-server
 )
 
-set_target_properties( multio-server-fapi
-    PROPERTIES Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module
- )
+if( HAVE_MULTIO_SERVER )
 
-target_include_directories( multio-server-fapi PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module> )
+set_target_properties( multio-server-fapi
+    PROPERTIES Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
+
+target_include_directories( multio-server-fapi
+    PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module> )
+
+endif()
 
 # target_fortran_module_directory(
 #   TARGET multio

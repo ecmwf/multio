@@ -76,7 +76,7 @@ void StreamPool::send(const message::Message& msg) {
     auto& strm = getStream(msg);
     auto sz = static_cast<size_t>(strm.bytesWritten());
     auto destId = static_cast<int>(msg.destination().id());
-    // comm_.send<void>(strm.buffer().content, sz, destId, static_cast<int>(msg.tag()));
+    comm_.send<void>(strm.buffer().content, sz, destId, static_cast<int>(msg.tag()));
     bytesSent_ += sz;
 }
 

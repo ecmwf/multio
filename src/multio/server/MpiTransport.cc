@@ -83,6 +83,8 @@ Message MpiTransport::receive() {
         return msg;
     }
 
+    auto sz = blockingReceive();
+
     bytesReceived_ += sz;
 
     eckit::ResizableMemoryStream stream{buffer_};
@@ -105,8 +107,13 @@ void MpiTransport::send(const Message& msg) {
 
     msg.encode(pool_.getStream(msg));
 
-    if (msg.tag() == Message::Tag::Close) {  // Send it now
-        pool_.send(msg);
+    if ((msg.tag() == Message::Tag::Open) || (msg.tag() == Message::Tag::Close)) {  // Send it now
+//        pool_.send(msg);
+        eckit::ResizableMemoryStream strm(buffer_);
+        msg.encode(strm);
+        auto sz = static_cast<size_t>(strm.bytesWritten());
+        auto destId = static_cast<int>(msg.destination().id());
+        comm().send<void>(buffer_.data(), sz, destId, static_cast<int>(msg.tag()));
     }
 }
 

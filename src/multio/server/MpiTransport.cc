@@ -108,10 +108,10 @@ Message MpiTransport::receive() {
 }
 
 void MpiTransport::send(const Message& msg) {
-    eckit::Log::info() << pool_ << std::endl;
+    // eckit::Log::info() << pool_ << std::endl;
 
-    eckit::Log::info() << " *** Encode " << msg << " into stream for " << msg.destination()
-                       << std::endl;
+    // eckit::Log::info() << " *** Encode " << msg << " into stream for " << msg.destination()
+    //                    << std::endl;
 
     msg.encode(pool_.getStream(msg));
 

@@ -14,9 +14,16 @@ namespace server {
 namespace  {
 std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
     std::vector<MpiBuffer> bufs;
+    eckit::Log::info() << " *** qAllocating " << poolSize << " buffers of size "
+                       << maxBufSize / 1024 / 1024 << " each" << std::endl;
+    size_t totMem = 0;
     for (auto ii = 0u; ii < poolSize; ++ii) {
         bufs.emplace_back(maxBufSize);
+        totMem += maxBufSize;
     }
+    totMem /= 1024*1024*1024;
+    eckit::Log::info() << " *** Allocated a total of " << totMem << "GiB of memory for this peer"
+                       << std::endl;
     return bufs;
 }
 }  // namespace
@@ -78,8 +85,8 @@ MpiBuffer& StreamPool::findAvailableBuffer() {
                           [](MpiBuffer& buf) { return buf.isFree(); });
     }
 
-    eckit::Log::info() << " *** -- Found available buffer with idx = "
-                       << static_cast<size_t>(std::distance(std::begin(buffers_), it)) << std::endl;
+    // eckit::Log::info() << " *** -- Found available buffer with idx = "
+    //                    << static_cast<size_t>(std::distance(std::begin(buffers_), it)) << std::endl;
 
     return *it;
 }

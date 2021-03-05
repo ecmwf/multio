@@ -55,8 +55,10 @@ MpiStream& StreamPool::getStream(const message::Message& msg) {
     auto sz = static_cast<size_t>(strm.bytesWritten());
     auto destId = static_cast<int>(dest.id());
     auto msg_tag = static_cast<int>(msg.tag());
-    strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
-    strm.buffer().status = BufferStatus::transmitting;
+    // strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
+    // strm.buffer().status = BufferStatus::transmitting;
+
+    strm.buffer().status = BufferStatus::available;
 
     bytesSent_ += sz;
 
@@ -74,7 +76,7 @@ void StreamPool::send(const message::Message& msg) {
     auto& strm = getStream(msg);
     auto sz = static_cast<size_t>(strm.bytesWritten());
     auto destId = static_cast<int>(msg.destination().id());
-    comm_.send<void>(strm.buffer().content, sz, destId, static_cast<int>(msg.tag()));
+    // comm_.send<void>(strm.buffer().content, sz, destId, static_cast<int>(msg.tag()));
     bytesSent_ += sz;
 }
 

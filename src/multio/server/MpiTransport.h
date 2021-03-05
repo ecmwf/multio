@@ -46,6 +46,8 @@ private:
 
     const eckit::mpi::Comm& comm() const;
 
+    size_t blockingReceive();
+
     MpiPeer local_;
 
     eckit::Buffer buffer_;

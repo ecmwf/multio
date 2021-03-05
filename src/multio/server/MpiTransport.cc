@@ -83,16 +83,6 @@ Message MpiTransport::receive() {
         return msg;
     }
 
-    auto status = comm().probe(comm().anySource(), comm().anyTag());
-
-    auto sz = comm().getCount<void>(status);
-    ASSERT(sz < buffer_.size());
-
-    {
-        util::ScopedTimer scTimer{receiveTiming_};
-        comm().receive<void>(buffer_, sz, status.source(), status.tag());
-    }
-
     bytesReceived_ += sz;
 
     eckit::ResizableMemoryStream stream{buffer_};
@@ -120,6 +110,10 @@ void MpiTransport::send(const Message& msg) {
     }
 }
 
+void MpiTransport::print(std::ostream& os) const {
+    os << "MpiTransport(" << local_ << ")";
+}
+
 Peer MpiTransport::localPeer() const {
     return local_;
 }
@@ -128,8 +122,16 @@ const eckit::mpi::Comm& MpiTransport::comm() const {
     return eckit::mpi::comm(local_.group().c_str());
 }
 
-void MpiTransport::print(std::ostream& os) const {
-    os << "MpiTransport(" << local_ << ")";
+size_t MpiTransport::blockingReceive() {
+    util::ScopedTimer scTimer{receiveTiming_};
+    auto status = comm().probe(comm().anySource(), comm().anyTag());
+
+    auto sz = comm().getCount<void>(status);
+    ASSERT(sz < buffer_.size());
+
+    comm().receive<void>(buffer_, sz, status.source(), status.tag());
+
+    return sz;
 }
 
 static TransportBuilder<MpiTransport> MpiTransportBuilder("mpi");

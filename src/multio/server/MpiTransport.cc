@@ -52,16 +52,20 @@ Message decodeMessage(eckit::Stream& stream) {
                 std::move(buffer)};
 }
 
+const size_t defaultBufferSize = 64 * 1024 * 1024;
+const size_t defaultPoolSize = 128;
+
 }  // namespace
 
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
     local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
     buffer_{
-        eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024)},
-    pool_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", 128),
-          eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024),
-          comm()} {}
+        eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", defaultBufferSize)},
+    pool_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", defaultPoolSize),
+          eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", defaultBufferSize),
+          comm()},
+    log_{"mpi-transport-" + std::to_string(local_.id()) + ".log"} {}
 
 MpiTransport::~MpiTransport() {
     // TODO: check why eckit::Log::info() crashes here for the clients
@@ -69,13 +73,16 @@ MpiTransport::~MpiTransport() {
     std::ostringstream os;
     os << " ******* " << *this << "\n";
     pool_.timings(os);
-    os << "\n         -- Receiving data:      " << bytesReceived_ / scale << " MiB, "
-       << receiveTiming_ << "s" << std::endl;
+    os << "\n         -- Total for send:       " << totSendTiming_
+       << "s\n         -- Receiving data:      " << bytesReceived_ / scale << " MiB, "
+       << receiveTiming_ << "s\n         -- Total for receive:       " << totReceiveTiming_ << "s"
+       << std::endl;
 
-    std::cout << os.str();
+    log_ << os.str();
 }
 
 Message MpiTransport::receive() {
+    util::ScopedTimer scTimer{totReceiveTiming_};
 
     while (not msgPack_.empty()) {
         auto msg = msgPack_.front();
@@ -100,6 +107,8 @@ Message MpiTransport::receive() {
 }
 
 void MpiTransport::send(const Message& msg) {
+    util::ScopedTimer scTimer{totSendTiming_};
+
     msg.encode(pool_.getStream(msg));
 
     if (msg.tag() == Message::Tag::Close) {  // Send it now

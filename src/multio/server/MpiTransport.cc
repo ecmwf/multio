@@ -73,9 +73,10 @@ MpiTransport::~MpiTransport() {
     std::ostringstream os;
     os << " ******* " << *this << "\n";
     pool_.timings(os);
-    os << "\n         -- Total for send:       " << totSendTiming_
+    os << "\n         -- Total for send:      " << totSendTiming_
+       << "s\n         -- Probing for data:    " << probeTiming_
        << "s\n         -- Receiving data:      " << bytesReceived_ / scale << " MiB, "
-       << receiveTiming_ << "s\n         -- Total for receive:       " << totReceiveTiming_ << "s"
+       << receiveTiming_ << "s\n         -- Total for receive:   " << totReceiveTiming_ << "s"
        << std::endl;
 
     log_ << os.str();
@@ -128,13 +129,20 @@ const eckit::mpi::Comm& MpiTransport::comm() const {
     return eckit::mpi::comm(local_.group().c_str());
 }
 
-size_t MpiTransport::blockingReceive() {
-    util::ScopedTimer scTimer{receiveTiming_};
+eckit::mpi::Status MpiTransport::blockingProbe() {
+    util::ScopedTimer scTimer{probeTiming_};
     auto status = comm().probe(comm().anySource(), comm().anyTag());
+
+    return status;
+}
+
+size_t MpiTransport::blockingReceive() {
+    auto status = blockingProbe();
 
     auto sz = comm().getCount<void>(status);
     ASSERT(sz < buffer_.size());
 
+    util::ScopedTimer scTimer{receiveTiming_};
     comm().receive<void>(buffer_, sz, status.source(), status.tag());
 
     return sz;

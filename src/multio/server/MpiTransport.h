@@ -47,6 +47,7 @@ private:
 
     const eckit::mpi::Comm& comm() const;
 
+    eckit::mpi::Status blockingProbe();
     size_t blockingReceive();
 
     MpiPeer local_;
@@ -59,6 +60,7 @@ private:
 
     eckit::Timing totSendTiming_;
     eckit::Timing receiveTiming_;
+    eckit::Timing probeTiming_;
     eckit::Timing totReceiveTiming_;
 
     std::size_t bytesReceived_ = 0;

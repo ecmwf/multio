@@ -14,7 +14,7 @@ namespace server {
 namespace  {
 std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
     std::vector<MpiBuffer> bufs;
-    eckit::Log::info() << " *** qAllocating " << poolSize << " buffers of size "
+    eckit::Log::info() << " *** Allocating " << poolSize << " buffers of size "
                        << maxBufSize / 1024 / 1024 << " each" << std::endl;
     size_t totMem = 0;
     for (auto ii = 0u; ii < poolSize; ++ii) {
@@ -94,8 +94,8 @@ MpiBuffer& StreamPool::findAvailableBuffer() {
 void StreamPool::timings(std::ostream &os) const
 {
     const std::size_t scale = 1024*1024;
-    os << "         -- Waiting for buffer: " << waitTiming_ << "s\n"
-       << "         -- Sending data:       " << bytesSent_ / scale << " MiB, " << sendTiming_
+    os << "         -- Waiting for buffer:  " << waitTiming_ << "s\n"
+       << "         -- Sending data:        " << bytesSent_ / scale << " MiB, " << sendTiming_
        << "s";
 }
 

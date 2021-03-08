@@ -59,7 +59,7 @@ void Statistics::execute(message::Message msg) const {
     // Create a unique key for the fieldStats_ map
     std::ostringstream os;
     os << msg.metadata().getString("category") << msg.metadata().getString("nemoParam")
-       << msg.metadata().getString("param");
+       << msg.metadata().getString("param") << msg.metadata().getLong("level");
 
     if (fieldStats_.find(os.str()) == end(fieldStats_)) {
         fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);

@@ -68,22 +68,14 @@ ecbuild_add_library(
         multio_nemo.f90
         multio.f90
 
+    PUBLIC_INCLUDES
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module>
+
     PUBLIC_LIBS
         multio-server
 )
 
 if( HAVE_MULTIO_SERVER )
-
-set_target_properties( multio-server-fapi
-    PROPERTIES Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
-
-target_include_directories( multio-server-fapi
-    PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module> )
-
+    set_target_properties( multio-server-fapi
+        PROPERTIES Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
 endif()
-
-# target_fortran_module_directory(
-#   TARGET multio
-#   MODULE_DIRECTORY  ${PROJECT_BINARY_DIR}/module/multio
-#   INSTALL_DIRECTORY module/multio
-# )

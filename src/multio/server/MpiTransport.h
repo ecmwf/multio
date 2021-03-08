@@ -18,6 +18,7 @@
 #define multio_server_MpiTransport_H
 
 #include <queue>
+#include <fstream>
 
 #include "eckit/io/Buffer.h"
 #include "eckit/log/Statistics.h"
@@ -46,6 +47,9 @@ private:
 
     const eckit::mpi::Comm& comm() const;
 
+    eckit::mpi::Status blockingProbe();
+    size_t blockingReceive();
+
     MpiPeer local_;
 
     eckit::Buffer buffer_;
@@ -54,9 +58,14 @@ private:
 
     std::queue<Message> msgPack_;
 
+    eckit::Timing totSendTiming_;
     eckit::Timing receiveTiming_;
+    eckit::Timing probeTiming_;
+    eckit::Timing totReceiveTiming_;
 
     std::size_t bytesReceived_ = 0;
+
+    std::ofstream log_;
 };
 
 }  // namespace server

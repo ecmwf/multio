@@ -45,7 +45,7 @@ private:
         return s;
     }
 
-    std::size_t cdoCount_;
+    std::size_t cdoCount_ = 0;
     std::deque<mstro_cdo> offered_cdos_;
 
     eckit::Timing timing_;

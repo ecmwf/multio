@@ -148,10 +148,10 @@ void MaestroSink::flush() {
         eckit::Log::info() << "MaestroSink::flush()" << std::endl;
 
         util::ScopedTimer timer{timing_};
-        ::sleep(15);
+        ::sleep(5);
         std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo) {
             //            mstro_cdo_withdraw(cdo);
-            //            mstro_cdo_dispose(cdo);
+            mstro_cdo_dispose(cdo);
         });
 
         offered_cdos_.clear();

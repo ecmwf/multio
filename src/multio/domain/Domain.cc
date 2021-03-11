@@ -57,6 +57,8 @@ void Structured::to_local(const std::vector<double>&, std::vector<double>&) cons
 void Structured::to_global(const message::Message& local, message::Message& global) const {
     auto levelCount = local.metadata().getLong("levelCount", 1);
 
+    ASSERT(definition_.size() == 11);
+
     // Global domain's dimenstions
     auto ni_global = definition_[0];
     auto nj_global = definition_[1];

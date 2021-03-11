@@ -10,12 +10,15 @@
 
 #include "MpiTransport.h"
 
+#include <algorithm>
+
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/maths/Functions.h"
 #include "eckit/serialisation/MemoryStream.h"
 
 #include "multio/util/ScopedTimer.h"
+#include "multio/util/print_buffer.h"
 
 namespace multio {
 namespace server {
@@ -48,63 +51,101 @@ Message decodeMessage(eckit::Stream& stream) {
                                 MpiPeer{dest_grp, dest_id}, std::move(fieldId)},
                 std::move(buffer)};
 }
+
+const size_t defaultBufferSize = 64 * 1024 * 1024;
+const size_t defaultPoolSize = 128;
+
 }  // namespace
-
-
-MpiPeer::MpiPeer(const std::string& comm, size_t rank) : Peer{comm, rank} {}
 
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
     local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
-    buffer_{0} {}
+    buffer_{
+        eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", defaultBufferSize)},
+    pool_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", defaultPoolSize),
+          eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", defaultBufferSize),
+          comm()},
+    log_{"mpi-transport-" + std::to_string(local_.id()) + ".log"} {}
 
 MpiTransport::~MpiTransport() {
-    eckit::Log::info() << " ******* " << *this
-                       << "\n         -- Total wall-clock time spent sending data: " << sendTiming_
-                       << "s\n         -- Total wall-clock time spent receiving data: "
-                       << receiveTiming_ << "s" << std::endl;
+    // TODO: check why eckit::Log::info() crashes here for the clients
+    const std::size_t scale = 1024*1024;
+    std::ostringstream os;
+    os << " ******* " << *this << "\n";
+    pool_.timings(os);
+    os << "\n         -- Total for send:      " << totSendTiming_
+       << "s\n         -- Probing for data:    " << probeTiming_
+       << "s\n         -- Receiving data:      " << bytesReceived_ / scale << " MiB, "
+       << receiveTiming_ << "s\n         -- Total for receive:   " << totReceiveTiming_ << "s"
+       << std::endl;
+
+    log_ << os.str();
 }
 
 Message MpiTransport::receive() {
-    const auto& comm = eckit::mpi::comm(local_.group().c_str());
+    util::ScopedTimer scTimer{totReceiveTiming_};
 
-    auto status = comm.probe(comm.anySource(), comm.anyTag());
+    while (not msgPack_.empty()) {
+        auto msg = msgPack_.front();
+        msgPack_.pop();
+        return msg;
+    }
 
-    util::ScopedTimer scTimer{receiveTiming_};
+    auto sz = blockingReceive();
 
-    buffer_.resize(eckit::round(comm.getCount<void>(status), 8));
-
-    comm.receive<void>(buffer_, buffer_.size(), status.source(), status.tag());
+    bytesReceived_ += sz;
 
     eckit::ResizableMemoryStream stream{buffer_};
 
-    return decodeMessage(stream);
+    while (stream.position() < sz) {
+        auto msg = decodeMessage(stream);
+        msgPack_.push(msg);
+    }
+
+    auto msg = msgPack_.front();
+    msgPack_.pop();
+    return msg;
 }
 
 void MpiTransport::send(const Message& msg) {
-    auto msg_tag = static_cast<int>(msg.tag());
+    util::ScopedTimer scTimer{totSendTiming_};
 
-    // Add 4K for header/footer etc. Should be plenty
-    buffer_.resize(eckit::round(msg.size(), 8) + 4096);
+    msg.encode(pool_.getStream(msg));
 
-    eckit::ResizableMemoryStream stream{buffer_};
+    if (msg.tag() == Message::Tag::Close) {  // Send it now
+        pool_.send(msg);
+    }
+}
 
-    msg.encode(stream);
-
-    auto sz = static_cast<size_t>(stream.bytesWritten());
-    auto dest = static_cast<int>(msg.destination().id());
-
-    util::ScopedTimer scTimer{sendTiming_};
-
-    eckit::mpi::comm(local_.group().c_str()).send<void>(buffer_, sz, dest, msg_tag);
+void MpiTransport::print(std::ostream& os) const {
+    os << "MpiTransport(" << local_ << ")";
 }
 
 Peer MpiTransport::localPeer() const {
     return local_;
 }
 
-void MpiTransport::print(std::ostream& os) const {
-    os << "MpiTransport(" << local_ << ")";
+const eckit::mpi::Comm& MpiTransport::comm() const {
+    return eckit::mpi::comm(local_.group().c_str());
+}
+
+eckit::mpi::Status MpiTransport::blockingProbe() {
+    util::ScopedTimer scTimer{probeTiming_};
+    auto status = comm().probe(comm().anySource(), comm().anyTag());
+
+    return status;
+}
+
+size_t MpiTransport::blockingReceive() {
+    auto status = blockingProbe();
+
+    auto sz = comm().getCount<void>(status);
+    ASSERT(sz < buffer_.size());
+
+    util::ScopedTimer scTimer{receiveTiming_};
+    comm().receive<void>(buffer_, sz, status.source(), status.tag());
+
+    return sz;
 }
 
 static TransportBuilder<MpiTransport> MpiTransportBuilder("mpi");

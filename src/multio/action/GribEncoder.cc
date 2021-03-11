@@ -36,6 +36,13 @@ std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
     static std::map<std::string, std::unique_ptr<GridInfo>> grids_;
     return grids_;
 }
+
+const std::map<const std::string, const long> ops_to_code{
+    {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
+
+const std::map<const std::string, const long> category_to_levtype{
+    {"ocean-grid-coordinate", 160}, {"ocean-2d", 160}, {"ocean-3d", 168}};
+
 }  // namespace
 
 GribEncoder::GribEncoder(codes_handle* handle, const std::string& gridType) :
@@ -73,12 +80,18 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("class", "rd");
     setValue("stream", "oper");
     setValue("type", "fc");
-    setValue("levtype", static_cast<long>(168));
+    setValue("levtype", category_to_levtype.at(metadata.getString("category")));
     setValue("step", metadata.getLong("step"));
     setValue("level", metadata.getLong("level"));
 
     // TODO: Nemo should set this at the beginning of the run
     setValue("date", metadata.getLong("date"));
+
+    // Statistics field
+    if (metadata.has("operation") and metadata.getString("operation") != "instant") {
+        setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));
+        setValue("stepRange", metadata.getString("stepRange"));
+    }
 
     // setDomainDimensions
     setValue("numberOfDataPoints", metadata.getLong("globalSize"));
@@ -91,7 +104,8 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("unstructuredGridType", gridType_);
 
     const auto& gridSubtype = metadata.getString("gridSubtype");
-    setValue("unstructuredGridSubtype", gridSubtype);
+    setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
+
     setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
 }
 

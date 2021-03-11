@@ -26,6 +26,7 @@ public:
 
     bool process(message::Message& msg);
     std::map<std::string, eckit::Buffer> compute(const message::Message& msg);
+    std::string stepRange(long step);
     void reset(const message::Message& msg);
 
 protected:
@@ -49,6 +50,7 @@ private:
 
     std::vector<std::string> opNames_;
     std::vector<std::unique_ptr<Operation>> statistics_;
+    long prevStep_ = 0;
 };
 
 //-------------------------------------------------------------------------------------------------

@@ -17,21 +17,19 @@
 #ifndef multio_server_MpiTransport_H
 #define multio_server_MpiTransport_H
 
-#include "eckit/io/ResizableBuffer.h"
+#include <queue>
+#include <fstream>
+
+#include "eckit/io/Buffer.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
 #include "multio/server/Transport.h"
+#include "multio/server/StreamPool.h"
 
 namespace multio {
 namespace server {
-
-class MpiPeer : public Peer {
-public:
-    MpiPeer(const std::string& comm, size_t rank);
-};
-
 
 class MpiTransport final : public Transport {
 public:
@@ -41,18 +39,33 @@ public:
 private:
     Message receive() override;
 
-    void send(const Message& message) override;
+    void send(const Message& msg) override;
 
     void print(std::ostream& os) const override;
 
     Peer localPeer() const override;
 
+    const eckit::mpi::Comm& comm() const;
+
+    eckit::mpi::Status blockingProbe();
+    size_t blockingReceive();
+
     MpiPeer local_;
 
-    eckit::ResizableBuffer buffer_;
+    eckit::Buffer buffer_;
 
-    eckit::Timing sendTiming_;
+    StreamPool pool_;
+
+    std::queue<Message> msgPack_;
+
+    eckit::Timing totSendTiming_;
     eckit::Timing receiveTiming_;
+    eckit::Timing probeTiming_;
+    eckit::Timing totReceiveTiming_;
+
+    std::size_t bytesReceived_ = 0;
+
+    std::ofstream log_;
 };
 
 }  // namespace server

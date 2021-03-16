@@ -78,7 +78,7 @@ void Encode::execute(Message msg) const {
         }
     }
     else {
-        eckit::Log::info() << "*** Grid metadata: " << msg.metadata() << std::endl;
+        LOG_DEBUG_LIB(LibMultio) << "*** Grid metadata: " << msg.metadata() << std::endl;
         if (encoder_->setGridInfo(msg)) {
             executeNext(encoder_->encodeLatitudes(msg.domain()));
             executeNext(encoder_->encodeLongitudes(msg.domain()));

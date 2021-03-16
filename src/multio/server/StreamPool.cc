@@ -78,9 +78,6 @@ MpiBuffer& StreamPool::findAvailableBuffer() {
                           [](MpiBuffer& buf) { return buf.isFree(); });
     }
 
-    eckit::Log::info() << " *** -- Found available buffer with idx = "
-                       << static_cast<size_t>(std::distance(std::begin(buffers_), it)) << std::endl;
-
     return *it;
 }
 

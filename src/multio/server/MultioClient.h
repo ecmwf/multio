@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "multio/message/Metadata.h"
+#include "multio/message/Peer.h"
 
 namespace eckit {
 class Buffer;
@@ -22,10 +23,6 @@ class Configuration;
 }  // namespace eckit
 
 namespace multio {
-
-namespace message {
-class Peer;
-}
 
 namespace server {
 
@@ -56,6 +53,9 @@ private:
     size_t serverCount_;
 
     std::shared_ptr<Transport> transport_ = nullptr;
+
+    const message::Peer client_;
+    size_t serverId_;
     PeerList serverPeers_;
 
 };

@@ -47,8 +47,8 @@ private:
 
     const eckit::mpi::Comm& comm() const;
 
-    eckit::mpi::Status blockingProbe();
-    size_t blockingReceive();
+    eckit::mpi::Status nonblockingProbe();
+    size_t blockingReceive(eckit::mpi::Status& status);
 
     MpiPeer local_;
 

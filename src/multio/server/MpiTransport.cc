@@ -85,26 +85,29 @@ MpiTransport::~MpiTransport() {
 Message MpiTransport::receive() {
     util::ScopedTimer scTimer{totReceiveTiming_};
 
-    while (not msgPack_.empty()) {
-        auto msg = msgPack_.front();
-        msgPack_.pop();
-        return msg;
-    }
+    while (true) {
+        auto status = nonblockingProbe();
+        if (not status.error()) {
+            auto sz = blockingReceive(status);
 
-    auto sz = blockingReceive();
+            bytesReceived_ += sz;
 
-    bytesReceived_ += sz;
+            eckit::ResizableMemoryStream stream{buffer_};
 
-    eckit::ResizableMemoryStream stream{buffer_};
+            while (stream.position() < sz) {
+                auto msg = decodeMessage(stream);
+                msgPack_.push(msg);
+            }
+        }
 
-    while (stream.position() < sz) {
-        auto msg = decodeMessage(stream);
-        msgPack_.push(msg);
-    }
+        if (not msgPack_.empty()) {
+            auto msg = msgPack_.front();
+            msgPack_.pop();
+            return msg;
+        }
+    };
 
-    auto msg = msgPack_.front();
-    msgPack_.pop();
-    return msg;
+    ASSERT(false);
 }
 
 void MpiTransport::send(const Message& msg) {
@@ -129,16 +132,14 @@ const eckit::mpi::Comm& MpiTransport::comm() const {
     return eckit::mpi::comm(local_.group().c_str());
 }
 
-eckit::mpi::Status MpiTransport::blockingProbe() {
+eckit::mpi::Status MpiTransport::nonblockingProbe() {
     util::ScopedTimer scTimer{probeTiming_};
-    auto status = comm().probe(comm().anySource(), comm().anyTag());
+    auto status = comm().iProbe(comm().anySource(), comm().anyTag());
 
     return status;
 }
 
-size_t MpiTransport::blockingReceive() {
-    auto status = blockingProbe();
-
+size_t MpiTransport::blockingReceive(eckit::mpi::Status& status) {
     auto sz = comm().getCount<void>(status);
     ASSERT(sz < buffer_.size());
 

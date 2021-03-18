@@ -76,7 +76,10 @@ MpiTransport::~MpiTransport() {
     os << "\n         -- Total for send:      " << totSendTiming_
        << "s\n         -- Probing for data:    " << probeTiming_
        << "s\n         -- Receiving data:      " << bytesReceived_ / scale << " MiB, "
-       << receiveTiming_ << "s\n         -- Total for receive:   " << totReceiveTiming_ << "s"
+       << receiveTiming_
+       << "s\n         -- Deserialising data:  " << decodeTiming_
+       << "s\n         -- Returning data:      " << returnTiming_
+       << "s\n         -- Total for receive:   " << totReceiveTiming_ << "s"
        << std::endl;
 
     log_ << os.str();
@@ -90,6 +93,7 @@ Message MpiTransport::receive() {
         if (not status.error()) {
             auto sz = blockingReceive(status);
 
+            util::ScopedTimer scTimer{decodeTiming_};
             bytesReceived_ += sz;
 
             eckit::ResizableMemoryStream stream{buffer_};
@@ -100,6 +104,7 @@ Message MpiTransport::receive() {
             }
         }
 
+        util::ScopedTimer scTimer{returnTiming_};
         if (not msgPack_.empty()) {
             auto msg = msgPack_.front();
             msgPack_.pop();

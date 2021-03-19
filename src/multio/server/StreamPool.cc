@@ -102,8 +102,6 @@ void StreamPool::timings(std::ostream &os) const
 MpiOutputStream& StreamPool::createNewStream(const message::Peer& dest) {
     util::ScopedTimer scTimer{waitTiming_};
 
-    // eckit::Log::info() << " ***** Creating new stream -- buffers: " << buffers_.size()
-    //        << ", streams: " << streams_.size() << std::endl;
     if (buffers_.size() <= streams_.size()) {
         throw eckit::BadValue("Too few buffers to cover all MPI destinations", Here());
     }

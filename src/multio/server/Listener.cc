@@ -126,7 +126,7 @@ void Listener::listen() {
 }
 
 bool Listener::moreConnections() const {
-    return !connections_.empty();// || closedCount_ < clientCount_;
+    return !connections_.empty() || closedCount_ < clientCount_;
 }
 
 void Listener::checkConnection(const Peer& conn) const {

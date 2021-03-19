@@ -102,9 +102,9 @@ Message MpiTransport::receive() {
         }
 
         if (not streamQueue_.empty()) {
-            util::ScopedTimer decTimer{decodeTiming_};
             auto& strm = streamQueue_.front();
             while (strm.position() < strm.size()) {
+                util::ScopedTimer decTimer{decodeTiming_};
                 auto msg = decodeMessage(strm);
                 msgPack_.push(msg);
             }

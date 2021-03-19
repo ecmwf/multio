@@ -102,9 +102,9 @@ Message MpiTransport::receive() {
         }
 
         if (not streamQueue_.empty()) {
+            util::ScopedTimer decTimer{decodeTiming_};
             auto& strm = streamQueue_.front();
             while (strm.position() < strm.size()) {
-                util::ScopedTimer decTimer{decodeTiming_};
                 auto msg = decodeMessage(strm);
                 msgPack_.push(msg);
             }
@@ -141,6 +141,7 @@ void MpiTransport::listen() {
     auto& buf = pool_.findAvailableBuffer();
     buf.status = BufferStatus::fillingUp;
     auto sz = blockingReceive(status, buf);
+    bytesReceived_ += sz;
     std::lock_guard<std::mutex> lock{mutex_};
     streamQueue_.emplace(buf, sz);
 }

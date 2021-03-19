@@ -36,13 +36,13 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 1d
+        output_frequency: 31d
         operations:
           - average
 
       - type : Encode
         format : grib
-        template : unstr_avg.tmpl
+        template : unstructured.tmpl
         grid-type : eORCA1
 
       - type : Sink
@@ -60,13 +60,13 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 3h
+        output_frequency: 1d
         operations:
           - average
 
       - type : Encode
         format : grib
-        template : unstr_avg.tmpl
+        template : unstructured.tmpl
         grid-type : eORCA1
 
       - type : Sink
@@ -84,13 +84,13 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 3h
+        output_frequency: 1d
         operations:
           - average
 
       - type : Encode
         format : grib
-        template : unstr_avg.tmpl
+        template : unstructured.tmpl
         grid-type : eORCA1
 
       - type : Sink

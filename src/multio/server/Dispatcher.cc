@@ -40,13 +40,13 @@ Dispatcher::Dispatcher(const eckit::Configuration& config) {
 
 Dispatcher::~Dispatcher() {
     eckit::Log::info() << " ******* Total wall-clock time spent in dispatcher "
-                       << eckit::Timing{timer_}.elapsed_ << "s" << std::endl
-                       << "         Total wall-clock time spent with dispatching " << timing_ << "s"
+                       << eckit::Timing{timer_}.elapsed_
+                       << "s -- of which time spent with dispatching " << timing_ << "s"
                        << std::endl;
 }
 
 void Dispatcher::dispatch(eckit::Queue<message::Message>& queue) {
-    ScopedTimer timer{timing_};
+    util::ScopedTimer timer{timing_};
     message::Message msg;
     while (queue.pop(msg) >= 0) {
         for (const auto& plan : plans_) {

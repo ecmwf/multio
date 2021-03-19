@@ -20,8 +20,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ### dependencies
 
 ecbuild_find_package( NAME eccodes VERSION  2.18  REQUIRED )
-ecbuild_find_package( NAME eckit   VERSION  1.13 REQUIRED )
-ecbuild_find_package( NAME metkit  VERSION  1.4  REQUIRED )
+ecbuild_find_package( NAME eckit   VERSION  1.16  REQUIRED )
+ecbuild_find_package( NAME metkit  VERSION  1.7   REQUIRED )
 
 if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
@@ -34,12 +34,6 @@ ecbuild_add_option( FEATURE FDB5
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "NAME fdb5 VERSION 5.0" )
 
-### fdb5 plugin
-
-ecbuild_add_option( FEATURE MAESTRO
-                    DEFAULT OFF
-                    DESCRIPTION "Sink data to Maestro" )
-
 ### legacy IFS I/O
 
 ecbuild_add_option( FEATURE LEGACY_IFSIO
@@ -51,8 +45,14 @@ ecbuild_add_option( FEATURE LEGACY_IFSIO
 ecbuild_add_option( FEATURE MULTIO_SERVER
                     DEFAULT OFF
                     CONDITION eckit_HAVE_MPI
-                    DESCRIPTION "Multio server"
-                    REQUIRED_PACKAGES "NAME atlas VERSION 0.15" )
+                    DESCRIPTION "Multio server" )
+
+### Maestro plugin
+
+ecbuild_add_option( FEATURE MAESTRO
+                    DEFAULT OFF
+                    DESCRIPTION "Pass data to Maestro middleware"
+                    REQUIRED_PACKAGES "NAME Maestro" )
 
 ### sandbox
 

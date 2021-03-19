@@ -1,8 +1,9 @@
 
+#include <unistd.h>
+
 #include <algorithm>
 #include <fstream>
 #include <random>
-#include "unistd.h"
 
 #include "eccodes.h"
 
@@ -14,7 +15,7 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "metkit/grib/GribHandle.h"
+#include "metkit/codes/GribHandle.h"
 
 #include "multio/action/Plan.h"
 #include "multio/LibMultio.h"
@@ -29,10 +30,12 @@
 #include "multio/tools/MultioTool.h"
 #include "multio/util/print_buffer.h"
 
+using multio::LibMultio;
 using multio::message::Message;
 using multio::message::Metadata;
 using multio::domain::Domain;
 using multio::domain::Unstructured;
+using multio::LibMultio;
 using multio::message::Peer;
 using multio::action::Plan;
 
@@ -370,8 +373,12 @@ void MultioHammer::sendData(const PeerList& serverPeers,
 
     // send partial mapping
     for (auto& server : serverPeers) {
-        Message msg{Message::Header{Message::Tag::Domain, client, *server, "grid-point",
-                                    "unstructured", clientCount_},
+        Metadata metadata;
+        metadata.set("name", "grid-point")
+            .set("category", "unstructured")
+            .set("domainCount", clientCount_);
+
+        Message msg{Message::Header{Message::Tag::Domain, client, *server, std::move(metadata)},
                     buffer};
 
         transport->send(msg);
@@ -382,9 +389,7 @@ void MultioHammer::sendData(const PeerList& serverPeers,
         for (auto param : sequence(paramCount_, 1)) {
             for (auto level : sequence(levelCount_, 1)) {
                 Metadata metadata;
-                metadata.set("level", level);
-                metadata.set("param", param);
-                metadata.set("step", step);
+                metadata.set("level", level).set("param", param).set("step", step);
 
                 std::string field_id = multio::message::to_string(metadata);
 
@@ -400,20 +405,30 @@ void MultioHammer::sendData(const PeerList& serverPeers,
                 eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()),
                                      field.size() * sizeof(double));
 
+                metadata.set("name", std::to_string(param))
+                    .set("param", std::to_string(param))
+                    .set("category", "model-level")
+                    .set("globalSize", static_cast<long>(field_size()))
+                    .set("domainCount", clientCount_)
+                    .set("domain", "grid-point");
+
                 Message msg{Message::Header{Message::Tag::Field, client, *serverPeers[id],
-                                            std::to_string(param), "model-level", clientCount_,
-                                            field_size(), "grid-point", field_id},
-                            buffer};
+                                            std::move(metadata)},
+                            std::move(buffer)};
 
                 transport->send(msg);
             }
         }
 
         // Send flush messages
+        Metadata md;
+        md.set("name", eckit::Translator<long, std::string>()(step))
+            .set("domain", "notification")
+            .set("domainCount", clientCount_);
         for (auto& server : serverPeers) {
             auto stepStr = eckit::Translator<long, std::string>()(step);
-            Message flush{Message::Header{Message::Tag::StepComplete, client, *server, stepStr,
-                                          "step", clientCount_}};
+            Message flush{
+                Message::Header{Message::Tag::StepComplete, client, *server, Metadata{md}}};
             transport->send(flush);
         }
     }
@@ -485,14 +500,14 @@ void MultioHammer::testData() {
                 auto expect = global_test_field(field_id);
                 auto actual = file_content(file_name);
 
-                eckit::Log::info() << "field id = " << field_id << std::endl;
-                eckit::Log::info() << "file_name = " << file_name << std::endl;
+                LOG_DEBUG_LIB(LibMultio) << "field id = " << field_id << std::endl;
+                LOG_DEBUG_LIB(LibMultio) << "file_name = " << file_name << std::endl;
 
-                eckit::Log::debug<multio::LibMultio>() << std::endl << "Expect = ";
-                multio::print_buffer(expect, eckit::Log::info());
-                eckit::Log::debug<multio::LibMultio>() << std::endl << "Actual = ";
-                multio::print_buffer(actual, eckit::Log::info());
-                eckit::Log::debug<multio::LibMultio>() << std::endl;
+                LOG_DEBUG_LIB(LibMultio) << "Expect = ";
+                multio::print_buffer(expect, eckit::Log::debug<LibMultio>());
+                LOG_DEBUG_LIB(LibMultio) << "\nActual = ";
+                multio::print_buffer(actual, eckit::Log::debug<LibMultio>());
+                LOG_DEBUG_LIB(LibMultio) << std::endl << std::endl;
 
                 ASSERT(expect == actual);
 
@@ -630,18 +645,20 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
             }
         }
 
-        auto stepStr = eckit::Translator<long, std::string>()(step);
-
-        Message msg{Message::Header{Message::Tag::StepComplete, Peer{"", 0}, Peer{"", 0}, stepStr,
-                                    "step", 1}};
+        Metadata md;
+        md.set("name", eckit::Translator<long, std::string>()(step))
+            .set("category", "step")
+            .set("domain", "notification")
+            .set("domainCount", 1);
+        Message msg{Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}, Metadata{md}}};
         for (const auto& plan : plans) {
             plan->process(msg);
         }
 
         // This message need only be sent by one server per ENS. Some sort of synchronisation
         // between the servers will be required -- OK for multio-hammer for now.
-        msg = Message{Message::Header{Message::Tag::StepNotification, Peer{"", 0}, Peer{"", 0},
-                                      stepStr, "step", 1}};
+        msg =
+            Message{Message::Header{Message::Tag::StepNotification, Peer{}, Peer{}, std::move(md)}};
         for (const auto& plan : plans) {
             plan->process(msg);
         }

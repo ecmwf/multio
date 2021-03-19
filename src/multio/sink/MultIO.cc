@@ -118,8 +118,11 @@ void MultIO::report(std::ostream& s) {
 void MultIO::print(std::ostream& os) const {
     std::lock_guard<std::mutex> lock(mutex_);
     os << "MultIO(";
+    bool first = true;
     for (const auto& sink : sinks_) {
+        os << (first ? "" : ", ");
         os << *(sink);
+        first = false;
     }
     os << ")";
 }

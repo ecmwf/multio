@@ -17,8 +17,8 @@
 
 #include "eccodes.h"
 
-#include "metkit/grib/GribHandle.h"
-#include "multio/action/GridInfo.h"
+#include "metkit/codes/GribHandle.h"
+#include "multio/message/Message.h"
 
 namespace multio {
 namespace action {
@@ -39,14 +39,14 @@ public:
     message::Message encodeLongitudes(const std::string& subtype);
 
     message::Message encodeField(const message::Message& msg);
+    message::Message encodeField(const message::Metadata& md, const double* data, size_t sz);
 
 private:
-
-    void setOceanMetadata(const message::Message& msg);
+    void setOceanMetadata(const message::Metadata& metadata);
     message::Message setFieldValues(const  message::Message& msg);
+    message::Message setFieldValues(const double* values, size_t count);
 
     const std::string gridType_;
-    std::map<std::string, std::unique_ptr<GridInfo>> grids_;
 
     std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",
                                     "lon_V", "lat_W", "lon_W", "lat_F", "lon_F"};

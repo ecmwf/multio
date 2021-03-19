@@ -15,6 +15,7 @@
 #include "eckit/config/Configuration.h"
 
 #include "multio/LibMultio.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
@@ -30,7 +31,8 @@ Select::Select(const eckit::Configuration& config) :
     Action{config}, match_{config.getString("match")}, items_{fetch_items(match_, config)} {}
 
 void Select::execute(Message msg) const {
-    ScopedTimer timer{timing_};
+    util::ScopedTimer timer{timing_};
+
     if (isMatched(msg)) {
         executeNext(msg);
     }
@@ -43,12 +45,13 @@ bool Select::isMatched(const Message& msg) const {
 bool Select::matchPlan(const Message& msg) const {
     auto item = (match_ == "category") ? msg.category() : msg.name();
 
-    eckit::Log::debug<LibMultio>()
-        << " *** Item " << item << " is being matched...  field size: " << msg.globalSize()
-        << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " *** Item " << item << " is being matched... ";
 
-    auto it = find(begin(items_), end(items_), item);
-    return it != end(items_);
+    bool ret = find(begin(items_), end(items_), item) != end(items_);
+
+    LOG_DEBUG_LIB(LibMultio) << (ret ? "found" : "not found") << std::endl;
+
+    return ret;
 }
 
 void Select::print(std::ostream& os) const {

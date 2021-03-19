@@ -127,27 +127,31 @@ public:
 
     void setDomain(const std::string& dname, const int* data, size_t bytes) {
         eckit::Buffer domain_def{reinterpret_cast<const char*>(data), bytes};
-        client().sendDomain(dname, "structured", domain_def);
+        Metadata md;
+        md.set("name", dname);
+        md.set("category", "structured");
+        md.set("domainCount", clientCount_);
+        client().sendDomain(std::move(md), std::move(domain_def));
     }
 
-    void writeField(const std::string& fname, const double* data, size_t bytes) {
+    void writeField(const std::string& fname, const double* data, size_t bytes,
+                    bool to_all_servers = false) {
+        if(metadata_.getString("category") != "ocean-grid-coordinate") {
+            ASSERT(not to_all_servers); // Sanity check for now -- to remove later
+        }
 
         ASSERT(isActive(fname));
 
+        metadata_.set("name", fname);
         metadata_.set("nemoParam", fname);
         metadata_.set("param", paramMap_.get(fname).param);
-
-        eckit::Log::debug<multio::LibMultio>()
-            << "*** Writing field " << fname << ", step = " << metadata_.getInt("step")
-            << ", level = " << metadata_.getInt("level") << std::endl;
-
-        auto gl_size = static_cast<size_t>(metadata_.getInt("globalSize"));
+        metadata_.set("gridSubtype", paramMap_.get(fname).gridType);
+        metadata_.set("domainCount", clientCount_);
+        metadata_.set("domain", paramMap_.get(fname).gridType);
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 
-        MultioNemo::instance().client().sendField(fname, "ocean-model-level", gl_size,
-                                                  paramMap_.get(fname).gridType, metadata_,
-                                                  std::move(field_vals));
+        MultioNemo::instance().client().sendField(metadata_, std::move(field_vals), to_all_servers);
     }
 
     bool useServer() const {
@@ -205,9 +209,9 @@ void multio_set_domain(const char* name, int* data, int size) {
     }
 }
 
-void multio_write_field(const char* name, const double* data, int size) {
+void multio_write_field(const char* name, const double* data, int size, bool to_all_servers) {
     if (MultioNemo::instance().useServer()) {
-        MultioNemo::instance().writeField(name, data, size * sizeof(double));
+        MultioNemo::instance().writeField(name, data, size * sizeof(double), to_all_servers);
     }
     else {
         eckit::Log::debug<multio::LibMultio>()

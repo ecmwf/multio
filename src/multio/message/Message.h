@@ -56,51 +56,38 @@ public:  // types
 
     class Header {
     public:
-        Header(Tag tag, Peer src, Peer dst, const std::string& nm = "", const std::string& cat = "",
-               size_t cnt = 0, size_t fsz = 0, const std::string& dom = "", const std::string& fid = "");
+        Header(Tag tag, Peer src, Peer dst, std::string&& fieldId);
+        Header(Tag tag, Peer src, Peer dst, Metadata&& md = message::Metadata{});
 
         Tag tag() const;
 
         Peer source() const;
         Peer destination() const;
 
-        const std::string& name() const;
+        std::string name() const;
 
-        const std::string& category() const;
+        std::string category() const;
 
         size_t domainCount() const;
 
-        size_t globalSize() const ;
+        long globalSize() const ;
 
-        const std::string& domain() const;
+        std::string domain() const;
 
         const std::string& fieldId() const;
 
         void encode(eckit::Stream& strm) const;
-        void decode(eckit::Stream& strm);
 
         const Metadata& metadata() const;
 
     private:
-        Tag tag_;
+        const Tag tag_;
 
-        Peer source_;
-        Peer destination_;
+        const Peer source_;
+        const Peer destination_;
 
-        std::string name_;
-
-        std::string category_;
-
-        size_t domainCount_;
-
-        size_t globalSize_;
-
-        // For fields only
-        std::string domain_;
-
-        std::string fieldId_; // Make that a hash?
-        Metadata metadata_;
-        void setMetadata();
+        const Metadata metadata_;
+        const std::string fieldId_; // Make that a hash?
     };
 
     class Content {
@@ -110,13 +97,13 @@ public:  // types
 
         size_t size() const;
 
-        Header& header();
+        const Header& header();
 
         eckit::Buffer& payload();
         const eckit::Buffer& payload() const;
 
     private:
-        Header header_;
+        const Header header_;
         eckit::Buffer payload_;
     };
 
@@ -136,15 +123,15 @@ public:  // methods
     Peer source() const;
     Peer destination() const;
 
-    const std::string& name() const;
+    std::string name() const;
 
-    const std::string& category() const;
+    std::string category() const;
 
     size_t domainCount() const;
 
-    size_t globalSize() const ;
+    long globalSize() const ;
 
-    const std::string& domain() const;
+    std::string domain() const;
 
     const std::string& fieldId() const;
     const Metadata& metadata() const;
@@ -155,7 +142,6 @@ public:  // methods
     size_t size() const;
 
     void encode(eckit::Stream& strm) const;
-    void decode(eckit::Stream& strm);
 
 private:  // methods
     void print(std::ostream& out) const;

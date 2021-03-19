@@ -17,6 +17,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/domain/Mappings.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
@@ -24,12 +25,10 @@ namespace action {
 Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 
 void Aggregation::execute(Message msg) const {
-    ScopedTimer timer{timing_};
-
-    LOG_DEBUG_LIB(LibMultio) << " *** Executing aggregation " << *this << std::endl;
+    util::ScopedTimer timer{timing_};
 
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
-        executeNext(msg);
+        executeNext(createGlobalField(msg));
     }
 
     if ((msg.tag() == Message::Tag::StepComplete) && handleFlush(msg)) {
@@ -37,14 +36,12 @@ void Aggregation::execute(Message msg) const {
     }
 }
 
-bool Aggregation::handleField(Message& msg) const {
+bool Aggregation::handleField(const Message& msg) const {
     messages_[msg.fieldId()].push_back(msg);
-    return allPartsArrived(msg) ? createGlobalField(msg) : false;
+    return allPartsArrived(msg);
 }
 
 bool Aggregation::handleFlush(const Message& msg) const {
-    eckit::Log::debug<LibMultio>() << "*** Aggregating flush messages: " << *this << std::endl;
-
     // Initialise if need be
     if (flushes_.find(msg.domain()) == end(flushes_)) {
         flushes_[msg.domain()] = 0;
@@ -56,30 +53,36 @@ bool Aggregation::handleFlush(const Message& msg) const {
 bool Aggregation::allPartsArrived(const Message& msg) const {
   LOG_DEBUG_LIB(LibMultio) << " *** Number of messages for field " << msg.fieldId()
                            << " are " << messages_.at(msg.fieldId()).size() << std::endl;
+
   return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
          (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
 }
 
-bool Aggregation::createGlobalField(Message& msgOut) const {
-    const auto& fid = msgOut.fieldId();
+Message Aggregation::createGlobalField(const Message& msg) const {
 
-    eckit::Buffer glField{msgOut.globalSize() * sizeof(double)};
-    for (auto msg : messages_.at(fid)) {
-        domain::Mappings::instance()
-            .get(msg.domain())
-            .at(msg.source())
-            ->to_global(msg.payload(), glField);
+    const auto& fid = msg.fieldId();
+    LOG_DEBUG_LIB(LibMultio) << " *** Creating global field for " << fid << std::endl;
+
+    auto levelCount = msg.metadata().getLong("levelCount", 1);
+
+    Message msgOut{Message::Header{msg.header()},
+                   eckit::Buffer{msg.globalSize() * levelCount * sizeof(double)}};
+
+    for (const auto& msg : messages_.at(fid)) {
+        domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_global(msg, msgOut);
     }
-
-    msgOut.payload() = std::move(glField);
 
     messages_.erase(fid);
 
-    return true;
+    return msgOut;
 }
 
 void Aggregation::print(std::ostream& os) const {
-    os << "Aggregation()";
+    os << "Aggregation(for " << messages_.size() << " fields = [";
+    for (const auto& msg : messages_) {
+        os << '\n' << "  --->  " << msg.first;
+    }
+    os << "])";
 }
 
 

@@ -48,8 +48,15 @@ Action::~Action() {
 
 void Action::executeNext(message::Message msg) const {
     if (next_) {
+        LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- Executing action -- "
+                                 << *next_ << std::endl;
         next_->execute(msg);
     }
+}
+
+std::ostream& operator<<(std::ostream& os, const Action& a) {
+    a.print(os);
+    return os;
 }
 
 //---------------------------------------------------------------------------------------------------------------
@@ -84,7 +91,7 @@ void ActionFactory::list(std::ostream& out) {
 Action* ActionFactory::build(const std::string& name, const Configuration& config) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
-    Log::debug<LibMultio>() << "Looking for ActionFactory [" << name << "]" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Looking for ActionFactory [" << name << "]" << std::endl;
 
     auto f = factories_.find(name);
 

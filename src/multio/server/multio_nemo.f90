@@ -18,6 +18,13 @@ module multio_nemo
     integer, private, parameter :: dp = selected_real_kind(15, 307)
 
     private to_c_string
+    private multio_write_field_2d
+    private multio_write_field_3d
+
+
+    interface multio_write_field
+        module procedure multio_write_field_2d, multio_write_field_3d
+    end interface
 
     interface
 
@@ -72,12 +79,13 @@ module multio_nemo
             integer(c_int), intent(in), value :: size
         end subroutine c_multio_set_domain
 
-        subroutine c_multio_write_field(c_name, data, size) bind(c, name='multio_write_field')
+        subroutine c_multio_write_field(c_name, data, sz, toall) bind(c, name='multio_write_field')
             use, intrinsic :: iso_c_binding
             implicit none
             character(c_char), intent(in) :: c_name(*)
             real(c_double), dimension(*), intent(in) :: data
-            integer(c_int), intent(in), value :: size
+            integer(c_int), intent(in), value :: sz
+            logical(c_bool), intent(in), value :: toall
         end subroutine c_multio_write_field
 
         function c_multio_field_is_active(c_name) result(is_active) bind(c, name='multio_field_is_active')
@@ -143,14 +151,28 @@ module multio_nemo
 
         end subroutine multio_set_domain
 
-        subroutine multio_write_field(fname, data)
+        subroutine multio_write_field_2d(fname, data, toall)
             implicit none
             character(*), intent(in) :: fname
             real(dp), dimension(:,:), intent(in) :: data
+            logical(1), optional, intent(in) :: toall
+            logical(1) :: c_toall = .false._1
 
-            call c_multio_write_field(to_c_string(fname), data, size(data))
+            if (present(toall)) c_toall = toall
 
-        end subroutine multio_write_field
+            call c_multio_write_field(to_c_string(fname), data, size(data), c_toall)
+
+        end subroutine multio_write_field_2d
+
+        subroutine multio_write_field_3d(fname, data)
+            implicit none
+            character(*), intent(in) :: fname
+            real(dp), dimension(:,:,:), intent(in) :: data
+            logical(1) :: c_toall = .false._1
+
+            call c_multio_write_field(to_c_string(fname), data, size(data), c_toall)
+
+        end subroutine multio_write_field_3d
 
         subroutine multio_field_is_active(fname, is_active)
             implicit none

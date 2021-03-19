@@ -26,7 +26,6 @@ list( APPEND multio_action_srcs
     action/Aggregation.h
     action/Encode.cc
     action/Encode.h
-    action/Endian.h
     action/GribEncoder.cc
     action/GribEncoder.h
     action/GridInfo.cc
@@ -47,6 +46,8 @@ list( APPEND multio_action_srcs
     action/Null.h
     action/Action.cc
     action/Action.h
+    action/Period.cc
+    action/Period.h
     action/Plan.cc
     action/Plan.h
     action/TemporalStatistics.cc
@@ -136,7 +137,6 @@ ecbuild_add_library(
     PUBLIC_LIBS
         metkit eckit )
 
-add_subdirectory(grib)
 add_subdirectory(fdb5)
 add_subdirectory(maestro)
 add_subdirectory(server)

@@ -33,16 +33,16 @@ mpi-test-configuration :
 thread-test-configuration :
   transport : thread
   plans :
-    - name : output-only
-      actions :
-        - type : Print
-          stream : debug
+    # - name : output-only
+    #   actions :
+    #     - type : Print
+    #       stream : debug
 
-        - type : Sink
-          sinks :
-            - type : file
-              append : true
-              path : messages.txt
+    #     - type : Sink
+    #       sinks :
+    #         - type : file
+    #           append : true
+    #           path : messages.txt
 
     - name : atmosphere
       actions :

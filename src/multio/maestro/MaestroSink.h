@@ -11,7 +11,6 @@
 /// @author Domokos Sarmany
 /// @date   Apr 2020
 
-
 #ifndef multio_MaestroSink_H
 #define multio_MaestroSink_H
 
@@ -21,7 +20,8 @@ extern "C" {
 #include <maestro.h>
 }
 
-#include "multio/action/Action.h"
+#include "eckit/log/Statistics.h"
+
 #include "multio/sink/DataSink.h"
 
 //--------------------------------------------------------------------------------------------------

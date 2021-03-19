@@ -104,6 +104,7 @@ void MultioReplay::execute(const eckit::option::CmdArgs &) {
  }
 
 void MultioReplay::setMetadata() {
+    multio_metadata_set_string_value("category", "ocean-model-level");
     multio_metadata_set_int_value("globalSize", globalSize_);
     multio_metadata_set_int_value("level", level_);
     multio_metadata_set_int_value("step", step_);
@@ -127,7 +128,7 @@ void MultioReplay::writeFields() {
         auto buffer = readField(param, rank_);
 
         auto sz = static_cast<int>(buffer.size());
-        multio_write_field(param.c_str(), buffer.data(), sz);
+        multio_write_field(param.c_str(), buffer.data(), sz, false);
     }
 }
 
@@ -190,9 +191,10 @@ void MultioReplay::testData() {
     }
 
     for (const auto& param : parameters_) {
-        std::ifstream infile{std::to_string(level_) +
-                             "::" + std::to_string(paramMap_.get(param).param) +
-                             "::" + std::to_string(step_)};
+        std::string actual_file_path{std::to_string(level_) +
+                                     "::" + std::to_string(paramMap_.get(param).param) +
+                                     "::" + std::to_string(step_)};
+        std::ifstream infile{actual_file_path.c_str()};
         std::string actual{std::istreambuf_iterator<char>(infile),
                            std::istreambuf_iterator<char>()};
         infile.close();
@@ -205,6 +207,8 @@ void MultioReplay::testData() {
                              std::istreambuf_iterator<char>()};
 
         ASSERT(actual == expected);
+
+        std::remove(actual_file_path.c_str());
     }
 }
 

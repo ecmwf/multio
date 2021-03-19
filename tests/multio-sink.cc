@@ -90,9 +90,13 @@ void MultioSink::execute(const eckit::option::CmdArgs& args) {
 
     fortint iwords = static_cast<fortint>(words);
 
-    imultio_write_(buf, &iwords);
+    if (imultio_write_(buf, &iwords)) {
+        ASSERT(false);
+    }
 
-    imultio_flush_();
+    if (imultio_flush_()) {
+        ASSERT(false);
+    }
 
     codes_handle_delete(handle);
 

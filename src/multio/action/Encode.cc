@@ -17,6 +17,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/server/ConfigurationPath.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
@@ -50,9 +51,7 @@ Encode::Encode(const eckit::Configuration& config) :
     Action{config}, format_{config.getString("format")}, encoder_{make_encoder(config)} {}
 
 void Encode::execute(Message msg) const {
-    ScopedTimer timer{timing_};
-
-    eckit::Log::info() << "*** Executing encoding: " << *this << std::endl;
+    util::ScopedTimer timer{timing_};
 
     if (not encoder_) {
         executeNext(msg);
@@ -61,8 +60,22 @@ void Encode::execute(Message msg) const {
 
     ASSERT(format_ == "grib");
 
+    LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain()
+                             << std::endl;
+
     if (encoder_->gridInfoReady(msg.domain())) {
-        executeNext(encoder_->encodeField(msg));
+        auto levelCount = msg.metadata().getLong("levelCount", 1);
+        if (levelCount == 1) {
+            executeNext(encoder_->encodeField(msg));
+        } else {
+            auto metadata = msg.metadata();
+            auto data = reinterpret_cast<const double*>(msg.payload().data());
+            for (auto lev = 0; lev != levelCount;) {
+                metadata.set("level", ++lev);
+                executeNext(encoder_->encodeField(metadata, data, msg.globalSize()));
+                data += msg.globalSize();
+            }
+        }
     }
     else {
         eckit::Log::info() << "*** Grid metadata: " << msg.metadata() << std::endl;

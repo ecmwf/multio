@@ -74,11 +74,11 @@ Peer Message::destination() const {
     return header().destination();
 }
 
-const std::string& Message::name() const {
+std::string Message::name() const {
     return header().name();
 }
 
-const std::string& Message::category() const {
+std::string Message::category() const {
     return header().category();
 }
 
@@ -86,11 +86,11 @@ size_t Message::domainCount() const {
     return header().domainCount();
 }
 
-size_t Message::globalSize() const {
+long Message::globalSize() const {
     return header().globalSize();
 }
 
-const std::string& Message::domain() const {
+std::string Message::domain() const {
     return header().domain();
 }
 
@@ -117,32 +117,15 @@ size_t Message::size() const {
 void Message::encode(eckit::Stream& strm) const {
     header().encode(strm);
 
-    strm << version_;
-
     strm << content_->size();
 
     strm << content_->payload();
 }
 
-void Message::decode(eckit::Stream& strm) {
-    content_->header().decode(strm);
-
-    strm >> version_;
-
-    unsigned long sz;
-    strm >> sz;
-
-    eckit::Buffer buffer(sz);
-    strm >> buffer;
-    content_->payload() = std::move(buffer);
-}
-
 void Message::print(std::ostream& out) const {
     out << "Message("
         << "version=" << version() << ", tag=" << tag2str(tag()) << ", source=" << source()
-        << ", destination=" << destination() << ", name=" << name() << ", category=" << category()
-        << ", domainCount=" << domainCount() << ", global_size=" << globalSize()
-        << ", domain=" << domain() << ", metadata=" << fieldId() << ")";
+        << ", destination=" << destination() << ", metadata=" << fieldId() << ")";
 }
 
 eckit::message::Message to_eckit_message(const Message& msg) {

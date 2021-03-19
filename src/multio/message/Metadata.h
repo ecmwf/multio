@@ -25,6 +25,7 @@ namespace message {
 using Metadata = eckit::LocalConfiguration;
 
 std::string to_string(const Metadata& metadata);
+Metadata to_metadata(const std::string& fieldId);
 
 }  // namespace message
 }  // namespace multio

@@ -15,18 +15,36 @@
 #include "GridInfo.h"
 
 #include <cstring>
+#include <iomanip>
+#include <sstream>
 
 #include "eckit/exception/Exceptions.h"
-#include "multio/action/Endian.h"
+#include "eckit/system/SystemInfo.h"
+#include "eckit/utils/ByteSwap.h"
+
+#include "multio/LibMultio.h"
 
 namespace multio {
 namespace action {
+
+namespace  {
+template <typename T>
+eckit::Buffer byteswap(const eckit::Buffer& buf) {
+    eckit::Buffer ret{static_cast<const char*>(buf), buf.size()};  // Create a local copy
+
+    auto ret_ptr = reinterpret_cast<T*>(ret.data());
+    auto ret_sz = buf.size() / sizeof(T);
+
+    eckit::byteswap(ret_ptr, ret_sz);
+
+    return ret;
+}
+}  // namespace
 
 GridInfo::GridInfo() {}
 
 void GridInfo::setSubtype(const std::string& subtype) {
     if (gridSubtype_.empty()) {
-        eckit::Log::info() << "*** Setting subtype " << std::endl;
         gridSubtype_ = subtype;
     }
 
@@ -36,15 +54,11 @@ void GridInfo::setSubtype(const std::string& subtype) {
 void GridInfo::setLatitudes(message::Message msg) {
     ASSERT(latitudes_.size() == 0);
 
-    eckit::Log::info() << "*** Setting latitudes " << std::endl;
-
     latitudes_ = msg;
 }
 
 void GridInfo::setLongitudes(message::Message msg) {
     ASSERT(longitudes_.size() == 0);
-
-    eckit::Log::info() << "*** Setting longitudes " << std::endl;
 
     longitudes_ = msg;
 }
@@ -68,28 +82,35 @@ bool GridInfo::computeHashIfCan() {
     addToHash(latitudes_.payload());
     addToHash(longitudes_.payload());
 
-    hashFunction_.numericalDigest(hashValue_);
+    hashValue_.reset(new unsigned char[DIGEST_LENGTH]);
+    hashFunction_.numericalDigest(hashValue_.get());
 
-    eckit::Log::info() << "*** Setting hash value " << hashValue_ << " with supposed size "
-                       << DIGEST_LENGTH << " and with actual size "
-                       << std::strlen(reinterpret_cast<const char*>(hashValue_)) << std::endl;
+    std::ostringstream oss;
+    oss << "*** Computed hash value: ";
+    for (int i = 0; i < DIGEST_LENGTH; ++i) {
+        oss << ((i == 0) ? "" : "-") << std::hex << std::setfill('0') << std::setw(2)
+            << static_cast<short>(hashValue_[i]);
+    }
+    LOG_DEBUG_LIB(LibMultio) << oss.str() << std::endl;
 
     return true;
 }
 
 bool GridInfo::hashExists() const {
-    return  static_cast<bool>(hashValue_[0]);
+    return static_cast<bool>(hashValue_);
 }
 
 const unsigned char* GridInfo::hashValue() const {
-    return &hashValue_[0];
+    return hashValue_.get();
 }
 
 void GridInfo::addToHash(const eckit::Buffer& buf) {
-    auto ptr = reinterpret_cast<const double*>(buf.data());
-    auto sz = buf.size() / sizeof(double);
-    for (size_t it = 0; it != sz; ++it) {
-        hashFunction_.add(Endian<double>::to_little_endian(*ptr++));
+    if (eckit::system::SystemInfo::isBigEndian()) {
+        auto swappedBuf = byteswap<double>(buf);
+
+        hashFunction_.add(swappedBuf.data(), swappedBuf.size());
+    } else {
+        hashFunction_.add(buf.data(), buf.size());
     }
 }
 

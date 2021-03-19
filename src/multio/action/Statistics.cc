@@ -16,61 +16,79 @@
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
+#include "multio/action/TemporalStatistics.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
 
 namespace  {
+
+const std::map<const char, const std::string> symbol_to_unit{
+    {'h', "hour"}, {'d', "day"}, {'m', "month"}};
+
 std::string set_unit(std::string const& output_freq) {
-    const auto& unit = output_freq.back();
+    const auto& symbol = output_freq.back();
 
-    if (unit == 'h') {
-        return "hour";
+    if (symbol_to_unit.find(symbol) == end(symbol_to_unit)) {
+        throw eckit::SeriousBug{"Time unit for symbol " + std::string{symbol} +
+                                " is not supported"};
     }
-
-    if (unit == 'd') {
-        return "day";
-    }
-
-    if (unit == 'm') {
-        return "month";
-    }
-
-    throw eckit::SeriousBug{"Time unit " + std::string{unit} + " is not supported"};
+    return symbol_to_unit.at(symbol);
 }
 
 long set_frequency(const std::string& output_freq) {
     auto freq = output_freq.substr(0, output_freq.size() - 1);
     return std::stol(freq);
 }
+
 }  // namespace
 
 Statistics::Statistics(const eckit::Configuration& config) :
     Action{config},
     timeUnit_{set_unit(config.getString("output_frequency"))},
-    writeFrequency_{set_frequency(config.getString("output_frequency"))},
+    timeSpan_{set_frequency(config.getString("output_frequency"))},
     operations_{config.getStringVector("operations")} {}
 
 void Statistics::execute(message::Message msg) const {
-    ScopedTimer timer{timing_};
+    util::ScopedTimer timer{timing_};
 
-    for (const auto& ops : operations_) {
-        applyOperation(ops);
+    LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << msg.metadata()
+                             << std::endl;
+
+    // Create a unique key for the fieldStats_ map
+    std::ostringstream os;
+    os << msg.metadata().getString("category") << msg.metadata().getString("nemoParam")
+       << msg.metadata().getString("param");
+
+    if (fieldStats_.find(os.str()) == end(fieldStats_)) {
+        fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
     }
 
-    LOG_DEBUG_LIB(LibMultio) << " *** Executing statistics " << *this << std::endl;
-
-    if (msg.metadata().getUnsigned("step") % writeFrequency_ != 0) {
+    if(fieldStats_.at(os.str())->process(msg)) {
         return;
     }
 
-    LOG_DEBUG_LIB(LibMultio) << "Passed six-hourly filter statistics " << std::endl;
+    auto md = msg.metadata();
+    md.set("timeUnit", timeUnit_);
+    md.set("timeSpan", timeSpan_);
+    md.set("stepRange", fieldStats_.at(os.str())->stepRange(md.getLong("step")));
+    for (auto&& stat : fieldStats_.at(os.str())->compute(msg)) {
+        md.set("operation", stat.first);
+        message::Message newMsg{
+            message::Message::Header{message::Message::Tag::Statistics, msg.source(),
+                                     msg.destination(), message::Metadata{md}},
+            std::move(stat.second)};
 
-    executeNext(msg);
+        executeNext(newMsg);
+    }
+
+    fieldStats_.at(os.str())->reset(msg);
 }
 
 void Statistics::print(std::ostream& os) const {
-    os << "Statistics(output frequency = " << writeFrequency_ << ", operations = ";
+    os << "Statistics(output frequency = " << timeSpan_ << ", unit = " << timeUnit_
+       << ", operations = ";
     bool first = true;
     for (const auto& ops : operations_) {
         os << (first ? "" : ", ");
@@ -78,11 +96,6 @@ void Statistics::print(std::ostream& os) const {
         first = false;
     }
     os << ")";
-}
-
-void Statistics::applyOperation(const std::string&) const {
-    [](){}(); // TODO: Call a dictionary of functions;
-    return;
 }
 
 

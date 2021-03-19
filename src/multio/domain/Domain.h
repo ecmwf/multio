@@ -9,6 +9,11 @@
 #include <eckit/io/Buffer.h>
 
 namespace multio {
+
+namespace message {
+    class Message;
+}
+
 namespace domain {
 
 class Domain {
@@ -17,7 +22,7 @@ public:
     virtual ~Domain() = default;
 
     virtual void to_local(const std::vector<double>& global, std::vector<double>& local) const = 0;
-    virtual void to_global(const eckit::Buffer& local, eckit::Buffer& global) const = 0;
+    virtual void to_global(const message::Message& local, message::Message& global) const = 0;
 
 protected:
     std::vector<int32_t> definition_;  // Grid-point
@@ -30,7 +35,7 @@ public:
 
 private:
     void to_local(const std::vector<double>& global, std::vector<double>& local) const override;
-    void to_global(const eckit::Buffer& local, eckit::Buffer& global) const override;
+    void to_global(const message::Message& local, message::Message& global) const override;
 };
 
 class Structured final : public Domain {
@@ -39,7 +44,7 @@ public:
 
 private:
     void to_local(const std::vector<double>& global, std::vector<double>& local) const override;
-    void to_global(const eckit::Buffer& local, eckit::Buffer& global) const override;
+    void to_global(const message::Message& local, message::Message& global) const override;
 };
 
 class Spectral final : public Domain {
@@ -48,7 +53,7 @@ public:
 
 private:
     void to_local(const std::vector<double>& global, std::vector<double>& local) const override;
-    void to_global(const eckit::Buffer& local, eckit::Buffer& global) const override;
+    void to_global(const message::Message& local, message::Message& global) const override;
 };
 
 }  // namespace domain

@@ -10,10 +10,15 @@
 
 #include "MpiTransport.h"
 
+#include <algorithm>
+
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/maths/Functions.h"
 #include "eckit/serialisation/MemoryStream.h"
+
+#include "multio/util/ScopedTimer.h"
+#include "multio/util/print_buffer.h"
 
 namespace multio {
 namespace server {
@@ -33,59 +38,98 @@ Message decodeMessage(eckit::Stream& stream) {
     size_t dest_id;
     stream >> dest_id;
 
-    Message msg{Message::Header{static_cast<Message::Tag>(t), MpiPeer{src_grp, src_id},
-                                MpiPeer{dest_grp, dest_id}}};
+    std::string fieldId;
+    stream >> fieldId;
 
-    msg.decode(stream);
+    unsigned long sz;
+    stream >> sz;
 
-    return msg;
+    eckit::Buffer buffer(sz);
+    stream >> buffer;
+
+    return Message{Message::Header{static_cast<Message::Tag>(t), MpiPeer{src_grp, src_id},
+                                MpiPeer{dest_grp, dest_id}, std::move(fieldId)},
+                std::move(buffer)};
 }
+
 }  // namespace
-
-
-MpiPeer::MpiPeer(const std::string& comm, size_t rank) : Peer{comm, rank} {}
 
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
     local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
-    buffer_{0} {}
+    buffer_{
+        eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024)},
+    pool_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", 128),
+          eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", 64 * 1024 * 1024),
+          comm()} {}
+
+MpiTransport::~MpiTransport() {
+    // TODO: check why eckit::Log::info() crashes here for the clients
+    const std::size_t scale = 1024*1024;
+    std::ostringstream os;
+    os << " ******* " << *this << "\n";
+    pool_.timings(os);
+    os << "\n         -- Receiving data:      " << bytesReceived_ / scale << " MiB, "
+       << receiveTiming_ << "s" << std::endl;
+
+    std::cout << os.str();
+}
 
 Message MpiTransport::receive() {
-    const auto& comm = eckit::mpi::comm(local_.group().c_str());
 
-    auto status = comm.probe(comm.anySource(), comm.anyTag());
+    while (not msgPack_.empty()) {
+        auto msg = msgPack_.front();
+        msgPack_.pop();
+        return msg;
+    }
 
-    buffer_.resize(eckit::round(comm.getCount<void>(status), 8));
+    auto status = comm().probe(comm().anySource(), comm().anyTag());
 
-    comm.receive<void>(buffer_, buffer_.size(), status.source(), status.tag());
+    auto sz = comm().getCount<void>(status);
+    ASSERT(sz < buffer_.size());
+
+    {
+        util::ScopedTimer scTimer{receiveTiming_};
+        comm().receive<void>(buffer_, sz, status.source(), status.tag());
+    }
+
+    bytesReceived_ += sz;
 
     eckit::ResizableMemoryStream stream{buffer_};
 
-    return decodeMessage(stream);
+    while (stream.position() < sz) {
+        auto msg = decodeMessage(stream);
+        msgPack_.push(msg);
+    }
+
+    auto msg = msgPack_.front();
+    msgPack_.pop();
+    return msg;
 }
 
 void MpiTransport::send(const Message& msg) {
+    eckit::Log::info() << pool_ << std::endl;
 
-    auto msg_tag = static_cast<int>(msg.tag());
+    eckit::Log::info() << " *** Encode " << msg << " into stream for " << msg.destination()
+                       << std::endl;
 
-    // Add 4K for header/footer etc. Should be plenty
-    buffer_.resize(eckit::round(msg.size(), 8) + 4096);
+    msg.encode(pool_.getStream(msg));
 
-    eckit::ResizableMemoryStream stream{buffer_};
-
-    msg.encode(stream);
-
-    auto sz = static_cast<size_t>(stream.bytesWritten());
-    auto dest = static_cast<int>(msg.destination().id());
-    eckit::mpi::comm(local_.group().c_str()).send<void>(buffer_, sz, dest, msg_tag);
+    if (msg.tag() == Message::Tag::Close) {  // Send it now
+        pool_.send(msg);
+    }
 }
 
 Peer MpiTransport::localPeer() const {
     return local_;
 }
 
+const eckit::mpi::Comm& MpiTransport::comm() const {
+    return eckit::mpi::comm(local_.group().c_str());
+}
+
 void MpiTransport::print(std::ostream& os) const {
-    os << "MpiTransport()";
+    os << "MpiTransport(" << local_ << ")";
 }
 
 static TransportBuilder<MpiTransport> MpiTransportBuilder("mpi");

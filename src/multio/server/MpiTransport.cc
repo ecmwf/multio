@@ -60,8 +60,6 @@ const size_t defaultPoolSize = 128;
 MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
     local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
-    buffer_{
-        eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", defaultBufferSize)},
     pool_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", defaultPoolSize),
           eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", defaultBufferSize),
           comm()},
@@ -88,31 +86,26 @@ MpiTransport::~MpiTransport() {
 Message MpiTransport::receive() {
     util::ScopedTimer scTimer{totReceiveTiming_};
 
-    while (true) {
-        auto status = nonblockingProbe();
-        if (not status.error()) {
-            auto sz = blockingReceive(status);
-
-            util::ScopedTimer scTimer{decodeTiming_};
-            bytesReceived_ += sz;
-
-            eckit::ResizableMemoryStream stream{buffer_};
-
-            while (stream.position() < sz) {
-                auto msg = decodeMessage(stream);
-                msgPack_.push(msg);
-            }
-        }
-
-        util::ScopedTimer scTimer{returnTiming_};
-        if (not msgPack_.empty()) {
+    do {
+        while (not msgPack_.empty()) {
+            util::ScopedTimer retTimer{returnTiming_};
             auto msg = msgPack_.front();
             msgPack_.pop();
             return msg;
         }
-    };
 
-    ASSERT(false);
+        if (not streamQueue_.empty()) {
+            util::ScopedTimer decTimer{decodeTiming_};
+            auto& strm = streamQueue_.front();
+            while (strm.position() < strm.size()) {
+                auto msg = decodeMessage(strm);
+                msgPack_.push(msg);
+            }
+            std::lock_guard<std::mutex> lock{mutex_};
+            strm.buffer().status = BufferStatus::available;
+            streamQueue_.pop();
+        }
+    } while (true);
 }
 
 void MpiTransport::send(const Message& msg) {
@@ -133,23 +126,35 @@ Peer MpiTransport::localPeer() const {
     return local_;
 }
 
+void MpiTransport::listen() {
+    auto status = probe();
+    if(status.error()) {
+        return;
+    }
+    auto& buf = pool_.findAvailableBuffer();
+    buf.status = BufferStatus::fillingUp;
+    auto sz = blockingReceive(status, buf);
+    std::lock_guard<std::mutex> lock{mutex_};
+    streamQueue_.emplace(buf, sz);
+}
+
 const eckit::mpi::Comm& MpiTransport::comm() const {
     return eckit::mpi::comm(local_.group().c_str());
 }
 
-eckit::mpi::Status MpiTransport::nonblockingProbe() {
+eckit::mpi::Status MpiTransport::probe() {
     util::ScopedTimer scTimer{probeTiming_};
     auto status = comm().iProbe(comm().anySource(), comm().anyTag());
 
     return status;
 }
 
-size_t MpiTransport::blockingReceive(eckit::mpi::Status& status) {
+size_t MpiTransport::blockingReceive(eckit::mpi::Status& status, MpiBuffer& buffer) {
     auto sz = comm().getCount<void>(status);
-    ASSERT(sz < buffer_.size());
+    ASSERT(sz < buffer.content.size());
 
     util::ScopedTimer scTimer{receiveTiming_};
-    comm().receive<void>(buffer_, sz, status.source(), status.tag());
+    comm().receive<void>(buffer.content, sz, status.source(), status.tag());
 
     return sz;
 }

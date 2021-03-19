@@ -22,17 +22,17 @@ public:
 
     MpiBuffer& buffer(size_t idx);
 
-    MpiStream& getStream(const message::Message& msg);
+    MpiOutputStream& getStream(const message::Message& msg);
 
     void send(const message::Message& msg);
+
+    MpiBuffer& findAvailableBuffer();
 
     void timings(std::ostream& os) const;
 
 private:
-    MpiBuffer& findAvailableBuffer();
-
-    MpiStream& createNewStream(const message::Peer& dest);
-    MpiStream& replaceStream(const message::Peer& dest);
+    MpiOutputStream& createNewStream(const message::Peer& dest);
+    MpiOutputStream& replaceStream(const message::Peer& dest);
 
     void print(std::ostream& os) const;
 
@@ -43,7 +43,7 @@ private:
 
     const eckit::mpi::Comm& comm_;
     std::vector<MpiBuffer> buffers_;
-    std::map<MpiPeer, MpiStream> streams_;
+    std::map<MpiPeer, MpiOutputStream> streams_;
 
     eckit::Timing sendTiming_;
     eckit::Timing waitTiming_;

@@ -47,6 +47,8 @@ public:  // methods
 
     virtual Peer localPeer() const = 0;
 
+    virtual void listen();
+
 private: // methods
 
     virtual void print(std::ostream &os) const = 0;

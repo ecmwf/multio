@@ -38,7 +38,7 @@ MpiBuffer& StreamPool::buffer(size_t idx) {
     return buffers_[idx];
 }
 
-MpiStream& StreamPool::getStream(const message::Message& msg) {
+MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
     auto dest = msg.destination();
 
     if (streams_.find(dest) == std::end(streams_)) {
@@ -63,7 +63,7 @@ MpiStream& StreamPool::getStream(const message::Message& msg) {
     return replaceStream(dest);
 }
 
-MpiStream& StreamPool::replaceStream(const message::Peer& dest) {
+MpiOutputStream& StreamPool::replaceStream(const message::Peer& dest) {
     streams_.erase(dest);
     return createNewStream(dest);
 }
@@ -99,7 +99,7 @@ void StreamPool::timings(std::ostream &os) const
        << "s";
 }
 
-MpiStream& StreamPool::createNewStream(const message::Peer& dest) {
+MpiOutputStream& StreamPool::createNewStream(const message::Peer& dest) {
     util::ScopedTimer scTimer{waitTiming_};
 
     // eckit::Log::info() << " ***** Creating new stream -- buffers: " << buffers_.size()

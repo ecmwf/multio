@@ -45,18 +45,21 @@ private:
 
     Peer localPeer() const override;
 
+    void listen() override;
+
     const eckit::mpi::Comm& comm() const;
 
-    eckit::mpi::Status nonblockingProbe();
-    size_t blockingReceive(eckit::mpi::Status& status);
+    eckit::mpi::Status probe();
+    size_t blockingReceive(eckit::mpi::Status& status, MpiBuffer& buffer);
 
     MpiPeer local_;
 
-    eckit::Buffer buffer_;
-
     StreamPool pool_;
 
+    std::queue<MpiInputStream> streamQueue_;
     std::queue<Message> msgPack_;
+
+    std::mutex mutex_;
 
     eckit::Timing totSendTiming_;
     eckit::Timing receiveTiming_;

@@ -63,7 +63,7 @@ private:
         config_{test_configuration("thread")},
         transport_{TransportFactory::instance().build("thread", config_)},
         listener_{config_, *transport_},
-        listenerThread_{&Listener::listen, &listener_} {}
+        listenerThread_{&Listener::start, &listener_} {}
 
     ~IoTransport() {
         if (listenerThread_.joinable()) {

@@ -343,7 +343,7 @@ void MultioHammer::finish(const eckit::option::CmdArgs&) {}
 
 void MultioHammer::startListening(std::shared_ptr<Transport> transport) {
     Listener listener(config_, *transport);
-    listener.listen();
+    listener.start();
 }
 
 void MultioHammer::spawnServers(const PeerList& serverPeers,

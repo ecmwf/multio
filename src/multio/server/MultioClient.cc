@@ -29,28 +29,27 @@ MultioClient::~MultioClient() = default;
 void MultioClient::openConnections() const {
     // auto client = transport_->localPeer();
     // for (auto& server : serverPeers_) {
-        Message msg{Message::Header{Message::Tag::Open, client_, *serverPeers_[serverId_]}};
-        transport_->send(msg);
+    Message msg{Message::Header{Message::Tag::Open, client_, *serverPeers_[serverId_]}};
+    transport_->send(msg);
     // }
 }
 
 void MultioClient::closeConnections() const {
     // auto client = transport_->localPeer();
     // for (auto& server : serverPeers_) {
-        Message msg{Message::Header{Message::Tag::Close, client_, *serverPeers_[serverId_]}};
-        transport_->send(msg);
+    Message msg{Message::Header{Message::Tag::Close, client_, *serverPeers_[serverId_]}};
+    transport_->send(msg);
     // }
 }
 
 void MultioClient::sendDomain(message::Metadata metadata, eckit::Buffer&& domain) {
-    // Peer client = transport_->localPeer();
+    // auto client = transport_->localPeer();
     // for (auto& server : serverPeers_) {
-    //     Message msg{Message::Header{Message::Tag::Domain, client_, *server, std::move(metadata)},
-    //                 domain};
-
-    //     transport_->send(msg);
+    Message msg{Message::Header{Message::Tag::Domain, client_, *serverPeers_[serverId_],
+                                std::move(metadata)},
+                domain};
+    transport_->send(msg);
     // }
-    sendField(metadata, std::move(domain), true);
 }
 
 void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,

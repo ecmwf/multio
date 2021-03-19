@@ -11,17 +11,18 @@ bool MpiBuffer::isFree() {
             (status == BufferStatus::transmitting && request.test());
 }
 
-MpiStream::MpiStream(MpiBuffer& buf) : eckit::ResizableMemoryStream{buf.content}, buf_{buf} {}
+MpiOutputStream::MpiOutputStream(MpiBuffer& buf) :
+    eckit::ResizableMemoryStream{buf.content}, buf_{buf} {}
 
-bool MpiStream::canFitMessage(size_t sz) {
+bool MpiOutputStream::canFitMessage(size_t sz) {
     return (position() + sz + 4096 < buf_.content.size());
 }
 
-MpiBuffer& MpiStream::buffer() const {
+MpiBuffer& MpiOutputStream::buffer() const {
     return buf_;
 }
 
-std::string MpiStream::name() const {
+std::string MpiOutputStream::name() const {
     static const std::map<BufferStatus, std::string> st2str{
         {BufferStatus::available, "available"},
         {BufferStatus::fillingUp, "fillingUp"},
@@ -29,5 +30,26 @@ std::string MpiStream::name() const {
 
     return "MpiStream(" + st2str.at(buf_.status) + ")";
 }
+
+MpiInputStream::MpiInputStream(MpiBuffer& buf, size_t sz) :
+    eckit::ResizableMemoryStream{buf.content}, buf_{buf}, size_{sz} {}
+
+MpiBuffer& MpiInputStream::buffer() const {
+    return buf_;
+}
+
+size_t MpiInputStream::size() const {
+    return size_;
+}
+
+std::string MpiInputStream::name() const {
+    static const std::map<BufferStatus, std::string> st2str{
+        {BufferStatus::available, "available"},
+        {BufferStatus::fillingUp, "fillingUp"},
+        {BufferStatus::transmitting, "transmitting"}};
+
+    return "MpiStream(" + st2str.at(buf_.status) + ")";
+}
+
 }
 }  // namespace multio

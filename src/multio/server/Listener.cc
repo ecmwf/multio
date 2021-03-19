@@ -39,16 +39,21 @@ Listener::Listener(const eckit::Configuration& config, Transport& trans) :
     transport_{trans},
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024*1024)) {}
 
-void Listener::listen() {
-    ScopedThread scThread{std::thread{&Dispatcher::dispatch, dispatcher_, std::ref(msgQueue_)}};
+void Listener::start() {
+    ScopedThread lstnThread{std::thread{&Listener::listen, this}};
+
+    ScopedThread dpatchThread{std::thread{&Dispatcher::dispatch, dispatcher_, std::ref(msgQueue_)}};
 
     do {
         Message msg = transport_.receive();
 
+//        eckit::Log::info() << " *** Unpacked message received: " << msg << std::endl;
+
         switch (msg.tag()) {
             case Message::Tag::Open:
                 connections_.insert(msg.source());
-                LOG_DEBUG_LIB(LibMultio)
+                eckit::Log::info()
+                //LOG_DEBUG_LIB(LibMultio)
                     << "*** OPENING connection to " << msg.source()
                     << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
                     << ", connections = " << connections_.size() << std::endl;
@@ -57,7 +62,8 @@ void Listener::listen() {
             case Message::Tag::Close:
                 connections_.erase(connections_.find(msg.source()));
                 ++closedCount_;
-                LOG_DEBUG_LIB(LibMultio)
+                eckit::Log::info()
+                //LOG_DEBUG_LIB(LibMultio)
                     << "*** CLOSING connection to " << msg.source()
                     << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
                     << ", connections = " << connections_.size() << std::endl;
@@ -103,11 +109,20 @@ void Listener::listen() {
         }
     } while (moreConnections());
 
-    LOG_DEBUG_LIB(LibMultio) << "*** STOPPED listening loop " << std::endl;
+    //LOG_DEBUG_LIB(LibMultio) << "*** STOPPED listening loop " << std::endl;
+    eckit::Log::info() << "*** STOPPED start loop " << std::endl;
 
     msgQueue_.close();
 
-    LOG_DEBUG_LIB(LibMultio) << "*** CLOSED message queue " << std::endl;
+    //LOG_DEBUG_LIB(LibMultio) << "*** CLOSED message queue " << std::endl;
+    eckit::Log::info() << "*** CLOSED message queue " << std::endl;
+}
+
+void Listener::listen() {
+    do {
+        transport_.listen();
+    } while (not msgQueue_.closed());
+    eckit::Log::info() << "*** STOPPED listening loop " << std::endl;
 }
 
 bool Listener::moreConnections() const {

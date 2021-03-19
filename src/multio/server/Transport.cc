@@ -28,6 +28,8 @@ using eckit::Log;
 
 Transport::Transport(const eckit::Configuration&) {}
 
+void Transport::listen() {}
+
 //--------------------------------------------------------------------------------------------------
 
 TransportFactory& TransportFactory::instance() {

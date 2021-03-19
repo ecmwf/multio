@@ -52,6 +52,13 @@ Message decodeMessage(eckit::Stream& stream) {
                 std::move(buffer)};
 }
 
+std::string filename(size_t id) {
+    std::ostringstream os;
+    os << "mpi-transport-" << std::setw(4) << std::setfill('0') << id;
+    os << ".log";
+    return os.str();
+}
+
 const size_t defaultBufferSize = 64 * 1024 * 1024;
 const size_t defaultPoolSize = 128;
 
@@ -63,7 +70,7 @@ MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     pool_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", defaultPoolSize),
           eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", defaultBufferSize),
           comm()},
-    log_{"mpi-transport-" + std::to_string(local_.id()) + ".log"} {}
+    log_{filename(local_.id())} {}
 
 MpiTransport::~MpiTransport() {
     // TODO: check why eckit::Log::info() crashes here for the clients

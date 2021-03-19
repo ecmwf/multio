@@ -47,13 +47,10 @@ void Listener::start() {
     do {
         Message msg = transport_.receive();
 
-//        eckit::Log::info() << " *** Unpacked message received: " << msg << std::endl;
-
         switch (msg.tag()) {
             case Message::Tag::Open:
                 connections_.insert(msg.source());
-                eckit::Log::info()
-                //LOG_DEBUG_LIB(LibMultio)
+                LOG_DEBUG_LIB(LibMultio)
                     << "*** OPENING connection to " << msg.source()
                     << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
                     << ", connections = " << connections_.size() << std::endl;
@@ -62,8 +59,7 @@ void Listener::start() {
             case Message::Tag::Close:
                 connections_.erase(connections_.find(msg.source()));
                 ++closedCount_;
-                eckit::Log::info()
-                //LOG_DEBUG_LIB(LibMultio)
+                LOG_DEBUG_LIB(LibMultio)
                     << "*** CLOSING connection to " << msg.source()
                     << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
                     << ", connections = " << connections_.size() << std::endl;
@@ -109,20 +105,17 @@ void Listener::start() {
         }
     } while (moreConnections());
 
-    //LOG_DEBUG_LIB(LibMultio) << "*** STOPPED listening loop " << std::endl;
-    eckit::Log::info() << "*** STOPPED start loop " << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** STOPPED listening loop " << std::endl;
 
     msgQueue_.close();
 
-    //LOG_DEBUG_LIB(LibMultio) << "*** CLOSED message queue " << std::endl;
-    eckit::Log::info() << "*** CLOSED message queue " << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** CLOSED message queue " << std::endl;
 }
 
 void Listener::listen() {
     do {
         transport_.listen();
     } while (not msgQueue_.closed());
-    eckit::Log::info() << "*** STOPPED listening loop " << std::endl;
 }
 
 bool Listener::moreConnections() const {

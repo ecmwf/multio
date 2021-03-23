@@ -16,7 +16,7 @@ std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
     std::vector<MpiBuffer> bufs;
     eckit::Log::info() << " *** Allocating " << poolSize << " buffers of size "
                        << maxBufSize / 1024 / 1024 << " each" << std::endl;
-    size_t totMem = 0;
+    double totMem = 0.0;
     for (auto ii = 0u; ii < poolSize; ++ii) {
         bufs.emplace_back(maxBufSize);
         totMem += maxBufSize;

@@ -59,6 +59,19 @@ std::string filename(size_t id) {
     return os.str();
 }
 
+std::string system_call(const char* cmd) {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
+
 const size_t defaultBufferSize = 64 * 1024 * 1024;
 const size_t defaultPoolSize = 128;
 
@@ -110,6 +123,7 @@ Message MpiTransport::receive() {
             }
             std::lock_guard<std::mutex> lock{mutex_};
             strm.buffer().status = BufferStatus::available;
+            log_ << system_call("free -m") << std::endl;
             log_ << " *** Size of message pack: " << msgPack_.size() << std::endl;
             log_ << " *** " << localPeer() << ": current pool = " << pool_ << std::endl;
             streamQueue_.pop();

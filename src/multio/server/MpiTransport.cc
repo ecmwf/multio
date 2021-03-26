@@ -138,6 +138,7 @@ void MpiTransport::listen() {
     if(status.error()) {
         return;
     }
+    log_ << " *** " << localPeer() << ": current pool = " << pool_ << std::endl;
     auto& buf = pool_.findAvailableBuffer();
     buf.status = BufferStatus::fillingUp;
     auto sz = blockingReceive(status, buf);

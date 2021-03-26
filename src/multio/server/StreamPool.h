@@ -26,7 +26,7 @@ public:
 
     void send(const message::Message& msg);
 
-    MpiBuffer& findAvailableBuffer();
+    MpiBuffer& findAvailableBuffer(std::ostream& os = eckit::Log::info());
 
     void timings(std::ostream& os) const;
 

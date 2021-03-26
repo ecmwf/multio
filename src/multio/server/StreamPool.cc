@@ -5,6 +5,8 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/mpi/Comm.h"
+
+#include  "multio/LibMultio.h"
 #include "multio/util/ScopedTimer.h"
 
 
@@ -78,15 +80,15 @@ void StreamPool::send(const message::Message& msg) {
     bytesSent_ += sz;
 }
 
-MpiBuffer& StreamPool::findAvailableBuffer() {
+MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {
     auto it = std::end(buffers_);
     while (it == std::end(buffers_)) {
         it = std::find_if(std::begin(buffers_), std::end(buffers_),
                           [](MpiBuffer& buf) { return buf.isFree(); });
     }
 
-    // eckit::Log::info() << " *** -- Found available buffer with idx = "
-    //                    << static_cast<size_t>(std::distance(std::begin(buffers_), it)) << std::endl;
+    os << " *** Found available buffer with idx = "
+       << static_cast<size_t>(std::distance(std::begin(buffers_), it)) << std::endl;
 
     return *it;
 }
@@ -106,7 +108,7 @@ MpiOutputStream& StreamPool::createNewStream(const message::Peer& dest) {
         throw eckit::BadValue("Too few buffers to cover all MPI destinations", Here());
     }
 
-    auto& buf = findAvailableBuffer();
+    auto& buf = findAvailableBuffer(eckit::Log::debug<LibMultio>());
     streams_.emplace(dest, buf);
     buf.status = BufferStatus::fillingUp;
 

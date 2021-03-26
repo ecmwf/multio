@@ -110,6 +110,8 @@ Message MpiTransport::receive() {
             }
             std::lock_guard<std::mutex> lock{mutex_};
             strm.buffer().status = BufferStatus::available;
+            log_ << " *** Size of message pack: " << msgPack_.size() << std::endl;
+            log_ << " *** " << localPeer() << ": current pool = " << pool_ << std::endl;
             streamQueue_.pop();
         }
     } while (true);
@@ -138,12 +140,12 @@ void MpiTransport::listen() {
     if(status.error()) {
         return;
     }
-    log_ << " *** " << localPeer() << ": current pool = " << pool_ << std::endl;
-    auto& buf = pool_.findAvailableBuffer();
+    auto& buf = pool_.findAvailableBuffer(log_);
     buf.status = BufferStatus::fillingUp;
     auto sz = blockingReceive(status, buf);
     bytesReceived_ += sz;
     std::lock_guard<std::mutex> lock{mutex_};
+    log_ << " *** " << localPeer() << ": current pool = " << pool_ << std::endl;
     streamQueue_.emplace(buf, sz);
 }
 

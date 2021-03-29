@@ -4,6 +4,7 @@
 
 #include "eckit/log/Statistics.h"
 
+#include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 #include "multio/server/MpiStream.h"
 
@@ -26,7 +27,7 @@ public:
 
     void send(const message::Message& msg);
 
-    MpiBuffer& findAvailableBuffer(std::ostream& os = eckit::Log::info());
+    MpiBuffer& findAvailableBuffer(std::ostream& os = eckit::Log::debug<LibMultio>());
 
     void timings(std::ostream& os) const;
 

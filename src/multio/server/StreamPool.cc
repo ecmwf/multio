@@ -6,7 +6,6 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/mpi/Comm.h"
 
-#include  "multio/LibMultio.h"
 #include "multio/util/ScopedTimer.h"
 
 

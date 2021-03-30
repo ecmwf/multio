@@ -51,15 +51,17 @@ MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
         return strm;
     }
 
-    util::ScopedTimer scTimer{sendTiming_};
+    {
+        util::ScopedTimer scTimer{sendTiming_};
 
-    auto sz = static_cast<size_t>(strm.bytesWritten());
-    auto destId = static_cast<int>(dest.id());
-    auto msg_tag = static_cast<int>(msg.tag());
-    strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
-    strm.buffer().status = BufferStatus::transmitting;
+        auto sz = static_cast<size_t>(strm.bytesWritten());
+        auto destId = static_cast<int>(dest.id());
+        auto msg_tag = static_cast<int>(msg.tag());
+        strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
+        strm.buffer().status = BufferStatus::transmitting;
 
-    bytesSent_ += sz;
+        bytesSent_ += sz;
+    }
 
     return replaceStream(dest);
 }

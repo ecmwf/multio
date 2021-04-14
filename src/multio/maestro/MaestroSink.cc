@@ -150,7 +150,7 @@ void MaestroSink::flush() {
         util::ScopedTimer timer{timing_};
         ::sleep(5);
         std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo) {
-            //            mstro_cdo_withdraw(cdo);
+            mstro_cdo_withdraw(cdo);
             mstro_cdo_dispose(cdo);
         });
 

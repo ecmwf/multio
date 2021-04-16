@@ -85,62 +85,60 @@ MaestroSink::~MaestroSink() {
 }
 
 void MaestroSink::write(eckit::message::Message blob) {
+    auto name = std::string("multio-hammer-cdo--") + std::to_string(cdoCount_++);
 
-// ++cdoCount_;
+    LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
 
-//    auto name = std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())) +
-//                "-" + std::to_string(cdoCount_++);
+    Metadata md;
 
-auto name = std::string("multio-hammer-cdo--") + std::to_string(cdoCount_++);
+    eckit::message::TypedSetter<Metadata> setter{md};
+    blob.getMetadata(setter);
 
-LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
+    std::ostringstream os;
+    os << md;
 
-Metadata md;
+    util::ScopedTimer timer{timing_};
 
-eckit::message::TypedSetter<Metadata> setter{md};
-blob.getMetadata(setter);
+    mstro_cdo cdo = nullptr;
+    mstro_status s;
+    s = mstro_cdo_declare(name.c_str(), MSTRO_ATTR_DEFAULT, &cdo);
+    // s = mstro_cdo_declare(os.str().c_str(), MSTRO_ATTR_DEFAULT, &cdo);
 
-std::ostringstream os;
-os << md;
+    // const void* cbuf = blob.data();
+    // void* buf = const_cast<void*>(cbuf);
 
-util::ScopedTimer timer{timing_};
+    auto buf = static_cast<void*>(new char[blob.length()]);
+    uint64_t sz = blob.length();
 
-mstro_cdo cdo = nullptr;
-mstro_status s;
-s = mstro_cdo_declare(name.c_str(), MSTRO_ATTR_DEFAULT, &cdo);
-//s = mstro_cdo_declare(os.str().c_str(), MSTRO_ATTR_DEFAULT, &cdo);
+    ::memcpy(buf, blob.data(), sz);
 
-//const void* cbuf = blob.data();
-//void* buf = const_cast<void*>(cbuf);
+    s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.raw-ptr", buf);
+    s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.scope.local-size", &sz);
 
-auto buf = static_cast<void*>(new char[blob.length()]);
-uint64_t sz = blob.length();
+    eckit::Log::info() << " *** MaestroSink *** buffer " << buf << " with size " << sz << std::endl;
 
-::memcpy(buf, blob.data(), sz);
+    LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
 
-s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.raw-ptr", buf);
-s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.scope.local-size", &sz);
+    for (const auto& kw : md.keys()) {
+        auto value = md.get<std::string>(kw);
 
-eckit::Log::info() << " *** MaestroSink *** buffer " << buf << " with size " << sz << std::endl;
+        auto mkey = ".maestro.ecmwf." + kw;
+        auto intvalue = std::stoi(value);
+        auto mvalue = static_cast<void*>(&intvalue);
+        s = mstro_cdo_attribute_set(cdo, mkey.c_str(), &mvalue);
+    }
 
-LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
+    s = mstro_cdo_seal(cdo);  // Seal it after setting all attributes
 
-for (const auto& kw : md.keys()) {
-    auto value = md.get<std::string>(kw);
+    eckit::Log::info() << " *** Offer cdo " << name.c_str() << std::endl;
 
-    auto mkey = ".maestro.ecmwf." + kw;
-    auto intvalue = std::stoi(value);
-    auto mvalue = static_cast<void *>(&intvalue);
-    s = mstro_cdo_attribute_set(cdo, mkey.c_str(), &mvalue);
-}
+    s = mstro_cdo_offer(cdo);  // Submit field
 
-s = mstro_cdo_seal(cdo);  // Seal it after setting all attributes
-
-eckit::Log::info() << " *** Offer cdo " << name.c_str() << std::endl;
-
-s = mstro_cdo_offer(cdo);  // Submit field
-
-offered_cdos_.push_back(cdo);
+    // TODO: do we need to check if the cdos has been demanded before moving to withdraw/dispose?
+    ::sleep(2);
+    mstro_cdo_withdraw(cdo);
+    mstro_cdo_dispose(cdo);
+//    offered_cdos_.push_back(cdo);
 }
 
 void MaestroSink::flush() {
@@ -148,7 +146,7 @@ void MaestroSink::flush() {
         eckit::Log::info() << "MaestroSink::flush()" << std::endl;
 
         util::ScopedTimer timer{timing_};
-        ::sleep(5);
+//        ::sleep(5);
         std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo) {
             mstro_cdo_withdraw(cdo);
             mstro_cdo_dispose(cdo);

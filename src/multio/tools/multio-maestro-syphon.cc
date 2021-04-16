@@ -5,9 +5,15 @@ extern "C" {
 
 #include <algorithm>
 
+#include "eccodes.h"
+
+#include "eckit/io/DataHandle.h"
 #include "eckit/log/Log.h"
-#include "eckit/option/SimpleOption.h"
 #include "eckit/log/Statistics.h"
+#include "eckit/message/Message.h"
+#include "eckit/option/SimpleOption.h"
+
+#include "metkit/codes/CodesContent.h"
 
 #include "multio/tools/MultioTool.h"
 #include "multio/util/ScopedTimer.h"
@@ -52,6 +58,10 @@ void MaestroSyphon::finish(const eckit::option::CmdArgs&) {
 }
 
 void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
+
+    std::unique_ptr<eckit::DataHandle> handle{
+        eckit::PathName{"consumed.grib"}.fileHandle(false)};
+    handle->openForAppend(0);
 
     mstro_cdo_selector selector = nullptr;
 
@@ -139,21 +149,28 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
 
                         eckit::Log::info() << " *** Attribute get " << std::endl;
 
-                        auto valType = MSTRO_CDO_ATTR_VALUE_uint64;
-                        const uint64_t* sz;
-                        s = mstro_cdo_attribute_get(cdo, ".maestro.core.cdo.scope.local-size",
-                                                    &valType, reinterpret_cast<const void**>(&sz));
+//                        auto valType = MSTRO_CDO_ATTR_VALUE_uint64;
+//                        const uint64_t* sz;
+//                        s = mstro_cdo_attribute_get(cdo, ".maestro.core.cdo.scope.local-size",
+//                                                    &valType, reinterpret_cast<const void**>(&sz));
 
-                        mmbArray *mamba_ptr=NULL;
-                        s = mstro_cdo_access_mamba_array(cdo, &mamba_ptr);
+//                        mmbArray* mamba_ptr = NULL;
+//                        s = mstro_cdo_access_mamba_array(cdo, &mamba_ptr);
+//                        eckit::Log::info() << " *** CDO with size " << *sz << " and mamba pointer "
+//                                           << mamba_ptr << " has been demanded " << std::endl;
 
-                        eckit::Log::info() << " *** CDO with size " << *sz << " and mamba pointer "
-                                           << mamba_ptr << " has been demanded " << std::endl;
+                        void* data = NULL;
+                        int64_t sz = 0;
+                        s = mstro_cdo_access_ptr(cdo, &data, &sz);
+                        eckit::Log::info() << " *** CDO with size " << sz << " and access pointer "
+                                           << data << " has been demanded " << std::endl;
 
-                        // FileSink here
+                        codes_handle* h = codes_handle_new_from_message(nullptr, data, sz);
+                        eckit::message::Message msg{new metkit::codes::CodesContent{h, true}};
+                        msg.write(*handle);
 
-                        s = mstro_cdo_dispose(cdo);
-                        ASSERT(s == MSTRO_OK);
+//                        s = mstro_cdo_dispose(cdo);
+//                        ASSERT(s == MSTRO_OK);
 
                         break;
                     }

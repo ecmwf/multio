@@ -75,9 +75,20 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
 }
 
 MaestroSink::~MaestroSink() {
+
     eckit::Timing timing;
     {
         util::ScopedTimer timer{timing};
+
+        ::sleep(60);
+
+        std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo) {
+            mstro_cdo_withdraw(cdo);
+            mstro_cdo_dispose(cdo);
+        });
+
+        offered_cdos_.clear();
+
         mstro_finalize();
     }
     eckit::Log::info() << " MaestroSink: finalising Maestro has taken " << timing.elapsed_ << "s"
@@ -100,12 +111,7 @@ void MaestroSink::write(eckit::message::Message blob) {
     util::ScopedTimer timer{timing_};
 
     mstro_cdo cdo = nullptr;
-    mstro_status s;
-    s = mstro_cdo_declare(name.c_str(), MSTRO_ATTR_DEFAULT, &cdo);
-    // s = mstro_cdo_declare(os.str().c_str(), MSTRO_ATTR_DEFAULT, &cdo);
-
-    // const void* cbuf = blob.data();
-    // void* buf = const_cast<void*>(cbuf);
+    mstro_status s = mstro_cdo_declare(name.c_str(), MSTRO_ATTR_DEFAULT, &cdo);
 
     auto buf = static_cast<void*>(new char[blob.length()]);
     uint64_t sz = blob.length();
@@ -134,11 +140,7 @@ void MaestroSink::write(eckit::message::Message blob) {
 
     s = mstro_cdo_offer(cdo);  // Submit field
 
-    // TODO: do we need to check if the cdos has been demanded before moving to withdraw/dispose?
-    ::sleep(2);
-    mstro_cdo_withdraw(cdo);
-    mstro_cdo_dispose(cdo);
-//    offered_cdos_.push_back(cdo);
+    offered_cdos_.push_back(cdo);
 }
 
 void MaestroSink::flush() {
@@ -146,13 +148,6 @@ void MaestroSink::flush() {
         eckit::Log::info() << "MaestroSink::flush()" << std::endl;
 
         util::ScopedTimer timer{timing_};
-//        ::sleep(5);
-        std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo) {
-            mstro_cdo_withdraw(cdo);
-            mstro_cdo_dispose(cdo);
-        });
-
-        offered_cdos_.clear();
     }
     eckit::Log::info() << " MaestroSink: CDO count = " << cdoCount_
                        << " -- writing the last step has taken " << timing_.elapsed_ << "s"

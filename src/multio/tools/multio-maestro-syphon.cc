@@ -169,8 +169,8 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
                         eckit::message::Message msg{new metkit::codes::CodesContent{h, true}};
                         msg.write(*handle);
 
-//                        s = mstro_cdo_dispose(cdo);
-//                        ASSERT(s == MSTRO_OK);
+                        s = mstro_cdo_dispose(cdo);
+                        ASSERT(s == MSTRO_OK);
 
                         break;
                     }

@@ -76,6 +76,8 @@ class MultioNemo {
         activeFields_{fetch_active_fields(config_)} {
         static const char* argv[2] = {"MultioNemo", 0};
         eckit::Main::initialise(1, const_cast<char**>(argv));
+
+        metadata_.set("run", config_.getSubConfiguration("run"));
     }
 
 public:

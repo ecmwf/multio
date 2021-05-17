@@ -118,8 +118,8 @@ void MaestroSink::write(eckit::message::Message blob) {
 
     ::memcpy(buf, blob.data(), sz);
 
-    s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.raw-ptr", buf);
-    s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.scope.local-size", &sz);
+    s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.raw-ptr", buf, false);
+    s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.scope.local-size", &sz, true);
 
     eckit::Log::info() << " *** MaestroSink *** buffer " << buf << " with size " << sz << std::endl;
 
@@ -131,7 +131,7 @@ void MaestroSink::write(eckit::message::Message blob) {
         auto mkey = ".maestro.ecmwf." + kw;
         auto intvalue = std::stoi(value);
         auto mvalue = static_cast<void*>(&intvalue);
-        s = mstro_cdo_attribute_set(cdo, mkey.c_str(), &mvalue);
+        s = mstro_cdo_attribute_set(cdo, mkey.c_str(), &mvalue, true);
     }
 
     s = mstro_cdo_seal(cdo);  // Seal it after setting all attributes

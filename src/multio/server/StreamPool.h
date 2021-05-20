@@ -2,6 +2,8 @@
 #ifndef multio_server_StreamPool_H
 #define multio_server_StreamPool_H
 
+#include <sstream>
+
 #include "eckit/log/Statistics.h"
 
 #include "multio/LibMultio.h"
@@ -50,6 +52,9 @@ private:
     eckit::Timing waitTiming_;
 
     std::size_t bytesSent_ = 0;
+
+    std::map<MpiPeer, unsigned int> counter_;
+    std::ostringstream os_;
 };
 
 }  // namespace server

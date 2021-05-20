@@ -2,10 +2,12 @@
 #include "StreamPool.h"
 
 #include <algorithm>
+#include <iomanip>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/mpi/Comm.h"
 
+#include "eckit/types/DateTime.h"
 #include "multio/util/ScopedTimer.h"
 
 
@@ -57,6 +59,17 @@ MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
         auto sz = static_cast<size_t>(strm.bytesWritten());
         auto destId = static_cast<int>(dest.id());
         auto msg_tag = static_cast<int>(msg.tag());
+
+        ++counter_[dest];
+        struct ::timeval tstamp;
+        ::gettimeofday(&tstamp, 0);
+        auto mSecs = tstamp.tv_usec / 1000;
+
+        os_ << " *** Dispatching buffer to " << dest << " -- counter: " << std::setw(4)
+            << std::setfill('0') << counter_.at(dest)
+            << ", timestamp: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
+            << ":" << std::setw(4) << std::setfill('0') << mSecs << '\n';
+
         strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
         strm.buffer().status = BufferStatus::transmitting;
 
@@ -96,6 +109,8 @@ MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {
 
 void StreamPool::timings(std::ostream &os) const
 {
+    os << os_.str();
+
     const std::size_t scale = 1024*1024;
     os << "         -- Waiting for buffer:  " << waitTiming_ << "s\n"
        << "         -- Sending data:        " << bytesSent_ / scale << " MiB, " << sendTiming_

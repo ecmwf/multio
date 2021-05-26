@@ -67,10 +67,16 @@ MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
 
         os_ << " *** Dispatching buffer to " << dest << " -- counter: " << std::setw(4)
             << std::setfill('0') << counter_.at(dest)
-            << ", timestamp: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
-            << ":" << std::setw(4) << std::setfill('0') << mSecs << '\n';
+            << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
+            << ":" << std::setw(3) << std::setfill('0') << mSecs;
 
         strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
+
+        ::gettimeofday(&tstamp, 0);
+        mSecs = tstamp.tv_usec / 1000;
+        os_ << " and " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
+            << ":" << std::setw(3) << std::setfill('0') << mSecs << '\n';
+
         strm.buffer().status = BufferStatus::transmitting;
 
         bytesSent_ += sz;

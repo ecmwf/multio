@@ -37,6 +37,8 @@ public:
     MpiOutputStream(MpiBuffer& buf);
 
     bool canFitMessage(size_t sz);
+    bool shallFitMessage(size_t sz);
+
     MpiBuffer& buffer() const;
 
 private:

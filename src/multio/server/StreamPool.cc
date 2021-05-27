@@ -49,13 +49,19 @@ MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
     }
 
     auto& strm = streams_.at(dest);
-    if (strm.canFitMessage(msg.size())) {
+
+    //  Carry on using stream if
+    //    * can fit this message into the the stream's buffer AND
+    //    * a probablistic algorithm return true
+    //  The algorithm returns true if buffer is less than 50% filled up, and false if 100% filled up
+    //  It returns either true of false depending on whether a randomly chosen number between 0.5
+    //  and 1.0 is smaller than the fill-up ratio
+
+    if (strm.shallFitMessage(msg.size())) {
         return strm;
     }
 
     {
-        util::ScopedTimer scTimer{sendTiming_};
-
         auto sz = static_cast<size_t>(strm.bytesWritten());
         auto destId = static_cast<int>(dest.id());
         auto msg_tag = static_cast<int>(msg.tag());
@@ -63,19 +69,21 @@ MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
         ++counter_[dest];
         struct ::timeval tstamp;
         ::gettimeofday(&tstamp, 0);
-        auto mSecs = tstamp.tv_usec / 1000;
+        auto mSecs = tstamp.tv_usec;
 
         os_ << " *** Dispatching buffer to " << dest << " -- counter: " << std::setw(4)
             << std::setfill('0') << counter_.at(dest)
             << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
-            << ":" << std::setw(3) << std::setfill('0') << mSecs;
+            << ":" << std::setw(6) << std::setfill('0') << mSecs;
+
+        util::ScopedTimer scTimer{sendTiming_};
 
         strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
 
         ::gettimeofday(&tstamp, 0);
-        mSecs = tstamp.tv_usec / 1000;
+        mSecs = tstamp.tv_usec;
         os_ << " and " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
-            << ":" << std::setw(3) << std::setfill('0') << mSecs << '\n';
+            << ":" << std::setw(6) << std::setfill('0') << mSecs << '\n';
 
         strm.buffer().status = BufferStatus::transmitting;
 

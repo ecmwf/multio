@@ -124,7 +124,9 @@ bool Listener::moreConnections() const {
 
 void Listener::checkConnection(const Peer& conn) const {
     if (connections_.find(conn) == end(connections_)) {
-        throw eckit::SeriousBug("Connection is not open");
+        std::ostringstream oss;
+        oss << "Connection to " << conn << " is not open";
+        throw oss.str();
     }
 }
 

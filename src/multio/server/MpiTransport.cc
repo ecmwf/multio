@@ -92,18 +92,19 @@ MpiTransport::~MpiTransport() {
     os << " ******* " << *this << "\n";
     pool_.timings(os);
     os << "\n         -- Total for send:      " << totSendTiming_
-       << "s\n         -- Probing for data:    " << probeTiming_
        << "s\n         -- Receiving data:      " << bytesReceived_ / scale
-       << " MiB\n         -- Receive timing:      " << receiveTiming_
+       << " MiB\n         -- Probing for data:    " << probeTiming_
+       << "s\n         -- Receive timing:      " << receiveTiming_
+       << "s\n         -- Push-queue timing:   " << pushToQueueTiming_
        << "s\n         -- Deserialising data:  " << decodeTiming_
        << "s\n         -- Returning data:      " << returnTiming_
-       << "s\n         -- Total for receive:   " << totReceiveTiming_ << "s" << std::endl;
+       << "s\n         -- Total for return:    " << totReturnTiming_ << "s" << std::endl;
 
     log_ << os.str();
 }
 
 Message MpiTransport::receive() {
-    util::ScopedTimer scTimer{totReceiveTiming_};
+    util::ScopedTimer scTimer{totReturnTiming_};
 
     do {
         while (not msgPack_.empty()) {
@@ -153,6 +154,7 @@ void MpiTransport::listen() {
     auto& buf = pool_.findAvailableBuffer();
     buf.status = BufferStatus::fillingUp;
     auto sz = blockingReceive(status, buf);
+    util::ScopedTimer scTimer{pushToQueueTiming_};
     bytesReceived_ += sz;
     std::lock_guard<std::mutex> lock{mutex_};
 //    log_ << " *** " << localPeer() << ": current pool = " << pool_ << std::endl;

@@ -64,9 +64,10 @@ private:
     eckit::Timing totSendTiming_;
     eckit::Timing receiveTiming_;
     eckit::Timing probeTiming_;
+    eckit::Timing pushToQueueTiming_;
     eckit::Timing decodeTiming_;
     eckit::Timing returnTiming_;
-    eckit::Timing totReceiveTiming_;
+    eckit::Timing totReturnTiming_;
 
     std::size_t bytesReceived_ = 0;
 

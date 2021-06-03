@@ -48,6 +48,7 @@ private:
     std::vector<MpiBuffer> buffers_;
     std::map<MpiPeer, MpiOutputStream> streams_;
 
+    eckit::Timing isendTiming_;
     eckit::Timing sendTiming_;
     eckit::Timing waitTiming_;
 

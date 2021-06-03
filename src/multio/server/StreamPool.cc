@@ -76,7 +76,7 @@ MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
             << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
             << ":" << std::setw(6) << std::setfill('0') << mSecs;
 
-        util::ScopedTimer scTimer{sendTiming_};
+        util::ScopedTimer scTimer{isendTiming_};
 
         strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
 
@@ -127,8 +127,9 @@ void StreamPool::timings(std::ostream &os) const
 
     const std::size_t scale = 1024*1024;
     os << "         -- Waiting for buffer:  " << waitTiming_ << "s\n"
-       << "         -- Sending data:        " << bytesSent_ / scale << " MiB, " << sendTiming_
-       << "s";
+       << "         -- Sending data:        " << bytesSent_ / scale << " MiB\n"
+       << "         -- Send time (async):   " << isendTiming_ << "s\n"
+       << "         -- Send time (block):   " << sendTiming_ << "s";
 }
 
 MpiOutputStream& StreamPool::createNewStream(const message::Peer& dest) {

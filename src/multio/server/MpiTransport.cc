@@ -93,12 +93,11 @@ MpiTransport::~MpiTransport() {
     pool_.timings(os);
     os << "\n         -- Total for send:      " << totSendTiming_
        << "s\n         -- Probing for data:    " << probeTiming_
-       << "s\n         -- Receiving data:      " << bytesReceived_ / scale << " MiB, "
-       << receiveTiming_
+       << "s\n         -- Receiving data:      " << bytesReceived_ / scale
+       << " MiB\n         -- Receive timing:      " << receiveTiming_
        << "s\n         -- Deserialising data:  " << decodeTiming_
        << "s\n         -- Returning data:      " << returnTiming_
-       << "s\n         -- Total for receive:   " << totReceiveTiming_ << "s"
-       << std::endl;
+       << "s\n         -- Total for receive:   " << totReceiveTiming_ << "s" << std::endl;
 
     log_ << os.str();
 }
@@ -123,9 +122,6 @@ Message MpiTransport::receive() {
             }
             std::lock_guard<std::mutex> lock{mutex_};
             strm.buffer().status = BufferStatus::available;
-//            log_ << system_call("free -m") << std::endl;
-//            log_ << " *** Size of message pack: " << msgPack_.size() << std::endl;
-//            log_ << " *** " << localPeer() << ": current pool = " << pool_ << std::endl;
             streamQueue_.pop();
         }
     } while (true);

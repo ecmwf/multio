@@ -25,14 +25,16 @@ bool MpiOutputStream::shallFitMessage(size_t sz) {
         return false;
     }
 
-    auto ratio = static_cast<double>(position()) / static_cast<double>(buf_.content.size());
+    return true;
 
-    std::random_device rd;   // Will be used to obtain a seed for the random number engine
-    std::mt19937 gen{rd()};  // Standard mersenne_twister_engine seeded with rd()
-    std::uniform_real_distribution<double> dis{0.5, 1.0};
-    auto randVal = dis(gen);
+//    auto ratio = static_cast<double>(position()) / static_cast<double>(buf_.content.size());
 
-    return ratio < randVal;
+//    std::random_device rd;   // Will be used to obtain a seed for the random number engine
+//    std::mt19937 gen{rd()};  // Standard mersenne_twister_engine seeded with rd()
+//    std::uniform_real_distribution<double> dis{0.5, 1.0};
+//    auto randVal = dis(gen);
+
+//    return ratio < randVal;
 }
 
 MpiBuffer& MpiOutputStream::buffer() const {

@@ -70,10 +70,11 @@ void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,
         os << metadata.getString("category") << metadata.getString("nemoParam")
            << metadata.getString("param") << metadata.getLong("level");
 
-        // auto id = std::hash<std::string>{}(os.str()) % serverCount_;
+        auto id = std::hash<std::string>{}(os.str()) % serverCount_;
 
-        auto offset = std::hash<std::string>{}(os.str()) % usedServerCount_;
-        auto id = (serverId_ + offset) % serverCount_;
+//        auto offset = std::hash<std::string>{}(os.str()) % usedServerCount_;
+//        auto id = (serverId_ + offset) % serverCount_;
+
         ASSERT(id < serverPeers_.size());
 
         //        eckit::Log::info() << " ***** " << client_ << ": destination id = " << id

@@ -101,10 +101,29 @@ MpiOutputStream& StreamPool::replaceStream(const message::Peer& dest) {
 void StreamPool::send(const message::Message& msg) {
     auto& strm = getStream(msg);
 
-    util::ScopedTimer scTimer{sendTiming_};
     auto sz = static_cast<size_t>(strm.bytesWritten());
-    auto destId = static_cast<int>(msg.destination().id());
+    auto dest = msg.destination();
+    auto destId = static_cast<int>(dest.id());
+
+    ++counter_[dest];
+    struct ::timeval tstamp;
+    ::gettimeofday(&tstamp, 0);
+    auto mSecs = tstamp.tv_usec;
+
+    os_ << " *** Dispatching buffer to " << dest << " -- counter: " << std::setw(4)
+        << std::setfill('0') << counter_.at(dest)
+        << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
+        << ":" << std::setw(6) << std::setfill('0') << mSecs;
+
+    util::ScopedTimer scTimer{sendTiming_};
+
     comm_.send<void>(strm.buffer().content, sz, destId, static_cast<int>(msg.tag()));
+
+    ::gettimeofday(&tstamp, 0);
+    mSecs = tstamp.tv_usec;
+    os_ << " and " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
+        << ":" << std::setw(6) << std::setfill('0') << mSecs << '\n';
+
     bytesSent_ += sz;
 }
 

@@ -48,8 +48,6 @@ MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
         return createNewStream(dest);
     }
 
-    auto& strm = streams_.at(dest);
-
     //  Carry on using stream if
     //    * can fit this message into the the stream's buffer AND
     //    * a probablistic algorithm return true
@@ -57,38 +55,12 @@ MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
     //  It returns either true of false depending on whether a randomly chosen number between 0.5
     //  and 1.0 is smaller than the fill-up ratio
 
+    auto& strm = streams_.at(dest);
     if (strm.shallFitMessage(msg.size())) {
         return strm;
     }
 
-    {
-        auto sz = static_cast<size_t>(strm.bytesWritten());
-        auto destId = static_cast<int>(dest.id());
-        auto msg_tag = static_cast<int>(msg.tag());
-
-        ++counter_[dest];
-        struct ::timeval tstamp;
-        ::gettimeofday(&tstamp, 0);
-        auto mSecs = tstamp.tv_usec;
-
-        os_ << " *** Dispatching buffer to " << dest << " -- counter: " << std::setw(4)
-            << std::setfill('0') << counter_.at(dest)
-            << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
-            << ":" << std::setw(6) << std::setfill('0') << mSecs;
-
-        util::ScopedTimer scTimer{isendTiming_};
-
-        strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
-
-        ::gettimeofday(&tstamp, 0);
-        mSecs = tstamp.tv_usec;
-        os_ << " and " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
-            << ":" << std::setw(6) << std::setfill('0') << mSecs << '\n';
-
-        strm.buffer().status = BufferStatus::transmitting;
-
-        bytesSent_ += sz;
-    }
+    sendBuffer(dest, static_cast<int>(msg.tag()));
 
     return replaceStream(dest);
 }
@@ -98,11 +70,10 @@ MpiOutputStream& StreamPool::replaceStream(const message::Peer& dest) {
     return createNewStream(dest);
 }
 
-void StreamPool::send(const message::Message& msg) {
-    auto& strm = getStream(msg);
+void StreamPool::sendBuffer(const message::Peer& dest, int msg_tag) {
+    auto& strm = streams_.at(dest);
 
     auto sz = static_cast<size_t>(strm.bytesWritten());
-    auto dest = msg.destination();
     auto destId = static_cast<int>(dest.id());
 
     ++counter_[dest];
@@ -110,21 +81,52 @@ void StreamPool::send(const message::Message& msg) {
     ::gettimeofday(&tstamp, 0);
     auto mSecs = tstamp.tv_usec;
 
-    os_ << " *** Dispatching buffer to " << dest << " -- counter: " << std::setw(4)
-        << std::setfill('0') << counter_.at(dest)
-        << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
-        << ":" << std::setw(6) << std::setfill('0') << mSecs;
+//    os_ << " *** Dispatching buffer to " << dest << " -- counter: " << std::setw(4)
+//        << std::setfill('0') << counter_.at(dest)
+//        << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
+//        << ":" << std::setw(6) << std::setfill('0') << mSecs;
 
-    util::ScopedTimer scTimer{sendTiming_};
+    util::ScopedTimer scTimer{isendTiming_};
 
-    comm_.send<void>(strm.buffer().content, sz, destId, static_cast<int>(msg.tag()));
+    strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
 
-    ::gettimeofday(&tstamp, 0);
-    mSecs = tstamp.tv_usec;
-    os_ << " and " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
-        << ":" << std::setw(6) << std::setfill('0') << mSecs << '\n';
+//    ::gettimeofday(&tstamp, 0);
+//    mSecs = tstamp.tv_usec;
+//    os_ << " and " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
+//        << ":" << std::setw(6) << std::setfill('0') << mSecs << '\n';
+
+    strm.buffer().status = BufferStatus::transmitting;
 
     bytesSent_ += sz;
+
+    eckit::Log::info() << dest << " has " << *this << std::endl;
+
+ //    auto& strm = getStream(msg);
+
+//    auto sz = static_cast<size_t>(strm.bytesWritten());
+//    auto dest = msg.destination();
+//    auto destId = static_cast<int>(dest.id());
+
+//    ++counter_[dest];
+//    struct ::timeval tstamp;
+//    ::gettimeofday(&tstamp, 0);
+//    auto mSecs = tstamp.tv_usec;
+
+//    os_ << " *** Dispatching buffer to " << dest << " -- counter: " << std::setw(4)
+//        << std::setfill('0') << counter_.at(dest)
+//        << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
+//        << ":" << std::setw(6) << std::setfill('0') << mSecs;
+
+//    util::ScopedTimer scTimer{sendTiming_};
+
+//    comm_.send<void>(strm.buffer().content, sz, destId, static_cast<int>(msg.tag()));
+
+//    ::gettimeofday(&tstamp, 0);
+//    mSecs = tstamp.tv_usec;
+//    os_ << " and " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
+//        << ":" << std::setw(6) << std::setfill('0') << mSecs << '\n';
+
+//    bytesSent_ += sz;
 }
 
 MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {
@@ -142,6 +144,11 @@ MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {
     return *it;
 }
 
+void StreamPool::waitAll() {
+    while (not std::all_of(std::begin(buffers_), std::end(buffers_),
+                           [](MpiBuffer& buf) { return buf.isFree(); })) {}
+}
+
 void StreamPool::timings(std::ostream &os) const
 {
     os << os_.str();
@@ -154,7 +161,7 @@ void StreamPool::timings(std::ostream &os) const
 }
 
 MpiOutputStream& StreamPool::createNewStream(const message::Peer& dest) {
-    if (buffers_.size() <= streams_.size()) {
+    if (buffers_.size() < streams_.size()) {
         throw eckit::BadValue("Too few buffers to cover all MPI destinations", Here());
     }
 

@@ -134,7 +134,8 @@ void MpiTransport::send(const Message& msg) {
     msg.encode(pool_.getStream(msg));
 
     if (msg.tag() == Message::Tag::Close) {  // Send it now
-        pool_.send(msg);
+        pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
+        pool_.waitAll(); // Silly -- do this outside the loop
     }
 }
 

@@ -115,6 +115,20 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
 }
 
 
+void TcpTransport::openConnections() {
+    for (auto& server : createServerPeers(config_)) {
+        Message msg{Message::Header{Message::Tag::Open, local_, *server}};
+        send(msg);
+    }
+}
+
+void TcpTransport::closeConnections() {
+    for (auto& server : createServerPeers(config_)) {
+        Message msg{Message::Header{Message::Tag::Close, local_, *server}};
+        send(msg);
+    }
+}
+
 Message TcpTransport::nextMessage(eckit::net::TCPSocket& socket) const {
     size_t size;
     socket.read(&size, sizeof(size));

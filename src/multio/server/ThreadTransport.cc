@@ -28,6 +28,14 @@ ThreadTransport::ThreadTransport(const eckit::Configuration& cfg) :
     messageQueueSize_(
         eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
 
+void ThreadTransport::openConnections() {
+    throw eckit::NotImplemented{Here()};
+}
+
+void ThreadTransport::closeConnections() {
+    throw eckit::NotImplemented{Here()};
+}
+
 Message ThreadTransport::receive() {
 
     Peer receiver = localPeer();

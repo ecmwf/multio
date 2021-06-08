@@ -45,6 +45,9 @@ public:
     Message receive() override;
 
 private:
+    void openConnections() override;
+    void closeConnections() override;
+
     void send(const Message& message) override;
 
     void print(std::ostream& os) const override;

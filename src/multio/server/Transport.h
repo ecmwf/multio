@@ -43,6 +43,9 @@ public:  // methods
     Transport(const eckit::Configuration& config);
     virtual ~Transport() = default;
 
+    virtual void openConnections() = 0;
+    virtual void closeConnections() = 0;
+
     virtual Message receive() = 0;
 
     virtual void send(const Message& message) = 0;
@@ -53,7 +56,10 @@ public:  // methods
 
     virtual PeerList createServerPeers(const eckit::Configuration& config) = 0;
 
-private:  // methods
+protected:
+    const eckit::LocalConfiguration config_;
+
+private: // methods
     virtual void print(std::ostream& os) const = 0;
 
     friend std::ostream& operator<<(std::ostream& os, const Transport& transport) {

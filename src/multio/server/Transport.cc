@@ -26,7 +26,7 @@ using eckit::Log;
 
 //--------------------------------------------------------------------------------------------------
 
-Transport::Transport(const eckit::Configuration&) {}
+Transport::Transport(const eckit::Configuration& config) : config_{config} {}
 
 void Transport::listen() {}
 

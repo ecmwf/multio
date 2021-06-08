@@ -103,6 +103,20 @@ MpiTransport::~MpiTransport() {
     log_ << os.str();
 }
 
+void MpiTransport::openConnections() {
+    for (auto& server : createServerPeers(config_)) {
+        Message msg{Message::Header{Message::Tag::Open, local_, *server}};
+        send(msg);
+    }
+}
+
+void MpiTransport::closeConnections() {
+    for (auto& server : createServerPeers(config_)) {
+        Message msg{Message::Header{Message::Tag::Close, local_, *server}};
+        send(msg);
+    }
+}
+
 Message MpiTransport::receive() {
     util::ScopedTimer scTimer{totReturnTiming_};
 

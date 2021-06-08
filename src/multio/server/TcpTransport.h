@@ -53,6 +53,9 @@ public:
     TcpTransport(const eckit::Configuration& config);
 
 private:
+    void openConnections() override;
+    void closeConnections() override;
+
     Message receive() override;
 
     void send(const Message& message) override;

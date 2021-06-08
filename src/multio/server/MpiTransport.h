@@ -37,6 +37,9 @@ public:
     ~MpiTransport();
 
 private:
+    void openConnections() override;
+    void closeConnections() override;
+
     Message receive() override;
 
     void send(const Message& msg) override;

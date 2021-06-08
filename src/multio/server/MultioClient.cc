@@ -30,17 +30,11 @@ MultioClient::MultioClient(const eckit::Configuration& config) :
 MultioClient::~MultioClient() = default;
 
 void MultioClient::openConnections() const {
-    for (auto& server : serverPeers_) {
-        Message msg{Message::Header{Message::Tag::Open, client_, *server}};
-        transport_->send(msg);
-    }
+    transport_->openConnections();
 }
 
 void MultioClient::closeConnections() const {
-    for (auto& server : serverPeers_) {
-        Message msg{Message::Header{Message::Tag::Close, client_, *server}};
-        transport_->send(msg);
-    }
+    transport_->closeConnections();
 }
 
 void MultioClient::sendDomain(message::Metadata metadata, eckit::Buffer&& domain) {

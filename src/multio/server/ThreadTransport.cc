@@ -11,6 +11,7 @@
 #include "ThreadTransport.h"
 
 #include "eckit/config/Resource.h"
+#include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
 
@@ -47,6 +48,10 @@ void ThreadTransport::send(const Message& msg) {
 
 Peer ThreadTransport::localPeer() const {
     return Peer{"thread", std::hash<std::thread::id>{}(std::this_thread::get_id())};
+}
+
+PeerList ThreadTransport::createServerPeers(const eckit::Configuration&) {
+    throw eckit::NotImplemented{Here()};
 }
 
 void ThreadTransport::print(std::ostream& os) const {

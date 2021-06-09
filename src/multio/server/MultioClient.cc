@@ -22,7 +22,7 @@ MultioClient::MultioClient(const eckit::Configuration& config) :
     client_{transport_->localPeer()},
     serverId_{client_.id() / (((clientCount_ - 1) / serverCount_) + 1)},
     usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
-    serverPeers_{createServerPeers(config)} {
+    serverPeers_{transport_->createServerPeers(config)} {
     ASSERT(usedServerCount_ <= serverCount_);
     eckit::Log::debug<multio::LibMultio>() << config << std::endl;
 }
@@ -93,46 +93,6 @@ void MultioClient::sendStepComplete() const {
         Message msg{Message::Header{Message::Tag::StepComplete, client_, *server}};
         transport_->send(msg);
     }
-}
-
-
-MultioClient::PeerList MultioClient::createServerPeers(const eckit::Configuration& config) {
-    PeerList serverPeers;
-
-    std::string transport = config.getString("transport");
-    std::string group = config.getString("group");
-
-    eckit::Log::debug<multio::LibMultio>()
-        << "transport = " << transport << ", group = " << group << ", clients = " << clientCount_
-        << ", servers = " << serverCount_ << std::endl;
-
-    // TODO: May want to move this part inside Transport to avoid these conditions
-
-    // For MPI -- this is dangerous as it requires having the same logic as in NEMO or IFS
-    // Perhpas you want ot create an intercommunicator
-    // Move this to the transport layer -- that should create the peerList and pass it back
-    if (transport == "mpi") {
-        auto comm_size = clientCount_ + serverCount_;
-        auto rank = clientCount_;
-        while (rank != comm_size) {
-            serverPeers.emplace_back(new MpiPeer{group, rank++});
-        }
-
-        eckit::Log::debug<multio::LibMultio>()
-            << "Returning list of " << serverPeers.size() << " server"
-            << (serverPeers.size() > 1 ? "s" : "") << std::endl;
-
-        return serverPeers;
-    }
-
-    // For TCP
-    for (auto cfg : config.getSubConfigurations("servers")) {
-        auto host = cfg.getString("host");
-        for (auto port : cfg.getUnsignedVector("ports")) {
-            serverPeers.emplace_back(new TcpPeer{host, port});
-        }
-    }
-    return serverPeers;
 }
 
 }

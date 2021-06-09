@@ -47,8 +47,6 @@ public:
 private:
     using PeerList = std::vector<std::unique_ptr<message::Peer>>;
 
-    PeerList createServerPeers(const eckit::Configuration& config);
-
     size_t clientCount_;
     size_t serverCount_;
 
@@ -58,7 +56,6 @@ private:
     size_t serverId_;
     size_t usedServerCount_;
     PeerList serverPeers_;
-
 };
 
 }  // namespace server

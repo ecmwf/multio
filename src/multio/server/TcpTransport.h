@@ -59,6 +59,8 @@ private:
 
     Peer localPeer() const override;
 
+    PeerList createServerPeers(const eckit::Configuration& config) override;
+
     void print(std::ostream& os) const override;
 
     Message nextMessage(eckit::net::TCPSocket& socket) const;

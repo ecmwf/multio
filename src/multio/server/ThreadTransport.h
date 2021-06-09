@@ -51,6 +51,8 @@ private:
 
     Peer localPeer() const override;
 
+    PeerList createServerPeers(const eckit::Configuration& config) override;
+
     eckit::Queue<Message>& receiveQueue(Peer to);
 
     std::map<Peer, std::unique_ptr<eckit::Queue<Message>>> queues_;

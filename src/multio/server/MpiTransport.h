@@ -47,6 +47,8 @@ private:
 
     void listen() override;
 
+    PeerList createServerPeers(const eckit::Configuration& config) override;
+
     const eckit::mpi::Comm& comm() const;
 
     eckit::mpi::Status probe();

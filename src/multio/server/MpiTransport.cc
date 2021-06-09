@@ -162,6 +162,21 @@ void MpiTransport::listen() {
     streamQueue_.emplace(buf, sz);
 }
 
+PeerList MpiTransport::createServerPeers(const eckit::Configuration& config) {
+    PeerList serverPeers;
+
+    std::string group = config.getString("group");
+    // This is dangerous as it requires having the same logic as in NEMO or IFS
+    // This needs to come from teh configuration or perhpas you want to create an intercommunicator
+    auto comm_size = config.getUnsigned("clientCount") + config.getUnsigned("serverCount");
+    auto rank = config.getUnsigned("clientCount");
+    while (rank != comm_size) {
+        serverPeers.emplace_back(new MpiPeer{group, rank++});
+    }
+
+    return serverPeers;
+}
+
 const eckit::mpi::Comm& MpiTransport::comm() const {
     return eckit::mpi::comm(local_.group().c_str());
 }

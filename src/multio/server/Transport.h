@@ -33,6 +33,8 @@ namespace server {
 using message::Message;
 using message::Peer;
 
+using PeerList = std::vector<std::unique_ptr<message::Peer>>;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 class Transport {
@@ -49,9 +51,10 @@ public:  // methods
 
     virtual void listen();
 
-private: // methods
+    virtual PeerList createServerPeers(const eckit::Configuration& config) = 0;
 
-    virtual void print(std::ostream &os) const = 0;
+private:  // methods
+    virtual void print(std::ostream& os) const = 0;
 
     friend std::ostream& operator<<(std::ostream& os, const Transport& transport) {
         transport.print(os);

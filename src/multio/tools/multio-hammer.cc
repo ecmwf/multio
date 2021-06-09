@@ -327,6 +327,8 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
             ? test_configuration(transportType_)
             : eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{configPath_}}};
 
+    config_.set("clientCount", clientCount_).set("serverCount", serverCount_);
+
     transportType_ = config_.getString("transport");
     if (transportType_ == "mpi") {
         auto comm_size = eckit::mpi::comm(config_.getString("group").c_str()).size();

@@ -114,7 +114,9 @@ void MpiTransport::closeConnections() {
     for (auto& server : createServerPeers(config_)) {
         Message msg{Message::Header{Message::Tag::Close, local_, *server}};
         send(msg);
+        pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
     }
+    pool_.waitAll();
 }
 
 Message MpiTransport::receive() {
@@ -146,11 +148,6 @@ void MpiTransport::send(const Message& msg) {
     util::ScopedTimer scTimer{totSendTiming_};
 
     msg.encode(pool_.getStream(msg));
-
-    if (msg.tag() == Message::Tag::Close) {  // Send it now
-        pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
-        pool_.waitAll(); // Silly -- do this outside the loop
-    }
 }
 
 void MpiTransport::print(std::ostream& os) const {

@@ -145,6 +145,7 @@ MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {
 }
 
 void StreamPool::waitAll() {
+    util::ScopedTimer scTimer{sendTiming_};
     while (not std::all_of(std::begin(buffers_), std::end(buffers_),
                            [](MpiBuffer& buf) { return buf.isFree(); })) {}
 }

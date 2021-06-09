@@ -106,14 +106,14 @@ MpiTransport::~MpiTransport() {
 void MpiTransport::openConnections() {
     for (auto& server : createServerPeers()) {
         Message msg{Message::Header{Message::Tag::Open, local_, *server}};
-        send(msg);
+        bufferedSend(msg);
     }
 }
 
 void MpiTransport::closeConnections() {
     for (auto& server : createServerPeers()) {
         Message msg{Message::Header{Message::Tag::Close, local_, *server}};
-        send(msg);
+        bufferedSend(msg);
         pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
     }
     pool_.waitAll();
@@ -145,6 +145,24 @@ Message MpiTransport::receive() {
 }
 
 void MpiTransport::send(const Message& msg) {
+    util::ScopedTimer scTimer{totSendTiming_};
+
+    auto msg_tag = static_cast<int>(msg.tag());
+
+    // TODO: find available buffer instead
+    // Add 4K for header/footer etc. Should be plenty
+    eckit::Buffer buffer{eckit::round(msg.size(), 8) + 4096};
+
+    eckit::ResizableMemoryStream stream{buffer};
+
+    msg.encode(stream);
+
+    auto sz = static_cast<size_t>(stream.bytesWritten());
+    auto dest = static_cast<int>(msg.destination().id());
+    eckit::mpi::comm(local_.group().c_str()).send<void>(buffer, sz, dest, msg_tag);
+}
+
+void MpiTransport::bufferedSend(const Message& msg) {
     util::ScopedTimer scTimer{totSendTiming_};
 
     msg.encode(pool_.getStream(msg));

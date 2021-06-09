@@ -54,6 +54,10 @@ void ThreadTransport::send(const Message& msg) {
     receiveQueue(msg.destination()).push(msg);
 }
 
+void ThreadTransport::bufferedSend(const Message&) {
+    throw eckit::NotImplemented{Here()};
+}
+
 Peer ThreadTransport::localPeer() const {
     return Peer{"thread", std::hash<std::thread::id>{}(std::this_thread::get_id())};
 }

@@ -42,7 +42,7 @@ void MultioClient::sendDomain(message::Metadata metadata, eckit::Buffer&& domain
         Message msg{Message::Header{Message::Tag::Domain, client_, *server, std::move(metadata)},
                     domain};
 
-        transport_->send(msg);
+        transport_->bufferedSend(msg);
     }
 }
 
@@ -55,7 +55,7 @@ void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,
             Message msg{Message::Header{Message::Tag::Field, client_, *server, std::move(metadata)},
                         field};
 
-            transport_->send(msg);
+            transport_->bufferedSend(msg);
         }
     }
     else {
@@ -78,14 +78,14 @@ void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,
             Message::Header{Message::Tag::Field, client_, *serverPeers_[id], std::move(metadata)},
             std::move(field)};
 
-        transport_->send(msg);
+        transport_->bufferedSend(msg);
     }
 }
 
 void MultioClient::sendStepComplete() const {
     for (auto& server : serverPeers_) {
         Message msg{Message::Header{Message::Tag::StepComplete, client_, *server}};
-        transport_->send(msg);
+        transport_->bufferedSend(msg);
     }
 }
 

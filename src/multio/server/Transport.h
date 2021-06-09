@@ -50,6 +50,8 @@ public:  // methods
 
     virtual void send(const Message& message) = 0;
 
+    virtual void bufferedSend(const Message& message) = 0;
+
     virtual Peer localPeer() const = 0;
 
     virtual void listen();

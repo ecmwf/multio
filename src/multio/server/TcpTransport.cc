@@ -180,6 +180,10 @@ void TcpTransport::send(const Message& msg) {
     socket->write(buffer, static_cast<int>(size));
 }
 
+void TcpTransport::bufferedSend(const Message&) {
+    throw eckit::NotImplemented{Here()};
+}
+
 Peer TcpTransport::localPeer() const {
     return local_;
 }

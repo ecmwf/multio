@@ -62,7 +62,7 @@ private:
 
     Peer localPeer() const override;
 
-    PeerList createServerPeers(const eckit::Configuration& config) override;
+    PeerList createServerPeers() override;
 
     void print(std::ostream& os) const override;
 

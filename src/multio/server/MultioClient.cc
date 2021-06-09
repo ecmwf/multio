@@ -22,7 +22,7 @@ MultioClient::MultioClient(const eckit::Configuration& config) :
     client_{transport_->localPeer()},
     serverId_{client_.id() / (((clientCount_ - 1) / serverCount_) + 1)},
     usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
-    serverPeers_{transport_->createServerPeers(config)} {
+    serverPeers_{transport_->createServerPeers()} {
     ASSERT(usedServerCount_ <= serverCount_);
     eckit::Log::debug<multio::LibMultio>() << config << std::endl;
 }

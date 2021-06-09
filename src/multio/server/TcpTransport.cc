@@ -116,14 +116,14 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
 
 
 void TcpTransport::openConnections() {
-    for (auto& server : createServerPeers(config_)) {
+    for (auto& server : createServerPeers()) {
         Message msg{Message::Header{Message::Tag::Open, local_, *server}};
         send(msg);
     }
 }
 
 void TcpTransport::closeConnections() {
-    for (auto& server : createServerPeers(config_)) {
+    for (auto& server : createServerPeers()) {
         Message msg{Message::Header{Message::Tag::Close, local_, *server}};
         send(msg);
     }
@@ -184,10 +184,10 @@ Peer TcpTransport::localPeer() const {
     return local_;
 }
 
-PeerList TcpTransport::createServerPeers(const eckit::Configuration& config) {
+PeerList TcpTransport::createServerPeers() {
     PeerList serverPeers;
 
-    for (auto cfg : config.getSubConfigurations("servers")) {
+    for (auto cfg : config_.getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             serverPeers.emplace_back(new TcpPeer{host, port});

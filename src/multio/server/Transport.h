@@ -54,7 +54,7 @@ public:  // methods
 
     virtual void listen();
 
-    virtual PeerList createServerPeers(const eckit::Configuration& config) = 0;
+    virtual PeerList createServerPeers() = 0;
 
 protected:
     const eckit::LocalConfiguration config_;

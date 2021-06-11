@@ -68,6 +68,7 @@ private:
 
     std::mutex mutex_;
 
+    eckit::Timing sendTiming_;
     eckit::Timing totSendTiming_;
     eckit::Timing receiveTiming_;
     eckit::Timing probeTiming_;

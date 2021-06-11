@@ -116,7 +116,7 @@ MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {
 }
 
 void StreamPool::waitAll() {
-    util::ScopedTimer scTimer{sendTiming_};
+    util::ScopedTimer scTimer{waitTiming_};
     while (not std::all_of(std::begin(buffers_), std::end(buffers_),
                            [](MpiBuffer& buf) { return buf.isFree(); })) {}
 }
@@ -128,8 +128,7 @@ void StreamPool::timings(std::ostream &os) const
     const std::size_t scale = 1024*1024;
     os << "         -- Waiting for buffer:  " << waitTiming_ << "s\n"
        << "         -- Sending data:        " << bytesSent_ / scale << " MiB\n"
-       << "         -- Send time (async):   " << isendTiming_ << "s\n"
-       << "         -- Send time (block):   " << sendTiming_ << "s";
+       << "         -- Send time (async):   " << isendTiming_ << "s";
 }
 
 MpiOutputStream& StreamPool::createNewStream(const message::Peer& dest) {

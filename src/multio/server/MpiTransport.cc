@@ -91,12 +91,13 @@ MpiTransport::~MpiTransport() {
     std::ostringstream os;
     os << " ******* " << *this << "\n";
     pool_.timings(os);
-    os << "\n         -- Total for send:      " << totSendTiming_
+    os << "\n         -- Send time (block):   " << sendTiming_
+       << "s\n         -- Send and serialise:  " << totSendTiming_
        << "s\n         -- Receiving data:      " << bytesReceived_ / scale
        << " MiB\n         -- Probing for data:    " << probeTiming_
        << "s\n         -- Receive timing:      " << receiveTiming_
        << "s\n         -- Push-queue timing:   " << pushToQueueTiming_
-       << "s\n         -- Deserialising data:  " << decodeTiming_
+       << "s\n         -- Deserialise data:    " << decodeTiming_
        << "s\n         -- Returning data:      " << returnTiming_
        << "s\n         -- Total for return:    " << totReturnTiming_ << "s" << std::endl;
 
@@ -145,7 +146,7 @@ Message MpiTransport::receive() {
 }
 
 void MpiTransport::send(const Message& msg) {
-    util::ScopedTimer scTimer{totSendTiming_};
+    util::ScopedTimer tscTimer{totSendTiming_};
 
     auto msg_tag = static_cast<int>(msg.tag());
 
@@ -156,6 +157,8 @@ void MpiTransport::send(const Message& msg) {
     eckit::ResizableMemoryStream stream{buffer};
 
     msg.encode(stream);
+
+    util::ScopedTimer scTimer{sendTiming_};
 
     auto sz = static_cast<size_t>(stream.bytesWritten());
     auto dest = static_cast<int>(msg.destination().id());

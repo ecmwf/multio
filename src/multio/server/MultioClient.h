@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <vector>
+#include <map>
 
 #include "multio/message/Metadata.h"
 #include "multio/message/Peer.h"

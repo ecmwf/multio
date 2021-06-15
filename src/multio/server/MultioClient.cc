@@ -28,7 +28,6 @@ MultioClient::MultioClient(const eckit::Configuration& config) :
     serverPeers_{transport_->createServerPeers()},
     counters_(serverPeers_.size()),
     distType_{distributionType()} {
-    ASSERT(usedServerCount_ <= serverCount_);
     eckit::Log::debug<multio::LibMultio>() << config << std::endl;
 }
 
@@ -89,6 +88,8 @@ message::Peer MultioClient::chooseServer(const message::Metadata& metadata) {
             std::ostringstream os;
             os << metadata.getString("category") << metadata.getString("nemoParam")
                << metadata.getString("param") << metadata.getLong("level");
+
+            ASSERT(usedServerCount_ <= serverCount_);
 
             auto offset = std::hash<std::string>{}(os.str()) % usedServerCount_;
             auto id = (serverId_ + offset) % serverCount_;

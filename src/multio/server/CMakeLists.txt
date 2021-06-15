@@ -44,6 +44,8 @@ ecbuild_add_library(
         TcpTransport.h
         Transport.cc
         Transport.h
+        TransportStatistics.cc
+        TransportStatistics.h
         ScopedThread.h
         StreamPool.cc
         StreamPool.h

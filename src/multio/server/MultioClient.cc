@@ -126,9 +126,6 @@ message::Peer MultioClient::chooseServer(const message::Metadata& metadata) {
 
             ++counters_[id];
 
-            print_buffer(counters_, eckit::Log::info());
-            eckit::Log::info() << std::endl;
-
             auto dest = *serverPeers_[id];
             destinations_[os.str()] = *serverPeers_[id];
 

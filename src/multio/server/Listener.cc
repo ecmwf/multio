@@ -68,7 +68,7 @@ void Listener::start() {
             case Message::Tag::Grib:
                 LOG_DEBUG_LIB(LibMultio)
                     << "*** Size of grib template: " << msg.size() << std::endl;
-//                GribTemplate::instance().add(msg);
+               GribTemplate::instance().add(msg);
                 break;
 
             case Message::Tag::Domain:
@@ -76,7 +76,7 @@ void Listener::start() {
                     << "*** Number of maps: " << msg.domainCount() << std::endl;
                 checkConnection(msg.source());
                 clientCount_ = msg.domainCount();
-//                domain::Mappings::instance().add(msg);
+               domain::Mappings::instance().add(msg);
                 break;
 
             case Message::Tag::StepNotification:
@@ -87,7 +87,7 @@ void Listener::start() {
             case Message::Tag::StepComplete:
                 LOG_DEBUG_LIB(LibMultio)
                     << "*** Flush received from: " << msg.source() << std::endl;
-//                msgQueue_.push(std::move(msg));
+               msgQueue_.push(std::move(msg));
                 break;
 
             case Message::Tag::Field:
@@ -95,7 +95,7 @@ void Listener::start() {
                 LOG_DEBUG_LIB(LibMultio)
                     << "*** Field received from: " << msg.source() << " with size "
                     << msg.size() / sizeof(double) << std::endl;
-//                msgQueue_.push(std::move(msg));
+               msgQueue_.push(std::move(msg));
                 break;
 
             default:

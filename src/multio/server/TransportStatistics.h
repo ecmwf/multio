@@ -9,7 +9,7 @@
 namespace multio {
 namespace server {
 
-class TransportStatistics {
+class TransportStatistics : public eckit::Statistics {
 public:
     TransportStatistics();
 

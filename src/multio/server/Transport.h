@@ -26,6 +26,7 @@
 #include "eckit/config/Configuration.h"
 
 #include "multio/message/Message.h"
+#include "multio/server/TransportStatistics.h"
 
 namespace multio {
 namespace server {
@@ -60,6 +61,8 @@ public:  // methods
 
 protected:
     const eckit::LocalConfiguration config_;
+
+    TransportStatistics statistics_;
 
 private: // methods
     virtual void print(std::ostream& os) const = 0;

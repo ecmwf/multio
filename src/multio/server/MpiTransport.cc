@@ -17,7 +17,6 @@
 #include "eckit/maths/Functions.h"
 #include "eckit/serialisation/MemoryStream.h"
 
-#include "multio/util/ScopedTimer.h"
 #include "multio/util/print_buffer.h"
 
 namespace multio {
@@ -87,13 +86,13 @@ MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
 
 MpiTransport::~MpiTransport() {
     // TODO: check why eckit::Log::info() crashes here for the clients
-    const std::size_t scale = 1024*1024;
+    const double scale = 1024.0*1024.0;
     std::ostringstream os;
     os << " ******* " << *this << "\n";
     pool_.timings(os);
     os << "\n         -- Send time (block):   " << sendTiming_
        << "s\n         -- Send and serialise:  " << totSendTiming_
-       << "s\n         -- Receiving data:      " << bytesReceived_ / scale
+       << "s\n         -- Receiving data:      " << static_cast<double>(bytesReceived_) / scale
        << " MiB\n         -- Probing for data:    " << probeTiming_
        << "s\n         -- Receive timing:      " << receiveTiming_
        << "s\n         -- Push-queue timing:   " << pushToQueueTiming_
@@ -121,18 +120,19 @@ void MpiTransport::closeConnections() {
 }
 
 Message MpiTransport::receive() {
-    util::ScopedTimer scTimer{totReturnTiming_};
+
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.totReturnTiming_};
 
     do {
         while (not msgPack_.empty()) {
-            util::ScopedTimer retTimer{returnTiming_};
+            eckit::AutoTiming retTiming{statistics_.timer_, statistics_.returnTiming_};
             auto msg = msgPack_.front();
             msgPack_.pop();
             return msg;
         }
 
         if (not streamQueue_.empty()) {
-            util::ScopedTimer decTimer{decodeTiming_};
+            eckit::AutoTiming decodeTiming_{statistics_.timer_, statistics_.decodeTiming_};
             auto& strm = streamQueue_.front();
             while (strm.position() < strm.size()) {
                 auto msg = decodeMessage(strm);
@@ -146,7 +146,7 @@ Message MpiTransport::receive() {
 }
 
 void MpiTransport::send(const Message& msg) {
-    util::ScopedTimer tscTimer{totSendTiming_};
+    eckit::AutoTiming totTiming{statistics_.timer_, statistics_.totSendTiming_};
 
     auto msg_tag = static_cast<int>(msg.tag());
 
@@ -158,7 +158,7 @@ void MpiTransport::send(const Message& msg) {
 
     msg.encode(stream);
 
-    util::ScopedTimer scTimer{sendTiming_};
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.sendTiming_};
 
     auto sz = static_cast<size_t>(stream.bytesWritten());
     auto dest = static_cast<int>(msg.destination().id());
@@ -166,7 +166,7 @@ void MpiTransport::send(const Message& msg) {
 }
 
 void MpiTransport::bufferedSend(const Message& msg) {
-    util::ScopedTimer scTimer{totSendTiming_};
+    eckit::AutoTiming totTiming{statistics_.timer_, statistics_.totSendTiming_};
 
     msg.encode(pool_.getStream(msg));
 }
@@ -187,8 +187,8 @@ void MpiTransport::listen() {
     auto& buf = pool_.findAvailableBuffer();
     buf.status = BufferStatus::fillingUp;
     auto sz = blockingReceive(status, buf);
-    util::ScopedTimer scTimer{pushToQueueTiming_};
-    bytesReceived_ += sz;
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.pushToQueueTiming_};
+    statistics_.receiveSize_ += sz;
     std::lock_guard<std::mutex> lock{mutex_};
 //    log_ << " *** " << localPeer() << ": current pool = " << pool_ << std::endl;
     streamQueue_.emplace(buf, sz);
@@ -214,7 +214,7 @@ const eckit::mpi::Comm& MpiTransport::comm() const {
 }
 
 eckit::mpi::Status MpiTransport::probe() {
-    util::ScopedTimer scTimer{probeTiming_};
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.probeTiming_};
     auto status = comm().iProbe(comm().anySource(), comm().anyTag());
 
     return status;
@@ -224,8 +224,10 @@ size_t MpiTransport::blockingReceive(eckit::mpi::Status& status, MpiBuffer& buff
     auto sz = comm().getCount<void>(status);
     ASSERT(sz < buffer.content.size());
 
-    util::ScopedTimer scTimer{receiveTiming_};
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.receiveTiming_};
     comm().receive<void>(buffer.content, sz, status.source(), status.tag());
+
+    ++statistics_.receiveCount_;
 
     return sz;
 }

@@ -4,11 +4,10 @@
 
 #include <sstream>
 
-#include "eckit/log/Statistics.h"
-
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 #include "multio/server/MpiStream.h"
+#include "multio/server/TransportStatistics.h"
 
 namespace multio {
 namespace server {
@@ -21,7 +20,8 @@ public:
 
 class StreamPool {
 public:
-    explicit StreamPool(size_t poolSize, size_t maxBufSize, const eckit::mpi::Comm& comm);
+    explicit StreamPool(size_t poolSize, size_t maxBufSize, const eckit::mpi::Comm& comm,
+                        TransportStatistics& stats);
 
     MpiBuffer& buffer(size_t idx);
 
@@ -41,20 +41,21 @@ private:
 
     void print(std::ostream& os) const;
 
-    friend std::ostream& operator<<(std::ostream& os, const StreamPool& transport) {
-        transport.print(os);
+    friend std::ostream& operator<<(std::ostream& os, const StreamPool& pool) {
+        pool.print(os);
         return os;
     }
 
     const eckit::mpi::Comm& comm_;
+    TransportStatistics& statistics_;
     std::vector<MpiBuffer> buffers_;
     std::map<MpiPeer, MpiOutputStream> streams_;
 
-    eckit::Timing isendTiming_;
-    eckit::Timing sendTiming_;
-    eckit::Timing waitTiming_;
+//    eckit::Timing isendTiming_;
+//    eckit::Timing sendTiming_;
+//    eckit::Timing waitTiming_;
 
-    std::size_t bytesSent_ = 0;
+//    std::size_t bytesSent_ = 0;
 
     std::map<MpiPeer, unsigned int> counter_;
     std::ostringstream os_;

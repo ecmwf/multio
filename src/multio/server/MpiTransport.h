@@ -59,6 +59,8 @@ private:
     eckit::mpi::Status probe();
     size_t blockingReceive(eckit::mpi::Status& status, MpiBuffer& buffer);
 
+    void encodeMessage(eckit::Stream& strm, const Message& msg);
+
     MpiPeer local_;
 
     StreamPool pool_;
@@ -67,17 +69,6 @@ private:
     std::queue<Message> msgPack_;
 
     std::mutex mutex_;
-
-//    eckit::Timing sendTiming_;
-//    eckit::Timing totSendTiming_;
-//    eckit::Timing receiveTiming_;
-//    eckit::Timing probeTiming_;
-//    eckit::Timing pushToQueueTiming_;
-//    eckit::Timing decodeTiming_;
-//    eckit::Timing returnTiming_;
-//    eckit::Timing totReturnTiming_;
-
-//    std::size_t bytesReceived_ = 0;
 
     std::ofstream log_;
 };

@@ -7,19 +7,23 @@ namespace server {
 TransportStatistics::TransportStatistics() {}
 
 void multio::server::TransportStatistics::report(std::ostream& out, const char* indent) const {
-    reportCount(out, "", sendCount_, indent);
-    reportBytes(out, "", sendSize_, indent);
-    reportTime(out, "", sendTiming_, indent);
+    
+    reportTime(out, " -- Waiting for buffer", waitTiming_, indent);
 
-    reportCount(out, "", receiveCount_, indent);
-    reportBytes(out, "", receiveSize_, indent);
-    reportTime(out, "", probeTiming_, indent);
-    reportTime(out, "", receiveTiming_, indent);
+    reportBytes(out, " -- Sending data", sendSize_, indent);
+    reportTime(out, " -- Send time (async)", isendTiming_, indent);
+    reportTime(out, " -- Send time (block)", sendTiming_, indent);
+    reportTime(out, " -- Serialise data", sendTiming_, indent);
 
-    reportTime(out, "", pushToQueueTiming_, indent);
-    reportTime(out, "", decodeTiming_, indent);
-    reportTime(out, "", returnTiming_, indent);
-    reportTime(out, "", totReturnTiming_, indent);
+    reportCount(out, " -- Receive calls:", receiveCount_, indent);
+    reportBytes(out, " -- Receiving data:", receiveSize_, indent);
+    reportTime(out, " -- Probing for data:", probeTiming_, indent);
+    reportTime(out, " -- Receive timing:", receiveTiming_, indent);
+
+    reportTime(out, " -- Push-queue timing:", pushToQueueTiming_, indent);
+    reportTime(out, " -- Deserialise data:", decodeTiming_, indent);
+    reportTime(out, " -- Returning data:", returnTiming_, indent);
+    reportTime(out, " -- Total for return:", totReturnTiming_, indent);
 }
 
 }  // namespace server

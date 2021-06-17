@@ -3,12 +3,16 @@ ecbuild_add_library(
     TARGET multio-maestro
 
     SOURCES
-        MaestroSink.cc
-        MaestroSink.h
+        MaestroCdo.cc
+        MaestroCdo.h
         MaestroSelector.cc
         MaestroSelector.h
         MaestroSubscription.cc
         MaestroSubscription.h
+        MaestroEvent.cc
+        MaestroEvent.h
+        MaestroSink.cc
+        MaestroSink.h
 
     CONDITION
         HAVE_MAESTRO

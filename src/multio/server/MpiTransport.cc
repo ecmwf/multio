@@ -166,6 +166,9 @@ void MpiTransport::send(const Message& msg) {
     auto sz = static_cast<size_t>(stream.bytesWritten());
     auto dest = static_cast<int>(msg.destination().id());
     eckit::mpi::comm(local_.group().c_str()).send<void>(buffer, sz, dest, msg_tag);
+
+    ++statistics_.sendCount_;
+    statistics_.sendSize_ += sz;
 }
 
 void MpiTransport::bufferedSend(const Message& msg) {
@@ -189,7 +192,6 @@ void MpiTransport::listen() {
     buf.status = BufferStatus::fillingUp;
     auto sz = blockingReceive(status, buf);
     eckit::AutoTiming timing{statistics_.timer_, statistics_.pushToQueueTiming_};
-    statistics_.receiveSize_ += sz;
     std::lock_guard<std::mutex> lock{mutex_};
 //    log_ << " *** " << localPeer() << ": current pool = " << pool_ << std::endl;
     streamQueue_.emplace(buf, sz);
@@ -229,6 +231,7 @@ size_t MpiTransport::blockingReceive(eckit::mpi::Status& status, MpiBuffer& buff
     comm().receive<void>(buffer.content, sz, status.source(), status.tag());
 
     ++statistics_.receiveCount_;
+    statistics_.receiveSize_ += sz;
 
     return sz;
 }

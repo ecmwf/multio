@@ -13,9 +13,13 @@ class TransportStatistics : public eckit::Statistics {
 public:
     TransportStatistics();
 
+    std::size_t isendCount_ = 0;
+    std::size_t isendSize_ = 0;
+
     std::size_t sendCount_ = 0;
-    std::size_t receiveCount_ = 0;
     std::size_t sendSize_ = 0;
+
+    std::size_t receiveCount_ = 0;
     std::size_t receiveSize_ = 0;
 
     eckit::Timing waitTiming_;

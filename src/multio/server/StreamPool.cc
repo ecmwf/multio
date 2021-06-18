@@ -88,16 +88,15 @@ void StreamPool::sendBuffer(const message::Peer& dest, int msg_tag) {
     eckit::AutoTiming(statistics_.timer_, statistics_.isendTiming_);
 
     strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
+    strm.buffer().status = BufferStatus::transmitting;
 
     ::gettimeofday(&tstamp, 0);
     mSecs = tstamp.tv_usec;
     os_ << " and " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
         << ":" << std::setw(6) << std::setfill('0') << mSecs << '\n';
 
-    strm.buffer().status = BufferStatus::transmitting;
-
-    statistics_.sendSize_ += sz;
-    ++statistics_.sendCount_;
+    ++statistics_.isendCount_;
+    statistics_.isendSize_ += sz;
 }
 
 MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {

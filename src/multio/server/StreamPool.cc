@@ -121,16 +121,6 @@ void StreamPool::waitAll() {
                            [](MpiBuffer& buf) { return buf.isFree(); })) {}
 }
 
-void StreamPool::timings(std::ostream &os) const
-{
-    os << os_.str();
-
-    const std::size_t scale = 1024*1024;
-//    os << "         -- Waiting for buffer:  " << waitTiming_ << "s\n"
-//       << "         -- Sending data:        " << bytesSent_ / scale << " MiB\n"
-//       << "         -- Send time (async):   " << isendTiming_ << "s";
-}
-
 MpiOutputStream& StreamPool::createNewStream(const message::Peer& dest) {
     if (buffers_.size() < streams_.size()) {
         throw eckit::BadValue("Too few buffers to cover all MPI destinations", Here());

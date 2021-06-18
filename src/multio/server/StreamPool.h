@@ -33,8 +33,6 @@ public:
 
     void waitAll();
 
-    void timings(std::ostream& os) const;
-
 private:
     MpiOutputStream& createNewStream(const message::Peer& dest);
     MpiOutputStream& replaceStream(const message::Peer& dest);
@@ -50,12 +48,6 @@ private:
     TransportStatistics& statistics_;
     std::vector<MpiBuffer> buffers_;
     std::map<MpiPeer, MpiOutputStream> streams_;
-
-//    eckit::Timing isendTiming_;
-//    eckit::Timing sendTiming_;
-//    eckit::Timing waitTiming_;
-
-//    std::size_t bytesSent_ = 0;
 
     std::map<MpiPeer, unsigned int> counter_;
     std::ostringstream os_;

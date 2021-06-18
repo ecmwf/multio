@@ -25,7 +25,7 @@ using multio::LibMultio;
 using multio::server::Listener;
 using multio::message::Message;
 using multio::message::Metadata;
-using multio::print_buffer;
+using multio::util::print_buffer;
 using multio::server::Transport;
 using multio::server::TransportFactory;
 

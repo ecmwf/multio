@@ -25,7 +25,7 @@ namespace action {
 Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 
 void Aggregation::execute(Message msg) const {
-    util::ScopedTimer timer{timing_};
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.executeTiming_};
 
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
         executeNext(createGlobalField(msg));

@@ -51,7 +51,7 @@ Statistics::Statistics(const eckit::Configuration& config) :
     operations_{config.getStringVector("operations")} {}
 
 void Statistics::execute(message::Message msg) const {
-    util::ScopedTimer timer{timing_};
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.executeTiming_};
 
     LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << msg.metadata()
                              << std::endl;

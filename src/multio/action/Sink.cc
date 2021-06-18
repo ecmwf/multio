@@ -26,7 +26,7 @@ namespace action {
 Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 
 void Sink::execute(Message msg) const {
-    util::ScopedTimer timer{timing_};
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.executeTiming_};
 
     switch (msg.tag()) {
         case Message::Tag::Field:

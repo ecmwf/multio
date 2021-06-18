@@ -11,7 +11,6 @@
 #include "multio/message/Message.h"
 #include "multio/server/MpiTransport.h"
 #include "multio/server/TcpTransport.h"
-#include "multio/util/print_buffer.h"
 
 using multio::message::Peer;
 

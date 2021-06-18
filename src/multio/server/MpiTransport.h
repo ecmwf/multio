@@ -18,7 +18,6 @@
 #define multio_server_MpiTransport_H
 
 #include <queue>
-#include <fstream>
 
 #include "eckit/io/Buffer.h"
 #include "eckit/log/Statistics.h"
@@ -69,8 +68,6 @@ private:
     std::queue<Message> msgPack_;
 
     std::mutex mutex_;
-
-    std::ofstream log_;
 };
 
 }  // namespace server

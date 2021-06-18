@@ -11,13 +11,15 @@
 #include "MpiTransport.h"
 
 #include <algorithm>
+#include <fstream>
 
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/maths/Functions.h"
+#include "eckit/runtime/Main.h"
 #include "eckit/serialisation/MemoryStream.h"
 
-#include "multio/util/print_buffer.h"
+#include "multio/util/logfile_name.h"
 
 namespace multio {
 namespace server {
@@ -51,26 +53,6 @@ Message decodeMessage(eckit::Stream& stream) {
                 std::move(buffer)};
 }
 
-std::string filename(size_t id) {
-    std::ostringstream os;
-    os << "mpi-transport-" << std::setw(4) << std::setfill('0') << id;
-    os << ".log";
-    return os.str();
-}
-
-std::string system_call(const char* cmd) {
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        result += buffer.data();
-    }
-    return result;
-}
-
 const size_t defaultBufferSize = 64 * 1024 * 1024;
 const size_t defaultPoolSize = 128;
 
@@ -81,31 +63,12 @@ MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
     local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
     pool_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", defaultPoolSize),
           eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", defaultBufferSize),
-          comm(), statistics_},
-    log_{filename(local_.id())} {}
+          comm(), statistics_} {}
 
 MpiTransport::~MpiTransport() {
-    // TODO: check why eckit::Log::info() crashes here for the clients
-//    const double scale = 1024.0*1024.0;
-
-    // TODO: pass log_ directly?
-    std::ostringstream os;
-    os << " ******* " << *this << "\n";
-
-    statistics_.report(os);
-
-    //    pool_.timings(os);
-//    os << "\n         -- Send time (block):   " << sendTiming_
-//       << "s\n         -- Send and serialise:  " << totSendTiming_
-//       << "s\n         -- Receiving data:      " << static_cast<double>(bytesReceived_) / scale
-//       << " MiB\n         -- Probing for data:    " << probeTiming_
-//       << "s\n         -- Receive timing:      " << receiveTiming_
-//       << "s\n         -- Push-queue timing:   " << pushToQueueTiming_
-//       << "s\n         -- Deserialise data:    " << decodeTiming_
-//       << "s\n         -- Returning data:      " << returnTiming_
-//       << "s\n         -- Total for return:    " << totReturnTiming_ << "s" << std::endl;
-
-    log_ << os.str();
+    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
+    logFile << " ** " << *this << "\n";
+    statistics_.report(logFile);
 }
 
 void MpiTransport::openConnections() {

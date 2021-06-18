@@ -506,9 +506,9 @@ void MultioHammer::testData() {
                 LOG_DEBUG_LIB(LibMultio) << "file_name = " << file_name << std::endl;
 
                 LOG_DEBUG_LIB(LibMultio) << "Expect = ";
-                multio::print_buffer(expect, eckit::Log::debug<LibMultio>());
+                multio::util::print_buffer(expect, eckit::Log::debug<LibMultio>());
                 LOG_DEBUG_LIB(LibMultio) << "\nActual = ";
-                multio::print_buffer(actual, eckit::Log::debug<LibMultio>());
+                multio::util::print_buffer(actual, eckit::Log::debug<LibMultio>());
                 LOG_DEBUG_LIB(LibMultio) << std::endl << std::endl;
 
                 ASSERT(expect == actual);

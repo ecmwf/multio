@@ -51,7 +51,7 @@ Encode::Encode(const eckit::Configuration& config) :
     Action{config}, format_{config.getString("format")}, encoder_{make_encoder(config)} {}
 
 void Encode::execute(Message msg) const {
-    util::ScopedTimer timer{timing_};
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.executeTiming_};
 
     if (not encoder_) {
         executeNext(msg);

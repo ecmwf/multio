@@ -31,7 +31,7 @@ Select::Select(const eckit::Configuration& config) :
     Action{config}, match_{config.getString("match")}, items_{fetch_items(match_, config)} {}
 
 void Select::execute(Message msg) const {
-    util::ScopedTimer timer{timing_};
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.executeTiming_};
 
     if (isMatched(msg)) {
         executeNext(msg);

@@ -35,7 +35,7 @@
 #include "multio/util/print_buffer.h"
 
 using multio::message::Metadata;
-using multio::print_buffer;
+using multio::util::print_buffer;
 using multio::server::MultioClient;
 using multio::server::MultioServer;
 

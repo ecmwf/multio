@@ -108,6 +108,8 @@ MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {
                           [](MpiBuffer& buf) { return buf.isFree(); });
     }
 
+    it->status = BufferStatus::fillingUp;
+
     os << " *** Found available buffer with idx = "
        << static_cast<size_t>(std::distance(std::begin(buffers_), it)) << std::endl;
 
@@ -127,7 +129,6 @@ MpiOutputStream& StreamPool::createNewStream(const message::Peer& dest) {
 
     auto& buf = findAvailableBuffer(eckit::Log::debug<LibMultio>());
     streams_.emplace(dest, buf);
-    buf.status = BufferStatus::fillingUp;
 
     return streams_.at(dest);
 }

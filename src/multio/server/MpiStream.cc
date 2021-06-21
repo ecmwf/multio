@@ -47,7 +47,7 @@ std::string MpiOutputStream::name() const {
         {BufferStatus::fillingUp, "fillingUp"},
         {BufferStatus::transmitting, "transmitting"}};
 
-    return "MpiStream(" + st2str.at(buf_.status) + ")";
+    return "MpiOutputStream(" + st2str.at(buf_.status) + ")";
 }
 
 MpiInputStream::MpiInputStream(MpiBuffer& buf, size_t sz) :
@@ -67,7 +67,7 @@ std::string MpiInputStream::name() const {
         {BufferStatus::fillingUp, "fillingUp"},
         {BufferStatus::transmitting, "transmitting"}};
 
-    return "MpiStream(" + st2str.at(buf_.status) + ")";
+    return "MpiInputStream(" + st2str.at(buf_.status) + ")";
 }
 
 }

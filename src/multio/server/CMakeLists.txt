@@ -49,6 +49,8 @@ ecbuild_add_library(
         ScopedThread.h
         StreamPool.cc
         StreamPool.h
+        StreamQueue.cc
+        StreamQueue.h
 
     PUBLIC_LIBS
         ${multio_server_plugins}

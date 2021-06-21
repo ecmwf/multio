@@ -26,6 +26,7 @@
 
 #include "multio/server/Transport.h"
 #include "multio/server/StreamPool.h"
+#include "multio/server/StreamQueue.h"
 
 namespace multio {
 namespace server {
@@ -64,7 +65,7 @@ private:
 
     StreamPool pool_;
 
-    std::queue<MpiInputStream> streamQueue_;
+    StreamQueue streamQueue_;
     std::queue<Message> msgPack_;
 
     std::mutex mutex_;

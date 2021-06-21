@@ -99,17 +99,15 @@ Message MpiTransport::receive() {
             return msg;
         }
 
-        if (not streamQueue_.empty()) {
-            eckit::AutoTiming decodeTiming_{statistics_.timer_, statistics_.decodeTiming_};
-            auto& strm = streamQueue_.front();
-            while (strm.position() < strm.size()) {
-                auto msg = decodeMessage(strm);
+        if (auto strm = streamQueue_.front()) {
+            while (strm->position() < strm->size()) {
+                eckit::AutoTiming decodeTiming{statistics_.timer_, statistics_.decodeTiming_};
+                auto msg = decodeMessage(*strm);
                 msgPack_.push(msg);
             }
-            std::lock_guard<std::mutex> lock{mutex_};
-            strm.buffer().status = BufferStatus::available;
             streamQueue_.pop();
         }
+
     } while (true);
 }
 
@@ -152,11 +150,8 @@ void MpiTransport::listen() {
         return;
     }
     auto& buf = pool_.findAvailableBuffer();
-    buf.status = BufferStatus::fillingUp;
     auto sz = blockingReceive(status, buf);
     eckit::AutoTiming timing{statistics_.timer_, statistics_.pushToQueueTiming_};
-    std::lock_guard<std::mutex> lock{mutex_};
-//    log_ << " *** " << localPeer() << ": current pool = " << pool_ << std::endl;
     streamQueue_.emplace(buf, sz);
 }
 

@@ -22,8 +22,8 @@ CASE("Accumulate timings correctly") {
 
     eckit::Log::info() << "Elapsed time = " << timing_ << "s" << std::endl;
 
-    EXPECT(0.029 < timing_.elapsed_);
-    EXPECT(timing_.elapsed_ < 0.031);
+    EXPECT(0.025 < timing_.elapsed_);
+    EXPECT(timing_.elapsed_ < 0.035);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

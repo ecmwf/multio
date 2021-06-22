@@ -62,13 +62,8 @@ Plan::Plan(const eckit::Configuration& config) {
 
 Plan::~Plan() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-    logFile << " ** Plan " << name_ << " -- total wall-clock time spent processing: " << timing_
+    logFile << "\n ** Plan " << name_ << " -- total wall-clock time spent processing: " << timing_
             << "s" << std::endl;
-
-    //    eckit::Log::setFile(util::logfile_name());
-    //    eckit::Log::info() << " ** Plan " << name_ << " -- total wall-clock time spent processing:
-    //    " << timing_
-    //            << "s" << std::endl;
 }
 
 void Plan::process(message::Message msg) {

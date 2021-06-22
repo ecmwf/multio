@@ -67,7 +67,7 @@ MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
 
 MpiTransport::~MpiTransport() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-    logFile << " ** " << *this << "\n";
+    logFile << "\n ** " << *this << "\n";
     statistics_.report(logFile);
 }
 

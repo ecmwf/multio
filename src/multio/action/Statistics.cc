@@ -51,28 +51,32 @@ Statistics::Statistics(const eckit::Configuration& config) :
     operations_{config.getStringVector("operations")} {}
 
 void Statistics::execute(message::Message msg) const {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.executeTiming_};
 
-    LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << msg.metadata()
-                             << std::endl;
-
-    // Create a unique key for the fieldStats_ map
     std::ostringstream os;
-    os << msg.metadata().getString("category") << msg.metadata().getString("nemoParam")
-       << msg.metadata().getString("param") << msg.metadata().getLong("level");
-
-    if (fieldStats_.find(os.str()) == end(fieldStats_)) {
-        fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
-    }
-
-    if(fieldStats_.at(os.str())->process(msg)) {
-        return;
-    }
-
     auto md = msg.metadata();
-    md.set("timeUnit", timeUnit_);
-    md.set("timeSpan", timeSpan_);
-    md.set("stepRange", fieldStats_.at(os.str())->stepRange(md.getLong("step")));
+    {
+        eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+
+        LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << md
+                                 << std::endl;
+
+        // Create a unique key for the fieldStats_ map
+        os << msg.metadata().getString("category") << msg.metadata().getString("nemoParam")
+           << msg.metadata().getString("param") << msg.metadata().getLong("level");
+
+        if (fieldStats_.find(os.str()) == end(fieldStats_)) {
+            fieldStats_[os.str()] =
+                TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
+        }
+
+        if (fieldStats_.at(os.str())->process(msg)) {
+            return;
+        }
+
+        md.set("timeUnit", timeUnit_);
+        md.set("timeSpan", timeSpan_);
+        md.set("stepRange", fieldStats_.at(os.str())->stepRange(md.getLong("step")));
+    }
     for (auto&& stat : fieldStats_.at(os.str())->compute(msg)) {
         md.set("operation", stat.first);
         message::Message newMsg{
@@ -83,6 +87,7 @@ void Statistics::execute(message::Message msg) const {
         executeNext(newMsg);
     }
 
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
     fieldStats_.at(os.str())->reset(msg);
 }
 

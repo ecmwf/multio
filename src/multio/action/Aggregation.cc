@@ -25,8 +25,6 @@ namespace action {
 Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 
 void Aggregation::execute(Message msg) const {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.executeTiming_};
-
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
         executeNext(createGlobalField(msg));
     }
@@ -37,12 +35,14 @@ void Aggregation::execute(Message msg) const {
 }
 
 bool Aggregation::handleField(const Message& msg) const {
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
     messages_[msg.fieldId()].push_back(msg);
     return allPartsArrived(msg);
 }
 
 bool Aggregation::handleFlush(const Message& msg) const {
     // Initialise if need be
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
     if (flushes_.find(msg.domain()) == end(flushes_)) {
         flushes_[msg.domain()] = 0;
     }
@@ -59,6 +59,7 @@ bool Aggregation::allPartsArrived(const Message& msg) const {
 }
 
 Message Aggregation::createGlobalField(const Message& msg) const {
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
 
     const auto& fid = msg.fieldId();
     LOG_DEBUG_LIB(LibMultio) << " *** Creating global field for " << fid << std::endl;

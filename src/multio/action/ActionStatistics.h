@@ -13,7 +13,7 @@ class ActionStatistics : public eckit::Statistics {
 public:
     ActionStatistics();
 
-    eckit::Timing executeTiming_;
+    eckit::Timing actionTiming_;
 
     void report(std::ostream& out, const std::string& type = "Action",
                 const char* indent = "") const;

@@ -18,6 +18,7 @@ ecbuild_add_test( TARGET    test_multio_encode_bitspervalue
 
 ecbuild_add_test( TARGET    test_multio_maestro
                   SOURCES   test_multio_maestro.cc
+                  CONDITION HAVE_MAESTRO
                   LIBS      multio multio-maestro )
 
 

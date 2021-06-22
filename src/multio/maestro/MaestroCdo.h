@@ -35,12 +35,12 @@ public:
         mstro_cdo_attribute_get(cdo_, key.c_str(), &ttype, (const void**)&val);
         return *val;
     }
-    size_t size() { return size_; }
+    uint64_t size() { return size_; }
     const void* data() { return data_; }
 private:
     void declare();
     void dispose();
-    void set_size_and_data();
+    void set_size_and_data(uint64_t size, const void* data);
     void get_size_and_data();
     void print(std::ostream&) const;
 
@@ -50,7 +50,7 @@ private:
     }
 
     std::string name_ = "";
-    int64_t size_ = 0;
+    uint64_t size_ = 0;
     void* data_ = nullptr;
     mstro_cdo cdo_ = nullptr;
 };

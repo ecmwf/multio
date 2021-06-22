@@ -13,8 +13,7 @@ namespace multio {
 
 class MaestroSelector {
 public:
-    MaestroSelector(mstro_schema schema, const char* nspace, const char* query);
-    MaestroSelector(const char* query) : MaestroSelector(nullptr, nullptr, query) {}
+    MaestroSelector(const char* query, mstro_schema schema = nullptr, const char* nspace = nullptr);
     ~MaestroSelector();
 
     MaestroSubscription subscribe(mstro_pool_event_kind events, enum mstro_subscription_opts flags);

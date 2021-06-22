@@ -5,7 +5,7 @@
 
 namespace multio {
 
-MaestroSelector::MaestroSelector(mstro_schema schema, const char* nspace, const char* query) {
+MaestroSelector::MaestroSelector(const char* query, mstro_schema schema, const char* nspace) {
     ASSERT(MSTRO_OK == mstro_cdo_selector_create(schema, nspace, query, &selector_));
 }
 

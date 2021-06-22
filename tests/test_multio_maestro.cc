@@ -20,22 +20,17 @@ namespace test {
 
 class TestHarness {
 public:
-    TestHarness() {
+    TestHarness() : size_{822329}, data_(size_, 'A') {
         mstro_init("Testing workflow", "Test Component", 0);
-        size_ = 822329;
-        data_ = new char[size_];
-        for (int i = 0; i < size_; i++)
-            data_[i] = 'A';
     }
     ~TestHarness() {
         mstro_finalize();
-        delete[] data_;
     }
     uint64_t size() { return size_; }
-    void* data() { return data_; }
+    const void* data() { return static_cast<const void*>(data_.c_str()); }
 private:
     uint64_t size_;
-    char* data_;
+    std::string data_;
 };
 
 CASE("CDO construction with name only.") {
@@ -148,10 +143,11 @@ CASE("Selector and subscription") {
     MaestroSubscription subscription = selector2.subscribe(MSTRO_POOL_EVENT_DECLARE|MSTRO_POOL_EVENT_OFFER, MSTRO_SUBSCRIPTION_OPTS_DEFAULT);
 
     MaestroEvent event1 = subscription.poll();
-    EXPECT(event1.isNull());
+    EXPECT(!event1);
 
     struct timespec ts = {1};
     MaestroEvent event2 = subscription.timedwait(&ts);
+    EXPECT(!event2);
     EXPECT(event2.isNull());
 
     MaestroSubscription ackSub = selector2.subscribe(MSTRO_POOL_EVENT_OFFER, MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);

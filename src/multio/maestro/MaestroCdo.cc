@@ -7,15 +7,14 @@
 
 namespace multio {
 
-MaestroCdo::MaestroCdo(std::string name) : name_{name}, size_{0}, data_{nullptr} {
+MaestroCdo::MaestroCdo(std::string name) : name_{name} {
     declare();
 }
 
-MaestroCdo::MaestroCdo(std::string name, const void* blob, uint64_t size) : name_{name}, size_{size} {
-    ASSERT(posix_memalign((void**)&data_, (size_t)sysconf(_SC_PAGESIZE), size_) == 0);
-    ::memcpy(data_, blob, size_);
+MaestroCdo::MaestroCdo(std::string name, const void* blob, uint64_t size) : name_{name} {
     declare();
-    set_size_and_data();
+    if (blob)
+        set_size_and_data(size, blob);
 }
 
 MaestroCdo::~MaestroCdo() {
@@ -55,13 +54,17 @@ void MaestroCdo::dispose() {
     ASSERT(MSTRO_OK == mstro_cdo_dispose(cdo_));
 }
 
-void MaestroCdo::set_size_and_data() {
+void MaestroCdo::set_size_and_data(uint64_t size, const void* data) {
+    size_ = size;
+    ASSERT(posix_memalign((void**)&data_, (size_t)sysconf(_SC_PAGESIZE), size_) == 0);
+    ::memcpy(data_, data, size_);
+
     ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, ".maestro.core.cdo.raw-ptr", data_, false));
     ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, ".maestro.core.cdo.scope.local-size", &size_, true));
 }
 
 void MaestroCdo::get_size_and_data() {
-    mstro_status s = mstro_cdo_access_ptr(cdo_, &data_, &size_);
+    mstro_status s = mstro_cdo_access_ptr(cdo_, &data_, reinterpret_cast<int64_t*>(&size_));
     if (s != MSTRO_OK)
         std::cout << "[i] The demnaded CDO does not contain any data." << std::endl;
 }

@@ -11,9 +11,9 @@ class MaestroEvent {
 public:
     MaestroEvent(mstro_pool_event event);
     ~MaestroEvent();
-    bool isNotNull() { return event_ != nullptr; }
-    bool isNull() { return !isNotNull(); }
-    mstro_pool_event get_mstro_pool_event() { return event_; }
+    bool isNull() { return event_ == nullptr; }
+    operator bool() const { return event_ != nullptr; }
+    mstro_pool_event raw_event() { return event_; }
 private:
     mstro_pool_event event_;
 };

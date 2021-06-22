@@ -80,7 +80,7 @@ void Statistics::execute(message::Message msg) const {
     for (auto&& stat : fieldStats_.at(os.str())->compute(msg)) {
         md.set("operation", stat.first);
         message::Message newMsg{
-            message::Message::Header{message::Message::Tag::Statistics, msg.source(),
+            message::Message::Header{message::Message::Tag::Field, msg.source(),
                                      msg.destination(), message::Metadata{md}},
             std::move(stat.second)};
 

@@ -19,12 +19,17 @@
 #include <thread>
 #include "unistd.h"
 
+extern "C" {
+#include <maestro.h>
+}
+
 #include "eckit/exception/Exceptions.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/value/Value.h"
 
 #include "multio/LibMultio.h"
 #include "multio/util/ScopedTimer.h"
+
 
 namespace multio {
 
@@ -82,9 +87,8 @@ MaestroSink::~MaestroSink() {
 
         ::sleep(60);
 
-        std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo) {
-            mstro_cdo_withdraw(cdo);
-            mstro_cdo_dispose(cdo);
+        std::for_each(begin(offered_cdos_), end(offered_cdos_), [](MaestroCdo& cdo) {
+            cdo.withdraw();
         });
 
         offered_cdos_.clear();
@@ -110,18 +114,13 @@ void MaestroSink::write(eckit::message::Message blob) {
 
     util::ScopedTimer timer{timing_};
 
-    mstro_cdo cdo = nullptr;
-    mstro_status s = mstro_cdo_declare(name.c_str(), MSTRO_ATTR_DEFAULT, &cdo);
+    offered_cdos_.emplace_back(name.c_str(), blob.data(), blob.length());
+    auto& cdo = offered_cdos_.back();
 
-    auto buf = static_cast<void*>(new char[blob.length()]);
-    uint64_t sz = blob.length();
+//    auto buf = static_cast<void*>(new char[blob.length()]);
+//    uint64_t sz = blob.length();
 
-    ::memcpy(buf, blob.data(), sz);
-
-    s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.raw-ptr", buf, false);
-    s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.scope.local-size", &sz, true);
-
-    eckit::Log::info() << " *** MaestroSink *** buffer " << buf << " with size " << sz << std::endl;
+//    eckit::Log::info() << " *** MaestroSink *** buffer " << buf << " with size " << sz << std::endl;
 
     LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
 
@@ -129,18 +128,20 @@ void MaestroSink::write(eckit::message::Message blob) {
         auto value = md.get<std::string>(kw);
 
         auto mkey = ".maestro.ecmwf." + kw;
-        auto intvalue = std::stoi(value);
-        auto mvalue = static_cast<void*>(&intvalue);
-        s = mstro_cdo_attribute_set(cdo, mkey.c_str(), &mvalue, true);
+        if (mkey == ".maestro.ecmwf.step") {
+            int64_t intvalue = std::stoi(value);
+            cdo.set_attribute(mkey.c_str(), intvalue, true);
+        }
+//        auto intvalue = std::stoi(value);
+//        auto mvalue = static_cast<void*>(&intvalue);
+//        s = mstro_cdo_attribute_set(cdo, mkey.c_str(), &mvalue, true);
     }
 
-    s = mstro_cdo_seal(cdo);  // Seal it after setting all attributes
+    cdo.seal();               // Seal it after setting all attributes
 
     eckit::Log::info() << " *** Offer cdo " << name.c_str() << std::endl;
 
-    s = mstro_cdo_offer(cdo);  // Submit field
-
-    offered_cdos_.push_back(cdo);
+    cdo.offer();               // Submit field
 }
 
 void MaestroSink::flush() {

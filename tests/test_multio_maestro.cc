@@ -33,18 +33,38 @@ private:
     std::string data_;
 };
 
-CASE("CDO construction with name only.") {
+CASE("CDO construction") {
 
     TestHarness test;
 
+    // only name
     EXPECT_NO_THROW(MaestroCdo{"name"});
-}
 
-CASE("CDO construction with name and data.") {
-
-    TestHarness test;
-
+    // name, data and size
     EXPECT_NO_THROW(MaestroCdo("name", test.data(), test.size()));
+
+    // move section
+    MaestroCdo cdo1{"name", test.data(), test.size()};
+    
+    // move constructor
+    MaestroCdo cdo2{std::move(cdo1)};
+
+    std::string data = std::string(static_cast<const char*>(cdo2.data()));
+    EXPECT(data.compare(static_cast<const char*>(test.data())) == 0);
+    EXPECT(cdo1.data() == nullptr);
+
+    EXPECT(cdo2.size() == test.size());
+    EXPECT(cdo1.size() == 0);
+
+    // move assignment constructor
+    MaestroCdo cdo3 = std::move(cdo2);
+
+    data = std::string(static_cast<const char*>(cdo3.data()));
+    EXPECT(data.compare(static_cast<const char*>(test.data())) == 0);
+    EXPECT(cdo2.data() == nullptr);
+
+    EXPECT(cdo3.size() == test.size());
+    EXPECT(cdo2.size() == 0);
 }
 
 CASE("Set and get CDO attributes") {

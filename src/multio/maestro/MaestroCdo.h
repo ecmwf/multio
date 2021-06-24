@@ -15,8 +15,8 @@ public:
     MaestroCdo(std::string name, const void* blob, uint64_t size);
     MaestroCdo(const MaestroCdo&) = delete;
     MaestroCdo& operator=(const MaestroCdo&) = delete;
-    MaestroCdo(MaestroCdo&&) = delete;
-    MaestroCdo& operator=(MaestroCdo&&) = delete;
+    MaestroCdo(MaestroCdo&&);
+    MaestroCdo& operator=(MaestroCdo&&);
     ~MaestroCdo();
     void seal();
     void offer();

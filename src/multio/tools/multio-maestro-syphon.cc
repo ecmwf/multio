@@ -18,6 +18,11 @@ extern "C" {
 #include "multio/tools/MultioTool.h"
 #include "multio/util/ScopedTimer.h"
 
+#include "multio/maestro/MaestroCdo.h"
+#include "multio/maestro/MaestroSelector.h"
+#include "multio/maestro/MaestroSubscription.h"
+#include "multio/maestro/MaestroEvent.h"
+
 namespace multio {
 
 class MaestroSyphon final : public multio::MultioTool {
@@ -48,13 +53,11 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) : multio::MultioTool(argc, a
 void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
     args.get("file", reqFile_);
 
-    mstro_status s =
-        mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0);
-    ASSERT(s == MSTRO_OK);
+    ASSERT(MSTRO_OK == mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0));
 }
 
 void MaestroSyphon::finish(const eckit::option::CmdArgs&) {
-    ASSERT(mstro_finalize() == MSTRO_OK);
+    ASSERT(MSTRO_OK == mstro_finalize());
 }
 
 void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
@@ -63,37 +66,24 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
         eckit::PathName{"consumed.grib"}.fileHandle(false)};
     handle->openForAppend(0);
 
-    mstro_cdo_selector selector = nullptr;
+    MaestroSelector selector{"(has .maestro.ecmwf.step)"};
 
-//    mstro_status s =
-//        mstro_cdo_selector_create(nullptr, nullptr, "(.maestro.ecmwf.step = 2)", &selector);
-    mstro_status s =
-        mstro_cdo_selector_create(nullptr, nullptr, "(has .maestro.ecmwf.step)", &selector);
-    ASSERT(s == MSTRO_OK);
+    auto offer_subscription = selector.subscribe(MSTRO_POOL_EVENT_OFFER,
+            MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
 
-    mstro_subscription offer_subscription;
-    s = mstro_subscribe(selector, MSTRO_POOL_EVENT_OFFER, MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK,
-                        &offer_subscription);
-    ASSERT(s == MSTRO_OK);
-
-    s = mstro_cdo_selector_dispose(selector);
-    ASSERT(s == MSTRO_OK);
-
-    mstro_subscription join_leave_subscription;
-    auto flag = static_cast<mstro_pool_event_kinds>(
-        (MSTRO_POOL_EVENT_APP_JOIN | MSTRO_POOL_EVENT_APP_LEAVE));
-    mstro_subscribe(nullptr, flag, MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK, &join_leave_subscription);
+    MaestroSelector match_all_selector{nullptr};
+    auto join_leave_subscription = match_all_selector.subscribe(
+            MSTRO_POOL_EVENT_APP_JOIN|MSTRO_POOL_EVENT_APP_LEAVE,
+            MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
 
     eckit::Log::info() << " *** Start polling" << std::endl;
     bool done = false;
     while(not done) {
-        mstro_pool_event event = nullptr;
-        s = mstro_subscription_poll(join_leave_subscription, &event);
-        ASSERT(s == MSTRO_OK);
+        auto event = join_leave_subscription.poll();
 
-        if (event != nullptr) {
+        if (event) {
             eckit::Log::info() << " *** Event: join/leave" << std::endl;
-            mstro_pool_event tmp = event;
+            mstro_pool_event tmp = event.raw_event();
             while (tmp != nullptr) {
                 switch (tmp->kind) {
                     case MSTRO_POOL_EVENT_APP_JOIN:
@@ -113,17 +103,13 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
                 }
                 tmp = tmp->next;
             }
-            s = mstro_subscription_ack(join_leave_subscription, event);
-            ASSERT(s == MSTRO_OK);
-            s = mstro_pool_event_dispose(event);
-            ASSERT(s == MSTRO_OK);
+            join_leave_subscription.ack(event);
         } else {
-            s = mstro_subscription_poll(offer_subscription, &event);
-            ASSERT(s == MSTRO_OK);
-            // eckit::Log::info() << " *** Polling CDO events" << std::endl;
+            event = offer_subscription.poll();
+            //eckit::Log::info() << " *** Polling CDO events" << std::endl;
             if(event) {
                 util::ScopedTimer timer{timing_};
-                mstro_pool_event tmp = event;
+                mstro_pool_event tmp = event.raw_event();
                 while (tmp) {
                     ++cdoEventCount_;
                     eckit::Log::info() << " *** CDO event ";
@@ -132,45 +118,33 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
                         eckit::Log::info()
                             << mstro_pool_event_description(tmp->kind)
                             << " occured -- cdo name: " << tmp->offer.cdo_name << std::endl;
-                        mstro_cdo cdo = nullptr;
-                        s = mstro_cdo_declare(tmp->offer.cdo_name, MSTRO_ATTR_DEFAULT, &cdo);
-                        ASSERT(s == MSTRO_OK);
+
+                        MaestroCdo cdo{tmp->offer.cdo_name};
+
                         eckit::Log::info() << " *** Require " << std::endl;
-                        s = mstro_cdo_require(cdo);
-                        ASSERT(s == MSTRO_OK);
+                        cdo.require();
 
 //                        eckit::Log::info() << " *** Retract " << std::endl;
-//                        s = mstro_cdo_retract(cdo);
-//                        ASSERT(s == MSTRO_OK);
+//                        cdo.retract();
 
                         eckit::Log::info() << " *** Demand " << std::endl;
-                        s = mstro_cdo_demand(cdo);
-                        ASSERT(s == MSTRO_OK);
+                        cdo.demand();
 
                         eckit::Log::info() << " *** Attribute get " << std::endl;
-
-//                        auto valType = MSTRO_CDO_ATTR_VALUE_uint64;
-//                        const uint64_t* sz;
-//                        s = mstro_cdo_attribute_get(cdo, ".maestro.core.cdo.scope.local-size",
-//                                                    &valType, reinterpret_cast<const void**>(&sz));
 
 //                        mmbArray* mamba_ptr = NULL;
 //                        s = mstro_cdo_access_mamba_array(cdo, &mamba_ptr);
 //                        eckit::Log::info() << " *** CDO with size " << *sz << " and mamba pointer "
 //                                           << mamba_ptr << " has been demanded " << std::endl;
 
-                        void* data = NULL;
-                        int64_t sz = 0;
-                        s = mstro_cdo_access_ptr(cdo, &data, &sz);
+                        const void* data = cdo.data();
+                        int64_t sz = cdo.size();
                         eckit::Log::info() << " *** CDO with size " << sz << " and access pointer "
                                            << data << " has been demanded " << std::endl;
 
                         codes_handle* h = codes_handle_new_from_message(nullptr, data, sz);
                         eckit::message::Message msg{new metkit::codes::CodesContent{h, true}};
                         msg.write(*handle);
-
-                        s = mstro_cdo_dispose(cdo);
-                        ASSERT(s == MSTRO_OK);
 
                         break;
                     }
@@ -180,10 +154,7 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
                     }
                     tmp = tmp->next;
                 }
-                s = mstro_subscription_ack(offer_subscription, event);
-                ASSERT(s == MSTRO_OK);
-                s = mstro_pool_event_dispose(event);
-                ASSERT(s == MSTRO_OK);
+                offer_subscription.ack(event);
             }
         }
     }

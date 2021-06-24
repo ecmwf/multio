@@ -21,7 +21,7 @@ public:
     MaestroEvent poll();
     MaestroEvent wait();
     MaestroEvent timedwait(const timespec* abstime);
-    bool ack(MaestroEvent event);
+    bool ack(MaestroEvent& event);
 private:
     mstro_subscription subscription_ = nullptr;
 };

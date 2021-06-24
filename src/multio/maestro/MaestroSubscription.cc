@@ -31,7 +31,7 @@ MaestroEvent MaestroSubscription::timedwait(const timespec* abstime) {
     return MaestroEvent{event};
 }
 
-bool MaestroSubscription::ack(MaestroEvent event) {
+bool MaestroSubscription::ack(MaestroEvent& event) {
     mstro_status s = mstro_subscription_ack(subscription_, event.raw_event());
     ASSERT(s == MSTRO_OK || s == MSTRO_INVARG);
     return s == MSTRO_OK;

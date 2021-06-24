@@ -17,6 +17,28 @@ MaestroCdo::MaestroCdo(std::string name, const void* blob, uint64_t size) : name
         set_size_and_data(size, blob);
 }
 
+MaestroCdo::MaestroCdo(MaestroCdo&& rhs) : name_(std::move(rhs.name_)),
+    size_{rhs.size_}, data_{rhs.data_}, cdo_{rhs.cdo_} {
+        rhs.size_ = 0;
+        rhs.data_ = nullptr;
+        rhs.cdo_ = nullptr;
+}
+
+MaestroCdo& MaestroCdo::operator=(MaestroCdo&& rhs) {
+    if (this != &rhs) {
+        dispose();
+        cdo_ = rhs.cdo_;
+        rhs.cdo_ = nullptr;
+        name_ = std::move(rhs.name_);
+        size_ = rhs.size_;
+        rhs.size_ = 0;
+        delete[] data_;
+        data_ = rhs.data_;
+        rhs.data_ = nullptr;
+    }
+    return *this;
+}
+
 MaestroCdo::~MaestroCdo() {
     dispose();
 }
@@ -51,7 +73,8 @@ void MaestroCdo::retract() {
 }
 
 void MaestroCdo::dispose() {
-    ASSERT(MSTRO_OK == mstro_cdo_dispose(cdo_));
+    if (cdo_)
+        ASSERT(MSTRO_OK == mstro_cdo_dispose(cdo_));
 }
 
 void MaestroCdo::set_size_and_data(uint64_t size, const void* data) {

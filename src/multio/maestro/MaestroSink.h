@@ -16,12 +16,9 @@
 
 #include <deque>
 
-extern "C" {
-#include <maestro.h>
-}
-
 #include "eckit/log/Statistics.h"
 
+#include "multio/maestro/MaestroCdo.h"
 #include "multio/sink/DataSink.h"
 
 //--------------------------------------------------------------------------------------------------
@@ -46,7 +43,7 @@ private:
     }
 
     std::size_t cdoCount_ = 0;
-    std::deque<mstro_cdo> offered_cdos_;
+    std::deque<MaestroCdo> offered_cdos_;
 
     eckit::Timing timing_;
 };

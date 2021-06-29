@@ -22,6 +22,8 @@
 namespace multio {
 namespace action {
 
+using message::Peer;
+
 Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
 
 void Aggregation::execute(Message msg) const {
@@ -66,8 +68,10 @@ Message Aggregation::createGlobalField(const Message& msg) const {
 
     auto levelCount = msg.metadata().getLong("levelCount", 1);
 
-    Message msgOut{Message::Header{msg.header()},
-                   eckit::Buffer{msg.globalSize() * levelCount * sizeof(double)}};
+    auto md = msg.header().metadata();
+    Message msgOut{
+        Message::Header{msg.header().tag(), Peer{}, Peer{}, std::move(md)},
+        eckit::Buffer{msg.globalSize() * levelCount * sizeof(double)}};
 
     for (const auto& msg : messages_.at(fid)) {
         domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_global(msg, msgOut);

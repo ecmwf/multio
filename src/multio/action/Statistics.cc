@@ -62,7 +62,7 @@ void Statistics::execute(message::Message msg) const {
 
         // Create a unique key for the fieldStats_ map
         os << msg.metadata().getString("category") << msg.metadata().getString("nemoParam")
-           << msg.metadata().getString("param") << msg.metadata().getLong("level") << msg.source();
+           << msg.metadata().getString("param") << msg.metadata().getLong("level");
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {
             fieldStats_[os.str()] =
@@ -79,10 +79,9 @@ void Statistics::execute(message::Message msg) const {
     }
     for (auto&& stat : fieldStats_.at(os.str())->compute(msg)) {
         md.set("operation", stat.first);
-        message::Message newMsg{
-            message::Message::Header{message::Message::Tag::Field, msg.source(),
-                                     msg.destination(), message::Metadata{md}},
-            std::move(stat.second)};
+        message::Message newMsg{message::Message::Header{message::Message::Tag::Field, msg.source(),
+                                                         msg.destination(), message::Metadata{md}},
+                                std::move(stat.second)};
 
         executeNext(newMsg);
     }

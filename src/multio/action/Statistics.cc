@@ -62,7 +62,7 @@ void Statistics::execute(message::Message msg) const {
 
         // Create a unique key for the fieldStats_ map
         os << msg.metadata().getString("category") << msg.metadata().getString("nemoParam")
-           << msg.metadata().getString("param") << msg.metadata().getLong("level");
+           << msg.metadata().getString("param") << msg.metadata().getLong("level") << msg.source();
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {
             fieldStats_[os.str()] =

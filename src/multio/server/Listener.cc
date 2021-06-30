@@ -18,6 +18,7 @@
 
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/log/ResourceUsage.h"
 
 #include "multio/domain/Mappings.h"
 #include "multio/LibMultio.h"
@@ -40,6 +41,9 @@ Listener::Listener(const eckit::Configuration& config, Transport& trans) :
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024*1024)) {}
 
 void Listener::start() {
+
+    eckit::ResourceUsage usage{"multio listener"};
+
     ScopedThread lstnThread{std::thread{&Listener::listen, this}};
 
     ScopedThread dpatchThread{std::thread{&Dispatcher::dispatch, dispatcher_, std::ref(msgQueue_)}};

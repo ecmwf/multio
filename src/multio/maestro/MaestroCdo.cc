@@ -32,7 +32,6 @@ MaestroCdo& MaestroCdo::operator=(MaestroCdo&& rhs) {
         name_ = std::move(rhs.name_);
         size_ = rhs.size_;
         rhs.size_ = 0;
-        delete[] data_;
         data_ = rhs.data_;
         rhs.data_ = nullptr;
     }
@@ -94,6 +93,17 @@ void MaestroCdo::get_size_and_data() {
 
 void MaestroCdo::print(std::ostream& os) const {
     os << "Cdo name: " << name_;
+}
+
+std::string retrieve_to_cdoname(const std::map<std::string,std::string>& retrieve) {
+    std::stringstream ss;
+    std::map<std::string,std::string>::const_iterator it = retrieve.begin();
+
+    ss << it->first << ":" << it->second;
+    it++;
+    for (; it != retrieve.end(); it++)
+        ss << ',' << it->first << ':' << it->second;
+    return ss.str();
 }
 
 }  // namespace multio

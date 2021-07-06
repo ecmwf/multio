@@ -31,6 +31,10 @@ inline mstro_pool_event_kind operator|(mstro_pool_event_kind a, mstro_pool_event
     return static_cast<mstro_pool_event_kind>(static_cast<int>(a) | static_cast<int>(b));
 }
 
+inline mstro_subscription_opts operator|(mstro_subscription_opts a, mstro_subscription_opts b) {
+    return static_cast<mstro_subscription_opts>(static_cast<int>(a) | static_cast<int>(b));
+}
+
 }
 
 #endif // multio_MaestroSubscription_H

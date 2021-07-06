@@ -81,11 +81,10 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
 
 MaestroSink::~MaestroSink() {
 
+    ::sleep(20);  // until issue https://gitlab.jsc.fz-juelich.de/maestro/maestro-core/-/issues/45 if being fixed
     eckit::Timing timing;
     {
         util::ScopedTimer timer{timing};
-
-        ::sleep(60);
 
         std::for_each(begin(offered_cdos_), end(offered_cdos_), [](MaestroCdo& cdo) {
             cdo.withdraw();
@@ -100,8 +99,6 @@ MaestroSink::~MaestroSink() {
 }
 
 void MaestroSink::write(eckit::message::Message blob) {
-    auto name = std::string("multio-hammer-cdo--") + std::to_string(cdoCount_++);
-
     LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
 
     Metadata md;
@@ -114,27 +111,30 @@ void MaestroSink::write(eckit::message::Message blob) {
 
     util::ScopedTimer timer{timing_};
 
+    auto name{"class:rd,date:20190701,domain:g,expver:xxxx,leg:1,levelist:1,levtype:ml,number:1,param:" + md.get<std::string>("param") 
+        + ",step:" + md.get<std::string>("step") + ",stream:enfo,time:1200,type:pf"};
+
     offered_cdos_.emplace_back(name.c_str(), blob.data(), blob.length());
     auto& cdo = offered_cdos_.back();
-
-//    auto buf = static_cast<void*>(new char[blob.length()]);
-//    uint64_t sz = blob.length();
-
-//    eckit::Log::info() << " *** MaestroSink *** buffer " << buf << " with size " << sz << std::endl;
 
     LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
 
     for (const auto& kw : md.keys()) {
-        auto value = md.get<std::string>(kw);
-
         auto mkey = ".maestro.ecmwf." + kw;
-        if (mkey == ".maestro.ecmwf.step") {
+        auto value = md.get<std::string>(kw);
+        eckit::Log::info() << "{" << kw << ":" << value << "}" << std::endl;
+
+        if (kw == "class" || kw == "domain" || kw == "expver" ||
+            kw == "levtype" || kw == "stream" || kw == "type") {
+            cdo.set_attribute(mkey.c_str(), value.c_str(), true);
+        } else if (kw == "levelist" || kw == "number" || 
+                   kw == "param" || kw == "step") {
             int64_t intvalue = std::stoi(value);
             cdo.set_attribute(mkey.c_str(), intvalue, true);
+        } else if (kw == "time") {
+            uint64_t intvalue = std::stoi(value);
+            cdo.set_attribute(mkey.c_str(), intvalue, true);
         }
-//        auto intvalue = std::stoi(value);
-//        auto mvalue = static_cast<void*>(&intvalue);
-//        s = mstro_cdo_attribute_set(cdo, mkey.c_str(), &mvalue, true);
     }
 
     cdo.seal();               // Seal it after setting all attributes

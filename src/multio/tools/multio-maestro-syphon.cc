@@ -1,34 +1,63 @@
-
 extern "C" {
 #include <maestro.h>
 }
 
-#include <algorithm>
+#include <unordered_map>
 
 #include "eccodes.h"
 
+#include "eckit/container/Queue.h"
+#include "eckit/config/Resource.h"
 #include "eckit/io/DataHandle.h"
 #include "eckit/log/Log.h"
-#include "eckit/log/Statistics.h"
 #include "eckit/message/Message.h"
 #include "eckit/option/SimpleOption.h"
 
 #include "metkit/codes/CodesContent.h"
 
+#include "multio/maestro/MaestroCdo.h"
+#include "multio/maestro/MaestroSelector.h"
+
 #include "multio/tools/MultioTool.h"
 #include "multio/util/ScopedTimer.h"
 
-#include "multio/maestro/MaestroCdo.h"
-#include "multio/maestro/MaestroSelector.h"
-#include "multio/maestro/MaestroSubscription.h"
-#include "multio/maestro/MaestroEvent.h"
+#include "pgen/distributed/Message.h"
+#include "pgen/prodgen/Requirement.h"
+#include "pgen/prodgen/RequirementGenerator.h"
+#include "pgen/prodgen/BatchGenerator.h"
 
 namespace multio {
 
-class MaestroSyphon final : public multio::MultioTool {
+namespace {
+template<typename Key, typename Value>
+class ThreadsafeMap {
+public:
+    template<typename... Args>
+    std::pair<typename std::unordered_map<Key,Value>::iterator,bool> emplace(Args&&... args) {
+        std::lock_guard<std::mutex> locker{mutex_};
+        return map_.emplace(std::forward<Args>(args)...);
+    }
+    const Value& at(const Key& key) const {
+        std::lock_guard<std::mutex> locker{mutex_};
+        return map_.at(key);
+    }
+    Value& at(const Key& key) {
+        std::lock_guard<std::mutex> locker{mutex_};
+        return map_.at(key);
+    }
+    size_t erase(const Key& key) {
+        std::lock_guard<std::mutex> locker{mutex_};
+        return map_.erase(key);
+    }
+private:
+    std::mutex mutex_;
+    std::unordered_map<Key, Value> map_;
+};
+}
+
+class MaestroSyphon final : public multio::MultioTool, public pgen::RequirementConsumer {
 public:  // methods
     MaestroSyphon(int argc, char** argv);
-
 private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << std::endl << "Usage: " << tool << " [options]" << std::endl;
@@ -40,18 +69,39 @@ private:
 
     void execute(const eckit::option::CmdArgs& args) override;
 
-    std::string reqFile_ = "";
+    virtual void consume(const pgen::Requirement&, size_t) override;
+
+    void broker();
+
+    void worker();
+
+    int step_ = 0;
     unsigned cdoEventCount_ = 0;
     eckit::Timing timing_;
+    bool compiled_ = false;
+    std::unique_ptr<pgen::BatchGenerator> generator_;
+    std::unordered_map<std::string, pgen::Requirement> requirements_;
+    int req_count_ = 0;
+    ThreadsafeMap<std::string,MaestroCdo> cdo_map_;
+    eckit::Queue<pgen::Requirement> req_queue_;
 };
 
-MaestroSyphon::MaestroSyphon(int argc, char** argv) : multio::MultioTool(argc, argv) {
-    options_.push_back(
-        new eckit::option::SimpleOption<std::string>("file", "File containing the requirements"));
+MaestroSyphon::MaestroSyphon(int argc, char** argv) : 
+    multio::MultioTool(argc, argv),
+    req_queue_{eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)} {
+
+    options_.push_back(new eckit::option::SimpleOption<std::string>("class", "Class (default od)"));
+    options_.push_back(new eckit::option::SimpleOption<long>("date", "Data date (default today)"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>("expver", "Expver (default 0001)"));
+    options_.push_back(new eckit::option::SimpleOption<uint64_t>("step", "Forecast step"));
+    options_.push_back(new eckit::option::SimpleOption<bool>("compiled", "Batch generator"));
 }
 
 void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
-    args.get("file", reqFile_);
+    args.get("step", step_);
+    args.get("compiled", compiled_);
+
+    generator_.reset(pgen::BatchGeneratorFactory::build(compiled_ ? "binary" : "text", args));
 
     ASSERT(MSTRO_OK == mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0));
 }
@@ -60,16 +110,39 @@ void MaestroSyphon::finish(const eckit::option::CmdArgs&) {
     ASSERT(MSTRO_OK == mstro_finalize());
 }
 
-void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
+void MaestroSyphon::execute(const eckit::option::CmdArgs& args) {
+    eckit::Log::info() << "*** Parsing requirements ***" << std::endl;
+    for (size_t i = 0; i < args.count(); i++) {
+        eckit::Log::info() << args(i) << " ==> " << std::endl;
+        std::unique_ptr<pgen::RequirementGenerator> parser(pgen::RequirementGeneratorFactory::build(args(i), args));
+        parser->execute(*this);
+    }
 
-    std::unique_ptr<eckit::DataHandle> handle{
-        eckit::PathName{"consumed.grib"}.fileHandle(false)};
-    handle->openForAppend(0);
+    for (auto& elem : requirements_)
+        std::cout << elem.first << std::endl;
+    std::cout << std::endl;
 
-    MaestroSelector selector{"(has .maestro.ecmwf.step)"};
+    std::thread worker(&MaestroSyphon::worker, this);
+    broker();
+    worker.join();
+
+    eckit::Log::info() << " MaestroSyphon: detected " << cdoEventCount_
+                       << " cdo events -- it has taken " << timing_.elapsed_ << "s" << std::endl;
+}
+
+void MaestroSyphon::consume(const pgen::Requirement& req, size_t)  {
+    auto cdo_name = retrieve_to_cdoname(req.retrieve());
+    requirements_.insert({cdo_name, req});
+}
+
+void MaestroSyphon::broker() {
+    eckit::Log::info() << "*** Hi from broker" << std::endl;
+//    std::string query{"(.maestro.ecmwf.step = " + std::to_string(step_) + ")"};
+    std::string query{"(has .maestro.ecmwf.step)"};
+    MaestroSelector selector{query.c_str()};
 
     auto offer_subscription = selector.subscribe(MSTRO_POOL_EVENT_OFFER,
-            MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
+            MSTRO_SUBSCRIPTION_OPTS_SIGNAL_BEFORE|MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
 
     MaestroSelector match_all_selector{nullptr};
     auto join_leave_subscription = match_all_selector.subscribe(
@@ -83,8 +156,8 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
 
         if (event) {
             eckit::Log::info() << " *** Event: join/leave" << std::endl;
-            mstro_pool_event tmp = event.raw_event();
-            while (tmp != nullptr) {
+            auto tmp = event.raw_event();
+            while (tmp) {
                 switch (tmp->kind) {
                     case MSTRO_POOL_EVENT_APP_JOIN:
                         eckit::Log::info() << " *** Application " << tmp->join.component_name
@@ -105,63 +178,63 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs&) {
             }
             join_leave_subscription.ack(event);
         } else {
-            event = offer_subscription.poll();
-            //eckit::Log::info() << " *** Polling CDO events" << std::endl;
+            auto event = offer_subscription.poll();
             if(event) {
                 util::ScopedTimer timer{timing_};
-                mstro_pool_event tmp = event.raw_event();
+                auto tmp = event.raw_event();
                 while (tmp) {
                     ++cdoEventCount_;
                     eckit::Log::info() << " *** CDO event ";
-                    switch(tmp->kind) {
-                    case MSTRO_POOL_EVENT_OFFER: {
-                        eckit::Log::info()
-                            << mstro_pool_event_description(tmp->kind)
-                            << " occured -- cdo name: " << tmp->offer.cdo_name << std::endl;
+                    eckit::Log::info()
+                        << mstro_pool_event_description(tmp->kind)
+                        << " occured -- cdo name: " << tmp->offer.cdo_name << std::endl;
+                    auto offered_cdo = std::string(tmp->offer.cdo_name);
+                    auto it = requirements_.find(offered_cdo);
+                    if (it != requirements_.end()) {
+                        cdo_map_.emplace(offered_cdo, offered_cdo);
+                        auto& broker_cdo = cdo_map_.at(offered_cdo);
+                        broker_cdo.require();
 
-                        MaestroCdo cdo{tmp->offer.cdo_name};
-
-                        eckit::Log::info() << " *** Require " << std::endl;
-                        cdo.require();
-
-//                        eckit::Log::info() << " *** Retract " << std::endl;
-//                        cdo.retract();
-
-                        eckit::Log::info() << " *** Demand " << std::endl;
-                        cdo.demand();
-
-                        eckit::Log::info() << " *** Attribute get " << std::endl;
-
-//                        mmbArray* mamba_ptr = NULL;
-//                        s = mstro_cdo_access_mamba_array(cdo, &mamba_ptr);
-//                        eckit::Log::info() << " *** CDO with size " << *sz << " and mamba pointer "
-//                                           << mamba_ptr << " has been demanded " << std::endl;
-
-                        const void* data = cdo.data();
-                        int64_t sz = cdo.size();
-                        eckit::Log::info() << " *** CDO with size " << sz << " and access pointer "
-                                           << data << " has been demanded " << std::endl;
-
-                        codes_handle* h = codes_handle_new_from_message(nullptr, data, sz);
-                        eckit::message::Message msg{new metkit::codes::CodesContent{h, true}};
-                        msg.write(*handle);
-
-                        break;
-                    }
-                    default:
-                        eckit::Log::info() << " *** CDO event "
-                                           << mstro_pool_event_description(tmp->kind) << std::endl;
+                        req_queue_.push(it->second);
+                        req_count_++;
                     }
                     tmp = tmp->next;
                 }
                 offer_subscription.ack(event);
             }
         }
+        if (requirements_.size() == req_count_) done = true;
     }
+    req_queue_.close();
+    eckit::Log::info() << "*** Broker is leaving" << std::endl;
+}
 
-    eckit::Log::info() << " MaestroSyphon: detected " << cdoEventCount_
-                       << " cdo events -- it has taken " << timing_.elapsed_ << "s" << std::endl;
+void MaestroSyphon::worker() {
+    eckit::Log::info() << "*** Hi from worker" << std::endl;
+    auto requirement = requirements_.begin()->second; // creating copy for the output
+    while (req_queue_.pop(requirement) > -1) {
+        // we will convert Rquirement to Message and call ProdGenWorker
+        auto worker_cdo_name = retrieve_to_cdoname(requirement.retrieve());
+        eckit::Log::info() << "Worker cdo: " << worker_cdo_name << std::endl;
 
+        auto& worker_cdo = cdo_map_.at(worker_cdo_name);
+        worker_cdo.demand();
+        const void* data = worker_cdo.data();
+        int64_t sz = worker_cdo.size();
+        eckit::Log::info() << " *** CDO with size " << sz << " and access pointer "
+                           << data << " has been demanded " << std::endl;
+
+        auto filename = "consumed" + std::to_string(step_) + ".grib";
+        std::unique_ptr<eckit::DataHandle> handle{
+            eckit::PathName{filename}.fileHandle(false)};
+        handle->openForAppend(0);
+        codes_handle* h = codes_handle_new_from_message(nullptr, data, sz);
+        eckit::message::Message msg{new metkit::codes::CodesContent{h, true}};
+        msg.write(*handle);
+
+        cdo_map_.erase(worker_cdo_name); // this will dispose the CDO before finalize
+    }
+    eckit::Log::info() << "*** Worker is leaving" << std::endl;
 }
 
 }  // namespace multio

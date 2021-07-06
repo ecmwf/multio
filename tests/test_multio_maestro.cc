@@ -40,6 +40,9 @@ CASE("CDO construction") {
     // only name
     EXPECT_NO_THROW(MaestroCdo{"name"});
 
+    // long name
+    EXPECT_NO_THROW(MaestroCdo{std::string(1000, 'A')});
+
     // name, data and size
     EXPECT_NO_THROW(MaestroCdo("name", test.data(), test.size()));
 

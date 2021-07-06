@@ -135,7 +135,7 @@ ecbuild_add_library(
       ${ECKIT_INCLUDE_DIRS}
 
     PUBLIC_LIBS
-        metkit eckit )
+        metkit eckit pgen )
 
 add_subdirectory(fdb5)
 add_subdirectory(maestro)

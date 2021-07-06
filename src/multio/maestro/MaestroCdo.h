@@ -1,6 +1,7 @@
 #ifndef multio_MaestroCdo_H
 #define multio_MaestroCdo_H
 
+#include <map>
 #include <string>
 #include "eckit/exception/Exceptions.h"
 extern "C" {
@@ -54,6 +55,8 @@ private:
     void* data_ = nullptr;
     mstro_cdo cdo_ = nullptr;
 };
+
+std::string retrieve_to_cdoname(const std::map<std::string,std::string>& retrieve);
 
 }  // namespace multio
 

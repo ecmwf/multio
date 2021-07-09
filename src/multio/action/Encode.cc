@@ -51,8 +51,6 @@ Encode::Encode(const eckit::Configuration& config) :
     Action{config}, format_{config.getString("format")}, encoder_{make_encoder(config)} {}
 
 void Encode::execute(Message msg) const {
-    util::ScopedTimer timer{timing_};
-
     if (not encoder_) {
         executeNext(msg);
         return;
@@ -65,9 +63,12 @@ void Encode::execute(Message msg) const {
 
     if (encoder_->gridInfoReady(msg.domain())) {
         auto levelCount = msg.metadata().getLong("levelCount", 1);
+        ASSERT(levelCount == 1);
+        // TODO: most of this can probably go if we stick to levelCount == 1 always
         if (levelCount == 1) {
             executeNext(encoder_->encodeField(msg));
-        } else {
+        }
+        else {
             auto metadata = msg.metadata();
             auto data = reinterpret_cast<const double*>(msg.payload().data());
             for (auto lev = 0; lev != levelCount;) {
@@ -80,14 +81,29 @@ void Encode::execute(Message msg) const {
     else {
         LOG_DEBUG_LIB(LibMultio) << "*** Grid metadata: " << msg.metadata() << std::endl;
         if (encoder_->setGridInfo(msg)) {
-            executeNext(encoder_->encodeLatitudes(msg.domain()));
-            executeNext(encoder_->encodeLongitudes(msg.domain()));
+            executeNext(encodeLatitudes(msg.domain()));
+            executeNext(encodeLongitudes(msg.domain()));
         }
     }
 }
 
 void Encode::print(std::ostream& os) const {
     os << "Encode(format=" << format_ << ")";
+}
+
+message::Message Encode::encodeField(const message::Message& msg) const {
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    return encoder_->encodeField(msg);
+}
+
+message::Message Encode::encodeLatitudes(const std::string& subtype) const {
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    return encoder_->encodeLatitudes(subtype);
+}
+
+message::Message Encode::encodeLongitudes(const std::string& subtype) const {
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    return encoder_->encodeLongitudes(subtype);
 }
 
 static ActionBuilder<Encode> EncodeBuilder("Encode");

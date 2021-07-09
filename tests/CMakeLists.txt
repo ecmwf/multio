@@ -16,6 +16,10 @@ ecbuild_add_test( TARGET    test_multio_encode_bitspervalue
                   SOURCES   test_multio_encode_bitspervalue.cc
                   LIBS      multio )
 
+ecbuild_add_test( TARGET    test_multio_scoped_timer
+                  SOURCES   test_multio_scoped_timer.cc
+                  LIBS      multio )
+
 
 list( APPEND _test_environment
     FDB_HOME=${CMAKE_BINARY_DIR}/multio

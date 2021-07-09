@@ -50,6 +50,8 @@ list( APPEND multio_action_srcs
     action/Period.h
     action/Plan.cc
     action/Plan.h
+    action/ActionStatistics.cc
+    action/ActionStatistics.h
     action/TemporalStatistics.cc
     action/TemporalStatistics.h
 )

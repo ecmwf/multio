@@ -45,6 +45,8 @@ void SingleFieldSink::execute(Message msg) const {
 }
 
 void SingleFieldSink::write(Message msg) const {
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+
     std::ostringstream oss;
     oss << rootPath_ << msg.metadata().getUnsigned("level")
         << "::" << msg.metadata().getString("param")
@@ -61,6 +63,8 @@ void SingleFieldSink::write(Message msg) const {
 }
 
 void SingleFieldSink::flush() const {
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+
     eckit::Log::debug<LibMultio>()
         << "*** Executing single-field flush for data sink... " << std::endl;
     if (dataSink_) {

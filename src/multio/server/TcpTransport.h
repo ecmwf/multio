@@ -53,11 +53,18 @@ public:
     TcpTransport(const eckit::Configuration& config);
 
 private:
+    void openConnections() override;
+    void closeConnections() override;
+
     Message receive() override;
 
     void send(const Message& message) override;
 
+    void bufferedSend(const Message& msg) override;
+
     Peer localPeer() const override;
+
+    PeerList createServerPeers() override;
 
     void print(std::ostream& os) const override;
 

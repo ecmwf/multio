@@ -26,12 +26,15 @@
 #include "eckit/config/Configuration.h"
 
 #include "multio/message/Message.h"
+#include "multio/server/TransportStatistics.h"
 
 namespace multio {
 namespace server {
 
 using message::Message;
 using message::Peer;
+
+using PeerList = std::vector<std::unique_ptr<message::Peer>>;
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -41,15 +44,28 @@ public:  // methods
     Transport(const eckit::Configuration& config);
     virtual ~Transport() = default;
 
+    virtual void openConnections() = 0;
+    virtual void closeConnections() = 0;
+
     virtual Message receive() = 0;
 
     virtual void send(const Message& message) = 0;
 
+    virtual void bufferedSend(const Message& message) = 0;
+
     virtual Peer localPeer() const = 0;
 
-private: // methods
+    virtual void listen();
 
-    virtual void print(std::ostream &os) const = 0;
+    virtual PeerList createServerPeers() = 0;
+
+protected:
+    const eckit::LocalConfiguration config_;
+
+    TransportStatistics statistics_;
+
+private: // methods
+    virtual void print(std::ostream& os) const = 0;
 
     friend std::ostream& operator<<(std::ostream& os, const Transport& transport) {
         transport.print(os);

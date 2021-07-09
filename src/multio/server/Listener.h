@@ -39,6 +39,8 @@ class Listener {
 public:
     Listener(const eckit::Configuration& config, Transport& trans);
 
+    void start();
+
     void listen();
 
 private:

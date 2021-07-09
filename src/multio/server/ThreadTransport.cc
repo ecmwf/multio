@@ -11,6 +11,7 @@
 #include "ThreadTransport.h"
 
 #include "eckit/config/Resource.h"
+#include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
 
@@ -26,6 +27,14 @@ ThreadTransport::ThreadTransport(const eckit::Configuration& cfg) :
     Transport(cfg),
     messageQueueSize_(
         eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
+
+void ThreadTransport::openConnections() {
+    throw eckit::NotImplemented{Here()};
+}
+
+void ThreadTransport::closeConnections() {
+    throw eckit::NotImplemented{Here()};
+}
 
 Message ThreadTransport::receive() {
 
@@ -45,8 +54,16 @@ void ThreadTransport::send(const Message& msg) {
     receiveQueue(msg.destination()).push(msg);
 }
 
+void ThreadTransport::bufferedSend(const Message&) {
+    throw eckit::NotImplemented{Here()};
+}
+
 Peer ThreadTransport::localPeer() const {
     return Peer{"thread", std::hash<std::thread::id>{}(std::this_thread::get_id())};
+}
+
+PeerList ThreadTransport::createServerPeers() {
+    throw eckit::NotImplemented{Here()};
 }
 
 void ThreadTransport::print(std::ostream& os) const {

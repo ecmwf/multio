@@ -39,12 +39,12 @@ plans :
         match : field
         fields : [ toce, soce, sigmat, sst, sss, ssh, hst, hbp, empmr, runoffs, saltflx, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, taum, wspd, cdn10, qrp, erp, mldkz5, 14d, 17d, 20d, 26d, 28d, hc300, sal300, hc700, sal700, hcbtm, salbtm, precip, uocee, vocen, uocees, vocens, utaue, vtaun, hc26c, thetaodmp, sodmp, ssu, uoce, utau, ssv, voce, vtau, woce ]
 
-      - type : Aggregation
-
       - type : Statistics
         output_frequency: 1d
         operations:
           - average
+
+      - type : Aggregation
 
       - type : Encode
         format : grib
@@ -63,12 +63,12 @@ plans :
         match : field
         fields : [ sst, sss, ssh, empmr, saltflx, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, wspd, taum, mldkz5, 14d, 17d, 20d, 26d, 28d, hc300, sal300, precip, uocees, vocens, utaue, vtaun, hc26c, ssu, utau, ssv, vtau ]
 
-      - type : Aggregation
-
       - type : Statistics
         output_frequency: 3h
         operations:
           - average
+
+      - type : Aggregation
 
       - type : Encode
         format : grib
@@ -87,12 +87,12 @@ plans :
         match : field
         fields : [ icevolu, ice_cover, iceconc_cat, icethic, icethick_cat, snwthic, snwthic_cat, uice, vice, iicevelur, iicevelvr, utau_ai, vtau_ai, iocestrur, iocestrvr, snowpre, icesalt, icetemp, icettop, icesalt_cat ]
 
-      - type : Aggregation
-
       - type : Statistics
         output_frequency: 3h
         operations:
           - average
+
+      - type : Aggregation
 
       - type : Encode
         format : grib

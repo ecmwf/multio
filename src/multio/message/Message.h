@@ -48,7 +48,6 @@ public:  // types
         Grib,
         Domain,
         Field,
-        Statistics,
         StepComplete,
         StepNotification,
         ENDTAG

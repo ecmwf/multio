@@ -24,6 +24,7 @@
 #include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
+#include "multio/action/ActionStatistics.h"
 #include "multio/message/Message.h"
 
 namespace eckit {
@@ -50,7 +51,7 @@ protected:
 
     std::unique_ptr<Action> next_;
 
-    mutable eckit::Timing timing_;
+    mutable ActionStatistics statistics_;
 
 private:
 

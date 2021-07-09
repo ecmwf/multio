@@ -13,12 +13,16 @@
 
 #include "Action.h"
 
+#include <fstream>
+
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/runtime/Main.h"
 
 #include "multio/LibMultio.h"
+#include "multio/util/logfile_name.h"
 
 using eckit::LocalConfiguration;
 
@@ -42,8 +46,9 @@ Action::Action(const eckit::Configuration& config) : type_{config.getString("typ
 }
 
 Action::~Action() {
-    eckit::Log::info() << "         -- Total wall-clock time spent on action <" << type_
-                       << ">: " << timing_.elapsed_ << "s" << std::endl;
+    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
+
+    statistics_.report(logFile, type_);
 }
 
 void Action::executeNext(message::Message msg) const {

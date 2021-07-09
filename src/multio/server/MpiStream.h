@@ -32,17 +32,34 @@ public:
     eckit::Buffer content;
 };
 
-class MpiStream : public eckit::ResizableMemoryStream {
+class MpiOutputStream : public eckit::ResizableMemoryStream {
 public:
-    MpiStream(MpiBuffer& buf);
+    MpiOutputStream(MpiBuffer& buf);
 
     bool canFitMessage(size_t sz);
+    bool shallFitMessage(size_t sz);
+
     MpiBuffer& buffer() const;
 
 private:
     std::string name() const override;
 
     MpiBuffer& buf_;
+};
+
+class MpiInputStream : public eckit::ResizableMemoryStream {
+public:
+    MpiInputStream(MpiBuffer& buf, size_t sz);
+
+    MpiBuffer& buffer() const;
+
+    size_t size() const;
+
+private:
+    std::string name() const override;
+
+    MpiBuffer& buf_;
+    size_t size_;
 };
 
 }  // namespace server

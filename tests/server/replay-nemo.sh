@@ -6,7 +6,7 @@ mpi_executable=${3:-mpiexec}
 mpi_args=${4:- }
 
 function launch_mpi {
-    local cmd="$mpi_executable $mpi_args -np 7 $client_binary : -np 1 $server_binary --test"
+    local cmd="$mpi_executable $mpi_args -n 7 $client_binary : -n 2 $server_binary --test"
     eval $cmd
 }
 

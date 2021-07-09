@@ -327,6 +327,8 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
             ? test_configuration(transportType_)
             : eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{configPath_}}};
 
+    config_.set("clientCount", clientCount_).set("serverCount", serverCount_);
+
     transportType_ = config_.getString("transport");
     if (transportType_ == "mpi") {
         auto comm_size = eckit::mpi::comm(config_.getString("group").c_str()).size();
@@ -343,7 +345,7 @@ void MultioHammer::finish(const eckit::option::CmdArgs&) {}
 
 void MultioHammer::startListening(std::shared_ptr<Transport> transport) {
     Listener listener(config_, *transport);
-    listener.listen();
+    listener.start();
 }
 
 void MultioHammer::spawnServers(const PeerList& serverPeers,
@@ -504,9 +506,9 @@ void MultioHammer::testData() {
                 LOG_DEBUG_LIB(LibMultio) << "file_name = " << file_name << std::endl;
 
                 LOG_DEBUG_LIB(LibMultio) << "Expect = ";
-                multio::print_buffer(expect, eckit::Log::debug<LibMultio>());
+                multio::util::print_buffer(expect, eckit::Log::debug<LibMultio>());
                 LOG_DEBUG_LIB(LibMultio) << "\nActual = ";
-                multio::print_buffer(actual, eckit::Log::debug<LibMultio>());
+                multio::util::print_buffer(actual, eckit::Log::debug<LibMultio>());
                 LOG_DEBUG_LIB(LibMultio) << std::endl << std::endl;
 
                 ASSERT(expect == actual);

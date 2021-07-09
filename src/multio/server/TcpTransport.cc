@@ -115,6 +115,20 @@ TcpTransport::TcpTransport(const eckit::Configuration& config) :
 }
 
 
+void TcpTransport::openConnections() {
+    for (auto& server : createServerPeers()) {
+        Message msg{Message::Header{Message::Tag::Open, local_, *server}};
+        send(msg);
+    }
+}
+
+void TcpTransport::closeConnections() {
+    for (auto& server : createServerPeers()) {
+        Message msg{Message::Header{Message::Tag::Close, local_, *server}};
+        send(msg);
+    }
+}
+
 Message TcpTransport::nextMessage(eckit::net::TCPSocket& socket) const {
     size_t size;
     socket.read(&size, sizeof(size));
@@ -166,8 +180,24 @@ void TcpTransport::send(const Message& msg) {
     socket->write(buffer, static_cast<int>(size));
 }
 
+void TcpTransport::bufferedSend(const Message&) {
+    throw eckit::NotImplemented{Here()};
+}
+
 Peer TcpTransport::localPeer() const {
     return local_;
+}
+
+PeerList TcpTransport::createServerPeers() {
+    PeerList serverPeers;
+
+    for (auto cfg : config_.getSubConfigurations("servers")) {
+        auto host = cfg.getString("host");
+        for (auto port : cfg.getUnsignedVector("ports")) {
+            serverPeers.emplace_back(new TcpPeer{host, port});
+        }
+    }
+    return serverPeers;
 }
 
 void TcpTransport::print(std::ostream& os) const {

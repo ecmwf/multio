@@ -141,12 +141,8 @@ MultioClient::DistributionType MultioClient::distributionType() {
         {"hashed_to_single", DistributionType::hashed_to_single},
         {"even", DistributionType::even}};
 
-    std::string key = ::getenv("MULTIO_SERVER_DISTRIBUTION");
-
-    eckit::Log::info() << " *** Setting distribution type to " << key << " -- "
-                       << static_cast<unsigned>(str2dist.at(key)) << std::endl;
-
-    return (key == "") ? DistributionType::hashed_to_single : str2dist.at(key);
+    auto key = std::getenv("MULTIO_SERVER_DISTRIBUTION");
+    return key ? str2dist.at(key) : DistributionType::hashed_to_single;
 }
 
 }  // namespace server

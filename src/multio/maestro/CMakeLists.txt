@@ -21,4 +21,5 @@ ecbuild_add_library(
         multio
         maestro
         eckit_mpi
+        pgen
 )

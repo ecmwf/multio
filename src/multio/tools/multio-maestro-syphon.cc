@@ -1,13 +1,11 @@
 extern "C" {
 #include <maestro.h>
 }
-
-#include <unordered_map>
-
 #include "eccodes.h"
 
 #include "eckit/container/Queue.h"
 #include "eckit/config/Resource.h"
+#include "eckit/io/Buffer.h"
 #include "eckit/io/DataHandle.h"
 #include "eckit/log/Log.h"
 #include "eckit/message/Message.h"
@@ -15,45 +13,19 @@ extern "C" {
 
 #include "metkit/codes/CodesContent.h"
 
-#include "multio/maestro/MaestroCdo.h"
-#include "multio/maestro/MaestroSelector.h"
-
 #include "multio/tools/MultioTool.h"
 #include "multio/util/ScopedTimer.h"
 
-#include "pgen/distributed/Message.h"
+#include "multio/maestro/MaestroCdo.h"
+#include "multio/maestro/MaestroSelector.h"
+#include "multio/maestro/MaestroSource.h"
+#include "multio/maestro/ThreadsafeMap.h"
+
+#include "pgen/prodgen/BatchGenerator.h"
 #include "pgen/prodgen/Requirement.h"
 #include "pgen/prodgen/RequirementGenerator.h"
-#include "pgen/prodgen/BatchGenerator.h"
 
 namespace multio {
-
-namespace {
-template<typename Key, typename Value>
-class ThreadsafeMap {
-public:
-    template<typename... Args>
-    std::pair<typename std::unordered_map<Key,Value>::iterator,bool> emplace(Args&&... args) {
-        std::lock_guard<std::mutex> locker{mutex_};
-        return map_.emplace(std::forward<Args>(args)...);
-    }
-    const Value& at(const Key& key) const {
-        std::lock_guard<std::mutex> locker{mutex_};
-        return map_.at(key);
-    }
-    Value& at(const Key& key) {
-        std::lock_guard<std::mutex> locker{mutex_};
-        return map_.at(key);
-    }
-    size_t erase(const Key& key) {
-        std::lock_guard<std::mutex> locker{mutex_};
-        return map_.erase(key);
-    }
-private:
-    std::mutex mutex_;
-    std::unordered_map<Key, Value> map_;
-};
-}
 
 class MaestroSyphon final : public multio::MultioTool, public pgen::RequirementConsumer {
 public:  // methods
@@ -73,7 +45,7 @@ private:
 
     void broker();
 
-    void worker();
+    void worker(const eckit::option::CmdArgs& args);
 
     int step_ = 0;
     unsigned cdoEventCount_ = 0;
@@ -82,7 +54,6 @@ private:
     std::unique_ptr<pgen::BatchGenerator> generator_;
     std::unordered_map<std::string, pgen::Requirement> requirements_;
     int req_count_ = 0;
-    ThreadsafeMap<std::string,MaestroCdo> cdo_map_;
     eckit::Queue<pgen::Requirement> req_queue_;
 };
 
@@ -122,7 +93,7 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs& args) {
         std::cout << elem.first << std::endl;
     std::cout << std::endl;
 
-    std::thread worker(&MaestroSyphon::worker, this);
+    std::thread worker{&MaestroSyphon::worker, this, std::cref(args)};
     broker();
     worker.join();
 
@@ -191,8 +162,8 @@ void MaestroSyphon::broker() {
                     auto offered_cdo = std::string(tmp->offer.cdo_name);
                     auto it = requirements_.find(offered_cdo);
                     if (it != requirements_.end()) {
-                        cdo_map_.emplace(offered_cdo, offered_cdo);
-                        auto& broker_cdo = cdo_map_.at(offered_cdo);
+                        CdoMap::instance().emplace(offered_cdo, offered_cdo);
+                        auto& broker_cdo = CdoMap::instance().at(offered_cdo);
                         broker_cdo.require();
 
                         req_queue_.push(it->second);
@@ -209,18 +180,16 @@ void MaestroSyphon::broker() {
     eckit::Log::info() << "*** Broker is leaving" << std::endl;
 }
 
-void MaestroSyphon::worker() {
+void MaestroSyphon::worker(const eckit::option::CmdArgs& args) {
     eckit::Log::info() << "*** Hi from worker" << std::endl;
+    MaestroSource source(args);
     auto requirement = requirements_.begin()->second; // creating copy for the output
     while (req_queue_.pop(requirement) > -1) {
-        // we will convert Rquirement to Message and call ProdGenWorker
-        auto worker_cdo_name = retrieve_to_cdoname(requirement.retrieve());
-        eckit::Log::info() << "Worker cdo: " << worker_cdo_name << std::endl;
+        eckit::Buffer field;
+        source.retrieve(requirement.retrieve(), field);
 
-        auto& worker_cdo = cdo_map_.at(worker_cdo_name);
-        worker_cdo.demand();
-        const void* data = worker_cdo.data();
-        int64_t sz = worker_cdo.size();
+        const void* data = field.data();
+        int64_t sz = field.size();
         eckit::Log::info() << " *** CDO with size " << sz << " and access pointer "
                            << data << " has been demanded " << std::endl;
 
@@ -231,8 +200,6 @@ void MaestroSyphon::worker() {
         codes_handle* h = codes_handle_new_from_message(nullptr, data, sz);
         eckit::message::Message msg{new metkit::codes::CodesContent{h, true}};
         msg.write(*handle);
-
-        cdo_map_.erase(worker_cdo_name); // this will dispose the CDO before finalize
     }
     eckit::Log::info() << "*** Worker is leaving" << std::endl;
 }

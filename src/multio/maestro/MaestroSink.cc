@@ -103,7 +103,7 @@ void MaestroSink::write(eckit::message::Message blob) {
 
     Metadata md;
 
-    eckit::message::TypedSetter<Metadata> setter{md};
+    eckit::message::StringSetter<Metadata> setter{md};
     blob.getMetadata(setter);
 
     std::ostringstream os;
@@ -111,8 +111,20 @@ void MaestroSink::write(eckit::message::Message blob) {
 
     util::ScopedTimer timer{timing_};
 
-    auto name{"class:rd,date:20190701,domain:g,expver:xxxx,leg:1,levelist:1,levtype:ml,number:1,param:" + md.get<std::string>("param") 
-        + ",step:" + md.get<std::string>("step") + ",stream:enfo,time:1200,type:pf"};
+    std::vector<std::string> keys{"class", "date", "domain", "expver", "leg", "levelist",
+        "levtype", "number", "param", "step", "stream", "time", "type"};
+    std::stringstream ss;
+    for (auto& key : keys) {
+        if (key == "class") {
+            ss << "class:" << md.get<std::string>(key);
+        } else if (key == "leg") {
+            ss << ",leg:1";
+        } else {
+            ss << ',' << key << ':' << md.get<std::string>(key);
+        }
+    }
+    auto name = ss.str();
+    eckit::Log::info() << "Name: " << name << std::endl;
 
     offered_cdos_.emplace_back(name.c_str(), blob.data(), blob.length());
     auto& cdo = offered_cdos_.back();

@@ -11,8 +11,11 @@ ecbuild_add_library(
         MaestroSubscription.h
         MaestroEvent.cc
         MaestroEvent.h
+        MaestroSource.cc
+        MaestroSource.h
         MaestroSink.cc
         MaestroSink.h
+        ThreadsafeMap.h
 
     CONDITION
         HAVE_MAESTRO

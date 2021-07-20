@@ -84,9 +84,7 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("type", metadata.getSubConfiguration("run").getString("type"));
 
     // setCommonMetadata
-    setValue("levtype", category_to_levtype.at(metadata.getString("category")));
     setValue("step", metadata.getLong("step"));
-    setValue("level", metadata.getLong("level"));
 
     // TODO: Nemo should set this at the beginning of the run
     setValue("date", metadata.getLong("date"));
@@ -103,6 +101,12 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
 
     // Setting parameter ID
     setValue("paramId", metadata.getLong("param"));
+    if (metadata.getString("category") == "ocean-3d") {
+        auto level = metadata.getLong("level");
+        ASSERT(level > 0);
+        setValue("scaledValueOfFirstFixedSurface", level-1);
+        setValue("scaledValueOfSecondFixedSurface", level);
+    }
 
     // Set ocean grid information
     setValue("unstructuredGridType", gridType_);

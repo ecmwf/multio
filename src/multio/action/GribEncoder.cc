@@ -104,8 +104,8 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     if (metadata.getString("category") == "ocean-3d") {
         auto level = metadata.getLong("level");
         ASSERT(level > 0);
-        setValue("scaledValueOfFirstFixedSurface", level-1);
-        setValue("scaledValueOfSecondFixedSurface", level);
+        setValue("scaledValueOfFirstFixedSurface", level);
+        setValue("scaledValueOfSecondFixedSurface", level + 1);
     }
 
     // Set ocean grid information

@@ -30,18 +30,19 @@ plans :
       - type : Sink
         sinks :
 
-          # - type : fdb5
-          #   config : {}
+          - type : fdb5
+            config : {}
 
           - type : file
             append : true
             path : ocean-output.grib
+            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
 
   - name : stream-2 # mainly 3d fields output monthly (standard) or daily (highout)
     actions :
       - type : Select
         match : field
-        fields : [ toce, soce, sigmat, sst, sss, ssh, hst, hbp, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, mldkz5, 14d, 17d, 20d, 26d, 28d, hc300, sal300, hc700, sal700, hcbtm, salbtm, uocee, vocen, utaue, vtaun, uoce, utau, voce, vtau, woce ]
+        fields : [ toce, soce, sigmat, sst, sss, ssh, hst, hbp, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, mldkz5, hc300, sal300, hc700, sal700, hcbtm, salbtm, uocee, vocen, utaue, vtaun, uoce, utau, voce, vtau, woce ]
 
       - type : Statistics
         output_frequency: 1d
@@ -58,18 +59,19 @@ plans :
       - type : Sink
         sinks :
 
-          # - type : fdb5
-          #   config : {}
+          - type : fdb5
+            config : {}
 
           - type : file
             append : true
             path : ocean-output.grib
+            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
 
   - name : stream-3 # mainly 2d fields output daily (standard) or hourly (highout)
     actions :
       - type : Select
         match : field
-        fields : [ sst, sss, ssh, qt, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, mldkz5, 14d, 17d, 20d, 26d, 28d, hc300, sal300, uocees, vocens, utaue, vtaun, ssu, utau, vtau ]
+        fields : [ sst, sss, ssh, qt, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, mldkz5, hc300, sal300, uocees, vocens, utaue, vtaun, ssu, utau, vtau ]
 
       - type : Statistics
         output_frequency: 3h
@@ -86,12 +88,13 @@ plans :
       - type : Sink
         sinks :
 
-          # - type : fdb5
-          #   config : {}
+          - type : fdb5
+            config : {}
 
           - type : file
             append : true
             path : ocean-output.grib
+            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
 
   - name : stream-10 # sea-ice fields output daily (standard) or hourly (highout)
     actions :
@@ -120,3 +123,4 @@ plans :
           - type : file
             append : true
             path : ocean-output.grib
+            # path : /scratch/ma/masd/ocean-output/grib2-output.grib

@@ -35,6 +35,7 @@ plans :
 
           - type : file
             append : true
+            per-server : true
             path : ocean-output.grib
             # path : /scratch/ma/masd/ocean-output/grib2-output.grib
 
@@ -42,7 +43,7 @@ plans :
     actions :
       - type : Select
         match : field
-        fields : [ toce, soce, sigmat, sst, sss, ssh, hst, hbp, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, mldkz5, hc300, sal300, hc700, sal700, hcbtm, salbtm, uocee, vocen, utaue, vtaun, uoce, utau, voce, vtau, woce ]
+        fields : [ toce, soce, sigmat, sst, sss, ssh, hst, qt, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, mldkz5, hc300, sal300, hc700, sal700, hcbtm, salbtm, uocee, vocen, utaue, vtaun, uoce, utau, voce, vtau, woce ]
 
       - type : Aggregation
 
@@ -64,6 +65,7 @@ plans :
 
           - type : file
             append : true
+            per-server : true
             path : ocean-output.grib
             # path : /scratch/ma/masd/ocean-output/grib2-output.grib
 
@@ -93,6 +95,7 @@ plans :
 
           - type : file
             append : true
+            per-server : true
             path : ocean-output.grib
             # path : /scratch/ma/masd/ocean-output/grib2-output.grib
 
@@ -122,5 +125,6 @@ plans :
 
           - type : file
             append : true
+            per-server : true
             path : ocean-output.grib
             # path : /scratch/ma/masd/ocean-output/grib2-output.grib

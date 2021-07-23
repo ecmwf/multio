@@ -10,10 +10,14 @@
 namespace multio {
 namespace util {
 
-inline std::string logfile_name() {
+inline std::string filename_prefix() {
     std::ostringstream os;
-    os << "multio-" << eckit::Main::hostname() << "-" << ::getpid() << ".log";
+    os << "multio-" << eckit::Main::hostname() << "-" << ::getpid();
     return os.str();
+}
+
+inline std::string logfile_name() {
+    return filename_prefix() + ".log";
 }
 
 }  // namespace util

@@ -17,6 +17,7 @@
 
 #include "multio/sink/DataSink.h"
 #include "multio/sink/FileSink.h"
+#include "multio/util/logfile_name.h"
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/DataHandle.h"
@@ -27,8 +28,19 @@ using namespace eckit;
 
 namespace multio {
 
+namespace  {
+std::string create_path(const eckit::LocalConfiguration& cfg) {
+    auto path = cfg.getString("path");
+    if (cfg.getBool("per-server", false)) {
+        return util::filename_prefix() + "-" + path;
+    }
+    return path;
+}
+}
+
+
 FileSink::FileSink(const Configuration& config) :
-    DataSink(config), path_(config_.getString("path")), handle_(path_.fileHandle(false)) {
+    DataSink(config), path_{create_path(config_)}, handle_(path_.fileHandle(false)) {
     if (config_.getBool("append", false)) {
         handle_->openForAppend(0);
     }

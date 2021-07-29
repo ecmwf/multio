@@ -1,3 +1,6 @@
+#ifndef multio_ThreadsafeMap_H
+#define multio_ThreadsafeMap_H
+
 #include <mutex>
 #include <unordered_map>
 #include "multio/maestro/MaestroCdo.h"
@@ -57,3 +60,4 @@ private:
     ThreadsafeMap<std::string,multio::MaestroCdo> map_;
 };
 
+#endif  // multio_ThreadsafeMap_H

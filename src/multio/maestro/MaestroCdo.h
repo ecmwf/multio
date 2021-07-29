@@ -56,8 +56,6 @@ private:
     mstro_cdo cdo_ = nullptr;
 };
 
-std::string retrieve_to_cdoname(const std::map<std::string,std::string>& retrieve);
-
 }  // namespace multio
 
 #endif  // multio_MaestroCdo_H

@@ -3,18 +3,22 @@ ecbuild_add_library(
     TARGET multio-maestro
 
     SOURCES
+        CdoNamer.h
+        MaestroMetadata.h
         MaestroCdo.cc
         MaestroCdo.h
-        MaestroSelector.cc
-        MaestroSelector.h
-        MaestroSubscription.cc
-        MaestroSubscription.h
         MaestroEvent.cc
         MaestroEvent.h
-        MaestroSource.cc
-        MaestroSource.h
+        MaestroSelector.cc
+        MaestroSelector.h
         MaestroSink.cc
         MaestroSink.h
+        MaestroSource.cc
+        MaestroSource.h
+        MaestroSubscription.cc
+        MaestroSubscription.h
+        MaestroWorker.cc
+        MaestroWorker.h
         ThreadsafeMap.h
 
     CONDITION

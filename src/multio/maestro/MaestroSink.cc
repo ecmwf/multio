@@ -25,42 +25,12 @@ extern "C" {
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/mpi/Comm.h"
-#include "eckit/value/Value.h"
 
 #include "multio/LibMultio.h"
 #include "multio/util/ScopedTimer.h"
 
 
 namespace multio {
-
-namespace  {
-class Metadata : protected eckit::LocalConfiguration {
-    void print(std::ostream& os) const {
-        os << *root_ << std::endl;
-    }
-    friend std::ostream& operator<<(std::ostream& os, const Metadata& md) {
-        md.print(os);
-        return os;
-    }
-
-public:
-    template <typename T>
-    void setValue(const std::string& key, const T& value) {
-        set(key, value);
-    }
-
-    template <typename T>
-    T get(const std::string& key) {
-        T value;
-        eckit::LocalConfiguration::get(key, value);
-        return value;
-    }
-
-    std::vector<std::string> keys() {
-        return eckit::LocalConfiguration::keys();
-    }
-};
-}
 
 MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) {
     LOG_DEBUG_LIB(LibMultio) << "Config = " << config << std::endl;
@@ -81,7 +51,7 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
 
 MaestroSink::~MaestroSink() {
 
-    ::sleep(20);  // until issue https://gitlab.jsc.fz-juelich.de/maestro/maestro-core/-/issues/45 if being fixed
+    ::sleep(300);  // until issue https://gitlab.jsc.fz-juelich.de/maestro/maestro-core/-/issues/45 if being fixed
     eckit::Timing timing;
     {
         util::ScopedTimer timer{timing};
@@ -101,9 +71,9 @@ MaestroSink::~MaestroSink() {
 void MaestroSink::write(eckit::message::Message blob) {
     LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
 
-    Metadata md;
+    MaestroMetadata md;
 
-    eckit::message::StringSetter<Metadata> setter{md};
+    eckit::message::StringSetter<MaestroMetadata> setter{md};
     blob.getMetadata(setter);
 
     std::ostringstream os;
@@ -111,19 +81,7 @@ void MaestroSink::write(eckit::message::Message blob) {
 
     util::ScopedTimer timer{timing_};
 
-    std::vector<std::string> keys{"class", "date", "domain", "expver", "leg", "levelist",
-        "levtype", "number", "param", "step", "stream", "time", "type"};
-    std::stringstream ss;
-    for (auto& key : keys) {
-        if (key == "class") {
-            ss << "class:" << md.get<std::string>(key);
-        } else if (key == "leg") {
-            ss << ",leg:1";
-        } else {
-            ss << ',' << key << ':' << md.get<std::string>(key);
-        }
-    }
-    auto name = ss.str();
+    auto name = cdo_namer_.name(md);
     eckit::Log::info() << "Name: " << name << std::endl;
 
     offered_cdos_.emplace_back(name.c_str(), blob.data(), blob.length());
@@ -134,7 +92,7 @@ void MaestroSink::write(eckit::message::Message blob) {
     for (const auto& kw : md.keys()) {
         auto mkey = ".maestro.ecmwf." + kw;
         auto value = md.get<std::string>(kw);
-        eckit::Log::info() << "{" << kw << ":" << value << "}" << std::endl;
+        //eckit::Log::info() << "{" << kw << ":" << value << "}" << std::endl;
 
         if (kw == "class" || kw == "domain" || kw == "expver" ||
             kw == "levtype" || kw == "stream" || kw == "type") {

@@ -2,12 +2,14 @@
 #ifndef multio_MaestroSource_H
 #define multio_MaestroSource_H
 
-#include "pgen/sources/Source.h"
 extern "C" {
 #include <maestro.h>
 }
 
+#include "multio/maestro/CdoNamer.h"
+#include "pgen/sources/Source.h"
 namespace multio {
+
 
 class MaestroSource : pgen::Source {
 public:
@@ -15,7 +17,8 @@ public:
 private:
     size_t retrieve(const std::map<std::string, std::string> &retrieve, eckit::Buffer &field) const override;
     void print(std::ostream &out) const override;
-    friend class MaestroSyphon;
+    CdoNamer cdo_namer_;
+    friend class MaestroWorker;
 };
 
 }  // namespace multio

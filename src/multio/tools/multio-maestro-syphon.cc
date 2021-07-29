@@ -1,29 +1,21 @@
-extern "C" {
-#include <maestro.h>
-}
-#include "eccodes.h"
 
 #include "eckit/container/Queue.h"
 #include "eckit/config/Resource.h"
-#include "eckit/io/Buffer.h"
-#include "eckit/io/DataHandle.h"
 #include "eckit/log/Log.h"
-#include "eckit/message/Message.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "metkit/codes/CodesContent.h"
-
-#include "multio/tools/MultioTool.h"
-#include "multio/util/ScopedTimer.h"
-
+#include "multio/maestro/CdoNamer.h"
 #include "multio/maestro/MaestroCdo.h"
 #include "multio/maestro/MaestroSelector.h"
-#include "multio/maestro/MaestroSource.h"
+#include "multio/maestro/MaestroWorker.h"
 #include "multio/maestro/ThreadsafeMap.h"
+#include "multio/tools/MultioTool.h"
+#include "multio/util/ScopedTimer.h"
 
 #include "pgen/prodgen/BatchGenerator.h"
 #include "pgen/prodgen/Requirement.h"
 #include "pgen/prodgen/RequirementGenerator.h"
+
 
 namespace multio {
 
@@ -45,8 +37,7 @@ private:
 
     void broker();
 
-    void worker(const eckit::option::CmdArgs& args);
-
+    CdoNamer cdo_namer_;
     int step_ = 0;
     unsigned cdoEventCount_ = 0;
     eckit::Timing timing_;
@@ -93,23 +84,23 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs& args) {
         std::cout << elem.first << std::endl;
     std::cout << std::endl;
 
-    std::thread worker{&MaestroSyphon::worker, this, std::cref(args)};
+    MaestroWorker worker{std::cref(args), req_queue_, requirements_.begin()->second};
+    std::thread worker_thread{&MaestroWorker::process, std::ref(worker)};
     broker();
-    worker.join();
+    worker_thread.join();
 
     eckit::Log::info() << " MaestroSyphon: detected " << cdoEventCount_
                        << " cdo events -- it has taken " << timing_.elapsed_ << "s" << std::endl;
 }
 
 void MaestroSyphon::consume(const pgen::Requirement& req, size_t)  {
-    auto cdo_name = retrieve_to_cdoname(req.retrieve());
+    auto cdo_name = cdo_namer_.name(req.retrieve());
     requirements_.insert({cdo_name, req});
 }
 
 void MaestroSyphon::broker() {
     eckit::Log::info() << "*** Hi from broker" << std::endl;
-//    std::string query{"(.maestro.ecmwf.step = " + std::to_string(step_) + ")"};
-    std::string query{"(has .maestro.ecmwf.step)"};
+    std::string query{"(.maestro.ecmwf.step = " + std::to_string(step_) + ")"};
     MaestroSelector selector{query.c_str()};
 
     auto offer_subscription = selector.subscribe(MSTRO_POOL_EVENT_OFFER,
@@ -121,8 +112,10 @@ void MaestroSyphon::broker() {
             MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
 
     eckit::Log::info() << " *** Start polling" << std::endl;
-    bool done = false;
-    while(not done) {
+    bool processed_requirements = false;
+    bool producer_left = false;
+    //while ((not processed_requirements) and (not producer_left)) {
+    while (not producer_left) {
         auto event = join_leave_subscription.poll();
 
         if (event) {
@@ -137,7 +130,7 @@ void MaestroSyphon::broker() {
                     case MSTRO_POOL_EVENT_APP_LEAVE:
                         eckit::Log::info() << " *** Application " << tmp->leave.appid
                                            << " is leaving" << std::endl;
-                        done = true;
+                        producer_left = true;
                         eckit::Log::info() << " *** Terminating " << std::endl;
                         break;
                     default:
@@ -150,7 +143,7 @@ void MaestroSyphon::broker() {
             join_leave_subscription.ack(event);
         } else {
             auto event = offer_subscription.poll();
-            if(event) {
+            if (event) {
                 util::ScopedTimer timer{timing_};
                 auto tmp = event.raw_event();
                 while (tmp) {
@@ -174,34 +167,10 @@ void MaestroSyphon::broker() {
                 offer_subscription.ack(event);
             }
         }
-        if (requirements_.size() == req_count_) done = true;
+        if (requirements_.size() == req_count_) processed_requirements = true;
     }
     req_queue_.close();
     eckit::Log::info() << "*** Broker is leaving" << std::endl;
-}
-
-void MaestroSyphon::worker(const eckit::option::CmdArgs& args) {
-    eckit::Log::info() << "*** Hi from worker" << std::endl;
-    MaestroSource source(args);
-    auto requirement = requirements_.begin()->second; // creating copy for the output
-    while (req_queue_.pop(requirement) > -1) {
-        eckit::Buffer field;
-        source.retrieve(requirement.retrieve(), field);
-
-        const void* data = field.data();
-        int64_t sz = field.size();
-        eckit::Log::info() << " *** CDO with size " << sz << " and access pointer "
-                           << data << " has been demanded " << std::endl;
-
-        auto filename = "consumed" + std::to_string(step_) + ".grib";
-        std::unique_ptr<eckit::DataHandle> handle{
-            eckit::PathName{filename}.fileHandle(false)};
-        handle->openForAppend(0);
-        codes_handle* h = codes_handle_new_from_message(nullptr, data, sz);
-        eckit::message::Message msg{new metkit::codes::CodesContent{h, true}};
-        msg.write(*handle);
-    }
-    eckit::Log::info() << "*** Worker is leaving" << std::endl;
 }
 
 }  // namespace multio

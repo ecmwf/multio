@@ -84,7 +84,7 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs& args) {
         std::cout << elem.first << std::endl;
     std::cout << std::endl;
 
-    MaestroWorker worker{std::cref(args), req_queue_, requirements_.begin()->second};
+    MaestroWorker worker{std::cref(args), req_queue_};
     std::thread worker_thread{&MaestroWorker::process, std::ref(worker)};
     broker();
     worker_thread.join();
@@ -101,6 +101,7 @@ void MaestroSyphon::consume(const pgen::Requirement& req, size_t)  {
 void MaestroSyphon::broker() {
     eckit::Log::info() << "*** Hi from broker" << std::endl;
     std::string query{"(.maestro.ecmwf.step = " + std::to_string(step_) + ")"};
+
     MaestroSelector selector{query.c_str()};
 
     auto offer_subscription = selector.subscribe(MSTRO_POOL_EVENT_OFFER,
@@ -109,7 +110,7 @@ void MaestroSyphon::broker() {
     MaestroSelector match_all_selector{nullptr};
     auto join_leave_subscription = match_all_selector.subscribe(
             MSTRO_POOL_EVENT_APP_JOIN|MSTRO_POOL_EVENT_APP_LEAVE,
-            MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
+            MSTRO_SUBSCRIPTION_OPTS_DEFAULT);
 
     eckit::Log::info() << " *** Start polling" << std::endl;
     bool processed_requirements = false;

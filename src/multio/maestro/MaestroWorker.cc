@@ -14,12 +14,12 @@
 
 namespace multio {
 
-MaestroWorker::MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pgen::Requirement>& queue, pgen::Requirement requirement) :
+MaestroWorker::MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pgen::Requirement>& queue) :
     args_{args},
     source_{args},
     namer_{pgen::FileNamerFactory::build(args)},
     queue_{queue},
-    requirement_{requirement}
+    requirement_{}
     {}
 
 void MaestroWorker::process() {

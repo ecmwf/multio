@@ -15,7 +15,7 @@ namespace multio {
 
 class MaestroWorker {
 public:
-    MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pgen::Requirement>& queue, pgen::Requirement requirement);
+    MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pgen::Requirement>& queue);
     void process();
 private:
     const eckit::option::CmdArgs& args_;

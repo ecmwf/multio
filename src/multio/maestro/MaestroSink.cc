@@ -51,7 +51,6 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
 
 MaestroSink::~MaestroSink() {
 
-    ::sleep(300);  // until issue https://gitlab.jsc.fz-juelich.de/maestro/maestro-core/-/issues/45 if being fixed
     eckit::Timing timing;
     {
         util::ScopedTimer timer{timing};

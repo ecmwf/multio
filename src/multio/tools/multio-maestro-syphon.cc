@@ -110,7 +110,7 @@ void MaestroSyphon::broker() {
     MaestroSelector match_all_selector{nullptr};
     auto join_leave_subscription = match_all_selector.subscribe(
             MSTRO_POOL_EVENT_APP_JOIN|MSTRO_POOL_EVENT_APP_LEAVE,
-            MSTRO_SUBSCRIPTION_OPTS_DEFAULT);
+            MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
 
     eckit::Log::info() << " *** Start polling" << std::endl;
     bool processed_requirements = false;

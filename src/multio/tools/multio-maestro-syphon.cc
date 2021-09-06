@@ -4,6 +4,7 @@
 #include "eckit/log/Log.h"
 #include "eckit/option/SimpleOption.h"
 
+#include "multio/LibMultio.h"
 #include "multio/maestro/CdoNamer.h"
 #include "multio/maestro/MaestroCdo.h"
 #include "multio/maestro/MaestroSelector.h"
@@ -16,6 +17,7 @@
 #include "pgen/prodgen/Requirement.h"
 #include "pgen/prodgen/RequirementGenerator.h"
 
+using multio::LibMultio;
 
 namespace multio {
 
@@ -34,6 +36,10 @@ private:
     void execute(const eckit::option::CmdArgs& args) override;
 
     virtual void consume(const pgen::Requirement&, size_t) override;
+
+    void process_join_leave_events(MaestroSubscription& join_leave_subscription);
+
+    void process_offer_events(MaestroSubscription& offer_subscription);
 
     void broker();
 
@@ -73,24 +79,24 @@ void MaestroSyphon::finish(const eckit::option::CmdArgs&) {
 }
 
 void MaestroSyphon::execute(const eckit::option::CmdArgs& args) {
-    eckit::Log::info() << "*** Parsing requirements ***" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Parsing requirements ***" << std::endl;
     for (size_t i = 0; i < args.count(); i++) {
-        eckit::Log::info() << args(i) << " ==> " << std::endl;
+        LOG_DEBUG_LIB(LibMultio) << args(i) << " ==> " << std::endl;
         std::unique_ptr<pgen::RequirementGenerator> parser(pgen::RequirementGeneratorFactory::build(args(i), args));
         parser->execute(*this);
     }
 
     for (auto& elem : requirements_)
-        std::cout << elem.first << std::endl;
-    std::cout << std::endl;
+        LOG_DEBUG_LIB(LibMultio) << elem.first << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << std::endl;
 
     MaestroWorker worker{std::cref(args), req_queue_};
     std::thread worker_thread{&MaestroWorker::process, std::ref(worker)};
     broker();
     worker_thread.join();
 
-    eckit::Log::info() << " MaestroSyphon: detected " << cdoEventCount_
-                       << " cdo events -- it has taken " << timing_.elapsed_ << "s" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " MaestroSyphon: detected " << cdoEventCount_
+                             << " cdo events -- it has taken " << timing_.elapsed_ << "s" << std::endl;
 }
 
 void MaestroSyphon::consume(const pgen::Requirement& req, size_t)  {
@@ -98,8 +104,62 @@ void MaestroSyphon::consume(const pgen::Requirement& req, size_t)  {
     requirements_.insert({cdo_name, req});
 }
 
+void MaestroSyphon::process_join_leave_events(MaestroSubscription& join_leave_subscription) {
+    auto event = join_leave_subscription.poll();
+    if (event) {
+        LOG_DEBUG_LIB(LibMultio) << " *** Event: join/leave" << std::endl;
+        auto tmp = event.raw_event();
+        while (tmp) {
+            switch (tmp->kind) {
+                case MSTRO_POOL_EVENT_APP_JOIN:
+                LOG_DEBUG_LIB(LibMultio) << " *** Application " << tmp->join.component_name
+                                             << " is joining" << std::endl;
+                    break;
+                case MSTRO_POOL_EVENT_APP_LEAVE:
+                LOG_DEBUG_LIB(LibMultio) << " *** Application " << tmp->leave.appid
+                                             << " is leaving" << std::endl;
+                    break;
+                default:
+                    std::ostringstream os;
+                    os << "Unexpected event " << tmp->kind;
+                    throw eckit::SeriousBug{os.str()};
+            }
+            tmp = tmp->next;
+        }
+        join_leave_subscription.ack(event);
+    }
+}
+
+void MaestroSyphon::process_offer_events(MaestroSubscription& offer_subscription) {
+    auto event = offer_subscription.poll();
+    if (event) {
+        util::ScopedTimer timer{timing_};
+        auto tmp = event.raw_event();
+        while (tmp) {
+            ++cdoEventCount_;
+            LOG_DEBUG_LIB(LibMultio) << " *** CDO event ";
+            LOG_DEBUG_LIB(LibMultio)
+                << mstro_pool_event_description(tmp->kind)
+                << " occured -- cdo name: " << tmp->offer.cdo_name << std::endl;
+            auto offered_cdo = std::string(tmp->offer.cdo_name);
+            auto it = requirements_.find(offered_cdo);
+            if (it != requirements_.end()) {
+                CdoMap::instance().emplace(offered_cdo, offered_cdo);
+                auto& broker_cdo = CdoMap::instance().at(offered_cdo);
+                broker_cdo.require();
+
+                req_queue_.push(it->second);
+                req_count_++;
+            }
+            tmp = tmp->next;
+        }
+        offer_subscription.ack(event);
+    }
+}
+
 void MaestroSyphon::broker() {
-    eckit::Log::info() << "*** Hi from broker" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Hi from broker" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "requirements: " << requirements_.size() << std::endl;
     std::string query{"(.maestro.ecmwf.step = " + std::to_string(step_) + ")"};
 
     MaestroSelector selector{query.c_str()};
@@ -112,66 +172,15 @@ void MaestroSyphon::broker() {
             MSTRO_POOL_EVENT_APP_JOIN|MSTRO_POOL_EVENT_APP_LEAVE,
             MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
 
-    eckit::Log::info() << " *** Start polling" << std::endl;
-    bool processed_requirements = false;
-    bool producer_left = false;
-    //while ((not processed_requirements) and (not producer_left)) {
-    while (not producer_left) {
-        auto event = join_leave_subscription.poll();
-
-        if (event) {
-            eckit::Log::info() << " *** Event: join/leave" << std::endl;
-            auto tmp = event.raw_event();
-            while (tmp) {
-                switch (tmp->kind) {
-                    case MSTRO_POOL_EVENT_APP_JOIN:
-                        eckit::Log::info() << " *** Application " << tmp->join.component_name
-                                           << " is joining" << std::endl;
-                        break;
-                    case MSTRO_POOL_EVENT_APP_LEAVE:
-                        eckit::Log::info() << " *** Application " << tmp->leave.appid
-                                           << " is leaving" << std::endl;
-                        producer_left = true;
-                        eckit::Log::info() << " *** Terminating " << std::endl;
-                        break;
-                    default:
-                        std::ostringstream os;
-                        os << "Unexpected event " << tmp->kind;
-                        throw eckit::SeriousBug{os.str()};
-                }
-                tmp = tmp->next;
-            }
-            join_leave_subscription.ack(event);
-        } else {
-            auto event = offer_subscription.poll();
-            if (event) {
-                util::ScopedTimer timer{timing_};
-                auto tmp = event.raw_event();
-                while (tmp) {
-                    ++cdoEventCount_;
-                    eckit::Log::info() << " *** CDO event ";
-                    eckit::Log::info()
-                        << mstro_pool_event_description(tmp->kind)
-                        << " occured -- cdo name: " << tmp->offer.cdo_name << std::endl;
-                    auto offered_cdo = std::string(tmp->offer.cdo_name);
-                    auto it = requirements_.find(offered_cdo);
-                    if (it != requirements_.end()) {
-                        CdoMap::instance().emplace(offered_cdo, offered_cdo);
-                        auto& broker_cdo = CdoMap::instance().at(offered_cdo);
-                        broker_cdo.require();
-
-                        req_queue_.push(it->second);
-                        req_count_++;
-                    }
-                    tmp = tmp->next;
-                }
-                offer_subscription.ack(event);
-            }
-        }
-        if (requirements_.size() == req_count_) processed_requirements = true;
+    LOG_DEBUG_LIB(LibMultio) << " *** Start polling" << std::endl;
+    bool processed_requirements{false};
+    while (not processed_requirements) {
+        process_join_leave_events(join_leave_subscription);
+        process_offer_events(offer_subscription);
+        processed_requirements = (req_count_ == requirements_.size());
     }
     req_queue_.close();
-    eckit::Log::info() << "*** Broker is leaving" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Broker is leaving" << std::endl;
 }
 
 }  // namespace multio

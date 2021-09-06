@@ -81,7 +81,7 @@ void MaestroSink::write(eckit::message::Message blob) {
     util::ScopedTimer timer{timing_};
 
     auto name = cdo_namer_.name(md);
-    eckit::Log::info() << "Name: " << name << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Name: " << name << std::endl;
 
     offered_cdos_.emplace_back(name.c_str(), blob.data(), blob.length());
     auto& cdo = offered_cdos_.back();
@@ -91,7 +91,6 @@ void MaestroSink::write(eckit::message::Message blob) {
     for (const auto& kw : md.keys()) {
         auto mkey = ".maestro.ecmwf." + kw;
         auto value = md.get<std::string>(kw);
-        //eckit::Log::info() << "{" << kw << ":" << value << "}" << std::endl;
 
         if (kw == "class" || kw == "domain" || kw == "expver" ||
             kw == "levtype" || kw == "stream" || kw == "type") {
@@ -108,7 +107,7 @@ void MaestroSink::write(eckit::message::Message blob) {
 
     cdo.seal();               // Seal it after setting all attributes
 
-    eckit::Log::info() << " *** Offer cdo " << name.c_str() << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " *** Offer cdo " << name.c_str() << std::endl;
 
     cdo.offer();               // Submit field
 }

@@ -7,10 +7,13 @@
 #include "mir/api/MIRJob.h"
 #include "mir/input/MIRInput.h"
 
+#include "multio/LibMultio.h"
+
 #include "pgen/handler/Handler.h"
 #include "pgen/prodgen/Fields.h"
 #include "pgen/prodgen/Output.h"
 
+using multio::LibMultio;
 
 namespace multio {
 
@@ -23,7 +26,7 @@ MaestroWorker::MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pg
     {}
 
 void MaestroWorker::process() {
-    eckit::Log::info() << "*** Hi from worker" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Hi from worker" << std::endl;
     std::string lastInputTag;
     mir::api::MIRComplexJob job;
     pgen::Fields fields;
@@ -32,14 +35,14 @@ void MaestroWorker::process() {
     while (queue_.pop(requirement_) > -1) {
         const pgen::Handler &handler = pgen::Handler::lookup(args_, requirement_.handlers());
         const std::string inputTag = handler.inputTag(requirement_);
-        eckit::Log::info() << "INPUT TAG [" << inputTag << "]" << std::endl;
+        LOG_DEBUG_LIB(LibMultio) << "INPUT TAG [" << inputTag << "]" << std::endl;
         if (job.empty() || (lastInputTag != inputTag)) {
-            eckit::Log::info() << "SET INPUT TAG [" << inputTag << "]" << std::endl;
+            LOG_DEBUG_LIB(LibMultio) << "SET INPUT TAG [" << inputTag << "]" << std::endl;
             lastInputTag = inputTag;
             job.clear();
             fields.clear();
             try {
-                eckit::Log::info() << "Handle input from " << source_ << std::endl;
+                LOG_DEBUG_LIB(LibMultio) << "Handle input from " << source_ << std::endl;
                 input.reset(handler.input(requirement_,
                                           fields,
                                           source_,
@@ -72,19 +75,19 @@ void MaestroWorker::process() {
             mj->set("matrix-loader", "file-io"); //optimization
             mj->set("point-search-trees", "mapped-anonymous-memory"); //can be commented out - optimization
 
-            eckit::Log::info() << "Job before add ===> " << *mj <<  std::endl;
+            LOG_DEBUG_LIB(LibMultio) << "Job before add ===> " << *mj <<  std::endl;
             job.add(mj.release(),
                     *input,
                     output,
                     nullptr);
-            eckit::Log::info() << "Job after add ===> " <<  std::endl;
+            LOG_DEBUG_LIB(LibMultio) << "Job after add ===> " <<  std::endl;
         } catch (std::exception &e) {
             eckit::Log::info() << "==== Error building job" << std::endl;
             eckit::Log::info() << "==== Exception  : " << e.what() << std::endl;
             eckit::Log::info() << "==== Requirement: " << requirement_ << std::endl;
             statistics_.failedRequirementsCount_++;
         }
-        eckit::Log::info() << "Execute job" << std::endl;
+        LOG_DEBUG_LIB(LibMultio) << "Execute job" << std::endl;
         eckit::AutoTiming timing(statistics_.timer_, statistics_.mirTiming_);
         job.execute(statistics_.mirStatistics_);
     }

@@ -1,6 +1,7 @@
 multio
 ======
 
+[![Build Status](https://img.shields.io/github/workflow/status/ecmwf/multio/ci/develop)](https://github.com/ecmwf/multio/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/ecmwf/multio/blob/develop/LICENSE)
 
 Requirements

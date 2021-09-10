@@ -8,6 +8,7 @@
 #include "multio/maestro/CdoNamer.h"
 #include "multio/maestro/MaestroCdo.h"
 #include "multio/maestro/MaestroSelector.h"
+#include "multio/maestro/MaestroStatistics.h"
 #include "multio/maestro/MaestroWorker.h"
 #include "multio/maestro/ThreadsafeMap.h"
 #include "multio/tools/MultioTool.h"
@@ -24,6 +25,9 @@ namespace multio {
 class MaestroSyphon final : public multio::MultioTool, public pgen::RequirementConsumer {
 public:  // methods
     MaestroSyphon(int argc, char** argv);
+    ~MaestroSyphon() {
+        statistics_.report(eckit::Log::info());
+    }
 private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << std::endl << "Usage: " << tool << " [options]" << std::endl;
@@ -52,6 +56,7 @@ private:
     std::unordered_map<std::string, pgen::Requirement> requirements_;
     int req_count_ = 0;
     eckit::Queue<pgen::Requirement> req_queue_;
+    MaestroStatistics statistics_;
 };
 
 MaestroSyphon::MaestroSyphon(int argc, char** argv) : 
@@ -66,6 +71,7 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
 }
 
 void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
+    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonInitTiming_);
     args.get("step", step_);
     args.get("compiled", compiled_);
 
@@ -75,10 +81,12 @@ void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
 }
 
 void MaestroSyphon::finish(const eckit::option::CmdArgs&) {
+    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonFinishTiming_);
     ASSERT(MSTRO_OK == mstro_finalize());
 }
 
 void MaestroSyphon::execute(const eckit::option::CmdArgs& args) {
+    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonExecuteTiming_);
     LOG_DEBUG_LIB(LibMultio) << "*** Parsing requirements ***" << std::endl;
     for (size_t i = 0; i < args.count(); i++) {
         LOG_DEBUG_LIB(LibMultio) << args(i) << " ==> " << std::endl;
@@ -100,11 +108,13 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs& args) {
 }
 
 void MaestroSyphon::consume(const pgen::Requirement& req, size_t)  {
+    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonConsumeTiming_);
     auto cdo_name = cdo_namer_.name(req.retrieve());
     requirements_.insert({cdo_name, req});
 }
 
 void MaestroSyphon::process_join_leave_events(MaestroSubscription& join_leave_subscription) {
+    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonJoinLeaveTiming_);
     auto event = join_leave_subscription.poll();
     if (event) {
         LOG_DEBUG_LIB(LibMultio) << " *** Event: join/leave" << std::endl;
@@ -131,6 +141,7 @@ void MaestroSyphon::process_join_leave_events(MaestroSubscription& join_leave_su
 }
 
 void MaestroSyphon::process_offer_events(MaestroSubscription& offer_subscription) {
+    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonOfferTiming_);
     auto event = offer_subscription.poll();
     if (event) {
         util::ScopedTimer timer{timing_};
@@ -158,6 +169,7 @@ void MaestroSyphon::process_offer_events(MaestroSubscription& offer_subscription
 }
 
 void MaestroSyphon::broker() {
+    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonBrokerTiming_);
     LOG_DEBUG_LIB(LibMultio) << "*** Hi from broker" << std::endl;
     LOG_DEBUG_LIB(LibMultio) << "requirements: " << requirements_.size() << std::endl;
     std::string query{"(.maestro.ecmwf.step = " + std::to_string(step_) + ")"};

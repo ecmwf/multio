@@ -25,7 +25,12 @@ MaestroWorker::MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pg
     requirement_{}
     {}
 
+MaestroWorker::~MaestroWorker() {
+    maestroStatistics_.report(eckit::Log::info());
+}
+
 void MaestroWorker::process() {
+    eckit::AutoTiming timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessTiming_);
     LOG_DEBUG_LIB(LibMultio) << "*** Hi from worker" << std::endl;
     std::string lastInputTag;
     mir::api::MIRComplexJob job;
@@ -92,6 +97,7 @@ void MaestroWorker::process() {
         job.execute(statistics_.mirStatistics_);
     }
 
+    statistics_.report(eckit::Log::info());
     eckit::Log::info() << "*** Worker is leaving" << std::endl;
 }
 

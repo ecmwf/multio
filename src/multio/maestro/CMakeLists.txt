@@ -15,6 +15,8 @@ ecbuild_add_library(
         MaestroSink.h
         MaestroSource.cc
         MaestroSource.h
+        MaestroStatistics.cc
+        MaestroStatistics.h
         MaestroSubscription.cc
         MaestroSubscription.h
         MaestroWorker.cc

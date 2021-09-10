@@ -18,8 +18,9 @@
 
 #include "eckit/log/Statistics.h"
 
-#include "multio/maestro/MaestroCdo.h"
 #include "multio/maestro/CdoNamer.h"
+#include "multio/maestro/MaestroCdo.h"
+#include "multio/maestro/MaestroStatistics.h"
 #include "multio/sink/DataSink.h"
 
 //--------------------------------------------------------------------------------------------------
@@ -48,6 +49,7 @@ private:
 
     CdoNamer cdo_namer_;
     eckit::Timing timing_;
+    MaestroStatistics statistics_;
 };
 
 }  // namespace multio

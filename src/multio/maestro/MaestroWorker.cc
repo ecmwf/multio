@@ -101,4 +101,9 @@ void MaestroWorker::process() {
     eckit::Log::info() << "*** Worker is leaving" << std::endl;
 }
 
+void execute_worker(const eckit::option::CmdArgs& args, eckit::Queue<pgen::Requirement>& req_queue) {
+    MaestroWorker worker{std::cref(args), req_queue};
+    worker.process();
+}
+
 }  // namespace multio

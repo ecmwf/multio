@@ -29,6 +29,8 @@ private:
     MaestroStatistics maestroStatistics_;
 };
 
+void execute_worker(const eckit::option::CmdArgs&, eckit::Queue<pgen::Requirement>&);
+
 }  // namespace multio
 
 #endif  // multio_MaestroWorker_H

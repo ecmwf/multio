@@ -49,6 +49,7 @@ private:
 
     CdoNamer cdo_namer_;
     int step_ = 0;
+    int nworkers_ = 1;
     unsigned cdoEventCount_ = 0;
     eckit::Timing timing_;
     bool compiled_ = false;
@@ -68,11 +69,13 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<std::string>("expver", "Expver (default 0001)"));
     options_.push_back(new eckit::option::SimpleOption<uint64_t>("step", "Forecast step"));
     options_.push_back(new eckit::option::SimpleOption<bool>("compiled", "Batch generator"));
+    options_.push_back(new eckit::option::SimpleOption<uint64_t>("nworkers", "Number of threaded workers"));
 }
 
 void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
     eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonInitTiming_);
     args.get("step", step_);
+    args.get("nworkers", nworkers_);
     args.get("compiled", compiled_);
 
     generator_.reset(pgen::BatchGeneratorFactory::build(compiled_ ? "binary" : "text", args));
@@ -98,10 +101,13 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs& args) {
         LOG_DEBUG_LIB(LibMultio) << elem.first << std::endl;
     LOG_DEBUG_LIB(LibMultio) << std::endl;
 
-    MaestroWorker worker{std::cref(args), req_queue_};
-    std::thread worker_thread{&MaestroWorker::process, std::ref(worker)};
+    std::vector<std::thread> worker_threads;
+
+    for (int i = 0; i < nworkers_; i++)
+        worker_threads.emplace_back(execute_worker, std::cref(args), std::ref(req_queue_));
     broker();
-    worker_thread.join();
+    for (int i = 0; i < nworkers_; i++)
+        worker_threads[i].join();
 
     LOG_DEBUG_LIB(LibMultio) << " MaestroSyphon: detected " << cdoEventCount_
                              << " cdo events -- it has taken " << timing_.elapsed_ << "s" << std::endl;

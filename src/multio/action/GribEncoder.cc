@@ -89,6 +89,8 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     // TODO: Nemo should set this at the beginning of the run
     setValue("date", metadata.getLong("date"));
 
+    setValue("dateOfAnalysis", metadata.getSubConfiguration("run").getString("dateOfAnalysis"));
+
     // Statistics field
     if (metadata.has("operation") and metadata.getString("operation") != "instant") {
         setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));

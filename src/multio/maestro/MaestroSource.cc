@@ -16,8 +16,9 @@ size_t MaestroSource::retrieve(const std::map<std::string, std::string> &retriev
     auto&cdo = CdoMap::instance().at(cdo_name);
     cdo.demand();
     field = std::move(eckit::Buffer{cdo.data(), cdo.size()});
+    auto size = cdo.size();
     CdoMap::instance().erase(cdo_name);
-    return cdo.size();
+    return size;
 }
 
 void MaestroSource::print(std::ostream& out) const {

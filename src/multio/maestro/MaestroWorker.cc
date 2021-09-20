@@ -65,7 +65,11 @@ void MaestroWorker::process() {
             }
         }
 
-        std::string path = handler.path(*namer_, requirement_, "." /* dir */, "id");
+        std::stringstream ss;
+        ss << std::this_thread::get_id();
+        std::string thread_id = ss.str();
+
+        std::string path = handler.path(*namer_, requirement_, "." /* dir */, thread_id);
         pgen::Output o{new eckit::FileHandle{path}, true /* append */};
         mir::output::MIROutput &output = o.output(handler, statistics_);
 

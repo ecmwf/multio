@@ -48,7 +48,7 @@ private:
     void broker();
 
     CdoNamer cdo_namer_;
-    int step_ = 0;
+    int number_ = 0;
     int nworkers_ = 1;
     unsigned cdoEventCount_ = 0;
     eckit::Timing timing_;
@@ -67,14 +67,14 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<std::string>("class", "Class (default od)"));
     options_.push_back(new eckit::option::SimpleOption<long>("date", "Data date (default today)"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("expver", "Expver (default 0001)"));
-    options_.push_back(new eckit::option::SimpleOption<uint64_t>("step", "Forecast step"));
+    options_.push_back(new eckit::option::SimpleOption<uint64_t>("number", "Ensemble number"));
     options_.push_back(new eckit::option::SimpleOption<bool>("compiled", "Batch generator"));
     options_.push_back(new eckit::option::SimpleOption<uint64_t>("nworkers", "Number of threaded workers"));
 }
 
 void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
     eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonInitTiming_);
-    args.get("step", step_);
+    args.get("number", number_);
     args.get("nworkers", nworkers_);
     args.get("compiled", compiled_);
 
@@ -178,7 +178,7 @@ void MaestroSyphon::broker() {
     eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonBrokerTiming_);
     LOG_DEBUG_LIB(LibMultio) << "*** Hi from broker" << std::endl;
     LOG_DEBUG_LIB(LibMultio) << "requirements: " << requirements_.size() << std::endl;
-    std::string query{"(.maestro.ecmwf.step = " + std::to_string(step_) + ")"};
+    std::string query{"(.maestro.ecmwf.number = " + std::to_string(number_) + ")"};
 
     MaestroSelector selector{query.c_str()};
 

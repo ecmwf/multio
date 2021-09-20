@@ -24,20 +24,6 @@ MaestroCdo::MaestroCdo(MaestroCdo&& rhs) : name_(std::move(rhs.name_)),
         rhs.cdo_ = nullptr;
 }
 
-MaestroCdo& MaestroCdo::operator=(MaestroCdo&& rhs) {
-    if (this != &rhs) {
-        dispose();
-        cdo_ = rhs.cdo_;
-        rhs.cdo_ = nullptr;
-        name_ = std::move(rhs.name_);
-        size_ = rhs.size_;
-        rhs.size_ = 0;
-        data_ = rhs.data_;
-        rhs.data_ = nullptr;
-    }
-    return *this;
-}
-
 MaestroCdo::~MaestroCdo() {
     dispose();
 }

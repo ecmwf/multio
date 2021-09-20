@@ -17,7 +17,7 @@ public:
     MaestroCdo(const MaestroCdo&) = delete;
     MaestroCdo& operator=(const MaestroCdo&) = delete;
     MaestroCdo(MaestroCdo&&);
-    MaestroCdo& operator=(MaestroCdo&&);
+    MaestroCdo& operator=(MaestroCdo&&) = delete;
     ~MaestroCdo();
     void seal();
     void offer();

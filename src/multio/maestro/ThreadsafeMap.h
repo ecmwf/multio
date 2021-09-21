@@ -10,23 +10,23 @@ class ThreadsafeMap {
 public:
     template<typename... Args>
     std::pair<typename std::unordered_map<Key,Value>::iterator,bool> emplace(Args&&... args) {
-        std::lock_guard<std::recursive_mutex> locker{mutex_};
+        std::lock_guard<std::mutex> locker{mutex_};
         return map_.emplace(std::forward<Args>(args)...);
     }
     const Value& at(const Key& key) const {
-        std::lock_guard<std::recursive_mutex> locker{mutex_};
+        std::lock_guard<std::mutex> locker{mutex_};
         return map_.at(key);
     }
     Value& at(const Key& key) {
-        std::lock_guard<std::recursive_mutex> locker{mutex_};
+        std::lock_guard<std::mutex> locker{mutex_};
         return map_.at(key);
     }
     size_t erase(const Key& key) {
-        std::lock_guard<std::recursive_mutex> locker{mutex_};
+        std::lock_guard<std::mutex> locker{mutex_};
         return map_.erase(key);
     }
 private:
-    std::recursive_mutex mutex_;
+    std::mutex mutex_;
     std::unordered_map<Key, Value> map_;
 };
 

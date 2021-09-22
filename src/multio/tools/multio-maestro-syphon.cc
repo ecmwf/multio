@@ -70,6 +70,7 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<uint64_t>("number", "Ensemble number"));
     options_.push_back(new eckit::option::SimpleOption<bool>("compiled", "Batch generator"));
     options_.push_back(new eckit::option::SimpleOption<uint64_t>("nworkers", "Number of threaded workers"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>("force-postproc", "Extra values to add to each requirements (e.g. --force-retrieve=resol=av)"));
 }
 
 void MaestroSyphon::init(const eckit::option::CmdArgs& args) {

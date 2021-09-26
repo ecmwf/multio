@@ -24,6 +24,42 @@ public:
     eckit::Timing syphonFinishTiming_;
 
     eckit::Timing workerProcessTiming_;
+    eckit::Timing workerProcessPopWorkTiming_;
+    eckit::Timing workerProcessInputTiming_;
+    eckit::Timing workerProcessJobPrepareTiming_;
+
+    eckit::Timing sourceConstructionTiming_;
+    eckit::Timing sourceRetrieveTiming_;
+
+    eckit::Timing cdoConstructionTiming_;
+    eckit::Timing cdoDestructionTiming_;
+    eckit::Timing cdoMoveTiming_;
+    eckit::Timing cdoDeclareTiming_;
+    eckit::Timing cdoSealTiming_;
+    eckit::Timing cdoOfferTiming_;
+    eckit::Timing cdoRequireTiming_;
+    eckit::Timing cdoWithdrawTiming_;
+    eckit::Timing cdoDemandTiming_;
+    eckit::Timing cdoRetractTiming_;
+    eckit::Timing cdoDisposeTiming_;
+    eckit::Timing cdoSetSizeAndDataTiming_;
+    eckit::Timing cdoGetSizeAndDataTiming_;
+
+    eckit::Timing selectorConstructionTiming_;
+    eckit::Timing selectorDestructionTiming_;
+    eckit::Timing selectorSubscribeTiming_;
+
+    eckit::Timing subscriptionConstructionTiming_;
+    eckit::Timing subscriptionDestructionTiming_;
+    eckit::Timing subscriptionPollTiming_;
+    eckit::Timing subscriptionWaitTiming_;
+    eckit::Timing subscriptionTimedWaitTiming_;
+    eckit::Timing subscriptionAckTiming_;
+
+    eckit::Timing eventConstructionTiming_;
+    eckit::Timing eventDestructionTiming_;
+    eckit::Timing eventMoveTiming_;
+    eckit::Timing eventDisposTiming_;
 
     void report(std::ostream& out, const char *indent = "") const;
 };

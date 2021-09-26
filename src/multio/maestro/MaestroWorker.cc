@@ -19,7 +19,7 @@ namespace multio {
 
 MaestroWorker::MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pgen::Requirement>& queue) :
     args_{args},
-    source_{args},
+    source_{args, maestroStatistics_},
     namer_{pgen::FileNamerFactory::build(args)},
     queue_{queue},
     requirement_{}
@@ -30,7 +30,7 @@ MaestroWorker::~MaestroWorker() {
 }
 
 void MaestroWorker::process() {
-    eckit::AutoTiming timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessTiming_);
+    eckit::AutoTiming process_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessTiming_);
     LOG_DEBUG_LIB(LibMultio) << "*** Hi from worker" << std::endl;
     std::string lastInputTag;
     mir::api::MIRComplexJob job;
@@ -38,6 +38,7 @@ void MaestroWorker::process() {
     std::unique_ptr<mir::input::MIRInput> input;
 
     while (queue_.pop(requirement_) > -1) {
+        eckit::AutoTiming pop_work_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessPopWorkTiming_);
         const pgen::Handler &handler = pgen::Handler::lookup(args_, requirement_.handlers());
         const std::string inputTag = handler.inputTag(requirement_);
         LOG_DEBUG_LIB(LibMultio) << "INPUT TAG [" << inputTag << "]" << std::endl;
@@ -47,6 +48,7 @@ void MaestroWorker::process() {
             job.clear();
             fields.clear();
             try {
+                eckit::AutoTiming input_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessInputTiming_);
                 LOG_DEBUG_LIB(LibMultio) << "Handle input from " << source_ << std::endl;
                 input.reset(handler.input(requirement_,
                                           fields,
@@ -74,6 +76,7 @@ void MaestroWorker::process() {
         mir::output::MIROutput &output = o.output(handler, statistics_);
 
         try {
+            eckit::AutoTiming prepare_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessJobPrepareTiming_);
             std::unique_ptr<mir::api::MIRJob> mj(new mir::api::MIRJob());
             if (!handler.prepare(*mj, requirement_, *input, output, statistics_)) {
                 eckit::Log::info() << "Handler did not prepare" << std::endl;

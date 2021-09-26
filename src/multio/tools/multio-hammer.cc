@@ -29,6 +29,7 @@
 #include "multio/server/TcpTransport.h"
 #include "multio/tools/MultioTool.h"
 #include "multio/util/print_buffer.h"
+#include "multio/util/ScopedTimer.h"
 
 using multio::LibMultio;
 using multio::message::Message;
@@ -670,6 +671,13 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 //---------------------------------------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-    MultioHammer tool{argc, argv};
-    return tool.start();
+    int ret;
+    eckit::Timing timing_;
+    {
+        multio::util::ScopedTimer scTimer{timing_};
+        MultioHammer tool{argc, argv};
+        ret = tool.start();
+    }
+    eckit::Log::info() << "-- Total hammer:   " << timing_ << "s" << std::endl;
+    return ret;
 }

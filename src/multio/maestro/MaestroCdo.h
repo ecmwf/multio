@@ -4,6 +4,8 @@
 #include <map>
 #include <string>
 #include "eckit/exception/Exceptions.h"
+#include "multio/maestro/MaestroStatistics.h"
+
 extern "C" {
 #include <maestro.h>
 }
@@ -12,8 +14,8 @@ namespace multio {
 
 class MaestroCdo {
 public:
-    MaestroCdo(std::string name);
-    MaestroCdo(std::string name, const void* blob, uint64_t size);
+    MaestroCdo(std::string name, MaestroStatistics&);
+    MaestroCdo(std::string name, const void* blob, uint64_t size, MaestroStatistics&);
     MaestroCdo(const MaestroCdo&) = delete;
     MaestroCdo& operator=(const MaestroCdo&) = delete;
     MaestroCdo(MaestroCdo&&);
@@ -54,6 +56,7 @@ private:
     uint64_t size_ = 0;
     void* data_ = nullptr;
     mstro_cdo cdo_ = nullptr;
+    MaestroStatistics& statistics_;
 };
 
 }  // namespace multio

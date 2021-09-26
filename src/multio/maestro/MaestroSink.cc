@@ -91,7 +91,7 @@ void MaestroSink::write(eckit::message::Message blob) {
 
     {
         eckit::AutoTiming timing(statistics_.timer_, statistics_.sinkCdoCreation_);
-        offered_cdos_.emplace_back(name.c_str(), blob.data(), blob.length());
+        offered_cdos_.emplace_back(name.c_str(), blob.data(), blob.length(), statistics_);
     }
     auto& cdo = offered_cdos_.back();
 

@@ -1,4 +1,6 @@
 
+#include <utility>
+#include <tuple>
 #include "eckit/container/Queue.h"
 #include "eckit/config/Resource.h"
 #include "eckit/log/Log.h"
@@ -162,7 +164,9 @@ void MaestroSyphon::process_offer_events(MaestroSubscription& offer_subscription
             auto offered_cdo = std::string(tmp->offer.cdo_name);
             auto it = requirements_.find(offered_cdo);
             if (it != requirements_.end()) {
-                CdoMap::instance().emplace(offered_cdo, offered_cdo);
+                CdoMap::instance().emplace(std::piecewise_construct,
+                                           std::forward_as_tuple(offered_cdo),
+                                           std::forward_as_tuple(offered_cdo, statistics_));
                 auto& broker_cdo = CdoMap::instance().at(offered_cdo);
                 broker_cdo.require();
 
@@ -181,12 +185,12 @@ void MaestroSyphon::broker() {
     LOG_DEBUG_LIB(LibMultio) << "requirements: " << requirements_.size() << std::endl;
     std::string query{"(.maestro.ecmwf.number = " + std::to_string(number_) + ")"};
 
-    MaestroSelector selector{query.c_str()};
+    MaestroSelector selector{query.c_str(), statistics_};
 
     auto offer_subscription = selector.subscribe(MSTRO_POOL_EVENT_OFFER,
             MSTRO_SUBSCRIPTION_OPTS_SIGNAL_BEFORE|MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
 
-    MaestroSelector match_all_selector{nullptr};
+    MaestroSelector match_all_selector{nullptr, statistics_};
     auto join_leave_subscription = match_all_selector.subscribe(
             MSTRO_POOL_EVENT_APP_JOIN|MSTRO_POOL_EVENT_APP_LEAVE,
             MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);

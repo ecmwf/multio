@@ -1,6 +1,7 @@
 #ifndef multio_MaestroEvent_H
 #define multio_MaestroEvent_H
 
+#include "multio/maestro/MaestroStatistics.h"
 extern "C" {
 #include <maestro.h>
 }
@@ -9,7 +10,7 @@ namespace multio {
 
 class MaestroEvent {
 public:
-    MaestroEvent(mstro_pool_event event);
+    MaestroEvent(mstro_pool_event event, MaestroStatistics& statistics);
     MaestroEvent(const MaestroEvent&) = delete;
     MaestroEvent& operator=(const MaestroEvent&) = delete;
     MaestroEvent(MaestroEvent&&);
@@ -21,6 +22,7 @@ public:
 private:
     void dispose();
     mstro_pool_event event_;
+    MaestroStatistics& statistics_;
 };
 
 }  // namespace multio

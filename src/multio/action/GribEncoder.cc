@@ -43,6 +43,9 @@ const std::map<const std::string, const long> ops_to_code{
 const std::map<const std::string, const long> category_to_levtype{
     {"ocean-grid-coordinate", 160}, {"ocean-2d", 160}, {"ocean-3d", 168}};
 
+const std::map<const std::string, const long> type_of_generating_process{
+    {"an", 0}, {"in", 1}, {"fc", 2}};
+
 }  // namespace
 
 GribEncoder::GribEncoder(codes_handle* handle, const std::string& gridType) :
@@ -86,15 +89,21 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     // setCommonMetadata
     setValue("step", metadata.getLong("step"));
 
-    // TODO: Nemo should set this at the beginning of the run
-    setValue("date", metadata.getLong("date"));
+    auto dateOfAnalysis = metadata.getSubConfiguration("run").getString("dateOfAnalysis");
+    setValue("yearOfAnalysis", std::stol(dateOfAnalysis.substr(0, 4)));
+    setValue("monthOfAnalysis", std::stol(dateOfAnalysis.substr(4, 2)));
+    setValue("dayOfAnalysis", std::stol(dateOfAnalysis.substr(6, 2)));
 
-    setValue("dateOfAnalysis", metadata.getSubConfiguration("run").getString("dateOfAnalysis"));
+    setValue("year", metadata.getLong("date") / 10000);
+    setValue("month", (metadata.getLong("date") % 10000) / 100);
+    setValue("day", metadata.getLong("date") % 100);
 
     // Statistics field
     if (metadata.has("operation") and metadata.getString("operation") != "instant") {
         setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));
         setValue("stepRange", metadata.getString("stepRange"));
+        setValue("indicatorOfUnitForTimeIncrement", 13l); // always seconds
+        setValue("timeIncrement", metadata.getLong("timeStep"));
     }
 
     // setDomainDimensions
@@ -119,10 +128,43 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
 }
 
+void GribEncoder::setCoordMetadata(const message::Metadata& metadata) {
+    // Set run-specific metadata
+    setValue("expver", metadata.getSubConfiguration("run").getString("expver"));
+    setValue("class", metadata.getSubConfiguration("run").getString("class"));
+    setValue("stream", metadata.getSubConfiguration("run").getString("stream"));
+    const std::string& type = metadata.getSubConfiguration("run").getString("type");
+    setValue("type", type);
+    setValue("typeOfGeneratingProcess", type_of_generating_process.at(type));
+
+    setValue("date", metadata.getLong("date"));
+
+    // setDomainDimensions
+    setValue("numberOfDataPoints", metadata.getLong("globalSize"));
+    setValue("numberOfValues", metadata.getLong("globalSize"));
+
+    // Setting parameter ID
+    setValue("paramId", metadata.getLong("param"));
+
+    // Set ocean grid information
+    setValue("unstructuredGridType", gridType_);
+
+    const auto& gridSubtype = metadata.getString("gridSubtype");
+    setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
+
+    setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
+}
+
 void GribEncoder::setValue(const std::string& key, long value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
     CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
 }
+
+// void GribEncoder::setValue(const std::string& key, unsigned long value) {
+//     eckit::Log::info() << "*** Setting value " << value << " for key " << key << std::endl;
+//     // LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
+//     CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
+// }
 
 void GribEncoder::setValue(const std::string& key, double value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
@@ -150,7 +192,7 @@ void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
 message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
     auto msg = grids().at(subtype)->latitudes();
 
-    setOceanMetadata(msg.metadata());
+    setCoordMetadata(msg.metadata());
 
     return setFieldValues(msg);
 }
@@ -158,7 +200,7 @@ message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
 message::Message GribEncoder::encodeLongitudes(const std::string& subtype) {
     auto msg = grids().at(subtype)->longitudes();
 
-    setOceanMetadata(msg.metadata());
+    setCoordMetadata(msg.metadata());
 
     return setFieldValues(msg);
 }

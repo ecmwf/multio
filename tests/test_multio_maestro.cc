@@ -54,7 +54,7 @@ CASE("CDO construction") {
     // move constructor
     MaestroCdo cdo2{std::move(cdo1)};
 
-    std::string data = std::string(static_cast<const char*>(cdo2.data()));
+    std::string data = std::string(static_cast<const char*>(cdo2.data())).substr(0, cdo2.size());
     EXPECT(data.compare(static_cast<const char*>(test.data())) == 0);
     EXPECT(cdo1.data() == nullptr);
 
@@ -116,7 +116,7 @@ CASE("Maestro CDO get size and data") {
     EXPECT(cdo1.data() == nullptr);
 
     MaestroCdo cdo2{"name", test.data(), test.size(), test.statistics_};
-    std::string data = std::string(static_cast<const char*>(cdo2.data()));
+    std::string data = std::string(static_cast<const char*>(cdo2.data())).substr(0, cdo2.size());
     EXPECT(cdo2.size() == test.size());
     EXPECT(data.compare(static_cast<const char*>(test.data())) == 0);
 }

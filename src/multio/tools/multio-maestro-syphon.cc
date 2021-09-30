@@ -3,8 +3,16 @@
 #include <tuple>
 #include "eckit/container/Queue.h"
 #include "eckit/config/Resource.h"
+#include "eckit/linalg/LinearAlgebra.h"
 #include "eckit/log/Log.h"
+#include "eckit/option/FactoryOption.h"
+#include "eckit/option/Separator.h"
 #include "eckit/option/SimpleOption.h"
+
+#include "mir/caching/legendre/LegendreLoader.h"
+#include "mir/caching/matrix/MatrixLoader.h"
+#include "mir/key/style/MIRStyle.h"
+#include "mir/search/Tree.h"
 
 #include "multio/LibMultio.h"
 #include "multio/maestro/CdoNamer.h"
@@ -73,6 +81,15 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<bool>("compiled", "Batch generator"));
     options_.push_back(new eckit::option::SimpleOption<uint64_t>("nworkers", "Number of threaded workers"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("force-postproc", "Extra values to add to each requirements (e.g. --force-retrieve=resol=av)"));
+
+    options_.push_back(new eckit::option::Separator("MIR options"));
+    options_.push_back(new eckit::option::FactoryOption<mir::key::style::MIRStyleFactory>("style", "Select how the interpolations are performed"));
+    options_.push_back(new eckit::option::FactoryOption<mir::caching::legendre::LegendreLoaderFactory>("legendre-loader", "Select the scheme to load coefficients"));
+    options_.push_back(new eckit::option::FactoryOption<mir::caching::matrix::MatrixLoaderFactory>("matrix-loader", "Select the scheme to load matrix weights"));
+    options_.push_back(new eckit::option::FactoryOption<eckit::linalg::LinearAlgebra>("backend", "Linear algebra backend (default '" + eckit::linalg::LinearAlgebra::backend().name() + "')"));
+    options_.push_back(new eckit::option::FactoryOption<mir::search::TreeFactory>("point-search-trees", "k-d tree control"));
+
+    options_.push_back(new eckit::option::SimpleOption<std::string>("directory", "Output directory (default current directory)"));
 }
 
 void MaestroSyphon::init(const eckit::option::CmdArgs& args) {

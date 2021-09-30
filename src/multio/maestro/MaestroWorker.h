@@ -26,6 +26,11 @@ private:
     pgen::Requirement requirement_;
     pgen::ProdGenStatistics statistics_;
     std::unique_ptr<pgen::FileNamer> namer_;
+    std::string directory_;
+    std::string style_;
+    std::string legendre_loader_;
+    std::string matrix_loader_;
+    std::string point_search_;
     MaestroStatistics maestroStatistics_;
 };
 

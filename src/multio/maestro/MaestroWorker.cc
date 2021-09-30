@@ -2,6 +2,7 @@
 #include "MaestroWorker.h"
 
 #include "eckit/io/FileHandle.h"
+#include "eckit/linalg/LinearAlgebra.h"
 
 #include "mir/api/MIRComplexJob.h"
 #include "mir/api/MIRJob.h"
@@ -22,8 +23,24 @@ MaestroWorker::MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pg
     source_{args, maestroStatistics_},
     namer_{pgen::FileNamerFactory::build(args)},
     queue_{queue},
-    requirement_{}
-    {}
+    requirement_{},
+    directory_("."),
+    style_{"dissemination"},
+    legendre_loader_{"file-io"},
+    matrix_loader_{"file-io"},
+    point_search_{"mapped-anonymous-memory"}
+{
+    args.get("directory", directory_);
+    args.get("style", style_);
+    args.get("legendre-loader", legendre_loader_);
+    args.get("matrix-loader", matrix_loader_);
+    args.get("point-search-trees", point_search_);
+
+    std::string backend;
+    if (args.get("backend", backend)) {
+        eckit::linalg::LinearAlgebra::backend(backend);
+    }
+}
 
 MaestroWorker::~MaestroWorker() {
     maestroStatistics_.report(eckit::Log::info());
@@ -71,7 +88,7 @@ void MaestroWorker::process() {
         ss << std::this_thread::get_id();
         std::string thread_id = ss.str();
 
-        std::string path = handler.path(*namer_, requirement_, "." /* dir */, thread_id);
+        std::string path = handler.path(*namer_, requirement_, directory_, thread_id);
         pgen::Output o{new eckit::FileHandle{path}, true /* append */};
         mir::output::MIROutput &output = o.output(handler, statistics_);
 
@@ -82,10 +99,10 @@ void MaestroWorker::process() {
                 eckit::Log::info() << "Handler did not prepare" << std::endl;
                 continue;
             }
-            mj->set("style", "dissemination"); //required
-            mj->set("legendre-loader", "file-io"); //optimization
-            mj->set("matrix-loader", "file-io"); //optimization
-            mj->set("point-search-trees", "mapped-anonymous-memory"); //can be commented out - optimization
+            mj->set("style", style_);
+            mj->set("legendre-loader", legendre_loader_);
+            mj->set("matrix-loader", matrix_loader_);
+            mj->set("point-search-trees", point_search_);
 
             LOG_DEBUG_LIB(LibMultio) << "Job before add ===> " << *mj <<  std::endl;
             job.add(mj.release(),

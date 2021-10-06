@@ -8,6 +8,8 @@ MaestroSubscription::MaestroSubscription(mstro_cdo_selector selector, mstro_pool
     statistics_{statistics} {
     eckit::AutoTiming timing(statistics_.timer_, statistics_.subscriptionConstructionTiming_);
     ASSERT(MSTRO_OK ==  mstro_subscribe(selector, events, flags, &subscription_));
+    eckit::Log::info() << "mstro_subscribe is called for selector, event kind " << selector << ", "
+                       << events << std::endl;
 }
 
 MaestroSubscription::~MaestroSubscription() {

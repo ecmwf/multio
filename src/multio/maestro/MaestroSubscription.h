@@ -19,6 +19,14 @@ public:
     MaestroSubscription(mstro_cdo_selector selector, mstro_pool_event_kind events,
                         mstro_subscription_opts flags, MaestroStatistics& statistics);
     ~MaestroSubscription();
+
+    // Only define move construction
+    MaestroSubscription(MaestroSubscription&&) noexcept;
+
+    MaestroSubscription(const MaestroSubscription&) = delete;
+    MaestroSubscription& operator=(const MaestroSubscription&) = delete;
+    MaestroSubscription& operator=(MaestroSubscription&&) noexcept = delete;
+
     MaestroEvent poll();
     MaestroEvent wait();
     MaestroEvent timedwait(const timespec* abstime);

@@ -15,6 +15,12 @@ MaestroSubscription::~MaestroSubscription() {
     ASSERT(MSTRO_OK == mstro_subscription_dispose(subscription_));
 }
 
+MaestroSubscription::MaestroSubscription(MaestroSubscription&& rhs) noexcept :
+    subscription_{rhs.subscription_}, statistics_{rhs.statistics_} {
+    eckit::AutoTiming timing(statistics_.timer_, statistics_.subscriptionPollTiming_);
+    rhs.subscription_ = nullptr;
+}
+
 MaestroEvent MaestroSubscription::poll() {
     eckit::AutoTiming timing(statistics_.timer_, statistics_.subscriptionPollTiming_);
     mstro_pool_event event;

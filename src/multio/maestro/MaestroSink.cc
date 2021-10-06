@@ -42,6 +42,7 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
         util::ScopedTimer timer{timing};
         auto componentName = std::string{::getenv("MSTRO_COMPONENT_NAME")} + " -- " +
                              std::to_string(eckit::mpi::comm().rank());
+        ::sleep(15);
         mstro_status s = mstro_init(::getenv("MSTRO_WORKFLOW_NAME"),componentName.c_str(), 0);
         ASSERT(s == MSTRO_OK);
     }
@@ -56,6 +57,7 @@ MaestroSink::~MaestroSink() {
         util::ScopedTimer timer{timing};
 
         std::for_each(begin(offered_cdos_), end(offered_cdos_), [](MaestroCdo& cdo) {
+            LOG_DEBUG_LIB(LibMultio) << "Withdrawing CDO: " << cdo << std::endl;
             cdo.withdraw();
         });
 

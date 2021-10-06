@@ -68,6 +68,7 @@ private:
     int req_count_ = 0;
     eckit::Queue<pgen::Requirement> req_queue_;
     MaestroStatistics statistics_;
+    std::set<std::string> req_set_;
 };
 
 MaestroSyphon::MaestroSyphon(int argc, char** argv) : 
@@ -168,17 +169,24 @@ void MaestroSyphon::process_join_leave_events(MaestroSubscription& join_leave_su
 
 void MaestroSyphon::process_offer_events(MaestroSubscription& offer_subscription) {
     eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonOfferTiming_);
+    std::stringstream ss;
     auto event = offer_subscription.poll();
     if (event) {
         util::ScopedTimer timer{timing_};
         auto tmp = event.raw_event();
         while (tmp) {
             ++cdoEventCount_;
-            LOG_DEBUG_LIB(LibMultio) << " *** CDO event ";
-            LOG_DEBUG_LIB(LibMultio)
-                << mstro_pool_event_description(tmp->kind)
-                << " occured -- cdo name: " << tmp->offer.cdo_name << std::endl;
+            ss << " *** CDO event "
+               << mstro_pool_event_description(tmp->kind)
+               << " occured -- cdo name: " << tmp->offer.cdo_name
+               << " ID: " << tmp->serial << '\n';
             auto offered_cdo = std::string(tmp->offer.cdo_name);
+            ASSERT(req_set_.find(offered_cdo) == req_set_.end());
+            if (req_set_.find(offered_cdo) != req_set_.end()) {
+                eckit::Log::info() << "CDO: " << offered_cdo << " already exists!" << std::endl;
+            } else {
+                req_set_.insert(offered_cdo);
+            }
             auto it = requirements_.find(offered_cdo);
             if (it != requirements_.end()) {
                 CdoMap::instance().emplace(std::piecewise_construct,
@@ -194,6 +202,7 @@ void MaestroSyphon::process_offer_events(MaestroSubscription& offer_subscription
         }
         offer_subscription.ack(event);
     }
+    eckit::Log::info() << ss.str() << std::flush;
 }
 
 void MaestroSyphon::broker() {

@@ -115,8 +115,8 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     // Setting parameter ID
     setValue("paramId", metadata.getLong("param"));
 
+    setValue("typeOfLevel", metadata.getString("typeOfLevel"));
     auto category = metadata.getString("category");
-    setValue("typeOfLevel", metadata.getLong("typeOfLevel"));
     if (category == "ocean-3d") {
         auto level = metadata.getLong("level");
         ASSERT(level > 0);
@@ -151,7 +151,7 @@ void GribEncoder::setCoordMetadata(const message::Metadata& metadata) {
     // Setting parameter ID
     setValue("paramId", metadata.getLong("param"));
 
-    setValue("typeOfLevel", metadata.getLong("typeOfLevel"));
+    setValue("typeOfLevel", metadata.getString("typeOfLevel"));
 
     // Set ocean grid information
     setValue("unstructuredGridType", gridType_);

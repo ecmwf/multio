@@ -40,8 +40,10 @@ std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
 const std::map<const std::string, const long> ops_to_code{
     {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
 
-const std::map<const std::string, const long> category_to_levtype{
-    {"ocean-grid-coordinate", 160}, {"ocean-2d", 160}, {"ocean-3d", 168}};
+const std::map<const std::string, const std::string> category_to_levtype{
+    {"ocean-grid-coordinate", "oceanSurface"},
+    {"ocean-2d", "oceanSurface"},
+    {"ocean-3d", "oceanModelLevel"}};
 
 const std::map<const std::string, const long> type_of_generating_process{
     {"an", 0}, {"in", 1}, {"fc", 2}};
@@ -112,7 +114,10 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
 
     // Setting parameter ID
     setValue("paramId", metadata.getLong("param"));
-    if (metadata.getString("category") == "ocean-3d") {
+
+    auto category = metadata.getString("category");
+    setValue("typeOfLevel", metadata.getLong("typeOfLevel"));
+    if (category == "ocean-3d") {
         auto level = metadata.getLong("level");
         ASSERT(level > 0);
         setValue("scaledValueOfFirstFixedSurface", level);
@@ -145,6 +150,8 @@ void GribEncoder::setCoordMetadata(const message::Metadata& metadata) {
 
     // Setting parameter ID
     setValue("paramId", metadata.getLong("param"));
+
+    setValue("typeOfLevel", metadata.getLong("typeOfLevel"));
 
     // Set ocean grid information
     setValue("unstructuredGridType", gridType_);

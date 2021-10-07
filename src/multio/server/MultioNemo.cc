@@ -150,6 +150,7 @@ public:
         metadata_.set("gridSubtype", paramMap_.get(fname).gridType);
         metadata_.set("domainCount", clientCount_);
         metadata_.set("domain", paramMap_.get(fname).gridType);
+        metadata_.set("typeOfLevel", paramMap_.get(fname).levelType);
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 

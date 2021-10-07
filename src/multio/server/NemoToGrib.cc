@@ -10,7 +10,9 @@ std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& config
     const auto& cfgList = config.getSubConfigurations("nemo-fields");
     std::map<std::string, GribData> nemo_map;
     for (auto const& cfg : cfgList) {
-        nemo_map[cfg.getString("nemo-id")] = {cfg.getLong("param-id"), cfg.getString("grid-type")};
+      nemo_map[cfg.getString("nemo-id")] = {cfg.getLong("param-id"),
+                                            cfg.getString("grid-type"),
+                                            cfg.getString("level-type")};
     }
     return nemo_map;
 }

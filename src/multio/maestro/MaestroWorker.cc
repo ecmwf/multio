@@ -25,7 +25,7 @@ MaestroWorker::MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pg
     queue_{queue},
     requirement_{},
     directory_("."),
-    style_{"dissemination"},
+    style_{"ecmwf"},
     legendre_loader_{"file-io"},
     matrix_loader_{"file-io"},
     point_search_{"mapped-anonymous-memory"}

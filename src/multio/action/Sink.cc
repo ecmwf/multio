@@ -23,7 +23,12 @@
 namespace multio {
 namespace action {
 
-Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
+Sink::Sink(const eckit::Configuration& config) :
+    Action(config), report_{config.getBool("report", true)}, mio_{config} {}
+
+Sink::~Sink() {
+    mio_.report(eckit::Log::info());
+}
 
 void Sink::execute(Message msg) const {
     util::ScopedTimer timer{timing_};

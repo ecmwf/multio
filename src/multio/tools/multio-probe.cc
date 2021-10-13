@@ -29,7 +29,7 @@ eckit::LocalConfiguration test_configuration(const std::string& type) {
                                                   {"thread", "thread-test-configuration"},
                                                   {"none", "no-transport-test-configuration"}};
 
-    eckit::YAMLConfiguration testConfigs{configuration_path() + "test-configurations.yaml"};
+    eckit::YAMLConfiguration testConfigs{configuration_path() + configuration_file()};
     return eckit::LocalConfiguration{testConfigs.getSubConfiguration(configs.at(type))};
 }
 }  // namespace
@@ -103,7 +103,7 @@ void MultioProbe::execute(const eckit::option::CmdArgs&) {
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioProbe::executeLive() {
-    MultioServer server{eckit::YAMLConfiguration{configuration_path() + "multio-server.yaml"}};
+    MultioServer server{eckit::YAMLConfiguration{configuration_path() + configuration_file()}};
 }
 
 void MultioProbe::executeTest() {

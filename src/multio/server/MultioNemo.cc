@@ -72,7 +72,7 @@ class MultioNemo {
     size_t serverCount_ = 0;
 
     MultioNemo() :
-        config_{eckit::YAMLConfiguration{configuration_path() + "multio-server.yaml"}},
+        config_{eckit::YAMLConfiguration{configuration_path() + configuration_file()}},
         activeFields_{fetch_active_fields(config_)} {
         static const char* argv[2] = {"MultioNemo", 0};
         eckit::Main::initialise(1, const_cast<char**>(argv));
@@ -123,8 +123,8 @@ public:
         // TODO: find a way to come up with a unique 'colour', such as using MPI_APPNUM
         eckit::mpi::comm("nemo").split(888, "server_comm");
 
-        multioServer_.reset(new MultioServer{
-            eckit::YAMLConfiguration{configuration_path() + "multio-server.yaml"}});
+        multioServer_.reset(new MultioServer{eckit::YAMLConfiguration{
+            configuration_path() + configuration_file()}});
     }
 
     void setDomain(const std::string& dname, const int* data, size_t bytes) {

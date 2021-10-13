@@ -46,7 +46,7 @@ const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-3d", "oceanModelLevel"}};
 
 const std::map<const std::string, const long> type_of_generating_process{
-    {"an", 0}, {"in", 1}, {"fc", 2}};
+    {"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}};
 
 }  // namespace
 
@@ -91,10 +91,16 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     // setCommonMetadata
     setValue("step", metadata.getLong("step"));
 
-    auto dateOfAnalysis = metadata.getSubConfiguration("run").getString("dateOfAnalysis");
-    setValue("yearOfAnalysis", std::stol(dateOfAnalysis.substr(0, 4)));
-    setValue("monthOfAnalysis", std::stol(dateOfAnalysis.substr(4, 2)));
-    setValue("dayOfAnalysis", std::stol(dateOfAnalysis.substr(6, 2)));
+    if (metadata.getSubConfiguration("run").has("dateOfAnalysis")) {
+      auto dateOfAnalysis = metadata.getSubConfiguration("run").getString("dateOfAnalysis");
+      setValue("yearOfAnalysis", std::stol(dateOfAnalysis.substr(0, 4)));
+      setValue("monthOfAnalysis", std::stol(dateOfAnalysis.substr(4, 2)));
+      setValue("dayOfAnalysis", std::stol(dateOfAnalysis.substr(6, 2)));
+    }
+
+    if (metadata.getSubConfiguration("run").has("number")) {
+      setValue("number", metadata.getSubConfiguration("run").getLong("number"));
+    }
 
     setValue("year", metadata.getLong("date") / 10000);
     setValue("month", (metadata.getLong("date") % 10000) / 100);

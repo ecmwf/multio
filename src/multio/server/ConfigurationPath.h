@@ -12,4 +12,11 @@ inline eckit::PathName configuration_path() {
     return base + "/configs/";
 }
 
+inline eckit::PathName configuration_file() {
+    const auto configFile = "MULTIO_SERVER_CONFIG";
+    return (::getenv(configFile))
+               ? eckit::PathName{::getenv(configFile)}
+               : eckit::PathName{"multio-server.yaml"};
+}
+
 #endif

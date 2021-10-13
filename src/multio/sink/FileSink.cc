@@ -31,6 +31,7 @@ namespace multio {
 namespace  {
 std::string create_path(const eckit::LocalConfiguration& cfg) {
     auto path = cfg.getString("path");
+    eckit::Log::info() << "path = " << path << std::endl;
     if (cfg.getBool("per-server", false)) {
         return util::filename_prefix() + "-" + path;
     }

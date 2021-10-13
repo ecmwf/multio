@@ -1,15 +1,12 @@
 
 transport : mpi
 group : nemo
-serverCount : 3
-clientCount : 5
 
 run:
-  expver: bilg
-  class: rd
-  stream: ocda
-  type: an
-  dateOfAnalysis: 20170909
+  expver: dsfc # bilg
+  class: rd    # rd
+  stream: oper
+  type: fc
 
 activeFields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethick_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
 
@@ -36,14 +33,8 @@ plans :
 
           - type : file
             append : true
-            per-server : true
-            path : ocean-output.grib
-            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
-
-          - type : file
-            append : true
-            path : ocean-output.grib
-            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
+            per-server : true # Will give you one file per server
+            path : ocean-output-grid.grib
 
   - name : stream-2 # mainly 3d fields output monthly (standard) or daily (highout)
     actions :
@@ -54,15 +45,13 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 1d
+        output_frequency: 5d
         operations:
           - average
 
-      - type : Aggregation
-
       - type : Encode
         format : grib
-        template : unstr_an.tmpl
+        template : unstr_fc.tmpl
         grid-type : eORCA1
 
       - type : Sink
@@ -74,13 +63,7 @@ plans :
           - type : file
             append : true
             per-server : true
-            path : ocean-output.grib
-            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
-
-          - type : file
-            append : true
-            path : ocean-output.grib
-            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
+            path : ocean-output-strm2.grib
 
   - name : stream-3 # mainly 2d fields output daily (standard) or hourly (highout)
     actions :
@@ -91,15 +74,13 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 3h
+        output_frequency: 1d
         operations:
           - average
 
-      - type : Aggregation
-
       - type : Encode
         format : grib
-        template : unstr_an.tmpl
+        template :  unstr_fc.tmpl
         grid-type : eORCA1
 
       - type : Sink
@@ -111,13 +92,7 @@ plans :
           - type : file
             append : true
             per-server : true
-            path : ocean-output.grib
-            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
-
-          - type : file
-            append : true
-            path : ocean-output.grib
-            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
+            path : ocean-output-strm3.grib
 
   - name : stream-10 # sea-ice fields output daily (standard) or hourly (highout)
     actions :
@@ -128,15 +103,13 @@ plans :
       - type : Aggregation
 
       - type : Statistics
-        output_frequency: 3h
+        output_frequency: 1d
         operations:
           - average
 
-      - type : Aggregation
-
       - type : Encode
         format : grib
-        template : unstr_an.tmpl
+        template : unstr_fc.tmpl
         grid-type : eORCA1
 
       - type : Sink
@@ -148,5 +121,4 @@ plans :
           - type : file
             append : true
             per-server : true
-            path : ocean-output.grib
-            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
+            path : ocean-output-strm10.grib

@@ -29,7 +29,7 @@ eckit::LocalConfiguration test_configuration(const std::string& type) {
                                                   {"thread", "thread-test-configuration"},
                                                   {"none", "no-transport-test-configuration"}};
 
-    eckit::YAMLConfiguration testConfigs{configuration_path() + configuration_file()};
+    eckit::YAMLConfiguration testConfigs{configuration_path() + "test-configurations.yaml"};
     return eckit::LocalConfiguration{testConfigs.getSubConfiguration(configs.at(type))};
 }
 }  // namespace
@@ -69,7 +69,6 @@ MultioProbe::MultioProbe(int argc, char** argv) : multio::MultioTool(argc, argv)
     options_.push_back(new eckit::option::SimpleOption<size_t>("port", "TCP port"));
     options_.push_back(new eckit::option::SimpleOption<bool>("test", "Whether it runs as part of test"));
 }
-
 
 void MultioProbe::init(const eckit::option::CmdArgs& args) {
     args.get("transport", transport_);

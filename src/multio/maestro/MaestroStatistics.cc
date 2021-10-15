@@ -56,7 +56,9 @@ void MaestroStatistics::report(std::ostream& out, const char* indent) const {
     reportTime(out, "MaestroEvent: construction: ", eventConstructionTiming_, indent);
     reportTime(out, "MaestroEvent: destruction: ", eventDestructionTiming_, indent);
     reportTime(out, "MaestroEvent: move: ", eventMoveTiming_, indent);
-    reportTime(out, "MaestroEvent: dispose: ", eventDisposTiming_, indent);
+    reportTime(out, "MaestroEvent: dispose: ", eventDisposeTiming_, indent);
+    reportTime(out, "MaestroEvent: non null polled: ", eventNonNullPolledTiming_, indent);
+    reportTime(out, "MaestroEvent: non null dispose: ", eventNonNullDisposeTiming_, indent);
 }
 
 }  // namespace multio

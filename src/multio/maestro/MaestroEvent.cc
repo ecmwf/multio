@@ -33,9 +33,11 @@ MaestroEvent::~MaestroEvent() {
 }
 
 void MaestroEvent::dispose() {
-    eckit::AutoTiming timing(statistics_.timer_, statistics_.eventDisposTiming_);
-    if (event_)
+    eckit::AutoTiming timing(statistics_.timer_, statistics_.eventDisposeTiming_);
+    if (event_) {
+        eckit::AutoTiming timing(statistics_.timer_, statistics_.eventNonNullDisposeTiming_);
         ASSERT(MSTRO_OK == mstro_pool_event_dispose(event_));
+    }
 }
 
 }  // namespace multio

@@ -27,6 +27,9 @@ MaestroEvent MaestroSubscription::poll() {
     eckit::AutoTiming timing(statistics_.timer_, statistics_.subscriptionPollTiming_);
     mstro_pool_event event;
     ASSERT(MSTRO_OK == mstro_subscription_poll(subscription_, &event));
+    if (event != nullptr) {
+        eckit::AutoTiming timing(statistics_.timer_, statistics_.eventNonNullPolledTiming_);
+    }
     return MaestroEvent{event, statistics_};
 }
 

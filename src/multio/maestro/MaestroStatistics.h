@@ -59,7 +59,9 @@ public:
     eckit::Timing eventConstructionTiming_;
     eckit::Timing eventDestructionTiming_;
     eckit::Timing eventMoveTiming_;
-    eckit::Timing eventDisposTiming_;
+    eckit::Timing eventDisposeTiming_;
+    eckit::Timing eventNonNullPolledTiming_;
+    eckit::Timing eventNonNullDisposeTiming_;
 
     void report(std::ostream& out, const char *indent = "") const;
 };

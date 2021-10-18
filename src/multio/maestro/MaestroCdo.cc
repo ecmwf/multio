@@ -29,9 +29,23 @@ MaestroCdo::MaestroCdo(MaestroCdo&& rhs) : name_(std::move(rhs.name_)),
         rhs.cdo_ = nullptr;
 }
 
+MaestroCdo& MaestroCdo::operator=(MaestroCdo&& rhs) {
+    if (this != &rhs) {
+        dispose();
+        cdo_ = rhs.cdo_;
+        rhs.cdo_ = nullptr;
+        name_ = std::move(rhs.name_);
+        size_ = rhs.size_;
+        rhs.size_ = 0;
+        data_ = rhs.data_;
+        rhs.data_ = nullptr;
+        statistics_ = std::move(rhs.statistics_);
+    }
+    return *this;
+}
+
 MaestroCdo::~MaestroCdo() {
     eckit::AutoTiming timing(statistics_.timer_, statistics_.cdoDestructionTiming_);
-    dispose();
 }
 
 void MaestroCdo::declare() {

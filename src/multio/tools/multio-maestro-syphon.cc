@@ -180,7 +180,7 @@ void MaestroSyphon::process_offer_events(MaestroSubscription& offer_subscription
                << mstro_pool_event_description(tmp->kind)
                << " occured -- cdo name: " << tmp->offer.cdo_name
                << " ID: " << tmp->serial << '\n';
-            auto offered_cdo = std::string(tmp->offer.cdo_name);
+            std::string offered_cdo = std::string(tmp->offer.cdo_name);
             ASSERT(req_set_.find(offered_cdo) == req_set_.end());
             if (req_set_.find(offered_cdo) != req_set_.end()) {
                 eckit::Log::info() << "CDO: " << offered_cdo << " already exists!" << std::endl;
@@ -189,11 +189,10 @@ void MaestroSyphon::process_offer_events(MaestroSubscription& offer_subscription
             }
             auto it = requirements_.find(offered_cdo);
             if (it != requirements_.end()) {
-                CdoMap::instance().emplace(std::piecewise_construct,
-                                           std::forward_as_tuple(offered_cdo),
-                                           std::forward_as_tuple(offered_cdo, statistics_));
-                auto& broker_cdo = CdoMap::instance().at(offered_cdo);
+                MaestroCdo broker_cdo{offered_cdo, statistics_};
                 broker_cdo.require();
+                auto p = std::make_pair(offered_cdo, std::move(broker_cdo));
+                CdoMap::instance().insert(std::move(p));
 
                 req_queue_.push(it->second);
                 req_count_++;

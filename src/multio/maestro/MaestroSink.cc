@@ -59,6 +59,7 @@ MaestroSink::~MaestroSink() {
         std::for_each(begin(offered_cdos_), end(offered_cdos_), [](MaestroCdo& cdo) {
             LOG_DEBUG_LIB(LibMultio) << "Withdrawing CDO: " << cdo << std::endl;
             cdo.withdraw();
+            cdo.dispose();
         });
 
         offered_cdos_.clear();

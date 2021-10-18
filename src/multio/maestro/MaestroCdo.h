@@ -19,7 +19,7 @@ public:
     MaestroCdo(const MaestroCdo&) = delete;
     MaestroCdo& operator=(const MaestroCdo&) = delete;
     MaestroCdo(MaestroCdo&&);
-    MaestroCdo& operator=(MaestroCdo&&) = delete;
+    MaestroCdo& operator=(MaestroCdo&&);
     ~MaestroCdo();
     void seal();
     void offer();
@@ -27,6 +27,7 @@ public:
     void withdraw();
     void demand();
     void retract();
+    void dispose();
     template<typename T>
     void set_attribute(const std::string& key, const T& value, bool copy=true) {
         ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, key.c_str(), (void**)&value, copy));
@@ -42,7 +43,6 @@ public:
     const void* data() { return data_; }
 private:
     void declare();
-    void dispose();
     void set_size_and_data(uint64_t size, const void* data);
     void get_size_and_data();
     void print(std::ostream&) const;

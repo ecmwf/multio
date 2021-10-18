@@ -17,17 +17,24 @@ using multio::message::Peer;
 namespace multio {
 namespace server {
 
-MultioClient::MultioClient(const eckit::Configuration& config) :
-    clientCount_{config.getUnsigned("clientCount")},
-    serverCount_{config.getUnsigned("serverCount")},
-    transport_(TransportFactory::instance().build(config.getString("transport"), config)),
-    client_{transport_->localPeer()},
-    serverId_{client_.id() / (((clientCount_ - 1) / serverCount_) + 1)},
-    usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
-    serverPeers_{transport_->createServerPeers()},
-    counters_(serverPeers_.size()),
-    distType_{distributionType()} {
-    eckit::Log::debug<multio::LibMultio>() << "Client config: " << config << std::endl;
+size_t serverIdDenom(size_t clientCount, size_t serverCount) {
+    return (serverCount == 0) ? 1 : (((clientCount - 1) / serverCount) + 1);
+}
+
+MultioClient::MultioClient(const eckit::Configuration &config)
+    : clientCount_{config.getUnsigned("clientCount")},
+      serverCount_{config.getUnsigned("serverCount")},
+      transport_(TransportFactory::instance().build(
+          config.getString("transport"), config)),
+      client_{transport_->localPeer()},
+      serverId_{client_.id() / serverIdDenom(clientCount_, serverCount_)},
+      usedServerCount_{
+          eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
+      serverPeers_{transport_->createServerPeers()},
+      counters_(serverPeers_.size()), distType_{distributionType()} {
+  eckit::Log::info() << "Client config: " << config << std::endl;
+  // eckit::Log::debug<multio::LibMultio>() << "Client config: " << config <<
+  // std::endl;
 }
 
 MultioClient::~MultioClient() = default;
@@ -82,6 +89,8 @@ void MultioClient::sendStepComplete() const {
 }
 
 message::Peer MultioClient::chooseServer(const message::Metadata& metadata) {
+    ASSERT_MSG(serverCount_ > 0, "No server to choose from");
+
     switch (distType_) {
         case DistributionType::hashed_cyclic: {
             std::ostringstream os;

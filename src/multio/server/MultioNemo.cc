@@ -100,8 +100,12 @@ public:
 
         eckit::mpi::addComm("nemo", parent_comm);
 
+        eckit::Log::info() << "*** Added nemo communicator" << std::endl;
+
         // TODO: find a way to come up with a unique 'colour' -- like getting application number
         const eckit::mpi::Comm& chld = eckit::mpi::comm("nemo").split(777, oce_str);
+
+        eckit::Log::info() << "*** Split nemo communicator" << std::endl;
 
         auto ret_comm = chld.communicator();
 
@@ -112,7 +116,13 @@ public:
         config_.set("clientCount", clientCount_);
         config_.set("serverCount", serverCount_);
 
+        eckit::Log::info() << "*** Resetting multio client" << std::endl;
+
+        eckit::Log::info() << "*** Client config: " << config_ << std::endl;
+
         multioClient_.reset(new MultioClient{config_});
+
+        eckit::Log::info() << "*** Reset multio client" << std::endl;
 
         return ret_comm;
     }
@@ -183,7 +193,10 @@ void multio_write_step_complete() {
 }
 
 int multio_init_client(const char* name, int parent_comm) {
-    return MultioNemo::instance().initClient(name, parent_comm);
+    eckit::Log::info() << "*** Init client" << std::endl;
+    auto val = MultioNemo::instance().initClient(name, parent_comm);
+    eckit::Log::info() << "*** Inited client with return val " << val << std::endl;
+    return val;
 }
 
 void multio_init_server(int nemo_comm) {

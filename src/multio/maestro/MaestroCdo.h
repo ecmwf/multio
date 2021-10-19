@@ -14,6 +14,7 @@ namespace multio {
 
 class MaestroCdo {
 public:
+    MaestroCdo(MaestroStatistics& statistics);
     MaestroCdo(std::string name, MaestroStatistics&);
     MaestroCdo(std::string name, const void* blob, uint64_t size, MaestroStatistics&);
     MaestroCdo(const MaestroCdo&) = delete;

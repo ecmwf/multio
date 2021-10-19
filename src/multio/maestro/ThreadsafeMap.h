@@ -11,24 +11,24 @@ class ThreadsafeMap {
 public:
     template<typename... Args>
     std::pair<typename std::unordered_map<Key,Value>::iterator,bool> emplace(Args&&... args) {
-        std::lock_guard<std::recursive_mutex> locker{mutex_};
+        std::lock_guard<std::mutex> locker{mutex_};
         return map_.emplace(std::forward<Args>(args)...);
     }
     template<class P>
     std::pair<typename std::unordered_map<Key, Value>::iterator,bool> insert(P&& val) {
-        std::lock_guard<std::recursive_mutex> locker{mutex_};
+        std::lock_guard<std::mutex> locker{mutex_};
         return map_.insert(std::forward<P>(val));
     }
     void get(const Key& key, Value& val) {
-        std::lock_guard<std::recursive_mutex> locker{mutex_};
-        return std::swap(val, map_.at(key));
+        std::lock_guard<std::mutex> locker{mutex_};
+        std::swap(val, map_.at(key));
     }
     size_t erase(const Key& key) {
-        std::lock_guard<std::recursive_mutex> locker{mutex_};
+        std::lock_guard<std::mutex> locker{mutex_};
         return map_.erase(key);
     }
 private:
-    std::recursive_mutex mutex_;
+    std::mutex mutex_;
     std::unordered_map<Key, Value> map_;
 };
 
@@ -55,11 +55,11 @@ public:
     std::pair<typename std::unordered_map<std::string, multio::MaestroCdo>::iterator,bool> insert(std::pair<std::string,multio::MaestroCdo>&& val) {
         return map_.insert(std::forward<std::pair<std::string,multio::MaestroCdo>>(val));
     }
-    void get(const std::string& cdo_name, multio::MaestroCdo& cdo) {
+    multio::MaestroCdo get(const std::string& cdo_name) {
         multio::MaestroStatistics s;
         multio::MaestroCdo c{"dummy", s};
         map_.get(cdo_name, c);
-        return std::swap(cdo, c);
+        return c;
     }
     size_t erase(const std::string& cdo_name) {
         return map_.erase(cdo_name);

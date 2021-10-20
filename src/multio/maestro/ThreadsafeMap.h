@@ -57,7 +57,7 @@ public:
     }
     multio::MaestroCdo get(const std::string& cdo_name) {
         multio::MaestroStatistics s;
-        multio::MaestroCdo c{"dummy", s};
+        multio::MaestroCdo c{s};
         map_.get(cdo_name, c);
         return c;
     }

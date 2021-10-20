@@ -40,18 +40,11 @@ plans :
             path : ocean-output.grib
             # path : /scratch/ma/masd/ocean-output/grib2-output.grib
 
-          - type : file
-            append : true
-            path : ocean-output.grib
-            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
-
   - name : stream-2 # mainly 3d fields output monthly (standard) or daily (highout)
     actions :
       - type : Select
         match : field
         fields : [ toce, soce, sigmat, sst, sss, ssh, hst, qt, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, mldkz5, hc300, sal300, hc700, sal700, hcbtm, salbtm, uocee, vocen, utaue, vtaun, uoce, utau, voce, vtau, woce ]
-
-      - type : Aggregation
 
       - type : Statistics
         output_frequency: 1d
@@ -77,18 +70,11 @@ plans :
             path : ocean-output.grib
             # path : /scratch/ma/masd/ocean-output/grib2-output.grib
 
-          - type : file
-            append : true
-            path : ocean-output.grib
-            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
-
   - name : stream-3 # mainly 2d fields output daily (standard) or hourly (highout)
     actions :
       - type : Select
         match : field
         fields : [ sst, sss, ssh, qt, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, mldkz5, hc300, sal300, uocees, vocens, utaue, vtaun, ssu, utau, vtau ]
-
-      - type : Aggregation
 
       - type : Statistics
         output_frequency: 3h
@@ -114,18 +100,11 @@ plans :
             path : ocean-output.grib
             # path : /scratch/ma/masd/ocean-output/grib2-output.grib
 
-          - type : file
-            append : true
-            path : ocean-output.grib
-            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
-
   - name : stream-10 # sea-ice fields output daily (standard) or hourly (highout)
     actions :
       - type : Select
         match : field
         fields : [ icevolu, ice_cover, iceconc_cat, icethick_cat, snwthic, snwthic_cat, uice, vice, iicevelur, iicevelvr, iocestrur, iocestrvr, icesalt, icetemp, icettop, icesalt_cat ]
-
-      - type : Aggregation
 
       - type : Statistics
         output_frequency: 3h

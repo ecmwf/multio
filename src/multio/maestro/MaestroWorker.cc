@@ -43,11 +43,11 @@ MaestroWorker::MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pg
 }
 
 MaestroWorker::~MaestroWorker() {
-    maestroStatistics_.report(eckit::Log::info());
+//    maestroStatistics_.report(eckit::Log::info());
 }
 
 void MaestroWorker::process() {
-    eckit::AutoTiming process_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessTiming_);
+//    eckit::AutoTiming process_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessTiming_);
     LOG_DEBUG_LIB(LibMultio) << "*** Hi from worker" << std::endl;
     std::string lastInputTag;
     mir::api::MIRComplexJob job;
@@ -55,7 +55,7 @@ void MaestroWorker::process() {
     std::unique_ptr<mir::input::MIRInput> input;
 
     while (queue_.pop(requirement_) > -1) {
-        eckit::AutoTiming pop_work_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessPopWorkTiming_);
+//        eckit::AutoTiming pop_work_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessPopWorkTiming_);
         const pgen::Handler &handler = pgen::Handler::lookup(args_, requirement_.handlers());
         const std::string inputTag = handler.inputTag(requirement_);
         LOG_DEBUG_LIB(LibMultio) << "INPUT TAG [" << inputTag << "]" << std::endl;
@@ -65,20 +65,20 @@ void MaestroWorker::process() {
             job.clear();
             fields.clear();
             try {
-                eckit::AutoTiming input_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessInputTiming_);
+//                eckit::AutoTiming input_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessInputTiming_);
                 LOG_DEBUG_LIB(LibMultio) << "Handle input from " << source_ << std::endl;
                 input.reset(handler.input(requirement_,
                                           fields,
                                           source_,
                                           statistics_));
                 if (!input) {
-                    eckit::Log::info() << "No input" << std::endl;
+//                    eckit::Log::info() << "No input" << std::endl;
                     continue;
                 }
             } catch (pgen::DataNotFound &e) {
-                eckit::Log::info() << "==== Error retrieving data" << std::endl;
-                eckit::Log::info() << "==== Exception  : " << e.what() << std::endl;
-                eckit::Log::info() << "==== Requirement: " << requirement_ << std::endl;
+//                eckit::Log::info() << "==== Error retrieving data" << std::endl;
+//                eckit::Log::info() << "==== Exception  : " << e.what() << std::endl;
+//                eckit::Log::info() << "==== Requirement: " << requirement_ << std::endl;
                 statistics_.fieldsNotFoundCount_++;
                 statistics_.failedRequirementsCount_++;
             }
@@ -93,10 +93,10 @@ void MaestroWorker::process() {
         mir::output::MIROutput &output = o.output(handler, statistics_);
 
         try {
-            eckit::AutoTiming prepare_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessJobPrepareTiming_);
+//            eckit::AutoTiming prepare_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessJobPrepareTiming_);
             std::unique_ptr<mir::api::MIRJob> mj(new mir::api::MIRJob());
             if (!handler.prepare(*mj, requirement_, *input, output, statistics_)) {
-                eckit::Log::info() << "Handler did not prepare" << std::endl;
+//                eckit::Log::info() << "Handler did not prepare" << std::endl;
                 continue;
             }
             mj->set("style", style_);
@@ -111,18 +111,18 @@ void MaestroWorker::process() {
                     nullptr);
             LOG_DEBUG_LIB(LibMultio) << "Job after add ===> " <<  std::endl;
         } catch (std::exception &e) {
-            eckit::Log::info() << "==== Error building job" << std::endl;
-            eckit::Log::info() << "==== Exception  : " << e.what() << std::endl;
-            eckit::Log::info() << "==== Requirement: " << requirement_ << std::endl;
+//            eckit::Log::info() << "==== Error building job" << std::endl;
+//            eckit::Log::info() << "==== Exception  : " << e.what() << std::endl;
+//            eckit::Log::info() << "==== Requirement: " << requirement_ << std::endl;
             statistics_.failedRequirementsCount_++;
         }
         LOG_DEBUG_LIB(LibMultio) << "Execute job" << std::endl;
-        eckit::AutoTiming timing(statistics_.timer_, statistics_.mirTiming_);
+//        eckit::AutoTiming timing(statistics_.timer_, statistics_.mirTiming_);
         job.execute(statistics_.mirStatistics_);
     }
 
-    statistics_.report(eckit::Log::info());
-    eckit::Log::info() << "*** Worker is leaving" << std::endl;
+//    statistics_.report(eckit::Log::info());
+//    eckit::Log::info() << "*** Worker is leaving" << std::endl;
 }
 
 void execute_worker(const eckit::option::CmdArgs& args, eckit::Queue<pgen::Requirement>& req_queue) {

@@ -94,7 +94,7 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
 }
 
 void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
-    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonInitTiming_);
+//    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonInitTiming_);
     args.get("number", number_);
     args.get("nworkers", nworkers_);
     args.get("compiled", compiled_);
@@ -105,12 +105,12 @@ void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
 }
 
 void MaestroSyphon::finish(const eckit::option::CmdArgs&) {
-    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonFinishTiming_);
+//    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonFinishTiming_);
     ASSERT(MSTRO_OK == mstro_finalize());
 }
 
 void MaestroSyphon::execute(const eckit::option::CmdArgs& args) {
-    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonExecuteTiming_);
+//    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonExecuteTiming_);
     LOG_DEBUG_LIB(LibMultio) << "*** Parsing requirements ***" << std::endl;
     for (size_t i = 0; i < args.count(); i++) {
         LOG_DEBUG_LIB(LibMultio) << args(i) << " ==> " << std::endl;
@@ -135,13 +135,13 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs& args) {
 }
 
 void MaestroSyphon::consume(const pgen::Requirement& req, size_t)  {
-    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonConsumeTiming_);
+//    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonConsumeTiming_);
     auto cdo_name = cdo_namer_.name(req.retrieve());
     requirements_.insert({cdo_name, req});
 }
 
 void MaestroSyphon::process_join_leave_events(MaestroSubscription& join_leave_subscription) {
-    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonJoinLeaveTiming_);
+//    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonJoinLeaveTiming_);
     auto event = join_leave_subscription.poll();
     if (event) {
         LOG_DEBUG_LIB(LibMultio) << " *** Event: join/leave" << std::endl;
@@ -168,7 +168,7 @@ void MaestroSyphon::process_join_leave_events(MaestroSubscription& join_leave_su
 }
 
 void MaestroSyphon::process_offer_events(MaestroSubscription& offer_subscription) {
-    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonOfferTiming_);
+//    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonOfferTiming_);
     std::stringstream ss;
     auto event = offer_subscription.poll();
     if (event) {
@@ -205,7 +205,7 @@ void MaestroSyphon::process_offer_events(MaestroSubscription& offer_subscription
 }
 
 void MaestroSyphon::broker() {
-    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonBrokerTiming_);
+//    eckit::AutoTiming timing(statistics_.timer_, statistics_.syphonBrokerTiming_);
     LOG_DEBUG_LIB(LibMultio) << "*** Hi from broker" << std::endl;
     LOG_DEBUG_LIB(LibMultio) << "requirements: " << requirements_.size() << std::endl;
     std::string query{"(.maestro.ecmwf.number = " + std::to_string(number_) + ")"};

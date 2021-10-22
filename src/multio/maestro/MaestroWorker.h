@@ -1,7 +1,7 @@
 #ifndef multio_MaestroWorker_H
 #define multio_MaestroWorker_H
 
-#include <ostream>
+#include <fstream>
 #include "eckit/container/Queue.h"
 #include "eckit/option/CmdArgs.h"
 
@@ -20,6 +20,7 @@ public:
     ~MaestroWorker();
     void process();
 private:
+    std::string get_log_name();
     const eckit::option::CmdArgs& args_;
     MaestroSource source_;
     eckit::Queue<pgen::Requirement>& queue_;
@@ -32,6 +33,7 @@ private:
     std::string matrix_loader_;
     std::string point_search_;
     MaestroStatistics maestroStatistics_;
+    std::ofstream log_file_;
 };
 
 void execute_worker(const eckit::option::CmdArgs&, eckit::Queue<pgen::Requirement>&);

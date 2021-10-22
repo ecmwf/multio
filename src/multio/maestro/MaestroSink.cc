@@ -68,12 +68,13 @@ MaestroSink::~MaestroSink() {
     }
     eckit::Log::info() << " MaestroSink: finalising Maestro has taken " << timing.elapsed_ << "s"
                        << std::endl;
-//    statistics_.report(eckit::Log::info());
+
+    statistics_.report(eckit::Log::info());
 }
 
 void MaestroSink::write(eckit::message::Message blob) {
     LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
-//    eckit::AutoTiming timing(statistics_.timer_, statistics_.sinkWriteTiming_);
+    eckit::AutoTiming timing(statistics_.timer_, statistics_.sinkWriteTiming_);
 
     MaestroMetadata md;
 
@@ -87,21 +88,21 @@ void MaestroSink::write(eckit::message::Message blob) {
 
     std::string name = "";
     {
-//        eckit::AutoTiming timing(statistics_.timer_, statistics_.sinkNameTiming_);
+        eckit::AutoTiming timing(statistics_.timer_, statistics_.sinkNameTiming_);
         name = cdo_namer_.name(md);
     }
     LOG_DEBUG_LIB(LibMultio) << "Name: " << name << std::endl;
 
     {
-//        eckit::AutoTiming timing(statistics_.timer_, statistics_.sinkCdoCreation_);
-        offered_cdos_.emplace_back(name.c_str(), blob.data(), blob.length(), statistics_);
+        eckit::AutoTiming timing(statistics_.timer_, statistics_.sinkCdoCreation_);
+        offered_cdos_.emplace_back(name.c_str(), blob.data(), blob.length());
     }
     auto& cdo = offered_cdos_.back();
 
     LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
 
     for (const auto& kw : md.keys()) {
-//        eckit::AutoTiming timing(statistics_.timer_, statistics_.sinkAttributeTiming_);
+        eckit::AutoTiming timing(statistics_.timer_, statistics_.sinkAttributeTiming_);
         auto mkey = ".maestro.ecmwf." + kw;
         auto value = md.get<std::string>(kw);
 
@@ -123,7 +124,7 @@ void MaestroSink::write(eckit::message::Message blob) {
     LOG_DEBUG_LIB(LibMultio) << " *** Offer cdo " << name.c_str() << std::endl;
 
     {
-//        eckit::AutoTiming timing(statistics_.timer_, statistics_.sinkCdoOffer_);
+        eckit::AutoTiming timing(statistics_.timer_, statistics_.sinkCdoOffer_);
         cdo.offer();               // Submit field
     }
 }

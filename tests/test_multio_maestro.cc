@@ -10,7 +10,6 @@
 #include "multio/maestro/MaestroCdo.h"
 #include "multio/maestro/MaestroSelector.h"
 #include "multio/maestro/MaestroSubscription.h"
-#include "multio/maestro/MaestroStatistics.h"
 
 #include <chrono>
 #include "unistd.h"
@@ -29,7 +28,6 @@ public:
     }
     uint64_t size() { return size_; }
     const void* data() { return static_cast<const void*>(data_.c_str()); }
-    MaestroStatistics statistics_;
 private:
     uint64_t size_;
     std::string data_;
@@ -40,16 +38,16 @@ CASE("CDO construction") {
     TestHarness test;
 
     // only name
-    EXPECT_NO_THROW(MaestroCdo("name", test.statistics_));
+    EXPECT_NO_THROW(MaestroCdo("name"));
 
     // long name
-    EXPECT_NO_THROW(MaestroCdo(std::string(1000, 'A'), test.statistics_));
+    EXPECT_NO_THROW(MaestroCdo(std::string(1000, 'A')));
 
     // name, data and size
-    EXPECT_NO_THROW(MaestroCdo("name", test.data(), test.size(), test.statistics_));
+    EXPECT_NO_THROW(MaestroCdo("name", test.data(), test.size()));
 
     // move section
-    MaestroCdo cdo1{"name", test.data(), test.size(), test.statistics_};
+    MaestroCdo cdo1{"name", test.data(), test.size()};
     
     // move constructor
     MaestroCdo cdo2{std::move(cdo1)};
@@ -76,7 +74,7 @@ CASE("Set and get CDO attributes") {
 
     TestHarness test;
 
-    MaestroCdo cdo{"name", test.statistics_};
+    MaestroCdo cdo{"name"};
 
     int64_t step{2};
     cdo.set_attribute<int64_t>(".maestro.ecmwf.step", step, true);  // int()
@@ -111,11 +109,11 @@ CASE("Maestro CDO get size and data") {
 
     TestHarness test;
 
-    MaestroCdo cdo1{"nodata", test.statistics_};
+    MaestroCdo cdo1{"nodata"};
     EXPECT(cdo1.size() == 0);
     EXPECT(cdo1.data() == nullptr);
 
-    MaestroCdo cdo2{"name", test.data(), test.size(), test.statistics_};
+    MaestroCdo cdo2{"name", test.data(), test.size()};
     std::string data = std::string(static_cast<const char*>(cdo2.data())).substr(0, cdo2.size());
     EXPECT(cdo2.size() == test.size());
     EXPECT(data.compare(static_cast<const char*>(test.data())) == 0);
@@ -125,12 +123,12 @@ CASE("Maestro core CDO operation") {
 
     TestHarness test;
 
-    MaestroCdo cdo{"name", test.statistics_};
+    MaestroCdo cdo{"name"};
     EXPECT_NO_THROW(cdo.seal());
     EXPECT_NO_THROW(cdo.offer());
     EXPECT_NO_THROW(cdo.withdraw());
 
-    MaestroCdo otherCdo{"other", test.statistics_};
+    MaestroCdo otherCdo{"other"};
     otherCdo.require();
     otherCdo.retract();
 }
@@ -142,13 +140,13 @@ CASE("Maestro core CDO operations with local transfer") {
     int64_t step{2};
     std::string stream{"oper"};
 
-    MaestroCdo sourceCdo{"name", test.statistics_};
+    MaestroCdo sourceCdo{"name"};
     sourceCdo.set_attribute<int64_t>(".maestro.ecmwf.step", step, true);
     sourceCdo.set_attribute<const char*>(".maestro.ecmwf.stream", stream.c_str(), true);
     sourceCdo.seal();
     sourceCdo.offer();
 
-    MaestroCdo destCdo{"name", test.statistics_};
+    MaestroCdo destCdo{"name"};
     destCdo.require();
     destCdo.demand();
 
@@ -162,8 +160,8 @@ CASE("Selector and subscription") {
 
     TestHarness test;
 
-    MaestroSelector selector1{"(has .maestro.ecmwf.step)", test.statistics_, nullptr, nullptr};
-    MaestroSelector selector2{"(has .maestro.ecmwf.step)", test.statistics_};
+    MaestroSelector selector1{"(has .maestro.ecmwf.step)", nullptr, nullptr};
+    MaestroSelector selector2{"(has .maestro.ecmwf.step)"};
 
     MaestroSubscription subscription = selector2.subscribe(MSTRO_POOL_EVENT_DECLARE|MSTRO_POOL_EVENT_OFFER, MSTRO_SUBSCRIPTION_OPTS_DEFAULT);
 

@@ -4,7 +4,6 @@
 #include <mutex>
 #include <unordered_map>
 #include "multio/maestro/MaestroCdo.h"
-#include "multio/maestro/MaestroStatistics.h"
 
 template<typename Key, typename Value>
 class ThreadsafeMap {
@@ -56,8 +55,7 @@ public:
         return map_.insert(std::forward<std::pair<std::string,multio::MaestroCdo>>(val));
     }
     multio::MaestroCdo get(const std::string& cdo_name) {
-        multio::MaestroStatistics s;
-        multio::MaestroCdo c{s};
+        multio::MaestroCdo c;
         map_.get(cdo_name, c);
         return c;
     }

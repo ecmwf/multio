@@ -5,7 +5,6 @@
 #define multio_MaestroSubscription_H
 
 #include "MaestroEvent.h"
-#include "multio/maestro/MaestroStatistics.h"
 #include <ctime>
 #include "eckit/exception/Exceptions.h"
 extern "C" {
@@ -17,7 +16,7 @@ namespace multio {
 class MaestroSubscription {
 public:
     MaestroSubscription(mstro_cdo_selector selector, mstro_pool_event_kind events,
-                        mstro_subscription_opts flags, MaestroStatistics& statistics);
+                        mstro_subscription_opts flags);
     ~MaestroSubscription();
 
     // Only define move construction
@@ -33,7 +32,6 @@ public:
     bool ack(MaestroEvent& event);
 private:
     mstro_subscription subscription_ = nullptr;
-    MaestroStatistics& statistics_;
 };
 
 inline mstro_pool_event_kind operator|(mstro_pool_event_kind a, mstro_pool_event_kind b)

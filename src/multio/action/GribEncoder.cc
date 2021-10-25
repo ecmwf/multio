@@ -242,7 +242,7 @@ message::Message GribEncoder::setFieldValues(const message::Message& msg) {
     eckit::Buffer buf{this->length()};
     this->write(buf);
 
-    return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
+    return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}}, std::move(buf)};
 }
 
 message::Message GribEncoder::setFieldValues(const double* values, size_t count) {

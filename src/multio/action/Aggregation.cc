@@ -64,13 +64,13 @@ Message Aggregation::createGlobalField(const Message& msg) const {
     eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     const auto& fid = msg.fieldId();
-    LOG_DEBUG_LIB(LibMultio) << " *** Creating global field for " << fid << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " *** Creating global field for " << msg << std::endl;
 
     auto levelCount = msg.metadata().getLong("levelCount", 1);
 
     auto md = msg.header().metadata();
     Message msgOut{
-        Message::Header{msg.header().tag(), Peer{}, Peer{}, std::move(md)},
+        Message::Header{msg.header().tag(), Peer{msg.source().group()}, Peer{msg.destination()}, std::move(md)},
         eckit::Buffer{msg.globalSize() * levelCount * sizeof(double)}};
 
     for (const auto& msg : messages_.at(fid)) {

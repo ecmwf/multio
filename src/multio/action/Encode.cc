@@ -92,17 +92,17 @@ void Encode::print(std::ostream& os) const {
 }
 
 message::Message Encode::encodeField(const message::Message& msg) const {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     return encoder_->encodeField(msg);
 }
 
 message::Message Encode::encodeLatitudes(const std::string& subtype) const {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     return encoder_->encodeLatitudes(subtype);
 }
 
 message::Message Encode::encodeLongitudes(const std::string& subtype) const {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     return encoder_->encodeLongitudes(subtype);
 }
 

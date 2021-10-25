@@ -7,7 +7,7 @@ namespace server {
 TransportStatistics::TransportStatistics() {}
 
 void multio::server::TransportStatistics::report(std::ostream& out, const char* indent) const {
-    
+
     reportTime(out, "    -- Waiting for buffer", waitTiming_, indent);
 
     reportCount(out, "    -- Send count (async)", isendCount_, indent);

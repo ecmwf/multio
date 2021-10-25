@@ -85,7 +85,7 @@ void StreamPool::sendBuffer(const message::Peer& dest, int msg_tag) {
         << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
         << ":" << std::setw(6) << std::setfill('0') << mSecs;
 
-    eckit::AutoTiming(statistics_.timer_, statistics_.isendTiming_);
+    eckit::AutoTiming(statistics_.localTimer_, statistics_.isendTiming_);
 
     strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
     strm.buffer().status = BufferStatus::transmitting;
@@ -100,7 +100,7 @@ void StreamPool::sendBuffer(const message::Peer& dest, int msg_tag) {
 }
 
 MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {
-    eckit::AutoTiming(statistics_.timer_, statistics_.waitTiming_);
+    eckit::AutoTiming(statistics_.localTimer_, statistics_.waitTiming_);
 
     auto it = std::end(buffers_);
     while (it == std::end(buffers_)) {
@@ -117,7 +117,7 @@ MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {
 }
 
 void StreamPool::waitAll() {
-    eckit::AutoTiming(statistics_.timer_, statistics_.waitTiming_);
+    eckit::AutoTiming(statistics_.localTimer_, statistics_.waitTiming_);
     while (not std::all_of(std::begin(buffers_), std::end(buffers_),
                            [](MpiBuffer& buf) { return buf.isFree(); })) {}
 }

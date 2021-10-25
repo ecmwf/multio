@@ -35,6 +35,8 @@ public:
     eckit::Timing returnTiming_;
     eckit::Timing totReturnTiming_;
 
+    eckit::Timer localTimer_; // Remove it once eckit::Statistics is fixed
+
     void report(std::ostream &out, const char* indent = "") const;
 };
 

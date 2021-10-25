@@ -50,7 +50,7 @@ void Sink::execute(Message msg) const {
 }
 
 void Sink::write(Message msg) const {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     eckit::message::Message blob = to_eckit_message(msg);
 
@@ -58,12 +58,12 @@ void Sink::write(Message msg) const {
 }
 
 void Sink::flush() const {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     mio_.flush();
 }
 
 void Sink::trigger(const Message& msg) const {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     eckit::StringDict metadata;
 

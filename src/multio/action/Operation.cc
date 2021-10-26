@@ -53,13 +53,14 @@ void Instant::print(std::ostream& os) const {
 Average::Average(const std::string& name, long sz) : Operation{name, sz} {}
 
 const std::vector<double>& Average::compute() {
+    // eckit::Log::info() << " Compute ======== division by " << count_ << std::endl;
     for(auto& val : values_) {
         val /= static_cast<double>(count_);
     }
-    LOG_DEBUG_LIB(LibMultio) << " ======== " << *this
-                             << ": minimum: " << *std::min_element(begin(values_), end(values_))
-                             << ", maximum: " << *std::max_element(begin(values_), end(values_))
-                             << ", count: " << count_ << std::endl;
+    // eckit::Log::info() << " Compute ======== " << *this
+    //                    << ": minimum: " << *std::min_element(begin(values_), end(values_))
+    //                    << ", maximum: " << *std::max_element(begin(values_), end(values_))
+    //                    << ", count: " << count_ << std::endl;
 
     return values_;
 }
@@ -69,10 +70,20 @@ void Average::update(const double* val, long sz) {
     os << "Expected size: " << values_.size() << " -- actual size: " << sz << std::endl;
     ASSERT_MSG(values_.size() == static_cast<size_t>(sz), os.str());
 
+    // eckit::Log::info() << " Before update ======== " << *this
+    //                    << ": minimum: " << *std::min_element(begin(values_), end(values_))
+    //                    << ", maximum: " << *std::max_element(begin(values_), end(values_))
+    //                    << ", count: " << count_ << std::endl;
+
     for (auto& v : values_) {
         v += *val++;
     }
     ++count_;
+
+    // eckit::Log::info() << " After update  ======== " << *this
+    //                    << ": minimum: " << *std::min_element(begin(values_), end(values_))
+    //                    << ", maximum: " << *std::max_element(begin(values_), end(values_))
+    //                    << ", count: " << count_ << std::endl;
 }
 
 void Average::print(std::ostream& os) const {

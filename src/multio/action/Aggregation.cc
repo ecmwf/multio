@@ -64,17 +64,33 @@ Message Aggregation::createGlobalField(const Message& msg) const {
     eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     const auto& fid = msg.fieldId();
-    LOG_DEBUG_LIB(LibMultio) << " *** Creating global field for " << msg << std::endl;
+    // eckit::Log::info() << " *** Creating global field for " << msg << std::endl;
 
     auto levelCount = msg.metadata().getLong("levelCount", 1);
 
     auto md = msg.header().metadata();
-    Message msgOut{
-        Message::Header{msg.header().tag(), Peer{msg.source().group()}, Peer{msg.destination()}, std::move(md)},
-        eckit::Buffer{msg.globalSize() * levelCount * sizeof(double)}};
+    Message msgOut{Message::Header{msg.header().tag(), Peer{msg.source().group()},
+                                   Peer{msg.destination()}, std::move(md)},
+                   eckit::Buffer{msg.globalSize() * levelCount * sizeof(double)}};
 
+    eckit::Log::info() << " *** Aggregator -- fid = " << fid << std::endl;
     for (const auto& msg : messages_.at(fid)) {
+        {
+            std::vector<double> vec(msg.size() / sizeof(double));
+            auto lit = static_cast<const double*>(msg.payload().data());
+            std::copy(lit, lit + msg.size() / sizeof(double), begin(vec));
+            auto it = std::max_element(begin(vec), end(vec));
+            eckit::Log::info() << " *** Aggregator -- max local value = " << *it << std::endl;
+        }
         domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_global(msg, msgOut);
+    }
+
+    {
+        std::vector<double> vec(msgOut.size() / sizeof(double));
+        auto git = static_cast<double*>(msgOut.payload().data());
+        std::copy(git, git + msgOut.size() / sizeof(double), begin(vec));
+        auto it = std::max_element(begin(vec), end(vec));
+        eckit::Log::info() << " *** Aggregator -- max global value = " << *it << std::endl;
     }
 
     messages_.erase(fid);
@@ -84,9 +100,9 @@ Message Aggregation::createGlobalField(const Message& msg) const {
 
 void Aggregation::print(std::ostream& os) const {
     os << "Aggregation(for " << messages_.size() << " fields = [";
-    for (const auto& msg : messages_) {
-        os << '\n' << "  --->  " << msg.first;
-    }
+    // for (const auto& msg : messages_) {
+    //     os << '\n' << "  --->  " << msg.first;
+    // }
     os << "])";
 }
 

@@ -100,14 +100,20 @@ public:
 
         eckit::mpi::addComm("nemo", parent_comm);
 
-        eckit::Log::info() << "*** Added nemo communicator" << std::endl;
+        eckit::Log::info() << "*** Added communicator nemo(comm="
+                           << eckit::mpi::comm("nemo").communicator() << ")" << std::endl;
 
         // TODO: find a way to come up with a unique 'colour' -- like getting application number
         const eckit::mpi::Comm& chld = eckit::mpi::comm("nemo").split(777, oce_str);
 
-        eckit::Log::info() << "*** Split nemo communicator" << std::endl;
-
         auto ret_comm = chld.communicator();
+
+        eckit::Log::info() << "*** Split nemo communicator server_comm(parent=" << parent_comm
+                           << ",size=" << eckit::mpi::comm("nemo").size() << "; child=" << ret_comm
+                           << ",size=" << chld.size() << ")" << std::endl;
+
+        eckit::Log::info() << "*** Split nemo communicator " << oce_str << "(parent=" << parent_comm
+                           << ", child=" << ret_comm << ")" << std::endl;
 
         clientCount_ = eckit::mpi::comm(oce_str.c_str()).size();
         serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
@@ -132,7 +138,14 @@ public:
 
         // TODO: find a way to come up with a unique 'colour', such as using MPI_APPNUM
         eckit::mpi::comm("nemo").split(888, "server_comm");
+        auto server_comm = eckit::mpi::comm("server_comm").communicator();
 
+        eckit::Log::info() << "*** Split nemo communicator server_comm(parent=" << parent_comm
+                           << ",size=" << eckit::mpi::comm("nemo").size()
+                           << "; child=" << server_comm << ",size="
+                           << eckit::mpi::comm("server_comm").size() << ")" << std::endl;
+
+        eckit::Log::info() << "*** Resetting multio server" << std::endl;
         multioServer_.reset(new MultioServer{eckit::YAMLConfiguration{
             configuration_path() + configuration_file()}});
     }

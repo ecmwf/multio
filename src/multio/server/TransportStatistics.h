@@ -23,19 +23,35 @@ public:
     std::size_t receiveSize_ = 0;
 
     eckit::Timing waitTiming_;
+    eckit::Timer waitTimer_;
 
     eckit::Timing isendTiming_;
+    eckit::Timer isendTimer_;
+
     eckit::Timing sendTiming_;
+    eckit::Timer sendTimer_;
+
     eckit::Timing encodeTiming_;
+    eckit::Timer encodeTimer_;
+
 
     eckit::Timing probeTiming_;
-    eckit::Timing receiveTiming_;
-    eckit::Timing pushToQueueTiming_;
-    eckit::Timing decodeTiming_;
-    eckit::Timing returnTiming_;
-    eckit::Timing totReturnTiming_;
+    eckit::Timer probeTimer_;
 
-    eckit::Timer localTimer_; // Remove it once eckit::Statistics is fixed
+    eckit::Timing receiveTiming_;
+    eckit::Timer receiveTimer_;
+
+    eckit::Timing pushToQueueTiming_;
+    eckit::Timer pushToQueueTimer_;
+
+    eckit::Timing decodeTiming_;
+    eckit::Timer decodeTimer_;
+
+    eckit::Timing returnTiming_;
+    eckit::Timer returnTimer_;
+
+    eckit::Timing totReturnTiming_;
+    eckit::Timer totReturnTimer_;
 
     void report(std::ostream &out, const char* indent = "") const;
 };

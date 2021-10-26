@@ -127,8 +127,8 @@ public:
         return ret_comm;
     }
 
-    void initServer(int nemo_comm) {
-        eckit::mpi::addComm("nemo", nemo_comm);
+    void initServer(int parent_comm) {
+        eckit::mpi::addComm("nemo", parent_comm);
 
         // TODO: find a way to come up with a unique 'colour', such as using MPI_APPNUM
         eckit::mpi::comm("nemo").split(888, "server_comm");
@@ -199,8 +199,8 @@ int multio_init_client(const char* name, int parent_comm) {
     return val;
 }
 
-void multio_init_server(int nemo_comm) {
-    MultioNemo::instance().initServer(nemo_comm);
+void multio_init_server(int parent_comm) {
+    MultioNemo::instance().initServer(parent_comm);
 }
 
 void multio_metadata_set_int_value(const char* key, int value) {

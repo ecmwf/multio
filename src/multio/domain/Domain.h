@@ -25,7 +25,7 @@ public:
     virtual void to_global(const message::Message& local, message::Message& global) const = 0;
 
 protected:
-    std::vector<int32_t> definition_;  // Grid-point
+    const std::vector<int32_t> definition_;  // Grid-point
 
 };
 

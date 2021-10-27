@@ -64,7 +64,6 @@ Message Aggregation::createGlobalField(const Message& msg) const {
     eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     const auto& fid = msg.fieldId();
-    // eckit::Log::info() << " *** Creating global field for " << msg << std::endl;
 
     auto levelCount = msg.metadata().getLong("levelCount", 1);
 

@@ -36,8 +36,6 @@ void Unstructured::to_global(const message::Message& local, message::Message& gl
             *(git + offset) = *lit++;
         }
     }
-
-    eckit::Log::debug<LibMultio>() << " *** Aggregation completed..." << std::endl;
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -49,7 +47,11 @@ constexpr bool inRange(int32_t val, int32_t low, int32_t upp) {
 }  // namespace
 
 
-Structured::Structured(std::vector<int32_t>&& def) : Domain{std::move(def)} {}
+Structured::Structured(std::vector<int32_t>&& def) : Domain{std::move(def)} {
+    eckit::Log::info() << "*** Structured domain -- mapping info: ";
+    util::print_buffer(definition_, eckit::Log::info());
+    eckit::Log::info() << std::endl;
+}
 
 void Structured::to_local(const std::vector<double>&, std::vector<double>&) const {
     NOTIMP;
@@ -77,10 +79,6 @@ void Structured::to_global(const message::Message& local, message::Message& glob
     auto data_nj = definition_[10];
     // auto data_dim = definition_[6]; -- Unused here
 
-    eckit::Log::info() << "*** Domain -- mapping info: ";
-    util::print_buffer(definition_, eckit::Log::info());
-    eckit::Log::info() << std::endl;
-
     ASSERT(sizeof(double) * ni_global * nj_global * levelCount == global.size());
     std::ostringstream os;
     os << "Local size is " << local.payload().size() / levelCount / sizeof(double)
@@ -104,6 +102,7 @@ void Structured::to_global(const message::Message& local, message::Message& glob
             }
         }
     }
+    // TODO: move this check out of here as it is rather expensive
     ++domainCount;
     if(domainCount == local.metadata().getLong("domainCount")) {
         std::ostringstream oss;

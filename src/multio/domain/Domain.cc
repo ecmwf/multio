@@ -77,7 +77,7 @@ void Structured::to_global(const message::Message& local, message::Message& glob
     auto data_nj = definition_[10];
     // auto data_dim = definition_[6]; -- Unused here
 
-    eckit::Log::info() << "*** Aggregator -- mapping info: ";
+    eckit::Log::info() << "*** Domain -- mapping info: ";
     util::print_buffer(definition_, eckit::Log::info());
     eckit::Log::info() << std::endl;
 

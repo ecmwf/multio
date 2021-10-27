@@ -15,16 +15,16 @@ namespace server {
 namespace  {
 std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
     std::vector<MpiBuffer> bufs;
-    eckit::Log::info() << " *** Allocating " << poolSize << " buffers of size "
-                       << maxBufSize / 1024 / 1024 << " each" << std::endl;
+    LOG_DEBUG_LIB(multio::LibMultio) << "*** Allocating " << poolSize << " buffers of size "
+                                     << maxBufSize / 1024 / 1024 << " each" << std::endl;
     double totMem = 0.0;
     for (auto ii = 0u; ii < poolSize; ++ii) {
         bufs.emplace_back(maxBufSize);
         totMem += maxBufSize;
     }
     totMem /= 1024*1024*1024;
-    eckit::Log::info() << " *** Allocated a total of " << totMem << "GiB of memory for this peer"
-                       << std::endl;
+    LOG_DEBUG_LIB(multio::LibMultio)
+        << "*** Allocated a total of " << totMem << "GiB of memory for this peer" << std::endl;
     return bufs;
 }
 }  // namespace

@@ -32,9 +32,7 @@ MultioClient::MultioClient(const eckit::Configuration &config)
           eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
       serverPeers_{transport_->createServerPeers()},
       counters_(serverPeers_.size()), distType_{distributionType()} {
-  eckit::Log::info() << "Client config: " << config << std::endl;
-  // eckit::Log::debug<multio::LibMultio>() << "Client config: " << config <<
-  // std::endl;
+    LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << config << std::endl;
 }
 
 MultioClient::~MultioClient() = default;
@@ -69,9 +67,6 @@ void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,
     }
     else {
         auto server = chooseServer(metadata);
-
-//        eckit::Log::info() << " *** Server " << server << " is picked for field "
-//                           << message::to_string(metadata) << std::endl;
 
         Message msg{
             Message::Header{Message::Tag::Field, client_, server, std::move(metadata)},

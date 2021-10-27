@@ -13,7 +13,7 @@ namespace server {
 MultioServer::MultioServer(const eckit::Configuration& config) :
     transport_{TransportFactory::instance().build(config.getString("transport"), config)},
     listener_{config, *transport_} {
-    eckit::Log::debug<multio::LibMultio>() << "Server config: " << config << std::endl;
+    LOG_DEBUG_LIB(multio::LibMultio) << "Server config: " << config << std::endl;
     listener_.start();
 }
 

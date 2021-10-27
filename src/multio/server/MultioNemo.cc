@@ -100,20 +100,14 @@ public:
 
         eckit::mpi::addComm("nemo", parent_comm);
 
-        eckit::Log::info() << "*** Added communicator nemo(comm="
-                           << eckit::mpi::comm("nemo").communicator() << ")" << std::endl;
-
         // TODO: find a way to come up with a unique 'colour' -- like getting application number
         const eckit::mpi::Comm& chld = eckit::mpi::comm("nemo").split(777, oce_str);
 
         auto ret_comm = chld.communicator();
 
-        eckit::Log::info() << "*** Split nemo communicator server_comm(parent=" << parent_comm
+        eckit::Log::info() << "*** Split nemo communicator " << oce_str << "(parent=" << parent_comm
                            << ",size=" << eckit::mpi::comm("nemo").size() << "; child=" << ret_comm
                            << ",size=" << chld.size() << ")" << std::endl;
-
-        eckit::Log::info() << "*** Split nemo communicator " << oce_str << "(parent=" << parent_comm
-                           << ", child=" << ret_comm << ")" << std::endl;
 
         clientCount_ = eckit::mpi::comm(oce_str.c_str()).size();
         serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
@@ -122,13 +116,7 @@ public:
         config_.set("clientCount", clientCount_);
         config_.set("serverCount", serverCount_);
 
-        eckit::Log::info() << "*** Resetting multio client" << std::endl;
-
-        eckit::Log::info() << "*** Client config: " << config_ << std::endl;
-
         multioClient_.reset(new MultioClient{config_});
-
-        eckit::Log::info() << "*** Reset multio client" << std::endl;
 
         return ret_comm;
     }
@@ -145,7 +133,6 @@ public:
                            << "; child=" << server_comm << ",size="
                            << eckit::mpi::comm("server_comm").size() << ")" << std::endl;
 
-        eckit::Log::info() << "*** Resetting multio server" << std::endl;
         multioServer_.reset(new MultioServer{eckit::YAMLConfiguration{
             configuration_path() + configuration_file()}});
     }
@@ -206,10 +193,7 @@ void multio_write_step_complete() {
 }
 
 int multio_init_client(const char* name, int parent_comm) {
-    eckit::Log::info() << "*** Init client" << std::endl;
-    auto val = MultioNemo::instance().initClient(name, parent_comm);
-    eckit::Log::info() << "*** Inited client with return val " << val << std::endl;
-    return val;
+    return MultioNemo::instance().initClient(name, parent_comm);
 }
 
 void multio_init_server(int parent_comm) {
@@ -243,9 +227,10 @@ void multio_write_field(const char* name, const double* data, int size, bool to_
         MultioNemo::instance().writeField(name, data, size * sizeof(double), to_all_servers);
     }
     else {
-        eckit::Log::debug<multio::LibMultio>()
-            << "*** Writing field " << name << ", local size = " << size << ", global size = "
-            << MultioNemo::instance().metadata().getInt("globalSize") << std::endl;
+        LOG_DEBUG_LIB(multio::LibMultio)
+            << "*** Writing field " << name << ", local size = " << size
+            << ", global size = " << MultioNemo::instance().metadata().getInt("globalSize")
+            << std::endl;
     }
 }
 
@@ -254,7 +239,8 @@ bool multio_field_is_active(const char* name) {
 }
 
 void multio_not_implemented(const char* message) {
-    eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO" << std::endl;
+    eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO"
+                       << std::endl;
 }
 
 

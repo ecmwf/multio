@@ -108,7 +108,6 @@ void Structured::to_global(const message::Message& local, message::Message& glob
         std::ostringstream oss;
         oss << "Number of inserted unique indices: " << glIndices.size() << " (expected "
             << local.globalSize() << ")";
-        eckit::Log::info() << oss.str() << std::endl;
         ASSERT_MSG(glIndices.size() == local.globalSize(), oss.str());
        glIndices.clear();
        domainCount = 0;

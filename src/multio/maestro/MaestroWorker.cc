@@ -49,7 +49,7 @@ MaestroWorker::~MaestroWorker() {
 }
 
 void MaestroWorker::process() {
-    eckit::AutoTiming process_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessTiming_);
+    eckit::AutoTiming process_timing(maestroStatistics_.workerProcessTimer_, maestroStatistics_.workerProcessTiming_);
     log_file_ << "*** Hi from worker" << std::endl;
     std::string lastInputTag;
     mir::api::MIRComplexJob job;
@@ -57,7 +57,7 @@ void MaestroWorker::process() {
     std::unique_ptr<mir::input::MIRInput> input;
 
     while (queue_.pop(requirement_) > -1) {
-        eckit::AutoTiming pop_work_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessPopWorkTiming_);
+        eckit::AutoTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_, maestroStatistics_.workerProcessPopWorkTiming_);
         const pgen::Handler &handler = pgen::Handler::lookup(args_, requirement_.handlers());
         const std::string inputTag = handler.inputTag(requirement_);
         log_file_ << "INPUT TAG [" << inputTag << "]" << std::endl;
@@ -67,7 +67,7 @@ void MaestroWorker::process() {
             job.clear();
             fields.clear();
             try {
-                eckit::AutoTiming input_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessInputTiming_);
+                eckit::AutoTiming input_timing(maestroStatistics_.workerProcessInputTimer_, maestroStatistics_.workerProcessInputTiming_);
                 log_file_ << "Handle input from " << source_ << std::endl;
                 input.reset(handler.input(requirement_,
                                           fields,
@@ -95,7 +95,7 @@ void MaestroWorker::process() {
         mir::output::MIROutput &output = o.output(handler, statistics_);
 
         try {
-            eckit::AutoTiming prepare_timing(maestroStatistics_.timer_, maestroStatistics_.workerProcessJobPrepareTiming_);
+            eckit::AutoTiming prepare_timing(maestroStatistics_.workerProcessJobPrepareTimer_, maestroStatistics_.workerProcessJobPrepareTiming_);
             std::unique_ptr<mir::api::MIRJob> mj(new mir::api::MIRJob());
             if (!handler.prepare(*mj, requirement_, *input, output, statistics_)) {
                 log_file_ << "Handler did not prepare" << std::endl;
@@ -119,7 +119,7 @@ void MaestroWorker::process() {
             statistics_.failedRequirementsCount_++;
         }
         log_file_ << "Execute job" << std::endl;
-        eckit::AutoTiming timing(statistics_.timer_, statistics_.mirTiming_);
+        eckit::AutoTiming timing(maestroStatistics_.mirTimer_, maestroStatistics_.mirTiming_);
         job.execute(statistics_.mirStatistics_);
     }
 

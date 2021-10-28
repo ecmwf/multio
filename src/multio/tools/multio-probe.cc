@@ -102,7 +102,7 @@ void MultioProbe::execute(const eckit::option::CmdArgs&) {
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioProbe::executeLive() {
-    MultioServer server{eckit::YAMLConfiguration{configuration_path() + configuration_file()}};
+    MultioServer server{eckit::YAMLConfiguration{configuration_file()}};
 }
 
 void MultioProbe::executeTest() {

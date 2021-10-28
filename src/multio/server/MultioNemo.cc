@@ -72,7 +72,7 @@ class MultioNemo {
     size_t serverCount_ = 0;
 
     MultioNemo() :
-        config_{eckit::YAMLConfiguration{configuration_path() + configuration_file()}},
+        config_{eckit::YAMLConfiguration{configuration_file()}},
         activeFields_{fetch_active_fields(config_)} {
         static const char* argv[2] = {"MultioNemo", 0};
         eckit::Main::initialise(1, const_cast<char**>(argv));
@@ -133,8 +133,7 @@ public:
                            << "; child=" << server_comm << ",size="
                            << eckit::mpi::comm("server_comm").size() << ")" << std::endl;
 
-        multioServer_.reset(new MultioServer{eckit::YAMLConfiguration{
-            configuration_path() + configuration_file()}});
+        multioServer_.reset(new MultioServer{eckit::YAMLConfiguration{configuration_file()}});
     }
 
     void setDomain(const std::string& dname, const int* data, size_t bytes) {

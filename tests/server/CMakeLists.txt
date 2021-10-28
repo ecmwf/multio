@@ -1,7 +1,7 @@
 if(HAVE_MULTIO_SERVER)
 
 list( APPEND _test_environment
-    MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/configs
+    MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config
 )
 
 ecbuild_add_test( TARGET test_multio_hammer_thread

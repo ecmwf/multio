@@ -34,6 +34,7 @@ private:
     std::string point_search_;
     MaestroStatistics maestroStatistics_;
     std::ofstream log_file_;
+    eckit::Timing start_;
 };
 
 void execute_worker(const eckit::option::CmdArgs&, eckit::Queue<pgen::Requirement>&);

@@ -57,6 +57,10 @@ void MaestroWorker::process() {
     std::unique_ptr<mir::input::MIRInput> input;
 
     while (queue_.pop(requirement_) > -1) {
+        if (not start_.elapsed_) {
+            start_ = eckit::Timing(statistics_.timer_);
+            log_file_ << "(timing) [start_] = " << start_ << std::endl;
+        }
         eckit::AutoTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_, maestroStatistics_.workerProcessPopWorkTiming_);
         const pgen::Handler &handler = pgen::Handler::lookup(args_, requirement_.handlers());
         const std::string inputTag = handler.inputTag(requirement_);
@@ -119,10 +123,13 @@ void MaestroWorker::process() {
             statistics_.failedRequirementsCount_++;
         }
         log_file_ << "Execute job" << std::endl;
-        eckit::AutoTiming timing(maestroStatistics_.mirTimer_, maestroStatistics_.mirTiming_);
+        eckit::AutoTiming timing(statistics_.timer_, statistics_.mirTiming_);
         job.execute(statistics_.mirStatistics_);
     }
 
+    log_file_ << "(timing) [start_] = " << start_ << std::endl;
+    statistics_.totalTiming_ = eckit::Timing(statistics_.timer_) - start_;
+    log_file_ << "(timing) [total]  = " << statistics_.totalTiming_ << std::endl;
     statistics_.report(log_file_);
     log_file_ << "*** Worker is leaving" << std::endl;
 }

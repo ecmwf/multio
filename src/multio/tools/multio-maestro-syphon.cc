@@ -60,6 +60,7 @@ private:
     CdoNamer cdo_namer_;
     int number_ = 0;
     int nworkers_ = 1;
+    bool dryrun_ = false;
     unsigned cdoEventCount_ = 0;
     eckit::Timing timing_;
     bool compiled_ = false;
@@ -79,6 +80,7 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<long>("date", "Data date (default today)"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("expver", "Expver (default 0001)"));
     options_.push_back(new eckit::option::SimpleOption<uint64_t>("number", "Ensemble number"));
+    options_.push_back(new eckit::option::SimpleOption<bool>("dryrun", "Run without MIR."));
     options_.push_back(new eckit::option::SimpleOption<bool>("compiled", "Batch generator"));
     options_.push_back(new eckit::option::SimpleOption<uint64_t>("nworkers", "Number of threaded workers"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("force-postproc", "Extra values to add to each requirements (e.g. --force-retrieve=resol=av)"));
@@ -98,6 +100,7 @@ void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
     args.get("number", number_);
     args.get("nworkers", nworkers_);
     args.get("compiled", compiled_);
+    args.get("dryrun", dryrun_);
 
     generator_.reset(pgen::BatchGeneratorFactory::build(compiled_ ? "binary" : "text", args));
 

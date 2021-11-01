@@ -32,6 +32,7 @@ private:
     std::string legendre_loader_;
     std::string matrix_loader_;
     std::string point_search_;
+    bool dryrun_;
     MaestroStatistics maestroStatistics_;
     std::ofstream log_file_;
     eckit::Timing start_;

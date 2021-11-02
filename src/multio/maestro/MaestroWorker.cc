@@ -56,6 +56,10 @@ void MaestroWorker::process() {
 
     if (dryrun_) {
         while (queue_.pop(requirement_) > -1) {
+            if (not start_.elapsed_) {
+                start_ = eckit::Timing(statistics_.timer_);
+                log_file_ << "(timing) [start_] = " << start_ << std::endl;
+            }
             log_file_ << requirement_ << std::endl;
             eckit::Buffer b;
             source_.retrieve(requirement_.retrieve(), b);

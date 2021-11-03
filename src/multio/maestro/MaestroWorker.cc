@@ -60,6 +60,7 @@ void MaestroWorker::process() {
                 start_ = eckit::Timing(statistics_.timer_);
                 log_file_ << "(timing) [start_] = " << start_ << std::endl;
             }
+            eckit::AutoTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_, maestroStatistics_.workerProcessPopWorkTiming_);
             log_file_ << requirement_ << std::endl;
             eckit::Buffer b;
             source_.retrieve(requirement_.retrieve(), b);

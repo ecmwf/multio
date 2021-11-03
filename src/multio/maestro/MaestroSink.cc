@@ -56,14 +56,6 @@ MaestroSink::~MaestroSink() {
     {
         util::ScopedTimer timer{timing};
 
-        std::for_each(begin(offered_cdos_), end(offered_cdos_), [](MaestroCdo& cdo) {
-            LOG_DEBUG_LIB(LibMultio) << "Withdrawing CDO: " << cdo << std::endl;
-            cdo.withdraw();
-            cdo.dispose();
-        });
-
-        offered_cdos_.clear();
-
         mstro_finalize();
     }
     eckit::Log::info() << " MaestroSink: finalising Maestro has taken " << timing.elapsed_ << "s"
@@ -126,6 +118,7 @@ void MaestroSink::write(eckit::message::Message blob) {
     {
         eckit::AutoTiming timing(statistics_.sinkCdoOfferTimer_, statistics_.sinkCdoOfferTiming_);
         cdo.offer();               // Submit field
+        ++cdoCount_;
     }
 }
 
@@ -134,6 +127,14 @@ void MaestroSink::flush() {
         eckit::Log::info() << "MaestroSink::flush()" << std::endl;
 
         util::ScopedTimer timer{timing_};
+
+        std::for_each(begin(offered_cdos_), end(offered_cdos_), [](MaestroCdo& cdo) {
+            LOG_DEBUG_LIB(LibMultio) << "Withdrawing CDO: " << cdo << std::endl;
+            cdo.withdraw();
+            cdo.dispose();
+        });
+
+        offered_cdos_.clear();
     }
     eckit::Log::info() << " MaestroSink: CDO count = " << cdoCount_
                        << " -- writing the last step has taken " << timing_.elapsed_ << "s"

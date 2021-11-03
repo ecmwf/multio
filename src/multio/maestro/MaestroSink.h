@@ -45,7 +45,7 @@ private:
     }
 
     std::size_t cdoCount_ = 0;
-    std::deque<MaestroCdo> offered_cdos_;
+    std::vector<MaestroCdo> offered_cdos_;
 
     CdoNamer cdo_namer_;
     eckit::Timing timing_;

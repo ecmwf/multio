@@ -84,6 +84,7 @@ void MaestroCdo::dispose() {
     if (cdo_) {
         ASSERT(MSTRO_OK == mstro_cdo_dispose(cdo_));
         cdo_ = nullptr;
+        free(data_);
     }
 }
 

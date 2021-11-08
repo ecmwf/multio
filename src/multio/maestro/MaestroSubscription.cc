@@ -6,8 +6,6 @@ namespace multio {
 MaestroSubscription::MaestroSubscription(mstro_cdo_selector selector, mstro_pool_event_kind events,
                                          mstro_subscription_opts flags) {
     ASSERT(MSTRO_OK ==  mstro_subscribe(selector, events, flags, &subscription_));
-    eckit::Log::info() << "mstro_subscribe is called for selector, event kind " << selector << ", "
-                       << events << std::endl;
 }
 
 MaestroSubscription::~MaestroSubscription() {

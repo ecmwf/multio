@@ -70,6 +70,7 @@ private:
     eckit::Queue<pgen::Requirement> req_queue_;
     MaestroStatistics statistics_;
     std::set<std::string> req_set_;
+    MaestroCdo readyCdo_;
 };
 
 MaestroSyphon::MaestroSyphon(int argc, char** argv) : 
@@ -109,6 +110,8 @@ void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
 
 void MaestroSyphon::finish(const eckit::option::CmdArgs&) {
     eckit::AutoTiming timing(statistics_.syphonFinishTimer_, statistics_.syphonFinishTiming_);
+    readyCdo_.withdraw();
+    readyCdo_.dispose();
     ASSERT(MSTRO_OK == mstro_finalize());
 }
 
@@ -222,6 +225,11 @@ void MaestroSyphon::broker() {
     auto join_leave_subscription = match_all_selector.subscribe(
             MSTRO_POOL_EVENT_APP_JOIN|MSTRO_POOL_EVENT_APP_LEAVE,
             MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
+
+    readyCdo_ = MaestroCdo{std::string{"READY - "} + std::to_string(number_)};
+    eckit::Log::info() << "Offering CDO [" << readyCdo_ << "] to PM." << std::endl;
+    readyCdo_.seal();
+    readyCdo_.offer();
 
     LOG_DEBUG_LIB(LibMultio) << " *** Start polling" << std::endl;
     bool processed_requirements{false};

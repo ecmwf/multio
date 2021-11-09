@@ -17,7 +17,6 @@
 #include <cstring>
 #include <string>
 #include <thread>
-#include "unistd.h"
 
 extern "C" {
 #include <maestro.h>
@@ -42,9 +41,18 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
         util::ScopedTimer timer{timing};
         auto componentName = std::string{::getenv("MSTRO_COMPONENT_NAME")} + " -- " +
                              std::to_string(eckit::mpi::comm().rank());
-        ::sleep(15);
         mstro_status s = mstro_init(::getenv("MSTRO_WORKFLOW_NAME"),componentName.c_str(), 0);
         ASSERT(s == MSTRO_OK);
+
+        auto component = std::string{::getenv("MSTRO_COMPONENT_NAME")};
+        auto delimiter = std::string{" - "};
+        auto number = std::atoi(component.substr(component.find(delimiter) + delimiter.length(),
+                                                 component.length()).c_str());
+        auto readyCdoName = std::string{"READY - "} + std::to_string(number);
+        readyCdo_ = MaestroCdo{readyCdoName};
+        eckit::Log::info() << "Waiting for CDO [" << readyCdo_ << "] to be ready." << std::endl;
+        readyCdo_.require();
+        readyCdo_.demand();
     }
     eckit::Log::info() << " MaestroSink: initialising Maestro has taken " << timing.elapsed_ << "s"
                        << std::endl;
@@ -55,7 +63,7 @@ MaestroSink::~MaestroSink() {
     eckit::Timing timing;
     {
         util::ScopedTimer timer{timing};
-
+        readyCdo_.dispose();
         mstro_finalize();
     }
     eckit::Log::info() << " MaestroSink: finalising Maestro has taken " << timing.elapsed_ << "s"

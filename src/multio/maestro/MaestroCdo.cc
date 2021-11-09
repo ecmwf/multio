@@ -11,6 +11,8 @@ MaestroCdo::MaestroCdo() {}
 
 MaestroCdo::MaestroCdo(std::string name) : name_{name} {
     declare();
+    int64_t size = 0;
+    ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, ".maestro.core.cdo.scope.local-size", (void**)&size, true));
 }
 
 MaestroCdo::MaestroCdo(std::string name, const void* blob, uint64_t size) : name_{name} {

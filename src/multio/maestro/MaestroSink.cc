@@ -39,12 +39,14 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
     eckit::Timing timing;
     {
         util::ScopedTimer timer{timing};
-        auto componentName = std::string{::getenv("MSTRO_COMPONENT_NAME")} + " -- " +
+        ASSERT(!::getenv("MSTRO_COMPONENT_NAME"));
+        ASSERT(::getenv("COMPONENT_NAME"));
+        auto componentName = std::string{::getenv("COMPONENT_NAME")} + " -- " +
                              std::to_string(eckit::mpi::comm().rank());
         mstro_status s = mstro_init(::getenv("MSTRO_WORKFLOW_NAME"),componentName.c_str(), 0);
         ASSERT(s == MSTRO_OK);
 
-        auto component = std::string{::getenv("MSTRO_COMPONENT_NAME")};
+        auto component = std::string{::getenv("COMPONENT_NAME")};
         auto delimiter = std::string{" - "};
         auto number = std::atoi(component.substr(component.find(delimiter) + delimiter.length(),
                                                  component.length()).c_str());
@@ -52,6 +54,7 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
         readyCdo_ = MaestroCdo{readyCdoName};
         eckit::Log::info() << "Waiting for CDO [" << readyCdo_ << "] to be ready." << std::endl;
         readyCdo_.require();
+        eckit::mpi::comm().barrier();
         readyCdo_.demand();
     }
     eckit::Log::info() << " MaestroSink: initialising Maestro has taken " << timing.elapsed_ << "s"

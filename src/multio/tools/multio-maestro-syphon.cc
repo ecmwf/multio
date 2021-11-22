@@ -71,7 +71,7 @@ private:
     MaestroStatistics statistics_;
     std::set<std::string> req_set_;
 
-    MaestroCdo allReady_{"allClientsReady"};
+    MaestroCdo allReady_;
     MaestroCdo readyCdo_;
 };
 
@@ -109,8 +109,10 @@ void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
 
     ASSERT(MSTRO_OK == mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0));
 
+    allReady_ = MaestroCdo{"allClientsReady"};
     allReady_.require();
     allReady_.demand();
+    allReady_.dispose();
 }
 
 void MaestroSyphon::finish(const eckit::option::CmdArgs&) {
@@ -118,9 +120,6 @@ void MaestroSyphon::finish(const eckit::option::CmdArgs&) {
 
     readyCdo_.withdraw();
     readyCdo_.dispose();
-
-    allReady_.withdraw();
-    allReady_.dispose();
 
     ASSERT(MSTRO_OK == mstro_finalize());
 }

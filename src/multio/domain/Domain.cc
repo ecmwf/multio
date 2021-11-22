@@ -77,10 +77,14 @@ void Structured::to_global(const message::Message& local, message::Message& glob
     // auto data_dim = definition_[6]; -- Unused here
 
     ASSERT(sizeof(double) * ni_global * nj_global * levelCount == global.size());
-    std::ostringstream os;
-    os << "Local size is " << local.payload().size() / levelCount / sizeof(double)
-       << " while it is expected to equal " << data_ni << " times " << data_nj << std::endl;
-    ASSERT_MSG(sizeof(double) * data_ni * data_nj * levelCount == local.size(), os.str());
+
+    if (sizeof(double) * data_ni * data_nj * levelCount != local.size()) {
+        throw eckit::AssertionFailed(
+            "Local size is " +
+            std::to_string(local.payload().size() / levelCount / sizeof(double)) +
+            " while it is expected to equal " + std::to_string(data_ni) + " times " +
+            std::to_string(data_nj));
+    }
 
     auto lit = static_cast<const double*>(local.payload().data());
     auto git = static_cast<double*>(global.payload().data());

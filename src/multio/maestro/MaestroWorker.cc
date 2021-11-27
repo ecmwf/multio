@@ -82,12 +82,12 @@ void MaestroWorker::process() {
             const std::string inputTag = handler.inputTag(requirement_);
             log_file_ << "INPUT TAG [" << inputTag << "]" << std::endl;
             if (job.empty() || (lastInputTag != inputTag)) {
+                eckit::AutoTiming input_timing(maestroStatistics_.workerProcessInputTimer_, maestroStatistics_.workerProcessInputTiming_);
                 log_file_ << "SET INPUT TAG [" << inputTag << "]" << std::endl;
                 lastInputTag = inputTag;
                 job.clear();
                 fields.clear();
                 try {
-                    eckit::AutoTiming input_timing(maestroStatistics_.workerProcessInputTimer_, maestroStatistics_.workerProcessInputTiming_);
                     log_file_ << "Handle input from " << source_ << std::endl;
                     input.reset(handler.input(requirement_,
                                               fields,
@@ -106,41 +106,44 @@ void MaestroWorker::process() {
                 }
             }
 
-            std::stringstream ss;
-            ss << std::this_thread::get_id();
-            std::string thread_id = ss.str();
-
-            std::string path = handler.path(*namer_, requirement_, directory_, thread_id);
-            pgen::Output o{new eckit::FileHandle{path}, true /* append */};
-            mir::output::MIROutput &output = o.output(handler, statistics_);
-
-            try {
+            {
                 eckit::AutoTiming prepare_timing(maestroStatistics_.workerProcessJobPrepareTimer_, maestroStatistics_.workerProcessJobPrepareTiming_);
-                std::unique_ptr<mir::api::MIRJob> mj(new mir::api::MIRJob());
-                if (!handler.prepare(*mj, requirement_, *input, output, statistics_)) {
-                    log_file_ << "Handler did not prepare" << std::endl;
-                    continue;
-                }
-                mj->set("style", style_);
-                mj->set("legendre-loader", legendre_loader_);
-                mj->set("matrix-loader", matrix_loader_);
-                mj->set("point-search-trees", point_search_);
+                std::stringstream ss;
+                ss << std::this_thread::get_id();
+                std::string thread_id = ss.str();
 
-                log_file_ << "Job before add ===> " << *mj <<  std::endl;
-                job.add(mj.release(),
-                        *input,
-                        output,
-                        nullptr);
-                log_file_ << "Job after add ===> " <<  std::endl;
-            } catch (std::exception &e) {
-                log_file_ << "==== Error building job" << std::endl;
-                log_file_ << "==== Exception  : " << e.what() << std::endl;
-                log_file_ << "==== Requirement: " << requirement_ << std::endl;
-                statistics_.failedRequirementsCount_++;
+                std::string path = handler.path(*namer_, requirement_, directory_, thread_id);
+                pgen::Output o{new eckit::FileHandle{path}, true /* append */};
+                mir::output::MIROutput &output = o.output(handler, statistics_);
+
+                try {
+                    std::unique_ptr<mir::api::MIRJob> mj(new mir::api::MIRJob());
+                    if (!handler.prepare(*mj, requirement_, *input, output, statistics_)) {
+                        log_file_ << "Handler did not prepare" << std::endl;
+                        continue;
+                    }
+                    mj->set("style", style_);
+                    mj->set("legendre-loader", legendre_loader_);
+                    mj->set("matrix-loader", matrix_loader_);
+                    mj->set("point-search-trees", point_search_);
+
+                    log_file_ << "Job before add ===> " << *mj <<  std::endl;
+                    job.add(mj.release(),
+                            *input,
+                            output,
+                            nullptr);
+                    log_file_ << "Job after add ===> " <<  std::endl;
+                } catch (std::exception &e) {
+                    log_file_ << "==== Error building job" << std::endl;
+                    log_file_ << "==== Exception  : " << e.what() << std::endl;
+                    log_file_ << "==== Requirement: " << requirement_ << std::endl;
+                    statistics_.failedRequirementsCount_++;
+                }
+                log_file_ << "Execute job" << std::endl;
+                eckit::AutoTiming timing(statistics_.timer_, statistics_.mirTiming_);
+                eckit::AutoTiming mirTiming(maestroStatistics_.mirTimer_, maestroStatistics_.mirTiming_);
+                job.execute(statistics_.mirStatistics_);
             }
-            log_file_ << "Execute job" << std::endl;
-            eckit::AutoTiming timing(statistics_.timer_, statistics_.mirTiming_);
-            job.execute(statistics_.mirStatistics_);
         }
     }
 

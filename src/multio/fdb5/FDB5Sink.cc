@@ -26,7 +26,7 @@ fdb5::Config fdb5_configuration(const eckit::Configuration& cfg) {
     auto fdb_configuration = cfg.getSubConfiguration("config");
 
     eckit::LocalConfiguration userConf;
-    if (not fdb_configuration.has("userConfig")) {
+    if (fdb_configuration.has("userConfig")) {
         userConf = fdb_configuration.getSubConfiguration("userConfig");
     }
     else {

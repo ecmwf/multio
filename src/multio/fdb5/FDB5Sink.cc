@@ -15,18 +15,28 @@
 #include "multio/fdb5/FDB5Sink.h"
 
 #include "eckit/exception/Exceptions.h"
+#include "fdb5/config/Config.h"
 
 #include "multio/LibMultio.h"
 
 namespace multio {
 
 namespace {
-eckit::LocalConfiguration fdb5_configuration(const eckit::Configuration& cfg) {
-    auto fdb_config = cfg.getSubConfiguration("config");
-    if (not fdb_config.has("useSubToc")) {
-        fdb_config.set("useSubToc", true);
+fdb5::Config fdb5_configuration(const eckit::Configuration& cfg) {
+    auto fdb_configuration = cfg.getSubConfiguration("config");
+
+    eckit::LocalConfiguration userConf;
+    if (not fdb_configuration.has("userConfig")) {
+        userConf = fdb_configuration.getSubConfiguration("userConfig");
     }
+    else {
+        userConf.set("useSubToc", true);
+    }
+
+    fdb5::Config fdb_config(fdb_configuration, userConf);
+
     LOG_DEBUG_LIB(LibMultio) << "FDB5 Config = " << fdb_config << std::endl;
+
     return fdb_config;
 }
 }  // namespace

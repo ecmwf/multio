@@ -25,15 +25,15 @@ namespace {
 fdb5::Config fdb5_configuration(const eckit::Configuration& cfg) {
     auto fdb_configuration = cfg.getSubConfiguration("config");
 
-    eckit::LocalConfiguration userConf;
+    eckit::LocalConfiguration userConfig;
     if (fdb_configuration.has("userConfig")) {
-        userConf = fdb_configuration.getSubConfiguration("userConfig");
+        userConfig = fdb_configuration.getSubConfiguration("userConfig");
     }
     else {
-        userConf.set("useSubToc", true);
+        userConfig.set("useSubToc", true);
     }
 
-    fdb5::Config fdb_config(fdb_configuration, userConf);
+    fdb5::Config fdb_config(fdb_configuration, userConfig);
 
     LOG_DEBUG_LIB(LibMultio) << "FDB5 Config = " << fdb_config << std::endl;
 

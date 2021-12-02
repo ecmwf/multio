@@ -70,6 +70,8 @@ private:
     eckit::Queue<pgen::Requirement> req_queue_;
     MaestroStatistics statistics_;
     std::set<std::string> req_set_;
+
+    MaestroCdo allReady_;
     MaestroCdo readyCdo_;
 };
 
@@ -106,12 +108,19 @@ void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
     generator_.reset(pgen::BatchGeneratorFactory::build(compiled_ ? "binary" : "text", args));
 
     ASSERT(MSTRO_OK == mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0));
+
+    allReady_ = MaestroCdo{"allClientsReady"};
+    allReady_.require();
+    allReady_.demand();
+    allReady_.dispose();
 }
 
 void MaestroSyphon::finish(const eckit::option::CmdArgs&) {
     eckit::AutoTiming timing(statistics_.syphonFinishTimer_, statistics_.syphonFinishTiming_);
+
     readyCdo_.withdraw();
     readyCdo_.dispose();
+
     ASSERT(MSTRO_OK == mstro_finalize());
 }
 

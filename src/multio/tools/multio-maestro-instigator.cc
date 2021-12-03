@@ -11,10 +11,10 @@
 
 namespace multio {
 
-class ComponentManager final : public MultioTool {
+class MaestroInstigator final : public MultioTool {
 public:
-    ComponentManager(int argc, char** argv);
-    ~ComponentManager() = default;
+    MaestroInstigator(int argc, char** argv);
+    ~MaestroInstigator() = default;
 
 private:
     void usage(const std::string& tool) const override {
@@ -27,25 +27,27 @@ private:
 
     void execute(const eckit::option::CmdArgs& args) override;
 
-    int numberOfJoins_;
+    bool isWorkflowReady(uint16_t joinCount);
+    bool isWorkflowDone(uint16_t joinCount, uint16_t leaveCount);
 
+    int numberOfJoins_;
     MaestroCdo allReady_;
 };
 
-ComponentManager::ComponentManager(int argc, char** argv) : multio::MultioTool(argc, argv) {
+MaestroInstigator::MaestroInstigator(int argc, char** argv) : multio::MultioTool(argc, argv) {
     options_.push_back(new eckit::option::SimpleOption<uint64_t>(
         "number-of-joins",
         "Wait for number-of-joins join events before sending an all-ready message"));
 }
 
-void ComponentManager::init(const eckit::option::CmdArgs& args) {
+void MaestroInstigator::init(const eckit::option::CmdArgs& args) {
     args.get("number-of-joins", numberOfJoins_);
 
     ASSERT(MSTRO_OK ==
            mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0));
 }
 
-void ComponentManager::finish(const eckit::option::CmdArgs&) {
+void MaestroInstigator::finish(const eckit::option::CmdArgs&) {
     auto s = mstro_finalize();
     if (s != MSTRO_OK) {
         std::ostringstream oss;
@@ -54,7 +56,7 @@ void ComponentManager::finish(const eckit::option::CmdArgs&) {
     }
 }
 
-void ComponentManager::execute(const eckit::option::CmdArgs &) {
+void MaestroInstigator::execute(const eckit::option::CmdArgs &) {
     uint16_t joinCount=0;
     uint16_t leaveCount=0;
     bool done = false;
@@ -91,28 +93,41 @@ void ComponentManager::execute(const eckit::option::CmdArgs &) {
         }
 
 
-        if (numberOfJoins_ > 0 and joinCount == numberOfJoins_ and not allReadySent) {
-            allReady_ = MaestroCdo{"allClientsReady"};
-            allReady_.seal();
-            allReady_.offer();
-            std::cout << mstro_clock() << ",ALL_READY,0, { 4294967295,\"SPECIAL MESSAGE\" }"
-                      << std::endl;
-            allReadySent = true;
+        if(not allReadySent) {
+            allReadySent = isWorkflowReady(joinCount);
         }
 
-        if ((0 < leaveCount) and (joinCount == leaveCount)) {
-            allReady_.withdraw();
-            allReady_.dispose();
-            done = true;
-        }
+        done = isWorkflowDone(joinCount, leaveCount);
     }
 }
 
+bool MaestroInstigator::isWorkflowReady(uint16_t joinCount) {
+    if (joinCount < numberOfJoins_) {
+        return false;
+    }
+
+    allReady_ = MaestroCdo{"allClientsReady"};
+    allReady_.seal();
+    allReady_.offer();
+    std::cout << mstro_clock() << ",ALL_READY,0, { 4294967295,\"SPECIAL MESSAGE\" }" << std::endl;
+
+    return true;
+}
+
+bool MaestroInstigator::isWorkflowDone(uint16_t joinCount, uint16_t leaveCount) {
+    if (leaveCount == 0 or leaveCount < joinCount) {
+        return false;
+    }
+
+    allReady_.withdraw();
+    allReady_.dispose();
+    return true;
+}
 }  // namespace multio
 
 //---------------------------------------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-    multio::ComponentManager tool(argc, argv);
+    multio::MaestroInstigator tool(argc, argv);
     return tool.start();
 }

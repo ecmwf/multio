@@ -14,7 +14,7 @@ MultioServer::MultioServer(const eckit::Configuration& config) :
     transport_{TransportFactory::instance().build(config.getString("transport"), config)},
     listener_{config, *transport_} {
     eckit::Log::debug<multio::LibMultio>() << config << std::endl;
-    listener_.listen();
+    listener_.start();
 }
 
 MultioServer::~MultioServer() = default;

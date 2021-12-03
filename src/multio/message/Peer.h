@@ -17,6 +17,7 @@
 #ifndef multio_Peer_H
 #define multio_Peer_H
 
+#include <limits>
 #include <string>
 
 namespace multio {
@@ -24,7 +25,7 @@ namespace message {
 
 class Peer {
 public:
-    Peer(const std::string& group = "null", size_t id = 0);
+    Peer(const std::string& group = "null", size_t id = std::numeric_limits<size_t>::max());
     virtual ~Peer() = default;
 
     operator std::string();

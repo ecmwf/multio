@@ -2,10 +2,12 @@
 #ifndef multio_server_StreamPool_H
 #define multio_server_StreamPool_H
 
-#include "eckit/log/Statistics.h"
+#include <sstream>
 
+#include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 #include "multio/server/MpiStream.h"
+#include "multio/server/TransportStatistics.h"
 
 namespace multio {
 namespace server {
@@ -18,37 +20,37 @@ public:
 
 class StreamPool {
 public:
-    explicit StreamPool(size_t poolSize, size_t maxBufSize, const eckit::mpi::Comm& comm);
+    explicit StreamPool(size_t poolSize, size_t maxBufSize, const eckit::mpi::Comm& comm,
+                        TransportStatistics& stats);
 
     MpiBuffer& buffer(size_t idx);
 
-    MpiStream& getStream(const message::Message& msg);
+    MpiOutputStream& getStream(const message::Message& msg);
 
-    void send(const message::Message& msg);
+    void sendBuffer(const message::Peer& dest, int msg_tag);
 
-    void timings(std::ostream& os) const;
+    MpiBuffer& findAvailableBuffer(std::ostream& os = eckit::Log::debug<LibMultio>());
+
+    void waitAll();
 
 private:
-    MpiBuffer& findAvailableBuffer();
-
-    MpiStream& createNewStream(const message::Peer& dest);
-    MpiStream& replaceStream(const message::Peer& dest);
+    MpiOutputStream& createNewStream(const message::Peer& dest);
+    MpiOutputStream& replaceStream(const message::Peer& dest);
 
     void print(std::ostream& os) const;
 
-    friend std::ostream& operator<<(std::ostream& os, const StreamPool& transport) {
-        transport.print(os);
+    friend std::ostream& operator<<(std::ostream& os, const StreamPool& pool) {
+        pool.print(os);
         return os;
     }
 
     const eckit::mpi::Comm& comm_;
+    TransportStatistics& statistics_;
     std::vector<MpiBuffer> buffers_;
-    std::map<MpiPeer, MpiStream> streams_;
+    std::map<MpiPeer, MpiOutputStream> streams_;
 
-    eckit::Timing sendTiming_;
-    eckit::Timing waitTiming_;
-
-    std::size_t bytesSent_ = 0;
+    std::map<MpiPeer, unsigned int> counter_;
+    std::ostringstream os_;
 };
 
 }  // namespace server

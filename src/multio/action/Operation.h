@@ -1,4 +1,4 @@
-﻿#ifndef multio_server_actions_Operation_H
+#ifndef multio_server_actions_Operation_H
 #define multio_server_actions_Operation_H
 
 #include <memory>

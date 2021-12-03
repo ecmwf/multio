@@ -75,14 +75,16 @@ bool GribEncoder::setGridInfo(message::Message msg) {
 }
 
 void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
+
+    // Set run-specific metadata
+
+    setValue("expver", metadata.getSubConfiguration("run").getString("expver"));
+    setValue("class", metadata.getSubConfiguration("run").getString("class"));
+    setValue("stream", metadata.getSubConfiguration("run").getString("stream"));
+    setValue("type", metadata.getSubConfiguration("run").getString("type"));
+
     // setCommonMetadata
-    setValue("expver", "xxxx");
-    setValue("class", "rd");
-    setValue("stream", "oper");
-    setValue("type", "fc");
-    setValue("levtype", category_to_levtype.at(metadata.getString("category")));
     setValue("step", metadata.getLong("step"));
-    setValue("level", metadata.getLong("level"));
 
     // TODO: Nemo should set this at the beginning of the run
     setValue("date", metadata.getLong("date"));
@@ -99,6 +101,12 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
 
     // Setting parameter ID
     setValue("paramId", metadata.getLong("param"));
+    if (metadata.getString("category") == "ocean-3d") {
+        auto level = metadata.getLong("level");
+        ASSERT(level > 0);
+        setValue("scaledValueOfFirstFixedSurface", level);
+        setValue("scaledValueOfSecondFixedSurface", level + 1);
+    }
 
     // Set ocean grid information
     setValue("unstructuredGridType", gridType_);

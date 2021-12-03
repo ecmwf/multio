@@ -65,9 +65,10 @@ const std::vector<double>& Average::compute() {
 }
 
 void Average::update(const double* val, long sz) {
-    std::ostringstream os;
-    os << "Expected size: " << values_.size() << " -- actual size: " << sz << std::endl;
-    ASSERT_MSG(values_.size() == static_cast<size_t>(sz), os.str());
+    if (values_.size() != static_cast<size_t>(sz)) {
+        throw eckit::AssertionFailed("Expected size: " + std::to_string(values_.size()) +
+                                     " -- actual size: " + std::to_string(sz));
+    }
 
     for (auto& v : values_) {
         v += *val++;

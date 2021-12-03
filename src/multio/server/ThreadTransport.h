@@ -45,11 +45,18 @@ public:
     Message receive() override;
 
 private:
+    void openConnections() override;
+    void closeConnections() override;
+
     void send(const Message& message) override;
+
+    void bufferedSend(const Message& msg) override;
 
     void print(std::ostream& os) const override;
 
     Peer localPeer() const override;
+
+    PeerList createServerPeers() override;
 
     eckit::Queue<Message>& receiveQueue(Peer to);
 

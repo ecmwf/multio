@@ -69,13 +69,14 @@ bool TemporalStatistics::process_next(message::Message& msg) {
     ASSERT(name_ == msg.name());
 
     LOG_DEBUG_LIB(LibMultio) << *this << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " *** Current ";
 
     auto dateTime = currentDateTime(msg);
-
-    std::ostringstream os;
-    os << dateTime << " is outside of current period " << current_ << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " *** Current ";
-    ASSERT_MSG(current_.isWithin(dateTime), os.str());
+    if (!current_.isWithin(dateTime)) {
+        std::ostringstream os;
+        os << dateTime << " is outside of current period " << current_ << std::endl;
+        throw eckit::AssertionFailed(os.str());
+    }
 
     updateStatistics(msg);
 

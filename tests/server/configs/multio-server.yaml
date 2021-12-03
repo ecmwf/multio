@@ -4,6 +4,12 @@ group : nemo
 serverCount : 3
 clientCount : 5
 
+run:
+  expver: bilg
+  class: rd
+  stream: ocda
+  type: pf
+
 activeFields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethick_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
 
 plans :
@@ -27,19 +33,24 @@ plans :
           - type : fdb5
             config : {}
 
+          - type : file
+            append : true
+            path : ocean-output.grib
+            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
+
   - name : stream-2 # mainly 3d fields output monthly (standard) or daily (highout)
     actions :
       - type : Select
         match : field
-        fields : [ toce, soce, sigmat, sst, sss, ssh, hst, hbp, empmr, runoffs, saltflx, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, taum, wspd, cdn10, qrp, erp, mldkz5, 14d, 17d, 20d, 26d, 28d, hc300, sal300, hc700, sal700, hcbtm, salbtm, precip, uocee, vocen, uocees, vocens, utaue, vtaun, hc26c, thetaodmp, sodmp, ssu, uoce, utau, ssv, voce, vtau, woce ]
-
-      - type : Aggregation
+        fields : [ toce, soce, sigmat, sst, sss, ssh, hst, hbp, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, mldkz5, hc300, sal300, hc700, sal700, hcbtm, salbtm, uocee, vocen, utaue, vtaun, uoce, utau, voce, vtau, woce ]
 
       - type : Statistics
         output_frequency: 1d
         operations:
           - average
 
+      - type : Aggregation
+
       - type : Encode
         format : grib
         template : unstr_avg.tmpl
@@ -50,19 +61,24 @@ plans :
 
           - type : fdb5
             config : {}
+
+          - type : file
+            append : true
+            path : ocean-output.grib
+            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
 
   - name : stream-3 # mainly 2d fields output daily (standard) or hourly (highout)
     actions :
       - type : Select
         match : field
-        fields : [ sst, sss, ssh, empmr, saltflx, qt, qsr, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, ice_cover, wspd, taum, mldkz5, 14d, 17d, 20d, 26d, 28d, hc300, sal300, precip, uocees, vocens, utaue, vtaun, hc26c, ssu, utau, ssv, vtau ]
-
-      - type : Aggregation
+        fields : [ sst, sss, ssh, qt, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, mldkz5, hc300, sal300, uocees, vocens, utaue, vtaun, ssu, utau, vtau ]
 
       - type : Statistics
         output_frequency: 3h
         operations:
           - average
+
+      - type : Aggregation
 
       - type : Encode
         format : grib
@@ -74,19 +90,24 @@ plans :
 
           - type : fdb5
             config : {}
+
+          - type : file
+            append : true
+            path : ocean-output.grib
+            # path : /scratch/ma/masd/ocean-output/grib2-output.grib
 
   - name : stream-10 # sea-ice fields output daily (standard) or hourly (highout)
     actions :
       - type : Select
         match : field
-        fields : [ icevolu, ice_cover, iceconc_cat, icethic, icethick_cat, snwthic, snwthic_cat, uice, vice, iicevelur, iicevelvr, utau_ai, vtau_ai, iocestrur, iocestrvr, snowpre, icesalt, icetemp, icettop, icesalt_cat ]
-
-      - type : Aggregation
+        fields : [ icevolu, ice_cover, iceconc_cat, icethick_cat, snwthic, snwthic_cat, uice, vice, iicevelur, iicevelvr, iocestrur, iocestrvr, icesalt, icetemp, icettop, icesalt_cat ]
 
       - type : Statistics
         output_frequency: 3h
         operations:
           - average
+
+      - type : Aggregation
 
       - type : Encode
         format : grib
@@ -96,5 +117,10 @@ plans :
       - type : Sink
         sinks :
 
-          - type : fdb5
-            config : {}
+          # - type : fdb5
+          #   config : {}
+
+          - type : file
+            append : true
+            path : ocean-output.grib
+            # path : /scratch/ma/masd/ocean-output/grib2-output.grib

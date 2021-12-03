@@ -26,11 +26,9 @@ namespace action {
 Sink::Sink(const eckit::Configuration &config) : Action(config), mio_{config} {}
 
 void Sink::execute(Message msg) const {
-    util::ScopedTimer timer{timing_};
 
     switch (msg.tag()) {
         case Message::Tag::Field:
-        case Message::Tag::Statistics:
         case Message::Tag::Grib:
             write(msg);
             executeNext(msg);
@@ -52,16 +50,21 @@ void Sink::execute(Message msg) const {
 }
 
 void Sink::write(Message msg) const {
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+
     eckit::message::Message blob = to_eckit_message(msg);
 
     mio_.write(blob);
 }
 
 void Sink::flush() const {
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
     mio_.flush();
 }
 
 void Sink::trigger(const Message& msg) const {
+    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+
     eckit::StringDict metadata;
 
     metadata[msg.category()] = msg.name();

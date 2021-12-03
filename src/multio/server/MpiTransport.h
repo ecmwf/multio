@@ -26,6 +26,7 @@
 
 #include "multio/server/Transport.h"
 #include "multio/server/StreamPool.h"
+#include "multio/server/StreamQueue.h"
 
 namespace multio {
 namespace server {
@@ -36,27 +37,38 @@ public:
     ~MpiTransport();
 
 private:
+    void openConnections() override;
+    void closeConnections() override;
+
     Message receive() override;
 
     void send(const Message& msg) override;
+
+    void bufferedSend(const Message& msg) override;
 
     void print(std::ostream& os) const override;
 
     Peer localPeer() const override;
 
+    void listen() override;
+
+    PeerList createServerPeers() override;
+
     const eckit::mpi::Comm& comm() const;
+
+    eckit::mpi::Status probe();
+    size_t blockingReceive(eckit::mpi::Status& status, MpiBuffer& buffer);
+
+    void encodeMessage(eckit::Stream& strm, const Message& msg);
 
     MpiPeer local_;
 
-    eckit::Buffer buffer_;
-
     StreamPool pool_;
 
+    StreamQueue streamQueue_;
     std::queue<Message> msgPack_;
 
-    eckit::Timing receiveTiming_;
-
-    std::size_t bytesReceived_ = 0;
+    std::mutex mutex_;
 };
 
 }  // namespace server

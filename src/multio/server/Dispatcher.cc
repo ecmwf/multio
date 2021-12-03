@@ -13,6 +13,8 @@
 
 #include "Dispatcher.h"
 
+#include <fstream>
+
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
 
@@ -20,6 +22,7 @@
 #include "multio/action/Plan.h"
 
 #include "multio/util/ScopedTimer.h"
+#include "multio/util/logfile_name.h"
 
 using eckit::LocalConfiguration;
 
@@ -39,10 +42,9 @@ Dispatcher::Dispatcher(const eckit::Configuration& config) {
 }
 
 Dispatcher::~Dispatcher() {
-    eckit::Log::info() << " ******* Total wall-clock time spent in dispatcher "
-                       << eckit::Timing{timer_}.elapsed_
-                       << "s -- of which time spent with dispatching " << timing_ << "s"
-                       << std::endl;
+    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
+    logFile << "\n ** Total wall-clock time spent in dispatcher " << eckit::Timing{timer_}.elapsed_
+            << "s -- of which time spent with dispatching " << timing_ << "s" << std::endl;
 }
 
 void Dispatcher::dispatch(eckit::Queue<message::Message>& queue) {

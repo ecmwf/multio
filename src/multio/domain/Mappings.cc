@@ -37,7 +37,7 @@ void Mappings::add(message::Message msg) {
     std::memcpy(local_map.data(), msg.payload().data(), msg.size());
 
     eckit::Log::debug<LibMultio>() << ": [";
-    print_buffer(local_map, eckit::Log::debug<LibMultio>());
+    util::print_buffer(local_map, eckit::Log::debug<LibMultio>());
     eckit::Log::debug<LibMultio>() << "]" << std::endl;
 
     if (msg.category() == "unstructured") {
@@ -52,9 +52,7 @@ void Mappings::add(message::Message msg) {
         return;
     }
 
-    std::ostringstream os;
-    os << "Unsupported domain category" << msg.category();
-    ASSERT_MSG(false, os.str());
+    throw eckit::AssertionFailed("Unsupported domain category" + msg.category());
 }
 
 void Mappings::list(std::ostream& out) const {
@@ -65,11 +63,15 @@ void Mappings::list(std::ostream& out) const {
     }
 }
 
-auto Mappings::get(const std::string& name) const -> const Mapping& {
+const Mapping& Mappings::get(const std::string& name) const {
     // Must exist
     eckit::Log::debug<LibMultio>() << "*** Fetch mappings for " << name << std::endl;
-    ASSERT_MSG(mappings_.find(name) != end(mappings_), "Cannot find mappings for " + name);
-    return mappings_.at(name);
+    auto it = mappings_.find(name);
+    if (it != end(mappings_)) {
+        return it->second;
+    }
+
+    throw eckit::AssertionFailed("Cannot find mappings for " + name);
 }
 
 }  // namespace domain

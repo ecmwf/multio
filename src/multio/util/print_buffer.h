@@ -1,6 +1,6 @@
 
-#ifndef multio_server_print_buffer_H
-#define multio_server_print_buffer_H
+#ifndef multio_print_buffer_H
+#define multio_print_buffer_H
 
 #include <algorithm>
 #include <iomanip>
@@ -9,6 +9,7 @@
 #include <vector>
 
 namespace multio {
+namespace util {
 
 template <typename T, int width>
 struct fixed_width_val {
@@ -42,6 +43,7 @@ void print_buffer(const std::vector<T>& vec, std::ostream& ostrm = std::cout,
     copy(begin(vec), end(vec), std::ostream_iterator<T>(ostrm, delim));
 }
 
+}  // namespace util
 }  // namespace multio
 
 #endif

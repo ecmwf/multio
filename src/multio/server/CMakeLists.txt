@@ -44,11 +44,13 @@ ecbuild_add_library(
         TcpTransport.h
         Transport.cc
         Transport.h
+        TransportStatistics.cc
+        TransportStatistics.h
         ScopedThread.h
         StreamPool.cc
         StreamPool.h
-        multio_nemo.f90
-        multio.f90
+        StreamQueue.cc
+        StreamQueue.h
 
     PUBLIC_LIBS
         ${multio_server_plugins}
@@ -59,3 +61,25 @@ ecbuild_add_library(
         metkit
         eccodes
 )
+
+ecbuild_add_library(
+
+    TARGET multio-server-fapi
+
+    CONDITION HAVE_MULTIO_SERVER
+
+    SOURCES
+        multio_nemo.f90
+        multio.f90
+
+    PUBLIC_INCLUDES
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module>
+
+    PUBLIC_LIBS
+        multio-server
+)
+
+if( HAVE_MULTIO_SERVER )
+    set_target_properties( multio-server-fapi
+        PROPERTIES Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
+endif()

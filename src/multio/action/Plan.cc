@@ -10,6 +10,8 @@
 
 #include "Plan.h"
 
+#include <fstream>
+
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
@@ -18,6 +20,7 @@
 #include "multio/action/Action.h"
 #include "multio/LibMultio.h"
 #include "multio/util/ScopedTimer.h"
+#include "multio/util/logfile_name.h"
 
 using eckit::LocalConfiguration;
 
@@ -53,15 +56,14 @@ LocalConfiguration rootConfig(const LocalConfiguration& config) {
 
 Plan::Plan(const eckit::Configuration& config) {
     name_ = config.getString("name", "anonymous");
-
     auto root = rootConfig(eckit::LocalConfiguration{config});
     root_.reset(ActionFactory::instance().build(root.getString("type"), root));
 }
 
 Plan::~Plan() {
-    eckit::Log::info() << " ******* Plan " << name_
-                       << " -- total wall-clock time spent processing: " << timing_ << "s"
-                       << std::endl;
+    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
+    logFile << "\n ** Plan " << name_ << " -- total wall-clock time spent processing: " << timing_
+            << "s" << std::endl;
 }
 
 void Plan::process(message::Message msg) {

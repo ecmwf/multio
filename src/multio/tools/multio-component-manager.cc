@@ -33,13 +33,16 @@ private:
 };
 
 ComponentManager::ComponentManager(int argc, char** argv) : multio::MultioTool(argc, argv) {
-    options_.push_back(new eckit::option::SimpleOption<uint64_t>("number-of-joins", "Wait for number-of-joins join events before sending an all-ready message"));
+    options_.push_back(new eckit::option::SimpleOption<uint64_t>(
+        "number-of-joins",
+        "Wait for number-of-joins join events before sending an all-ready message"));
 }
 
 void ComponentManager::init(const eckit::option::CmdArgs& args) {
     args.get("number-of-joins", numberOfJoins_);
 
-    ASSERT(MSTRO_OK == mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0));
+    ASSERT(MSTRO_OK ==
+           mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0));
 }
 
 void ComponentManager::finish(const eckit::option::CmdArgs&) {
@@ -57,9 +60,8 @@ void ComponentManager::execute(const eckit::option::CmdArgs &) {
     bool done = false;
     bool allReadySent = false;
     MaestroSelector selector{nullptr};
-    auto subscription = selector.subscribe(
-            MSTRO_POOL_EVENT_APP_JOIN|MSTRO_POOL_EVENT_APP_LEAVE,
-            MSTRO_SUBSCRIPTION_OPTS_DEFAULT);
+    auto subscription = selector.subscribe(MSTRO_POOL_EVENT_APP_JOIN | MSTRO_POOL_EVENT_APP_LEAVE,
+                                           MSTRO_SUBSCRIPTION_OPTS_DEFAULT);
 
     while (not done) {
         auto event = subscription.poll();
@@ -68,8 +70,8 @@ void ComponentManager::execute(const eckit::option::CmdArgs &) {
             while (tmp) {
                 switch(tmp->kind) {
                     case MSTRO_POOL_EVENT_APP_JOIN:
-                        std::cout << mstro_clock() << ",JOIN," << tmp->serial
-                                  << ", { " << tmp->join.appid << ",\"" << tmp->join.component_name << "\" }"
+                        std::cout << mstro_clock() << ",JOIN," << tmp->serial << ", { "
+                                  << tmp->join.appid << ",\"" << tmp->join.component_name << "\" }"
                                   << std::endl;
                         ++joinCount;
                         break;
@@ -88,12 +90,13 @@ void ComponentManager::execute(const eckit::option::CmdArgs &) {
             }
         }
 
-    
+
         if (numberOfJoins_ > 0 and joinCount == numberOfJoins_ and not allReadySent) {
             allReady_ = MaestroCdo{"allClientsReady"};
             allReady_.seal();
             allReady_.offer();
-            std::cout << mstro_clock() << ",ALL_READY,0, { 4294967295,\"SPECIAL MESSAGE\" }" << std::endl;
+            std::cout << mstro_clock() << ",ALL_READY,0, { 4294967295,\"SPECIAL MESSAGE\" }"
+                      << std::endl;
             allReadySent = true;
         }
 

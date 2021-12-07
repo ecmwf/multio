@@ -71,7 +71,9 @@ private:
     MaestroStatistics statistics_;
     std::set<std::string> req_set_;
 
+    bool allReadyEnabled_;
     MaestroCdo allReady_;
+
     MaestroCdo readyCdo_;
 };
 
@@ -87,6 +89,7 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<bool>("compiled", "Batch generator"));
     options_.push_back(new eckit::option::SimpleOption<uint64_t>("nworkers", "Number of threaded workers"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("force-postproc", "Extra values to add to each requirements (e.g. --force-retrieve=resol=av)"));
+    options_.push_back(new eckit::option::SimpleOption<bool>("all-ready", "Wait for the all-ready CDO."));
 
     options_.push_back(new eckit::option::Separator("MIR options"));
     options_.push_back(new eckit::option::FactoryOption<mir::key::style::MIRStyleFactory>("style", "Select how the interpolations are performed"));
@@ -104,15 +107,18 @@ void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
     args.get("nworkers", nworkers_);
     args.get("compiled", compiled_);
     args.get("dryrun", dryrun_);
+    args.get("allrady", allReadyEnabled_);
 
     generator_.reset(pgen::BatchGeneratorFactory::build(compiled_ ? "binary" : "text", args));
 
     ASSERT(MSTRO_OK == mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0));
 
-    allReady_ = MaestroCdo{"allClientsReady"};
-    allReady_.require();
-    allReady_.demand();
-    allReady_.dispose();
+    if (allReadyEnabled_) {
+        allReady_ = MaestroCdo{"allClientsReady"};
+        allReady_.require();
+        allReady_.demand();
+        allReady_.dispose();
+    }
 }
 
 void MaestroSyphon::finish(const eckit::option::CmdArgs&) {

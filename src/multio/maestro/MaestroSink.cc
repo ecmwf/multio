@@ -35,6 +35,7 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
     LOG_DEBUG_LIB(LibMultio) << "Config = " << config << std::endl;
 
     LOG_DEBUG_LIB(LibMultio) << *this << std::endl;
+    readyCdoEnabled_ = config.getBool("ready-cdo", true);
 
     eckit::Timing timing;
     {
@@ -50,12 +51,14 @@ MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) 
         auto delimiter = std::string{" - "};
         auto number = std::atoi(component.substr(component.find(delimiter) + delimiter.length(),
                                                  component.length()).c_str());
-        auto readyCdoName = std::string{"READY - "} + std::to_string(number);
-        readyCdo_ = MaestroCdo{readyCdoName};
-        eckit::Log::info() << "Waiting for CDO [" << readyCdo_ << "] to be ready." << std::endl;
-        readyCdo_.require();
-        eckit::mpi::comm().barrier();
-        readyCdo_.demand();
+        if (readyCdoEnabled_) {
+            auto readyCdoName = std::string{"READY - "} + std::to_string(number);
+            readyCdo_ = MaestroCdo{readyCdoName};
+            eckit::Log::info() << "Waiting for CDO [" << readyCdo_ << "] to be ready." << std::endl;
+            readyCdo_.require();
+            eckit::mpi::comm().barrier();
+            readyCdo_.demand();
+        }
     }
     eckit::Log::info() << " MaestroSink: initialising Maestro has taken " << timing.elapsed_ << "s"
                        << std::endl;
@@ -66,7 +69,8 @@ MaestroSink::~MaestroSink() {
     eckit::Timing timing;
     {
         util::ScopedTimer timer{timing};
-        readyCdo_.dispose();
+        if (readyCdoEnabled_)
+            readyCdo_.dispose();
         mstro_finalize();
     }
     eckit::Log::info() << " MaestroSink: finalising Maestro has taken " << timing.elapsed_ << "s"

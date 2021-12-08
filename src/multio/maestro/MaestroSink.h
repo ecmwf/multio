@@ -50,6 +50,8 @@ private:
     CdoNamer cdo_namer_;
     eckit::Timing timing_;
     MaestroStatistics statistics_;
+
+    bool readyCdoEnabled_ = true;
     MaestroCdo readyCdo_;
 };
 

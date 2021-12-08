@@ -38,7 +38,7 @@ using message::Message;
 Listener::Listener(const eckit::Configuration& config, Transport& trans) :
     dispatcher_{std::make_shared<Dispatcher>(config)},
     transport_{trans},
-    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024*1024)) {}
+    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE",1024*1024)) {}
 
 void Listener::start() {
 
@@ -72,7 +72,7 @@ void Listener::start() {
             case Message::Tag::Grib:
                 LOG_DEBUG_LIB(LibMultio)
                     << "*** Size of grib template: " << msg.size() << std::endl;
-               GribTemplate::instance().add(msg);
+                GribTemplate::instance().add(msg);
                 break;
 
             case Message::Tag::Domain:
@@ -91,7 +91,7 @@ void Listener::start() {
             case Message::Tag::StepComplete:
                 LOG_DEBUG_LIB(LibMultio)
                     << "*** Flush received from: " << msg.source() << std::endl;
-               msgQueue_.push(std::move(msg));
+                msgQueue_.push(std::move(msg));
                 break;
 
             case Message::Tag::Field:
@@ -99,7 +99,7 @@ void Listener::start() {
                 LOG_DEBUG_LIB(LibMultio)
                     << "*** Field received from: " << msg.source() << " with size "
                     << msg.size() / sizeof(double) << std::endl;
-               msgQueue_.push(std::move(msg));
+                msgQueue_.emplace(std::move(msg));
                 break;
 
             default:

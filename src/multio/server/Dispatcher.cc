@@ -55,7 +55,7 @@ void Dispatcher::dispatch(eckit::Queue<message::Message>& queue) {
         for (const auto& plan : plans_) {
             plan->process(msg);
         }
-        eckit::Log::info() << "Size of the dispatch queue: " << sz << std::endl;
+        LOG_DEBUG_LIB(multio::LibMultio) << "Size of the dispatch queue: " << sz << std::endl;
         sz = queue.pop(msg);
     }
 }

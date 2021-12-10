@@ -111,7 +111,8 @@ bool domainConsistent_ = false;
 }  // namespace
 
 void Structured::checkDomainConsistency(const message::Message& local) const {
-    if (checkedDomains_.find(msg.domain()) == std::end(checkedDomains_)) {
+    if (checkedDomains_.find(local.domain()) == std::end(checkedDomains_)) {
+        checkedDomains_.insert(local.domain());
         domainConsistent_ = false;
     }
 

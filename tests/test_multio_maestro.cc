@@ -38,21 +38,21 @@ CASE("CDO construction") {
     TestHarness test;
 
     // only name
-    EXPECT_NO_THROW(MaestroCdo("name"));
+    EXPECT_NO_THROW(MaestroCdo{"name"}.dispose());
 
     // long name
-    EXPECT_NO_THROW(MaestroCdo(std::string(1000, 'A')));
+    EXPECT_NO_THROW(MaestroCdo{std::string(1000, 'A')}.dispose());
 
     // name, data and size
-    EXPECT_NO_THROW(MaestroCdo("name", test.data(), test.size()));
+    EXPECT_NO_THROW(MaestroCdo("name", test.data(), test.size()).dispose());
 
     // move section
     MaestroCdo cdo1{"name", test.data(), test.size()};
-    
+
     // move constructor
     MaestroCdo cdo2{std::move(cdo1)};
 
-    std::string data = std::string(static_cast<const char*>(cdo2.data())).substr(0, cdo2.size());
+    std::string data{static_cast<const char*>(cdo2.data()), cdo2.size()};
     EXPECT(data.compare(static_cast<const char*>(test.data())) == 0);
     EXPECT(cdo1.data() == nullptr);
 
@@ -62,12 +62,14 @@ CASE("CDO construction") {
     // move assignment constructor
     MaestroCdo cdo3 = std::move(cdo2);
 
-    data = std::string(static_cast<const char*>(cdo3.data()));
+    data = std::string{static_cast<const char*>(cdo3.data()), cdo3.size()};
     EXPECT(data.compare(static_cast<const char*>(test.data())) == 0);
     EXPECT(cdo2.data() == nullptr);
 
     EXPECT(cdo3.size() == test.size());
     EXPECT(cdo2.size() == 0);
+
+    cdo3.dispose();
 }
 
 CASE("Set and get CDO attributes") {
@@ -103,6 +105,8 @@ CASE("Set and get CDO attributes") {
     EXPECT(getdate.sec == date.sec);
     EXPECT(getdate.nsec == date.nsec);
     EXPECT(getdate.offset == date.offset);
+
+    cdo.dispose();
 }
 
 CASE("Maestro CDO get size and data") {
@@ -112,11 +116,13 @@ CASE("Maestro CDO get size and data") {
     MaestroCdo cdo1{"nodata"};
     EXPECT(cdo1.size() == 0);
     EXPECT(cdo1.data() == nullptr);
+    cdo1.dispose();
 
     MaestroCdo cdo2{"name", test.data(), test.size()};
-    std::string data = std::string(static_cast<const char*>(cdo2.data())).substr(0, cdo2.size());
+    std::string data = std::string{static_cast<const char*>(cdo2.data()), cdo2.size()};
     EXPECT(cdo2.size() == test.size());
     EXPECT(data.compare(static_cast<const char*>(test.data())) == 0);
+    cdo2.dispose();
 }
 
 CASE("Maestro core CDO operation") {
@@ -127,10 +133,12 @@ CASE("Maestro core CDO operation") {
     EXPECT_NO_THROW(cdo.seal());
     EXPECT_NO_THROW(cdo.offer());
     EXPECT_NO_THROW(cdo.withdraw());
+    EXPECT_NO_THROW(cdo.dispose());
 
     MaestroCdo otherCdo{"other"};
     otherCdo.require();
     otherCdo.retract();
+    otherCdo.dispose();
 }
 
 CASE("Maestro core CDO operations with local transfer") {
@@ -154,6 +162,9 @@ CASE("Maestro core CDO operations with local transfer") {
     EXPECT(stream.compare(destCdo.get_attribute<const char*>(".maestro.ecmwf.stream")) == 0);
 
     sourceCdo.withdraw();
+
+    sourceCdo.dispose();
+    destCdo.dispose();
 }
 
 CASE("Selector and subscription") {

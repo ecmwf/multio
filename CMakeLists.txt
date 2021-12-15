@@ -52,7 +52,7 @@ ecbuild_add_option( FEATURE MULTIO_SERVER
 ecbuild_add_option( FEATURE MAESTRO
                     DEFAULT OFF
                     DESCRIPTION "Pass data to Maestro middleware"
-                    REQUIRED_PACKAGES "NAME Maestro" )
+                    REQUIRED_PACKAGES "NAME Maestro" "NAME pgen" )
 
 ### sandbox
 

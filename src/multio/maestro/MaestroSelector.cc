@@ -5,21 +5,16 @@
 
 namespace multio {
 
-MaestroSelector::MaestroSelector(mstro_schema schema, const char* nspace, const char* query) :
-    status_{mstro_cdo_selector_create(schema, nspace, query, &selector_)} {
-    ASSERT(status_ == MSTRO_OK);
+MaestroSelector::MaestroSelector(const char* query, mstro_schema schema, const char* nspace) {
+    ASSERT(MSTRO_OK == mstro_cdo_selector_create(schema, nspace, query, &selector_));
 }
 
 MaestroSelector::~MaestroSelector() {
-    mstro_cdo_selector_dispose(selector_);
+    ASSERT(MSTRO_OK == mstro_cdo_selector_dispose(selector_));
 }
 
-mstro_subscription MaestroSelector::subscribe(mstro_pool_event_kind events,
-                                              mstro_subscription_opts flags) {
-    mstro_subscription subscription;
-    status_ = mstro_subscribe(selector_, events, flags, &subscription);
-    ASSERT(status_ == MSTRO_OK);
-    return subscription;
+MaestroSubscription MaestroSelector::subscribe(mstro_pool_event_kind events, mstro_subscription_opts flags) {
+    return MaestroSubscription{selector_, events, flags};
 }
 
 }  // namespace multio

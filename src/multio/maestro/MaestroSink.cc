@@ -14,131 +14,139 @@
 #include "multio/maestro/MaestroSink.h"
 
 #include <algorithm>
+#include <cstring>
 #include <string>
 #include <thread>
 
+extern "C" {
+#include <maestro.h>
+}
+
 #include "eckit/exception/Exceptions.h"
-#include "eckit/value/Value.h"
+#include "eckit/mpi/Comm.h"
 
 #include "multio/LibMultio.h"
 #include "multio/util/ScopedTimer.h"
 
+
 namespace multio {
-
-namespace  {
-class Metadata : protected eckit::LocalConfiguration {
-    void print(std::ostream& os) const {
-        os << *root_ << std::endl;
-    }
-    friend std::ostream& operator<<(std::ostream& os, const Metadata& md) {
-        md.print(os);
-        return os;
-    }
-
-public:
-    template <typename T>
-    void setValue(const std::string& key, const T& value) {
-        set(key, value);
-    }
-
-    template <typename T>
-    T get(const std::string& key) {
-        T value;
-        eckit::LocalConfiguration::get(key, value);
-        return value;
-    }
-
-    std::vector<std::string> keys() {
-        return eckit::LocalConfiguration::keys();
-    }
-};
-}
 
 MaestroSink::MaestroSink(const eckit::Configuration& config) : DataSink(config) {
     LOG_DEBUG_LIB(LibMultio) << "Config = " << config << std::endl;
 
     LOG_DEBUG_LIB(LibMultio) << *this << std::endl;
+    readyCdoEnabled_ = config.getBool("ready-cdo", true);
 
     eckit::Timing timing;
     {
         util::ScopedTimer timer{timing};
-        mstro_status s =
-            mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0);
+        ASSERT(!::getenv("MSTRO_COMPONENT_NAME"));
+        ASSERT(::getenv("COMPONENT_NAME"));
+        auto componentName = std::string{::getenv("COMPONENT_NAME")} + " -- " +
+                             std::to_string(eckit::mpi::comm().rank());
+        mstro_status s = mstro_init(::getenv("MSTRO_WORKFLOW_NAME"),componentName.c_str(), 0);
         ASSERT(s == MSTRO_OK);
+
+        auto component = std::string{::getenv("COMPONENT_NAME")};
+        auto delimiter = std::string{" - "};
+        auto number = std::atoi(component.substr(component.find(delimiter) + delimiter.length(),
+                                                 component.length()).c_str());
+        if (readyCdoEnabled_) {
+            auto readyCdoName = std::string{"READY - "} + std::to_string(number);
+            readyCdo_ = MaestroCdo{readyCdoName};
+            eckit::Log::info() << "Waiting for CDO [" << readyCdo_ << "] to be ready." << std::endl;
+            readyCdo_.require();
+            eckit::mpi::comm().barrier();
+            readyCdo_.demand();
+        }
     }
     eckit::Log::info() << " MaestroSink: initialising Maestro has taken " << timing.elapsed_ << "s"
                        << std::endl;
 }
 
 MaestroSink::~MaestroSink() {
+
     eckit::Timing timing;
     {
         util::ScopedTimer timer{timing};
+        if (readyCdoEnabled_)
+            readyCdo_.dispose();
         mstro_finalize();
     }
     eckit::Log::info() << " MaestroSink: finalising Maestro has taken " << timing.elapsed_ << "s"
                        << std::endl;
+
+    statistics_.report(eckit::Log::info());
 }
 
 void MaestroSink::write(eckit::message::Message blob) {
+    LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
+    eckit::AutoTiming timing(statistics_.sinkWriteTimer_, statistics_.sinkWriteTiming_);
 
-//    auto name = std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id())) +
-//                "-" + std::to_string(cdoCount_++);
-++cdoCount_;
+    MaestroMetadata md;
 
-//auto name = std::string("multio-hammer-cdo -- ") + std::to_string(cdoCount_++);
+    eckit::message::StringSetter<MaestroMetadata> setter{md};
+    blob.getMetadata(setter);
 
-LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
+    std::ostringstream os;
+    os << md;
 
-util::ScopedTimer timer{timing_};
+    util::ScopedTimer timer{timing_};
 
-Metadata md;
+    std::string name = "";
+    {
+        eckit::AutoTiming timing(statistics_.sinkNameTimer_, statistics_.sinkNameTiming_);
+        name = cdo_namer_.name(md);
+    }
+    LOG_DEBUG_LIB(LibMultio) << "Name: " << name << std::endl;
 
-eckit::message::TypedSetter<Metadata> setter{md};
-blob.getMetadata(setter);
+    {
+        eckit::AutoTiming timing(statistics_.sinkCdoCreationTimer_, statistics_.sinkCdoCreationTiming_);
+        offered_cdos_.emplace_back(name.c_str(), blob.data(), blob.length());
+    }
+    auto& cdo = offered_cdos_.back();
 
-std::ostringstream os;
-os << md;
+    LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
 
-mstro_cdo cdo = nullptr;
-mstro_status s = mstro_cdo_declare(os.str().c_str(), MSTRO_ATTR_DEFAULT, &cdo);
+    for (const auto& kw : md.keys()) {
+        eckit::AutoTiming timing(statistics_.sinkAttributeTimer_, statistics_.sinkAttributeTiming_);
+        auto mkey = ".maestro.ecmwf." + kw;
+        auto value = md.get<std::string>(kw);
 
-const void* cbuf = blob.data();
-void* buf = const_cast<void*>(cbuf);
-s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.raw-ptr", buf);
+        if (kw == "class" || kw == "domain" || kw == "expver" ||
+            kw == "levtype" || kw == "stream" || kw == "type") {
+            cdo.set_attribute(mkey.c_str(), value.c_str(), true);
+        } else if (kw == "levelist" || kw == "number" || 
+                   kw == "param" || kw == "step") {
+            int64_t intvalue = std::stoi(value);
+            cdo.set_attribute(mkey.c_str(), intvalue, true);
+        } else if (kw == "time") {
+            uint64_t intvalue = std::stoi(value);
+            cdo.set_attribute(mkey.c_str(), intvalue, true);
+        }
+    }
 
-auto sz = blob.length();
-s = mstro_cdo_attribute_set(cdo, ".maestro.core.cdo.scope.local-size", &sz);
+    cdo.seal();               // Seal it after setting all attributes
 
-LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " *** Offer cdo " << name.c_str() << std::endl;
 
-for (const auto& kw : md.keys()) {
-    auto value = md.get<std::string>(kw);
-
-    auto mkey = ".maestro.ecmwf." + kw;
-    //auto mvalue = const_cast<char*>(value.c_str());
-    auto intvalue = std::stoi(value);
-    auto mvalue = static_cast<void *>(&intvalue);
-    s = mstro_cdo_attribute_set(cdo, mkey.c_str(), &mvalue);
-}
-
-s = mstro_cdo_declaration_seal(cdo);  // Seal it after setting all attributes
-
-eckit::Log::info() << " *** Offer cdo " << os.str().c_str() << std::endl;
-s = mstro_cdo_offer(cdo);  // Submit field
-
-offered_cdos_.push_back(cdo);
+    {
+        eckit::AutoTiming timing(statistics_.sinkCdoOfferTimer_, statistics_.sinkCdoOfferTiming_);
+        cdo.offer();               // Submit field
+        ++cdoCount_;
+    }
 }
 
 void MaestroSink::flush() {
     {
-        util::ScopedTimer timer{timing_};
-        LOG_DEBUG_LIB(LibMultio) << "MaestroSink::flush()" << std::endl;
+        eckit::Log::info() << "MaestroSink::flush()" << std::endl;
 
-        std::for_each(begin(offered_cdos_), end(offered_cdos_), [](mstro_cdo cdo) {
-            mstro_status s = mstro_cdo_withdraw(cdo);
-//            s = mstro_cdo_dispose(cdo);
-            ASSERT(s == MSTRO_OK);
+        util::ScopedTimer timer{timing_};
+
+        std::for_each(begin(offered_cdos_), end(offered_cdos_), [](MaestroCdo& cdo) {
+            LOG_DEBUG_LIB(LibMultio) << "Withdrawing CDO: " << cdo << std::endl;
+            cdo.withdraw();
+            cdo.dispose();
         });
 
         offered_cdos_.clear();

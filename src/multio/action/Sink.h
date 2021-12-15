@@ -37,6 +37,7 @@ using message::Message;
 class Sink : public Action {
 public:
     explicit Sink(const eckit::Configuration& config);
+    ~Sink();
 
     void execute(message::Message msg) const override;
 
@@ -48,6 +49,8 @@ private:
     void flush() const;
 
     void trigger(const Message& msg) const;
+
+    bool report_;
 
     mutable MultIO mio_;
 };

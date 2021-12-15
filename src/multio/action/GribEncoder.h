@@ -43,6 +43,8 @@ public:
 
 private:
     void setOceanMetadata(const message::Metadata& metadata);
+    void setCoordMetadata(const message::Metadata& metadata);
+
     message::Message setFieldValues(const  message::Message& msg);
     message::Message setFieldValues(const double* values, size_t count);
 

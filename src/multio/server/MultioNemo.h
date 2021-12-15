@@ -25,7 +25,7 @@ void multio_write_step_complete();
 
 int multio_init_client(const char* name, int parent_comm);
 
-void multio_init_server(int nemo_comm);
+void multio_init_server(int parent_comm);
 
 void multio_metadata_set_int_value(const char* key, int value);
 

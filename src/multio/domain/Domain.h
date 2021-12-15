@@ -25,7 +25,7 @@ public:
     virtual void to_global(const message::Message& local, message::Message& global) const = 0;
 
 protected:
-    std::vector<int32_t> definition_;  // Grid-point
+    const std::vector<int32_t> definition_;  // Grid-point
 
 };
 
@@ -45,6 +45,8 @@ public:
 private:
     void to_local(const std::vector<double>& global, std::vector<double>& local) const override;
     void to_global(const message::Message& local, message::Message& global) const override;
+
+    void checkDomainConsistency(const message::Message& local) const;
 };
 
 class Spectral final : public Domain {

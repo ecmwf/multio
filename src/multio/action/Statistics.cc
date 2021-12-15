@@ -55,7 +55,7 @@ void Statistics::execute(message::Message msg) const {
     std::ostringstream os;
     auto md = msg.metadata();
     {
-        eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+        eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
         LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << md
                                  << std::endl;
@@ -86,7 +86,7 @@ void Statistics::execute(message::Message msg) const {
         executeNext(newMsg);
     }
 
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     fieldStats_.at(os.str())->reset(msg);
 }
 

@@ -10,6 +10,7 @@ using NemoKey = std::string;
 struct GribData {
     long param;
     std::string gridType;
+    std::string levelType;
 };
 
 class NemoToGrib {

@@ -92,4 +92,3 @@ private: // methods
 }  // namespace multio
 
 #endif // multio_IOStats_H
-

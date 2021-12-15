@@ -14,20 +14,20 @@ namespace multio {
           md.print(os);
           return os;
       }
- 
+
   public:
       template <typename T>
       void setValue(const std::string& key, const T& value) {
           set(key, value);
       }
- 
+
       template <typename T>
       T get(const std::string& key) {
           T value;
           eckit::LocalConfiguration::get(key, value);
           return value;
       }
- 
+
       std::vector<std::string> keys() {
           return eckit::LocalConfiguration::keys();
       }

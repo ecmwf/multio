@@ -77,7 +77,7 @@ private:
     MaestroCdo readyCdo_;
 };
 
-MaestroSyphon::MaestroSyphon(int argc, char** argv) : 
+MaestroSyphon::MaestroSyphon(int argc, char** argv) :
     multio::MultioTool(argc, argv),
     req_queue_{eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)} {
 

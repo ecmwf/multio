@@ -80,4 +80,3 @@ private: // methods
 }  // namespace multio
 
 #endif // multio_IOLogger_H
-

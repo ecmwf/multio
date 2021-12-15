@@ -5,4 +5,3 @@ serverCount : 3
 clientCount : 5
 
 activeFields : [sst, ssu, ssv, ssh]
-

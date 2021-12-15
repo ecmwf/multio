@@ -36,7 +36,7 @@ private:
         std::copy_if(retrieve.begin(), retrieve.end(), std::inserter(filtered_retrieve,
             filtered_retrieve.end()),[this](std::pair<std::string, std::string> const& it) {
                 return ignored_keys.find(it.first) == ignored_keys.end();
-            }); 
+            });
 
         std::stringstream ss;
         auto it = filtered_retrieve.cbegin();

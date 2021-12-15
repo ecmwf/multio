@@ -8,7 +8,7 @@ namespace multio {
 class MaestroStatistics : public eckit::Statistics {
 public:
     MaestroStatistics();
-    
+
     eckit::Timing sinkWriteTiming_;
     eckit::Timer  sinkWriteTimer_;
     eckit::Timing sinkNameTiming_;

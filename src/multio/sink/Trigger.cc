@@ -397,4 +397,3 @@ void Trigger::print(std::ostream& os) const {
 
 }  // namespace multio
 
-

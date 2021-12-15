@@ -116,7 +116,7 @@ void MaestroSink::write(eckit::message::Message blob) {
         if (kw == "class" || kw == "domain" || kw == "expver" ||
             kw == "levtype" || kw == "stream" || kw == "type") {
             cdo.set_attribute(mkey.c_str(), value.c_str(), true);
-        } else if (kw == "levelist" || kw == "number" || 
+        } else if (kw == "levelist" || kw == "number" ||
                    kw == "param" || kw == "step") {
             int64_t intvalue = std::stoi(value);
             cdo.set_attribute(mkey.c_str(), intvalue, true);

@@ -46,10 +46,6 @@ constexpr bool inRange(int32_t val, int32_t low, int32_t upp) {
 
 
 Structured::Structured(std::vector<int32_t>&& def) : Domain{std::move(def)} {
-    eckit::Log::info() << "*** Structured domain -- mapping info: ";
-    util::print_buffer(definition_, eckit::Log::info());
-    eckit::Log::info() << std::endl;
-
     ASSERT(definition_.size() == 11);
 }
 

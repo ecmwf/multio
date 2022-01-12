@@ -10,14 +10,14 @@
 
 #include "Sink.h"
 
-#include <iostream>
+#include <fstream>
 
 #include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/message/Message.h"
 
 #include "multio/LibMultio.h"
-#include "multio/util/ScopedTimer.h"
+#include "multio/util/logfile_name.h"
 
 
 namespace multio {
@@ -27,7 +27,10 @@ Sink::Sink(const eckit::Configuration& config) :
     Action(config), report_{config.getBool("report", true)}, mio_{config} {}
 
 Sink::~Sink() {
-    mio_.report(eckit::Log::info());
+    if (report_) {
+        std::ofstream logFile{util::logfile_name(), std::ios_base::app};
+        mio_.report(logFile);
+    }
 }
 
 void Sink::execute(Message msg) const {
@@ -55,7 +58,7 @@ void Sink::execute(Message msg) const {
 }
 
 void Sink::write(Message msg) const {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     eckit::message::Message blob = to_eckit_message(msg);
 
@@ -63,12 +66,12 @@ void Sink::write(Message msg) const {
 }
 
 void Sink::flush() const {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     mio_.flush();
 }
 
 void Sink::trigger(const Message& msg) const {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.actionTiming_};
+    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     eckit::StringDict metadata;
 

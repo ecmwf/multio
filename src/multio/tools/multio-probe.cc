@@ -70,7 +70,6 @@ MultioProbe::MultioProbe(int argc, char** argv) : multio::MultioTool(argc, argv)
     options_.push_back(new eckit::option::SimpleOption<bool>("test", "Whether it runs as part of test"));
 }
 
-
 void MultioProbe::init(const eckit::option::CmdArgs& args) {
     args.get("transport", transport_);
     args.get("port", port_);
@@ -103,7 +102,7 @@ void MultioProbe::execute(const eckit::option::CmdArgs&) {
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioProbe::executeLive() {
-    MultioServer server{eckit::YAMLConfiguration{configuration_path() + "multio-server.yaml"}};
+    MultioServer server{eckit::YAMLConfiguration{configuration_file()}};
 }
 
 void MultioProbe::executeTest() {

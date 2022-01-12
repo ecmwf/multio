@@ -4,42 +4,52 @@ nemo-fields :
   - nemo-id: lat_T
     param-id: 250003
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   - nemo-id: lon_T
     param-id: 250004
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   - nemo-id: lat_U
     param-id: 250005
     grid-type : "U grid"
+    level-type : "oceanSurface"
 
   - nemo-id: lon_U
     param-id: 250006
     grid-type : "U grid"
+    level-type : "oceanSurface"
 
   - nemo-id: lat_V
     param-id: 250007
     grid-type : "V grid"
+    level-type : "oceanSurface"
 
   - nemo-id: lon_V
     param-id: 250008
     grid-type : "V grid"
+    level-type : "oceanSurface"
 
   - nemo-id: lat_W
     param-id: 250009
     grid-type : "W grid"
+    level-type : "oceanSurface"
 
   - nemo-id: lon_W
     param-id: 250010
     grid-type : "W grid"
+    level-type : "oceanSurface"
 
   - nemo-id: lat_F
     param-id: 250011
     grid-type : "F grid"
+    level-type : "oceanSurface"
 
   - nemo-id: lon_F
     param-id: 250012
     grid-type : "F grid"
+    level-type : "oceanSurface"
 
   #==============================+===
   # Sea-ice parameters -- levtype 174
@@ -49,36 +59,43 @@ nemo-fields :
   - nemo-id : icevolu
     param-id : 262000
     grid-type : "T grid"
+    level-type : "topSeaIceLevel"
 
   #Sea ice area fraction
   - nemo-id : ice_cover
     param-id : 262001
     grid-type : "T grid"
+    level-type : "topSeaIceLevel"
 
   #Sea ice snow thickness
   - nemo-id : snwthic
     param-id : 262002
     grid-type : "T grid"
+    level-type : "seaIceLayer"
 
   #Sea ice x velocity
   - nemo-id : uice
     param-id : 262003
     grid-type : "U grid"
+    level-type : "oceanSurface"
 
   #Sea ice y velocity
   - nemo-id : vice
     param-id : 262004
     grid-type : "V grid"
+    level-type : "oceanSurface"
 
   #Sea-ice albedo
   - nemo-id : icealb
     param-id : 262005
     grid-type : "T grid"
+    level-type : "topSeaIceLevel"
 
   #Sea ice surface temperature
   - nemo-id : icettop
     param-id : 262006
     grid-type : "T grid"
+    level-type : "topSeaIceLevel"
 
   #===================================
   # Ocean 2d parameters -- levtype 160
@@ -88,126 +105,151 @@ nemo-fields :
   - nemo-id : sss
     param-id : 262100
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Sea surface temperature
   - nemo-id : sst
     param-id : 262101
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Depth of 14C isotherm
   - nemo-id : 14d
     param-id : 262102
     grid-type : "T grid"
+    level-type : "isothermal"
 
   #Depth of 17C isotherm
   - nemo-id : 17d
     param-id : 262103
     grid-type : "T grid"
+    level-type : "isothermal"
 
   #Depth of 20C isotherm
   - nemo-id : 20d
     param-id : 262104
     grid-type : "T grid"
+    level-type : "isothermal"
 
   #Depth of 26C isotherm
   - nemo-id : 26d
     param-id : 262105
     grid-type : "T grid"
+    level-type : "isothermal"
 
   #Depth of 28C isotherm
   - nemo-id : 28d
     param-id : 262106
     grid-type : "T grid"
+    level-type : "isothermal"
 
   #Surface downward heat flux
   - nemo-id : qt
     param-id : 262108
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Northward surface stress
   - nemo-id : vtaun
     param-id : 262109
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Eastward surface stress
   - nemo-id : utaue
     param-id : 262110
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Y component of surface stress
   - nemo-id : vtau
     param-id : 262111
     grid-type : "V grid"
+    level-type : "oceanSurface"
 
   #X component of surface stress
   - nemo-id : utau
     param-id : 262112
     grid-type : "U grid"
+    level-type : "oceanSurface"
 
-  #Ocean mixed layer depth defind by sigma theta 0.01 kg m+AC0-3
+  #Ocean mixed layer depth defind by sigma theta 0.01 kg m-3
   - nemo-id : mldr10_1
     param-id : 262113
     grid-type : "T grid"
+    level-type : "mixedLayerDepthByDensity"
 
-  #Ocean mixed layer depth defind by sigma theta 0.03 kg m+AC0-3
+  #Ocean mixed layer depth defind by sigma theta 0.03 kg m-3
   - nemo-id : mldkr03
     param-id : 262114
     grid-type : "T grid"
+    level-type : "mixedLayerDepthByDensity"
 
-  #Ocean mixed layer depth defind by sigma theta 0.125 kg m+AC0-3
+  #Ocean mixed layer depth defind by sigma theta 0.125 kg m-3
   - nemo-id : mldkr125
     param-id : 262115
     grid-type : "T grid"
+    level-type : "mixedLayerDepthByDensity"
 
   #Ocean mixed layer depth  defined by temperature 0.2 C
   - nemo-id : mldt02
     param-id : 262116
     grid-type : "T grid"
+    level-type : "mixedLayerDepthByTemperature"
 
   #Ocean mixed layer depth  defined by temperature 0.5 C
   - nemo-id : mldt05
     param-id : 262117
     grid-type : "T grid"
+    level-type : "mixedLayerDepthByTemperature"
 
   #Integral of sea water practical salinity in the upper 300m
   - nemo-id : sal300
     param-id : 262118
     grid-type : "T grid"
+    level-type : "oceanDepthLayer"
 
   #Integral of sea water practical salinity in the upper 700m
   - nemo-id : sal700
     param-id : 262119
     grid-type : "T grid"
+    level-type : "oceanDepthLayer"
 
   #Integral of sea water practical salinity in the total water column
   - nemo-id : salbtm
     param-id : 262120
     grid-type : "T grid"
+    level-type : "entireOcean"
 
   #Water column integrated heat content in the upper 300 m
   - nemo-id : hc300
     param-id : 262121
     grid-type : "T grid"
+    level-type : "oceanDepthLayer"
 
   #Water column integrated heat content in the upper 700m
   - nemo-id : hc700
     param-id : 262122
     grid-type : "T grid"
+    level-type : "oceanDepthLayer"
 
   #Water column integrated heat content in the total water column
   - nemo-id : hcbtm
     param-id : 262123
     grid-type : "T grid"
+    level-type : "entireOcean"
 
   #Sea surface height
   - nemo-id : ssh
     param-id : 262124
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
    #Steric change in sea surface height -- is this correct?
   - nemo-id : hst
     param-id : 262125
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #===================================
   # Ocean 3d parameters -- levtype 168
@@ -217,41 +259,49 @@ nemo-fields :
   - nemo-id : soce
     param-id : 262500
     grid-type : "T grid"
+    level-type : "oceanModelLayer"
 
   #Sea water potential temperature
   - nemo-id : toce
     param-id : 262501
     grid-type : "T grid"
+    level-type : "oceanModelLayer"
 
   #Sea water sigma theta
   - nemo-id : sigmat
     param-id : 262502
     grid-type : "T grid"
+    level-type : "oceanModelLayer"
 
   #Y component of sea water velocity
   - nemo-id : voce
     param-id : 262503
     grid-type : "V grid"
+    level-type : "oceanModelLayer"
 
   #X component of sea water velocity
   - nemo-id : uoce
     param-id : 262504
     grid-type : "U grid"
+    level-type : "oceanModelLayer"
 
   #Northward sea water velocity
   - nemo-id : vocen
     param-id : 262505
     grid-type : "T grid"
+    level-type : "oceanModelLayer"
 
   #Eastward sea water velocity
   - nemo-id : uocee
     param-id : 262506
     grid-type : "T grid"
+    level-type : "oceanModelLayer"
 
   #Upward sea water velocity
   - nemo-id : woce
     param-id : 262507
     grid-type : "W grid"
+    level-type : "oceanModelLayer"
 
   #=================================
   # Experimental parameters
@@ -264,78 +314,95 @@ nemo-fields :
   - nemo-id : hbp
     param-id : 212008 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   - nemo-id : empmr
     param-id : 212009 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   - nemo-id : runoffs
     param-id : 212010 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   - nemo-id : saltflx # Still experimental
     param-id : 212011
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   - nemo-id : qsr
     param-id : 212013 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   - nemo-id : taum
     param-id : 212020 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   - nemo-id : wspd
     param-id : 212021 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Natural drag coefficient
   - nemo-id : cdn10
     param-id : 212022 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Heat-flux correction
   - nemo-id : qrp
     param-id : 212023 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Virtual salt-fluxh correction (surface water-flux damping?)
   - nemo-id : erp
     param-id : 212024 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Turbocline depth
   - nemo-id : mldkz5
     param-id : 212025 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Total precipitation
   - nemo-id : precip
     param-id : 212037 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Surface eastward sea water velocity
   - nemo-id : uocees
     param-id : 212040 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Surface northward sea water velocity
   - nemo-id : vocens
     param-id : 212041 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #Water column integrated heat content in the total water column 0-26C
   - nemo-id : hc26c
     param-id : 212044 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   - nemo-id : thetaodmp
     param-id : 212045 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   - nemo-id : sodmp
     param-id : 212046 # Still experimental
     grid-type : "T grid"
+    level-type : "oceanSurface"
 
   #=================================
   # Physical parameters -- U grid
@@ -345,6 +412,7 @@ nemo-fields :
   - nemo-id : ssu
     param-id : 212101 # Still experimental
     grid-type : "U grid"
+    level-type : "oceanSurface"
 
   #=================================
   # Physical parameters -- V grid
@@ -354,6 +422,7 @@ nemo-fields :
   - nemo-id : ssv
     param-id : 212151 # Still experimental
     grid-type : "V grid"
+    level-type : "oceanSurface"
 
   #=================================
   # Physical parameters -- W grid
@@ -363,6 +432,7 @@ nemo-fields :
   - nemo-id : ssw
     param-id : 212202 # Still experimental
     grid-type : "W grid"
+    level-type : "oceanSurface"
 
   #=================================
   # Ice variables -- T,U,V grid
@@ -371,55 +441,69 @@ nemo-fields :
   - nemo-id : iceconc_cat
     param-id : 212213 # Still experimental
     grid-type : "T grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : icethic
     param-id : 212214 # Still experimental
     grid-type : "T grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : icethick_cat
     param-id : 212215 # Still experimental
     grid-type : "T grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : snwthic_cat
     param-id : 212217 # Still experimental
     grid-type : "T grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : iicevelur
     param-id : 212220 # Still experimental
     grid-type : "U grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : iicevelvr
     param-id : 212221 # Still experimental
     grid-type : "V grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : utau_ai
     param-id : 212222 # Still experimental
     grid-type : "U grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : vtau_ai
     param-id : 212223 # Still experimental
     grid-type : "V grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : iocestrur
     param-id : 212224 # Still experimental
     grid-type : "U grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : iocestrvr
     param-id : 212225 # Still experimental
     grid-type : "V grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : snowpre
     param-id : 212226 # Still experimental
     grid-type : "T grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : icesalt
     param-id : 212227 # Still experimental
     grid-type : "T grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : icetemp
     param-id : 212228 # Still experimental
     grid-type : "T grid"
+    level-type : "topSeaIceLevel"
 
   - nemo-id : icesalt_cat
     param-id : 212230 # Still experimental
     grid-type : "T grid"
+    level-type : "topSeaIceLevel"

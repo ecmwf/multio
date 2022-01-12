@@ -89,11 +89,11 @@ void MpiTransport::closeConnections() {
 
 Message MpiTransport::receive() {
 
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.totReturnTiming_};
+    eckit::AutoTiming timing{statistics_.totReturnTimer_, statistics_.totReturnTiming_};
 
     do {
         while (not msgPack_.empty()) {
-            eckit::AutoTiming retTiming{statistics_.timer_, statistics_.returnTiming_};
+            eckit::AutoTiming retTiming{statistics_.returnTimer_, statistics_.returnTiming_};
             auto msg = msgPack_.front();
             msgPack_.pop();
             return msg;
@@ -101,7 +101,7 @@ Message MpiTransport::receive() {
 
         if (auto strm = streamQueue_.front()) {
             while (strm->position() < strm->size()) {
-                eckit::AutoTiming decodeTiming{statistics_.timer_, statistics_.decodeTiming_};
+                eckit::AutoTiming decodeTiming{statistics_.decodeTimer_, statistics_.decodeTiming_};
                 auto msg = decodeMessage(*strm);
                 msgPack_.push(msg);
             }
@@ -122,7 +122,7 @@ void MpiTransport::send(const Message& msg) {
 
     encodeMessage(stream, msg);
 
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.sendTiming_};
+    eckit::AutoTiming timing{statistics_.sendTimer_, statistics_.sendTiming_};
 
     auto sz = static_cast<size_t>(stream.bytesWritten());
     auto dest = static_cast<int>(msg.destination().id());
@@ -151,7 +151,7 @@ void MpiTransport::listen() {
     }
     auto& buf = pool_.findAvailableBuffer();
     auto sz = blockingReceive(status, buf);
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.pushToQueueTiming_};
+    eckit::AutoTiming timing{statistics_.pushToQueueTimer_, statistics_.pushToQueueTiming_};
     streamQueue_.emplace(buf, sz);
 }
 
@@ -175,7 +175,7 @@ const eckit::mpi::Comm& MpiTransport::comm() const {
 }
 
 eckit::mpi::Status MpiTransport::probe() {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.probeTiming_};
+    eckit::AutoTiming timing{statistics_.probeTimer_, statistics_.probeTiming_};
     auto status = comm().iProbe(comm().anySource(), comm().anyTag());
 
     return status;
@@ -185,7 +185,7 @@ size_t MpiTransport::blockingReceive(eckit::mpi::Status& status, MpiBuffer& buff
     auto sz = comm().getCount<void>(status);
     ASSERT(sz < buffer.content.size());
 
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.receiveTiming_};
+    eckit::AutoTiming timing{statistics_.receiveTimer_, statistics_.receiveTiming_};
     comm().receive<void>(buffer.content, sz, status.source(), status.tag());
 
     ++statistics_.receiveCount_;
@@ -195,7 +195,7 @@ size_t MpiTransport::blockingReceive(eckit::mpi::Status& status, MpiBuffer& buff
 }
 
 void MpiTransport::encodeMessage(eckit::Stream& strm, const Message& msg) {
-    eckit::AutoTiming timing{statistics_.timer_, statistics_.encodeTiming_};
+    eckit::AutoTiming timing{statistics_.encodeTimer_, statistics_.encodeTiming_};
 
     msg.encode(strm);
 }

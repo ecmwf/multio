@@ -14,6 +14,7 @@ public:
     ActionStatistics();
 
     eckit::Timing actionTiming_;
+    eckit::Timer localTimer_; // Remove it once eckit::Statistics is fixed
 
     void report(std::ostream& out, const std::string& type = "Action",
                 const char* indent = "") const;

@@ -1,12 +1,11 @@
 
 #include "Domain.h"
 
-#include <algorithm>
-
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/message/Message.h"
 #include "multio/LibMultio.h"
+#include "multio/util/print_buffer.h"
 
 namespace multio {
 namespace domain {
@@ -35,8 +34,6 @@ void Unstructured::to_global(const message::Message& local, message::Message& gl
             *(git + offset) = *lit++;
         }
     }
-
-    eckit::Log::debug<LibMultio>() << " *** Aggregation completed..." << std::endl;
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -48,13 +45,17 @@ constexpr bool inRange(int32_t val, int32_t low, int32_t upp) {
 }  // namespace
 
 
-Structured::Structured(std::vector<int32_t>&& def) : Domain{std::move(def)} {}
+Structured::Structured(std::vector<int32_t>&& def) : Domain{std::move(def)} {
+    ASSERT(definition_.size() == 11);
+}
 
 void Structured::to_local(const std::vector<double>&, std::vector<double>&) const {
     NOTIMP;
 }
 
 void Structured::to_global(const message::Message& local, message::Message& global) const {
+    checkDomainConsistency(local);
+
     auto levelCount = local.metadata().getLong("levelCount", 1);
 
     ASSERT(definition_.size() == 11);
@@ -99,7 +100,64 @@ void Structured::to_global(const message::Message& local, message::Message& glob
             }
         }
     }
+}
 
+// TODO: Move this to the mapping
+namespace {
+std::set<int32_t> glIndices_;
+std::set<std::string> checkedDomains_;
+long domainCount_ = 0;
+bool domainConsistent_ = false;
+}  // namespace
+
+void Structured::checkDomainConsistency(const message::Message& local) const {
+    if (checkedDomains_.find(local.domain()) == std::end(checkedDomains_)) {
+        checkedDomains_.insert(local.domain());
+        domainConsistent_ = false;
+    }
+
+    if (domainConsistent_) {
+        return;
+    }
+
+    // Global domain's dimenstions
+    auto ni_global = definition_[0];
+    auto nj_global = definition_[1];
+
+    // Local domain's dimensions
+    auto ibegin = definition_[2];
+    auto ni = definition_[3];
+    auto jbegin = definition_[4];
+    auto nj = definition_[5];
+
+    // Data dimensions on local domain -- includes halo points
+    auto data_ibegin = definition_[7];
+    auto data_ni = definition_[8];
+    auto data_jbegin = definition_[9];
+    auto data_nj = definition_[10];
+    // auto data_dim = definition_[6]; -- Unused here
+
+    auto lit = static_cast<const double*>(local.payload().data());
+    for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
+        for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
+            if (inRange(i, 0, ni) && inRange(j, 0, nj)) {
+                auto gidx = (jbegin + j) * ni_global + (ibegin + i);
+                ASSERT(glIndices_.find(gidx) == std::end(glIndices_));
+                glIndices_.insert(gidx);
+            }
+        }
+    }
+    // TODO: move this check out of here as it is rather expensive
+    ++domainCount_;
+    if (domainCount_ == local.metadata().getLong("domainCount")) {
+        std::ostringstream oss;
+        oss << "Number of inserted unique indices: " << glIndices_.size() << " (expected "
+            << local.globalSize() << ")";
+        ASSERT_MSG(glIndices_.size() == local.globalSize(), oss.str());
+        glIndices_.clear();
+        domainCount_ = 0;
+        domainConsistent_ = true;
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------

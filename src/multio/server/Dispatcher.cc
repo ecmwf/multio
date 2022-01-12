@@ -50,10 +50,13 @@ Dispatcher::~Dispatcher() {
 void Dispatcher::dispatch(eckit::Queue<message::Message>& queue) {
     util::ScopedTimer timer{timing_};
     message::Message msg;
-    while (queue.pop(msg) >= 0) {
+    auto sz = queue.pop(msg);
+    while (sz >= 0) {
         for (const auto& plan : plans_) {
             plan->process(msg);
         }
+        LOG_DEBUG_LIB(multio::LibMultio) << "Size of the dispatch queue: " << sz << std::endl;
+        sz = queue.pop(msg);
     }
 }
 

@@ -15,16 +15,16 @@ namespace server {
 namespace  {
 std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
     std::vector<MpiBuffer> bufs;
-    eckit::Log::info() << " *** Allocating " << poolSize << " buffers of size "
-                       << maxBufSize / 1024 / 1024 << " each" << std::endl;
+    LOG_DEBUG_LIB(multio::LibMultio) << "*** Allocating " << poolSize << " buffers of size "
+                                     << maxBufSize / 1024 / 1024 << " each" << std::endl;
     double totMem = 0.0;
     for (auto ii = 0u; ii < poolSize; ++ii) {
         bufs.emplace_back(maxBufSize);
         totMem += maxBufSize;
     }
     totMem /= 1024*1024*1024;
-    eckit::Log::info() << " *** Allocated a total of " << totMem << "GiB of memory for this peer"
-                       << std::endl;
+    LOG_DEBUG_LIB(multio::LibMultio)
+        << "*** Allocated a total of " << totMem << "GiB of memory for this peer" << std::endl;
     return bufs;
 }
 }  // namespace
@@ -85,7 +85,7 @@ void StreamPool::sendBuffer(const message::Peer& dest, int msg_tag) {
         << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
         << ":" << std::setw(6) << std::setfill('0') << mSecs;
 
-    eckit::AutoTiming(statistics_.timer_, statistics_.isendTiming_);
+    eckit::AutoTiming(statistics_.isendTimer_, statistics_.isendTiming_);
 
     strm.buffer().request = comm_.iSend<void>(strm.buffer().content, sz, destId, msg_tag);
     strm.buffer().status = BufferStatus::transmitting;
@@ -100,7 +100,7 @@ void StreamPool::sendBuffer(const message::Peer& dest, int msg_tag) {
 }
 
 MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {
-    eckit::AutoTiming(statistics_.timer_, statistics_.waitTiming_);
+    eckit::AutoTiming(statistics_.waitTimer_, statistics_.waitTiming_);
 
     auto it = std::end(buffers_);
     while (it == std::end(buffers_)) {
@@ -117,7 +117,7 @@ MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {
 }
 
 void StreamPool::waitAll() {
-    eckit::AutoTiming(statistics_.timer_, statistics_.waitTiming_);
+    eckit::AutoTiming(statistics_.waitTimer_, statistics_.waitTiming_);
     while (not std::all_of(std::begin(buffers_), std::end(buffers_),
                            [](MpiBuffer& buf) { return buf.isFree(); })) {}
 }
@@ -139,5 +139,6 @@ void StreamPool::print(std::ostream& os) const {
                   [&os](const MpiBuffer& buf) { os << static_cast<unsigned>(buf.status); });
     os << ")";
 }
-}
-}
+
+}  // namespace server
+}  // namespace multio

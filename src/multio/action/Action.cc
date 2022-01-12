@@ -53,8 +53,9 @@ Action::~Action() {
 
 void Action::executeNext(message::Message msg) const {
     if (next_) {
-        LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- Executing action -- "
-                                 << *next_ << std::endl;
+        LOG_DEBUG_LIB(multio::LibMultio)
+            << "*** [source = " << msg.source() << ", destination = " << msg.destination()
+            << "] -- Executing action -- " << *next_ << std::endl;
         next_->execute(msg);
     }
 }

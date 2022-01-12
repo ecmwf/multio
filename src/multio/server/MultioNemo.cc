@@ -71,6 +71,10 @@ class MultioNemo {
     size_t clientCount_ = 1;
     size_t serverCount_ = 0;
 
+    const double missingValue_ = 0.0;
+    const bool bitmapPresent_ = true;
+    const long bitsPerValue_ = 16;
+
     MultioNemo() :
         config_{eckit::YAMLConfiguration{configuration_file()}},
         activeFields_{fetch_active_fields(config_)} {
@@ -160,6 +164,10 @@ public:
         metadata_.set("domainCount", clientCount_);
         metadata_.set("domain", paramMap_.get(fname).gridType);
         metadata_.set("typeOfLevel", paramMap_.get(fname).levelType);
+
+        metadata_.set("missingValue", missingValue_);
+        metadata_.set("bitmapPresent", bitmapPresent_);
+        metadata_.set("bitsPerValue", bitsPerValue_);
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 

@@ -50,8 +50,8 @@ private:
 
     const std::string gridType_;
 
-    std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",
-                                    "lon_V", "lat_W", "lon_W", "lat_F", "lon_F"};
+    const std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",
+                                          "lon_V", "lat_W", "lon_W", "lat_F", "lon_F"};
 };
 
 }  // namespace action

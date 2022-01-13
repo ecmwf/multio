@@ -145,10 +145,9 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
 
     // Set encoding for missing value support
-    setValue("missingValue", metadata.getDouble("missingValue", 0.0));
-    setValue("bitmapPresent",
-             static_cast<long>(metadata.getBool("bitmapPresent", true)));
-    setValue("bitsPerValue", metadata.getDouble("bitsPerValue", true));
+    setValue("missingValue", metadata.getDouble("missingValue"));
+    setValue("bitmapPresent", static_cast<long>(metadata.getBool("bitmapPresent")));
+    setValue("bitsPerValue", metadata.getLong("bitsPerValue"));
 
     // setValue("missingValue", 0.0);
     // setValue("bitmapPresent", 1l);
@@ -185,7 +184,7 @@ void GribEncoder::setCoordMetadata(const message::Metadata& metadata) {
 
     // Set encoding for missing value support
     setValue("bitmapPresent", static_cast<long>(false));
-    setValue("bitsPerValue", metadata.getDouble("bitsPerValue"));
+    setValue("bitsPerValue", metadata.getLong("bitsPerValue"));
 }
 
 void GribEncoder::setValue(const std::string& key, long value) {

@@ -33,6 +33,8 @@ void multio_metadata_set_string_value(const char* key, const char* value);
 
 void multio_set_domain(const char* key, int* data, int size);
 
+void multio_write_mask(const char* key, const double* data, int size);
+
 void multio_write_field(const char* fname, const double* data, int size, bool to_all_servers);
 
 bool multio_field_is_active(const char* fname);

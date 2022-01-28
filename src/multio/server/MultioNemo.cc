@@ -229,8 +229,15 @@ void multio_set_domain(const char* name, int* data, int size) {
     }
 }
 
+void multio_write_mask(const char* key, const double* data, int size) {
+    eckit::Log::info() << key << ": " << std::flush;
+    std::vector<double> mask_data{data, data + size};
+    eckit::Log::info() << "mask size = " << mask_data.size();
+}
+
 void multio_write_field(const char* name, const double* data, int size, bool to_all_servers) {
     if (MultioNemo::instance().useServer()) {
+        eckit::Log::info() << "*** Write field " << name << ", local size = " << size << std::endl;
         MultioNemo::instance().writeField(name, data, size * sizeof(double), to_all_servers);
     }
     else {

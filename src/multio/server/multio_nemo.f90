@@ -11,6 +11,7 @@ module multio_nemo
     public multio_metadata_set_string_value
     public multio_init_client
     public multio_set_domain
+    public multio_write_mask
     public multio_write_field
     public multio_field_is_active
     public multio_not_implemented
@@ -78,6 +79,14 @@ module multio_nemo
             integer(c_int), dimension(*), intent(in) :: data
             integer(c_int), intent(in), value :: size
         end subroutine c_multio_set_domain
+
+        subroutine c_multio_write_mask(c_key, data, size) bind(c, name='multio_write_mask')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            character(c_char), intent(in) :: c_key(*)
+            real(c_double), dimension(*), intent(in) :: data
+            integer(c_int), intent(in), value :: size
+        end subroutine c_multio_write_mask
 
         subroutine c_multio_write_field(c_name, data, sz, toall) bind(c, name='multio_write_field')
             use, intrinsic :: iso_c_binding
@@ -179,6 +188,15 @@ module multio_nemo
             call c_multio_set_domain(to_c_string(key), data, size(data))
 
         end subroutine multio_set_domain
+
+        subroutine multio_write_mask(key, data)
+            implicit none
+            character(*), intent(in) :: key
+            real(dp), dimension(:,:,:), intent(in) :: data
+
+            call c_multio_write_mask(to_c_string(key), data, size(data))
+
+        end subroutine multio_write_mask
 
         subroutine multio_write_field_2d(fname, data, toall)
             implicit none

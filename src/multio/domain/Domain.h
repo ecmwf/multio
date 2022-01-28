@@ -23,6 +23,7 @@ public:
 
     virtual void to_local(const std::vector<double>& global, std::vector<double>& local) const = 0;
     virtual void to_global(const message::Message& local, message::Message& global) const = 0;
+    virtual void to_bitmask(const message::Message& local, std::vector<bool>& bmask) const = 0;
 
 protected:
     const std::vector<int32_t> definition_;  // Grid-point
@@ -36,6 +37,7 @@ public:
 private:
     void to_local(const std::vector<double>& global, std::vector<double>& local) const override;
     void to_global(const message::Message& local, message::Message& global) const override;
+    void to_bitmask(const message::Message& local, std::vector<bool>& bmask) const override;
 };
 
 class Structured final : public Domain {
@@ -45,6 +47,7 @@ public:
 private:
     void to_local(const std::vector<double>& global, std::vector<double>& local) const override;
     void to_global(const message::Message& local, message::Message& global) const override;
+    void to_bitmask(const message::Message& local, std::vector<bool>& bmask) const override;
 
     void checkDomainConsistency(const message::Message& local) const;
 };
@@ -56,6 +59,7 @@ public:
 private:
     void to_local(const std::vector<double>& global, std::vector<double>& local) const override;
     void to_global(const message::Message& local, message::Message& global) const override;
+    void to_bitmask(const message::Message& local, std::vector<bool>& bmask) const override;
 };
 
 }  // namespace domain

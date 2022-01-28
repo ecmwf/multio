@@ -36,6 +36,11 @@ void Unstructured::to_global(const message::Message& local, message::Message& gl
     }
 }
 
+void Unstructured::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
+    NOTIMP;
+}
+
+
 //------------------------------------------------------------------------------------------------------------
 
 namespace {
@@ -101,6 +106,11 @@ void Structured::to_global(const message::Message& local, message::Message& glob
         }
     }
 }
+
+void Structured::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
+    NOTIMP;
+}
+
 
 // TODO: Move this to the mapping
 namespace {
@@ -169,6 +179,10 @@ void Spectral::to_local(const std::vector<double>&, std::vector<double>&) const 
 }
 
 void Spectral::to_global(const message::Message&, message::Message&) const {
+    NOTIMP;
+}
+
+void Spectral::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
     NOTIMP;
 }
 

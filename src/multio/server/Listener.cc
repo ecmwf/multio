@@ -80,7 +80,14 @@ void Listener::start() {
                     << "*** Number of maps: " << msg.domainCount() << std::endl;
                 checkConnection(msg.source());
                 clientCount_ = msg.domainCount();
-               domain::Mappings::instance().add(msg);
+                domain::Mappings::instance().add(msg);
+                break;
+
+            case Message::Tag::Mask:
+                checkConnection(msg.source());
+                eckit::Log::info()
+                    << "Mask received with metadata: " << msg.metadata() << std::endl;
+                // domain::Mappings::instance().addMask(msg);
                 break;
 
             case Message::Tag::StepNotification:

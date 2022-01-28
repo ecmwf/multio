@@ -149,6 +149,19 @@ public:
         client().sendDomain(std::move(md), std::move(domain_def));
     }
 
+    void writeMask(const std::string& mname, const uint8_t* data, size_t bytes) {
+        metadata_.set("name", mname);
+        eckit::Buffer mask_vals{reinterpret_cast<const char*>(data), bytes};
+        Metadata md;
+        md.set("name", mname);
+        md.set("category", "structured");
+        md.set("domainCount", clientCount_);
+        md.set("levelCount", metadata_.getLong("levelCount"));
+        md.set("level", metadata_.getLong("level"));
+
+        MultioNemo::instance().client().sendMask(md, std::move(mask_vals));
+    }
+
     void writeField(const std::string& fname, const double* data, size_t bytes,
                     bool to_all_servers = false) {
         if(metadata_.getString("category") != "ocean-grid-coordinate") {
@@ -165,6 +178,7 @@ public:
         metadata_.set("domain", paramMap_.get(fname).gridType);
         metadata_.set("typeOfLevel", paramMap_.get(fname).levelType);
 
+        // TODO: May not need to be a field's metadata
         metadata_.set("missingValue", missingValue_);
         metadata_.set("bitmapPresent", bitmapPresent_);
         metadata_.set("bitsPerValue", bitsPerValue_);
@@ -229,15 +243,23 @@ void multio_set_domain(const char* name, int* data, int size) {
     }
 }
 
-void multio_write_mask(const char* key, const double* data, int size) {
-    eckit::Log::info() << key << ": " << std::flush;
+void multio_write_mask(const char* name, const double* data, int size) {
     std::vector<double> mask_data{data, data + size};
-    eckit::Log::info() << "mask size = " << mask_data.size();
+    std::vector<uint8_t> bitMask;
+    for (const auto& mval : mask_data) {
+        if (not (mval == 0.0 || mval == 1.0 || mval == 2.0)) {
+            throw eckit::SeriousBug("Unrecognised mask value: " + std::to_string(mval));
+        }
+        bitMask.push_back(static_cast<uint8_t>(mval));
+    }
+    ASSERT(bitMask.size() == static_cast<size_t>(size));
+    MultioNemo::instance().writeMask(name, bitMask.data(), size * sizeof(uint8_t));
 }
 
 void multio_write_field(const char* name, const double* data, int size, bool to_all_servers) {
     if (MultioNemo::instance().useServer()) {
-        eckit::Log::info() << "*** Write field " << name << ", local size = " << size << std::endl;
+        LOG_DEBUG_LIB(multio::LibMultio)
+            << "*** Write field " << name << ", local size = " << size << std::endl;
         MultioNemo::instance().writeField(name, data, size * sizeof(double), to_all_servers);
     }
     else {

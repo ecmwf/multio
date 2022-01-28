@@ -192,7 +192,7 @@ module multio_nemo
         subroutine multio_write_mask(key, data)
             implicit none
             character(*), intent(in) :: key
-            real(dp), dimension(:,:,:), intent(in) :: data
+            real(dp), dimension(:,:), intent(in) :: data
 
             call c_multio_write_mask(to_c_string(key), data, size(data))
 

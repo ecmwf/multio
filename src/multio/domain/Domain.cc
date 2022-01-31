@@ -63,8 +63,6 @@ void Structured::to_global(const message::Message& local, message::Message& glob
 
     auto levelCount = local.metadata().getLong("levelCount", 1);
 
-    ASSERT(definition_.size() == 11);
-
     // Global domain's dimenstions
     auto ni_global = definition_[0];
     auto nj_global = definition_[1];
@@ -108,7 +106,37 @@ void Structured::to_global(const message::Message& local, message::Message& glob
 }
 
 void Structured::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
-    NOTIMP;
+    auto levelCount = local.metadata().getLong("levelCount", 1);
+
+    // Global domain's dimenstions
+    auto ni_global = definition_[0];
+    auto nj_global = definition_[1];
+
+    // Local domain's dimensions
+    auto ibegin = definition_[2];
+    auto ni = definition_[3];
+    auto jbegin = definition_[4];
+    auto nj = definition_[5];
+
+    // Data dimensions on local domain -- includes halo points
+    auto data_ibegin = definition_[7];
+    auto data_ni = definition_[8];
+    auto data_jbegin = definition_[9];
+    auto data_nj = definition_[10];
+    // auto data_dim = definition_[6]; -- Unused here
+
+    ASSERT(levelCount == 1);
+    ASSERT(ni_global * nj_global == bmask.size());
+    auto lit = static_cast<const double*>(local.payload().data());
+    auto offset = local.globalSize();
+    for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
+        for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
+            if (inRange(i, 0, ni) && inRange(j, 0, nj)) {
+                auto gidx = offset + (jbegin + j) * ni_global + (ibegin + i);
+                bmask[gidx] = (*lit == 0.0) ? false : true;
+            }
+        }
+    }
 }
 
 

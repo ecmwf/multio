@@ -153,9 +153,11 @@ public:
         metadata_.set("name", mname);
         eckit::Buffer mask_vals{reinterpret_cast<const char*>(data), bytes};
         Metadata md;
+        md.set("globalSize", MultioNemo::instance().metadata().getInt("globalSize"));
         md.set("name", mname);
         md.set("category", "structured");
         md.set("domainCount", clientCount_);
+        md.set("domain", mname.substr(0, 1) + " grid");
         md.set("levelCount", metadata_.getLong("levelCount"));
         md.set("level", metadata_.getLong("level"));
 

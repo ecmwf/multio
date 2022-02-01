@@ -21,6 +21,8 @@
 #include "eckit/log/ResourceUsage.h"
 
 #include "multio/domain/Mappings.h"
+#include "multio/domain/Mask.h"
+
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 
@@ -86,8 +88,8 @@ void Listener::start() {
             case Message::Tag::Mask:
                 checkConnection(msg.source());
                 eckit::Log::info()
-                    << "Mask received with metadata: " << msg.metadata() << std::endl;
-                // domain::Mappings::instance().addMask(msg);
+                    << "Mask received from " << msg.source() << ": " << msg.metadata() << std::endl;
+                domain::Mask::instance().add(msg);
                 break;
 
             case Message::Tag::StepNotification:

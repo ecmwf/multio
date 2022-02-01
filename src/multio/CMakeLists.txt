@@ -76,6 +76,8 @@ list( APPEND multio_domain_srcs
     domain/Domain.h
     domain/Mappings.cc
     domain/Mappings.h
+    domain/Mask.cc
+    domain/Mask.h
 )
 
 list( APPEND multio_message_srcs

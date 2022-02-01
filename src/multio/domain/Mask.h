@@ -4,6 +4,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <map>
+#include <mutex>
 #include <vector>
 
 #include <eckit/io/Buffer.h>
@@ -11,7 +13,7 @@
 namespace multio {
 
 namespace message {
-    class Message;
+class Message;
 }
 
 namespace domain {
@@ -30,12 +32,16 @@ public:
 
     void add(message::Message msg);
 
-    const DomainMap& get(const std::string& name) const;
+    const std::vector<uint8_t>& get(const std::string& name) const;
 
 private:
 
-    mutable std::map<std::string, std::vector<Message>> messages_;
-    mutable std::map<std::string, std::vector<bool>> bitmasks_;
+    bool allPartsArrived(message::Message msg) const;
+
+    std::map<std::string, std::vector<message::Message>> messages_;
+    std::map<std::string, std::vector<uint8_t>> bitmasks_;
+
+    mutable std::mutex mutex_;
 };
 
 }  // namespace domain

@@ -10,6 +10,8 @@
 
 #include "Mask.h"
 
+#include <algorithm>
+
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 
@@ -44,6 +46,9 @@ void Mask::add(message::Message inMsg) {
                            << std::endl;
         domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_bitmask(msg, bitmask);
     }
+    std::for_each(std::begin(bitmask), std::end(bitmask), [](const uint8_t& val){
+            ASSERT(val == 0 || val == 1 || val == 2);
+        });
 
     // Assert invariants such are bound to be creating this the first and last time
     // TODO: Do not use fid, just use the mask name and the level
@@ -54,7 +59,7 @@ void Mask::add(message::Message inMsg) {
     eckit::Log::info() << "Size of bitmap " << bkey << " : " << bitmasks_.at(bkey).size()
                        << std::endl;
 
-    // messages_.at(inMsg.fieldId()).clear();
+    messages_.at(inMsg.fieldId()).clear();
 }
 
 const std::vector<uint8_t>& Mask::get(const std::string& bkey) const {

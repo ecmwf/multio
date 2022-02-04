@@ -52,6 +52,8 @@ plans :
         operations:
           - average
 
+      - type : Mask
+
       - type : Encode
         format : grib
         template : unstr_an.tmpl
@@ -81,6 +83,8 @@ plans :
         operations:
           - average
 
+      - type : Mask
+
       - type : Encode
         format : grib
         template :  unstr_an.tmpl
@@ -109,6 +113,8 @@ plans :
         output_frequency: 1d
         operations:
           - average
+
+      - type : Mask
 
       - type : Encode
         format : grib

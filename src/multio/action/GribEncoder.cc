@@ -120,16 +120,8 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
 
     // Setting parameter ID
     setValue("paramId", metadata.getLong("param"));
-    if (metadata.getString("category") == "ocean-3d") {
-        auto level = metadata.getLong("level");
-        ASSERT(level > 0);
-        setValue("scaledValueOfFirstFixedSurface", level);
-        setValue("scaledValueOfSecondFixedSurface", level + 1);
-    }
-
     setValue("typeOfLevel", metadata.getString("typeOfLevel"));
-    auto category = metadata.getString("category");
-    if (category == "ocean-3d") {
+    if (metadata.getString("category") == "ocean-3d") {
         auto level = metadata.getLong("level");
         ASSERT(level > 0);
         setValue("scaledValueOfFirstFixedSurface", level);

@@ -72,7 +72,7 @@ class MultioNemo {
     size_t serverCount_ = 0;
 
     const double missingValue_ = 0.0;
-    const bool bitmapPresent_ = true;
+    const bool bitmapPresent_ = false;
     const long bitsPerValue_ = 16;
 
     MultioNemo() :

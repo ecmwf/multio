@@ -10,27 +10,28 @@
 
 #include "Mask.h"
 
-#include <fstream>
 #include <limits>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 #include "eckit/config/Configuration.h"
 
+#include "multio/domain/Mask.h"
+
 namespace multio {
 namespace action {
 
 Mask::Mask(const eckit::Configuration& config) :
-    Action(config) :
-    missingValue_{config.getDouble("missing-value", std::numberical_limits<double>::max())} {}
+    Action(config),
+    missingValue_{config.getDouble("missing-value", std::numeric_limits<double>::max())} {}
 
 void Mask::execute(message::Message msg) const {
 
     // Sanity check
     ASSERT(msg.metadata().getLong("levelCount") == 1);
 
-    auto const& bkey = Mask::key(msg.metadata());
-    auto const& bitmask = Mask::get(bkey);
+    auto const& bkey = domain::Mask::key(msg.metadata());
+    auto const& bitmask = domain::Mask::instance().get(bkey);
 
     ASSERT(bitmask.size() == msg.size() / sizeof(double));
 
@@ -45,10 +46,24 @@ void Mask::execute(message::Message msg) const {
         }
     }
 
-    eckit::Log::info() << "Field " << msg.name() << " with bitmap " << bkey << ": "
+    message::Metadata md{msg.metadata()};
+    md.set("missingValue", missingValue_);
+    md.set("bitmapPresent", true);
+
+    message::Message nextMsg{
+        message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(md)},
+        std::move(msg.payload())};
+
+    eckit::Log::info() << "Old payload size: " << msg.payload().size() << std::endl;
+    eckit::Log::info() << "New payload size: " << nextMsg.payload().size() / sizeof(double)
+                       << std::endl;
+
+
+    eckit::Log::info() << "Field metadata: " << nextMsg.metadata() << std::endl;
+    eckit::Log::info() << "Field " << nextMsg.name() << " with bitmap " << bkey << ": "
                        << bitmask.size() << " -- Number of land points: " << cnt << std::endl;
 
-    executeNext(msg);
+    executeNext(nextMsg);
 }
 
 void Mask::print(std::ostream& os) const {

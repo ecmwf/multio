@@ -36,7 +36,7 @@ void Unstructured::to_global(const message::Message& local, message::Message& gl
     }
 }
 
-void Unstructured::to_bitmask(const message::Message& local, std::vector<uint8_t>& bmask) const {
+void Unstructured::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
     NOTIMP;
 }
 
@@ -105,7 +105,7 @@ void Structured::to_global(const message::Message& local, message::Message& glob
     }
 }
 
-void Structured::to_bitmask(const message::Message& local, std::vector<uint8_t>& bmask) const {
+void Structured::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
     auto levelCount = local.metadata().getLong("levelCount", 1);
 
     // Global domain's dimenstions
@@ -128,13 +128,11 @@ void Structured::to_bitmask(const message::Message& local, std::vector<uint8_t>&
     ASSERT(levelCount == 1);
     ASSERT(ni_global * nj_global == bmask.size());
     auto lit = static_cast<const uint8_t*>(local.payload().data());
-    auto bit = bmask.data();
     for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
         for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
             if (inRange(i, 0, ni) && inRange(j, 0, nj)) {
                 auto bidx = (jbegin + j) * ni_global + (ibegin + i);
-                // bmask[bidx] = (*lit == 0.0) ? false : true;
-                *(bit + bidx) = *lit;
+                bmask[bidx] = (*lit == 0.0) ? false : true;
             }
         }
     }
@@ -211,7 +209,7 @@ void Spectral::to_global(const message::Message&, message::Message&) const {
     NOTIMP;
 }
 
-void Spectral::to_bitmask(const message::Message& local, std::vector<uint8_t>& bmask) const {
+void Spectral::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
     NOTIMP;
 }
 

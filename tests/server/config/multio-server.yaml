@@ -53,6 +53,8 @@ plans :
 
       - type : Aggregation
 
+      - type : Mask
+
       - type : Encode
         format : grib
         template : unstr_an.tmpl
@@ -83,6 +85,8 @@ plans :
 
       - type : Aggregation
 
+      - type : Mask
+
       - type : Encode
         format : grib
         template : unstr_an.tmpl
@@ -112,6 +116,8 @@ plans :
           - average
 
       - type : Aggregation
+
+      - type : Mask
 
       - type : Encode
         format : grib

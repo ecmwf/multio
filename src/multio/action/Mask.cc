@@ -54,15 +54,6 @@ void Mask::execute(message::Message msg) const {
         message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(md)},
         std::move(msg.payload())};
 
-    eckit::Log::info() << "Old payload size: " << msg.payload().size() << std::endl;
-    eckit::Log::info() << "New payload size: " << nextMsg.payload().size() / sizeof(double)
-                       << std::endl;
-
-
-    eckit::Log::info() << "Field metadata: " << nextMsg.metadata() << std::endl;
-    eckit::Log::info() << "Field " << nextMsg.name() << " with bitmap " << bkey << ": "
-                       << bitmask.size() << " -- Number of land points: " << cnt << std::endl;
-
     executeNext(nextMsg);
 }
 

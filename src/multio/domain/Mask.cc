@@ -57,26 +57,15 @@ bool Mask::allPartsArrived(message::Message msg) const {
 void Mask::createBitmask(message::Message inMsg) {
     const auto& fid = inMsg.fieldId();
 
-    eckit::Log::info() << "Allocating dynamic bitmap (bitmask)" << std::endl;
     std::vector<bool> bitmask;
-    eckit::Log::info() << "Resizing dynamic bitmap (bitmask)" << std::endl;
     bitmask.resize(inMsg.globalSize());
-    eckit::Log::info() << "Allocated dynamic bitmap (bitmask)" << std::endl;
     for (const auto& msg : messages_.at(fid)) {
-        eckit::Log::info() << "Aggregate message " << msg.source() << ": " << msg.metadata()
-                           << std::endl;
         domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_bitmask(msg, bitmask);
     }
 
     // Assert invariants such are bound to be creating this the first and last time
     auto bkey = Mask::key(inMsg.metadata());
     bitmasks_[bkey] = std::move(bitmask);
-    eckit::Log::info() << "Number of bitmaps: " << bitmasks_.size() << std::endl;
-    eckit::Log::info() << "Size of bitmap " << bkey << ": " << bitmasks_.at(bkey).size()
-                       << " -- Number of land points: "
-                       << std::count(std::begin(bitmasks_.at(bkey)), std::end(bitmasks_.at(bkey)),
-                                     false)
-                       << std::endl;
 
     messages_.at(inMsg.fieldId()).clear();
 }

@@ -47,6 +47,11 @@ ecbuild_add_option( FEATURE MULTIO_SERVER
                     CONDITION eckit_HAVE_MPI
                     DESCRIPTION "Multio server" )
 
+### multio fortran bindings
+ecbuild_add_option( FEATURE FORTRAN
+                    DESCRIPTION "Provide Fortran bindings")
+
+
 ### Maestro plugin
 
 ecbuild_add_option( FEATURE MAESTRO

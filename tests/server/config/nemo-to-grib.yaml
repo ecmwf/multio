@@ -59,43 +59,43 @@ nemo-fields :
   - nemo-id : icethic
     param-id : 262000
     grid-type : "T grid"
-    level-type : "topSeaIceLevel"
+    level-type : "iceLayerOnWater"
 
   # Sea ice area fraction
   - nemo-id : ice_cover
     param-id : 262001
     grid-type : "T grid"
-    level-type : "topSeaIceLevel"
+    level-type : "iceTopOnWater"
 
   # Sea ice snow thickness
   - nemo-id : snwthic
     param-id : 262002
     grid-type : "T grid"
-    level-type : "seaIceLayer"
+    level-type : "iceLayerOnWater"
 
   # Sea ice eastward velocity -- update long name
   - nemo-id : iicevelur
     param-id : 262003
     grid-type : "U grid"
-    level-type : "topSeaIceLevel"
+    level-type : "iceLayerOnWater"
 
   # Sea ice westward velocity -- updated long name
   - nemo-id : iicevelvr
     param-id : 262004
     grid-type : "V grid"
-    level-type : "topSeaIceLevel"
+    level-type : "iceLayerOnWater"
 
   # Sea-ice or snow albedo
   - nemo-id : icealb
     param-id : 262005
     grid-type : "T grid"
-    level-type : "topSeaIceLevel"
+    level-type : "iceTopOnWater"
 
   # Sea ice surface temperature
   - nemo-id : icettop
     param-id : 262006
     grid-type : "T grid"
-    level-type : "topSeaIceLevel"
+    level-type : "iceTopOnWater"
 
   # # ??? Lateral sea-ice growth rate (cell average)
   # - nemo-id : licepro_cea
@@ -231,7 +231,7 @@ nemo-fields :
   - nemo-id : salbtm
     param-id : 262120
     grid-type : "T grid"
-    level-type : "entireOcean"
+    level-type : "oceanSurfaceToBottom"
 
   #Water column integrated heat content in the upper 300 m
   - nemo-id : hc300
@@ -249,7 +249,7 @@ nemo-fields :
   - nemo-id : hcbtm
     param-id : 262123
     grid-type : "T grid"
-    level-type : "entireOcean"
+    level-type : "oceanSurfaceToBottom"
 
   #Sea surface height
   - nemo-id : ssh

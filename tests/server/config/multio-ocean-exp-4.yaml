@@ -50,6 +50,8 @@ plans :
         operations:
           - average
 
+      - type : Mask
+
       - type : Aggregation
 
       - type : Encode
@@ -79,6 +81,8 @@ plans :
         operations:
           - average
 
+      - type : Mask
+
       - type : Aggregation
 
       - type : Encode
@@ -107,6 +111,8 @@ plans :
         output_frequency: 1h
         operations:
           - average
+
+      - type : Mask
 
       - type : Aggregation
 

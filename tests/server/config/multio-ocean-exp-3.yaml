@@ -45,6 +45,8 @@ plans :
 
       - type : Aggregation
 
+      - type : Mask
+
       - type : Statistics
         output_frequency: 5d
         operations:
@@ -74,6 +76,8 @@ plans :
 
       - type : Aggregation
 
+      - type : Mask
+
       - type : Statistics
         output_frequency: 1d
         operations:
@@ -102,6 +106,8 @@ plans :
         fields : [ icethic, ice_cover, snwthic, iicevelur, iicevelvr, icettop ]
 
       - type : Aggregation
+
+      - type : Mask
 
       - type : Statistics
         output_frequency: 1d

@@ -38,7 +38,8 @@ std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
 }
 
 const std::map<const std::string, const long> ops_to_code{
-    {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
+    {"average", 1000}, {"accumulate", 2000}, {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
+//  {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
 
 const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"},
@@ -108,7 +109,7 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
 
     // Statistics field
     if (metadata.has("operation") and metadata.getString("operation") != "instant") {
-        setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));
+        //setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));
         setValue("stepRange", metadata.getString("stepRange"));
         setValue("indicatorOfUnitForTimeIncrement", 13l); // always seconds
         setValue("timeIncrement", metadata.getLong("timeStep"));
@@ -119,21 +120,14 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("numberOfValues", metadata.getLong("globalSize"));
 
     // Setting parameter ID
-    setValue("paramId", metadata.getLong("param"));
+    setValue("paramId",
+             metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
+    setValue("typeOfLevel", metadata.getString("typeOfLevel"));
     if (metadata.getString("category") == "ocean-3d") {
         auto level = metadata.getLong("level");
         ASSERT(level > 0);
-        setValue("scaledValueOfFirstFixedSurface", level);
-        setValue("scaledValueOfSecondFixedSurface", level + 1);
-    }
-
-    setValue("typeOfLevel", metadata.getString("typeOfLevel"));
-    auto category = metadata.getString("category");
-    if (category == "ocean-3d") {
-        auto level = metadata.getLong("level");
-        ASSERT(level > 0);
-        setValue("scaledValueOfFirstFixedSurface", level);
-        setValue("scaledValueOfSecondFixedSurface", level + 1);
+        setValue("scaledValueOfFirstFixedSurface", level - 1);
+        setValue("scaledValueOfSecondFixedSurface", level);
     }
 
     // Set ocean grid information

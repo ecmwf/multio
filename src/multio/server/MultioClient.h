@@ -41,6 +41,8 @@ public:
 
     void sendDomain(message::Metadata metadata, eckit::Buffer&& domain);
 
+    void sendMask(message::Metadata metadata, eckit::Buffer&& mask);
+
     void sendField(message::Metadata metadata, eckit::Buffer&& field, bool to_all_servers = false);
 
     void sendStepComplete() const;
@@ -62,7 +64,7 @@ private:
     // Distribute fields
     message::Peer chooseServer(const message::Metadata& metadata);
     std::map<std::string, message::Peer> destinations_;
-    std::vector<u_int64_t> counters_;
+    std::vector<uint64_t> counters_;
 
     enum class DistributionType : unsigned
     {

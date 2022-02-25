@@ -21,6 +21,8 @@
 #include "eckit/log/ResourceUsage.h"
 
 #include "multio/domain/Mappings.h"
+#include "multio/domain/Mask.h"
+
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 
@@ -80,7 +82,14 @@ void Listener::start() {
                     << "*** Number of maps: " << msg.domainCount() << std::endl;
                 checkConnection(msg.source());
                 clientCount_ = msg.domainCount();
-               domain::Mappings::instance().add(msg);
+                domain::Mappings::instance().add(msg);
+                break;
+
+            case Message::Tag::Mask:
+                checkConnection(msg.source());
+                LOG_DEBUG_LIB(LibMultio)
+                    << "Mask received from " << msg.source() << ": " << msg.metadata() << std::endl;
+                domain::Mask::instance().add(msg);
                 break;
 
             case Message::Tag::StepNotification:

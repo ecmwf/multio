@@ -11,7 +11,7 @@ run:
   type: an
   dateOfAnalysis: 20170909
 
-activeFields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethick_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
+activeFields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethic_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
 
 plans :
 
@@ -53,6 +53,8 @@ plans :
 
       - type : Aggregation
 
+      - type : Mask
+
       - type : Encode
         format : grib
         template : unstr_an.tmpl
@@ -83,6 +85,8 @@ plans :
 
       - type : Aggregation
 
+      - type : Mask
+
       - type : Encode
         format : grib
         template : unstr_an.tmpl
@@ -104,7 +108,7 @@ plans :
     actions :
       - type : Select
         match : field
-        fields : [ icevolu, ice_cover, iceconc_cat, icethick_cat, snwthic, snwthic_cat, uice, vice, iicevelur, iicevelvr, iocestrur, iocestrvr, icesalt, icetemp, icettop, icesalt_cat ]
+        fields : [ icevolu, ice_cover, iceconc_cat, icethic_cat, snwthic, snwthic_cat, uice, vice, iicevelur, iicevelvr, iocestrur, iocestrvr, icesalt, icetemp, icettop, icesalt_cat ]
 
       - type : Statistics
         output_frequency: 3h
@@ -112,6 +116,8 @@ plans :
           - average
 
       - type : Aggregation
+
+      - type : Mask
 
       - type : Encode
         format : grib

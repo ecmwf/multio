@@ -54,6 +54,15 @@ void MultioClient::sendDomain(message::Metadata metadata, eckit::Buffer&& domain
     }
 }
 
+void MultioClient::sendMask(message::Metadata metadata, eckit::Buffer&& mask) {
+    for (auto& server : serverPeers_) {
+        Message msg{Message::Header{Message::Tag::Mask, client_, *server, std::move(metadata)},
+                    mask};
+
+        transport_->bufferedSend(msg);
+    }
+}
+
 void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,
                              bool to_all_servers) {
 

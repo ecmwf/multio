@@ -47,6 +47,7 @@ public:  // types
         Close,
         Grib,
         Domain,
+        Mask,
         Field,
         StepComplete,
         StepNotification,

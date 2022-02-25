@@ -9,7 +9,7 @@ run:
   type: pf
   number: 42
 
-activeFields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethick_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
+activeFields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethic_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
 
 plans :
 
@@ -41,9 +41,11 @@ plans :
     actions :
       - type : Select
         match : field
-        fields : [ toce, soce, sigmat, sst, sss, ssh, hst, qt, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, mldkz5, hc300, sal300, hc700, sal700, hcbtm, salbtm, uocee, vocen, utaue, vtaun, uoce, utau, voce, vtau, woce ]
+        fields : [ sss, sst, hst, qt, vtaun, utaue, vtau, utau, mldr10_1, mldkr125, mldkr03, mldt02, mldt05, hc300, sal300, sal700, salbtm, hc700, hcbtm, ssh, soce, toce, sigmat, voce, uoce, vocen, uocee, woce ]
 
       - type : Aggregation
+
+      - type : Mask
 
       - type : Statistics
         output_frequency: 5d
@@ -70,9 +72,11 @@ plans :
     actions :
       - type : Select
         match : field
-        fields : [ sst, sss, ssh, qt, mldr10_1, mldkr125, mldkr03, mldt05, mldt02, mldkz5, hc300, sal300, uocees, vocens, utaue, vtaun, ssu, utau, vtau ]
+        fields : [ sss, sst, 14d, 17d, 20d, 26d, 28d, qt, vtaun, utaue, vtau, utau, mldr10_1, mldkr03, mldkr125, mldt02, mldt05, sal300, sal700, salbtm, hc300, hc700, hcbtm, ssh, hst, mlddzt ]
 
       - type : Aggregation
+
+      - type : Mask
 
       - type : Statistics
         output_frequency: 1d
@@ -99,9 +103,11 @@ plans :
     actions :
       - type : Select
         match : field
-        fields : [ icevolu, ice_cover, iceconc_cat, icethick_cat, snwthic, snwthic_cat, uice, vice, iicevelur, iicevelvr, iocestrur, iocestrvr, icesalt, icetemp, icettop, icesalt_cat ]
+        fields : [ icethic, ice_cover, snwthic, iicevelur, iicevelvr, icettop ]
 
       - type : Aggregation
+
+      - type : Mask
 
       - type : Statistics
         output_frequency: 1d

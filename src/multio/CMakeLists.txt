@@ -30,6 +30,8 @@ list( APPEND multio_action_srcs
     action/GribEncoder.h
     action/GridInfo.cc
     action/GridInfo.h
+    action/Mask.cc
+    action/Mask.h
     action/Operation.cc
     action/Operation.h
     action/Print.cc
@@ -76,6 +78,8 @@ list( APPEND multio_domain_srcs
     domain/Domain.h
     domain/Mappings.cc
     domain/Mappings.h
+    domain/Mask.cc
+    domain/Mask.h
 )
 
 list( APPEND multio_message_srcs

@@ -71,7 +71,7 @@ nemo-fields :
   - nemo-id : snwthic
     param-id : 262002
     grid-type : "T grid"
-    level-type : "iceLayerOnWater"
+    level-type : "snowLayerOverIceOnWater"
 
   # Sea ice eastward velocity -- update long name
   - nemo-id : iicevelur
@@ -101,7 +101,7 @@ nemo-fields :
   # - nemo-id : licepro_cea
   #   param-id : 262007
   #   grid-type : "T grid"
-  #   level-type : "topSeaIceLevel"
+  #   level-type : "iceLayerOnWater"
 
   #===================================
   # Ocean 2d parameters -- levtype 160

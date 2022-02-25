@@ -101,7 +101,7 @@ plans :
     actions :
       - type : Select
         match : field
-        fields : [ icevolu ]
+        fields : [ icethic ]
 
       - type : Statistics
         output_frequency: 1h

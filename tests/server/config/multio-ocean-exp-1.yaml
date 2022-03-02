@@ -1,0 +1,133 @@
+
+transport : mpi
+group : nemo
+serverCount : 3
+clientCount : 5
+
+run:
+  expver: dsan # bilg
+  class: rd    # rd
+  stream: olda
+  type: an
+  dateOfAnalysis: 20170916
+
+activeFields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethic_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
+
+plans :
+
+  - name : ocean-grids
+    actions:
+      - type : Select
+        match : category
+        categories : [ocean-grid-coordinate]
+
+      - type : Aggregation
+
+      - type : Encode
+        format : grib
+        template : unstr_latlon.tmpl
+        grid-type : eORCA1
+
+      - type : Sink
+        sinks :
+
+          # - type : fdb5
+          #   config : {}
+
+          - type : file
+            append : true
+            per-server : true # Will give you one file per server
+            path : ocean-output-grid.grib
+
+  - name : stream-2 # mainly 3d fields output monthly (standard) or daily (highout)
+    actions :
+      - type : Select
+        match : field
+        fields : [ sss, sst, hst, qt, vtaun, utaue, vtau, utau, mldr10_1, mldkr125, mldkr03, mldt02, mldt05, hc300, sal300, sal700, salbtm, hc700, hcbtm, ssh, soce, toce, sigmat, voce, uoce, vocen, uocee, woce ]
+
+      - type : Aggregation
+
+      - type : Statistics
+        output_frequency: 5d
+        operations:
+          - average
+
+      - type : Mask
+
+      - type : Encode
+        format : grib
+        template : unstr_an.tmpl
+        grid-type : eORCA1
+
+      - type : Sink
+        sinks :
+
+          # - type : fdb5
+          #   config : {}
+
+          - type : file
+            append : true
+            per-server : true
+            path : ocean-output-strm2.grib
+
+  - name : stream-3 # mainly 2d fields output daily (standard) or hourly (highout)
+    actions :
+      - type : Select
+        match : field
+        fields : [ sss, sst, 14d, 17d, 20d, 26d, 28d, qt, vtaun, utaue, vtau, utau, mldr10_1, mldkr03, mldkr125, mldt02, mldt05, sal300, sal700, salbtm, hc300, hc700, hcbtm, ssh, hst, mlddzt ]
+
+      - type : Aggregation
+
+      - type : Statistics
+        output_frequency: 1d
+        operations:
+          - average
+
+      - type : Mask
+
+      - type : Encode
+        format : grib
+        template :  unstr_an.tmpl
+        grid-type : eORCA1
+
+      - type : Sink
+        sinks :
+
+          # - type : fdb5
+          #   config : {}
+
+          - type : file
+            append : true
+            per-server : true
+            path : ocean-output-strm3.grib
+
+  - name : stream-10 # sea-ice fields output daily (standard) or hourly (highout)
+    actions :
+      - type : Select
+        match : field
+        fields : [ icethic, ice_cover, snwthic, iicevelur, iicevelvr, icettop ]
+
+      - type : Aggregation
+
+      - type : Statistics
+        output_frequency: 1d
+        operations:
+          - average
+
+      - type : Mask
+
+      - type : Encode
+        format : grib
+        template : unstr_an.tmpl
+        grid-type : eORCA1
+
+      - type : Sink
+        sinks :
+
+          # - type : fdb5
+          #   config : {}
+
+          - type : file
+            append : true
+            per-server : true
+            path : ocean-output-strm10.grib

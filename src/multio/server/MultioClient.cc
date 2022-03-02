@@ -17,17 +17,22 @@ using multio::message::Peer;
 namespace multio {
 namespace server {
 
-MultioClient::MultioClient(const eckit::Configuration& config) :
-    clientCount_{config.getUnsigned("clientCount")},
-    serverCount_{config.getUnsigned("serverCount")},
-    transport_(TransportFactory::instance().build(config.getString("transport"), config)),
-    client_{transport_->localPeer()},
-    serverId_{client_.id() / (((clientCount_ - 1) / serverCount_) + 1)},
-    usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
-    serverPeers_{transport_->createServerPeers()},
-    counters_(serverPeers_.size()),
-    distType_{distributionType()} {
-    eckit::Log::debug<multio::LibMultio>() << config << std::endl;
+size_t serverIdDenom(size_t clientCount, size_t serverCount) {
+    return (serverCount == 0) ? 1 : (((clientCount - 1) / serverCount) + 1);
+}
+
+MultioClient::MultioClient(const eckit::Configuration &config)
+    : clientCount_{config.getUnsigned("clientCount")},
+      serverCount_{config.getUnsigned("serverCount")},
+      transport_(TransportFactory::instance().build(
+          config.getString("transport"), config)),
+      client_{transport_->localPeer()},
+      serverId_{client_.id() / serverIdDenom(clientCount_, serverCount_)},
+      usedServerCount_{
+          eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
+      serverPeers_{transport_->createServerPeers()},
+      counters_(serverPeers_.size()), distType_{distributionType()} {
+    LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << config << std::endl;
 }
 
 MultioClient::~MultioClient() = default;
@@ -49,6 +54,15 @@ void MultioClient::sendDomain(message::Metadata metadata, eckit::Buffer&& domain
     }
 }
 
+void MultioClient::sendMask(message::Metadata metadata, eckit::Buffer&& mask) {
+    for (auto& server : serverPeers_) {
+        Message msg{Message::Header{Message::Tag::Mask, client_, *server, std::move(metadata)},
+                    mask};
+
+        transport_->bufferedSend(msg);
+    }
+}
+
 void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,
                              bool to_all_servers) {
 
@@ -62,9 +76,6 @@ void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,
     }
     else {
         auto server = chooseServer(metadata);
-
-//        eckit::Log::info() << " *** Server " << server << " is picked for field "
-//                           << message::to_string(metadata) << std::endl;
 
         Message msg{
             Message::Header{Message::Tag::Field, client_, server, std::move(metadata)},
@@ -82,6 +93,8 @@ void MultioClient::sendStepComplete() const {
 }
 
 message::Peer MultioClient::chooseServer(const message::Metadata& metadata) {
+    ASSERT_MSG(serverCount_ > 0, "No server to choose from");
+
     switch (distType_) {
         case DistributionType::hashed_cyclic: {
             std::ostringstream os;

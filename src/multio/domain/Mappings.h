@@ -19,7 +19,7 @@ class Peer;
 
 namespace domain {
 
-using Mapping = std::map<message::Peer, std::unique_ptr<Domain>>;
+using DomainMap = std::map<message::Peer, std::unique_ptr<Domain>>;
 
 class Mappings {
 public:  // methods
@@ -37,10 +37,10 @@ public:  // methods
 
     void list(std::ostream&) const;
 
-    const Mapping& get(const std::string& name) const;
+    const DomainMap& get(const std::string& name) const;
 
 private:  // members
-    std::map<std::string, Mapping> mappings_;
+    std::map<std::string, DomainMap> mappings_;
 
     mutable std::recursive_mutex mutex_;
 };

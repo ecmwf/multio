@@ -32,4 +32,5 @@ jobs:
           ecmwf/odc
           ecmwf/eccodes
           ecmwf/metkit
+          ecmwf/fdb
         dependency_branch: develop

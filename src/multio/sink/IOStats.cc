@@ -215,4 +215,3 @@ void IOStats::reportRate(std::ostream &s, const std::string& label, size_t bytes
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-

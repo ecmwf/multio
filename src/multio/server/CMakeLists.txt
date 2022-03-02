@@ -62,11 +62,15 @@ ecbuild_add_library(
         eccodes
 )
 
+if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
+    ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
+endif()
+
 ecbuild_add_library(
 
     TARGET multio-server-fapi
 
-    CONDITION HAVE_MULTIO_SERVER
+    CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN 
 
     SOURCES
         multio_nemo.f90
@@ -78,8 +82,3 @@ ecbuild_add_library(
     PUBLIC_LIBS
         multio-server
 )
-
-if( HAVE_MULTIO_SERVER )
-    set_target_properties( multio-server-fapi
-        PROPERTIES Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
-endif()

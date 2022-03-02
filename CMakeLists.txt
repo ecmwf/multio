@@ -10,7 +10,7 @@
 
 cmake_minimum_required( VERSION 3.12 FATAL_ERROR )
 
-find_package( ecbuild 3.4 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild)
+find_package( ecbuild 3.6 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild)
 
 project( multio LANGUAGES CXX )
 
@@ -19,9 +19,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### dependencies
 
-ecbuild_find_package( NAME eccodes VERSION  2.18  REQUIRED )
-ecbuild_find_package( NAME eckit   VERSION  1.16  REQUIRED )
-ecbuild_find_package( NAME metkit  VERSION  1.7   REQUIRED )
+ecbuild_find_package( NAME eccodes VERSION  2.18   REQUIRED )
+ecbuild_find_package( NAME eckit   VERSION  1.16   REQUIRED )
+ecbuild_find_package( NAME metkit  VERSION  1.7    REQUIRED )
 
 if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
@@ -32,7 +32,7 @@ endif()
 ecbuild_add_option( FEATURE FDB5
                     DEFAULT ON
                     DESCRIPTION "Send data to FDB5"
-                    REQUIRED_PACKAGES "NAME fdb5 VERSION 5.0" )
+                    REQUIRED_PACKAGES "NAME fdb5 VERSION 5.10.1" )
 
 ### legacy IFS I/O
 
@@ -47,12 +47,17 @@ ecbuild_add_option( FEATURE MULTIO_SERVER
                     CONDITION eckit_HAVE_MPI
                     DESCRIPTION "Multio server" )
 
+### multio fortran bindings
+ecbuild_add_option( FEATURE FORTRAN
+                    DESCRIPTION "Provide Fortran bindings")
+
+
 ### Maestro plugin
 
 ecbuild_add_option( FEATURE MAESTRO
                     DEFAULT OFF
                     DESCRIPTION "Pass data to Maestro middleware"
-                    REQUIRED_PACKAGES "NAME Maestro" )
+                    REQUIRED_PACKAGES "NAME Maestro" "NAME pgen" )
 
 ### sandbox
 
@@ -69,6 +74,8 @@ set( MULTIO_LIBRARIES      multio )
 get_directory_property( MULTIO_DEFINITIONS COMPILE_DEFINITIONS )
 
 ### sources
+
+include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
 
 include_directories( ${MULTIO_INCLUDE_DIRS} )
 

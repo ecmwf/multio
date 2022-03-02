@@ -71,8 +71,12 @@ class MultioNemo {
     size_t clientCount_ = 1;
     size_t serverCount_ = 0;
 
+    const double missingValue_ = 0.0;
+    const bool bitmapPresent_ = false;
+    const long bitsPerValue_ = 16;
+
     MultioNemo() :
-        config_{eckit::YAMLConfiguration{configuration_path() + "multio-server.yaml"}},
+        config_{eckit::YAMLConfiguration{configuration_file()}},
         activeFields_{fetch_active_fields(config_)} {
         static const char* argv[2] = {"MultioNemo", 0};
         eckit::Main::initialise(1, const_cast<char**>(argv));
@@ -105,6 +109,10 @@ public:
 
         auto ret_comm = chld.communicator();
 
+        eckit::Log::info() << "*** Split nemo communicator " << oce_str << "(parent=" << parent_comm
+                           << ",size=" << eckit::mpi::comm("nemo").size() << "; child=" << ret_comm
+                           << ",size=" << chld.size() << ")" << std::endl;
+
         clientCount_ = eckit::mpi::comm(oce_str.c_str()).size();
         serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
 
@@ -117,14 +125,19 @@ public:
         return ret_comm;
     }
 
-    void initServer(int nemo_comm) {
-        eckit::mpi::addComm("nemo", nemo_comm);
+    void initServer(int parent_comm) {
+        eckit::mpi::addComm("nemo", parent_comm);
 
         // TODO: find a way to come up with a unique 'colour', such as using MPI_APPNUM
         eckit::mpi::comm("nemo").split(888, "server_comm");
+        auto server_comm = eckit::mpi::comm("server_comm").communicator();
 
-        multioServer_.reset(new MultioServer{
-            eckit::YAMLConfiguration{configuration_path() + "multio-server.yaml"}});
+        eckit::Log::info() << "*** Split nemo communicator server_comm(parent=" << parent_comm
+                           << ",size=" << eckit::mpi::comm("nemo").size()
+                           << "; child=" << server_comm << ",size="
+                           << eckit::mpi::comm("server_comm").size() << ")" << std::endl;
+
+        multioServer_.reset(new MultioServer{eckit::YAMLConfiguration{configuration_file()}});
     }
 
     void setDomain(const std::string& dname, const int* data, size_t bytes) {
@@ -134,6 +147,21 @@ public:
         md.set("category", "structured");
         md.set("domainCount", clientCount_);
         client().sendDomain(std::move(md), std::move(domain_def));
+    }
+
+    void writeMask(const std::string& mname, const uint8_t* data, size_t bytes) {
+        metadata_.set("name", mname);
+        eckit::Buffer mask_vals{reinterpret_cast<const char*>(data), bytes};
+        Metadata md;
+        md.set("globalSize", MultioNemo::instance().metadata().getInt("globalSize"));
+        md.set("name", mname);
+        md.set("category", "structured");
+        md.set("domainCount", clientCount_);
+        md.set("domain", mname.substr(0, 1) + " grid");
+        md.set("levelCount", metadata_.getLong("levelCount"));
+        md.set("level", metadata_.getLong("level"));
+
+        MultioNemo::instance().client().sendMask(md, std::move(mask_vals));
     }
 
     void writeField(const std::string& fname, const double* data, size_t bytes,
@@ -150,6 +178,12 @@ public:
         metadata_.set("gridSubtype", paramMap_.get(fname).gridType);
         metadata_.set("domainCount", clientCount_);
         metadata_.set("domain", paramMap_.get(fname).gridType);
+        metadata_.set("typeOfLevel", paramMap_.get(fname).levelType);
+
+        // TODO: May not need to be a field's metadata
+        metadata_.set("missingValue", missingValue_);
+        metadata_.set("bitmapPresent", bitmapPresent_);
+        metadata_.set("bitsPerValue", bitsPerValue_);
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 
@@ -185,8 +219,8 @@ int multio_init_client(const char* name, int parent_comm) {
     return MultioNemo::instance().initClient(name, parent_comm);
 }
 
-void multio_init_server(int nemo_comm) {
-    MultioNemo::instance().initServer(nemo_comm);
+void multio_init_server(int parent_comm) {
+    MultioNemo::instance().initServer(parent_comm);
 }
 
 void multio_metadata_set_int_value(const char* key, int value) {
@@ -211,14 +245,30 @@ void multio_set_domain(const char* name, int* data, int size) {
     }
 }
 
+void multio_write_mask(const char* name, const double* data, int size) {
+    std::vector<double> mask_data{data, data + size};
+    std::vector<uint8_t> bitMask;
+    for (const auto& mval : mask_data) {
+        if (not (mval == 0.0 || mval == 1.0 || mval == 2.0)) {
+            throw eckit::SeriousBug("Unrecognised mask value: " + std::to_string(mval));
+        }
+        bitMask.push_back(static_cast<uint8_t>(mval));
+    }
+    ASSERT(bitMask.size() == static_cast<size_t>(size));
+    MultioNemo::instance().writeMask(name, bitMask.data(), size * sizeof(uint8_t));
+}
+
 void multio_write_field(const char* name, const double* data, int size, bool to_all_servers) {
     if (MultioNemo::instance().useServer()) {
+        LOG_DEBUG_LIB(multio::LibMultio)
+            << "*** Write field " << name << ", local size = " << size << std::endl;
         MultioNemo::instance().writeField(name, data, size * sizeof(double), to_all_servers);
     }
     else {
-        eckit::Log::debug<multio::LibMultio>()
-            << "*** Writing field " << name << ", local size = " << size << ", global size = "
-            << MultioNemo::instance().metadata().getInt("globalSize") << std::endl;
+        LOG_DEBUG_LIB(multio::LibMultio)
+            << "*** Writing field " << name << ", local size = " << size
+            << ", global size = " << MultioNemo::instance().metadata().getInt("globalSize")
+            << std::endl;
     }
 }
 
@@ -227,7 +277,8 @@ bool multio_field_is_active(const char* name) {
 }
 
 void multio_not_implemented(const char* message) {
-    eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO" << std::endl;
+    eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO"
+                       << std::endl;
 }
 
 

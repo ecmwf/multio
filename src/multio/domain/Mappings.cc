@@ -22,15 +22,15 @@ void Mappings::add(message::Message msg) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     // Retrieve metadata
-    auto& mapping = mappings_[msg.name()];
+    auto& domainMap = mappings_[msg.name()];
 
-    if (msg.destination().group() == "thread" && mapping.find(msg.source()) != end(mapping)) {
+    if (msg.destination().group() == "thread" && domainMap.find(msg.source()) != end(domainMap)) {
         // Map has been added already -- needed only for the thread transport
         return;
     }
-    eckit::Log::debug<LibMultio>() << "*** Add mapping for " << msg.name();
+    eckit::Log::debug<LibMultio>() << "*** Add domainMap for " << msg.name();
 
-    ASSERT(mapping.find(msg.source()) == end(mapping));
+    ASSERT(domainMap.find(msg.source()) == end(domainMap));
 
     std::vector<int32_t> local_map(msg.size() / sizeof(int32_t));
 
@@ -41,13 +41,13 @@ void Mappings::add(message::Message msg) {
     eckit::Log::debug<LibMultio>() << "]" << std::endl;
 
     if (msg.category() == "unstructured") {
-        mapping.emplace(msg.source(),
+        domainMap.emplace(msg.source(),
                         std::unique_ptr<Domain>{new Unstructured{std::move(local_map)}});
         return;
     }
 
     if (msg.category() == "structured") {
-        mapping.emplace(msg.source(),
+        domainMap.emplace(msg.source(),
                         std::unique_ptr<Domain>{new Structured{std::move(local_map)}});
         return;
     }
@@ -63,15 +63,15 @@ void Mappings::list(std::ostream& out) const {
     }
 }
 
-const Mapping& Mappings::get(const std::string& name) const {
+const DomainMap& Mappings::get(const std::string& name) const {
     // Must exist
-    eckit::Log::debug<LibMultio>() << "*** Fetch mappings for " << name << std::endl;
+    eckit::Log::debug<LibMultio>() << "*** Fetch domainMaps for " << name << std::endl;
     auto it = mappings_.find(name);
     if (it != end(mappings_)) {
         return it->second;
     }
 
-    throw eckit::AssertionFailed("Cannot find mappings for " + name);
+    throw eckit::AssertionFailed("Cannot find domainMaps for " + name);
 }
 
 }  // namespace domain

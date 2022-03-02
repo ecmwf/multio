@@ -23,7 +23,9 @@ public:
     }
 
     void pop() {
-        front()->buffer().status = BufferStatus::available;
+        const auto strm = front();
+        std::lock_guard<std::mutex> lock{mutex_};
+        strm->buffer().status = BufferStatus::available;
         queue_.pop();
     }
 

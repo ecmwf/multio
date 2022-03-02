@@ -25,13 +25,15 @@ void multio_write_step_complete();
 
 int multio_init_client(const char* name, int parent_comm);
 
-void multio_init_server(int nemo_comm);
+void multio_init_server(int parent_comm);
 
 void multio_metadata_set_int_value(const char* key, int value);
 
 void multio_metadata_set_string_value(const char* key, const char* value);
 
 void multio_set_domain(const char* key, int* data, int size);
+
+void multio_write_mask(const char* key, const double* data, int size);
 
 void multio_write_field(const char* fname, const double* data, int size, bool to_all_servers);
 

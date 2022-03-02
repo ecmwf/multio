@@ -16,12 +16,11 @@
 
 #include <deque>
 
-extern "C" {
-#include <maestro.h>
-}
-
 #include "eckit/log/Statistics.h"
 
+#include "multio/maestro/CdoNamer.h"
+#include "multio/maestro/MaestroCdo.h"
+#include "multio/maestro/MaestroStatistics.h"
 #include "multio/sink/DataSink.h"
 
 //--------------------------------------------------------------------------------------------------
@@ -45,10 +44,15 @@ private:
         return s;
     }
 
-    std::size_t cdoCount_;
-    std::deque<mstro_cdo> offered_cdos_;
+    std::size_t cdoCount_ = 0;
+    std::vector<MaestroCdo> offered_cdos_;
 
+    CdoNamer cdo_namer_;
     eckit::Timing timing_;
+    MaestroStatistics statistics_;
+
+    bool readyCdoEnabled_ = true;
+    MaestroCdo readyCdo_;
 };
 
 }  // namespace multio

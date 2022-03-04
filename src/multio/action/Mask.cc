@@ -37,13 +37,11 @@ void Mask::execute(message::Message msg) const {
 
     auto git = static_cast<double*>(msg.payload().data());
 
-    auto cnt = 0;
     for (const auto bval : bitmask) {
         if (not bval) {
             *git = missingValue_;
-            ++git;
-            ++cnt;
         }
+        ++git;
     }
 
     message::Metadata md{msg.metadata()};

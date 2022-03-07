@@ -87,30 +87,39 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("expver", metadata.getSubConfiguration("run").getString("expver"));
     setValue("class", metadata.getSubConfiguration("run").getString("class"));
     setValue("stream", metadata.getSubConfiguration("run").getString("stream"));
-    setValue("type", metadata.getSubConfiguration("run").getString("type"));
+    auto type = metadata.getSubConfiguration("run").getString("type");
+    setValue("type", type);
 
-    // setCommonMetadata
-    setValue("step", metadata.getLong("step"));
+    long date = (type == "an") ? metadata.getLong("currentDate") : metadata.getLong("startDate");
+    setValue("year",  date / 10000);
+    setValue("month", (date % 10000) / 100);
+    setValue("day", date % 100);
 
     if (metadata.getSubConfiguration("run").has("dateOfAnalysis")) {
-      auto dateOfAnalysis = metadata.getSubConfiguration("run").getString("dateOfAnalysis");
-      setValue("yearOfAnalysis", std::stol(dateOfAnalysis.substr(0, 4)));
-      setValue("monthOfAnalysis", std::stol(dateOfAnalysis.substr(4, 2)));
-      setValue("dayOfAnalysis", std::stol(dateOfAnalysis.substr(6, 2)));
+      auto dateOfAnalysis = metadata.getSubConfiguration("run").getLong("dateOfAnalysis");
+      setValue("yearOfAnalysis", dateOfAnalysis / 10000);
+      setValue("monthOfAnalysis", (dateOfAnalysis % 10000) / 100);
+      setValue("dayOfAnalysis", dateOfAnalysis % 100);
+
+      // auto dateOfAnalysis = metadata.getSubConfiguration("run").getString("dateOfAnalysis");
+      // setValue("yearOfAnalysis", std::stol(dateOfAnalysis.substr(0, 4)));
+      // setValue("monthOfAnalysis", std::stol(dateOfAnalysis.substr(4, 2)));
+      // setValue("dayOfAnalysis", std::stol(dateOfAnalysis.substr(6, 2)));
     }
 
     if (metadata.getSubConfiguration("run").has("number")) {
       setValue("number", metadata.getSubConfiguration("run").getLong("number"));
     }
 
-    setValue("year", metadata.getLong("date") / 10000);
-    setValue("month", (metadata.getLong("date") % 10000) / 100);
-    setValue("day", metadata.getLong("date") % 100);
-
     // Statistics field
     if (metadata.has("operation") and metadata.getString("operation") != "instant") {
         //setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));
-        setValue("stepRange", metadata.getString("stepRange"));
+        // setValue("stepRange", metadata.getString("stepRange"));
+        long curDate = metadata.getLong("currentDate");
+        setValue("yearOfEndOfOverallTimeInterval",  curDate / 10000);
+        setValue("monthOfEndOfOverallTimeInterval", (curDate % 10000) / 100);
+        setValue("dayOfEndOfOverallTimeInterval", curDate % 100);
+        setValue("lengthOfTimeRange", metadata.getLong("timeSpanInHours"));
         setValue("indicatorOfUnitForTimeIncrement", 13l); // always seconds
         setValue("timeIncrement", metadata.getLong("timeStep"));
     }
@@ -157,7 +166,7 @@ void GribEncoder::setCoordMetadata(const message::Metadata& metadata) {
     setValue("type", type);
     setValue("typeOfGeneratingProcess", type_of_generating_process.at(type));
 
-    setValue("date", metadata.getLong("date"));
+    setValue("date", metadata.getLong("startDate"));
 
     // setDomainDimensions
     setValue("numberOfDataPoints", metadata.getLong("globalSize"));

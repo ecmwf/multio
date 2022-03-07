@@ -27,6 +27,7 @@ public:
     bool process(message::Message& msg);
     std::map<std::string, eckit::Buffer> compute(const message::Message& msg);
     std::string stepRange(long step);
+    const DateTimePeriod& current() const;
     void reset(const message::Message& msg);
 
 protected:

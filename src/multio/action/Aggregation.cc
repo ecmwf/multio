@@ -37,14 +37,14 @@ void Aggregation::execute(Message msg) const {
 }
 
 bool Aggregation::handleField(const Message& msg) const {
-    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     messages_[msg.fieldId()].push_back(msg);
     return allPartsArrived(msg);
 }
 
 bool Aggregation::handleFlush(const Message& msg) const {
     // Initialise if need be
-    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     if (flushes_.find(msg.domain()) == end(flushes_)) {
         flushes_[msg.domain()] = 0;
     }
@@ -61,7 +61,7 @@ bool Aggregation::allPartsArrived(const Message& msg) const {
 }
 
 Message Aggregation::createGlobalField(const Message& msg) const {
-    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     const auto& fid = msg.fieldId();
 

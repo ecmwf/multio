@@ -51,7 +51,7 @@ MaestroWorker::~MaestroWorker() {
 }
 
 void MaestroWorker::process() {
-    eckit::AutoTiming process_timing(maestroStatistics_.workerProcessTimer_, maestroStatistics_.workerProcessTiming_);
+    util::ScopedTiming process_timing(maestroStatistics_.workerProcessTimer_, maestroStatistics_.workerProcessTiming_);
     log_file_ << "*** Hi from worker" << std::endl;
 
     if (dryrun_) {
@@ -60,7 +60,7 @@ void MaestroWorker::process() {
                 start_ = eckit::Timing(statistics_.timer_);
                 log_file_ << "(timing) [start_] = " << start_ << std::endl;
             }
-            eckit::AutoTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_, maestroStatistics_.workerProcessPopWorkTiming_);
+            util::ScopedTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_, maestroStatistics_.workerProcessPopWorkTiming_);
             log_file_ << requirement_ << std::endl;
             eckit::Buffer b;
             source_.retrieve(requirement_.retrieve(), b);
@@ -77,12 +77,12 @@ void MaestroWorker::process() {
                 start_ = eckit::Timing(statistics_.timer_);
                 log_file_ << "(timing) [start_] = " << start_ << std::endl;
             }
-            eckit::AutoTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_, maestroStatistics_.workerProcessPopWorkTiming_);
+            util::ScopedTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_, maestroStatistics_.workerProcessPopWorkTiming_);
             const pgen::Handler &handler = pgen::Handler::lookup(args_, requirement_.handlers());
             const std::string inputTag = handler.inputTag(requirement_);
             log_file_ << "INPUT TAG [" << inputTag << "]" << std::endl;
             if (job.empty() || (lastInputTag != inputTag)) {
-                eckit::AutoTiming input_timing(maestroStatistics_.workerProcessInputTimer_, maestroStatistics_.workerProcessInputTiming_);
+                util::ScopedTiming input_timing(maestroStatistics_.workerProcessInputTimer_, maestroStatistics_.workerProcessInputTiming_);
                 log_file_ << "SET INPUT TAG [" << inputTag << "]" << std::endl;
                 lastInputTag = inputTag;
                 job.clear();
@@ -107,7 +107,7 @@ void MaestroWorker::process() {
             }
 
             {
-                eckit::AutoTiming prepare_timing(maestroStatistics_.workerProcessJobPrepareTimer_, maestroStatistics_.workerProcessJobPrepareTiming_);
+                util::ScopedTiming prepare_timing(maestroStatistics_.workerProcessJobPrepareTimer_, maestroStatistics_.workerProcessJobPrepareTiming_);
                 std::stringstream ss;
                 ss << std::this_thread::get_id();
                 std::string thread_id = ss.str();
@@ -140,8 +140,8 @@ void MaestroWorker::process() {
                     statistics_.failedRequirementsCount_++;
                 }
                 log_file_ << "Execute job" << std::endl;
-                eckit::AutoTiming timing(statistics_.timer_, statistics_.mirTiming_);
-                eckit::AutoTiming mirTiming(maestroStatistics_.mirTimer_, maestroStatistics_.mirTiming_);
+                util::ScopedTiming timing(statistics_.timer_, statistics_.mirTiming_);
+                util::ScopedTiming mirTiming(maestroStatistics_.mirTimer_, maestroStatistics_.mirTiming_);
                 job.execute(statistics_.mirStatistics_);
             }
         }

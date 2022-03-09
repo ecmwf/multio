@@ -19,7 +19,7 @@ MaestroSource::~MaestroSource() {
 }
 
 size_t MaestroSource::retrieve(const std::map<std::string, std::string> &retrieve, eckit::Buffer &field) const {
-    eckit::AutoTiming retrieveTiming(timer_, timing_);
+    util::ScopedTiming retrieveTiming(timer_, timing_);
     auto cdo_name = cdo_namer_.name(retrieve);
     MaestroCdo cdo = CdoMap::instance().get(cdo_name);
     cdo.demand();

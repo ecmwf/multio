@@ -45,7 +45,7 @@ plans :
       - type : Statistics
         output_frequency: 5d
         operations:
-          - average
+          - instant
 
       - type : Aggregation
 
@@ -53,7 +53,7 @@ plans :
 
       - type : Encode
         format : grib
-        template : unstr_fc.tmpl
+        template : unstructured.tmpl
         grid-type : eORCA1
 
       - type : Sink
@@ -76,7 +76,7 @@ plans :
       - type : Statistics
         output_frequency: 1d
         operations:
-          - average
+          - instant
 
       - type : Aggregation
 
@@ -84,7 +84,7 @@ plans :
 
       - type : Encode
         format : grib
-        template :  unstr_fc.tmpl
+        template :  unstructured.tmpl
         grid-type : eORCA1
 
       - type : Sink
@@ -107,7 +107,7 @@ plans :
       - type : Statistics
         output_frequency: 1d
         operations:
-          - average
+          - instant
 
       - type : Aggregation
 
@@ -115,7 +115,7 @@ plans :
 
       - type : Encode
         format : grib
-        template : unstr_fc.tmpl
+        template : unstructured.tmpl
         grid-type : eORCA1
 
       - type : Sink

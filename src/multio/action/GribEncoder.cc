@@ -37,8 +37,9 @@ std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
     return grids_;
 }
 
-const std::map<const std::string, const long> ops_to_code{
-    {"average", 1000}, {"accumulate", 2000}, {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
+const std::map<const std::string, const long> ops_to_code{{"instant", 0000},    {"average", 1000},
+                                                          {"accumulate", 2000}, {"maximum", 3000},
+                                                          {"minimum", 4000},    {"stddev", 5000}};
 //  {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
 
 const std::map<const std::string, const std::string> category_to_levtype{
@@ -89,6 +90,7 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("stream", metadata.getSubConfiguration("run").getString("stream"));
     auto type = metadata.getSubConfiguration("run").getString("type");
     setValue("type", type);
+    setValue("typeOfGeneratingProcess", type_of_generating_process.at(type));
 
     long date = (type == "an") ? metadata.getLong("currentDate") : metadata.getLong("startDate");
     setValue("year",  date / 10000);
@@ -122,6 +124,10 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
         setValue("lengthOfTimeRange", metadata.getLong("timeSpanInHours"));
         setValue("indicatorOfUnitForTimeIncrement", 13l); // always seconds
         setValue("timeIncrement", metadata.getLong("timeStep"));
+    } else if(type == "fc") { // Instant fields
+        auto stepInSeconds = metadata.getLong("step") * metadata.getLong("timeStep");
+        ASSERT(stepInSeconds % 3600 == 0);
+        setValue("step", stepInSeconds / 3600);
     }
 
     // setDomainDimensions

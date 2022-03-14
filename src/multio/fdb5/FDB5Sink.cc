@@ -30,7 +30,7 @@ fdb5::Config fdb5_configuration(const eckit::Configuration& cfg) {
         userConfig = fdb_configuration.getSubConfiguration("userConfig");
     }
     else {
-        userConfig.set("useSubToc", true);
+        userConfig.set("useSubToc", fdb_configuration.getBool("useSubToc", true));
     }
 
     fdb5::Config fdb_config(fdb_configuration, userConfig);

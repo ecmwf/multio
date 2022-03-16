@@ -36,13 +36,13 @@ public:
 
 private:
     void applyMask(message::Message msg) const;
-    void applyOffset();
+    void applyOffset(message::Message msg) const;
 
     void print(std::ostream& os) const override;
 
     double missingValue_;
-    std::vector<std::string> fieldsToOffset_;
-    double offset_;
+    std::set<std::string> offsetFields_;
+    double offsetValue_;
 };
 
 }  // namespace action

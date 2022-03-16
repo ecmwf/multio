@@ -35,9 +35,14 @@ public:
     void execute(message::Message msg) const override;
 
 private:
+    void applyMask(message::Message msg) const;
+    void applyOffset();
+
     void print(std::ostream& os) const override;
 
     double missingValue_;
+    std::vector<std::string> fieldsToOffset_;
+    double offset_;
 };
 
 }  // namespace action

@@ -23,13 +23,29 @@ namespace action {
 
 Mask::Mask(const eckit::Configuration& config) :
     Action(config),
-    missingValue_{config.getDouble("missing-value", std::numeric_limits<double>::max())} {}
+    missingValue_{config.getDouble("missing-value", std::numeric_limits<double>::max())},
+    fieldsToOffset_{config.getStringVector("fields-to-offset", std::vector<std::string>{})},
+    offset_{config.getDouble("offset-value", 273.15)} {}
 
 void Mask::execute(message::Message msg) const {
 
     // Sanity check
     ASSERT(msg.metadata().getLong("levelCount") == 1);
 
+    applyMask(msg);
+
+    message::Metadata md{msg.metadata()};
+    md.set("missingValue", missingValue_);
+    md.set("bitmapPresent", true);
+
+    message::Message nextMsg{
+        message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(md)},
+        std::move(msg.payload())};
+
+    executeNext(nextMsg);
+}
+
+void Mask::applyMask(message::Message msg) const {
     auto const& bkey = domain::Mask::key(msg.metadata());
     auto const& bitmask = domain::Mask::instance().get(bkey);
 
@@ -43,16 +59,6 @@ void Mask::execute(message::Message msg) const {
         }
         ++git;
     }
-
-    message::Metadata md{msg.metadata()};
-    md.set("missingValue", missingValue_);
-    md.set("bitmapPresent", true);
-
-    message::Message nextMsg{
-        message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(md)},
-        std::move(msg.payload())};
-
-    executeNext(nextMsg);
 }
 
 void Mask::print(std::ostream& os) const {

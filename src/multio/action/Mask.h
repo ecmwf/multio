@@ -40,6 +40,7 @@ private:
 
     void print(std::ostream& os) const override;
 
+    bool applyBitmap_;
     double missingValue_;
     std::set<std::string> offsetFields_;
     double offsetValue_;

@@ -50,6 +50,7 @@ plans :
       - type : Aggregation
 
       - type : Mask
+        apply-bitmap: true
         offset-fields: [sst, toce]
         offset-value: 273.15
 
@@ -84,6 +85,7 @@ plans :
 
         # Mask and offset should be applied at the same time as we do not support offsetting masked values
       - type : Mask
+        apply-bitmap: true
         offset-fields: [sst]
         offset-value: 273.15
 
@@ -117,6 +119,7 @@ plans :
       - type : Aggregation
 
       - type : Mask
+        apply-bitmap: true
         offset-fields: [icettop]
         offset-value: 273.15
 

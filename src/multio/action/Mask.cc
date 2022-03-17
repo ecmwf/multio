@@ -34,6 +34,7 @@ bool setContains(const std::set<T>& _set, const T& key) {
 
 Mask::Mask(const eckit::Configuration& config) :
     Action(config),
+    applyBitmap_{config.getBool("apply-bitmap", true)},
     missingValue_{config.getDouble("missing-value", std::numeric_limits<double>::max())},
     offsetFields_{fetch_offset_fields(config)},
     offsetValue_{config.getDouble("offset-value", 273.15)} {}
@@ -43,7 +44,9 @@ void Mask::execute(message::Message msg) const {
     // Sanity check
     ASSERT(msg.metadata().getLong("levelCount") == 1);
 
-    applyMask(msg);
+    if (applyBitmap_) {
+        applyMask(msg);
+    }
 
     if (setContains(offsetFields_, msg.name())) {
         applyOffset(msg);

@@ -50,6 +50,8 @@ plans :
       - type : Aggregation
 
       - type : Mask
+        fields-to-offset: [sst, toce]
+        offset-value: 273.15
 
       - type : Encode
         format : grib
@@ -82,7 +84,7 @@ plans :
 
         # Mask and offset should be applied at the same time as we do not support offsetting masked values
       - type : Mask
-        fields-to-offset: [icettop, sst, toce]
+        fields-to-offset: [sst]
         offset-value: 273.15
 
       - type : Encode
@@ -115,6 +117,8 @@ plans :
       - type : Aggregation
 
       - type : Mask
+        fields-to-offset: [icettop]
+        offset-value: 273.15
 
       - type : Encode
         format : grib

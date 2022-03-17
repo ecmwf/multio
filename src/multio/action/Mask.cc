@@ -93,8 +93,8 @@ void Mask::applyOffset(message::Message msg) const {
 }
 
 void Mask::print(std::ostream& os) const {
-    os << "Mask(missing=" << missingValue_ << ", fields to offset=" << offsetFields_
-       << ", offset value==" << offsetValue_ << ")";
+    os << "Mask(missing=" << missingValue_ << ", offset-fields=" << offsetFields_
+       << ", offset-value=" << offsetValue_ << ")";
 }
 
 static ActionBuilder<Mask> MaskBuilder("Mask");

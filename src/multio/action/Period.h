@@ -35,11 +35,12 @@ public:
 
     bool isWithin(const eckit::DateTime& dt);
 
+    eckit::DateTime endPoint() const;
+
 private:
     eckit::DateTime startPoint_;
     eckit::DateTime endPoint_;
 
-    eckit::DateTime endPoint() const;
     void print(std::ostream& os) const;
 
     friend std::ostream& operator<<(std::ostream& os, const DateTimePeriod& a);

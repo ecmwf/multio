@@ -35,9 +35,15 @@ public:
     void execute(message::Message msg) const override;
 
 private:
+    void applyMask(message::Message msg) const;
+    void applyOffset(message::Message msg) const;
+
     void print(std::ostream& os) const override;
 
+    bool applyBitmap_;
     double missingValue_;
+    std::set<std::string> offsetFields_;
+    double offsetValue_;
 };
 
 }  // namespace action

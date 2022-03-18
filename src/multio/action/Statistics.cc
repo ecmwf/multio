@@ -27,6 +27,8 @@ namespace  {
 const std::map<const char, const std::string> symbol_to_unit{
     {'h', "hour"}, {'d', "day"}, {'m', "month"}};
 
+const std::map<const std::string, long> to_hourly{{"hour", 1}, {"day", 24}};
+
 std::string set_unit(std::string const& output_freq) {
     const auto& symbol = output_freq.back();
 
@@ -74,8 +76,9 @@ void Statistics::execute(message::Message msg) const {
         }
 
         md.set("timeUnit", timeUnit_);
-        md.set("timeSpan", timeSpan_);
+        md.set("timeSpanInHours", timeSpan_ * to_hourly.at(timeUnit_));
         md.set("stepRange", fieldStats_.at(os.str())->stepRange(md.getLong("step")));
+        md.set("currentDate", fieldStats_.at(os.str())->current().endPoint().date().yyyymmdd());
     }
     for (auto&& stat : fieldStats_.at(os.str())->compute(msg)) {
         md.set("operation", stat.first);

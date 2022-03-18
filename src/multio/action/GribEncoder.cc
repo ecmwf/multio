@@ -37,8 +37,9 @@ std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
     return grids_;
 }
 
-const std::map<const std::string, const long> ops_to_code{
-    {"average", 1000}, {"accumulate", 2000}, {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
+const std::map<const std::string, const long> ops_to_code{{"instant", 0000},    {"average", 1000},
+                                                          {"accumulate", 2000}, {"maximum", 3000},
+                                                          {"minimum", 4000},    {"stddev", 5000}};
 //  {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
 
 const std::map<const std::string, const std::string> category_to_levtype{
@@ -87,32 +88,46 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("expver", metadata.getSubConfiguration("run").getString("expver"));
     setValue("class", metadata.getSubConfiguration("run").getString("class"));
     setValue("stream", metadata.getSubConfiguration("run").getString("stream"));
-    setValue("type", metadata.getSubConfiguration("run").getString("type"));
+    auto type = metadata.getSubConfiguration("run").getString("type");
+    setValue("type", type);
+    setValue("typeOfGeneratingProcess", type_of_generating_process.at(type));
 
-    // setCommonMetadata
-    setValue("step", metadata.getLong("step"));
+    long date = (type == "an") ? metadata.getLong("currentDate") : metadata.getLong("startDate");
+    setValue("year",  date / 10000);
+    setValue("month", (date % 10000) / 100);
+    setValue("day", date % 100);
 
     if (metadata.getSubConfiguration("run").has("dateOfAnalysis")) {
-      auto dateOfAnalysis = metadata.getSubConfiguration("run").getString("dateOfAnalysis");
-      setValue("yearOfAnalysis", std::stol(dateOfAnalysis.substr(0, 4)));
-      setValue("monthOfAnalysis", std::stol(dateOfAnalysis.substr(4, 2)));
-      setValue("dayOfAnalysis", std::stol(dateOfAnalysis.substr(6, 2)));
+      auto dateOfAnalysis = metadata.getSubConfiguration("run").getLong("dateOfAnalysis");
+      setValue("yearOfAnalysis", dateOfAnalysis / 10000);
+      setValue("monthOfAnalysis", (dateOfAnalysis % 10000) / 100);
+      setValue("dayOfAnalysis", dateOfAnalysis % 100);
+
+      // auto dateOfAnalysis = metadata.getSubConfiguration("run").getString("dateOfAnalysis");
+      // setValue("yearOfAnalysis", std::stol(dateOfAnalysis.substr(0, 4)));
+      // setValue("monthOfAnalysis", std::stol(dateOfAnalysis.substr(4, 2)));
+      // setValue("dayOfAnalysis", std::stol(dateOfAnalysis.substr(6, 2)));
     }
 
     if (metadata.getSubConfiguration("run").has("number")) {
       setValue("number", metadata.getSubConfiguration("run").getLong("number"));
     }
 
-    setValue("year", metadata.getLong("date") / 10000);
-    setValue("month", (metadata.getLong("date") % 10000) / 100);
-    setValue("day", metadata.getLong("date") % 100);
-
     // Statistics field
     if (metadata.has("operation") and metadata.getString("operation") != "instant") {
         //setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));
-        setValue("stepRange", metadata.getString("stepRange"));
+        // setValue("stepRange", metadata.getString("stepRange"));
+        long curDate = metadata.getLong("currentDate");
+        setValue("yearOfEndOfOverallTimeInterval",  curDate / 10000);
+        setValue("monthOfEndOfOverallTimeInterval", (curDate % 10000) / 100);
+        setValue("dayOfEndOfOverallTimeInterval", curDate % 100);
+        setValue("lengthOfTimeRange", metadata.getLong("timeSpanInHours"));
         setValue("indicatorOfUnitForTimeIncrement", 13l); // always seconds
         setValue("timeIncrement", metadata.getLong("timeStep"));
+    } else if(type == "fc") { // Instant fields
+        auto stepInSeconds = metadata.getLong("step") * metadata.getLong("timeStep");
+        ASSERT(stepInSeconds % 3600 == 0);
+        setValue("step", stepInSeconds / 3600);
     }
 
     // setDomainDimensions
@@ -157,7 +172,7 @@ void GribEncoder::setCoordMetadata(const message::Metadata& metadata) {
     setValue("type", type);
     setValue("typeOfGeneratingProcess", type_of_generating_process.at(type));
 
-    setValue("date", metadata.getLong("date"));
+    setValue("date", metadata.getLong("startDate"));
 
     // setDomainDimensions
     setValue("numberOfDataPoints", metadata.getLong("globalSize"));

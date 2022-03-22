@@ -56,7 +56,7 @@ plans :
 
       - type : Encode
         format : grib
-        template : unstr_an.tmpl
+        template : unstr_avg_an.tmpl
         grid-type : eORCA1
 
       - type : Sink
@@ -87,7 +87,7 @@ plans :
 
       - type : Encode
         format : grib
-        template :  unstr_an.tmpl
+        template :  unstr_avg_an.tmpl
         grid-type : eORCA1
 
       - type : Sink
@@ -118,7 +118,7 @@ plans :
 
       - type : Encode
         format : grib
-        template : unstr_an.tmpl
+        template : unstr_avg_an.tmpl
         grid-type : eORCA1
 
       - type : Sink

@@ -22,7 +22,10 @@ std::vector<std::unique_ptr<Operation>> reset_statistics(const std::vector<std::
 
 eckit::DateTime currentDateTime(const message::Message& msg) {
     eckit::Date startDate{eckit::Date{msg.metadata().getLong("startDate")}};
-    eckit::DateTime startDateTime{startDate, eckit::Time{0}};
+    auto startTime = msg.metadata().getLong("startTime");
+    auto hour = startTime / 10000;
+    auto minute = (startTime % 10000) / 100;
+    eckit::DateTime startDateTime{startDate, eckit::Time{hour, minute, 0}};
     return startDateTime + static_cast<eckit::Second>(msg.metadata().getLong("step") *
                                                       msg.metadata().getLong("timeStep"));
 }

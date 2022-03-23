@@ -97,16 +97,22 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("month", (date % 10000) / 100);
     setValue("day", date % 100);
 
+    long time = (type == "an") ? metadata.getLong("currentTime") : metadata.getLong("startTime");
+    setValue("hour",  time / 10000);
+    setValue("minute", (time % 10000) / 100);
+    setValue("second", time % 100);
+
     if (metadata.getSubConfiguration("run").has("dateOfAnalysis")) {
       auto dateOfAnalysis = metadata.getSubConfiguration("run").getLong("dateOfAnalysis");
       setValue("yearOfAnalysis", dateOfAnalysis / 10000);
       setValue("monthOfAnalysis", (dateOfAnalysis % 10000) / 100);
       setValue("dayOfAnalysis", dateOfAnalysis % 100);
+    }
 
-      // auto dateOfAnalysis = metadata.getSubConfiguration("run").getString("dateOfAnalysis");
-      // setValue("yearOfAnalysis", std::stol(dateOfAnalysis.substr(0, 4)));
-      // setValue("monthOfAnalysis", std::stol(dateOfAnalysis.substr(4, 2)));
-      // setValue("dayOfAnalysis", std::stol(dateOfAnalysis.substr(6, 2)));
+    if (metadata.getSubConfiguration("run").has("timeOfAnalysis")) {
+      auto dateOfAnalysis = metadata.getSubConfiguration("run").getLong("timeOfAnalysis");
+      setValue("hourOfAnalysis", dateOfAnalysis / 10000);
+      setValue("minuteOfAnalysis", (dateOfAnalysis % 10000) / 100);
     }
 
     if (metadata.getSubConfiguration("run").has("number")) {

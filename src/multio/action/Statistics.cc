@@ -79,6 +79,7 @@ void Statistics::execute(message::Message msg) const {
         md.set("timeSpanInHours", timeSpan_ * to_hourly.at(timeUnit_));
         md.set("stepRange", fieldStats_.at(os.str())->stepRange(md.getLong("step")));
         md.set("currentDate", fieldStats_.at(os.str())->current().endPoint().date().yyyymmdd());
+        md.set("currentTime", fieldStats_.at(os.str())->current().endPoint().time().hhmmss());
     }
     for (auto&& stat : fieldStats_.at(os.str())->compute(msg)) {
         md.set("operation", stat.first);

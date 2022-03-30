@@ -16,6 +16,7 @@
 #define multio_server_actions_Transport_H
 
 #include "multio/action/Action.h"
+#include "multio/server/Transport.h"
 
 namespace eckit { class Configuration; }
 
@@ -33,7 +34,8 @@ public:
 private:
     void print(std::ostream &os) const override;
 
-    std::shared_ptr<Transport> transport_ = nullptr;
+    std::shared_ptr<server::Transport> transport_ = nullptr;
+    bool buffered_ = false;
 };
 
 }  // namespace action

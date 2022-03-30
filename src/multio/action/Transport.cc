@@ -20,12 +20,12 @@ void Transport::execute(Message msg) const {
     if(buffered_) {
         transport_->send(msg);
     } else {
-        transport_->sendBuffered();
+        transport_->bufferedSend(msg);
     }
 }
 
 void Transport::print(std::ostream& os) const {
-    os << "Action[" << *transport_ os << "]";
+    os << "Action[" << *transport_ << "]";
 }
 
 

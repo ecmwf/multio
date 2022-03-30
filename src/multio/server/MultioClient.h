@@ -15,6 +15,7 @@
 #include <vector>
 #include <map>
 
+#include "multio/action/Plan.h"
 #include "multio/message/Metadata.h"
 #include "multio/message/Peer.h"
 
@@ -24,6 +25,10 @@ class Configuration;
 }  // namespace eckit
 
 namespace multio {
+
+namespace message {
+class Message;
+}
 
 namespace server {
 
@@ -45,9 +50,15 @@ public:
 
     void sendField(message::Metadata metadata, eckit::Buffer&& field, bool to_all_servers = false);
 
+    void dispatch(message::Metadata metadata, eckit::Buffer&& payload, int itag);
+
+    void dispatch(message::Message msg);
+
     void sendStepComplete() const;
 
 private:
+    std::vector<std::unique_ptr<action::Plan>> plans_;
+
     using PeerList = std::vector<std::unique_ptr<message::Peer>>;
 
     size_t clientCount_;

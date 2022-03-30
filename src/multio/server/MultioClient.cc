@@ -3,6 +3,7 @@
 
 #include <algorithm>
 
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/Resource.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
@@ -33,6 +34,13 @@ MultioClient::MultioClient(const eckit::Configuration &config)
       serverPeers_{transport_->createServerPeers()},
       counters_(serverPeers_.size()), distType_{distributionType()} {
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << config << std::endl;
+    const std::vector<eckit::LocalConfiguration> plans =
+        config.getSubConfiguration("client").getSubConfigurations("plans");
+    for (const auto& cfg : plans) {
+        eckit::Log::debug<LibMultio>() << cfg << std::endl;
+        plans_.emplace_back(new action::Plan(cfg));
+    }
+
 }
 
 MultioClient::~MultioClient() = default;
@@ -82,6 +90,23 @@ void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,
             std::move(field)};
 
         transport_->bufferedSend(msg);
+    }
+}
+
+void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload, int itag) {
+    auto tag = static_cast<Message::Tag>(itag);
+    ASSERT(tag < Message::Tag::ENDTAG);
+    Message msg{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)},
+                std::move(payload)};
+
+    for (const auto& plan : plans_) {
+        plan->process(msg);
+    }
+}
+
+void MultioClient::dispatch(message::Message msg) {
+    for (const auto& plan : plans_) {
+        plan->process(msg);
     }
 }
 

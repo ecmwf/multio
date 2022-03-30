@@ -15,7 +15,6 @@
 
 #include <fstream>
 
-#include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
 
 #include "multio/LibMultio.h"

@@ -159,13 +159,11 @@ void MpiTransport::listen() {
 PeerList MpiTransport::createServerPeers() {
     PeerList serverPeers;
 
-    std::string group = config_.getString("group");
     // This is dangerous as it requires having the same logic as in NEMO or IFS
     // This needs to come from teh configuration or perhpas you want to create an intercommunicator
-    auto comm_size = config_.getUnsigned("clientCount") + config_.getUnsigned("serverCount");
-    auto rank = config_.getUnsigned("clientCount");
-    while (rank != comm_size) {
-        serverPeers.emplace_back(new MpiPeer{group, rank++});
+    auto rank = comm().size() - config_.getUnsigned("count");
+    while (rank != comm().size()) {
+        serverPeers.emplace_back(new MpiPeer{local_.group(), rank++});
     }
 
     return serverPeers;

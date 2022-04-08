@@ -59,10 +59,8 @@ client:
           operations:
             - instant
 
-        - type : Sink
-          sinks :
-
         - type : Transport
+          count : 5 # May be overridden, better to template it via script?
           target : nemo-ioserver
 
     - name : stream-10 # sea-ice fields output daily (standard) or hourly (highout)
@@ -77,14 +75,17 @@ client:
             - instant
 
         - type : Transport
+          count : 5 # May be overridden, better to template it via script?
           target : nemo-ioserver
 
 #===================================================================================================
 
 # TODO: could be a list of servers?
 nemo-ioserver:
-  transport: mpi
-  plans:
+  transport : mpi
+  group : nemo
+  count : 3 # May be overridden, better to template it via script?
+  plans :
 
     - name : ocean-grids
       actions:
@@ -114,7 +115,7 @@ nemo-ioserver:
       actions :
         - type : Select
           match : category
-          fields : [ ocean-2d, ocean-3d ]
+          categories : [ocean-2d, ocean-3d]
 
         - type : Aggregation
 

@@ -34,6 +34,8 @@
 #include "multio/server/NemoToGrib.h"
 #include "multio/util/print_buffer.h"
 
+using multio::message::Peer;
+using multio::message::Message;
 using multio::message::Metadata;
 using multio::util::print_buffer;
 using multio::server::MultioClient;
@@ -116,16 +118,27 @@ public:
         clientCount_ = eckit::mpi::comm(oce_str.c_str()).size();
         serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
 
-        config_.set("group", "nemo");
-        config_.set("clientCount", clientCount_);
-        config_.set("serverCount", serverCount_);
+        // // Get transport setting
+        // auto planConfigs = config_.getSubConfiguration("client").getSubConfigurations("plans");
+        // for (const auto& plan : planCfgs)
+        // auto it = std::find(begin(actions), end(actions), [](const Configuration& cfg) {
+        //     return cfg.getString("type") == "transport";
+        // });
+
+        // ASSERT(it != end(actions));
+
+        // it->set("count", cleintCount_);
+
+        // auto serverConfig = config_.getSubConfiguration(it->getString("target"));
+        // serverConfig.set("group", "nemo");
+        // serverConfig.set("count", serverCount_);
 
         multioClient_.reset(new MultioClient{config_});
 
         return ret_comm;
     }
 
-    void initServer(int parent_comm) {
+    void initServer(int parent_comm, const std::string server_name = "nemo-ioserver") {
         eckit::mpi::addComm("nemo", parent_comm);
 
         // TODO: find a way to come up with a unique 'colour', such as using MPI_APPNUM
@@ -137,7 +150,21 @@ public:
                            << "; child=" << server_comm << ",size="
                            << eckit::mpi::comm("server_comm").size() << ")" << std::endl;
 
-        multioServer_.reset(new MultioServer{eckit::YAMLConfiguration{configuration_file()}});
+        auto serverConfig = config_.getSubConfiguration(server_name)};
+        serverConfig.set("group", "nemo");
+        serverConfig.set("count", serverCount_);
+
+        multioServer_.reset(new MultioServer{});
+    }
+
+    void openConnections() {
+        Metadata md;
+        md.set("clientCount", clientCount_);
+        md.set("serverCount", serverCount_);
+
+        Message msg{Message::Header{Message::Tag::Domain, Peer{}, Peer{}, std::move(metadata_)}};
+
+        MultioNemo::instance().client().dispatch(msg);
     }
 
     void setDomain(const std::string& dname, const int* data, size_t bytes) {
@@ -146,7 +173,14 @@ public:
         md.set("name", dname);
         md.set("category", "structured");
         md.set("domainCount", clientCount_);
-        client().sendDomain(std::move(md), std::move(domain_def));
+
+        metadata_.set("toAllServers", to_all_servers);
+        Message msg{Message::Header{Message::Tag::Domain, Peer{}, Peer{}, std::move(metadata_)},
+                std::move(domain_def)};
+
+        MultioNemo::instance().client().dispatch(msg);
+
+        // client().sendDomain(std::move(md), std::move(domain_def));
     }
 
     void writeMask(const std::string& mname, const uint8_t* data, size_t bytes) {
@@ -161,7 +195,13 @@ public:
         md.set("levelCount", metadata_.getLong("levelCount"));
         md.set("level", metadata_.getLong("level"));
 
-        MultioNemo::instance().client().sendMask(md, std::move(mask_vals));
+        metadata_.set("toAllServers", to_all_servers);
+        Message msg{Message::Header{Message::Tag::Mask, Peer{}, Peer{}, std::move(metadata_)},
+                std::move(mask_vals)};
+
+        MultioNemo::instance().client().dispatch(msg);
+
+        // MultioNemo::instance().client().sendMask(md, std::move(mask_vals));
     }
 
     void writeField(const std::string& fname, const double* data, size_t bytes,
@@ -187,7 +227,13 @@ public:
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 
-        MultioNemo::instance().client().sendField(metadata_, std::move(field_vals), to_all_servers);
+        metadata_.set("toAllServers", to_all_servers);
+        Message msg{Message::Header{Message::Tag::Field, Peer{}, Peer{}, std::move(metadata_)},
+                    std::move(field_vals)};
+
+        MultioNemo::instance().client().dispatch(msg);
+
+        // MultioNemo::instance().client().sendField(metadata_, std::move(field_vals), to_all_servers);
     }
 
     bool useServer() const {
@@ -204,7 +250,8 @@ extern "C" {
 #endif
 
 void multio_open_connections() {
-    MultioNemo::instance().client().openConnections();
+    MultioNemo::openConnections();
+    // MultioNemo::instance().client().openConnections();
 }
 
 void multio_close_connections() {

@@ -40,17 +40,26 @@ MultioClient::MultioClient(const eckit::Configuration &config)
         eckit::Log::debug<LibMultio>() << cfg << std::endl;
         plans_.emplace_back(new action::Plan(cfg));
     }
-
 }
 
 MultioClient::~MultioClient() = default;
 
 void MultioClient::openConnections() const {
-    transport_->openConnections();
+    // transport_->openConnections();
+
+    Message msg{Message::Header{Message::Tag::Open, Peer{}, Peer{}}};
+    for (const auto& plan : plans_) {
+        plan->process(msg);
+    }
 }
 
 void MultioClient::closeConnections() const {
-    transport_->closeConnections();
+    // transport_->closeConnections();
+
+    Message msg{Message::Header{Message::Tag::Close, Peer{}, Peer{}}};
+    for (const auto& plan : plans_) {
+        plan->process(msg);
+    }
 }
 
 void MultioClient::sendDomain(message::Metadata metadata, eckit::Buffer&& domain) {
@@ -73,7 +82,6 @@ void MultioClient::sendMask(message::Metadata metadata, eckit::Buffer&& mask) {
 
 void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,
                              bool to_all_servers) {
-
     if (to_all_servers) {
         for (auto& server : serverPeers_) {
             Message msg{Message::Header{Message::Tag::Field, client_, *server, std::move(metadata)},

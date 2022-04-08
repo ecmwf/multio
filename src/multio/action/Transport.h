@@ -34,8 +34,37 @@ public:
 private:
     void print(std::ostream &os) const override;
 
-    std::shared_ptr<server::Transport> transport_ = nullptr;
+    using PeerList = std::vector<std::unique_ptr<message::Peer>>;
+
+    size_t clientCount_;
+    size_t serverCount_;
+
+    std::shared_ptr<Transport> transport_ = nullptr;
+
+    const message::Peer client_;
+
+    void setServerId(size clientCount);
+    size_t serverId_;
+    size_t usedServerCount_;
+    PeerList serverPeers_;
+
+    // Distribute fields
+    message::Peer chooseServer(const message::Metadata& metadata);
+    std::map<std::string, message::Peer> destinations_;
+    std::vector<uint64_t> counters_;
+
+    enum class DistributionType : unsigned
+    {
+        hashed_cyclic,
+        hashed_to_single,
+        even,
+    };
+    DistributionType distType_;
+
+    enum DistributionType distributionType();
+
     bool buffered_ = false;
+    bool connectionsOpen_ = false;
 };
 
 }  // namespace action

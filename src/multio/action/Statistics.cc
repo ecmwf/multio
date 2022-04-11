@@ -17,6 +17,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/action/TemporalStatistics.h"
+#include "multio/message/Message.h"
 #include "multio/util/ScopedTimer.h"
 
 namespace multio {
@@ -55,7 +56,7 @@ Statistics::Statistics(const eckit::Configuration& config) :
 void Statistics::execute(message::Message msg) const {
 
     // Pass through -- no statistics for messages other than fields
-    if(msg.tag() != Message::Tag::Field()) {
+    if(msg.tag() != message::Message::Tag::Field) {
         executeNext(msg);
     }
 

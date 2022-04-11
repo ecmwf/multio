@@ -10,36 +10,46 @@
 
 #include "Transport.h"
 
+#include <algorithm>
+
+#include "eckit/config/YAMLConfiguration.h"
+#include "eckit/config/Resource.h"
+
+#include "multio/server/ConfigurationPath.h"
+#include "multio/server/Transport.h"
+#include "multio/util/logfile_name.h"
+
 namespace multio {
 namespace action {
 
 namespace {
-std::shared_ptr<Transport> make_transport(const eckit::Configuration &config) {
+std::shared_ptr<server::Transport> make_transport(const eckit::Configuration &config) {
     auto serverName = config.getString("target");
     eckit::LocalConfiguration fullConfig{eckit::YAMLConfiguration{configuration_file()}};
     auto serverConfig = fullConfig.getSubConfiguration(serverName);
-    return TransportFactory::instance().build(serverConfig.getString("transport"), serverConfig);
+    return std::shared_ptr<server::Transport>{server::TransportFactory::instance().build(
+        serverConfig.getString("transport"), serverConfig)};
 }
 
 size_t serverIdDenom(size_t clientCount, size_t serverCount) {
     return (serverCount == 0) ? 1 : (((clientCount - 1) / serverCount) + 1);
 }
-}
+}  // namespace
 
-Transport::Transport(const eckit::Configuration &config)
-    : Action{config}, transport_{make_transport},
-      client_{transport_->localPeer()},
-      usedServerCount_{
-          eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
-      serverPeers_{transport_->createServerPeers()},
-      serverCount_{config.getUnsigned("serverCount")},
-      counters_(serverPeers_.size()), distType_{distributionType()} {}
+Transport::Transport(const eckit::Configuration& config) :
+    Action{config},
+    transport_{make_transport(config)},
+    client_{transport_->localPeer()},
+    serverPeers_{transport_->createServerPeers()},
+    serverCount_{config.getUnsigned("serverCount")},
+    usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
+    counters_(serverPeers_.size()),
+    distType_{distributionType()} {}
 
 void Transport::execute(Message msg) const {
 
     if (msg.tag() == Message::Tag::Open && not connectionsOpen_) {
         setServerId(msg.metadata().getUnsigned("clientCount"));
-        createConnectionTopology(msg.metadata().getLong());
         transport_->openConnections();
         connectionsOpen_ = true;
         return;
@@ -62,8 +72,8 @@ void Transport::print(std::ostream& os) const {
     os << "Action[" << *transport_ << "]";
 }
 
-void Transport::setServerId(size_t clientCount) {
-    serverId_ = client_.id() / serverIdDenom(clientCount, serverCount_)
+void Transport::setServerId(size_t clientCount) const {
+    serverId_ = client_.id() / serverIdDenom(clientCount, serverCount_);
 }
 
 message::Peer Transport::chooseServer(const message::Metadata& metadata) {

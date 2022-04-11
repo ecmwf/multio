@@ -150,11 +150,11 @@ public:
                            << "; child=" << server_comm << ",size="
                            << eckit::mpi::comm("server_comm").size() << ")" << std::endl;
 
-        auto serverConfig = config_.getSubConfiguration(server_name)};
+        auto serverConfig = config_.getSubConfiguration(server_name);
         serverConfig.set("group", "nemo");
         serverConfig.set("count", serverCount_);
 
-        multioServer_.reset(new MultioServer{});
+        multioServer_.reset(new MultioServer{serverConfig});
     }
 
     void openConnections() {
@@ -162,7 +162,13 @@ public:
         md.set("clientCount", clientCount_);
         md.set("serverCount", serverCount_);
 
-        Message msg{Message::Header{Message::Tag::Domain, Peer{}, Peer{}, std::move(metadata_)}};
+        Message msg{Message::Header{Message::Tag::Open, Peer{}, Peer{}, std::move(metadata_)}};
+
+        MultioNemo::instance().client().dispatch(msg);
+    }
+
+    void closeConnections() {
+        Message msg{Message::Header{Message::Tag::Close, Peer{}, Peer{}}};
 
         MultioNemo::instance().client().dispatch(msg);
     }
@@ -174,7 +180,7 @@ public:
         md.set("category", "structured");
         md.set("domainCount", clientCount_);
 
-        metadata_.set("toAllServers", to_all_servers);
+        metadata_.set("toAllServers", true);
         Message msg{Message::Header{Message::Tag::Domain, Peer{}, Peer{}, std::move(metadata_)},
                 std::move(domain_def)};
 
@@ -195,7 +201,7 @@ public:
         md.set("levelCount", metadata_.getLong("levelCount"));
         md.set("level", metadata_.getLong("level"));
 
-        metadata_.set("toAllServers", to_all_servers);
+        metadata_.set("toAllServers", true);
         Message msg{Message::Header{Message::Tag::Mask, Peer{}, Peer{}, std::move(metadata_)},
                 std::move(mask_vals)};
 
@@ -250,12 +256,13 @@ extern "C" {
 #endif
 
 void multio_open_connections() {
-    MultioNemo::openConnections();
+    MultioNemo::instance().openConnections();
     // MultioNemo::instance().client().openConnections();
 }
 
 void multio_close_connections() {
-    MultioNemo::instance().client().closeConnections();
+    MultioNemo::instance().closeConnections();
+//    MultioNemo::instance().client().closeConnections();
 }
 
 void multio_write_step_complete() {

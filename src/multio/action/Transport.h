@@ -16,7 +16,7 @@
 #define multio_server_actions_Transport_H
 
 #include "multio/action/Action.h"
-#include "multio/server/Transport.h"
+#include "multio/server/Transport.h" // This means circular dependency at the minute
 
 namespace eckit { class Configuration; }
 
@@ -36,17 +36,16 @@ private:
 
     using PeerList = std::vector<std::unique_ptr<message::Peer>>;
 
-    size_t clientCount_;
-    size_t serverCount_;
-
-    std::shared_ptr<Transport> transport_ = nullptr;
+    std::shared_ptr<server::Transport> transport_ = nullptr;
 
     const message::Peer client_;
-
-    void setServerId(size clientCount);
-    size_t serverId_;
-    size_t usedServerCount_;
     PeerList serverPeers_;
+
+    size_t serverCount_;
+
+    void setServerId(size_t clientCount) const;
+    mutable size_t serverId_;
+    size_t usedServerCount_;
 
     // Distribute fields
     message::Peer chooseServer(const message::Metadata& metadata);
@@ -64,7 +63,7 @@ private:
     enum DistributionType distributionType();
 
     bool buffered_ = false;
-    bool connectionsOpen_ = false;
+    mutable bool connectionsOpen_ = false;
 };
 
 }  // namespace action

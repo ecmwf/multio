@@ -73,19 +73,29 @@ MpiTransport::~MpiTransport() {
 }
 
 void MpiTransport::openConnections() {
+    if (connectionsOpen_) {
+        return;
+    }
+
     for (auto& server : createServerPeers()) {
         Message msg{Message::Header{Message::Tag::Open, local_, *server}};
         bufferedSend(msg);
     }
+    connectionsOpen_ = true;
 }
 
 void MpiTransport::closeConnections() {
+    if (not connectionsOpen_) {
+        return;
+    }
+
     for (auto& server : createServerPeers()) {
         Message msg{Message::Header{Message::Tag::Close, local_, *server}};
         bufferedSend(msg);
         pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
     }
     pool_.waitAll();
+    connectionsOpen_ = false;
 }
 
 Message MpiTransport::receive() {
@@ -134,6 +144,8 @@ void MpiTransport::send(const Message& msg) {
 }
 
 void MpiTransport::bufferedSend(const Message& msg) {
+    eckit::Log::info() << "Sending message " << Message::tag2str(msg.tag()) << " from "
+                       << localPeer() << " to " << msg.destination() << std::endl;
     encodeMessage(pool_.getStream(msg), msg);
 }
 
@@ -162,10 +174,14 @@ PeerList MpiTransport::createServerPeers() {
     // This is dangerous as it requires having the same logic as in NEMO or IFS
     // This needs to come from teh configuration or perhpas you want to create an intercommunicator
     auto rank = comm().size() - config_.getUnsigned("count");
+    eckit::Log::info() << "comm size = " << comm().size()
+                       << ", server size = " << config_.getUnsigned("count") << ", rank = " << rank;
+    eckit::Log::info() << ", Server peers: ";
     while (rank != comm().size()) {
         serverPeers.emplace_back(new MpiPeer{local_.group(), rank++});
+        eckit::Log::info() << *serverPeers.back() << " ";
     }
-
+    eckit::Log::info() << std::endl;
     return serverPeers;
 }
 

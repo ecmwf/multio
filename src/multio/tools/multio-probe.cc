@@ -20,22 +20,6 @@ using namespace multio::server;
 
 //----------------------------------------------------------------------------------------------------------------
 
-namespace {
-eckit::LocalConfiguration test_configuration(const std::string& type) {
-    eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
-
-    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-configuration"},
-                                                  {"tcp", "tcp-test-configuration"},
-                                                  {"thread", "thread-test-configuration"},
-                                                  {"none", "no-transport-test-configuration"}};
-
-    eckit::YAMLConfiguration testConfigs{configuration_path() + "test-configurations.yaml"};
-    return eckit::LocalConfiguration{testConfigs.getSubConfiguration(configs.at(type))};
-}
-}  // namespace
-
-//----------------------------------------------------------------------------------------------------------------
-
 class MultioProbe final : public multio::MultioTool {
 public:  // methods
 
@@ -57,6 +41,7 @@ private:
 
     void testData() const;
 
+    std::string serverName_ = "nemo-ioserver";
     std::string transport_ = "mpi";
     int port_ = 7777;
     bool test_ = false;
@@ -74,9 +59,9 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
     args.get("transport", transport_);
     args.get("port", port_);
     args.get("test", test_);
+    args.get("server", serverName_);
 
-    config_ = test_configuration(transport_);
-    config_.set("local_port", port_);
+    eckit::LocalConfiguration fullConfig{eckit::YAMLConfiguration{configuration_file()}};
 
     if(transport_ == "mpi") {
         if (!eckit::mpi::hasComm("nemo")) {
@@ -85,7 +70,20 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
         }
         // TODO: find a way to come up with a unique 'colour'
         eckit::mpi::comm("nemo").split(888, "server_comm");
+        auto parent_comm = eckit::mpi::comm("nemo").communicator();
+        auto server_comm = eckit::mpi::comm("server_comm").communicator();
+
+        eckit::Log::info() << "*** Server -- split nemo communicator server_comm(parent="
+                           << parent_comm << ",size=" << eckit::mpi::comm("nemo").size()
+                           << "; child=" << server_comm
+                           << ",size=" << eckit::mpi::comm("server_comm").size() << ")"
+                           << std::endl;
     }
+
+    config_ = fullConfig.getSubConfiguration(serverName_);
+    config_.set("local_port", port_);
+    config_.set("group", "nemo");
+    config_.set("count", eckit::mpi::comm("server_comm").size());
 }
 
 void MultioProbe::finish(const eckit::option::CmdArgs&) {}
@@ -102,7 +100,7 @@ void MultioProbe::execute(const eckit::option::CmdArgs&) {
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioProbe::executeLive() {
-    MultioServer server{eckit::YAMLConfiguration{configuration_file()}};
+    MultioServer server{config_};
 }
 
 void MultioProbe::executeTest() {

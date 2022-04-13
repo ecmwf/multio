@@ -69,6 +69,7 @@ private:
     std::queue<Message> msgPack_;
 
     std::mutex mutex_;
+    bool connectionsOpen_ = false;
 };
 
 }  // namespace server

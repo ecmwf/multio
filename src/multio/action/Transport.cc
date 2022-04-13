@@ -24,6 +24,7 @@ namespace action {
 
 namespace {
 std::shared_ptr<server::Transport> make_transport(const eckit::Configuration &config) {
+    eckit::Log::info() << "Action transport config: " << config << std::endl;
     auto serverName = config.getString("target");
     eckit::LocalConfiguration fullConfig{eckit::YAMLConfiguration{configuration_file()}};
     auto serverConfig = fullConfig.getSubConfiguration(serverName);
@@ -41,30 +42,42 @@ Transport::Transport(const eckit::Configuration& config) :
     transport_{make_transport(config)},
     client_{transport_->localPeer()},
     serverPeers_{transport_->createServerPeers()},
-    serverCount_{config.getUnsigned("serverCount")},
+    serverCount_{serverPeers_.size()},
     usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
     counters_(serverPeers_.size()),
     distType_{distributionType()} {}
 
 void Transport::execute(Message msg) const {
-
-    if (msg.tag() == Message::Tag::Open && not connectionsOpen_) {
+    eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
+    if (msg.tag() == Message::Tag::Open) {
+        eckit::Log::info() << "Opening connections " << std::endl;
         setServerId(msg.metadata().getUnsigned("clientCount"));
         transport_->openConnections();
-        connectionsOpen_ = true;
         return;
     }
 
-    if (msg.tag() == Message::Tag::Close && connectionsOpen_) {
+    if (msg.tag() == Message::Tag::Close) {
         transport_->closeConnections();
-        connectionsOpen_ = false;
         return;
     }
 
-    if (buffered_) {
-        transport_->bufferedSend(msg);
-    } else {
-        transport_->send(msg);
+    auto md = msg.metadata();
+    if (md.getBool("toAllServers")) {
+        for (auto& server : serverPeers_) {
+            auto md = msg.metadata();
+            Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)},
+                          msg.payload()};
+
+            transport_->bufferedSend(trMsg);
+        }
+    }
+    else {
+        auto server = chooseServer(msg.metadata());
+
+        Message trMsg{Message::Header{msg.tag(), client_, server, std::move(md)},
+                    std::move(msg.payload())};
+
+        transport_->bufferedSend(trMsg);
     }
 }
 
@@ -76,7 +89,7 @@ void Transport::setServerId(size_t clientCount) const {
     serverId_ = client_.id() / serverIdDenom(clientCount, serverCount_);
 }
 
-message::Peer Transport::chooseServer(const message::Metadata& metadata) {
+message::Peer Transport::chooseServer(const message::Metadata& metadata) const {
     ASSERT_MSG(serverCount_ > 0, "No server to choose from");
 
     switch (distType_) {

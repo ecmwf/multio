@@ -111,7 +111,8 @@ public:
 
         auto ret_comm = chld.communicator();
 
-        eckit::Log::info() << "*** Split nemo communicator " << oce_str << "(parent=" << parent_comm
+        eckit::Log::info() << "*** Client -- Split nemo communicator " << oce_str
+                           << "(parent=" << parent_comm
                            << ",size=" << eckit::mpi::comm("nemo").size() << "; child=" << ret_comm
                            << ",size=" << chld.size() << ")" << std::endl;
 
@@ -145,10 +146,11 @@ public:
         eckit::mpi::comm("nemo").split(888, "server_comm");
         auto server_comm = eckit::mpi::comm("server_comm").communicator();
 
-        eckit::Log::info() << "*** Split nemo communicator server_comm(parent=" << parent_comm
-                           << ",size=" << eckit::mpi::comm("nemo").size()
-                           << "; child=" << server_comm << ",size="
-                           << eckit::mpi::comm("server_comm").size() << ")" << std::endl;
+        eckit::Log::info() << "*** Server -- split nemo communicator server_comm(parent="
+                           << parent_comm << ",size=" << eckit::mpi::comm("nemo").size()
+                           << "; child=" << server_comm
+                           << ",size=" << eckit::mpi::comm("server_comm").size() << ")"
+                           << std::endl;
 
         auto serverConfig = config_.getSubConfiguration(server_name);
         serverConfig.set("group", "nemo");
@@ -162,7 +164,7 @@ public:
         md.set("clientCount", clientCount_);
         md.set("serverCount", serverCount_);
 
-        Message msg{Message::Header{Message::Tag::Open, Peer{}, Peer{}, std::move(metadata_)}};
+        Message msg{Message::Header{Message::Tag::Open, Peer{}, Peer{}, std::move(md)}};
 
         MultioNemo::instance().client().dispatch(msg);
     }
@@ -173,15 +175,21 @@ public:
         MultioNemo::instance().client().dispatch(msg);
     }
 
+    void writeStepComplete() {
+        Message msg{Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}}};
+
+        MultioNemo::instance().client().dispatch(msg);
+    }
+
     void setDomain(const std::string& dname, const int* data, size_t bytes) {
         eckit::Buffer domain_def{reinterpret_cast<const char*>(data), bytes};
         Metadata md;
         md.set("name", dname);
         md.set("category", "structured");
         md.set("domainCount", clientCount_);
+        md.set("toAllServers", true);
 
-        metadata_.set("toAllServers", true);
-        Message msg{Message::Header{Message::Tag::Domain, Peer{}, Peer{}, std::move(metadata_)},
+        Message msg{Message::Header{Message::Tag::Domain, Peer{}, Peer{}, std::move(md)},
                 std::move(domain_def)};
 
         MultioNemo::instance().client().dispatch(msg);
@@ -201,8 +209,8 @@ public:
         md.set("levelCount", metadata_.getLong("levelCount"));
         md.set("level", metadata_.getLong("level"));
 
-        metadata_.set("toAllServers", true);
-        Message msg{Message::Header{Message::Tag::Mask, Peer{}, Peer{}, std::move(metadata_)},
+        md.set("toAllServers", true);
+        Message msg{Message::Header{Message::Tag::Mask, Peer{}, Peer{}, std::move(md)},
                 std::move(mask_vals)};
 
         MultioNemo::instance().client().dispatch(msg);
@@ -266,7 +274,7 @@ void multio_close_connections() {
 }
 
 void multio_write_step_complete() {
-    MultioNemo::instance().client().sendStepComplete();
+    MultioNemo::instance().writeStepComplete();
 }
 
 int multio_init_client(const char* name, int parent_comm) {

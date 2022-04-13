@@ -48,9 +48,9 @@ private:
     size_t usedServerCount_;
 
     // Distribute fields
-    message::Peer chooseServer(const message::Metadata& metadata);
-    std::map<std::string, message::Peer> destinations_;
-    std::vector<uint64_t> counters_;
+    message::Peer chooseServer(const message::Metadata& metadata) const;
+    mutable std::map<std::string, message::Peer> destinations_;
+    mutable std::vector<uint64_t> counters_;
 
     enum class DistributionType : unsigned
     {
@@ -61,9 +61,6 @@ private:
     DistributionType distType_;
 
     enum DistributionType distributionType();
-
-    bool buffered_ = false;
-    mutable bool connectionsOpen_ = false;
 };
 
 }  // namespace action

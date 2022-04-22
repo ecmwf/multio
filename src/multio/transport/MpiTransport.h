@@ -14,8 +14,8 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_MpiTransport_H
-#define multio_server_MpiTransport_H
+#ifndef multio_transport_MpiTransport_H
+#define multio_transport_MpiTransport_H
 
 #include <queue>
 
@@ -24,12 +24,12 @@
 #include "eckit/mpi/Comm.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
-#include "multio/server/Transport.h"
-#include "multio/server/StreamPool.h"
-#include "multio/server/StreamQueue.h"
+#include "multio/transport/Transport.h"
+#include "multio/transport/StreamPool.h"
+#include "multio/transport/StreamQueue.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 class MpiTransport final : public Transport {
 public:
@@ -72,7 +72,7 @@ private:
     bool connectionsOpen_ = false;
 };
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio
 
 #endif

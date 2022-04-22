@@ -15,12 +15,14 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/config/Resource.h"
 
-#include "multio/server/ConfigurationPath.h"
-#include "multio/server/Transport.h"
+#include "multio/util/ConfigurationPath.h"
+#include "multio/transport/Transport.h"
 #include "multio/util/logfile_name.h"
 
 namespace multio {
 namespace action {
+
+using util::configuration_file;
 
 namespace {
 size_t serverIdDenom(size_t clientCount, size_t serverCount) {
@@ -33,7 +35,7 @@ TransportRegistry& TransportRegistry::instance() {
     return singleton;
 }
 
-std::shared_ptr<server::Transport> TransportRegistry::get(const eckit::Configuration& config) {
+std::shared_ptr<transport::Transport> TransportRegistry::get(const eckit::Configuration& config) {
     eckit::Log::info() << "Action transport config: " << config << std::endl;
     auto serverName = config.getString("target");
     add(serverName);
@@ -52,7 +54,7 @@ void TransportRegistry::add(const std::string& serverName) {
     auto serverConfig = fullConfig.getSubConfiguration(serverName);
     transports_.insert(
         {serverName,
-         std::shared_ptr<server::Transport>{server::TransportFactory::instance().build(
+         std::shared_ptr<transport::Transport>{transport::TransportFactory::instance().build(
              serverConfig.getString("transport"), serverConfig)}});
 }
 

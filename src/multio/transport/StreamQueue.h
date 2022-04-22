@@ -1,13 +1,13 @@
 
-#ifndef multio_server_StreamQueue_H
-#define multio_server_StreamQueue_H
+#ifndef multio_transport_StreamQueue_H
+#define multio_transport_StreamQueue_H
 
 #include <queue>
 
-#include "multio/server/MpiStream.h"
+#include "multio/transport/MpiStream.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 class StreamQueue {
 public:
@@ -40,7 +40,7 @@ private:
     std::mutex mutex_;
 };
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio
 
-#endif // multio_server_StreamQueue_H
+#endif // multio_transport_StreamQueue_H

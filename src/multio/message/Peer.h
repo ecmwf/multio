@@ -14,8 +14,8 @@
 
 /// @date Jan 2019
 
-#ifndef multio_Peer_H
-#define multio_Peer_H
+#ifndef multio_message_Peer_H
+#define multio_message_Peer_H
 
 #include <limits>
 #include <string>

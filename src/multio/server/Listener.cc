@@ -26,16 +26,16 @@
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 
-#include "multio/server/GribTemplate.h"
-#include "multio/server/ScopedThread.h"
-
+#include "multio/util/ScopedThread.h"
 #include "multio/server/Dispatcher.h"
-#include "multio/server/ThreadTransport.h"
+#include "multio/transport/Transport.h"
 
 namespace multio {
 namespace server {
 
 using message::Message;
+using util::ScopedThread;
+using transport::Transport;
 
 Listener::Listener(const eckit::Configuration& config, Transport& trans) :
     dispatcher_{std::make_shared<Dispatcher>(config)},
@@ -69,12 +69,6 @@ void Listener::start() {
                     << "*** CLOSING connection to " << msg.source()
                     << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
                     << ", connections = " << connections_.size() << std::endl;
-                break;
-
-            case Message::Tag::Grib:
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Size of grib template: " << msg.size() << std::endl;
-                GribTemplate::instance().add(msg);
                 break;
 
             case Message::Tag::Domain:
@@ -135,7 +129,7 @@ bool Listener::moreConnections() const {
     return !connections_.empty() || closedCount_ < clientCount_;
 }
 
-void Listener::checkConnection(const Peer& conn) const {
+void Listener::checkConnection(const message::Peer& conn) const {
     if (connections_.find(conn) == end(connections_)) {
         std::ostringstream oss;
         oss << "Connection to " << conn << " is not open";

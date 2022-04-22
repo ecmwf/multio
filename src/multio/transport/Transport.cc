@@ -19,7 +19,7 @@
 #include "multio/LibMultio.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 using eckit::Configuration;
 using eckit::Log;
@@ -93,5 +93,5 @@ TransportBuilderBase::~TransportBuilderBase() {
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio

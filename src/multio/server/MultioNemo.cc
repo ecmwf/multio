@@ -28,15 +28,16 @@
 
 #include "multio/LibMultio.h"
 #include "multio/message/Metadata.h"
-#include "multio/server/ConfigurationPath.h"
 #include "multio/server/MultioClient.h"
 #include "multio/server/MultioServer.h"
 #include "multio/server/NemoToGrib.h"
+#include "multio/util/ConfigurationPath.h"
 #include "multio/util/print_buffer.h"
 
 using multio::message::Peer;
 using multio::message::Message;
 using multio::message::Metadata;
+using multio::util::configuration_file;
 using multio::util::print_buffer;
 using multio::server::MultioClient;
 using multio::server::MultioServer;

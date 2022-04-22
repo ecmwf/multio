@@ -18,16 +18,17 @@
 #include "multio/util/print_buffer.h"
 #include "multio/LibMultio.h"
 #include "multio/server/Listener.h"
-#include "multio/server/ConfigurationPath.h"
-#include "multio/server/ThreadTransport.h"
+#include "multio/util/ConfigurationPath.h"
+#include "multio/transport/ThreadTransport.h"
 
 using multio::LibMultio;
-using multio::server::Listener;
 using multio::message::Message;
 using multio::message::Metadata;
+using multio::util::configuration_path;
 using multio::util::print_buffer;
-using multio::server::Transport;
-using multio::server::TransportFactory;
+using multio::server::Listener;
+using multio::transport::Transport;
+using multio::transport::TransportFactory;
 
 namespace {
 eckit::LocalConfiguration test_configuration(const std::string& type) {

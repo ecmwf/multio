@@ -20,9 +20,12 @@ class Configuration;
 }  // namespace eckit
 
 namespace multio {
-namespace server {
 
+namespace transport {
 class Transport;
+}
+
+namespace server {
 
 class MultioServer {
 public:
@@ -31,7 +34,7 @@ public:
     ~MultioServer();
 
 private:
-    std::shared_ptr<Transport> transport_ = nullptr;
+    std::shared_ptr<transport::Transport> transport_ = nullptr;
     Listener listener_;
 };
 }  // namespace server

@@ -16,7 +16,7 @@
 #define multio_server_actions_Transport_H
 
 #include "multio/action/Action.h"
-#include "multio/server/Transport.h" // This means circular dependency at the minute
+#include "multio/transport/Transport.h" // This means circular dependency at the minute
 
 namespace eckit { class Configuration; }
 
@@ -29,12 +29,12 @@ class TransportRegistry : public eckit::NonCopyable {
 public:
     static TransportRegistry& instance();
 
-    std::shared_ptr<server::Transport> get(const eckit::Configuration& config);
+    std::shared_ptr<transport::Transport> get(const eckit::Configuration& config);
 
 private:
     void add(const std::string& serverName);
 
-    std::map<std::string, std::shared_ptr<server::Transport>> transports_;
+    std::map<std::string, std::shared_ptr<transport::Transport>> transports_;
     std::mutex mutex_;
 };
 
@@ -51,7 +51,7 @@ private:
 
     using PeerList = std::vector<std::unique_ptr<message::Peer>>;
 
-    std::shared_ptr<server::Transport> transport_ = nullptr;
+    std::shared_ptr<transport::Transport> transport_ = nullptr;
 
     const message::Peer client_;
     PeerList serverPeers_;

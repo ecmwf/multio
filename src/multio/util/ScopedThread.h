@@ -1,13 +1,13 @@
 
-#ifndef multio_server_ScopedThread_H
-#define multio_server_ScopedThread_H
+#ifndef multio_util_ScopedThread_H
+#define multio_util_ScopedThread_H
 
 #include <thread>
 
 #include "eckit/exception/Exceptions.h"
 
 namespace multio {
-namespace server {
+namespace util {
 
 class ScopedThread {
 public:

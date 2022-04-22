@@ -16,11 +16,13 @@
 #include "eckit/io/StdFile.h"
 
 #include "multio/LibMultio.h"
-#include "multio/server/ConfigurationPath.h"
+#include "multio/util/ConfigurationPath.h"
 #include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
+
+using util::configuration_path;
 
 namespace {
 

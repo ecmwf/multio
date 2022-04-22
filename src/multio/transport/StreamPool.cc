@@ -11,7 +11,7 @@
 #include "multio/util/ScopedTimer.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 namespace  {
 std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
@@ -145,5 +145,5 @@ void StreamPool::print(std::ostream& os) const {
     os << ")";
 }
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio

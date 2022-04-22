@@ -14,8 +14,8 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_Transport_H
-#define multio_server_Transport_H
+#ifndef multio_transport_Transport_H
+#define multio_transport_Transport_H
 
 #include <iosfwd>
 #include <string>
@@ -26,10 +26,10 @@
 #include "eckit/config/Configuration.h"
 
 #include "multio/message/Message.h"
-#include "multio/server/TransportStatistics.h"
+#include "multio/transport/TransportStatistics.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 using message::Message;
 using message::Peer;
@@ -120,7 +120,7 @@ public:
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio
 
 #endif

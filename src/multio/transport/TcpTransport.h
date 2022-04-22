@@ -14,8 +14,8 @@
 
 /// @date Mar 2019
 
-#ifndef multio_server_TcpTransport_H
-#define multio_server_TcpTransport_H
+#ifndef multio_transport_TcpTransport_H
+#define multio_transport_TcpTransport_H
 
 #include <iosfwd>
 #include <map>
@@ -25,7 +25,7 @@
 #include "eckit/net/TCPServer.h"
 #include "eckit/io/Select.h"
 
-#include "multio/server/Transport.h"
+#include "multio/transport/Transport.h"
 
 namespace eckit {
 class Configuration;
@@ -35,7 +35,7 @@ class TCPSocket;
 }  // namespace eckit
 
 namespace multio {
-namespace server {
+namespace transport {
 
 class TcpPeer : public Peer {
 public:
@@ -85,7 +85,7 @@ private:
     std::vector<std::unique_ptr<Connection>> incoming_;
 };
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio
 
 #endif

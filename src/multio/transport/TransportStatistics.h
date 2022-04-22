@@ -1,13 +1,13 @@
 
-#ifndef multio_server_TransportStatistics_H
-#define multio_server_TransportStatistics_H
+#ifndef multio_transport_TransportStatistics_H
+#define multio_transport_TransportStatistics_H
 
 #include <iosfwd>
 
 #include <eckit/log/Statistics.h>
 
 namespace multio {
-namespace server {
+namespace transport {
 
 class TransportStatistics : public eckit::Statistics {
 public:
@@ -56,7 +56,7 @@ public:
     void report(std::ostream &out, const char* indent = "") const;
 };
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio
 
-#endif // multio_server_TransportStatistics_H
+#endif // multio_transport_TransportStatistics_H

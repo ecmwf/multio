@@ -5,10 +5,12 @@
 #include "eckit/filesystem/PathName.h"
 
 #include "multio/LibMultio.h"
-#include "multio/server/Transport.h"
+#include "multio/transport/Transport.h"
 
 namespace multio {
 namespace server {
+
+using transport::TransportFactory;
 
 MultioServer::MultioServer(const eckit::Configuration& config) :
     transport_{TransportFactory::instance().build(config.getString("transport"), config)},

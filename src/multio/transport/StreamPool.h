@@ -1,16 +1,16 @@
 
-#ifndef multio_server_StreamPool_H
-#define multio_server_StreamPool_H
+#ifndef multio_transport_StreamPool_H
+#define multio_transport_StreamPool_H
 
 #include <sstream>
 
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
-#include "multio/server/MpiStream.h"
-#include "multio/server/TransportStatistics.h"
+#include "multio/transport/MpiStream.h"
+#include "multio/transport/TransportStatistics.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 class MpiPeer : public message::Peer {
 public:
@@ -53,7 +53,7 @@ private:
     std::ostringstream os_;
 };
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio
 
-#endif // multio_server_StreamPool_H
+#endif // multio_transport_StreamPool_H

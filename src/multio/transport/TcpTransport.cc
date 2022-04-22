@@ -20,7 +20,7 @@
 #include "eckit/serialisation/MemoryStream.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 namespace {
 Message decodeMessage(eckit::Stream& stream) {
@@ -232,5 +232,5 @@ bool TcpTransport::amIServer(const std::string& host, std::vector<size_t> ports)
 
 static TransportBuilder<TcpTransport> TcpTransportBuilder("tcp");
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio

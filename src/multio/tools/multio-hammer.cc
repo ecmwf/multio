@@ -22,12 +22,12 @@
 
 #include "multio/domain/Domain.h"
 #include "multio/message/Message.h"
-#include "multio/server/ConfigurationPath.h"
+#include "multio/util/ConfigurationPath.h"
 #include "multio/server/Listener.h"
-#include "multio/server/MpiTransport.h"
-#include "multio/server/ThreadTransport.h"
-#include "multio/server/TcpTransport.h"
 #include "multio/tools/MultioTool.h"
+#include "multio/transport/MpiTransport.h"
+#include "multio/transport/ThreadTransport.h"
+#include "multio/transport/TcpTransport.h"
 #include "multio/util/print_buffer.h"
 #include "multio/util/ScopedTimer.h"
 
@@ -39,6 +39,12 @@ using multio::domain::Unstructured;
 using multio::LibMultio;
 using multio::message::Peer;
 using multio::action::Plan;
+using multio::util::configuration_path;
+using multio::transport::Transport;
+using multio::transport::TransportFactory;
+using multio::transport::MpiPeer;
+using multio::transport::TcpPeer;
+using multio::transport::ThreadPeer;
 
 using namespace multio::server;
 

@@ -16,7 +16,7 @@
 #include "multio/LibMultio.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 ThreadPeer::ThreadPeer(std::thread t) :
     Peer{"thread", std::hash<std::thread::id>{}(t.get_id())},
@@ -89,5 +89,5 @@ eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer dest) {
 
 static TransportBuilder<ThreadTransport> ThreadTransportBuilder("thread");
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio

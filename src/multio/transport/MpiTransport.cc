@@ -23,7 +23,7 @@
 #include "multio/util/ScopedTimer.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 namespace {
 Message decodeMessage(eckit::Stream& stream) {
@@ -217,5 +217,5 @@ void MpiTransport::encodeMessage(eckit::Stream& strm, const Message& msg) {
 
 static TransportBuilder<MpiTransport> MpiTransportBuilder("mpi");
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio

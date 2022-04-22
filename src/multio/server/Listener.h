@@ -30,14 +30,18 @@ class Configuration;
 }
 
 namespace multio {
+
+namespace transport {
+class Transport;
+}
+
 namespace server {
 
-class Transport;
 class Dispatcher;
 
 class Listener {
 public:
-    Listener(const eckit::Configuration& config, Transport& trans);
+    Listener(const eckit::Configuration& config, transport::Transport& trans);
 
     void start();
 
@@ -49,7 +53,7 @@ private:
 
     std::shared_ptr<Dispatcher> dispatcher_;
 
-    Transport& transport_;
+    transport::Transport& transport_;
 
     size_t closedCount_ = 0;
     size_t clientCount_ = 0;

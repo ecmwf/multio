@@ -16,18 +16,18 @@
 #include <map>
 
 #include "multio/action/Plan.h"
-#include "multio/message/Metadata.h"
-#include "multio/message/Peer.h"
 
 namespace eckit {
 class Buffer;
 class Configuration;
+class LocalConfiguration;
 }  // namespace eckit
 
 namespace multio {
 
 namespace message {
 class Message;
+using Metadata = eckit::LocalConfiguration;
 }
 
 namespace server {
@@ -58,34 +58,6 @@ public:
 
 private:
     std::vector<std::unique_ptr<action::Plan>> plans_;
-
-//    using PeerList = std::vector<std::unique_ptr<message::Peer>>;
-
-//    size_t clientCount_ = 5;
-//    size_t serverCount_ = 3;
-
-//    std::shared_ptr<Transport> transport_ = nullptr;
-
-//    const message::Peer client_;
-
-//    size_t serverId_;
-//    size_t usedServerCount_;
-//    PeerList serverPeers_;
-
-//    // Distribute fields
-//    message::Peer chooseServer(const message::Metadata& metadata);
-//    std::map<std::string, message::Peer> destinations_;
-//    std::vector<uint64_t> counters_;
-
-//    enum class DistributionType : unsigned
-//    {
-//        hashed_cyclic,
-//        hashed_to_single,
-//        even,
-//    };
-//    DistributionType distType_;
-
-//    enum DistributionType distributionType();
 };
 
 }  // namespace server

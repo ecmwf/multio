@@ -34,8 +34,6 @@ TransportRegistry& TransportRegistry::instance() {
 }
 
 std::shared_ptr<server::Transport> TransportRegistry::get(const eckit::Configuration& config) {
-    std::lock_guard<std::mutex> lock{mutex_};
-
     eckit::Log::info() << "Action transport config: " << config << std::endl;
     auto serverName = config.getString("target");
     add(serverName);
@@ -44,6 +42,8 @@ std::shared_ptr<server::Transport> TransportRegistry::get(const eckit::Configura
 }
 
 void TransportRegistry::add(const std::string& serverName) {
+    std::lock_guard<std::mutex> lock{mutex_};
+
     if (transports_.find(serverName) != std::end(transports_)) {
         return;
     }

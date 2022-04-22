@@ -11,13 +11,9 @@
 #include "eckit/log/JSON.h"
 
 #include "multio/LibMultio.h"
-#include "multio/server/Listener.h"
 #include "multio/server/MultioNemo.h"
 #include "multio/server/NemoToGrib.h"
-#include "multio/server/Transport.h"
 #include "multio/tools/MultioTool.h"
-
-using namespace multio::server;
 
 //----------------------------------------------------------------------------------------------------------------
 

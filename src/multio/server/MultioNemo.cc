@@ -119,21 +119,6 @@ public:
         clientCount_ = eckit::mpi::comm(oce_str.c_str()).size();
         serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
 
-        // // Get transport setting
-        // auto planConfigs = config_.getSubConfiguration("client").getSubConfigurations("plans");
-        // for (const auto& plan : planCfgs)
-        // auto it = std::find(begin(actions), end(actions), [](const Configuration& cfg) {
-        //     return cfg.getString("type") == "transport";
-        // });
-
-        // ASSERT(it != end(actions));
-
-        // it->set("count", cleintCount_);
-
-        // auto serverConfig = config_.getSubConfiguration(it->getString("target"));
-        // serverConfig.set("group", "nemo");
-        // serverConfig.set("count", serverCount_);
-
         multioClient_.reset(new MultioClient{config_});
 
         return ret_comm;
@@ -193,8 +178,6 @@ public:
                 std::move(domain_def)};
 
         MultioNemo::instance().client().dispatch(msg);
-
-        // client().sendDomain(std::move(md), std::move(domain_def));
     }
 
     void writeMask(const std::string& mname, const uint8_t* data, size_t bytes) {
@@ -214,8 +197,6 @@ public:
                 std::move(mask_vals)};
 
         MultioNemo::instance().client().dispatch(msg);
-
-        // MultioNemo::instance().client().sendMask(md, std::move(mask_vals));
     }
 
     void writeField(const std::string& fname, const double* data, size_t bytes,
@@ -246,8 +227,6 @@ public:
                     std::move(field_vals)};
 
         MultioNemo::instance().client().dispatch(msg);
-
-        // MultioNemo::instance().client().sendField(metadata_, std::move(field_vals), to_all_servers);
     }
 
     bool useServer() const {
@@ -265,12 +244,10 @@ extern "C" {
 
 void multio_open_connections() {
     MultioNemo::instance().openConnections();
-    // MultioNemo::instance().client().openConnections();
 }
 
 void multio_close_connections() {
     MultioNemo::instance().closeConnections();
-//    MultioNemo::instance().client().closeConnections();
 }
 
 void multio_write_step_complete() {

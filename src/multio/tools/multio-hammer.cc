@@ -149,6 +149,7 @@ std::vector<double> create_random_data(const size_t sz) {
 }
 
 std::vector<int32_t> generate_index_map(size_t id, size_t nbclients) {
+    ASSERT(nbclients > 0);
     auto chunk_size = field_size() / nbclients + ((id < field_size() % nbclients) ? 1 : 0);
 
     auto maps = std::vector<int32_t>(chunk_size);

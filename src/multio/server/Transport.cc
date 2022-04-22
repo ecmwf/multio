@@ -42,6 +42,7 @@ TransportFactory& TransportFactory::instance() {
 void TransportFactory::add(const std::string& name, const TransportBuilderBase* builder) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(factories_.find(name) == factories_.end());
+    Log::info() << "Adding TransportFactory [" << name << "]" << std::endl;
     factories_[name] = builder;
 }
 
@@ -67,6 +68,8 @@ Transport* TransportFactory::build(const std::string& name, const Configuration&
     Log::debug<LibMultio>() << "Looking for TransportFactory [" << name << "]" << std::endl;
 
     auto f = factories_.find(name);
+
+    Log::info() << "Looking for TransportFactory [" << name << "]" << std::endl;
 
     if (f != factories_.end())
         return f->second->make(config);

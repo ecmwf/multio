@@ -24,8 +24,8 @@ void Mappings::add(message::Message msg) {
     // Retrieve metadata
     auto& domainMap = mappings_[msg.name()];
 
-    if (msg.destination().group() == "thread" && domainMap.find(msg.source()) != end(domainMap)) {
-        // Map has been added already -- needed only for the thread transport
+    if (domainMap.find(msg.source()) != end(domainMap)) {
+        // Map has been added already
         return;
     }
     eckit::Log::debug<LibMultio>() << "*** Add domainMap for " << msg.name();

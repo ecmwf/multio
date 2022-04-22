@@ -23,29 +23,52 @@ namespace multio {
 namespace action {
 
 namespace {
-std::shared_ptr<server::Transport> make_transport(const eckit::Configuration &config) {
-    eckit::Log::info() << "Action transport config: " << config << std::endl;
-    auto serverName = config.getString("target");
-    eckit::LocalConfiguration fullConfig{eckit::YAMLConfiguration{configuration_file()}};
-    auto serverConfig = fullConfig.getSubConfiguration(serverName);
-    return std::shared_ptr<server::Transport>{server::TransportFactory::instance().build(
-        serverConfig.getString("transport"), serverConfig)};
-}
-
 size_t serverIdDenom(size_t clientCount, size_t serverCount) {
     return (serverCount == 0) ? 1 : (((clientCount - 1) / serverCount) + 1);
 }
 }  // namespace
 
+TransportRegistry& TransportRegistry::instance() {
+    static TransportRegistry singleton;
+    return singleton;
+}
+
+std::shared_ptr<server::Transport> TransportRegistry::get(const eckit::Configuration& config) {
+    std::lock_guard<std::mutex> lock{mutex_};
+
+    eckit::Log::info() << "Action transport config: " << config << std::endl;
+    auto serverName = config.getString("target");
+    add(serverName);
+
+    return transports_.at(serverName);
+}
+
+void TransportRegistry::add(const std::string& serverName) {
+    if (transports_.find(serverName) != std::end(transports_)) {
+        return;
+    }
+
+    eckit::LocalConfiguration fullConfig{eckit::YAMLConfiguration{configuration_file()}};
+    auto serverConfig = fullConfig.getSubConfiguration(serverName);
+    transports_.insert(
+        {serverName,
+         std::shared_ptr<server::Transport>{server::TransportFactory::instance().build(
+             serverConfig.getString("transport"), serverConfig)}});
+}
+
+// ================================================================================================
+
 Transport::Transport(const eckit::Configuration& config) :
     Action{config},
-    transport_{make_transport(config)},
+    transport_{TransportRegistry::instance().get(config)},
     client_{transport_->localPeer()},
     serverPeers_{transport_->createServerPeers()},
     serverCount_{serverPeers_.size()},
     usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
     counters_(serverPeers_.size()),
-    distType_{distributionType()} {}
+    distType_{distributionType()} {
+    eckit::Log::info() << "Transport use count = " << transport_.use_count() << std::endl;
+}
 
 void Transport::execute(Message msg) const {
     eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
@@ -75,7 +98,7 @@ void Transport::execute(Message msg) const {
         auto server = chooseServer(msg.metadata());
 
         Message trMsg{Message::Header{msg.tag(), client_, server, std::move(md)},
-                    std::move(msg.payload())};
+                      std::move(msg.payload())};
 
         transport_->bufferedSend(trMsg);
     }

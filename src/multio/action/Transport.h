@@ -25,6 +25,21 @@ namespace action {
 
 using message::Message;
 
+class TransportRegistry : public eckit::NonCopyable {
+public:
+    static TransportRegistry& instance();
+
+    std::shared_ptr<server::Transport> get(const eckit::Configuration& config);
+
+private:
+    void add(const std::string& serverName);
+
+    std::map<std::string, std::shared_ptr<server::Transport>> transports_;
+    std::mutex mutex_;
+};
+
+// ================================================================================================
+
 class Transport : public Action {
 public:
     explicit Transport(const eckit::Configuration& config);

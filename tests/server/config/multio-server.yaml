@@ -11,11 +11,20 @@ activeFields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, 
 client:
   plans:
 
-    - name : ocean-replay-test # mainly 3d fields output monthly (standard) or daily (highout)
+    - name : ocean-replay-test-stream1
       actions :
         - type : Select
           match : field
-          fields : [ sst, ssu, ssv, ssw ]
+          fields : [ sst, ssv ]
+
+        - type : Transport
+          target : nemo-ioserver
+
+    - name : ocean-replay-test-stream2
+      actions :
+        - type : Select
+          match : field
+          fields : [ ssu, ssw ]
 
         - type : Transport
           target : nemo-ioserver

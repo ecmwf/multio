@@ -35,7 +35,9 @@ MpiPeer::MpiPeer(Peer peer) : Peer{peer} {}
 
 StreamPool::StreamPool(size_t poolSize, size_t maxBufSize, const eckit::mpi::Comm& comm,
                        TransportStatistics& stats) :
-    comm_{comm}, statistics_{stats}, buffers_(makeBuffers(poolSize, maxBufSize)) {}
+    comm_{comm}, statistics_{stats}, buffers_(makeBuffers(poolSize, maxBufSize)) {
+    eckit::Log::info() << "Stream Pool object is created in rank "<< comm_.rank() << std::endl;
+}
 
 MpiBuffer& StreamPool::buffer(size_t idx) {
     return buffers_[idx];

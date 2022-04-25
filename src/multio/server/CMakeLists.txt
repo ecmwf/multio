@@ -35,8 +35,8 @@ ecbuild_add_library(
     PUBLIC_LIBS
         ${multio_server_plugins}
         multio
-        eckit_mpi
         eckit
+        eckit_mpi
 )
 
 if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
@@ -47,7 +47,7 @@ ecbuild_add_library(
 
     TARGET multio-server-fapi
 
-    CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN 
+    CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN
 
     SOURCES
         multio_nemo.f90

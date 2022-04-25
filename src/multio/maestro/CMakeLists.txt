@@ -29,6 +29,6 @@ ecbuild_add_library(
     PUBLIC_LIBS
         multio
         maestro
-        eckit_mpi
+        eckit_mpi # For distributed producer
         pgen
 )

@@ -58,6 +58,7 @@ void Statistics::execute(message::Message msg) const {
     // Pass through -- no statistics for messages other than fields
     if(msg.tag() != message::Message::Tag::Field) {
         executeNext(msg);
+        return;
     }
 
     std::ostringstream os;

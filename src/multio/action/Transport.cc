@@ -78,11 +78,13 @@ void Transport::execute(Message msg) const {
         eckit::Log::info() << "Opening connections " << std::endl;
         setServerId(msg.metadata().getUnsigned("clientCount"));
         transport_->openConnections();
+        executeNext(msg);
         return;
     }
 
     if (msg.tag() == Message::Tag::Close) {
         transport_->closeConnections();
+        executeNext(msg);
         return;
     }
 
@@ -104,6 +106,8 @@ void Transport::execute(Message msg) const {
 
         transport_->bufferedSend(trMsg);
     }
+
+    executeNext(msg);
 }
 
 void Transport::print(std::ostream& os) const {

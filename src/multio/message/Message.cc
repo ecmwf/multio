@@ -36,6 +36,7 @@ std::string Message::tag2str(Tag t) {
                                            {Tag::Close, "Close"},
                                            {Tag::Grib, "Grib"},
                                            {Tag::Domain, "Domain"},
+                                           {Tag::Mask, "Mask"},
                                            {Tag::Field, "Field"},
                                            {Tag::StepComplete, "StepComplete"},
                                            {Tag::StepNotification, "StepNotification"}};

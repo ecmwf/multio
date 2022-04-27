@@ -40,21 +40,9 @@ public:
 
     ~MultioClient();
 
-    void openConnections() const;
-
-    void closeConnections() const;
-
-    void sendDomain(message::Metadata metadata, eckit::Buffer&& domain);
-
-    void sendMask(message::Metadata metadata, eckit::Buffer&& mask);
-
-    void sendField(message::Metadata metadata, eckit::Buffer&& field, bool to_all_servers = false);
-
     void dispatch(message::Metadata metadata, eckit::Buffer&& payload, int itag);
 
     void dispatch(message::Message msg);
-
-    void sendStepComplete() const;
 
 private:
     std::vector<std::unique_ptr<action::Plan>> plans_;

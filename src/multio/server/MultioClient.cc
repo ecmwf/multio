@@ -33,20 +33,6 @@ MultioClient::MultioClient(const eckit::Configuration& config) {
 
 MultioClient::~MultioClient() = default;
 
-void MultioClient::openConnections() const {
-    Message msg{Message::Header{Message::Tag::Open, Peer{}, Peer{}}};
-    for (const auto& plan : plans_) {
-        plan->process(msg);
-    }
-}
-
-void MultioClient::closeConnections() const {
-    Message msg{Message::Header{Message::Tag::Close, Peer{}, Peer{}}};
-    for (const auto& plan : plans_) {
-        plan->process(msg);
-    }
-}
-
 void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload, int itag) {
     auto tag = static_cast<Message::Tag>(itag);
     ASSERT(tag < Message::Tag::ENDTAG);

@@ -34,19 +34,19 @@ client:
         - type : Transport
           target : nemo-ioserver
 
-    - name : stream-2 # mainly 3d fields output monthly (standard) or daily (highout)
-      actions :
-        - type : Select
-          match : field
-          fields : [ sss, sst, hst, qt, vtaun, utaue, vtau, utau, mldr10_1, mldkr125, mldkr03, mldt02, mldt05, hc300, sal300, sal700, salbtm, hc700, hcbtm, ssh, soce, toce, sigmat, voce, uoce, vocen, uocee, woce ]
+    # - name : stream-2 # mainly 3d fields output monthly (standard) or daily (highout)
+    #   actions :
+    #     - type : Select
+    #       match : field
+    #       fields : [ sss, sst, hst, qt, vtaun, utaue, vtau, utau, mldr10_1, mldkr125, mldkr03, mldt02, mldt05, hc300, sal300, sal700, salbtm, hc700, hcbtm, ssh, soce, toce, sigmat, voce, uoce, vocen, uocee, woce ]
 
-        - type : Statistics
-          output_frequency: 5d
-          operations:
-            - instant
+    #     - type : Statistics
+    #       output_frequency: 5d
+    #       operations:
+    #         - instant
 
-        - type : Transport
-          target : nemo-ioserver
+    #     - type : Transport
+    #       target : nemo-ioserver
 
     - name : stream-3 # mainly 2d fields output daily (standard) or hourly (highout)
       actions :
@@ -60,31 +60,28 @@ client:
             - instant
 
         - type : Transport
-          count : 5 # May be overridden, better to template it via script?
           target : nemo-ioserver
 
-    - name : stream-10 # sea-ice fields output daily (standard) or hourly (highout)
-      actions :
-        - type : Select
-          match : field
-          fields : [ icethic, ice_cover, snwthic, iicevelur, iicevelvr, icettop ]
+    # - name : stream-10 # sea-ice fields output daily (standard) or hourly (highout)
+    #   actions :
+    #     - type : Select
+    #       match : field
+    #       fields : [ icethic, ice_cover, snwthic, iicevelur, iicevelvr, icettop ]
 
-        - type : Statistics
-          output_frequency: 1d
-          operations:
-            - instant
+    #     - type : Statistics
+    #       output_frequency: 1d
+    #       operations:
+    #         - instant
 
-        - type : Transport
-          count : 5 # May be overridden, better to template it via script?
-          target : nemo-ioserver
+    #     - type : Transport
+    #       target : nemo-ioserver
 
 #===================================================================================================
 
-# TODO: could be a list of servers?
 nemo-ioserver:
   transport : mpi
   group : nemo
-  count : 3 # May be overridden, better to template it via script?
+  count : 1 # May be overridden, better to template it via script?
   plans :
 
     - name : ocean-grids
@@ -103,8 +100,8 @@ nemo-ioserver:
         - type : Sink
           sinks :
 
-            - type : fdb5
-              config : {}
+            # - type : fdb5
+            #   config : {}
 
             - type : file
               append : true
@@ -129,8 +126,8 @@ nemo-ioserver:
         - type : Sink
           sinks :
 
-            - type : fdb5
-              config : {}
+            # - type : fdb5
+            #   config : {}
 
             - type : file
               append : true

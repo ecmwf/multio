@@ -21,6 +21,14 @@
 namespace multio {
 namespace domain {
 
+namespace  {
+std::string partialMaskId(const message::Message& msg) {
+    std::ostringstream os;
+    os << msg;
+    return os.str();
+}
+}  // namespace
+
 Mask& Mask::instance() {
     static Mask singleton;
     return singleton;
@@ -35,15 +43,15 @@ void Mask::add(message::Message msg) {
 
     // This is sub-optimal but it does not matter because it happens at startup
     // Using a lookup table instead would also be fine
+
+    eckit::Log::info() << " *** Checking mask " << msg << std::endl;
     const auto& msgList = messages_[msg.fieldId()];
-    eckit::Log::info() << " *** Checking mask " << message::to_metadata(msg.fieldId()) << std::endl;
-    if (std::find_if(begin(msgList), end(msgList),
-                     [msg](const message::Message &m) {
-                       return m.fieldId() == msg.fieldId();
-                     }) == end(msgList)) {
-      eckit::Log::info() << " *** Adding mask "
-                         << message::to_metadata(msg.fieldId()) << std::endl;
-      messages_.at(msg.fieldId()).push_back(msg);
+    const auto& maskId = partialMaskId(msg);
+    if (std::find_if(begin(msgList), end(msgList), [&maskId](const message::Message& m) {
+            return partialMaskId(m) == maskId;
+        }) == end(msgList)) {
+        eckit::Log::info() << " *** Adding mask " << msg << std::endl;
+        messages_.at(msg.fieldId()).push_back(msg);
     }
 
     if (not allPartsArrived(msg)) {

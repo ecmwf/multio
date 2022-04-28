@@ -144,8 +144,8 @@ void MpiTransport::send(const Message& msg) {
 }
 
 void MpiTransport::bufferedSend(const Message& msg) {
-    eckit::Log::info() << "Sending message " << Message::tag2str(msg.tag()) << " from "
-                       << localPeer() << " to " << msg.destination() << std::endl;
+    // eckit::Log::info() << "Sending message " << Message::tag2str(msg.tag()) << " from "
+    //                    << localPeer() << " to " << msg.destination() << std::endl;
     encodeMessage(pool_.getStream(msg), msg);
 }
 

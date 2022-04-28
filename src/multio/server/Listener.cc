@@ -81,6 +81,7 @@ void Listener::start() {
 
             case Message::Tag::Mask:
                 checkConnection(msg.source());
+                // eckit::Log::info()
                 LOG_DEBUG_LIB(LibMultio)
                     << "Mask received from " << msg.source() << ": " << msg.metadata() << std::endl;
                 domain::Mask::instance().add(msg);

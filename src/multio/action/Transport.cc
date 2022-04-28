@@ -73,7 +73,7 @@ Transport::Transport(const eckit::Configuration& config) :
 }
 
 void Transport::execute(Message msg) const {
-    eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
+    // eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
     if (msg.tag() == Message::Tag::Open) {
         eckit::Log::info() << "Opening connections " << std::endl;
         setServerId(msg.metadata().getUnsigned("clientCount"));

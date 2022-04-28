@@ -33,7 +33,19 @@ std::string Mask::key(const message::Metadata& md) {
 void Mask::add(message::Message msg) {
     std::lock_guard<std::mutex> lock{mutex_};
 
-    messages_[msg.fieldId()].push_back(msg);
+    // This is sub-optimal but it does not matter because it happens at startup
+    // Using a lookup table instead would also be fine
+    const auto& msgList = messages_[msg.fieldId()];
+    eckit::Log::info() << " *** Checking mask " << message::to_metadata(msg.fieldId()) << std::endl;
+    if (std::find_if(begin(msgList), end(msgList),
+                     [msg](const message::Message &m) {
+                       return m.fieldId() == msg.fieldId();
+                     }) == end(msgList)) {
+      eckit::Log::info() << " *** Adding mask "
+                         << message::to_metadata(msg.fieldId()) << std::endl;
+      messages_.at(msg.fieldId()).push_back(msg);
+    }
+
     if (not allPartsArrived(msg)) {
         return;
     }
@@ -50,6 +62,12 @@ const std::vector<bool>& Mask::get(const std::string& bkey) const {
 }
 
 bool Mask::allPartsArrived(message::Message msg) const {
+    eckit::Log::info() << " *** Domain cout         : " << msg.domainCount() << std::endl;
+    eckit::Log::info() << " *** Message-list size   : "
+                       << messages_.at(msg.fieldId()).size() << std::endl;
+    eckit::Log::info() << " *** Stored domain count : "
+                       << domain::Mappings::instance().get(msg.domain()).size()
+                       << std::endl;
     return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
            (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
 }
@@ -65,6 +83,7 @@ void Mask::createBitmask(message::Message inMsg) {
 
     // Assert invariants such are bound to be creating this the first and last time
     auto bkey = Mask::key(inMsg.metadata());
+    eckit::Log::info() << "Creating bitmask for " << bkey << std::endl;
     bitmasks_[bkey] = std::move(bitmask);
 
     messages_.at(inMsg.fieldId()).clear();

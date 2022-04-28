@@ -41,9 +41,24 @@ std::string Mask::key(const message::Metadata& md) {
 void Mask::add(message::Message msg) {
     std::lock_guard<std::mutex> lock{mutex_};
 
-    // This is sub-optimal but it does not matter because it happens at startup
-    // Using a lookup table instead would also be fine
+    addPartialMask(msg);
 
+    if (allPartsArrived(msg)) {
+        createBitmask(msg);
+    }
+}
+
+const std::vector<bool>& Mask::get(const std::string& bkey) const {
+    if (bitmasks_.find(bkey) == std::end(bitmasks_)) {
+        throw eckit::AssertionFailed("There is no bitmask for " + bkey);
+    }
+
+    return bitmasks_.at(bkey);
+}
+
+void Mask::addPartialMask(const message::Message& msg) {
+    // This is sub-optimal but it does not matter because it happens at startup
+    // Using a lookup table instead would also faster
     eckit::Log::info() << " *** Checking mask " << msg << std::endl;
     const auto& msgList = messages_[msg.fieldId()];
     const auto& maskId = partialMaskId(msg);
@@ -53,20 +68,6 @@ void Mask::add(message::Message msg) {
         eckit::Log::info() << " *** Adding mask " << msg << std::endl;
         messages_.at(msg.fieldId()).push_back(msg);
     }
-
-    if (not allPartsArrived(msg)) {
-        return;
-    }
-
-    createBitmask(msg);
-}
-
-const std::vector<bool>& Mask::get(const std::string& bkey) const {
-    if (bitmasks_.find(bkey) == std::end(bitmasks_)) {
-        throw eckit::AssertionFailed("There is no bitmask for " + bkey);
-    }
-
-    return bitmasks_.at(bkey);
 }
 
 bool Mask::allPartsArrived(message::Message msg) const {

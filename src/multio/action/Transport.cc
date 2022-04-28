@@ -15,13 +15,14 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/config/Resource.h"
 
+#include "multio/action/TransportRegistry.h"
 #include "multio/util/ConfigurationPath.h"
-#include "multio/transport/Transport.h"
 #include "multio/util/logfile_name.h"
 
 namespace multio {
 namespace action {
 
+using message::Message;
 using util::configuration_file;
 
 namespace {
@@ -30,42 +31,13 @@ size_t serverIdDenom(size_t clientCount, size_t serverCount) {
 }
 }  // namespace
 
-TransportRegistry& TransportRegistry::instance() {
-    static TransportRegistry singleton;
-    return singleton;
-}
-
-std::shared_ptr<transport::Transport> TransportRegistry::get(const eckit::Configuration& config) {
-    eckit::Log::info() << "Action transport config: " << config << std::endl;
-    auto serverName = config.getString("target");
-    add(serverName);
-
-    return transports_.at(serverName);
-}
-
-void TransportRegistry::add(const std::string& serverName) {
-    std::lock_guard<std::mutex> lock{mutex_};
-
-    if (transports_.find(serverName) != std::end(transports_)) {
-        return;
-    }
-
-    eckit::LocalConfiguration fullConfig{eckit::YAMLConfiguration{configuration_file()}};
-    auto serverConfig = fullConfig.getSubConfiguration(serverName);
-    transports_.insert(
-        {serverName,
-         std::shared_ptr<transport::Transport>{transport::TransportFactory::instance().build(
-             serverConfig.getString("transport"), serverConfig)}});
-}
-
-// ================================================================================================
-
 Transport::Transport(const eckit::Configuration& config) :
     Action{config},
     transport_{TransportRegistry::instance().get(config)},
     client_{transport_->localPeer()},
     serverPeers_{transport_->createServerPeers()},
     serverCount_{serverPeers_.size()},
+    serverId_{client_.id() / serverIdDenom(config.getUnsigned("count", 1), serverCount_)},
     usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
     counters_(serverPeers_.size()),
     distType_{distributionType()} {
@@ -74,20 +46,6 @@ Transport::Transport(const eckit::Configuration& config) :
 
 void Transport::execute(Message msg) const {
     // eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
-    if (msg.tag() == Message::Tag::Open) {
-        eckit::Log::info() << "Opening connections " << std::endl;
-        setServerId(msg.metadata().getUnsigned("clientCount"));
-        transport_->openConnections();
-        executeNext(msg);
-        return;
-    }
-
-    if (msg.tag() == Message::Tag::Close) {
-        transport_->closeConnections();
-        executeNext(msg);
-        return;
-    }
-
     auto md = msg.metadata();
     if (md.getBool("toAllServers")) {
         for (auto& server : serverPeers_) {
@@ -112,10 +70,6 @@ void Transport::execute(Message msg) const {
 
 void Transport::print(std::ostream& os) const {
     os << "Action[" << *transport_ << "]";
-}
-
-void Transport::setServerId(size_t clientCount) const {
-    serverId_ = client_.id() / serverIdDenom(clientCount, serverCount_);
 }
 
 message::Peer Transport::chooseServer(const message::Metadata& metadata) const {

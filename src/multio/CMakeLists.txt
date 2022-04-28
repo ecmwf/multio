@@ -58,6 +58,8 @@ list( APPEND multio_action_srcs
     action/TemporalStatistics.h
     action/Transport.cc
     action/Transport.h
+    action/TransportRegistry.cc
+    action/TransportRegistry.h
 )
 
 list( APPEND multio_ifsio_srcs

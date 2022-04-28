@@ -146,19 +146,11 @@ public:
     }
 
     void openConnections() {
-        Metadata md;
-        md.set("clientCount", clientCount_);
-        md.set("serverCount", serverCount_);
-
-        Message msg{Message::Header{Message::Tag::Open, Peer{}, Peer{}, std::move(md)}};
-
-        MultioNemo::instance().client().dispatch(msg);
+        MultioNemo::instance().client().openConnections();
     }
 
     void closeConnections() {
-        Message msg{Message::Header{Message::Tag::Close, Peer{}, Peer{}}};
-
-        MultioNemo::instance().client().dispatch(msg);
+        MultioNemo::instance().client().closeConnections();
     }
 
     void writeStepComplete() {

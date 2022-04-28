@@ -67,9 +67,6 @@ private:
 
     StreamQueue streamQueue_;
     std::queue<Message> msgPack_;
-
-    std::mutex mutex_;
-    bool connectionsOpen_ = false;
 };
 
 }  // namespace transport

@@ -40,6 +40,9 @@ public:
 
     ~MultioClient();
 
+    void openConnections();
+    void closeConnections();
+
     void dispatch(message::Metadata metadata, eckit::Buffer&& payload, int itag);
 
     void dispatch(message::Message msg);

@@ -23,28 +23,11 @@ namespace eckit { class Configuration; }
 namespace multio {
 namespace action {
 
-using message::Message;
-
-class TransportRegistry : public eckit::NonCopyable {
-public:
-    static TransportRegistry& instance();
-
-    std::shared_ptr<transport::Transport> get(const eckit::Configuration& config);
-
-private:
-    void add(const std::string& serverName);
-
-    std::map<std::string, std::shared_ptr<transport::Transport>> transports_;
-    std::mutex mutex_;
-};
-
-// ================================================================================================
-
 class Transport : public Action {
 public:
     explicit Transport(const eckit::Configuration& config);
 
-    void execute(Message msg) const override;
+    void execute(message::Message msg) const override;
 
 private:
     void print(std::ostream &os) const override;
@@ -58,8 +41,7 @@ private:
 
     size_t serverCount_;
 
-    void setServerId(size_t clientCount) const;
-    mutable size_t serverId_;
+    size_t serverId_;
     size_t usedServerCount_;
 
     // Distribute fields

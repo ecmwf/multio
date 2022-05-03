@@ -120,6 +120,19 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     }
 
     // Statistics field
+    if(type == "fc") {
+        auto stepInSeconds = metadata.getLong("step") * metadata.getLong("timeStep");
+        ASSERT(stepInSeconds % 3600 == 0);
+        auto stepInHours = stepInSeconds / 3600;
+        auto prevStep = stepInHours - metadata.getLong("timeSpanInHours");
+        auto stepRange = std::to_string(prevStep) + "-" + std::to_string(stepInHours);
+        if(metadata.getString("operation") == "instant") {
+            setValue("step", stepInHours);
+        } else {
+            setValue("stepRange", stepRange);
+        }
+    }
+
     if (metadata.has("operation") and metadata.getString("operation") != "instant") {
         //setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));
         // setValue("stepRange", metadata.getString("stepRange"));
@@ -130,10 +143,6 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
         setValue("lengthOfTimeRange", metadata.getLong("timeSpanInHours"));
         setValue("indicatorOfUnitForTimeIncrement", 13l); // always seconds
         setValue("timeIncrement", metadata.getLong("timeStep"));
-    } else if(type == "fc") { // Instant fields
-        auto stepInSeconds = metadata.getLong("step") * metadata.getLong("timeStep");
-        ASSERT(stepInSeconds % 3600 == 0);
-        setValue("step", stepInSeconds / 3600);
     }
 
     // setDomainDimensions

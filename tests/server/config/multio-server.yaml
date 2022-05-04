@@ -11,6 +11,15 @@ activeFields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, 
 client:
   plans:
 
+    - name : ocean-replay-grid-info-stream
+      actions :
+        - type : Select
+          match : category
+          categories : [ocean-domain-map, ocean-mask]
+
+        - type : Transport
+          target : nemo-ioserver
+
     - name : ocean-replay-test-stream1
       actions :
         - type : Select

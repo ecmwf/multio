@@ -42,17 +42,13 @@ Select::Select(const eckit::Configuration& config) :
 }
 
 void Select::execute(Message msg) const {
-    if (isMatched(msg)) {
+    if (matchPlan(msg)) {
         executeNext(msg);
     }
 }
 
-bool Select::isMatched(const Message& msg) const {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-    return (msg.tag() != Message::Tag::Field) || matchPlan(msg);
-}
-
 bool Select::matchPlan(const Message& msg) const {
+    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     auto item = msg.metadata().getString(mdEntry.at(match_));
 
     LOG_DEBUG_LIB(LibMultio) << " *** Item " << item << " is being matched... ";

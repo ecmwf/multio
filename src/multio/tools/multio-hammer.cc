@@ -385,7 +385,8 @@ void MultioHammer::sendData(const PeerList& serverPeers,
     for (auto& server : serverPeers) {
         Metadata metadata;
         metadata.set("name", "grid-point")
-            .set("category", "unstructured")
+            .set("category", "atms-domain-map")
+            .set("representation", "unstructured")
             .set("domainCount", clientCount_);
 
         Message msg{Message::Header{Message::Tag::Domain, client, *server, std::move(metadata)},
@@ -433,7 +434,8 @@ void MultioHammer::sendData(const PeerList& serverPeers,
         // Send flush messages
         Metadata md;
         md.set("name", eckit::Translator<long, std::string>()(step))
-            .set("domain", "notification")
+            .set("category", "atms-checkpoint")
+            .set("trigger", "step")
             .set("domainCount", clientCount_);
         for (auto& server : serverPeers) {
             auto stepStr = eckit::Translator<long, std::string>()(step);
@@ -657,8 +659,8 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
         Metadata md;
         md.set("name", eckit::Translator<long, std::string>()(step))
-            .set("category", "step")
-            .set("domain", "notification")
+            .set("category", "atms-checkpoint")
+            .set("trigger", "step")
             .set("domainCount", 1);
         Message msg{Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}, Metadata{md}}};
         for (const auto& plan : plans) {

@@ -163,7 +163,8 @@ public:
         eckit::Buffer domain_def{reinterpret_cast<const char*>(data), bytes};
         Metadata md;
         md.set("name", dname);
-        md.set("category", "structured");
+        md.set("category", "ocean-domain-map");
+        md.set("representation", "structured");
         md.set("domainCount", clientCount_);
         md.set("toAllServers", true);
 
@@ -179,7 +180,8 @@ public:
         Metadata md;
         md.set("globalSize", MultioNemo::instance().metadata().getInt("globalSize"));
         md.set("name", mname);
-        md.set("category", "structured");
+        md.set("category", "ocean-mask");
+        md.set("representation", "structured");
         md.set("domainCount", clientCount_);
         md.set("domain", mname.substr(0, 1) + " grid");
         md.set("levelCount", metadata_.getLong("levelCount"));

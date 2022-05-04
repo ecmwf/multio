@@ -247,7 +247,8 @@ void send_multio_mapping_(const void* in_ptr, fortint* words, const char* name, 
 
         Metadata md;
         md.set("name", mapping_name);
-        md.set("category", "unstructured");
+        md.set("category", "atms-domain-map");
+        md.set("representation", "unstructured");
         md.set("domainCount", nb_clients);
         Message msg{Message::Header{Message::Tag::Domain, client, server, std::move(md)},
                     std::move(buffer)};

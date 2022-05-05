@@ -108,7 +108,7 @@ message::Message Encode::encodeLongitudes(const std::string& subtype) const {
     return encoder_->encodeLongitudes(subtype);
 }
 
-static ActionBuilder<Encode> EncodeBuilder("Encode");
+static ActionBuilder<Encode> EncodeBuilder("encode");
 
 }  // namespace action
 }  // namespace multio

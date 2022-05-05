@@ -44,7 +44,7 @@ void Print::print(std::ostream& os) const {
 }
 
 
-static ActionBuilder<Print> PrintBuilder("Print");
+static ActionBuilder<Print> PrintBuilder("print");
 
 }  // namespace action
 }  // namespace multio

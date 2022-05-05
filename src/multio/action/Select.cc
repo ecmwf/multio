@@ -72,7 +72,7 @@ void Select::print(std::ostream& os) const {
 }
 
 
-static ActionBuilder<Select> SelectBuilder("Select");
+static ActionBuilder<Select> SelectBuilder("select");
 
 }  // namespace action
 }  // namespace multio

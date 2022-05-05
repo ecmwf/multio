@@ -88,7 +88,7 @@ void Sink::print(std::ostream& os) const {
     os << "Sink(DataSink=" << mio_ << ")";
 }
 
-static ActionBuilder<Sink> SinkBuilder("Sink");
+static ActionBuilder<Sink> SinkBuilder("sink");
 
 }  // namespace action
 }  // namespace multio

@@ -90,7 +90,7 @@ void Aggregation::print(std::ostream& os) const {
 }
 
 
-static ActionBuilder<Aggregation> AggregationBuilder("Aggregation");
+static ActionBuilder<Aggregation> AggregationBuilder("aggregation");
 
 }  // namespace action
 }  // namespace multio

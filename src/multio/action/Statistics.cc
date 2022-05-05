@@ -114,7 +114,7 @@ void Statistics::print(std::ostream& os) const {
 }
 
 
-static ActionBuilder<Statistics> StatisticsBuilder("Statistics");
+static ActionBuilder<Statistics> StatisticsBuilder("statistics");
 
 }  // namespace action
 }  // namespace multio

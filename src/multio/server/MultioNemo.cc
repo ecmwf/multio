@@ -46,7 +46,7 @@ using NemoKey = std::string;
 
 namespace {
 std::set<std::string> fetch_active_fields(const eckit::Configuration& cfg) {
-    const auto& vec = cfg.getStringVector("activeFields");
+    const auto& vec = cfg.getStringVector("active-fields");
     return std::set<std::string>{begin(vec), end(vec)};
 }
 

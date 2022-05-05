@@ -136,7 +136,7 @@ Transport::DistributionType Transport::distributionType() {
     return key ? str2dist.at(key) : DistributionType::hashed_to_single;
 }
 
-static ActionBuilder<Transport> TransportBuilder("Transport");
+static ActionBuilder<Transport> TransportBuilder("transport");
 
 }  // namespace action
 }  // namespace multio

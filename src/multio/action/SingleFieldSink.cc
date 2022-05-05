@@ -81,7 +81,7 @@ void SingleFieldSink::print(std::ostream& os) const {
     }
 }
 
-static ActionBuilder<SingleFieldSink> SinkBuilder("SingleFieldSink");
+static ActionBuilder<SingleFieldSink> SinkBuilder("single-field-sink");
 
 }  // namespace action
 }  // namespace multio

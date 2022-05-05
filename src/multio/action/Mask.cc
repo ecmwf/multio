@@ -100,7 +100,7 @@ void Mask::print(std::ostream& os) const {
        << ", offset-value=" << offsetValue_ << ")";
 }
 
-static ActionBuilder<Mask> MaskBuilder("Mask");
+static ActionBuilder<Mask> MaskBuilder("mask");
 
 }  // namespace action
 }  // namespace multio

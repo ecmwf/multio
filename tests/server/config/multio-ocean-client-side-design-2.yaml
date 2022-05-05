@@ -16,7 +16,7 @@ client:
       actions:
         - type : Select
           match : category
-          categories : [ocean-grid-coordinate]
+          categories : [ocean-domain-map, ocean-mask, ocean-grid-coordinate]
 
         - type : Transport
           target : nemo-ioserver

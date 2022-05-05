@@ -35,9 +35,7 @@ MpiPeer::MpiPeer(Peer peer) : Peer{peer} {}
 
 StreamPool::StreamPool(size_t poolSize, size_t maxBufSize, const eckit::mpi::Comm& comm,
                        TransportStatistics& stats) :
-    comm_{comm}, statistics_{stats}, buffers_(makeBuffers(poolSize, maxBufSize)) {
-    eckit::Log::info() << "Stream Pool object is created in rank "<< comm_.rank() << std::endl;
-}
+    comm_{comm}, statistics_{stats}, buffers_(makeBuffers(poolSize, maxBufSize)) {}
 
 MpiBuffer& StreamPool::buffer(size_t idx) {
     return buffers_[idx];
@@ -87,8 +85,6 @@ void StreamPool::sendBuffer(const message::Peer& dest, int msg_tag) {
         << std::setfill('0') << counter_.at(dest)
         << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
         << ":" << std::setw(6) << std::setfill('0') << mSecs;
-
-    eckit::Log::info() << os_.str() << std::endl;
 
     util::ScopedTiming(statistics_.isendTimer_, statistics_.isendTiming_);
 

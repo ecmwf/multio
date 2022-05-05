@@ -113,6 +113,8 @@ Message MpiTransport::receive() {
 }
 
 void MpiTransport::send(const Message& msg) {
+    std::lock_guard<std::mutex> lock{mutex_};
+
     auto msg_tag = static_cast<int>(msg.tag());
 
     // TODO: find available buffer instead
@@ -134,8 +136,7 @@ void MpiTransport::send(const Message& msg) {
 }
 
 void MpiTransport::bufferedSend(const Message& msg) {
-    // eckit::Log::info() << "Sending message " << Message::tag2str(msg.tag()) << " from "
-    //                    << localPeer() << " to " << msg.destination() << std::endl;
+    std::lock_guard<std::mutex> lock{mutex_};
     encodeMessage(pool_.getStream(msg), msg);
 }
 
@@ -158,20 +159,15 @@ void MpiTransport::listen() {
     streamQueue_.emplace(buf, sz);
 }
 
-PeerList MpiTransport::createServerPeers() {
+PeerList MpiTransport::createServerPeers() const {
     PeerList serverPeers;
 
     // This is dangerous as it requires having the same logic as in NEMO or IFS
-    // This needs to come from teh configuration or perhpas you want to create an intercommunicator
+    // This needs to come from the configuration or perhaps you want to create an intercommunicator
     auto rank = comm().size() - config_.getUnsigned("count");
-    eckit::Log::info() << "comm size = " << comm().size()
-                       << ", server size = " << config_.getUnsigned("count") << ", rank = " << rank;
-    eckit::Log::info() << ", Server peers: ";
     while (rank != comm().size()) {
         serverPeers.emplace_back(new MpiPeer{local_.group(), rank++});
-        eckit::Log::info() << *serverPeers.back() << " ";
     }
-    eckit::Log::info() << std::endl;
     return serverPeers;
 }
 

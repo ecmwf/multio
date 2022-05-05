@@ -25,8 +25,9 @@ void Mappings::add(message::Message msg) {
     auto& domainMap = mappings_[msg.name()];
 
     if (domainMap.find(msg.source()) != end(domainMap)) {
-        // Map has been added already
-        return;
+      eckit::Log::warning()
+          << "Partial domain had already been received: " << msg.fieldId() << std::endl;
+      return;
     }
     eckit::Log::debug<LibMultio>() << "*** Add domainMap for " << msg.name();
 

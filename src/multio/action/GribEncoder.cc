@@ -216,12 +216,6 @@ void GribEncoder::setValue(const std::string& key, long value) {
     CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
 }
 
-// void GribEncoder::setValue(const std::string& key, unsigned long value) {
-//     eckit::Log::info() << "*** Setting value " << value << " for key " << key << std::endl;
-//     // LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-//     CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
-// }
-
 void GribEncoder::setValue(const std::string& key, double value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
     CODES_CHECK(codes_set_double(raw(), key.c_str(), value), NULL);

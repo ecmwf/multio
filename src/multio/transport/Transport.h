@@ -57,12 +57,14 @@ public:  // methods
 
     virtual void listen();
 
-    virtual PeerList createServerPeers() = 0;
+    virtual PeerList createServerPeers() const = 0;
 
 protected:
     const eckit::LocalConfiguration config_;
 
     TransportStatistics statistics_;
+
+    std::mutex mutex_;
 
 private: // methods
     virtual void print(std::ostream& os) const = 0;

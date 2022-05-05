@@ -62,7 +62,7 @@ Peer ThreadTransport::localPeer() const {
     return Peer{"thread", std::hash<std::thread::id>{}(std::this_thread::get_id())};
 }
 
-PeerList ThreadTransport::createServerPeers() {
+PeerList ThreadTransport::createServerPeers() const {
     throw eckit::NotImplemented{Here()};
 }
 

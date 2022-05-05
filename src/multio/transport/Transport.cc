@@ -26,8 +26,8 @@ using eckit::Log;
 
 //--------------------------------------------------------------------------------------------------
 
-Transport::Transport(const eckit::Configuration& config) : config_{config} {
-    eckit::Log::info() << "Transport config: " << config_ << std::endl;
+Transport::Transport(const eckit::Configuration &config) : config_{config} {
+    LOG_DEBUG_LIB(LibMultio) << "Transport config: " << config_ << std::endl;
 }
 
 void Transport::listen() {}
@@ -68,8 +68,6 @@ Transport* TransportFactory::build(const std::string& name, const Configuration&
     Log::debug<LibMultio>() << "Looking for TransportFactory [" << name << "]" << std::endl;
 
     auto f = factories_.find(name);
-
-    Log::info() << "Looking for TransportFactory [" << name << "]" << std::endl;
 
     if (f != factories_.end())
         return f->second->make(config);

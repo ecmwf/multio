@@ -15,7 +15,7 @@ TransportRegistry& TransportRegistry::instance() {
 }
 
 std::shared_ptr<transport::Transport> TransportRegistry::get(const eckit::Configuration& config) {
-    eckit::Log::info() << "Action transport config: " << config << std::endl;
+
     auto serverName = config.getString("target");
     add(serverName);
 

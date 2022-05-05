@@ -59,24 +59,19 @@ const std::vector<bool>& Mask::get(const std::string& bkey) const {
 void Mask::addPartialMask(const message::Message& msg) {
     // This is sub-optimal but it does not matter because it happens at startup
     // Using a lookup table instead would also faster
-    // eckit::Log::info() << " *** Checking mask " << msg << std::endl;
     const auto& msgList = messages_[msg.fieldId()];
     const auto& maskId = partialMaskId(msg);
-    if (std::find_if(begin(msgList), end(msgList), [&maskId](const message::Message& m) {
-            return partialMaskId(m) == maskId;
-        }) == end(msgList)) {
-        // eckit::Log::info() << " *** Adding mask " << msg << std::endl;
-        messages_.at(msg.fieldId()).push_back(msg);
+    if (std::find_if(begin(msgList), end(msgList),
+                     [&maskId](const message::Message &m) {
+                       return partialMaskId(m) == maskId;
+                     }) != end(msgList)) {
+        eckit::Log::warning() << "Duplicate received for partial mask " << maskId << std::endl;
+        return;
     }
+    messages_.at(msg.fieldId()).push_back(msg);
 }
 
 bool Mask::allPartsArrived(message::Message msg) const {
-    // eckit::Log::info() << " *** Domain cout         : " << msg.domainCount() << std::endl;
-    // eckit::Log::info() << " *** Message-list size   : "
-    //                    << messages_.at(msg.fieldId()).size() << std::endl;
-    // eckit::Log::info() << " *** Stored domain count : "
-    //                    << domain::Mappings::instance().get(msg.domain()).size()
-    //                    << std::endl;
     return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
            (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
 }
@@ -92,7 +87,6 @@ void Mask::createBitmask(message::Message inMsg) {
 
     // Assert invariants such are bound to be creating this the first and last time
     auto bkey = Mask::key(inMsg.metadata());
-    eckit::Log::info() << "Creating bitmask for " << bkey << std::endl;
     bitmasks_[bkey] = std::move(bitmask);
 
     messages_.at(inMsg.fieldId()).clear();

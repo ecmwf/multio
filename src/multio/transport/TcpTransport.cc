@@ -165,6 +165,8 @@ Message TcpTransport::receive() {
 }
 
 void TcpTransport::send(const Message& msg) {
+    std::lock_guard<std::mutex> lock{mutex_};
+
     const auto& socket = outgoing_.at(msg.destination());
 
     // Add 4K for header/footer etc. Should be plenty
@@ -188,7 +190,7 @@ Peer TcpTransport::localPeer() const {
     return local_;
 }
 
-PeerList TcpTransport::createServerPeers() {
+PeerList TcpTransport::createServerPeers() const {
     PeerList serverPeers;
 
     for (auto cfg : config_.getSubConfigurations("servers")) {

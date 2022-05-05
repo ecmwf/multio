@@ -40,9 +40,7 @@ Transport::Transport(const eckit::Configuration& config) :
     serverId_{client_.id() / serverIdDenom(config.getUnsigned("count", 1), serverCount_)},
     usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
     counters_(serverPeers_.size()),
-    distType_{distributionType()} {
-    eckit::Log::info() << "Transport use count = " << transport_.use_count() << std::endl;
-}
+    distType_{distributionType()} {}
 
 void Transport::execute(Message msg) const {
     // eckit::Log::info() << "Execute transport action for message " << msg << std::endl;

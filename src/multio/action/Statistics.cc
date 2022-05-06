@@ -49,8 +49,8 @@ long set_frequency(const std::string& output_freq) {
 
 Statistics::Statistics(const eckit::Configuration& config) :
     Action{config},
-    timeUnit_{set_unit(config.getString("output_frequency"))},
-    timeSpan_{set_frequency(config.getString("output_frequency"))},
+    timeUnit_{set_unit(config.getString("output-frequency"))},
+    timeSpan_{set_frequency(config.getString("output-frequency"))},
     operations_{config.getStringVector("operations")} {}
 
 void Statistics::execute(message::Message msg) const {

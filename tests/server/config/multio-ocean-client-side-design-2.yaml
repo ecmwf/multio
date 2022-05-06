@@ -28,7 +28,7 @@ client:
           fields : [ sss, sst, hst, qt, vtaun, utaue, vtau, utau, mldr10_1, mldkr125, mldkr03, mldt02, mldt05, hc300, sal300, sal700, salbtm, hc700, hcbtm, ssh, soce, toce, sigmat, voce, uoce, vocen, uocee, woce ]
 
         - type : statistics
-          output_frequency: 2d
+          output-frequency: 2d
           operations:
             - average
 
@@ -42,7 +42,7 @@ client:
           fields : [ sss, sst, 14d, 17d, 20d, 26d, 28d, qt, vtaun, utaue, vtau, utau, mldr10_1, mldkr03, mldkr125, mldt02, mldt05, sal300, sal700, salbtm, hc300, hc700, hcbtm, ssh, hst, mlddzt ]
 
         - type : statistics
-          output_frequency: 1d
+          output-frequency: 1d
           operations:
             - average
 
@@ -56,7 +56,7 @@ client:
           fields : [ icethic, ice_cover, snwthic, iicevelur, iicevelvr, icettop ]
 
         - type : statistics
-          output_frequency: 1d
+          output-frequency: 1d
           operations:
             - average
 

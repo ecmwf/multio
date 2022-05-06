@@ -42,7 +42,7 @@ TransportFactory& TransportFactory::instance() {
 void TransportFactory::add(const std::string& name, const TransportBuilderBase* builder) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(factories_.find(name) == factories_.end());
-    Log::info() << "Adding TransportFactory [" << name << "]" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Adding TransportFactory [" << name << "]" << std::endl;
     factories_[name] = builder;
 }
 

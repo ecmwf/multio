@@ -10,7 +10,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
-#include "multio/action/TransportRegistry.h"
+#include "multio/transport/TransportRegistry.h"
 
 using multio::message::Message;
 using multio::message::Peer;
@@ -33,11 +33,11 @@ MultioClient::MultioClient(const eckit::Configuration& config) {
 }
 
 void MultioClient::openConnections() {
-    action::TransportRegistry::instance().openConnections();
+    transport::TransportRegistry::instance().openConnections();
 }
 
 void MultioClient::closeConnections() {
-    action::TransportRegistry::instance().closeConnections();
+    transport::TransportRegistry::instance().closeConnections();
 }
 
 MultioClient::~MultioClient() = default;

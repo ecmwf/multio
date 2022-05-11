@@ -5,7 +5,7 @@
 #include "multio/util/ConfigurationPath.h"
 
 namespace multio {
-namespace action {
+namespace transport {
 
 using util::configuration_file;
 

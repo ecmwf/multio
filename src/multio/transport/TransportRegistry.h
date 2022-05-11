@@ -2,16 +2,15 @@
 
 /// @date Jan 2022
 
-#ifndef multio_server_actions_TransportRegistry_H
-#define multio_server_actions_TransportRegistry_H
+#ifndef multio_server_transport_TransportRegistry_H
+#define multio_server_transport_TransportRegistry_H
 
-#include "multio/action/Action.h"
 #include "multio/transport/Transport.h" // This means circular dependency at the minute
 
 namespace eckit { class Configuration; }
 
 namespace multio {
-namespace action {
+namespace transport {
 
 using message::Message;
 

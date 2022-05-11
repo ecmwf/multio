@@ -15,7 +15,7 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/config/Resource.h"
 
-#include "multio/action/TransportRegistry.h"
+#include "multio/transport/TransportRegistry.h"
 #include "multio/util/ConfigurationPath.h"
 #include "multio/util/logfile_name.h"
 
@@ -24,6 +24,7 @@ namespace action {
 
 using message::Message;
 using util::configuration_file;
+using transport::TransportRegistry;
 
 namespace {
 size_t serverIdDenom(size_t clientCount, size_t serverCount) {

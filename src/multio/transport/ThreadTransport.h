@@ -44,6 +44,8 @@ public:
 
     Message receive() override;
 
+    void abort() override;
+
 private:
     void openConnections() override;
     void closeConnections() override;

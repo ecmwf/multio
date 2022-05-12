@@ -11,11 +11,21 @@
 #ifndef multio_server_MultioNemo_H
 #define multio_server_MultioNemo_H
 
-#include <cstdint>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stdint.h>
+
+enum MultioErrorValues {
+    MULTIO_SUCCESS = 0,
+    MULTIO_ERROR_GENERAL_EXCEPTION = 1,
+    MULTIO_ERROR_UNKNOWN_EXCEPTION = 2
+};
+
+void multio_version(const char** version);
+
+void multio_vcs_version(const char** version);
 
 void multio_open_connections();
 

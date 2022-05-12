@@ -112,6 +112,10 @@ Message MpiTransport::receive() {
     } while (true);
 }
 
+void MpiTransport::abort() {
+    comm().abort();
+}
+
 void MpiTransport::send(const Message& msg) {
     std::lock_guard<std::mutex> lock{mutex_};
 

@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <iostream>
 
+#include "eckit/config/LibEcKit.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/log/Plural.h"
 #include "eckit/maths/Functions.h"
@@ -162,6 +163,10 @@ Message TcpTransport::receive() {
     }
 
     throw eckit::SeriousBug("No message received");
+}
+
+void TcpTransport::abort() {
+    eckit::LibEcKit::instance().abort();
 }
 
 void TcpTransport::send(const Message& msg) {

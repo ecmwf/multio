@@ -27,6 +27,8 @@ namespace  {
 const std::map<const char, const std::string> symbol_to_unit{
     {'h', "hour"}, {'d', "day"}, {'m', "month"}};
 
+const std::map<const std::string, long> to_hourly{{"hour", 1}, {"day", 24}};
+
 std::string set_unit(std::string const& output_freq) {
     const auto& symbol = output_freq.back();
 
@@ -55,7 +57,7 @@ void Statistics::execute(message::Message msg) const {
     std::ostringstream os;
     auto md = msg.metadata();
     {
-        eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+        util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
         LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << md
                                  << std::endl;
@@ -74,8 +76,10 @@ void Statistics::execute(message::Message msg) const {
         }
 
         md.set("timeUnit", timeUnit_);
-        md.set("timeSpan", timeSpan_);
+        md.set("timeSpanInHours", timeSpan_ * to_hourly.at(timeUnit_));
         md.set("stepRange", fieldStats_.at(os.str())->stepRange(md.getLong("step")));
+        md.set("currentDate", fieldStats_.at(os.str())->current().endPoint().date().yyyymmdd());
+        md.set("currentTime", fieldStats_.at(os.str())->current().endPoint().time().hhmmss());
     }
     for (auto&& stat : fieldStats_.at(os.str())->compute(msg)) {
         md.set("operation", stat.first);
@@ -86,7 +90,7 @@ void Statistics::execute(message::Message msg) const {
         executeNext(newMsg);
     }
 
-    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     fieldStats_.at(os.str())->reset(msg);
 }
 

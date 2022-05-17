@@ -37,7 +37,7 @@ void Select::execute(Message msg) const {
 }
 
 bool Select::isMatched(const Message& msg) const {
-    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     return (msg.tag() != Message::Tag::Field) || matchPlan(msg);
 }
 

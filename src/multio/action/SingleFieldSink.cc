@@ -18,6 +18,7 @@
 
 #include "multio/sink/DataSink.h"
 #include "multio/LibMultio.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
@@ -45,7 +46,7 @@ void SingleFieldSink::execute(Message msg) const {
 }
 
 void SingleFieldSink::write(Message msg) const {
-    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     std::ostringstream oss;
     oss << rootPath_ << msg.metadata().getUnsigned("level")
@@ -63,7 +64,7 @@ void SingleFieldSink::write(Message msg) const {
 }
 
 void SingleFieldSink::flush() const {
-    eckit::AutoTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     eckit::Log::debug<LibMultio>()
         << "*** Executing single-field flush for data sink... " << std::endl;

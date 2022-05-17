@@ -45,15 +45,18 @@ plans :
       - type : Statistics
         output_frequency: 5d
         operations:
-          - average
+          - instant
 
       - type : Aggregation
 
       - type : Mask
+        apply-bitmap: true
+        offset-fields: [sst, toce]
+        offset-value: 273.15
 
       - type : Encode
         format : grib
-        template : unstr_fc.tmpl
+        template : unstr_inst_fc.tmpl
         grid-type : eORCA1
 
       - type : Sink
@@ -76,15 +79,19 @@ plans :
       - type : Statistics
         output_frequency: 1d
         operations:
-          - average
+          - instant
 
       - type : Aggregation
 
+        # Mask and offset should be applied at the same time as we do not support offsetting masked values
       - type : Mask
+        apply-bitmap: true
+        offset-fields: [sst]
+        offset-value: 273.15
 
       - type : Encode
         format : grib
-        template :  unstr_fc.tmpl
+        template :  unstr_inst_fc.tmpl
         grid-type : eORCA1
 
       - type : Sink
@@ -107,15 +114,18 @@ plans :
       - type : Statistics
         output_frequency: 1d
         operations:
-          - average
+          - instant
 
       - type : Aggregation
 
       - type : Mask
+        apply-bitmap: true
+        offset-fields: [icettop]
+        offset-value: 273.15
 
       - type : Encode
         format : grib
-        template : unstr_fc.tmpl
+        template : unstr_inst_fc.tmpl
         grid-type : eORCA1
 
       - type : Sink

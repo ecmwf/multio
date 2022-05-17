@@ -10,8 +10,6 @@
 
 #include "Mask.h"
 
-#include <limits>
-
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 #include "eckit/config/Configuration.h"
@@ -21,29 +19,37 @@
 namespace multio {
 namespace action {
 
+namespace {
+std::set<std::string> fetch_offset_fields(const eckit::Configuration& cfg) {
+    const auto& vec = cfg.getStringVector("offset-fields", std::vector<std::string>{});
+    return std::set<std::string>{begin(vec), end(vec)};
+}
+
+template<typename T>
+bool setContains(const std::set<T>& _set, const T& key) {
+    return _set.find(key) != std::end(_set);
+}
+
+}  // namespace
+
 Mask::Mask(const eckit::Configuration& config) :
     Action(config),
-    missingValue_{config.getDouble("missing-value", std::numeric_limits<double>::max())} {}
+    applyBitmap_{config.getBool("apply-bitmap", true)},
+    missingValue_{config.getDouble("missing-value", std::numeric_limits<double>::max())},
+    offsetFields_{fetch_offset_fields(config)},
+    offsetValue_{config.getDouble("offset-value", 273.15)} {}
 
 void Mask::execute(message::Message msg) const {
 
     // Sanity check
     ASSERT(msg.metadata().getLong("levelCount") == 1);
 
-    auto const& bkey = domain::Mask::key(msg.metadata());
-    auto const& bitmask = domain::Mask::instance().get(bkey);
+    if (applyBitmap_) {
+        applyMask(msg);
+    }
 
-    ASSERT(bitmask.size() == msg.size() / sizeof(double));
-
-    auto git = static_cast<double*>(msg.payload().data());
-
-    auto cnt = 0;
-    for (const auto bval : bitmask) {
-        if (not bval) {
-            *git = missingValue_;
-            ++git;
-            ++cnt;
-        }
+    if (setContains(offsetFields_, msg.name())) {
+        applyOffset(msg);
     }
 
     message::Metadata md{msg.metadata()};
@@ -57,8 +63,41 @@ void Mask::execute(message::Message msg) const {
     executeNext(nextMsg);
 }
 
+void Mask::applyMask(message::Message msg) const {
+    auto const& bkey = domain::Mask::key(msg.metadata());
+    auto const& bitmask = domain::Mask::instance().get(bkey);
+
+    ASSERT(bitmask.size() == msg.size() / sizeof(double));
+
+    auto git = static_cast<double*>(msg.payload().data());
+
+    for (const auto bval : bitmask) {
+        if (not bval) {
+            *git = missingValue_;
+        }
+        ++git;
+    }
+}
+
+void Mask::applyOffset(message::Message msg) const {
+    auto const& bkey = domain::Mask::key(msg.metadata());
+    auto const& bitmask = domain::Mask::instance().get(bkey);
+
+    ASSERT(bitmask.size() == msg.size() / sizeof(double));
+
+    auto git = static_cast<double*>(msg.payload().data());
+
+    for (const auto bval : bitmask) {
+        if (bval) {
+            *git += offsetValue_;
+        }
+        ++git;
+    }
+}
+
 void Mask::print(std::ostream& os) const {
-    os << "Mask(missing=" << missingValue_ << ")";
+    os << "Mask(missing=" << missingValue_ << ", offset-fields=" << offsetFields_
+       << ", offset-value=" << offsetValue_ << ")";
 }
 
 static ActionBuilder<Mask> MaskBuilder("Mask");

@@ -22,7 +22,11 @@
 namespace multio {
 namespace message {
 
-using Metadata = eckit::LocalConfiguration;
+class Metadata : public eckit::LocalConfiguration {
+public:
+    Metadata() = default;
+    Metadata(const eckit::Configuration& config);
+};
 
 std::string to_string(const Metadata& metadata);
 Metadata to_metadata(const std::string& fieldId);

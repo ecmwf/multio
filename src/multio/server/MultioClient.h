@@ -27,7 +27,7 @@ namespace multio {
 
 namespace message {
 class Message;
-using Metadata = eckit::LocalConfiguration;
+class Metadata;
 }
 
 namespace server {

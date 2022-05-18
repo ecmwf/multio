@@ -18,10 +18,6 @@ using multio::message::Peer;
 namespace multio {
 namespace server {
 
-size_t serverIdDenom(size_t clientCount, size_t serverCount) {
-    return (serverCount == 0) ? 1 : (((clientCount - 1) / serverCount) + 1);
-}
-
 MultioClient::MultioClient(const eckit::Configuration& config) {
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << config << std::endl;
     const std::vector<eckit::LocalConfiguration> plans =

@@ -21,11 +21,6 @@ list( APPEND multio_library_srcs
     multio_version.cc
 )
 
-list( APPEND multio_api_srcs
-    api/multio_c.h
-    api/multio_c.cc
-)
-
 list( APPEND multio_action_srcs
     action/Aggregation.cc
     action/Aggregation.h
@@ -136,7 +131,6 @@ list( APPEND multio_transport_srcs
 
 list( APPEND multio_srcs
     ${multio_library_srcs}
-    ${multio_api_srcs}
     ${multio_action_srcs}
     ${multio_ifsio_srcs}
     ${multio_domain_srcs}
@@ -176,4 +170,5 @@ ecbuild_add_library(
 add_subdirectory(fdb5)
 add_subdirectory(maestro)
 add_subdirectory(server)
+add_subdirectory(api)
 add_subdirectory(tools)

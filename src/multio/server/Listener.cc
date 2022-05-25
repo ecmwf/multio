@@ -134,7 +134,7 @@ void Listener::checkConnection(const message::Peer& conn) const {
     if (connections_.find(conn) == end(connections_)) {
         std::ostringstream oss;
         oss << "Connection to " << conn << " is not open";
-        throw oss.str();
+        throw eckit::SeriousBug{oss.str(), Here()};
     }
 }
 

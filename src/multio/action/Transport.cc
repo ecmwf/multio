@@ -18,6 +18,7 @@
 #include "multio/transport/TransportRegistry.h"
 #include "multio/util/ConfigurationPath.h"
 #include "multio/util/logfile_name.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
@@ -45,6 +46,8 @@ Transport::Transport(const eckit::Configuration& config) :
 
 void Transport::execute(Message msg) const {
     // eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
+    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+
     auto md = msg.metadata();
     if (md.getBool("toAllServers")) {
         for (auto& server : serverPeers_) {
@@ -64,6 +67,7 @@ void Transport::execute(Message msg) const {
         transport_->bufferedSend(trMsg);
     }
 
+    ASSERT(not next_); // End of pipeline
     executeNext(msg);
 }
 

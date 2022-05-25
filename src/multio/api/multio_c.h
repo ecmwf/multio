@@ -128,9 +128,10 @@ int multio_close_connections(multio_handle_t* multio);
 /** Indicates that a given step is complete
  * \note Can be used for checkpointing
  * \param mio Handle to the multio (client) instance
+ * \param md Metadata information about the domain
  * \returns Return code (#MultioErrorValues)
  */
-int multio_write_step_complete(multio_handle_t* multio);
+int multio_write_step_complete(multio_handle_t* multio, multio_metadata_t* md);
 
 /** Writes domain information (e.g. local-to-global index mapping) to the server
  * \param mio Handle to the multio (client) instance

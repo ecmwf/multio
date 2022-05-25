@@ -112,7 +112,7 @@ public:  // methods
     static std::string tag2str(Tag t);
 
     Message();
-    Message(Header&& header, const eckit::Buffer& payload = eckit::Buffer(0));
+    Message(Header&& header, const eckit::Buffer& payload = eckit::Buffer{0});
     Message(Header&& header, eckit::Buffer&& payload);
 
     const Header& header() const;

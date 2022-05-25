@@ -38,11 +38,9 @@ void MultioClient::closeConnections() {
 
 MultioClient::~MultioClient() = default;
 
-void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload, int itag) {
-    auto tag = static_cast<Message::Tag>(itag);
+void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload, Message::Tag tag) {
     ASSERT(tag < Message::Tag::ENDTAG);
-    Message msg{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)},
-                std::move(payload)};
+    Message msg{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)}, std::move(payload)};
 
     for (const auto& plan : plans_) {
         plan->process(msg);

@@ -155,45 +155,36 @@ int multio_close_connections(multio_handle_t* multio) {
     return wrapApiFunction([multio]() { multio->closeConnections(); });
 }
 
-int multio_write_step_complete(multio_handle_t* multio) {
-    return wrapApiFunction([multio]() {
-        Message msg{Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}}};
-        multio->dispatch(msg);
+int multio_write_step_complete(multio_handle_t* mio, multio_metadata_t* md) {
+    return wrapApiFunction([mio, md]() {
+        mio->dispatch(std::move(*md), eckit::Buffer{0}, Message::Tag::StepComplete);
     });
 }
 
 int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
         eckit::Buffer domain_def{reinterpret_cast<const char*>(data), size * sizeof(int)};
-        multio::message::Metadata& metadata = *md;
-        Message msg{Message::Header{Message::Tag::Domain, Peer{}, Peer{}, std::move(metadata)},
-                    std::move(domain_def)};
-        mio->dispatch(msg);
+        mio->dispatch(std::move(*md), std::move(domain_def), Message::Tag::Domain);
     });
 }
 
 int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
         std::vector<double> mask_data{data, data + size};
-        std::vector<uint8_t> bitMask;
+        eckit::Buffer mask_vals{size * sizeof(uint8_t)};
+        auto bit = static_cast<uint8_t*>(mask_vals.data());
         for (const auto& mval : mask_data) {
-            bitMask.push_back(static_cast<uint8_t>(mval));
+            *bit = static_cast<uint8_t>(mval);
+            ++bit;
         }
-        eckit::Buffer mask_vals{reinterpret_cast<const char*>(bitMask.data()),
-                                size * sizeof(uint8_t)};
-        multio::message::Metadata& metadata = *md;
-        Message msg{Message::Header{Message::Tag::Mask, Peer{}, Peer{}, std::move(metadata)},
-                    std::move(mask_vals)};
+        mio->dispatch(std::move(*md), std::move(mask_vals), Message::Tag::Mask);
     });
 }
 
 int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(double)};
-        multio::message::Metadata& metadata = *md;
-        Message msg{Message::Header{Message::Tag::Field, Peer{}, Peer{}, std::move(metadata)},
-                    std::move(field_vals)};
-        mio->dispatch(msg);
+        mio->dispatch(std::move(*md), std::move(field_vals), Message::Tag::Mask);
     });
 }
 

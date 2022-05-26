@@ -126,17 +126,17 @@ int multio_set_failure_handler(multio_failure_handler_t handler, void* context) 
     });
 }
 
-int multio_new_handle(multio_handle_t** multio) {
-    return wrapApiFunction([multio]() {
+int multio_new_handle(multio_handle_t** mio) {
+    return wrapApiFunction([mio]() {
         const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_file()}};
-        (*multio) = new multio_handle_t{config};
+        (*mio) = new multio_handle_t{config};
     });
 }
 
-int multio_delete_handle(multio_handle_t* multio) {
-    return wrapApiFunction([multio]() {
-        ASSERT(multio);
-        delete multio;
+int multio_delete_handle(multio_handle_t* mio) {
+    return wrapApiFunction([mio]() {
+        ASSERT(mio);
+        delete mio;
     });
 }
 
@@ -147,22 +147,36 @@ int multio_start_server() {
     });
 }
 
-int multio_open_connections(multio_handle_t* multio) {
-    return wrapApiFunction([multio]() { multio->openConnections(); });
+int multio_open_connections(multio_handle_t* mio) {
+    return wrapApiFunction([mio]() {
+        ASSERT(mio);
+
+        mio->openConnections();
+    });
 }
 
-int multio_close_connections(multio_handle_t* multio) {
-    return wrapApiFunction([multio]() { multio->closeConnections(); });
+int multio_close_connections(multio_handle_t* mio) {
+    return wrapApiFunction([mio]() {
+        ASSERT(mio);
+
+        mio->closeConnections();
+    });
 }
 
 int multio_write_step_complete(multio_handle_t* mio, multio_metadata_t* md) {
     return wrapApiFunction([mio, md]() {
+        ASSERT(mio);
+        ASSERT(md);
+
         mio->dispatch(std::move(*md), eckit::Buffer{0}, Message::Tag::StepComplete);
     });
 }
 
 int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
+        ASSERT(mio);
+        ASSERT(md);
+
         eckit::Buffer domain_def{reinterpret_cast<const char*>(data), size * sizeof(int)};
         mio->dispatch(std::move(*md), std::move(domain_def), Message::Tag::Domain);
     });
@@ -170,6 +184,9 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
 
 int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
+        ASSERT(mio);
+        ASSERT(md);
+
         std::vector<double> mask_data{data, data + size};
         eckit::Buffer mask_vals{size * sizeof(uint8_t)};
         auto bit = static_cast<uint8_t*>(mask_vals.data());
@@ -177,13 +194,18 @@ int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double*
             *bit = static_cast<uint8_t>(mval);
             ++bit;
         }
+
         mio->dispatch(std::move(*md), std::move(mask_vals), Message::Tag::Mask);
     });
 }
 
 int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
+        ASSERT(mio);
+        ASSERT(md);
+
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(double)};
+
         mio->dispatch(std::move(*md), std::move(field_vals), Message::Tag::Mask);
     });
 }
@@ -203,13 +225,20 @@ int multio_delete_metadata(multio_metadata_t* md) {
 
 int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int value) {
     return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+
         std::string skey{key};
-        md->set(skey, value);
+        md->set(key, value);
     });
 }
 
 int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, const char* value) {
     return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+        ASSERT(value);
+
         std::string skey{key}, svalue{value};
         md->set(skey, svalue);
     });

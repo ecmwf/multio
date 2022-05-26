@@ -117,13 +117,13 @@ int multio_start_server();
  * \note This will open connections to all processes associated with the server
  * \returns Return code (#MultioErrorValues)
  */
-int multio_open_connections(multio_handle_t* multio);
+int multio_open_connections(multio_handle_t* mio);
 /** Closes connections to the server
  * \note This will close connections to all processes associated with the server
  * \param mio Handle to the multio (client) instance
  * \returns Return code (#MultioErrorValues)
  */
-int multio_close_connections(multio_handle_t* multio);
+int multio_close_connections(multio_handle_t* mio);
 
 /** Indicates that a given step is complete
  * \note Can be used for checkpointing
@@ -131,7 +131,7 @@ int multio_close_connections(multio_handle_t* multio);
  * \param md Metadata information about the domain
  * \returns Return code (#MultioErrorValues)
  */
-int multio_write_step_complete(multio_handle_t* multio, multio_metadata_t* md);
+int multio_write_step_complete(multio_handle_t* mio, multio_metadata_t* md);
 
 /** Writes domain information (e.g. local-to-global index mapping) to the server
  * \param mio Handle to the multio (client) instance

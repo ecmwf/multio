@@ -33,12 +33,20 @@ list( APPEND _test_data
 )
 
 ecbuild_add_executable( TARGET    multio-sink
-                        SOURCES   multio-sink.cc ${CMAKE_CURRENT_SOURCE_DIR}/../src/multio/tools/MultioTool.cc
+                        SOURCES   multio-sink.cc
+                                  ${CMAKE_CURRENT_SOURCE_DIR}/../src/multio/tools/MultioTool.cc
                         CONDITION HAVE_FDB5
                         LIBS      multio multio-fdb5 eckit_option)
 
 ecbuild_add_executable( TARGET    multio-legacy
-                        SOURCES   multio-legacy.cc ${CMAKE_CURRENT_SOURCE_DIR}/../src/multio/tools/MultioTool.cc
+                        SOURCES   multio-legacy.cc
+                                  ${CMAKE_CURRENT_SOURCE_DIR}/../src/multio/tools/MultioTool.cc
+                        CONDITION HAVE_FDB5 AND HAVE_LEGACY_IFSIO
+                        LIBS      multio multio-fdb5 eckit_option)
+
+ecbuild_add_executable( TARGET    multio-legacy-hammer
+                        SOURCES   multio-legacy-hammer.cc
+                                  ${CMAKE_CURRENT_SOURCE_DIR}/../src/multio/tools/MultioTool.cc
                         CONDITION HAVE_FDB5 AND HAVE_LEGACY_IFSIO
                         LIBS      multio multio-fdb5 eckit_option)
 

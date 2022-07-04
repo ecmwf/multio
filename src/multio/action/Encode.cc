@@ -68,9 +68,10 @@ void Encode::execute(Message msg) const {
         ASSERT(levelCount == 1);
         // TODO: most of this can probably go if we stick to levelCount == 1 always
         if (levelCount == 1) {
-            executeNext(encoder_->encodeField(msg));
+            executeNext(encodeField(msg));
         }
         else { // TODO: this branch can probably go. See above...
+            ASSERT(false);
             auto metadata = msg.metadata();
             auto data = reinterpret_cast<const double*>(msg.payload().data());
             for (auto lev = 0; lev != levelCount;) {

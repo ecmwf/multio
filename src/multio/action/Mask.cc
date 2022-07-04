@@ -15,6 +15,7 @@
 #include "eckit/config/Configuration.h"
 
 #include "multio/domain/Mask.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
@@ -44,6 +45,13 @@ void Mask::execute(message::Message msg) const {
     // Sanity check
     ASSERT(msg.metadata().getLong("levelCount") == 1);
 
+    executeNext(createMasked(msg));
+}
+
+message::Message Mask::createMasked(message::Message msg) const {
+
+    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+
     if (applyBitmap_) {
         applyMask(msg);
     }
@@ -56,11 +64,11 @@ void Mask::execute(message::Message msg) const {
     md.set("missingValue", missingValue_);
     md.set("bitmapPresent", true);
 
-    message::Message nextMsg{
+    message::Message maskedMsg{
         message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(md)},
         std::move(msg.payload())};
 
-    executeNext(nextMsg);
+    return maskedMsg;
 }
 
 void Mask::applyMask(message::Message msg) const {

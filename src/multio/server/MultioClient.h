@@ -17,6 +17,8 @@
 
 #include "multio/action/Plan.h"
 
+#include "eckit/log/Statistics.h"
+
 namespace eckit {
 class Buffer;
 class Configuration;
@@ -49,6 +51,9 @@ public:
 
 private:
     std::vector<std::unique_ptr<action::Plan>> plans_;
+
+    eckit::Timing totClientTiming_;
+    eckit::Timer totClientTimer_;
 };
 
 }  // namespace server

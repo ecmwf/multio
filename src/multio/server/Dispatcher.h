@@ -48,9 +48,9 @@ public:
 private:
 
     std::vector<std::unique_ptr<action::Plan>> plans_;
+
     eckit::Timing timing_;
     eckit::Timer timer_;
-
 };
 
 }  // namespace server

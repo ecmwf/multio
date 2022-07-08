@@ -26,9 +26,11 @@
 #include "eckit/mpi/Comm.h"
 #include "eckit/runtime/Main.h"
 
+#include "multio/multio_version.h"
 #include "multio/LibMultio.h"
 #include "multio/message/Metadata.h"
 #include "multio/server/MultioClient.h"
+#include "multio/server/MultioErrorHandling.h"
 #include "multio/server/MultioServer.h"
 #include "multio/server/NemoToGrib.h"
 #include "multio/util/ConfigurationPath.h"
@@ -237,82 +239,150 @@ public:
 extern "C" {
 #endif
 
+void multio_version(const char** version) {
+    try {
+        *version = multio_version_str();
+    }  catch (std::exception& e) {
+        multio_handle_error(e);
+    }
+}
+
+void multio_vcs_version(const char** sha1) {
+    try {
+        *sha1 = multio_git_sha1();
+    }  catch (std::exception& e) {
+        multio_handle_error(e);
+    }
+}
+
 void multio_open_connections() {
-    MultioNemo::instance().openConnections();
+    try {
+        MultioNemo::instance().openConnections();
+    }  catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 void multio_close_connections() {
-    MultioNemo::instance().closeConnections();
+    try {
+        MultioNemo::instance().closeConnections();
+    }  catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 void multio_write_step_complete() {
-    MultioNemo::instance().writeStepComplete();
+    try {
+        MultioNemo::instance().writeStepComplete();
+    }
+    catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 int multio_init_client(const char* name, int parent_comm) {
-    return MultioNemo::instance().initClient(name, parent_comm);
+    try {
+        return MultioNemo::instance().initClient(name, parent_comm);
+    }
+    catch (std::exception& e) {
+        return multio_handle_error(e);
+    }
 }
 
 void multio_init_server(int parent_comm) {
-    MultioNemo::instance().initServer(parent_comm);
+    try {
+        MultioNemo::instance().initServer(parent_comm);
+    }
+    catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 void multio_metadata_set_int_value(const char* key, int value) {
-    std::string skey{key};
-    MultioNemo::instance().metadata().set(skey, value);
+    try {
+        std::string skey{key};
+        MultioNemo::instance().metadata().set(skey, value);
+    }
+    catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 void multio_metadata_set_string_value(const char* key, const char* value) {
-    std::string skey{key}, svalue{value};
-    MultioNemo::instance().metadata().set(skey, svalue);
+    try {
+        std::string skey{key}, svalue{value};
+        MultioNemo::instance().metadata().set(skey, svalue);
+    }
+    catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 void multio_set_domain(const char* name, int* data, int size) {
-    if (MultioNemo::instance().useServer()) {
-        MultioNemo::instance().setDomain(name, data, size * sizeof(int));
+    try {
+        if (MultioNemo::instance().useServer()) {
+            MultioNemo::instance().setDomain(name, data, size * sizeof(int));
+        }
     }
-    else {
-        eckit::Log::debug<multio::LibMultio>() << name << ":  " << std::flush;
-        std::vector<int> grid_data{data, data + size};
-        print_buffer(grid_data, eckit::Log::debug<multio::LibMultio>());
-        eckit::Log::debug<multio::LibMultio>() << std::endl;
+    catch (std::exception& e) {
+        multio_handle_error(e);
     }
 }
 
 void multio_write_mask(const char* name, const double* data, int size) {
-    std::vector<double> mask_data{data, data + size};
-    std::vector<uint8_t> bitMask;
-    for (const auto& mval : mask_data) {
-        if (not (mval == 0.0 || mval == 1.0 || mval == 2.0)) {
-            throw eckit::SeriousBug("Unrecognised mask value: " + std::to_string(mval));
+    try {
+        std::vector<double> mask_data{data, data + size};
+        std::vector<uint8_t> bitMask;
+        for (const auto& mval : mask_data) {
+            if (not (mval == 0.0 || mval == 1.0 || mval == 2.0)) {
+                throw eckit::SeriousBug("Unrecognised mask value: " + std::to_string(mval));
+            }
+            bitMask.push_back(static_cast<uint8_t>(mval));
         }
-        bitMask.push_back(static_cast<uint8_t>(mval));
+        ASSERT(bitMask.size() == static_cast<size_t>(size));
+        MultioNemo::instance().writeMask(name, bitMask.data(), size * sizeof(uint8_t));
     }
-    ASSERT(bitMask.size() == static_cast<size_t>(size));
-    MultioNemo::instance().writeMask(name, bitMask.data(), size * sizeof(uint8_t));
+    catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 void multio_write_field(const char* name, const double* data, int size, bool to_all_servers) {
-    if (MultioNemo::instance().useServer()) {
-        LOG_DEBUG_LIB(multio::LibMultio)
-            << "*** Write field " << name << ", local size = " << size << std::endl;
-        MultioNemo::instance().writeField(name, data, size * sizeof(double), to_all_servers);
+    try {
+        if (MultioNemo::instance().useServer()) {
+            LOG_DEBUG_LIB(multio::LibMultio)
+                << "*** Write field " << name << ", local size = " << size << std::endl;
+            MultioNemo::instance().writeField(name, data, size * sizeof(double), to_all_servers);
+        }
+        else {
+            LOG_DEBUG_LIB(multio::LibMultio)
+                << "*** Writing field " << name << ", local size = " << size
+                << ", global size = " << MultioNemo::instance().metadata().getInt("globalSize")
+                << std::endl;
+        }
     }
-    else {
-        LOG_DEBUG_LIB(multio::LibMultio)
-            << "*** Writing field " << name << ", local size = " << size
-            << ", global size = " << MultioNemo::instance().metadata().getInt("globalSize")
-            << std::endl;
+    catch (std::exception& e) {
+        multio_handle_error(e);
     }
 }
 
 bool multio_field_is_active(const char* name) {
-    return MultioNemo::instance().isActive(name);
+    try {
+        return MultioNemo::instance().isActive(name);
+    }
+    catch (std::exception& e) {
+        return multio_handle_error(e);
+    }
 }
 
 void multio_not_implemented(const char* message) {
-    eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO"
-                       << std::endl;
+    try {
+        eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO"
+                           << std::endl;
+    }
+    catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 

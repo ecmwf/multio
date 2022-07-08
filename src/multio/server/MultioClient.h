@@ -27,7 +27,7 @@ namespace multio {
 
 namespace message {
 class Message;
-using Metadata = eckit::LocalConfiguration;
+class Metadata;
 }
 
 namespace server {
@@ -43,7 +43,7 @@ public:
     void openConnections();
     void closeConnections();
 
-    void dispatch(message::Metadata metadata, eckit::Buffer&& payload, int itag);
+    void dispatch(message::Metadata metadata, eckit::Buffer&& payload, message::Message::Tag tag);
 
     void dispatch(message::Message msg);
 

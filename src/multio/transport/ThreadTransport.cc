@@ -10,6 +10,7 @@
 
 #include "ThreadTransport.h"
 
+#include "eckit/config/LibEcKit.h"
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
 
@@ -48,6 +49,10 @@ Message ThreadTransport::receive() {
     ASSERT(msg.destination() == receiver);
 
     return msg;
+}
+
+void ThreadTransport::abort() {
+    eckit::LibEcKit::instance().abort();
 }
 
 void ThreadTransport::send(const Message& msg) {

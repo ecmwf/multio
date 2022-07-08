@@ -42,6 +42,8 @@ private:
 
     Message receive() override;
 
+    void abort() override;
+
     void send(const Message& msg) override;
 
     void bufferedSend(const Message& msg) override;

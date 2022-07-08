@@ -18,10 +18,6 @@ using multio::message::Peer;
 namespace multio {
 namespace server {
 
-size_t serverIdDenom(size_t clientCount, size_t serverCount) {
-    return (serverCount == 0) ? 1 : (((clientCount - 1) / serverCount) + 1);
-}
-
 MultioClient::MultioClient(const eckit::Configuration& config) {
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << config << std::endl;
     const std::vector<eckit::LocalConfiguration> plans =
@@ -42,11 +38,9 @@ void MultioClient::closeConnections() {
 
 MultioClient::~MultioClient() = default;
 
-void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload, int itag) {
-    auto tag = static_cast<Message::Tag>(itag);
+void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload, Message::Tag tag) {
     ASSERT(tag < Message::Tag::ENDTAG);
-    Message msg{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)},
-                std::move(payload)};
+    Message msg{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)}, std::move(payload)};
 
     for (const auto& plan : plans_) {
         plan->process(msg);

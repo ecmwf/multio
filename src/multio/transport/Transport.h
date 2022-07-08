@@ -49,6 +49,8 @@ public:  // methods
 
     virtual Message receive() = 0;
 
+    virtual void abort() = 0;
+
     virtual void send(const Message& message) = 0;
 
     virtual void bufferedSend(const Message& message) = 0;

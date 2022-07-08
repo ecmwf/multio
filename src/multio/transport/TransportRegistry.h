@@ -23,6 +23,9 @@ public:
     void openConnections();
     void closeConnections();
 
+    void abort(const std::string& serverName);
+    void abortAll();
+
 private:
     void add(const std::string& serverName);
 

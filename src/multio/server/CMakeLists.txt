@@ -25,12 +25,14 @@ ecbuild_add_library(
         Listener.h
         MultioClient.cc
         MultioClient.h
-        MultioServer.cc
-        MultioServer.h
+        MultioErrorHandling.cc
+        MultioErrorHandling.h
         NemoToGrib.cc
         NemoToGrib.h
         MultioNemo.cc
         MultioNemo.h
+        MultioServer.cc
+        MultioServer.h
 
     PUBLIC_LIBS
         ${multio_server_plugins}

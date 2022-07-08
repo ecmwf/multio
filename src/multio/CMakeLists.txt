@@ -170,4 +170,5 @@ ecbuild_add_library(
 add_subdirectory(fdb5)
 add_subdirectory(maestro)
 add_subdirectory(server)
+add_subdirectory(api)
 add_subdirectory(tools)

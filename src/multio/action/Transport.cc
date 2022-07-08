@@ -55,7 +55,8 @@ void Transport::execute(Message msg) const {
             Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)},
                           msg.payload()};
 
-            transport_->bufferedSend(trMsg);
+            transport_->send(trMsg);
+//            transport_->bufferedSend(trMsg);
         }
     }
     else {
@@ -64,7 +65,8 @@ void Transport::execute(Message msg) const {
         Message trMsg{Message::Header{msg.tag(), client_, server, std::move(md)},
                       std::move(msg.payload())};
 
-        transport_->bufferedSend(trMsg);
+        transport_->send(trMsg);
+ //            transport_->bufferedSend(trMsg);
     }
 
     ASSERT(not next_); // End of pipeline

@@ -75,19 +75,17 @@ MpiTransport::~MpiTransport() {
 void MpiTransport::openConnections() {
     for (auto& server : createServerPeers()) {
         Message msg{Message::Header{Message::Tag::Open, local_, *server}};
-        send(msg);
-        //        bufferedSend(msg);
+        bufferedSend(msg);
     }
 }
 
 void MpiTransport::closeConnections() {
     for (auto& server : createServerPeers()) {
         Message msg{Message::Header{Message::Tag::Close, local_, *server}};
-        send(msg);
-//        bufferedSend(msg);
-//        pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
+        bufferedSend(msg);
+        pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
     }
-//    pool_.waitAll();
+    pool_.waitAll();
 }
 
 Message MpiTransport::receive() {

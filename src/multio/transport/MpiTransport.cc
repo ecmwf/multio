@@ -73,14 +73,14 @@ MpiTransport::~MpiTransport() {
 }
 
 void MpiTransport::openConnections() {
-    for (auto& server : createServerPeers()) {
+    for (auto& server : serverPeers()) {
         Message msg{Message::Header{Message::Tag::Open, local_, *server}};
         send(msg);
     }
 }
 
 void MpiTransport::closeConnections() {
-    for (auto& server : createServerPeers()) {
+    for (auto& server : serverPeers()) {
         Message msg{Message::Header{Message::Tag::Close, local_, *server}};
         bufferedSend(msg);
         pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
@@ -117,10 +117,6 @@ void MpiTransport::abort() {
 }
 
 void MpiTransport::send(const Message& msg) {
-
-    // std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-    // logFile << "Blocking-send message " << msg << std::endl;
-
     std::lock_guard<std::mutex> lock{mutex_};
 
     auto msg_tag = static_cast<int>(msg.tag());
@@ -144,11 +140,19 @@ void MpiTransport::send(const Message& msg) {
 }
 
 void MpiTransport::bufferedSend(const Message& msg) {
-    // std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-    // logFile << "Buffered-send message " << msg << std::endl;
-
     std::lock_guard<std::mutex> lock{mutex_};
     encodeMessage(pool_.getStream(msg), msg);
+}
+
+void MpiTransport::createPeers() const {
+    auto rank = 0ul;
+    auto clientCount = comm().size() - config_.getUnsigned("count");
+    while (rank != clientCount) {
+        clientPeers_.emplace_back(new MpiPeer{local_.group(), rank++});
+    }
+    while (rank != comm().size()) {
+        serverPeers_.emplace_back(new MpiPeer{local_.group(), rank++});
+    }
 }
 
 void MpiTransport::print(std::ostream& os) const {

@@ -68,6 +68,8 @@ private:
 
     PeerList createServerPeers() const override;
 
+    void createPeers() const override;
+
     void print(std::ostream& os) const override;
 
     Message nextMessage(eckit::net::TCPSocket& socket) const;

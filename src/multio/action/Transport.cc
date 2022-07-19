@@ -37,7 +37,7 @@ Transport::Transport(const eckit::Configuration& config) :
     Action{config},
     transport_{TransportRegistry::instance().get(config)},
     client_{transport_->localPeer()},
-    serverPeers_{transport_->createServerPeers()},
+    serverPeers_{transport_->serverPeers()},
     serverCount_{serverPeers_.size()},
     serverId_{client_.id() / serverIdDenom(config.getUnsigned("count", 1), serverCount_)},
     usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},

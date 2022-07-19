@@ -20,9 +20,6 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/ResourceUsage.h"
 
-#include "multio/domain/Mappings.h"
-#include "multio/domain/Mask.h"
-
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 
@@ -40,6 +37,7 @@ using transport::Transport;
 Listener::Listener(const eckit::Configuration& config, Transport& trans) :
     dispatcher_{std::make_shared<Dispatcher>(config)},
     transport_{trans},
+    clientCount_{transport_.clientPeers().size()},
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE",1024*1024)) {}
 
 void Listener::start() {
@@ -72,37 +70,15 @@ void Listener::start() {
                 break;
 
             case Message::Tag::Domain:
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Number of maps: " << msg.domainCount() << std::endl;
-                checkConnection(msg.source());
-                clientCount_ = msg.domainCount();
-                // domain::Mappings::instance().add(msg);
-                break;
-
             case Message::Tag::Mask:
-                checkConnection(msg.source());
-                // eckit::Log::info()
-                LOG_DEBUG_LIB(LibMultio)
-                    << "Mask received from " << msg.source() << ": " << msg.metadata() << std::endl;
-                // domain::Mask::instance().add(msg);
-                break;
-
             case Message::Tag::StepNotification:
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Step notification received from: " << msg.source() << std::endl;
-                break;
-
             case Message::Tag::StepComplete:
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Flush received from: " << msg.source() << std::endl;
-                msgQueue_.push(std::move(msg));
-                break;
-
             case Message::Tag::Field:
+                if(msg.metadata().has("domainCount")) {
+                    ASSERT(msg.metadata().getUnsigned("domainCount") == clientCount_);
+                }
                 checkConnection(msg.source());
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Field received from: " << msg.source() << " with size "
-                    << msg.size() / sizeof(double) << std::endl;
+                LOG_DEBUG_LIB(LibMultio) << "*** Message received: " << msg << std::endl;
                 msgQueue_.emplace(std::move(msg));
                 break;
 

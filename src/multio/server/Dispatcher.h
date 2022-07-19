@@ -47,6 +47,8 @@ public:
 
 private:
 
+    void handle(const message::Message& msg) const;
+
     std::vector<std::unique_ptr<action::Plan>> plans_;
 
     eckit::Timing timing_;

@@ -71,6 +71,12 @@ PeerList ThreadTransport::createServerPeers() const {
     throw eckit::NotImplemented{Here()};
 }
 
+void ThreadTransport::createPeers() const {
+    // Hack to work around the very different logic of creating ThreadPeers.
+    // See multio-hammer.cc: MultioHammer::executeThread
+    clientPeers_ = PeerList(config_.getUnsigned("clientCount"));
+}
+
 void ThreadTransport::print(std::ostream& os) const {
     os << "ThreadTransport(number of queues = " << queues_.size() << ")";
 }

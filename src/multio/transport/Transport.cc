@@ -30,7 +30,27 @@ Transport::Transport(const eckit::Configuration &config) : config_{config} {
     LOG_DEBUG_LIB(LibMultio) << "Transport config: " << config_ << std::endl;
 }
 
+Transport::~Transport() = default;
+
 void Transport::listen() {}
+
+const PeerList& Transport::clientPeers() const {
+    if(peersMissing()) {
+        createPeers();
+    }
+    return clientPeers_;
+}
+
+const PeerList& Transport::serverPeers() const {
+    if(peersMissing()) {
+        createPeers();
+    }
+    return serverPeers_;
+}
+
+bool Transport::peersMissing() const {
+    return clientPeers_.empty() && serverPeers_.empty();
+}
 
 //--------------------------------------------------------------------------------------------------
 

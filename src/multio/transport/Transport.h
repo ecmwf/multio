@@ -42,7 +42,7 @@ class Transport {
 public:  // methods
 
     Transport(const eckit::Configuration& config);
-    virtual ~Transport() = default;
+    virtual ~Transport();
 
     virtual void openConnections() = 0;
     virtual void closeConnections() = 0;
@@ -61,14 +61,24 @@ public:  // methods
 
     virtual PeerList createServerPeers() const = 0;
 
+    const PeerList& clientPeers() const;
+    const PeerList& serverPeers() const;
+
 protected:
     const eckit::LocalConfiguration config_;
+
+    mutable PeerList serverPeers_;
+    mutable PeerList clientPeers_;
 
     TransportStatistics statistics_;
 
     std::mutex mutex_;
 
 private: // methods
+    bool peersMissing() const;
+
+    virtual void createPeers() const = 0;
+
     virtual void print(std::ostream& os) const = 0;
 
     friend std::ostream& operator<<(std::ostream& os, const Transport& transport) {

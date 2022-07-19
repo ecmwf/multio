@@ -207,6 +207,26 @@ PeerList TcpTransport::createServerPeers() const {
     return serverPeers;
 }
 
+void TcpTransport::createPeers() const {
+
+    // Client peers
+    for (auto cfg : config_.getSubConfigurations("clients")) {
+        auto host = cfg.getString("host");
+        for (auto port : cfg.getUnsignedVector("ports")) {
+            clientPeers_.emplace_back(new TcpPeer{host, port});
+        }
+    }
+
+    // Server peers
+    for (auto cfg : config_.getSubConfigurations("servers")) {
+        auto host = cfg.getString("host");
+        for (auto port : cfg.getUnsignedVector("ports")) {
+            serverPeers_.emplace_back(new TcpPeer{host, port});
+        }
+    }
+
+}
+
 void TcpTransport::print(std::ostream& os) const {
     os << "TcpTransport()";
 }

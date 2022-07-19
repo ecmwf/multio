@@ -37,7 +37,7 @@ private:
     std::shared_ptr<transport::Transport> transport_ = nullptr;
 
     const message::Peer client_;
-    PeerList serverPeers_;
+    const PeerList& serverPeers_; // = transport_->serverPeers();
 
     size_t serverCount_;
 

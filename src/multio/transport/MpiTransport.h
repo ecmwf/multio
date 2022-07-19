@@ -48,6 +48,8 @@ private:
 
     void bufferedSend(const Message& msg) override;
 
+    void createPeers() const override;
+
     void print(std::ostream& os) const override;
 
     Peer localPeer() const override;

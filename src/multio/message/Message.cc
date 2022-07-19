@@ -126,7 +126,8 @@ void Message::encode(eckit::Stream& strm) const {
 void Message::print(std::ostream& out) const {
     out << "Message("
         << "version=" << version() << ", tag=" << tag2str(tag()) << ", source=" << source()
-        << ", destination=" << destination() << ", metadata=" << fieldId() << ")";
+        << ", destination=" << destination() << ", metadata=" << fieldId()
+        << ", payload-size=" << payload().size() << ")";
 }
 
 eckit::message::Message to_eckit_message(const Message& msg) {

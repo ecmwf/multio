@@ -55,7 +55,7 @@ void Transport::execute(Message msg) const {
             Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)},
                           msg.payload()};
 
-            transport_->bufferedSend(trMsg);
+            transport_->send(trMsg);
         }
     }
     else {

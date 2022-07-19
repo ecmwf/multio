@@ -75,7 +75,7 @@ MpiTransport::~MpiTransport() {
 void MpiTransport::openConnections() {
     for (auto& server : createServerPeers()) {
         Message msg{Message::Header{Message::Tag::Open, local_, *server}};
-        bufferedSend(msg);
+        send(msg);
     }
 }
 
@@ -117,6 +117,10 @@ void MpiTransport::abort() {
 }
 
 void MpiTransport::send(const Message& msg) {
+
+    // std::ofstream logFile{util::logfile_name(), std::ios_base::app};
+    // logFile << "Blocking-send message " << msg << std::endl;
+
     std::lock_guard<std::mutex> lock{mutex_};
 
     auto msg_tag = static_cast<int>(msg.tag());
@@ -140,6 +144,9 @@ void MpiTransport::send(const Message& msg) {
 }
 
 void MpiTransport::bufferedSend(const Message& msg) {
+    // std::ofstream logFile{util::logfile_name(), std::ios_base::app};
+    // logFile << "Buffered-send message " << msg << std::endl;
+
     std::lock_guard<std::mutex> lock{mutex_};
     encodeMessage(pool_.getStream(msg), msg);
 }

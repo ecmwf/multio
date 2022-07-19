@@ -76,7 +76,7 @@ void Listener::start() {
                     << "*** Number of maps: " << msg.domainCount() << std::endl;
                 checkConnection(msg.source());
                 clientCount_ = msg.domainCount();
-                domain::Mappings::instance().add(msg);
+                // domain::Mappings::instance().add(msg);
                 break;
 
             case Message::Tag::Mask:
@@ -84,7 +84,7 @@ void Listener::start() {
                 // eckit::Log::info()
                 LOG_DEBUG_LIB(LibMultio)
                     << "Mask received from " << msg.source() << ": " << msg.metadata() << std::endl;
-                domain::Mask::instance().add(msg);
+                // domain::Mask::instance().add(msg);
                 break;
 
             case Message::Tag::StepNotification:

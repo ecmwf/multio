@@ -141,8 +141,6 @@ public:
                            << std::endl;
 
         auto serverConfig = config_.getSubConfiguration(server_name);
-        serverConfig.set("group", "nemo");
-        serverConfig.set("count", serverCount_);
 
         multioServer_.reset(new MultioServer{serverConfig});
     }

@@ -33,42 +33,60 @@ Optional
 Build & Install
 ---------------
 
-1. Clone repository
+.. code-block:: shell
 
-   .. code-block:: shell
+   # 1. Clone repository
    git clone https://github.com/ecmwf/multio
 
-2. Set up environment as appropriate
-
-   .. code-block:: shell
+   # 2. Set up environment as appropriate
    srcdir=$(pwd)
    builddir=build
    installdir=$HOME/local
 
-3. Run Cmake/ecbuild
-
-   .. code-block:: shell
+   # 3. Run Cmake/ecbuild. Note that the package is in active development and the I/O-server functionality is not enabled by default; it needs to be turned on explicitly.
    ecbuild --prefix=$installdir -- -DCMAKE_PREFIX_PATH=<path/to/dependencies/install> -DENABLE_MULTIO_SERVER=ON $srcdir
 
-   The package is in active development and the I/O-server functionality is not enabled by default;
-   it needs to be turned on explicitly. In addition, if built with FDB support, some compilers will
-   require linking to be forced.
-
-   .. code-block:: shell
+   #  In addition, if built with FDB support, some compilers will require linking to be forced.
    ecbuild --prefix=$installdir -- -DCMAKE_PREFIX_PATH=<path/to/dependencies/install>
    -DENABLE_MULTIO_SERVER=ON -DECBUILD_EXE_LINKER_FLAGS=-Wl,--no-as-needed $srcdir
 
-4. Compile, test and install
-
-   .. code-block:: bash
+   # 4. Compile, test and install
    make -j10
    ctest
    make install
 
-.. code-block:: bash
-make -j10
-ctest
-make install
+..
+   1. Clone repository
+
+      .. code-block:: shell
+      git clone https://github.com/ecmwf/multio
+
+   2. Set up environment as appropriate
+
+      .. code-block:: shell
+      srcdir=$(pwd)
+      builddir=build
+      installdir=$HOME/local
+
+   3. Run Cmake/ecbuild
+
+      .. code-block:: shell
+      ecbuild --prefix=$installdir -- -DCMAKE_PREFIX_PATH=<path/to/dependencies/install> -DENABLE_MULTIO_SERVER=ON $srcdir
+
+      The package is in active development and the I/O-server functionality is not enabled by default;
+      it needs to be turned on explicitly. In addition, if built with FDB support, some compilers will
+      require linking to be forced.
+
+      .. code-block:: shell
+      ecbuild --prefix=$installdir -- -DCMAKE_PREFIX_PATH=<path/to/dependencies/install>
+      -DENABLE_MULTIO_SERVER=ON -DECBUILD_EXE_LINKER_FLAGS=-Wl,--no-as-needed $srcdir
+
+   4. Compile, test and install
+
+      .. code-block:: bash
+      make -j10
+      ctest
+      make install
 
 .. _`CMake`: https://cmake.org
 .. _`ecbuild`: https://github.com/ecmwf/ecbuild

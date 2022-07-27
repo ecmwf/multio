@@ -53,8 +53,6 @@ Build & Install
 
    ecbuild --prefix=$installdir -- -DCMAKE_PREFIX_PATH=<path/to/dependencies/install> -DENABLE_MULTIO_SERVER=ON $srcdir
 
-   .. note::
-
    The package is in active development and the I/O-server functionality is not enabled by default;
    it needs to be turned on explicitly. In addition, if built with FDB support, some compilers will
    require linking to be forced.

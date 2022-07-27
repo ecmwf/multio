@@ -1,5 +1,5 @@
 Welcome to multio’s documentation!
-===============================
+==================================
 
 An I/O library to provide multiplexing, I/O-server functionality and on-the-fly postprocessing for
 distributed meteorological and earth-system models.

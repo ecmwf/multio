@@ -3,7 +3,7 @@
 Introduction
 ============
 
-**multio** provides C++ libraries for data routing from distributed meteorological and earth-system models. It supports
+``multio`` provides C++ libraries for data routing from distributed meteorological and earth-system models. It supports
   * I/O multiplexing to produce multiple output data from the same input;
   * I/O-server functionality to create aggregated horizontal fields from distributed parallel models;
   * post-processing pipelines to calculate derived meteorological products, such as temporal

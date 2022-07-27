@@ -1,7 +1,7 @@
 .. index:: API
 
-API Design
-==========
+API
+===
 
 
 .. index:: API; C Interface

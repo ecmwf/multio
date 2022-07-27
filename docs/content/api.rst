@@ -108,6 +108,73 @@ process is aborted.
 The ``context`` parameter is user-specified, and is defined as the second argument to
 ``multio_set_failure_handler``.
 
+Initialisation
+~~~~~~~~~~~~~~
+
+Initialisation, if necessary, must be called before any other function
+
+.. note::
+
+   This is only required if being used from a context where **eckit::Main()** is not otherwise
+   initialised.
+
+.. code-block:: c
+
+   int multio_initialise();
+
+
+
+Version Accessors
+~~~~~~~~~~~~~~~~~
+
+It is possible to retrieve the release version of the library in a human-readable format,
+e.g. ``1.3.0``, as well as the version-control checksum of the latest change,
+e.g. ``a88011c007a0db48a5d16e296934a197eac2050a``.
+
+.. code-block:: c
+
+   int multio_version(const char** version);
+   int multio_vcs_version(const char** sha1);
+
+
+Setting the metadata
+~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: c
+
+   int multio_new_metadata(multio_metadata_t** md);
+   int multio_delete_metadata(multio_metadata_t* md);
+   int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int value);
+   int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, const char* value);
+
+
+Data routing
+~~~~~~~~~~~~
+
+.. code-block:: c
+
+   int multio_new_handle(multio_handle_t** mio);
+   int multio_delete_handle(multio_handle_t* mio);
+
+   int multio_open_connections(multio_handle_t* mio);
+   int multio_close_connections(multio_handle_t* mio);
+
+   int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, int size);
+   int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
+   int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
+   int multio_write_step_complete(multio_handle_t* mio, multio_metadata_t* md);
+
+
+Initialise server
+~~~~~~~~~~~~~~~~~
+
+Typically, a server would be running where the aggregation of partial fields into global ones takes
+place. Starting the server itself is the only interface call required on the server side.
+
+.. code-block:: c
+
+   int multio_start_server();
+
 
 C++ Interface
 -------------

@@ -86,9 +86,8 @@ int multio_vcs_version(const char** sha1);
 
 /** @} */
 
-/** API */
+/** \defgroup Data-routing */
 /** @{ */
-
 
 // TODO: Shall we allow passing in a configuration path here?
 // int multio_new_handle(const char* configuration_path, multio_handle_t** multio);
@@ -161,6 +160,9 @@ int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double
 /** @} */
 
 
+/** \defgroup Metadata setting */
+/** @{ */
+
 /** Creates a multio metadata object
  * \param md Return a handle to the multio metadata object
  * \returns Return code (#MultioErrorValues)
@@ -187,6 +189,7 @@ int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int va
  */
 int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, const char* value);
 
+/** @} */
 
 #ifdef __cplusplus
 } /* extern "C" */

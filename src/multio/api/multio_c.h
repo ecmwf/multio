@@ -107,10 +107,11 @@ int multio_delete_handle(multio_handle_t* mio);
 // int multio_start_server(const char* configuration_path);
 
 /** Initialises and starts server
- * \note This will be running until it receives a 'close' message from all of clients
+ * \note This will be running until it receives a 'close' message from all the clients
+ * \param server_name Name (key) of the subconfiguration for the server
  * \returns Return code (#MultioErrorValues)
  */
-int multio_start_server();
+int multio_start_server(const char* server_name);
 
 /** Opens connections to the server
  * \note This will open connections to all processes associated with the server

@@ -140,10 +140,11 @@ int multio_delete_handle(multio_handle_t* mio) {
     });
 }
 
-int multio_start_server() {
-    return wrapApiFunction([]() {
+int multio_start_server(const char* server_name) {
+    return wrapApiFunction([server_name]() {
         const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_file()}};
-        multio::server::MultioServer{config};
+        auto serverConfig = config.getSubConfiguration(server_name);
+        multio::server::MultioServer{serverConfig};
     });
 }
 

@@ -58,7 +58,7 @@ const std::vector<bool>& Mask::get(const std::string& bkey) const {
 
 void Mask::addPartialMask(const message::Message& msg) {
     // This is sub-optimal but it does not matter because it happens at startup
-    // Using a lookup table instead would also faster
+    // Using a lookup table instead would also be faster
     const auto& msgList = messages_[msg.fieldId()];
     const auto& maskId = partialMaskId(msg);
     if (std::find_if(begin(msgList), end(msgList),

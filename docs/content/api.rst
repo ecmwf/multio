@@ -137,27 +137,50 @@ e.g. ``a88011c007a0db48a5d16e296934a197eac2050a``.
    int multio_vcs_version(const char** sha1);
 
 
-Setting the metadata
+Setting the Metadata
 ~~~~~~~~~~~~~~~~~~~~
+
+The metadata object consists of key-value pairs, with integer and string values being currently
+supported. The metadata object need be destroyed once passed to **multio** via the
+:ref:`data-routing API <api-data-routing>`.
 
 .. code-block:: c
 
    int multio_new_metadata(multio_metadata_t** md);
    int multio_delete_metadata(multio_metadata_t* md);
+
    int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int value);
    int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, const char* value);
 
 
-Data routing
-~~~~~~~~~~~~
+Handle creation/destruction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A single **multio** handle object is required throughout the lifetime of a typical run.
 
 .. code-block:: c
 
    int multio_new_handle(multio_handle_t** mio);
    int multio_delete_handle(multio_handle_t* mio);
 
+
+Server Connections
+~~~~~~~~~~~~~~~~~~
+
+Connections to the servers, if exist, need to be opened and closed explicitly.
+
+.. code-block:: c
+
    int multio_open_connections(multio_handle_t* mio);
    int multio_close_connections(multio_handle_t* mio);
+
+
+.. _`api-data-routing`:
+
+Data Routing
+~~~~~~~~~~~~
+
+.. code-block:: c
 
    int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, int size);
    int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
@@ -165,7 +188,7 @@ Data routing
    int multio_write_step_complete(multio_handle_t* mio, multio_metadata_t* md);
 
 
-Initialise server
+Initialise Server
 ~~~~~~~~~~~~~~~~~
 
 Typically, a server would be running where the aggregation of partial fields into global ones takes

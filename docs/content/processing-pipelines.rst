@@ -180,5 +180,49 @@ the run, by colling the API function
 Encode
 ~~~~~~
 
+This action will encode data in the required format and pass the new, encoded message to the next
+action. Currently, the ``GRIB`` (edition 2) format is supported. It is also possible to specify the
+format as ``raw``, in which case the data will be passed on unencoded.
+
+For GRIB encoding, a template must also be provided. Most of the GRIB keys are already defined in
+the template, so what GRIB template to use will depend on the types of data being produced.
+
+.. code-block:: yaml
+
+       - type : encode
+         format : grib
+         template : unstr_avg_fc.tmpl
+         grid-type : eORCA025
+
+
 Sink
 ~~~~
+
+This action is responsible for outputting data and is at the end of the pipeline. It typically
+involves passing the data to specialised libraries for a filesystem, object store or some other
+forms of middleware. Currently files and `fdb`_ are supported.
+
+It is possible to define multio sinks as part of the same action. **multio** will then loop over the
+list of sinks and pass data to each of them. The following examples outputs messages to file and FDB
+simultaneously.
+
+.. code-block:: yaml
+
+       - type : sink
+         sinks :
+
+           - type : fdb5
+             config : {}
+
+           - type : file
+             append : true
+             per-server : true
+             path : ocean-output-field.grib
+
+The key ``path`` must be set for file output. If multiple server processes are run, setting
+``per-server`` to ``true`` will avoid possible race conditions by ensuring that different processes
+will not attempt to write to the same file. Then **multio** will create files where the ``path``
+value is prefixed with hostname and process-id information,
+e.g. ``multio-myhostname-18862-ocean-output-field.grib``.
+
+.. _`fdb`: https://github.com/ecmwf/fdb

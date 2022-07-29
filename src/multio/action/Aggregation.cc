@@ -45,11 +45,11 @@ bool Aggregation::handleField(const Message& msg) const {
 bool Aggregation::handleFlush(const Message& msg) const {
     // Initialise if need be
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-    if (flushes_.find(msg.domain()) == end(flushes_)) {
-        flushes_[msg.domain()] = 0;
+    if (flushes_.find(msg.fieldId()) == end(flushes_)) {
+        flushes_[msg.fieldId()] = 0;
     }
 
-    return ++flushes_.at(msg.domain()) == msg.domainCount();
+    return ++flushes_.at(msg.fieldId()) == msg.domainCount();
 }
 
 bool Aggregation::allPartsArrived(const Message& msg) const {
@@ -90,7 +90,7 @@ void Aggregation::print(std::ostream& os) const {
 }
 
 
-static ActionBuilder<Aggregation> AggregationBuilder("Aggregation");
+static ActionBuilder<Aggregation> AggregationBuilder("aggregation");
 
 }  // namespace action
 }  // namespace multio

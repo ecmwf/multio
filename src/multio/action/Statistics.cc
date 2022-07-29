@@ -17,6 +17,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/action/TemporalStatistics.h"
+#include "multio/message/Message.h"
 #include "multio/util/ScopedTimer.h"
 
 namespace multio {
@@ -48,11 +49,17 @@ long set_frequency(const std::string& output_freq) {
 
 Statistics::Statistics(const eckit::Configuration& config) :
     Action{config},
-    timeUnit_{set_unit(config.getString("output_frequency"))},
-    timeSpan_{set_frequency(config.getString("output_frequency"))},
+    timeUnit_{set_unit(config.getString("output-frequency"))},
+    timeSpan_{set_frequency(config.getString("output-frequency"))},
     operations_{config.getStringVector("operations")} {}
 
 void Statistics::execute(message::Message msg) const {
+
+    // Pass through -- no statistics for messages other than fields
+    if(msg.tag() != message::Message::Tag::Field) {
+        executeNext(msg);
+        return;
+    }
 
     std::ostringstream os;
     auto md = msg.metadata();
@@ -107,7 +114,7 @@ void Statistics::print(std::ostream& os) const {
 }
 
 
-static ActionBuilder<Statistics> StatisticsBuilder("Statistics");
+static ActionBuilder<Statistics> StatisticsBuilder("statistics");
 
 }  // namespace action
 }  // namespace multio

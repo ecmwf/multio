@@ -14,8 +14,8 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_ThreadTransport_H
-#define multio_server_ThreadTransport_H
+#ifndef multio_transport_ThreadTransport_H
+#define multio_transport_ThreadTransport_H
 
 #include <map>
 #include <mutex>
@@ -23,11 +23,11 @@
 
 #include "eckit/container/Queue.h"
 
-#include "multio/server/ScopedThread.h"
-#include "multio/server/Transport.h"
+#include "multio/util/ScopedThread.h"
+#include "multio/transport/Transport.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 class ThreadPeer : public Peer {
 public:
@@ -35,7 +35,7 @@ public:
 
 private:
 
-    ScopedThread thread_;
+    util::ScopedThread thread_;
 };
 
 class ThreadTransport final : public Transport {
@@ -43,6 +43,8 @@ public:
     ThreadTransport(const eckit::Configuration& config);
 
     Message receive() override;
+
+    void abort() override;
 
 private:
     void openConnections() override;
@@ -56,7 +58,9 @@ private:
 
     Peer localPeer() const override;
 
-    PeerList createServerPeers() override;
+    PeerList createServerPeers() const override;
+
+    void createPeers() const override;
 
     eckit::Queue<Message>& receiveQueue(Peer to);
 
@@ -67,7 +71,7 @@ private:
     size_t messageQueueSize_;
 };
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio
 
 #endif

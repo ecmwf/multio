@@ -12,12 +12,13 @@
 #include "multio/action/Plan.h"
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
-#include "multio/server/ConfigurationPath.h"
+#include "multio/util/ConfigurationPath.h"
 #include "multio/tools/MultioTool.h"
 
+using multio::action::Plan;
 using multio::message::Message;
 using multio::message::Peer;
-using multio::action::Plan;
+using multio::util::configuration_path;
 
 //----------------------------------------------------------------------------------------------------------------
 

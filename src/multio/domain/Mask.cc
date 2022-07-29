@@ -21,6 +21,14 @@
 namespace multio {
 namespace domain {
 
+namespace  {
+std::string partialMaskId(const message::Message& msg) {
+    std::ostringstream os;
+    os << msg;
+    return os.str();
+}
+}  // namespace
+
 Mask& Mask::instance() {
     static Mask singleton;
     return singleton;
@@ -33,12 +41,11 @@ std::string Mask::key(const message::Metadata& md) {
 void Mask::add(message::Message msg) {
     std::lock_guard<std::mutex> lock{mutex_};
 
-    messages_[msg.fieldId()].push_back(msg);
-    if (not allPartsArrived(msg)) {
-        return;
-    }
+    addPartialMask(msg);
 
-    createBitmask(msg);
+    if (allPartsArrived(msg)) {
+        createBitmask(msg);
+    }
 }
 
 const std::vector<bool>& Mask::get(const std::string& bkey) const {
@@ -47,6 +54,21 @@ const std::vector<bool>& Mask::get(const std::string& bkey) const {
     }
 
     return bitmasks_.at(bkey);
+}
+
+void Mask::addPartialMask(const message::Message& msg) {
+    // This is sub-optimal but it does not matter because it happens at startup
+    // Using a lookup table instead would also faster
+    const auto& msgList = messages_[msg.fieldId()];
+    const auto& maskId = partialMaskId(msg);
+    if (std::find_if(begin(msgList), end(msgList),
+                     [&maskId](const message::Message &m) {
+                       return partialMaskId(m) == maskId;
+                     }) != end(msgList)) {
+        eckit::Log::warning() << "Duplicate received for partial mask " << maskId << std::endl;
+        return;
+    }
+    messages_.at(msg.fieldId()).push_back(msg);
 }
 
 bool Mask::allPartsArrived(message::Message msg) const {

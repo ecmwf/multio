@@ -4,13 +4,13 @@
 #include <random>
 
 namespace multio {
-namespace server {
+namespace transport {
 
 MpiBuffer::MpiBuffer(size_t maxBufSize) : content{maxBufSize} {}
 
 bool MpiBuffer::isFree() {
     return status == BufferStatus::available ||
-            (status == BufferStatus::transmitting && request.test());
+           (status == BufferStatus::transmitting && request.test());
 }
 
 MpiOutputStream::MpiOutputStream(MpiBuffer& buf) :

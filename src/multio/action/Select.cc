@@ -13,6 +13,7 @@
 #include <algorithm>
 
 #include "eckit/config/Configuration.h"
+#include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
 #include "multio/util/ScopedTimer.h"
@@ -21,28 +22,34 @@ namespace multio {
 namespace action {
 
 namespace {
+const std::initializer_list<std::string> matchTypes = {"category", "field"};
+
+const std::map<std::string, std::string> plural = {{"category", "categories"}, {"field", "fields"}};
+
+const std::map<std::string, std::string> mdEntry = {{"category", "category"}, {"field", "name"}};
+
 std::vector<std::string> fetch_items(const std::string& match, const eckit::Configuration& config) {
-    return (match == "category") ? config.getStringVector("categories")
-                                 : config.getStringVector("fields");
+    return config.getStringVector(plural.at(match));
 }
 }  // namespace
 
 Select::Select(const eckit::Configuration& config) :
-    Action{config}, match_{config.getString("match")}, items_{fetch_items(match_, config)} {}
+    Action{config}, match_{config.getString("match")}, items_{fetch_items(match_, config)} {
+    if (std::none_of(begin(matchTypes), end(matchTypes),
+                     [this](const std::string& mt) { return match_ == mt; })) {
+        throw eckit::SeriousBug{"Cannot match " + match_};
+    }
+}
 
 void Select::execute(Message msg) const {
-    if (isMatched(msg)) {
+    if (matchPlan(msg)) {
         executeNext(msg);
     }
 }
 
-bool Select::isMatched(const Message& msg) const {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-    return (msg.tag() != Message::Tag::Field) || matchPlan(msg);
-}
-
 bool Select::matchPlan(const Message& msg) const {
-    auto item = (match_ == "category") ? msg.category() : msg.name();
+    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    auto item = msg.metadata().getString(mdEntry.at(match_));
 
     LOG_DEBUG_LIB(LibMultio) << " *** Item " << item << " is being matched... ";
 
@@ -54,7 +61,7 @@ bool Select::matchPlan(const Message& msg) const {
 }
 
 void Select::print(std::ostream& os) const {
-    os << "Select(categories=";
+    os << "Select(" << plural.at(match_) << "=(";
     bool first = true;
     for(const auto& cat : items_) {
         os << (first ? "" : ", ");
@@ -65,7 +72,7 @@ void Select::print(std::ostream& os) const {
 }
 
 
-static ActionBuilder<Select> SelectBuilder("Select");
+static ActionBuilder<Select> SelectBuilder("select");
 
 }  // namespace action
 }  // namespace multio

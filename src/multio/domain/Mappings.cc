@@ -24,9 +24,10 @@ void Mappings::add(message::Message msg) {
     // Retrieve metadata
     auto& domainMap = mappings_[msg.name()];
 
-    if (msg.destination().group() == "thread" && domainMap.find(msg.source()) != end(domainMap)) {
-        // Map has been added already -- needed only for the thread transport
-        return;
+    if (domainMap.find(msg.source()) != end(domainMap)) {
+      eckit::Log::warning()
+          << "Partial domain had already been received: " << msg.fieldId() << std::endl;
+      return;
     }
     eckit::Log::debug<LibMultio>() << "*** Add domainMap for " << msg.name();
 
@@ -40,19 +41,20 @@ void Mappings::add(message::Message msg) {
     util::print_buffer(local_map, eckit::Log::debug<LibMultio>());
     eckit::Log::debug<LibMultio>() << "]" << std::endl;
 
-    if (msg.category() == "unstructured") {
+    if (msg.metadata().getString("representation") == "unstructured") {
         domainMap.emplace(msg.source(),
                         std::unique_ptr<Domain>{new Unstructured{std::move(local_map)}});
         return;
     }
 
-    if (msg.category() == "structured") {
+    if (msg.metadata().getString("representation") == "structured") {
         domainMap.emplace(msg.source(),
                         std::unique_ptr<Domain>{new Structured{std::move(local_map)}});
         return;
     }
 
-    throw eckit::AssertionFailed("Unsupported domain category" + msg.category());
+    throw eckit::AssertionFailed("Unsupported domain representation " +
+                                 msg.metadata().getString("representation"));
 }
 
 void Mappings::list(std::ostream& out) const {

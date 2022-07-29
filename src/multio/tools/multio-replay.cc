@@ -11,13 +11,9 @@
 #include "eckit/log/JSON.h"
 
 #include "multio/LibMultio.h"
-#include "multio/server/Listener.h"
 #include "multio/server/MultioNemo.h"
 #include "multio/server/NemoToGrib.h"
-#include "multio/server/Transport.h"
 #include "multio/tools/MultioTool.h"
-
-using namespace multio::server;
 
 //----------------------------------------------------------------------------------------------------------------
 
@@ -104,7 +100,7 @@ void MultioReplay::execute(const eckit::option::CmdArgs &) {
  }
 
 void MultioReplay::setMetadata() {
-    multio_metadata_set_string_value("category", "ocean-model-level");
+    multio_metadata_set_string_value("category", "ocean-2d");
     multio_metadata_set_int_value("globalSize", globalSize_);
     multio_metadata_set_int_value("level", level_);
     multio_metadata_set_int_value("step", step_);
@@ -162,6 +158,8 @@ std::vector<double> MultioReplay::readField(const std::string& param, size_t cli
         << std::setw(2) << client_id;
 
     auto field = eckit::PathName{pathToNemoData_ + oss.str()};
+
+    eckit::Log::info() << " *** Reading path " << field << std::endl;
 
     std::ifstream infile(std::string(field.fullName()).c_str());
     infile.seekg(0, infile.end);

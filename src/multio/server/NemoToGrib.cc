@@ -3,7 +3,9 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/YAMLConfiguration.h"
 
-#include "ConfigurationPath.h"
+#include "multio/util/ConfigurationPath.h"
+
+using multio::util::configuration_path;
 
 namespace {
 std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& config) {
@@ -16,7 +18,6 @@ std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& config
     }
     return nemo_map;
 }
-
 }  // namespace
 
 NemoToGrib::NemoToGrib() :

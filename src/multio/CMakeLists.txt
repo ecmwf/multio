@@ -56,6 +56,8 @@ list( APPEND multio_action_srcs
     action/ActionStatistics.h
     action/TemporalStatistics.cc
     action/TemporalStatistics.h
+    action/Transport.cc
+    action/Transport.h
 )
 
 list( APPEND multio_ifsio_srcs
@@ -106,6 +108,27 @@ list( APPEND multio_sink_srcs
     sink/Trigger.h
 )
 
+list( APPEND multio_transport_srcs
+    transport/ThreadTransport.cc
+    transport/ThreadTransport.h
+    transport/MpiStream.cc
+    transport/MpiStream.h
+    transport/MpiTransport.cc
+    transport/MpiTransport.h
+    transport/TcpTransport.cc
+    transport/TcpTransport.h
+    transport/Transport.cc
+    transport/Transport.h
+    transport/TransportRegistry.cc
+    transport/TransportRegistry.h
+    transport/TransportStatistics.cc
+    transport/TransportStatistics.h
+    transport/StreamPool.cc
+    transport/StreamPool.h
+    transport/StreamQueue.cc
+    transport/StreamQueue.h
+)
+
 list( APPEND multio_srcs
     ${multio_library_srcs}
     ${multio_action_srcs}
@@ -113,6 +136,7 @@ list( APPEND multio_srcs
     ${multio_domain_srcs}
     ${multio_message_srcs}
     ${multio_sink_srcs}
+    ${multio_transport_srcs}
 )
 
 ### multio library
@@ -141,9 +165,10 @@ ecbuild_add_library(
       ${ECKIT_INCLUDE_DIRS}
 
     PUBLIC_LIBS
-        metkit eckit )
+        metkit eckit eckit_mpi)
 
 add_subdirectory(fdb5)
 add_subdirectory(maestro)
 add_subdirectory(server)
+add_subdirectory(api)
 add_subdirectory(tools)

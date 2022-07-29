@@ -61,16 +61,23 @@ private:
 
     bool subtocExists() const;
 
+    eckit::PathName fdbRootPath_;
+
     bool testSubtoc_ = false;
 };
 
-MultioSink::MultioSink(int argc, char** argv) : multio::MultioTool(argc, argv) {
+MultioSink::MultioSink(int argc, char** argv) :
+    multio::MultioTool{argc, argv}, fdbRootPath_{"~fdb/tests/fdb/root"} {
     options_.push_back(
         new eckit::option::SimpleOption<bool>("test-subtoc", "Test if subtoc has been created"));
 }
 
 void MultioSink::init(const eckit::option::CmdArgs& args) {
     args.get("test-subtoc", testSubtoc_);
+    if (testSubtoc_) {
+        std::system(std::string{"rm -rf " + fdbRootPath_.asString() + "/*"}.c_str());
+        fdbRootPath_.mkdir();
+    }
 }
 
 void MultioSink::finish(const eckit::option::CmdArgs&) {}
@@ -106,11 +113,9 @@ void MultioSink::execute(const eckit::option::CmdArgs& args) {
 }
 
 bool MultioSink::subtocExists() const {
-    eckit::PathName fdb_root_path{"~fdb/tests/fdb/root"};
-
     TempFile file{"tmp.out"};
 
-    std::string cmd{"find " + fdb_root_path.asString() + " -name toc* > " + file.path()};
+    std::string cmd{"find " + fdbRootPath_.asString() + " -name toc* > " + file.path()};
     std::system(cmd.c_str());
 
     const std::regex subtoc{"^toc\\.[0-9]{8}\\.[0-9]{6}\\..*", std::regex_constants::egrep};

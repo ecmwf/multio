@@ -75,10 +75,11 @@ void Sink::trigger(const Message& msg) const {
 
     eckit::StringDict metadata;
 
-    metadata[msg.category()] = msg.name();
+    metadata[msg.metadata().getString("trigger")] = msg.name();
 
-    eckit::Log::debug<LibMultio>() << "Trigger " << msg.category() << " with value " << msg.name()
-                                   << " is being called..." << std::endl;
+    eckit::Log::debug<LibMultio>()
+        << "Trigger " << msg.metadata().getString("trigger") << " with value " << msg.name()
+        << " is being called..." << std::endl;
 
     mio_.trigger(metadata);
 }
@@ -87,7 +88,7 @@ void Sink::print(std::ostream& os) const {
     os << "Sink(DataSink=" << mio_ << ")";
 }
 
-static ActionBuilder<Sink> SinkBuilder("Sink");
+static ActionBuilder<Sink> SinkBuilder("sink");
 
 }  // namespace action
 }  // namespace multio

@@ -4,15 +4,15 @@
 
 /// @date Jan 2021
 
-#ifndef multio_server_MpiStream_H
-#define multio_server_MpiStream_H
+#ifndef multio_transport_MpiStream_H
+#define multio_transport_MpiStream_H
 
 #include "eckit/mpi/Comm.h"
 #include "eckit/io/Buffer.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 enum class BufferStatus : uint8_t
 {
@@ -62,7 +62,7 @@ private:
     size_t size_;
 };
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio
 
-#endif // multio_server_MpiStream_H
+#endif // multio_transport_MpiStream_H

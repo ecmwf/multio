@@ -17,7 +17,7 @@
 #ifndef multio_server_IoTransport_H
 #define multio_server_IoTransport_H
 
-#include "eccodes.h"
+#include<cstdint>
 
 using fortint = int32_t;
 

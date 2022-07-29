@@ -35,6 +35,8 @@ public:
     void execute(message::Message msg) const override;
 
 private:
+    message::Message createMasked(message::Message msg) const;
+
     void applyMask(message::Message msg) const;
     void applyOffset(message::Message msg) const;
 

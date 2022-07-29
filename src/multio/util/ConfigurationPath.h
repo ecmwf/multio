@@ -1,8 +1,11 @@
 
-#ifndef multio_server_ConfigurationPath_H
-#define multio_server_ConfigurationPath_H
+#ifndef multio_util_ConfigurationPath_H
+#define multio_util_ConfigurationPath_H
 
 #include "eckit/filesystem/PathName.h"
+
+namespace multio {
+namespace util {
 
 inline eckit::PathName configuration_path() {
     eckit::PathName base = (::getenv("MULTIO_SERVER_CONFIG_PATH"))
@@ -17,5 +20,8 @@ inline eckit::PathName configuration_file() {
     return (::getenv(configFile)) ? eckit::PathName{::getenv(configFile)}
                                   : eckit::PathName{configuration_path() + "multio-server.yaml"};
 }
+
+}  // namespace util
+}  // namespace multio
 
 #endif

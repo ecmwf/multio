@@ -8,26 +8,26 @@ mpi-test-configuration :
   plans :
     - name : atmosphere
       actions :
-        - type : Select
+        - type : select
           match : category
           categories : [model-level, pressure-level, surface-level]
 
-        - type : Aggregation
+        - type : aggregation
 
-        - type : Encode
+        - type : encode
           format : none
 
-        - type : SingleFieldSink
+        - type : single-field-sink
 
     - name : ocean
       actions :
-        - type : Select
+        - type : select
           match : category
           categories : [ocean-model-level]
 
-        - type : Aggregation
+        - type : aggregation
 
-        - type : SingleFieldSink
+        - type : single-field-sink
 
 
 thread-test-configuration :
@@ -35,10 +35,10 @@ thread-test-configuration :
   plans :
     # - name : output-only
     #   actions :
-    #     - type : Print
+    #     - type : print
     #       stream : debug
 
-    #     - type : Sink
+    #     - type : sink
     #       sinks :
     #         - type : file
     #           append : true
@@ -46,16 +46,16 @@ thread-test-configuration :
 
     - name : atmosphere
       actions :
-        - type : Select
+        - type : select
           match : category
           categories : [model-level, pressure-level, surface-level]
 
-        - type : Aggregation
+        - type : aggregation
 
-        - type : Encode
+        - type : encode
           format : none
 
-        - type : SingleFieldSink
+        - type : single-field-sink
 
 
 tcp-test-configuration:
@@ -71,16 +71,16 @@ tcp-test-configuration:
   plans :
     - name : atmosphere
       actions :
-        - type : Select
+        - type : select
           match : category
           categories : [model-level, pressure-level, surface-level]
 
-        - type : Aggregation
+        - type : aggregation
 
-        - type : Encode
+        - type : encode
           format : none
 
-        - type : SingleFieldSink
+        - type : single-field-sink
 
 
 no-transport-test-configuration :
@@ -93,7 +93,7 @@ no-transport-test-configuration :
   plans :
     - name : atmosphere
       actions :
-        - type : Sink
+        - type : sink
           sinks :
             - type : fdb5
               config : {}

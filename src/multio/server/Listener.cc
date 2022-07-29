@@ -20,26 +20,24 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/ResourceUsage.h"
 
-#include "multio/domain/Mappings.h"
-#include "multio/domain/Mask.h"
-
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 
-#include "multio/server/GribTemplate.h"
-#include "multio/server/ScopedThread.h"
-
+#include "multio/util/ScopedThread.h"
 #include "multio/server/Dispatcher.h"
-#include "multio/server/ThreadTransport.h"
+#include "multio/transport/Transport.h"
 
 namespace multio {
 namespace server {
 
 using message::Message;
+using util::ScopedThread;
+using transport::Transport;
 
 Listener::Listener(const eckit::Configuration& config, Transport& trans) :
     dispatcher_{std::make_shared<Dispatcher>(config)},
     transport_{trans},
+    clientCount_{transport_.clientPeers().size()},
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE",1024*1024)) {}
 
 void Listener::start() {
@@ -71,43 +69,16 @@ void Listener::start() {
                     << ", connections = " << connections_.size() << std::endl;
                 break;
 
-            case Message::Tag::Grib:
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Size of grib template: " << msg.size() << std::endl;
-                GribTemplate::instance().add(msg);
-                break;
-
             case Message::Tag::Domain:
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Number of maps: " << msg.domainCount() << std::endl;
-                checkConnection(msg.source());
-                clientCount_ = msg.domainCount();
-                domain::Mappings::instance().add(msg);
-                break;
-
             case Message::Tag::Mask:
-                checkConnection(msg.source());
-                LOG_DEBUG_LIB(LibMultio)
-                    << "Mask received from " << msg.source() << ": " << msg.metadata() << std::endl;
-                domain::Mask::instance().add(msg);
-                break;
-
             case Message::Tag::StepNotification:
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Step notification received from: " << msg.source() << std::endl;
-                break;
-
             case Message::Tag::StepComplete:
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Flush received from: " << msg.source() << std::endl;
-                msgQueue_.push(std::move(msg));
-                break;
-
             case Message::Tag::Field:
+                if(msg.metadata().has("domainCount")) {
+                    ASSERT(msg.metadata().getUnsigned("domainCount") == clientCount_);
+                }
                 checkConnection(msg.source());
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Field received from: " << msg.source() << " with size "
-                    << msg.size() / sizeof(double) << std::endl;
+                LOG_DEBUG_LIB(LibMultio) << "*** Message received: " << msg << std::endl;
                 msgQueue_.emplace(std::move(msg));
                 break;
 
@@ -135,11 +106,11 @@ bool Listener::moreConnections() const {
     return !connections_.empty() || closedCount_ < clientCount_;
 }
 
-void Listener::checkConnection(const Peer& conn) const {
+void Listener::checkConnection(const message::Peer& conn) const {
     if (connections_.find(conn) == end(connections_)) {
         std::ostringstream oss;
         oss << "Connection to " << conn << " is not open";
-        throw oss.str();
+        throw eckit::SeriousBug{oss.str(), Here()};
     }
 }
 

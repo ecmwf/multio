@@ -18,16 +18,17 @@
 #include "multio/util/print_buffer.h"
 #include "multio/LibMultio.h"
 #include "multio/server/Listener.h"
-#include "multio/server/ConfigurationPath.h"
-#include "multio/server/ThreadTransport.h"
+#include "multio/util/ConfigurationPath.h"
+#include "multio/transport/ThreadTransport.h"
 
 using multio::LibMultio;
-using multio::server::Listener;
 using multio::message::Message;
 using multio::message::Metadata;
+using multio::util::configuration_path;
 using multio::util::print_buffer;
-using multio::server::Transport;
-using multio::server::TransportFactory;
+using multio::server::Listener;
+using multio::transport::Transport;
+using multio::transport::TransportFactory;
 
 namespace {
 eckit::LocalConfiguration test_configuration(const std::string& type) {
@@ -246,7 +247,8 @@ void send_multio_mapping_(const void* in_ptr, fortint* words, const char* name, 
 
         Metadata md;
         md.set("name", mapping_name);
-        md.set("category", "unstructured");
+        md.set("category", "atms-domain-map");
+        md.set("representation", "unstructured");
         md.set("domainCount", nb_clients);
         Message msg{Message::Header{Message::Tag::Domain, client, server, std::move(md)},
                     std::move(buffer)};

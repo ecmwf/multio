@@ -15,11 +15,13 @@
 
 #include <fstream>
 
-#include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
 
 #include "multio/LibMultio.h"
 #include "multio/action/Plan.h"
+
+#include "multio/domain/Mappings.h"
+#include "multio/domain/Mask.h"
 
 #include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
@@ -52,11 +54,26 @@ void Dispatcher::dispatch(eckit::Queue<message::Message>& queue) {
     message::Message msg;
     auto sz = queue.pop(msg);
     while (sz >= 0) {
-        for (const auto& plan : plans_) {
-            plan->process(msg);
-        }
+        handle(msg);
         LOG_DEBUG_LIB(multio::LibMultio) << "Size of the dispatch queue: " << sz << std::endl;
         sz = queue.pop(msg);
+    }
+}
+
+void Dispatcher::handle(const message::Message& msg) const {
+    switch (msg.tag()) {
+        case message::Message::Tag::Domain:
+            domain::Mappings::instance().add(msg);
+            break;
+
+        case message::Message::Tag::Mask:
+            domain::Mask::instance().add(msg);
+            break;
+
+        default:
+            for (const auto& plan : plans_) {
+                plan->process(msg);
+            }
     }
 }
 

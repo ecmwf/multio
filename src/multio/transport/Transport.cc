@@ -19,16 +19,38 @@
 #include "multio/LibMultio.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 using eckit::Configuration;
 using eckit::Log;
 
 //--------------------------------------------------------------------------------------------------
 
-Transport::Transport(const eckit::Configuration& config) : config_{config} {}
+Transport::Transport(const eckit::Configuration &config) : config_{config} {
+    LOG_DEBUG_LIB(LibMultio) << "Transport config: " << config_ << std::endl;
+}
+
+Transport::~Transport() = default;
 
 void Transport::listen() {}
+
+const PeerList& Transport::clientPeers() const {
+    if(peersMissing()) {
+        createPeers();
+    }
+    return clientPeers_;
+}
+
+const PeerList& Transport::serverPeers() const {
+    if(peersMissing()) {
+        createPeers();
+    }
+    return serverPeers_;
+}
+
+bool Transport::peersMissing() const {
+    return clientPeers_.empty() && serverPeers_.empty();
+}
 
 //--------------------------------------------------------------------------------------------------
 
@@ -40,6 +62,7 @@ TransportFactory& TransportFactory::instance() {
 void TransportFactory::add(const std::string& name, const TransportBuilderBase* builder) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(factories_.find(name) == factories_.end());
+    LOG_DEBUG_LIB(LibMultio) << "Adding TransportFactory [" << name << "]" << std::endl;
     factories_[name] = builder;
 }
 
@@ -88,5 +111,5 @@ TransportBuilderBase::~TransportBuilderBase() {
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio

@@ -36,6 +36,7 @@ std::string Message::tag2str(Tag t) {
                                            {Tag::Close, "Close"},
                                            {Tag::Grib, "Grib"},
                                            {Tag::Domain, "Domain"},
+                                           {Tag::Mask, "Mask"},
                                            {Tag::Field, "Field"},
                                            {Tag::StepComplete, "StepComplete"},
                                            {Tag::StepNotification, "StepNotification"}};
@@ -125,7 +126,8 @@ void Message::encode(eckit::Stream& strm) const {
 void Message::print(std::ostream& out) const {
     out << "Message("
         << "version=" << version() << ", tag=" << tag2str(tag()) << ", source=" << source()
-        << ", destination=" << destination() << ", metadata=" << fieldId() << ")";
+        << ", destination=" << destination() << ", metadata=" << fieldId()
+        << ", payload-size=" << payload().size() << ")";
 }
 
 eckit::message::Message to_eckit_message(const Message& msg) {

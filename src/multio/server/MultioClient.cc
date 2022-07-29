@@ -2,160 +2,89 @@
 #include "MultioClient.h"
 
 #include <algorithm>
+#include <fstream>
+#include <iomanip>
 
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/Resource.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
+#include "eckit/log/Statistics.h"
+#include "eckit/types/DateTime.h"
 
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
-#include "multio/server/MpiTransport.h"
-#include "multio/server/TcpTransport.h"
+#include "multio/transport/TransportRegistry.h"
+#include "multio/util/logfile_name.h"
 
+using multio::message::Message;
 using multio::message::Peer;
 
 namespace multio {
 namespace server {
 
-size_t serverIdDenom(size_t clientCount, size_t serverCount) {
-    return (serverCount == 0) ? 1 : (((clientCount - 1) / serverCount) + 1);
-}
+MultioClient::MultioClient(const eckit::Configuration& config) {
+    totClientTimer_.start();
 
-MultioClient::MultioClient(const eckit::Configuration &config)
-    : clientCount_{config.getUnsigned("clientCount")},
-      serverCount_{config.getUnsigned("serverCount")},
-      transport_(TransportFactory::instance().build(
-          config.getString("transport"), config)),
-      client_{transport_->localPeer()},
-      serverId_{client_.id() / serverIdDenom(clientCount_, serverCount_)},
-      usedServerCount_{
-          eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
-      serverPeers_{transport_->createServerPeers()},
-      counters_(serverPeers_.size()), distType_{distributionType()} {
+    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
+
+    struct ::timeval tstamp;
+    ::gettimeofday(&tstamp, 0);
+    auto mSecs = tstamp.tv_usec;
+
+    logFile << "MultioClient starts at "
+            << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
+            << std::setw(6) << std::setfill('0') << mSecs << " -- ";
+
+
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << config << std::endl;
-}
 
-MultioClient::~MultioClient() = default;
+    const std::vector<eckit::LocalConfiguration> plans =
+        config.getSubConfiguration("client").getSubConfigurations("plans");
 
-void MultioClient::openConnections() const {
-    transport_->openConnections();
-}
-
-void MultioClient::closeConnections() const {
-    transport_->closeConnections();
-}
-
-void MultioClient::sendDomain(message::Metadata metadata, eckit::Buffer&& domain) {
-    for (auto& server : serverPeers_) {
-        Message msg{Message::Header{Message::Tag::Domain, client_, *server, std::move(metadata)},
-                    domain};
-
-        transport_->bufferedSend(msg);
+    for (const auto& cfg : plans) {
+        eckit::Log::debug<LibMultio>() << cfg << std::endl;
+        plans_.emplace_back(new action::Plan(cfg));
     }
 }
 
-void MultioClient::sendMask(message::Metadata metadata, eckit::Buffer&& mask) {
-    for (auto& server : serverPeers_) {
-        Message msg{Message::Header{Message::Tag::Mask, client_, *server, std::move(metadata)},
-                    mask};
+void MultioClient::openConnections() {
+    transport::TransportRegistry::instance().openConnections();
+}
 
-        transport_->bufferedSend(msg);
+void MultioClient::closeConnections() {
+    transport::TransportRegistry::instance().closeConnections();
+}
+
+MultioClient::~MultioClient() {
+    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
+
+    struct ::timeval tstamp;
+    ::gettimeofday(&tstamp, 0);
+    auto mSecs = tstamp.tv_usec;
+
+    logFile << "MultioClient stops at "
+            << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
+            << std::setw(6) << std::setfill('0') << mSecs;
+
+
+    logFile << "\n ** Total wall-clock time spent in MultioClient "
+            << eckit::Timing{totClientTimer_}.elapsed_ << "s" <<std::endl;
+}
+
+void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload, Message::Tag tag) {
+    ASSERT(tag < Message::Tag::ENDTAG);
+    Message msg{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)}, std::move(payload)};
+
+    for (const auto& plan : plans_) {
+        plan->process(msg);
     }
 }
 
-void MultioClient::sendField(message::Metadata metadata, eckit::Buffer&& field,
-                             bool to_all_servers) {
-
-    if (to_all_servers) {
-        for (auto& server : serverPeers_) {
-            Message msg{Message::Header{Message::Tag::Field, client_, *server, std::move(metadata)},
-                        field};
-
-            transport_->bufferedSend(msg);
-        }
+void MultioClient::dispatch(message::Message msg) {
+    for (const auto& plan : plans_) {
+        plan->process(msg);
     }
-    else {
-        auto server = chooseServer(metadata);
-
-        Message msg{
-            Message::Header{Message::Tag::Field, client_, server, std::move(metadata)},
-            std::move(field)};
-
-        transport_->bufferedSend(msg);
-    }
-}
-
-void MultioClient::sendStepComplete() const {
-    for (auto& server : serverPeers_) {
-        Message msg{Message::Header{Message::Tag::StepComplete, client_, *server}};
-        transport_->bufferedSend(msg);
-    }
-}
-
-message::Peer MultioClient::chooseServer(const message::Metadata& metadata) {
-    ASSERT_MSG(serverCount_ > 0, "No server to choose from");
-
-    switch (distType_) {
-        case DistributionType::hashed_cyclic: {
-            std::ostringstream os;
-            os << metadata.getString("category") << metadata.getString("nemoParam")
-               << metadata.getString("param") << metadata.getLong("level");
-
-            ASSERT(usedServerCount_ <= serverCount_);
-
-            auto offset = std::hash<std::string>{}(os.str()) % usedServerCount_;
-            auto id = (serverId_ + offset) % serverCount_;
-
-            ASSERT(id < serverPeers_.size());
-
-            return *serverPeers_[id];
-        }
-        case DistributionType::hashed_to_single: {
-            std::ostringstream os;
-            os << metadata.getString("category") << metadata.getString("nemoParam")
-               << metadata.getString("param") << metadata.getLong("level");
-
-            auto id = std::hash<std::string>{}(os.str()) % serverCount_;
-
-            ASSERT(id < serverPeers_.size());
-
-            return *serverPeers_[id];
-        }
-        case DistributionType::even: {
-            std::ostringstream os;
-            os << metadata.getString("category") << metadata.getString("nemoParam")
-               << metadata.getString("param") << metadata.getLong("level");
-
-            if (destinations_.find(os.str()) != end(destinations_)) {
-                return destinations_.at(os.str());
-            }
-
-            auto it = std::min_element(begin(counters_), end(counters_));
-            auto id = static_cast<size_t>(std::distance(std::begin(counters_), it));
-
-            ASSERT(id < serverPeers_.size());
-            ASSERT(id < counters_.size());
-
-            ++counters_[id];
-
-            auto dest = *serverPeers_[id];
-            destinations_[os.str()] = *serverPeers_[id];
-
-            return dest;
-        }
-        default:
-            throw eckit::SeriousBug("Unhandled distribution type");
-    }
-}
-
-MultioClient::DistributionType MultioClient::distributionType() {
-    const std::map<std::string, enum DistributionType> str2dist = {
-        {"hashed_cyclic", DistributionType::hashed_cyclic},
-        {"hashed_to_single", DistributionType::hashed_to_single},
-        {"even", DistributionType::even}};
-
-    auto key = std::getenv("MULTIO_SERVER_DISTRIBUTION");
-    return key ? str2dist.at(key) : DistributionType::hashed_to_single;
 }
 
 }  // namespace server

@@ -10,13 +10,14 @@
 
 #include "ThreadTransport.h"
 
+#include "eckit/config/LibEcKit.h"
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 ThreadPeer::ThreadPeer(std::thread t) :
     Peer{"thread", std::hash<std::thread::id>{}(t.get_id())},
@@ -50,6 +51,10 @@ Message ThreadTransport::receive() {
     return msg;
 }
 
+void ThreadTransport::abort() {
+    eckit::LibEcKit::instance().abort();
+}
+
 void ThreadTransport::send(const Message& msg) {
     receiveQueue(msg.destination()).push(msg);
 }
@@ -62,8 +67,14 @@ Peer ThreadTransport::localPeer() const {
     return Peer{"thread", std::hash<std::thread::id>{}(std::this_thread::get_id())};
 }
 
-PeerList ThreadTransport::createServerPeers() {
+PeerList ThreadTransport::createServerPeers() const {
     throw eckit::NotImplemented{Here()};
+}
+
+void ThreadTransport::createPeers() const {
+    // Hack to work around the very different logic of creating ThreadPeers.
+    // See multio-hammer.cc: MultioHammer::executeThread
+    clientPeers_ = PeerList(config_.getUnsigned("clientCount"));
 }
 
 void ThreadTransport::print(std::ostream& os) const {
@@ -89,5 +100,5 @@ eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer dest) {
 
 static TransportBuilder<ThreadTransport> ThreadTransportBuilder("thread");
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio

@@ -16,11 +16,13 @@
 #include "eckit/io/StdFile.h"
 
 #include "multio/LibMultio.h"
-#include "multio/server/ConfigurationPath.h"
+#include "multio/util/ConfigurationPath.h"
 #include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
+
+using util::configuration_path;
 
 namespace {
 
@@ -66,9 +68,10 @@ void Encode::execute(Message msg) const {
         ASSERT(levelCount == 1);
         // TODO: most of this can probably go if we stick to levelCount == 1 always
         if (levelCount == 1) {
-            executeNext(encoder_->encodeField(msg));
+            executeNext(encodeField(msg));
         }
         else { // TODO: this branch can probably go. See above...
+            ASSERT(false);
             auto metadata = msg.metadata();
             auto data = reinterpret_cast<const double*>(msg.payload().data());
             for (auto lev = 0; lev != levelCount;) {
@@ -106,7 +109,7 @@ message::Message Encode::encodeLongitudes(const std::string& subtype) const {
     return encoder_->encodeLongitudes(subtype);
 }
 
-static ActionBuilder<Encode> EncodeBuilder("Encode");
+static ActionBuilder<Encode> EncodeBuilder("encode");
 
 }  // namespace action
 }  // namespace multio

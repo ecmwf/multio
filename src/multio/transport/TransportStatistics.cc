@@ -2,11 +2,11 @@
 #include "TransportStatistics.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 TransportStatistics::TransportStatistics() {}
 
-void multio::server::TransportStatistics::report(std::ostream& out, const char* indent) const {
+void TransportStatistics::report(std::ostream& out, const char* indent) const {
 
     reportTime(out, "    -- Waiting for buffer", waitTiming_, indent);
 
@@ -37,5 +37,5 @@ void multio::server::TransportStatistics::report(std::ostream& out, const char* 
     reportTime(out, "    -- Total for return", totReturnTiming_, indent);
 }
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio

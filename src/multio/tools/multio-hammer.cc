@@ -22,12 +22,12 @@
 
 #include "multio/domain/Domain.h"
 #include "multio/message/Message.h"
-#include "multio/server/ConfigurationPath.h"
+#include "multio/util/ConfigurationPath.h"
 #include "multio/server/Listener.h"
-#include "multio/server/MpiTransport.h"
-#include "multio/server/ThreadTransport.h"
-#include "multio/server/TcpTransport.h"
 #include "multio/tools/MultioTool.h"
+#include "multio/transport/MpiTransport.h"
+#include "multio/transport/ThreadTransport.h"
+#include "multio/transport/TcpTransport.h"
 #include "multio/util/print_buffer.h"
 #include "multio/util/ScopedTimer.h"
 
@@ -39,6 +39,12 @@ using multio::domain::Unstructured;
 using multio::LibMultio;
 using multio::message::Peer;
 using multio::action::Plan;
+using multio::util::configuration_path;
+using multio::transport::Transport;
+using multio::transport::TransportFactory;
+using multio::transport::MpiPeer;
+using multio::transport::TcpPeer;
+using multio::transport::ThreadPeer;
 
 using namespace multio::server;
 
@@ -149,6 +155,7 @@ std::vector<double> create_random_data(const size_t sz) {
 }
 
 std::vector<int32_t> generate_index_map(size_t id, size_t nbclients) {
+    ASSERT(nbclients > 0);
     auto chunk_size = field_size() / nbclients + ((id < field_size() % nbclients) ? 1 : 0);
 
     auto maps = std::vector<int32_t>(chunk_size);
@@ -328,7 +335,7 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
             ? test_configuration(transportType_)
             : eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{configPath_}}};
 
-    config_.set("clientCount", clientCount_).set("serverCount", serverCount_);
+    config_.set("clientCount", clientCount_).set("count", serverCount_);
 
     transportType_ = config_.getString("transport");
     if (transportType_ == "mpi") {
@@ -378,7 +385,8 @@ void MultioHammer::sendData(const PeerList& serverPeers,
     for (auto& server : serverPeers) {
         Metadata metadata;
         metadata.set("name", "grid-point")
-            .set("category", "unstructured")
+            .set("category", "atms-domain-map")
+            .set("representation", "unstructured")
             .set("domainCount", clientCount_);
 
         Message msg{Message::Header{Message::Tag::Domain, client, *server, std::move(metadata)},
@@ -426,7 +434,8 @@ void MultioHammer::sendData(const PeerList& serverPeers,
         // Send flush messages
         Metadata md;
         md.set("name", eckit::Translator<long, std::string>()(step))
-            .set("domain", "notification")
+            .set("category", "atms-checkpoint")
+            .set("trigger", "step")
             .set("domainCount", clientCount_);
         for (auto& server : serverPeers) {
             auto stepStr = eckit::Translator<long, std::string>()(step);
@@ -650,8 +659,8 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
         Metadata md;
         md.set("name", eckit::Translator<long, std::string>()(step))
-            .set("category", "step")
-            .set("domain", "notification")
+            .set("category", "atms-checkpoint")
+            .set("trigger", "step")
             .set("domainCount", 1);
         Message msg{Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}, Metadata{md}}};
         for (const auto& plan : plans) {

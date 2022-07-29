@@ -38,8 +38,6 @@ public:
 private:
     void print(std::ostream &os) const override;
 
-    bool isMatched(const Message& msg) const;
-
     bool matchPlan(const Message& msg) const;
 
     std::string match_;

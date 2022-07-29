@@ -14,8 +14,8 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_MpiTransport_H
-#define multio_server_MpiTransport_H
+#ifndef multio_transport_MpiTransport_H
+#define multio_transport_MpiTransport_H
 
 #include <queue>
 
@@ -24,12 +24,12 @@
 #include "eckit/mpi/Comm.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
-#include "multio/server/Transport.h"
-#include "multio/server/StreamPool.h"
-#include "multio/server/StreamQueue.h"
+#include "multio/transport/Transport.h"
+#include "multio/transport/StreamPool.h"
+#include "multio/transport/StreamQueue.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 class MpiTransport final : public Transport {
 public:
@@ -42,9 +42,13 @@ private:
 
     Message receive() override;
 
+    void abort() override;
+
     void send(const Message& msg) override;
 
     void bufferedSend(const Message& msg) override;
+
+    void createPeers() const override;
 
     void print(std::ostream& os) const override;
 
@@ -52,7 +56,7 @@ private:
 
     void listen() override;
 
-    PeerList createServerPeers() override;
+    PeerList createServerPeers() const override;
 
     const eckit::mpi::Comm& comm() const;
 
@@ -67,11 +71,9 @@ private:
 
     StreamQueue streamQueue_;
     std::queue<Message> msgPack_;
-
-    std::mutex mutex_;
 };
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio
 
 #endif

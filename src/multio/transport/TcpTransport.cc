@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <iostream>
 
+#include "eckit/config/LibEcKit.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/log/Plural.h"
 #include "eckit/maths/Functions.h"
@@ -20,7 +21,7 @@
 #include "eckit/serialisation/MemoryStream.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 namespace {
 Message decodeMessage(eckit::Stream& stream) {
@@ -164,7 +165,13 @@ Message TcpTransport::receive() {
     throw eckit::SeriousBug("No message received");
 }
 
+void TcpTransport::abort() {
+    eckit::LibEcKit::instance().abort();
+}
+
 void TcpTransport::send(const Message& msg) {
+    std::lock_guard<std::mutex> lock{mutex_};
+
     const auto& socket = outgoing_.at(msg.destination());
 
     // Add 4K for header/footer etc. Should be plenty
@@ -188,7 +195,7 @@ Peer TcpTransport::localPeer() const {
     return local_;
 }
 
-PeerList TcpTransport::createServerPeers() {
+PeerList TcpTransport::createServerPeers() const {
     PeerList serverPeers;
 
     for (auto cfg : config_.getSubConfigurations("servers")) {
@@ -198,6 +205,26 @@ PeerList TcpTransport::createServerPeers() {
         }
     }
     return serverPeers;
+}
+
+void TcpTransport::createPeers() const {
+
+    // Client peers
+    for (auto cfg : config_.getSubConfigurations("clients")) {
+        auto host = cfg.getString("host");
+        for (auto port : cfg.getUnsignedVector("ports")) {
+            clientPeers_.emplace_back(new TcpPeer{host, port});
+        }
+    }
+
+    // Server peers
+    for (auto cfg : config_.getSubConfigurations("servers")) {
+        auto host = cfg.getString("host");
+        for (auto port : cfg.getUnsignedVector("ports")) {
+            serverPeers_.emplace_back(new TcpPeer{host, port});
+        }
+    }
+
 }
 
 void TcpTransport::print(std::ostream& os) const {
@@ -232,5 +259,5 @@ bool TcpTransport::amIServer(const std::string& host, std::vector<size_t> ports)
 
 static TransportBuilder<TcpTransport> TcpTransportBuilder("tcp");
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio

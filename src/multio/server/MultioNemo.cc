@@ -26,15 +26,20 @@
 #include "eckit/mpi/Comm.h"
 #include "eckit/runtime/Main.h"
 
+#include "multio/multio_version.h"
 #include "multio/LibMultio.h"
 #include "multio/message/Metadata.h"
-#include "multio/server/ConfigurationPath.h"
 #include "multio/server/MultioClient.h"
+#include "multio/server/MultioErrorHandling.h"
 #include "multio/server/MultioServer.h"
 #include "multio/server/NemoToGrib.h"
+#include "multio/util/ConfigurationPath.h"
 #include "multio/util/print_buffer.h"
 
+using multio::message::Peer;
+using multio::message::Message;
 using multio::message::Metadata;
+using multio::util::configuration_file;
 using multio::util::print_buffer;
 using multio::server::MultioClient;
 using multio::server::MultioServer;
@@ -43,7 +48,7 @@ using NemoKey = std::string;
 
 namespace {
 std::set<std::string> fetch_active_fields(const eckit::Configuration& cfg) {
-    const auto& vec = cfg.getStringVector("activeFields");
+    const auto& vec = cfg.getStringVector("active-fields");
     return std::set<std::string>{begin(vec), end(vec)};
 }
 
@@ -109,44 +114,64 @@ public:
 
         auto ret_comm = chld.communicator();
 
-        eckit::Log::info() << "*** Split nemo communicator " << oce_str << "(parent=" << parent_comm
+        eckit::Log::info() << "*** Client -- Split nemo communicator " << oce_str
+                           << "(parent=" << parent_comm
                            << ",size=" << eckit::mpi::comm("nemo").size() << "; child=" << ret_comm
                            << ",size=" << chld.size() << ")" << std::endl;
 
         clientCount_ = eckit::mpi::comm(oce_str.c_str()).size();
         serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
 
-        config_.set("group", "nemo");
-        config_.set("clientCount", clientCount_);
-        config_.set("serverCount", serverCount_);
-
         multioClient_.reset(new MultioClient{config_});
 
         return ret_comm;
     }
 
-    void initServer(int parent_comm) {
+    void initServer(int parent_comm, const std::string server_name = "nemo-ioserver") {
         eckit::mpi::addComm("nemo", parent_comm);
 
         // TODO: find a way to come up with a unique 'colour', such as using MPI_APPNUM
         eckit::mpi::comm("nemo").split(888, "server_comm");
         auto server_comm = eckit::mpi::comm("server_comm").communicator();
 
-        eckit::Log::info() << "*** Split nemo communicator server_comm(parent=" << parent_comm
-                           << ",size=" << eckit::mpi::comm("nemo").size()
-                           << "; child=" << server_comm << ",size="
-                           << eckit::mpi::comm("server_comm").size() << ")" << std::endl;
+        eckit::Log::info() << "*** Server -- split nemo communicator server_comm(parent="
+                           << parent_comm << ",size=" << eckit::mpi::comm("nemo").size()
+                           << "; child=" << server_comm
+                           << ",size=" << eckit::mpi::comm("server_comm").size() << ")"
+                           << std::endl;
 
-        multioServer_.reset(new MultioServer{eckit::YAMLConfiguration{configuration_file()}});
+        auto serverConfig = config_.getSubConfiguration(server_name);
+
+        multioServer_.reset(new MultioServer{serverConfig});
+    }
+
+    void openConnections() {
+        MultioNemo::instance().client().openConnections();
+    }
+
+    void closeConnections() {
+        MultioNemo::instance().client().closeConnections();
+    }
+
+    void writeStepComplete() {
+        Message msg{Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}}};
+
+        MultioNemo::instance().client().dispatch(msg);
     }
 
     void setDomain(const std::string& dname, const int* data, size_t bytes) {
         eckit::Buffer domain_def{reinterpret_cast<const char*>(data), bytes};
         Metadata md;
         md.set("name", dname);
-        md.set("category", "structured");
+        md.set("category", "ocean-domain-map");
+        md.set("representation", "structured");
         md.set("domainCount", clientCount_);
-        client().sendDomain(std::move(md), std::move(domain_def));
+        md.set("toAllServers", true);
+
+        Message msg{Message::Header{Message::Tag::Domain, Peer{}, Peer{}, std::move(md)},
+                std::move(domain_def)};
+
+        MultioNemo::instance().client().dispatch(msg);
     }
 
     void writeMask(const std::string& mname, const uint8_t* data, size_t bytes) {
@@ -155,13 +180,18 @@ public:
         Metadata md;
         md.set("globalSize", MultioNemo::instance().metadata().getInt("globalSize"));
         md.set("name", mname);
-        md.set("category", "structured");
+        md.set("category", "ocean-mask");
+        md.set("representation", "structured");
         md.set("domainCount", clientCount_);
         md.set("domain", mname.substr(0, 1) + " grid");
         md.set("levelCount", metadata_.getLong("levelCount"));
         md.set("level", metadata_.getLong("level"));
 
-        MultioNemo::instance().client().sendMask(md, std::move(mask_vals));
+        md.set("toAllServers", true);
+        Message msg{Message::Header{Message::Tag::Mask, Peer{}, Peer{}, std::move(md)},
+                std::move(mask_vals)};
+
+        MultioNemo::instance().client().dispatch(msg);
     }
 
     void writeField(const std::string& fname, const double* data, size_t bytes,
@@ -187,7 +217,11 @@ public:
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), bytes};
 
-        MultioNemo::instance().client().sendField(metadata_, std::move(field_vals), to_all_servers);
+        metadata_.set("toAllServers", to_all_servers);
+        Message msg{Message::Header{Message::Tag::Field, Peer{}, Peer{}, std::move(metadata_)},
+                    std::move(field_vals)};
+
+        MultioNemo::instance().client().dispatch(msg);
     }
 
     bool useServer() const {
@@ -203,82 +237,150 @@ public:
 extern "C" {
 #endif
 
+void multio_version(const char** version) {
+    try {
+        *version = multio_version_str();
+    }  catch (std::exception& e) {
+        multio_handle_error(e);
+    }
+}
+
+void multio_vcs_version(const char** sha1) {
+    try {
+        *sha1 = multio_git_sha1();
+    }  catch (std::exception& e) {
+        multio_handle_error(e);
+    }
+}
+
 void multio_open_connections() {
-    MultioNemo::instance().client().openConnections();
+    try {
+        MultioNemo::instance().openConnections();
+    }  catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 void multio_close_connections() {
-    MultioNemo::instance().client().closeConnections();
+    try {
+        MultioNemo::instance().closeConnections();
+    }  catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 void multio_write_step_complete() {
-    MultioNemo::instance().client().sendStepComplete();
+    try {
+        MultioNemo::instance().writeStepComplete();
+    }
+    catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 int multio_init_client(const char* name, int parent_comm) {
-    return MultioNemo::instance().initClient(name, parent_comm);
+    try {
+        return MultioNemo::instance().initClient(name, parent_comm);
+    }
+    catch (std::exception& e) {
+        return multio_handle_error(e);
+    }
 }
 
 void multio_init_server(int parent_comm) {
-    MultioNemo::instance().initServer(parent_comm);
+    try {
+        MultioNemo::instance().initServer(parent_comm);
+    }
+    catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 void multio_metadata_set_int_value(const char* key, int value) {
-    std::string skey{key};
-    MultioNemo::instance().metadata().set(skey, value);
+    try {
+        std::string skey{key};
+        MultioNemo::instance().metadata().set(skey, value);
+    }
+    catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 void multio_metadata_set_string_value(const char* key, const char* value) {
-    std::string skey{key}, svalue{value};
-    MultioNemo::instance().metadata().set(skey, svalue);
+    try {
+        std::string skey{key}, svalue{value};
+        MultioNemo::instance().metadata().set(skey, svalue);
+    }
+    catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 void multio_set_domain(const char* name, int* data, int size) {
-    if (MultioNemo::instance().useServer()) {
-        MultioNemo::instance().setDomain(name, data, size * sizeof(int));
+    try {
+        if (MultioNemo::instance().useServer()) {
+            MultioNemo::instance().setDomain(name, data, size * sizeof(int));
+        }
     }
-    else {
-        eckit::Log::debug<multio::LibMultio>() << name << ":  " << std::flush;
-        std::vector<int> grid_data{data, data + size};
-        print_buffer(grid_data, eckit::Log::debug<multio::LibMultio>());
-        eckit::Log::debug<multio::LibMultio>() << std::endl;
+    catch (std::exception& e) {
+        multio_handle_error(e);
     }
 }
 
 void multio_write_mask(const char* name, const double* data, int size) {
-    std::vector<double> mask_data{data, data + size};
-    std::vector<uint8_t> bitMask;
-    for (const auto& mval : mask_data) {
-        if (not (mval == 0.0 || mval == 1.0 || mval == 2.0)) {
-            throw eckit::SeriousBug("Unrecognised mask value: " + std::to_string(mval));
+    try {
+        std::vector<double> mask_data{data, data + size};
+        std::vector<uint8_t> bitMask;
+        for (const auto& mval : mask_data) {
+            if (not (mval == 0.0 || mval == 1.0 || mval == 2.0)) {
+                throw eckit::SeriousBug("Unrecognised mask value: " + std::to_string(mval));
+            }
+            bitMask.push_back(static_cast<uint8_t>(mval));
         }
-        bitMask.push_back(static_cast<uint8_t>(mval));
+        ASSERT(bitMask.size() == static_cast<size_t>(size));
+        MultioNemo::instance().writeMask(name, bitMask.data(), size * sizeof(uint8_t));
     }
-    ASSERT(bitMask.size() == static_cast<size_t>(size));
-    MultioNemo::instance().writeMask(name, bitMask.data(), size * sizeof(uint8_t));
+    catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 void multio_write_field(const char* name, const double* data, int size, bool to_all_servers) {
-    if (MultioNemo::instance().useServer()) {
-        LOG_DEBUG_LIB(multio::LibMultio)
-            << "*** Write field " << name << ", local size = " << size << std::endl;
-        MultioNemo::instance().writeField(name, data, size * sizeof(double), to_all_servers);
+    try {
+        if (MultioNemo::instance().useServer()) {
+            LOG_DEBUG_LIB(multio::LibMultio)
+                << "*** Write field " << name << ", local size = " << size << std::endl;
+            MultioNemo::instance().writeField(name, data, size * sizeof(double), to_all_servers);
+        }
+        else {
+            LOG_DEBUG_LIB(multio::LibMultio)
+                << "*** Writing field " << name << ", local size = " << size
+                << ", global size = " << MultioNemo::instance().metadata().getInt("globalSize")
+                << std::endl;
+        }
     }
-    else {
-        LOG_DEBUG_LIB(multio::LibMultio)
-            << "*** Writing field " << name << ", local size = " << size
-            << ", global size = " << MultioNemo::instance().metadata().getInt("globalSize")
-            << std::endl;
+    catch (std::exception& e) {
+        multio_handle_error(e);
     }
 }
 
 bool multio_field_is_active(const char* name) {
-    return MultioNemo::instance().isActive(name);
+    try {
+        return MultioNemo::instance().isActive(name);
+    }
+    catch (std::exception& e) {
+        return multio_handle_error(e);
+    }
 }
 
 void multio_not_implemented(const char* message) {
-    eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO"
-                       << std::endl;
+    try {
+        eckit::Log::info() << std::string{message} + " is not currently implemented in MultIO"
+                           << std::endl;
+    }
+    catch (std::exception& e) {
+        multio_handle_error(e);
+    }
 }
 
 

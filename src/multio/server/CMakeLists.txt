@@ -17,49 +17,28 @@ ecbuild_add_library(
     CONDITION HAVE_MULTIO_SERVER
 
     SOURCES
-        ConfigurationPath.h
         Dispatcher.cc
         Dispatcher.h
-        GribTemplate.h
-        GribTemplate.cc
         IoTransport.cc
         IoTransport.h
         Listener.cc
         Listener.h
         MultioClient.cc
         MultioClient.h
-        MultioServer.cc
-        MultioServer.h
+        MultioErrorHandling.cc
+        MultioErrorHandling.h
         NemoToGrib.cc
         NemoToGrib.h
         MultioNemo.cc
         MultioNemo.h
-        ThreadTransport.cc
-        ThreadTransport.h
-        MpiStream.cc
-        MpiStream.h
-        MpiTransport.cc
-        MpiTransport.h
-        TcpTransport.cc
-        TcpTransport.h
-        Transport.cc
-        Transport.h
-        TransportStatistics.cc
-        TransportStatistics.h
-        ScopedThread.h
-        StreamPool.cc
-        StreamPool.h
-        StreamQueue.cc
-        StreamQueue.h
+        MultioServer.cc
+        MultioServer.h
 
     PUBLIC_LIBS
         ${multio_server_plugins}
         multio
-        eckit_mpi
-        eckit_option
         eckit
-        metkit
-        eccodes
+        eckit_mpi
 )
 
 if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
@@ -70,7 +49,7 @@ ecbuild_add_library(
 
     TARGET multio-server-fapi
 
-    CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN 
+    CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN
 
     SOURCES
         multio_nemo.f90

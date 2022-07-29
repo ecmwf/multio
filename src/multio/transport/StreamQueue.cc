@@ -2,9 +2,9 @@
 #include "StreamQueue.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 StreamQueue::StreamQueue() {}
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio

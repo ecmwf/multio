@@ -23,7 +23,7 @@
 #include "multio/util/ScopedTimer.h"
 
 namespace multio {
-namespace server {
+namespace transport {
 
 namespace {
 Message decodeMessage(eckit::Stream& stream) {
@@ -73,14 +73,14 @@ MpiTransport::~MpiTransport() {
 }
 
 void MpiTransport::openConnections() {
-    for (auto& server : createServerPeers()) {
+    for (auto& server : serverPeers()) {
         Message msg{Message::Header{Message::Tag::Open, local_, *server}};
-        bufferedSend(msg);
+        send(msg);
     }
 }
 
 void MpiTransport::closeConnections() {
-    for (auto& server : createServerPeers()) {
+    for (auto& server : serverPeers()) {
         Message msg{Message::Header{Message::Tag::Close, local_, *server}};
         bufferedSend(msg);
         pool_.sendBuffer(msg.destination(), static_cast<int>(msg.tag()));
@@ -112,7 +112,13 @@ Message MpiTransport::receive() {
     } while (true);
 }
 
+void MpiTransport::abort() {
+    comm().abort();
+}
+
 void MpiTransport::send(const Message& msg) {
+    std::lock_guard<std::mutex> lock{mutex_};
+
     auto msg_tag = static_cast<int>(msg.tag());
 
     // TODO: find available buffer instead
@@ -134,7 +140,19 @@ void MpiTransport::send(const Message& msg) {
 }
 
 void MpiTransport::bufferedSend(const Message& msg) {
+    std::lock_guard<std::mutex> lock{mutex_};
     encodeMessage(pool_.getStream(msg), msg);
+}
+
+void MpiTransport::createPeers() const {
+    auto rank = 0ul;
+    auto clientCount = comm().size() - config_.getUnsigned("count");
+    while (rank != clientCount) {
+        clientPeers_.emplace_back(new MpiPeer{local_.group(), rank++});
+    }
+    while (rank != comm().size()) {
+        serverPeers_.emplace_back(new MpiPeer{local_.group(), rank++});
+    }
 }
 
 void MpiTransport::print(std::ostream& os) const {
@@ -156,18 +174,15 @@ void MpiTransport::listen() {
     streamQueue_.emplace(buf, sz);
 }
 
-PeerList MpiTransport::createServerPeers() {
+PeerList MpiTransport::createServerPeers() const {
     PeerList serverPeers;
 
-    std::string group = config_.getString("group");
     // This is dangerous as it requires having the same logic as in NEMO or IFS
-    // This needs to come from teh configuration or perhpas you want to create an intercommunicator
-    auto comm_size = config_.getUnsigned("clientCount") + config_.getUnsigned("serverCount");
-    auto rank = config_.getUnsigned("clientCount");
-    while (rank != comm_size) {
-        serverPeers.emplace_back(new MpiPeer{group, rank++});
+    // This needs to come from the configuration or perhaps you want to create an intercommunicator
+    auto rank = comm().size() - config_.getUnsigned("count");
+    while (rank != comm().size()) {
+        serverPeers.emplace_back(new MpiPeer{local_.group(), rank++});
     }
-
     return serverPeers;
 }
 
@@ -203,5 +218,5 @@ void MpiTransport::encodeMessage(eckit::Stream& strm, const Message& msg) {
 
 static TransportBuilder<MpiTransport> MpiTransportBuilder("mpi");
 
-}  // namespace server
+}  // namespace transport
 }  // namespace multio

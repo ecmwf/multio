@@ -5,7 +5,7 @@ Usage examples
 
 .. index:: Usage examples; NEMO ocean model
 
-.. _`nemo`:
+.. _`nemo-example`:
 
 NEMO ocean model
 ----------------

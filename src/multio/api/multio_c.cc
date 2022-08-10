@@ -126,6 +126,15 @@ int multio_set_failure_handler(multio_failure_handler_t handler, void* context) 
     });
 }
 
+
+int multio_new_handle_from_config(const char* configuration_path, multio_handle_t** mio) {
+    return wrapApiFunction([configuration_path, mio]() {
+        const eckit::LocalConfiguration config{eckit::YAMLConfiguration{eckit::PathName(configuration_path)}};
+        (*mio) = new multio_handle_t{config};
+    });
+}
+
+
 int multio_new_handle(multio_handle_t** mio) {
     return wrapApiFunction([mio]() {
         const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_file()}};
@@ -206,7 +215,7 @@ int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(double)};
 
-        mio->dispatch(std::move(*md), std::move(field_vals), Message::Tag::Mask);
+        mio->dispatch(std::move(*md), std::move(field_vals), Message::Tag::Field);
     });
 }
 
@@ -216,12 +225,27 @@ int multio_new_metadata(multio_metadata_t** md) {
     });
 }
 
+int multio_new_metadata_from_yaml(multio_metadata_t** md, const char* yaml_json_str) {
+    return wrapApiFunction([md, yaml_json_str]() {
+        (*md) = new multio_metadata_t{multio::message::to_metadata(std::string{yaml_json_str})};
+    });
+}
+
+
 int multio_delete_metadata(multio_metadata_t* md) {
     return wrapApiFunction([md]() {
         ASSERT(md);
         delete md;
     });
 }
+int multio_reset_metadata(multio_metadata_t* md) {
+    return wrapApiFunction([md]() {
+        ASSERT(md);
+        md->~multio_metadata_t();
+        new(md) multio_metadata_t{};
+    });
+}
+
 
 int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int value) {
     return wrapApiFunction([md, key, value]() {
@@ -241,6 +265,58 @@ int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, con
 
         std::string skey{key}, svalue{value};
         md->set(skey, svalue);
+    });
+}
+
+int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, int value) {
+    return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+
+        std::string skey{key};
+        md->set(skey, value > 0);
+    });
+}
+
+int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, float value) {
+    return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+
+        std::string skey{key};
+        md->set(skey, value);
+    });
+}
+
+int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, double value) {
+    return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+
+        std::string skey{key};
+        md->set(skey, value);
+    });
+}
+
+int multio_metadata_set_map_value(multio_metadata_t* md, const char* key, multio_metadata_t* value) {
+    return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+        ASSERT(value);
+
+        std::string skey{key};
+        md->set(skey, std::move(*value));
+    });
+}
+
+int multio_metadata_set_map_value_from_yaml(multio_metadata_t* md, const char* key, const char* yaml_json_str) {
+    return wrapApiFunction([md, key, yaml_json_str]() {
+        ASSERT(md);
+        ASSERT(key);
+        ASSERT(yaml_json_str);
+
+        std::string skey{key};
+        md->set(skey, multio::message::to_metadata(yaml_json_str));
     });
 }
 

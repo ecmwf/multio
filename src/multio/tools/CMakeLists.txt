@@ -9,6 +9,11 @@ ecbuild_add_executable( TARGET    multio-replay
                         SOURCES   multio-replay.cc MultioTool.cc
                         LIBS      multio multio-server)
 
+ecbuild_add_executable( TARGET    multio-replay-nemo-capi
+                        CONDITION HAVE_MULTIO_SERVER
+                        SOURCES   multio-replay-nemo-capi.cc MultioTool.cc
+                        LIBS      multio multio-server multio-api)
+
 ecbuild_add_executable( TARGET    multio-probe
                         CONDITION HAVE_MULTIO_SERVER
                         SOURCES   multio-probe.cc MultioTool.cc

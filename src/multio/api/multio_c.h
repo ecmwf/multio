@@ -91,7 +91,12 @@ int multio_vcs_version(const char** sha1);
 
 
 // TODO: Shall we allow passing in a configuration path here?
-// int multio_new_handle(const char* configuration_path, multio_handle_t** multio);
+/** Creates a multio (client) instance
+ * \param configuration_path Path to YAML configuration file
+ * \param mio Return a handle to the multio (client) instance
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_new_handle_from_config(const char* configuration_path, multio_handle_t** multio);
 
 /** Creates a multio (client) instance
  * \param mio Return a handle to the multio (client) instance
@@ -166,11 +171,25 @@ int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double
  * \returns Return code (#MultioErrorValues)
  */
 int multio_new_metadata(multio_metadata_t** md);
+/** Creates a multio metadata object by parsing a YAML/JSON string
+ * \param md Return a handle to the multio metadata object
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_new_metadata_from_yaml(multio_metadata_t** md, const char* yaml_json_str);
 /** Deletes a multio metadata object
  * \param md Handle to the multio metadata object
  * \returns Return code (#MultioErrorValues)
  */
 int multio_delete_metadata(multio_metadata_t* md);
+/** Resets/clears a multio metadata object to make the allocated memory reusable efficiently
+ * 
+ * TODO: Discuss - std::move is also used very often for efficiency. Everything is fine for sequentially processing.
+ * Problems could arise if at one end the data is not copy and instead accessed in an asynchronous manner.
+ * 
+ * \param md Handle to the multio metadata object
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_reset_metadata(multio_metadata_t* md);
 
 /** Sets a metadata key-value pair for integer values
  * \param md Handle to the multio metadata object
@@ -186,6 +205,41 @@ int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int va
  * \returns Return code (#MultioErrorValues)
  */
 int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, const char* value);
+/** Sets a metadata key-value pair for boolean values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Integer value representing the boolean by testing `value > 0`
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, int value);
+/** Sets a metadata key-value pair for float values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value float value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, float value);
+/** Sets a metadata key-value pair for double values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value double value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, double value);
+/** Sets a metadata key-value pair for recursive metadata maps.
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value metadata value (ordered map) to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_map_value(multio_metadata_t* md, const char* key, multio_metadata_t*);
+/** Sets a metadata key-value pair for recursive metadata maps directly parsed from yaml/json.
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value yaml/json string parsed from
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_map_value_from_yaml(multio_metadata_t* md, const char* key, const char* yaml_json_str);
 
 
 #ifdef __cplusplus

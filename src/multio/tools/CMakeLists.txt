@@ -38,3 +38,20 @@ ecbuild_add_executable( TARGET    multio-maestro-instigator
                         CONDITION HAVE_MULTIO_SERVER AND HAVE_MAESTRO
                         SOURCES   multio-maestro-instigator.cc MultioTool.cc
                         LIBS      multio maestro multio-maestro)
+
+if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
+    ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
+    find_package(fckit)
+endif()
+
+# TODO ADD SOME FCKIT condition
+ecbuild_add_executable( TARGET    multio-replay-nemo-fapi
+                        CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN 
+                        SOURCES   multio-replay-nemo-fapi.f90
+                        LIBS      multio multio-server multio-api fckit
+)
+
+# set( CMAKE_Fortran_MODULE_DIRECTORY ${MPI_Fortran_MODULE_DIR} )
+
+# set_target_properties(multio-replay-nemo-fapi PROPERTIES COMPILE_FLAGS "${MPI_Fortran_COMPILE_FLAGS}")
+# set_target_properties(multio-replay-nemo-fapi PROPERTIES LINK_FLAGS "${MPI_Fortran_LINK_FLAGS}")

@@ -127,7 +127,7 @@ int multio_set_failure_handler(multio_failure_handler_t handler, void* context) 
 }
 
 
-int multio_new_handle_from_config(const char* configuration_path, multio_handle_t** mio) {
+int multio_new_handle_from_config(multio_handle_t** mio, const char* configuration_path) {
     return wrapApiFunction([configuration_path, mio]() {
         const eckit::LocalConfiguration config{eckit::YAMLConfiguration{eckit::PathName(configuration_path)}};
         (*mio) = new multio_handle_t{config};
@@ -257,6 +257,26 @@ int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int va
     });
 }
 
+int multio_metadata_set_long_value(multio_metadata_t* md, const char* key, long value) {
+    return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+
+        std::string skey{key};
+        md->set(key, value);
+    });
+}
+
+int multio_metadata_set_longlong_value(multio_metadata_t* md, const char* key, long long value) {
+    return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+
+        std::string skey{key};
+        md->set(key, value);
+    });
+}
+
 int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, const char* value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
@@ -268,13 +288,13 @@ int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, con
     });
 }
 
-int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, int value) {
+int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, bool value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
 
         std::string skey{key};
-        md->set(skey, value > 0);
+        md->set(skey, value);
     });
 }
 

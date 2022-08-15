@@ -26,7 +26,9 @@
 using multio::util::configuration_file;
 
 //----------------------------------------------------------------------------------------------------------------
-
+/**
+ * \todo Using this simple handler will throuw exceptions before any error codes can be checked. Can we write separate tests which test for specific expected error codes?
+ */
 void rethrowMaybe(int err) {
     if (err != MULTIO_SUCCESS) {
         throw eckit::Exception{"MULTIO C Exception:" + std::string{multio_error_string(err)}};
@@ -163,20 +165,19 @@ void MultioReplayNemoCApi::writeFields() {
     multio_metadata_t* runConfig;
     multio_new_metadata_from_yaml(&runConfig, multio::message::to_string(multio::message::Metadata(config_.getSubConfiguration("run"))).c_str());
 
-    bool isFirstField = true;
     for (const auto& param : parameters_) {
         auto buffer = readField(param, rank_);
 
         auto sz = static_cast<int>(buffer.size());
         auto fname = param.c_str(); 
 
-        if (isFirstField) {
-            multio_metadata_set_map_value(md, "run", runConfig);
-            multio_metadata_set_string_value(md, "category", "ocean-2d");
-            multio_metadata_set_int_value(md, "globalSize", globalSize_);
-            multio_metadata_set_int_value(md, "level", level_);
-            multio_metadata_set_int_value(md, "step", step_);
-        }
+        // TODO: Actually not required to pass this runconfig
+        multio_metadata_set_map_value(md, "run", runConfig);
+        // TODO: These fields are also not required? Test passes also without
+        multio_metadata_set_string_value(md, "category", "ocean-2d");
+        multio_metadata_set_int_value(md, "globalSize", globalSize_);
+        multio_metadata_set_int_value(md, "level", level_);
+        multio_metadata_set_int_value(md, "step", step_);
 
         multio_metadata_set_string_value(md, "name", fname);
         multio_metadata_set_string_value(md, "nemoParam", fname);
@@ -197,6 +198,7 @@ void MultioReplayNemoCApi::writeFields() {
         multio_reset_metadata(md);
     }
     multio_delete_metadata(md);
+    multio_delete_metadata(runConfig);
 }
 
 std::vector<int> MultioReplayNemoCApi::readGrid(const std::string& grid_type, size_t client_id) {
@@ -257,7 +259,7 @@ void MultioReplayNemoCApi::initClient() {
     auto configPath = configuration_file();
 
     multio_set_failure_handler(multio_throw_failure_handler, nullptr);
-    multio_new_handle_from_config(configPath.asString().c_str(), &multio_handle);
+    multio_new_handle_from_config(&multio_handle, configPath.asString().c_str());
     //! Not required in new transport based api?
     // multio_init_client("oce", eckit::mpi::comm().communicator());
     // Simplate client that knows about nemo communicator and oce
@@ -268,6 +270,7 @@ void MultioReplayNemoCApi::initClient() {
         auto ret_comm = chld.communicator();
 
     // Access information directly with mpi
+    // TODO: Provide different API mechanisms to do this?
     clientCount_ = eckit::mpi::comm("oce").size();
     serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
 

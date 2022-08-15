@@ -96,7 +96,7 @@ int multio_vcs_version(const char** sha1);
  * \param mio Return a handle to the multio (client) instance
  * \returns Return code (#MultioErrorValues)
  */
-int multio_new_handle_from_config(const char* configuration_path, multio_handle_t** multio);
+int multio_new_handle_from_config(multio_handle_t** multio, const char* configuration_path);
 
 /** Creates a multio (client) instance
  * \param mio Return a handle to the multio (client) instance
@@ -198,6 +198,20 @@ int multio_reset_metadata(multio_metadata_t* md);
  * \returns Return code (#MultioErrorValues)
  */
 int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int value);
+/** Sets a metadata key-value pair for long values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Long value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_long_value(multio_metadata_t* md, const char* key, long value);
+/** Sets a metadata key-value pair for long long values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Long long value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_longlong_value(multio_metadata_t* md, const char* key, long long value);
 /** Sets a metadata key-value pair for string values
  * \param md Handle to the multio metadata object
  * \param key C-string key to be set
@@ -208,10 +222,10 @@ int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, con
 /** Sets a metadata key-value pair for boolean values
  * \param md Handle to the multio metadata object
  * \param key C-string key to be set
- * \param value Integer value representing the boolean by testing `value > 0`
+ * \param value Boolean/logical value
  * \returns Return code (#MultioErrorValues)
  */
-int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, int value);
+int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, bool value);
 /** Sets a metadata key-value pair for float values
  * \param md Handle to the multio metadata object
  * \param key C-string key to be set
@@ -227,6 +241,9 @@ int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, floa
  */
 int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, double value);
 /** Sets a metadata key-value pair for recursive metadata maps.
+ * 
+ * \todo Do we need nested metadata?
+ * 
  * \param md Handle to the multio metadata object
  * \param key C-string key to be set
  * \param value metadata value (ordered map) to be set
@@ -234,12 +251,21 @@ int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, dou
  */
 int multio_metadata_set_map_value(multio_metadata_t* md, const char* key, multio_metadata_t*);
 /** Sets a metadata key-value pair for recursive metadata maps directly parsed from yaml/json.
+ * 
+ * \todo discuss - is this required? I just used it for the nemo c api test to read in some metadata... but that's actually not required
+ * 
  * \param md Handle to the multio metadata object
  * \param key C-string key to be set
  * \param value yaml/json string parsed from
  * \returns Return code (#MultioErrorValues)
  */
 int multio_metadata_set_map_value_from_yaml(multio_metadata_t* md, const char* key, const char* yaml_json_str);
+
+/**
+ * 
+ * \todo Do we need arrays in metadata? Are there use cases for that? If so, are single type arrays fine or should we support mixed type arrays (however we would express that with c...)
+ */
+
 
 
 #ifdef __cplusplus

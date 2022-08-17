@@ -43,7 +43,7 @@ public:
 
 private:
 
-    void addPartialMask(const message::Message& msg);
+    void addPartialMask(message::Message msg);
 
     bool allPartsArrived(message::Message msg) const;
     void createBitmask(message::Message msg);

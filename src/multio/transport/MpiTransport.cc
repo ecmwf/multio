@@ -177,6 +177,7 @@ void MpiTransport::listen() {
     if(status.error()) {
         return;
     }
+    // TODO status contains information on required message size - use that to retrieve a sufficient large buffer?
     auto& buf = pool_.findAvailableBuffer();
     auto sz = blockingReceive(status, buf);
     util::ScopedTiming timing{statistics_.pushToQueueTimer_, statistics_.pushToQueueTiming_};

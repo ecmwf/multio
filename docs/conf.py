@@ -58,6 +58,7 @@ version = parse_version(release)  # feature version
 # ones.
 extensions = [
     "sphinx_rtd_theme",
+    "breathe",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -94,3 +95,12 @@ html_show_sourcelink = False
 
 # Remove "Created using Sphinx" from the HTML footer.
 html_show_sphinx = False
+
+
+# -- Breathe configuration ---------------------------------------------------
+
+breathe_projects = {"multio": "_build/xml/"}
+breathe_default_project = "multio"
+breathe_domain_by_file_pattern = {
+    "*/multio_c.h": "c",
+}

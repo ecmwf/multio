@@ -58,7 +58,6 @@ version = parse_version(release)  # feature version
 # ones.
 extensions = [
     "sphinx_rtd_theme",
-    "sphinx_copybutton",
     "sphinx_tabs.tabs",
     "breathe",
 ]
@@ -106,13 +105,6 @@ breathe_default_project = "multio"
 breathe_domain_by_file_pattern = {
     "*/multio_c.h": "c",
 }
-
-
-# -- Sphinx copy button configuration -----------------------------------------------
-
-copybutton_selector = ".copybutton div.highlight pre"
-
-
 # -- Sphinx Tabs configuration -----------------------------------------------
 
 sphinx_tabs_disable_tab_closing = True

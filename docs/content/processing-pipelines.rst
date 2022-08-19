@@ -26,7 +26,7 @@ configuration file typically consists of two main parts:
   partial fields or the aggregated fields depending on the action's position in the pipeline.
 
 Every interface call that passes a message (data + metadata) to **multio** via the
-:ref:`data-routing API <api-data-routing>` will result in that message being passed to every
+:ref:`data-routing API <reference-data-routing>` will result in that message being passed to every
 pipeline. Each action will examine its own configuration as well as checking certain keys in the
 message's metadata to decide how to handle the message.
 

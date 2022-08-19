@@ -13,6 +13,7 @@ distributed meteorological and earth-system models.
    content/introduction
    content/installation
    content/api
+   content/reference
    content/processing-pipelines
    content/usage-examples
    content/licence

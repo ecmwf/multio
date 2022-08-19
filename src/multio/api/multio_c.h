@@ -79,8 +79,8 @@ int multio_initialise();
 int multio_version(const char** version);
 
 /** Retrieves version control checksum of the latest change, e.g. ``a88011c007a0db48a5d16e296934a197eac2050a``
- * \param version Return variable for version control checksum. Returned pointer valid throughout program lifetime.
- * \returns Return code (#OdcErrorValues)
+ * \param sha1 Return variable for version control checksum. Returned pointer valid throughout program lifetime.
+ * \returns Return code (#MultioErrorValues)
  */
 int multio_vcs_version(const char** sha1);
 

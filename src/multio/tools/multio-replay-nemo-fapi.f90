@@ -183,8 +183,6 @@ subroutine set_domains(mio, rank, client_count)
 
         cerr = mio%write_domain(md, buffer)
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 15
-        cerr = md%reset_metadata()
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 16
     end do
 
     cerr = md%delete_metadata()
@@ -217,18 +215,28 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
     cerr = md%new_metadata()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 19
 
+    cerr = md%set_string_value("category", "ocean-2d")
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP 20
+    cerr = md%set_int_value("globalSize", global_size)
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP 21
+    cerr = md%set_int_value("level", level)
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP 22
+    cerr = md%set_int_value("step", step)
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP 23
+
+    cerr = md%set_double_value("missingValue", 0.0_8)
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP 31
+    cerr = md%set_bool_value("bitmapPresent", .FALSE._1)
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP 32
+    cerr = md%set_int_value("bitsPerValue", 16)
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP 33
+
+    cerr = md%set_bool_value("toAllServers", .FALSE._1)
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP 34
+
     do i=1, size(nemo_parameters)
         print *,i, nemo_parameters(i)
         call read_field(nemo_parameters(i), rank, step, values)
-
-        cerr = md%set_string_value("category", "ocean-2d")
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 20
-        cerr = md%set_int_value("globalSize", global_size)
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 21
-        cerr = md%set_int_value("level", level)
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 22
-        cerr = md%set_int_value("step", step)
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 23
 
         cerr = md%set_string_value("name", nemo_parameters(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 24
@@ -245,19 +253,7 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
         cerr = md%set_string_value("typeOfLevel", grib_level_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 30
 
-        cerr = md%set_double_value("missingValue", 0.0_8)
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 31
-        cerr = md%set_bool_value("bitmapPresent", .FALSE._1)
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 32
-        cerr = md%set_int_value("bitsPerValue", 16)
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 33
-
-        cerr = md%set_bool_value("toAllServers", .FALSE._1)
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 34
-
         cerr = mio%write_field(md, values)
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 35
-        cerr = md%reset_metadata()
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 35
 
         deallocate(values)

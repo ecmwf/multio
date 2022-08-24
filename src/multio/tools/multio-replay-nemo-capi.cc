@@ -4,6 +4,7 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
+#include "eckit/io/FileHandle.h"
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/option/CmdArgs.h"
@@ -62,7 +63,7 @@ private:
     void writeFields();
 
     std::vector<int> readGrid(const std::string& grid_type, size_t client_id);
-    std::vector<double> readField(const std::string& param, size_t client_id) const;
+    eckit::Buffer readField(const std::string& param, size_t client_id) const;
 
     size_t commSize() const;
     void initClient();
@@ -153,7 +154,6 @@ void MultioReplayNemoCApi::setDomains() {
         multio_metadata_set_bool_value(md, "toAllServers", true);
 
         multio_write_domain(multio_handle, md, buffer.data(), sz);
-        multio_reset_metadata(md);
     }
     multio_delete_metadata(md);
 }
@@ -162,23 +162,32 @@ void MultioReplayNemoCApi::writeFields() {
     multio_metadata_t* md = nullptr; 
     multio_new_metadata(&md);
 
-    multio_metadata_t* runConfig;
-    multio_new_metadata_from_yaml(&runConfig, multio::message::to_string(multio::message::Metadata(config_.getSubConfiguration("run"))).c_str());
+    // multio_metadata_t* runConfig;
+    // multio_new_metadata_from_yaml(&runConfig, multio::message::to_string(multio::message::Metadata(config_.getSubConfiguration("run"))).c_str());
+     
+    // TODO: Actually not required to pass this runconfig
+    // multio_metadata_set_map_value(md, "run", runConfig);
+    // TODO: These fields are also not required? Test passes also without
+    // Set reused fields once at the beginning
+    multio_metadata_set_string_value(md, "category", "ocean-2d");
+    multio_metadata_set_int_value(md, "globalSize", globalSize_);
+    multio_metadata_set_int_value(md, "level", level_);
+    multio_metadata_set_int_value(md, "step", step_);
+
+    // TODO: May not need to be a field's metadata
+    multio_metadata_set_double_value(md, "missingValue", 0.0);
+    multio_metadata_set_bool_value(md, "bitmapPresent", false);
+    multio_metadata_set_int_value(md, "bitsPerValue", 16);
+
+    multio_metadata_set_bool_value(md, "toAllServers", false);
 
     for (const auto& param : parameters_) {
         auto buffer = readField(param, rank_);
 
-        auto sz = static_cast<int>(buffer.size());
+        auto sz = static_cast<int>(buffer.size())/sizeof(double);
         auto fname = param.c_str(); 
 
-        // TODO: Actually not required to pass this runconfig
-        multio_metadata_set_map_value(md, "run", runConfig);
-        // TODO: These fields are also not required? Test passes also without
-        multio_metadata_set_string_value(md, "category", "ocean-2d");
-        multio_metadata_set_int_value(md, "globalSize", globalSize_);
-        multio_metadata_set_int_value(md, "level", level_);
-        multio_metadata_set_int_value(md, "step", step_);
-
+        // Overwrite these fields in the existing metadata object
         multio_metadata_set_string_value(md, "name", fname);
         multio_metadata_set_string_value(md, "nemoParam", fname);
         multio_metadata_set_int_value(md, "param", paramMap_.get(fname).param);
@@ -187,27 +196,19 @@ void MultioReplayNemoCApi::writeFields() {
         multio_metadata_set_string_value(md, "domain", paramMap_.get(fname).gridType.c_str());
         multio_metadata_set_string_value(md, "typeOfLevel", paramMap_.get(fname).levelType.c_str());
 
-        // TODO: May not need to be a field's metadata
-        multio_metadata_set_double_value(md, "missingValue", 0.0);
-        multio_metadata_set_bool_value(md, "bitmapPresent", false);
-        multio_metadata_set_int_value(md, "bitsPerValue", 16);
-
-        multio_metadata_set_bool_value(md, "toAllServers", false);
-
-        multio_write_field(multio_handle, md, buffer.data(), sz);
-        multio_reset_metadata(md);
+        multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz);
     }
     multio_delete_metadata(md);
-    multio_delete_metadata(runConfig);
+    // multio_delete_metadata(runConfig);
 }
 
 std::vector<int> MultioReplayNemoCApi::readGrid(const std::string& grid_type, size_t client_id) {
     std::ostringstream oss;
-    oss << grid_type << "_" << std::setfill('0') << std::setw(2) << client_id;
+    oss << pathToNemoData_ << grid_type << "_" << std::setfill('0') << std::setw(2) << client_id;
 
-    auto grid = eckit::PathName{pathToNemoData_ + oss.str()};
+    auto grid = eckit::PathName{oss.str()};
 
-    std::ifstream infile(std::string(grid.fullName()).c_str());
+    std::ifstream infile(grid.fullName());
 
     std::string gtype;
     infile >> gtype;
@@ -225,25 +226,43 @@ std::vector<int> MultioReplayNemoCApi::readGrid(const std::string& grid_type, si
     return domain_dims;
 }
 
-std::vector<double> MultioReplayNemoCApi::readField(const std::string& param, size_t client_id) const {
+eckit::Buffer MultioReplayNemoCApi::readField(const std::string& param, size_t client_id) const {
     std::ostringstream oss;
-    oss << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_" << std::setfill('0')
+    oss << pathToNemoData_ << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_" << std::setfill('0')
         << std::setw(2) << client_id;
 
-    auto field = eckit::PathName{pathToNemoData_ + oss.str()};
+    auto field = eckit::PathName{oss.str()};
 
     eckit::Log::info() << " *** Reading path " << field << std::endl;
 
-    std::ifstream infile(std::string(field.fullName()).c_str());
-    infile.seekg(0, infile.end);
-    auto bytes = infile.tellg();
-    infile.seekg(0, infile.beg);
+    eckit::FileHandle infile{field.fullName()};
+    size_t bytes = infile.openForRead();
 
-    std::vector<double> vals(bytes / sizeof(double));
-    infile.read(reinterpret_cast<char*>(vals.data()), bytes);
+    eckit::Buffer buffer(bytes);
+    infile.read(buffer.data(), bytes);
 
-    return vals;
+    return buffer;
 }
+
+// std::vector<double> MultioReplayNemoCApi::readField(const std::string& param, size_t client_id) const {
+//     std::ostringstream oss;
+//     oss << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_" << std::setfill('0')
+//         << std::setw(2) << client_id;
+
+//     auto field = eckit::PathName{pathToNemoData_ + oss.str()};
+
+//     eckit::Log::info() << " *** Reading path " << field << std::endl;
+
+//     std::ifstream infile(field.fullName());
+//     infile.seekg(0, infile.end);
+//     auto bytes = infile.tellg();
+//     infile.seekg(0, infile.beg);
+
+//     std::vector<double> vals(bytes / sizeof(double));
+//     infile.read(reinterpret_cast<char*>(vals.data()), bytes);
+
+//     return vals;
+// }
 
 void MultioReplayNemoCApi::initClient() {
     if (transportType_ != "mpi") {
@@ -285,16 +304,19 @@ void MultioReplayNemoCApi::testData() {
     }
 
     for (const auto& param : parameters_) {
-        std::string actual_file_path{std::to_string(level_) +
-                                     "::" + std::to_string(paramMap_.get(param).param) +
-                                     "::" + std::to_string(step_)};
+        std::ostringstream oss;
+        oss << level_ << "::" << paramMap_.get(param).param << "::" << step_;
+
+        std::string actual_file_path{oss.str()};
         std::ifstream infile{actual_file_path.c_str()};
         std::string actual{std::istreambuf_iterator<char>(infile),
                            std::istreambuf_iterator<char>()};
         infile.close();
 
-        auto path = eckit::PathName{std::string{pathToNemoData_ + param + "_" +
-                                                std::to_string(step_) + "_reference"}};
+        oss.str("");
+        oss.clear();
+        oss << pathToNemoData_ << param << "_" << step_ << "_reference";
+        auto path = eckit::PathName{oss.str()};
 
         infile.open(std::string(path.fullName()).c_str());
         std::string expected{std::istreambuf_iterator<char>(infile),

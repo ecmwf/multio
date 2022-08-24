@@ -188,11 +188,11 @@ int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double
 int multio_new_metadata(multio_metadata_t** md);
 
 
-/** Creates a multio metadata object by parsing a YAML/JSON string
- * \param md Return a handle to the multio metadata object
- * \returns Return code (#MultioErrorValues)
- */
-int multio_new_metadata_from_yaml(multio_metadata_t** md, const char* yaml_json_str);
+// /** Creates a multio metadata object by parsing a YAML/JSON string
+//  * \param md Return a handle to the multio metadata object
+//  * \returns Return code (#MultioErrorValues)
+//  */
+// int multio_new_metadata_from_yaml(multio_metadata_t** md, const char* yaml_json_str);
 
 
 /** Deletes a multio metadata object
@@ -202,16 +202,16 @@ int multio_new_metadata_from_yaml(multio_metadata_t** md, const char* yaml_json_
 int multio_delete_metadata(multio_metadata_t* md);
 
 
-/** Resets/clears a multio metadata object to make the allocated memory reusable efficiently
- *
- * TODO: Discuss - std::move is also used very often for efficiency. Everything is fine for
- * sequentially processing. Problems could arise if at one end the data is not copy and instead
- * accessed in an asynchronous manner.
- *
- * \param md Handle to the multio metadata object
- * \returns Return code (#MultioErrorValues)
- */
-int multio_reset_metadata(multio_metadata_t* md);
+// /** Resets/clears a multio metadata object to make the allocated memory reusable efficiently
+//  *
+//  * TODO: Discuss - std::move is also used very often for efficiency. Everything is fine for
+//  * sequentially processing. Problems could arise if at one end the data is not copy and instead
+//  * accessed in an asynchronous manner.
+//  *
+//  * \param md Handle to the multio metadata object
+//  * \returns Return code (#MultioErrorValues)
+//  */
+// int multio_reset_metadata(multio_metadata_t* md);
 
 
 /** Sets a metadata key-value pair for integer values

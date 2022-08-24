@@ -3,6 +3,7 @@
 #include <iomanip>
 
 #include "eckit/exception/Exceptions.h"
+#include "eckit/io/FileHandle.h"
 #include "eckit/io/StdFile.h"
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
@@ -40,7 +41,7 @@ private:
     void writeFields();
 
     std::vector<int> readGrid(const std::string& grid_type, size_t client_id);
-    std::vector<double> readField(const std::string& param, size_t client_id) const;
+    eckit::Buffer readField(const std::string& param, size_t client_id) const;
 
     size_t commSize() const;
     void initClient();
@@ -152,24 +153,22 @@ std::vector<int> MultioReplay::readGrid(const std::string& grid_type, size_t cli
     return domain_dims;
 }
 
-std::vector<double> MultioReplay::readField(const std::string& param, size_t client_id) const {
+eckit::Buffer MultioReplay::readField(const std::string& param, size_t client_id) const {
     std::ostringstream oss;
-    oss << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_" << std::setfill('0')
+    oss << pathToNemoData_ << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_" << std::setfill('0')
         << std::setw(2) << client_id;
 
-    auto field = eckit::PathName{pathToNemoData_ + oss.str()};
+    auto field = eckit::PathName{oss.str()};
 
     eckit::Log::info() << " *** Reading path " << field << std::endl;
 
-    std::ifstream infile(std::string(field.fullName()).c_str());
-    infile.seekg(0, infile.end);
-    auto bytes = infile.tellg();
-    infile.seekg(0, infile.beg);
+    eckit::FileHandle infile{field.fullName()};
+    size_t bytes = infile.openForRead();
 
-    std::vector<double> vals(bytes / sizeof(double));
-    infile.read(reinterpret_cast<char*>(vals.data()), bytes);
+    eckit::Buffer buffer(bytes);
+    infile.read(buffer.data(), bytes);
 
-    return vals;
+    return buffer;
 }
 
 void MultioReplay::initClient() {
@@ -189,26 +188,31 @@ void MultioReplay::testData() {
     }
 
     for (const auto& param : parameters_) {
-        std::string actual_file_path{std::to_string(level_) +
-                                     "::" + std::to_string(paramMap_.get(param).param) +
-                                     "::" + std::to_string(step_)};
+        std::ostringstream oss;
+        oss << level_ << "::" << paramMap_.get(param).param << "::" << step_;
+
+        std::string actual_file_path{oss.str()};
         std::ifstream infile{actual_file_path.c_str()};
         std::string actual{std::istreambuf_iterator<char>(infile),
                            std::istreambuf_iterator<char>()};
         infile.close();
 
-        auto path = eckit::PathName{std::string{pathToNemoData_ + param + "_" +
-                                                std::to_string(step_) + "_reference"}};
+        oss.str("");
+        oss.clear();
+        oss << pathToNemoData_ << param << "_" << step_ << "_reference";
+        auto path = eckit::PathName{oss.str()};
 
         infile.open(std::string(path.fullName()).c_str());
         std::string expected{std::istreambuf_iterator<char>(infile),
                              std::istreambuf_iterator<char>()};
 
+        eckit::Log::info() << " *** testData - ActualFilePath: " << actual_file_path << ", expected path: " << path << std::endl;
+
         ASSERT(actual == expected);
 
         std::remove(actual_file_path.c_str());
     }
-}
+}    
 
 
 //----------------------------------------------------------------------------------------------------------------

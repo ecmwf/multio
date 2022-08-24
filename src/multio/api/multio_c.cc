@@ -130,7 +130,7 @@ int multio_set_failure_handler(multio_failure_handler_t handler, void* context) 
 
 int multio_new_handle_from_config(multio_handle_t** mio, const char* configuration_path) {
     return wrapApiFunction([configuration_path, mio]() {
-        const eckit::LocalConfiguration config{eckit::YAMLConfiguration{eckit::PathName(configuration_path)}};
+        const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_path == NULL ? configuration_file() : eckit::PathName(configuration_path)}};
         (*mio) = new multio_handle_t{config};
     });
 }
@@ -226,11 +226,12 @@ int multio_new_metadata(multio_metadata_t** md) {
     });
 }
 
-int multio_new_metadata_from_yaml(multio_metadata_t** md, const char* yaml_json_str) {
-    return wrapApiFunction([md, yaml_json_str]() {
-        (*md) = new multio_metadata_t{multio::message::to_metadata(std::string{yaml_json_str})};
-    });
-}
+
+// int multio_new_metadata_from_yaml(multio_metadata_t** md, const char* yaml_json_str) {
+//     return wrapApiFunction([md, yaml_json_str]() {
+//         (*md) = new multio_metadata_t{multio::message::to_metadata(std::string{yaml_json_str})};
+//     });
+// }
 
 
 int multio_delete_metadata(multio_metadata_t* md) {
@@ -239,13 +240,13 @@ int multio_delete_metadata(multio_metadata_t* md) {
         delete md;
     });
 }
-int multio_reset_metadata(multio_metadata_t* md) {
-    return wrapApiFunction([md]() {
-        ASSERT(md);
-        md->~multio_metadata_t();
-        new(md) multio_metadata_t{};
-    });
-}
+// int multio_reset_metadata(multio_metadata_t* md) {
+//     return wrapApiFunction([md]() {
+//         ASSERT(md);
+//         md->~multio_metadata_t();
+//         new(md) multio_metadata_t{};
+//     });
+// }
 
 
 int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int value) {

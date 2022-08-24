@@ -188,13 +188,6 @@ int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double
 int multio_new_metadata(multio_metadata_t** md);
 
 
-// /** Creates a multio metadata object by parsing a YAML/JSON string
-//  * \param md Return a handle to the multio metadata object
-//  * \returns Return code (#MultioErrorValues)
-//  */
-// int multio_new_metadata_from_yaml(multio_metadata_t** md, const char* yaml_json_str);
-
-
 /** Deletes a multio metadata object
  * \param md Handle to the multio metadata object
  * \returns Return code (#MultioErrorValues)
@@ -288,19 +281,6 @@ int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, dou
  */
 int multio_metadata_set_map_value(multio_metadata_t* md, const char* key, multio_metadata_t*);
 
-
-/** Sets a metadata key-value pair for recursive metadata maps directly parsed from yaml/json.
- *
- * \todo discuss - is this required? I just used it for the nemo c api test to read in some
- * metadata... but that's actually not required
- *
- * \param md Handle to the multio metadata object
- * \param key C-string key to be set
- * \param value yaml/json string parsed from
- * \returns Return code (#MultioErrorValues)
- */
-int multio_metadata_set_map_value_from_yaml(multio_metadata_t* md, const char* key,
-                                            const char* yaml_json_str);
 
 /**
  *

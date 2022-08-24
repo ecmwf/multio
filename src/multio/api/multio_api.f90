@@ -35,9 +35,7 @@ module multio_api
         type(c_ptr) :: impl = c_null_ptr
     contains
         procedure :: new_metadata => multio_new_metadata
-        procedure :: new_metadata_from_yaml => multio_new_metadata_from_yaml
         procedure :: delete_metadata => multio_delete_metadata
-        procedure :: reset_metadata => multio_reset_metadata
         procedure :: set_int_value => multio_metadata_set_int_value
         procedure :: set_long_value => multio_metadata_set_long_value
         procedure :: set_longlong_value => multio_metadata_set_longlong_value
@@ -46,7 +44,6 @@ module multio_api
         procedure :: set_float_value => multio_metadata_set_float_value
         procedure :: set_double_value => multio_metadata_set_double_value
         procedure :: set_map_value => multio_metadata_set_map_value
-        procedure :: set_map_value_from_yaml => multio_metadata_set_map_value_from_yaml
     end type
 
     ! Type declarations
@@ -241,25 +238,8 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_new_metadata_from_yaml(metadata, yaml_str) result(err) &
-                bind(c, name='multio_new_metadata_from_yaml')
-            use, intrinsic :: iso_c_binding
-            implicit none
-            type(c_ptr), intent(in), value :: yaml_str
-            type(c_ptr), intent(out) :: metadata
-            integer(c_int) :: err
-        end function
-
         function c_multio_delete_metadata(metadata) result(err) &
                 bind(c, name='multio_delete_metadata')
-            use, intrinsic :: iso_c_binding
-            implicit none
-            type(c_ptr), intent(in), value :: metadata
-            integer(c_int) :: err
-        end function
-
-        function c_multio_reset_metadata(metadata) result(err) &
-                bind(c, name='multio_reset_metadata')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: metadata
@@ -346,15 +326,6 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_metadata_set_map_value_from_yaml(metadata, key, value) result(err) &
-                bind(c, name='multio_metadata_set_map_value_from_yaml')
-            use, intrinsic :: iso_c_binding
-            implicit none
-            type(c_ptr), intent(in), value :: metadata
-            type(c_ptr), intent(in), value :: key
-            type(c_ptr), intent(in), value :: value
-            integer(c_int) :: err
-        end function
     end interface
 
 contains
@@ -507,26 +478,11 @@ contains
         err = c_multio_new_metadata(metadata%impl)
     end function
 
-    function multio_new_metadata_from_yaml(metadata, path) result(err)
-        class(multio_metadata), intent(inout) :: metadata
-        character(*), intent(in) :: path
-        integer :: err
-        character(:), allocatable, target :: nullified_path
-        nullified_path = trim(path) // c_null_char
-        err = c_multio_new_metadata_from_yaml(metadata%impl, c_loc(nullified_path))
-    end function
-
     function multio_delete_metadata(metadata) result(err)
         class(multio_metadata), intent(inout) :: metadata
         integer :: err
         err = c_multio_delete_metadata(metadata%impl)
         metadata%impl = c_null_ptr
-    end function
-
-    function multio_reset_metadata(metadata) result(err)
-        class(multio_metadata), intent(inout) :: metadata
-        integer :: err
-        err = c_multio_reset_metadata(metadata%impl)
     end function
 
     function multio_metadata_set_int_value(metadata, key, value) result(err)
@@ -627,17 +583,4 @@ contains
         err = c_multio_metadata_set_map_value(metadata%impl, c_loc(nullified_key), value%impl)
     end function
 
-    function multio_metadata_set_map_value_from_yaml(metadata, key, value) result(err)
-        class(multio_metadata), intent(in) :: metadata
-        character(*), intent(in) :: key
-        character(*), intent(in) :: value
-        integer :: err
-        character(:), allocatable, target :: nullified_key
-        character(:), allocatable, target :: nullified_value
-
-        nullified_key = trim(key) // c_null_char
-        nullified_value = trim(value) // c_null_char
-
-        err = c_multio_metadata_set_map_value_from_yaml(metadata%impl, c_loc(nullified_key), c_loc(nullified_value))
-    end function
 end module multio_api

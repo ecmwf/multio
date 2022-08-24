@@ -1,5 +1,6 @@
 
 #include "multio_c.h"
+#include "multio_c_cpp_utils.h"
 
 #include <functional>
 
@@ -252,7 +253,6 @@ int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int va
         ASSERT(md);
         ASSERT(key);
 
-        std::string skey{key};
         md->set(key, value);
     });
 }
@@ -262,7 +262,6 @@ int multio_metadata_set_long_value(multio_metadata_t* md, const char* key, long 
         ASSERT(md);
         ASSERT(key);
 
-        std::string skey{key};
         md->set(key, value);
     });
 }
@@ -272,7 +271,6 @@ int multio_metadata_set_longlong_value(multio_metadata_t* md, const char* key, l
         ASSERT(md);
         ASSERT(key);
 
-        std::string skey{key};
         md->set(key, value);
     });
 }
@@ -283,8 +281,7 @@ int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, con
         ASSERT(key);
         ASSERT(value);
 
-        std::string skey{key}, svalue{value};
-        md->set(skey, svalue);
+        md->set(key, value);
     });
 }
 
@@ -293,8 +290,7 @@ int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, bool 
         ASSERT(md);
         ASSERT(key);
 
-        std::string skey{key};
-        md->set(skey, value);
+        md->set(key, value);
     });
 }
 
@@ -303,8 +299,7 @@ int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, floa
         ASSERT(md);
         ASSERT(key);
 
-        std::string skey{key};
-        md->set(skey, value);
+        md->set(key, value);
     });
 }
 
@@ -313,8 +308,7 @@ int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, dou
         ASSERT(md);
         ASSERT(key);
 
-        std::string skey{key};
-        md->set(skey, value);
+        md->set(key, value);
     });
 }
 
@@ -324,8 +318,7 @@ int multio_metadata_set_map_value(multio_metadata_t* md, const char* key, multio
         ASSERT(key);
         ASSERT(value);
 
-        std::string skey{key};
-        md->set(skey, std::move(*value));
+        md->set(key, std::move(*value));
     });
 }
 
@@ -335,9 +328,19 @@ int multio_metadata_set_map_value_from_yaml(multio_metadata_t* md, const char* k
         ASSERT(key);
         ASSERT(yaml_json_str);
 
-        std::string skey{key};
-        md->set(skey, multio::message::to_metadata(yaml_json_str));
+        md->set(key, multio::message::to_metadata(yaml_json_str));
     });
 }
 
 }  // extern "C"
+
+
+// Casting between cpp and c type for testing
+
+Metadata* multio_from_c(multio_metadata_t* md) {
+ return static_cast<Metadata*>(md);
+}
+
+multio_metadata_t* multio_to_c(Metadata* md) {
+ return static_cast<multio_metadata_t*>(md);
+}

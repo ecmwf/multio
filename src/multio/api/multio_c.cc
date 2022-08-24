@@ -178,7 +178,7 @@ int multio_write_step_complete(multio_handle_t* mio, multio_metadata_t* md) {
         ASSERT(mio);
         ASSERT(md);
 
-        mio->dispatch(std::move(*md), eckit::Buffer{0}, Message::Tag::StepComplete);
+        mio->dispatch(*md, eckit::Buffer{0}, Message::Tag::StepComplete);
     });
 }
 
@@ -188,7 +188,7 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
         ASSERT(md);
 
         eckit::Buffer domain_def{reinterpret_cast<const char*>(data), size * sizeof(int)};
-        mio->dispatch(std::move(*md), std::move(domain_def), Message::Tag::Domain);
+        mio->dispatch(*md, std::move(domain_def), Message::Tag::Domain);
     });
 }
 
@@ -205,7 +205,7 @@ int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double*
             ++bit;
         }
 
-        mio->dispatch(std::move(*md), std::move(mask_vals), Message::Tag::Mask);
+        mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
     });
 }
 
@@ -216,7 +216,7 @@ int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(double)};
 
-        mio->dispatch(std::move(*md), std::move(field_vals), Message::Tag::Field);
+        mio->dispatch(*md, std::move(field_vals), Message::Tag::Field);
     });
 }
 
@@ -318,7 +318,7 @@ int multio_metadata_set_map_value(multio_metadata_t* md, const char* key, multio
         ASSERT(key);
         ASSERT(value);
 
-        md->set(key, std::move(*value));
+        md->set(key, *value);
     });
 }
 

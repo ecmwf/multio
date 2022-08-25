@@ -211,6 +211,11 @@ CASE("Metadata can set values") {
     err = multio_delete_metadata(mdp);
     EXPECT(err == MULTIO_SUCCESS);
 }
+
+// TODO:
+//  * test multio_open_connections, multio_close_connections, multio_write_step_complete, multio_write_domain, multio_write_mask, multio_write_field
+//  * Testing these with MPI in units is not possible here, maybe use another transport layer
+//  * test other transport layers....
 }  // namespace test
 }  // namespace multio
 

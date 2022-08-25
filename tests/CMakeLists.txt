@@ -24,7 +24,9 @@ ecbuild_add_test( TARGET    test_multio_maestro
 ecbuild_add_test( TARGET    test_multio_capi
                   SOURCES   test_multio_capi.cc
                   CONDITION HAVE_MULTIO_SERVER
-                  LIBS      multio multio-server multio-api )
+                  LIBS      multio multio-server multio-api 
+                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/../tests/server/config"
+)
 
 
 list( APPEND _test_environment

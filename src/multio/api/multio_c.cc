@@ -150,10 +150,29 @@ int multio_delete_handle(multio_handle_t* mio) {
     });
 }
 
-int multio_start_server() {
-    return wrapApiFunction([]() {
+int multio_start_server_from_config(const char* configuration_path, const char* server_name_key) {
+    return wrapApiFunction([=]() {
+        std::string server_name(server_name_key);
+        const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_path == NULL ? configuration_file() : eckit::PathName(configuration_path)}};
+        if (!config.has(server_name)) {
+            std::ostringstream oss;
+            oss << "Configuration '" << server_name << "' not found in configuration " << configuration_path;
+            throw eckit::Exception(oss.str());
+        }
+        multio::server::MultioServer{config.getSubConfiguration(server_name)};
+    });
+}
+
+int multio_start_server(const char* server_name_key) {
+    return wrapApiFunction([=]() {
+        std::string server_name(server_name_key);
         const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_file()}};
-        multio::server::MultioServer{config};
+        if (!config.has(server_name)) {
+            std::ostringstream oss;
+            oss << "Configuration '" << server_name << "' not found";
+            throw eckit::Exception(oss.str());
+        }
+        multio::server::MultioServer{config.getSubConfiguration(server_name)};
     });
 }
 

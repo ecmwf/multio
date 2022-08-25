@@ -114,14 +114,17 @@ int multio_new_handle(multio_handle_t** mio);
 int multio_delete_handle(multio_handle_t* mio);
 
 
-// TODO: Shall we allow passing in a configuration path here?
-// int multio_start_server(const char* configuration_path);
+/** Initialises and starts server
+ * \note This will be running until it receives a 'close' message from all of clients
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_start_server_from_config(const char* configuration_path, const char* server_name_key);
 
 /** Initialises and starts server
  * \note This will be running until it receives a 'close' message from all of clients
  * \returns Return code (#MultioErrorValues)
  */
-int multio_start_server();
+int multio_start_server(const char* server_name_key);
 
 
 /** Opens connections to the server

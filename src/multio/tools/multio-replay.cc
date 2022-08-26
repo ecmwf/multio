@@ -5,11 +5,11 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/FileHandle.h"
 #include "eckit/io/StdFile.h"
+#include "eckit/log/JSON.h"
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
-#include "eckit/log/JSON.h"
 
 #include "multio/LibMultio.h"
 #include "multio/server/MultioNemo.h"
@@ -20,7 +20,6 @@
 
 class MultioReplay final : public multio::MultioTool {
 public:
-
     MultioReplay(int argc, char** argv);
 
 private:
@@ -82,23 +81,23 @@ void MultioReplay::init(const eckit::option::CmdArgs& args) {
 
 void MultioReplay::finish(const eckit::option::CmdArgs&) {}
 
-void MultioReplay::execute(const eckit::option::CmdArgs &) {
+void MultioReplay::execute(const eckit::option::CmdArgs&) {
     runClient();
 
     testData();
- }
+}
 
- void MultioReplay::runClient() {
-     setMetadata();
+void MultioReplay::runClient() {
+    setMetadata();
 
-     multio_open_connections();
+    multio_open_connections();
 
-     setDomains();
+    setDomains();
 
-     writeFields();
+    writeFields();
 
-     multio_close_connections();
- }
+    multio_close_connections();
+}
 
 void MultioReplay::setMetadata() {
     multio_metadata_set_string_value("category", "ocean-2d");
@@ -112,7 +111,6 @@ void MultioReplay::setDomains() {
         {"T grid", "grid_T"}, {"U grid", "grid_U"}, {"V grid", "grid_V"}, {"W grid", "grid_W"}};
 
     for (auto const& grid : grid_type) {
-
         auto buffer = readGrid(grid.second, rank_);
         auto sz = static_cast<int>(buffer.size());
 
@@ -124,8 +122,9 @@ void MultioReplay::writeFields() {
     for (const auto& param : parameters_) {
         auto buffer = readField(param, rank_);
 
-        auto sz = static_cast<int>(buffer.size())/sizeof(double);
-        multio_write_field(param.c_str(), reinterpret_cast<const double*>(buffer.data()), sz, false);
+        auto sz = static_cast<int>(buffer.size()) / sizeof(double);
+        multio_write_field(param.c_str(), reinterpret_cast<const double*>(buffer.data()), sz,
+                           false);
     }
 }
 
@@ -155,8 +154,8 @@ std::vector<int> MultioReplay::readGrid(const std::string& grid_type, size_t cli
 
 eckit::Buffer MultioReplay::readField(const std::string& param, size_t client_id) const {
     std::ostringstream oss;
-    oss << pathToNemoData_ << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_" << std::setfill('0')
-        << std::setw(2) << client_id;
+    oss << pathToNemoData_ << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_"
+        << std::setfill('0') << std::setw(2) << client_id;
 
     auto field = eckit::PathName{oss.str()};
 
@@ -192,27 +191,29 @@ void MultioReplay::testData() {
         oss << level_ << "::" << paramMap_.get(param).param << "::" << step_;
 
         std::string actual_file_path{oss.str()};
-        std::ifstream infile{actual_file_path.c_str()};
-        std::string actual{std::istreambuf_iterator<char>(infile),
+        std::ifstream infile_actual{actual_file_path};
+        std::string actual{std::istreambuf_iterator<char>(infile_actual),
                            std::istreambuf_iterator<char>()};
-        infile.close();
+        infile_actual.close();
 
         oss.str("");
         oss.clear();
         oss << pathToNemoData_ << param << "_" << step_ << "_reference";
         auto path = eckit::PathName{oss.str()};
 
-        infile.open(std::string(path.fullName()).c_str());
-        std::string expected{std::istreambuf_iterator<char>(infile),
+        std::ifstream infile_expected{path.fullName()};
+        std::string expected{std::istreambuf_iterator<char>(infile_expected),
                              std::istreambuf_iterator<char>()};
 
-        eckit::Log::info() << " *** testData - ActualFilePath: " << actual_file_path << ", expected path: " << path << std::endl;
+        eckit::Log::info() << " *** testData - ActualFilePath: " << actual_file_path
+                           << ", expected path: " << path << std::endl;
 
+        infile_actual.close();
+        infile_expected.close();
         ASSERT(actual == expected);
-
         std::remove(actual_file_path.c_str());
     }
-}    
+}
 
 
 //----------------------------------------------------------------------------------------------------------------

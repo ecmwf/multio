@@ -2,15 +2,15 @@
 #include <fstream>
 #include <iomanip>
 
+#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
-#include "eckit/io/StdFile.h"
 #include "eckit/io/FileHandle.h"
+#include "eckit/io/StdFile.h"
+#include "eckit/log/JSON.h"
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
-#include "eckit/log/JSON.h"
-#include "eckit/config/YAMLConfiguration.h"
 
 
 #include "multio/LibMultio.h"
@@ -23,12 +23,12 @@
 #include "multio/message/Metadata.h"
 
 
-
 using multio::util::configuration_file;
 
 //----------------------------------------------------------------------------------------------------------------
 /**
- * \todo Using this simple handler will throuw exceptions before any error codes can be checked. Can we write separate tests which test for specific expected error codes?
+ * \todo Using this simple handler will throuw exceptions before any error codes can be checked. Can
+ * we write separate tests which test for specific expected error codes?
  */
 void rethrowMaybe(int err) {
     if (err != MULTIO_SUCCESS) {
@@ -42,7 +42,6 @@ void multio_throw_failure_handler(void*, int err) {
 
 class MultioReplayNemoCApi final : public multio::MultioTool {
 public:
-
     MultioReplayNemoCApi(int argc, char** argv);
 
 private:
@@ -114,32 +113,31 @@ void MultioReplayNemoCApi::finish(const eckit::option::CmdArgs&) {
     multio_delete_handle(multio_handle);
 }
 
-void MultioReplayNemoCApi::execute(const eckit::option::CmdArgs &) {
+void MultioReplayNemoCApi::execute(const eckit::option::CmdArgs&) {
     runClient();
 
     testData();
- }
-
- void MultioReplayNemoCApi::runClient() {
-     setMetadata();
-
-     multio_open_connections(multio_handle);
-
-     setDomains();
-
-     writeFields();
-
-     multio_close_connections(multio_handle);
- }
-
-void MultioReplayNemoCApi::setMetadata() {
 }
+
+void MultioReplayNemoCApi::runClient() {
+    setMetadata();
+
+    multio_open_connections(multio_handle);
+
+    setDomains();
+
+    writeFields();
+
+    multio_close_connections(multio_handle);
+}
+
+void MultioReplayNemoCApi::setMetadata() {}
 
 void MultioReplayNemoCApi::setDomains() {
     const std::map<std::string, std::string> grid_type = {
         {"T grid", "grid_T"}, {"U grid", "grid_U"}, {"V grid", "grid_V"}, {"W grid", "grid_W"}};
 
-        multio_metadata_t* md = nullptr; 
+    multio_metadata_t* md = nullptr;
     multio_new_metadata(&md);
 
     for (auto const& grid : grid_type) {
@@ -159,12 +157,13 @@ void MultioReplayNemoCApi::setDomains() {
 }
 
 void MultioReplayNemoCApi::writeFields() {
-    multio_metadata_t* md = nullptr; 
+    multio_metadata_t* md = nullptr;
     multio_new_metadata(&md);
 
     // multio_metadata_t* runConfig;
-    // multio_new_metadata_from_yaml(&runConfig, multio::message::to_string(multio::message::Metadata(config_.getSubConfiguration("run"))).c_str());
-     
+    // multio_new_metadata_from_yaml(&runConfig,
+    // multio::message::to_string(multio::message::Metadata(config_.getSubConfiguration("run"))).c_str());
+
     // TODO: Actually not required to pass this runconfig
     // multio_metadata_set_map_value(md, "run", runConfig);
     // TODO: These fields are also not required? Test passes also without
@@ -184,8 +183,8 @@ void MultioReplayNemoCApi::writeFields() {
     for (const auto& param : parameters_) {
         auto buffer = readField(param, rank_);
 
-        auto sz = static_cast<int>(buffer.size())/sizeof(double);
-        auto fname = param.c_str(); 
+        auto sz = static_cast<int>(buffer.size()) / sizeof(double);
+        auto fname = param.c_str();
 
         // Overwrite these fields in the existing metadata object
         multio_metadata_set_string_value(md, "name", fname);
@@ -228,8 +227,8 @@ std::vector<int> MultioReplayNemoCApi::readGrid(const std::string& grid_type, si
 
 eckit::Buffer MultioReplayNemoCApi::readField(const std::string& param, size_t client_id) const {
     std::ostringstream oss;
-    oss << pathToNemoData_ << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_" << std::setfill('0')
-        << std::setw(2) << client_id;
+    oss << pathToNemoData_ << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_"
+        << std::setfill('0') << std::setw(2) << client_id;
 
     auto field = eckit::PathName{oss.str()};
 
@@ -241,34 +240,16 @@ eckit::Buffer MultioReplayNemoCApi::readField(const std::string& param, size_t c
     eckit::Buffer buffer(bytes);
     infile.read(buffer.data(), bytes);
 
+    infile.close();
     return buffer;
 }
-
-// std::vector<double> MultioReplayNemoCApi::readField(const std::string& param, size_t client_id) const {
-//     std::ostringstream oss;
-//     oss << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_" << std::setfill('0')
-//         << std::setw(2) << client_id;
-
-//     auto field = eckit::PathName{pathToNemoData_ + oss.str()};
-
-//     eckit::Log::info() << " *** Reading path " << field << std::endl;
-
-//     std::ifstream infile(field.fullName());
-//     infile.seekg(0, infile.end);
-//     auto bytes = infile.tellg();
-//     infile.seekg(0, infile.beg);
-
-//     std::vector<double> vals(bytes / sizeof(double));
-//     infile.read(reinterpret_cast<char*>(vals.data()), bytes);
-
-//     return vals;
-// }
 
 void MultioReplayNemoCApi::initClient() {
     if (transportType_ != "mpi") {
         throw eckit::SeriousBug("Only MPI transport is supported for this tool");
     }
-    //! TODO run metadata will need to be fetched from config. Hence config is read twice - in the api and here
+    //! TODO run metadata will need to be fetched from config. Hence config is read twice - in the
+    //! api and here
     configPath_ = configuration_file();
     config_ = eckit::LocalConfiguration{eckit::YAMLConfiguration{configPath_}};
 
@@ -286,15 +267,15 @@ void MultioReplayNemoCApi::initClient() {
 
     // TODO: find a way to come up with a unique 'colour' -- like getting application number
     const eckit::mpi::Comm& chld = eckit::mpi::comm("nemo").split(777, "oce");
-        auto ret_comm = chld.communicator();
+    auto ret_comm = chld.communicator();
 
     // Access information directly with mpi
     // TODO: Provide different API mechanisms to do this?
     clientCount_ = eckit::mpi::comm("oce").size();
     serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
 
-    eckit::Log::info() << " *** initClient - clientcount:  " << clientCount_ << ", serverCount: " << serverCount_ << std::endl;
-
+    eckit::Log::info() << " *** initClient - clientcount:  " << clientCount_
+                       << ", serverCount: " << serverCount_ << std::endl;
 }
 
 void MultioReplayNemoCApi::testData() {
@@ -308,24 +289,26 @@ void MultioReplayNemoCApi::testData() {
         oss << level_ << "::" << paramMap_.get(param).param << "::" << step_;
 
         std::string actual_file_path{oss.str()};
-        std::ifstream infile{actual_file_path.c_str()};
-        std::string actual{std::istreambuf_iterator<char>(infile),
+        std::ifstream infile_actual{actual_file_path};
+        std::string actual{std::istreambuf_iterator<char>(infile_actual),
                            std::istreambuf_iterator<char>()};
-        infile.close();
+        infile_actual.close();
 
         oss.str("");
         oss.clear();
         oss << pathToNemoData_ << param << "_" << step_ << "_reference";
         auto path = eckit::PathName{oss.str()};
 
-        infile.open(std::string(path.fullName()).c_str());
-        std::string expected{std::istreambuf_iterator<char>(infile),
+        std::ifstream infile_expected{path.fullName()};
+        std::string expected{std::istreambuf_iterator<char>(infile_expected),
                              std::istreambuf_iterator<char>()};
 
-        eckit::Log::info() << " *** testData - ActualFilePath: " << actual_file_path << ", expected path: " << path << std::endl;
+        eckit::Log::info() << " *** testData - ActualFilePath: " << actual_file_path
+                           << ", expected path: " << path << std::endl;
 
+        infile_actual.close();
+        infile_expected.close();
         ASSERT(actual == expected);
-
         std::remove(actual_file_path.c_str());
     }
 }

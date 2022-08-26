@@ -24,16 +24,16 @@
 #include "eckit/mpi/Comm.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
-#include "multio/transport/Transport.h"
 #include "multio/transport/StreamPool.h"
 #include "multio/transport/StreamQueue.h"
+#include "multio/transport/Transport.h"
 
 namespace multio {
 namespace transport {
 
 class MpiTransport final : public Transport {
 public:
-    MpiTransport(const eckit::Configuration& config);
+    MpiTransport(const ConfigurationContext& confCtx);
     ~MpiTransport();
 
 private:

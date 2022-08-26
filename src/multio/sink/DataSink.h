@@ -25,6 +25,7 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/message/Message.h"
+#include <multio/util/ConfigurationContext.h>
 
 namespace multio {
 
@@ -32,7 +33,7 @@ namespace multio {
 
 class DataSink {
 public:  // methods
-    DataSink(const eckit::Configuration& config);
+    DataSink(const util::ConfigurationContext& confCtx);
 
     virtual ~DataSink();
 
@@ -79,7 +80,7 @@ private:  // methods
 protected:  // members
     bool failOnError_;
 
-    const eckit::LocalConfiguration config_;
+    const util::ConfigurationContext confCtx_;
     int id_;
 };
 
@@ -100,7 +101,7 @@ public:  // methods
 
     void list(std::ostream&);
 
-    DataSink* build(const std::string&, const eckit::Configuration& config);
+    DataSink* build(const std::string&, const util::ConfigurationContext& confCtx);
 
 private:  // members
     std::map<std::string, const DataSinkBuilderBase*> factories_;
@@ -110,7 +111,7 @@ private:  // members
 
 class DataSinkBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual DataSink* make(const eckit::Configuration& config) const = 0;
+    virtual DataSink* make(const util::ConfigurationContext& confCtx) const = 0;
 
 protected:  // methods
     DataSinkBuilderBase(const std::string&);
@@ -122,7 +123,7 @@ protected:  // methods
 
 template <class T>
 class DataSinkBuilder final : public DataSinkBuilderBase {
-    DataSink* make(const eckit::Configuration& config) const override { return new T(config); }
+    DataSink* make(const util::ConfigurationContext& confCtx) const override { return new T(confCtx); }
 
 public:
     DataSinkBuilder(const std::string& name) : DataSinkBuilderBase(name) {}

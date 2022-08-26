@@ -17,8 +17,8 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 
-#include "multio/action/Action.h"
 #include "multio/LibMultio.h"
+#include "multio/action/Action.h"
 #include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
 
@@ -54,10 +54,11 @@ LocalConfiguration rootConfig(const LocalConfiguration& config) {
 
 }  // namespace
 
-Plan::Plan(const eckit::Configuration& config) {
-    name_ = config.getString("name", "anonymous");
-    auto root = rootConfig(eckit::LocalConfiguration{config});
-    root_.reset(ActionFactory::instance().build(root.getString("type"), root));
+Plan::Plan(const ConfigurationContext& confCtx) {
+    name_ = confCtx.config().getString("name", "anonymous");
+    auto root = rootConfig(confCtx.config());
+    root_.reset(ActionFactory::instance().build(root.getString("type"),
+                                                confCtx.recast(root)));
 }
 
 Plan::~Plan() {

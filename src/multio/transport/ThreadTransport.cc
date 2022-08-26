@@ -24,8 +24,8 @@ ThreadPeer::ThreadPeer(std::thread t) :
     thread_{std::move(t)} {}
 
 
-ThreadTransport::ThreadTransport(const eckit::Configuration& cfg) :
-    Transport(cfg),
+ThreadTransport::ThreadTransport(const ConfigurationContext& confCtx) :
+    Transport(confCtx),
     messageQueueSize_(
         eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
 
@@ -74,7 +74,7 @@ PeerList ThreadTransport::createServerPeers() const {
 void ThreadTransport::createPeers() const {
     // Hack to work around the very different logic of creating ThreadPeers.
     // See multio-hammer.cc: MultioHammer::executeThread
-    clientPeers_ = PeerList(config_.getUnsigned("clientCount"));
+    clientPeers_ = PeerList(confCtx_.config().getUnsigned("clientCount"));
 }
 
 void ThreadTransport::print(std::ostream& os) const {

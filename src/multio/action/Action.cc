@@ -38,10 +38,10 @@ using eckit::Log;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-Action::Action(const eckit::Configuration& config) : type_{config.getString("type")} {
-    if (config.has("next")) {
-        const LocalConfiguration next = config.getSubConfiguration("next");
-        next_.reset(ActionFactory::instance().build(next.getString("type"), next));
+Action::Action(const ConfigurationContext& confCtx) : confCtx_(confCtx), type_{confCtx.config().getString("type")} {
+    if (confCtx.config().has("next")) {
+        const ConfigurationContext nextCtx = confCtx.subContext("next");
+        next_.reset(ActionFactory::instance().build(nextCtx.config().getString("type"), nextCtx));
     }
 }
 
@@ -94,7 +94,7 @@ void ActionFactory::list(std::ostream& out) {
     }
 }
 
-Action* ActionFactory::build(const std::string& name, const Configuration& config) {
+Action* ActionFactory::build(const std::string& name, const ConfigurationContext& confCtx) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     LOG_DEBUG_LIB(LibMultio) << "Looking for ActionFactory [" << name << "]" << std::endl;
@@ -102,7 +102,7 @@ Action* ActionFactory::build(const std::string& name, const Configuration& confi
     auto f = factories_.find(name);
 
     if (f != factories_.end())
-        return f->second->make(config);
+        return f->second->make(confCtx);
 
     Log::error() << "No ActionFactory for [" << name << "]" << std::endl;
     Log::error() << "ActionFactories are:" << std::endl;

@@ -18,10 +18,11 @@ namespace server {
 
 using transport::TransportFactory;
 
-MultioServer::MultioServer(const eckit::Configuration& config) :
-    transport_{TransportFactory::instance().build(config.getString("transport"), config)},
-    listener_{config, *transport_} {
-    LOG_DEBUG_LIB(multio::LibMultio) << "Server config: " << config << std::endl;
+MultioServer::MultioServer(const ConfigurationContext& confCtx) :
+    transport_{
+        TransportFactory::instance().build(confCtx.config().getString("transport"), confCtx)},
+    listener_{confCtx, *transport_} {
+    LOG_DEBUG_LIB(multio::LibMultio) << "Server config: " << confCtx.config() << std::endl;
 
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
 
@@ -48,7 +49,6 @@ MultioServer::~MultioServer() {
     logFile << "MultioServer stops at "
             << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
             << std::setw(6) << std::setfill('0') << mSecs << std::endl;
-
 }
 
 }  // namespace server

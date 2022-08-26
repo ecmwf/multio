@@ -50,7 +50,7 @@ struct Connection;
 
 class TcpTransport final : public Transport {
 public:
-    TcpTransport(const eckit::Configuration& config);
+    TcpTransport(const ConfigurationContext& confCtx);
 
 private:
     void openConnections() override;

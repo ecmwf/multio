@@ -21,6 +21,11 @@ list( APPEND multio_library_srcs
     multio_version.cc
 )
 
+list( APPEND multio_util_srcs
+    util/ConfigurationContext.cc 
+    util/ConfigurationContext.h 
+)
+
 list( APPEND multio_action_srcs
     action/Aggregation.cc
     action/Aggregation.h
@@ -131,6 +136,7 @@ list( APPEND multio_transport_srcs
 
 list( APPEND multio_srcs
     ${multio_library_srcs}
+    ${multio_util_srcs}
     ${multio_action_srcs}
     ${multio_ifsio_srcs}
     ${multio_domain_srcs}

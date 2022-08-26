@@ -25,7 +25,7 @@ namespace action {
 
 class Transport : public Action {
 public:
-    explicit Transport(const eckit::Configuration& config);
+    explicit Transport(const ConfigurationContext& config);
 
     void execute(message::Message msg) const override;
 

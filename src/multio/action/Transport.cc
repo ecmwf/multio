@@ -12,19 +12,17 @@
 
 #include <algorithm>
 
-#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/config/Resource.h"
 
 #include "multio/transport/TransportRegistry.h"
 #include "multio/util/ConfigurationPath.h"
-#include "multio/util/logfile_name.h"
 #include "multio/util/ScopedTimer.h"
+#include "multio/util/logfile_name.h"
 
 namespace multio {
 namespace action {
 
 using message::Message;
-using util::configuration_file;
 using transport::TransportRegistry;
 
 namespace {
@@ -33,13 +31,13 @@ size_t serverIdDenom(size_t clientCount, size_t serverCount) {
 }
 }  // namespace
 
-Transport::Transport(const eckit::Configuration& config) :
-    Action{config},
-    transport_{TransportRegistry::instance().get(config)},
+Transport::Transport(const ConfigurationContext& confCtx) :
+    Action{confCtx},
+    transport_{TransportRegistry::instance().get(confCtx)},
     client_{transport_->localPeer()},
     serverPeers_{transport_->serverPeers()},
     serverCount_{serverPeers_.size()},
-    serverId_{client_.id() / serverIdDenom(config.getUnsigned("count", 1), serverCount_)},
+    serverId_{client_.id() / serverIdDenom(confCtx.config().getUnsigned("count", 1), serverCount_)},
     usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
     counters_(serverPeers_.size()),
     distType_{distributionType()} {}
@@ -67,7 +65,7 @@ void Transport::execute(Message msg) const {
         transport_->bufferedSend(trMsg);
     }
 
-    ASSERT(not next_); // End of pipeline
+    ASSERT(not next_);  // End of pipeline
     executeNext(msg);
 }
 

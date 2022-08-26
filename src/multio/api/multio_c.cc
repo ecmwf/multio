@@ -13,6 +13,7 @@
 #include "multio/server/MultioClient.h"
 #include "multio/server/MultioServer.h"
 #include "multio/util/ConfigurationPath.h"
+#include "multio/util/ConfigurationContext.h"
 
 using eckit::Log;
 
@@ -21,6 +22,9 @@ using multio::message::Message;
 using multio::message::Metadata;
 
 using multio::util::configuration_file;
+using multio::util::configuration_file_name;
+using multio::util::configuration_path_name;
+using multio::util::ConfigurationContext;
 
 namespace {
 
@@ -88,7 +92,7 @@ extern "C" {
 
 struct multio_handle_t : public multio::server::MultioClient {
     using multio::server::MultioClient::MultioClient;
-    multio_handle_t(const eckit::LocalConfiguration& config) : MultioClient{config} {}
+    multio_handle_t(const ConfigurationContext& confCtx) : MultioClient{confCtx} {}
 };
 
 struct multio_metadata_t : public multio::message::Metadata {
@@ -130,16 +134,22 @@ int multio_set_failure_handler(multio_failure_handler_t handler, void* context) 
 
 int multio_new_handle_from_config(multio_handle_t** mio, const char* configuration_path) {
     return wrapApiFunction([configuration_path, mio]() {
-        const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_path == NULL ? configuration_file() : eckit::PathName(configuration_path)}};
-        (*mio) = new multio_handle_t{config};
+        (*mio) = new multio_handle_t{
+            configuration_path == NULL 
+            ? ConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())
+            : ConfigurationContext(
+                eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName(configuration_path)}},
+                configuration_path_name(),
+                configuration_path
+                )
+        };
     });
 }
 
 
 int multio_new_handle(multio_handle_t** mio) {
     return wrapApiFunction([mio]() {
-        const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_file()}};
-        (*mio) = new multio_handle_t{config};
+        (*mio) = new multio_handle_t{ConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())};
     });
 }
 
@@ -153,26 +163,37 @@ int multio_delete_handle(multio_handle_t* mio) {
 int multio_start_server_from_config(const char* configuration_path, const char* server_name_key) {
     return wrapApiFunction([=]() {
         std::string server_name(server_name_key);
-        const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_path == NULL ? configuration_file() : eckit::PathName(configuration_path)}};
-        if (!config.has(server_name)) {
+       
+        ConfigurationContext confCtx(
+            configuration_path == NULL 
+            ? ConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())
+            : ConfigurationContext(
+                eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName(configuration_path)}},
+                configuration_path_name(),
+                configuration_path
+                )
+            );
+        if (!confCtx.config().has(server_name)) {
             std::ostringstream oss;
             oss << "Configuration '" << server_name << "' not found in configuration " << configuration_path;
             throw eckit::Exception(oss.str());
         }
-        multio::server::MultioServer{config.getSubConfiguration(server_name)};
+        multio::server::MultioServer{confCtx.subContext(server_name)};
     });
 }
 
 int multio_start_server(const char* server_name_key) {
     return wrapApiFunction([=]() {
         std::string server_name(server_name_key);
-        const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_file()}};
-        if (!config.has(server_name)) {
+        ConfigurationContext confCtx(
+            ConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())
+            );
+        if (!confCtx.config().has(server_name)) {
             std::ostringstream oss;
             oss << "Configuration '" << server_name << "' not found";
             throw eckit::Exception(oss.str());
         }
-        multio::server::MultioServer{config.getSubConfiguration(server_name)};
+        multio::server::MultioServer{confCtx.subContext(server_name)};
     });
 }
 

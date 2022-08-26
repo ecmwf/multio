@@ -12,7 +12,6 @@
 
 #include <algorithm>
 
-#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
@@ -33,8 +32,10 @@ std::vector<std::string> fetch_items(const std::string& match, const eckit::Conf
 }
 }  // namespace
 
-Select::Select(const eckit::Configuration& config) :
-    Action{config}, match_{config.getString("match")}, items_{fetch_items(match_, config)} {
+Select::Select(const ConfigurationContext& confCtx) :
+    Action{confCtx},
+    match_{confCtx.config().getString("match")},
+    items_{fetch_items(match_, confCtx.config())} {
     if (std::none_of(begin(matchTypes), end(matchTypes),
                      [this](const std::string& mt) { return match_ == mt; })) {
         throw eckit::SeriousBug{"Cannot match " + match_};
@@ -63,7 +64,7 @@ bool Select::matchPlan(const Message& msg) const {
 void Select::print(std::ostream& os) const {
     os << "Select(" << plural.at(match_) << "=(";
     bool first = true;
-    for(const auto& cat : items_) {
+    for (const auto& cat : items_) {
         os << (first ? "" : ", ");
         os << cat;
         first = false;

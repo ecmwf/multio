@@ -23,19 +23,18 @@
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/message/Message.h"
-
-namespace eckit {
-class Configuration;
-}
+#include "multio/util/ConfigurationContext.h"
 
 namespace multio {
 namespace action {
+
+using util::ConfigurationContext;
 
 class Action;
 
 class Plan : private eckit::NonCopyable {
 public:
-    Plan(const eckit::Configuration& config);
+    Plan(const ConfigurationContext& confCtx);
     ~Plan();
 
     void process(message::Message msg);

@@ -48,8 +48,8 @@ Message decodeMessage(eckit::Stream& stream) {
     stream >> buffer;
 
     return Message{Message::Header{static_cast<Message::Tag>(t), TcpPeer{src_grp, src_id},
-                                TcpPeer{dest_grp, dest_id}, std::move(fieldId)},
-                std::move(buffer)};
+                                   TcpPeer{dest_grp, dest_id}, std::move(fieldId)},
+                   std::move(buffer)};
 }
 }  // namespace
 
@@ -70,8 +70,7 @@ struct Connection {
     eckit::net::TCPSocket socket_;
 
     Connection(eckit::Select& select, eckit::net::TCPSocket& socket) :
-        select_{select},
-        socket_{socket} {
+        select_{select}, socket_{socket} {
         select_.add(socket_);
     }
 
@@ -83,10 +82,9 @@ struct Connection {
     bool ready() { return select_.set(socket_); }
 };
 
-TcpTransport::TcpTransport(const eckit::Configuration& config) :
-    Transport(config),
-    local_{"localhost", config.getUnsigned("local_port")} {
-    auto serverConfigs = config.getSubConfigurations("servers");
+TcpTransport::TcpTransport(const ConfigurationContext& confCtx) :
+    Transport(confCtx), local_{"localhost", confCtx.config().getUnsigned("local_port")} {
+    auto serverConfigs = confCtx.config().getSubConfigurations("servers");
 
     for (auto cfg : serverConfigs) {
         auto host = cfg.getString("host");
@@ -143,19 +141,19 @@ Message TcpTransport::nextMessage(eckit::net::TCPSocket& socket) const {
 }
 
 Message TcpTransport::receive() {
-
     waitForEvent();
 
     for (auto it = begin(incoming_); it != end(incoming_); ++it) {
-        if (not (*it)->ready()) {
+        if (not(*it)->ready()) {
             continue;
         }
 
         auto msg = nextMessage((*it)->socket_);
 
-        if(msg.tag() == Message::Tag::Close) {
+        if (msg.tag() == Message::Tag::Close) {
             incoming_.erase(it);
-        } else {
+        }
+        else {
             std::swap(*it, incoming_[incoming_.size() - 1]);
         }
 
@@ -198,7 +196,7 @@ Peer TcpTransport::localPeer() const {
 PeerList TcpTransport::createServerPeers() const {
     PeerList serverPeers;
 
-    for (auto cfg : config_.getSubConfigurations("servers")) {
+    for (auto cfg : confCtx_.config().getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             serverPeers.emplace_back(new TcpPeer{host, port});
@@ -208,9 +206,8 @@ PeerList TcpTransport::createServerPeers() const {
 }
 
 void TcpTransport::createPeers() const {
-
     // Client peers
-    for (auto cfg : config_.getSubConfigurations("clients")) {
+    for (auto cfg : confCtx_.config().getSubConfigurations("clients")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             clientPeers_.emplace_back(new TcpPeer{host, port});
@@ -218,13 +215,12 @@ void TcpTransport::createPeers() const {
     }
 
     // Server peers
-    for (auto cfg : config_.getSubConfigurations("servers")) {
+    for (auto cfg : confCtx_.config().getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             serverPeers_.emplace_back(new TcpPeer{host, port});
         }
     }
-
 }
 
 void TcpTransport::print(std::ostream& os) const {

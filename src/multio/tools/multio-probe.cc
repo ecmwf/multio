@@ -13,9 +13,13 @@
 #include "multio/LibMultio.h"
 #include "multio/server/MultioServer.h"
 #include "multio/util/ConfigurationPath.h"
+#include "multio/util/ConfigurationContext.h"
 #include "multio/tools/MultioTool.h"
 
 using multio::util::configuration_file;
+using multio::util::configuration_file_name;
+using multio::util::configuration_path_name;
+using multio::util::ConfigurationContext;
 
 using namespace multio::server;
 
@@ -46,10 +50,10 @@ private:
     std::string transport_ = "mpi";
     int port_ = 7777;
     bool test_ = false;
-    eckit::LocalConfiguration config_;
+    ConfigurationContext confCtx_;
 };
 
-MultioProbe::MultioProbe(int argc, char** argv) : multio::MultioTool(argc, argv) {
+MultioProbe::MultioProbe(int argc, char** argv) : multio::MultioTool(argc, argv), confCtx_(configuration_file(), configuration_path_name(), configuration_file_name())  {
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("port", "TCP port"));
@@ -61,8 +65,9 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
     args.get("port", port_);
     args.get("test", test_);
     args.get("server", serverName_);
-
-    eckit::LocalConfiguration fullConfig{eckit::YAMLConfiguration{configuration_file()}};
+    
+   
+    confCtx_ = confCtx_.subContext(serverName_);
 
     if(transport_ == "mpi") {
         if (!eckit::mpi::hasComm("nemo")) {
@@ -81,10 +86,9 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
                            << std::endl;
     }
 
-    config_ = fullConfig.getSubConfiguration(serverName_);
-    config_.set("local_port", port_);
-    config_.set("group", "nemo");
-    config_.set("count", eckit::mpi::comm("server_comm").size());
+    confCtx_.config().set("local_port", port_);
+    confCtx_.config().set("group", "nemo");
+    confCtx_.config().set("count", eckit::mpi::comm("server_comm").size());
 }
 
 void MultioProbe::finish(const eckit::option::CmdArgs&) {}
@@ -101,11 +105,11 @@ void MultioProbe::execute(const eckit::option::CmdArgs&) {
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioProbe::executeLive() {
-    MultioServer server{config_};
+    MultioServer server{confCtx_};
 }
 
 void MultioProbe::executeTest() {
-    MultioServer server{config_};
+    MultioServer server{confCtx_};
 
     testData();
 }

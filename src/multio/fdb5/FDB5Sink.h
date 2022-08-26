@@ -26,14 +26,17 @@
 #include "fdb5/api/FDB.h"
 
 #include "multio/sink/DataSink.h"
+#include "multio/util/ConfigurationContext.h"
 
 namespace multio {
+
+using util::ConfigurationContext;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 class FDB5Sink : public multio::DataSink {
 public:
-    explicit FDB5Sink(const eckit::Configuration& config);
+    explicit FDB5Sink(const ConfigurationContext& confCtx);
 
 private:
     void write(eckit::message::Message msg) override;

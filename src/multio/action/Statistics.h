@@ -30,7 +30,7 @@ class TemporalStatistics;
 
 class Statistics : public Action {
 public:
-    explicit Statistics(const eckit::Configuration& config);
+    explicit Statistics(const ConfigurationContext& confCtx);
 
     void execute(message::Message msg) const override;
 

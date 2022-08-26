@@ -31,15 +31,15 @@ using eckit::LocalConfiguration;
 namespace multio {
 namespace server {
 
-Dispatcher::Dispatcher(const eckit::Configuration& config) {
+Dispatcher::Dispatcher(const util::ConfigurationContext& confCtx) {
     timer_.start();
 
-    eckit::Log::debug<LibMultio>() << config << std::endl;
+    eckit::Log::debug<LibMultio>() << confCtx.config() << std::endl;
 
-    const std::vector<LocalConfiguration> plans = config.getSubConfigurations("plans");
-    for (const auto& cfg : plans) {
-        eckit::Log::debug<LibMultio>() << cfg << std::endl;
-        plans_.emplace_back(new action::Plan(cfg));
+    util::ConfigurationContext::SubConfigurationContexts plans = confCtx.subContexts("plans");
+    for (auto&& subCtx: plans) {
+        eckit::Log::debug<LibMultio>() << subCtx.config() << std::endl;
+        plans_.emplace_back(new action::Plan(std::move(subCtx)));
     }
 }
 

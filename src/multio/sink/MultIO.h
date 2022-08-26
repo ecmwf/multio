@@ -28,14 +28,17 @@
 #include "multio/sink/DataSink.h"
 #include "multio/sink/IOStats.h"
 #include "multio/sink/Trigger.h"
+#include <multio/util/ConfigurationContext.h>
 
 namespace multio {
+
+using util::ConfigurationContext;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 class MultIO final : public DataSink {
 public:
-    explicit MultIO(const eckit::Configuration& config);
+    explicit MultIO(const ConfigurationContext& config);
 
     ~MultIO() override = default;
 

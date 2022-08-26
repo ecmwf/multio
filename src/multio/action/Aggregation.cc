@@ -24,7 +24,7 @@ namespace action {
 
 using message::Peer;
 
-Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
+Aggregation::Aggregation(const ConfigurationContext& confCtx) : Action(confCtx) {}
 
 void Aggregation::execute(Message msg) const {
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {

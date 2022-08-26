@@ -17,7 +17,7 @@
 namespace multio {
 namespace action {
 
-Null::Null(const eckit::Configuration& config) : Action(config) {}
+Null::Null(const ConfigurationContext& confCtx) : Action(confCtx) {}
 
 void Null::execute(message::Message /*msg*/) const {
     ASSERT(!next_);

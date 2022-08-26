@@ -34,12 +34,16 @@
 #include "multio/server/MultioServer.h"
 #include "multio/server/NemoToGrib.h"
 #include "multio/util/ConfigurationPath.h"
+#include "multio/util/ConfigurationContext.h"
 #include "multio/util/print_buffer.h"
 
 using multio::message::Peer;
 using multio::message::Message;
 using multio::message::Metadata;
 using multio::util::configuration_file;
+using multio::util::configuration_file_name;
+using multio::util::configuration_path_name;
+using multio::util::ConfigurationContext;
 using multio::util::print_buffer;
 using multio::server::MultioClient;
 using multio::server::MultioServer;
@@ -60,7 +64,7 @@ struct GribData {
 }  // namespace
 
 class MultioNemo {
-    eckit::LocalConfiguration config_;
+    ConfigurationContext confCtx_;
     const std::set<std::string> activeFields_;
 
     // Nemo to grib dictionary
@@ -81,12 +85,12 @@ class MultioNemo {
     const long bitsPerValue_ = 16;
 
     MultioNemo() :
-        config_{eckit::YAMLConfiguration{configuration_file()}},
-        activeFields_{fetch_active_fields(config_)} {
+        confCtx_(configuration_file(), configuration_path_name(), configuration_file_name()),
+        activeFields_{fetch_active_fields(confCtx_.config())} {
         static const char* argv[2] = {"MultioNemo", 0};
         eckit::Main::initialise(1, const_cast<char**>(argv));
 
-        metadata_.set("run", config_.getSubConfiguration("run"));
+        metadata_.set("run", confCtx_.config().getSubConfiguration("run"));
     }
 
 public:
@@ -122,7 +126,7 @@ public:
         clientCount_ = eckit::mpi::comm(oce_str.c_str()).size();
         serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
 
-        multioClient_.reset(new MultioClient{config_});
+        multioClient_.reset(new MultioClient{confCtx_});
 
         return ret_comm;
     }
@@ -140,7 +144,7 @@ public:
                            << ",size=" << eckit::mpi::comm("server_comm").size() << ")"
                            << std::endl;
 
-        auto serverConfig = config_.getSubConfiguration(server_name);
+        auto serverConfig = confCtx_.subContext(server_name);
 
         multioServer_.reset(new MultioServer{serverConfig});
     }

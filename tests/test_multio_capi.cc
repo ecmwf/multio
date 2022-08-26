@@ -8,6 +8,9 @@
  * does it submit to any jurisdiction.
  */
 
+// @author Philipp Geier
+
+
 #include <unistd.h>
 #include <cstring>
 #include <limits>
@@ -54,7 +57,7 @@ CASE("Create handle with default configuration without MPI splitting") {
     int err;
     err = multio_new_handle(&mdp);
     std::string errStr(multio_error_string(err));
-    std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
+    // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind("SeriousBug: No communicator called nemo") != std::string::npos);
 }

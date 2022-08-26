@@ -12,7 +12,6 @@
 
 #include <algorithm>
 
-#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
@@ -23,7 +22,7 @@
 namespace multio {
 namespace action {
 
-namespace  {
+namespace {
 
 const std::map<const char, const std::string> symbol_to_unit{
     {'h', "hour"}, {'d', "day"}, {'m', "month"}};
@@ -47,16 +46,15 @@ long set_frequency(const std::string& output_freq) {
 
 }  // namespace
 
-Statistics::Statistics(const eckit::Configuration& config) :
-    Action{config},
-    timeUnit_{set_unit(config.getString("output-frequency"))},
-    timeSpan_{set_frequency(config.getString("output-frequency"))},
-    operations_{config.getStringVector("operations")} {}
+Statistics::Statistics(const ConfigurationContext& confCtx) :
+    Action{confCtx},
+    timeUnit_{set_unit(confCtx.config().getString("output-frequency"))},
+    timeSpan_{set_frequency(confCtx.config().getString("output-frequency"))},
+    operations_{confCtx.config().getStringVector("operations")} {}
 
 void Statistics::execute(message::Message msg) const {
-
     // Pass through -- no statistics for messages other than fields
-    if(msg.tag() != message::Message::Tag::Field) {
+    if (msg.tag() != message::Message::Tag::Field) {
         executeNext(msg);
         return;
     }

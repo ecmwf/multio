@@ -24,6 +24,7 @@
 
 #include "multio/message/Peer.h"
 #include "multio/message/Message.h"
+#include "multio/util/ConfigurationContext.h"
 
 namespace eckit {
 class Configuration;
@@ -41,7 +42,7 @@ class Dispatcher;
 
 class Listener {
 public:
-    Listener(const eckit::Configuration& config, transport::Transport& trans);
+    Listener(const util::ConfigurationContext& confCtx, transport::Transport& trans);
 
     void start();
 

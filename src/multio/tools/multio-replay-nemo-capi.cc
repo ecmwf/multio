@@ -23,7 +23,7 @@
 #include "multio/message/Metadata.h"
 
 
-using multio::util::configuration_file;
+using multio::util::configuration_file_name;
 
 //----------------------------------------------------------------------------------------------------------------
 /**
@@ -250,13 +250,13 @@ void MultioReplayNemoCApi::initClient() {
     }
     //! TODO run metadata will need to be fetched from config. Hence config is read twice - in the
     //! api and here
-    configPath_ = configuration_file();
+    configPath_ = configuration_file_name();
     config_ = eckit::LocalConfiguration{eckit::YAMLConfiguration{configPath_}};
 
     rank_ = eckit::mpi::comm("world").rank();
     eckit::mpi::addComm("nemo", eckit::mpi::comm().communicator());
 
-    auto configPath = configuration_file();
+    auto configPath = configuration_file_name();
 
     multio_set_failure_handler(multio_throw_failure_handler, nullptr);
     multio_new_handle_from_config(&multio_handle, configPath.asString().c_str());

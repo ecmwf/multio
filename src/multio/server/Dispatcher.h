@@ -24,6 +24,7 @@
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/message/Message.h"
+#include "multio/util/ConfigurationContext.h"
 
 namespace eckit {
 class Configuration;
@@ -40,7 +41,7 @@ namespace server {
 
 class Dispatcher : private eckit::NonCopyable {
 public:
-    Dispatcher(const eckit::Configuration& config);
+    Dispatcher(const util::ConfigurationContext& confCtx);
     ~Dispatcher();
 
     void dispatch(eckit::Queue<message::Message>& queue);

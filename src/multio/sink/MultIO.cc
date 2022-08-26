@@ -18,7 +18,6 @@
 #include <unistd.h>
 #include <functional>
 
-#include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/value/Value.h"
@@ -53,18 +52,14 @@ public:
 
 using namespace std::placeholders;
 
-MultIO::MultIO(const eckit::Configuration& config) :
-    DataSink(config),
+MultIO::MultIO(const ConfigurationContext& confCtx) :
+    DataSink(confCtx),
     stats_(std::string("Multio ") + Main::hostname() + ":" +
            Translator<int, std::string>()(::getpid())),
-    trigger_(config) {
+    trigger_(confCtx_) {
 
-    const std::vector<LocalConfiguration> configs = config.getSubConfigurations("sinks");
-
-    std::vector<LocalConfiguration>::const_iterator it = configs.begin();
-    std::vector<LocalConfiguration>::const_iterator end = configs.end();
-    for (; it != end; ++it) {
-        DataSink* sink = DataSinkFactory::instance().build(it->getString("type"), *it);
+    for(auto&& subCtx: confCtx.subContexts("sinks")) {
+        DataSink* sink = DataSinkFactory::instance().build(subCtx.config().getString("type"), std::move(subCtx));
         ASSERT(sink);
         sink->setId(sinks_.size());
         sinks_.emplace_back(sink);

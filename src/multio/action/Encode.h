@@ -20,16 +20,12 @@
 #include "multio/action/GribEncoder.h"
 #include "multio/action/Action.h"
 
-namespace eckit {
-class Configuration;
-}
-
 namespace multio {
 namespace action {
 
 class Encode : public Action {
 public:
-    explicit Encode(const eckit::Configuration& config);
+    explicit Encode(const ConfigurationContext& confCtx);
 
     void execute(message::Message msg) const override;
 

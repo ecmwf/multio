@@ -12,7 +12,6 @@
 
 #include <fstream>
 
-#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/message/Message.h"
 
@@ -23,8 +22,8 @@
 namespace multio {
 namespace action {
 
-Sink::Sink(const eckit::Configuration& config) :
-    Action(config), report_{config.getBool("report", true)}, mio_{config} {}
+Sink::Sink(const ConfigurationContext& confCtx) :
+    Action(confCtx), report_{confCtx.config().getBool("report", true)}, mio_{confCtx} {}
 
 Sink::~Sink() {
     if (report_) {

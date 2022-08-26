@@ -30,6 +30,7 @@
 #include "multio/ifsio/ifsio.h"
 #include "multio/ifsio/ifsio_internals.h"
 #include "multio/multio_version.h"
+#include "multio/util/ConfigurationContext.h"
 
 #include "multio/sink/MultIO.h"
 
@@ -71,9 +72,9 @@ public:
     }
 
 private:
-    void init(Configuration& config) {
-        ptr_.reset(new MultIO(config));
-        bpv_.reset(new EncodeBitsPerValue(config));
+    void init(const ConfigurationContext& confCtx) {
+        ptr_.reset(new MultIO(confCtx));
+        bpv_.reset(new EncodeBitsPerValue(confCtx.config()));
     }
 
     MIO() : log_(false), dirty_(false) {
@@ -84,16 +85,14 @@ private:
         if (::getenv("MULTIO_CONFIG")) {
             std::string cfg(::getenv("MULTIO_CONFIG"));
             std::cout << "MultIO initialising with config " << cfg << std::endl;
-            eckit::YAMLConfiguration config(cfg);
-            init(config);
+            init(ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(cfg)), cfg, cfg));
             return;
         }
 
         if (::getenv("MULTIO_CONFIG_FILE")) {
             PathName path(::getenv("MULTIO_CONFIG_FILE"));
             std::cout << "MultIO initialising with file " << path << std::endl;
-            eckit::YAMLConfiguration config(path);
-            init(config);
+            init(ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(path)), path, path));
             return;
         }
 
@@ -119,8 +118,7 @@ private:
         std::cout << "MultIO initialising with $MULTIO_SINKS " << oss.str() << std::endl;
 
         std::istringstream iss(oss.str());
-        eckit::YAMLConfiguration config(iss);
-        init(config);
+        init(ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(iss)), "", ""));
     }
 
     ~MIO() {

@@ -28,6 +28,13 @@ ecbuild_add_test( TARGET    test_multio_capi
                   ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/../tests/server/config"
 )
 
+ecbuild_add_test( TARGET    test_multio_confctx
+                  SOURCES   test_multio_confctx.cc
+                  CONDITION HAVE_MULTIO_SERVER
+                  LIBS      multio 
+                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/../tests/server/config"
+)
+
 
 list( APPEND _test_environment
     FDB_HOME=${CMAKE_BINARY_DIR}/multio

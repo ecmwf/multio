@@ -16,6 +16,7 @@
 #include <map>
 
 #include "multio/action/Plan.h"
+#include "multio/util/ConfigurationContext.h"
 
 #include "eckit/log/Statistics.h"
 
@@ -26,6 +27,8 @@ class LocalConfiguration;
 }  // namespace eckit
 
 namespace multio {
+
+using util::ConfigurationContext;
 
 namespace message {
 class Message;
@@ -38,7 +41,7 @@ class Transport;
 
 class MultioClient {
 public:
-    explicit MultioClient(const eckit::Configuration& config);
+    explicit MultioClient(const ConfigurationContext& config);
 
     ~MultioClient();
 

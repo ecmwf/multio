@@ -19,8 +19,8 @@
 namespace multio {
 namespace action {
 
-Print::Print(const eckit::Configuration& config) : Action(config) {
-    stream_ = config.getString("stream", "info");
+Print::Print(const ConfigurationContext& confCtx) : Action(confCtx) {
+    stream_ = confCtx.config().getString("stream", "info");
 
     if (stream_ == "info") {
         os = &eckit::Log::info();

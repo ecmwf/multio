@@ -23,7 +23,7 @@ using multio::message::Peer;
 namespace multio {
 namespace server {
 
-MultioClient::MultioClient(const eckit::Configuration& config) {
+MultioClient::MultioClient(const ConfigurationContext& confCtx) {
     totClientTimer_.start();
 
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
@@ -37,14 +37,10 @@ MultioClient::MultioClient(const eckit::Configuration& config) {
             << std::setw(6) << std::setfill('0') << mSecs << " -- ";
 
 
-    LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << config << std::endl;
-
-    const std::vector<eckit::LocalConfiguration> plans =
-        config.getSubConfiguration("client").getSubConfigurations("plans");
-
-    for (const auto& cfg : plans) {
-        eckit::Log::debug<LibMultio>() << cfg << std::endl;
-        plans_.emplace_back(new action::Plan(cfg));
+    LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << confCtx.config() << std::endl;
+    for (auto&& cfg : confCtx.subContext("client").subContexts("plans")) {
+        eckit::Log::debug<LibMultio>() << cfg.config() << std::endl;
+        plans_.emplace_back(new action::Plan(std::move(cfg)));
     }
 }
 

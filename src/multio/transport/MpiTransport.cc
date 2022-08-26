@@ -19,8 +19,8 @@
 #include "eckit/runtime/Main.h"
 #include "eckit/serialisation/MemoryStream.h"
 
-#include "multio/util/logfile_name.h"
 #include "multio/util/ScopedTimer.h"
+#include "multio/util/logfile_name.h"
 
 namespace multio {
 namespace transport {
@@ -50,8 +50,8 @@ Message decodeMessage(eckit::Stream& stream) {
     stream >> buffer;
 
     return Message{Message::Header{static_cast<Message::Tag>(t), MpiPeer{src_grp, src_id},
-                                MpiPeer{dest_grp, dest_id}, std::move(fieldId)},
-                std::move(buffer)};
+                                   MpiPeer{dest_grp, dest_id}, std::move(fieldId)},
+                   std::move(buffer)};
 }
 
 const size_t defaultBufferSize = 64 * 1024 * 1024;
@@ -59,9 +59,10 @@ const size_t defaultPoolSize = 128;
 
 }  // namespace
 
-MpiTransport::MpiTransport(const eckit::Configuration& cfg) :
-    Transport(cfg),
-    local_{cfg.getString("group"), eckit::mpi::comm(cfg.getString("group").c_str()).rank()},
+MpiTransport::MpiTransport(const ConfigurationContext& confCtx) :
+    Transport(confCtx),
+    local_{confCtx.config().getString("group"),
+           eckit::mpi::comm(confCtx.config().getString("group").c_str()).rank()},
     pool_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", defaultPoolSize),
           eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", defaultBufferSize),
           comm(), statistics_} {}
@@ -89,29 +90,29 @@ void MpiTransport::closeConnections() {
 }
 
 Message MpiTransport::receive() {
-
     util::ScopedTiming timing{statistics_.totReturnTimer_, statistics_.totReturnTiming_};
     /**
      * Read raw messages from streamQueue_ (filled by listen() in other thread)
-     * 
+     *
      * Decode and add to msgPack_ (msgQueue)
-     * 
+     *
      * Return single messages until msgPack_ is empty and start over
      */
 
     do {
         while (not msgPack_.empty()) {
             util::ScopedTiming retTiming{statistics_.returnTimer_, statistics_.returnTiming_};
-            //! TODO For switch to MPMC queue: combine front() and pop() 
+            //! TODO For switch to MPMC queue: combine front() and pop()
             auto msg = msgPack_.front();
             msgPack_.pop();
             return msg;
         }
 
-        //! TODO For switch to MPMC queue: combine front() and pop() 
+        //! TODO For switch to MPMC queue: combine front() and pop()
         if (auto strm = streamQueue_.front()) {
             while (strm->position() < strm->size()) {
-                util::ScopedTiming decodeTiming{statistics_.decodeTimer_, statistics_.decodeTiming_};
+                util::ScopedTiming decodeTiming{statistics_.decodeTimer_,
+                                                statistics_.decodeTiming_};
                 auto msg = decodeMessage(*strm);
                 msgPack_.push(msg);
             }
@@ -155,7 +156,7 @@ void MpiTransport::bufferedSend(const Message& msg) {
 
 void MpiTransport::createPeers() const {
     auto rank = 0ul;
-    auto clientCount = comm().size() - config_.getUnsigned("count");
+    auto clientCount = comm().size() - confCtx_.config().getUnsigned("count");
     while (rank != clientCount) {
         clientPeers_.emplace_back(new MpiPeer{local_.group(), rank++});
     }
@@ -174,10 +175,11 @@ Peer MpiTransport::localPeer() const {
 
 void MpiTransport::listen() {
     auto status = probe();
-    if(status.error()) {
+    if (status.error()) {
         return;
     }
-    // TODO status contains information on required message size - use that to retrieve a sufficient large buffer?
+    // TODO status contains information on required message size - use that to retrieve a sufficient
+    // large buffer?
     auto& buf = pool_.findAvailableBuffer();
     auto sz = blockingReceive(status, buf);
     util::ScopedTiming timing{statistics_.pushToQueueTimer_, statistics_.pushToQueueTiming_};
@@ -189,7 +191,7 @@ PeerList MpiTransport::createServerPeers() const {
 
     // This is dangerous as it requires having the same logic as in NEMO or IFS
     // This needs to come from the configuration or perhaps you want to create an intercommunicator
-    auto rank = comm().size() - config_.getUnsigned("count");
+    auto rank = comm().size() - confCtx_.config().getUnsigned("count");
     while (rank != comm().size()) {
         serverPeers.emplace_back(new MpiPeer{local_.group(), rank++});
     }

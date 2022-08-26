@@ -26,6 +26,7 @@
 
 #include "multio/action/ActionStatistics.h"
 #include "multio/message/Message.h"
+#include "multio/util/ConfigurationContext.h"
 
 namespace eckit {
 class Configuration;
@@ -34,11 +35,13 @@ class Configuration;
 namespace multio {
 namespace action {
 
+using util::ConfigurationContext;
+
 //--------------------------------------------------------------------------------------------------
 
 class Action : private eckit::NonCopyable {
 public:
-    Action(const eckit::Configuration& config);
+    Action(const ConfigurationContext& confCtx);
     virtual ~Action();
 
     void executeNext(message::Message msg) const;
@@ -46,6 +49,7 @@ public:
     virtual void execute(message::Message msg) const = 0;
 
 protected:
+    ConfigurationContext confCtx_;
 
     std::string type_;
 
@@ -77,7 +81,7 @@ public:  // methods
 
     void list(std::ostream&);
 
-    Action* build(const std::string&, const eckit::Configuration& config);
+    Action* build(const std::string&, const ConfigurationContext& confCtx);
 
 private:  // members
     std::map<std::string, const ActionBuilderBase*> factories_;
@@ -87,7 +91,7 @@ private:  // members
 
 class ActionBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual Action* make(const eckit::Configuration& config) const = 0;
+    virtual Action* make(const ConfigurationContext& confCtx) const = 0;
 
 protected:  // methods
     ActionBuilderBase(const std::string&);
@@ -99,7 +103,7 @@ protected:  // methods
 
 template <class T>
 class ActionBuilder final : public ActionBuilderBase {
-    Action* make(const eckit::Configuration& config) const override { return new T(config); }
+    Action* make(const ConfigurationContext& confCtx) const override { return new T(confCtx); }
 
 public:
     ActionBuilder(const std::string& name) : ActionBuilderBase(name) {}

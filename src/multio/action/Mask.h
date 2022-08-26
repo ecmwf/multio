@@ -21,16 +21,12 @@
 
 #include "multio/action/Action.h"
 
-namespace eckit {
-class Configuration;
-}
-
 namespace multio {
 namespace action {
 
 class Mask : public Action {
 public:
-    explicit Mask(const eckit::Configuration& config);
+    explicit Mask(const ConfigurationContext& confCtx);
 
     void execute(message::Message msg) const override;
 

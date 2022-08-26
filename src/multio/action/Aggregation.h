@@ -23,10 +23,6 @@
 
 #include "multio/action/Action.h"
 
-namespace eckit {
-class Configuration;
-}
-
 namespace multio {
 namespace action {
 
@@ -34,7 +30,7 @@ using message::Message;
 
 class Aggregation : public Action {
 public:
-    explicit Aggregation(const eckit::Configuration& config);
+    explicit Aggregation(const ConfigurationContext& confCtx);
 
     void execute(Message msg) const override;
 

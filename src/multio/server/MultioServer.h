@@ -14,12 +14,15 @@
 #include <memory>
 
 #include "multio/server/Listener.h"
+#include "multio/util/ConfigurationContext.h"
 
 namespace eckit {
 class Configuration;
 }  // namespace eckit
 
 namespace multio {
+
+using util::ConfigurationContext;
 
 namespace transport {
 class Transport;
@@ -29,7 +32,7 @@ namespace server {
 
 class MultioServer {
 public:
-    MultioServer(const eckit::Configuration& config);
+    MultioServer(const ConfigurationContext& confCtx);
 
     ~MultioServer();
 

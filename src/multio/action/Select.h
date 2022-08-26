@@ -22,8 +22,6 @@
 
 #include "multio/action/Action.h"
 
-namespace eckit { class Configuration; }
-
 namespace multio {
 namespace action {
 
@@ -31,7 +29,7 @@ using message::Message;
 
 class Select : public Action {
 public:
-    explicit Select(const eckit::Configuration& config);
+    explicit Select(const ConfigurationContext& confCtx);
 
     void execute(Message msg) const override;
 

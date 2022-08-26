@@ -22,10 +22,6 @@
 #include "multio/sink/MultIO.h"
 #include "multio/action/Action.h"
 
-namespace eckit {
-class Configuration;
-}
-
 namespace multio {
 
 class DataSink;
@@ -36,7 +32,7 @@ using message::Message;
 
 class Sink : public Action {
 public:
-    explicit Sink(const eckit::Configuration& config);
+    explicit Sink(const ConfigurationContext& confCtx);
     ~Sink();
 
     void execute(message::Message msg) const override;

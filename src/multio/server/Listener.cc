@@ -24,6 +24,7 @@
 #include "multio/message/Message.h"
 
 #include "multio/util/ScopedThread.h"
+#include "multio/util/ConfigurationContext.h"
 #include "multio/server/Dispatcher.h"
 #include "multio/transport/Transport.h"
 
@@ -34,8 +35,8 @@ using message::Message;
 using util::ScopedThread;
 using transport::Transport;
 
-Listener::Listener(const eckit::Configuration& config, Transport& trans) :
-    dispatcher_{std::make_shared<Dispatcher>(config)},
+Listener::Listener(const util::ConfigurationContext& confCtx, Transport& trans) :
+    dispatcher_{std::make_shared<Dispatcher>(confCtx)},
     transport_{trans},
     clientCount_{transport_.clientPeers().size()},
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE",1024*1024)) {}

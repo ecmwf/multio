@@ -19,16 +19,12 @@
 
 #include "multio/action/Action.h"
 
-namespace eckit {
-class Configuration;
-}
-
 namespace multio {
 namespace action {
 
 class Null : public Action {
 public:
-    explicit Null(const eckit::Configuration& config);
+    explicit Null(const ConfigurationContext& confCtx);
 
     void execute(message::Message msg) const override;
 

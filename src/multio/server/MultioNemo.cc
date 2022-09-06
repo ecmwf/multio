@@ -44,6 +44,8 @@ using multio::util::configuration_file;
 using multio::util::configuration_file_name;
 using multio::util::configuration_path_name;
 using multio::util::ConfigurationContext;
+using multio::util::ClientConfigurationContext;
+using multio::util::ServerConfigurationContext;
 using multio::util::print_buffer;
 using multio::server::MultioClient;
 using multio::server::MultioServer;
@@ -126,7 +128,7 @@ public:
         clientCount_ = eckit::mpi::comm(oce_str.c_str()).size();
         serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
 
-        multioClient_.reset(new MultioClient{confCtx_});
+        multioClient_.reset(new MultioClient{ClientConfigurationContext{confCtx_}});
 
         return ret_comm;
     }
@@ -144,7 +146,7 @@ public:
                            << ",size=" << eckit::mpi::comm("server_comm").size() << ")"
                            << std::endl;
 
-        auto serverConfig = confCtx_.subContext(server_name);
+        auto serverConfig = ServerConfigurationContext(confCtx_.subContext(server_name));
 
         multioServer_.reset(new MultioServer{serverConfig});
     }

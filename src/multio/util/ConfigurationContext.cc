@@ -5,29 +5,81 @@ namespace multio {
 namespace util {
 
 
-SubContextIteratorMapper::SubContextIteratorMapper(const ConfigurationContext& confCtx) : confCtx_(confCtx) {}
-SubContextIteratorMapper::SubContextIteratorMapper(ConfigurationContext&& confCtx) : confCtx_(std::move(confCtx)) {}
+SubContextIteratorMapper::SubContextIteratorMapper(const ConfigurationContext& confCtx) :
+    confCtx_(confCtx) {}
+SubContextIteratorMapper::SubContextIteratorMapper(ConfigurationContext&& confCtx) :
+    confCtx_(std::move(confCtx)) {}
 
-ConfigurationContext SubContextIteratorMapper::operator()(const eckit::LocalConfiguration& config) const {
-        return confCtx_.recast(config);
+ConfigurationContext SubContextIteratorMapper::operator()(
+    const eckit::LocalConfiguration& config) const {
+    return confCtx_.recast(config);
 }
+
+
+// GlobalConfCtx
+GlobalConfCtx::GlobalConfCtx(const eckit::LocalConfiguration& config,
+                             const eckit::PathName& pathName, const eckit::PathName& fileName,
+                             LocalPeerTag localPeerTag) :
+    globalConfig_(config), pathName_(pathName), fileName_(fileName), localPeerTag_(localPeerTag) {}
+
+GlobalConfCtx::GlobalConfCtx(const eckit::PathName& pathName, const eckit::PathName& fileName,
+                             LocalPeerTag localPeerTag) :
+    GlobalConfCtx::GlobalConfCtx(eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}},
+                                 pathName, fileName, localPeerTag) {}
+
+const eckit::LocalConfiguration& GlobalConfCtx::globalConfig() const {
+    return globalConfig_;
+};
+const eckit::PathName& GlobalConfCtx::pathName() const {
+    return pathName_;
+};
+const eckit::PathName& GlobalConfCtx::fileName() const {
+    return fileName_;
+};
+
+LocalPeerTag GlobalConfCtx::localPeerTag() const {
+    return localPeerTag_;
+};
+void GlobalConfCtx::setLocalPeerTag(LocalPeerTag clientOrServer) {
+    localPeerTag_ = clientOrServer;
+};
+
+const MPIParentCommInfo& GlobalConfCtx::getMPIParentCommInfo() const {
+    return mpiParentCommInfo_;
+};
+void GlobalConfCtx::setMPIParentCommInfo(const MPIParentCommInfo& val) {
+    mpiParentCommInfo_ = val;
+};
+
+
+// ConfigurationContext
+ConfigurationContext::ConfigurationContext(const eckit::LocalConfiguration& config,
+                                           std::shared_ptr<GlobalConfCtx> globalConfCtx) :
+    config_(config), globalConfCtx_(std::move(globalConfCtx)){};
 
 
 ConfigurationContext::ConfigurationContext(const eckit::LocalConfiguration& config,
                                            const eckit::LocalConfiguration& globalConfig,
                                            const eckit::PathName& pathName,
-                                           const eckit::PathName& fileName) :
-    config_(config), globalConfig_(globalConfig), pathName_(pathName), fileName_(fileName) {}
+                                           const eckit::PathName& fileName,
+                                           LocalPeerTag localPeerTag) :
+    ConfigurationContext::ConfigurationContext(
+        config,
+        std::shared_ptr<GlobalConfCtx>{new GlobalConfCtx(globalConfig, pathName, fileName, localPeerTag)}) {
+}
 
 ConfigurationContext::ConfigurationContext(const eckit::LocalConfiguration& config,
                                            const eckit::PathName& pathName,
-                                           const eckit::PathName& fileName) :
-    ConfigurationContext::ConfigurationContext(config, config, pathName, fileName) {}
+                                           const eckit::PathName& fileName,
+                                           LocalPeerTag localPeerTag) :
+    ConfigurationContext::ConfigurationContext(config, config, pathName, fileName, localPeerTag) {}
 
 ConfigurationContext::ConfigurationContext(const eckit::PathName& pathName,
-                                           const eckit::PathName& fileName) :
+                                           const eckit::PathName& fileName,
+                                           LocalPeerTag localPeerTag) :
     ConfigurationContext::ConfigurationContext(
-        eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}}, pathName, fileName) {}
+        eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}}, pathName, fileName,
+        localPeerTag) {}
 
 eckit::LocalConfiguration& ConfigurationContext::config() {
     return config_;
@@ -37,15 +89,15 @@ const eckit::LocalConfiguration& ConfigurationContext::config() const {
 };
 
 const eckit::LocalConfiguration& ConfigurationContext::globalConfig() const {
-    return globalConfig_;
+    return globalConfCtx_->globalConfig();
 };
 
 const eckit::PathName& ConfigurationContext::pathName() const {
-    return pathName_;
+    return globalConfCtx_->pathName();
 };
 
 const eckit::PathName& ConfigurationContext::fileName() const {
-    return fileName_;
+    return globalConfCtx_->fileName();
 };
 
 ConfigurationContext ConfigurationContext::subContext(const std::string& subConfiguratinKey) const {
@@ -59,8 +111,41 @@ ConfigurationContext::SubConfigurationContexts ConfigurationContext::subContexts
 };
 
 ConfigurationContext ConfigurationContext::recast(const eckit::LocalConfiguration& config) const {
-    return ConfigurationContext(config, globalConfig_, pathName_, fileName_);
+    return ConfigurationContext(config, globalConfCtx_);
 };
+
+
+// LocalPeerTag
+LocalPeerTag ConfigurationContext::localPeerTag() const {
+    return globalConfCtx_->localPeerTag();
+};
+bool ConfigurationContext::isServer() const {
+    return localPeerTag() == LocalPeerTag::Server;
+};
+bool ConfigurationContext::isClient() const {
+    return localPeerTag() == LocalPeerTag::Client;
+};
+
+ConfigurationContext& ConfigurationContext::setLocalPeerTag(LocalPeerTag clientOrServer) {
+    globalConfCtx_->setLocalPeerTag(clientOrServer);
+    return *this;
+};
+ConfigurationContext& ConfigurationContext::tagServer() {
+    return setLocalPeerTag(LocalPeerTag::Server);
+};
+ConfigurationContext& ConfigurationContext::tagClient() {
+    return setLocalPeerTag(LocalPeerTag::Client);
+};
+
+
+// MPIParentCommInfo
+const MPIParentCommInfo& ConfigurationContext::getMPIParentCommInfo() const {
+    return globalConfCtx_->getMPIParentCommInfo();
+}
+ConfigurationContext& ConfigurationContext::setMPIParentCommInfo(const MPIParentCommInfo& val) {
+    globalConfCtx_->setMPIParentCommInfo(val);
+    return *this;
+}
 
 
 }  // namespace util

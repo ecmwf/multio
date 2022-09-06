@@ -18,7 +18,7 @@ namespace server {
 
 using transport::TransportFactory;
 
-MultioServer::MultioServer(const ConfigurationContext& confCtx) :
+MultioServer::MultioServer(const ServerConfigurationContext& confCtx) :
     transport_{
         TransportFactory::instance().build(confCtx.config().getString("transport"), confCtx)},
     listener_{confCtx, *transport_} {

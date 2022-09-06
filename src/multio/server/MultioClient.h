@@ -29,6 +29,7 @@ class LocalConfiguration;
 namespace multio {
 
 using util::ConfigurationContext;
+using util::ClientConfigurationContext;
 
 namespace message {
 class Message;
@@ -41,7 +42,7 @@ class Transport;
 
 class MultioClient {
 public:
-    explicit MultioClient(const ConfigurationContext& config);
+    explicit MultioClient(const ClientConfigurationContext& config);
 
     ~MultioClient();
 

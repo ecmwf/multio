@@ -15,21 +15,24 @@
 /**
  * Template class that allows applying mappings lazily through iterators.
  * This is useful, for example, to avoid allocating to many `std::vector` to apply transformations.
- * A mapped container is self contained (i.e. can be passed arround) and further mappings can be applied.
- * The type can grow arbitrarily complex, but it can be efficient if the mapped values will be moved or processed anyway.
+ * A mapped container is self contained (i.e. can be passed arround) and further mappings can be
+ * applied. The type can grow arbitrarily complex, but it can be efficient if the mapped values will
+ * be moved or processed anyway.
  *
  * Todo:
  *  - Allow different kind of storage wrappers (i.e. references)
  *  - Implement map function to apply further compile time mappings
- *  - Refactor by using an efficient optional implementation using union. (i.e. separate implementation)
+ * implementation)
  *
  */
 
 #ifndef multio_util_IteratorMapper_H
 #define multio_util_IteratorMapper_H
 
-#include <iterator>
 #include <iostream>
+#include <iterator>
+
+#include "eckit/utils/Optional.h"
 
 namespace multio {
 namespace util {
@@ -38,12 +41,12 @@ template <typename ForwardItContainer, class Mapper>
 class MappedContainer;
 
 template <typename ForwardItContainer, class Mapper, bool is_const>
-using IteratorMapperValueType = typename std::conditional<
-    is_const,
-    typename std::decay<decltype(std::declval<Mapper>()(
-        *(std::declval<ForwardItContainer>().cbegin())))>::type const,
-    typename std::decay<decltype(std::declval<Mapper>()(
-        *(std::declval<ForwardItContainer>().begin())))>::type>::type;
+using IteratorMapperValueType =
+    typename std::conditional<is_const,
+                              typename std::decay<decltype(std::declval<Mapper>()(
+                                  *(std::declval<ForwardItContainer>().cbegin())))>::type const,
+                              typename std::decay<decltype(std::declval<Mapper>()(
+                                  *(std::declval<ForwardItContainer>().begin())))>::type>::type;
 
 // TODO std::iterator is deprecated in c++17
 template <typename ForwardItContainer, class Mapper, bool is_const = false>
@@ -62,91 +65,45 @@ public:
 
 
     IteratorMapper(const This& other) :
-        container_{other.container_},
-        mapper_{other.mapper_},
-        hasValue_{other.hasValue_},
-        it_{other.it_},
-        val_{.none = None{}} {
-        if (hasValue_) {
-            // Always use new (&val_.some) to assign a new value. Using the = assignment would cause a segfault for non-trivial classes
-            new (&val_.some) value_type(other.val_.some);
-        }
-    }
+        container_{other.container_}, mapper_{other.mapper_}, it_{other.it_}, val_{other.val_} {}
 
     IteratorMapper(This&& other) :
         container_{other.container_},
         mapper_{other.mapper_},
-        hasValue_{other.hasValue_},
         it_{std::move(other.it_)},
-        val_{.none = None{}} {
-        if (hasValue_) {
-            // Always use new (&val_.some) to assign a new value. Using the = assignment would cause a segfault for non-trivial classes
-            new (&val_.some) value_type(std::move(other.val_.some));
-        }
-    }
+        val_{std::move(other.val_)} {}
 
     reference operator=(const This& other) {
         if (it_ != other.it_) {
-            bool hasValBefore = hasValue_;
             container_ = other.container_;
             mapper_ = other.mapper_;
-            hasValue_ = other.hasValue_;
             it_ = other.it_;
-            if(hasValBefore) {
-                val_.some.~value_type();
-            }
-            if (hasValue_) {
-                // Always use new (&val_.some) to assign a new value. Using the = assignment would cause a segfault for non-trivial classes
-                new (&val_.some) value_type(other.val_.some_);
-            }
-            else {
-                val_.none = None{};
-            }
+            val_ = other.val_;
         }
         return *this;
     }
     reference operator=(This&& other) {
         if (it_ != other.it_) {
-            bool hasValBefore = hasValue_;
             container_ = other.container_;
             mapper_ = other.mapper_;
-            hasValue_ = other.hasValue_;
             it_ = std::move(other.it_);
-            if(hasValBefore) {
-                val_.some.~value_type();
-            }
-            if (hasValue_) {
-                // Always use new (&val_.some) to assign a new value. Using the = assignment would cause a segfault for non-trivial classes
-                new (&val_.some) value_type(std::move(other.val_.some_));
-            }
-            else {
-                val_.none = None{};
-            }
+            val_ = std::move(other.val_);
         }
         return *this;
     }
 
-    reference operator*() const { return val_.some; }
-    reference operator*()       { return val_.some; }
+    reference operator*() const { return val_.value(); }
+    reference operator*() { return val_.value(); }
 
-    pointer operator->() const { return &val_.some; }
-    pointer operator->()       { return &val_.some; }
+    pointer operator->() const { return &val_.value(); }
+    pointer operator->() { return &val_.value(); }
 
     This& operator++() {
-        // std::cout << "Incr" <<std::endl;
-        
-        if(hasValue_) {
-            // deallocate first
-            val_.some.~value_type();
-            hasValue_ = false;
-        }
         ++it_;
-        
-        if(it_ != container_.cend()) {
-            // Always use new (&val_.some) to assign a new value. Using the = assignment would cause a segfault for non-trivial classes
-           new (&val_.some) value_type(mapper_(*it_));
-           hasValue_ = true;
-        } 
+
+        if (it_ != container_.cend()) {
+            val_ = mapper_(*it_);
+        }
         return *this;
     }
 
@@ -160,70 +117,31 @@ public:
 
     bool operator!=(const This& other) const noexcept { return it_ != other.it_; }
 
-    ~IteratorMapper() {
-        // std::cout << "destruct" << std::endl;
-        if (hasValue_) {
-            val_.some.~value_type();
-        }
-        else {
-            val_.none.~None();
-        }
-        it_.~IteratorType();
-        // std::cout << "destructed" << std::endl;
-    }
-
 private:
-    //! TODO put in separate optional implementation (eckit::Optional is doing mem
-    //! allocation...)
-    struct None {};
-    union opt_value_type {
-        None none;
-        value_type some;
-        ~opt_value_type(){};
-    };
-    template<typename ItType>
+    template <typename ItType>
     IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, ItType&& it,
                    const value_type& val) :
-        container_(container),
-        mapper_(mapper),
-        hasValue_(true),
-        it_(std::forward<IteratorType>(it)),
-        val_{.none = None{}} {
-            // Always use new (&val_.some) to assign a new value. Using the = assignment would cause a segfault for non-trivial classes
-            new (&val_.some) value_type(val);
-    }
-        
-    template<typename ItType>
+        container_(container), mapper_(mapper), it_(std::forward<IteratorType>(it)), val_{val} {}
+
+    template <typename ItType>
     IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, ItType&& it,
                    value_type&& val) :
         container_(container),
         mapper_(mapper),
-        hasValue_(true),
         it_(std::forward<ItType>(it)),
-        val_{.none = None{}} {
-            // Always use new (&val_.some) to assign a new value. Using the = assignment would cause a segfault for non-trivial classes
-            new (&val_.some) value_type(std::move(val));
-    }
+        val_{std::move(val)} {}
 
-    template<typename ItType>
+    template <typename ItType>
     IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, bool hasValue,
                    ItType&& it) :
         container_(container),
         mapper_(mapper),
-        hasValue_(hasValue),
         it_(std::forward<ItType>(it)),
-        val_{.none = None{}} {
-        // std::cout << "I may fail here; hasValue " << hasValue_ << std::endl;
-        if (hasValue_) {
-           // std::cout << "Mapped value" << mapper(*it_).config() << std::endl;
-            // Always use new (&val_.some) to assign a new value. Using the = assignment would cause a segfault for non-trivial classes
-            new (&val_.some) value_type(mapper(*it_));
-        }
-        // std::cout << "Wow initialized" << std::endl;
-    }
-   
-  
-    template<typename ItType>
+        val_{hasValue ? eckit::Optional<value_type>{value_type(mapper(*it_))}
+                      : eckit::Optional<value_type>{}} {}
+
+
+    template <typename ItType>
     IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, ItType&& it) :
         IteratorMapper(container, mapper, it != container.cend(), std::forward<ItType>(it)) {}
 
@@ -233,10 +151,8 @@ private:
 
     ForwardItContainer const& container_;
     Mapper const& mapper_;
-
-    bool hasValue_;
     IteratorType it_;
-    opt_value_type val_;
+    eckit::Optional<value_type> val_;
 
     friend class MappedContainer<ForwardItContainer, Mapper>;
 };
@@ -249,29 +165,16 @@ public:
 
     using This = MappedContainer<ForwardItContainer, Mapper>;
 
-    template<typename Cont_, typename Mapper_>
+    template <typename Cont_, typename Mapper_>
     MappedContainer(Cont_&& container, Mapper_&& mapper) :
-        container_(std::forward<Cont_>(container)),
-        mapper_(std::forward<Mapper_>(mapper)) {}
+        container_(std::forward<Cont_>(container)), mapper_(std::forward<Mapper_>(mapper)) {}
 
 
-    iterator begin() const { 
-        // std::cout << "MappedContainer::begin" << std::endl; 
-        return iterator(container_, mapper_); 
-    }
-    iterator end() const { 
-        // std::cout << "MappedContainer::end" << std::endl; 
-        return iterator(container_, mapper_, false, container_.end()); 
-    }
+    iterator begin() const { return iterator(container_, mapper_); }
+    iterator end() const { return iterator(container_, mapper_, false, container_.end()); }
 
-    iterator cbegin() const { 
-        // std::cout << "MappedContainer::cbegin" << std::endl; 
-        return const_iterator(container_, mapper_); 
-    }
-    iterator cend() const { 
-        // std::cout << "MappedContainer::cend" << std::endl; 
-        return const_iterator(container_, mapper_, false, container_.end()); 
-    }
+    iterator cbegin() const { return const_iterator(container_, mapper_); }
+    iterator cend() const { return const_iterator(container_, mapper_, false, container_.end()); }
 
 private:
     ForwardItContainer container_;

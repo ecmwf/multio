@@ -23,7 +23,7 @@ using multio::message::Peer;
 namespace multio {
 namespace server {
 
-MultioClient::MultioClient(const ConfigurationContext& confCtx) {
+MultioClient::MultioClient(const ClientConfigurationContext& confCtx) {
     totClientTimer_.start();
 
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};

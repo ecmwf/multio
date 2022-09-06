@@ -25,6 +25,8 @@ using multio::util::configuration_file;
 using multio::util::configuration_file_name;
 using multio::util::configuration_path_name;
 using multio::util::ConfigurationContext;
+using multio::util::ServerConfigurationContext;
+using multio::util::ClientConfigurationContext;
 
 namespace {
 
@@ -92,7 +94,7 @@ extern "C" {
 
 struct multio_handle_t : public multio::server::MultioClient {
     using multio::server::MultioClient::MultioClient;
-    multio_handle_t(const ConfigurationContext& confCtx) : MultioClient{confCtx} {}
+    multio_handle_t(const ClientConfigurationContext& confCtx) : MultioClient{confCtx} {}
 };
 
 struct multio_metadata_t : public multio::message::Metadata {
@@ -136,8 +138,8 @@ int multio_new_handle_from_config(multio_handle_t** mio, const char* configurati
     return wrapApiFunction([configuration_path, mio]() {
         (*mio) = new multio_handle_t{
             configuration_path == NULL 
-            ? ConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())
-            : ConfigurationContext(
+            ? ClientConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())
+            : ClientConfigurationContext(
                 eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName(configuration_path)}},
                 configuration_path_name(),
                 configuration_path
@@ -149,7 +151,7 @@ int multio_new_handle_from_config(multio_handle_t** mio, const char* configurati
 
 int multio_new_handle(multio_handle_t** mio) {
     return wrapApiFunction([mio]() {
-        (*mio) = new multio_handle_t{ConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())};
+        (*mio) = new multio_handle_t{ClientConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())};
     });
 }
 
@@ -164,7 +166,7 @@ int multio_start_server_from_config(const char* configuration_path, const char* 
     return wrapApiFunction([=]() {
         std::string server_name(server_name_key);
        
-        ConfigurationContext confCtx(
+        ServerConfigurationContext confCtx(
             configuration_path == NULL 
             ? ConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())
             : ConfigurationContext(
@@ -185,7 +187,7 @@ int multio_start_server_from_config(const char* configuration_path, const char* 
 int multio_start_server(const char* server_name_key) {
     return wrapApiFunction([=]() {
         std::string server_name(server_name_key);
-        ConfigurationContext confCtx(
+        ServerConfigurationContext confCtx(
             ConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())
             );
         if (!confCtx.config().has(server_name)) {

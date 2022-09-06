@@ -22,7 +22,7 @@ class Configuration;
 
 namespace multio {
 
-using util::ConfigurationContext;
+using util::ServerConfigurationContext;
 
 namespace transport {
 class Transport;
@@ -32,7 +32,7 @@ namespace server {
 
 class MultioServer {
 public:
-    MultioServer(const ConfigurationContext& confCtx);
+    MultioServer(const ServerConfigurationContext& confCtx);
 
     ~MultioServer();
 

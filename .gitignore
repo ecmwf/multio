@@ -6,3 +6,5 @@ doc/latex
 *.sublime-workspace
 .*.sw*
 .*un~
+build
+docs/_build

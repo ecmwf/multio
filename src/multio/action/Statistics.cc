@@ -56,6 +56,7 @@ Statistics::Statistics(const eckit::Configuration& config) :
 void Statistics::execute(message::Message msg) const {
 
     // Pass through -- no statistics for messages other than fields
+    // TODO: make this assert and ensure that other message get to different plans?
     if(msg.tag() != message::Message::Tag::Field) {
         executeNext(msg);
         return;

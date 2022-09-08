@@ -79,16 +79,15 @@ int multio_initialise();
 int multio_version(const char** version);
 
 /** Retrieves version control checksum of the latest change, e.g. ``a88011c007a0db48a5d16e296934a197eac2050a``
- * \param version Return variable for version control checksum. Returned pointer valid throughout program lifetime.
- * \returns Return code (#OdcErrorValues)
+ * \param sha1 Return variable for version control checksum. Returned pointer valid throughout program lifetime.
+ * \returns Return code (#MultioErrorValues)
  */
 int multio_vcs_version(const char** sha1);
 
 /** @} */
 
-/** API */
+/** \defgroup Data-routing */
 /** @{ */
-
 
 // TODO: Shall we allow passing in a configuration path here?
 // int multio_new_handle(const char* configuration_path, multio_handle_t** multio);
@@ -108,10 +107,11 @@ int multio_delete_handle(multio_handle_t* mio);
 // int multio_start_server(const char* configuration_path);
 
 /** Initialises and starts server
- * \note This will be running until it receives a 'close' message from all of clients
+ * \note This will be running until it receives a 'close' message from all the clients
+ * \param server_name Name (key) of the subconfiguration for the server
  * \returns Return code (#MultioErrorValues)
  */
-int multio_start_server();
+int multio_start_server(const char* server_name);
 
 /** Opens connections to the server
  * \note This will open connections to all processes associated with the server
@@ -161,6 +161,9 @@ int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double
 /** @} */
 
 
+/** \defgroup Metadata setting */
+/** @{ */
+
 /** Creates a multio metadata object
  * \param md Return a handle to the multio metadata object
  * \returns Return code (#MultioErrorValues)
@@ -187,6 +190,7 @@ int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int va
  */
 int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, const char* value);
 
+/** @} */
 
 #ifdef __cplusplus
 } /* extern "C" */

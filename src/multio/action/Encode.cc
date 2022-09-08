@@ -37,7 +37,7 @@ std::unique_ptr<GribEncoder> make_encoder(const eckit::Configuration& config) {
             new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err),
                             config.getString("grid-type", "ORCA1")}};
     }
-    else if (format == "none") {
+    else if (format == "raw") {
         return nullptr;  // leave message in raw binary format
     }
     else {

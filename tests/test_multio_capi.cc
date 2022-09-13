@@ -57,9 +57,9 @@ CASE("Try Create handle with wrong configuration path") {
     int err;
     err = multio_new_handle_from_config(&mdp, "I_AM_NOT_HERE/server/config/multio-server.yaml");
     std::string errStr(multio_error_string(err));
-    // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
+    std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
-    EXPECT(errStr.compare("Cannot open I_AM_NOT_HERE/server/config/multio-server.yaml  (No such file or directory) ") == 0);
+    EXPECT(errStr.rfind("Cannot open I_AM_NOT_HERE/server/config/multio-server.yaml  (No such file or directory)") != std::string::npos);
 }
 
 CASE("Create handle with default configuration without MPI splitting") {

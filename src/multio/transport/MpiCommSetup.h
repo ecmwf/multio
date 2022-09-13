@@ -16,7 +16,7 @@
 #define multio_transport_MpiCommSetup_H
 
 #include "eckit/config/LocalConfiguration.h"
-#include "eckit/mpi/Comm.h"
+#include "eckit/mpi/Parallel.h"
 #include "eckit/utils/Optional.h"
 
 #include "multio/util/ConfigurationContext.h"

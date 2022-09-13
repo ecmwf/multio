@@ -47,6 +47,8 @@ using multio::transport::MpiPeer;
 using multio::transport::TcpPeer;
 using multio::transport::ThreadPeer;
 using multio::util::ConfigurationContext;
+using multio::util::ClientConfigurationContext;
+using multio::util::ServerConfigurationContext;
 
 using namespace multio::server;
 
@@ -532,7 +534,8 @@ void MultioHammer::testData() {
 }
 
 void MultioHammer::executeMpi() {
-    std::shared_ptr<Transport> transport{TransportFactory::instance().build("mpi", confCtx_)};
+    auto rank = eckit::mpi::comm(confCtx_.config().getString("group").c_str()).rank();
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("mpi", rank < clientCount_ ? confCtx_.tagClient() : confCtx_.tagServer() )};
 
     auto comm = confCtx_.config().getString("group");
 

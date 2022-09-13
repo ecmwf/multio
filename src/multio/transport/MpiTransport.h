@@ -18,6 +18,9 @@
 #define multio_transport_MpiTransport_H
 
 #include <queue>
+#include <tuple>
+
+#include <mpi.h>
 
 #include "eckit/io/Buffer.h"
 #include "eckit/log/Statistics.h"
@@ -31,12 +34,16 @@
 namespace multio {
 namespace transport {
 
+using MpiPeerSetup = std::tuple<MpiPeer, MPI_Group, MPI_Group, MPI_Group>;
+
 class MpiTransport final : public Transport {
 public:
     MpiTransport(const ConfigurationContext& confCtx);
     ~MpiTransport();
 
 private:
+    MpiTransport(const ConfigurationContext& confCtx, MpiPeerSetup&& peerSetup);
+    
     void openConnections() override;
     void closeConnections() override;
 
@@ -66,6 +73,9 @@ private:
     void encodeMessage(eckit::Stream& strm, const Message& msg);
 
     MpiPeer local_;
+    MPI_Group parentGroup_;
+    MPI_Group clientGroup_;
+    MPI_Group serverGroup_;
 
     StreamPool pool_;
 

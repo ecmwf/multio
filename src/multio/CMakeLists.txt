@@ -116,6 +116,8 @@ list( APPEND multio_sink_srcs
 list( APPEND multio_transport_srcs
     transport/ThreadTransport.cc
     transport/ThreadTransport.h
+    transport/MpiCommSetup.cc
+    transport/MpiCommSetup.h
     transport/MpiStream.cc
     transport/MpiStream.h
     transport/MpiTransport.cc

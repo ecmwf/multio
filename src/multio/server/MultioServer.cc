@@ -23,6 +23,7 @@ MultioServer::MultioServer(const ServerConfigurationContext& confCtx) :
         TransportFactory::instance().build(confCtx.config().getString("transport"), confCtx)},
     listener_{confCtx, *transport_} {
     LOG_DEBUG_LIB(multio::LibMultio) << "Server config: " << confCtx.config() << std::endl;
+    eckit::Log::info() << "*** Server -- constructor " << confCtx.config() << std::endl;
 
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
 
@@ -35,6 +36,7 @@ MultioServer::MultioServer(const ServerConfigurationContext& confCtx) :
             << std::setw(6) << std::setfill('0') << mSecs << " -- ";
 
 
+    eckit::Log::info() << "Server start listening..." << std::endl;
     listener_.start();
     eckit::Log::info() << "Listening loop has stopped" << std::endl;
 }

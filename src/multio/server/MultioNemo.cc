@@ -43,6 +43,7 @@ using multio::message::Metadata;
 using multio::util::configuration_file;
 using multio::util::configuration_file_name;
 using multio::util::configuration_path_name;
+using multio::util::MPIInitInfo;
 using multio::util::ConfigurationContext;
 using multio::util::ClientConfigurationContext;
 using multio::util::ServerConfigurationContext;
@@ -112,6 +113,10 @@ public:
     }
 
     int initClient(const std::string& oce_str, int parent_comm) {
+        MPIInitInfo initInfo;
+        initInfo.parentComm = eckit::Optional<int>{parent_comm};
+        initInfo.clientId = eckit::Optional<std::string>(oce_str);
+        confCtx_.setMPIInitInfo(eckit::Optional<MPIInitInfo>(std::move(initInfo)));
 
         eckit::mpi::addComm("nemo", parent_comm);
 
@@ -134,6 +139,11 @@ public:
     }
 
     void initServer(int parent_comm, const std::string server_name = "nemo-ioserver") {
+        MPIInitInfo initInfo;
+        initInfo.parentComm = eckit::Optional<int>{parent_comm};
+        initInfo.clientId = eckit::Optional<std::string>{};
+        confCtx_.setMPIInitInfo(eckit::Optional<MPIInitInfo>(std::move(initInfo)));
+        
         eckit::mpi::addComm("nemo", parent_comm);
 
         // TODO: find a way to come up with a unique 'colour', such as using MPI_APPNUM

@@ -20,6 +20,7 @@ using multio::util::configuration_file;
 using multio::util::configuration_file_name;
 using multio::util::configuration_path_name;
 using multio::util::ConfigurationContext;
+using multio::util::ServerConfigurationContext;
 
 using namespace multio::server;
 
@@ -50,7 +51,7 @@ private:
     std::string transport_ = "mpi";
     int port_ = 7777;
     bool test_ = false;
-    ConfigurationContext confCtx_;
+    ServerConfigurationContext confCtx_;
 };
 
 MultioProbe::MultioProbe(int argc, char** argv) : multio::MultioTool(argc, argv), confCtx_(configuration_file(), configuration_path_name(), configuration_file_name())  {
@@ -69,26 +70,26 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
    
     confCtx_ = confCtx_.subContext(serverName_);
 
-    if(transport_ == "mpi") {
-        if (!eckit::mpi::hasComm("nemo")) {
-            int32_t gl_comm = eckit::mpi::comm().communicator();
-            eckit::mpi::addComm("nemo", gl_comm);
-        }
-        // TODO: find a way to come up with a unique 'colour'
-        eckit::mpi::comm("nemo").split(888, "server_comm");
-        auto parent_comm = eckit::mpi::comm("nemo").communicator();
-        auto server_comm = eckit::mpi::comm("server_comm").communicator();
+    // if(transport_ == "mpi") {
+    //     if (!eckit::mpi::hasComm("nemo")) {
+    //         int32_t gl_comm = eckit::mpi::comm().communicator();
+    //         eckit::mpi::addComm("nemo", gl_comm);
+    //     }
+    //     // TODO: find a way to come up with a unique 'colour'
+    //     eckit::mpi::comm("nemo").split(888, "nemo-servers");
+    //     auto parent_comm = eckit::mpi::comm("nemo").communicator();
+    //     auto server_comm = eckit::mpi::comm("nemo-servers").communicator();
 
-        eckit::Log::info() << "*** Server -- split nemo communicator server_comm(parent="
-                           << parent_comm << ",size=" << eckit::mpi::comm("nemo").size()
-                           << "; child=" << server_comm
-                           << ",size=" << eckit::mpi::comm("server_comm").size() << ")"
-                           << std::endl;
-    }
+    //     eckit::Log::info() << "*** Server -- split nemo communicator server_comm(parent="
+    //                        << parent_comm << ",size=" << eckit::mpi::comm("nemo").size()
+    //                        << "; child=" << server_comm
+    //                        << ",size=" << eckit::mpi::comm("nemo-servers").size() << ")"
+    //                        << std::endl;
+    // }
 
     confCtx_.config().set("local_port", port_);
-    confCtx_.config().set("group", "nemo");
-    confCtx_.config().set("count", eckit::mpi::comm("server_comm").size());
+    // confCtx_.config().set("group", "nemo");
+    // confCtx_.config().set("count", eckit::mpi::comm("nemo-servers").size());
 }
 
 void MultioProbe::finish(const eckit::option::CmdArgs&) {}
@@ -105,10 +106,12 @@ void MultioProbe::execute(const eckit::option::CmdArgs&) {
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioProbe::executeLive() {
+    eckit::Log::info() << "*** Server -- executeLive "<< std::endl;
     MultioServer server{confCtx_};
 }
 
 void MultioProbe::executeTest() {
+    eckit::Log::info() << "*** Server -- executeTest "<< std::endl;
     MultioServer server{confCtx_};
 
     testData();

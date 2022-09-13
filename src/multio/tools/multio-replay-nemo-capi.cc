@@ -1,4 +1,3 @@
-
 #include <fstream>
 #include <iomanip>
 
@@ -21,6 +20,9 @@
 #include "multio/util/ConfigurationPath.h"
 
 #include "multio/message/Metadata.h"
+
+#define XSTRM(m) STRM(m)
+#define STRM(m) #m
 
 
 using multio::util::configuration_file_name;
@@ -83,9 +85,6 @@ private:
     size_t serverCount_ = 0;
 
     multio_handle_t* multio_handle = nullptr;
-
-    eckit::PathName configPath_;
-    eckit::LocalConfiguration config_;
 };
 
 //----------------------------------------------------------------------------------------------------------------
@@ -157,34 +156,28 @@ void MultioReplayNemoCApi::setDomains() {
 }
 
 void MultioReplayNemoCApi::writeFields() {
-    multio_metadata_t* md = nullptr;
-    multio_new_metadata(&md);
-
-    // multio_metadata_t* runConfig;
-    // multio_new_metadata_from_yaml(&runConfig,
-    // multio::message::to_string(multio::message::Metadata(config_.getSubConfiguration("run"))).c_str());
-
-    // TODO: Actually not required to pass this runconfig
-    // multio_metadata_set_map_value(md, "run", runConfig);
-    // TODO: These fields are also not required? Test passes also without
-    // Set reused fields once at the beginning
-    multio_metadata_set_string_value(md, "category", "ocean-2d");
-    multio_metadata_set_int_value(md, "globalSize", globalSize_);
-    multio_metadata_set_int_value(md, "level", level_);
-    multio_metadata_set_int_value(md, "step", step_);
-
-    // TODO: May not need to be a field's metadata
-    multio_metadata_set_double_value(md, "missingValue", 0.0);
-    multio_metadata_set_bool_value(md, "bitmapPresent", false);
-    multio_metadata_set_int_value(md, "bitsPerValue", 16);
-
-    multio_metadata_set_bool_value(md, "toAllServers", false);
 
     for (const auto& param : parameters_) {
         auto buffer = readField(param, rank_);
 
         auto sz = static_cast<int>(buffer.size()) / sizeof(double);
         auto fname = param.c_str();
+        
+        multio_metadata_t* md = nullptr;
+        multio_new_metadata(&md);
+
+        // Set reused fields once at the beginning
+        multio_metadata_set_string_value(md, "category", "ocean-2d");
+        multio_metadata_set_int_value(md, "globalSize", globalSize_);
+        multio_metadata_set_int_value(md, "level", level_);
+        multio_metadata_set_int_value(md, "step", step_);
+
+        // TODO: May not need to be a field's metadata
+        multio_metadata_set_double_value(md, "missingValue", 0.0);
+        multio_metadata_set_bool_value(md, "bitmapPresent", false);
+        multio_metadata_set_int_value(md, "bitsPerValue", 16);
+
+        multio_metadata_set_bool_value(md, "toAllServers", false);
 
         // Overwrite these fields in the existing metadata object
         multio_metadata_set_string_value(md, "name", fname);
@@ -196,9 +189,9 @@ void MultioReplayNemoCApi::writeFields() {
         multio_metadata_set_string_value(md, "typeOfLevel", paramMap_.get(fname).levelType.c_str());
 
         multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz);
+        
+        multio_delete_metadata(md);
     }
-    multio_delete_metadata(md);
-    // multio_delete_metadata(runConfig);
 }
 
 std::vector<int> MultioReplayNemoCApi::readGrid(const std::string& grid_type, size_t client_id) {
@@ -250,31 +243,54 @@ void MultioReplayNemoCApi::initClient() {
     }
     //! TODO run metadata will need to be fetched from config. Hence config is read twice - in the
     //! api and here
-    configPath_ = configuration_file_name();
-    config_ = eckit::LocalConfiguration{eckit::YAMLConfiguration{configPath_}};
 
-    rank_ = eckit::mpi::comm("world").rank();
+
+#if defined(EXPLICIT_MPI) || defined(INIT_BY_MPI)
     eckit::mpi::addComm("nemo", eckit::mpi::comm().communicator());
+    eckit::mpi::comm("nemo").split(777, "nemo-clients");
+#endif
 
-    auto configPath = configuration_file_name();
-
+    
     multio_set_failure_handler(multio_throw_failure_handler, nullptr);
+
+#if defined(INIT_BY_FILEPATH)
+    auto configPath = configuration_file_name();
     multio_new_handle_from_config(&multio_handle, configPath.asString().c_str());
+#endif
+#if defined(INIT_BY_MPI)
+    int retComm = 0;
+    multio_new_handle_mpi(&multio_handle, "oce", eckit::mpi::comm("nemo").communicator(), &retComm);
+    eckit::Log::info() << " *** multio_new_handle_mpi returned comm: " << retComm << std::endl;
+    ASSERT(retComm != 0);
+#endif
+#if defined(INIT_BY_ENV)
+    multio_new_handle(&multio_handle);
+#endif
     //! Not required in new transport based api?
     // multio_init_client("oce", eckit::mpi::comm().communicator());
     // Simplate client that knows about nemo communicator and oce
     // eckit::mpi::addComm("nemo", eckit::mpi::comm().communicator());
 
-    // TODO: find a way to come up with a unique 'colour' -- like getting application number
-    const eckit::mpi::Comm& chld = eckit::mpi::comm("nemo").split(777, "oce");
-    auto ret_comm = chld.communicator();
+#if defined(INIT_BY_MPI)
+    ASSERT(eckit::mpi::comm("oce").communicator() == retComm);
+    ASSERT(eckit::mpi::comm("nemo-clients").communicator() == retComm);
+#endif
 
-    // Access information directly with mpi
-    // TODO: Provide different API mechanisms to do this?
-    clientCount_ = eckit::mpi::comm("oce").size();
-    serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
+#if defined(SPECIFIC_MPI_GROUP)
+    eckit::Log::info() << " *** SPCEFICI_MPI_GROUP: " << XSTRM(SPECIFIC_MPI_GROUP) << std::endl;
+const eckit::mpi::Comm& group = eckit::mpi::comm(XSTRM(SPECIFIC_MPI_GROUP));
+const eckit::mpi::Comm& clients = eckit::mpi::comm((std::string(XSTRM(SPECIFIC_MPI_GROUP)) + "-clients").c_str());
+#else
+    eckit::Log::info() << " *** DEFAULT MPI GROUP: nemo " << std::endl;
+const eckit::mpi::Comm& group = eckit::mpi::comm("nemo");
+const eckit::mpi::Comm& clients = eckit::mpi::comm("nemo-clients");
+#endif
 
-    eckit::Log::info() << " *** initClient - clientcount:  " << clientCount_
+    rank_ = group.rank();
+    clientCount_ = clients.size();
+    serverCount_ = group.size() - clientCount_;
+
+    eckit::Log::info() << " *** initClient - clientcount:  " << clientCount_  
                        << ", serverCount: " << serverCount_ << std::endl;
 }
 
@@ -292,7 +308,6 @@ void MultioReplayNemoCApi::testData() {
         std::ifstream infile_actual{actual_file_path};
         std::string actual{std::istreambuf_iterator<char>(infile_actual),
                            std::istreambuf_iterator<char>()};
-        infile_actual.close();
 
         oss.str("");
         oss.clear();

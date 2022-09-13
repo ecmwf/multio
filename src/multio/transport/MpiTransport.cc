@@ -21,6 +21,7 @@
 
 #include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
+#include "multio/transport/MpiCommSetup.h"
 
 namespace multio {
 namespace transport {
@@ -59,13 +60,68 @@ const size_t defaultPoolSize = 128;
 
 }  // namespace
 
+
+MpiPeer setupMPI_(const ConfigurationContext& confCtx) {
+    if (!confCtx.config().has("group")) {
+        std::ostringstream oss;
+        oss << "No key \"group\" in MPI server config found (Configuration filename:  " << confCtx.fileName() << ")" << std::endl;
+        throw eckit::Exception(oss.str());
+    }
+    const std::string& groupName = confCtx.config().getString("group");
+    mpi::CommSetupOptions groupOptions;
+    groupOptions.defaultType = eckit::Optional<mpi::CommSetupType>(mpi::CommSetupType::Passed); 
+   
+    eckit::mpi::Comm& groupComm = mpi::getComm(confCtx, groupName, eckit::Optional<mpi::CommSetupOptions>{std::move(groupOptions)});
+    
+    switch (confCtx.localPeerTag()) {
+        case util::LocalPeerTag::Client: {
+                mpi::CommSetupOptions options;
+                // Add default in case of missing configuration
+                options.defaultType = eckit::Optional<mpi::CommSetupType>(mpi::CommSetupType::Split); 
+                options.parentCommName = eckit::Optional<std::string>(groupName);
+                
+                const auto& mpiInitInfo = confCtx.getMPIInitInfo();
+                options.alias = mpiInitInfo ? mpiInitInfo().clientId : eckit::Optional<std::string>{};
+                
+                std::string subGroupName = confCtx.config().has("client-group") ? confCtx.config().getString("client-group") : ([&](){
+                    std::ostringstream oss;
+                    oss << groupName << "-" << "clients";
+                    return oss.str();
+                })();
+                // eckit::Log::info() << " *** MpiTransport::setupMPI_ client " << subGroupName << " alias: " << (options.alias? options.alias().c_str() : "none") << std::endl;
+    
+                // Setup client group
+                mpi::getComm(confCtx, subGroupName, eckit::Optional<mpi::CommSetupOptions>{std::move(options)});
+            }
+            break;
+        case util::LocalPeerTag::Server: {
+                mpi::CommSetupOptions options;
+                // Add default in case of missing configuration
+                options.defaultType = eckit::Optional<mpi::CommSetupType>(mpi::CommSetupType::Split); 
+                options.parentCommName = eckit::Optional<std::string>(groupName);
+                              
+                std::string subGroupName = confCtx.config().has("server-group") ? confCtx.config().getString("server-group") : ([&](){
+                    std::ostringstream oss;
+                    oss << groupName << "-" << "servers";
+                    return oss.str();
+                })();
+                // eckit::Log::info() << " *** MpiTransport::setupMPI_ server " << subGroupName << std::endl;
+    
+                // Setup client group
+                mpi::getComm(confCtx, subGroupName, eckit::Optional<mpi::CommSetupOptions>{std::move(options)});
+            }
+            break;
+    }
+    return MpiPeer{groupName, groupComm.rank()};
+}
+
 MpiTransport::MpiTransport(const ConfigurationContext& confCtx) :
     Transport(confCtx),
-    local_{confCtx.config().getString("group"),
-           eckit::mpi::comm(confCtx.config().getString("group").c_str()).rank()},
+    local_{setupMPI_(confCtx)},
     pool_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", defaultPoolSize),
           eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", defaultBufferSize),
-          comm(), statistics_} {}
+          comm(), statistics_} {
+          }
 
 MpiTransport::~MpiTransport() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
@@ -143,6 +199,8 @@ void MpiTransport::send(const Message& msg) {
 
     auto sz = static_cast<size_t>(stream.bytesWritten());
     auto dest = static_cast<int>(msg.destination().id());
+    
+    // eckit::Log::info() << " *** MpiTransport::send from " << local_.group() << " " << local_.id << std::endl;
     eckit::mpi::comm(local_.group().c_str()).send<void>(buffer, sz, dest, msg_tag);
 
     ++statistics_.sendCount_;
@@ -157,6 +215,8 @@ void MpiTransport::bufferedSend(const Message& msg) {
 void MpiTransport::createPeers() const {
     auto rank = 0ul;
     auto clientCount = comm().size() - confCtx_.config().getUnsigned("count");
+    eckit::Log::info() << " *** MpiTransport::createPeers clientCount" << clientCount << " commSize: " << comm().size() << std::endl;
+   
     while (rank != clientCount) {
         clientPeers_.emplace_back(new MpiPeer{local_.group(), rank++});
     }

@@ -4,6 +4,17 @@
 namespace multio {
 namespace util {
 
+std::string toString(LocalPeerTag tag) {
+    switch (tag) {
+        case LocalPeerTag::Client:
+            return "Client";
+        case LocalPeerTag::Server:
+            return "Server";
+        default:
+            return "Unknown local peer tag";
+    }
+}
+
 
 SubContextIteratorMapper::SubContextIteratorMapper(const ConfigurationContext& confCtx) :
     confCtx_(confCtx) {}
@@ -44,11 +55,11 @@ void GlobalConfCtx::setLocalPeerTag(LocalPeerTag clientOrServer) {
     localPeerTag_ = clientOrServer;
 };
 
-const MPIParentCommInfo& GlobalConfCtx::getMPIParentCommInfo() const {
-    return mpiParentCommInfo_;
+const eckit::Optional<MPIInitInfo>& GlobalConfCtx::getMPIInitInfo() const {
+    return mpiInitInfo_;
 };
-void GlobalConfCtx::setMPIParentCommInfo(const MPIParentCommInfo& val) {
-    mpiParentCommInfo_ = val;
+void GlobalConfCtx::setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val) {
+    mpiInitInfo_ = val;
 };
 
 
@@ -138,15 +149,14 @@ ConfigurationContext& ConfigurationContext::tagClient() {
 };
 
 
-// MPIParentCommInfo
-const MPIParentCommInfo& ConfigurationContext::getMPIParentCommInfo() const {
-    return globalConfCtx_->getMPIParentCommInfo();
+// MPIInitInfo
+const eckit::Optional<MPIInitInfo>& ConfigurationContext::getMPIInitInfo() const {
+    return globalConfCtx_->getMPIInitInfo();
 }
-ConfigurationContext& ConfigurationContext::setMPIParentCommInfo(const MPIParentCommInfo& val) {
-    globalConfCtx_->setMPIParentCommInfo(val);
+ConfigurationContext& ConfigurationContext::setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val) {
+    globalConfCtx_->setMPIInitInfo(val);
     return *this;
 }
-
 
 }  // namespace util
 }  // namespace multio

@@ -22,6 +22,7 @@ module multio_api
     contains
         procedure :: new_handle => multio_new_handle
         procedure :: new_handle_from_config => multio_new_handle_from_config
+        procedure :: new_handle_mpi => multio_new_handle_mpi
         procedure :: delete_handle => multio_delete_handle
         procedure :: open_connections => multio_open_connections
         procedure :: close_connections => multio_close_connections
@@ -43,7 +44,6 @@ module multio_api
         procedure :: set_bool_value => multio_metadata_set_bool_value
         procedure :: set_float_value => multio_metadata_set_float_value
         procedure :: set_double_value => multio_metadata_set_double_value
-        procedure :: set_map_value => multio_metadata_set_map_value
     end type
 
     ! Type declarations
@@ -57,6 +57,10 @@ module multio_api
     public :: multio_version, multio_vcs_version
     public :: multio_set_failure_handler
     public :: multio_start_server
+    public :: multio_start_server_mpi
+    public :: multio_mpi_allow_world_default_comm
+    public :: multio_mpi_split_client_color
+    public :: multio_mpi_split_server_color
 
     ! Error handling definitions
 
@@ -111,10 +115,53 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function multio_start_server() result(err) &
+        function multio_start_server(server_name) result(err) &
                 bind(c, name='multio_start_server')
             use, intrinsic :: iso_c_binding
             implicit none
+            type(c_ptr), intent(in), value :: server_name
+            integer(c_int) :: err
+        end function
+        
+        function multio_start_server_from_config(path, server_name) result(err) &
+                bind(c, name='multio_start_server_from_config')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: path
+            type(c_ptr), intent(in), value :: server_name
+            integer(c_int) :: err
+        end function
+        
+        function multio_start_server_mpi(server_name, parent_comm) result(err) &
+                bind(c, name='multio_start_server_mpi')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: server_name
+            integer(c_int), intent(in), value :: parent_comm
+            integer(c_int) :: err
+        end function
+        
+        function multio_mpi_allow_world_default_comm(allow) result(err) &
+                bind(c, name='multio_mpi_allow_world_default_comm')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            logical(c_bool), intent(in), value :: allow
+            integer(c_int) :: err
+        end function
+        
+        function multio_mpi_split_client_color(color) result(err) &
+                bind(c, name='multio_mpi_split_client_color')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            integer(c_int), intent(in), value :: color
+            integer(c_int) :: err
+        end function
+        
+        function multio_mpi_split_server_color(color) result(err) &
+                bind(c, name='multio_mpi_split_server_color')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            integer(c_int), intent(in), value :: color
             integer(c_int) :: err
         end function
 
@@ -159,6 +206,18 @@ module multio_api
             implicit none
             type(c_ptr), intent(in), value :: path
             type(c_ptr), intent(out) :: handle
+            integer(c_int) :: err
+        end function
+        
+        function c_multio_new_handle_mpi(handle, client_id, parent_comm, return_comm) result(err) &
+                bind(c, name='multio_new_handle_mpi')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(out) :: handle
+            type(c_ptr), intent(in), value :: client_id ! can be c_null_ptr
+            integer(c_int), intent(in), value :: parent_comm
+            integer(c_int), intent(out), optional :: return_comm ! can be c_null_ptr
+            ! type(c_ptr), intent(out) :: return_comm ! can be c_null_ptr
             integer(c_int) :: err
         end function
 
@@ -316,16 +375,6 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_metadata_set_map_value(metadata, key, value) result(err) &
-                bind(c, name='multio_metadata_set_map_value')
-            use, intrinsic :: iso_c_binding
-            implicit none
-            type(c_ptr), intent(in), value :: metadata
-            type(c_ptr), intent(in), value :: key
-            type(c_ptr), intent(in), value :: value
-            integer(c_int) :: err
-        end function
-
     end interface
 
 contains
@@ -404,6 +453,25 @@ contains
         character(:), allocatable, target :: nullified_path
         nullified_path = trim(path) // c_null_char
         err = c_multio_new_handle_from_config(handle%impl, c_loc(nullified_path))
+    end function
+    
+    function multio_new_handle_mpi(handle, client_id, parent_comm, return_comm) result(err)
+        class(multio_handle), intent(inout) :: handle
+        character(*), intent(in), optional :: client_id
+        integer, intent(in), optional :: parent_comm
+        integer(c_int), intent(inout), optional  :: return_comm
+        integer :: err
+        character(:), allocatable, target :: nullified_client
+        type(c_ptr) :: nullified_client_ptr
+        
+        if (present(client_id)) then
+            nullified_client = trim(client_id) // c_null_char
+            nullified_client_ptr = c_loc(nullified_client)
+        else
+            nullified_client_ptr = c_null_ptr
+        end if
+        
+        err = c_multio_new_handle_mpi(handle%impl, nullified_client_ptr, parent_comm, return_comm)
     end function
 
     function multio_delete_handle(handle) result(err)
@@ -569,18 +637,6 @@ contains
         nullified_value = trim(value) // c_null_char
 
         err = c_multio_metadata_set_string_value(metadata%impl, c_loc(nullified_key), c_loc(nullified_value))
-    end function
-
-    function multio_metadata_set_map_value(metadata, key, value) result(err)
-        class(multio_metadata), intent(in) :: metadata
-        character(*), intent(in) :: key
-        class(multio_metadata), intent(in) :: value
-        integer :: err
-        character(:), allocatable, target :: nullified_key
-
-        nullified_key = trim(key) // c_null_char
-
-        err = c_multio_metadata_set_map_value(metadata%impl, c_loc(nullified_key), value%impl)
     end function
 
 end module multio_api

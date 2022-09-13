@@ -88,16 +88,29 @@ int multio_vcs_version(const char** sha1);
 /** @} */
 
 /** API */
-/** @{ */
+/** @{*/
 
 
-// TODO: Shall we allow passing in a configuration path here?
 /** Creates a multio (client) instance
  * \param configuration_path Path to YAML configuration file
  * \param mio Return a handle to the multio (client) instance
  * \returns Return code (#MultioErrorValues)
  */
 int multio_new_handle_from_config(multio_handle_t** multio, const char* configuration_path);
+      
+/** Creates a multio (client) instance and allows passing a MPI communicator as well as an clientID.
+ * This function is provided for compatibility with existing API bindings to other IO servers.
+ * 
+ * Attention: The used configuration file (provided by MULTIO_SERVER_CONFIG_FILE) must also specify MPI as transport layer. 
+ * Then the provided communicator can be used.
+ *
+ * \param retComm MPI communicator for clients created by MULTIO. Multio will split a client and a server communicator from the passed parentComm. The client communicator will be written to retComm. This requires clientId to be non-null.
+ * \param parentComm MPI parent communicator containing all clients and servers
+ * \param clientId  Null or string containing the client id (provided for backwards compatibility). By using eckit::mpi, a global [communicator name -> communicator] map is maintained. The clientId should be unique in the sense that no other library registers a communicator with the same name.
+ * \param mio Return a handle to the multio (client) instance
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_new_handle_mpi(multio_handle_t** multio, const char* clientId, int parentComm, int* retComm);
 
 
 /** Creates a multio (client) instance
@@ -116,12 +129,24 @@ int multio_delete_handle(multio_handle_t* mio);
 
 /** Initialises and starts server
  * \note This will be running until it receives a 'close' message from all of clients
+ * \param server_name_key Name of the server as listed in the yaml configuration file
+ * \param configuration_path Path to the YAML configuration file
  * \returns Return code (#MultioErrorValues)
  */
 int multio_start_server_from_config(const char* configuration_path, const char* server_name_key);
 
 /** Initialises and starts server
  * \note This will be running until it receives a 'close' message from all of clients
+ *
+ * \param parent_comm Parent MPI intra communicator containing all servers and clients.
+ * \param server_name_key Name of the server as listed in the yaml configuration file
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_start_server_mpi(const char* server_name_key, int parent_comm);
+
+/** Initialises and starts server
+ * \note This will be running until it receives a 'close' message from all of clients
+ * \param server_name_key Name of the server as listed in the yaml configuration file
  * \returns Return code (#MultioErrorValues)
  */
 int multio_start_server(const char* server_name_key);
@@ -273,25 +298,28 @@ int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, floa
 int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, double value);
 
 
-/** Sets a metadata key-value pair for recursive metadata maps.
+/** Overwrite global MPI options for default splitting.
  *
- * \todo Do we need nested metadata?
- *
- * \param md Handle to the multio metadata object
- * \param key C-string key to be set
- * \param value metadata value (ordered map) to be set
+ * \param allow Specifies if multio is supposed to use the WORLD communicator as default if a group has not been added to eckit::mpi yet.
  * \returns Return code (#MultioErrorValues)
  */
-int multio_metadata_set_map_value(multio_metadata_t* md, const char* key, multio_metadata_t*);
+int multio_mpi_allow_world_default_comm(bool allow);
 
 
-/**
+/** Overwrite global MPI options for default splitting.
  *
- * \todo Do we need arrays in metadata? Are there use cases for that? If so, are single type arrays
- * fine or should we support mixed type arrays (however we would express that with c...)
+ * \param color Specifies the color with which multio is allowed to split from the parent group to create a client only intra communicator.
+ * \returns Return code (#MultioErrorValues)
  */
+int multio_mpi_split_client_color(int color);
 
 
+/** Overwrite global MPI options for default splitting.
+ *
+ * \param color Specifies the color with which multio is allowed to split from the parent group to create a server only intra communicator.
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_mpi_split_server_color(int color);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

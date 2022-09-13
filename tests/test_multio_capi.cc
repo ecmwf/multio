@@ -42,6 +42,16 @@ typename std::enable_if<!std::numeric_limits<T>::is_integer, bool>::type
         || std::fabs(x-y) < std::numeric_limits<T>::min();
 }
 
+static std::string expectedMPIError("No communicator \"nemo\" and no default given.");
+
+CASE("Set global mpi options") {
+    int err;
+    err = multio_mpi_allow_world_default_comm(false);
+    std::string errStr(multio_error_string(err));
+    // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
+    EXPECT(err == MULTIO_SUCCESS);
+}
+
 CASE("Try Create handle with wrong configuration path") {
     multio_handle_t* mdp = nullptr;
     int err;
@@ -59,7 +69,7 @@ CASE("Create handle with default configuration without MPI splitting") {
     std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
-    EXPECT(errStr.rfind("SeriousBug: No communicator called nemo") != std::string::npos);
+    EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
 }
 
 CASE("Create handle with default configuration through nullptr configuration path without MPI splitting") {
@@ -69,7 +79,7 @@ CASE("Create handle with default configuration through nullptr configuration pat
     std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
-    EXPECT(errStr.rfind("SeriousBug: No communicator called nemo") != std::string::npos);
+    EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
 }
 
 
@@ -86,7 +96,7 @@ CASE("Create handle with configuration path without MPI splitting") {
     std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
-    EXPECT(errStr.rfind("SeriousBug: No communicator called nemo") != std::string::npos);
+    EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
 }
 
 CASE("Start server with default configuration & unknown server name") {
@@ -104,7 +114,7 @@ CASE("Start server with default configuration") {
     std::string errStr(multio_error_string(err));
     std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
-    EXPECT(errStr.rfind("SeriousBug: No communicator called nemo") != std::string::npos);
+    EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
 }
 
 CASE("Metadata is created and delected sucessfully") {

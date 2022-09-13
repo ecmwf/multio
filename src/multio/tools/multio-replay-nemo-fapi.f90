@@ -54,15 +54,21 @@ subroutine init(mio, rank, server_count, client_count)
     integer, intent(out) :: rank
     integer, intent(out) :: server_count
     integer, intent(out) :: client_count
-    integer :: color_client, key
+    ! integer :: color_client
+    integer :: key
     type(fckit_mpi_comm) :: comm
     type(fckit_mpi_comm) :: newcomm
+    integer(c_int) :: newcomm_id
     type(multio_handle), intent(inout) :: mio
 
 
     write(0,*) "Init..."
+    cerr = multio_mpi_split_client_color(777)
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting default multio mpi split color"
+    cerr = multio_mpi_allow_world_default_comm(.FALSE._1)
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting default multio mpi allow_world_default_comm"
 
-    color_client = 777
+    ! color_client = 777
 
     write(0,*) "multio_initialise..."
     cerr = multio_initialise()
@@ -76,13 +82,15 @@ subroutine init(mio, rank, server_count, client_count)
 
     write(0,*) "add mpi comm nemo"
     call fckit_mpi_addComm("nemo", comm%communicator())
+    ! newcomm = comm%split(color_client, "oce") ! Client splitting done by multio
 
     write(0,*) "multio_new_handle..."
-    cerr = mio%new_handle()
+    newcomm_id = 0
+    cerr = mio%new_handle_mpi(client_id="oce", parent_comm=comm%communicator(), return_comm=newcomm_id) 
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 2
+    if (newcomm_id == 0) ERROR STOP "Return communicator has not been set as expected"
+    newcomm = fckit_mpi_comm(newcomm_id)
 
-
-    newcomm = comm%split(color_client, "oce")
     server_count = comm%size()
     client_count = newcomm%size()
     server_count = server_count - client_count

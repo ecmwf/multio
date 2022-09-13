@@ -30,6 +30,7 @@ enum class LocalPeerTag : unsigned
     Client = 0,
     Server = 1,
 };
+std::string toString(LocalPeerTag tag);
 
 class SubContextIteratorMapper;
 
@@ -38,7 +39,14 @@ class ServerConfigurationContext;
 class ClientConfigurationContext;
 
 class GlobalConfCtx; // TODO: hide internal implementation in separate namespace
-using MPIParentCommInfo = eckit::Optional<std::tuple<std::string, int>>;
+
+struct MPIInitInfo {
+    eckit::Optional<int> parentComm{};
+    eckit::Optional<std::string> clientId{};
+    eckit::Optional<int> defaultClientSplitColor{777}; // Hardcoded defaults may be overwritten
+    eckit::Optional<int> defaultServerSplitColor{888}; // Hardcoded defaults may be overwritten
+    bool allowWorldAsDefault{true};
+};
 
 class ConfigurationContext {
 public:
@@ -52,6 +60,23 @@ public:
                          const eckit::PathName& pathName, const eckit::PathName& fileName,
                          LocalPeerTag clientOrServer = LocalPeerTag::Client);
                          
+    // ConfigurationContext(const ConfigurationContext& other): config_(other.config_), globalConfCtx_(other.globalConfCtx_) {
+    // }
+    // ConfigurationContext(ConfigurationContext&& other): config_(std::move(other.config_)), globalConfCtx_(std::move(other.globalConfCtx_)) {
+    // }
+    
+    // ConfigurationContext& operator=(const ConfigurationContext& other) {
+    //     config_ = other.config_;
+    //     globalConfCtx_ = other.globalConfCtx_;
+    //     return *this;
+    // }
+    
+    // ConfigurationContext& operator=(ConfigurationContext&& other) {
+    //     config_ = std::move(other.config_);
+    //     globalConfCtx_ = std::move(other.globalConfCtx_);
+    //     return *this;
+    // }
+                         
     eckit::LocalConfiguration& config();
     const eckit::LocalConfiguration& config() const;
     const eckit::LocalConfiguration& globalConfig() const;
@@ -59,8 +84,8 @@ public:
     const eckit::PathName& fileName() const;
 
     LocalPeerTag localPeerTag() const;
-    inline bool isServer() const;
-    inline bool isClient() const;
+    bool isServer() const;
+    bool isClient() const;
 
     ConfigurationContext& setLocalPeerTag(LocalPeerTag clientOrServer);
     ConfigurationContext& tagServer();
@@ -73,8 +98,8 @@ public:
     SubConfigurationContexts subContexts(const std::string& subConfiguratinKey) const;
     ConfigurationContext recast(const eckit::LocalConfiguration& config) const;
 
-    const MPIParentCommInfo& getMPIParentCommInfo() const;
-    ConfigurationContext& setMPIParentCommInfo(const MPIParentCommInfo& val);
+    const eckit::Optional<MPIInitInfo>& getMPIInitInfo() const;
+    ConfigurationContext& setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val);
 
 protected:
     ConfigurationContext(const eckit::LocalConfiguration& config,
@@ -104,8 +129,8 @@ protected:
     LocalPeerTag localPeerTag() const;
     void setLocalPeerTag(LocalPeerTag clientOrServer);
 
-    const MPIParentCommInfo& getMPIParentCommInfo() const;
-    void setMPIParentCommInfo(const MPIParentCommInfo& val);
+    const eckit::Optional<MPIInitInfo>& getMPIInitInfo() const;
+    void setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val);
 
 
 private:
@@ -114,7 +139,7 @@ private:
     eckit::PathName fileName_;
     LocalPeerTag localPeerTag_;
 
-    MPIParentCommInfo mpiParentCommInfo_;
+    eckit::Optional<MPIInitInfo> mpiInitInfo_{MPIInitInfo{}};
 
     friend class ConfigurationContext;
 };

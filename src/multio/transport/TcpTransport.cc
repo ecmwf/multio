@@ -85,6 +85,7 @@ struct Connection {
 TcpTransport::TcpTransport(const ConfigurationContext& confCtx) :
     Transport(confCtx), local_{"localhost", confCtx.config().getUnsigned("local_port")} {
     auto serverConfigs = confCtx.config().getSubConfigurations("servers");
+        eckit::Log::debug() << " *** TcpTransport::constructor" << std::endl;
 
     for (auto cfg : serverConfigs) {
         auto host = cfg.getString("host");

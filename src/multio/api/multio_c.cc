@@ -6,27 +6,29 @@
 
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/mpi/Comm.h"
 #include "eckit/runtime/Main.h"
 
-#include "multio/multio_version.h"
 #include "multio/message/Metadata.h"
+#include "multio/multio_version.h"
 #include "multio/server/MultioClient.h"
 #include "multio/server/MultioServer.h"
-#include "multio/util/ConfigurationPath.h"
 #include "multio/util/ConfigurationContext.h"
+#include "multio/util/ConfigurationPath.h"
 
 using eckit::Log;
 
-using multio::message::Peer;
 using multio::message::Message;
 using multio::message::Metadata;
+using multio::message::Peer;
 
+using multio::util::ClientConfigurationContext;
 using multio::util::configuration_file;
 using multio::util::configuration_file_name;
 using multio::util::configuration_path_name;
 using multio::util::ConfigurationContext;
+using multio::util::MPIInitInfo;
 using multio::util::ServerConfigurationContext;
-using multio::util::ClientConfigurationContext;
 
 namespace {
 
@@ -35,17 +37,18 @@ extern "C" {
 static std::string g_current_error_str;
 static multio_failure_handler_t g_failure_handler = nullptr;
 static void* g_failure_handler_context = nullptr;
+static MPIInitInfo g_mpi_init_info{};
 
 const char* multio_error_string(int err) {
     switch (err) {
-    case MULTIO_SUCCESS:
-        return "Success";
-    case MULTIO_ERROR_ECKIT_EXCEPTION:
-    case MULTIO_ERROR_GENERAL_EXCEPTION:
-    case MULTIO_ERROR_UNKNOWN_EXCEPTION:
-        return g_current_error_str.c_str();
-    default:
-        return "<unknown>";
+        case MULTIO_SUCCESS:
+            return "Success";
+        case MULTIO_ERROR_ECKIT_EXCEPTION:
+        case MULTIO_ERROR_GENERAL_EXCEPTION:
+        case MULTIO_ERROR_UNKNOWN_EXCEPTION:
+            return g_current_error_str.c_str();
+        default:
+            return "<unknown>";
     };
 }
 
@@ -60,24 +63,26 @@ int innerWrapFn(std::function<void()> f) {
 
 template <typename FN>
 int wrapApiFunction(FN f) {
-
     try {
         return innerWrapFn(f);
-    } catch (eckit::Exception& e) {
+    }
+    catch (eckit::Exception& e) {
         Log::error() << "Caught eckit exception on C-C++ API boundary: " << e.what() << std::endl;
         g_current_error_str = e.what();
         if (g_failure_handler) {
             g_failure_handler(g_failure_handler_context, MULTIO_ERROR_ECKIT_EXCEPTION);
         }
         return MULTIO_ERROR_ECKIT_EXCEPTION;
-    } catch (std::exception& e) {
+    }
+    catch (std::exception& e) {
         Log::error() << "Caught exception on C-C++ API boundary: " << e.what() << std::endl;
         g_current_error_str = e.what();
         if (g_failure_handler) {
             g_failure_handler(g_failure_handler_context, MULTIO_ERROR_GENERAL_EXCEPTION);
         }
         return MULTIO_ERROR_GENERAL_EXCEPTION;
-    } catch (...) {
+    }
+    catch (...) {
         Log::error() << "Caught unknown on C-C++ API boundary" << std::endl;
         g_current_error_str = "Unrecognised and unknown exception";
         if (g_failure_handler) {
@@ -137,21 +142,45 @@ int multio_set_failure_handler(multio_failure_handler_t handler, void* context) 
 int multio_new_handle_from_config(multio_handle_t** mio, const char* configuration_path) {
     return wrapApiFunction([configuration_path, mio]() {
         (*mio) = new multio_handle_t{
-            configuration_path == NULL 
-            ? ClientConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())
-            : ClientConfigurationContext(
-                eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName(configuration_path)}},
-                configuration_path_name(),
-                configuration_path
-                )
-        };
+            configuration_path == NULL
+                ? ClientConfigurationContext(configuration_file(), configuration_path_name(),
+                                             configuration_file_name()).setMPIInitInfo(eckit::Optional<MPIInitInfo>(g_mpi_init_info))
+                : ClientConfigurationContext(eckit::LocalConfiguration{eckit::YAMLConfiguration{
+                                                 eckit::PathName(configuration_path)}},
+                                             configuration_path_name(), configuration_path).setMPIInitInfo(eckit::Optional<MPIInitInfo>(g_mpi_init_info))};
     });
 }
+
+int multio_new_handle_mpi(multio_handle_t** mio, const char* clientId, int parentComm, int* retComm) {
+    return wrapApiFunction([mio, clientId, parentComm, retComm]() {
+        if (clientId != nullptr && eckit::mpi::hasComm(clientId)) {
+            std::ostringstream oss;
+            oss << "An eckit::mpi communicator with the name \"" << clientId<< "\" already exists. Please provide another clientId.";
+            throw eckit::Exception(oss.str());
+        }
+        if (clientId == nullptr && retComm != nullptr) {
+            throw eckit::Exception("A clientId is required to set the variable retComm.");
+        }
+        
+        MPIInitInfo initInfo(g_mpi_init_info);
+        initInfo.parentComm = eckit::Optional<int>{parentComm};
+        initInfo.clientId = eckit::Optional<std::string>{clientId};
+        (*mio) = new multio_handle_t{
+            ClientConfigurationContext(configuration_file(), configuration_path_name(),
+                                       configuration_file_name())
+                .setMPIInitInfo(eckit::Optional<MPIInitInfo>(std::move(initInfo)))};
+                
+        if (clientId != nullptr && retComm != nullptr) {
+            *retComm = eckit::mpi::comm(clientId).communicator();
+        }
+    });
+};
 
 
 int multio_new_handle(multio_handle_t** mio) {
     return wrapApiFunction([mio]() {
-        (*mio) = new multio_handle_t{ClientConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())};
+        (*mio) = new multio_handle_t{ClientConfigurationContext(
+            configuration_file(), configuration_path_name(), configuration_file_name()).setMPIInitInfo(eckit::Optional<MPIInitInfo>(g_mpi_init_info))};
     });
 }
 
@@ -165,19 +194,18 @@ int multio_delete_handle(multio_handle_t* mio) {
 int multio_start_server_from_config(const char* configuration_path, const char* server_name_key) {
     return wrapApiFunction([=]() {
         std::string server_name(server_name_key);
-       
+
         ServerConfigurationContext confCtx(
-            configuration_path == NULL 
-            ? ConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())
-            : ConfigurationContext(
-                eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName(configuration_path)}},
-                configuration_path_name(),
-                configuration_path
-                )
-            );
+            configuration_path == NULL
+                ? ConfigurationContext(configuration_file(), configuration_path_name(),
+                                       configuration_file_name()).setMPIInitInfo(eckit::Optional<MPIInitInfo>(g_mpi_init_info))
+                : ConfigurationContext(eckit::LocalConfiguration{eckit::YAMLConfiguration{
+                                           eckit::PathName(configuration_path)}},
+                                       configuration_path_name(), configuration_path).setMPIInitInfo(eckit::Optional<MPIInitInfo>(g_mpi_init_info)));
         if (!confCtx.config().has(server_name)) {
             std::ostringstream oss;
-            oss << "Configuration '" << server_name << "' not found in configuration " << configuration_path;
+            oss << "Configuration '" << server_name << "' not found in configuration "
+                << configuration_path;
             throw eckit::Exception(oss.str());
         }
         multio::server::MultioServer{confCtx.subContext(server_name)};
@@ -187,9 +215,9 @@ int multio_start_server_from_config(const char* configuration_path, const char* 
 int multio_start_server(const char* server_name_key) {
     return wrapApiFunction([=]() {
         std::string server_name(server_name_key);
-        ServerConfigurationContext confCtx(
-            ConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name())
-            );
+        ServerConfigurationContext confCtx(ConfigurationContext(
+            configuration_file(), configuration_path_name(), configuration_file_name()));
+        confCtx.setMPIInitInfo(eckit::Optional<MPIInitInfo>(g_mpi_init_info));
         if (!confCtx.config().has(server_name)) {
             std::ostringstream oss;
             oss << "Configuration '" << server_name << "' not found";
@@ -263,9 +291,7 @@ int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double
 }
 
 int multio_new_metadata(multio_metadata_t** md) {
-    return wrapApiFunction([md]() {
-        (*md) = new multio_metadata_t{};
-    });
+    return wrapApiFunction([md]() { (*md) = new multio_metadata_t{}; });
 }
 
 
@@ -341,15 +367,23 @@ int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, dou
     });
 }
 
-int multio_metadata_set_map_value(multio_metadata_t* md, const char* key, multio_metadata_t* value) {
-    return wrapApiFunction([md, key, value]() {
-        ASSERT(md);
-        ASSERT(key);
-        ASSERT(value);
-
-        md->set(key, *value);
+int multio_mpi_allow_world_default_comm(bool allow) {
+    return wrapApiFunction([allow]() {
+        g_mpi_init_info.allowWorldAsDefault = allow;
     });
-}
+};
+
+int multio_mpi_split_client_color(int color) {
+    return wrapApiFunction([color]() {
+        g_mpi_init_info.defaultClientSplitColor = color;
+    });
+};
+
+int multio_mpi_split_server_color(int color) {
+    return wrapApiFunction([color]() {
+        g_mpi_init_info.defaultServerSplitColor = color;
+    });
+};
 
 }  // extern "C"
 
@@ -357,9 +391,9 @@ int multio_metadata_set_map_value(multio_metadata_t* md, const char* key, multio
 // Casting between cpp and c type for testing
 
 Metadata* multio_from_c(multio_metadata_t* md) {
- return static_cast<Metadata*>(md);
+    return static_cast<Metadata*>(md);
 }
 
 multio_metadata_t* multio_to_c(Metadata* md) {
- return static_cast<multio_metadata_t*>(md);
+    return static_cast<multio_metadata_t*>(md);
 }

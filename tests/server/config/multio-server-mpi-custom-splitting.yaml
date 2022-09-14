@@ -55,7 +55,6 @@ client:
 nemo-ioserver:
   transport: mpi
   group: custom
-  count : 2 # May be overridden, better to template it via script?
   plans :
 
     - name : ocean-fields

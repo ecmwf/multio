@@ -55,9 +55,8 @@ client:
 nemo-ioserver:
   transport: mpi
   group: nemo
-  server-clients: nemo-clients 
-  server-servers: nemo-servers 
-  count : 2 # May be overridden, better to template it via script?
+  client-group: nemo-clients 
+  server-group: nemo-servers 
   plans :
 
     - name : ocean-fields

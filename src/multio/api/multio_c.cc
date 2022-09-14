@@ -37,7 +37,6 @@ extern "C" {
 static std::string g_current_error_str;
 static multio_failure_handler_t g_failure_handler = nullptr;
 static void* g_failure_handler_context = nullptr;
-static MPIInitInfo g_mpi_init_info{};
 
 const char* multio_error_string(int err) {
     switch (err) {
@@ -97,6 +96,11 @@ int wrapApiFunction(FN f) {
 
 extern "C" {
 
+struct multio_configurationcontext_t : public ConfigurationContext {
+    multio_configurationcontext_t(const eckit::PathName& fileName = configuration_file_name()) :
+        ConfigurationContext{fileName} {}
+};
+
 struct multio_handle_t : public multio::server::MultioClient {
     using multio::server::MultioClient::MultioClient;
     multio_handle_t(const ClientConfigurationContext& confCtx) : MultioClient{confCtx} {}
@@ -139,48 +143,112 @@ int multio_set_failure_handler(multio_failure_handler_t handler, void* context) 
 }
 
 
-int multio_new_handle_from_config(multio_handle_t** mio, const char* configuration_path) {
-    return wrapApiFunction([configuration_path, mio]() {
-        (*mio) = new multio_handle_t{
-            configuration_path == NULL
-                ? ClientConfigurationContext(configuration_file(), configuration_path_name(),
-                                             configuration_file_name()).setMPIInitInfo(eckit::Optional<MPIInitInfo>(g_mpi_init_info))
-                : ClientConfigurationContext(eckit::LocalConfiguration{eckit::YAMLConfiguration{
-                                                 eckit::PathName(configuration_path)}},
-                                             configuration_path_name(), configuration_path).setMPIInitInfo(eckit::Optional<MPIInitInfo>(g_mpi_init_info))};
-    });
-}
+int multio_new_configurationcontext(multio_configurationcontext_t** cc) {
+    return wrapApiFunction([cc]() { (*cc) = new multio_configurationcontext_t{}; });
+};
 
-int multio_new_handle_mpi(multio_handle_t** mio, const char* clientId, int parentComm, int* retComm) {
-    return wrapApiFunction([mio, clientId, parentComm, retComm]() {
-        if (clientId != nullptr && eckit::mpi::hasComm(clientId)) {
-            std::ostringstream oss;
-            oss << "An eckit::mpi communicator with the name \"" << clientId<< "\" already exists. Please provide another clientId.";
-            throw eckit::Exception(oss.str());
-        }
-        if (clientId == nullptr && retComm != nullptr) {
-            throw eckit::Exception("A clientId is required to set the variable retComm.");
-        }
-        
-        MPIInitInfo initInfo(g_mpi_init_info);
-        initInfo.parentComm = eckit::Optional<int>{parentComm};
-        initInfo.clientId = eckit::Optional<std::string>{clientId};
-        (*mio) = new multio_handle_t{
-            ClientConfigurationContext(configuration_file(), configuration_path_name(),
-                                       configuration_file_name())
-                .setMPIInitInfo(eckit::Optional<MPIInitInfo>(std::move(initInfo)))};
-                
-        if (clientId != nullptr && retComm != nullptr) {
-            *retComm = eckit::mpi::comm(clientId).communicator();
+int multio_new_configurationcontext_from_filename(multio_configurationcontext_t** cc,
+                                                  const char* conf_file_name) {
+    return wrapApiFunction([cc, conf_file_name]() {
+        (*cc) = new multio_configurationcontext_t{conf_file_name != nullptr
+                                                      ? eckit::PathName{conf_file_name}
+                                                      : configuration_file_name()};
+    });
+};
+
+int multio_delete_configurationcontext(multio_configurationcontext_t* cc) {
+    return wrapApiFunction([cc]() {
+        ASSERT(cc);
+        delete cc;
+    });
+};
+
+int multio_conf_set_path(multio_configurationcontext_t* cc, const char* configuration_path) {
+    return wrapApiFunction([cc, configuration_path]() {
+        ASSERT(cc);
+        if (configuration_path != nullptr) {
+            cc->setPathName(eckit::PathName(configuration_path));
         }
     });
 };
 
+int multio_conf_mpi_allow_world_default_comm(multio_configurationcontext_t* cc, bool allow) {
+    return wrapApiFunction([cc, allow]() {
+        ASSERT(cc);
+        if (!cc->getMPIInitInfo()) {
+            cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
+        }
+        cc->getMPIInitInfo().value().allowWorldAsDefault = allow;
+    });
+};
 
-int multio_new_handle(multio_handle_t** mio) {
-    return wrapApiFunction([mio]() {
-        (*mio) = new multio_handle_t{ClientConfigurationContext(
-            configuration_file(), configuration_path_name(), configuration_file_name()).setMPIInitInfo(eckit::Optional<MPIInitInfo>(g_mpi_init_info))};
+int multio_conf_mpi_split_client_color(multio_configurationcontext_t* cc, int color) {
+    return wrapApiFunction([cc, color]() {
+        ASSERT(cc);
+        if (!cc->getMPIInitInfo()) {
+            cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
+        }
+        cc->getMPIInitInfo().value().defaultClientSplitColor = color;
+    });
+};
+
+int multio_conf_mpi_split_server_color(multio_configurationcontext_t* cc, int color) {
+    return wrapApiFunction([cc, color]() {
+        ASSERT(cc);
+        if (!cc->getMPIInitInfo()) {
+            cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
+        }
+        cc->getMPIInitInfo().value().defaultServerSplitColor = color;
+    });
+};
+
+int multio_conf_mpi_parent_comm(multio_configurationcontext_t* cc, int parent_comm) {
+    return wrapApiFunction([cc, parent_comm]() {
+        ASSERT(cc);
+        if (!cc->getMPIInitInfo()) {
+            cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
+        }
+        cc->getMPIInitInfo().value().parentComm = parent_comm;
+    });
+};
+
+int multio_conf_mpi_return_client_comm(multio_configurationcontext_t* cc, int* return_client_comm) {
+    return wrapApiFunction([cc, return_client_comm]() {
+        ASSERT(cc);
+        if (!cc->getMPIInitInfo()) {
+            cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
+        }
+        cc->getMPIInitInfo().value().returnClientComm = return_client_comm;
+    });
+};
+
+int multio_conf_mpi_return_server_comm(multio_configurationcontext_t* cc, int* return_server_comm) {
+    return wrapApiFunction([cc, return_server_comm]() {
+        ASSERT(cc);
+        if (!cc->getMPIInitInfo()) {
+            cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
+        }
+        cc->getMPIInitInfo().value().returnServerComm = return_server_comm;
+    });
+};
+
+int multio_conf_mpi_client_id(multio_configurationcontext_t* cc, const char* client_id) {
+    return wrapApiFunction([cc, client_id]() {
+        ASSERT(cc);
+        if (client_id != nullptr) {
+            if (!cc->getMPIInitInfo()) {
+                cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
+            }
+            cc->getMPIInitInfo().value().clientId = eckit::Optional<std::string>{client_id};
+        }
+    });
+}
+
+
+int multio_new_handle(multio_handle_t** mio, multio_configurationcontext_t* cc) {
+    return wrapApiFunction([mio, cc]() {
+        ASSERT(cc);
+        (*mio) = new multio_handle_t{std::move(*cc)};
     });
 }
 
@@ -191,36 +259,15 @@ int multio_delete_handle(multio_handle_t* mio) {
     });
 }
 
-int multio_start_server_from_config(const char* configuration_path, const char* server_name_key) {
-    return wrapApiFunction([=]() {
+int multio_start_server(multio_configurationcontext_t* cc, const char* server_name_key) {
+    return wrapApiFunction([cc, server_name_key]() {
+        ASSERT(cc);
         std::string server_name(server_name_key);
-
-        ServerConfigurationContext confCtx(
-            configuration_path == NULL
-                ? ConfigurationContext(configuration_file(), configuration_path_name(),
-                                       configuration_file_name()).setMPIInitInfo(eckit::Optional<MPIInitInfo>(g_mpi_init_info))
-                : ConfigurationContext(eckit::LocalConfiguration{eckit::YAMLConfiguration{
-                                           eckit::PathName(configuration_path)}},
-                                       configuration_path_name(), configuration_path).setMPIInitInfo(eckit::Optional<MPIInitInfo>(g_mpi_init_info)));
+        ServerConfigurationContext confCtx(*cc);
         if (!confCtx.config().has(server_name)) {
             std::ostringstream oss;
-            oss << "Configuration '" << server_name << "' not found in configuration "
-                << configuration_path;
-            throw eckit::Exception(oss.str());
-        }
-        multio::server::MultioServer{confCtx.subContext(server_name)};
-    });
-}
-
-int multio_start_server(const char* server_name_key) {
-    return wrapApiFunction([=]() {
-        std::string server_name(server_name_key);
-        ServerConfigurationContext confCtx(ConfigurationContext(
-            configuration_file(), configuration_path_name(), configuration_file_name()));
-        confCtx.setMPIInitInfo(eckit::Optional<MPIInitInfo>(g_mpi_init_info));
-        if (!confCtx.config().has(server_name)) {
-            std::ostringstream oss;
-            oss << "Configuration '" << server_name << "' not found";
+            oss << "Configuration '" << server_name << "' not found in configuration file "
+                << confCtx.fileName();
             throw eckit::Exception(oss.str());
         }
         multio::server::MultioServer{confCtx.subContext(server_name)};
@@ -366,24 +413,6 @@ int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, dou
         md->set(key, value);
     });
 }
-
-int multio_mpi_allow_world_default_comm(bool allow) {
-    return wrapApiFunction([allow]() {
-        g_mpi_init_info.allowWorldAsDefault = allow;
-    });
-};
-
-int multio_mpi_split_client_color(int color) {
-    return wrapApiFunction([color]() {
-        g_mpi_init_info.defaultClientSplitColor = color;
-    });
-};
-
-int multio_mpi_split_server_color(int color) {
-    return wrapApiFunction([color]() {
-        g_mpi_init_info.defaultServerSplitColor = color;
-    });
-};
 
 }  // extern "C"
 

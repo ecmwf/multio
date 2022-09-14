@@ -38,11 +38,18 @@ GlobalConfCtx::GlobalConfCtx(const eckit::PathName& pathName, const eckit::PathN
     GlobalConfCtx::GlobalConfCtx(eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}},
                                  pathName, fileName, localPeerTag) {}
 
+GlobalConfCtx::GlobalConfCtx(const eckit::PathName& fileName, LocalPeerTag localPeerTag) :
+    GlobalConfCtx::GlobalConfCtx(eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}},
+                                 configuration_path_name(), fileName, localPeerTag) {}
+
 const eckit::LocalConfiguration& GlobalConfCtx::globalConfig() const {
     return globalConfig_;
 };
 const eckit::PathName& GlobalConfCtx::pathName() const {
     return pathName_;
+};
+void GlobalConfCtx::setPathName(const eckit::PathName& pathName) {
+    pathName_ = pathName;
 };
 const eckit::PathName& GlobalConfCtx::fileName() const {
     return fileName_;
@@ -56,6 +63,9 @@ void GlobalConfCtx::setLocalPeerTag(LocalPeerTag clientOrServer) {
 };
 
 const eckit::Optional<MPIInitInfo>& GlobalConfCtx::getMPIInitInfo() const {
+    return mpiInitInfo_;
+};
+eckit::Optional<MPIInitInfo>& GlobalConfCtx::getMPIInitInfo() {
     return mpiInitInfo_;
 };
 void GlobalConfCtx::setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val) {
@@ -75,9 +85,8 @@ ConfigurationContext::ConfigurationContext(const eckit::LocalConfiguration& conf
                                            const eckit::PathName& fileName,
                                            LocalPeerTag localPeerTag) :
     ConfigurationContext::ConfigurationContext(
-        config,
-        std::shared_ptr<GlobalConfCtx>{new GlobalConfCtx(globalConfig, pathName, fileName, localPeerTag)}) {
-}
+        config, std::shared_ptr<GlobalConfCtx>{
+                    new GlobalConfCtx(globalConfig, pathName, fileName, localPeerTag)}) {}
 
 ConfigurationContext::ConfigurationContext(const eckit::LocalConfiguration& config,
                                            const eckit::PathName& pathName,
@@ -92,6 +101,12 @@ ConfigurationContext::ConfigurationContext(const eckit::PathName& pathName,
         eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}}, pathName, fileName,
         localPeerTag) {}
 
+ConfigurationContext::ConfigurationContext(const eckit::PathName& fileName,
+                                           LocalPeerTag localPeerTag) :
+    ConfigurationContext::ConfigurationContext(
+        eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}}, configuration_path_name(),
+        fileName, localPeerTag) {}
+
 eckit::LocalConfiguration& ConfigurationContext::config() {
     return config_;
 };
@@ -105,6 +120,11 @@ const eckit::LocalConfiguration& ConfigurationContext::globalConfig() const {
 
 const eckit::PathName& ConfigurationContext::pathName() const {
     return globalConfCtx_->pathName();
+};
+
+ConfigurationContext& ConfigurationContext::setPathName(const eckit::PathName& pathName) {
+    globalConfCtx_->setPathName(pathName);
+    return *this;
 };
 
 const eckit::PathName& ConfigurationContext::fileName() const {
@@ -153,7 +173,11 @@ ConfigurationContext& ConfigurationContext::tagClient() {
 const eckit::Optional<MPIInitInfo>& ConfigurationContext::getMPIInitInfo() const {
     return globalConfCtx_->getMPIInitInfo();
 }
-ConfigurationContext& ConfigurationContext::setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val) {
+eckit::Optional<MPIInitInfo>& ConfigurationContext::getMPIInitInfo() {
+    return globalConfCtx_->getMPIInitInfo();
+}
+ConfigurationContext& ConfigurationContext::setMPIInitInfo(
+    const eckit::Optional<MPIInitInfo>& val) {
     globalConfCtx_->setMPIInitInfo(val);
     return *this;
 }

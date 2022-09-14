@@ -45,11 +45,15 @@ struct MPIInitInfo {
     eckit::Optional<std::string> clientId{};
     eckit::Optional<int> defaultClientSplitColor{777}; // Hardcoded defaults may be overwritten
     eckit::Optional<int> defaultServerSplitColor{888}; // Hardcoded defaults may be overwritten
+    mutable int* returnClientComm{nullptr}; // Hardcoded defaults may be overwritten
+    mutable int* returnServerComm{nullptr}; // Hardcoded defaults may be overwritten
     bool allowWorldAsDefault{true};
 };
 
 class ConfigurationContext {
 public:
+    ConfigurationContext(const eckit::PathName& fileName,
+                         LocalPeerTag clientOrServer = LocalPeerTag::Client);
     ConfigurationContext(const eckit::PathName& pathName, const eckit::PathName& fileName,
                          LocalPeerTag clientOrServer = LocalPeerTag::Client);
     ConfigurationContext(const eckit::LocalConfiguration& config, const eckit::PathName& pathName,
@@ -82,6 +86,8 @@ public:
     const eckit::LocalConfiguration& globalConfig() const;
     const eckit::PathName& pathName() const;
     const eckit::PathName& fileName() const;
+    
+    ConfigurationContext& setPathName(const eckit::PathName&);
 
     LocalPeerTag localPeerTag() const;
     bool isServer() const;
@@ -99,6 +105,7 @@ public:
     ConfigurationContext recast(const eckit::LocalConfiguration& config) const;
 
     const eckit::Optional<MPIInitInfo>& getMPIInitInfo() const;
+    eckit::Optional<MPIInitInfo>& getMPIInitInfo();
     ConfigurationContext& setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val);
 
 protected:
@@ -116,6 +123,8 @@ private:
 
 class GlobalConfCtx {
 protected:
+    GlobalConfCtx(const eckit::PathName& fileName,
+                  LocalPeerTag clientOrServer = LocalPeerTag::Client);
     GlobalConfCtx(const eckit::PathName& pathName, const eckit::PathName& fileName,
                   LocalPeerTag clientOrServer = LocalPeerTag::Client);
     GlobalConfCtx(const eckit::LocalConfiguration& config, const eckit::PathName& pathName,
@@ -125,11 +134,14 @@ protected:
     const eckit::LocalConfiguration& globalConfig() const;
     const eckit::PathName& pathName() const;
     const eckit::PathName& fileName() const;
+    
+    void setPathName(const eckit::PathName&);
 
     LocalPeerTag localPeerTag() const;
     void setLocalPeerTag(LocalPeerTag clientOrServer);
 
     const eckit::Optional<MPIInitInfo>& getMPIInitInfo() const;
+    eckit::Optional<MPIInitInfo>& getMPIInitInfo();
     void setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val);
 
 

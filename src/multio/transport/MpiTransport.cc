@@ -131,6 +131,13 @@ MpiPeerSetup setupMPI_(const ConfigurationContext& confCtx) {
             // Setup client group
             auto& clientComm = mpi::getComm(
                 confCtx, subGroupName, eckit::Optional<mpi::CommSetupOptions>{std::move(options)});
+            // eckit::Log::info() << " *** MpiTransport::setupMPI_ created clientComm... " << std::endl;
+            
+            if( mpiInitInfo && mpiInitInfo().returnClientComm != nullptr ) {
+                *(mpiInitInfo().returnClientComm) = clientComm.communicator();
+                mpiInitInfo().returnClientComm = nullptr; // Set to null to prevent setting the pointer at a later time when it may be invalid
+            }
+            
             MPI_CALL(MPI_Comm_group(assumeParellelComm(clientComm).MPIComm(), &clientGroup));
             MPI_CALL(MPI_Group_difference(parentGroup, clientGroup, &serverGroup));
         } break;
@@ -139,6 +146,8 @@ MpiPeerSetup setupMPI_(const ConfigurationContext& confCtx) {
             // Add default in case of missing configuration
             options.defaultType = eckit::Optional<mpi::CommSetupType>(mpi::CommSetupType::Split);
             options.parentCommName = eckit::Optional<std::string>(groupName);
+            
+            const auto& mpiInitInfo = confCtx.getMPIInitInfo();
 
             std::string subGroupName = confCtx.config().has("server-group")
                                            ? confCtx.config().getString("server-group")
@@ -154,6 +163,12 @@ MpiPeerSetup setupMPI_(const ConfigurationContext& confCtx) {
             // Setup client group
             auto& serverComm = mpi::getComm(
                 confCtx, subGroupName, eckit::Optional<mpi::CommSetupOptions>{std::move(options)});
+                
+            if( mpiInitInfo && mpiInitInfo().returnServerComm != nullptr ) {
+                *(mpiInitInfo().returnServerComm) = serverComm.communicator();
+                mpiInitInfo().returnServerComm = nullptr; // Set to null to prevent setting the pointer at a later time when it may be invalid
+            }
+            
             MPI_CALL(MPI_Comm_group(assumeParellelComm(serverComm).MPIComm(), &serverGroup));
             MPI_CALL(MPI_Group_difference(parentGroup, serverGroup, &clientGroup));
         } break;

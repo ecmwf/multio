@@ -78,9 +78,10 @@ int multio_initialise();
  */
 int multio_version(const char** version);
 
-/** Retrieves version control checksum of the latest change, e.g. ``a88011c007a0db48a5d16e296934a197eac2050a``
- * \param version Return variable for version control checksum. Returned pointer valid throughout program lifetime.
- * \returns Return code (#OdcErrorValues)
+/** Retrieves version control checksum of the latest change, e.g.
+ * ``a88011c007a0db48a5d16e296934a197eac2050a`` \param version Return variable for version control
+ * checksum. Returned pointer valid throughout program lifetime. \returns Return code
+ * (#OdcErrorValues)
  */
 int multio_vcs_version(const char** sha1);
 
@@ -91,39 +92,55 @@ int multio_vcs_version(const char** sha1);
 
 
 // TODO: Shall we allow passing in a configuration path here?
-// int multio_new_handle(const char* configuration_path, multio_handle_t** multio);
+/** Creates a multio (client) instance
+ * \param configuration_path Path to YAML configuration file
+ * \param mio Return a handle to the multio (client) instance
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_new_handle_from_config(multio_handle_t** multio, const char* configuration_path);
+
 
 /** Creates a multio (client) instance
  * \param mio Return a handle to the multio (client) instance
  * \returns Return code (#MultioErrorValues)
  */
 int multio_new_handle(multio_handle_t** mio);
+
+
 /** Deletes a multio (client) instance
  * \param mio Handle to the multio (client) instance to be deleted
  * \returns Return code (#MultioErrorValues)
  */
 int multio_delete_handle(multio_handle_t* mio);
 
-// TODO: Shall we allow passing in a configuration path here?
-// int multio_start_server(const char* configuration_path);
 
 /** Initialises and starts server
  * \note This will be running until it receives a 'close' message from all of clients
  * \returns Return code (#MultioErrorValues)
  */
-int multio_start_server();
+int multio_start_server_from_config(const char* configuration_path, const char* server_name_key);
+
+/** Initialises and starts server
+ * \note This will be running until it receives a 'close' message from all of clients
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_start_server(const char* server_name_key);
+
 
 /** Opens connections to the server
  * \note This will open connections to all processes associated with the server
  * \returns Return code (#MultioErrorValues)
  */
 int multio_open_connections(multio_handle_t* mio);
+
+
 /** Closes connections to the server
  * \note This will close connections to all processes associated with the server
  * \param mio Handle to the multio (client) instance
  * \returns Return code (#MultioErrorValues)
  */
 int multio_close_connections(multio_handle_t* mio);
+
 
 /** Indicates that a given step is complete
  * \note Can be used for checkpointing
@@ -133,6 +150,7 @@ int multio_close_connections(multio_handle_t* mio);
  */
 int multio_write_step_complete(multio_handle_t* mio, multio_metadata_t* md);
 
+
 /** Writes domain information (e.g. local-to-global index mapping) to the server
  * \param mio Handle to the multio (client) instance
  * \param md Metadata information about the domain
@@ -141,6 +159,8 @@ int multio_write_step_complete(multio_handle_t* mio, multio_metadata_t* md);
  * \returns Return code (#MultioErrorValues)
  */
 int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, int size);
+
+
 /** Writes masking information (e.g. land-sea mask) to the server
  * \param mio Handle to the multio (client) instance
  * \param md Metadata information about the mask
@@ -149,6 +169,8 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
  * \returns Return code (#MultioErrorValues)
  */
 int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
+
+
 /** Writes (partial) fields
  * \param mio Handle to the multio (client) instance
  * \param md Metadata information about the field
@@ -158,6 +180,7 @@ int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double*
  */
 int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
 
+
 /** @} */
 
 
@@ -166,11 +189,26 @@ int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double
  * \returns Return code (#MultioErrorValues)
  */
 int multio_new_metadata(multio_metadata_t** md);
+
+
 /** Deletes a multio metadata object
  * \param md Handle to the multio metadata object
  * \returns Return code (#MultioErrorValues)
  */
 int multio_delete_metadata(multio_metadata_t* md);
+
+
+// /** Resets/clears a multio metadata object to make the allocated memory reusable efficiently
+//  *
+//  * TODO: Discuss - std::move is also used very often for efficiency. Everything is fine for
+//  * sequentially processing. Problems could arise if at one end the data is not copy and instead
+//  * accessed in an asynchronous manner.
+//  *
+//  * \param md Handle to the multio metadata object
+//  * \returns Return code (#MultioErrorValues)
+//  */
+// int multio_reset_metadata(multio_metadata_t* md);
+
 
 /** Sets a metadata key-value pair for integer values
  * \param md Handle to the multio metadata object
@@ -179,6 +217,26 @@ int multio_delete_metadata(multio_metadata_t* md);
  * \returns Return code (#MultioErrorValues)
  */
 int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int value);
+
+
+/** Sets a metadata key-value pair for long values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Long value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_long_value(multio_metadata_t* md, const char* key, long value);
+
+
+/** Sets a metadata key-value pair for long long values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Long long value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_longlong_value(multio_metadata_t* md, const char* key, long long value);
+
+
 /** Sets a metadata key-value pair for string values
  * \param md Handle to the multio metadata object
  * \param key C-string key to be set
@@ -186,6 +244,52 @@ int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int va
  * \returns Return code (#MultioErrorValues)
  */
 int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, const char* value);
+
+
+/** Sets a metadata key-value pair for boolean values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Boolean/logical value
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, bool value);
+
+
+/** Sets a metadata key-value pair for float values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value float value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, float value);
+
+
+/** Sets a metadata key-value pair for double values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value double value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, double value);
+
+
+/** Sets a metadata key-value pair for recursive metadata maps.
+ *
+ * \todo Do we need nested metadata?
+ *
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value metadata value (ordered map) to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_map_value(multio_metadata_t* md, const char* key, multio_metadata_t*);
+
+
+/**
+ *
+ * \todo Do we need arrays in metadata? Are there use cases for that? If so, are single type arrays
+ * fine or should we support mixed type arrays (however we would express that with c...)
+ */
 
 
 #ifdef __cplusplus

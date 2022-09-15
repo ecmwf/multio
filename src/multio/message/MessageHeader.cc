@@ -23,6 +23,10 @@ Message::Header::Header(Tag tag, Peer src, Peer dst, std::string&& fieldId) :
         metadata_{message::to_metadata(fieldId)},
         fieldId_{std::move(fieldId)} {}
 
+// TODO: Discussion on ownership of Metadata & LocalConfiguration. 
+// LocalConfiguration does not support moving, instead shallow copies are created (reference counting).
+// Yet the ownership is not always clear.
+// Possibly also add a constructor for copying Metadata
 Message::Header::Header(Tag tag, Peer src, Peer dst, Metadata&& md) :
     tag_{tag},
     source_{std::move(src)},

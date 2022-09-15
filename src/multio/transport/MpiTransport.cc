@@ -91,15 +91,24 @@ void MpiTransport::closeConnections() {
 Message MpiTransport::receive() {
 
     util::ScopedTiming timing{statistics_.totReturnTimer_, statistics_.totReturnTiming_};
+    /**
+     * Read raw messages from streamQueue_ (filled by listen() in other thread)
+     * 
+     * Decode and add to msgPack_ (msgQueue)
+     * 
+     * Return single messages until msgPack_ is empty and start over
+     */
 
     do {
         while (not msgPack_.empty()) {
             util::ScopedTiming retTiming{statistics_.returnTimer_, statistics_.returnTiming_};
+            //! TODO For switch to MPMC queue: combine front() and pop() 
             auto msg = msgPack_.front();
             msgPack_.pop();
             return msg;
         }
 
+        //! TODO For switch to MPMC queue: combine front() and pop() 
         if (auto strm = streamQueue_.front()) {
             while (strm->position() < strm->size()) {
                 util::ScopedTiming decodeTiming{statistics_.decodeTimer_, statistics_.decodeTiming_};
@@ -168,6 +177,7 @@ void MpiTransport::listen() {
     if(status.error()) {
         return;
     }
+    // TODO status contains information on required message size - use that to retrieve a sufficient large buffer?
     auto& buf = pool_.findAvailableBuffer();
     auto sz = blockingReceive(status, buf);
     util::ScopedTiming timing{statistics_.pushToQueueTimer_, statistics_.pushToQueueTiming_};

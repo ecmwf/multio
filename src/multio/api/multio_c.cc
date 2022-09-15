@@ -1,5 +1,6 @@
 
 #include "multio_c.h"
+#include "multio_c_cpp_utils.h"
 
 #include <functional>
 
@@ -126,6 +127,15 @@ int multio_set_failure_handler(multio_failure_handler_t handler, void* context) 
     });
 }
 
+
+int multio_new_handle_from_config(multio_handle_t** mio, const char* configuration_path) {
+    return wrapApiFunction([configuration_path, mio]() {
+        const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_path == NULL ? configuration_file() : eckit::PathName(configuration_path)}};
+        (*mio) = new multio_handle_t{config};
+    });
+}
+
+
 int multio_new_handle(multio_handle_t** mio) {
     return wrapApiFunction([mio]() {
         const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_file()}};
@@ -140,10 +150,29 @@ int multio_delete_handle(multio_handle_t* mio) {
     });
 }
 
-int multio_start_server() {
-    return wrapApiFunction([]() {
+int multio_start_server_from_config(const char* configuration_path, const char* server_name_key) {
+    return wrapApiFunction([=]() {
+        std::string server_name(server_name_key);
+        const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_path == NULL ? configuration_file() : eckit::PathName(configuration_path)}};
+        if (!config.has(server_name)) {
+            std::ostringstream oss;
+            oss << "Configuration '" << server_name << "' not found in configuration " << configuration_path;
+            throw eckit::Exception(oss.str());
+        }
+        multio::server::MultioServer{config.getSubConfiguration(server_name)};
+    });
+}
+
+int multio_start_server(const char* server_name_key) {
+    return wrapApiFunction([=]() {
+        std::string server_name(server_name_key);
         const eckit::LocalConfiguration config{eckit::YAMLConfiguration{configuration_file()}};
-        multio::server::MultioServer{config};
+        if (!config.has(server_name)) {
+            std::ostringstream oss;
+            oss << "Configuration '" << server_name << "' not found";
+            throw eckit::Exception(oss.str());
+        }
+        multio::server::MultioServer{config.getSubConfiguration(server_name)};
     });
 }
 
@@ -168,7 +197,7 @@ int multio_write_step_complete(multio_handle_t* mio, multio_metadata_t* md) {
         ASSERT(mio);
         ASSERT(md);
 
-        mio->dispatch(std::move(*md), eckit::Buffer{0}, Message::Tag::StepComplete);
+        mio->dispatch(*md, eckit::Buffer{0}, Message::Tag::StepComplete);
     });
 }
 
@@ -178,7 +207,7 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
         ASSERT(md);
 
         eckit::Buffer domain_def{reinterpret_cast<const char*>(data), size * sizeof(int)};
-        mio->dispatch(std::move(*md), std::move(domain_def), Message::Tag::Domain);
+        mio->dispatch(*md, std::move(domain_def), Message::Tag::Domain);
     });
 }
 
@@ -195,7 +224,7 @@ int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double*
             ++bit;
         }
 
-        mio->dispatch(std::move(*md), std::move(mask_vals), Message::Tag::Mask);
+        mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
     });
 }
 
@@ -206,7 +235,7 @@ int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(double)};
 
-        mio->dispatch(std::move(*md), std::move(field_vals), Message::Tag::Mask);
+        mio->dispatch(*md, std::move(field_vals), Message::Tag::Field);
     });
 }
 
@@ -216,6 +245,7 @@ int multio_new_metadata(multio_metadata_t** md) {
     });
 }
 
+
 int multio_delete_metadata(multio_metadata_t* md) {
     return wrapApiFunction([md]() {
         ASSERT(md);
@@ -223,12 +253,30 @@ int multio_delete_metadata(multio_metadata_t* md) {
     });
 }
 
+
 int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
 
-        std::string skey{key};
+        md->set(key, value);
+    });
+}
+
+int multio_metadata_set_long_value(multio_metadata_t* md, const char* key, long value) {
+    return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+
+        md->set(key, value);
+    });
+}
+
+int multio_metadata_set_longlong_value(multio_metadata_t* md, const char* key, long long value) {
+    return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+
         md->set(key, value);
     });
 }
@@ -239,9 +287,56 @@ int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, con
         ASSERT(key);
         ASSERT(value);
 
-        std::string skey{key}, svalue{value};
-        md->set(skey, svalue);
+        md->set(key, value);
+    });
+}
+
+int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, bool value) {
+    return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+
+        md->set(key, value);
+    });
+}
+
+int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, float value) {
+    return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+
+        md->set(key, value);
+    });
+}
+
+int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, double value) {
+    return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+
+        md->set(key, value);
+    });
+}
+
+int multio_metadata_set_map_value(multio_metadata_t* md, const char* key, multio_metadata_t* value) {
+    return wrapApiFunction([md, key, value]() {
+        ASSERT(md);
+        ASSERT(key);
+        ASSERT(value);
+
+        md->set(key, *value);
     });
 }
 
 }  // extern "C"
+
+
+// Casting between cpp and c type for testing
+
+Metadata* multio_from_c(multio_metadata_t* md) {
+ return static_cast<Metadata*>(md);
+}
+
+multio_metadata_t* multio_to_c(Metadata* md) {
+ return static_cast<multio_metadata_t*>(md);
+}

@@ -23,7 +23,8 @@ using multio::message::Peer;
 namespace multio {
 namespace server {
 
-MultioClient::MultioClient(const ClientConfigurationContext& confCtx) {
+MultioClient::MultioClient(const ClientConfigurationContext& confCtx): FailureAware(confCtx) {
+    ASSERT(confCtx.componentTag() == util::ComponentTag::Client);
     totClientTimer_.start();
 
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
@@ -38,11 +39,19 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) {
 
 
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << confCtx.config() << std::endl;
-    for (auto&& cfg : confCtx.subContext("client").subContexts("plans")) {
+    for (auto&& cfg : confCtx.subContexts("plans", ComponentTag::Plan)) {
         eckit::Log::debug<LibMultio>() << cfg.config() << std::endl;
         plans_.emplace_back(new action::Plan(std::move(cfg)));
     }
 }
+
+util::FailureHandlerResponse MultioClient::handleFailure(const eckit::Optional<util::OnClientError>& t) {
+    if (t && (*t == util::OnClientError::AbortAllTransports)) {
+        transport::TransportRegistry::instance().abortAll();
+    }
+    return util::FailureHandlerResponse::Rethrow;
+};
+
 
 void MultioClient::openConnections() {
     transport::TransportRegistry::instance().openConnections();
@@ -72,15 +81,19 @@ void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload,
     ASSERT(tag < Message::Tag::ENDTAG);
     Message msg{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)}, std::move(payload)};
 
-    for (const auto& plan : plans_) {
-        plan->process(msg);
-    }
+    withFailureHandling([&]() {
+        for (const auto& plan : plans_) {
+            plan->process(msg);
+        }
+    });
 }
 
 void MultioClient::dispatch(message::Message msg) {
-    for (const auto& plan : plans_) {
-        plan->process(msg);
-    }
+    withFailureHandling([&]() {
+        for (const auto& plan : plans_) {
+            plan->process(msg);
+        }
+    });
 }
 
 }  // namespace server

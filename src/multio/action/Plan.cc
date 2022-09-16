@@ -55,10 +55,11 @@ LocalConfiguration rootConfig(const LocalConfiguration& config) {
 }  // namespace
 
 Plan::Plan(const ConfigurationContext& confCtx) {
+    ASSERT(confCtx.componentTag() == util::ComponentTag::Plan);
     name_ = confCtx.config().getString("name", "anonymous");
     auto root = rootConfig(confCtx.config());
     root_.reset(ActionFactory::instance().build(root.getString("type"),
-                                                confCtx.recast(root)));
+                                                confCtx.recast(root, util::ComponentTag::Action)));
 }
 
 Plan::~Plan() {

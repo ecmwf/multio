@@ -4,6 +4,29 @@
 namespace multio {
 namespace util {
 
+std::string toString(ComponentTag tag) {
+    switch (tag) {
+        case ComponentTag::Unrelated:
+            return "Unrelated";
+        case ComponentTag::Client:
+            return "Client";
+        case ComponentTag::Server:
+            return "Server";
+        case ComponentTag::Plan:
+            return "Plan";
+        case ComponentTag::Action:
+            return "Action";
+        case ComponentTag::Transport:
+            return "Transport";
+        case ComponentTag::Receiver:
+            return "Receiver";
+        case ComponentTag::Dispatcher:
+            return "Dispatcher";
+        default:
+            return "Unknown component tag";
+    }
+}
+
 std::string toString(LocalPeerTag tag) {
     switch (tag) {
         case LocalPeerTag::Client:
@@ -16,14 +39,14 @@ std::string toString(LocalPeerTag tag) {
 }
 
 
-SubContextIteratorMapper::SubContextIteratorMapper(const ConfigurationContext& confCtx) :
-    confCtx_(confCtx) {}
-SubContextIteratorMapper::SubContextIteratorMapper(ConfigurationContext&& confCtx) :
-    confCtx_(std::move(confCtx)) {}
+SubContextIteratorMapper::SubContextIteratorMapper(const ConfigurationContext& confCtx, ComponentTag tag) :
+    confCtx_(confCtx), tag_(tag) {}
+SubContextIteratorMapper::SubContextIteratorMapper(ConfigurationContext&& confCtx, ComponentTag tag) :
+    confCtx_(std::move(confCtx)), tag_(tag) {}
 
 ConfigurationContext SubContextIteratorMapper::operator()(
     const eckit::LocalConfiguration& config) const {
-    return confCtx_.recast(config);
+    return confCtx_.recast(config, tag_);
 }
 
 
@@ -75,37 +98,42 @@ void GlobalConfCtx::setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val) {
 
 // ConfigurationContext
 ConfigurationContext::ConfigurationContext(const eckit::LocalConfiguration& config,
-                                           std::shared_ptr<GlobalConfCtx> globalConfCtx) :
-    config_(config), globalConfCtx_(std::move(globalConfCtx)){};
+                                           std::shared_ptr<GlobalConfCtx> globalConfCtx,
+                                           ComponentTag tag) :
+    config_(config), globalConfCtx_(std::move(globalConfCtx)), componentTag_(tag){};
 
 
 ConfigurationContext::ConfigurationContext(const eckit::LocalConfiguration& config,
                                            const eckit::LocalConfiguration& globalConfig,
                                            const eckit::PathName& pathName,
                                            const eckit::PathName& fileName,
-                                           LocalPeerTag localPeerTag) :
+                                           LocalPeerTag localPeerTag,
+                                           ComponentTag tag) :
     ConfigurationContext::ConfigurationContext(
         config, std::shared_ptr<GlobalConfCtx>{
-                    new GlobalConfCtx(globalConfig, pathName, fileName, localPeerTag)}) {}
+                    new GlobalConfCtx(globalConfig, pathName, fileName, localPeerTag)}, tag) {}
 
 ConfigurationContext::ConfigurationContext(const eckit::LocalConfiguration& config,
                                            const eckit::PathName& pathName,
                                            const eckit::PathName& fileName,
-                                           LocalPeerTag localPeerTag) :
-    ConfigurationContext::ConfigurationContext(config, config, pathName, fileName, localPeerTag) {}
+                                           LocalPeerTag localPeerTag,
+                                           ComponentTag tag) :
+    ConfigurationContext::ConfigurationContext(config, config, pathName, fileName, localPeerTag, tag) {}
 
 ConfigurationContext::ConfigurationContext(const eckit::PathName& pathName,
                                            const eckit::PathName& fileName,
-                                           LocalPeerTag localPeerTag) :
+                                           LocalPeerTag localPeerTag,
+                                           ComponentTag tag) :
     ConfigurationContext::ConfigurationContext(
         eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}}, pathName, fileName,
-        localPeerTag) {}
+        localPeerTag, tag) {}
 
 ConfigurationContext::ConfigurationContext(const eckit::PathName& fileName,
-                                           LocalPeerTag localPeerTag) :
+                                           LocalPeerTag localPeerTag,
+                                           ComponentTag tag) :
     ConfigurationContext::ConfigurationContext(
         eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}}, configuration_path_name(),
-        fileName, localPeerTag) {}
+        fileName, localPeerTag, tag) {}
 
 eckit::LocalConfiguration& ConfigurationContext::config() {
     return config_;
@@ -131,20 +159,32 @@ const eckit::PathName& ConfigurationContext::fileName() const {
     return globalConfCtx_->fileName();
 };
 
-ConfigurationContext ConfigurationContext::subContext(const std::string& subConfiguratinKey) const {
-    return recast(config_.getSubConfiguration(subConfiguratinKey));
+ConfigurationContext ConfigurationContext::subContext(const std::string& subConfiguratinKey, ComponentTag tag) const {
+    return recast(config_.getSubConfiguration(subConfiguratinKey), tag);
 };
 
 ConfigurationContext::SubConfigurationContexts ConfigurationContext::subContexts(
-    const std::string& subConfiguratinKey) const {
+    const std::string& subConfiguratinKey, ComponentTag tag) const {
     return SubConfigurationContexts(config_.getSubConfigurations(subConfiguratinKey),
-                                    SubContextIteratorMapper(*this));
+                                    SubContextIteratorMapper(*this, tag));
 };
 
-ConfigurationContext ConfigurationContext::recast(const eckit::LocalConfiguration& config) const {
-    return ConfigurationContext(config, globalConfCtx_);
+ConfigurationContext ConfigurationContext::recast(const eckit::LocalConfiguration& config, ComponentTag tag) const {
+    return ConfigurationContext(config, globalConfCtx_, tag);
 };
 
+ConfigurationContext ConfigurationContext::recast(ComponentTag tag) const {
+    return ConfigurationContext(config_, globalConfCtx_, tag);
+};
+
+// ComponentTag
+ComponentTag ConfigurationContext::componentTag() const {
+    return componentTag_;
+};
+ConfigurationContext& ConfigurationContext::setComponentTag(ComponentTag tag) {
+    componentTag_ = tag;
+    return  *this;
+};
 
 // LocalPeerTag
 LocalPeerTag ConfigurationContext::localPeerTag() const {
@@ -162,10 +202,10 @@ ConfigurationContext& ConfigurationContext::setLocalPeerTag(LocalPeerTag clientO
     return *this;
 };
 ConfigurationContext& ConfigurationContext::tagServer() {
-    return setLocalPeerTag(LocalPeerTag::Server);
+    return setComponentTag(ComponentTag::Server).setLocalPeerTag(LocalPeerTag::Server);
 };
 ConfigurationContext& ConfigurationContext::tagClient() {
-    return setLocalPeerTag(LocalPeerTag::Client);
+    return setComponentTag(ComponentTag::Client).setLocalPeerTag(LocalPeerTag::Client);
 };
 
 

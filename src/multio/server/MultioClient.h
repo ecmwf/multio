@@ -17,6 +17,7 @@
 
 #include "multio/action/Plan.h"
 #include "multio/util/ConfigurationContext.h"
+#include "multio/util/FailureHandling.h"
 
 #include "eckit/log/Statistics.h"
 
@@ -30,6 +31,7 @@ namespace multio {
 
 using util::ConfigurationContext;
 using util::ClientConfigurationContext;
+using util::ComponentTag;
 
 namespace message {
 class Message;
@@ -40,7 +42,7 @@ namespace server {
 
 class Transport;
 
-class MultioClient {
+class MultioClient: public util::FailureAware<util::ComponentTag::Client> {
 public:
     explicit MultioClient(const ClientConfigurationContext& config);
 
@@ -52,6 +54,8 @@ public:
     void dispatch(message::Metadata metadata, eckit::Buffer&& payload, message::Message::Tag tag);
 
     void dispatch(message::Message msg);
+    
+    util::FailureHandlerResponse handleFailure(const eckit::Optional<util::OnClientError>&) override;
 
 private:
     std::vector<std::unique_ptr<action::Plan>> plans_;

@@ -15,6 +15,7 @@
 
 #include "multio/server/Listener.h"
 #include "multio/util/ConfigurationContext.h"
+#include "multio/util/FailureHandling.h"
 
 namespace eckit {
 class Configuration;
@@ -23,6 +24,7 @@ class Configuration;
 namespace multio {
 
 using util::ServerConfigurationContext;
+using util::FailureAware;
 
 namespace transport {
 class Transport;
@@ -30,9 +32,11 @@ class Transport;
 
 namespace server {
 
-class MultioServer {
+class MultioServer: FailureAware<util::ComponentTag::Server> {
 public:
     MultioServer(const ServerConfigurationContext& confCtx);
+    
+    util::FailureHandlerResponse handleFailure(const eckit::Optional<util::OnServerError>&) override;
 
     ~MultioServer();
 

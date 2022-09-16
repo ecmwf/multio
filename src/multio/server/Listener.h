@@ -17,14 +17,16 @@
 #ifndef multio_server_Listener_H
 #define multio_server_Listener_H
 
-#include <set>
+#include <atomic>
 #include <memory>
+#include <set>
 
 #include "eckit/container/Queue.h"
 
-#include "multio/message/Peer.h"
 #include "multio/message/Message.h"
+#include "multio/message/Peer.h"
 #include "multio/util/ConfigurationContext.h"
+#include "multio/util/FailureHandling.h"
 
 namespace eckit {
 class Configuration;
@@ -40,18 +42,21 @@ namespace server {
 
 class Dispatcher;
 
-class Listener {
+class Listener: public util::FailureAware<util::ComponentTag::Receiver> {
 public:
     Listener(const util::ConfigurationContext& confCtx, transport::Transport& trans);
 
     void start();
 
     void listen();
+    
+    util::FailureHandlerResponse handleFailure(const eckit::Optional<util::OnReceiveError>&) override;
 
 private:
     bool moreConnections() const;
     void checkConnection(const message::Peer& conn) const;
 
+    std::shared_ptr<std::atomic<bool>> continue_;
     std::shared_ptr<Dispatcher> dispatcher_;
 
     transport::Transport& transport_;
@@ -59,9 +64,10 @@ private:
     size_t closedCount_ = 0;
     size_t clientCount_ = 0;
 
-    std::set<message::Peer> connections_;
 
+    std::set<message::Peer> connections_;
     eckit::Queue<message::Message> msgQueue_;
+
 };
 
 }  // namespace server

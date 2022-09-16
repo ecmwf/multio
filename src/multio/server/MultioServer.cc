@@ -19,9 +19,11 @@ namespace server {
 using transport::TransportFactory;
 
 MultioServer::MultioServer(const ServerConfigurationContext& confCtx) :
+    FailureAware(confCtx),
     transport_{
-        TransportFactory::instance().build(confCtx.config().getString("transport"), confCtx)},
-    listener_{confCtx, *transport_} {
+        TransportFactory::instance().build(confCtx.config().getString("transport"), confCtx.recast(util::ComponentTag::Transport))},
+    listener_{confCtx.recast(util::ComponentTag::Receiver), *transport_} {
+    ASSERT(confCtx.componentTag() == util::ComponentTag::Server);
     LOG_DEBUG_LIB(multio::LibMultio) << "Server config: " << confCtx.config() << std::endl;
     eckit::Log::info() << "*** Server -- constructor " << confCtx.config() << std::endl;
 
@@ -37,9 +39,18 @@ MultioServer::MultioServer(const ServerConfigurationContext& confCtx) :
 
 
     eckit::Log::info() << "Server start listening..." << std::endl;
-    listener_.start();
+    withFailureHandling([&]() {
+        listener_.start();
+    });
     eckit::Log::info() << "Listening loop has stopped" << std::endl;
 }
+
+util::FailureHandlerResponse MultioServer::handleFailure(const eckit::Optional<util::OnServerError>& t) {
+    if (t && (*t == util::OnServerError::AbortTransport)) {
+        transport_->abort();
+    }
+    return util::FailureHandlerResponse::Rethrow;
+};
 
 MultioServer::~MultioServer() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};

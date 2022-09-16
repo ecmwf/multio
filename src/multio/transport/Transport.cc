@@ -84,6 +84,7 @@ void TransportFactory::list(std::ostream& out) const {
 
 Transport* TransportFactory::build(const std::string& name, const ConfigurationContext& confCtx) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
+    ASSERT(confCtx.componentTag() == util::ComponentTag::Transport);
 
     Log::debug<LibMultio>() << "Looking for TransportFactory [" << name << "]" << std::endl;
 

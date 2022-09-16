@@ -133,7 +133,7 @@ public:
         clientCount_ = eckit::mpi::comm(oce_str.c_str()).size();
         serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
 
-        multioClient_.reset(new MultioClient{ClientConfigurationContext{confCtx_}});
+        multioClient_.reset(new MultioClient{ClientConfigurationContext{confCtx_, "client"}});
 
         return ret_comm;
     }
@@ -156,7 +156,7 @@ public:
                            << ",size=" << eckit::mpi::comm("server_comm").size() << ")"
                            << std::endl;
 
-        auto serverConfig = ServerConfigurationContext(confCtx_.subContext(server_name));
+        auto serverConfig = ServerConfigurationContext(confCtx_, server_name);
 
         multioServer_.reset(new MultioServer{serverConfig});
     }

@@ -248,7 +248,7 @@ int multio_conf_mpi_client_id(multio_configurationcontext_t* cc, const char* cli
 int multio_new_handle(multio_handle_t** mio, multio_configurationcontext_t* cc) {
     return wrapApiFunction([mio, cc]() {
         ASSERT(cc);
-        (*mio) = new multio_handle_t{std::move(*cc)};
+        (*mio) = new multio_handle_t{ClientConfigurationContext{*cc, "client"}};
     });
 }
 
@@ -263,14 +263,7 @@ int multio_start_server(multio_configurationcontext_t* cc, const char* server_na
     return wrapApiFunction([cc, server_name_key]() {
         ASSERT(cc);
         std::string server_name(server_name_key);
-        ServerConfigurationContext confCtx(*cc);
-        if (!confCtx.config().has(server_name)) {
-            std::ostringstream oss;
-            oss << "Configuration '" << server_name << "' not found in configuration file "
-                << confCtx.fileName();
-            throw eckit::Exception(oss.str());
-        }
-        multio::server::MultioServer{confCtx.subContext(server_name)};
+        multio::server::MultioServer{ServerConfigurationContext{*cc, server_name}};
     });
 }
 

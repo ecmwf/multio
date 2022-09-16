@@ -47,8 +47,7 @@ using multio::transport::MpiPeer;
 using multio::transport::TcpPeer;
 using multio::transport::ThreadPeer;
 using multio::util::ConfigurationContext;
-using multio::util::ClientConfigurationContext;
-using multio::util::ServerConfigurationContext;
+using multio::util::ComponentTag;
 
 using namespace multio::server;
 
@@ -356,7 +355,7 @@ void MultioHammer::finish(const eckit::option::CmdArgs&) {}
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioHammer::startListening(std::shared_ptr<Transport> transport) {
-    Listener listener(confCtx_, *transport);
+    Listener listener(confCtx_.recast(ComponentTag::Receiver), *transport);
     listener.start();
 }
 
@@ -535,7 +534,7 @@ void MultioHammer::testData() {
 
 void MultioHammer::executeMpi() {
     auto rank = eckit::mpi::comm(confCtx_.config().getString("group").c_str()).rank();
-    std::shared_ptr<Transport> transport{TransportFactory::instance().build("mpi", rank < clientCount_ ? confCtx_.tagClient() : confCtx_.tagServer() )};
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("mpi", (rank < clientCount_ ? confCtx_.tagClient() : confCtx_.tagServer()).recast(ComponentTag::Transport) )};
 
     auto comm = confCtx_.config().getString("group");
 
@@ -557,7 +556,7 @@ void MultioHammer::executeMpi() {
 
 void MultioHammer::executeTcp() {
     confCtx_.config().set("local_port", port_);
-    std::shared_ptr<Transport> transport{TransportFactory::instance().build("tcp", confCtx_)};
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("tcp", confCtx_.recast(ComponentTag::Transport))};
 
     PeerList serverPeers;
     for (auto cfg : confCtx_.config().getSubConfigurations("servers")) {
@@ -583,7 +582,7 @@ void MultioHammer::executeTcp() {
 }
 
 void MultioHammer::executeThread() {
-    std::shared_ptr<Transport> transport{TransportFactory::instance().build("thread", confCtx_)};
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("thread", confCtx_.recast(ComponentTag::Transport))};
 
     // Spawn servers
     PeerList serverPeers;
@@ -608,7 +607,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
     ASSERT(handle);
 
     std::vector<std::unique_ptr<Plan>> plans;
-    for (auto&& subCtx: confCtx_.subContexts("plans")) {
+    for (auto&& subCtx: confCtx_.subContexts("plans", ComponentTag::Plan)) {
         eckit::Log::debug<multio::LibMultio>() << subCtx.config() << std::endl;
         plans.emplace_back(new Plan(std::move(subCtx)));
     }

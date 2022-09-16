@@ -40,7 +40,7 @@ using eckit::Log;
 
 Action::Action(const ConfigurationContext& confCtx) : confCtx_(confCtx), type_{confCtx.config().getString("type")} {
     if (confCtx.config().has("next")) {
-        const ConfigurationContext nextCtx = confCtx.subContext("next");
+        const ConfigurationContext nextCtx = confCtx.subContext("next", util::ComponentTag::Action);
         next_.reset(ActionFactory::instance().build(nextCtx.config().getString("type"), nextCtx));
     }
 }
@@ -96,6 +96,7 @@ void ActionFactory::list(std::ostream& out) {
 
 Action* ActionFactory::build(const std::string& name, const ConfigurationContext& confCtx) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
+    ASSERT(confCtx.componentTag() == util::ComponentTag::Action);
 
     LOG_DEBUG_LIB(LibMultio) << "Looking for ActionFactory [" << name << "]" << std::endl;
 

@@ -247,6 +247,8 @@ int multio_delete_handle(multio_handle_t* mio);
 // int multio_start_server(const char* server_name_key);
 
 /** Initialises and starts server
+ * TODO Discuss if server_name_key has to be picked through another mechanism
+ *
  * \note This will be running until it receives a 'close' message from all of clients
  * \param cc Handle to configuration context
  * \param server_name_key Name of the server as listed in the yaml configuration file

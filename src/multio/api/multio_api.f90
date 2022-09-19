@@ -73,8 +73,8 @@ module multio_api
     public :: multio_initialise
     public :: multio_version, multio_vcs_version
     public :: multio_set_failure_handler
-    ! public :: multio_start_server
-    ! public :: multio_start_server_mpi
+    public :: multio_start_server
+    public :: multio_error_string
 
     ! Error handling definitions
 

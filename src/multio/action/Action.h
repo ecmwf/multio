@@ -19,6 +19,8 @@
 
 #include <memory>
 #include <map>
+#include <set>
+#include <iterator>
 #include <mutex>
 
 #include "eckit/log/Statistics.h"
@@ -47,6 +49,12 @@ public:
     void executeNext(message::Message msg) const;
 
     virtual void execute(message::Message msg) const = 0;
+    
+    // May be implemented in a action (i.e. select)
+    virtual void activeFields(std::insert_iterator<std::set<std::string>>& ins) const;
+    
+    // Computes all active fields of this and following actions
+    void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
 
 protected:
     ConfigurationContext confCtx_;

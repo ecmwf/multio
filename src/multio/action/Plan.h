@@ -38,7 +38,8 @@ public:
     ~Plan();
 
     void process(message::Message msg);
-
+    
+    void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
 private:
 
     std::string name_;

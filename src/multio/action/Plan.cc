@@ -73,5 +73,10 @@ void Plan::process(message::Message msg) {
     root_->execute(msg);
 }
 
+void Plan::computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const {
+    root_->computeActiveFields(ins);
+};
+
+
 }  // namespace action
 }  // namespace multio

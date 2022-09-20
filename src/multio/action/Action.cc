@@ -60,6 +60,18 @@ void Action::executeNext(message::Message msg) const {
     }
 }
 
+void Action::activeFields(std::insert_iterator<std::set<std::string>>& ins) const {
+    return;
+}
+
+void Action::computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const {
+    activeFields(ins);
+    if (!next_) {
+        return;
+    }
+    next_->computeActiveFields(ins);
+}
+
 std::ostream& operator<<(std::ostream& os, const Action& a) {
     a.print(os);
     return os;

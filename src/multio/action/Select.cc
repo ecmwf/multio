@@ -48,10 +48,17 @@ void Select::execute(Message msg) const {
     }
 }
 
+void Select::activeFields(std::insert_iterator<std::set<std::string>>& ins) const {
+    if (match_ == "field") {
+        std::copy(items_.begin(), items_.end(), ins);
+    }
+}
+
+
 bool Select::matchPlan(const Message& msg) const {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     auto item = msg.metadata().getString(mdEntry.at(match_));
-   
+
 
     LOG_DEBUG_LIB(LibMultio) << " *** Item " << item << " is being matched... ";
 

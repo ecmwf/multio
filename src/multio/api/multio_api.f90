@@ -46,6 +46,7 @@ module multio_api
         procedure :: write_domain => multio_write_domain
         procedure :: write_mask => multio_write_mask
         procedure :: write_field => multio_write_field
+        procedure :: field_is_active => multio_field_is_active
     end type
 
     type multio_metadata
@@ -328,6 +329,16 @@ module multio_api
             type(c_ptr), intent(in), value :: metadata
             real(c_double), dimension(*), intent(in) :: data
             integer(c_int), intent(in), value :: size
+            integer(c_int) :: err
+        end function
+        
+        function c_multio_field_is_active(handle, field, set_value) result(err) &
+                bind(c, name='multio_field_is_active')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: handle
+            type(c_ptr), intent(in), value :: field
+            logical(c_bool), intent(out) :: set_value
             integer(c_int) :: err
         end function
 
@@ -634,6 +645,16 @@ contains
 
         real(dp), dimension(:), intent(in) :: data
         err = c_multio_write_field(handle%impl, metadata%impl, data, size(data))
+    end function
+    
+    function multio_field_is_active(handle, field, set_value) result(err)
+        class(multio_handle), intent(inout) :: handle
+        logical(c_bool), intent(out) :: set_value
+        character(*), intent(in) :: field
+        integer :: err
+        character(:), allocatable, target :: nullified_field
+        nullified_field = trim(field) // c_null_char
+        err = c_multio_field_is_active(handle%impl, c_loc(nullified_field), set_value)
     end function
 
 

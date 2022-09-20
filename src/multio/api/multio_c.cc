@@ -407,6 +407,17 @@ int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, dou
     });
 }
 
+int multio_field_is_active(multio_handle_t* mio, const char* fname, bool* value) {
+    return wrapApiFunction([mio, fname, value]() {
+        ASSERT(mio);
+        ASSERT(fname);
+        ASSERT(value);
+        
+        *value = mio->isFieldActive(fname);
+    });
+};
+
+
 }  // extern "C"
 
 

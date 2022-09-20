@@ -54,11 +54,6 @@ using multio::server::MultioServer;
 using NemoKey = std::string;
 
 namespace {
-std::set<std::string> fetch_active_fields(const eckit::Configuration& cfg) {
-    const auto& vec = cfg.getStringVector("active-fields");
-    return std::set<std::string>{begin(vec), end(vec)};
-}
-
 struct GribData {
     long param;
     std::string gridType;
@@ -68,7 +63,6 @@ struct GribData {
 
 class MultioNemo {
     ConfigurationContext confCtx_;
-    const std::set<std::string> activeFields_;
 
     // Nemo to grib dictionary
     NemoToGrib paramMap_;
@@ -88,8 +82,7 @@ class MultioNemo {
     const long bitsPerValue_ = 16;
 
     MultioNemo() :
-        confCtx_(configuration_file(), configuration_path_name(), configuration_file_name()),
-        activeFields_{fetch_active_fields(confCtx_.config())} {
+        confCtx_(configuration_file(), configuration_path_name(), configuration_file_name()) {
         static const char* argv[2] = {"MultioNemo", 0};
         eckit::Main::initialise(1, const_cast<char**>(argv));
 
@@ -245,7 +238,7 @@ public:
     }
 
     bool isActive(const std::string& name) const {
-        return activeFields_.find(name) != end(activeFields_);
+        return MultioNemo::instance().client().isFieldActive(name);
     }
 };
 

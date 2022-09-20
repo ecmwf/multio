@@ -402,6 +402,16 @@ int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, floa
  */
 int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, double value);
 
+
+/** Query information whether a field is actively used or can be omitted
+ * \param mio Handle to the multio (client) instance
+ * \param fname Name of the field
+ * \param set_value Pointer to the boolean where to store the result
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_field_is_active(multio_handle_t* mio, const char* fname, bool* set_value);
+
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

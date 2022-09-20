@@ -39,9 +39,15 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx): FailureAw
 
 
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << confCtx.config() << std::endl;
+    auto activeFieldInserter = std::inserter(activeFields_, activeFields_.end());
     for (auto&& cfg : confCtx.subContexts("plans", ComponentTag::Plan)) {
         eckit::Log::debug<LibMultio>() << cfg.config() << std::endl;
         plans_.emplace_back(new action::Plan(std::move(cfg)));
+        plans_.back()->computeActiveFields(activeFieldInserter);
+    }
+    if (confCtx.globalConfig().has("active-fields")) {
+        const auto& vec = confCtx.globalConfig().getStringVector("active-fields");
+        std::copy(vec.begin(), vec.end(), activeFieldInserter);
     }
 }
 
@@ -94,7 +100,12 @@ void MultioClient::dispatch(message::Message msg) {
             plan->process(msg);
         }
     });
+}    
+
+bool MultioClient::isFieldActive(const std::string& name) const {
+    return activeFields_.find(name) != end(activeFields_);
 }
+
 
 }  // namespace server
 }  // namespace multio

@@ -112,6 +112,7 @@ void MultioReplayNemoCApi::finish(const eckit::option::CmdArgs&) {
     multio_delete_handle(multio_handle);
 }
 
+
 void MultioReplayNemoCApi::execute(const eckit::option::CmdArgs&) {
     runClient();
 
@@ -158,6 +159,13 @@ void MultioReplayNemoCApi::setDomains() {
 void MultioReplayNemoCApi::writeFields() {
 
     for (const auto& param : parameters_) {
+        bool is_active = false;
+        multio_field_is_active(multio_handle, param.c_str(), &is_active);
+        if (!is_active) {
+            throw eckit::SeriousBug{"Field should be active: " + param};
+        }
+        
+        
         auto buffer = readField(param, rank_);
 
         auto sz = static_cast<int>(buffer.size()) / sizeof(double);

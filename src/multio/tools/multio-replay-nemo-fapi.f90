@@ -61,6 +61,8 @@ subroutine init(mio, rank, server_count, client_count)
     integer(c_int) :: newcomm_id
     type(multio_handle), intent(inout) :: mio
     type(multio_configurationcontext) :: cc
+    ! for tests
+    logical(c_bool) :: is_active
 
 
     write(0,*) "Init..."
@@ -115,6 +117,33 @@ subroutine init(mio, rank, server_count, client_count)
 
     write(0,*) "client_count", client_count
     write(0,*) "server_count", server_count
+    
+    ! Performing a few tests
+    cerr = mio%field_is_active("sst", is_active)
+    if (.not. is_active) then
+        ERROR STOP 'Field "sst" should be active'
+    end if
+    
+    cerr = mio%field_is_active("ssv", is_active)
+    if (.not. is_active) then
+        ERROR STOP 'Field "ssv" should be active'
+    end if
+    
+    cerr = mio%field_is_active("ssu", is_active)
+    if (.not. is_active) then
+        ERROR STOP 'Field "ssu" should be active'
+    end if
+    
+    cerr = mio%field_is_active("ssw", is_active)
+    if (.not. is_active) then
+        ERROR STOP 'Field "ssw" should be active'
+    end if
+    
+    cerr = mio%field_is_active("notexisting", is_active)
+    if (is_active) then
+        ERROR STOP 'Field "notexisting" should not be active'
+    end if
+
 end subroutine init
 
 

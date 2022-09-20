@@ -19,6 +19,8 @@
 
 #include <iosfwd>
 #include <vector>
+#include <set>
+#include <iterator>
 
 #include "multio/action/Action.h"
 
@@ -33,6 +35,8 @@ public:
 
     void execute(Message msg) const override;
 
+    void activeFields(std::insert_iterator<std::set<std::string>>& ins) const override;
+    
 private:
     void print(std::ostream &os) const override;
 

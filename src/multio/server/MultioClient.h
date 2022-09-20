@@ -55,10 +55,14 @@ public:
 
     void dispatch(message::Message msg);
     
+    bool isFieldActive(const std::string& name) const;
+    
     util::FailureHandlerResponse handleFailure(const eckit::Optional<util::OnClientError>&) override;
 
 private:
     std::vector<std::unique_ptr<action::Plan>> plans_;
+    std::set<std::string> activeFields_;
+
 
     eckit::Timing totClientTiming_;
     eckit::Timer totClientTimer_;

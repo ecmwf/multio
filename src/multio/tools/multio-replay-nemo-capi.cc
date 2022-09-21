@@ -307,12 +307,13 @@ void MultioReplayNemoCApi::initClient() {
 
 #if defined(SPECIFIC_MPI_GROUP)
     eckit::Log::info() << " *** SPCEFICI_MPI_GROUP: " << XSTRM(SPECIFIC_MPI_GROUP) << std::endl;
-const eckit::mpi::Comm& group = eckit::mpi::comm(XSTRM(SPECIFIC_MPI_GROUP));
-const eckit::mpi::Comm& clients = eckit::mpi::comm((std::string(XSTRM(SPECIFIC_MPI_GROUP)) + "-clients").c_str());
+    const eckit::mpi::Comm& group = eckit::mpi::comm(XSTRM(SPECIFIC_MPI_GROUP));
+    const eckit::mpi::Comm& clients =
+        eckit::mpi::comm((std::string(XSTRM(SPECIFIC_MPI_GROUP)) + "-clients").c_str());
 #else
     eckit::Log::info() << " *** DEFAULT MPI GROUP: nemo " << std::endl;
-const eckit::mpi::Comm& group = eckit::mpi::comm("nemo");
-const eckit::mpi::Comm& clients = eckit::mpi::comm("nemo-clients");
+    const eckit::mpi::Comm& group = eckit::mpi::comm("nemo");
+    const eckit::mpi::Comm& clients = eckit::mpi::comm("nemo-clients");
 #endif
 
     rank_ = group.rank();

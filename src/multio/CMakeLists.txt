@@ -22,12 +22,12 @@ list( APPEND multio_library_srcs
 )
 
 list( APPEND multio_util_srcs
-    util/ConfigurationContext.cc 
-    util/ConfigurationContext.h 
-    util/FailureHandling.cc 
-    util/FailureHandling.h 
-    util/ParameterMappings.cc 
-    util/ParameterMappings.h 
+    util/ConfigurationContext.cc
+    util/ConfigurationContext.h
+    util/FailureHandling.cc
+    util/FailureHandling.h
+    util/ParameterMappings.cc
+    util/ParameterMappings.h
 )
 
 list( APPEND multio_action_srcs

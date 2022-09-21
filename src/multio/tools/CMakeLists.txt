@@ -9,42 +9,41 @@ ecbuild_add_executable( TARGET    multio-replay
                         SOURCES   multio-replay.cc MultioTool.cc
                         LIBS      multio multio-server)
 
-ecbuild_add_executable( TARGET    multio-replay-nemo-capi-initfilepath
-                        CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS      multio multio-server multio-api)
-target_compile_definitions(multio-replay-nemo-capi-initfilepath PUBLIC "INIT_BY_FILEPATH" "EXPLICIT_MPI")
+ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initfilepath
+                        CONDITION   HAVE_MULTIO_SERVER
+                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
+                        LIBS        multio multio-server multio-api
+                        DEFINITIONS "INIT_BY_FILEPATH" "EXPLICIT_MPI")
 
-ecbuild_add_executable( TARGET    multio-replay-nemo-capi-initdefault-empi
-                        CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS      multio multio-server multio-api)
-target_compile_definitions(multio-replay-nemo-capi-initdefault-empi PUBLIC "INIT_BY_ENV" "EXPLICIT_MPI")
+ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initdefault-empi
+                        CONDITION   HAVE_MULTIO_SERVER
+                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
+                        LIBS        multio multio-server multio-api
+                        DEFINITIONS "INIT_BY_ENV" "EXPLICIT_MPI")
 
-ecbuild_add_executable( TARGET    multio-replay-nemo-capi-initdefault-impi
-                        CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS      multio multio-server multio-api)
-target_compile_definitions(multio-replay-nemo-capi-initdefault-impi PUBLIC "INIT_BY_ENV" "IMPLICIT_MPI")
+ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initdefault-impi
+                        CONDITION   HAVE_MULTIO_SERVER
+                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
+                        LIBS        multio multio-server multio-api
+                        DEFINITIONS "INIT_BY_ENV" "IMPLICIT_MPI")
 
-ecbuild_add_executable( TARGET    multio-replay-nemo-capi-initdefault-impi-custom
-                        CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS      multio multio-server multio-api)
-target_compile_definitions(multio-replay-nemo-capi-initdefault-impi-custom PUBLIC "INIT_BY_ENV" "IMPLICIT_MPI" "SPECIFIC_MPI_GROUP=custom")
+ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initdefault-impi-custom
+                        CONDITION   HAVE_MULTIO_SERVER
+                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
+                        LIBS        multio multio-server multio-api
+                        DEFINITIONS "INIT_BY_ENV" "IMPLICIT_MPI" "SPECIFIC_MPI_GROUP=custom")
 
-ecbuild_add_executable( TARGET    multio-replay-nemo-capi-initmpi-empi
-                        CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS      multio multio-server multio-api)
-target_compile_definitions(multio-replay-nemo-capi-initmpi-empi PUBLIC "INIT_BY_MPI" "EXPLICIT_MPI")
+ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initmpi-empi
+                        CONDITION   HAVE_MULTIO_SERVER
+                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
+                        LIBS        multio multio-server multio-api
+                        DEFINITIONS "INIT_BY_MPI" "EXPLICIT_MPI")
 
-ecbuild_add_executable( TARGET    multio-replay-nemo-capi-initmpi-impi
-                        CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS      multio multio-server multio-api)
-target_compile_definitions(multio-replay-nemo-capi-initmpi-impi PUBLIC "INIT_BY_MPI" "IMPLICIT_MPI")
-
+ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initmpi-impi
+                        CONDITION   HAVE_MULTIO_SERVER
+                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
+                        LIBS        multio multio-server multio-api
+                        DEFINITIONS "INIT_BY_MPI" "EXPLICIT_MPI")
 
 ecbuild_add_executable( TARGET    multio-probe
                         CONDITION HAVE_MULTIO_SERVER

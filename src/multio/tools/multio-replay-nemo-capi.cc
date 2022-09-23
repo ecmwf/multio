@@ -160,6 +160,16 @@ void MultioReplayNemoCApi::writeFields() {
 
     for (const auto& param : parameters_) {
         bool is_active = false;
+        multio_category_is_fully_active(multio_handle, "ocean-2d", &is_active);
+        if (is_active) {
+            throw eckit::SeriousBug{"Category should be not fully active: ocean-2d"};
+        }
+        
+        multio_category_is_fully_active(multio_handle, "ocean-2d", &is_active);
+        if (is_active) {
+            throw eckit::SeriousBug{"Category should be not fully active: ocean-2d"};
+        }
+        
         multio_field_is_active(multio_handle, param.c_str(), &is_active);
         if (!is_active) {
             throw eckit::SeriousBug{"Field should be active: " + param};

@@ -23,6 +23,7 @@
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/message/Message.h"
+#include "multio/transport/Transport.h"
 #include "multio/util/ConfigurationContext.h"
 
 namespace multio {
@@ -35,17 +36,27 @@ class Action;
 class Plan : private eckit::NonCopyable {
 public:
     Plan(const ConfigurationContext& confCtx);
-    ~Plan();
+    virtual ~Plan();
 
-    void process(message::Message msg);
-    
+    virtual void process(message::Message msg);
+
     void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
-private:
 
+protected:
     std::string name_;
 
     std::unique_ptr<Action> root_;
     eckit::Timing timing_;
+};
+
+// ClientPlans are transport aware, i.e. their last action is assumed to be an transport
+class ClientPlan : public Plan {
+public:
+    ClientPlan(const ConfigurationContext& confCtx);
+
+    std::shared_ptr<transport::Transport> getTransport() const;
+
+    void process(message::Message msg) override;
 };
 
 }  // namespace action

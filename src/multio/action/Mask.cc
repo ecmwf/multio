@@ -44,7 +44,7 @@ void Mask::execute(message::Message msg) const {
     // Sanity check
     ASSERT(msg.metadata().getLong("levelCount") == 1);
 
-    executeNext(createMasked(msg));
+    executeNext(createMasked(std::move(msg)));
 }
 
 message::Message Mask::createMasked(message::Message msg) const {

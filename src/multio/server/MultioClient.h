@@ -56,12 +56,14 @@ public:
     void dispatch(message::Message msg);
     
     bool isFieldActive(const std::string& name) const;
+    bool isCategoryActive(const std::string& name) const;
     
     util::FailureHandlerResponse handleFailure(const eckit::Optional<util::OnClientError>&) override;
 
 private:
-    std::vector<std::unique_ptr<action::Plan>> plans_;
+    std::vector<std::unique_ptr<action::ClientPlan>> plans_;
     std::set<std::string> activeFields_;
+    std::set<std::string> activeCategories_;
 
 
     eckit::Timing totClientTiming_;

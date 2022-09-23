@@ -26,6 +26,8 @@ list( APPEND multio_util_srcs
     util/ConfigurationContext.h 
     util/FailureHandling.cc 
     util/FailureHandling.h 
+    util/ParameterMappings.cc 
+    util/ParameterMappings.h 
 )
 
 list( APPEND multio_action_srcs
@@ -41,6 +43,8 @@ list( APPEND multio_action_srcs
     action/Mask.h
     action/Operation.cc
     action/Operation.h
+    action/ParameterMapping.cc
+    action/ParameterMapping.h
     action/Print.cc
     action/Print.h
     action/Select.cc
@@ -93,13 +97,14 @@ list( APPEND multio_domain_srcs
 
 list( APPEND multio_message_srcs
     message/Message.cc
-    message/MessageContent.cc
     message/MessageHeader.cc
     message/Message.h
     message/Metadata.cc
     message/Metadata.h
     message/Peer.cc
     message/Peer.h
+    message/ParameterMapping.cc
+    message/ParameterMapping.h
 )
 
 list( APPEND multio_sink_srcs

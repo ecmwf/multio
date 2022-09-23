@@ -15,15 +15,17 @@
 #ifndef multio_util_ConfigurationContext_H
 #define multio_util_ConfigurationContext_H
 
+#include <functional>
 #include <tuple>
+#include <unordered_map>
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/utils/Optional.h"
 #include "multio/util/ConfigurationPath.h"
+#include "multio/util/ParameterMappings.h"
 #include "multio/util/IteratorMapper.h"
 
 namespace multio {
 namespace util {
-
 
 enum class ComponentTag : unsigned
 {
@@ -51,15 +53,15 @@ class SubContextIteratorMapper;
 class ServerConfigurationContext;
 class ClientConfigurationContext;
 
-class GlobalConfCtx; // TODO: hide internal implementation in separate namespace
+class GlobalConfCtx;  // TODO: hide internal implementation in separate namespace
 
 struct MPIInitInfo {
     eckit::Optional<int> parentComm{};
     eckit::Optional<std::string> clientId{};
-    eckit::Optional<int> defaultClientSplitColor{777}; // Hardcoded defaults may be overwritten
-    eckit::Optional<int> defaultServerSplitColor{888}; // Hardcoded defaults may be overwritten
-    mutable int* returnClientComm{nullptr}; // Hardcoded defaults may be overwritten
-    mutable int* returnServerComm{nullptr}; // Hardcoded defaults may be overwritten
+    eckit::Optional<int> defaultClientSplitColor{777};  // Hardcoded defaults may be overwritten
+    eckit::Optional<int> defaultServerSplitColor{888};  // Hardcoded defaults may be overwritten
+    mutable int* returnClientComm{nullptr};             // Hardcoded defaults may be overwritten
+    mutable int* returnServerComm{nullptr};             // Hardcoded defaults may be overwritten
     bool allowWorldAsDefault{true};
 };
 
@@ -80,32 +82,34 @@ public:
                          const eckit::PathName& pathName, const eckit::PathName& fileName,
                          LocalPeerTag clientOrServer = LocalPeerTag::Client,
                          ComponentTag tag = ComponentTag::Unrelated);
-                         
-    // ConfigurationContext(const ConfigurationContext& other): config_(other.config_), globalConfCtx_(other.globalConfCtx_) {
+
+    // ConfigurationContext(const ConfigurationContext& other): config_(other.config_),
+    // globalConfCtx_(other.globalConfCtx_) {
     // }
-    // ConfigurationContext(ConfigurationContext&& other): config_(std::move(other.config_)), globalConfCtx_(std::move(other.globalConfCtx_)) {
+    // ConfigurationContext(ConfigurationContext&& other): config_(std::move(other.config_)),
+    // globalConfCtx_(std::move(other.globalConfCtx_)) {
     // }
-    
+
     // ConfigurationContext& operator=(const ConfigurationContext& other) {
     //     config_ = other.config_;
     //     globalConfCtx_ = other.globalConfCtx_;
     //     return *this;
     // }
-    
+
     // ConfigurationContext& operator=(ConfigurationContext&& other) {
     //     config_ = std::move(other.config_);
     //     globalConfCtx_ = std::move(other.globalConfCtx_);
     //     return *this;
     // }
-                         
+
     eckit::LocalConfiguration& config();
     const eckit::LocalConfiguration& config() const;
     const eckit::LocalConfiguration& globalConfig() const;
     const eckit::PathName& pathName() const;
     const eckit::PathName& fileName() const;
-    
+
     ConfigurationContext& setPathName(const eckit::PathName&);
-    
+
     ComponentTag componentTag() const;
     ConfigurationContext& setComponentTag(ComponentTag);
 
@@ -120,14 +124,25 @@ public:
     using SubConfigurationContexts =
         MappedContainer<std::vector<eckit::LocalConfiguration>, SubContextIteratorMapper>;
 
-    ConfigurationContext subContext(const std::string& subConfiguratinKey, ComponentTag tag = ComponentTag::Unrelated) const;
-    SubConfigurationContexts subContexts(const std::string& subConfiguratinKey, ComponentTag tag = ComponentTag::Unrelated) const;
-    ConfigurationContext recast(const eckit::LocalConfiguration& config, ComponentTag tag = ComponentTag::Unrelated) const;
+    ConfigurationContext subContext(const std::string& subConfiguratinKey,
+                                    ComponentTag tag = ComponentTag::Unrelated) const;
+    SubConfigurationContexts subContexts(const std::string& subConfiguratinKey,
+                                         ComponentTag tag = ComponentTag::Unrelated) const;
+    ConfigurationContext recast(const eckit::LocalConfiguration& config,
+                                ComponentTag tag = ComponentTag::Unrelated) const;
     ConfigurationContext recast(ComponentTag tag = ComponentTag::Unrelated) const;
 
     const eckit::Optional<MPIInitInfo>& getMPIInitInfo() const;
     eckit::Optional<MPIInitInfo>& getMPIInitInfo();
     ConfigurationContext& setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val);
+
+    // Allows loading and caching other configuration files related to the configured path
+    const eckit::LocalConfiguration& getYAMLFile(const char*) const;
+    const eckit::LocalConfiguration& getYAMLFile(const std::string&) const;
+    
+    const eckit::LocalConfiguration& getYAMLFile(const eckit::PathName&) const;
+
+    const ParameterMappings& parameterMappings() const;
 
 protected:
     ConfigurationContext(const eckit::LocalConfiguration& config,
@@ -145,7 +160,7 @@ private:
 
 
 class GlobalConfCtx {
-protected:
+public:
     GlobalConfCtx(const eckit::PathName& fileName,
                   LocalPeerTag clientOrServer = LocalPeerTag::Client);
     GlobalConfCtx(const eckit::PathName& pathName, const eckit::PathName& fileName,
@@ -157,7 +172,7 @@ protected:
     const eckit::LocalConfiguration& globalConfig() const;
     const eckit::PathName& pathName() const;
     const eckit::PathName& fileName() const;
-    
+
     void setPathName(const eckit::PathName&);
 
     LocalPeerTag localPeerTag() const;
@@ -167,6 +182,13 @@ protected:
     eckit::Optional<MPIInitInfo>& getMPIInitInfo();
     void setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val);
 
+    const eckit::LocalConfiguration& getYAMLFile(const char*) const;
+    const eckit::LocalConfiguration& getYAMLFile(const std::string&) const;
+    
+    const eckit::LocalConfiguration& getYAMLFile(const eckit::PathName&) const;
+
+    friend util::ParameterMappings;
+    const ParameterMappings& parameterMappings() const;
 
 private:
     eckit::LocalConfiguration globalConfig_;
@@ -176,14 +198,17 @@ private:
 
     eckit::Optional<MPIInitInfo> mpiInitInfo_{MPIInitInfo{}};
 
-    friend class ConfigurationContext;
+    mutable std::unordered_map<std::string, eckit::LocalConfiguration> referencedConfigFiles_;
+    mutable eckit::Optional<ParameterMappings> parameterMappings_;
 };
 
 
 class SubContextIteratorMapper {
 public:
-    SubContextIteratorMapper(const ConfigurationContext& confCtx, ComponentTag tag = ComponentTag::Unrelated);
-    SubContextIteratorMapper(ConfigurationContext&& confCtx, ComponentTag tag = ComponentTag::Unrelated);
+    SubContextIteratorMapper(const ConfigurationContext& confCtx,
+                             ComponentTag tag = ComponentTag::Unrelated);
+    SubContextIteratorMapper(ConfigurationContext&& confCtx,
+                             ComponentTag tag = ComponentTag::Unrelated);
 
     ConfigurationContext operator()(const eckit::LocalConfiguration& config) const;
 
@@ -194,28 +219,29 @@ private:
 
 
 namespace {
-    ConfigurationContext throwRecast_(const ConfigurationContext& confCtx, const std::string& key) {
-        if (!confCtx.globalConfig().has(key)) {
-            std::ostringstream oss;
-            oss << "Configuration '" << key << "' not found in configuration file "
-                << confCtx.fileName();
-            throw eckit::Exception(oss.str());
-        }
-        return confCtx.recast(confCtx.globalConfig().getSubConfiguration(key));
+ConfigurationContext throwRecast_(const ConfigurationContext& confCtx, const std::string& key) {
+    if (!confCtx.globalConfig().has(key)) {
+        std::ostringstream oss;
+        oss << "Configuration '" << key << "' not found in configuration file "
+            << confCtx.fileName();
+        throw eckit::Exception(oss.str());
     }
+    return confCtx.recast(confCtx.globalConfig().getSubConfiguration(key));
 }
+}  // namespace
 
 class ClientConfigurationContext : public ConfigurationContext {
 public:
-    ClientConfigurationContext(const ConfigurationContext& otherBase, const std::string& key = "client") :
+    ClientConfigurationContext(const ConfigurationContext& otherBase,
+                               const std::string& key = "client") :
         ConfigurationContext(throwRecast_(otherBase, key).tagClient()) {}
-       
 };
 
 
 class ServerConfigurationContext : public ConfigurationContext {
 public:
-    ServerConfigurationContext(const ConfigurationContext& otherBase, const std::string& serverName) :
+    ServerConfigurationContext(const ConfigurationContext& otherBase,
+                               const std::string& serverName) :
         ConfigurationContext(throwRecast_(otherBase, serverName).tagServer()) {}
 };
 

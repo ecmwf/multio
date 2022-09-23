@@ -56,11 +56,15 @@ void Action::executeNext(message::Message msg) const {
         LOG_DEBUG_LIB(multio::LibMultio)
             << "*** [source = " << msg.source() << ", destination = " << msg.destination()
             << "] -- Executing action -- " << *next_ << std::endl;
-        next_->execute(msg);
+        next_->execute(std::move(msg));
     }
 }
 
 void Action::activeFields(std::insert_iterator<std::set<std::string>>& ins) const {
+    return;
+}
+
+void Action::activeCategories(std::insert_iterator<std::set<std::string>>& ins) const {
     return;
 }
 
@@ -71,6 +75,22 @@ void Action::computeActiveFields(std::insert_iterator<std::set<std::string>>& in
     }
     next_->computeActiveFields(ins);
 }
+
+void Action::computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const {
+    activeCategories(ins);
+    if (!next_) {
+        return;
+    }
+    next_->computeActiveCategories(ins);
+}
+
+std::weak_ptr<transport::Transport> Action::getTransport() const {
+    if (!next_) {
+        return std::weak_ptr<transport::Transport>{};
+    }
+    return next_->getTransport();
+};
+
 
 std::ostream& operator<<(std::ostream& os, const Action& a) {
     a.print(os);

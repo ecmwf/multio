@@ -139,6 +139,26 @@ subroutine init(mio, rank, server_count, client_count)
         ERROR STOP 'Field "ssw" should be active'
     end if
     
+    cerr = mio%category_is_fully_active("ocean-domain-map", is_active)
+    if (.not. is_active) then
+        ERROR STOP 'Category "ocean-domain-map" should be completly active'
+    end if
+    
+    cerr = mio%category_is_fully_active("ocean-mask", is_active)
+    if (.not. is_active) then
+        ERROR STOP 'Category "ocean-mask" should be fully active'
+    end if
+    
+    cerr = mio%category_is_fully_active("ocean-2d", is_active)
+    if (is_active) then
+        ERROR STOP 'Category "ocean-2d" should not be fully active'
+    end if
+    
+    cerr = mio%category_is_fully_active("ocean-3d", is_active)
+    if (is_active) then
+        ERROR STOP 'Category "ocean-3d" should not be fully active'
+    end if
+    
     cerr = mio%field_is_active("notexisting", is_active)
     if (is_active) then
         ERROR STOP 'Field "notexisting" should not be active'

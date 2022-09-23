@@ -66,6 +66,9 @@ public:  // methods
 
     const PeerList& clientPeers() const;
     const PeerList& serverPeers() const;
+    
+    virtual size_t clientCount() const;
+    virtual size_t serverCount() const;
 
 protected:
     const ConfigurationContext confCtx_;

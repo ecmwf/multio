@@ -36,7 +36,7 @@ void Print::execute(message::Message msg) const {
     ASSERT(os);
     (*os) << msg << std::endl;
 
-    executeNext(msg);
+    executeNext(std::move(msg));
 }
 
 void Print::print(std::ostream& os) const {

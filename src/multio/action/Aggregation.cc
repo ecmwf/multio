@@ -28,11 +28,11 @@ Aggregation::Aggregation(const ConfigurationContext& confCtx) : Action(confCtx) 
 
 void Aggregation::execute(Message msg) const {
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
-        executeNext(createGlobalField(msg));
+        executeNext(createGlobalField(std::move(msg)));
     }
 
     if ((msg.tag() == Message::Tag::StepComplete) && handleFlush(msg)) {
-        executeNext(msg);
+        executeNext(std::move(msg));
     }
 }
 

@@ -47,6 +47,7 @@ module multio_api
         procedure :: write_mask => multio_write_mask
         procedure :: write_field => multio_write_field
         procedure :: field_is_active => multio_field_is_active
+        procedure :: category_is_fully_active => multio_category_is_fully_active
     end type
 
     type multio_metadata
@@ -338,6 +339,16 @@ module multio_api
             implicit none
             type(c_ptr), intent(in), value :: handle
             type(c_ptr), intent(in), value :: field
+            logical(c_bool), intent(out) :: set_value
+            integer(c_int) :: err
+        end function
+
+        function c_multio_category_is_fully_active(handle, category, set_value) result(err) &
+                bind(c, name='multio_category_is_fully_active')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: handle
+            type(c_ptr), intent(in), value :: category
             logical(c_bool), intent(out) :: set_value
             integer(c_int) :: err
         end function
@@ -656,7 +667,16 @@ contains
         nullified_field = trim(field) // c_null_char
         err = c_multio_field_is_active(handle%impl, c_loc(nullified_field), set_value)
     end function
-
+    
+    function multio_category_is_fully_active(handle, category, set_value) result(err)
+        class(multio_handle), intent(inout) :: handle
+        logical(c_bool), intent(out) :: set_value
+        character(*), intent(in) :: category
+        integer :: err
+        character(:), allocatable, target :: nullified_category
+        nullified_category = trim(category) // c_null_char
+        err = c_multio_category_is_fully_active(handle%impl, c_loc(nullified_category), set_value)
+    end function
 
     ! Methods for metadata objects
     function multio_new_metadata(metadata) result(err)

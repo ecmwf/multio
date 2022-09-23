@@ -1,5 +1,6 @@
 
 #include "ConfigurationContext.h"
+#include "ParameterMappings.h"
 
 namespace multio {
 namespace util {
@@ -93,6 +94,30 @@ eckit::Optional<MPIInitInfo>& GlobalConfCtx::getMPIInitInfo() {
 };
 void GlobalConfCtx::setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val) {
     mpiInitInfo_ = val;
+};
+
+const eckit::LocalConfiguration& GlobalConfCtx::getYAMLFile(const char* fname) const {
+    return getYAMLFile(std::string(fname));
+}
+const eckit::LocalConfiguration& GlobalConfCtx::getYAMLFile(const std::string& fname) const {
+    return getYAMLFile(pathName_ + fname);
+}
+const eckit::LocalConfiguration& GlobalConfCtx::getYAMLFile(const eckit::PathName& fname) const {
+    std::string key = fname.fullName().asString();
+    auto config = referencedConfigFiles_.find(key);
+    if (config != referencedConfigFiles_.end()) {
+        return config->second;
+    }
+    
+    referencedConfigFiles_.emplace(key, eckit::YAMLConfiguration{fname});
+    return referencedConfigFiles_[key];
+}
+
+const ParameterMappings& GlobalConfCtx::parameterMappings() const {
+    if(!parameterMappings_) {
+        parameterMappings_ = ParameterMappings(std::cref(*this));
+    }
+    return *parameterMappings_;
 };
 
 
@@ -220,6 +245,21 @@ ConfigurationContext& ConfigurationContext::setMPIInitInfo(
     const eckit::Optional<MPIInitInfo>& val) {
     globalConfCtx_->setMPIInitInfo(val);
     return *this;
+}
+
+// Referenced fileds
+const eckit::LocalConfiguration& ConfigurationContext::getYAMLFile(const char* fname) const {
+    return globalConfCtx_->getYAMLFile(fname);
+}
+const eckit::LocalConfiguration& ConfigurationContext::getYAMLFile(const std::string& fname) const {
+    return globalConfCtx_->getYAMLFile(fname);
+}
+const eckit::LocalConfiguration& ConfigurationContext::getYAMLFile(const eckit::PathName& fname) const {
+    return globalConfCtx_->getYAMLFile(fname);
+}
+
+const ParameterMappings& ConfigurationContext::parameterMappings() const {
+    return globalConfCtx_->parameterMappings();
 }
 
 }  // namespace util

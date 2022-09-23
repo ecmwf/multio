@@ -52,6 +52,20 @@ bool Transport::peersMissing() const {
     return clientPeers_.empty() && serverPeers_.empty();
 }
 
+size_t Transport::clientCount() const {
+    if(peersMissing()) {
+        createPeers();
+    }
+    return clientPeers_.size();
+}
+
+size_t Transport::serverCount() const {
+    if(peersMissing()) {
+        createPeers();
+    }
+    return serverPeers_.size();
+}
+
 //--------------------------------------------------------------------------------------------------
 
 TransportFactory& TransportFactory::instance() {

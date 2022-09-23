@@ -40,7 +40,7 @@ void SingleFieldSink::execute(Message msg) const {
             ASSERT(false);
     }
 
-    executeNext(msg);
+    executeNext(std::move(msg));
 }
 
 void SingleFieldSink::write(Message msg) const {

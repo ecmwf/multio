@@ -417,6 +417,16 @@ int multio_field_is_active(multio_handle_t* mio, const char* fname, bool* value)
     });
 };
 
+int multio_category_is_fully_active(multio_handle_t* mio, const char* cname, bool* value) {
+    return wrapApiFunction([mio, cname, value]() {
+        ASSERT(mio);
+        ASSERT(cname);
+        ASSERT(value);
+        
+        *value = mio->isCategoryActive(cname);
+    });
+};
+
 
 }  // extern "C"
 

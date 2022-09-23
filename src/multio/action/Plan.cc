@@ -70,12 +70,41 @@ Plan::~Plan() {
 
 void Plan::process(message::Message msg) {
     util::ScopedTimer timer{timing_};
-    root_->execute(msg);
+    root_->execute(std::move(msg));
 }
 
 void Plan::computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const {
     root_->computeActiveFields(ins);
 };
+
+// ClientPlan
+ClientPlan::ClientPlan(const ConfigurationContext& confCtx): Plan(confCtx) {}
+
+std::shared_ptr<transport::Transport> ClientPlan::getTransport() const {
+    auto sp = root_->getTransport().lock();
+    if (!sp) {
+        throw eckit::Exception("Client plan \"" + name_ + "\" has no transport.");
+    }
+    return sp; 
+}
+
+void ClientPlan::process(message::Message msg) {
+    switch(msg.tag()) {
+        case message::Message::Tag::Domain:
+        case message::Message::Tag::Field:
+        case message::Message::Tag::Mask:
+        case message::Message::Tag::StepComplete:
+        case message::Message::Tag::StepNotification: {
+            auto md = msg.metadata();
+            md.set("domainCount", getTransport()->clientCount());
+            msg = msg.modifyMetadata(std::move(md));
+            break;
+        }
+        default:
+            break;
+    }
+    Plan::process(std::move(msg));
+}
 
 
 }  // namespace action

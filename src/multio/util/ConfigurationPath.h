@@ -9,6 +9,7 @@
 namespace multio {
 namespace util {
 
+// TODO Provide defaults with eckit pathname (sync with Simon) 
 inline eckit::PathName configuration_path_name() {
     eckit::PathName base = (::getenv("MULTIO_SERVER_CONFIG_PATH"))
                                ? eckit::PathName{::getenv("MULTIO_SERVER_CONFIG_PATH")}

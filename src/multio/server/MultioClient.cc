@@ -23,7 +23,7 @@ using multio::message::Peer;
 namespace multio {
 namespace server {
 
-MultioClient::MultioClient(const ClientConfigurationContext& confCtx): FailureAware(confCtx) {
+MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureAware(confCtx) {
     ASSERT(confCtx.componentTag() == util::ComponentTag::Client);
     totClientTimer_.start();
 
@@ -42,7 +42,7 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx): FailureAw
     auto activeFieldInserter = std::inserter(activeFields_, activeFields_.end());
     for (auto&& cfg : confCtx.subContexts("plans", ComponentTag::Plan)) {
         eckit::Log::debug<LibMultio>() << cfg.config() << std::endl;
-        plans_.emplace_back(new action::Plan(std::move(cfg)));
+        plans_.emplace_back(new action::ClientPlan(std::move(cfg)));
         plans_.back()->computeActiveFields(activeFieldInserter);
     }
     if (confCtx.globalConfig().has("active-fields")) {
@@ -51,7 +51,8 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx): FailureAw
     }
 }
 
-util::FailureHandlerResponse MultioClient::handleFailure(const eckit::Optional<util::OnClientError>& t) {
+util::FailureHandlerResponse MultioClient::handleFailure(
+    const eckit::Optional<util::OnClientError>& t) {
     if (t && (*t == util::OnClientError::AbortAllTransports)) {
         transport::TransportRegistry::instance().abortAll();
     }
@@ -80,18 +81,13 @@ MultioClient::~MultioClient() {
 
 
     logFile << "\n ** Total wall-clock time spent in MultioClient "
-            << eckit::Timing{totClientTimer_}.elapsed_ << "s" <<std::endl;
+            << eckit::Timing{totClientTimer_}.elapsed_ << "s" << std::endl;
 }
 
 void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload, Message::Tag tag) {
     ASSERT(tag < Message::Tag::ENDTAG);
-    Message msg{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)}, std::move(payload)};
-
-    withFailureHandling([&]() {
-        for (const auto& plan : plans_) {
-            plan->process(msg);
-        }
-    });
+    dispatch(
+        Message{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)}, std::move(payload)});
 }
 
 void MultioClient::dispatch(message::Message msg) {
@@ -100,12 +96,15 @@ void MultioClient::dispatch(message::Message msg) {
             plan->process(msg);
         }
     });
-}    
+}
 
 bool MultioClient::isFieldActive(const std::string& name) const {
     return activeFields_.find(name) != end(activeFields_);
 }
 
+bool MultioClient::isCategoryActive(const std::string& name) const {
+    return activeCategories_.find(name) != end(activeCategories_);
+}
 
 }  // namespace server
 }  // namespace multio

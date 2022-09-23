@@ -49,14 +49,22 @@ std::string Message::tag2str(Tag t) {
 Message::Message() : Message(Message::Header{Message::Tag::Empty, Peer{}, Peer{}}) {}
 
 Message::Message(Header&& header, const eckit::Buffer& payload) :
-    version_{protocolVersion()}, content_{std::make_shared<Content>(std::move(header), payload)} {}
+    Message(std::make_shared<Header>(std::move(header)), std::make_shared<eckit::Buffer>(payload, payload.size())) {}
 
 Message::Message(Header&& header, eckit::Buffer&& payload) :
-    version_{protocolVersion()},
-    content_{std::make_shared<Content>(std::move(header), std::move(payload))} {}
+    Message(std::make_shared<Header>(std::move(header)), std::make_shared<eckit::Buffer>(std::move(payload))) {}
+    
+// Message::Message(std::shared_ptr<Header> header, std::shared_ptr<eckit::Buffer> payload) :
+//     Message(std::move(header), std::move(payload)) {}
+    
+Message::Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload) :
+    version_{protocolVersion()}, header_{std::move(header)}, payload_{std::move(payload)} {}
+    
+Message::Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload) :
+    version_{protocolVersion()}, header_{std::move(header)}, payload_{payload} {}
 
 const Message::Header& Message::header() const {
-    return content_->header();
+    return *header_;
 }
 
 int Message::version() const {
@@ -99,28 +107,36 @@ const std::string& Message::fieldId() const {
     return header().fieldId();
 }
 
-const Metadata& Message::metadata() const {
-    return header().metadata();
+const Metadata& Message::metadata() const& {
+    return header_->metadata();
 }
 
+// Metadata&& Message::metadata() && {
+//     return std::move(header_).metadata();
+// }
+    
+Message Message::modifyMetadata(Metadata&& md) const {
+    return Message(std::make_shared<Header>(header_->modifyMetadata(std::move(md))), payload_);
+};
+
 eckit::Buffer& Message::payload() {
-    return content_->payload();
+    return *payload_;
 }
 
 const eckit::Buffer& Message::payload() const {
-    return content_->payload();
+    return *payload_;
 }
 
 size_t Message::size() const {
-    return content_->size();
+    return payload_->size();
 }
 
 void Message::encode(eckit::Stream& strm) const {
     header().encode(strm);
 
-    strm << content_->size();
+    strm << size();
 
-    strm << content_->payload();
+    strm << payload();
 }
 
 void Message::print(std::ostream& out) const {

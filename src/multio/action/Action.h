@@ -30,6 +30,8 @@
 #include "multio/message/Message.h"
 #include "multio/util/ConfigurationContext.h"
 
+#include "multio/transport/Transport.h"
+
 namespace eckit {
 class Configuration;
 }
@@ -46,15 +48,26 @@ public:
     Action(const ConfigurationContext& confCtx);
     virtual ~Action();
 
+    // TODO I think we should discuss if passing by value is really the right way
+    //      In consideration of multithreading & pipelining, of course we need to deal with copies etc...
+    //      However this kind of action pipeline then would also need to be rewritten.
+    //      At many places it is just fine to accept const&
     void executeNext(message::Message msg) const;
 
     virtual void execute(message::Message msg) const = 0;
     
     // May be implemented in a action (i.e. select)
     virtual void activeFields(std::insert_iterator<std::set<std::string>>& ins) const;
+    virtual void activeCategories(std::insert_iterator<std::set<std::string>>& ins) const;
     
     // Computes all active fields of this and following actions
     void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
+    void computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const;
+    
+    // Traverses the action list and returns the first transport - might return null;
+    // TODO we need this to retrieve the client/domain count for a plan, which might be retrieved on each message.
+    //      Alternatively we can interface this functionality directly.
+    virtual std::weak_ptr<transport::Transport> getTransport() const;
 
 protected:
     ConfigurationContext confCtx_;

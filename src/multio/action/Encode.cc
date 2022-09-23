@@ -54,7 +54,7 @@ Encode::Encode(const ConfigurationContext& confCtx) :
 
 void Encode::execute(Message msg) const {
     if (not encoder_) {
-        executeNext(msg);
+        executeNext(std::move(msg));
         return;
     }
 
@@ -68,7 +68,7 @@ void Encode::execute(Message msg) const {
         ASSERT(levelCount == 1);
         // TODO: most of this can probably go if we stick to levelCount == 1 always
         if (levelCount == 1) {
-            executeNext(encodeField(msg));
+            executeNext(encodeField(std::move(msg)));
         }
         else { // TODO: this branch can probably go. See above...
             ASSERT(false);

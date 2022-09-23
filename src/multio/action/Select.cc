@@ -44,12 +44,17 @@ Select::Select(const ConfigurationContext& confCtx) :
 
 void Select::execute(Message msg) const {
     if (matchPlan(msg)) {
-        executeNext(msg);
+        executeNext(std::move(msg));
     }
 }
 
 void Select::activeFields(std::insert_iterator<std::set<std::string>>& ins) const {
     if (match_ == "field") {
+        std::copy(items_.begin(), items_.end(), ins);
+    }
+}
+void Select::activeCategories(std::insert_iterator<std::set<std::string>>& ins) const {
+    if (match_ == "category") {
         std::copy(items_.begin(), items_.end(), ins);
     }
 }

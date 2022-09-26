@@ -77,6 +77,10 @@ void Plan::computeActiveFields(std::insert_iterator<std::set<std::string>>& ins)
     root_->computeActiveFields(ins);
 };
 
+void Plan::computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const {
+    root_->computeActiveCategories(ins);
+};
+
 // ClientPlan
 ClientPlan::ClientPlan(const ConfigurationContext& confCtx): Plan(confCtx) {}
 

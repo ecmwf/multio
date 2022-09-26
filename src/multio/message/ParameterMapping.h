@@ -23,6 +23,12 @@
 namespace multio {
 namespace message {
 
+struct ParameterMappingOptions {
+    bool enforceMatch;
+    bool overwriteExisting;
+};
+
+
 class ParameterMapping {
 public:
     ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
@@ -32,10 +38,10 @@ public:
     ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
                      std::unordered_map<std::string, eckit::LocalConfiguration>&& source);
 
-    void applyInplace(Metadata&, bool enforceMatch = false) const;
+    void applyInplace(Metadata&, ParameterMappingOptions options = ParameterMappingOptions{}) const;
 
-    Metadata apply(Metadata&&, bool enforceMatch = false) const;
-    Metadata apply(const Metadata&, bool enforceMatch = false) const;
+    Metadata apply(Metadata&&, ParameterMappingOptions options = ParameterMappingOptions{}) const;
+    Metadata apply(const Metadata&, ParameterMappingOptions options = ParameterMappingOptions{}) const;
 
 private:
     std::string sourceKey_; 

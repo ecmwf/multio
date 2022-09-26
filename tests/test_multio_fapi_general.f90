@@ -202,7 +202,7 @@ contains
     end function
 
     subroutine test_error_handler(context, error)
-        integer(8), intent(in) :: context
+        integer(8), intent(inout) :: context
         integer, intent(in) :: error
 
         test_error_handler_calls = test_error_handler_calls + 1

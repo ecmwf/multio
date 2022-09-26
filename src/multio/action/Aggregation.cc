@@ -53,11 +53,11 @@ bool Aggregation::handleFlush(const Message& msg) const {
 }
 
 bool Aggregation::allPartsArrived(const Message& msg) const {
-  LOG_DEBUG_LIB(LibMultio) << " *** Number of messages for field " << msg.fieldId()
-                           << " are " << messages_.at(msg.fieldId()).size() << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " *** Number of messages for field " << msg.fieldId() << " are "
+                             << messages_.at(msg.fieldId()).size() << std::endl;
 
-  return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
-         (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
+    return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
+           (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
 }
 
 Message Aggregation::createGlobalField(const Message& msg) const {

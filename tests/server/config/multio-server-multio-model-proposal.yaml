@@ -43,7 +43,7 @@ mpi-communicators:
 client:
   plans:
     - name : ocean-plan1
-      tag: ocean
+      # tag: ocean
       actions :
         - type : select
           match : field
@@ -53,7 +53,7 @@ client:
           target : ocean-ioserver
           
     - name : atmosphere-plan1
-      tag: atmosphere
+      # tag: atmosphere
       actions :
         - type : select
           match : field
@@ -65,7 +65,7 @@ client:
 ocean-ioserver:
   transport: mpi
   group: ocean
-  tag: ocean
+  # tag: ocean
   client-group: ocean-clients # implicit
   server-group: ocean-servers # implicit
   plans :

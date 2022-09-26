@@ -8,9 +8,11 @@
 !
 program multio_replay_nemo_fapi
     use, intrinsic :: iso_c_binding
+    use, intrinsic :: iso_fortran_env
     use multio_api
     use fckit_module
     use fckit_mpi_module
+    use mpi_f08 ! for error codes
     implicit none 
 
     integer :: rank, client_count, server_count 
@@ -18,8 +20,11 @@ program multio_replay_nemo_fapi
     integer :: global_size = 105704
     integer :: level = 1
     integer :: step = 24
+    
+
 
     type(multio_handle) :: mio
+    integer(8) :: mio_parent_comm = MPI_UNDEFINED
 
     character(len=3), dimension(4) :: nemo_parameters = ["sst", "ssu", "ssv", "ssw" ] 
     integer, dimension(4) :: grib_param_id = [262101, 212101, 212151, 212202 ] 
@@ -46,6 +51,24 @@ program multio_replay_nemo_fapi
     call test_data(rank, nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
                global_size, level, step)
 contains
+
+subroutine multio_custom_error_handler(context, err)
+    integer(8), intent(inout) :: context  ! Use mpi communicator as context
+    integer, intent(in) :: err
+    type(fckit_mpi_comm) :: comm
+    
+    if (err /= MULTIO_SUCCESS) then
+        write (error_unit, *) 'MULTIO ERROR: ',multio_error_string(err)
+        write (error_unit, *) 'Abort mpi...'
+        
+        if (context /= MPI_UNDEFINED) then
+            comm = fckit_mpi_comm(int(context))
+            call comm%abort(MPI_ERR_OTHER)
+            context = MPI_UNDEFINED
+        endif
+    endif
+end subroutine
+
 
 
 subroutine init(mio, rank, server_count, client_count)
@@ -96,7 +119,8 @@ subroutine init(mio, rank, server_count, client_count)
     cerr = cc%mpi_client_id("oce")
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi client id to configuration context"
     write(0,*) "set parent comm..."
-    cerr = cc%mpi_parent_comm(comm%communicator())
+    mio_parent_comm = comm%communicator()
+    cerr = cc%mpi_parent_comm(int(mio_parent_comm))
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi parent comm to configuration context"
     write(0,*) "set return client comm..."
     ! write (*,*) "newcomm_id ptr",loc(newcomm_id)
@@ -117,6 +141,14 @@ subroutine init(mio, rank, server_count, client_count)
 
     write(0,*) "client_count", client_count
     write(0,*) "server_count", server_count
+    
+    cerr = multio_set_failure_handler(multio_custom_error_handler, mio_parent_comm)
+    if (cerr /= MULTIO_SUCCESS) then
+         write(error_unit, *) 'setting multio failure handler failed: ',multio_error_string(cerr)
+         ERROR STOP "MULTIO_ERROR"
+    end if
+
+
     
     ! Performing a few tests
     cerr = mio%field_is_active("sst", is_active)

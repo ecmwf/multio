@@ -34,7 +34,8 @@ client:
       
         - type : parameter-mapping
           mapping : nemo-to-grib
-          enforce-match : true
+          enforce-match : false # default, may be omitted
+          overwrite-existing : false # default, may be omitted
 
         - type : transport
           target : nemo-ioserver
@@ -47,7 +48,6 @@ client:
           
         - type : parameter-mapping
           mapping : nemo-to-grib
-          enforce-match : true
 
         - type : transport
           target : nemo-ioserver

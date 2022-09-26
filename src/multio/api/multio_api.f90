@@ -84,7 +84,7 @@ module multio_api
         subroutine failure_handler_t(context, error)
             implicit none
             integer, parameter :: int64 = selected_int_kind(15)
-            integer(int64), intent(in) :: context
+            integer(int64), intent(inout) :: context
             integer, intent(in) :: error
         end subroutine
     end interface
@@ -459,7 +459,7 @@ contains
 
     subroutine failure_handler_wrapper(unused_context, error) &
                 bind(c)
-        type(c_ptr), intent(in), value :: unused_context
+        type(c_ptr), value :: unused_context
         integer(c_long), intent(in), value :: error
         call failure_handler_fn(failure_handler_context, int(error))
     end subroutine
@@ -472,7 +472,7 @@ contains
             subroutine handler (ctx, err)
                 implicit none
                 integer, parameter :: int64 = selected_int_kind(15)
-                integer(int64), intent(in) :: ctx
+                integer(int64), intent(inout) :: ctx
                 integer, intent(in) :: err
             end subroutine
         end interface

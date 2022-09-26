@@ -40,7 +40,7 @@ private:
     void print(std::ostream& os) const override;
 
     std::pair<std::string, std::shared_ptr<std::vector<message::ParameterMapping>>> mappings_;
-    bool enforceMatch_;
+    message::ParameterMappingOptions options_;
 };
 
 }  // namespace action

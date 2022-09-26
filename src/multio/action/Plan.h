@@ -41,6 +41,7 @@ public:
     virtual void process(message::Message msg);
 
     void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
+    void computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const;
 
 protected:
     std::string name_;

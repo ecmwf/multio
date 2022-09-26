@@ -31,9 +31,9 @@ ParameterMapping::ParameterMapping(
     std::unordered_map<std::string, eckit::LocalConfiguration>&& source) :
     sourceKey_(sourceKey), mapping_{mappings}, source_{std::move(source)} {}
 
-void ParameterMapping::applyInplace(Metadata& m, bool enforceMatch) const {
+void ParameterMapping::applyInplace(Metadata& m, ParameterMappingOptions options) const {
     if (!m.has(sourceKey_)) {
-        if (enforceMatch) {
+        if (options.enforceMatch) {
             std::ostringstream oss;
             oss << "ParameterMapping failure: Metadata has no source key \"" << sourceKey_ << "\"";
             throw eckit::Exception(oss.str());
@@ -50,6 +50,9 @@ void ParameterMapping::applyInplace(Metadata& m, bool enforceMatch) const {
         throw eckit::Exception(oss.str());
     }
     for (const auto& key : mapping_.keys()) {
+        if(!options.overwriteExisting && m.has(key)) {
+            continue;
+        }
         std::string lookUpMapKey = mapping_.getString(key);
         if (!from->second.has(lookUpMapKey)) {
             std::ostringstream oss;
@@ -63,14 +66,14 @@ void ParameterMapping::applyInplace(Metadata& m, bool enforceMatch) const {
     }
 };
 
-Metadata ParameterMapping::apply(Metadata&& m, bool enforceMatch) const {
+Metadata ParameterMapping::apply(Metadata&& m, ParameterMappingOptions options) const {
     Metadata mc(std::move(m));
-    applyInplace(mc, enforceMatch);
+    applyInplace(mc, options);
     return mc;
 };
-Metadata ParameterMapping::apply(const Metadata& m, bool enforceMatch) const {
+Metadata ParameterMapping::apply(const Metadata& m, ParameterMappingOptions options) const {
     Metadata mc(m);
-    applyInplace(mc, enforceMatch);
+    applyInplace(mc, options);
     return mc;
 };
 

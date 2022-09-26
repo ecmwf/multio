@@ -15,7 +15,10 @@ std::pair<std::string, std::shared_ptr<std::vector<message::ParameterMapping>>> 
 }  // namespace
 
 ParameterMapping::ParameterMapping(const ConfigurationContext& confCtx) :
-    Action(confCtx), mappings_(getMappings(confCtx)), enforceMatch_(confCtx.config().getBool("enforce-match", false)) {};
+    Action(confCtx), mappings_(getMappings(confCtx)), options_{} {
+    options_.enforceMatch = confCtx.config().getBool("enforce-match", false);
+    options_.overwriteExisting = confCtx.config().getBool("overwrite-existing", false);
+};
 
 void ParameterMapping::execute(message::Message msg) const {
     executeNext(msg.modifyMetadata(apply(std::move(msg).metadata())));
@@ -23,7 +26,7 @@ void ParameterMapping::execute(message::Message msg) const {
 
 void ParameterMapping::applyInplace(message::Metadata& md) const {
     for (const auto& m : *(mappings_.second)) {
-        m.applyInplace(md, enforceMatch_);
+        m.applyInplace(md, options_);
     }
 };
 message::Metadata ParameterMapping::apply(const message::Metadata& md) const {
@@ -39,7 +42,8 @@ message::Metadata ParameterMapping::apply(message::Metadata&& md) const {
 
 void ParameterMapping::print(std::ostream& os) const {
     os << "ParameterMapping(mapping=" << (mappings_.first)
-       << ", enforce-match=" << (enforceMatch_ ? "true" : "false") << ")";
+       << ", enforce-match=" << (options_.enforceMatch ? "true" : "false")
+       << ", overwrite-existing=" << (options_.overwriteExisting ? "true" : "false") << ")";
 }
 
 

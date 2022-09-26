@@ -58,10 +58,6 @@ std::string Message::Header::category() const {
     return metadata_.getString("category");
 }
 
-size_t Message::Header::domainCount() const {
-    return metadata_.getUnsigned("domainCount");
-}
-
 long Message::Header::globalSize() const {
     return metadata_.getLong("globalSize");
 }

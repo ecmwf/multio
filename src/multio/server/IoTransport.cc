@@ -214,7 +214,6 @@ void send_multio_grib_template_(const void* grib_msg, fortint *words) {
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
     Metadata md{IoTransport::instance().metadata()};
-    md.set("domainCount", IoTransport::instance().clientCount());
     md.set("globalSize", IoTransport::instance().globalSize());
     Message msg{Message::Header{Message::Tag::Grib, client, server, std::move(md)},
                 std::move(buffer)};
@@ -249,7 +248,6 @@ void send_multio_mapping_(const void* in_ptr, fortint* words, const char* name, 
         md.set("name", mapping_name);
         md.set("category", "atms-domain-map");
         md.set("representation", "unstructured");
-        md.set("domainCount", nb_clients);
         Message msg{Message::Header{Message::Tag::Domain, client, server, std::move(md)},
                     std::move(buffer)};
 
@@ -284,7 +282,6 @@ void send_multio_field_(const double* data, fortint* size, const char* name, con
     md.set("name", md.getString("param"));
     md.set("category", category);
     md.set("globalSize", IoTransport::instance().globalSize());
-    md.set("domainCount", IoTransport::instance().clientCount());
     md.set("domain", domain_name);
     Message msg{Message::Header{Message::Tag::Field, client, server, std::move(md)},
                 std::move(buffer)};

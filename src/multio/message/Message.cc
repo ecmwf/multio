@@ -91,10 +91,6 @@ std::string Message::category() const {
     return header().category();
 }
 
-size_t Message::domainCount() const {
-    return header().domainCount();
-}
-
 long Message::globalSize() const {
     return header().globalSize();
 }

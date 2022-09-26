@@ -43,7 +43,7 @@ void Mappings::add(message::Message msg) {
 
     if (msg.metadata().getString("representation") == "unstructured") {
         domainMap.emplace(msg.source(),
-                        std::unique_ptr<Domain>{new Unstructured{std::move(local_map)}});
+                        std::unique_ptr<Domain>{new Unstructured{std::move(local_map), msg.globalSize()}});
         return;
     }
 

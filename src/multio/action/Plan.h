@@ -56,8 +56,6 @@ public:
     ClientPlan(const ConfigurationContext& confCtx);
 
     std::shared_ptr<transport::Transport> getTransport() const;
-
-    void process(message::Message msg) override;
 };
 
 }  // namespace action

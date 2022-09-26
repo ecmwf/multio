@@ -283,8 +283,6 @@ subroutine set_domains(mio, rank, client_count)
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 11
         cerr = md%set_string_value("representation", "structured")
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 12
-        cerr = md%set_int_value("domainCount", client_count)
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 13
         cerr = md%set_bool_value("toAllServers", .TRUE._1)
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 14
 
@@ -353,8 +351,6 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 26
         cerr = md%set_string_value("gridSubType", grib_grid_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 27
-        cerr = md%set_int_value("domainCount", client_count)
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 28
         cerr = md%set_string_value("domain", grib_grid_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 29
         cerr = md%set_string_value("typeOfLevel", grib_level_type(i))

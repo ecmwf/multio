@@ -338,7 +338,7 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
             ? test_configuration(transportType_)
             : ConfigurationContext(eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{configPath_}}}, configPath_, configPath_);
 
-    confCtx_.config().set("clientCount", clientCount_).set("count", serverCount_);
+    confCtx_.config().set("clientCount", clientCount_);
 
     transportType_ = confCtx_.config().getString("transport");
     if (transportType_ == "mpi") {
@@ -382,15 +382,15 @@ void MultioHammer::sendData(const PeerList& serverPeers,
 
     auto idxm = generate_index_map(client_list_id, clientCount_);
     eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(int32_t));
-    std::unique_ptr<Domain> index_map{new Unstructured{std::move(idxm)}};
+    std::unique_ptr<Domain> index_map{new Unstructured{std::move(idxm), static_cast<long>(field_size())}};
 
     // send partial mapping
     for (auto& server : serverPeers) {
         Metadata metadata;
         metadata.set("name", "grid-point")
             .set("category", "atms-domain-map")
-            .set("representation", "unstructured")
-            .set("domainCount", clientCount_);
+            .set("globalSize", static_cast<long>(field_size()))
+            .set("representation", "unstructured");
 
         Message msg{Message::Header{Message::Tag::Domain, client, *server, std::move(metadata)},
                     buffer};
@@ -423,7 +423,6 @@ void MultioHammer::sendData(const PeerList& serverPeers,
                     .set("param", std::to_string(param))
                     .set("category", "model-level")
                     .set("globalSize", static_cast<long>(field_size()))
-                    .set("domainCount", clientCount_)
                     .set("domain", "grid-point");
 
                 Message msg{Message::Header{Message::Tag::Field, client, *serverPeers[id],
@@ -438,8 +437,7 @@ void MultioHammer::sendData(const PeerList& serverPeers,
         Metadata md;
         md.set("name", eckit::Translator<long, std::string>()(step))
             .set("category", "atms-checkpoint")
-            .set("trigger", "step")
-            .set("domainCount", clientCount_);
+            .set("trigger", "step");
         for (auto& server : serverPeers) {
             auto stepStr = eckit::Translator<long, std::string>()(step);
             Message flush{
@@ -664,8 +662,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
         Metadata md;
         md.set("name", eckit::Translator<long, std::string>()(step))
             .set("category", "atms-checkpoint")
-            .set("trigger", "step")
-            .set("domainCount", 1);
+            .set("trigger", "step");
         Message msg{Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}, Metadata{md}}};
         for (const auto& plan : plans) {
             plan->process(msg);

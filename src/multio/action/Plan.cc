@@ -92,24 +92,5 @@ std::shared_ptr<transport::Transport> ClientPlan::getTransport() const {
     return sp; 
 }
 
-void ClientPlan::process(message::Message msg) {
-    switch(msg.tag()) {
-        case message::Message::Tag::Domain:
-        case message::Message::Tag::Field:
-        case message::Message::Tag::Mask:
-        case message::Message::Tag::StepComplete:
-        case message::Message::Tag::StepNotification: {
-            auto md = msg.metadata();
-            md.set("domainCount", getTransport()->clientCount());
-            msg = msg.modifyMetadata(std::move(md));
-            break;
-        }
-        default:
-            break;
-    }
-    Plan::process(std::move(msg));
-}
-
-
 }  // namespace action
 }  // namespace multio

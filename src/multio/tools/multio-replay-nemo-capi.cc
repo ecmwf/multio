@@ -147,8 +147,7 @@ void MultioReplayNemoCApi::setDomains() {
 
         multio_metadata_set_string_value(md, "category", "ocean-domain-map");
         multio_metadata_set_string_value(md, "representation", "structured");
-        //! How to determine number of clients with API?
-        multio_metadata_set_int_value(md, "domainCount", clientCount_);
+        multio_metadata_set_int_value(md, "globalSize", globalSize_);
         multio_metadata_set_bool_value(md, "toAllServers", true);
 
         multio_write_domain(multio_handle, md, buffer.data(), sz);
@@ -202,7 +201,6 @@ void MultioReplayNemoCApi::writeFields() {
         multio_metadata_set_string_value(md, "nemoParam", fname);
         multio_metadata_set_int_value(md, "param", paramMap_.get(fname).param);
         multio_metadata_set_string_value(md, "gridSubtype", paramMap_.get(fname).gridType.c_str());
-        multio_metadata_set_int_value(md, "domainCount", clientCount_);
         multio_metadata_set_string_value(md, "domain", paramMap_.get(fname).gridType.c_str());
         multio_metadata_set_string_value(md, "typeOfLevel", paramMap_.get(fname).levelType.c_str());
 

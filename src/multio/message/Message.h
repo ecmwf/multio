@@ -69,8 +69,6 @@ public:  // types
 
         std::string category() const;
 
-        size_t domainCount() const;
-
         long globalSize() const ;
 
         std::string domain() const;
@@ -136,8 +134,6 @@ public:
     std::string name() const;
 
     std::string category() const;
-
-    size_t domainCount() const;
 
     long globalSize() const ;
 

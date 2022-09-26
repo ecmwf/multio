@@ -66,8 +66,16 @@ void Mask::addPartialMask(message::Message msg) {
 }
 
 bool Mask::allPartsArrived(message::Message msg) const {
-    return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
-           (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
+    const auto& fid = msg.fieldId();
+    size_t acc_size = 0;
+    size_t expected_global_size = msg.globalSize();
+    for (const auto& msg : messages_.at(fid)) {
+        const auto& domain = domain::Mappings::instance().get(msg.domain()).at(msg.source());
+        acc_size += domain->local_size();
+        ASSERT(domain->global_size() == expected_global_size);
+    }
+    ASSERT(acc_size <= expected_global_size);
+    return (acc_size == expected_global_size);
 }
 
 void Mask::createBitmask(message::Message inMsg) {

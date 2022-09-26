@@ -174,7 +174,6 @@ public:
         md.set("name", dname);
         md.set("category", "ocean-domain-map");
         md.set("representation", "structured");
-        md.set("domainCount", clientCount_);
         md.set("toAllServers", true);
 
         Message msg{Message::Header{Message::Tag::Domain, Peer{}, Peer{}, std::move(md)},
@@ -191,7 +190,6 @@ public:
         md.set("name", mname);
         md.set("category", "ocean-mask");
         md.set("representation", "structured");
-        md.set("domainCount", clientCount_);
         md.set("domain", mname.substr(0, 1) + " grid");
         md.set("levelCount", metadata_.getLong("levelCount"));
         md.set("level", metadata_.getLong("level"));
@@ -215,7 +213,6 @@ public:
         metadata_.set("nemoParam", fname);
         metadata_.set("param", paramMap_.get(fname).param);
         metadata_.set("gridSubtype", paramMap_.get(fname).gridType);
-        metadata_.set("domainCount", clientCount_);
         metadata_.set("domain", paramMap_.get(fname).gridType);
         metadata_.set("typeOfLevel", paramMap_.get(fname).levelType);
 

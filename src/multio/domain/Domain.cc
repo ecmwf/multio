@@ -14,7 +14,7 @@ Domain::Domain(std::vector<int32_t>&& def) : definition_(std::move(def)) {}
 
 //------------------------------------------------------------------------------------------------------------
 
-Unstructured::Unstructured(std::vector<int32_t>&& def) : Domain{std::move(def)} {}
+Unstructured::Unstructured(std::vector<int32_t>&& def, long global_size_val) : Domain{std::move(def)}, global_size_{global_size_val} {}
 
 void Unstructured::to_local(const std::vector<double>& global, std::vector<double>& local) const {
     local.resize(0);
@@ -23,22 +23,25 @@ void Unstructured::to_local(const std::vector<double>& global, std::vector<doubl
 }
 
 void Unstructured::to_global(const message::Message& local, message::Message& global) const {
-    auto levelCount = local.metadata().getLong("levelCount", 1);
-    ASSERT(local.payload().size() == definition_.size() * levelCount * sizeof(double));
+    ASSERT(local.payload().size() == definition_.size() * sizeof(double));
 
     auto lit = static_cast<const double*>(local.payload().data());
     auto git = static_cast<double*>(global.payload().data());
-    for (long lev = 0; lev != levelCount; ++lev) {
-        for (auto id : definition_) {
-            auto offset = id + lev * local.globalSize();
-            *(git + offset) = *lit++;
-        }
+    for (auto id : definition_) {
+        *(git + id) = *lit++;
     }
 }
 
 void Unstructured::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
     NOTIMP;
 }
+
+long Unstructured::local_size() const {
+   return definition_.size(); 
+};
+long Unstructured::global_size() const {
+   return global_size_; 
+};
 
 
 //------------------------------------------------------------------------------------------------------------
@@ -59,7 +62,7 @@ void Structured::to_local(const std::vector<double>&, std::vector<double>&) cons
 }
 
 void Structured::to_global(const message::Message& local, message::Message& global) const {
-    checkDomainConsistency(local);
+    // checkDomainConsistency(local);
 
     auto levelCount = local.metadata().getLong("levelCount", 1);
 
@@ -196,6 +199,22 @@ void Structured::checkDomainConsistency(const message::Message& local) const {
         domainConsistent_ = true;
     }
 }
+long Structured::local_size() const {
+    // Local domain's dimensions
+    auto ni = definition_[3];
+    auto nj = definition_[5];
+    
+    return ni*nj;
+    
+};
+long Structured::global_size() const {
+    // Global domain's dimenstions
+    auto ni_global = definition_[0];
+    auto nj_global = definition_[1];
+    
+    return ni_global*nj_global;
+};
+
 
 //------------------------------------------------------------------------------------------------------------
 
@@ -212,6 +231,13 @@ void Spectral::to_global(const message::Message&, message::Message&) const {
 void Spectral::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
     NOTIMP;
 }
+
+long Spectral::local_size() const {
+    NOTIMP;
+};
+long Spectral::global_size() const {
+    NOTIMP;
+};
 
 }  // namespace domain
 }  // namespace multio

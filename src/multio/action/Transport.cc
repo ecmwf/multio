@@ -37,7 +37,7 @@ Transport::Transport(const ConfigurationContext& confCtx) :
     client_{transport_->localPeer()},
     serverPeers_{transport_->serverPeers()},
     serverCount_{serverPeers_.size()},
-    serverId_{client_.id() / serverIdDenom(confCtx.config().getUnsigned("count", 1), serverCount_)},
+    serverId_{client_.id() / serverIdDenom(transport_->serverCount(), serverCount_)},
     usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
     counters_(serverPeers_.size()),
     distType_{distributionType()} {}

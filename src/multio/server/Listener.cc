@@ -85,9 +85,6 @@ void Listener::start() {
                 case Message::Tag::StepNotification:
                 case Message::Tag::StepComplete:
                 case Message::Tag::Field:
-                    if(msg.metadata().has("domainCount")) {
-                        ASSERT(msg.metadata().getUnsigned("domainCount") == clientCount_);
-                    }
                     checkConnection(msg.source());
                     LOG_DEBUG_LIB(LibMultio) << "*** Message received: " << msg << std::endl;
                     msgQueue_.emplace(std::move(msg));

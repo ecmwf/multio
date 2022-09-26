@@ -48,16 +48,30 @@ bool Aggregation::handleFlush(const Message& msg) const {
     if (flushes_.find(msg.fieldId()) == end(flushes_)) {
         flushes_[msg.fieldId()] = 0;
     }
-
-    return ++flushes_.at(msg.fieldId()) == msg.domainCount();
+    
+    // To test whether all clients have flushed, get and count their contribution to the domain
+    const auto& domain = domain::Mappings::instance().get(msg.domain()).at(msg.source());
+    auto& acc_size = flushes_.at(msg.fieldId());
+    acc_size += domain->local_size();
+    ASSERT(domain->global_size() == msg.globalSize());
+    ASSERT(acc_size <= msg.globalSize());
+    return (acc_size == msg.globalSize());
 }
 
 bool Aggregation::allPartsArrived(const Message& msg) const {
     LOG_DEBUG_LIB(LibMultio) << " *** Number of messages for field " << msg.fieldId() << " are "
                              << messages_.at(msg.fieldId()).size() << std::endl;
-
-    return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
-           (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
+                             
+    const auto& fid = msg.fieldId();
+    size_t acc_size = 0;
+    size_t expected_global_size = msg.globalSize();
+    for (const auto& msg : messages_.at(fid)) {
+        const auto& domain = domain::Mappings::instance().get(msg.domain()).at(msg.source());
+        acc_size += domain->local_size();
+        ASSERT(domain->global_size() == expected_global_size);
+    }
+    ASSERT(acc_size <= expected_global_size);
+    return (acc_size == expected_global_size);
 }
 
 Message Aggregation::createGlobalField(const Message& msg) const {

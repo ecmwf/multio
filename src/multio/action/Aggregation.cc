@@ -48,14 +48,8 @@ bool Aggregation::handleFlush(const Message& msg) const {
     if (flushes_.find(msg.fieldId()) == end(flushes_)) {
         flushes_[msg.fieldId()] = 0;
     }
-    
-    // To test whether all clients have flushed, get and count their contribution to the domain
-    const auto& domain = domain::Mappings::instance().get(msg.domain()).at(msg.source());
-    auto& acc_size = flushes_.at(msg.fieldId());
-    acc_size += domain->local_size();
-    ASSERT(domain->global_size() == msg.globalSize());
-    ASSERT(acc_size <= msg.globalSize());
-    return (acc_size == msg.globalSize());
+
+    return ++flushes_.at(msg.fieldId()) == domain::Mappings::instance().get(msg.domain()).size();
 }
 
 bool Aggregation::allPartsArrived(const Message& msg) const {

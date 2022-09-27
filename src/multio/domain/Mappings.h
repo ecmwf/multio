@@ -39,6 +39,8 @@ public:  // methods
 
     const DomainMap& get(const std::string& name) const;
 
+    void checkDomainConsistency(const std::vector<message::Message>& localDomains) const;
+
 private:  // members
     std::map<std::string, DomainMap> mappings_;
 

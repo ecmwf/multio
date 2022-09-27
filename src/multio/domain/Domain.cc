@@ -32,7 +32,7 @@ void Unstructured::to_global(const message::Message& local, message::Message& gl
     }
 }
 
-void Unstructured::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
+void Unstructured::to_bitmask(const message::Message&, std::vector<bool>&) const {
     NOTIMP;
 }
 
@@ -40,8 +40,19 @@ long Unstructured::local_size() const {
    return definition_.size(); 
 };
 long Unstructured::global_size() const {
-   return global_size_; 
-};
+    return global_size_;
+}
+
+void Unstructured::collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const {
+    auto payloadSize = static_cast<long>(local.payload().size() / sizeof(double));
+    if (payloadSize != local_size()) {
+        throw eckit::SeriousBug{"Mismatch between sizes of index map and local field", Here()};
+    }
+
+    for(const auto& idx : definition_) {
+        glIndices.insert(idx);
+    }
+}
 
 
 //------------------------------------------------------------------------------------------------------------
@@ -129,7 +140,7 @@ void Structured::to_bitmask(const message::Message& local, std::vector<bool>& bm
     // auto data_dim = definition_[6]; -- Unused here
 
     ASSERT(levelCount == 1);
-    ASSERT(ni_global * nj_global == bmask.size());
+    ASSERT(static_cast<std::set<int32_t>::size_type>(ni_global * nj_global) == bmask.size());
     auto lit = static_cast<const uint8_t*>(local.payload().data());
     for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
         for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
@@ -142,23 +153,7 @@ void Structured::to_bitmask(const message::Message& local, std::vector<bool>& bm
 }
 
 
-// TODO: Move this to the mapping
-namespace {
-std::set<int32_t> glIndices_;
-std::set<std::string> checkedDomains_;
-long domainCount_ = 0;
-bool domainConsistent_ = false;
-}  // namespace
-
-void Structured::checkDomainConsistency(const message::Message& local) const {
-    if (checkedDomains_.find(local.domain()) == std::end(checkedDomains_)) {
-        checkedDomains_.insert(local.domain());
-        domainConsistent_ = false;
-    }
-
-    if (domainConsistent_) {
-        return;
-    }
+void Structured::collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const {
 
     // Global domain's dimenstions
     auto ni_global = definition_[0];
@@ -177,28 +172,20 @@ void Structured::checkDomainConsistency(const message::Message& local) const {
     auto data_nj = definition_[10];
     // auto data_dim = definition_[6]; -- Unused here
 
+    ASSERT(static_cast<std::set<int32_t>::size_type>(ni_global * nj_global) < glIndices.size());
+
     auto lit = static_cast<const double*>(local.payload().data());
     for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
         for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
             if (inRange(i, 0, ni) && inRange(j, 0, nj)) {
                 auto gidx = (jbegin + j) * ni_global + (ibegin + i);
-                ASSERT(glIndices_.find(gidx) == std::end(glIndices_));
-                glIndices_.insert(gidx);
+                ASSERT(glIndices.find(gidx) == std::end(glIndices));
+                glIndices.insert(gidx);
             }
         }
     }
-    // TODO: move this check out of here as it is rather expensive
-    ++domainCount_;
-    if (domainCount_ == local.metadata().getLong("domainCount")) {
-        std::ostringstream oss;
-        oss << "Number of inserted unique indices: " << glIndices_.size() << " (expected "
-            << local.globalSize() << ")";
-        ASSERT_MSG(glIndices_.size() == local.globalSize(), oss.str());
-        glIndices_.clear();
-        domainCount_ = 0;
-        domainConsistent_ = true;
-    }
 }
+
 long Structured::local_size() const {
     // Local domain's dimensions
     auto ni = definition_[3];
@@ -228,7 +215,7 @@ void Spectral::to_global(const message::Message&, message::Message&) const {
     NOTIMP;
 }
 
-void Spectral::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
+void Spectral::to_bitmask(const message::Message&, std::vector<bool>&) const {
     NOTIMP;
 }
 
@@ -238,6 +225,10 @@ long Spectral::local_size() const {
 long Spectral::global_size() const {
     NOTIMP;
 };
+
+void Spectral::collectIndices(const message::Message&, std::set<int32_t>&) const {
+    NOTIMP;
+}
 
 }  // namespace domain
 }  // namespace multio

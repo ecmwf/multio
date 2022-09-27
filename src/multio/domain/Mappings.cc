@@ -76,5 +76,20 @@ const DomainMap& Mappings::get(const std::string& name) const {
     throw eckit::AssertionFailed("Cannot find domainMaps for " + name);
 }
 
+void Mappings::checkDomainConsistency(const std::vector<message::Message>& localDomains) const {
+    std::set<int32_t> globalIndices;
+    for (const auto& local : localDomains) {
+        get(local.domain()).at(local.source())->collectIndices(local, globalIndices);
+    }
+
+    auto globalSize = static_cast<std::set<int32_t>::size_type>(localDomains.back().globalSize());
+    std::ostringstream oss;
+    oss << "Number of inserted unique indices: " << globalIndices.size() << " (expected "
+        << globalSize << ")";
+    if (globalIndices.size() == globalSize) {
+        throw eckit::SeriousBug{oss.str(), Here()};
+    }
+}
+
 }  // namespace domain
 }  // namespace multio

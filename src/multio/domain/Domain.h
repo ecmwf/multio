@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <vector>
+#include <set>
 
 #include <eckit/io/Buffer.h>
 
@@ -28,6 +29,8 @@ public:
     virtual long local_size() const = 0;
     virtual long global_size() const = 0;
 
+    virtual void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const = 0;
+
 protected:
     const std::vector<int32_t> definition_;  // Grid-point
 };
@@ -44,6 +47,8 @@ private:
     long local_size() const override;
     long global_size() const override;
     
+    void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
+
     long global_size_;
 };
 
@@ -56,10 +61,10 @@ private:
     void to_global(const message::Message& local, message::Message& global) const override;
     void to_bitmask(const message::Message& local, std::vector<bool>& bmask) const override;
 
-    void checkDomainConsistency(const message::Message& local) const;
-    
     long local_size() const override;
     long global_size() const override;
+
+    void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 };
 
 class Spectral final : public Domain {
@@ -73,6 +78,8 @@ private:
     
     long local_size() const override;
     long global_size() const override;
+
+    void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 };
 
 }  // namespace domain

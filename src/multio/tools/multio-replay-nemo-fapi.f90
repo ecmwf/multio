@@ -286,7 +286,7 @@ subroutine set_domains(mio, rank, client_count)
         cerr = md%set_bool_value("toAllServers", .TRUE._1)
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 14
 
-        cerr = mio%write_domain(md, buffer)
+        cerr = mio%write_domain(md, buffer, size(buffer))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 15
     end do
 
@@ -356,7 +356,7 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
         cerr = md%set_string_value("typeOfLevel", grib_level_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 30
 
-        cerr = mio%write_field(md, values)
+        cerr = mio%write_field(md, values, size(values))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 35
 
         deallocate(values)

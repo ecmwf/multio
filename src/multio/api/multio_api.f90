@@ -632,30 +632,33 @@ contains
         err = c_multio_write_step_complete(handle%impl, metadata%impl)
     end function
 
-    function multio_write_domain(handle, metadata, data) result(err)
+    function multio_write_domain(handle, metadata, data, size) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
         integer :: err
-        integer, dimension(:), intent(in) :: data
-        err = c_multio_write_domain(handle%impl, metadata%impl, data, size(data))
+        integer, dimension(*), intent(in) :: data
+        integer, intent(in), value :: size
+        err = c_multio_write_domain(handle%impl, metadata%impl, data, size)
     end function
 
-    function multio_write_mask(handle, metadata, data) result(err)
+    function multio_write_mask(handle, metadata, data, size) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
         integer :: err
 
-        real(dp), dimension(:), intent(in) :: data
-        err = c_multio_write_mask(handle%impl, metadata%impl, data, size(data))
+        real(dp), dimension(*), intent(in) :: data
+        integer, intent(in), value :: size
+        err = c_multio_write_mask(handle%impl, metadata%impl, data, size)
     end function
 
-    function multio_write_field(handle, metadata, data) result(err)
+    function multio_write_field(handle, metadata, data, size) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
         integer :: err
 
-        real(dp), dimension(:), intent(in) :: data
-        err = c_multio_write_field(handle%impl, metadata%impl, data, size(data))
+        real(dp), dimension(*), intent(in) :: data
+        integer, intent(in), value :: size
+        err = c_multio_write_field(handle%impl, metadata%impl, data, size)
     end function
     
     function multio_field_is_active(handle, field, set_value) result(err)

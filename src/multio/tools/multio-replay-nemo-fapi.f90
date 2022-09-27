@@ -270,7 +270,7 @@ subroutine set_domains(mio, rank, client_count)
 
     write(0,*) "set_domains..."
 
-    cerr = md%new_metadata()
+    cerr = md%new()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 9
 
     do i=1, size(grib_grid_type)
@@ -290,7 +290,7 @@ subroutine set_domains(mio, rank, client_count)
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 15
     end do
 
-    cerr = md%delete_metadata()
+    cerr = md%delete()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 17
 end subroutine set_domains
 
@@ -317,7 +317,7 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
 
     write(0,*) "write_fields", rank, client_count
 
-    cerr = md%new_metadata()
+    cerr = md%new()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 19
 
     cerr = md%set_string_value("category", "ocean-2d")
@@ -362,7 +362,7 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
         deallocate(values)
     end do
 
-    cerr = md%delete_metadata()
+    cerr = md%delete()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 36
 end subroutine write_fields
 

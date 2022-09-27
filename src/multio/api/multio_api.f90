@@ -51,8 +51,8 @@ module multio_api
     type multio_metadata
         type(c_ptr) :: impl = c_null_ptr
     contains
-        procedure :: new_metadata => multio_new_metadata
-        procedure :: delete_metadata => multio_delete_metadata
+        procedure :: new => multio_new_metadata
+        procedure :: delete => multio_delete_metadata
         procedure :: set_int_value => multio_metadata_set_int_value
         procedure :: set_long_value => multio_metadata_set_long_value
         procedure :: set_longlong_value => multio_metadata_set_longlong_value

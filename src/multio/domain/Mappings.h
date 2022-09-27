@@ -10,16 +10,36 @@
 
 #include "multio/domain/Domain.h"
 
+#include "multio/message/Message.h"
+
 namespace multio {
-
-namespace message {
-class Message;
-class Peer;
-}
-
 namespace domain {
 
-using DomainMap = std::map<message::Peer, std::unique_ptr<Domain>>;
+class DomainMap {
+public:
+
+    std::unique_ptr<Domain>& at(const message::Peer& peer) {
+        return domainMap_.at(peer);
+    }
+
+    const std::unique_ptr<Domain>& at(const message::Peer& peer) const {
+        return domainMap_.at(peer);
+    }
+
+    bool contains(const message::Peer& peer) {
+        return domainMap_.find(peer) != end(domainMap_);
+    }
+
+    template <typename... Args>
+    void emplace(Args&&... args) {
+        domainMap_.emplace(std::forward<Args>(args)...);
+    }
+
+private:
+    std::map<message::Peer, std::unique_ptr<Domain>> domainMap_;
+};
+
+//using DomainMap = std::map<message::Peer, std::unique_ptr<Domain>>;
 
 class Mappings {
 public:  // methods

@@ -24,14 +24,14 @@ void Mappings::add(message::Message msg) {
     // Retrieve metadata
     auto& domainMap = mappings_[msg.name()];
 
-    if (domainMap.find(msg.source()) != end(domainMap)) {
+    if (domainMap.contains(msg.source())) {
       eckit::Log::warning()
           << "Partial domain had already been received: " << msg.fieldId() << std::endl;
       return;
     }
     eckit::Log::debug<LibMultio>() << "*** Add domainMap for " << msg.name();
 
-    ASSERT(domainMap.find(msg.source()) == end(domainMap));
+    ASSERT(not domainMap.contains(msg.source()));
 
     std::vector<int32_t> local_map(msg.size() / sizeof(int32_t));
 

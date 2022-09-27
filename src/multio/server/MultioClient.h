@@ -61,7 +61,7 @@ public:
     util::FailureHandlerResponse handleFailure(const eckit::Optional<util::OnClientError>&) override;
 
 private:
-    std::vector<std::unique_ptr<action::ClientPlan>> plans_;
+    std::vector<std::unique_ptr<action::Plan>> plans_;
     std::set<std::string> activeFields_;
     std::set<std::string> activeCategories_;
 

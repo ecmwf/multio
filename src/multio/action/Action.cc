@@ -84,14 +84,6 @@ void Action::computeActiveCategories(std::insert_iterator<std::set<std::string>>
     next_->computeActiveCategories(ins);
 }
 
-std::weak_ptr<transport::Transport> Action::getTransport() const {
-    if (!next_) {
-        return std::weak_ptr<transport::Transport>{};
-    }
-    return next_->getTransport();
-};
-
-
 std::ostream& operator<<(std::ostream& os, const Action& a) {
     a.print(os);
     return os;

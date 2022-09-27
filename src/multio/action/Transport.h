@@ -29,8 +29,6 @@ public:
 
     void execute(message::Message msg) const override;
     
-    std::weak_ptr<transport::Transport> getTransport() const override;
-
 private:
     void print(std::ostream &os) const override;
 

@@ -139,12 +139,6 @@ Transport::DistributionType Transport::distributionType() {
     return key ? str2dist.at(key) : DistributionType::hashed_to_single;
 }
 
-std::weak_ptr<transport::Transport> Transport::getTransport() const {
-    return transport_;
-};
-
-
-
 static ActionBuilder<Transport> TransportBuilder("transport");
 
 }  // namespace action

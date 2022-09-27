@@ -81,16 +81,5 @@ void Plan::computeActiveCategories(std::insert_iterator<std::set<std::string>>& 
     root_->computeActiveCategories(ins);
 };
 
-// ClientPlan
-ClientPlan::ClientPlan(const ConfigurationContext& confCtx): Plan(confCtx) {}
-
-std::shared_ptr<transport::Transport> ClientPlan::getTransport() const {
-    auto sp = root_->getTransport().lock();
-    if (!sp) {
-        throw eckit::Exception("Client plan \"" + name_ + "\" has no transport.");
-    }
-    return sp; 
-}
-
 }  // namespace action
 }  // namespace multio

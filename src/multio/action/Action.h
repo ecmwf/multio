@@ -64,11 +64,6 @@ public:
     void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
     void computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const;
     
-    // Traverses the action list and returns the first transport - might return null;
-    // TODO we need this to retrieve the client/domain count for a plan, which might be retrieved on each message.
-    //      Alternatively we can interface this functionality directly.
-    virtual std::weak_ptr<transport::Transport> getTransport() const;
-
 protected:
     ConfigurationContext confCtx_;
 

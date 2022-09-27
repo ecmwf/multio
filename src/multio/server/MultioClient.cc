@@ -43,7 +43,7 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureA
     auto activeCategoryInserter = std::inserter(activeCategories_, activeCategories_.end());
     for (auto&& cfg : confCtx.subContexts("plans", ComponentTag::Plan)) {
         eckit::Log::debug<LibMultio>() << cfg.config() << std::endl;
-        plans_.emplace_back(new action::ClientPlan(std::move(cfg)));
+        plans_.emplace_back(new action::Plan(std::move(cfg)));
         plans_.back()->computeActiveFields(activeFieldInserter);
         plans_.back()->computeActiveCategories(activeCategoryInserter);
     }

@@ -50,14 +50,6 @@ protected:
     eckit::Timing timing_;
 };
 
-// ClientPlans are transport aware, i.e. their last action is assumed to be an transport
-class ClientPlan : public Plan {
-public:
-    ClientPlan(const ConfigurationContext& confCtx);
-
-    std::shared_ptr<transport::Transport> getTransport() const;
-};
-
 }  // namespace action
 }  // namespace multio
 

@@ -174,6 +174,11 @@ void Structured::collectIndices(const message::Message& local, std::set<int32_t>
 
     ASSERT(glIndices.size() < static_cast<std::set<int32_t>::size_type>(ni_global * nj_global));
 
+    auto payloadSize = static_cast<long>(local.payload().size() / sizeof(double));
+    if (payloadSize != data_ni * data_nj) { // Payload contains halo informat$ion
+        throw eckit::SeriousBug{"Mismatch between sizes of index map and local field", Here()};
+    }
+
     auto lit = static_cast<const double*>(local.payload().data());
     for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
         for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {

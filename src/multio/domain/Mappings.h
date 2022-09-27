@@ -2,6 +2,7 @@
 #ifndef multio_server_Mappings_H
 #define multio_server_Mappings_H
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -34,6 +35,28 @@ public:
     void emplace(Args&&... args) {
         domainMap_.emplace(std::forward<Args>(args)...);
     }
+
+    auto size() const -> std::map<message::Peer, std::unique_ptr<Domain>>::size_type {
+        if (not isComplete()) {
+            throw eckit::SeriousBug("Function size() is called before domain map is complete", Here());
+        }
+
+        return domainMap_.size();
+    }
+
+    bool isComplete() const {
+        if (isConsistent()) {
+            return true;
+        }
+
+        auto totalSize = 0;
+        std::for_each(std::begin(domainMap_), std::end(domainMap_),
+                      [&totalSize](const std::pair<const message::Peer, std::unique_ptr<Domain>>& domain) {
+                          totalSize += domain.second->local_size();
+                      });
+
+        return (totalSize == domainMap_.begin()->second->global_size());
+    };
 
     bool isConsistent() const { return consistent_; }
     void isConsistent(bool val) const { consistent_ = val; }

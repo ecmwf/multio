@@ -61,17 +61,10 @@ bool Aggregation::handleFlush(const Message& msg) const {
 bool Aggregation::allPartsArrived(const Message& msg) const {
     LOG_DEBUG_LIB(LibMultio) << " *** Number of messages for field " << msg.fieldId() << " are "
                              << messages_.at(msg.fieldId()).size() << std::endl;
-                             
-    const auto& fid = msg.fieldId();
-    size_t acc_size = 0;
-    size_t expected_global_size = msg.globalSize();
-    for (const auto& msg : messages_.at(fid)) {
-        const auto& domain = domain::Mappings::instance().get(msg.domain()).at(msg.source());
-        acc_size += domain->local_size();
-        ASSERT(domain->global_size() == expected_global_size);
-    }
-    ASSERT(acc_size <= expected_global_size);
-    return (acc_size == expected_global_size);
+
+    const auto& domainMap = domain::Mappings::instance().get(msg.domain());
+
+    return domainMap.isComplete() && (messages_.at(msg.fieldId()).size() == domainMap.size());
 }
 
 Message Aggregation::createGlobalField(const Message& msg) const {

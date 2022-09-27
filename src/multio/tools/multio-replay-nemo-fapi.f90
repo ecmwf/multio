@@ -113,7 +113,7 @@ subroutine init(mio, rank, server_count, client_count)
     call fckit_mpi_addComm("nemo", comm%communicator())
     ! newcomm = comm%split(color_client, "oce") ! Client splitting done by multio
 
-    write(0,*) "multio_new_handle..."
+    write(0,*) "multio_new..."
     newcomm_id = 0
     write(0,*) "set client id..."
     cerr = cc%mpi_client_id("oce")
@@ -127,7 +127,7 @@ subroutine init(mio, rank, server_count, client_count)
     cerr = cc%mpi_return_client_comm(newcomm_id)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi client return comm to configuration context"
     write(0,*) "create new handle..."
-    cerr = mio%new_handle(cc) 
+    cerr = mio%new(cc) 
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error creating new mpi handle"
     if (newcomm_id == 0) ERROR STOP "Return communicator has not been set as expected"
     newcomm = fckit_mpi_comm(newcomm_id)

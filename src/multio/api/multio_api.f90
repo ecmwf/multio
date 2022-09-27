@@ -36,10 +36,8 @@ module multio_api
     type multio_handle
         type(c_ptr) :: impl = c_null_ptr
     contains
-        procedure :: new_handle => multio_new_handle
-        ! procedure :: new_handle_from_config => multio_new_handle_from_config
-        ! procedure :: new_handle_mpi => multio_new_handle_mpi
-        procedure :: delete_handle => multio_delete_handle
+        procedure :: new => multio_new_handle
+        procedure :: delete => multio_delete_handle
         procedure :: open_connections => multio_open_connections
         procedure :: close_connections => multio_close_connections
         procedure :: write_step_complete => multio_write_step_complete

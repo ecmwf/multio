@@ -148,9 +148,9 @@ contains
         end if
 
         ! Trigger another error
-        err = mio%new_handle(cc)
+        err = mio%new(cc)
         if (err == MULTIO_SUCCESS) then
-            write(error_unit, *) 'multio_new_handle succeeded unexpectedly with "0"'
+            write(error_unit, *) 'multio_new succeeded unexpectedly with "0"'
             success = .false.
         end if
 

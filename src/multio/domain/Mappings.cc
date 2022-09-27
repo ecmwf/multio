@@ -77,18 +77,23 @@ const DomainMap& Mappings::get(const std::string& name) const {
 }
 
 void Mappings::checkDomainConsistency(const std::vector<message::Message>& localDomains) const {
+    if (get(localDomains.back().domain()).isConsistent()) {
+        return;
+    }
+
     std::set<int32_t> globalIndices;
     for (const auto& local : localDomains) {
         get(local.domain()).at(local.source())->collectIndices(local, globalIndices);
     }
 
     auto globalSize = static_cast<std::set<int32_t>::size_type>(localDomains.back().globalSize());
-    std::ostringstream oss;
-    oss << "Number of inserted unique indices: " << globalIndices.size() << " (expected "
-        << globalSize << ")";
-    if (globalIndices.size() == globalSize) {
+    if (globalIndices.size() != globalSize) {
+        std::ostringstream oss;
+        oss << "Number of inserted unique indices: " << globalIndices.size() << " (expected " << globalSize << ")";
         throw eckit::SeriousBug{oss.str(), Here()};
     }
+
+    get(localDomains.back().domain()).isConsistent(true);
 }
 
 }  // namespace domain

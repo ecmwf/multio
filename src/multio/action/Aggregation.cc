@@ -86,6 +86,8 @@ Message Aggregation::createGlobalField(const Message& msg) const {
                                    Peer{msg.destination()}, std::move(md)},
                    eckit::Buffer{msg.globalSize() * levelCount * sizeof(double)}};
 
+    domain::Mappings::instance().checkDomainConsistency(messages_.at(fid));
+
     for (const auto& msg : messages_.at(fid)) {
         domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_global(msg, msgOut);
     }

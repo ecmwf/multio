@@ -172,7 +172,7 @@ void Structured::collectIndices(const message::Message& local, std::set<int32_t>
     auto data_nj = definition_[10];
     // auto data_dim = definition_[6]; -- Unused here
 
-    ASSERT(static_cast<std::set<int32_t>::size_type>(ni_global * nj_global) < glIndices.size());
+    ASSERT(glIndices.size() < static_cast<std::set<int32_t>::size_type>(ni_global * nj_global));
 
     auto lit = static_cast<const double*>(local.payload().data());
     for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {

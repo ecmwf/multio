@@ -35,11 +35,13 @@ public:
         domainMap_.emplace(std::forward<Args>(args)...);
     }
 
+    bool isConsistent() const { return consistent_; }
+    void isConsistent(bool val) const { consistent_ = val; }
+
 private:
     std::map<message::Peer, std::unique_ptr<Domain>> domainMap_;
+    mutable bool consistent_ = false;
 };
-
-//using DomainMap = std::map<message::Peer, std::unique_ptr<Domain>>;
 
 class Mappings {
 public:  // methods

@@ -47,7 +47,7 @@ private:
 
     void testData() const;
 
-    std::string serverName_ = "nemo-ioserver";
+    std::string serverName_ = "server";
     std::string transport_ = "mpi";
     int port_ = 7777;
     bool test_ = false;

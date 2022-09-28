@@ -259,11 +259,10 @@ int multio_delete_handle(multio_handle_t* mio) {
     });
 }
 
-int multio_start_server(multio_configurationcontext_t* cc, const char* server_name_key) {
-    return wrapApiFunction([cc, server_name_key]() {
+int multio_start_server(multio_configurationcontext_t* cc) {
+    return wrapApiFunction([cc]() {
         ASSERT(cc);
-        std::string server_name(server_name_key);
-        multio::server::MultioServer{ServerConfigurationContext{*cc, server_name}};
+        multio::server::MultioServer{ServerConfigurationContext{*cc, "server"}};
     });
 }
 

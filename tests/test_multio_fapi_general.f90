@@ -176,7 +176,7 @@ contains
         context = 0
 
         ! Trigger yet another error
-        err = multio_start_server(cc, "test-server")
+        err = multio_start_server(cc)
         if (err == MULTIO_SUCCESS) then
             write(error_unit, *) 'multio_start_server succeeded unexpectedly with invalid configuration context'
             success = .false.

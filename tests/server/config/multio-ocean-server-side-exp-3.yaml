@@ -18,13 +18,11 @@ client:
           categories : [ocean-domain-map, ocean-mask, ocean-grid-coordinate, ocean-2d, ocean-3d]
 
         - type : transport
-          target : nemo-ioserver
+          target : server
 
 
-nemo-ioserver:
+server:
   transport : mpi
-  group : nemo
-  count : 2 # May be overridden, better to template it via script?
   plans :
 
     - name : ocean-grids

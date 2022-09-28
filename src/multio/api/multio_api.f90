@@ -129,11 +129,10 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_start_server(cc, server_name) result(err) &
+        function c_multio_start_server(cc) result(err) &
                 bind(c, name='multio_start_server')
             use, intrinsic :: iso_c_binding
             implicit none
-            type(c_ptr), intent(in), value :: server_name
             type(c_ptr), intent(in), value :: cc
             integer(c_int) :: err
         end function
@@ -502,13 +501,10 @@ contains
         error_string = fortranise_cstr(c_multio_error_string(err))
     end function
     
-    function multio_start_server(cc, server_name) result(err)
+    function multio_start_server(cc) result(err)
         class(multio_configurationcontext), intent(in) :: cc
         integer :: err
-        character(*), intent(in) :: server_name
-        character(:), allocatable, target :: nullified_server_name
-        nullified_server_name = trim(server_name) // c_null_char
-        err = c_multio_start_server(cc%impl, c_loc(nullified_server_name))
+        err = c_multio_start_server(cc%impl)
     end function
     
     ! Methods for configuration context objects

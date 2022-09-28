@@ -222,39 +222,13 @@ int multio_new_handle(multio_handle_t** multio, multio_configurationcontext_t* c
 int multio_delete_handle(multio_handle_t* mio);
 
 
-// /** Initialises and starts server
-//  * \note This will be running until it receives a 'close' message from all of clients
-//  * \param server_name_key Name of the server as listed in the yaml configuration file
-//  * \param configuration_path Path to the YAML configuration file
-//  * \returns Return code (#MultioErrorValues)
-//  */
-// int multio_start_server_from_config(const char* configuration_path, const char* server_name_key);
-
-// /** Initialises and starts server
-//  * \note This will be running until it receives a 'close' message from all of clients
-//  *
-//  * \param parent_comm Parent MPI intra communicator containing all servers and clients.
-//  * \param server_name_key Name of the server as listed in the yaml configuration file
-//  * \returns Return code (#MultioErrorValues)
-//  */
-// int multio_start_server_mpi(const char* server_name_key, int parent_comm);
-
-// /** Initialises and starts server
-//  * \note This will be running until it receives a 'close' message from all of clients
-//  * \param server_name_key Name of the server as listed in the yaml configuration file
-//  * \returns Return code (#MultioErrorValues)
-//  */
-// int multio_start_server(const char* server_name_key);
-
 /** Initialises and starts server
- * TODO Discuss if server_name_key has to be picked through another mechanism
  *
  * \note This will be running until it receives a 'close' message from all of clients
  * \param cc Handle to configuration context
- * \param server_name_key Name of the server as listed in the yaml configuration file
  * \returns Return code (#MultioErrorValues)
  */
-int multio_start_server(multio_configurationcontext_t* cc, const char* server_name_key);
+int multio_start_server(multio_configurationcontext_t* cc);
 
 
 /** Opens connections to the server

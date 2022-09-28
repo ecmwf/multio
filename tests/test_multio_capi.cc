@@ -42,7 +42,7 @@ typename std::enable_if<!std::numeric_limits<T>::is_integer, bool>::type
         || std::fabs(x-y) < std::numeric_limits<T>::min();
 }
 
-static std::string expectedMPIError("No communicator \"nemo\" and no default given.");
+static std::string expectedMPIError("No communicator \"multio\" and no default given.");
 
 CASE("Try Create handle with wrong configuration path") {
     multio_configurationcontext_t* cc = nullptr;
@@ -110,20 +110,20 @@ CASE("Create handle with configuration path without MPI splitting") {
     multio_delete_configurationcontext(cc);
 }
 
-CASE("Start server with default configuration & unknown server name") {
-    multio_configurationcontext_t* cc = nullptr;
-    int err;
-    err = multio_new_configurationcontext(&cc);
-    EXPECT(err == MULTIO_SUCCESS);
-    err = multio_conf_mpi_allow_world_default_comm(cc, false);
-    EXPECT(err == MULTIO_SUCCESS);
-    err = multio_start_server(cc, "I_AM_NOT_HERE");
-    std::string errStr(multio_error_string(err));
-    // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
-    EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
-    EXPECT(errStr.rfind("Configuration 'I_AM_NOT_HERE' not found") != std::string::npos);
-    multio_delete_configurationcontext(cc);
-}
+// CASE("Start server with default configuration & unknown server name") {
+//     multio_configurationcontext_t* cc = nullptr;
+//     int err;
+//     err = multio_new_configurationcontext(&cc);
+//     EXPECT(err == MULTIO_SUCCESS);
+//     err = multio_conf_mpi_allow_world_default_comm(cc, false);
+//     EXPECT(err == MULTIO_SUCCESS);
+//     err = multio_start_server(cc, "I_AM_NOT_HERE");
+//     std::string errStr(multio_error_string(err));
+//     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
+//     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
+//     EXPECT(errStr.rfind("Configuration 'I_AM_NOT_HERE' not found") != std::string::npos);
+//     multio_delete_configurationcontext(cc);
+// }
 
 CASE("Start server with default configuration") {
     multio_configurationcontext_t* cc = nullptr;
@@ -132,7 +132,7 @@ CASE("Start server with default configuration") {
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_conf_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_start_server(cc, "nemo-ioserver");
+    err = multio_start_server(cc);
     std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);

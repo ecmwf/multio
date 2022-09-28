@@ -131,7 +131,7 @@ public:
         return ret_comm;
     }
 
-    void initServer(int parent_comm, const std::string server_name = "nemo-ioserver") {
+    void initServer(int parent_comm, const std::string server_name = "server") {
         MPIInitInfo initInfo;
         initInfo.parentComm = eckit::Optional<int>{parent_comm};
         initInfo.clientId = eckit::Optional<std::string>{};

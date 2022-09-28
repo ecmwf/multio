@@ -88,13 +88,13 @@ eckit::mpi::Parallel& assumeParellelComm(eckit::mpi::Comm& comm) {
 }
 
 MpiPeerSetup setupMPI_(const ConfigurationContext& confCtx) {
-    if (!confCtx.config().has("group")) {
-        std::ostringstream oss;
-        oss << "No key \"group\" in MPI server config found (Configuration filename:  "
-            << confCtx.fileName() << ")" << std::endl;
-        throw eckit::Exception(oss.str());
-    }
-    const std::string& groupName = confCtx.config().getString("group");
+    // if (!confCtx.config().has("group")) {
+    //     std::ostringstream oss;
+    //     oss << "No key \"group\" in MPI server config found (Configuration filename:  "
+    //         << confCtx.fileName() << ")" << std::endl;
+    //     throw eckit::Exception(oss.str());
+    // }
+    const std::string& groupName = confCtx.config().getString("group", "multio");
     mpi::CommSetupOptions groupOptions;
     groupOptions.defaultType = eckit::Optional<mpi::CommSetupType>(mpi::CommSetupType::Passed);
 

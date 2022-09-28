@@ -20,7 +20,7 @@ client:
           categories : [ocean-domain-map, ocean-mask, ocean-grid-coordinate]
 
         - type : transport
-          target : nemo-ioserver
+          target : server
 
     - name : stream-2 # mainly 3d fields output monthly (standard) or daily (highout)
       actions :
@@ -34,7 +34,7 @@ client:
             - average
 
         - type : transport
-          target : nemo-ioserver
+          target : server
 
     - name : stream-3 # mainly 2d fields output daily (standard) or hourly (highout)
       actions :
@@ -48,7 +48,7 @@ client:
             - average
 
         - type : transport
-          target : nemo-ioserver
+          target : server
 
     - name : stream-10 # sea-ice fields output daily (standard) or hourly (highout)
       actions :
@@ -62,14 +62,12 @@ client:
             - average
 
         - type : transport
-          target : nemo-ioserver
+          target : server
 
 #===================================================================================================
 
-nemo-ioserver:
+server:
   transport : mpi
-  group : nemo
-  count : 42 # Should be overridden, better to template it via script?
   plans :
 
     - name : ocean-grids

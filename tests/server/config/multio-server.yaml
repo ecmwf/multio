@@ -24,7 +24,7 @@ client:
           categories : [ocean-domain-map, ocean-mask]
           
         - type : transport
-          target : nemo-ioserver
+          target : server
 
     - name : ocean-replay-test-stream1
       actions :
@@ -38,7 +38,7 @@ client:
           overwrite-existing : false # default, may be omitted
 
         - type : transport
-          target : nemo-ioserver
+          target : server
 
     - name : ocean-replay-test-stream2
       actions :
@@ -50,11 +50,10 @@ client:
           mapping : nemo-to-grib
 
         - type : transport
-          target : nemo-ioserver
+          target : server
 
-nemo-ioserver:
+server:
   transport : mpi
-  group : nemo
   on-error: abort-transport
   plans :
 

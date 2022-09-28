@@ -8,19 +8,19 @@ run:
 
 # active-fields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethic_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
 
-# These are the defaults. Multio will do the following when accessing the mpi group "nemo" mentioned in "nemo-ioserver"
+# These are the defaults. Multio will do the following when accessing the mpi group "nemo" mentioned in "server"
 mpi-communicators:
-    nemo:
+    multio:
         type: passed
         defaullt: world
-    nemo-clients:
+    multio-clients:
         type: split
         color: 777
-        parent: nemo
-    nemo-servers:
+        parent: multio
+    multio-servers:
         type: split
         color: 888
-        parent: nemo
+        parent: multio
 
 client:
   plans:
@@ -32,7 +32,7 @@ client:
           categories : [ocean-domain-map, ocean-mask]
 
         - type : transport
-          target : nemo-ioserver
+          target : server
 
     - name : ocean-replay-test-stream1
       actions :
@@ -41,7 +41,7 @@ client:
           fields : [ sst, ssv ]
 
         - type : transport
-          target : nemo-ioserver
+          target : server
 
     - name : ocean-replay-test-stream2
       actions :
@@ -50,13 +50,13 @@ client:
           fields : [ ssu, ssw ]
 
         - type : transport
-          target : nemo-ioserver
+          target : server
 
-nemo-ioserver:
+server:
   transport: mpi
-  group: nemo
-  client-group: nemo-clients 
-  server-group: nemo-servers 
+  group: multio # implicit default
+  client-group: multio-clients  # implicit default
+  server-group: multio-servers  # implicit default
   plans :
 
     - name : ocean-fields

@@ -241,7 +241,7 @@ public:
 class ServerConfigurationContext : public ConfigurationContext {
 public:
     ServerConfigurationContext(const ConfigurationContext& otherBase,
-                               const std::string& serverName) :
+                               const std::string& serverName = "server") :
         ConfigurationContext(throwRecast_(otherBase, serverName).tagServer()) {}
 };
 

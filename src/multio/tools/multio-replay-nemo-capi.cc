@@ -262,8 +262,8 @@ void MultioReplayNemoCApi::initClient() {
 
 
 #if defined(EXPLICIT_MPI) || defined(INIT_BY_MPI)
-    eckit::mpi::addComm("nemo", eckit::mpi::comm().communicator());
-    eckit::mpi::comm("nemo").split(777, "nemo-clients");
+    eckit::mpi::addComm("multio", eckit::mpi::comm().communicator());
+    eckit::mpi::comm("multio").split(777, "multio-clients");
 #endif
 
     
@@ -282,7 +282,7 @@ void MultioReplayNemoCApi::initClient() {
     int retComm = 0;
     multio_new_configurationcontext(&multio_cc);
     multio_conf_mpi_client_id(multio_cc, "oce");
-    multio_conf_mpi_parent_comm(multio_cc, eckit::mpi::comm("nemo").communicator());
+    multio_conf_mpi_parent_comm(multio_cc, eckit::mpi::comm("multio").communicator());
     multio_conf_mpi_return_client_comm(multio_cc, &retComm);
     multio_new_handle(&multio_handle, multio_cc);
     eckit::Log::info() << " *** multio_new_handle mpi returned comm: " << retComm << std::endl;
@@ -302,7 +302,7 @@ void MultioReplayNemoCApi::initClient() {
 
 #if defined(INIT_BY_MPI)
     ASSERT(eckit::mpi::comm("oce").communicator() == retComm);
-    ASSERT(eckit::mpi::comm("nemo-clients").communicator() == retComm);
+    ASSERT(eckit::mpi::comm("multio-clients").communicator() == retComm);
 #endif
 
 #if defined(SPECIFIC_MPI_GROUP)
@@ -311,9 +311,9 @@ void MultioReplayNemoCApi::initClient() {
     const eckit::mpi::Comm& clients =
         eckit::mpi::comm((std::string(XSTRM(SPECIFIC_MPI_GROUP)) + "-clients").c_str());
 #else
-    eckit::Log::info() << " *** DEFAULT MPI GROUP: nemo " << std::endl;
-    const eckit::mpi::Comm& group = eckit::mpi::comm("nemo");
-    const eckit::mpi::Comm& clients = eckit::mpi::comm("nemo-clients");
+    eckit::Log::info() << " *** DEFAULT MPI GROUP: multio " << std::endl;
+    const eckit::mpi::Comm& group = eckit::mpi::comm("multio");
+    const eckit::mpi::Comm& clients = eckit::mpi::comm("multio-clients");
 #endif
 
     rank_ = group.rank();

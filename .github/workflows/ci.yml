@@ -31,6 +31,7 @@ jobs:
           ecmwf/eckit
           ecmwf/odc
           ecmwf/eccodes
+          MathisRosenhauer/libaec@master
           ecmwf/metkit
           ecmwf/fdb
         dependency_branch: develop

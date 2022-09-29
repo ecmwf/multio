@@ -20,11 +20,10 @@
 #include <queue>
 #include <tuple>
 
-#include <mpi.h>
-
 #include "eckit/io/Buffer.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/mpi/Comm.h"
+#include "eckit/mpi/Group.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
 #include "multio/transport/StreamPool.h"
@@ -34,7 +33,7 @@
 namespace multio {
 namespace transport {
 
-using MpiPeerSetup = std::tuple<MpiPeer, MPI_Group, MPI_Group, MPI_Group>;
+using MpiPeerSetup = std::tuple<MpiPeer, eckit::mpi::Group, eckit::mpi::Group, eckit::mpi::Group>;
 
 class MpiTransport final : public Transport {
 public:
@@ -73,9 +72,9 @@ private:
     void encodeMessage(eckit::Stream& strm, const Message& msg);
 
     MpiPeer local_;
-    MPI_Group parentGroup_;
-    MPI_Group clientGroup_;
-    MPI_Group serverGroup_;
+    eckit::mpi::Group parentGroup_;
+    eckit::mpi::Group clientGroup_;
+    eckit::mpi::Group serverGroup_;
 
     StreamPool pool_;
 

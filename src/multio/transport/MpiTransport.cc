@@ -51,41 +51,13 @@ Message decodeMessage(eckit::Stream& stream) {
     eckit::Buffer buffer(sz);
     stream >> buffer;
 
-    return Message{Message::Header{static_cast<Message::Tag>(t), MpiPeer{src_grp, src_id},
-                                   MpiPeer{dest_grp, dest_id}, std::move(fieldId)},
+    return Message{Message::Header{static_cast<Message::Tag>(t), MpiPeer{src_grp, src_id}, MpiPeer{dest_grp, dest_id},
+                                   std::move(fieldId)},
                    std::move(buffer)};
 }
 
 const size_t defaultBufferSize = 64 * 1024 * 1024;
 const size_t defaultPoolSize = 128;
-
-void MPICall(int code, const char* mpifunc, const eckit::CodeLocation& loc) {
-    if (code != MPI_SUCCESS) {
-        char error[10240];
-        int len = sizeof(error) - 1;
-        MPI_Error_string(code, error, &len);
-        error[len] = 0;
-
-        std::ostringstream oss;
-        oss << "MpiTransport setup: MPI call failed with error '" << error << "' while calling "
-            << mpifunc;
-        throw eckit::Exception(oss.str(), loc);
-    }
-}
-
-#define MPI_CALL(a) MPICall(a, #a, Here())
-
-eckit::mpi::Parallel& assumeParellelComm(eckit::mpi::Comm& comm) {
-    try {
-        return dynamic_cast<eckit::mpi::Parallel&>(comm);
-    }
-    catch (const std::bad_cast& e) {
-        throw eckit::Exception(
-            std::string("MpiTransport setup: Failed to cast generic communicator to underlying "
-                        "eckit::mpi::Parallel implementation.") +
-            e.what());
-    }
-}
 
 MpiPeerSetup setupMPI_(const ConfigurationContext& confCtx) {
     // if (!confCtx.config().has("group")) {
@@ -98,14 +70,12 @@ MpiPeerSetup setupMPI_(const ConfigurationContext& confCtx) {
     mpi::CommSetupOptions groupOptions;
     groupOptions.defaultType = eckit::Optional<mpi::CommSetupType>(mpi::CommSetupType::Passed);
 
-    eckit::mpi::Comm& groupComm = mpi::getComm(
-        confCtx, groupName, eckit::Optional<mpi::CommSetupOptions>{std::move(groupOptions)});
+    eckit::mpi::Comm& groupComm =
+        mpi::getComm(confCtx, groupName, eckit::Optional<mpi::CommSetupOptions>{std::move(groupOptions)});
 
-    MPI_Group parentGroup;
-    MPI_Group clientGroup;
-    MPI_Group serverGroup;
-
-    MPI_CALL(MPI_Comm_group(assumeParellelComm(groupComm).MPIComm(), &parentGroup));
+    eckit::mpi::Group parentGroup = groupComm.group();
+    eckit::mpi::Group clientGroup;
+    eckit::mpi::Group serverGroup;
 
     switch (confCtx.localPeerTag()) {
         case util::LocalPeerTag::Client: {
@@ -117,60 +87,60 @@ MpiPeerSetup setupMPI_(const ConfigurationContext& confCtx) {
             const auto& mpiInitInfo = confCtx.getMPIInitInfo();
             options.alias = mpiInitInfo ? mpiInitInfo().clientId : eckit::Optional<std::string>{};
 
-            std::string subGroupName = confCtx.config().has("client-group")
-                                           ? confCtx.config().getString("client-group")
-                                           : ([&]() {
-                                                 std::ostringstream oss;
-                                                 oss << groupName << "-"
-                                                     << "clients";
-                                                 return oss.str();
-                                             })();
+            std::string subGroupName =
+                confCtx.config().has("client-group") ? confCtx.config().getString("client-group") : ([&]() {
+                    std::ostringstream oss;
+                    oss << groupName << "-"
+                        << "clients";
+                    return oss.str();
+                })();
             // eckit::Log::info() << " *** MpiTransport::setupMPI_ client " << subGroupName << "
             // alias: " << (options.alias? options.alias().c_str() : "none") << std::endl;
 
             // Setup client group
-            auto& clientComm = mpi::getComm(
-                confCtx, subGroupName, eckit::Optional<mpi::CommSetupOptions>{std::move(options)});
+            auto& clientComm =
+                mpi::getComm(confCtx, subGroupName, eckit::Optional<mpi::CommSetupOptions>{std::move(options)});
             // eckit::Log::info() << " *** MpiTransport::setupMPI_ created clientComm... " << std::endl;
-            
-            if( mpiInitInfo && mpiInitInfo().returnClientComm != nullptr ) {
+
+            if (mpiInitInfo && mpiInitInfo().returnClientComm != nullptr) {
                 *(mpiInitInfo().returnClientComm) = clientComm.communicator();
-                mpiInitInfo().returnClientComm = nullptr; // Set to null to prevent setting the pointer at a later time when it may be invalid
+                mpiInitInfo().returnClientComm =
+                    nullptr;  // Set to null to prevent setting the pointer at a later time when it may be invalid
             }
-            
-            MPI_CALL(MPI_Comm_group(assumeParellelComm(clientComm).MPIComm(), &clientGroup));
-            MPI_CALL(MPI_Group_difference(parentGroup, clientGroup, &serverGroup));
+
+            clientGroup = clientComm.group();
+            serverGroup = parentGroup.difference(clientGroup);
         } break;
         case util::LocalPeerTag::Server: {
             mpi::CommSetupOptions options;
             // Add default in case of missing configuration
             options.defaultType = eckit::Optional<mpi::CommSetupType>(mpi::CommSetupType::Split);
             options.parentCommName = eckit::Optional<std::string>(groupName);
-            
+
             const auto& mpiInitInfo = confCtx.getMPIInitInfo();
 
-            std::string subGroupName = confCtx.config().has("server-group")
-                                           ? confCtx.config().getString("server-group")
-                                           : ([&]() {
-                                                 std::ostringstream oss;
-                                                 oss << groupName << "-"
-                                                     << "servers";
-                                                 return oss.str();
-                                             })();
+            std::string subGroupName =
+                confCtx.config().has("server-group") ? confCtx.config().getString("server-group") : ([&]() {
+                    std::ostringstream oss;
+                    oss << groupName << "-"
+                        << "servers";
+                    return oss.str();
+                })();
             // eckit::Log::info() << " *** MpiTransport::setupMPI_ server " << subGroupName <<
             // std::endl;
 
             // Setup client group
-            auto& serverComm = mpi::getComm(
-                confCtx, subGroupName, eckit::Optional<mpi::CommSetupOptions>{std::move(options)});
-                
-            if( mpiInitInfo && mpiInitInfo().returnServerComm != nullptr ) {
+            auto& serverComm =
+                mpi::getComm(confCtx, subGroupName, eckit::Optional<mpi::CommSetupOptions>{std::move(options)});
+
+            if (mpiInitInfo && mpiInitInfo().returnServerComm != nullptr) {
                 *(mpiInitInfo().returnServerComm) = serverComm.communicator();
-                mpiInitInfo().returnServerComm = nullptr; // Set to null to prevent setting the pointer at a later time when it may be invalid
+                mpiInitInfo().returnServerComm =
+                    nullptr;  // Set to null to prevent setting the pointer at a later time when it may be invalid
             }
-            
-            MPI_CALL(MPI_Comm_group(assumeParellelComm(serverComm).MPIComm(), &serverGroup));
-            MPI_CALL(MPI_Group_difference(parentGroup, serverGroup, &clientGroup));
+
+            serverGroup = serverComm.group();
+            clientGroup = parentGroup.difference(serverGroup);
         } break;
     }
     return MpiPeerSetup(MpiPeer{groupName, groupComm.rank()}, parentGroup, clientGroup, serverGroup);
@@ -187,11 +157,10 @@ MpiTransport::MpiTransport(const ConfigurationContext& confCtx, MpiPeerSetup&& p
     clientGroup_{std::move(std::get<2>(peerSetup))},
     serverGroup_{std::move(std::get<3>(peerSetup))},
     pool_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_MPI_POOL_SIZE", defaultPoolSize),
-          eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", defaultBufferSize),
-          comm(), statistics_} {}
+          eckit::Resource<size_t>("multioMpiBufferSize;$MULTIO_MPI_BUFFER_SIZE", defaultBufferSize), comm(),
+          statistics_} {}
 
-MpiTransport::MpiTransport(const ConfigurationContext& confCtx) :
-    MpiTransport(confCtx, setupMPI_(confCtx)) {}
+MpiTransport::MpiTransport(const ConfigurationContext& confCtx) : MpiTransport(confCtx, setupMPI_(confCtx)) {}
 
 MpiTransport::~MpiTransport() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
@@ -237,8 +206,7 @@ Message MpiTransport::receive() {
         //! TODO For switch to MPMC queue: combine front() and pop()
         if (auto strm = streamQueue_.front()) {
             while (strm->position() < strm->size()) {
-                util::ScopedTiming decodeTiming{statistics_.decodeTimer_,
-                                                statistics_.decodeTiming_};
+                util::ScopedTiming decodeTiming{statistics_.decodeTimer_, statistics_.decodeTiming_};
                 auto msg = decodeMessage(*strm);
                 msgPack_.push(msg);
             }
@@ -286,28 +254,24 @@ void MpiTransport::bufferedSend(const Message& msg) {
 void MpiTransport::createPeers() const {
     auto parentSize = comm().size();
     std::vector<int> parentRanks(parentSize);
-    std::vector<int> clientRanks(parentSize);
-    std::vector<int> serverRanks(parentSize);
-    
-    for(int r=0; r < parentSize; ++r) {
+
+    for (int r = 0; r < parentSize; ++r) {
         parentRanks[r] = r;
     }
     // clientGroup_ and serverGroup_ are disjoint and their union are expected to be the full parentGroup_
     // In theory we need just an translate_ranks call, however for simplicity we translate from the groups explicitly.
-    MPI_CALL(MPI_Group_translate_ranks(parentGroup_, parentSize, parentRanks.data(), clientGroup_, clientRanks.data()));
-    MPI_CALL(MPI_Group_translate_ranks(parentGroup_, parentSize, parentRanks.data(), serverGroup_, serverRanks.data()));
-    
-    for(int r=0; r < parentSize; ++r) {
-        if(clientRanks[r] != MPI_UNDEFINED) {
-            clientPeers_.emplace_back(new MpiPeer{local_.group(), (unsigned long) parentRanks[r]});
-        }
-        if(serverRanks[r] != MPI_UNDEFINED) {
-            serverPeers_.emplace_back(new MpiPeer{local_.group(), (unsigned long) parentRanks[r]});
-        }
+    auto clientRankMap = parentGroup_.translate_ranks(parentRanks, clientGroup_);
+    auto serverRankMap = parentGroup_.translate_ranks(parentRanks, serverGroup_);
+
+    for (auto& it : clientRankMap) {
+        clientPeers_.emplace_back(new MpiPeer{local_.group(), (unsigned long)it.first});
     }
+    for (auto& it : serverRankMap) {
+        serverPeers_.emplace_back(new MpiPeer{local_.group(), (unsigned long)it.first});
+    }
+
     eckit::Log::info() << " *** MpiTransport::createPeers clientCount: " << clientPeers_.size()
-                       << ", serverCount: " << serverPeers_.size()
-                       << ", commSize: " << parentSize << std::endl;
+                       << ", serverCount: " << serverPeers_.size() << ", commSize: " << parentSize << std::endl;
 }
 
 void MpiTransport::print(std::ostream& os) const {
@@ -333,20 +297,17 @@ void MpiTransport::listen() {
 
 PeerList MpiTransport::createServerPeers() const {
     PeerList serverPeers;
-    
+
     auto parentSize = comm().size();
     std::vector<int> parentRanks(parentSize);
-    std::vector<int> serverRanks(parentSize);
-    
-    for(int r=0; r < parentSize; ++r) {
+
+    for (int r = 0; r < parentSize; ++r) {
         parentRanks[r] = r;
     }
-    MPI_CALL(MPI_Group_translate_ranks(parentGroup_, parentSize, parentRanks.data(), serverGroup_, serverRanks.data()));
-    
-    for(int r=0; r < parentSize; ++r) {
-        if(serverRanks[r] != MPI_UNDEFINED) {
-            serverPeers.emplace_back(new MpiPeer{local_.group(), (unsigned long) parentRanks[r]});
-        }
+    auto serverRankMap = parentGroup_.translate_ranks(parentRanks, serverGroup_);
+
+    for (auto& it : serverRankMap) {
+        serverPeers_.emplace_back(new MpiPeer{local_.group(), (unsigned long)it.first});
     }
     eckit::Log::info() << " *** MpiTransport::createServerPeers serverCount: " << serverPeers.size()
                        << ", commSize: " << parentSize << std::endl;

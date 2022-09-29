@@ -29,8 +29,6 @@ module multio_api
         procedure :: mpi_parent_comm => multio_conf_mpi_parent_comm
         procedure :: mpi_return_client_comm => multio_conf_mpi_return_client_comm
         procedure :: mpi_return_server_comm => multio_conf_mpi_return_server_comm
-        procedure :: mpi_split_client_color => multio_conf_mpi_split_client_color
-        procedure :: mpi_split_server_color => multio_conf_mpi_split_server_color
     end type
     
     type multio_handle
@@ -230,24 +228,6 @@ module multio_api
                 use, intrinsic :: iso_c_binding
                 implicit none
                 integer(c_int), intent(out) :: return_comm ! can be c_null_ptr
-                type(c_ptr), intent(in), value :: cc
-                integer(c_int) :: err
-        end function
-        
-        function c_multio_conf_mpi_split_client_color(cc, color) result(err) &
-                bind(c, name='multio_conf_mpi_split_client_color')
-                use, intrinsic :: iso_c_binding
-                implicit none
-                integer(c_int), intent(in), value :: color
-                type(c_ptr), intent(in), value :: cc
-                integer(c_int) :: err
-        end function
-        
-        function c_multio_conf_mpi_split_server_color(cc, color) result(err) &
-                bind(c, name='multio_conf_mpi_split_server_color')
-                use, intrinsic :: iso_c_binding
-                implicit none
-                integer(c_int), intent(in), value :: color
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
@@ -577,20 +557,6 @@ contains
             err = c_multio_conf_mpi_return_server_comm(cc%impl, return_comm)
     end function
     
-    function multio_conf_mpi_split_client_color(cc, color) result(err) 
-            class(multio_configurationcontext), intent(inout) :: cc
-            integer(c_int), intent(in), value :: color
-            integer :: err
-            err = c_multio_conf_mpi_split_client_color(cc%impl, color)
-    end function
-    
-    function multio_conf_mpi_split_server_color(cc, color) result(err) 
-            class(multio_configurationcontext), intent(inout) :: cc
-            integer(c_int), intent(in), value :: color
-            integer :: err
-            err = c_multio_conf_mpi_split_server_color(cc%impl, color)
-    end function
-
     ! Methods for handle objects
 
     function multio_new_handle(handle, cc) result(err)

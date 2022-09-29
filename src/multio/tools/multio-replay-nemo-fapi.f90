@@ -92,8 +92,6 @@ subroutine init(mio, rank, server_count, client_count)
     cerr = cc%new()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error creating default configuration context"
     
-    cerr = cc%mpi_split_client_color(777)
-    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting default multio mpi split color"
     cerr = cc%mpi_allow_world_default_comm(.FALSE._1)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting default multio mpi allow_world_default_comm"
 

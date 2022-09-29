@@ -182,26 +182,6 @@ int multio_conf_mpi_allow_world_default_comm(multio_configurationcontext_t* cc, 
     });
 };
 
-int multio_conf_mpi_split_client_color(multio_configurationcontext_t* cc, int color) {
-    return wrapApiFunction([cc, color]() {
-        ASSERT(cc);
-        if (!cc->getMPIInitInfo()) {
-            cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
-        }
-        cc->getMPIInitInfo().value().defaultClientSplitColor = color;
-    });
-};
-
-int multio_conf_mpi_split_server_color(multio_configurationcontext_t* cc, int color) {
-    return wrapApiFunction([cc, color]() {
-        ASSERT(cc);
-        if (!cc->getMPIInitInfo()) {
-            cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
-        }
-        cc->getMPIInitInfo().value().defaultServerSplitColor = color;
-    });
-};
-
 int multio_conf_mpi_parent_comm(multio_configurationcontext_t* cc, int parent_comm) {
     return wrapApiFunction([cc, parent_comm]() {
         ASSERT(cc);

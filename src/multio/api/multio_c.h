@@ -128,24 +128,6 @@ int multio_conf_set_path(multio_configurationcontext_t* cc, const char* configur
  */
 int multio_conf_mpi_allow_world_default_comm(multio_configurationcontext_t* cc, bool allow);
 
-
-/** Overwrite global MPI options for default splitting.
- *
- * \param color Specifies the color with which multio is allowed to split from the parent group to create a client only intra communicator.
- * \param cc Handle to the multio configuration context object
- * \returns Return code (#MultioErrorValues)
- */
-int multio_conf_mpi_split_client_color(multio_configurationcontext_t* cc, int color);
-
-
-/** Overwrite global MPI options for default splitting.
- *
- * \param color Specifies the color with which multio is allowed to split from the parent group to create a server only intra communicator.
- * \param cc Handle to the multio configuration context object
- * \returns Return code (#MultioErrorValues)
- */
-int multio_conf_mpi_split_server_color(multio_configurationcontext_t* cc, int color);
-      
 /** Set MPI specific initalization parameters
  *
  * \param parent_comm Parent MPI intra communicator containing all servers and clients.
@@ -177,35 +159,6 @@ int multio_conf_mpi_return_server_comm(multio_configurationcontext_t* cc, int* r
  * \returns Return code (#MultioErrorValues)
  */
 int multio_conf_mpi_client_id(multio_configurationcontext_t* cc, const char* client_id);
-      
-      
-// /** Creates a multio (client) instance
-//  * \param configuration_path Path to YAML configuration file
-//  * \param mio Return a handle to the multio (client) instance
-//  * \returns Return code (#MultioErrorValues)
-//  */
-// int multio_new_handle_from_config(multio_handle_t** multio, const char* configuration_path);
-      
-// /** Creates a multio (client) instance and allows passing a MPI communicator as well as an clientID.
-//  * This function is provided for compatibility with existing API bindings to other IO servers.
-//  * 
-//  * Attention: The used configuration file (provided by MULTIO_SERVER_CONFIG_FILE) must also specify MPI as transport layer. 
-//  * Then the provided communicator can be used.
-//  *
-//  * \param retComm MPI communicator for clients created by MULTIO. Multio will split a client and a server communicator from the passed parentComm. The client communicator will be written to retComm. This requires clientId to be non-null.
-//  * \param parentComm MPI parent communicator containing all clients and servers
-//  * \param clientId  Null or string containing the client id (provided for backwards compatibility). By using eckit::mpi, a global [communicator name -> communicator] map is maintained. The clientId should be unique in the sense that no other library registers a communicator with the same name.
-//  * \param mio Return a handle to the multio (client) instance
-//  * \returns Return code (#MultioErrorValues)
-//  */
-// int multio_new_handle_mpi(multio_handle_t** multio, const char* clientId, int parentComm, int* retComm);
-
-
-// /** Creates a multio (client) instance
-//  * \param mio Return a handle to the multio (client) instance
-//  * \returns Return code (#MultioErrorValues)
-//  */
-// int multio_new_handle(multio_handle_t** mio);
       
 /** Creates a multio (client) instance
  * \param cc Handle to configuration context
@@ -300,19 +253,6 @@ int multio_new_metadata(multio_metadata_t** md);
  * \returns Return code (#MultioErrorValues)
  */
 int multio_delete_metadata(multio_metadata_t* md);
-
-
-// /** Resets/clears a multio metadata object to make the allocated memory reusable efficiently
-//  *
-//  * TODO: Discuss - std::move is also used very often for efficiency. Everything is fine for
-//  * sequentially processing. Problems could arise if at one end the data is not copy and instead
-//  * accessed in an asynchronous manner.
-//  *
-//  * \param md Handle to the multio metadata object
-//  * \returns Return code (#MultioErrorValues)
-//  */
-// int multio_reset_metadata(multio_metadata_t* md);
-
 
 /** Sets a metadata key-value pair for integer values
  * \param md Handle to the multio metadata object

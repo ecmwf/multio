@@ -21,14 +21,6 @@
 namespace multio {
 namespace domain {
 
-namespace  {
-std::string partialMaskId(const message::Message& msg) {
-    std::ostringstream os;
-    os << msg;
-    return os.str();
-}
-}  // namespace
-
 Mask& Mask::instance() {
     static Mask singleton;
     return singleton;
@@ -65,17 +57,11 @@ void Mask::addPartialMask(message::Message msg) {
     msgList.push_back(std::move(msg));
 }
 
-bool Mask::allPartsArrived(message::Message msg) const {
-    const auto& fid = msg.fieldId();
-    size_t acc_size = 0;
-    size_t expected_global_size = msg.globalSize();
-    for (const auto& msg : messages_.at(fid)) {
-        const auto& domain = domain::Mappings::instance().get(msg.domain()).at(msg.source());
-        acc_size += domain->local_size();
-        ASSERT(domain->global_size() == expected_global_size);
-    }
-    ASSERT(acc_size <= expected_global_size);
-    return (acc_size == expected_global_size);
+bool Mask::allPartsArrived(const message::Message& msg) const {
+
+    const auto& domainMap = domain::Mappings::instance().get(msg.domain());
+
+    return domainMap.isComplete() && (messages_.at(msg.fieldId()).size() == domainMap.size());
 }
 
 void Mask::createBitmask(message::Message inMsg) {

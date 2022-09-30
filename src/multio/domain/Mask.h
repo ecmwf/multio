@@ -45,7 +45,7 @@ private:
 
     void addPartialMask(message::Message msg);
 
-    bool allPartsArrived(message::Message msg) const;
+    bool allPartsArrived(const message::Message& msg) const;
     void createBitmask(message::Message msg);
 
     std::map<std::string, std::vector<message::Message>> messages_;

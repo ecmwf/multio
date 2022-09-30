@@ -58,7 +58,7 @@ public:
     bool isFieldActive(const std::string& name) const;
     bool isCategoryActive(const std::string& name) const;
     
-    util::FailureHandlerResponse handleFailure(const eckit::Optional<util::OnClientError>&) override;
+    util::FailureHandlerResponse handleFailure(util::OnClientError) const override;
 
 private:
     std::vector<std::unique_ptr<action::Plan>> plans_;

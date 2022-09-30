@@ -28,7 +28,7 @@ class Mask : public Action {
 public:
     explicit Mask(const ConfigurationContext& confCtx);
 
-    void execute(message::Message msg) const override;
+    void executeImpl(message::Message msg) const override;
 
 private:
     message::Message createMasked(message::Message msg) const;

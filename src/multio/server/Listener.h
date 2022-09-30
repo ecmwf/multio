@@ -50,7 +50,7 @@ public:
 
     void listen();
     
-    util::FailureHandlerResponse handleFailure(const eckit::Optional<util::OnReceiveError>&) override;
+    util::FailureHandlerResponse handleFailure(util::OnReceiveError) const override;
 
 private:
     bool moreConnections() const;
@@ -66,7 +66,7 @@ private:
 
 
     std::set<message::Peer> connections_;
-    eckit::Queue<message::Message> msgQueue_;
+    mutable eckit::Queue<message::Message> msgQueue_; // Mark mutable to be able to close when handling failure in const function
 
 };
 

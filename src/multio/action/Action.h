@@ -29,21 +29,20 @@
 #include "multio/action/ActionStatistics.h"
 #include "multio/message/Message.h"
 #include "multio/util/ConfigurationContext.h"
+#include "multio/util/FailureHandling.h"
+
 
 #include "multio/transport/Transport.h"
-
-namespace eckit {
-class Configuration;
-}
 
 namespace multio {
 namespace action {
 
 using util::ConfigurationContext;
+using util::FailureAware;
 
 //--------------------------------------------------------------------------------------------------
 
-class Action : private eckit::NonCopyable {
+class Action : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Action> {
 public:
     Action(const ConfigurationContext& confCtx);
     virtual ~Action();
@@ -54,7 +53,11 @@ public:
     //      At many places it is just fine to accept const&
     void executeNext(message::Message msg) const;
 
-    virtual void execute(message::Message msg) const = 0;
+    void execute(message::Message msg) const;
+    
+    virtual void executeImpl(message::Message msg) const = 0;
+
+    virtual util::FailureHandlerResponse handleFailure(util::OnActionError) const override;
     
     // May be implemented in a action (i.e. select)
     virtual void activeFields(std::insert_iterator<std::set<std::string>>& ins) const;

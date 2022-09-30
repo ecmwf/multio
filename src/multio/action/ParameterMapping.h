@@ -29,7 +29,7 @@ class ParameterMapping : public Action {
 public:
     explicit ParameterMapping(const ConfigurationContext& confCtx);
 
-    void execute(message::Message msg) const override;
+    void executeImpl(message::Message msg) const override;
 
 protected:
     void applyInplace(message::Metadata& msg) const;

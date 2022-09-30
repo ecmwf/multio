@@ -33,7 +33,7 @@ class Select : public Action {
 public:
     explicit Select(const ConfigurationContext& confCtx);
 
-    void execute(Message msg) const override;
+    void executeImpl(Message msg) const override;
 
     void activeFields(std::insert_iterator<std::set<std::string>>& ins) const override;
     void activeCategories(std::insert_iterator<std::set<std::string>>& ins) const override;

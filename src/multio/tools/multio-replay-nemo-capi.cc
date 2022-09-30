@@ -199,10 +199,6 @@ void MultioReplayNemoCApi::writeFields() {
         // Overwrite these fields in the existing metadata object
         multio_metadata_set_string_value(md, "name", fname);
         multio_metadata_set_string_value(md, "nemoParam", fname);
-        multio_metadata_set_int_value(md, "param", paramMap_.get(fname).param);
-        multio_metadata_set_string_value(md, "gridSubtype", paramMap_.get(fname).gridType.c_str());
-        multio_metadata_set_string_value(md, "domain", paramMap_.get(fname).gridType.c_str());
-        multio_metadata_set_string_value(md, "typeOfLevel", paramMap_.get(fname).levelType.c_str());
 
         multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz);
         

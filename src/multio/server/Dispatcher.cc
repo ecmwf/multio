@@ -43,7 +43,7 @@ Dispatcher::Dispatcher(const util::ConfigurationContext& confCtx, std::shared_pt
     }
 }
 
-util::FailureHandlerResponse Dispatcher::handleFailure(const eckit::Optional<util::OnDispatchError>& t) {
+util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t) const {
     continue_->store(false, std::memory_order_relaxed);
     return util::FailureHandlerResponse::Rethrow;
 };

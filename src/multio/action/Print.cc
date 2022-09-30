@@ -32,7 +32,7 @@ Print::Print(const ConfigurationContext& confCtx) : Action(confCtx) {
     }
 }
 
-void Print::execute(message::Message msg) const {
+void Print::executeImpl(message::Message msg) const {
     ASSERT(os);
     (*os) << msg << std::endl;
 

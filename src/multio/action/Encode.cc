@@ -52,7 +52,7 @@ using message::Peer;
 Encode::Encode(const ConfigurationContext& confCtx) :
     Action{confCtx}, format_{confCtx.config().getString("format")}, encoder_{make_encoder(confCtx)} {}
 
-void Encode::execute(Message msg) const {
+void Encode::executeImpl(Message msg) const {
     if (not encoder_) {
         executeNext(std::move(msg));
         return;

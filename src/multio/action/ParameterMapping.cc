@@ -16,11 +16,11 @@ std::pair<std::string, std::shared_ptr<std::vector<message::ParameterMapping>>> 
 
 ParameterMapping::ParameterMapping(const ConfigurationContext& confCtx) :
     Action(confCtx), mappings_(getMappings(confCtx)), options_{} {
-    options_.enforceMatch = confCtx.config().getBool("enforce-match", false);
+    options_.enforceMatch = confCtx.config().getBool("enforce-match", true);
     options_.overwriteExisting = confCtx.config().getBool("overwrite-existing", false);
 };
 
-void ParameterMapping::execute(message::Message msg) const {
+void ParameterMapping::executeImpl(message::Message msg) const {
     executeNext(msg.modifyMetadata(apply(std::move(msg).metadata())));
 };
 

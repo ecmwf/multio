@@ -27,7 +27,7 @@ class Encode : public Action {
 public:
     explicit Encode(const ConfigurationContext& confCtx);
 
-    void execute(message::Message msg) const override;
+    void executeImpl(message::Message msg) const override;
 
 private:
     void print(std::ostream& os) const override;

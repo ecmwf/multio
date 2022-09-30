@@ -26,7 +26,7 @@ using message::Peer;
 
 Aggregation::Aggregation(const ConfigurationContext& confCtx) : Action(confCtx) {}
 
-void Aggregation::execute(Message msg) const {
+void Aggregation::executeImpl(Message msg) const {
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
         executeNext(createGlobalField(std::move(msg)));
     }

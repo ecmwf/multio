@@ -32,7 +32,7 @@ class Aggregation : public Action {
 public:
     explicit Aggregation(const ConfigurationContext& confCtx);
 
-    void execute(Message msg) const override;
+    void executeImpl(Message msg) const override;
 
 private:
     void print(std::ostream& os) const override;

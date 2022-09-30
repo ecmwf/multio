@@ -42,7 +42,7 @@ Transport::Transport(const ConfigurationContext& confCtx) :
     counters_(serverPeers_.size()),
     distType_{distributionType()} {}
 
-void Transport::execute(Message msg) const {
+void Transport::executeImpl(Message msg) const {
     // eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
@@ -79,7 +79,7 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) const {
     switch (distType_) {
         case DistributionType::hashed_cyclic: {
             std::ostringstream os;
-            os << metadata.getString("category") << metadata.getString("nemoParam")
+            os << metadata.getString("category") << metadata.getString("name")
                << metadata.getString("param") << metadata.getLong("level");
 
             ASSERT(usedServerCount_ <= serverCount_);
@@ -93,7 +93,7 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) const {
         }
         case DistributionType::hashed_to_single: {
             std::ostringstream os;
-            os << metadata.getString("category") << metadata.getString("nemoParam")
+            os << metadata.getString("category") << metadata.getString("name")
                << metadata.getString("param") << metadata.getLong("level");
 
             auto id = std::hash<std::string>{}(os.str()) % serverCount_;
@@ -104,7 +104,7 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) const {
         }
         case DistributionType::even: {
             std::ostringstream os;
-            os << metadata.getString("category") << metadata.getString("nemoParam")
+            os << metadata.getString("category") << metadata.getString("name")
                << metadata.getString("param") << metadata.getLong("level");
 
             if (destinations_.find(os.str()) != end(destinations_)) {

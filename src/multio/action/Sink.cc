@@ -32,7 +32,7 @@ Sink::~Sink() {
     }
 }
 
-void Sink::execute(Message msg) const {
+void Sink::executeImpl(Message msg) const {
 
     switch (msg.tag()) {
         case Message::Tag::Field:

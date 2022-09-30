@@ -25,7 +25,7 @@ namespace action {
 SingleFieldSink::SingleFieldSink(const ConfigurationContext& confCtx) :
     Action{confCtx}, rootPath_{confCtx.config().getString("root_path", "")} {}
 
-void SingleFieldSink::execute(Message msg) const {
+void SingleFieldSink::executeImpl(Message msg) const {
     switch (msg.tag()) {
         case Message::Tag::Field:
         case Message::Tag::Grib:

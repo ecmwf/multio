@@ -33,8 +33,7 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureA
     ::gettimeofday(&tstamp, 0);
     auto mSecs = tstamp.tv_usec;
 
-    logFile << "MultioClient starts at "
-            << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
+    logFile << "MultioClient starts at " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
             << std::setw(6) << std::setfill('0') << mSecs << " -- ";
 
 
@@ -53,9 +52,8 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureA
     }
 }
 
-util::FailureHandlerResponse MultioClient::handleFailure(
-    const eckit::Optional<util::OnClientError>& t) {
-    if (t && (*t == util::OnClientError::AbortAllTransports)) {
+util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t) const {
+    if (t == util::OnClientError::AbortAllTransports) {
         transport::TransportRegistry::instance().abortAll();
     }
     return util::FailureHandlerResponse::Rethrow;
@@ -77,19 +75,17 @@ MultioClient::~MultioClient() {
     ::gettimeofday(&tstamp, 0);
     auto mSecs = tstamp.tv_usec;
 
-    logFile << "MultioClient stops at "
-            << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
+    logFile << "MultioClient stops at " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
             << std::setw(6) << std::setfill('0') << mSecs;
 
 
-    logFile << "\n ** Total wall-clock time spent in MultioClient "
-            << eckit::Timing{totClientTimer_}.elapsed_ << "s" << std::endl;
+    logFile << "\n ** Total wall-clock time spent in MultioClient " << eckit::Timing{totClientTimer_}.elapsed_ << "s"
+            << std::endl;
 }
 
 void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload, Message::Tag tag) {
     ASSERT(tag < Message::Tag::ENDTAG);
-    dispatch(
-        Message{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)}, std::move(payload)});
+    dispatch(Message{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)}, std::move(payload)});
 }
 
 void MultioClient::dispatch(message::Message msg) {

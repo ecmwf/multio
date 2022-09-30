@@ -25,15 +25,17 @@
 #include "multio/message/Message.h"
 #include "multio/transport/Transport.h"
 #include "multio/util/ConfigurationContext.h"
+#include "multio/util/FailureHandling.h"
 
 namespace multio {
 namespace action {
 
 using util::ConfigurationContext;
+using util::FailureAware;
 
 class Action;
 
-class Plan : private eckit::NonCopyable {
+class Plan : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Plan> {
 public:
     Plan(const ConfigurationContext& confCtx);
     virtual ~Plan();
@@ -42,6 +44,8 @@ public:
 
     void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
     void computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const;
+
+    util::FailureHandlerResponse handleFailure(util::OnPlanError) const override;
 
 protected:
     std::string name_;

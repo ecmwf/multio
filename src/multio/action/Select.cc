@@ -42,7 +42,7 @@ Select::Select(const ConfigurationContext& confCtx) :
     }
 }
 
-void Select::execute(Message msg) const {
+void Select::executeImpl(Message msg) const {
     if (matchPlan(msg)) {
         executeNext(std::move(msg));
     }

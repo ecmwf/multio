@@ -42,8 +42,8 @@ LocalConfiguration createActionList(std::vector<LocalConfiguration> actions) {
 }
 
 LocalConfiguration rootConfig(const LocalConfiguration& config) {
-    const auto actions = config.has("actions") ? config.getSubConfigurations("actions")
-                                               : std::vector<LocalConfiguration>{};
+    const auto actions =
+        config.has("actions") ? config.getSubConfigurations("actions") : std::vector<LocalConfiguration>{};
 
     if (actions.empty()) {
         throw eckit::UserError("Plan config must define at least one action");
@@ -54,24 +54,35 @@ LocalConfiguration rootConfig(const LocalConfiguration& config) {
 
 }  // namespace
 
-Plan::Plan(const ConfigurationContext& confCtx) {
+Plan::Plan(const ConfigurationContext& confCtx) : FailureAware(confCtx) {
     ASSERT(confCtx.componentTag() == util::ComponentTag::Plan);
     name_ = confCtx.config().getString("name", "anonymous");
     auto root = rootConfig(confCtx.config());
-    root_.reset(ActionFactory::instance().build(root.getString("type"),
-                                                confCtx.recast(root, util::ComponentTag::Action)));
+    root_.reset(
+        ActionFactory::instance().build(root.getString("type"), confCtx.recast(root, util::ComponentTag::Action)));
 }
 
 Plan::~Plan() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-    logFile << "\n ** Plan " << name_ << " -- total wall-clock time spent processing: " << timing_
-            << "s" << std::endl;
+    logFile << "\n ** Plan " << name_ << " -- total wall-clock time spent processing: " << timing_ << "s" << std::endl;
 }
 
 void Plan::process(message::Message msg) {
     util::ScopedTimer timer{timing_};
-    root_->execute(std::move(msg));
+    withFailureHandling([&]() { root_->execute(std::move(msg)); }, [=]() {
+        std::ostringstream oss;
+        oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl; 
+        return oss.str();
+    });
 }
+
+util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t) const {
+    if (t == util::OnPlanError::Recover) {
+        return util::FailureHandlerResponse::Retry;
+    }
+    return util::FailureHandlerResponse::Rethrow;
+};
+
 
 void Plan::computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const {
     root_->computeActiveFields(ins);

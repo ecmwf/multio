@@ -44,7 +44,7 @@ Listener::Listener(const util::ConfigurationContext& confCtx, Transport& trans):
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE",1024*1024)) {
 }
 
-util::FailureHandlerResponse Listener::handleFailure(const eckit::Optional<util::OnReceiveError>& t) {
+util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t) const {
     msgQueue_.close(); // TODO: msgQueue_ pop is blocking in dispatch.... redesign to have better awareness on blocking positions to safely stop and restart
     continue_->store(false, std::memory_order_release);
     return util::FailureHandlerResponse::Rethrow;

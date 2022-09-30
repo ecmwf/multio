@@ -40,7 +40,7 @@ Mask::Mask(const ConfigurationContext& confCtx) :
     offsetFields_{fetch_offset_fields(confCtx.config())},
     offsetValue_{confCtx.config().getDouble("offset-value", 273.15)} {}
 
-void Mask::execute(message::Message msg) const {
+void Mask::executeImpl(message::Message msg) const {
     // Sanity check
     ASSERT(msg.metadata().getLong("levelCount") == 1);
 

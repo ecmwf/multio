@@ -15,10 +15,10 @@
 
 #include <fstream>
 
-#include "eckit/exception/Exceptions.h"
-#include "eckit/log/Log.h"
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/exception/Exceptions.h"
+#include "eckit/log/Log.h"
 #include "eckit/runtime/Main.h"
 
 #include "multio/LibMultio.h"
@@ -29,16 +29,14 @@ using eckit::LocalConfiguration;
 namespace multio {
 namespace action {
 
-namespace {
-
-}  // namespace
+namespace {}  // namespace
 
 using eckit::Configuration;
 using eckit::Log;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-Action::Action(const ConfigurationContext& confCtx) : confCtx_(confCtx), type_{confCtx.config().getString("type")} {
+Action::Action(const ConfigurationContext& confCtx) : FailureAware(confCtx), confCtx_(confCtx), type_{confCtx.config().getString("type")} {
     if (confCtx.config().has("next")) {
         const ConfigurationContext nextCtx = confCtx.subContext("next", util::ComponentTag::Action);
         next_.reset(ActionFactory::instance().build(nextCtx.config().getString("type"), nextCtx));
@@ -53,12 +51,28 @@ Action::~Action() {
 
 void Action::executeNext(message::Message msg) const {
     if (next_) {
-        LOG_DEBUG_LIB(multio::LibMultio)
-            << "*** [source = " << msg.source() << ", destination = " << msg.destination()
-            << "] -- Executing action -- " << *next_ << std::endl;
+        LOG_DEBUG_LIB(multio::LibMultio) << "*** [source = " << msg.source() << ", destination = " << msg.destination()
+                                         << "] -- Executing action -- " << *next_ << std::endl;
         next_->execute(std::move(msg));
     }
 }
+
+void Action::execute(message::Message msg) const {
+    withFailureHandling([&]() { executeImpl(std::move(msg)); },
+                        [&,msg]() {
+                            std::ostringstream oss;
+                            oss << *this << " with Message: " << msg;
+                            return oss.str();
+                        });
+}
+
+util::FailureHandlerResponse Action::handleFailure(util::OnActionError t) const {
+    if (t == util::OnActionError::Recover) {
+        return util::FailureHandlerResponse::Retry;
+    }
+    return util::FailureHandlerResponse::Rethrow;
+};
+
 
 void Action::activeFields(std::insert_iterator<std::set<std::string>>& ins) const {
     return;

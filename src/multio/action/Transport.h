@@ -27,7 +27,7 @@ class Transport : public Action {
 public:
     explicit Transport(const ConfigurationContext& config);
 
-    void execute(message::Message msg) const override;
+    void executeImpl(message::Message msg) const override;
     
 private:
     void print(std::ostream &os) const override;

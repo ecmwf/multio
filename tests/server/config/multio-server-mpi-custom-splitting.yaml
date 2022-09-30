@@ -39,7 +39,7 @@ client:
         - type : select
           match : field
           fields : [ sst, ssv ]
-      
+
         - type : parameter-mapping
           mapping : nemo-to-grib
 
@@ -51,7 +51,7 @@ client:
         - type : select
           match : field
           fields : [ ssu, ssw ]
-          
+
         - type : parameter-mapping
           mapping : nemo-to-grib
 

@@ -54,15 +54,15 @@ public:
     void executeNext(message::Message msg) const;
 
     void execute(message::Message msg) const;
-    
+
     virtual void executeImpl(message::Message msg) const = 0;
 
     virtual util::FailureHandlerResponse handleFailure(util::OnActionError) const override;
-    
+
     // May be implemented in a action (i.e. select)
     virtual void activeFields(std::insert_iterator<std::set<std::string>>& ins) const;
     virtual void activeCategories(std::insert_iterator<std::set<std::string>>& ins) const;
-    
+
     // Computes all active fields of this and following actions
     void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
     void computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const;

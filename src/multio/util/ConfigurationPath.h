@@ -26,12 +26,13 @@ inline eckit::PathName configuration_file_name() {
 }
 
 inline const eckit::LocalConfiguration& configuration_file() {
-    static eckit::Optional<eckit::LocalConfiguration> config_;
 
-    if (!config_.has_value()) {
-        config_ = eckit::LocalConfiguration(eckit::YAMLConfiguration{configuration_file_name()});
+    static eckit::Optional<eckit::LocalConfiguration> config;
+
+    if (!config.has_value()) {
+        config = eckit::LocalConfiguration(eckit::YAMLConfiguration{configuration_file_name()});
     }
-    return config_.value();
+    return config.value();
 }
 
 

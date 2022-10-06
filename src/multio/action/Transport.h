@@ -43,6 +43,8 @@ private:
 
     size_t serverId_;
     size_t usedServerCount_;
+    
+    std::vector<std::string> hashKeys_;
 
     // Distribute fields
     message::Peer chooseServer(const message::Metadata& metadata) const;

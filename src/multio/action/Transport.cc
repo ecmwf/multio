@@ -29,6 +29,13 @@ namespace {
 size_t serverIdDenom(size_t clientCount, size_t serverCount) {
     return (serverCount == 0) ? 1 : (((clientCount - 1) / serverCount) + 1);
 }
+
+std::vector<std::string> getHashKeys(const eckit::Configuration& conf) {
+    if (conf.has("hash-keys")) {
+        return conf.getStringVector("hash-keys");
+    }
+    return std::vector<std::string>{"category", "name", "level"};
+}
 }  // namespace
 
 Transport::Transport(const ConfigurationContext& confCtx) :
@@ -39,8 +46,10 @@ Transport::Transport(const ConfigurationContext& confCtx) :
     serverCount_{serverPeers_.size()},
     serverId_{client_.id() / serverIdDenom(transport_->serverCount(), serverCount_)},
     usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
+    hashKeys_{getHashKeys(confCtx.config())},
     counters_(serverPeers_.size()),
-    distType_{distributionType()} {}
+    distType_{distributionType()} {
+}
 
 void Transport::executeImpl(Message msg) const {
     // eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
@@ -75,16 +84,31 @@ void Transport::print(std::ostream& os) const {
 
 message::Peer Transport::chooseServer(const message::Metadata& metadata) const {
     ASSERT_MSG(serverCount_ > 0, "No server to choose from");
+    
+    auto getMetadataValue = [&](const std::string& hashKey) {
+        if (!metadata.has(hashKey)) {
+            std::ostringstream os;
+            os << "The hash key \"" << hashKey << "\" is not defined in the metadata object: " << metadata << std::endl;
+            throw eckit::Exception(os.str());
+        }
+        return metadata.getString(hashKey);
+    };
+    
+    auto constructHash = [&](){
+        std::ostringstream os;
+        
+        for(const std::string& s: hashKeys_) {
+            os << getMetadataValue(s);
+        }
+        return os.str();
+    };
 
     switch (distType_) {
         case DistributionType::hashed_cyclic: {
-            std::ostringstream os;
-            os << metadata.getString("category") << metadata.getString("name")
-               << metadata.getString("param") << metadata.getLong("level");
-
+            std::string hashString = constructHash();
             ASSERT(usedServerCount_ <= serverCount_);
 
-            auto offset = std::hash<std::string>{}(os.str()) % usedServerCount_;
+            auto offset = std::hash<std::string>{}(hashString) % usedServerCount_;
             auto id = (serverId_ + offset) % serverCount_;
 
             ASSERT(id < serverPeers_.size());
@@ -92,23 +116,18 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) const {
             return *serverPeers_[id];
         }
         case DistributionType::hashed_to_single: {
-            std::ostringstream os;
-            os << metadata.getString("category") << metadata.getString("name")
-               << metadata.getString("param") << metadata.getLong("level");
-
-            auto id = std::hash<std::string>{}(os.str()) % serverCount_;
+            std::string hashString = constructHash();
+            auto id = std::hash<std::string>{}(hashString) % serverCount_;
 
             ASSERT(id < serverPeers_.size());
 
             return *serverPeers_[id];
         }
         case DistributionType::even: {
-            std::ostringstream os;
-            os << metadata.getString("category") << metadata.getString("name")
-               << metadata.getString("param") << metadata.getLong("level");
+            std::string hashString = constructHash();
 
-            if (destinations_.find(os.str()) != end(destinations_)) {
-                return destinations_.at(os.str());
+            if (destinations_.find(hashString) != end(destinations_)) {
+                return destinations_.at(hashString);
             }
 
             auto it = std::min_element(begin(counters_), end(counters_));
@@ -120,7 +139,7 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) const {
             ++counters_[id];
 
             auto dest = *serverPeers_[id];
-            destinations_[os.str()] = *serverPeers_[id];
+            destinations_[hashString] = *serverPeers_[id];
 
             return dest;
         }

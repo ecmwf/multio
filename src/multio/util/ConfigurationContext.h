@@ -70,13 +70,16 @@ public:
     ConfigurationContext(const eckit::PathName& fileName,
                          LocalPeerTag clientOrServer = LocalPeerTag::Client,
                          ComponentTag tag = ComponentTag::Unrelated);
+
     ConfigurationContext(const eckit::PathName& pathName, const eckit::PathName& fileName,
                          LocalPeerTag clientOrServer = LocalPeerTag::Client,
                          ComponentTag tag = ComponentTag::Unrelated);
+
     ConfigurationContext(const eckit::LocalConfiguration& config, const eckit::PathName& pathName,
                          const eckit::PathName& fileName,
                          LocalPeerTag clientOrServer = LocalPeerTag::Client,
                          ComponentTag tag = ComponentTag::Unrelated);
+
     ConfigurationContext(const eckit::LocalConfiguration& config,
                          const eckit::LocalConfiguration& globalConfig,
                          const eckit::PathName& pathName, const eckit::PathName& fileName,

@@ -1,11 +1,4 @@
 
-run:
-  expver: dsan
-  class: rd
-  stream: olda
-  type: an
-  date-of-analysis: 20170916
-
 active-fields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethic_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
 
 #===================================================================================================
@@ -82,6 +75,13 @@ server:
           format : grib
           template : unstr_latlon.tmpl
           grid-type : eORCA1
+          run:
+            expver: dsan
+            class: rd
+            stream: olda
+            type: an
+            date-of-analysis: 20170916
+
 
         - type : Sink
           sinks :
@@ -108,6 +108,12 @@ server:
           format : grib
           template : unstr_inst_an.tmpl
           grid-type : eORCA1
+          run:
+            expver: dsan
+            class: rd
+            stream: olda
+            type: an
+            date-of-analysis: 20170916
 
         - type : Sink
           sinks :

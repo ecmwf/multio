@@ -52,8 +52,8 @@ const std::map<const std::string, const long> type_of_generating_process{
 
 }  // namespace
 
-GribEncoder::GribEncoder(codes_handle* handle, const std::string& gridType) :
-    metkit::grib::GribHandle{handle}, gridType_{gridType} {
+GribEncoder::GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config) :
+    metkit::grib::GribHandle{handle}, config_{config} {
     for (auto const& subtype : {"T grid", "U grid", "V grid", "W grid", "F grid"}) {
         grids().insert(std::make_pair(subtype, std::unique_ptr<GridInfo>{new GridInfo{}}));
     }
@@ -85,10 +85,10 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
 
     // Set run-specific metadata
 
-    setValue("expver", metadata.getSubConfiguration("run").getString("expver"));
-    setValue("class", metadata.getSubConfiguration("run").getString("class"));
-    setValue("stream", metadata.getSubConfiguration("run").getString("stream"));
-    auto type = metadata.getSubConfiguration("run").getString("type");
+    setValue("expver", config_.getSubConfiguration("run").getString("expver"));
+    setValue("class", config_.getSubConfiguration("run").getString("class"));
+    setValue("stream", config_.getSubConfiguration("run").getString("stream"));
+    auto type = config_.getSubConfiguration("run").getString("type");
     setValue("type", type);
     setValue("typeOfGeneratingProcess", type_of_generating_process.at(type));
 
@@ -102,21 +102,21 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("minute", (time % 10000) / 100);
     setValue("second", time % 100);
 
-    if (metadata.getSubConfiguration("run").has("date-of-analysis")) {
-      auto dateOfAnalysis = metadata.getSubConfiguration("run").getLong("date-of-analysis");
-      setValue("yearOfAnalysis", dateOfAnalysis / 10000);
-      setValue("monthOfAnalysis", (dateOfAnalysis % 10000) / 100);
-      setValue("dayOfAnalysis", dateOfAnalysis % 100);
+    if (config_.getSubConfiguration("run").has("date-of-analysis")) {
+        auto dateOfAnalysis = config_.getSubConfiguration("run").getLong("date-of-analysis");
+        setValue("yearOfAnalysis", dateOfAnalysis / 10000);
+        setValue("monthOfAnalysis", (dateOfAnalysis % 10000) / 100);
+        setValue("dayOfAnalysis", dateOfAnalysis % 100);
     }
 
-    if (metadata.getSubConfiguration("run").has("time-of-analysis")) {
-      auto timeOfAnalysis = metadata.getSubConfiguration("run").getLong("time-of-analysis");
-      setValue("hourOfAnalysis", timeOfAnalysis / 10000);
-      setValue("minuteOfAnalysis", (timeOfAnalysis % 10000) / 100);
+    if (config_.getSubConfiguration("run").has("time-of-analysis")) {
+        auto timeOfAnalysis = config_.getSubConfiguration("run").getLong("time-of-analysis");
+        setValue("hourOfAnalysis", timeOfAnalysis / 10000);
+        setValue("minuteOfAnalysis", (timeOfAnalysis % 10000) / 100);
     }
 
-    if (metadata.getSubConfiguration("run").has("number")) {
-      setValue("number", metadata.getSubConfiguration("run").getLong("number"));
+    if (config_.getSubConfiguration("run").has("number")) {
+        setValue("number", config_.getSubConfiguration("run").getLong("number"));
     }
 
     // Statistics field
@@ -161,7 +161,7 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     }
 
     // Set ocean grid information
-    setValue("unstructuredGridType", gridType_);
+    setValue("unstructuredGridType", config_.getString("grid-type"));
 
     const auto& gridSubtype = metadata.getString("gridSubtype");
     setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
@@ -180,10 +180,10 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
 
 void GribEncoder::setCoordMetadata(const message::Metadata& metadata) {
     // Set run-specific metadata
-    setValue("expver", metadata.getSubConfiguration("run").getString("expver"));
-    setValue("class", metadata.getSubConfiguration("run").getString("class"));
-    setValue("stream", metadata.getSubConfiguration("run").getString("stream"));
-    const std::string& type = metadata.getSubConfiguration("run").getString("type");
+    setValue("expver", config_.getSubConfiguration("run").getString("expver"));
+    setValue("class", config_.getSubConfiguration("run").getString("class"));
+    setValue("stream", config_.getSubConfiguration("run").getString("stream"));
+    const std::string& type = config_.getSubConfiguration("run").getString("type");
     setValue("type", type);
     setValue("typeOfGeneratingProcess", type_of_generating_process.at(type));
 
@@ -199,7 +199,7 @@ void GribEncoder::setCoordMetadata(const message::Metadata& metadata) {
     setValue("typeOfLevel", metadata.getString("typeOfLevel"));
 
     // Set ocean grid information
-    setValue("unstructuredGridType", gridType_);
+    setValue("unstructuredGridType", config_.getString("grid-type"));
 
     const auto& gridSubtype = metadata.getString("gridSubtype");
     setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));

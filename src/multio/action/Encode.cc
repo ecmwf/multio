@@ -34,8 +34,7 @@ std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
         eckit::AutoStdFile fin{confCtx.pathName() + confCtx.config().getString("template")};
         int err;
         return std::unique_ptr<GribEncoder>{
-            new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err),
-                            confCtx.config().getString("grid-type", "ORCA1")}};
+            new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), confCtx.config()}};
     }
     else if (format == "none") {
         return nullptr;  // leave message in raw binary format

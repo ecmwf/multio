@@ -25,7 +25,7 @@ namespace action {
 
 class GribEncoder : public metkit::grib::GribHandle {
 public:
-    GribEncoder(codes_handle* handle, const std::string& gridType);
+    GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config);
 
     bool gridInfoReady(const std::string& subtype) const;
     bool setGridInfo(message::Message msg);
@@ -48,7 +48,7 @@ private:
     message::Message setFieldValues(const  message::Message& msg);
     message::Message setFieldValues(const double* values, size_t count);
 
-    const std::string gridType_;
+    const eckit::LocalConfiguration config_;
 
     const std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",
                                           "lon_V", "lat_W", "lon_W", "lat_F", "lon_F"};

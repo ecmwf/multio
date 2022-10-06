@@ -85,8 +85,6 @@ class MultioNemo {
         confCtx_(configuration_file(), configuration_path_name(), configuration_file_name()) {
         static const char* argv[2] = {"MultioNemo", 0};
         eckit::Main::initialise(1, const_cast<char**>(argv));
-
-        metadata_.set("run", confCtx_.config().getSubConfiguration("run"));
     }
 
 public:

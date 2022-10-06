@@ -84,7 +84,7 @@ void Transport::print(std::ostream& os) const {
 
 message::Peer Transport::chooseServer(const message::Metadata& metadata) const {
     ASSERT_MSG(serverCount_ > 0, "No server to choose from");
-    
+
     auto getMetadataValue = [&](const std::string& hashKey) {
         if (!metadata.has(hashKey)) {
             std::ostringstream os;
@@ -93,10 +93,10 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) const {
         }
         return metadata.getString(hashKey);
     };
-    
+
     auto constructHash = [&](){
         std::ostringstream os;
-        
+
         for(const std::string& s: hashKeys_) {
             os << getMetadataValue(s);
         }

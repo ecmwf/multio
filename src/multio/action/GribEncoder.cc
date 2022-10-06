@@ -172,10 +172,6 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("missingValue", metadata.getDouble("missingValue"));
     setValue("bitmapPresent", static_cast<long>(metadata.getBool("bitmapPresent")));
     setValue("bitsPerValue", metadata.getLong("bitsPerValue"));
-
-    // setValue("missingValue", 0.0);
-    // setValue("bitmapPresent", 1l);
-    // setValue("bitsPerValue", 16l);
 }
 
 void GribEncoder::setCoordMetadata(const message::Metadata& metadata) {

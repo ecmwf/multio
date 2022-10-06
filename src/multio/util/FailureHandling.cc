@@ -1,10 +1,9 @@
 
 #include "FailureHandling.h"
 
-namespace multio {
-namespace util {
+using namespace multio::util;
 
-std::string toString(OnClientError tag) {
+std::string eckit::Translator<OnClientError, std::string>::operator()(OnClientError tag) {
     switch (tag) {
         case OnClientError::Propagate:
             return std::string("propagate");
@@ -15,7 +14,7 @@ std::string toString(OnClientError tag) {
     }
 }
 
-std::string toString(OnServerError tag) {
+std::string eckit::Translator<OnServerError , std::string>::operator()(OnServerError tag) {
     switch (tag) {
         case OnServerError::Propagate:
             return std::string("propagate");
@@ -26,7 +25,7 @@ std::string toString(OnServerError tag) {
     }
 }
 
-std::string toString(OnPlanError tag) {
+std::string eckit::Translator<OnPlanError , std::string>::operator()(OnPlanError tag) {
     switch (tag) {
         case OnPlanError::Propagate:
             return std::string("propagate");
@@ -35,7 +34,7 @@ std::string toString(OnPlanError tag) {
     }
 }
 
-std::string toString(OnActionError tag) {
+std::string eckit::Translator<OnActionError , std::string>::operator()(OnActionError tag) {
     switch (tag) {
         case OnActionError::Propagate:
             return std::string("propagate");
@@ -44,7 +43,7 @@ std::string toString(OnActionError tag) {
     }
 }
 
-std::string toString(OnTransportError tag) {
+std::string eckit::Translator<OnTransportError , std::string>::operator()(OnTransportError tag) {
     switch (tag) {
         case OnTransportError::Propagate:
             return std::string("propagate");
@@ -53,19 +52,22 @@ std::string toString(OnTransportError tag) {
     }
 }
 
-std::string toString(OnReceiveError tag) {
+std::string eckit::Translator<OnReceiveError , std::string>::operator()(OnReceiveError tag) {
     switch (tag) {
         case OnReceiveError::Propagate:
             return std::string("propagate");
     }
 }
 
-std::string toString(OnDispatchError tag) {
+std::string eckit::Translator<OnDispatchError , std::string>::operator()(OnDispatchError tag) {
     switch (tag) {
         case OnDispatchError::Propagate:
             return std::string("propagate");
     }
 }
+namespace multio {
+namespace util {
+
 
 }  // namespace util
 }  // namespace multio

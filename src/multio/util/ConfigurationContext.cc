@@ -2,10 +2,9 @@
 #include "ConfigurationContext.h"
 #include "ParameterMappings.h"
 
-namespace multio {
-namespace util {
+using namespace multio::util;
 
-std::string toString(ComponentTag tag) {
+std::string eckit::Translator<ComponentTag, std::string>::operator()(ComponentTag tag) {
     switch (tag) {
         case ComponentTag::Unrelated:
             return "Unrelated";
@@ -28,7 +27,7 @@ std::string toString(ComponentTag tag) {
     }
 }
 
-std::string toString(LocalPeerTag tag) {
+std::string eckit::Translator<LocalPeerTag, std::string>::operator()(LocalPeerTag tag) {
     switch (tag) {
         case LocalPeerTag::Client:
             return "Client";
@@ -38,6 +37,9 @@ std::string toString(LocalPeerTag tag) {
             return "Unknown local peer tag";
     }
 }
+
+namespace multio {
+namespace util {
 
 
 SubContextIteratorMapper::SubContextIteratorMapper(const ConfigurationContext& confCtx, ComponentTag tag) :

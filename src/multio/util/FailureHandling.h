@@ -24,6 +24,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/utils/Optional.h"
 #include "eckit/utils/StringTools.h"
+#include "multio/util/Translate.h"
 
 
 /** Experimental - we don't know how to best deal with errors and how we can define descriptive and generic handlers.
@@ -91,20 +92,53 @@ struct RetryOptions {
     int maxRetry = 0;
     int countRetries = 0;
 };
+}
+}
 
 
-std::string toString(OnClientError tag);
-std::string toString(OnServerError tag);
-std::string toString(OnPlanError tag);
-std::string toString(OnActionError tag);
-std::string toString(OnTransportError tag);
-std::string toString(OnReceiveError tag);
-std::string toString(OnDispatchError tag);
+template <>
+struct eckit::Translator<multio::util::OnClientError, std::string> {
+    std::string operator()(multio::util::OnClientError);
+};
+
+template <>
+struct eckit::Translator<multio::util::OnServerError, std::string> {
+    std::string operator()(multio::util::OnServerError);
+};
+
+template <>
+struct eckit::Translator<multio::util::OnPlanError, std::string> {
+    std::string operator()(multio::util::OnPlanError);
+};
+
+template <>
+struct eckit::Translator<multio::util::OnActionError, std::string> {
+    std::string operator()(multio::util::OnActionError);
+};
+
+template <>
+struct eckit::Translator<multio::util::OnTransportError, std::string> {
+    std::string operator()(multio::util::OnTransportError);
+};
+
+template <>
+struct eckit::Translator<multio::util::OnReceiveError, std::string> {
+    std::string operator()(multio::util::OnReceiveError);
+};
+
+template <>
+struct eckit::Translator<multio::util::OnDispatchError, std::string> {
+    std::string operator()(multio::util::OnDispatchError);
+};
+
+
+namespace multio {
+namespace util {
 
 namespace {
 template <typename T>
 std::pair<std::string, T> makeLowerCaseStringPair(T&& v) {
-    return {eckit::StringTools::lower(toString(v)), std::forward<T>(v)};
+    return {eckit::StringTools::lower(translate<std::string>(v)), std::forward<T>(v)};
 }
 
 template <typename T, T... TS>
@@ -275,10 +309,10 @@ protected:
                 callable();
             }
             catch (...) {
-                eckit::Log::error() << "[FailureAware<" << util::toString(tag) << "> "
-                                    << (parsedOnErrTag_ ? util::toString(*parsedOnErrTag_)
+                eckit::Log::error() << "[FailureAware<" << translate<std::string>(tag) << "> "
+                                    << (parsedOnErrTag_ ? translate<std::string>(*parsedOnErrTag_)
                                                         : std::string("default handling"))
-                                    << " on " << util::toString(peerTag_) << " for context: [" << std::endl
+                                    << " on " << translate<std::string>(peerTag_) << " for context: [" << std::endl
                                     << contextString() << std::endl
                                     << "]] "
                                     << " - Handling ";

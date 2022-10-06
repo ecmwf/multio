@@ -20,6 +20,7 @@
 #include <unordered_map>
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/utils/Optional.h"
+#include "multio/util/Translate.h"
 #include "multio/util/ConfigurationPath.h"
 #include "multio/util/ParameterMappings.h"
 #include "multio/util/IteratorMapper.h"
@@ -38,14 +39,29 @@ enum class ComponentTag : unsigned
     Receiver,
     Dispatcher,
 };
-std::string toString(ComponentTag tag);
 
 enum class LocalPeerTag : unsigned
 {
     Client = 1,
     Server = 2,
 };
-std::string toString(LocalPeerTag tag);
+}}
+
+namespace eckit {
+template <>
+struct Translator<multio::util::ComponentTag, std::string> {
+    std::string operator()(multio::util::ComponentTag);
+};
+
+
+template <>
+struct Translator<multio::util::LocalPeerTag, std::string> {
+    std::string operator()(multio::util::LocalPeerTag);
+};
+}
+
+namespace multio {
+namespace util {
 
 class SubContextIteratorMapper;
 

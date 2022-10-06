@@ -8,11 +8,17 @@ namespace util {
 namespace {
 eckit::LocalConfiguration getParameterMappingConfiguration(const GlobalConfCtx& globalConfCtx) {
     if (globalConfCtx.globalConfig().has("parameter-mappings")) {
-        try {
-            return globalConfCtx.getYAMLFile(
-                globalConfCtx.globalConfig().getString("parameter-mappings"));
-        }
-        catch (const eckit::Exception&) {
+        auto fileNameMaybe = ([&](){
+            try {
+                return eckit::Optional<std::string>{globalConfCtx.globalConfig().getString("parameter-mappings")};
+            }
+            catch (const eckit::Exception&) {
+                return eckit::Optional<std::string>{};
+            }
+        })();
+        if (fileNameMaybe) {
+            return globalConfCtx.getYAMLFile(*fileNameMaybe);
+        } else {
             return globalConfCtx.globalConfig().getSubConfiguration("parameter-mappings");
         }
     }

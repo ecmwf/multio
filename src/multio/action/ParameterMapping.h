@@ -39,7 +39,8 @@ protected:
 private:
     void print(std::ostream& os) const override;
 
-    std::pair<std::string, std::shared_ptr<std::vector<message::ParameterMapping>>> mappings_;
+    std::string name_;
+    const std::vector<message::ParameterMapping>& mappings_;
     message::ParameterMappingOptions options_;
 };
 

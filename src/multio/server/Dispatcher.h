@@ -48,7 +48,7 @@ public:
 
     void dispatch(eckit::Queue<message::Message>& queue);
     
-    util::FailureHandlerResponse handleFailure(util::OnDispatchError) const override;
+    util::FailureHandlerResponse handleFailure(util::OnDispatchError, const util::FailureContext&, util::DefaultFailureState&) const override;
 
 private:
 

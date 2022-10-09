@@ -14,7 +14,7 @@ std::string eckit::Translator<OnClientError, std::string>::operator()(OnClientEr
     }
 }
 
-std::string eckit::Translator<OnServerError , std::string>::operator()(OnServerError tag) {
+std::string eckit::Translator<OnServerError, std::string>::operator()(OnServerError tag) {
     switch (tag) {
         case OnServerError::Propagate:
             return std::string("propagate");
@@ -25,7 +25,7 @@ std::string eckit::Translator<OnServerError , std::string>::operator()(OnServerE
     }
 }
 
-std::string eckit::Translator<OnPlanError , std::string>::operator()(OnPlanError tag) {
+std::string eckit::Translator<OnPlanError, std::string>::operator()(OnPlanError tag) {
     switch (tag) {
         case OnPlanError::Propagate:
             return std::string("propagate");
@@ -34,7 +34,7 @@ std::string eckit::Translator<OnPlanError , std::string>::operator()(OnPlanError
     }
 }
 
-std::string eckit::Translator<OnActionError , std::string>::operator()(OnActionError tag) {
+std::string eckit::Translator<OnActionError, std::string>::operator()(OnActionError tag) {
     switch (tag) {
         case OnActionError::Propagate:
             return std::string("propagate");
@@ -43,7 +43,7 @@ std::string eckit::Translator<OnActionError , std::string>::operator()(OnActionE
     }
 }
 
-std::string eckit::Translator<OnTransportError , std::string>::operator()(OnTransportError tag) {
+std::string eckit::Translator<OnTransportError, std::string>::operator()(OnTransportError tag) {
     switch (tag) {
         case OnTransportError::Propagate:
             return std::string("propagate");
@@ -52,22 +52,22 @@ std::string eckit::Translator<OnTransportError , std::string>::operator()(OnTran
     }
 }
 
-std::string eckit::Translator<OnReceiveError , std::string>::operator()(OnReceiveError tag) {
+std::string eckit::Translator<OnReceiveError, std::string>::operator()(OnReceiveError tag) {
     switch (tag) {
         case OnReceiveError::Propagate:
             return std::string("propagate");
     }
 }
 
-std::string eckit::Translator<OnDispatchError , std::string>::operator()(OnDispatchError tag) {
+std::string eckit::Translator<OnDispatchError, std::string>::operator()(OnDispatchError tag) {
     switch (tag) {
         case OnDispatchError::Propagate:
             return std::string("propagate");
     }
 }
+
 namespace multio {
 namespace util {
-
 
 }  // namespace util
 }  // namespace multio

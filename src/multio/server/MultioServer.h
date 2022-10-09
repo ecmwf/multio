@@ -36,7 +36,7 @@ class MultioServer: FailureAware<util::ComponentTag::Server> {
 public:
     MultioServer(const ServerConfigurationContext& confCtx);
     
-    util::FailureHandlerResponse handleFailure(util::OnServerError) const override;
+    util::FailureHandlerResponse handleFailure(util::OnServerError, const util::FailureContext&, util::DefaultFailureState&) const override;
 
     ~MultioServer();
 

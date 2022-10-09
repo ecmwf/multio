@@ -36,7 +36,8 @@ using eckit::Log;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-Action::Action(const ConfigurationContext& confCtx) : FailureAware(confCtx), confCtx_(confCtx), type_{confCtx.config().getString("type")} {
+Action::Action(const ConfigurationContext& confCtx) :
+    FailureAware(confCtx), confCtx_(confCtx), type_{confCtx.config().getString("type")} {
     if (confCtx.config().has("next")) {
         const ConfigurationContext nextCtx = confCtx.subContext("next", util::ComponentTag::Action);
         next_.reset(ActionFactory::instance().build(nextCtx.config().getString("type"), nextCtx));
@@ -59,14 +60,15 @@ void Action::executeNext(message::Message msg) const {
 
 void Action::execute(message::Message msg) const {
     withFailureHandling([&]() { executeImpl(std::move(msg)); },
-                        [&,msg]() {
+                        [&, msg]() {
                             std::ostringstream oss;
                             oss << *this << " with Message: " << msg;
                             return oss.str();
                         });
 }
 
-util::FailureHandlerResponse Action::handleFailure(util::OnActionError t) const {
+util::FailureHandlerResponse Action::handleFailure(util::OnActionError t, const util::FailureContext&,
+                                                   util::DefaultFailureState&) const {
     if (t == util::OnActionError::Recover) {
         return util::FailureHandlerResponse::Retry;
     }

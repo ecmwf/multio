@@ -43,7 +43,11 @@ Dispatcher::Dispatcher(const util::ConfigurationContext& confCtx, std::shared_pt
     }
 }
 
-util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t) const {
+util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, const util::FailureContext& c, util::DefaultFailureState&) const {
+    // Dispatcher has its own thread, hence this is the last instance to print an exception
+    // TODO
+    print(c);
+
     continue_->store(false, std::memory_order_relaxed);
     return util::FailureHandlerResponse::Rethrow;
 };

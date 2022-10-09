@@ -58,7 +58,7 @@ public:
     bool isFieldActive(const std::string& name) const;
     bool isCategoryActive(const std::string& name) const;
     
-    util::FailureHandlerResponse handleFailure(util::OnClientError) const override;
+    util::FailureHandlerResponse handleFailure(util::OnClientError, const util::FailureContext&, util::DefaultFailureState&) const override;
 
 private:
     std::vector<std::unique_ptr<action::Plan>> plans_;

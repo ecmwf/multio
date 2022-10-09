@@ -12,7 +12,7 @@ eckit::LocalConfiguration getParameterMappingConfiguration(const GlobalConfCtx& 
             try {
                 return eckit::Optional<std::string>{globalConfCtx.globalConfig().getString("parameter-mappings")};
             }
-            catch (const eckit::Exception&) {
+            catch (...) {
                 return eckit::Optional<std::string>{};
             }
         })();
@@ -28,16 +28,16 @@ eckit::LocalConfiguration getParameterMappingConfiguration(const GlobalConfCtx& 
 }
 }  // namespace
 
-ParameterMappings::ParameterMappings(std::reference_wrapper<const GlobalConfCtx> globalConfCtx) :
-    globalConfCtx_(std::move(globalConfCtx)),
+ParameterMappings::ParameterMappings(const GlobalConfCtx& globalConfCtx) :
+    globalConfCtx_(std::ref(globalConfCtx)),
     configs_{getParameterMappingConfiguration(globalConfCtx_.get())},
     mappings_{} {}    
     
 
-std::pair<std::string, std::shared_ptr<std::vector<message::ParameterMapping>>> ParameterMappings::getMappings(const std::string& mapping) const {
+const std::vector<message::ParameterMapping>& ParameterMappings::getMappings(const std::string& mapping) const {
     auto search = mappings_.find(mapping);
     if (search != mappings_.end()) {
-        return *search;
+        return search->second;
     }
     if (configs_.has(mapping)) {
         auto mappingConfig =  configs_.getSubConfiguration(mapping);
@@ -115,8 +115,8 @@ std::pair<std::string, std::shared_ptr<std::vector<message::ParameterMapping>>> 
             v.emplace(v.end(), std::move(sourceKey), std::move(mappings), sourceList, std::move(targetKey));
             ++mcind;
         }
-        mappings_.emplace(mapping, std::make_shared<std::vector<message::ParameterMapping>>(std::move(v)));
-        return *(mappings_.find(mapping));
+        mappings_.emplace(mapping, std::move(v));
+        return mappings_.at(mapping);
     }
     
     std::ostringstream oss;

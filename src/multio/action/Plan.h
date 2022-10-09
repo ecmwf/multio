@@ -45,7 +45,7 @@ public:
     void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
     void computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const;
 
-    util::FailureHandlerResponse handleFailure(util::OnPlanError) const override;
+    util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&, util::DefaultFailureState&) const override;
 
 protected:
     std::string name_;

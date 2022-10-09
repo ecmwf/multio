@@ -27,14 +27,15 @@ class GlobalConfCtx;  // Forward declaration
 
 class ParameterMappings {
 public:
-    ParameterMappings(std::reference_wrapper<const GlobalConfCtx> globalConfCtx);
+    ParameterMappings(const GlobalConfCtx& globalConfCtx);
 
-    std::pair<std::string, std::shared_ptr<std::vector<message::ParameterMapping>>> getMappings(const std::string& mapping) const;
+    const std::vector<message::ParameterMapping>& getMappings(const std::string& mapping) const;
 
 private:
+    // Use reference wrapper to avoid creating an explicit copy constructor
     std::reference_wrapper<const GlobalConfCtx> globalConfCtx_;
     eckit::LocalConfiguration configs_;
-    mutable std::unordered_map<std::string, std::shared_ptr<std::vector<message::ParameterMapping>>> mappings_;
+    mutable std::unordered_map<std::string, std::vector<message::ParameterMapping>> mappings_;
 };
 }  // namespace util
 }  // namespace multio

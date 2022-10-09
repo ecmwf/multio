@@ -57,7 +57,7 @@ public:
 
     virtual void executeImpl(message::Message msg) const = 0;
 
-    virtual util::FailureHandlerResponse handleFailure(util::OnActionError) const override;
+    virtual util::FailureHandlerResponse handleFailure(util::OnActionError, const util::FailureContext&, util::DefaultFailureState&) const override;
 
     // May be implemented in a action (i.e. select)
     virtual void activeFields(std::insert_iterator<std::set<std::string>>& ins) const;

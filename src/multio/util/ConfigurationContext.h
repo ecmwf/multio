@@ -20,10 +20,10 @@
 #include <unordered_map>
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/utils/Optional.h"
-#include "multio/util/Translate.h"
 #include "multio/util/ConfigurationPath.h"
-#include "multio/util/ParameterMappings.h"
 #include "multio/util/IteratorMapper.h"
+#include "multio/util/ParameterMappings.h"
+#include "multio/util/Translate.h"
 
 namespace multio {
 namespace util {
@@ -45,7 +45,8 @@ enum class LocalPeerTag : unsigned
     Client = 1,
     Server = 2,
 };
-}}
+}  // namespace util
+}  // namespace multio
 
 namespace eckit {
 template <>
@@ -58,7 +59,7 @@ template <>
 struct Translator<multio::util::LocalPeerTag, std::string> {
     std::string operator()(multio::util::LocalPeerTag);
 };
-}
+}  // namespace eckit
 
 namespace multio {
 namespace util {
@@ -83,8 +84,7 @@ struct MPIInitInfo {
 
 class ConfigurationContext {
 public:
-    ConfigurationContext(const eckit::PathName& fileName,
-                         LocalPeerTag clientOrServer = LocalPeerTag::Client,
+    ConfigurationContext(const eckit::PathName& fileName, LocalPeerTag clientOrServer = LocalPeerTag::Client,
                          ComponentTag tag = ComponentTag::Unrelated);
 
     ConfigurationContext(const eckit::PathName& pathName, const eckit::PathName& fileName,
@@ -92,12 +92,10 @@ public:
                          ComponentTag tag = ComponentTag::Unrelated);
 
     ConfigurationContext(const eckit::LocalConfiguration& config, const eckit::PathName& pathName,
-                         const eckit::PathName& fileName,
-                         LocalPeerTag clientOrServer = LocalPeerTag::Client,
+                         const eckit::PathName& fileName, LocalPeerTag clientOrServer = LocalPeerTag::Client,
                          ComponentTag tag = ComponentTag::Unrelated);
 
-    ConfigurationContext(const eckit::LocalConfiguration& config,
-                         const eckit::LocalConfiguration& globalConfig,
+    ConfigurationContext(const eckit::LocalConfiguration& config, const eckit::LocalConfiguration& globalConfig,
                          const eckit::PathName& pathName, const eckit::PathName& fileName,
                          LocalPeerTag clientOrServer = LocalPeerTag::Client,
                          ComponentTag tag = ComponentTag::Unrelated);
@@ -140,8 +138,7 @@ public:
     ConfigurationContext& tagServer();
     ConfigurationContext& tagClient();
 
-    using SubConfigurationContexts =
-        MappedContainer<std::vector<eckit::LocalConfiguration>, SubContextIteratorMapper>;
+    using SubConfigurationContexts = MappedContainer<std::vector<eckit::LocalConfiguration>, SubContextIteratorMapper>;
 
     ConfigurationContext subContext(const std::string& subConfiguratinKey,
                                     ComponentTag tag = ComponentTag::Unrelated) const;
@@ -158,14 +155,13 @@ public:
     // Allows loading and caching other configuration files related to the configured path
     const eckit::LocalConfiguration& getYAMLFile(const char*) const;
     const eckit::LocalConfiguration& getYAMLFile(const std::string&) const;
-    
+
     const eckit::LocalConfiguration& getYAMLFile(const eckit::PathName&) const;
 
     const ParameterMappings& parameterMappings() const;
 
 protected:
-    ConfigurationContext(const eckit::LocalConfiguration& config,
-                         std::shared_ptr<GlobalConfCtx> globalConfCtx,
+    ConfigurationContext(const eckit::LocalConfiguration& config, std::shared_ptr<GlobalConfCtx> globalConfCtx,
                          ComponentTag tag = ComponentTag::Unrelated);
 
 
@@ -180,13 +176,11 @@ private:
 
 class GlobalConfCtx {
 public:
-    GlobalConfCtx(const eckit::PathName& fileName,
-                  LocalPeerTag clientOrServer = LocalPeerTag::Client);
+    GlobalConfCtx(const eckit::PathName& fileName, LocalPeerTag clientOrServer = LocalPeerTag::Client);
     GlobalConfCtx(const eckit::PathName& pathName, const eckit::PathName& fileName,
                   LocalPeerTag clientOrServer = LocalPeerTag::Client);
     GlobalConfCtx(const eckit::LocalConfiguration& config, const eckit::PathName& pathName,
-                  const eckit::PathName& fileName,
-                  LocalPeerTag clientOrServer = LocalPeerTag::Client);
+                  const eckit::PathName& fileName, LocalPeerTag clientOrServer = LocalPeerTag::Client);
 
     const eckit::LocalConfiguration& globalConfig() const;
     const eckit::PathName& pathName() const;
@@ -203,7 +197,7 @@ public:
 
     const eckit::LocalConfiguration& getYAMLFile(const char*) const;
     const eckit::LocalConfiguration& getYAMLFile(const std::string&) const;
-    
+
     const eckit::LocalConfiguration& getYAMLFile(const eckit::PathName&) const;
 
     friend util::ParameterMappings;
@@ -224,10 +218,8 @@ private:
 
 class SubContextIteratorMapper {
 public:
-    SubContextIteratorMapper(const ConfigurationContext& confCtx,
-                             ComponentTag tag = ComponentTag::Unrelated);
-    SubContextIteratorMapper(ConfigurationContext&& confCtx,
-                             ComponentTag tag = ComponentTag::Unrelated);
+    SubContextIteratorMapper(const ConfigurationContext& confCtx, ComponentTag tag = ComponentTag::Unrelated);
+    SubContextIteratorMapper(ConfigurationContext&& confCtx, ComponentTag tag = ComponentTag::Unrelated);
 
     ConfigurationContext operator()(const eckit::LocalConfiguration& config) const;
 
@@ -239,28 +231,29 @@ private:
 
 namespace {
 ConfigurationContext throwRecast_(const ConfigurationContext& confCtx, const std::string& key) {
-    if (!confCtx.globalConfig().has(key)) {
-        std::ostringstream oss;
-        oss << "Configuration '" << key << "' not found in configuration file "
-            << confCtx.fileName();
-        throw eckit::Exception(oss.str());
-    }
-    return confCtx.recast(confCtx.globalConfig().getSubConfiguration(key));
+    return confCtx.recast(([&]() {
+        try {
+            return confCtx.globalConfig().getSubConfiguration(key);
+        }
+        catch (...) {
+            std::ostringstream oss;
+            oss << "Configuration '" << key << "' not found in configuration file " << confCtx.fileName();
+            std::throw_with_nested(eckit::Exception(oss.str()));
+        }
+    })());
 }
 }  // namespace
 
 class ClientConfigurationContext : public ConfigurationContext {
 public:
-    ClientConfigurationContext(const ConfigurationContext& otherBase,
-                               const std::string& key = "client") :
+    ClientConfigurationContext(const ConfigurationContext& otherBase, const std::string& key = "client") :
         ConfigurationContext(throwRecast_(otherBase, key).tagClient()) {}
 };
 
 
 class ServerConfigurationContext : public ConfigurationContext {
 public:
-    ServerConfigurationContext(const ConfigurationContext& otherBase,
-                               const std::string& serverName = "server") :
+    ServerConfigurationContext(const ConfigurationContext& otherBase, const std::string& serverName = "server") :
         ConfigurationContext(throwRecast_(otherBase, serverName).tagServer()) {}
 };
 

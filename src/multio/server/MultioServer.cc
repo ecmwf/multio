@@ -45,7 +45,10 @@ MultioServer::MultioServer(const ServerConfigurationContext& confCtx) :
     eckit::Log::info() << "Listening loop has stopped" << std::endl;
 }
 
-util::FailureHandlerResponse MultioServer::handleFailure(util::OnServerError t) const {
+util::FailureHandlerResponse MultioServer::handleFailure(util::OnServerError t, const util::FailureContext& c, util::DefaultFailureState&) const {
+    // Last cascading instace - print nested contexts
+    print(c);
+    
     if (t == util::OnServerError::AbortTransport) {
         transport_->abort();
     }

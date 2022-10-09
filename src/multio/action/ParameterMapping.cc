@@ -4,18 +4,18 @@ namespace multio {
 namespace action {
 
 namespace {
-std::pair<std::string, std::shared_ptr<std::vector<message::ParameterMapping>>> getMappings(
+std::string getMappingName(
     const ConfigurationContext& confCtx) {
     if (!confCtx.config().has("mapping")) {
         throw eckit::Exception(
             "An action of type \"parameter-mapping\" needs to have a field \"mapping\".");
     }
-    return confCtx.parameterMappings().getMappings(confCtx.config().getString("mapping"));
+    return confCtx.config().getString("mapping");
 }
 }  // namespace
 
 ParameterMapping::ParameterMapping(const ConfigurationContext& confCtx) :
-    Action(confCtx), mappings_(getMappings(confCtx)), options_{} {
+    Action(confCtx), name_(getMappingName(confCtx)), mappings_(confCtx.parameterMappings().getMappings(name_)), options_{} {
     options_.enforceMatch = confCtx.config().getBool("enforce-match", true);
     options_.overwriteExisting = confCtx.config().getBool("overwrite-existing", false);
 };
@@ -25,7 +25,7 @@ void ParameterMapping::executeImpl(message::Message msg) const {
 };
 
 void ParameterMapping::applyInplace(message::Metadata& md) const {
-    for (const auto& m : *(mappings_.second)) {
+    for (const auto& m : mappings_) {
         m.applyInplace(md, options_);
     }
 };
@@ -41,7 +41,7 @@ message::Metadata ParameterMapping::apply(message::Metadata&& md) const {
 };
 
 void ParameterMapping::print(std::ostream& os) const {
-    os << "ParameterMapping(mapping=" << (mappings_.first)
+    os << "ParameterMapping(mapping=" << (name_)
        << ", enforce-match=" << (options_.enforceMatch ? "true" : "false")
        << ", overwrite-existing=" << (options_.overwriteExisting ? "true" : "false") << ")";
 }

@@ -52,7 +52,10 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureA
     }
 }
 
-util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t) const {
+util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t, const util::FailureContext& c, util::DefaultFailureState&) const {
+    // Last cascading instance, print nested contexts
+    print(c);
+    
     if (t == util::OnClientError::AbortAllTransports) {
         transport::TransportRegistry::instance().abortAll();
     }
@@ -61,11 +64,13 @@ util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t) 
 
 
 void MultioClient::openConnections() {
-    transport::TransportRegistry::instance().openConnections();
+    withFailureHandling([&]() { transport::TransportRegistry::instance().openConnections(); },
+                        []() { return std::string("MultioClient::openConnections"); });
 }
 
 void MultioClient::closeConnections() {
-    transport::TransportRegistry::instance().closeConnections();
+    withFailureHandling([&]() { transport::TransportRegistry::instance().closeConnections(); },
+                        []() { return std::string("MultioClient::closeConnections"); });
 }
 
 MultioClient::~MultioClient() {

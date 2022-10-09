@@ -117,7 +117,7 @@ const eckit::LocalConfiguration& GlobalConfCtx::getYAMLFile(const eckit::PathNam
 
 const ParameterMappings& GlobalConfCtx::parameterMappings() const {
     if(!parameterMappings_) {
-        parameterMappings_ = ParameterMappings(std::cref(*this));
+        parameterMappings_ = ParameterMappings(*this);
     }
     return *parameterMappings_;
 };

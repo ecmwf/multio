@@ -76,7 +76,7 @@ void Plan::process(message::Message msg) {
     });
 }
 
-util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t) const {
+util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t, const util::FailureContext&, util::DefaultFailureState&) const {
     if (t == util::OnPlanError::Recover) {
         return util::FailureHandlerResponse::Retry;
     }

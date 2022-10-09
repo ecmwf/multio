@@ -50,7 +50,7 @@ public:
 
     void listen();
     
-    util::FailureHandlerResponse handleFailure(util::OnReceiveError) const override;
+    util::FailureHandlerResponse handleFailure(util::OnReceiveError, const util::FailureContext&, util::DefaultFailureState&) const override;
 
 private:
     bool moreConnections() const;

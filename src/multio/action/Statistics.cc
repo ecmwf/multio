@@ -72,8 +72,7 @@ void Statistics::executeImpl(message::Message msg) const {
            << msg.metadata().getString("param") << msg.metadata().getLong("level") << msg.source();
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {
-            fieldStats_[os.str()] =
-                TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
+            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
         }
 
         if (fieldStats_.at(os.str())->process(msg)) {
@@ -96,6 +95,7 @@ void Statistics::executeImpl(message::Message msg) const {
     }
 
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+
     fieldStats_.at(os.str())->reset(msg);
 }
 

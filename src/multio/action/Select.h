@@ -37,7 +37,7 @@ public:
 
     void activeFields(std::insert_iterator<std::set<std::string>>& ins) const override;
     void activeCategories(std::insert_iterator<std::set<std::string>>& ins) const override;
-    
+
 private:
     void print(std::ostream &os) const override;
 

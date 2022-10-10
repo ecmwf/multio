@@ -1,5 +1,5 @@
 nemo-to-grib:
-    source: 
+    source:
         file: nemo-to-grib.yaml
         path: nemo-fields
     mappings:

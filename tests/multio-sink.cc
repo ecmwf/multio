@@ -67,7 +67,7 @@ private:
 };
 
 MultioSink::MultioSink(int argc, char** argv) :
-    multio::MultioTool{argc, argv}, fdbRootPath_{"~fdb/tests/fdb/root"} {
+    multio::MultioTool{argc, argv}, fdbRootPath_{"~multio/multio/tests/fdb/root"} {
     options_.push_back(
         new eckit::option::SimpleOption<bool>("test-subtoc", "Test if subtoc has been created"));
 }

@@ -1,5 +1,5 @@
 
-if( CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
+if( CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
     list( APPEND multio_server_plugins
         -Wl,--no-as-needed
     )

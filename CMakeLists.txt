@@ -76,7 +76,6 @@ get_directory_property( MULTIO_DEFINITIONS COMPILE_DEFINITIONS )
 ### sources
 
 include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
-include(cmake/compile_flags.cmake)     # conditionally include additional flags
 
 include_directories( ${MULTIO_INCLUDE_DIRS} )
 

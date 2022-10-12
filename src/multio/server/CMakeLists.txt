@@ -1,5 +1,6 @@
 if( HAVE_FDB5 )
     list( APPEND multio_server_plugins
+        -Wl,--no-as-needed
         multio-fdb5
     )
 endif()

@@ -1,6 +1,12 @@
-if( HAVE_FDB5 )
+
+if( CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
     list( APPEND multio_server_plugins
         -Wl,--no-as-needed
+    )
+endif()
+
+if( HAVE_FDB5 )
+    list( APPEND multio_server_plugins
         multio-fdb5
     )
 endif()

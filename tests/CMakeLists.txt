@@ -32,8 +32,13 @@ list( APPEND _test_data
     "rd.vod.grib"
 )
 
+if( CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
+    list( APPEND _link_libraries
+        -Wl,--no-as-needed
+    )
+endif()
+
 list( APPEND _link_libraries
-    -Wl,--no-as-needed
     multio
     multio-fdb5
     eckit_option

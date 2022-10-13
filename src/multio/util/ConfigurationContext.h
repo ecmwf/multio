@@ -15,15 +15,18 @@
 #ifndef multio_util_ConfigurationContext_H
 #define multio_util_ConfigurationContext_H
 
-#include <functional>
-#include <tuple>
-#include <unordered_map>
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/utils/Optional.h"
+
 #include "multio/util/ConfigurationPath.h"
 #include "multio/util/IteratorMapper.h"
 #include "multio/util/ParameterMappings.h"
 #include "multio/util/Translate.h"
+
+#include <functional>
+#include <tuple>
+#include <unordered_map>
+
 
 namespace multio {
 namespace util {

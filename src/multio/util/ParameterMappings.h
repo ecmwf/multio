@@ -15,10 +15,13 @@
 #ifndef multio_util_ParameterMappings_H
 #define multio_util_ParameterMappings_H
 
+#include "eckit/config/LocalConfiguration.h"
+
+#include "multio/message/ParameterMapping.h"
+
 #include <functional>
 #include <unordered_map>
-#include "eckit/config/LocalConfiguration.h"
-#include "multio/message/ParameterMapping.h"
+
 
 namespace multio {
 namespace util {

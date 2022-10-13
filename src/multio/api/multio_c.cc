@@ -2,8 +2,6 @@
 #include "multio_c.h"
 #include "multio_c_cpp_utils.h"
 
-#include <functional>
-
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/mpi/Comm.h"
@@ -15,6 +13,8 @@
 #include "multio/server/MultioServer.h"
 #include "multio/util/ConfigurationContext.h"
 #include "multio/util/ConfigurationPath.h"
+
+#include <functional>
 
 using eckit::Log;
 
@@ -147,12 +147,10 @@ int multio_new_configurationcontext(multio_configurationcontext_t** cc) {
     return wrapApiFunction([cc]() { (*cc) = new multio_configurationcontext_t{}; });
 };
 
-int multio_new_configurationcontext_from_filename(multio_configurationcontext_t** cc,
-                                                  const char* conf_file_name) {
+int multio_new_configurationcontext_from_filename(multio_configurationcontext_t** cc, const char* conf_file_name) {
     return wrapApiFunction([cc, conf_file_name]() {
-        (*cc) = new multio_configurationcontext_t{conf_file_name != nullptr
-                                                      ? eckit::PathName{conf_file_name}
-                                                      : configuration_file_name()};
+        (*cc) = new multio_configurationcontext_t{conf_file_name != nullptr ? eckit::PathName{conf_file_name}
+                                                                            : configuration_file_name()};
     });
 };
 
@@ -391,7 +389,7 @@ int multio_field_is_active(multio_handle_t* mio, const char* fname, bool* value)
         ASSERT(mio);
         ASSERT(fname);
         ASSERT(value);
-        
+
         *value = mio->isFieldActive(fname);
     });
 };
@@ -401,7 +399,7 @@ int multio_category_is_fully_active(multio_handle_t* mio, const char* cname, boo
         ASSERT(mio);
         ASSERT(cname);
         ASSERT(value);
-        
+
         *value = mio->isCategoryActive(cname);
     });
 };

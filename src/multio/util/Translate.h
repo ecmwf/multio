@@ -20,10 +20,10 @@
 #ifndef multio_util_Translate_H
 #define multio_util_Translate_H
 
+#include "eckit/utils/Translator.h"
+
 #include <iostream>
 #include <iterator>
-
-#include "eckit/utils/Translator.h"
 
 namespace multio {
 namespace util {

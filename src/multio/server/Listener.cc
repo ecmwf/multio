@@ -45,10 +45,6 @@ Listener::Listener(const util::ConfigurationContext& confCtx, Transport& trans):
 }
 
 util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, const util::FailureContext& c, util::DefaultFailureState&) const {
-    // Listener has its own thread, hence this is the last instance to print an exception
-    // TODO
-    print(c);
-
     msgQueue_.close(); // TODO: msgQueue_ pop is blocking in dispatch.... redesign to have better awareness on blocking positions to safely stop and restart
     continue_->store(false, std::memory_order_release);
     return util::FailureHandlerResponse::Rethrow;
@@ -57,10 +53,14 @@ util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, con
 void Listener::start() {
 
     eckit::ResourceUsage usage{"multio listener"};
+    
+    // Store thread errors
+    std::exception_ptr lstnExcPtr;
+    std::exception_ptr dpatchExcPtr;
 
-    ScopedThread lstnThread{std::thread{&Listener::listen, this}};
+    ScopedThread lstnThread{std::thread{[&](){ try{ this->listen(); } catch (...) { lstnExcPtr = std::current_exception(); } }}};
 
-    ScopedThread dpatchThread{std::thread{&Dispatcher::dispatch, dispatcher_, std::ref(msgQueue_)}};
+    ScopedThread dpatchThread{std::thread{[&](){ try { dispatcher_->dispatch(msgQueue_); } catch (...) { dpatchExcPtr = std::current_exception(); } }}};
 
     withFailureHandling([&]() {
         do {
@@ -107,6 +107,14 @@ void Listener::start() {
     msgQueue_.close();
 
     LOG_DEBUG_LIB(LibMultio) << "*** CLOSED message queue " << std::endl;
+    
+    // Propagate possible thread errors
+    if (lstnExcPtr) {
+        std::rethrow_exception(lstnExcPtr);
+    }
+    if (dpatchExcPtr) {
+        std::rethrow_exception(dpatchExcPtr);
+    }
 }
 
 void Listener::listen() {

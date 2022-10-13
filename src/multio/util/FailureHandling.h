@@ -15,16 +15,19 @@
 #ifndef multio_util_FailureHandling_H
 #define multio_util_FailureHandling_H
 
-#include <algorithm>
-#include <string>
-#include <unordered_map>
-#include "ConfigurationContext.h"
-#include "IntegerSequence.h"
+
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/utils/Optional.h"
 #include "eckit/utils/StringTools.h"
+
+#include "multio/util/ConfigurationContext.h"
+#include "multio/util/IntegerSequence.h"
 #include "multio/util/Translate.h"
+
+#include <algorithm>
+#include <string>
+#include <unordered_map>
 
 
 /** Experimental - we don't know how to best deal with errors and how we can define descriptive and generic handlers.
@@ -393,48 +396,47 @@ public:
 
 private:
     // TODO accept output stream as parameter
-    void printNestedException(const std::exception& e, int level = 0) const {
-        eckit::Log::error() << (level + 1) << ": " << e.what() << std::endl;
+    void printNestedException(std::ostream& out, const std::exception& e, int level = 0) const {
+        out << (level + 1) << ": " << e.what() << std::endl;
         try {
             std::rethrow_if_nested(e);
         }
         catch (const FailureAwareException& nestedException) {
-            printNestedException(nestedException, level + 1);
+            printNestedException(out, nestedException, level + 1);
         }
         catch (const eckit::Exception& nestedException) {
-            printNestedException(nestedException, level + 1);
+            printNestedException(out, nestedException, level + 1);
         }
         catch (const std::exception& nestedException) {
-            printNestedException(nestedException, level + 1);
+            printNestedException(out, nestedException, level + 1);
         }
         catch (...) {
         }
     }
 
-    void printExceptionHeader(int level = 0) const { eckit::Log::error() << "[Exception ]" << (level + 1) << "] "; }
+    void printExceptionHeader(std::ostream& out, int level = 0) const { out << "[Exception ]" << (level + 1) << "] "; }
 
 protected:
-    void printException(const std::exception& e, int level = 0) const {
-        printExceptionHeader(level);
-        eckit::Log::error() << e.what() << std::endl;
-        ;
-        printNestedException(e, level);
+    void printException(std::ostream& out, const std::exception& e, int level = 0) const {
+        printExceptionHeader(out, level);
+        out << e.what() << std::endl;
+        printNestedException(out, e, level);
     }
-    void printException(const eckit::Exception& e, int level = 0) const {
-        printExceptionHeader(level);
-        eckit::Log::error() << e.what() << std::endl;
+    void printException(std::ostream& out, const eckit::Exception& e, int level = 0) const {
+        printExceptionHeader(out, level);
+        out << e.what() << std::endl;
         // A plain eckit::Ecxeption is probably the end of the nested stack constructed with FailureAware. Hence we
         // print the whole stack here.
-        e.exceptionStack(eckit::Log::error(), true);
-        printNestedException(e, level);
+        e.exceptionStack(out, true);
+        printNestedException(out, e, level);
     }
-    void printException(const FailureAwareException& e, int level = 0) const {
-        printExceptionHeader(level);
-        eckit::Log::error() << e.what() << std::endl;
-        printNestedException(e, level);
+    void printException(std::ostream& out, const FailureAwareException& e, int level = 0) const {
+        printExceptionHeader(out, level);
+        out << e.what() << std::endl;
+        printNestedException(out, e, level);
     }
 
-    void print(const FailureContext& c) const {
+    void print(std::ostream& out, const FailureContext& c) const {
         if (c.eptr) {
             try {
                 try {
@@ -445,12 +447,11 @@ protected:
                 }
             }
             catch (const FailureAwareException& e) {
-                printException(e);
+                printException(out, e);
             }
         }
         else {
-            eckit::Log::error() << "Exception " << c.context << std::endl;
-            ;
+            out << "Exception " << c.context << std::endl;
         }
     }
 
@@ -483,7 +484,7 @@ protected:
                         }
                         catch (const FailureAwareException& e) {
                             // This is supposed to be called
-                            printException(e);
+                            printException(eckit::Log::error(), e);
                             doRetry = true;
                         }
                         break;
@@ -499,7 +500,7 @@ protected:
                         }
                         catch (const FailureAwareException& e) {
                             // This is supposed to be called
-                            printException(e);
+                            printException(eckit::Log::error(), e);
                         }
                         break;
                 }

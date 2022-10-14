@@ -29,8 +29,8 @@ eckit::LocalConfiguration getParameterMappingConfiguration(const GlobalConfCtx& 
 }  // namespace
 
 ParameterMappings::ParameterMappings(const GlobalConfCtx& globalConfCtx) :
-    globalConfCtx_(std::ref(globalConfCtx)),
-    configs_{getParameterMappingConfiguration(globalConfCtx_.get())},
+    globalConfCtx_(globalConfCtx),
+    configs_{getParameterMappingConfiguration(globalConfCtx)},
     mappings_{} {}    
     
 
@@ -63,7 +63,7 @@ const std::vector<message::ParameterMapping>& ParameterMappings::getMappings(con
         }
         auto sourcePath = sourceConfigBlock.getString("path");
         
-        auto sourceConfig = globalConfCtx_.get().getYAMLFile(sourceFname);
+        auto sourceConfig = globalConfCtx_.getYAMLFile(sourceFname);
         if (!sourceConfig.has(sourcePath)) {
             std::ostringstream oss;
             oss << "YAML file \"" << sourceFname << "\" for parameter mapping \"" << mapping << "\" does have a top-level path \"" << sourcePath << "\"" << std::endl;

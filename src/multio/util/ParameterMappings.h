@@ -35,8 +35,7 @@ public:
     const std::vector<message::ParameterMapping>& getMappings(const std::string& mapping) const;
 
 private:
-    // Use reference wrapper to avoid creating an explicit copy constructor
-    std::reference_wrapper<const GlobalConfCtx> globalConfCtx_;
+    const GlobalConfCtx& globalConfCtx_;
     eckit::LocalConfiguration configs_;
     mutable std::unordered_map<std::string, std::vector<message::ParameterMapping>> mappings_;
 };

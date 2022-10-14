@@ -330,7 +330,7 @@ private:
     using FailureState = typename ComponentFailureTraits<tag>::FailureState;
 
     util::LocalPeerTag peerTag_;
-    eckit::Optional<OnErrorType> parsedOnErrTag_{};
+    OnErrorType parsedOnErrTag_{};
     FailureOptions options_;
 
 public:
@@ -374,7 +374,8 @@ public:
                     }
                 }
             })();
-            parsedOnErrTag_ = ComponentFailureTraits<tag>::parse(unparsedOnErrTag);
+            auto errorTagMaybe = ComponentFailureTraits<tag>::parse(unparsedOnErrTag);
+            parsedOnErrTag_ = errorTagMaybe ? *errorTagMaybe : ComponentFailureTraits<tag>::defaultOnErrorTag();
 
             if (subConfigMaybe) {
                 options_ = ComponentFailureTraits<tag>::parseFailureOptions(*subConfigMaybe);
@@ -388,8 +389,7 @@ public:
     virtual FailureHandlerResponse handleFailure(OnErrorType t, const FailureContext&, FailureState&) const = 0;
 
     FailureHandlerResponse handleFailure(const FailureContext& e, FailureState& s) const {
-        return handleFailure(parsedOnErrTag_ ? *parsedOnErrTag_ : ComponentFailureTraits<tag>::defaultOnErrorTag(), e,
-                             s);
+        return handleFailure(parsedOnErrTag_, e, s);
     };
 
     virtual ~FailureAware() = default;
@@ -451,7 +451,12 @@ protected:
             }
         }
         else {
-            out << "Exception " << c.context << std::endl;
+            try {
+                throw FailureAwareException(c.context);
+            }
+            catch (const FailureAwareException& e) {
+                printException(out, e);
+            }
         }
     }
 
@@ -467,9 +472,9 @@ protected:
             }
             catch (...) {
                 std::ostringstream oss;
-                oss << "FailureAware<" << translate<std::string>(tag) << "> "
-                    << (parsedOnErrTag_ ? translate<std::string>(*parsedOnErrTag_) : std::string("default handling"))
-                    << " on " << translate<std::string>(peerTag_) << " for context: [" << std::endl
+                oss << "FailureAware<" << translate<std::string>(tag) << "> with behaviour \""
+                    << translate<std::string>(parsedOnErrTag_) << "\" on " << translate<std::string>(peerTag_)
+                    << " for context: [" << std::endl
                     << contextString() << std::endl
                     << "]";
 
@@ -479,7 +484,8 @@ protected:
                     case FailureHandlerResponse::Retry: {
                         try {
                             std::ostringstream oss2;
-                            oss2 << "Retrying after receiving: " << std::endl << oss.str() << std::endl;
+                            oss2 << "Retrying after catching nested exceptions: " << std::endl
+                                 << oss.str() << std::endl;
                             std::throw_with_nested(FailureAwareException(oss2.str()));
                         }
                         catch (const FailureAwareException& e) {
@@ -495,7 +501,7 @@ protected:
                     default:
                         try {
                             std::ostringstream oss2;
-                            oss2 << "Ignoring caught exception stack: " << std::endl << oss.str() << std::endl;
+                            oss2 << "Ignoring nested exceptions: " << std::endl << oss.str() << std::endl;
                             std::throw_with_nested(FailureAwareException(oss2.str()));
                         }
                         catch (const FailureAwareException& e) {

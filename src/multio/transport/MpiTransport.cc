@@ -16,7 +16,7 @@
 #include "eckit/config/Resource.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/maths/Functions.h"
-#include "eckit/mpi/Parallel.h"
+#include "eckit/mpi/Comm.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/serialisation/MemoryStream.h"
 

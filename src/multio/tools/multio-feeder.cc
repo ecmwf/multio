@@ -48,9 +48,9 @@ public:
 };
 }  // namespace
 
-class MultioSink final : public multio::MultioTool {
+class MultioFeeder final : public multio::MultioTool {
 public:  // methods
-    MultioSink(int argc, char** argv);
+    MultioFeeder(int argc, char** argv);
 
 private:
     void usage(const std::string& tool) const override {
@@ -70,11 +70,11 @@ private:
     bool testSubtoc_ = false;
 };
 
-MultioSink::MultioSink(int argc, char** argv) : multio::MultioTool{argc, argv}, fdbRootPath_{"~fdb/tests/fdb/root"} {
+MultioFeeder::MultioFeeder(int argc, char** argv) : multio::MultioTool{argc, argv}, fdbRootPath_{"~fdb/tests/fdb/root"} {
     options_.push_back(new eckit::option::SimpleOption<bool>("test-subtoc", "Test if subtoc has been created"));
 }
 
-void MultioSink::init(const eckit::option::CmdArgs& args) {
+void MultioFeeder::init(const eckit::option::CmdArgs& args) {
     args.get("test-subtoc", testSubtoc_);
     if (testSubtoc_) {
         std::system(std::string{"rm -rf " + fdbRootPath_.asString() + "/*"}.c_str());
@@ -82,9 +82,9 @@ void MultioSink::init(const eckit::option::CmdArgs& args) {
     }
 }
 
-void MultioSink::finish(const eckit::option::CmdArgs&) {}
+void MultioFeeder::finish(const eckit::option::CmdArgs&) {}
 
-void MultioSink::execute(const eckit::option::CmdArgs& args) {
+void MultioFeeder::execute(const eckit::option::CmdArgs& args) {
     eckit::message::Reader reader{args(0)};
 
     eckit::message::Message msg;
@@ -108,7 +108,7 @@ void MultioSink::execute(const eckit::option::CmdArgs& args) {
     }
 }
 
-bool MultioSink::subtocExists() const {
+bool MultioFeeder::subtocExists() const {
     TempFile file{"tmp.out"};
 
     std::string cmd{"find " + fdbRootPath_.asString() + " -name toc* > " + file.path()};
@@ -134,6 +134,6 @@ bool MultioSink::subtocExists() const {
 
 
 int main(int argc, char** argv) {
-    multio::test::MultioSink tool(argc, argv);
+    multio::test::MultioFeeder tool(argc, argv);
     return tool.start();
 }

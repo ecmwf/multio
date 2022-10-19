@@ -111,7 +111,7 @@ const eckit::LocalConfiguration& GlobalConfCtx::getYAMLFile(const eckit::PathNam
         return config->second;
     }
     
-    referencedConfigFiles_.emplace(key, eckit::YAMLConfiguration{fname});
+    referencedConfigFiles_.emplace(std::piecewise_construct, std::forward_as_tuple(key), std::forward_as_tuple(eckit::YAMLConfiguration{fname}));
     return referencedConfigFiles_[key];
 }
 

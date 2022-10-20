@@ -23,25 +23,31 @@
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/message/Message.h"
-
-namespace eckit {
-class Configuration;
-}
+#include "multio/transport/Transport.h"
+#include "multio/util/ConfigurationContext.h"
+#include "multio/util/FailureHandling.h"
 
 namespace multio {
 namespace action {
 
+using util::ConfigurationContext;
+using util::FailureAware;
+
 class Action;
 
-class Plan : private eckit::NonCopyable {
+class Plan : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Plan> {
 public:
-    Plan(const eckit::Configuration& config);
-    ~Plan();
+    Plan(const ConfigurationContext& confCtx);
+    virtual ~Plan();
 
-    void process(message::Message msg);
+    virtual void process(message::Message msg);
 
-private:
+    void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
+    void computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const;
 
+    util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&, util::DefaultFailureState&) const override;
+
+protected:
     std::string name_;
 
     std::unique_ptr<Action> root_;

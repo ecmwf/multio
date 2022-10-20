@@ -25,6 +25,7 @@
 #include "eckit/filesystem/PathName.h"
 
 #include "multio/sink/DataSink.h"
+#include "multio/util/ConfigurationContext.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -36,7 +37,7 @@ namespace multio {
 
 class FileSink final : public DataSink {
 public:
-    explicit FileSink(const eckit::Configuration& config);
+    explicit FileSink(const util::ConfigurationContext& confCtx);
 
     ~FileSink() override;
 

@@ -19,35 +19,35 @@
 #include "multio/LibMultio.h"
 #include "multio/server/Listener.h"
 #include "multio/util/ConfigurationPath.h"
+#include "multio/util/ConfigurationContext.h"
 #include "multio/transport/ThreadTransport.h"
 
 using multio::LibMultio;
 using multio::message::Message;
 using multio::message::Metadata;
-using multio::util::configuration_path;
+using multio::util::configuration_path_name;
 using multio::util::print_buffer;
 using multio::server::Listener;
 using multio::transport::Transport;
 using multio::transport::TransportFactory;
 
 namespace {
-eckit::LocalConfiguration test_configuration(const std::string& type) {
+multio::util::ConfigurationContext test_configuration(const std::string& type) {
     eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
 
-    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-configuration"},
+    static std::map<std::string, std::string> configs = {{"mpi", "mpi-test-configuration"},
                                                   {"tcp", "tcp-test-configuration"},
                                                   {"thread", "thread-test-configuration"},
                                                   {"none", "no-transport-test-configuration"}};
 
-    eckit::YAMLConfiguration testConfigs{configuration_path() + "test-configurations.yaml"};
-    return eckit::LocalConfiguration{testConfigs.getSubConfiguration(configs.at(type))};
+    return multio::util::ConfigurationContext(configuration_path_name(), "test-configurations.yaml").subContext(configs.at(type));
 }
 
 }  // namespace
 
 class IoTransport {
 private:
-    eckit::LocalConfiguration config_;
+    multio::util::ConfigurationContext confCtx_;
     std::shared_ptr<Transport> transport_;
     Listener listener_;
     std::thread listenerThread_;
@@ -61,9 +61,9 @@ private:
     size_t globalSize_ = 2048;
 
     IoTransport() :
-        config_{test_configuration("thread")},
-        transport_{TransportFactory::instance().build("thread", config_)},
-        listener_{config_, *transport_},
+        confCtx_{test_configuration("thread")},
+        transport_{TransportFactory::instance().build("thread", confCtx_)},
+        listener_{confCtx_, *transport_},
         listenerThread_{&Listener::start, &listener_} {}
 
     ~IoTransport() {
@@ -214,7 +214,6 @@ void send_multio_grib_template_(const void* grib_msg, fortint *words) {
                 std::hash<std::thread::id>{}(IoTransport::instance().listenerThread().get_id())};
 
     Metadata md{IoTransport::instance().metadata()};
-    md.set("domainCount", IoTransport::instance().clientCount());
     md.set("globalSize", IoTransport::instance().globalSize());
     Message msg{Message::Header{Message::Tag::Grib, client, server, std::move(md)},
                 std::move(buffer)};
@@ -249,7 +248,6 @@ void send_multio_mapping_(const void* in_ptr, fortint* words, const char* name, 
         md.set("name", mapping_name);
         md.set("category", "atms-domain-map");
         md.set("representation", "unstructured");
-        md.set("domainCount", nb_clients);
         Message msg{Message::Header{Message::Tag::Domain, client, server, std::move(md)},
                     std::move(buffer)};
 
@@ -284,7 +282,6 @@ void send_multio_field_(const double* data, fortint* size, const char* name, con
     md.set("name", md.getString("param"));
     md.set("category", category);
     md.set("globalSize", IoTransport::instance().globalSize());
-    md.set("domainCount", IoTransport::instance().clientCount());
     md.set("domain", domain_name);
     Message msg{Message::Header{Message::Tag::Field, client, server, std::move(md)},
                 std::move(buffer)};

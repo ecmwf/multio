@@ -8,9 +8,11 @@
 !
 program multio_replay_nemo_fapi
     use, intrinsic :: iso_c_binding
+    use, intrinsic :: iso_fortran_env
     use multio_api
     use fckit_module
     use fckit_mpi_module
+    use mpi_f08 ! for error codes
     implicit none 
 
     integer :: rank, client_count, server_count 
@@ -18,8 +20,11 @@ program multio_replay_nemo_fapi
     integer :: global_size = 105704
     integer :: level = 1
     integer :: step = 24
+    
+
 
     type(multio_handle) :: mio
+    integer(8) :: mio_parent_comm = MPI_UNDEFINED
 
     character(len=3), dimension(4) :: nemo_parameters = ["sst", "ssu", "ssv", "ssw" ] 
     integer, dimension(4) :: grib_param_id = [262101, 212101, 212151, 212202 ] 
@@ -47,6 +52,24 @@ program multio_replay_nemo_fapi
                global_size, level, step)
 contains
 
+subroutine multio_custom_error_handler(context, err)
+    integer(8), intent(inout) :: context  ! Use mpi communicator as context
+    integer, intent(in) :: err
+    type(fckit_mpi_comm) :: comm
+    
+    if (err /= MULTIO_SUCCESS) then
+        write (error_unit, *) 'MULTIO ERROR: ',multio_error_string(err)
+        write (error_unit, *) 'Abort mpi...'
+        
+        if (context /= MPI_UNDEFINED) then
+            comm = fckit_mpi_comm(int(context))
+            call comm%abort(MPI_ERR_OTHER)
+            context = MPI_UNDEFINED
+        endif
+    endif
+end subroutine
+
+
 
 subroutine init(mio, rank, server_count, client_count)
     integer(kind=c_int) :: cerr
@@ -54,15 +77,25 @@ subroutine init(mio, rank, server_count, client_count)
     integer, intent(out) :: rank
     integer, intent(out) :: server_count
     integer, intent(out) :: client_count
-    integer :: color_client, key
+    ! integer :: color_client
+    integer :: key
     type(fckit_mpi_comm) :: comm
     type(fckit_mpi_comm) :: newcomm
+    integer(c_int) :: newcomm_id
     type(multio_handle), intent(inout) :: mio
+    type(multio_configurationcontext) :: cc
+    ! for tests
+    logical(c_bool) :: is_active
 
 
     write(0,*) "Init..."
+    cerr = cc%new()
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error creating default configuration context"
+    
+    cerr = cc%mpi_allow_world_default_comm(.FALSE._1)
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting default multio mpi allow_world_default_comm"
 
-    color_client = 777
+    ! color_client = 777
 
     write(0,*) "multio_initialise..."
     cerr = multio_initialise()
@@ -76,19 +109,91 @@ subroutine init(mio, rank, server_count, client_count)
 
     write(0,*) "add mpi comm nemo"
     call fckit_mpi_addComm("nemo", comm%communicator())
+    ! newcomm = comm%split(color_client, "oce") ! Client splitting done by multio
 
-    write(0,*) "multio_new_handle..."
-    cerr = mio%new_handle()
-    if (cerr /= MULTIO_SUCCESS) ERROR STOP 2
+    write(0,*) "multio_new..."
+    newcomm_id = 0
+    write(0,*) "set client id..."
+    cerr = cc%mpi_client_id("oce")
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi client id to configuration context"
+    write(0,*) "set parent comm..."
+    mio_parent_comm = comm%communicator()
+    cerr = cc%mpi_parent_comm(int(mio_parent_comm))
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi parent comm to configuration context"
+    write(0,*) "set return client comm..."
+    ! write (*,*) "newcomm_id ptr",loc(newcomm_id)
+    cerr = cc%mpi_return_client_comm(newcomm_id)
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi client return comm to configuration context"
+    write(0,*) "create new handle..."
+    cerr = mio%new(cc) 
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error creating new mpi handle"
+    if (newcomm_id == 0) ERROR STOP "Return communicator has not been set as expected"
+    newcomm = fckit_mpi_comm(newcomm_id)
+    
+    cerr = cc%delete() 
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error deleting configuration context"
 
-
-    newcomm = comm%split(color_client, "oce")
     server_count = comm%size()
     client_count = newcomm%size()
     server_count = server_count - client_count
 
     write(0,*) "client_count", client_count
     write(0,*) "server_count", server_count
+    
+    cerr = multio_set_failure_handler(multio_custom_error_handler, mio_parent_comm)
+    if (cerr /= MULTIO_SUCCESS) then
+         write(error_unit, *) 'setting multio failure handler failed: ',multio_error_string(cerr)
+         ERROR STOP "MULTIO_ERROR"
+    end if
+
+
+    
+    ! Performing a few tests
+    cerr = mio%field_is_active("sst", is_active)
+    if (.not. is_active) then
+        ERROR STOP 'Field "sst" should be active'
+    end if
+    
+    cerr = mio%field_is_active("ssv", is_active)
+    if (.not. is_active) then
+        ERROR STOP 'Field "ssv" should be active'
+    end if
+    
+    cerr = mio%field_is_active("ssu", is_active)
+    if (.not. is_active) then
+        ERROR STOP 'Field "ssu" should be active'
+    end if
+    
+    cerr = mio%field_is_active("ssw", is_active)
+    if (.not. is_active) then
+        ERROR STOP 'Field "ssw" should be active'
+    end if
+    
+    cerr = mio%category_is_fully_active("ocean-domain-map", is_active)
+    if (.not. is_active) then
+        ERROR STOP 'Category "ocean-domain-map" should be completly active'
+    end if
+    
+    cerr = mio%category_is_fully_active("ocean-mask", is_active)
+    if (.not. is_active) then
+        ERROR STOP 'Category "ocean-mask" should be fully active'
+    end if
+    
+    cerr = mio%category_is_fully_active("ocean-2d", is_active)
+    if (is_active) then
+        ERROR STOP 'Category "ocean-2d" should not be fully active'
+    end if
+    
+    cerr = mio%category_is_fully_active("ocean-3d", is_active)
+    if (is_active) then
+        ERROR STOP 'Category "ocean-3d" should not be fully active'
+    end if
+    
+    cerr = mio%field_is_active("notexisting", is_active)
+    if (is_active) then
+        ERROR STOP 'Field "notexisting" should not be active'
+    end if
+
 end subroutine init
 
 
@@ -163,7 +268,7 @@ subroutine set_domains(mio, rank, client_count)
 
     write(0,*) "set_domains..."
 
-    cerr = md%new_metadata()
+    cerr = md%new()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 9
 
     do i=1, size(grib_grid_type)
@@ -176,16 +281,14 @@ subroutine set_domains(mio, rank, client_count)
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 11
         cerr = md%set_string_value("representation", "structured")
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 12
-        cerr = md%set_int_value("domainCount", client_count)
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 13
         cerr = md%set_bool_value("toAllServers", .TRUE._1)
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 14
 
-        cerr = mio%write_domain(md, buffer)
+        cerr = mio%write_domain(md, buffer, size(buffer))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 15
     end do
 
-    cerr = md%delete_metadata()
+    cerr = md%delete()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 17
 end subroutine set_domains
 
@@ -212,7 +315,7 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
 
     write(0,*) "write_fields", rank, client_count
 
-    cerr = md%new_metadata()
+    cerr = md%new()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 19
 
     cerr = md%set_string_value("category", "ocean-2d")
@@ -246,20 +349,18 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 26
         cerr = md%set_string_value("gridSubType", grib_grid_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 27
-        cerr = md%set_int_value("domainCount", client_count)
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 28
         cerr = md%set_string_value("domain", grib_grid_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 29
         cerr = md%set_string_value("typeOfLevel", grib_level_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 30
 
-        cerr = mio%write_field(md, values)
+        cerr = mio%write_field(md, values, size(values))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 35
 
         deallocate(values)
     end do
 
-    cerr = md%delete_metadata()
+    cerr = md%delete()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 36
 end subroutine write_fields
 

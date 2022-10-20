@@ -25,7 +25,24 @@ ecbuild_add_test( TARGET    test_multio_capi
                   SOURCES   test_multio_capi.cc
                   CONDITION HAVE_MULTIO_SERVER
                   LIBS      multio multio-server multio-api 
-                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/../tests/server/config"
+                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/server/config"
+)
+
+if( HAVE_FORTRAN )
+    ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
+    ecbuild_add_test( TARGET    test_multio_fapi_general
+                      SOURCES   test_multio_fapi_general.f90
+                      CONDITION HAVE_MULTIO_SERVER
+                      LIBS      multio multio-server multio-api multio-fapi
+                      ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/server/config"
+    )
+endif()
+
+ecbuild_add_test( TARGET    test_multio_confctx
+                  SOURCES   test_multio_confctx.cc
+                  CONDITION HAVE_MULTIO_SERVER
+                  LIBS      multio 
+                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/server/config"
 )
 
 

@@ -19,10 +19,10 @@
 
 #include <iosfwd>
 #include <vector>
+#include <set>
+#include <iterator>
 
 #include "multio/action/Action.h"
-
-namespace eckit { class Configuration; }
 
 namespace multio {
 namespace action {
@@ -31,9 +31,12 @@ using message::Message;
 
 class Select : public Action {
 public:
-    explicit Select(const eckit::Configuration& config);
+    explicit Select(const ConfigurationContext& confCtx);
 
-    void execute(Message msg) const override;
+    void executeImpl(Message msg) const override;
+
+    void activeFields(std::insert_iterator<std::set<std::string>>& ins) const override;
+    void activeCategories(std::insert_iterator<std::set<std::string>>& ins) const override;
 
 private:
     void print(std::ostream &os) const override;

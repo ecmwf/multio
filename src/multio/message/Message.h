@@ -21,6 +21,7 @@
 #include <string>
 
 #include "eckit/io/Buffer.h"
+#include "eckit/utils/Optional.h"
 
 #include "multio/message/Metadata.h"
 #include "multio/message/Peer.h"
@@ -68,8 +69,6 @@ public:  // types
 
         std::string category() const;
 
-        size_t domainCount() const;
-
         long globalSize() const ;
 
         std::string domain() const;
@@ -78,34 +77,38 @@ public:  // types
 
         void encode(eckit::Stream& strm) const;
 
-        const Metadata& metadata() const;
+        // Metadata&& metadata() &&;
+        const Metadata& metadata() const&;
+        
+        Header modifyMetadata(Metadata&& md) const;
 
     private:
-        const Tag tag_;
+        Tag tag_;
 
-        const Peer source_;
-        const Peer destination_;
+        Peer source_;
+        Peer destination_;
 
-        const Metadata metadata_;
-        const std::string fieldId_; // Make that a hash?
+        Metadata metadata_;
+        // encode fieldId_ lazily
+        mutable eckit::Optional<std::string> fieldId_; // Make that a hash?
     };
 
-    class Content {
-    public:
-        Content(Header&& header, const eckit::Buffer& payload = eckit::Buffer(0));
-        Content(Header&& header, eckit::Buffer&& payload);
+    // class Content {
+    // public:
+    //     Content(Header&& header, const eckit::Buffer& payload = eckit::Buffer(0));
+    //     Content(Header&& header, eckit::Buffer&& payload);
 
-        size_t size() const;
+    //     size_t size() const;
 
-        const Header& header();
+    //     const Header& header();
 
-        eckit::Buffer& payload();
-        const eckit::Buffer& payload() const;
+    //     eckit::Buffer& payload();
+    //     const eckit::Buffer& payload() const;
 
-    private:
-        const Header header_;
-        eckit::Buffer payload_;
-    };
+    // private:
+    //     const Header header_;
+    //     eckit::Buffer payload_;
+    // };
 
 public:  // methods
     static int protocolVersion();
@@ -114,6 +117,11 @@ public:  // methods
     Message();
     Message(Header&& header, const eckit::Buffer& payload = eckit::Buffer{0});
     Message(Header&& header, eckit::Buffer&& payload);
+    Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload);
+    Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload);
+    // Message(std::shared_ptr<Header> header, std::shared_ptr<eckit::Buffer> payload);
+
+public:
 
     const Header& header() const;
 
@@ -127,14 +135,17 @@ public:  // methods
 
     std::string category() const;
 
-    size_t domainCount() const;
-
     long globalSize() const ;
 
     std::string domain() const;
 
     const std::string& fieldId() const;
-    const Metadata& metadata() const;
+    
+    // Metadata&& metadata() &&;
+    
+    const Metadata& metadata() const&;
+    
+    Message modifyMetadata(Metadata&& md) const;
 
     eckit::Buffer& payload();
     const eckit::Buffer& payload() const;
@@ -154,7 +165,8 @@ private:  // methods
 private:  // members
     int version_;
 
-    std::shared_ptr<Content> content_;
+    std::shared_ptr<Header> header_;
+    std::shared_ptr<eckit::Buffer> payload_;
 
 };
 

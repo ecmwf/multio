@@ -21,12 +21,15 @@
 #include "eckit/memory/NonCopyable.h"
 
 #include "eckit/message/Message.h"
+#include "multio/util/ConfigurationContext.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 
 namespace eckit { class Configuration; }
 
 namespace multio {
+
+using util::ConfigurationContext;
 
 
 class EventTrigger;
@@ -35,7 +38,7 @@ class Trigger : public eckit::NonCopyable {
 
 public: // methods
 
-    Trigger(const eckit::Configuration& config);
+    Trigger(const ConfigurationContext& confCtx);
 
     ~Trigger();
 

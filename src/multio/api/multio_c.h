@@ -47,6 +47,8 @@ int multio_set_failure_handler(multio_failure_handler_t handler, void* context);
 /** Types */
 
 ///@{
+struct multio_configurationcontext_t;
+typedef struct multio_configurationcontext_t multio_configurationcontext_t;
 
 struct multio_metadata_t;
 typedef struct multio_metadata_t multio_metadata_t;
@@ -88,23 +90,82 @@ int multio_vcs_version(const char** sha1);
 /** @} */
 
 /** API */
-/** @{ */
+/** @{*/
+      
+/** Creates a multio configuration context object with default configuration file name (environment variable: MULTIO_SERVER_CONFIG_FILE)
+ * \param md Return a handle to the multio configuration context object
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_new_configurationcontext(multio_configurationcontext_t** cc);
+      
+/** Creates a multio configuration context object with custom configuration file name
+ * \param configuration_file_name Absolute path to the YAML configuration file
+ * \param cc Return a handle to the multio configuration context object
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_new_configurationcontext_from_filename(multio_configurationcontext_t** cc, const char* configuration_file_name);
 
+/** Deletes a multio configuration context object
+ * \param md Handle to the multio configuration context object
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_delete_configurationcontext(multio_configurationcontext_t* cc);
+      
+      
+/** Sets the configuration path which some components might use to read configuration files (default: environment variable: MULTIO_SERVER_CONFIG_PATH)
+ * \param configuration_path Absolute path to configuration file folder - may be used in subcomponents?
+ * \param cc Handle to the multio configuration context object
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_conf_set_path(multio_configurationcontext_t* cc, const char* configuration_path);
+      
 
-// TODO: Shall we allow passing in a configuration path here?
+/** Overwrite global MPI options for default splitting.
+ *
+ * \param allow Specifies if multio is supposed to use the WORLD communicator as default if a group has not been added to eckit::mpi yet.
+ * \param cc Handle to the multio configuration context object
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_conf_mpi_allow_world_default_comm(multio_configurationcontext_t* cc, bool allow);
+
+/** Set MPI specific initalization parameters
+ *
+ * \param parent_comm Parent MPI intra communicator containing all servers and clients.
+ * \param cc Handle to the multio configuration context object
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_conf_mpi_parent_comm(multio_configurationcontext_t* cc, int parent_comm);
+      
+/** Set MPI specific initalization parameters
+ *
+ * \param return_client_comm Pointer to an integer specifying the client communicator that the multio may set on initialization
+ * \param cc Handle to the multio configuration context object
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_conf_mpi_return_client_comm(multio_configurationcontext_t* cc, int* return_client_comm);
+      
+/** Set MPI specific initalization parameters
+ *
+ * \param return_server_comm Pointer to an integer specifying the server communicator that the multio may set on initialization
+ * \param cc Handle to the multio configuration context object
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_conf_mpi_return_server_comm(multio_configurationcontext_t* cc, int* return_server_comm);
+      
+/** Set MPI specific initalization parameters
+ *
+ * \param client_id  String containing the client id (provided for backwards compatibility). 
+ * \param cc Handle to the multio configuration context object
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_conf_mpi_client_id(multio_configurationcontext_t* cc, const char* client_id);
+      
 /** Creates a multio (client) instance
- * \param configuration_path Path to YAML configuration file
+ * \param cc Handle to configuration context
  * \param mio Return a handle to the multio (client) instance
  * \returns Return code (#MultioErrorValues)
  */
-int multio_new_handle_from_config(multio_handle_t** multio, const char* configuration_path);
-
-
-/** Creates a multio (client) instance
- * \param mio Return a handle to the multio (client) instance
- * \returns Return code (#MultioErrorValues)
- */
-int multio_new_handle(multio_handle_t** mio);
+int multio_new_handle(multio_handle_t** multio, multio_configurationcontext_t* cc);
 
 
 /** Deletes a multio (client) instance
@@ -115,16 +176,12 @@ int multio_delete_handle(multio_handle_t* mio);
 
 
 /** Initialises and starts server
+ *
  * \note This will be running until it receives a 'close' message from all of clients
+ * \param cc Handle to configuration context
  * \returns Return code (#MultioErrorValues)
  */
-int multio_start_server_from_config(const char* configuration_path, const char* server_name_key);
-
-/** Initialises and starts server
- * \note This will be running until it receives a 'close' message from all of clients
- * \returns Return code (#MultioErrorValues)
- */
-int multio_start_server(const char* server_name_key);
+int multio_start_server(multio_configurationcontext_t* cc);
 
 
 /** Opens connections to the server
@@ -197,19 +254,6 @@ int multio_new_metadata(multio_metadata_t** md);
  */
 int multio_delete_metadata(multio_metadata_t* md);
 
-
-// /** Resets/clears a multio metadata object to make the allocated memory reusable efficiently
-//  *
-//  * TODO: Discuss - std::move is also used very often for efficiency. Everything is fine for
-//  * sequentially processing. Problems could arise if at one end the data is not copy and instead
-//  * accessed in an asynchronous manner.
-//  *
-//  * \param md Handle to the multio metadata object
-//  * \returns Return code (#MultioErrorValues)
-//  */
-// int multio_reset_metadata(multio_metadata_t* md);
-
-
 /** Sets a metadata key-value pair for integer values
  * \param md Handle to the multio metadata object
  * \param key C-string key to be set
@@ -273,23 +317,30 @@ int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, floa
 int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, double value);
 
 
-/** Sets a metadata key-value pair for recursive metadata maps.
+/** Query information whether a field is actively used or can be omitted
  *
- * \todo Do we need nested metadata?
+ *  Multio is not aware on specific category <-> field relation ships. 
+ *  Therefore this information should be queried together with `multio_category_is_fully_active` and combined with an logical OR. 
+ *  Even if a category is not fully/explicitly active, a single field may be and hence a `multio_field_is_active` query should be performed.
+ *  Vice versa, a category might me explicitly active while a single field within that category is not.
  *
- * \param md Handle to the multio metadata object
- * \param key C-string key to be set
- * \param value metadata value (ordered map) to be set
+ * \param mio Handle to the multio (client) instance
+ * \param fname Name of the field
+ * \param set_value Pointer to the boolean where to store the result
  * \returns Return code (#MultioErrorValues)
  */
-int multio_metadata_set_map_value(multio_metadata_t* md, const char* key, multio_metadata_t*);
+int multio_field_is_active(multio_handle_t* mio, const char* fname, bool* set_value);
 
-
-/**
+/** Query information whether a whole category is actively used (i.e. the whole category is explicitly listed in the configuration) or can be omitted.
+ *  
+ * Please read the comments in `multio_field_is_active`.
  *
- * \todo Do we need arrays in metadata? Are there use cases for that? If so, are single type arrays
- * fine or should we support mixed type arrays (however we would express that with c...)
+ * \param mio Handle to the multio (client) instance
+ * \param fname Name of the field
+ * \param set_value Pointer to the boolean where to store the result
+ * \returns Return code (#MultioErrorValues)
  */
+int multio_category_is_fully_active(multio_handle_t* mio, const char* cname, bool* set_value);
 
 
 #ifdef __cplusplus

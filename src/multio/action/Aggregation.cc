@@ -66,12 +66,10 @@ Message Aggregation::createGlobalField(const Message& msg) const {
 
     const auto& fid = msg.fieldId();
 
-    auto levelCount = msg.metadata().getLong("levelCount", 1);
-
     auto md = msg.header().metadata();
-    Message msgOut{Message::Header{msg.header().tag(), Peer{msg.source().group()},
-                                   Peer{msg.destination()}, std::move(md)},
-                   eckit::Buffer{msg.globalSize() * levelCount * sizeof(double)}};
+    Message msgOut{
+        Message::Header{msg.header().tag(), Peer{msg.source().group()}, Peer{msg.destination()}, std::move(md)},
+        eckit::Buffer{msg.globalSize() * sizeof(double)}};
 
     domain::Mappings::instance().checkDomainConsistency(messages_.at(fid));
 

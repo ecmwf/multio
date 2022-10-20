@@ -189,7 +189,6 @@ public:
         md.set("category", "ocean-mask");
         md.set("representation", "structured");
         md.set("domain", mname.substr(0, 1) + " grid");
-        md.set("levelCount", metadata_.getLong("levelCount"));
         md.set("level", metadata_.getLong("level"));
 
         md.set("toAllServers", true);

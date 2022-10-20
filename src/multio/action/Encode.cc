@@ -63,22 +63,7 @@ void Encode::executeImpl(Message msg) const {
                              << std::endl;
 
     if (encoder_->gridInfoReady(msg.domain())) {
-        auto levelCount = msg.metadata().getLong("levelCount", 1);
-        ASSERT(levelCount == 1);
-        // TODO: most of this can probably go if we stick to levelCount == 1 always
-        if (levelCount == 1) {
-            executeNext(encodeField(std::move(msg)));
-        }
-        else { // TODO: this branch can probably go. See above...
-            ASSERT(false);
-            auto metadata = msg.metadata();
-            auto data = reinterpret_cast<const double*>(msg.payload().data());
-            for (auto lev = 0; lev != levelCount;) {
-                metadata.set("level", ++lev);
-                executeNext(encoder_->encodeField(metadata, data, msg.globalSize()));
-                data += msg.globalSize();
-            }
-        }
+        executeNext(encodeField(std::move(msg)));
     }
     else {
         LOG_DEBUG_LIB(LibMultio) << "*** Grid metadata: " << msg.metadata() << std::endl;

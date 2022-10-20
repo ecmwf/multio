@@ -41,9 +41,6 @@ Mask::Mask(const ConfigurationContext& confCtx) :
     offsetValue_{confCtx.config().getDouble("offset-value", 273.15)} {}
 
 void Mask::executeImpl(message::Message msg) const {
-    // Sanity check
-    ASSERT(msg.metadata().getLong("levelCount") == 1);
-
     executeNext(createMasked(std::move(msg)));
 }
 

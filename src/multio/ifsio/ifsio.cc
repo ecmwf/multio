@@ -56,11 +56,6 @@ public:
     void log(bool log) { log_ = log; }
     void dirty(bool dirty) { dirty_ = dirty; }
 
-    // void report() {
-    //     if (log_ && ptr_ && !::getenv("MULTIO_NO_REPORT")) {
-    //         ptr_->report(std::cout);
-    //     }
-    // }
 
     void lock() { mutex_.lock(); }
     void unlock() { mutex_.unlock(); }
@@ -84,8 +79,8 @@ public:
             });
     };
 
-    util::FailureHandlerResponse handleFailure(util::OnClientError t, const util::FailureContext& c,
-                                               util::DefaultFailureState&) const {
+    util::FailureHandlerResponse handleFailure(util::OnClientError, const util::FailureContext& c,
+                                               util::DefaultFailureState&) const override {
         // Last cascading instance, print nested contexts
         print(eckit::Log::error(), c);
         return util::FailureHandlerResponse::Rethrow;

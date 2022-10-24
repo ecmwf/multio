@@ -70,9 +70,9 @@ ecbuild_add_executable( TARGET    multio-maestro-instigator
                         SOURCES   multio-maestro-instigator.cc MultioTool.cc
                         LIBS      multio maestro multio-maestro)
 
-ecbuild_add_executable( TARGET    multio-feeder
+ecbuild_add_executable( TARGET    multio-feed
                         CONDITION HAVE_FDB5
-                        SOURCES   multio-feeder.cc MultioTool.cc
+                        SOURCES   multio-feed.cc MultioTool.cc
                         LIBS      multio multio-fdb5 eckit_option)
 
 if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )

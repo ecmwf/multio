@@ -73,9 +73,6 @@ void Structured::to_local(const std::vector<double>&, std::vector<double>&) cons
 }
 
 void Structured::to_global(const message::Message& local, message::Message& global) const {
-    // checkDomainConsistency(local);
-
-    auto levelCount = local.metadata().getLong("levelCount", 1);
 
     // Global domain's dimenstions
     auto ni_global = definition_[0];
@@ -94,33 +91,28 @@ void Structured::to_global(const message::Message& local, message::Message& glob
     auto data_nj = definition_[10];
     // auto data_dim = definition_[6]; -- Unused here
 
-    ASSERT(sizeof(double) * ni_global * nj_global * levelCount == global.size());
+    ASSERT(sizeof(double) * ni_global * nj_global == global.size());
 
-    if (sizeof(double) * data_ni * data_nj * levelCount != local.size()) {
-        throw eckit::AssertionFailed(
-            "Local size is " +
-            std::to_string(local.payload().size() / levelCount / sizeof(double)) +
-            " while it is expected to equal " + std::to_string(data_ni) + " times " +
-            std::to_string(data_nj));
+    if (sizeof(double) * data_ni * data_nj != local.size()) {
+        throw eckit::AssertionFailed("Local size is " + std::to_string(local.payload().size() / sizeof(double))
+                                     + " while it is expected to equal " + std::to_string(data_ni) + " times "
+                                     + std::to_string(data_nj));
     }
 
     auto lit = static_cast<const double*>(local.payload().data());
     auto git = static_cast<double*>(global.payload().data());
-    for (long lev = 0; lev != levelCount; ++lev) {
-        auto offset = lev * local.globalSize();
-        for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
-            for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
-                if (inRange(i, 0, ni) && inRange(j, 0, nj)) {
-                    auto gidx = offset + (jbegin + j) * ni_global + (ibegin + i);
-                    *(git + gidx) = *lit;
-                }
+    auto offset = local.globalSize();
+    for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
+        for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
+            if (inRange(i, 0, ni) && inRange(j, 0, nj)) {
+                auto gidx = offset + (jbegin + j) * ni_global + (ibegin + i);
+                *(git + gidx) = *lit;
             }
         }
     }
 }
 
 void Structured::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
-    auto levelCount = local.metadata().getLong("levelCount", 1);
 
     // Global domain's dimenstions
     auto ni_global = definition_[0];
@@ -139,7 +131,6 @@ void Structured::to_bitmask(const message::Message& local, std::vector<bool>& bm
     auto data_nj = definition_[10];
     // auto data_dim = definition_[6]; -- Unused here
 
-    ASSERT(levelCount == 1);
     ASSERT(static_cast<std::set<int32_t>::size_type>(ni_global * nj_global) == bmask.size());
     auto lit = static_cast<const uint8_t*>(local.payload().data());
     for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {

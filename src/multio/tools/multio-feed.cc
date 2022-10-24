@@ -101,7 +101,7 @@ private:
     eckit::PathName fdbRootPath_;
 
     bool testSubtoc_ = false;
-    bool rawData_ = false;
+    bool decodeData_ = false;
     std::string configPath_ = "";
 };
 
@@ -109,7 +109,7 @@ MultioFeed::MultioFeed(int argc, char** argv) :
     multio::MultioTool{argc, argv}, fdbRootPath_{"~multio/multio/tests/fdb/root"} {
     options_.push_back(new eckit::option::SimpleOption<bool>("test-subtoc", "Test if subtoc has been created"));
     options_.push_back(new eckit::option::SimpleOption<bool>(
-        "raw", "Decode messages and pass raw data with metadata through the pipeline"));
+        "decode", "Decode messages and pass raw data with metadata through the pipeline"));
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("plans", "Path to YAML/JSON file containing plans and actions."));
 }
@@ -120,7 +120,7 @@ void MultioFeed::init(const eckit::option::CmdArgs& args) {
         std::system(std::string{"rm -rf " + fdbRootPath_.asString() + "/*"}.c_str());
         fdbRootPath_.mkdir();
     }
-    args.get("raw", rawData_);
+    args.get("decode", decodeData_);
     args.get("plans", configPath_);
 
     if (!configPath_.empty()) {
@@ -136,7 +136,7 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
     eckit::message::Message msg;
 
     while ((msg = reader.next())) {
-        if (rawData_) {
+        if (decodeData_) {
             eckit::StringDict sd;
             eckit::message::Message codesMsg = msg.transform(sd);
 

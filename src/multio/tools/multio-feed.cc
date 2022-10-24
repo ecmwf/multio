@@ -17,6 +17,7 @@
 #include <fstream>
 #include <regex>
 
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/FileHandle.h"
 #include "eckit/io/PeekHandle.h"
@@ -27,6 +28,8 @@
 #include "eckit/message/Reader.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
+#include "eckit/value/Value.h"
+
 
 #include "metkit/codes/CodesSplitter.h"
 
@@ -45,6 +48,36 @@ public:
     ~TempFile() { std::remove(path_.c_str()); }
 
     const std::string& path() const { return path_; }
+};
+
+class MetadataSetter : public eckit::LocalConfiguration {
+    // void print(std::ostream& os) const {
+    //     os << *root_ << std::endl;
+    // }
+    // friend std::ostream& operator<<(std::ostream& os, const MetadataSetter& md) {
+    //     md.print(os);
+    //     return os;
+    // }
+
+public:
+    using eckit::LocalConfiguration::has;
+    using eckit::LocalConfiguration::getString;
+    using eckit::LocalConfiguration::getLong;
+    using eckit::LocalConfiguration::getDouble;
+    
+    template <typename T>
+    void setValue(const std::string& key, const T& value) {
+        set(key, value);
+    }
+
+    template <typename T>
+    T get(const std::string& key) {
+        T value;
+        eckit::LocalConfiguration::get(key, value);
+        return value;
+    }
+
+    std::vector<std::string> keys() { return eckit::LocalConfiguration::keys(); }
 };
 }  // namespace
 
@@ -68,11 +101,17 @@ private:
     eckit::PathName fdbRootPath_;
 
     bool testSubtoc_ = false;
+    bool rawData_ = false;
+    std::string configPath_ = "";
 };
 
 MultioFeed::MultioFeed(int argc, char** argv) :
     multio::MultioTool{argc, argv}, fdbRootPath_{"~multio/multio/tests/fdb/root"} {
     options_.push_back(new eckit::option::SimpleOption<bool>("test-subtoc", "Test if subtoc has been created"));
+    options_.push_back(new eckit::option::SimpleOption<bool>(
+        "raw", "Decode messages and pass raw data with metadata through the pipeline"));
+    options_.push_back(
+        new eckit::option::SimpleOption<std::string>("plans", "Path to YAML/JSON file containing plans and actions."));
 }
 
 void MultioFeed::init(const eckit::option::CmdArgs& args) {
@@ -80,6 +119,12 @@ void MultioFeed::init(const eckit::option::CmdArgs& args) {
     if (testSubtoc_) {
         std::system(std::string{"rm -rf " + fdbRootPath_.asString() + "/*"}.c_str());
         fdbRootPath_.mkdir();
+    }
+    args.get("raw", rawData_);
+    args.get("plans", configPath_);
+
+    if (!configPath_.empty()) {
+        ::setenv("MULTIO_PLANS_FILE", configPath_.c_str(), 1);
     }
 }
 
@@ -91,12 +136,50 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
     eckit::message::Message msg;
 
     while ((msg = reader.next())) {
-        size_t words = eckit::round(msg.length(), sizeof(fortint)) / sizeof(fortint);
+        if (rawData_) {
+            eckit::StringDict sd;
+            eckit::message::Message codesMsg = msg.transform(sd);
 
-        fortint iwords = static_cast<fortint>(words);
+            MetadataSetter encodingMetadata;
+            eckit::message::TypedSetter<MetadataSetter> gatherer{encodingMetadata};
+            codesMsg.getMetadata(gatherer);
+            
+            eckit::LocalConfiguration metadata;
+            if(encodingMetadata.has("name")) {
+                metadata.set("name", encodingMetadata.getString("name"));
+            }
+            if(encodingMetadata.has("param")) {
+                metadata.set("param", encodingMetadata.getLong("param"));
+            }
+            if(encodingMetadata.has("step")) {
+                metadata.set("step", encodingMetadata.getLong("step"));
+            }
+            metadata.set("mars", encodingMetadata); 
+            
+            std::vector<double> data;
+            /// TODO: GRIB specific encoding. ECKIT Message needs some refactoring to decode data for different types
+            codesMsg.getDoubleArray("values", data);
 
-        if (imultio_write_(msg.data(), &iwords)) {
-            ASSERT(false);
+            size_t words = eckit::round(data.size(), sizeof(fortint)) / sizeof(fortint);
+            fortint iwords = static_cast<fortint>(words);
+            
+            // size_t words = eckit::round(codesMsg.length(), sizeof(fortint)) / sizeof(fortint);
+
+            // fortint iwords = static_cast<fortint>(words);
+
+            if (imultio_write_raw_(&metadata, reinterpret_cast<const void*>(codesMsg.data()), &iwords)) {
+                ASSERT(false);
+            }
+        }
+        else {
+            size_t words = eckit::round(msg.length(), sizeof(fortint)) / sizeof(fortint);
+
+            fortint iwords = static_cast<fortint>(words);
+
+
+            if (imultio_write_(msg.data(), &iwords)) {
+                ASSERT(false);
+            }
         }
     }
 

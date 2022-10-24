@@ -16,6 +16,7 @@
 #include "eckit/config/LibEcKit.h"
 #include "eckit/config/Resource.h"
 #include "eckit/config/YAMLConfiguration.h"
+#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/message/Message.h"
@@ -123,6 +124,12 @@ private:
             return ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(cfg)), cfg, cfg);
         }
 
+        if (::getenv("MULTIO_PLANS_FILE")) {
+            PathName path(::getenv("MULTIO_PLANS_FILE"));
+            std::cout << "MultIO initialising with plans file " << path << std::endl;
+            return ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(path)), path, path);
+        }
+
         if (::getenv("MULTIO_CONFIG")) {
             std::string cfg(::getenv("MULTIO_CONFIG"));
             std::cout << "MultIO initialising with config " << cfg << std::endl;
@@ -132,7 +139,7 @@ private:
 
         if (::getenv("MULTIO_CONFIG_FILE")) {
             PathName path(::getenv("MULTIO_CONFIG_FILE"));
-            std::cout << "MultIO initialising with file " << path << std::endl;
+            std::cout << "MultIO initialising with config file " << path << std::endl;
             return configureFromSinks(
                 ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(path)), path, path));
         }
@@ -245,6 +252,37 @@ fortint imultio_write_(const void* data, const fortint* words) {
         multio::message::Metadata metadata;
         multio::message::Message message{
             multio::message::Message::Header{Message::Tag::Grib, Peer{}, Peer{}, std::move(metadata)},
+            std::move(payload)};
+        MIO::instance().dispatch(message);
+
+        MIO::instance().log(true);
+        MIO::instance().dirty(true);
+    }
+    catch (std::exception& e) {
+        return ifsio_handle_error(e);
+    }
+    return 0;
+}
+
+
+fortint imultio_write_raw_(const void* configuration, const void* data, const fortint* words) {
+    try {
+        eckit::AutoLock<MIO> lock(MIO::instance());
+
+        MULTIO_TRACE_FUNC();
+        ASSERT(configuration);
+        const eckit::Configuration* conf = reinterpret_cast<const eckit::Configuration*>(configuration);
+        
+        ASSERT(data);
+        int ilen = (*words) * sizeof(fortint);
+        ASSERT(ilen > 0);
+        size_t len(ilen);
+
+        eckit::Buffer payload{reinterpret_cast<const char*>(data), len};
+
+        multio::message::Metadata metadata{*conf};
+        multio::message::Message message{
+            multio::message::Message::Header{Message::Tag::Field, Peer{}, Peer{}, std::move(metadata)},
             std::move(payload)};
         MIO::instance().dispatch(message);
 

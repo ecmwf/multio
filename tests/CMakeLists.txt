@@ -56,12 +56,6 @@ list( APPEND _test_data
   "rd.vod.grib"
 )
 
-ecbuild_add_executable( TARGET    multio-sink
-                        SOURCES   multio-sink.cc
-                                  ${CMAKE_CURRENT_SOURCE_DIR}/../src/multio/tools/MultioTool.cc
-                        CONDITION HAVE_FDB5
-                        LIBS      multio multio-fdb5 eckit_option)
-
 ecbuild_add_executable( TARGET    multio-legacy
                         SOURCES   multio-legacy.cc
                                   ${CMAKE_CURRENT_SOURCE_DIR}/../src/multio/tools/MultioTool.cc
@@ -76,16 +70,23 @@ ecbuild_add_executable( TARGET    multio-legacy-hammer
 
 ecbuild_get_test_multidata( TARGET multio_get_test_data DIRNAME fdb5/tests/fdb NAMES ${_test_data} )
 
+ecbuild_add_test( TARGET test_multio_ifs_plans
+                  CONDITION HAVE_FDB5
+                  COMMAND $<TARGET_FILE:multio-feed>
+                  TEST_DEPENDS multio_get_test_data
+                  ARGS ${_test_data}
+                  ENVIRONMENT "${_test_environment}" "MULTIO_PLANS={ \"plans\": [{ \"name\": \"test plans fdb5\", \"actions\": [{ \"type\": \"sink\", \"sinks\": [{\"type\": \"fdb5\"}]}]}]}" )
+
 ecbuild_add_test( TARGET test_multio_ifs_io
                   CONDITION HAVE_FDB5
-                  COMMAND $<TARGET_FILE:multio-sink>
+                  COMMAND $<TARGET_FILE:multio-feed>
                   TEST_DEPENDS multio_get_test_data
                   ARGS ${_test_data}
                   ENVIRONMENT "${_test_environment}" )
 
 ecbuild_add_test( TARGET test_multio_subtoc
                   CONDITION HAVE_FDB5
-                  COMMAND $<TARGET_FILE:multio-sink>
+                  COMMAND $<TARGET_FILE:multio-feed>
                   TEST_DEPENDS multio_get_test_data
                   ARGS ${_test_data} --test-subtoc
                   ENVIRONMENT "${_test_environment}" )

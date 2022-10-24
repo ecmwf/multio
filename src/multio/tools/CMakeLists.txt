@@ -70,6 +70,11 @@ ecbuild_add_executable( TARGET    multio-maestro-instigator
                         SOURCES   multio-maestro-instigator.cc MultioTool.cc
                         LIBS      multio maestro multio-maestro)
 
+ecbuild_add_executable( TARGET    multio-feed
+                        CONDITION HAVE_FDB5
+                        SOURCES   multio-feed.cc MultioTool.cc
+                        LIBS      multio multio-fdb5 eckit_option)
+
 if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
     ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
     find_package(fckit)

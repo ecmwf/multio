@@ -1,23 +1,19 @@
 
 #include "TransportRegistry.h"
-
-#include "eckit/config/YAMLConfiguration.h"
-#include "multio/util/ConfigurationPath.h"
+#include "eckit/exception/Exceptions.h"
 
 namespace multio {
 namespace transport {
-
-using util::configuration_file;
 
 TransportRegistry& TransportRegistry::instance() {
     static TransportRegistry singleton;
     return singleton;
 }
 
-std::shared_ptr<transport::Transport> TransportRegistry::get(const eckit::Configuration& config) {
+std::shared_ptr<transport::Transport> TransportRegistry::get(const ConfigurationContext& confCtx) {
 
-    auto serverName = config.getString("target");
-    add(serverName);
+    auto serverName = confCtx.config().getString("target");
+    add(serverName, confCtx);
 
     return transports_.at(serverName);
 }
@@ -49,19 +45,29 @@ void TransportRegistry::abortAll() {
     }
 }
 
-void TransportRegistry::add(const std::string& serverName) {
+void TransportRegistry::add(const std::string& serverName, const ConfigurationContext& confCtx) {
     std::lock_guard<std::mutex> lock{mutex_};
 
     if (transports_.find(serverName) != std::end(transports_)) {
         return;
     }
 
-    eckit::LocalConfiguration fullConfig{eckit::YAMLConfiguration{configuration_file()}};
-    auto serverConfig = fullConfig.getSubConfiguration(serverName);
+    if (!confCtx.globalConfig().has(serverName)) {
+        std::ostringstream oss;
+        oss << "No config for server \"" << serverName << "\" found in configuration " << confCtx.fileName() << std::endl;
+        throw eckit::Exception(oss.str());
+    }
+    auto serverConfigCtx = confCtx.recast(confCtx.globalConfig().getSubConfiguration(serverName), util::ComponentTag::Transport);    
+    if (!serverConfigCtx.config().has("transport")) {
+        std::ostringstream oss;
+        oss << "No key \"transport\" in server config for server \"" << serverName << "\" found (Configuration filename:  " << confCtx.fileName() << ")" << std::endl;
+        throw eckit::Exception(oss.str());
+    }
     transports_.insert({serverName, std::shared_ptr<transport::Transport>{
                                         transport::TransportFactory::instance().build(
-                                            serverConfig.getString("transport"), serverConfig)}});
+                                            serverConfigCtx.config().getString("transport"), serverConfigCtx)}});
 }
+
 
 }  // namespace action
 }  // namespace multio

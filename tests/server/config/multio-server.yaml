@@ -6,9 +6,14 @@ run:
   type: an
   date-of-analysis: 20170909
 
-active-fields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethic_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
+# May be generated through client plans
+# active-fields : [ 14d, 17d, 20d, 26d, 28d, cdn10, empmr, erp, hbp, hc26c, hc300, hc700, hcbtm, hst, iceconc_cat, ice_cover, ice_cover, icesalt, icesalt_cat, icetemp, icethic, icethic_cat, icettop, icevolu, iicevelur, iicevelvr, iocestrur, iocestrvr, lat_T, lat_U, lat_V, lat_W, lon_T, lon_U, lon_V, lon_W, mldkr03, mldkr125, mldkz5, mldr10_1, mldt02, mldt05, precip, qrp, qsr, qt, runoffs, sal300, sal700, salbtm, saltflx, sigmat, snowpre, snwthic, snwthic_cat, soce, sodmp, ssh, sss, sst, ssu, ssv, ssw, taum, taum, thetaodmp, toce, uice, uoce, uocee, uocees, utau, utau_ai, utaue, vice, voce, vocen, vocens, vtau, vtau_ai, vtaun, woce, wspd ]
+
+# Default - can be omitted, inline definition instead of refering to a file is also possible
+# parameter-mappings: "parameter-mappings.yaml"
 
 client:
+  on-error: abort-all-transports
   plans:
 
     - name : ocean-replay-grid-info-stream
@@ -18,7 +23,7 @@ client:
           categories : [ocean-domain-map, ocean-mask]
 
         - type : transport
-          target : nemo-ioserver
+          target : server
 
     - name : ocean-replay-test-stream1
       actions :
@@ -26,8 +31,13 @@ client:
           match : field
           fields : [ sst, ssv ]
 
+        - type : parameter-mapping
+          mapping : nemo-to-grib
+          enforce-match : true # default, may be omitted
+          overwrite-existing : false # default, may be omitted
+
         - type : transport
-          target : nemo-ioserver
+          target : server
 
     - name : ocean-replay-test-stream2
       actions :
@@ -35,13 +45,17 @@ client:
           match : field
           fields : [ ssu, ssw ]
 
-        - type : transport
-          target : nemo-ioserver
+        - type : parameter-mapping
+          mapping : nemo-to-grib
+          enforce-match : true # default, may be omitted
+          overwrite-existing : false # default, may be omitted
 
-nemo-ioserver:
+        - type : transport
+          target : server
+
+server:
   transport : mpi
-  group : nemo
-  count : 2
+  on-error: abort-transport
   plans :
 
     - name : ocean-fields

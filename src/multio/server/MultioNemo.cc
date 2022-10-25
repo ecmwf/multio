@@ -34,12 +34,19 @@
 #include "multio/server/MultioServer.h"
 #include "multio/server/NemoToGrib.h"
 #include "multio/util/ConfigurationPath.h"
+#include "multio/util/ConfigurationContext.h"
 #include "multio/util/print_buffer.h"
 
 using multio::message::Peer;
 using multio::message::Message;
 using multio::message::Metadata;
 using multio::util::configuration_file;
+using multio::util::configuration_file_name;
+using multio::util::configuration_path_name;
+using multio::util::MPIInitInfo;
+using multio::util::ConfigurationContext;
+using multio::util::ClientConfigurationContext;
+using multio::util::ServerConfigurationContext;
 using multio::util::print_buffer;
 using multio::server::MultioClient;
 using multio::server::MultioServer;
@@ -47,11 +54,6 @@ using multio::server::MultioServer;
 using NemoKey = std::string;
 
 namespace {
-std::set<std::string> fetch_active_fields(const eckit::Configuration& cfg) {
-    const auto& vec = cfg.getStringVector("active-fields");
-    return std::set<std::string>{begin(vec), end(vec)};
-}
-
 struct GribData {
     long param;
     std::string gridType;
@@ -60,8 +62,7 @@ struct GribData {
 }  // namespace
 
 class MultioNemo {
-    eckit::LocalConfiguration config_;
-    const std::set<std::string> activeFields_;
+    ConfigurationContext confCtx_;
 
     // Nemo to grib dictionary
     NemoToGrib paramMap_;
@@ -81,12 +82,9 @@ class MultioNemo {
     const long bitsPerValue_ = 16;
 
     MultioNemo() :
-        config_{eckit::YAMLConfiguration{configuration_file()}},
-        activeFields_{fetch_active_fields(config_)} {
+        confCtx_(configuration_file(), configuration_path_name(), configuration_file_name()) {
         static const char* argv[2] = {"MultioNemo", 0};
         eckit::Main::initialise(1, const_cast<char**>(argv));
-
-        metadata_.set("run", config_.getSubConfiguration("run"));
     }
 
 public:
@@ -106,6 +104,10 @@ public:
     }
 
     int initClient(const std::string& oce_str, int parent_comm) {
+        MPIInitInfo initInfo;
+        initInfo.parentComm = eckit::Optional<int>{parent_comm};
+        initInfo.clientId = eckit::Optional<std::string>(oce_str);
+        confCtx_.setMPIInitInfo(eckit::Optional<MPIInitInfo>(std::move(initInfo)));
 
         eckit::mpi::addComm("nemo", parent_comm);
 
@@ -122,12 +124,17 @@ public:
         clientCount_ = eckit::mpi::comm(oce_str.c_str()).size();
         serverCount_ = eckit::mpi::comm("nemo").size() - clientCount_;
 
-        multioClient_.reset(new MultioClient{config_});
+        multioClient_.reset(new MultioClient{ClientConfigurationContext{confCtx_, "client"}});
 
         return ret_comm;
     }
 
-    void initServer(int parent_comm, const std::string server_name = "nemo-ioserver") {
+    void initServer(int parent_comm, const std::string server_name = "server") {
+        MPIInitInfo initInfo;
+        initInfo.parentComm = eckit::Optional<int>{parent_comm};
+        initInfo.clientId = eckit::Optional<std::string>{};
+        confCtx_.setMPIInitInfo(eckit::Optional<MPIInitInfo>(std::move(initInfo)));
+        
         eckit::mpi::addComm("nemo", parent_comm);
 
         // TODO: find a way to come up with a unique 'colour', such as using MPI_APPNUM
@@ -140,7 +147,7 @@ public:
                            << ",size=" << eckit::mpi::comm("server_comm").size() << ")"
                            << std::endl;
 
-        auto serverConfig = config_.getSubConfiguration(server_name);
+        auto serverConfig = ServerConfigurationContext(confCtx_, server_name);
 
         multioServer_.reset(new MultioServer{serverConfig});
     }
@@ -165,7 +172,6 @@ public:
         md.set("name", dname);
         md.set("category", "ocean-domain-map");
         md.set("representation", "structured");
-        md.set("domainCount", clientCount_);
         md.set("toAllServers", true);
 
         Message msg{Message::Header{Message::Tag::Domain, Peer{}, Peer{}, std::move(md)},
@@ -182,9 +188,7 @@ public:
         md.set("name", mname);
         md.set("category", "ocean-mask");
         md.set("representation", "structured");
-        md.set("domainCount", clientCount_);
         md.set("domain", mname.substr(0, 1) + " grid");
-        md.set("levelCount", metadata_.getLong("levelCount"));
         md.set("level", metadata_.getLong("level"));
 
         md.set("toAllServers", true);
@@ -206,7 +210,6 @@ public:
         metadata_.set("nemoParam", fname);
         metadata_.set("param", paramMap_.get(fname).param);
         metadata_.set("gridSubtype", paramMap_.get(fname).gridType);
-        metadata_.set("domainCount", clientCount_);
         metadata_.set("domain", paramMap_.get(fname).gridType);
         metadata_.set("typeOfLevel", paramMap_.get(fname).levelType);
 
@@ -229,7 +232,7 @@ public:
     }
 
     bool isActive(const std::string& name) const {
-        return activeFields_.find(name) != end(activeFields_);
+        return MultioNemo::instance().client().isFieldActive(name);
     }
 };
 

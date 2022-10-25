@@ -30,6 +30,7 @@
 #include "multio/transport/TcpTransport.h"
 #include "multio/util/print_buffer.h"
 #include "multio/util/ScopedTimer.h"
+#include "multio/util/ConfigurationContext.h"
 
 using multio::LibMultio;
 using multio::message::Message;
@@ -39,12 +40,14 @@ using multio::domain::Unstructured;
 using multio::LibMultio;
 using multio::message::Peer;
 using multio::action::Plan;
-using multio::util::configuration_path;
+using multio::util::configuration_path_name;
 using multio::transport::Transport;
 using multio::transport::TransportFactory;
 using multio::transport::MpiPeer;
 using multio::transport::TcpPeer;
 using multio::transport::ThreadPeer;
+using multio::util::ConfigurationContext;
+using multio::util::ComponentTag;
 
 using namespace multio::server;
 
@@ -199,16 +202,16 @@ std::vector<double> file_content(const eckit::PathName& file_path) {
     return vec;
 }
 
-eckit::LocalConfiguration test_configuration(const std::string& type) {
+ConfigurationContext test_configuration(const std::string& type) {
     eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
 
-    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-configuration"},
+    static std::map<std::string, std::string> configs = {{"mpi", "mpi-test-configuration"},
                                                   {"tcp", "tcp-test-configuration"},
                                                   {"thread", "thread-test-configuration"},
                                                   {"none", "no-transport-test-configuration"}};
 
-    eckit::YAMLConfiguration testConfigs{configuration_path() + "test-configurations.yaml"};
-    return eckit::LocalConfiguration{testConfigs.getSubConfiguration(configs.at(type))};
+    auto fileName = configuration_path_name() + "test-configurations.yaml";
+    return ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration{fileName}), configuration_path_name(), fileName).subContext(configs.at(type));
 }
 
 }  // namespace
@@ -270,7 +273,7 @@ private:
     long ensMember_ = 1;
     long sleep_ = 0;
 
-    eckit::LocalConfiguration config_;
+    ConfigurationContext confCtx_{eckit::LocalConfiguration(), "", ""};
 
     class Connection {
         std::shared_ptr<Transport> transport_;
@@ -330,16 +333,16 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
     args.get("member", ensMember_);
     args.get("sleep", sleep_);
 
-    config_ =
+    confCtx_ =
         (configPath_.empty())
             ? test_configuration(transportType_)
-            : eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{configPath_}}};
+            : ConfigurationContext(eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{configPath_}}}, configPath_, configPath_);
 
-    config_.set("clientCount", clientCount_).set("count", serverCount_);
+    confCtx_.config().set("clientCount", clientCount_);
 
-    transportType_ = config_.getString("transport");
+    transportType_ = confCtx_.config().getString("transport");
     if (transportType_ == "mpi") {
-        auto comm_size = eckit::mpi::comm(config_.getString("group").c_str()).size();
+        auto comm_size = eckit::mpi::comm(confCtx_.config().getString("group").c_str()).size();
         if (comm_size != clientCount_ + serverCount_) {
             throw eckit::SeriousBug(
                 "Number of MPI ranks does not match the number of clients and servers");
@@ -352,7 +355,7 @@ void MultioHammer::finish(const eckit::option::CmdArgs&) {}
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioHammer::startListening(std::shared_ptr<Transport> transport) {
-    Listener listener(config_, *transport);
+    Listener listener(confCtx_.recast(ComponentTag::Receiver), *transport);
     listener.start();
 }
 
@@ -379,15 +382,15 @@ void MultioHammer::sendData(const PeerList& serverPeers,
 
     auto idxm = generate_index_map(client_list_id, clientCount_);
     eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(int32_t));
-    std::unique_ptr<Domain> index_map{new Unstructured{std::move(idxm)}};
+    std::unique_ptr<Domain> index_map{new Unstructured{std::move(idxm), static_cast<long>(field_size())}};
 
     // send partial mapping
     for (auto& server : serverPeers) {
         Metadata metadata;
         metadata.set("name", "grid-point")
             .set("category", "atms-domain-map")
-            .set("representation", "unstructured")
-            .set("domainCount", clientCount_);
+            .set("globalSize", static_cast<long>(field_size()))
+            .set("representation", "unstructured");
 
         Message msg{Message::Header{Message::Tag::Domain, client, *server, std::move(metadata)},
                     buffer};
@@ -420,7 +423,6 @@ void MultioHammer::sendData(const PeerList& serverPeers,
                     .set("param", std::to_string(param))
                     .set("category", "model-level")
                     .set("globalSize", static_cast<long>(field_size()))
-                    .set("domainCount", clientCount_)
                     .set("domain", "grid-point");
 
                 Message msg{Message::Header{Message::Tag::Field, client, *serverPeers[id],
@@ -435,8 +437,7 @@ void MultioHammer::sendData(const PeerList& serverPeers,
         Metadata md;
         md.set("name", eckit::Translator<long, std::string>()(step))
             .set("category", "atms-checkpoint")
-            .set("trigger", "step")
-            .set("domainCount", clientCount_);
+            .set("trigger", "step");
         for (auto& server : serverPeers) {
             auto stepStr = eckit::Translator<long, std::string>()(step);
             Message flush{
@@ -530,9 +531,10 @@ void MultioHammer::testData() {
 }
 
 void MultioHammer::executeMpi() {
-    std::shared_ptr<Transport> transport{TransportFactory::instance().build("mpi", config_)};
+    auto rank = eckit::mpi::comm(confCtx_.config().getString("group").c_str()).rank();
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("mpi", (rank < clientCount_ ? confCtx_.tagClient() : confCtx_.tagServer()).recast(ComponentTag::Transport) )};
 
-    auto comm = config_.getString("group");
+    auto comm = confCtx_.config().getString("group");
 
     PeerList clientPeers;
     auto i = 0u;
@@ -551,11 +553,11 @@ void MultioHammer::executeMpi() {
 }
 
 void MultioHammer::executeTcp() {
-    config_.set("local_port", port_);
-    std::shared_ptr<Transport> transport{TransportFactory::instance().build("tcp", config_)};
+    confCtx_.config().set("local_port", port_);
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("tcp", confCtx_.recast(ComponentTag::Transport))};
 
     PeerList serverPeers;
-    for (auto cfg : config_.getSubConfigurations("servers")) {
+    for (auto cfg : confCtx_.config().getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             serverPeers.emplace_back(new TcpPeer{host, port});
@@ -563,7 +565,7 @@ void MultioHammer::executeTcp() {
     }
 
     PeerList clientPeers;
-    for (auto cfg : config_.getSubConfigurations("clients")) {
+    for (auto cfg : confCtx_.config().getSubConfigurations("clients")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             clientPeers.emplace_back(new TcpPeer{host, port});
@@ -578,7 +580,7 @@ void MultioHammer::executeTcp() {
 }
 
 void MultioHammer::executeThread() {
-    std::shared_ptr<Transport> transport{TransportFactory::instance().build("thread", config_)};
+    std::shared_ptr<Transport> transport{TransportFactory::instance().build("thread", confCtx_.recast(ComponentTag::Transport))};
 
     // Spawn servers
     PeerList serverPeers;
@@ -603,9 +605,9 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
     ASSERT(handle);
 
     std::vector<std::unique_ptr<Plan>> plans;
-    for (const auto& cfg : config_.getSubConfigurations("plans")) {
-        eckit::Log::debug<multio::LibMultio>() << cfg << std::endl;
-        plans.emplace_back(new Plan(cfg));
+    for (auto&& subCtx: confCtx_.subContexts("plans", ComponentTag::Plan)) {
+        eckit::Log::debug<multio::LibMultio>() << subCtx.config() << std::endl;
+        plans.emplace_back(new Plan(std::move(subCtx)));
     }
 
     std::string expver = "xxxx";
@@ -625,7 +627,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
         CODES_CHECK(codes_set_long(handle, "step", step), nullptr);
 
-        const auto& paramList = config_.getSubConfiguration("parameters");
+        const auto& paramList = confCtx_.config().getSubConfiguration("parameters");
 
         for (const auto& levtype : {"ml", "pl", "sfc"}) {
             size = std::strlen(levtype);
@@ -660,8 +662,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
         Metadata md;
         md.set("name", eckit::Translator<long, std::string>()(step))
             .set("category", "atms-checkpoint")
-            .set("trigger", "step")
-            .set("domainCount", 1);
+            .set("trigger", "step");
         Message msg{Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}, Metadata{md}}};
         for (const auto& plan : plans) {
             plan->process(msg);

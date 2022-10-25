@@ -23,16 +23,19 @@
 #include <mutex>
 
 #include "eckit/memory/NonCopyable.h"
-#include "eckit/config/Configuration.h"
 
 #include "multio/message/Message.h"
 #include "multio/transport/TransportStatistics.h"
+#include "multio/util/ConfigurationContext.h"
+
+
 
 namespace multio {
 namespace transport {
 
 using message::Message;
 using message::Peer;
+using util::ConfigurationContext;
 
 using PeerList = std::vector<std::unique_ptr<message::Peer>>;
 
@@ -41,7 +44,7 @@ using PeerList = std::vector<std::unique_ptr<message::Peer>>;
 class Transport {
 public:  // methods
 
-    Transport(const eckit::Configuration& config);
+    Transport(const ConfigurationContext& confCtx);
     virtual ~Transport();
 
     virtual void openConnections() = 0;
@@ -63,9 +66,12 @@ public:  // methods
 
     const PeerList& clientPeers() const;
     const PeerList& serverPeers() const;
+    
+    virtual size_t clientCount() const;
+    virtual size_t serverCount() const;
 
 protected:
-    const eckit::LocalConfiguration config_;
+    const ConfigurationContext confCtx_;
 
     mutable PeerList serverPeers_;
     mutable PeerList clientPeers_;
@@ -102,7 +108,7 @@ public:
 
     void list(std::ostream&) const;
 
-    Transport* build(const std::string&, const eckit::Configuration& config);
+    Transport* build(const std::string&, const ConfigurationContext& confCtx);
 
 private:
     TransportFactory() = default;
@@ -114,7 +120,7 @@ private:
 
 class TransportBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual Transport* make(const eckit::Configuration& config) const = 0;
+    virtual Transport* make(const ConfigurationContext& confCtx) const = 0;
 
 protected:  // methods
     TransportBuilderBase(const std::string&);
@@ -126,7 +132,7 @@ protected:  // methods
 
 template <class T>
 class TransportBuilder final : public TransportBuilderBase {
-    Transport* make(const eckit::Configuration& config) const override { return new T(config); }
+    Transport* make(const ConfigurationContext& confCtx) const override { return new T(confCtx); }
 
 public:
     TransportBuilder(const std::string& name) : TransportBuilderBase(name) {}

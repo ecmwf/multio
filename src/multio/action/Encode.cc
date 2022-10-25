@@ -22,20 +22,19 @@
 namespace multio {
 namespace action {
 
-using util::configuration_path;
+using util::configuration_path_name;
 
 namespace {
 
-std::unique_ptr<GribEncoder> make_encoder(const eckit::Configuration& config) {
-    auto format = config.getString("format");
+std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
+    auto format = confCtx.config().getString("format");
 
     if (format == "grib") {
-        ASSERT(config.has("template"));
-        eckit::AutoStdFile fin{configuration_path() + config.getString("template")};
+        ASSERT(confCtx.config().has("template"));
+        eckit::AutoStdFile fin{confCtx.pathName() + confCtx.config().getString("template")};
         int err;
         return std::unique_ptr<GribEncoder>{
-            new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err),
-                            config.getString("grid-type", "ORCA1")}};
+            new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), confCtx.config()}};
     }
     else if (format == "raw") {
         return nullptr;  // leave message in raw binary format
@@ -49,12 +48,12 @@ std::unique_ptr<GribEncoder> make_encoder(const eckit::Configuration& config) {
 using message::Message;
 using message::Peer;
 
-Encode::Encode(const eckit::Configuration& config) :
-    Action{config}, format_{config.getString("format")}, encoder_{make_encoder(config)} {}
+Encode::Encode(const ConfigurationContext& confCtx) :
+    Action{confCtx}, format_{confCtx.config().getString("format")}, encoder_{make_encoder(confCtx)} {}
 
-void Encode::execute(Message msg) const {
+void Encode::executeImpl(Message msg) const {
     if (not encoder_) {
-        executeNext(msg);
+        executeNext(std::move(msg));
         return;
     }
 
@@ -64,22 +63,7 @@ void Encode::execute(Message msg) const {
                              << std::endl;
 
     if (encoder_->gridInfoReady(msg.domain())) {
-        auto levelCount = msg.metadata().getLong("levelCount", 1);
-        ASSERT(levelCount == 1);
-        // TODO: most of this can probably go if we stick to levelCount == 1 always
-        if (levelCount == 1) {
-            executeNext(encodeField(msg));
-        }
-        else { // TODO: this branch can probably go. See above...
-            ASSERT(false);
-            auto metadata = msg.metadata();
-            auto data = reinterpret_cast<const double*>(msg.payload().data());
-            for (auto lev = 0; lev != levelCount;) {
-                metadata.set("level", ++lev);
-                executeNext(encoder_->encodeField(metadata, data, msg.globalSize()));
-                data += msg.globalSize();
-            }
-        }
+        executeNext(encodeField(std::move(msg)));
     }
     else {
         LOG_DEBUG_LIB(LibMultio) << "*** Grid metadata: " << msg.metadata() << std::endl;

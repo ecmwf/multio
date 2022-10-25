@@ -12,7 +12,6 @@
 
 #include <algorithm>
 
-#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
@@ -23,7 +22,7 @@
 namespace multio {
 namespace action {
 
-namespace  {
+namespace {
 
 const std::map<const char, const std::string> symbol_to_unit{
     {'h', "hour"}, {'d', "day"}, {'m', "month"}};
@@ -47,17 +46,15 @@ long set_frequency(const std::string& output_freq) {
 
 }  // namespace
 
-Statistics::Statistics(const eckit::Configuration& config) :
-    Action{config},
-    timeUnit_{set_unit(config.getString("output-frequency"))},
-    timeSpan_{set_frequency(config.getString("output-frequency"))},
-    operations_{config.getStringVector("operations")} {}
+Statistics::Statistics(const ConfigurationContext& confCtx) :
+    Action{confCtx},
+    timeUnit_{set_unit(confCtx.config().getString("output-frequency"))},
+    timeSpan_{set_frequency(confCtx.config().getString("output-frequency"))},
+    operations_{confCtx.config().getStringVector("operations")} {}
 
-void Statistics::execute(message::Message msg) const {
-
+void Statistics::executeImpl(message::Message msg) const {
     // Pass through -- no statistics for messages other than fields
-    // TODO: make this assert and ensure that other message get to different plans?
-    if(msg.tag() != message::Message::Tag::Field) {
+    if (msg.tag() != message::Message::Tag::Field) {
         executeNext(msg);
         return;
     }
@@ -75,8 +72,7 @@ void Statistics::execute(message::Message msg) const {
            << msg.metadata().getString("param") << msg.metadata().getLong("level") << msg.source();
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {
-            fieldStats_[os.str()] =
-                TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
+            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
         }
 
         if (fieldStats_.at(os.str())->process(msg)) {
@@ -99,6 +95,7 @@ void Statistics::execute(message::Message msg) const {
     }
 
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+
     fieldStats_.at(os.str())->reset(msg);
 }
 

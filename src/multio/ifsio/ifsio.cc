@@ -13,8 +13,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "eccodes.h"
-
 #include "eckit/config/LibEcKit.h"
 #include "eckit/config/Resource.h"
 #include "eckit/config/YAMLConfiguration.h"
@@ -30,7 +28,11 @@
 #include "multio/ifsio/ifsio.h"
 #include "multio/ifsio/ifsio_internals.h"
 #include "multio/multio_version.h"
+#include "multio/util/ConfigurationContext.h"
+#include "multio/util/FailureHandling.h"
 
+#include "multio/action/Plan.h"
+#include "multio/action/Sink.h"
 #include "multio/sink/MultIO.h"
 
 #include "metkit/codes/CodesContent.h"
@@ -38,29 +40,22 @@
 using namespace eckit;
 using namespace metkit;
 using namespace multio;
+using namespace multio::util;
+using namespace multio::message;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class MIO {
+class MIO : public util::FailureAware<ComponentTag::Client> {
 public:
     static MIO& instance() {
         static MIO mio;
         return mio;
     }
 
-    MultIO& mio() {
-        ASSERT(ptr_);
-        return *ptr_;
-    }
 
     void log(bool log) { log_ = log; }
     void dirty(bool dirty) { dirty_ = dirty; }
 
-    void report() {
-        if (log_ && ptr_ && !::getenv("MULTIO_NO_REPORT")) {
-            ptr_->report(std::cout);
-        }
-    }
 
     void lock() { mutex_.lock(); }
     void unlock() { mutex_.unlock(); }
@@ -70,31 +65,76 @@ public:
         return bpv_->getBitsPerValue(paramid, levtype, min, max);
     }
 
+    void dispatch(const multio::message::Message& msg) {
+        withFailureHandling(
+            [&]() {
+                for (const auto& plan : plans_) {
+                    plan->process(msg);
+                }
+            },
+            [msg]() {
+                std::ostringstream oss;
+                oss << "IFSIO dispatching message: " << msg;
+                return oss.str();
+            });
+    };
+
+    util::FailureHandlerResponse handleFailure(util::OnClientError, const util::FailureContext& c,
+                                               util::DefaultFailureState&) const override {
+        // Last cascading instance, print nested contexts
+        print(eckit::Log::error(), c);
+        return util::FailureHandlerResponse::Rethrow;
+    };
+
+
 private:
-    void init(Configuration& config) {
-        ptr_.reset(new MultIO(config));
-        bpv_.reset(new EncodeBitsPerValue(config));
+    ConfigurationContext configureFromSinks(const ConfigurationContext& confCtx) {
+        std::vector<eckit::LocalConfiguration> actions;
+        actions.push_back(confCtx.config());
+        actions[0].set("type", "sink");
+
+        std::vector<eckit::LocalConfiguration> plans;
+        plans.push_back(eckit::LocalConfiguration{});
+        plans[0].set("actions", actions);
+
+        eckit::LocalConfiguration cfg;
+        cfg.set("plans", plans);
+
+        return confCtx.recast(cfg);
     }
 
-    MIO() : log_(false), dirty_(false) {
+    MIO(const ConfigurationContext& confCtx) : FailureAware(confCtx), log_(false), dirty_(false) {
+        for (auto&& cfg : confCtx.subContexts("plans", ComponentTag::Plan)) {
+            plans_.emplace_back(new action::Plan(std::move(cfg)));
+        }
+        bpv_.reset(new EncodeBitsPerValue(confCtx.config()));
+    }
+
+    MIO() : MIO(configureFromEnv().setComponentTag(multio::util::ComponentTag::Client)) {}
+
+    ConfigurationContext configureFromEnv() {
         static const char* argv[2] = {"ifsio", nullptr};
 
         eckit::Main::initialise(1, const_cast<char**>(argv));
 
+        if (::getenv("MULTIO_PLANS")) {
+            std::string cfg(::getenv("MULTIO_PLANS"));
+            std::cout << "MultIO initialising with plans " << cfg << std::endl;
+            return ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(cfg)), cfg, cfg);
+        }
+
         if (::getenv("MULTIO_CONFIG")) {
             std::string cfg(::getenv("MULTIO_CONFIG"));
             std::cout << "MultIO initialising with config " << cfg << std::endl;
-            eckit::YAMLConfiguration config(cfg);
-            init(config);
-            return;
+            return configureFromSinks(
+                ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(cfg)), cfg, cfg));
         }
 
         if (::getenv("MULTIO_CONFIG_FILE")) {
             PathName path(::getenv("MULTIO_CONFIG_FILE"));
             std::cout << "MultIO initialising with file " << path << std::endl;
-            eckit::YAMLConfiguration config(path);
-            init(config);
-            return;
+            return configureFromSinks(
+                ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(path)), path, path));
         }
 
         eckit::Tokenizer parse(":");
@@ -119,27 +159,24 @@ private:
         std::cout << "MultIO initialising with $MULTIO_SINKS " << oss.str() << std::endl;
 
         std::istringstream iss(oss.str());
-        eckit::YAMLConfiguration config(iss);
-        init(config);
+        return configureFromSinks(
+            ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(iss)), "", ""));
     }
 
     ~MIO() {
         if (dirty_) {
             static char* abort_on_error = ::getenv("MULTIO_ABORT_ON_ERROR");
             if (abort_on_error) {
-                std::cout << "ERROR - MultIO finished without a final call to imultio_flush"
-                          << std::endl;
-                std::cerr << "ERROR - MultIO finished without a final call to imultio_flush"
-                          << std::endl;
+                std::cout << "ERROR - MultIO finished without a final call to imultio_flush" << std::endl;
+                std::cerr << "ERROR - MultIO finished without a final call to imultio_flush" << std::endl;
                 eckit::LibEcKit::instance().abort();
             }
             else
-                std::cout << "WARNING - MultIO finished without a final call to imultio_flush"
-                          << std::endl;
+                std::cout << "WARNING - MultIO finished without a final call to imultio_flush" << std::endl;
         }
     }
 
-    std::unique_ptr<MultIO> ptr_;
+    std::vector<std::unique_ptr<action::Plan>> plans_;
     std::unique_ptr<EncodeBitsPerValue> bpv_;
     eckit::Mutex mutex_;
     bool log_;
@@ -156,7 +193,13 @@ fortint imultio_flush_() {
         eckit::AutoLock<MIO> lock(MIO::instance());
 
         MULTIO_TRACE_FUNC();
-        MIO::instance().mio().flush();
+
+        multio::message::Metadata metadata;
+        multio::message::Message message{
+            multio::message::Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}, std::move(metadata)},
+            eckit::Buffer{0}};
+        MIO::instance().dispatch(message);
+
         MIO::instance().log(true);
         MIO::instance().dirty(false);
     }
@@ -172,9 +215,14 @@ fortint imultio_notify_step_(const fortint* step) {
 
         MULTIO_TRACE_FUNC();
         ASSERT(step);
-        eckit::StringDict metadata;
-        metadata["step"] = eckit::Translator<fortint, std::string>()(*step);
-        MIO::instance().mio().trigger(metadata);
+
+        multio::message::Metadata metadata;
+        metadata.set("trigger", "step");
+        metadata.set("name", eckit::Translator<fortint, std::string>()(*step));
+        multio::message::Message message{
+            multio::message::Message::Header{Message::Tag::StepNotification, Peer{}, Peer{}, std::move(metadata)},
+            eckit::Buffer{0}};
+        MIO::instance().dispatch(message);
     }
     catch (std::exception& e) {
         return ifsio_handle_error(e);
@@ -192,10 +240,14 @@ fortint imultio_write_(const void* data, const fortint* words) {
         ASSERT(ilen > 0);
         size_t len(ilen);
 
-        codes_handle* h = codes_handle_new_from_message(nullptr, data, len);
-        eckit::message::Message message{new metkit::codes::CodesContent{h, true}};
+        eckit::Buffer payload{reinterpret_cast<const char*>(data), len};
 
-        MIO::instance().mio().write(message);
+        multio::message::Metadata metadata;
+        multio::message::Message message{
+            multio::message::Message::Header{Message::Tag::Grib, Peer{}, Peer{}, std::move(metadata)},
+            std::move(payload)};
+        MIO::instance().dispatch(message);
+
         MIO::instance().log(true);
         MIO::instance().dirty(true);
     }
@@ -205,7 +257,8 @@ fortint imultio_write_(const void* data, const fortint* words) {
     return 0;
 }
 
-fortint imultio_encode_bitspervalue_(fortint *bitspervalue, const fortint *paramid, const char* levtype,  const double *min,  const double *max, int levtype_len) {
+fortint imultio_encode_bitspervalue_(fortint* bitspervalue, const fortint* paramid, const char* levtype,
+                                     const double* min, const double* max, int levtype_len) {
     try {
         std::string slevtype(levtype, levtype + levtype_len);
         eckit::AutoLock<MIO> lock(MIO::instance());

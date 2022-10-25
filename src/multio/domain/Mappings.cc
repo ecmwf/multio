@@ -24,14 +24,14 @@ void Mappings::add(message::Message msg) {
     // Retrieve metadata
     auto& domainMap = mappings_[msg.name()];
 
-    if (domainMap.find(msg.source()) != end(domainMap)) {
+    if (domainMap.contains(msg.source())) {
       eckit::Log::warning()
           << "Partial domain had already been received: " << msg.fieldId() << std::endl;
       return;
     }
     eckit::Log::debug<LibMultio>() << "*** Add domainMap for " << msg.name();
 
-    ASSERT(domainMap.find(msg.source()) == end(domainMap));
+    ASSERT(not domainMap.contains(msg.source()));
 
     std::vector<int32_t> local_map(msg.size() / sizeof(int32_t));
 
@@ -43,13 +43,12 @@ void Mappings::add(message::Message msg) {
 
     if (msg.metadata().getString("representation") == "unstructured") {
         domainMap.emplace(msg.source(),
-                        std::unique_ptr<Domain>{new Unstructured{std::move(local_map)}});
+                          std::unique_ptr<Domain>{new Unstructured{std::move(local_map), msg.globalSize()}});
         return;
     }
 
     if (msg.metadata().getString("representation") == "structured") {
-        domainMap.emplace(msg.source(),
-                        std::unique_ptr<Domain>{new Structured{std::move(local_map)}});
+        domainMap.emplace(msg.source(), std::unique_ptr<Domain>{new Structured{std::move(local_map)}});
         return;
     }
 
@@ -74,6 +73,26 @@ const DomainMap& Mappings::get(const std::string& name) const {
     }
 
     throw eckit::AssertionFailed("Cannot find domainMaps for " + name);
+}
+
+void Mappings::checkDomainConsistency(const std::vector<message::Message>& localDomains) const {
+    if (get(localDomains.back().domain()).isConsistent()) {
+        return;
+    }
+
+    std::set<int32_t> globalIndices;
+    for (const auto& local : localDomains) {
+        get(local.domain()).at(local.source())->collectIndices(local, globalIndices);
+    }
+
+    auto globalSize = static_cast<std::set<int32_t>::size_type>(localDomains.back().globalSize());
+    if (globalIndices.size() != globalSize) {
+        std::ostringstream oss;
+        oss << "Number of inserted unique indices: " << globalIndices.size() << " (expected " << globalSize << ")";
+        throw eckit::SeriousBug{oss.str(), Here()};
+    }
+
+    get(localDomains.back().domain()).isConsistent(true);
 }
 
 }  // namespace domain

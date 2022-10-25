@@ -25,10 +25,10 @@ namespace action {
 
 class Transport : public Action {
 public:
-    explicit Transport(const eckit::Configuration& config);
+    explicit Transport(const ConfigurationContext& config);
 
-    void execute(message::Message msg) const override;
-
+    void executeImpl(message::Message msg) const override;
+    
 private:
     void print(std::ostream &os) const override;
 
@@ -43,6 +43,8 @@ private:
 
     size_t serverId_;
     size_t usedServerCount_;
+    
+    std::vector<std::string> hashKeys_;
 
     // Distribute fields
     message::Peer chooseServer(const message::Metadata& metadata) const;

@@ -12,22 +12,20 @@
 
 #include <iostream>
 
-#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/message/Message.h"
 
-#include "multio/sink/DataSink.h"
 #include "multio/LibMultio.h"
+#include "multio/sink/DataSink.h"
 #include "multio/util/ScopedTimer.h"
 
 namespace multio {
 namespace action {
 
-SingleFieldSink::SingleFieldSink(const eckit::Configuration& config) :
-    Action{config},
-    rootPath_{config.getString("root_path", "")} {}
+SingleFieldSink::SingleFieldSink(const ConfigurationContext& confCtx) :
+    Action{confCtx}, rootPath_{confCtx.config().getString("root_path", "")} {}
 
-void SingleFieldSink::execute(Message msg) const {
+void SingleFieldSink::executeImpl(Message msg) const {
     switch (msg.tag()) {
         case Message::Tag::Field:
         case Message::Tag::Grib:
@@ -42,7 +40,7 @@ void SingleFieldSink::execute(Message msg) const {
             ASSERT(false);
     }
 
-    executeNext(msg);
+    executeNext(std::move(msg));
 }
 
 void SingleFieldSink::write(Message msg) const {
@@ -50,13 +48,13 @@ void SingleFieldSink::write(Message msg) const {
 
     std::ostringstream oss;
     oss << rootPath_ << msg.metadata().getUnsigned("level")
-        << "::" << msg.metadata().getString("param")
-        << "::" << msg.metadata().getUnsigned("step");
+        << "::" << msg.metadata().getString("param") << "::" << msg.metadata().getUnsigned("step");
     eckit::LocalConfiguration config;
 
     LOG_DEBUG_LIB(LibMultio) << "Writing output path: " << oss.str() << std::endl;
     config.set("path", oss.str());
-    dataSink_.reset(DataSinkFactory::instance().build("file", config));
+    ConfigurationContext subCtx = confCtx_.recast(config);
+    dataSink_.reset(DataSinkFactory::instance().build("file", subCtx));
 
     eckit::message::Message blob = to_eckit_message(msg);
 
@@ -76,7 +74,8 @@ void SingleFieldSink::flush() const {
 void SingleFieldSink::print(std::ostream& os) const {
     if (dataSink_) {
         os << "Sink(DataSink=" << *dataSink_ << ")";
-    } else {
+    }
+    else {
         os << "Sink(DataSink=NULL)";
     }
 }

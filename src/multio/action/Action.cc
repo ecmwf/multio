@@ -15,10 +15,10 @@
 
 #include <fstream>
 
-#include "eckit/exception/Exceptions.h"
-#include "eckit/log/Log.h"
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/exception/Exceptions.h"
+#include "eckit/log/Log.h"
 #include "eckit/runtime/Main.h"
 
 #include "multio/LibMultio.h"
@@ -29,19 +29,18 @@ using eckit::LocalConfiguration;
 namespace multio {
 namespace action {
 
-namespace {
-
-}  // namespace
+namespace {}  // namespace
 
 using eckit::Configuration;
 using eckit::Log;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-Action::Action(const eckit::Configuration& config) : type_{config.getString("type")} {
-    if (config.has("next")) {
-        const LocalConfiguration next = config.getSubConfiguration("next");
-        next_.reset(ActionFactory::instance().build(next.getString("type"), next));
+Action::Action(const ConfigurationContext& confCtx) :
+    FailureAware(confCtx), confCtx_(confCtx), type_{confCtx.config().getString("type")} {
+    if (confCtx.config().has("next")) {
+        const ConfigurationContext nextCtx = confCtx.subContext("next", util::ComponentTag::Action);
+        next_.reset(ActionFactory::instance().build(nextCtx.config().getString("type"), nextCtx));
     }
 }
 
@@ -53,11 +52,52 @@ Action::~Action() {
 
 void Action::executeNext(message::Message msg) const {
     if (next_) {
-        LOG_DEBUG_LIB(multio::LibMultio)
-            << "*** [source = " << msg.source() << ", destination = " << msg.destination()
-            << "] -- Executing action -- " << *next_ << std::endl;
-        next_->execute(msg);
+        LOG_DEBUG_LIB(multio::LibMultio) << "*** [source = " << msg.source() << ", destination = " << msg.destination()
+                                         << "] -- Executing action -- " << *next_ << std::endl;
+        next_->execute(std::move(msg));
     }
+}
+
+void Action::execute(message::Message msg) const {
+    withFailureHandling([&]() { executeImpl(std::move(msg)); },
+                        [&, msg]() {
+                            std::ostringstream oss;
+                            oss << *this << " with Message: " << msg;
+                            return oss.str();
+                        });
+}
+
+util::FailureHandlerResponse Action::handleFailure(util::OnActionError t, const util::FailureContext&,
+                                                   util::DefaultFailureState&) const {
+    if (t == util::OnActionError::Recover) {
+        return util::FailureHandlerResponse::Retry;
+    }
+    return util::FailureHandlerResponse::Rethrow;
+};
+
+
+void Action::activeFields(std::insert_iterator<std::set<std::string>>& ins) const {
+    return;
+}
+
+void Action::activeCategories(std::insert_iterator<std::set<std::string>>& ins) const {
+    return;
+}
+
+void Action::computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const {
+    activeFields(ins);
+    if (!next_) {
+        return;
+    }
+    next_->computeActiveFields(ins);
+}
+
+void Action::computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const {
+    activeCategories(ins);
+    if (!next_) {
+        return;
+    }
+    next_->computeActiveCategories(ins);
 }
 
 std::ostream& operator<<(std::ostream& os, const Action& a) {
@@ -94,15 +134,16 @@ void ActionFactory::list(std::ostream& out) {
     }
 }
 
-Action* ActionFactory::build(const std::string& name, const Configuration& config) {
+Action* ActionFactory::build(const std::string& name, const ConfigurationContext& confCtx) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
+    ASSERT(confCtx.componentTag() == util::ComponentTag::Action);
 
     LOG_DEBUG_LIB(LibMultio) << "Looking for ActionFactory [" << name << "]" << std::endl;
 
     auto f = factories_.find(name);
 
     if (f != factories_.end())
-        return f->second->make(config);
+        return f->second->make(confCtx);
 
     Log::error() << "No ActionFactory for [" << name << "]" << std::endl;
     Log::error() << "ActionFactories are:" << std::endl;

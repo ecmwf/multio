@@ -16,6 +16,8 @@
 #include <map>
 
 #include "multio/action/Plan.h"
+#include "multio/util/ConfigurationContext.h"
+#include "multio/util/FailureHandling.h"
 
 #include "eckit/log/Statistics.h"
 
@@ -27,6 +29,10 @@ class LocalConfiguration;
 
 namespace multio {
 
+using util::ConfigurationContext;
+using util::ClientConfigurationContext;
+using util::ComponentTag;
+
 namespace message {
 class Message;
 class Metadata;
@@ -36,9 +42,9 @@ namespace server {
 
 class Transport;
 
-class MultioClient {
+class MultioClient: public util::FailureAware<util::ComponentTag::Client> {
 public:
-    explicit MultioClient(const eckit::Configuration& config);
+    explicit MultioClient(const ClientConfigurationContext& config);
 
     ~MultioClient();
 
@@ -48,9 +54,17 @@ public:
     void dispatch(message::Metadata metadata, eckit::Buffer&& payload, message::Message::Tag tag);
 
     void dispatch(message::Message msg);
+    
+    bool isFieldActive(const std::string& name) const;
+    bool isCategoryActive(const std::string& name) const;
+    
+    util::FailureHandlerResponse handleFailure(util::OnClientError, const util::FailureContext&, util::DefaultFailureState&) const override;
 
 private:
     std::vector<std::unique_ptr<action::Plan>> plans_;
+    std::set<std::string> activeFields_;
+    std::set<std::string> activeCategories_;
+
 
     eckit::Timing totClientTiming_;
     eckit::Timer totClientTimer_;

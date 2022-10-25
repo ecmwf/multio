@@ -26,8 +26,8 @@ using eckit::Log;
 
 //--------------------------------------------------------------------------------------------------
 
-Transport::Transport(const eckit::Configuration &config) : config_{config} {
-    LOG_DEBUG_LIB(LibMultio) << "Transport config: " << config_ << std::endl;
+Transport::Transport(const ConfigurationContext& confCtx) : confCtx_{confCtx} {
+    LOG_DEBUG_LIB(LibMultio) << "Transport config: " << confCtx.config() << std::endl;
 }
 
 Transport::~Transport() = default;
@@ -50,6 +50,20 @@ const PeerList& Transport::serverPeers() const {
 
 bool Transport::peersMissing() const {
     return clientPeers_.empty() && serverPeers_.empty();
+}
+
+size_t Transport::clientCount() const {
+    if(peersMissing()) {
+        createPeers();
+    }
+    return clientPeers_.size();
+}
+
+size_t Transport::serverCount() const {
+    if(peersMissing()) {
+        createPeers();
+    }
+    return serverPeers_.size();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -82,15 +96,16 @@ void TransportFactory::list(std::ostream& out) const {
     }
 }
 
-Transport* TransportFactory::build(const std::string& name, const Configuration& config) {
+Transport* TransportFactory::build(const std::string& name, const ConfigurationContext& confCtx) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
+    ASSERT(confCtx.componentTag() == util::ComponentTag::Transport);
 
     Log::debug<LibMultio>() << "Looking for TransportFactory [" << name << "]" << std::endl;
 
     auto f = factories_.find(name);
 
     if (f != factories_.end())
-        return f->second->make(config);
+        return f->second->make(confCtx);
 
     Log::error() << "No TransportFactory for [" << name << "]" << std::endl;
     Log::error() << "TransportFactories are:" << std::endl;

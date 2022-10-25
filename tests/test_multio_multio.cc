@@ -17,6 +17,7 @@
 
 #include "multio/sink/FileSink.h"
 #include "multio/sink/MultIO.h"
+#include "multio/util/ConfigurationContext.h"
 
 #include "TestDataContent.h"
 #include "TestHelpers.h"
@@ -116,9 +117,10 @@ CASE("test_multio_with_event_trigger") {
                 }
                 )json");
 
-    eckit::YAMLConfiguration config(sinks);
+    eckit::LocalConfiguration config{eckit::YAMLConfiguration(sinks)};
+    ConfigurationContext confCtx(config, config, "" , "");
     {
-        auto mio = std::unique_ptr<MultIO>(new MultIO{config});
+        auto mio = std::unique_ptr<MultIO>(new MultIO{confCtx});
 
         for (int step = 0; step <= 24; step++) {
             for (int level = 1; level <= 5; level++) {

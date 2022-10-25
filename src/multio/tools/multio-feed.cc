@@ -14,17 +14,21 @@
 
 /// @date Oct 2019
 
-#include "eccodes.h"
-
 #include <fstream>
 #include <regex>
 
 #include "eckit/exception/Exceptions.h"
+#include "eckit/io/FileHandle.h"
+#include "eckit/io/PeekHandle.h"
 #include "eckit/io/StdFile.h"
 #include "eckit/log/Log.h"
 #include "eckit/maths/Functions.h"
+#include "eckit/message/Message.h"
+#include "eckit/message/Reader.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
+
+#include "metkit/codes/CodesSplitter.h"
 
 #include "multio/ifsio/ifsio.h"
 #include "multio/tools/MultioTool.h"
@@ -44,9 +48,9 @@ public:
 };
 }  // namespace
 
-class MultioSink final : public multio::MultioTool {
+class MultioFeed final : public multio::MultioTool {
 public:  // methods
-    MultioSink(int argc, char** argv);
+    MultioFeed(int argc, char** argv);
 
 private:
     void usage(const std::string& tool) const override {
@@ -66,13 +70,12 @@ private:
     bool testSubtoc_ = false;
 };
 
-MultioSink::MultioSink(int argc, char** argv) :
+MultioFeed::MultioFeed(int argc, char** argv) :
     multio::MultioTool{argc, argv}, fdbRootPath_{"~multio/multio/tests/fdb/root"} {
-    options_.push_back(
-        new eckit::option::SimpleOption<bool>("test-subtoc", "Test if subtoc has been created"));
+    options_.push_back(new eckit::option::SimpleOption<bool>("test-subtoc", "Test if subtoc has been created"));
 }
 
-void MultioSink::init(const eckit::option::CmdArgs& args) {
+void MultioFeed::init(const eckit::option::CmdArgs& args) {
     args.get("test-subtoc", testSubtoc_);
     if (testSubtoc_) {
         std::system(std::string{"rm -rf " + fdbRootPath_.asString() + "/*"}.c_str());
@@ -80,39 +83,33 @@ void MultioSink::init(const eckit::option::CmdArgs& args) {
     }
 }
 
-void MultioSink::finish(const eckit::option::CmdArgs&) {}
+void MultioFeed::finish(const eckit::option::CmdArgs&) {}
 
-void MultioSink::execute(const eckit::option::CmdArgs& args) {
-    eckit::AutoStdFile fin(args(0));
+void MultioFeed::execute(const eckit::option::CmdArgs& args) {
+    eckit::message::Reader reader{args(0)};
 
-    int err;
-    codes_handle* handle = codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err);
-    ASSERT(handle);
+    eckit::message::Message msg;
 
-    const void* buf = nullptr;
-    size_t sz = 0;
-    CODES_CHECK(codes_get_message(handle, &buf, &sz), NULL);
+    while ((msg = reader.next())) {
+        size_t words = eckit::round(msg.length(), sizeof(fortint)) / sizeof(fortint);
 
-    size_t words = eckit::round(sz, sizeof(fortint)) / sizeof(fortint);
+        fortint iwords = static_cast<fortint>(words);
 
-    fortint iwords = static_cast<fortint>(words);
-
-    if (imultio_write_(buf, &iwords)) {
-        ASSERT(false);
+        if (imultio_write_(msg.data(), &iwords)) {
+            ASSERT(false);
+        }
     }
 
     if (imultio_flush_()) {
         ASSERT(false);
     }
 
-    codes_handle_delete(handle);
-
-    if(testSubtoc_) {
+    if (testSubtoc_) {
         ASSERT(subtocExists());
     }
 }
 
-bool MultioSink::subtocExists() const {
+bool MultioFeed::subtocExists() const {
     TempFile file{"tmp.out"};
 
     std::string cmd{"find " + fdbRootPath_.asString() + " -name toc* > " + file.path()};
@@ -131,13 +128,13 @@ bool MultioSink::subtocExists() const {
     return false;
 }
 
-}
+}  // namespace test
 }  // namespace multio
 
 //---------------------------------------------------------------------------------------------------------------
 
 
 int main(int argc, char** argv) {
-    multio::test::MultioSink tool(argc, argv);
+    multio::test::MultioFeed tool(argc, argv);
     return tool.start();
 }

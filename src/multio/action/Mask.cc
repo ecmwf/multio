@@ -10,9 +10,9 @@
 
 #include "Mask.h"
 
+#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
-#include "eckit/config/Configuration.h"
 
 #include "multio/domain/Mask.h"
 #include "multio/util/ScopedTimer.h"
@@ -26,30 +26,25 @@ std::set<std::string> fetch_offset_fields(const eckit::Configuration& cfg) {
     return std::set<std::string>{begin(vec), end(vec)};
 }
 
-template<typename T>
+template <typename T>
 bool setContains(const std::set<T>& _set, const T& key) {
     return _set.find(key) != std::end(_set);
 }
 
 }  // namespace
 
-Mask::Mask(const eckit::Configuration& config) :
-    Action(config),
-    applyBitmap_{config.getBool("apply-bitmap", true)},
-    missingValue_{config.getDouble("missing-value", std::numeric_limits<double>::max())},
-    offsetFields_{fetch_offset_fields(config)},
-    offsetValue_{config.getDouble("offset-value", 273.15)} {}
+Mask::Mask(const ConfigurationContext& confCtx) :
+    Action(confCtx),
+    applyBitmap_{confCtx.config().getBool("apply-bitmap", true)},
+    missingValue_{confCtx.config().getDouble("missing-value", std::numeric_limits<double>::max())},
+    offsetFields_{fetch_offset_fields(confCtx.config())},
+    offsetValue_{confCtx.config().getDouble("offset-value", 273.15)} {}
 
-void Mask::execute(message::Message msg) const {
-
-    // Sanity check
-    ASSERT(msg.metadata().getLong("levelCount") == 1);
-
-    executeNext(createMasked(msg));
+void Mask::executeImpl(message::Message msg) const {
+    executeNext(createMasked(std::move(msg)));
 }
 
 message::Message Mask::createMasked(message::Message msg) const {
-
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     if (applyBitmap_) {

@@ -19,6 +19,8 @@
 
 #include <memory>
 #include <map>
+#include <set>
+#include <iterator>
 #include <mutex>
 
 #include "eckit/log/Statistics.h"
@@ -26,26 +28,47 @@
 
 #include "multio/action/ActionStatistics.h"
 #include "multio/message/Message.h"
+#include "multio/util/ConfigurationContext.h"
+#include "multio/util/FailureHandling.h"
 
-namespace eckit {
-class Configuration;
-}
+
+#include "multio/transport/Transport.h"
 
 namespace multio {
 namespace action {
 
+using util::ConfigurationContext;
+using util::FailureAware;
+
 //--------------------------------------------------------------------------------------------------
 
-class Action : private eckit::NonCopyable {
+class Action : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Action> {
 public:
-    Action(const eckit::Configuration& config);
+    Action(const ConfigurationContext& confCtx);
     virtual ~Action();
 
+    // TODO I think we should discuss if passing by value is really the right way
+    //      In consideration of multithreading & pipelining, of course we need to deal with copies etc...
+    //      However this kind of action pipeline then would also need to be rewritten.
+    //      At many places it is just fine to accept const&
     void executeNext(message::Message msg) const;
 
-    virtual void execute(message::Message msg) const = 0;
+    void execute(message::Message msg) const;
 
+    virtual void executeImpl(message::Message msg) const = 0;
+
+    virtual util::FailureHandlerResponse handleFailure(util::OnActionError, const util::FailureContext&, util::DefaultFailureState&) const override;
+
+    // May be implemented in a action (i.e. select)
+    virtual void activeFields(std::insert_iterator<std::set<std::string>>& ins) const;
+    virtual void activeCategories(std::insert_iterator<std::set<std::string>>& ins) const;
+
+    // Computes all active fields of this and following actions
+    void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
+    void computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const;
+    
 protected:
+    ConfigurationContext confCtx_;
 
     std::string type_;
 
@@ -77,7 +100,7 @@ public:  // methods
 
     void list(std::ostream&);
 
-    Action* build(const std::string&, const eckit::Configuration& config);
+    Action* build(const std::string&, const ConfigurationContext& confCtx);
 
 private:  // members
     std::map<std::string, const ActionBuilderBase*> factories_;
@@ -87,7 +110,7 @@ private:  // members
 
 class ActionBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual Action* make(const eckit::Configuration& config) const = 0;
+    virtual Action* make(const ConfigurationContext& confCtx) const = 0;
 
 protected:  // methods
     ActionBuilderBase(const std::string&);
@@ -99,7 +122,7 @@ protected:  // methods
 
 template <class T>
 class ActionBuilder final : public ActionBuilderBase {
-    Action* make(const eckit::Configuration& config) const override { return new T(config); }
+    Action* make(const ConfigurationContext& confCtx) const override { return new T(confCtx); }
 
 public:
     ActionBuilder(const std::string& name) : ActionBuilderBase(name) {}

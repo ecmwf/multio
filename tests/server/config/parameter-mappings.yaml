@@ -1,0 +1,12 @@
+nemo-to-grib:
+    source:
+        file: nemo-to-grib.yaml
+        path: nemo-fields
+    mappings:
+        - match:
+            nemoParam: nemo-id
+          map:
+            param: param-id
+            gridSubtype: grid-type
+            domain: grid-type
+            typeOfLevel: level-type

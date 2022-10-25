@@ -60,11 +60,11 @@ class MetadataSetter : public eckit::LocalConfiguration {
     // }
 
 public:
-    using eckit::LocalConfiguration::has;
-    using eckit::LocalConfiguration::getString;
-    using eckit::LocalConfiguration::getLong;
     using eckit::LocalConfiguration::getDouble;
-    
+    using eckit::LocalConfiguration::getLong;
+    using eckit::LocalConfiguration::getString;
+    using eckit::LocalConfiguration::has;
+
     template <typename T>
     void setValue(const std::string& key, const T& value) {
         set(key, value);
@@ -135,39 +135,58 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
 
     eckit::message::Message msg;
 
+    const auto isGRIB = [](const MetadataSetter& ms) {
+        return ms.has("domain") && ms.has("levtype") && ms.has("levelist") && ms.has("date") && ms.has("time")
+            && ms.has("step") && ms.has("param") && ms.has("class") && ms.has("type") && ms.has("stream")
+            && ms.has("expver");
+    };
+    
+    const auto isBUFR = [](const MetadataSetter& ms) {
+        return ms.has("bufrHeaderCentre") || ms.has("bufrHeaderSubCentre");
+    };
+
     while ((msg = reader.next())) {
         if (decodeData_) {
-            eckit::StringDict sd;
-            eckit::message::Message codesMsg = msg.transform(sd);
+            // eckit::StringDict sd;
+            // eckit::message::Message codesMsg = msg.transform(sd);
 
             MetadataSetter encodingMetadata;
             eckit::message::TypedSetter<MetadataSetter> gatherer{encodingMetadata};
-            codesMsg.getMetadata(gatherer);
-            
+            msg.getMetadata(gatherer);
+
             eckit::LocalConfiguration metadata;
-            if(encodingMetadata.has("name")) {
-                metadata.set("name", encodingMetadata.getString("name"));
+            if (isBUFR(encodingMetadata)) {
+                // @TODO Think about what to extract and how to handle BUFR in the pipeline
+                metadata.set("bufr", encodingMetadata);
+            } else if (isGRIB(encodingMetadata)) {
+                if (encodingMetadata.has("name")) {
+                    metadata.set("name", encodingMetadata.getString("name"));
+                }
+                if (encodingMetadata.has("param")) {
+                    metadata.set("param", encodingMetadata.getLong("param"));
+                }
+                if (encodingMetadata.has("step")) {
+                    metadata.set("step", encodingMetadata.getLong("step"));
+                }
+                metadata.set("mars", encodingMetadata);
+            } else {
+                metadata = encodingMetadata;
             }
-            if(encodingMetadata.has("param")) {
-                metadata.set("param", encodingMetadata.getLong("param"));
-            }
-            if(encodingMetadata.has("step")) {
-                metadata.set("step", encodingMetadata.getLong("step"));
-            }
-            metadata.set("mars", encodingMetadata); 
-            
-            std::vector<double> data;
+
             /// TODO: GRIB specific encoding. ECKIT Message needs some refactoring to decode data for different types
-            codesMsg.getDoubleArray("values", data);
+            // codesMsg.getDoubleArray("numericValues", data);
+            // std::vector<double> data;
+            eckit::Buffer data = msg.decode();
+
 
             size_t words = eckit::round(data.size(), sizeof(fortint)) / sizeof(fortint);
             fortint iwords = static_cast<fortint>(words);
-            
+
             // size_t words = eckit::round(codesMsg.length(), sizeof(fortint)) / sizeof(fortint);
 
             // fortint iwords = static_cast<fortint>(words);
 
-            if (imultio_write_raw_(&metadata, reinterpret_cast<const void*>(codesMsg.data()), &iwords)) {
+            if (imultio_write_raw_(&metadata, reinterpret_cast<const void*>(data.data()), &iwords)) {
                 ASSERT(false);
             }
         }

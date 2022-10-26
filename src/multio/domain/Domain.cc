@@ -101,11 +101,10 @@ void Structured::to_global(const message::Message& local, message::Message& glob
 
     auto lit = static_cast<const double*>(local.payload().data());
     auto git = static_cast<double*>(global.payload().data());
-    auto offset = local.globalSize();
     for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
         for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
             if (inRange(i, 0, ni) && inRange(j, 0, nj)) {
-                auto gidx = offset + (jbegin + j) * ni_global + (ibegin + i);
+                auto gidx = (jbegin + j) * ni_global + (ibegin + i);
                 *(git + gidx) = *lit;
             }
         }

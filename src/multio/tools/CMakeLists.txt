@@ -70,10 +70,23 @@ ecbuild_add_executable( TARGET    multio-maestro-instigator
                         SOURCES   multio-maestro-instigator.cc MultioTool.cc
                         LIBS      multio maestro multio-maestro)
 
+
+if( CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
+    list( APPEND _link_libraries
+        -Wl,--no-as-needed
+    )
+endif()
+
+list( APPEND _link_libraries
+    multio
+    multio-fdb5
+    eckit_option
+)
+
 ecbuild_add_executable( TARGET    multio-feed
                         CONDITION HAVE_FDB5
                         SOURCES   multio-feed.cc MultioTool.cc
-                        LIBS      multio multio-fdb5 eckit_option)
+                        LIBS      ${_link_libraries})
 
 if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
     ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
@@ -83,7 +96,7 @@ if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
     if( fckit_FOUND )
         # TODO ADD SOME FCKIT condition
         ecbuild_add_executable( TARGET    multio-replay-nemo-fapi
-                                CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN 
+                                CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN
                                 SOURCES   multio-replay-nemo-fapi.f90
                                 LIBS      multio multio-server multio-api multio-fapi fckit MPI::MPI_Fortran
         )

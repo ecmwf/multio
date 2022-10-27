@@ -26,8 +26,6 @@ ecbuild_add_library(
     SOURCES
         Dispatcher.cc
         Dispatcher.h
-        IoTransport.cc
-        IoTransport.h
         Listener.cc
         Listener.h
         MultioClient.cc

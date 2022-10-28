@@ -158,7 +158,6 @@ struct eckit::Translator<multio::util::OnDispatchError, std::string> {
 namespace multio {
 namespace util {
 
-namespace {
 template <typename T>
 std::pair<std::string, T> makeLowerCaseStringPair(T&& v) {
     return {eckit::StringTools::lower(translate<std::string>(v)), std::forward<T>(v)};
@@ -183,8 +182,6 @@ eckit::Optional<T> parseErrorTag_(const std::string& str) {
     static const std::unordered_map<std::string, T> map{buildEnumLookUpMap_(TagSeq())};
     return parseWithEnumMap_(map, str);
 }
-
-}  // namespace
 
 
 template <ComponentTag tag>

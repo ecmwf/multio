@@ -42,8 +42,11 @@ public:
     message::Message encodeField(const message::Metadata& md, const double* data, size_t sz);
 
 private:
+    void setFieldMetadata(const message::Metadata& metadata);
     void setOceanMetadata(const message::Metadata& metadata);
+    
     void setCoordMetadata(const message::Metadata& metadata);
+    void setCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig);
 
     message::Message setFieldValues(const  message::Message& msg);
     message::Message setFieldValues(const double* values, size_t count);

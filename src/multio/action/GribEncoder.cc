@@ -30,25 +30,21 @@ namespace action {
 using message::Message;
 using message::Peer;
 
-namespace  {
+namespace {
 // TODO: perhaps move this to Mappings as that is already a singleton
 std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
     static std::map<std::string, std::unique_ptr<GridInfo>> grids_;
     return grids_;
 }
 
-const std::map<const std::string, const long> ops_to_code{{"instant", 0000},    {"average", 1000},
-                                                          {"accumulate", 2000}, {"maximum", 3000},
-                                                          {"minimum", 4000},    {"stddev", 5000}};
+const std::map<const std::string, const long> ops_to_code{{"instant", 0000}, {"average", 1000}, {"accumulate", 2000},
+                                                          {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
 //  {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
 
 const std::map<const std::string, const std::string> category_to_levtype{
-    {"ocean-grid-coordinate", "oceanSurface"},
-    {"ocean-2d", "oceanSurface"},
-    {"ocean-3d", "oceanModelLevel"}};
+    {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
 
-const std::map<const std::string, const long> type_of_generating_process{
-    {"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}};
+const std::map<const std::string, const long> type_of_generating_process{{"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}};
 
 }  // namespace
 
@@ -64,7 +60,7 @@ bool GribEncoder::gridInfoReady(const std::string& subtype) const {
 }
 
 bool GribEncoder::setGridInfo(message::Message msg) {
-    ASSERT(not gridInfoReady(msg.domain())); // Panic check during development
+    ASSERT(not gridInfoReady(msg.domain()));  // Panic check during development
 
     ASSERT(coordSet_.find(msg.metadata().getString("nemoParam")) != end(coordSet_));
 
@@ -81,67 +77,93 @@ bool GribEncoder::setGridInfo(message::Message msg) {
     return grids().at(msg.domain())->computeHashIfCan();
 }
 
+void GribEncoder::setFieldMetadata(const message::Metadata& metadata) {
+    static const auto isOcean = [](const message::Metadata& metadata) {
+        // Check if metadata has a key "nemoParam" or a category starting with "ocean"
+        return metadata.has("nemoParam")
+            || (metadata.has("category") && (metadata.getString("category").rfind("ocean") == 0));
+    };
+    if (metadata.has("mars")) {
+        auto runConfig = config_.getSubConfiguration("run");
+        setValue("domain", runConfig.getString("domain"));
+        setValue("levtype", runConfig.getString("levtype"));
+        setValue("levelist", runConfig.getLong("levelist"));
+        setValue("date", runConfig.getLong("date"));
+        setValue("time", runConfig.getLong("time"));
+        setValue("step", runConfig.getLong("step"));
+        setValue("param", runConfig.getLong("param"));
+        setValue("class", runConfig.getString("class"));
+        setValue("type", runConfig.getString("type"));
+        setValue("stream", runConfig.getString("stream"));
+        setValue("expver", runConfig.getString("expver"));
+    }
+    else if (isOcean(metadata)) {
+        setOceanMetadata(metadata);
+    }
+}
+
 void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
+    auto runConfig = config_.getSubConfiguration("run");
 
     // Set run-specific metadata
-
-    setValue("expver", config_.getSubConfiguration("run").getString("expver"));
-    setValue("class", config_.getSubConfiguration("run").getString("class"));
-    setValue("stream", config_.getSubConfiguration("run").getString("stream"));
-    auto type = config_.getSubConfiguration("run").getString("type");
+    setValue("expver", runConfig.getString("expver"));
+    setValue("class", runConfig.getString("class"));
+    setValue("stream", runConfig.getString("stream"));
+    auto type = runConfig.getString("type");
     setValue("type", type);
     setValue("typeOfGeneratingProcess", type_of_generating_process.at(type));
 
     long date = (type == "an") ? metadata.getLong("currentDate") : metadata.getLong("startDate");
-    setValue("year",  date / 10000);
+    setValue("year", date / 10000);
     setValue("month", (date % 10000) / 100);
     setValue("day", date % 100);
 
     long time = (type == "an") ? metadata.getLong("currentTime") : metadata.getLong("startTime");
-    setValue("hour",  time / 10000);
+    setValue("hour", time / 10000);
     setValue("minute", (time % 10000) / 100);
     setValue("second", time % 100);
 
-    if (config_.getSubConfiguration("run").has("date-of-analysis")) {
-        auto dateOfAnalysis = config_.getSubConfiguration("run").getLong("date-of-analysis");
+    if (runConfig.has("date-of-analysis")) {
+        auto dateOfAnalysis = runConfig.getLong("date-of-analysis");
         setValue("yearOfAnalysis", dateOfAnalysis / 10000);
         setValue("monthOfAnalysis", (dateOfAnalysis % 10000) / 100);
         setValue("dayOfAnalysis", dateOfAnalysis % 100);
     }
 
-    if (config_.getSubConfiguration("run").has("time-of-analysis")) {
-        auto timeOfAnalysis = config_.getSubConfiguration("run").getLong("time-of-analysis");
+    if (runConfig.has("time-of-analysis")) {
+        auto timeOfAnalysis = runConfig.getLong("time-of-analysis");
         setValue("hourOfAnalysis", timeOfAnalysis / 10000);
         setValue("minuteOfAnalysis", (timeOfAnalysis % 10000) / 100);
     }
 
-    if (config_.getSubConfiguration("run").has("number")) {
-        setValue("number", config_.getSubConfiguration("run").getLong("number"));
+    if (runConfig.has("number")) {
+        setValue("number", runConfig.getLong("number"));
     }
 
     // Statistics field
-    if(type == "fc") {
+    if (type == "fc") {
         auto stepInSeconds = metadata.getLong("step") * metadata.getLong("timeStep");
         ASSERT(stepInSeconds % 3600 == 0);
         auto stepInHours = stepInSeconds / 3600;
         auto prevStep = stepInHours - metadata.getLong("timeSpanInHours");
         auto stepRange = std::to_string(prevStep) + "-" + std::to_string(stepInHours);
-        if(metadata.getString("operation") == "instant") {
+        if (metadata.getString("operation") == "instant") {
             setValue("step", stepInHours);
-        } else {
+        }
+        else {
             setValue("stepRange", stepRange);
         }
     }
 
     if (metadata.has("operation") and metadata.getString("operation") != "instant") {
-        //setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));
-        // setValue("stepRange", metadata.getString("stepRange"));
+        // setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));
+        //  setValue("stepRange", metadata.getString("stepRange"));
         long curDate = metadata.getLong("currentDate");
-        setValue("yearOfEndOfOverallTimeInterval",  curDate / 10000);
+        setValue("yearOfEndOfOverallTimeInterval", curDate / 10000);
         setValue("monthOfEndOfOverallTimeInterval", (curDate % 10000) / 100);
         setValue("dayOfEndOfOverallTimeInterval", curDate % 100);
         setValue("lengthOfTimeRange", metadata.getLong("timeSpanInHours"));
-        setValue("indicatorOfUnitForTimeIncrement", 13l); // always seconds
+        setValue("indicatorOfUnitForTimeIncrement", 13l);  // always seconds
         setValue("timeIncrement", metadata.getLong("timeStep"));
     }
 
@@ -150,8 +172,7 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("numberOfValues", metadata.getLong("globalSize"));
 
     // Setting parameter ID
-    setValue("paramId",
-             metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
+    setValue("paramId", metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
     setValue("typeOfLevel", metadata.getString("typeOfLevel"));
     if (metadata.getString("category") == "ocean-3d") {
         auto level = metadata.getLong("level");
@@ -175,11 +196,16 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
 }
 
 void GribEncoder::setCoordMetadata(const message::Metadata& metadata) {
+    setCoordMetadata(metadata,
+                     metadata.has("mars") ? metadata.getSubConfiguration("mars") : config_.getSubConfiguration("run"));
+}
+void GribEncoder::setCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig) {
+
     // Set run-specific metadata
-    setValue("expver", config_.getSubConfiguration("run").getString("expver"));
-    setValue("class", config_.getSubConfiguration("run").getString("class"));
-    setValue("stream", config_.getSubConfiguration("run").getString("stream"));
-    const std::string& type = config_.getSubConfiguration("run").getString("type");
+    setValue("expver", runConfig.getString("expver"));
+    setValue("class", runConfig.getString("class"));
+    setValue("stream", runConfig.getString("stream"));
+    const std::string& type = runConfig.getString("type");
     setValue("type", type);
     setValue("typeOfGeneratingProcess", type_of_generating_process.at(type));
 
@@ -226,11 +252,9 @@ void GribEncoder::setValue(const std::string& key, const std::string& value) {
 void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
     std::ostringstream oss;
     for (int i = 0; i < DIGEST_LENGTH; ++i) {
-        oss << ((i == 0) ? "" : "-") << std::hex << std::setfill('0') << std::setw(2)
-            << static_cast<short>(value[i]);
+        oss << ((i == 0) ? "" : "-") << std::hex << std::setfill('0') << std::setw(2) << static_cast<short>(value[i]);
     }
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << oss.str() << " for key " << key
-                             << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << oss.str() << " for key " << key << std::endl;
     size_t sz = DIGEST_LENGTH;
     CODES_CHECK(codes_set_bytes(raw(), key.c_str(), value, &sz), NULL);
 }
@@ -252,13 +276,12 @@ message::Message GribEncoder::encodeLongitudes(const std::string& subtype) {
 }
 
 message::Message GribEncoder::encodeField(const message::Message& msg) {
-        setOceanMetadata(msg.metadata());
-        return setFieldValues(msg);
+    setFieldMetadata(msg.metadata());
+    return setFieldValues(msg);
 }
 
-message::Message GribEncoder::encodeField(const message::Metadata& md, const double* data,
-                                          size_t sz) {
-    setOceanMetadata(md);
+message::Message GribEncoder::encodeField(const message::Metadata& md, const double* data, size_t sz) {
+    setFieldMetadata(md);
     return setFieldValues(data, sz);
 }
 
@@ -269,7 +292,8 @@ message::Message GribEncoder::setFieldValues(const message::Message& msg) {
     eckit::Buffer buf{this->length()};
     this->write(buf);
 
-    return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}}, std::move(buf)};
+    return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}},
+                   std::move(buf)};
 }
 
 message::Message GribEncoder::setFieldValues(const double* values, size_t count) {

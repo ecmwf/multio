@@ -26,6 +26,7 @@
 #include "eckit/maths/Functions.h"
 #include "eckit/message/Message.h"
 #include "eckit/message/Reader.h"
+#include "eckit/message/Decoder.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 #include "eckit/value/Value.h"
@@ -152,7 +153,7 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
 
             MetadataSetter encodingMetadata;
             eckit::message::TypedSetter<MetadataSetter> gatherer{encodingMetadata};
-            msg.getMetadata(gatherer);
+            msg.getMetadata(gatherer, eckit::message::ValueRepresentation::Native);
 
             eckit::LocalConfiguration metadata;
             if (isBUFR(encodingMetadata)) {

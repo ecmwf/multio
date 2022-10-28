@@ -68,7 +68,7 @@ void Statistics::executeImpl(message::Message msg) const {
                                  << std::endl;
 
         // Create a unique key for the fieldStats_ map
-        os << msg.metadata().getString("category") << msg.metadata().getString("nemoParam")
+        os << msg.metadata().getString("category") << msg.metadata().getString("name")
            << msg.metadata().getString("param") << msg.metadata().getLong("level") << msg.source();
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {

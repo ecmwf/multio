@@ -22,6 +22,8 @@ std::string eckit::Translator<ComponentTag, std::string>::operator()(ComponentTa
             return "Receiver";
         case ComponentTag::Dispatcher:
             return "Dispatcher";
+        case ComponentTag::Encoder:
+            return "Encoder";
         default:
             return "Unknown component tag";
     }

@@ -42,6 +42,7 @@ enum class ComponentTag : unsigned
     Transport,
     Receiver,
     Dispatcher,
+    Encoder,
 };
 
 

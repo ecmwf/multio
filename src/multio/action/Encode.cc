@@ -26,6 +26,59 @@ using util::configuration_path_name;
 
 namespace {
 
+ConfigurationContext getEncodingConfiguration(const ConfigurationContext& confCtx) {
+    return confCtx.recast(([&](){
+        if (confCtx.config().has("encoding")) {
+            auto encodingKeyMaybe = ([&]() {
+                try {
+                    return eckit::Optional<std::string>{confCtx.config().getString("encoding")};
+                }
+                catch (...) {
+                    return eckit::Optional<std::string>{};
+                }
+            })();
+
+            if (encodingKeyMaybe) {
+                auto encodings = ([&]() {
+                    try {
+                        return confCtx.globalConfig().getSubConfiguration("encodings");
+                    }
+                    catch (...) {
+                        std::ostringstream oss;
+                        oss << "No global \"encodings\" mapping is defined to look up encoding configuration \""
+                            << *encodingKeyMaybe << "\"";
+                        std::throw_with_nested(eckit::Exception(oss.str()));
+                    }
+                }());
+                auto encoding = ([&]() {
+                    try {
+                        return encodings.getSubConfiguration(*encodingKeyMaybe);
+                    }
+                    catch (...) {
+                        std::ostringstream oss;
+                        oss << "Global \"encodings\" configuration contains no mapping for encoding configuration \""
+                            << *encodingKeyMaybe << "\"";
+                        std::throw_with_nested(eckit::Exception(oss.str()));
+                    }
+                }());
+
+                /// @TODO Allow defining overwrites. Problem: we can not copy mappings/values from one to another configuration
+                /// without knowing it's type explicitly
+                // if (confCtx.config().has("overwrite")) {
+                //     confCtx.config().getSubConfiguration("overwrite")
+
+                // }
+
+                return encoding;
+            }
+            else {
+                return confCtx.config().getSubConfiguration("encoding");
+            }
+        } 
+        return confCtx.config();
+    })(), util::ComponentTag::Encoder);
+}
+
 std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
     auto format = confCtx.config().getString("format");
 
@@ -48,8 +101,11 @@ std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
 using message::Message;
 using message::Peer;
 
+Encode::Encode(const ConfigurationContext& confCtx, ConfigurationContext&& encConfCtx) :
+    Action{confCtx}, format_{encConfCtx.config().getString("format")}, encoder_{make_encoder(encConfCtx)} {}
+    
 Encode::Encode(const ConfigurationContext& confCtx) :
-    Action{confCtx}, format_{confCtx.config().getString("format")}, encoder_{make_encoder(confCtx)} {}
+    Encode(confCtx, getEncodingConfiguration(confCtx)) {}
 
 void Encode::executeImpl(Message msg) const {
     if (not encoder_) {
@@ -59,8 +115,7 @@ void Encode::executeImpl(Message msg) const {
 
     ASSERT(format_ == "grib");
 
-    LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain()
-                             << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain() << std::endl;
 
     if (encoder_->gridInfoReady(msg.domain())) {
         executeNext(encodeField(std::move(msg)));

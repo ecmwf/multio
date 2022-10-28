@@ -119,40 +119,44 @@ struct DefaultFailureState {
 }  // namespace multio
 
 
+namespace eckit {
+
 template <>
-struct eckit::Translator<multio::util::OnClientError, std::string> {
+struct Translator<multio::util::OnClientError, std::string> {
     std::string operator()(multio::util::OnClientError);
 };
 
 template <>
-struct eckit::Translator<multio::util::OnServerError, std::string> {
+struct Translator<multio::util::OnServerError, std::string> {
     std::string operator()(multio::util::OnServerError);
 };
 
 template <>
-struct eckit::Translator<multio::util::OnPlanError, std::string> {
+struct Translator<multio::util::OnPlanError, std::string> {
     std::string operator()(multio::util::OnPlanError);
 };
 
 template <>
-struct eckit::Translator<multio::util::OnActionError, std::string> {
+struct Translator<multio::util::OnActionError, std::string> {
     std::string operator()(multio::util::OnActionError);
 };
 
 template <>
-struct eckit::Translator<multio::util::OnTransportError, std::string> {
+struct Translator<multio::util::OnTransportError, std::string> {
     std::string operator()(multio::util::OnTransportError);
 };
 
 template <>
-struct eckit::Translator<multio::util::OnReceiveError, std::string> {
+struct Translator<multio::util::OnReceiveError, std::string> {
     std::string operator()(multio::util::OnReceiveError);
 };
 
 template <>
-struct eckit::Translator<multio::util::OnDispatchError, std::string> {
+struct Translator<multio::util::OnDispatchError, std::string> {
     std::string operator()(multio::util::OnDispatchError);
 };
+
+}  // namespace eckit
 
 
 namespace multio {

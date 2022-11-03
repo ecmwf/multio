@@ -76,7 +76,7 @@ ConfigurationContext getEncodingConfiguration(const ConfigurationContext& confCt
             }
         } 
         return confCtx.config();
-    })(), util::ComponentTag::Encoder);
+    })());
 }
 
 std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {

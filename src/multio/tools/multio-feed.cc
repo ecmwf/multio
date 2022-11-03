@@ -24,9 +24,9 @@
 #include "eckit/io/StdFile.h"
 #include "eckit/log/Log.h"
 #include "eckit/maths/Functions.h"
+#include "eckit/message/Decoder.h"
 #include "eckit/message/Message.h"
 #include "eckit/message/Reader.h"
-#include "eckit/message/Decoder.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 #include "eckit/value/Value.h"
@@ -136,56 +136,43 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
 
     eckit::message::Message msg;
 
-    const auto isGRIB = [](const MetadataSetter& ms) {
-        return ms.has("domain") && ms.has("levtype") && ms.has("levelist") && ms.has("date") && ms.has("time")
-            && ms.has("step") && ms.has("param") && ms.has("class") && ms.has("type") && ms.has("stream")
-            && ms.has("expver");
-    };
-    
-    const auto isBUFR = [](const MetadataSetter& ms) {
-        return ms.has("bufrHeaderCentre") || ms.has("bufrHeaderSubCentre");
-    };
-
     while ((msg = reader.next())) {
         if (decodeData_) {
-            // eckit::StringDict sd;
-            // eckit::message::Message codesMsg = msg.transform(sd);
-
             MetadataSetter encodingMetadata;
             eckit::message::TypedSetter<MetadataSetter> gatherer{encodingMetadata};
             msg.getMetadata(gatherer, eckit::message::ValueRepresentation::Native);
 
             eckit::LocalConfiguration metadata;
-            if (isBUFR(encodingMetadata)) {
-                // @TODO Think about what to extract and how to handle BUFR in the pipeline
-                metadata.set("bufr", encodingMetadata);
-            } else if (isGRIB(encodingMetadata)) {
-                if (encodingMetadata.has("name")) {
-                    metadata.set("name", encodingMetadata.getString("name"));
+            switch (msg.getEncodingFormat()) {
+                case eckit::message::EncodingFormat::GRIB: {
+                    if (encodingMetadata.has("name")) {
+                        metadata.set("name", encodingMetadata.getString("name"));
+                    }
+                    if (encodingMetadata.has("param")) {
+                        metadata.set("param", encodingMetadata.getLong("param"));
+                    }
+                    if (encodingMetadata.has("step")) {
+                        metadata.set("step", encodingMetadata.getLong("step"));
+                    }
+                    metadata.set("mars", encodingMetadata);
+                    break;
                 }
-                if (encodingMetadata.has("param")) {
-                    metadata.set("param", encodingMetadata.getLong("param"));
+                case eckit::message::EncodingFormat::BUFR: {
+                    // @TODO Think about what to extract and how to handle BUFR in the pipeline
+                    metadata.set("bufr", encodingMetadata);
+                    break;
                 }
-                if (encodingMetadata.has("step")) {
-                    metadata.set("step", encodingMetadata.getLong("step"));
+                default: {
+                    metadata = encodingMetadata;
+                    break;
                 }
-                metadata.set("mars", encodingMetadata);
-            } else {
-                metadata = encodingMetadata;
             }
 
-            /// TODO: GRIB specific encoding. ECKIT Message needs some refactoring to decode data for different types
-            // codesMsg.getDoubleArray("numericValues", data);
-            // std::vector<double> data;
             eckit::Buffer data = msg.decode();
 
 
             size_t words = eckit::round(data.size(), sizeof(fortint)) / sizeof(fortint);
             fortint iwords = static_cast<fortint>(words);
-
-            // size_t words = eckit::round(codesMsg.length(), sizeof(fortint)) / sizeof(fortint);
-
-            // fortint iwords = static_cast<fortint>(words);
 
             if (imultio_write_raw_(&metadata, reinterpret_cast<const void*>(data.data()), &iwords)) {
                 ASSERT(false);
@@ -195,7 +182,6 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
             size_t words = eckit::round(msg.length(), sizeof(fortint)) / sizeof(fortint);
 
             fortint iwords = static_cast<fortint>(words);
-
 
             if (imultio_write_(msg.data(), &iwords)) {
                 ASSERT(false);

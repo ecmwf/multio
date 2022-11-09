@@ -127,7 +127,7 @@ private:
         if (::getenv("MULTIO_PLANS_FILE")) {
             PathName path(::getenv("MULTIO_PLANS_FILE"));
             std::cout << "MultIO initialising with plans file " << path << std::endl;
-            return ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(path)), path, path);
+            return ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(path)), path.dirName(), path);
         }
 
         if (::getenv("MULTIO_CONFIG")) {
@@ -141,7 +141,7 @@ private:
             PathName path(::getenv("MULTIO_CONFIG_FILE"));
             std::cout << "MultIO initialising with config file " << path << std::endl;
             return configureFromSinks(
-                ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(path)), path, path));
+                ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(path)), path.dirName(), path));
         }
 
         eckit::Tokenizer parse(":");

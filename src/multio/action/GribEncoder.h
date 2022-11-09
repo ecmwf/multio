@@ -57,6 +57,13 @@ private:
                                           "lon_V", "lat_W", "lon_W", "lat_F", "lon_F"};
 };
 
+inline bool isOcean(const message::Metadata& metadata) {
+    // Check if metadata has a key "nemoParam" or a category starting with "ocean"
+    return metadata.has("nemoParam")
+        || (metadata.has("category") && (metadata.getString("category").rfind("ocean") == 0));
+};
+
+
 }  // namespace action
 }  // namespace multio
 

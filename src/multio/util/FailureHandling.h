@@ -397,44 +397,56 @@ public:
 
 private:
     // TODO accept output stream as parameter
-    void printNestedException(std::ostream& out, const std::exception& e, int level = 0) const {
-        out << (level + 1) << ": " << e.what() << std::endl;
+    int printNestedException(std::ostream& out, const std::exception& e) const {
+        int level=0;
         try {
             std::rethrow_if_nested(e);
         }
         catch (const FailureAwareException& nestedException) {
-            printNestedException(out, nestedException, level + 1);
+            level = printNestedException(out, nestedException);
         }
         catch (const eckit::Exception& nestedException) {
-            printNestedException(out, nestedException, level + 1);
+            level = printNestedException(out, nestedException);
         }
         catch (const std::exception& nestedException) {
-            printNestedException(out, nestedException, level + 1);
+            level = printNestedException(out, nestedException);
         }
         catch (...) {
+            return level + 1;
         }
+        printExceptionHeader(out, e, level);
+        return level + 1;
     }
 
-    void printExceptionHeader(std::ostream& out, int level = 0) const { out << "[Exception ]" << (level + 1) << "] "; }
+    inline void printExceptionHeader(std::ostream& out, const std::exception& e, int level = 0) const {
+        out << std::endl << "  * " << (level + 1) << ": " << e.what() << std::endl;
+        ;
+    }
 
 protected:
-    void printException(std::ostream& out, const std::exception& e, int level = 0) const {
-        printExceptionHeader(out, level);
-        out << e.what() << std::endl;
-        printNestedException(out, e, level);
+    void printException(std::ostream& out, const std::exception& e) const {
+        out << std::endl;
+        out << "Nested std::Exception: " << std::endl;
+        printNestedException(out, e);
+        out << std::endl;
     }
-    void printException(std::ostream& out, const eckit::Exception& e, int level = 0) const {
-        printExceptionHeader(out, level);
-        out << e.what() << std::endl;
-        // A plain eckit::Ecxeption is probably the end of the nested stack constructed with FailureAware. Hence we
-        // print the whole stack here.
+    void printException(std::ostream& out, const eckit::Exception& e) const {
+        out << std::endl;
+        out << "Nested eckit::Exception: " << std::endl;
+        printNestedException(out, e);
+        out << std::endl;
         e.exceptionStack(out, true);
-        printNestedException(out, e, level);
+        out << std::endl;
+        out << std::endl;
     }
-    void printException(std::ostream& out, const FailureAwareException& e, int level = 0) const {
-        printExceptionHeader(out, level);
-        out << e.what() << std::endl;
-        printNestedException(out, e, level);
+    void printException(std::ostream& out, const FailureAwareException& e) const {
+        out << std::endl;
+        out << "Nested FailureAwareException: " << std::endl;
+        printNestedException(out, e);
+        out << std::endl;
+        e.exceptionStack(out, true);
+        out << std::endl;
+        out << std::endl;
     }
 
     void print(std::ostream& out, const FailureContext& c) const {

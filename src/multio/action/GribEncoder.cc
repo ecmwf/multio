@@ -78,13 +78,8 @@ bool GribEncoder::setGridInfo(message::Message msg) {
 }
 
 void GribEncoder::setFieldMetadata(const message::Metadata& metadata) {
-    static const auto isOcean = [](const message::Metadata& metadata) {
-        // Check if metadata has a key "nemoParam" or a category starting with "ocean"
-        return metadata.has("nemoParam")
-            || (metadata.has("category") && (metadata.getString("category").rfind("ocean") == 0));
-    };
     if (metadata.has("mars")) {
-        auto runConfig = config_.getSubConfiguration("run");
+        auto runConfig = metadata.getSubConfiguration("mars");
         setValue("domain", runConfig.getString("domain"));
         setValue("levtype", runConfig.getString("levtype"));
         setValue("levelist", runConfig.getLong("levelist"));
@@ -233,20 +228,28 @@ void GribEncoder::setCoordMetadata(const message::Metadata& metadata, const ecki
     setValue("bitsPerValue", metadata.getLong("bitsPerValue"));
 }
 
+void codesCheck(int ret) {
+    if (ret == CODES_READ_ONLY) {
+        // If value is read only, do not panic...
+        return;
+    }
+    CODES_CHECK(ret, NULL);
+}
+
 void GribEncoder::setValue(const std::string& key, long value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
+    codesCheck(codes_set_long(raw(), key.c_str(), value));
 }
 
 void GribEncoder::setValue(const std::string& key, double value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    CODES_CHECK(codes_set_double(raw(), key.c_str(), value), NULL);
+    codesCheck(codes_set_double(raw(), key.c_str(), value));
 }
 
 void GribEncoder::setValue(const std::string& key, const std::string& value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
     size_t sz = value.size();
-    CODES_CHECK(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), NULL);
+    codesCheck(codes_set_string(raw(), key.c_str(), value.c_str(), &sz));
 }
 
 void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
@@ -256,7 +259,7 @@ void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
     }
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << oss.str() << " for key " << key << std::endl;
     size_t sz = DIGEST_LENGTH;
-    CODES_CHECK(codes_set_bytes(raw(), key.c_str(), value, &sz), NULL);
+    codesCheck(codes_set_bytes(raw(), key.c_str(), value, &sz));
 }
 
 message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
@@ -287,6 +290,8 @@ message::Message GribEncoder::encodeField(const message::Metadata& md, const dou
 
 message::Message GribEncoder::setFieldValues(const message::Message& msg) {
     auto beg = reinterpret_cast<const double*>(msg.payload().data());
+    // TODO refactor
+    // this->setDataValues(beg, msg.metadata().has("globalSize") ? msg.globalSize() : msg.payload().size() / sizeof(double));
     this->setDataValues(beg, msg.globalSize());
 
     eckit::Buffer buf{this->length()};

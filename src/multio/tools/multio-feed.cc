@@ -169,7 +169,7 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
             }
 
             eckit::Buffer data = msg.decode();
-
+            metadata.set("globalSize", data.size() / sizeof(double));
 
             size_t words = eckit::round(data.size(), sizeof(fortint)) / sizeof(fortint);
             fortint iwords = static_cast<fortint>(words);

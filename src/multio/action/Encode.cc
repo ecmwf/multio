@@ -84,7 +84,9 @@ std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
 
     if (format == "grib") {
         ASSERT(confCtx.config().has("template"));
-        eckit::AutoStdFile fin{confCtx.pathName() + confCtx.config().getString("template")};
+        std::string tmplPath = confCtx.config().getString("template");
+        // TODO provide utility to distinguish between relative and absolute paths
+        eckit::AutoStdFile fin{ tmplPath.rfind("/", 0) == 0 ? eckit::PathName{tmplPath} : (confCtx.pathName() / confCtx.config().getString("template"))};
         int err;
         return std::unique_ptr<GribEncoder>{
             new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), confCtx.config()}};
@@ -108,24 +110,33 @@ Encode::Encode(const ConfigurationContext& confCtx) :
     Encode(confCtx, getEncodingConfiguration(confCtx)) {}
 
 void Encode::executeImpl(Message msg) const {
+    if (msg.tag() != Message::Tag::Field) {
+        executeNext(std::move(msg));
+        return;
+    }
     if (not encoder_) {
         executeNext(std::move(msg));
         return;
     }
 
-    ASSERT(format_ == "grib");
+    if (isOcean(msg.metadata())) {
+        //! TODO shoud not be checked here anymore, encoder_ should have been initialized according to format_
+        ASSERT(format_ == "grib");
 
-    LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain() << std::endl;
+        LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain() << std::endl;
 
-    if (encoder_->gridInfoReady(msg.domain())) {
-        executeNext(encodeField(std::move(msg)));
-    }
-    else {
-        LOG_DEBUG_LIB(LibMultio) << "*** Grid metadata: " << msg.metadata() << std::endl;
-        if (encoder_->setGridInfo(msg)) {
-            executeNext(encodeLatitudes(msg.domain()));
-            executeNext(encodeLongitudes(msg.domain()));
+        if (encoder_->gridInfoReady(msg.domain())) {
+            executeNext(encodeField(std::move(msg)));
         }
+        else {
+            LOG_DEBUG_LIB(LibMultio) << "*** Grid metadata: " << msg.metadata() << std::endl;
+            if (encoder_->setGridInfo(msg)) {
+                executeNext(encodeLatitudes(msg.domain()));
+                executeNext(encodeLongitudes(msg.domain()));
+            }
+        }
+    } else {
+        executeNext(encodeField(std::move(msg)));
     }
 }
 
@@ -134,18 +145,36 @@ void Encode::print(std::ostream& os) const {
 }
 
 message::Message Encode::encodeField(const message::Message& msg) const {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-    return encoder_->encodeField(msg);
+    try {
+        util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+        return encoder_->encodeField(msg);
+    } catch (...) {
+        std::ostringstream oss;
+        oss << "Encode::encodeField with Message: " << msg;
+        std::throw_with_nested(eckit::Exception(oss.str()));
+    }
 }
 
 message::Message Encode::encodeLatitudes(const std::string& subtype) const {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-    return encoder_->encodeLatitudes(subtype);
+    try {
+        util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+        return encoder_->encodeLatitudes(subtype);
+    } catch (...) {
+        std::ostringstream oss;
+        oss << "Encode::encodeLatitudes with subtype: " << subtype;
+        std::throw_with_nested(eckit::Exception(oss.str()));
+    }
 }
 
 message::Message Encode::encodeLongitudes(const std::string& subtype) const {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-    return encoder_->encodeLongitudes(subtype);
+    try {
+        util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+        return encoder_->encodeLongitudes(subtype);
+    } catch (...) {
+        std::ostringstream oss;
+        oss << "Encode::encodeLongitudes with subtype: " << subtype;
+        std::throw_with_nested(eckit::Exception(oss.str()));
+    }
 }
 
 static ActionBuilder<Encode> EncodeBuilder("encode");

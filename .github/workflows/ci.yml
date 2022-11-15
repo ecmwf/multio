@@ -23,6 +23,8 @@ jobs:
   ci:
     name: ci
     uses: ecmwf-actions/reusable-workflows/.github/workflows/ci.yml@v1
+    strategy:
+      fail-fast: false  # false: try to complete all jobs
     with:
       codecov_upload: true
       build_package_inputs: |
@@ -30,8 +32,8 @@ jobs:
           ecmwf/ecbuild
           ecmwf/eckit
           ecmwf/odc
-          ecmwf/eccodes
           MathisRosenhauer/libaec@master
+          ecmwf/eccodes
           ecmwf/metkit
           ecmwf/fdb
         dependency_branch: develop

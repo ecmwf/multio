@@ -304,6 +304,8 @@ int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double
         ASSERT(md);
         // std::cout << "multio_write_field: " << *md << std::endl;
 
+        md->set("precision", "double");
+
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(double)};
 
         mio->dispatch(*md, std::move(field_vals), Message::Tag::Field);

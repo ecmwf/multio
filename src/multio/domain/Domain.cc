@@ -1,11 +1,11 @@
 
 #include "Domain.h"
 
+#include <algorithm>
+
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/message/Message.h"
-#include "multio/LibMultio.h"
-#include "multio/util/print_buffer.h"
 
 namespace multio {
 namespace domain {
@@ -14,7 +14,8 @@ Domain::Domain(std::vector<int32_t>&& def) : definition_(std::move(def)) {}
 
 //------------------------------------------------------------------------------------------------------------
 
-Unstructured::Unstructured(std::vector<int32_t>&& def, long global_size_val) : Domain{std::move(def)}, global_size_{global_size_val} {}
+Unstructured::Unstructured(std::vector<int32_t>&& def, long global_size_val) :
+    Domain{std::move(def)}, global_size_{global_size_val} {}
 
 void Unstructured::to_local(const std::vector<double>& global, std::vector<double>& local) const {
     local.resize(0);

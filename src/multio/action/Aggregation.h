@@ -18,7 +18,6 @@
 
 #include <iosfwd>
 #include <unordered_map>
-#include <vector>
 
 #include "multio/action/ChainedAction.h"
 
@@ -26,6 +25,47 @@ namespace multio {
 namespace action {
 
 using message::Message;
+
+class MessageMap : private std::map<std::string, Message>{
+public:
+    using std::map<std::string, Message>::at;
+    using std::map<std::string, Message>::size;
+    using std::map<std::string, Message>::begin;
+    using std::map<std::string, Message>::end;
+
+    bool contains(const std::string& key) const {
+        return find(key) != end() && processedParts_.find(key) != std::end(processedParts_);
+    }
+
+    std::size_t partsCount (const std::string& key) const {
+        ASSERT(contains(key));
+        return processedParts_.at(key).size();
+    }
+
+    void bookProcessedPart(const std::string& key, message::Peer peer) {
+        ASSERT(contains(key));
+        auto ret = processedParts_.at(key).insert(std::move(peer));
+        if (not ret.second) {
+            eckit::Log::warning() << " Field " << key << " has been aggregated already" << std::endl;
+        }
+    }
+
+    void addNew(const Message& msg) {
+        ASSERT(not contains(msg.fieldId()));
+        emplace(msg.fieldId(),
+                Message{Message::Header{msg.header()}, eckit::Buffer{msg.globalSize() * sizeof(double)}});
+        processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
+    }
+
+    void reset(const std::string& key) {
+        erase(key);
+        processedParts_.erase(key);
+    }
+
+private:
+    std::map<std::string, std::set<message::Peer>> processedParts_;
+};
+
 
 class Aggregation : public ChainedAction {
 public:
@@ -42,7 +82,7 @@ private:
     Message createGlobalField(const Message& msg) const;
     bool allPartsArrived(const Message& msg) const;
 
-    mutable std::map<std::string, std::vector<Message>> messages_;
+    mutable MessageMap msgMap_;
     mutable std::map<std::string, unsigned int> flushes_;
 };
 

@@ -12,9 +12,6 @@
 
 #include <algorithm>
 
-#include "eckit/config/Configuration.h"
-#include "eckit/exception/Exceptions.h"
-
 #include "multio/LibMultio.h"
 #include "multio/domain/Mappings.h"
 #include "multio/util/ScopedTimer.h"
@@ -41,7 +38,12 @@ void Aggregation::executeImpl(Message msg) const {
 
 bool Aggregation::handleField(const Message& msg) const {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-    messages_[msg.fieldId()].push_back(msg);
+    if (not msgMap_.contains(msg.fieldId())) {
+        msgMap_.addNew(msg);
+    }
+    // TODO: Perhaps call collect indices here and store it for a later call on check consistnecy
+    domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_global(msg, msgMap_.at(msg.fieldId()));
+    msgMap_.bookProcessedPart(msg.fieldId(), msg.source());
     return allPartsArrived(msg);
 }
 
@@ -63,38 +65,37 @@ bool Aggregation::handleFlush(const Message& msg) const {
 
 bool Aggregation::allPartsArrived(const Message& msg) const {
     LOG_DEBUG_LIB(LibMultio) << " *** Number of messages for field " << msg.fieldId() << " are "
-                             << messages_.at(msg.fieldId()).size() << std::endl;
+                             << msgMap_.partsCount(msg.fieldId()) << std::endl;
 
     const auto& domainMap = domain::Mappings::instance().get(msg.domain());
 
-    return domainMap.isComplete() && (messages_.at(msg.fieldId()).size() == domainMap.size());
+    return domainMap.isComplete() && (msgMap_.partsCount(msg.fieldId()) == domainMap.size());
 }
 
 Message Aggregation::createGlobalField(const Message& msg) const {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
+    eckit::Log::info() << "Creating global field " << std::endl;
+
     const auto& fid = msg.fieldId();
 
-    auto md = msg.header().metadata();
-    Message msgOut{
-        Message::Header{msg.header().tag(), Peer{msg.source().group()}, Peer{msg.destination()}, std::move(md)},
-        eckit::Buffer{msg.globalSize() * sizeof(double)}};
+    // TODO: checking domain consistency is skipped for now...
+    //domain::Mappings::instance().checkDomainConsistency(messages_.at(fid));
 
-    domain::Mappings::instance().checkDomainConsistency(messages_.at(fid));
+    auto msgOut = std::move(msgMap_.at(fid));
 
-    for (const auto& msg : messages_.at(fid)) {
-        domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_global(msg, msgOut);
-    }
-
-    messages_.erase(fid);
+    msgMap_.reset(fid);
 
     return msgOut;
 }
 
 void Aggregation::print(std::ostream& os) const {
-    os << "Aggregation(for " << messages_.size() << " fields = [";
-    for (const auto& msg : messages_) {
-        os << '\n' << "  --->  " << msg.first;
+    os << "Aggregation(for " << msgMap_.size() << " fields = [";
+    for (const auto& mp : msgMap_) {
+        auto const& domainMap = domain::Mappings::instance().get(mp.second.domain());
+        os << '\n'
+           << "  --->  " << mp.first << " ---> Aggregated " << msgMap_.partsCount(mp.first) << " parts of a total of "
+           << (domainMap.isComplete() ? domainMap.size() : 0);
     }
     os << "])";
 }

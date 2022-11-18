@@ -132,6 +132,8 @@ void MultioFeed::init(const eckit::option::CmdArgs& args) {
 void MultioFeed::finish(const eckit::option::CmdArgs&) {}
 
 void MultioFeed::execute(const eckit::option::CmdArgs& args) {
+    using eckit::message::MetadataFilter;
+    using eckit::message::ValueRepresentation;
     eckit::message::Reader reader{args(0)};
 
     eckit::message::Message msg;
@@ -140,7 +142,11 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
         if (decodeData_) {
             MetadataSetter encodingMetadata;
             eckit::message::TypedSetter<MetadataSetter> gatherer{encodingMetadata};
-            msg.getMetadata(gatherer, eckit::message::ValueRepresentation::Native);
+            eckit::message::GetMetadataOptions mdOpts{};
+            mdOpts.valueRepresentation = ValueRepresentation::Native;
+            mdOpts.filter = MetadataFilter::AllKeys;
+            mdOpts.nameSpace = "";
+            msg.getMetadata(gatherer, mdOpts);
 
             eckit::LocalConfiguration metadata;
             switch (msg.getEncodingFormat()) {
@@ -154,7 +160,7 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
                     if (encodingMetadata.has("step")) {
                         metadata.set("step", encodingMetadata.getLong("step"));
                     }
-                    metadata.set("mars", encodingMetadata);
+                    metadata.set("encodingKeys", encodingMetadata);
                     break;
                 }
                 case eckit::message::EncodingFormat::BUFR: {

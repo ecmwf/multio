@@ -34,6 +34,16 @@ public:
     void setValue(const std::string& key, double value);
     void setValue(const std::string& key, const std::string& value);
     void setValue(const std::string& key, const unsigned char* value);
+    
+    // Convert bool to long (0/1)
+    void setValue(const std::string& key, bool value);
+    
+    template<typename T>
+    void setValue(const std::string& key, eckit::Optional<T> v) {
+        if(v) {
+            setValue(key, *v);
+        }
+    }
 
     message::Message encodeLatitudes(const std::string& subtype);
     message::Message encodeLongitudes(const std::string& subtype);

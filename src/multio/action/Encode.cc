@@ -98,6 +98,7 @@ std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
         throw eckit::SeriousBug("Encoding format <" + format + "> is not supported");
     }
 }
+
 }  // namespace
 
 using message::Message;

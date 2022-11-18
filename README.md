@@ -24,6 +24,7 @@ Runtime dependencies:
 Optional runtime dependencies:
 
 - fdb -- http://github.com/ecmwf/fdb
+- fckit -- http://github.com/ecmwf/fckit (for the fortran example code only)
 
 Build dependencies:
 

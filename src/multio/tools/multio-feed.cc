@@ -132,7 +132,6 @@ void MultioFeed::init(const eckit::option::CmdArgs& args) {
 void MultioFeed::finish(const eckit::option::CmdArgs&) {}
 
 void MultioFeed::execute(const eckit::option::CmdArgs& args) {
-    using eckit::message::MetadataFilter;
     using eckit::message::ValueRepresentation;
     eckit::message::Reader reader{args(0)};
 
@@ -144,35 +143,20 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
             eckit::message::TypedSetter<MetadataSetter> gatherer{encodingMetadata};
             eckit::message::GetMetadataOptions mdOpts{};
             mdOpts.valueRepresentation = ValueRepresentation::Native;
-            mdOpts.filter = MetadataFilter::AllKeys;
             mdOpts.nameSpace = "";
             msg.getMetadata(gatherer, mdOpts);
 
             eckit::LocalConfiguration metadata;
-            switch (msg.getEncodingFormat()) {
-                case eckit::message::EncodingFormat::GRIB: {
-                    if (encodingMetadata.has("name")) {
-                        metadata.set("name", encodingMetadata.getString("name"));
-                    }
-                    if (encodingMetadata.has("param")) {
-                        metadata.set("param", encodingMetadata.getLong("param"));
-                    }
-                    if (encodingMetadata.has("step")) {
-                        metadata.set("step", encodingMetadata.getLong("step"));
-                    }
-                    metadata.set("encodingKeys", encodingMetadata);
-                    break;
-                }
-                case eckit::message::EncodingFormat::BUFR: {
-                    // @TODO Think about what to extract and how to handle BUFR in the pipeline
-                    metadata.set("bufr", encodingMetadata);
-                    break;
-                }
-                default: {
-                    metadata = encodingMetadata;
-                    break;
-                }
+            if (encodingMetadata.has("name")) {
+                metadata.set("name", encodingMetadata.getString("name"));
             }
+            if (encodingMetadata.has("param")) {
+                metadata.set("param", encodingMetadata.getLong("param"));
+            }
+            if (encodingMetadata.has("step")) {
+                metadata.set("step", encodingMetadata.getLong("step"));
+            }
+            metadata.set("encodingKeys", encodingMetadata);
 
             eckit::Buffer data = msg.decode();
             metadata.set("globalSize", data.size() / sizeof(double));

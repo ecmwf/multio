@@ -34,7 +34,7 @@ bool setContains(const std::set<T>& _set, const T& key) {
 }  // namespace
 
 Mask::Mask(const ConfigurationContext& confCtx) :
-    Action(confCtx),
+    ChainedAction(confCtx),
     applyBitmap_{confCtx.config().getBool("apply-bitmap", true)},
     missingValue_{confCtx.config().getDouble("missing-value", std::numeric_limits<double>::max())},
     offsetFields_{fetch_offset_fields(confCtx.config())},

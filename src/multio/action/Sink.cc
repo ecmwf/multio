@@ -38,17 +38,14 @@ void Sink::executeImpl(Message msg) const {
         case Message::Tag::Field:
         case Message::Tag::Grib:
             write(msg);
-            executeNext(std::move(msg));
             return;
 
         case Message::Tag::StepComplete:
             flush();
-            executeNext(std::move(msg));
             return;
 
         case Message::Tag::StepNotification:
             trigger(msg);
-            executeNext(std::move(msg));
             return;
 
         default:

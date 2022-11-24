@@ -33,7 +33,7 @@ std::vector<std::string> fetch_items(const std::string& match, const eckit::Conf
 }  // namespace
 
 Select::Select(const ConfigurationContext& confCtx) :
-    Action{confCtx},
+    ChainedAction{confCtx},
     match_{confCtx.config().getString("match")},
     items_{fetch_items(match_, confCtx.config())} {
     if (std::none_of(begin(matchTypes), end(matchTypes),

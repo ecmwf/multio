@@ -14,16 +14,15 @@
 
 /// @date Oct 2019
 
-#ifndef multio_server_actions_Encode_H
-#define multio_server_actions_Encode_H
+#pragma once
 
 #include "multio/action/GribEncoder.h"
-#include "multio/action/Action.h"
+#include "multio/action/ChainedAction.h"
 
 namespace multio {
 namespace action {
 
-class Encode : public Action {
+class Encode : public ChainedAction {
 public:
     explicit Encode(const ConfigurationContext& confCtx);
 
@@ -46,5 +45,3 @@ private:
 
 }  // namespace action
 }  // namespace multio
-
-#endif

@@ -85,11 +85,11 @@ util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t, const util
 
 
 void Plan::computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const {
-    root_->computeActiveFields(ins);
+    root_->activeFields(ins);
 };
 
 void Plan::computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const {
-    root_->computeActiveCategories(ins);
+    root_->activeCategories(ins);
 };
 
 }  // namespace action

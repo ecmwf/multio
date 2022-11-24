@@ -14,18 +14,17 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_actions_Mask_H
-#define multio_server_actions_Mask_H
+#pragma once
 
 #include <unordered_map>
 
-#include "multio/action/Action.h"
+#include "multio/action/ChainedAction.h"
 #include "multio/message/ParameterMapping.h"
 
 namespace multio {
 namespace action {
 
-class ParameterMapping : public Action {
+class ParameterMapping : public ChainedAction {
 public:
     explicit ParameterMapping(const ConfigurationContext& confCtx);
 
@@ -46,5 +45,3 @@ private:
 
 }  // namespace action
 }  // namespace multio
-
-#endif

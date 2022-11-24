@@ -14,22 +14,21 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_actions_Select_H
-#define multio_server_actions_Select_H
+#pragma once
 
 #include <iosfwd>
 #include <vector>
 #include <set>
 #include <iterator>
 
-#include "multio/action/Action.h"
+#include "multio/action/ChainedAction.h"
 
 namespace multio {
 namespace action {
 
 using message::Message;
 
-class Select : public Action {
+class Select : public ChainedAction {
 public:
     explicit Select(const ConfigurationContext& confCtx);
 
@@ -50,5 +49,3 @@ private:
 
 }  // namespace action
 }  // namespace multio
-
-#endif

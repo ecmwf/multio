@@ -59,6 +59,8 @@ list( APPEND multio_action_srcs
     action/Statistics.h
     action/Null.cc
     action/Null.h
+    action/ChainedAction.cc
+    action/ChainedAction.h
     action/Action.cc
     action/Action.h
     action/Period.cc

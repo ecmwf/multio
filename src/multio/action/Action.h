@@ -44,39 +44,29 @@ using util::FailureAware;
 
 class Action : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Action> {
 public:
-    Action(const ConfigurationContext& confCtx);
-    virtual ~Action();
-
-    // TODO I think we should discuss if passing by value is really the right way
-    //      In consideration of multithreading & pipelining, of course we need to deal with copies etc...
-    //      However this kind of action pipeline then would also need to be rewritten.
-    //      At many places it is just fine to accept const&
-    void executeNext(message::Message msg) const;
+    explicit Action(const ConfigurationContext& confCtx);
+    ~Action() override;
 
     void execute(message::Message msg) const;
 
-    virtual void executeImpl(message::Message msg) const = 0;
-
-    virtual util::FailureHandlerResponse handleFailure(util::OnActionError, const util::FailureContext&, util::DefaultFailureState&) const override;
-
-    // May be implemented in a action (i.e. select)
     virtual void activeFields(std::insert_iterator<std::set<std::string>>& ins) const;
     virtual void activeCategories(std::insert_iterator<std::set<std::string>>& ins) const;
 
-    // Computes all active fields of this and following actions
-    void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
-    void computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const;
-    
+    util::FailureHandlerResponse handleFailure(util::OnActionError,
+                                               const util::FailureContext&,
+                                               util::DefaultFailureState&) const override;
+
 protected:
     ConfigurationContext confCtx_;
 
     std::string type_;
 
-    std::unique_ptr<Action> next_;
-
     mutable ActionStatistics statistics_;
 
 private:
+
+
+    virtual void executeImpl(message::Message msg) const = 0;
 
     virtual void print(std::ostream &os) const = 0;
 

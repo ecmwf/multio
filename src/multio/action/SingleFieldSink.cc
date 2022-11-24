@@ -39,8 +39,6 @@ void SingleFieldSink::executeImpl(Message msg) const {
         default:
             ASSERT(false);
     }
-
-    executeNext(std::move(msg));
 }
 
 void SingleFieldSink::write(Message msg) const {

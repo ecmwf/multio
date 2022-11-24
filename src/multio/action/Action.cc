@@ -1,17 +1,4 @@
-/*
- * (C) Copyright 1996- ECMWF.
- *
- * This software is licensed under the terms of the Apache Licence Version 2.0
- * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
- * In applying this licence, ECMWF does not waive the privileges and immunities
- * granted to it by virtue of its status as an intergovernmental organisation nor
- * does it submit to any jurisdiction.
- */
-
-#ifndef multio_server_Listener_H
-#define multio_server_Listener_H
-
-#include "Action.h"
+#include "multio/action/Action.h"
 
 #include <fstream>
 
@@ -24,13 +11,11 @@
 #include "multio/LibMultio.h"
 #include "multio/util/logfile_name.h"
 
-using eckit::LocalConfiguration;
 
 namespace multio {
 namespace action {
 
-namespace {}  // namespace
-
+using eckit::LocalConfiguration;
 using eckit::Configuration;
 using eckit::Log;
 
@@ -38,24 +23,12 @@ using eckit::Log;
 
 Action::Action(const ConfigurationContext& confCtx) :
     FailureAware(confCtx), confCtx_(confCtx), type_{confCtx.config().getString("type")} {
-    if (confCtx.config().has("next")) {
-        const ConfigurationContext nextCtx = confCtx.subContext("next", util::ComponentTag::Action);
-        next_.reset(ActionFactory::instance().build(nextCtx.config().getString("type"), nextCtx));
-    }
 }
 
 Action::~Action() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
 
     statistics_.report(logFile, type_);
-}
-
-void Action::executeNext(message::Message msg) const {
-    if (next_) {
-        LOG_DEBUG_LIB(multio::LibMultio) << "*** [source = " << msg.source() << ", destination = " << msg.destination()
-                                         << "] -- Executing action -- " << *next_ << std::endl;
-        next_->execute(std::move(msg));
-    }
 }
 
 void Action::execute(message::Message msg) const {
@@ -76,29 +49,9 @@ util::FailureHandlerResponse Action::handleFailure(util::OnActionError t, const 
 };
 
 
-void Action::activeFields(std::insert_iterator<std::set<std::string>>& ins) const {
-    return;
-}
+void Action::activeFields(std::insert_iterator<std::set<std::string>>& ins) const {}
 
-void Action::activeCategories(std::insert_iterator<std::set<std::string>>& ins) const {
-    return;
-}
-
-void Action::computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const {
-    activeFields(ins);
-    if (!next_) {
-        return;
-    }
-    next_->computeActiveFields(ins);
-}
-
-void Action::computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const {
-    activeCategories(ins);
-    if (!next_) {
-        return;
-    }
-    next_->computeActiveCategories(ins);
-}
+void Action::activeCategories(std::insert_iterator<std::set<std::string>>& ins) const {}
 
 std::ostream& operator<<(std::ostream& os, const Action& a) {
     a.print(os);
@@ -166,5 +119,3 @@ ActionBuilderBase::~ActionBuilderBase() {
 
 }  // namespace action
 }  // namespace multio
-
-#endif

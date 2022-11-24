@@ -105,7 +105,7 @@ using message::Message;
 using message::Peer;
 
 Encode::Encode(const ConfigurationContext& confCtx, ConfigurationContext&& encConfCtx) :
-    Action{confCtx}, format_{encConfCtx.config().getString("format")}, encoder_{make_encoder(encConfCtx)} {}
+    ChainedAction{confCtx}, format_{encConfCtx.config().getString("format")}, encoder_{make_encoder(encConfCtx)} {}
     
 Encode::Encode(const ConfigurationContext& confCtx) :
     Encode(confCtx, getEncodingConfiguration(confCtx)) {}

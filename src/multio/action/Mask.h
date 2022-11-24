@@ -14,17 +14,16 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_actions_Mask_H
-#define multio_server_actions_Mask_H
+#pragma once
 
 #include <iosfwd>
 
-#include "multio/action/Action.h"
+#include "multio/action/ChainedAction.h"
 
 namespace multio {
 namespace action {
 
-class Mask : public Action {
+class Mask : public ChainedAction {
 public:
     explicit Mask(const ConfigurationContext& confCtx);
 
@@ -46,5 +45,3 @@ private:
 
 }  // namespace action
 }  // namespace multio
-
-#endif

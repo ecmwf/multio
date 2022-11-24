@@ -28,6 +28,8 @@ list( APPEND multio_util_srcs
     util/FailureHandling.h
     util/ParameterMappings.cc
     util/ParameterMappings.h
+    util/Metadata.cc
+    util/Metadata.h
 )
 
 list( APPEND multio_action_srcs

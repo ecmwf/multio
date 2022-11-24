@@ -20,8 +20,10 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
+
 #include "multio/LibMultio.h"
 #include "multio/action/GridInfo.h"
+#include "multio/util/Metadata.h"
 
 
 namespace multio {
@@ -30,25 +32,43 @@ namespace action {
 using message::Message;
 using message::Peer;
 
-namespace  {
+using util::firstOf;
+using util::LookUpBool;
+using util::lookUpBool;
+using util::LookUpDouble;
+using util::lookUpDouble;
+using util::LookUpLong;
+using util::lookUpLong;
+using util::LookUpString;
+using util::lookUpString;
+using util::withFirstOf;
+
+namespace {
 // TODO: perhaps move this to Mappings as that is already a singleton
 std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
     static std::map<std::string, std::unique_ptr<GridInfo>> grids_;
     return grids_;
 }
 
-const std::map<const std::string, const long> ops_to_code{{"instant", 0000},    {"average", 1000},
-                                                          {"accumulate", 2000}, {"maximum", 3000},
-                                                          {"minimum", 4000},    {"stddev", 5000}};
+const std::map<const std::string, const long> ops_to_code{{"instant", 0000}, {"average", 1000}, {"accumulate", 2000},
+                                                          {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
 //  {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
 
 const std::map<const std::string, const std::string> category_to_levtype{
-    {"ocean-grid-coordinate", "oceanSurface"},
-    {"ocean-2d", "oceanSurface"},
-    {"ocean-3d", "oceanModelLevel"}};
+    {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
 
-const std::map<const std::string, const long> type_of_generating_process{
-    {"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}};
+const std::map<const std::string, const long> type_of_generating_process{{"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}};
+
+
+struct ValueSetter {
+    GribEncoder& g_;
+    std::string key_;
+
+    template <typename T>
+    void operator()(T&& t) {
+        g_.setValue(key_, std::forward<T>(t));
+    }
+};
 
 }  // namespace
 
@@ -64,7 +84,7 @@ bool GribEncoder::gridInfoReady(const std::string& subtype) const {
 }
 
 bool GribEncoder::setGridInfo(message::Message msg) {
-    ASSERT(not gridInfoReady(msg.domain())); // Panic check during development
+    ASSERT(not gridInfoReady(msg.domain()));  // Panic check during development
 
     ASSERT(coordSet_.find(msg.metadata().getString("nemoParam")) != end(coordSet_));
 
@@ -81,77 +101,116 @@ bool GribEncoder::setGridInfo(message::Message msg) {
     return grids().at(msg.domain())->computeHashIfCan();
 }
 
-void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
 
-    // Set run-specific metadata
+eckit::Optional<std::string> setMarsFields(GribEncoder& g, const eckit::Configuration& md) {
+    withFirstOf(ValueSetter{g, "domain"}, LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
+    withFirstOf(ValueSetter{g, "levtype"}, LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
+    withFirstOf(ValueSetter{g, "level"}, LookUpLong(md, "level"), LookUpLong(md, "levelist"));
+    withFirstOf(ValueSetter{g, "date"}, LookUpLong(md, "date"), LookUpLong(md, "dataDate"));
+    withFirstOf(ValueSetter{g, "time"}, LookUpLong(md, "time"), LookUpLong(md, "dataTime"));
+    withFirstOf(ValueSetter{g, "step"}, LookUpLong(md, "step"), LookUpLong(md, "startStep"));
+    withFirstOf(ValueSetter{g, "param"}, LookUpLong(md, "param"), LookUpLong(md, "indicatorOfParameter"));
+    withFirstOf(ValueSetter{g, "class"}, LookUpString(md, "class"), LookUpString(md, "marsClass"));
+    withFirstOf(ValueSetter{g, "stream"}, LookUpString(md, "stream"), LookUpString(md, "marsStream"));
+    withFirstOf(ValueSetter{g, "expver"}, LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
 
-    setValue("expver", config_.getSubConfiguration("run").getString("expver"));
-    setValue("class", config_.getSubConfiguration("run").getString("class"));
-    setValue("stream", config_.getSubConfiguration("run").getString("stream"));
-    auto type = config_.getSubConfiguration("run").getString("type");
-    setValue("type", type);
-    setValue("typeOfGeneratingProcess", type_of_generating_process.at(type));
+    auto type = firstOf(LookUpString(md, "type"), LookUpString(md, "marsType"));
+    if (type) {
+        g.setValue("type", *type);
+        g.setValue("typeOfGeneratingProcess", type_of_generating_process.at(*type));
+    }
+    return type;
+}
 
-    long date = (type == "an") ? metadata.getLong("currentDate") : metadata.getLong("startDate");
-    setValue("year",  date / 10000);
-    setValue("month", (date % 10000) / 100);
-    setValue("day", date % 100);
+void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
+    // globalSize is expected to be set in md directly
+    auto gls = lookUpLong(md, "globalSize");
+    withFirstOf(ValueSetter{g, "numberOfDataPoints"}, gls);
+    withFirstOf(ValueSetter{g, "numberOfValues"}, gls);
 
-    long time = (type == "an") ? metadata.getLong("currentTime") : metadata.getLong("startTime");
-    setValue("hour",  time / 10000);
-    setValue("minute", (time % 10000) / 100);
-    setValue("second", time % 100);
+    withFirstOf(ValueSetter{g, "missingValue"}, LookUpString(md, "missingValue"));
+    withFirstOf(ValueSetter{g, "bitmapPresent"}, LookUpBool(md, "bitmapPresent"));
+    withFirstOf(ValueSetter{g, "bitsPerValue"}, firstOf(LookUpLong(md, "bitsPerValue")));
+}
 
-    if (config_.getSubConfiguration("run").has("date-of-analysis")) {
-        auto dateOfAnalysis = config_.getSubConfiguration("run").getLong("date-of-analysis");
-        setValue("yearOfAnalysis", dateOfAnalysis / 10000);
-        setValue("monthOfAnalysis", (dateOfAnalysis % 10000) / 100);
-        setValue("dayOfAnalysis", dateOfAnalysis % 100);
+void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
+                                 const eckit::Optional<std::string>& type) {
+    auto date
+        = firstOf(LookUpLong(md, (type && (*type == "an")) ? "currentDate" : "startDate"), LookUpLong(md, "startDate"));
+    if (date) {
+        g.setValue("year", *date / 10000);
+        g.setValue("month", (*date % 10000) / 100);
+        g.setValue("day", *date % 100);
+    }
+    auto time
+        = firstOf(LookUpLong(md, (type && (*type == "an")) ? "currentTime" : "startTime"), LookUpLong(md, "startTime"));
+    if (time) {
+        g.setValue("hour", *time / 10000);
+        g.setValue("minute", (*time % 10000) / 100);
+        g.setValue("second", *time % 100);
     }
 
-    if (config_.getSubConfiguration("run").has("time-of-analysis")) {
-        auto timeOfAnalysis = config_.getSubConfiguration("run").getLong("time-of-analysis");
-        setValue("hourOfAnalysis", timeOfAnalysis / 10000);
-        setValue("minuteOfAnalysis", (timeOfAnalysis % 10000) / 100);
+    auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
+    if (dateOfAnalysis) {
+        g.setValue("yearOfAnalysis", *dateOfAnalysis / 10000);
+        g.setValue("monthOfAnalysis", (*dateOfAnalysis % 10000) / 100);
+        g.setValue("dayOfAnalysis", *dateOfAnalysis % 100);
     }
 
-    if (config_.getSubConfiguration("run").has("number")) {
-        setValue("number", config_.getSubConfiguration("run").getLong("number"));
+    auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis"));
+    if (timeOfAnalysis) {
+        g.setValue("hourOfAnalysis", *timeOfAnalysis / 10000);
+        g.setValue("minuteOfAnalysis", (*timeOfAnalysis % 10000) / 100);
     }
 
-    // Statistics field
-    if(type == "fc") {
-        auto stepInSeconds = metadata.getLong("step") * metadata.getLong("timeStep");
-        ASSERT(stepInSeconds % 3600 == 0);
-        auto stepInHours = stepInSeconds / 3600;
-        auto prevStep = stepInHours - metadata.getLong("timeSpanInHours");
-        auto stepRange = std::to_string(prevStep) + "-" + std::to_string(stepInHours);
-        if(metadata.getString("operation") == "instant") {
-            setValue("step", stepInHours);
-        } else {
-            setValue("stepRange", stepRange);
+    withFirstOf(ValueSetter{g, "number"}, LookUpLong(md, "number"));
+
+    auto operation = lookUpString(md, "operation");
+    if (operation) {
+        // Statistics field
+        if (*type == "fc" && *operation == "instant") {
+            withFirstOf(ValueSetter{g, "step"}, LookUpLong(md, "stepInHours"));
+        }
+        else {
+            withFirstOf(ValueSetter{g, "stepRange"}, LookUpLong(md, "stepRangeInHours"));
+        }
+
+        eckit::Optional<long> curDate;
+        if (*operation != "instant" && (curDate = firstOf(LookUpLong(md, "currentDate")))) {
+            // g.setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));
+            //  g.setValue("stepRange", metadata.getString("stepRange"));
+            g.setValue("yearOfEndOfOverallTimeInterval", *curDate / 10000);
+            g.setValue("monthOfEndOfOverallTimeInterval", (*curDate % 10000) / 100);
+            g.setValue("dayOfEndOfOverallTimeInterval", *curDate % 100);
+            g.setValue("lengthOfTimeRange", md.getLong("timeSpanInHours"));
+            g.setValue("indicatorOfUnitForTimeIncrement", 13l);  // always seconds
+            g.setValue("timeIncrement", md.getLong("timeStep"));
         }
     }
+}
 
-    if (metadata.has("operation") and metadata.getString("operation") != "instant") {
-        //setValue("typeOfStatisticalProcessing", ops_to_code.at(metadata.getString("operation")));
-        // setValue("stepRange", metadata.getString("stepRange"));
-        long curDate = metadata.getLong("currentDate");
-        setValue("yearOfEndOfOverallTimeInterval",  curDate / 10000);
-        setValue("monthOfEndOfOverallTimeInterval", (curDate % 10000) / 100);
-        setValue("dayOfEndOfOverallTimeInterval", curDate % 100);
-        setValue("lengthOfTimeRange", metadata.getLong("timeSpanInHours"));
-        setValue("indicatorOfUnitForTimeIncrement", 13l); // always seconds
-        setValue("timeIncrement", metadata.getLong("timeStep"));
+void GribEncoder::setFieldMetadata(const message::Metadata& metadata) {
+    if (metadata.has("encodingKeys")) {
+        auto runConfig = metadata.getSubConfiguration("encodingKeys");
+
+        auto type = setMarsFields(*this, runConfig);
+        setEncodingSpecificFields(*this, runConfig);
+        setDateAndStatisticalFields(*this, runConfig, type);
     }
+    else if (isOcean(metadata)) {
+        setOceanMetadata(metadata);
+    }
+}
 
-    // setDomainDimensions
-    setValue("numberOfDataPoints", metadata.getLong("globalSize"));
-    setValue("numberOfValues", metadata.getLong("globalSize"));
+void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
+    auto runConfig = config_.getSubConfiguration("run");
+
+    auto typeMaybe = setMarsFields(*this, runConfig);
+    setDateAndStatisticalFields(*this, runConfig, typeMaybe);
+    setEncodingSpecificFields(*this, metadata);
 
     // Setting parameter ID
-    setValue("paramId",
-             metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
+    setValue("paramId", metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
     setValue("typeOfLevel", metadata.getString("typeOfLevel"));
     if (metadata.getString("category") == "ocean-3d") {
         auto level = metadata.getLong("level");
@@ -167,72 +226,80 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
 
     setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
-
-    // Set encoding for missing value support
-    setValue("missingValue", metadata.getDouble("missingValue"));
-    setValue("bitmapPresent", static_cast<long>(metadata.getBool("bitmapPresent")));
-    setValue("bitsPerValue", metadata.getLong("bitsPerValue"));
 }
 
 void GribEncoder::setCoordMetadata(const message::Metadata& metadata) {
-    // Set run-specific metadata
-    setValue("expver", config_.getSubConfiguration("run").getString("expver"));
-    setValue("class", config_.getSubConfiguration("run").getString("class"));
-    setValue("stream", config_.getSubConfiguration("run").getString("stream"));
-    const std::string& type = config_.getSubConfiguration("run").getString("type");
-    setValue("type", type);
-    setValue("typeOfGeneratingProcess", type_of_generating_process.at(type));
+    setCoordMetadata(metadata, metadata.has("encodingKeys") ? metadata.getSubConfiguration("encodingKeys")
+                                                            : config_.getSubConfiguration("run"));
+}
+void GribEncoder::setCoordMetadata(const message::Metadata& md, const eckit::Configuration& runConfig) {
 
-    setValue("date", metadata.getLong("startDate"));
+    // Set run-specific md
+    setMarsFields(*this, runConfig);
+    
+    setValue("date", md.getLong("startDate"));
 
     // setDomainDimensions
-    setValue("numberOfDataPoints", metadata.getLong("globalSize"));
-    setValue("numberOfValues", metadata.getLong("globalSize"));
+    auto gls = lookUpLong(md, "globalSize");
+    setValue("numberOfDataPoints", md.getLong("globalSize"));
+    setValue("numberOfValues", md.getLong("globalSize"));
 
     // Setting parameter ID
-    setValue("paramId", metadata.getLong("param"));
+    setValue("paramId", md.getLong("param"));
 
-    setValue("typeOfLevel", metadata.getString("typeOfLevel"));
+    setValue("typeOfLevel", md.getString("typeOfLevel"));
 
     // Set ocean grid information
     setValue("unstructuredGridType", config_.getString("grid-type"));
 
-    const auto& gridSubtype = metadata.getString("gridSubtype");
+    const auto& gridSubtype = md.getString("gridSubtype");
     setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
 
     setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
 
     // Set encoding for missing value support
     setValue("bitmapPresent", static_cast<long>(false));
-    setValue("bitsPerValue", metadata.getLong("bitsPerValue"));
+    setValue("bitsPerValue", md.getLong("bitsPerValue"));
+}
+
+void codesCheck(int ret) {
+    if (ret == CODES_READ_ONLY) {
+        // If value is read only, do not panic...
+        return;
+    }
+    CODES_CHECK(ret, NULL);
 }
 
 void GribEncoder::setValue(const std::string& key, long value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    CODES_CHECK(codes_set_long(raw(), key.c_str(), value), NULL);
+    codesCheck(codes_set_long(raw(), key.c_str(), value));
 }
 
 void GribEncoder::setValue(const std::string& key, double value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    CODES_CHECK(codes_set_double(raw(), key.c_str(), value), NULL);
+    codesCheck(codes_set_double(raw(), key.c_str(), value));
 }
 
 void GribEncoder::setValue(const std::string& key, const std::string& value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
     size_t sz = value.size();
-    CODES_CHECK(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), NULL);
+    codesCheck(codes_set_string(raw(), key.c_str(), value.c_str(), &sz));
 }
 
 void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
     std::ostringstream oss;
     for (int i = 0; i < DIGEST_LENGTH; ++i) {
-        oss << ((i == 0) ? "" : "-") << std::hex << std::setfill('0') << std::setw(2)
-            << static_cast<short>(value[i]);
+        oss << ((i == 0) ? "" : "-") << std::hex << std::setfill('0') << std::setw(2) << static_cast<short>(value[i]);
     }
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << oss.str() << " for key " << key
-                             << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << oss.str() << " for key " << key << std::endl;
     size_t sz = DIGEST_LENGTH;
-    CODES_CHECK(codes_set_bytes(raw(), key.c_str(), value, &sz), NULL);
+    codesCheck(codes_set_bytes(raw(), key.c_str(), value, &sz));
+}
+
+void GribEncoder::setValue(const std::string& key, bool value) {
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << "(" << static_cast<long>(value) << ") for key " << key
+                             << std::endl;
+    codesCheck(codes_set_long(raw(), key.c_str(), static_cast<long>(value)));
 }
 
 message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
@@ -252,24 +319,27 @@ message::Message GribEncoder::encodeLongitudes(const std::string& subtype) {
 }
 
 message::Message GribEncoder::encodeField(const message::Message& msg) {
-        setOceanMetadata(msg.metadata());
-        return setFieldValues(msg);
+    setFieldMetadata(msg.metadata());
+    return setFieldValues(msg);
 }
 
-message::Message GribEncoder::encodeField(const message::Metadata& md, const double* data,
-                                          size_t sz) {
-    setOceanMetadata(md);
+message::Message GribEncoder::encodeField(const message::Metadata& md, const double* data, size_t sz) {
+    setFieldMetadata(md);
     return setFieldValues(data, sz);
 }
 
 message::Message GribEncoder::setFieldValues(const message::Message& msg) {
     auto beg = reinterpret_cast<const double*>(msg.payload().data());
+    // TODO refactor
+    // this->setDataValues(beg, msg.metadata().has("globalSize") ? msg.globalSize() : msg.payload().size() /
+    // sizeof(double));
     this->setDataValues(beg, msg.globalSize());
 
     eckit::Buffer buf{this->length()};
     this->write(buf);
 
-    return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}}, std::move(buf)};
+    return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}},
+                   std::move(buf)};
 }
 
 message::Message GribEncoder::setFieldValues(const double* values, size_t count) {

@@ -34,6 +34,16 @@ public:
     void setValue(const std::string& key, double value);
     void setValue(const std::string& key, const std::string& value);
     void setValue(const std::string& key, const unsigned char* value);
+    
+    // Convert bool to long (0/1)
+    void setValue(const std::string& key, bool value);
+    
+    template<typename T>
+    void setValue(const std::string& key, eckit::Optional<T> v) {
+        if(v) {
+            setValue(key, *v);
+        }
+    }
 
     message::Message encodeLatitudes(const std::string& subtype);
     message::Message encodeLongitudes(const std::string& subtype);
@@ -42,8 +52,11 @@ public:
     message::Message encodeField(const message::Metadata& md, const double* data, size_t sz);
 
 private:
+    void setFieldMetadata(const message::Metadata& metadata);
     void setOceanMetadata(const message::Metadata& metadata);
+    
     void setCoordMetadata(const message::Metadata& metadata);
+    void setCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig);
 
     message::Message setFieldValues(const  message::Message& msg);
     message::Message setFieldValues(const double* values, size_t count);
@@ -53,6 +66,13 @@ private:
     const std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",
                                           "lon_V", "lat_W", "lon_W", "lat_F", "lon_F"};
 };
+
+inline bool isOcean(const message::Metadata& metadata) {
+    // Check if metadata has a key "nemoParam" or a category starting with "ocean"
+    return metadata.has("nemoParam")
+        || (metadata.has("category") && (metadata.getString("category").rfind("ocean") == 0));
+};
+
 
 }  // namespace action
 }  // namespace multio

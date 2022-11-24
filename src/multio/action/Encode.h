@@ -30,6 +30,9 @@ public:
     void executeImpl(message::Message msg) const override;
 
 private:
+    // Internal constructor delegate with prepared configuration for specific encoder
+    explicit Encode(const ConfigurationContext& confCtx, ConfigurationContext&& encConfCtx);
+    
     void print(std::ostream& os) const override;
 
     message::Message encodeField(const message::Message& msg) const;

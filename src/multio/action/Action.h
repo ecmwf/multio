@@ -35,6 +35,9 @@
 #include "multio/transport/Transport.h"
 
 namespace multio {
+
+namespace message { class MetadataMatchers; }
+
 namespace action {
 
 using util::ConfigurationContext;
@@ -49,8 +52,7 @@ public:
 
     void execute(message::Message msg) const;
 
-    virtual void activeFields(std::insert_iterator<std::set<std::string>>& ins) const;
-    virtual void activeCategories(std::insert_iterator<std::set<std::string>>& ins) const;
+    virtual void matchedFields(message::MetadataMatchers& matchers) const;
 
     util::FailureHandlerResponse handleFailure(util::OnActionError,
                                                const util::FailureContext&,
@@ -84,9 +86,8 @@ private:  // methods
 public:  // methods
     static ActionFactory& instance();
 
-    void add(const std::string& name, const ActionBuilderBase* builder);
-
-    void remove(const std::string& name);
+    void enregister(const std::string& name, const ActionBuilderBase* builder);
+    void deregister(const std::string& name);
 
     void list(std::ostream&);
 

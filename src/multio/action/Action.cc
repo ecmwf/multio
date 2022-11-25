@@ -48,10 +48,7 @@ util::FailureHandlerResponse Action::handleFailure(util::OnActionError t, const 
     return util::FailureHandlerResponse::Rethrow;
 };
 
-
-void Action::activeFields(std::insert_iterator<std::set<std::string>>& ins) const {}
-
-void Action::activeCategories(std::insert_iterator<std::set<std::string>>& ins) const {}
+void Action::matchedFields(message::MetadataMatchers& matchers) const {}
 
 std::ostream& operator<<(std::ostream& os, const Action& a) {
     a.print(os);
@@ -65,13 +62,13 @@ ActionFactory& ActionFactory::instance() {
     return singleton;
 }
 
-void ActionFactory::add(const std::string& name, const ActionBuilderBase* builder) {
+void ActionFactory::enregister(const std::string& name, const ActionBuilderBase* builder) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(factories_.find(name) == factories_.end());
     factories_[name] = builder;
 }
 
-void ActionFactory::remove(const std::string& name) {
+void ActionFactory::deregister(const std::string& name) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(factories_.find(name) != factories_.end());
     factories_.erase(name);
@@ -108,11 +105,11 @@ Action* ActionFactory::build(const std::string& name, const ConfigurationContext
 
 
 ActionBuilderBase::ActionBuilderBase(const std::string& name) : name_(name) {
-    ActionFactory::instance().add(name, this);
+    ActionFactory::instance().enregister(name, this);
 }
 
 ActionBuilderBase::~ActionBuilderBase() {
-    ActionFactory::instance().remove(name_);
+    ActionFactory::instance().deregister(name_);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

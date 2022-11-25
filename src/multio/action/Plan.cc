@@ -84,13 +84,9 @@ util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t, const util
 };
 
 
-void Plan::computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const {
-    root_->activeFields(ins);
-};
-
-void Plan::computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const {
-    root_->activeCategories(ins);
-};
+void Plan::matchedFields(message::MetadataMatchers& matchers) const {
+    root_->matchedFields(matchers);
+}
 
 }  // namespace action
 }  // namespace multio

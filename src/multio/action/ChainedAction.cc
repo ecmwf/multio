@@ -23,14 +23,9 @@ void ChainedAction::executeNext(message::Message msg) const {
     next_->execute(std::move(msg));
 }
 
-void ChainedAction::activeFields(std::insert_iterator<std::set<std::string>>& ins) const {
-    Action::activeFields(ins);
-    next_->activeFields(ins);
-}
-
-void ChainedAction::activeCategories(std::insert_iterator<std::set<std::string>>& ins) const {
-    Action::activeCategories(ins);
-    next_->activeCategories(ins);
+void ChainedAction::matchedFields(message::MetadataMatchers& matchers) const {
+    Action::matchedFields(matchers);
+    next_->matchedFields(matchers);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

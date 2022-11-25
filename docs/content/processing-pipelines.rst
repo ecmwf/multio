@@ -41,8 +41,8 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
        - name : ocean-replay-grid-info-stream
          actions :
            - type : select
-             match : category
-             categories : [ocean-domain-map, ocean-mask]
+             match :
+              - category : [ocean-domain-map, ocean-mask]
 
            - type : transport
              target : nemo-ioserver
@@ -50,8 +50,8 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
        - name : ocean-replay-test-stream1
          actions :
            - type : select
-             match : field
-             fields : [ sst, ssv ]
+             match :
+              - name: [ sst, ssv ]
 
            - type : transport
              target : nemo-ioserver
@@ -59,8 +59,8 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
        - name : ocean-replay-test-stream2
          actions :
            - type : select
-             match : field
-             fields : [ ssu, ssw ]
+             match :
+              - field: [ ssu, ssw ]
 
            - type : transport
              target : nemo-ioserver
@@ -74,8 +74,8 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
        - name : ocean-fields
          actions :
            - type : select
-             match : category
-             categories : [ocean-2d]
+             match :
+              - category : [ocean-2d]
 
            - type : aggregation
 

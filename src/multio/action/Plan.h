@@ -27,7 +27,11 @@
 #include "multio/util/ConfigurationContext.h"
 #include "multio/util/FailureHandling.h"
 
+
 namespace multio {
+
+namespace message { class MetadataMatchers; }
+
 namespace action {
 
 using util::ConfigurationContext;
@@ -42,8 +46,7 @@ public:
 
     virtual void process(message::Message msg);
 
-    void computeActiveFields(std::insert_iterator<std::set<std::string>>& ins) const;
-    void computeActiveCategories(std::insert_iterator<std::set<std::string>>& ins) const;
+    void matchedFields(message::MetadataMatchers& matchers) const;
 
     util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&, util::DefaultFailureState&) const override;
 

@@ -159,22 +159,28 @@ void MultioReplayNemoCApi::writeFields() {
 
     for (const auto& param : parameters_) {
         bool is_active = false;
-        multio_category_is_fully_active(multio_handle, "ocean-2d", &is_active);
-        if (is_active) {
-            throw eckit::SeriousBug{"Category should be not fully active: ocean-2d"};
+        {
+            multio_metadata_t* md = nullptr;
+            multio_new_metadata(&md);
+            multio_metadata_set_string_value(md, "category", "ocean-2d");
+            multio_field_accepted(multio_handle, md, &is_active);
+            multio_delete_metadata(md);
+            if (is_active) {
+                throw eckit::SeriousBug{"Category should be not fully active: ocean-2d", Here()};
+            }
         }
-        
-        multio_category_is_fully_active(multio_handle, "ocean-2d", &is_active);
-        if (is_active) {
-            throw eckit::SeriousBug{"Category should be not fully active: ocean-2d"};
+
+        {
+            multio_metadata_t* md = nullptr;
+            multio_new_metadata(&md);
+            multio_metadata_set_string_value(md, "name", param.c_str());
+            multio_field_accepted(multio_handle, md, &is_active);
+            multio_delete_metadata(md);
+            if (!is_active) {
+                throw eckit::SeriousBug{"Field should be active: " + param, Here()};
+            }
         }
-        
-        multio_field_is_active(multio_handle, param.c_str(), &is_active);
-        if (!is_active) {
-            throw eckit::SeriousBug{"Field should be active: " + param};
-        }
-        
-        
+
         auto buffer = readField(param, rank_);
 
         auto sz = static_cast<int>(buffer.size()) / sizeof(double);

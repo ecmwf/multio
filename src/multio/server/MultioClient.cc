@@ -38,17 +38,20 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureA
 
 
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << confCtx.config() << std::endl;
-    auto activeFieldInserter = std::inserter(activeFields_, activeFields_.end());
-    auto activeCategoryInserter = std::inserter(activeCategories_, activeCategories_.end());
     for (auto&& cfg : confCtx.subContexts("plans", ComponentTag::Plan)) {
         eckit::Log::debug<LibMultio>() << cfg.config() << std::endl;
         plans_.emplace_back(new action::Plan(std::move(cfg)));
-        plans_.back()->computeActiveFields(activeFieldInserter);
-        plans_.back()->computeActiveCategories(activeCategoryInserter);
+        plans_.back()->matchedFields(activeMatchers_);
     }
-    if (confCtx.globalConfig().has("active-fields")) {
-        const auto& vec = confCtx.globalConfig().getStringVector("active-fields");
-        std::copy(vec.begin(), vec.end(), activeFieldInserter);
+
+    if (confCtx.globalConfig().has("active-matchers")) {
+        for (const auto& m : confCtx.globalConfig().getSubConfigurations("active-matchers")) {
+            std::map<std::string, std::set<std::string>> matches;
+            for (const auto& k : m.keys()) {
+                auto v = m.getStringVector(k);
+                matches.emplace(k, std::set<std::string>(v.begin(), v.end()));
+            }
+        }
     }
 }
 
@@ -101,12 +104,8 @@ void MultioClient::dispatch(message::Message msg) {
     });
 }
 
-bool MultioClient::isFieldActive(const std::string& name) const {
-    return activeFields_.find(name) != end(activeFields_);
-}
-
-bool MultioClient::isCategoryActive(const std::string& name) const {
-    return activeCategories_.find(name) != end(activeCategories_);
+bool MultioClient::isFieldMatched(const message::Metadata& metadata) const {
+    return activeMatchers_.matches(metadata);
 }
 
 }  // namespace server

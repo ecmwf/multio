@@ -16,6 +16,7 @@
 #include <map>
 
 #include "multio/action/Plan.h"
+#include "multio/message/MetadataMatcher.h"
 #include "multio/util/ConfigurationContext.h"
 #include "multio/util/FailureHandling.h"
 
@@ -55,16 +56,13 @@ public:
 
     void dispatch(message::Message msg);
     
-    bool isFieldActive(const std::string& name) const;
-    bool isCategoryActive(const std::string& name) const;
-    
+    bool isFieldMatched(const message::Metadata& matcher) const;
+
     util::FailureHandlerResponse handleFailure(util::OnClientError, const util::FailureContext&, util::DefaultFailureState&) const override;
 
 private:
     std::vector<std::unique_ptr<action::Plan>> plans_;
-    std::set<std::string> activeFields_;
-    std::set<std::string> activeCategories_;
-
+    message::MetadataMatchers activeMatchers_;
 
     eckit::Timing totClientTiming_;
     eckit::Timer totClientTimer_;

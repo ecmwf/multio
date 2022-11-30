@@ -46,10 +46,6 @@ ecbuild_add_library(
         eckit_mpi
 )
 
-if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
-    ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
-endif()
-
 ecbuild_add_library(
 
     TARGET multio-server-fapi

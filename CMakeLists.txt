@@ -47,9 +47,11 @@ ecbuild_add_option( FEATURE MULTIO_SERVER
                     CONDITION eckit_HAVE_MPI
                     DESCRIPTION "Multio server" )
 
-### multio fortran bindings
-ecbuild_add_option( FEATURE FORTRAN
-                    DESCRIPTION "Provide Fortran bindings")
+if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
+  ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
+  ecbuild_find_package( NAME fckit   VERSION 0.9.6   REQUIRED )
+  find_package( MPI COMPONENTS Fortran) # Add explict mpi for errocodes -- isn't there a better way?
+endif()
 
 
 ### Maestro plugin

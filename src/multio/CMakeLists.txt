@@ -107,6 +107,8 @@ list( APPEND multio_message_srcs
     message/Metadata.h
     message/MetadataMatcher.cc
     message/MetadataMatcher.h
+    message/MetadataSelector.cc
+    message/MetadataSelector.h
     message/Peer.cc
     message/Peer.h
     message/ParameterMapping.cc

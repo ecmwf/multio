@@ -68,7 +68,6 @@ struct Translator<multio::util::LocalPeerTag, std::string> {
 }  // namespace eckit
 
 
-
 namespace multio {
 namespace util {
 
@@ -81,6 +80,10 @@ class ClientConfigurationContext;
 
 class GlobalConfCtx;  // TODO: hide internal implementation in separate namespace
 
+struct YAMLFile {
+    eckit::LocalConfiguration content; 
+    eckit::PathName path;
+};
 
 struct MPIInitInfo {
     eckit::Optional<int> parentComm{};
@@ -95,7 +98,7 @@ struct MPIInitInfo {
 
 class ConfigurationContext {
 public:
-    ConfigurationContext(const eckit::PathName& fileName, LocalPeerTag clientOrServer = LocalPeerTag::Client,
+    ConfigurationContext(const eckit::PathName& fileName = configuration_file_name(), LocalPeerTag clientOrServer = LocalPeerTag::Client,
                          ComponentTag tag = ComponentTag::Unrelated);
 
     ConfigurationContext(const eckit::PathName& pathName, const eckit::PathName& fileName,
@@ -129,7 +132,7 @@ public:
     ConfigurationContext& setLocalPeerTag(LocalPeerTag clientOrServer);
     ConfigurationContext& tagServer();
     ConfigurationContext& tagClient();
-    
+
 
     using SubConfigurationContexts = MappedContainer<std::vector<eckit::LocalConfiguration>, SubContextIteratorMapper>;
 
@@ -140,8 +143,7 @@ public:
     ConfigurationContext recast(const eckit::LocalConfiguration& config,
                                 ComponentTag tag = ComponentTag::Unrelated) const;
     ConfigurationContext recast(ComponentTag tag = ComponentTag::Unrelated) const;
-    
-    
+
 
     const eckit::Optional<MPIInitInfo>& getMPIInitInfo() const;
     eckit::Optional<MPIInitInfo>& getMPIInitInfo();
@@ -149,12 +151,14 @@ public:
 
 
     // Allows loading and caching other configuration files related to the configured path
-    const eckit::LocalConfiguration& getYAMLFile(const char*) const;
-    const eckit::LocalConfiguration& getYAMLFile(const std::string&) const;
+    const YAMLFile& getYAMLFile(const char*) const;
+    const YAMLFile& getYAMLFile(const std::string&) const;
 
-    const eckit::LocalConfiguration& getYAMLFile(const eckit::PathName&) const;
+    const YAMLFile& getYAMLFile(const eckit::PathName&) const;
     
-    
+    const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const char*) const;
+    const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
+
 
     const ParameterMappings& parameterMappings() const;
 
@@ -170,8 +174,6 @@ private:
 
     friend class SubContextIteratorMapper;
 };
-
-
 
 
 class GlobalConfCtx {
@@ -191,18 +193,21 @@ public:
 
     LocalPeerTag localPeerTag() const;
     void setLocalPeerTag(LocalPeerTag clientOrServer);
-    
+
 
     const eckit::Optional<MPIInitInfo>& getMPIInitInfo() const;
     eckit::Optional<MPIInitInfo>& getMPIInitInfo();
     void setMPIInitInfo(const eckit::Optional<MPIInitInfo>& val);
-    
 
-    const eckit::LocalConfiguration& getYAMLFile(const char*) const;
-    const eckit::LocalConfiguration& getYAMLFile(const std::string&) const;
 
-    const eckit::LocalConfiguration& getYAMLFile(const eckit::PathName&) const;
+    const YAMLFile& getYAMLFile(const char*) const;
+    const YAMLFile& getYAMLFile(const std::string&) const;
+
+    const YAMLFile& getYAMLFile(const eckit::PathName&) const;
     
+    const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const char*) const;
+    const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
+
 
     friend util::ParameterMappings;
     const ParameterMappings& parameterMappings() const;
@@ -215,11 +220,9 @@ private:
 
     eckit::Optional<MPIInitInfo> mpiInitInfo_{MPIInitInfo{}};
 
-    mutable std::unordered_map<std::string, eckit::LocalConfiguration> referencedConfigFiles_;
+    mutable std::unordered_map<std::string, YAMLFile> referencedConfigFiles_;
     mutable eckit::Optional<ParameterMappings> parameterMappings_;
 };
-
-
 
 
 class SubContextIteratorMapper {
@@ -233,7 +236,6 @@ private:
     ConfigurationContext confCtx_;
     ComponentTag tag_;
 };
-
 
 
 namespace {
@@ -252,14 +254,14 @@ ConfigurationContext throwRecast_(const ConfigurationContext& confCtx, const std
 }  // namespace
 
 
-
 class ClientConfigurationContext : public ConfigurationContext {
 public:
     ClientConfigurationContext(const ConfigurationContext& otherBase, const std::string& key = "client") :
-        ConfigurationContext(throwRecast_(otherBase, key).tagClient()) {}
+        ConfigurationContext(((!otherBase.config().has("client") && otherBase.config().has("plans"))
+                                  ? ConfigurationContext(otherBase)
+                                  : throwRecast_(otherBase, key))
+                                 .tagClient()) {}
 };
-
-
 
 
 class ServerConfigurationContext : public ConfigurationContext {

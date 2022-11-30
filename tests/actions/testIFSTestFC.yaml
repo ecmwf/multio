@@ -1,0 +1,85 @@
+plans:
+    - name: print all
+      actions:
+        - type: print
+          stream: cout
+          prefix: Print all
+        - type: sink
+          sinks: []
+    - name: ml sh
+      actions:
+        - type: select
+          match:
+            - levtype: ml
+              gridType: sh
+              gribEdition: 1
+        - type: print
+          stream: cout
+          prefix: Plan for leveltype "ml" and gridType "sh" (grib1)
+        - type: encode
+          format: grib
+          template: ../../../eccodes/experimental/templates/sh_ml_grib1.tmpl
+        - type: sink
+          sinks:
+            - type: file
+              append: false
+              per-server: true # Will give you one file per server
+              path: test-ifs-ml-sh.grib
+    - name: ml sh
+      actions:
+        - type: select
+          match:
+            - levtype: ml
+              gridType: sh
+              gribEdition: 2
+        - type: print
+          stream: cout
+          prefix: Plan for leveltype "ml" and gridType "sh" (grib2)
+        - type: encode
+          format: grib
+          template: ../../../eccodes/experimental/templates/ifs_templates/grib1_mlgrib2/sh_ml.tmpl
+        - type: sink
+          sinks:
+            - type: file
+              append: false
+              per-server: true # Will give you one file per server
+              path: test-ifs-ml-sh.grib
+    - name: pl sh
+      actions:
+        - type: select
+          match:
+            - levtype: pl
+              gridType: sh
+              gribEdition: 1
+        - type: print
+          stream: cout
+          prefix: Plan for leveltype "pl" and gridType "sh" (grib1)
+        - type: encode
+          format: grib
+          template: ../../../eccodes/experimental/templates/sh_pl_grib1.tmpl
+        - type: sink
+          sinks:
+            - type: file
+              append: false
+              per-server: true # Will give you one file per server
+              path: test-ifs-pl-sh.grib
+    - name: ml regular_gg
+      actions:
+        - type: select
+          match:
+            - levtype: ml
+              gridType: regular_gg
+              gribEdition: 2
+        - type: print
+          stream: cout
+          prefix: Plan leveltype "ml" and gridType "regular_gg"
+        - type: encode
+          format: grib
+          template: ../../../eccodes/experimental/templates/regular_gg_ml_grib1.tmpl
+          # template: ../../../eccodes/experimental/templates/ifs_templates/grib1_mlgrib2/gg_ml.tmpl
+        - type: sink
+          sinks:
+            - type: file
+              append: false
+              per-server: true # Will give you one file per server
+              path: ifs-test-ml-gg.grib

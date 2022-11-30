@@ -48,7 +48,7 @@ ecbuild_add_option( FEATURE LEGACY_IFSIO
 ### multio-server
 
 ecbuild_add_option( FEATURE MULTIO_SERVER
-                    DEFAULT OFF
+                    DEFAULT ON
                     CONDITION eckit_HAVE_MPI
                     DESCRIPTION "Build with I/O-server support" )
 

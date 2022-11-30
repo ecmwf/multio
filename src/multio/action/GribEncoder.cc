@@ -73,7 +73,7 @@ struct ValueSetter {
 }  // namespace
 
 GribEncoder::GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config) :
-    metkit::grib::GribHandle{handle}, config_{config} {
+    metkit::grib::GribHandle{handle}, config_{config} /*, encodeBitsPerValue_(config)*/ {
     for (auto const& subtype : {"T grid", "U grid", "V grid", "W grid", "F grid"}) {
         grids().insert(std::make_pair(subtype, std::unique_ptr<GridInfo>{new GridInfo{}}));
     }
@@ -101,49 +101,116 @@ bool GribEncoder::setGridInfo(message::Message msg) {
     return grids().at(msg.domain())->computeHashIfCan();
 }
 
+struct QueriedMarsFields {
+    eckit::Optional<std::string> type{};
+    eckit::Optional<long> paramId{};
+};
 
-eckit::Optional<std::string> setMarsFields(GribEncoder& g, const eckit::Configuration& md) {
-    withFirstOf(ValueSetter{g, "domain"}, LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
+QueriedMarsFields setMarsFields(GribEncoder& g, const eckit::Configuration& md) {
+    QueriedMarsFields ret;
+    // TODO we should be able to determine the type in the metadata and preserve it
+    // Domain usually is always readonly
+    // withFirstOf(ValueSetter{g, "domain"}, LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
     withFirstOf(ValueSetter{g, "levtype"}, LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
     withFirstOf(ValueSetter{g, "level"}, LookUpLong(md, "level"), LookUpLong(md, "levelist"));
     withFirstOf(ValueSetter{g, "date"}, LookUpLong(md, "date"), LookUpLong(md, "dataDate"));
     withFirstOf(ValueSetter{g, "time"}, LookUpLong(md, "time"), LookUpLong(md, "dataTime"));
     withFirstOf(ValueSetter{g, "step"}, LookUpLong(md, "step"), LookUpLong(md, "startStep"));
-    withFirstOf(ValueSetter{g, "param"}, LookUpLong(md, "param"), LookUpLong(md, "indicatorOfParameter"));
+
+    ret.paramId = firstOf(LookUpLong(md, "paramId"),
+                          LookUpLong(md, "param"));  // param might be a string, separated by . for GRIB1. String to
+                                                     // long convertion should get it right
+    if (ret.paramId) {
+        g.setValue("paramId", *ret.paramId);
+    }
     withFirstOf(ValueSetter{g, "class"}, LookUpString(md, "class"), LookUpString(md, "marsClass"));
     withFirstOf(ValueSetter{g, "stream"}, LookUpString(md, "stream"), LookUpString(md, "marsStream"));
     withFirstOf(ValueSetter{g, "expver"}, LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
 
-    auto type = firstOf(LookUpString(md, "type"), LookUpString(md, "marsType"));
-    if (type) {
-        g.setValue("type", *type);
-        g.setValue("typeOfGeneratingProcess", type_of_generating_process.at(*type));
+    ret.type = firstOf(LookUpString(md, "type"), LookUpString(md, "marsType"));
+    if (ret.type) {
+        g.setValue("type", *ret.type);
     }
-    return type;
+
+    // Additional parameters passed through for spherical harmonics
+    withFirstOf(ValueSetter{g, "complexPacking"}, LookUpLong(md, "complexPacking"));
+    if (md.has("gridType") && md.getString("gridType") == "sh") {
+        withFirstOf(ValueSetter{g, "pentagonalResolutionParameterJ"}, LookUpLong(md, "pentagonalResolutionParameterJ"),
+                    LookUpLong(md, "J"));
+        withFirstOf(ValueSetter{g, "pentagonalResolutionParameterK"}, LookUpLong(md, "pentagonalResolutionParameterK"),
+                    LookUpLong(md, "K"));
+        withFirstOf(ValueSetter{g, "pentagonalResolutionParameterM"}, LookUpLong(md, "pentagonalResolutionParameterM"),
+                    LookUpLong(md, "M"));
+        // withFirstOf(ValueSetter{g, "unpackedSubsetPrecision"}, LookUpLong(md, "unpackedSubsetPrecision"));
+        withFirstOf(ValueSetter{g, "subSetJ"}, LookUpLong(md, "subSetJ"), LookUpLong(md, "JS"));
+        withFirstOf(ValueSetter{g, "subSetK"}, LookUpLong(md, "subSetK"), LookUpLong(md, "KS"));
+        withFirstOf(ValueSetter{g, "subSetM"}, LookUpLong(md, "subSetM"), LookUpLong(md, "MS"));
+    }
+    // TODO Remove Part of parameter mapping now
+    // withFirstOf(ValueSetter{g, "generatingProcessIdentifier"}, LookUpLong(md, "generatingProcessIdentifier"));
+
+    return ret;
 }
 
-void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
-    // globalSize is expected to be set in md directly
+void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
+    if (md.has("encoderOverwrites")) {
+        // TODO Refactor with visitor
+        auto overwrites = md.getSubConfiguration("encoderOverwrites");
+        for (const auto& k : overwrites.keys()) {
+            // TODO handle type... however eccodes should support string as well. For some representations the string
+            // and integer representation in eccodes differ significantly and my produce wrong results
+            g.setValue(k, overwrites.getString(k));
+        }
+    }
+}
+
+// int GribEncoder::getBitsPerValue(int paramid, const std::string& levtype, double min, double max) {
+//     return encodeBitsPerValue_.getBitsPerValue(paramid, levtype, min, max);
+// }
+
+void setEncodingSpecificFields(GribEncoder& g, const message::Message& msg) {
+    const auto& md = msg.metadata();
+    // TODO globalSize is expected to be set in md directly. nmuberOf* should be readonly anyway... test removal..
     auto gls = lookUpLong(md, "globalSize");
     withFirstOf(ValueSetter{g, "numberOfDataPoints"}, gls);
     withFirstOf(ValueSetter{g, "numberOfValues"}, gls);
 
     withFirstOf(ValueSetter{g, "missingValue"}, LookUpString(md, "missingValue"));
     withFirstOf(ValueSetter{g, "bitmapPresent"}, LookUpBool(md, "bitmapPresent"));
-    withFirstOf(ValueSetter{g, "bitsPerValue"}, firstOf(LookUpLong(md, "bitsPerValue")));
+    // Part of parameter Mapping now
+    // withFirstOf(ValueSetter{g, "bitsPerValue"}, LookUpLong(md, "bitsPerValue"), [&g, &msg]() {
+    //     const auto& md = msg.metadata();
+    //     auto paramId = firstOf(LookUpLong(md, "paramId"), LookUpLong(md, "param"));
+    //     if (paramId) {
+    //         // TODO may convert from string - check if possible at all?
+    //         auto lv = firstOf(LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
+    //         if (!lv) {
+    //             return eckit::Optional<long>{};
+    //         }
+    //         // TODO: add floating point support
+    //         auto beg = reinterpret_cast<const double*>(msg.payload().data());
+    //         auto end = beg + msg.payload().size() / sizeof(double);
+    //         auto minmax = std::minmax_element(beg, end);
+    //         int bitsPerValue = g.getBitsPerValue(*paramId, *lv, *minmax.first, *minmax.second);
+    //         return eckit::Optional<long>{bitsPerValue};
+    //     }
+    //     return eckit::Optional<long>{};
+    // });
 }
 
 void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
-                                 const eckit::Optional<std::string>& type) {
-    auto date
-        = firstOf(LookUpLong(md, (type && (*type == "an")) ? "currentDate" : "startDate"), LookUpLong(md, "startDate"));
+                                 const QueriedMarsFields& queriedMarsFields) {
+    auto date = firstOf(
+        LookUpLong(md, (queriedMarsFields.type && (*queriedMarsFields.type == "an")) ? "currentDate" : "startDate"),
+        LookUpLong(md, "startDate"));
     if (date) {
         g.setValue("year", *date / 10000);
         g.setValue("month", (*date % 10000) / 100);
         g.setValue("day", *date % 100);
     }
-    auto time
-        = firstOf(LookUpLong(md, (type && (*type == "an")) ? "currentTime" : "startTime"), LookUpLong(md, "startTime"));
+    auto time = firstOf(
+        LookUpLong(md, (queriedMarsFields.type && (*queriedMarsFields.type == "an")) ? "currentTime" : "startTime"),
+        LookUpLong(md, "startTime"));
     if (time) {
         g.setValue("hour", *time / 10000);
         g.setValue("minute", (*time % 10000) / 100);
@@ -168,7 +235,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
     auto operation = lookUpString(md, "operation");
     if (operation) {
         // Statistics field
-        if (*type == "fc" && *operation == "instant") {
+        if (*queriedMarsFields.type == "fc" && *operation == "instant") {
             withFirstOf(ValueSetter{g, "step"}, LookUpLong(md, "stepInHours"));
         }
         else {
@@ -189,25 +256,29 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
     }
 }
 
-void GribEncoder::setFieldMetadata(const message::Metadata& metadata) {
-    if (metadata.has("encodingKeys")) {
-        auto runConfig = metadata.getSubConfiguration("encodingKeys");
-
-        auto type = setMarsFields(*this, runConfig);
-        setEncodingSpecificFields(*this, runConfig);
-        setDateAndStatisticalFields(*this, runConfig, type);
+void GribEncoder::setFieldMetadata(const message::Message& msg) {
+    if (isOcean(msg.metadata())) {
+        setOceanMetadata(msg);
     }
-    else if (isOcean(metadata)) {
-        setOceanMetadata(metadata);
+    else {
+        auto queriedMarsFields = setMarsFields(*this, msg.metadata());
+        applyOverwrites(*this, msg.metadata());
+        setEncodingSpecificFields(*this, msg);
+        setDateAndStatisticalFields(*this, msg.metadata(), queriedMarsFields);
     }
 }
 
-void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
+void GribEncoder::setOceanMetadata(const message::Message& msg) {
     auto runConfig = config_.getSubConfiguration("run");
+    const auto& metadata = msg.metadata();
 
-    auto typeMaybe = setMarsFields(*this, runConfig);
-    setDateAndStatisticalFields(*this, runConfig, typeMaybe);
-    setEncodingSpecificFields(*this, metadata);
+    auto queriedMarsFields = setMarsFields(*this, runConfig);
+    if (queriedMarsFields.type) {
+        setValue("typeOfGeneratingProcess", type_of_generating_process.at(*queriedMarsFields.type));
+    }
+    applyOverwrites(*this, msg.metadata());
+    setDateAndStatisticalFields(*this, runConfig, queriedMarsFields);
+    setEncodingSpecificFields(*this, msg);
 
     // Setting parameter ID
     setValue("paramId", metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
@@ -228,15 +299,14 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
 }
 
-void GribEncoder::setCoordMetadata(const message::Metadata& metadata) {
-    setCoordMetadata(metadata, metadata.has("encodingKeys") ? metadata.getSubConfiguration("encodingKeys")
-                                                            : config_.getSubConfiguration("run"));
+void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {
+    setOceanCoordMetadata(metadata, config_.getSubConfiguration("run"));
 }
-void GribEncoder::setCoordMetadata(const message::Metadata& md, const eckit::Configuration& runConfig) {
+void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit::Configuration& runConfig) {
 
     // Set run-specific md
     setMarsFields(*this, runConfig);
-    
+
     setValue("date", md.getLong("startDate"));
 
     // setDomainDimensions
@@ -262,28 +332,34 @@ void GribEncoder::setCoordMetadata(const message::Metadata& md, const eckit::Con
     setValue("bitsPerValue", md.getLong("bitsPerValue"));
 }
 
-void codesCheck(int ret) {
+// TODO refactor - maybe throw exception instead of letting eccodes panic and disrupt exception system
+void codesCheckRelaxed(int ret, const std::string& name) {
     if (ret == CODES_READ_ONLY) {
         // If value is read only, do not panic...
+        eckit::Log::info() << "Multio GribEncoder: Ignoring readonly field " << name << std::endl;
         return;
+    }
+    if (ret != 0) {
+        eckit::Log::info() << "Multio GribEncoder: CODES return value != NULL for operation on field: " << name
+                           << std::endl;
     }
     CODES_CHECK(ret, NULL);
 }
 
 void GribEncoder::setValue(const std::string& key, long value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    codesCheck(codes_set_long(raw(), key.c_str(), value));
+    codesCheckRelaxed(codes_set_long(raw(), key.c_str(), value), key);
 }
 
 void GribEncoder::setValue(const std::string& key, double value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    codesCheck(codes_set_double(raw(), key.c_str(), value));
+    codesCheckRelaxed(codes_set_double(raw(), key.c_str(), value), key);
 }
 
 void GribEncoder::setValue(const std::string& key, const std::string& value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
     size_t sz = value.size();
-    codesCheck(codes_set_string(raw(), key.c_str(), value.c_str(), &sz));
+    codesCheckRelaxed(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), key);
 }
 
 void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
@@ -293,38 +369,38 @@ void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
     }
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << oss.str() << " for key " << key << std::endl;
     size_t sz = DIGEST_LENGTH;
-    codesCheck(codes_set_bytes(raw(), key.c_str(), value, &sz));
+    codesCheckRelaxed(codes_set_bytes(raw(), key.c_str(), value, &sz), key);
 }
 
 void GribEncoder::setValue(const std::string& key, bool value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << "(" << static_cast<long>(value) << ") for key " << key
                              << std::endl;
-    codesCheck(codes_set_long(raw(), key.c_str(), static_cast<long>(value)));
+    codesCheckRelaxed(codes_set_long(raw(), key.c_str(), static_cast<long>(value)), key);
 }
 
-message::Message GribEncoder::encodeLatitudes(const std::string& subtype) {
+message::Message GribEncoder::encodeOceanLatitudes(const std::string& subtype) {
     auto msg = grids().at(subtype)->latitudes();
 
-    setCoordMetadata(msg.metadata());
+    setOceanCoordMetadata(msg.metadata());
 
     return setFieldValues(msg);
 }
 
-message::Message GribEncoder::encodeLongitudes(const std::string& subtype) {
+message::Message GribEncoder::encodeOceanLongitudes(const std::string& subtype) {
     auto msg = grids().at(subtype)->longitudes();
 
-    setCoordMetadata(msg.metadata());
+    setOceanCoordMetadata(msg.metadata());
 
     return setFieldValues(msg);
 }
 
 message::Message GribEncoder::encodeField(const message::Message& msg) {
-    setFieldMetadata(msg.metadata());
+    setFieldMetadata(msg);
     return setFieldValues(msg);
 }
 
-message::Message GribEncoder::encodeField(const message::Metadata& md, const double* data, size_t sz) {
-    setFieldMetadata(md);
+message::Message GribEncoder::encodeField(const message::Message& msg, const double* data, size_t sz) {
+    setFieldMetadata(msg);
     return setFieldValues(data, sz);
 }
 

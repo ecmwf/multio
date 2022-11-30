@@ -18,7 +18,7 @@
 #include "multio/util/ScopedTimer.h"
 
 using multio::message::Message;
-using multio::message::MetadataMatchers;
+using multio::message::MetadataSelectors;
 
 namespace multio {
 namespace action {
@@ -27,7 +27,7 @@ namespace action {
 
 Select::Select(const ConfigurationContext& confCtx) :
     ChainedAction{confCtx},
-    match_(confCtx.config().getSubConfigurations("match")) {}
+    selectors_{confCtx.config()} {}
 
 void Select::executeImpl(Message msg) const {
     if (matches(msg)) {
@@ -37,15 +37,15 @@ void Select::executeImpl(Message msg) const {
 
 bool Select::matches(const Message& msg) const {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-    return match_.matches(msg);
+    return selectors_.matches(msg);
 }
 
-void Select::matchedFields(MetadataMatchers& matchers) const {
-    matchers.extend(match_);
+void Select::matchedFields(MetadataSelectors& selectors) const {
+    selectors.extend(selectors_);
 }
 
 void Select::print(std::ostream& os) const {
-    os << "Select(" << match_ << ")";
+    os << "Select(" << selectors_ << ")";
 }
 
 //--------------------------------------------------------------------------------------------------

@@ -27,6 +27,7 @@ namespace multio {
 namespace util {
 
 class GlobalConfCtx;  // Forward declaration
+struct YAMLFile;  // Forward declaration
 
 class ParameterMappings {
 public:
@@ -36,7 +37,7 @@ public:
 
 private:
     const GlobalConfCtx& globalConfCtx_;
-    eckit::LocalConfiguration configs_;
+    const YAMLFile& configFile_;
     mutable std::unordered_map<std::string, std::vector<message::ParameterMapping>> mappings_;
 };
 }  // namespace util

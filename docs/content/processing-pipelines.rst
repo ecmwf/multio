@@ -22,7 +22,7 @@ configuration file typically consists of two main parts:
 
 * A list of action plans on the model (``client``) side of multio, where they act on partial fields
   and the domain/grid properties of partial fields.
-* A list of action plans on the server (e.g. ``nemo-ioserver``) side, where they act on either
+* A list of action plans on the server (e.g. ``server``) side, where they act on either
   partial fields or the aggregated fields depending on the action's position in the pipeline.
 
 Every interface call that passes a message (data + metadata) to **multio** via the
@@ -31,7 +31,7 @@ pipeline. Each action will examine its own configuration as well as checking cer
 message's metadata to decide how to handle the message.
 
 Here is a small example of a configuration with three pipelines (``plans``) on the model
-(``client``) side and one on the server (``nemo-ioserver``) side.
+(``client``) side and one on the server (``server``) side.
 
 .. code-block:: yaml
 
@@ -45,7 +45,7 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
               - category : [ocean-domain-map, ocean-mask]
 
            - type : transport
-             target : nemo-ioserver
+             target : server
 
        - name : ocean-replay-test-stream1
          actions :
@@ -54,7 +54,7 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
               - name: [ sst, ssv ]
 
            - type : transport
-             target : nemo-ioserver
+             target : server
 
        - name : ocean-replay-test-stream2
          actions :
@@ -63,11 +63,11 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
               - field: [ ssu, ssw ]
 
            - type : transport
-             target : nemo-ioserver
+             target : server
 
-   nemo-ioserver:
+   server:
      transport : mpi
-     group : nemo
+     group : multio
      count : 2
      plans :
 
@@ -80,6 +80,74 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
            - type : aggregation
 
            - type : single-field-sink
+
+
+
+MPI Communicators
+-----------------
+
+    *Note:
+    MPI splitting is very inflexible. On failure applications usually have to restart, 
+    as it is not possible for single nodes to reconnect.
+    In future as an alternative MultIO might also support MPI via 
+    `MPI_connect`/`MPI_accept` to allow more failure tolerant and dynamic setups.*
+
+MultIO is trying to be purely messaged based and intents to use a general 
+concept of transports with different and multiple backends.
+Nevertheless MPI is a common and important player in HPC and also needs a 
+little bit of special handling regarding communicators.
+
+In scientific distributed applications, communication, specialization of nodes and 
+distributing tasks is done by splitting communicators with `MPI_split` to create subgroups, 
+i.e. new intra communicators containing only a subset of nodes.
+For splitting, a unqiue *color* (i.e. a tag represented by an integer) is chosen and 
+all nodes have to commit on a split at the same times within a given timeframe.
+Accordingly applications usually perform all splittings on initialization and 
+maintain the structure for their whole lifetime. 
+
+In practice this implies that models may pass down parent communicators through an interface 
+and have to start client as well as server nodes. Currently, in the Multio API this is the 
+only exception for configurations that are passed through the API. 
+Multio then splits a *client* or a *server* communicator and uses `MPI_Group` to compute 
+ranks of servers and clients (`mpigroups`_).
+**Important: The passed communicator are expected to be either a client or a server. 
+Nodes performing other tasks should not be contained in the communicator.**
+
+In the configuration example above, you can see that client plans refer to a server through a *transport*. In the server section the *transport* is then specified to be "mpi".
+The key `group` then refers ta a MPI communicator used for communication. Using `eckit::mpi` named lookup the communicator is looked up --- i.e. using `eckit` or `fckit` communicators may be used to manage communicators. 
+Otherwise, if the communicator is not existing, a recursive lookup mechanism is triggered to setup a communicator (`mpisetup`_).
+
+.. _`mpisetup`:
+
+MPI Groups
+~~~~~~~~~~
+
+MultIO MPI is working with an communicator containing all clients and server instances. 
+Yet clients do not know the server ranks in the communicator. To retrieve this information, 
+a furter MPI split is made: All clients split from the parent communicator to a 
+separate client communicator and all servers split to a separate server communicator.
+Now with `MPI_Group` we can retrieve the parent group and one child group for each instance.
+By using `MPI_Group_difference` it is possible to compute the *opposite* child group, 
+i.e. clients can compute the server group and server the client group.
+Now by using `MPI_Group_translate_ranks`, it is very easy to compute all ranks of both 
+groups *in the parent communicator*. This now allows clients to directly communicate to servers
+by mainting a list of server ranks.
+
+This approach is very flexible. The only assumption is that a communicator containing 
+only server and client instances is passed to MultIO.
+As MultIO will split off clients and servers, it is also recommended to split whole 
+separate communicator for MultIO. Otherwise splitting colors have to be adjusted (`mpisetup`_).
+
+
+
+.. _`mpisetup`:
+
+MPI Setup
+~~~~~~~~~
+
+.. code-block:: yaml
+
+TBD
 
 
 Actions

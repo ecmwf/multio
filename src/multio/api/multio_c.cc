@@ -233,6 +233,7 @@ int multio_new_handle(multio_handle_t** mio, multio_configurationcontext_t* cc) 
 int multio_delete_handle(multio_handle_t* mio) {
     return wrapApiFunction([mio]() {
         ASSERT(mio);
+        // std::cout << "multio_delete_handle" << std::endl;
         delete mio;
     });
 }
@@ -264,6 +265,7 @@ int multio_write_step_complete(multio_handle_t* mio, multio_metadata_t* md) {
     return wrapApiFunction([mio, md]() {
         ASSERT(mio);
         ASSERT(md);
+        // std::cout << "multio_write_step_complete" << std::endl;
 
         mio->dispatch(*md, eckit::Buffer{0}, Message::Tag::StepComplete);
     });
@@ -300,6 +302,7 @@ int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double
     return wrapApiFunction([mio, md, data, size]() {
         ASSERT(mio);
         ASSERT(md);
+        // std::cout << "multio_write_field: " << *md << std::endl;
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(double)};
 

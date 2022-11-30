@@ -139,24 +139,68 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
 
     while ((msg = reader.next())) {
         if (decodeData_) {
-            MetadataSetter encodingMetadata;
-            eckit::message::TypedSetter<MetadataSetter> gatherer{encodingMetadata};
+            MetadataSetter metadata;
+            eckit::message::TypedSetter<MetadataSetter> gatherer{metadata};
             eckit::message::GetMetadataOptions mdOpts{};
             mdOpts.valueRepresentation = ValueRepresentation::Native;
-            mdOpts.nameSpace = "";
+            mdOpts.nameSpace = "mars";
             msg.getMetadata(gatherer, mdOpts);
 
-            eckit::LocalConfiguration metadata;
-            if (encodingMetadata.has("name")) {
-                metadata.set("name", encodingMetadata.getString("name"));
+            MetadataSetter metadataDetailed;
+            eckit::message::TypedSetter<MetadataSetter> gathererDetailed{metadataDetailed};
+            mdOpts.valueRepresentation = ValueRepresentation::Native;
+            mdOpts.nameSpace = "";
+            msg.getMetadata(gathererDetailed, mdOpts);
+
+            if (metadataDetailed.has("gridType"))
+                metadata.set("gridType", metadataDetailed.getString("gridType"));
+
+            // Maybe use gridType?
+            if (metadataDetailed.getBool("sphericalHarmonics", false)) {
+                metadata.set("sphericalHarmonics", true);
+
+                if (metadataDetailed.has("complexPacking"))
+                    metadata.set("complexPacking", metadataDetailed.getLong("complexPacking"));
+                if (metadataDetailed.has("generatingProcessIdentifier"))
+                    metadata.set("generatingProcessIdentifier",
+                                 metadataDetailed.getLong("generatingProcessIdentifier"));
+                if (metadataDetailed.has("J"))
+                    metadata.set("pentagonalResolutionParameterJ", metadataDetailed.getLong("J"));
+                if (metadataDetailed.has("K"))
+                    metadata.set("pentagonalResolutionParameterK", metadataDetailed.getLong("K"));
+                if (metadataDetailed.has("M"))
+                    metadata.set("pentagonalResolutionParameterM", metadataDetailed.getLong("M"));
+                if (metadataDetailed.has("JS"))
+                    metadata.set("subSetJ", metadataDetailed.getLong("JS"));
+                if (metadataDetailed.has("KS"))
+                    metadata.set("subSetK", metadataDetailed.getLong("KS"));
+                if (metadataDetailed.has("MS"))
+                    metadata.set("subSetM", metadataDetailed.getLong("MS"));
+
+                // Seems not to be settable in codes
+                metadata.set("unpackedSubsetPrecision", 1);
             }
-            if (encodingMetadata.has("param")) {
-                metadata.set("param", encodingMetadata.getLong("param"));
+
+            // Name is not required but convenient to print...
+            if (metadataDetailed.has("name")) {
+                metadata.set("name", metadataDetailed.getString("name"));
             }
-            if (encodingMetadata.has("step")) {
-                metadata.set("step", encodingMetadata.getLong("step"));
+            if (metadataDetailed.has("paramId")) {
+                metadata.set("paramId", metadataDetailed.getLong("paramId"));
             }
-            metadata.set("encodingKeys", encodingMetadata);
+            if (metadataDetailed.has("param")) {
+                metadata.set("param", metadataDetailed.getLong("param"));
+                if (!metadata.has("paramId")) {
+                    metadata.set("paramId", metadataDetailed.getLong("param"));
+                }
+            }
+            if (metadataDetailed.has("GRIBEditionNumber")) {
+                metadata.set("gribEdition", metadataDetailed.getString("GRIBEditionNumber"));
+            }
+            if (!metadata.has("level") && metadataDetailed.has("level")) {
+                metadata.set("level", metadataDetailed.getString("level"));
+            }
+
 
             eckit::Buffer data = msg.decode();
             metadata.set("globalSize", data.size() / sizeof(double));

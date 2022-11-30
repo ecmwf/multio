@@ -1,0 +1,176 @@
+# PL fields
+pl-overwrites:
+  - paramId: 129
+  
+  - paramId: 130
+  
+  - paramId: 133
+  
+  - paramId: 135
+  
+  - paramId: 138
+  
+  - paramId: 155
+  
+  - paramId: 131
+  
+  - paramId: 132
+  
+  - paramId: 157
+  
+  
+sfc-overwrites:
+  - paramId: 8
+  
+  - paramId: 9
+  
+  - paramId: 31
+  
+  - paramId: 33
+  
+  - paramId: 34
+  
+  - paramId: 129
+    generatingProcessIdentifier: 153 
+    decimalScaleFactor: 0
+    # Nj: 2560
+    # latitudeOfFirstGridPoint: 89946
+    # latitudeOfLastGridPoint: -89946
+    # longitudeOfLastGridPoint: 359929
+    # N: 1280
+    # pl: 2560
+    binaryScaleFactor: 1
+    bitsPerValue: 16
+  
+  - paramId: 134
+  
+  - paramId: 141
+    binaryScaleFactor: -20
+    bitsPerValue: 24
+  
+  - paramId: 144
+  
+  - paramId: 146
+  
+  - paramId: 147
+  
+  - paramId: 151
+  
+  - paramId: 165
+  
+  - paramId: 166
+  
+  - paramId: 167
+  
+  - paramId: 168
+  
+  - paramId: 169
+  
+  - paramId: 172
+  
+  - paramId: 175
+  
+  - paramId: 176
+  
+  - paramId: 177
+  
+  - paramId: 178
+  
+  - paramId: 179
+  
+  - paramId: 228
+  
+  - paramId: 235
+  
+  - paramId: 228051
+  
+  - paramId: 212
+  
+  - paramId: 98
+  
+  - paramId: 79
+  
+  - paramId: 78
+  
+  - paramId: 137
+  
+  - paramId: 228089
+  
+  - paramId: 228090
+  
+  - paramId: 228021
+  
+  - paramId: 164
+  
+  - paramId: 181
+  
+  - paramId: 180
+  
+  - paramId: 195
+  
+  - paramId: 196
+  
+  - paramId: 228246
+  
+  - paramId: 228247
+  
+  - paramId: 228029
+  
+  - paramId: 174098
+    binaryScaleFactor: -13
+   
+  - paramId: 139
+    bitsPerValue: 16
+    bottomLevel: 7
+    topLevel: 0
+    binaryScaleFactor: -9
+    # indicatorOfTypeOfLevel: 112
+    
+  - paramId: 170
+    bitsPerValue: 16
+    bottomLevel: 28
+    topLevel: 7
+    binaryScaleFactor: -9
+    # indicatorOfTypeOfLevel: 112
+    
+  - paramId: 183
+    bitsPerValue: 16
+    bottomLevel: 100
+    topLevel: 28
+    binaryScaleFactor: -9
+    # indicatorOfTypeOfLevel: 112
+    
+  - paramId: 236
+    bitsPerValue: 16
+    # bottomLevel: 7
+    topLevel: 100
+    binaryScaleFactor: -16
+    # indicatorOfTypeOfLevel: 112
+    
+  - paramId: 39
+    bitsPerValue: 16
+    bottomLevel: 7
+    topLevel: 0
+    binaryScaleFactor: -16
+    # indicatorOfTypeOfLevel: 112
+   
+  - paramId: 40
+    bitsPerValue: 16
+    bottomLevel: 28
+    topLevel: 7
+    binaryScaleFactor: -16
+    # indicatorOfTypeOfLevel: 112
+   
+  - paramId: 41
+    bitsPerValue: 16
+    bottomLevel: 100
+    topLevel: 28
+    binaryScaleFactor: -16
+    # indicatorOfTypeOfLevel: 112
+    
+  - paramId: 42
+    bitsPerValue: 16
+    topLevel: 100
+    binaryScaleFactor: -16
+    # indicatorOfTypeOfLevel: 112
+   

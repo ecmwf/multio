@@ -21,8 +21,10 @@
 #include <set>
 #include <iterator>
 
+#include "eckit/utils/Optional.h"
+
 #include "multio/action/ChainedAction.h"
-#include "multio/message/MetadataMatcher.h"
+#include "multio/message/MetadataSelector.h"
 
 namespace multio {
 namespace action {
@@ -42,11 +44,11 @@ private: // methods
     void executeImpl(message::Message msg) const override;
 
     /// @note This describes an algebra, so the function here can be significantly extended to give helpful return
-    void matchedFields(message::MetadataMatchers& matchers) const override;
+    void matchedFields(message::MetadataSelectors& selectors) const override;
 
 private: // members
 
-    message::MetadataMatchers match_;
+    message::MetadataSelectors selectors_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

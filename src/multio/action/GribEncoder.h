@@ -18,7 +18,10 @@
 #include "eccodes.h"
 
 #include "metkit/codes/GribHandle.h"
+
 #include "multio/message/Message.h"
+
+// #include "multio/ifsio/EncodeBitsPerValue.h"
 
 namespace multio {
 namespace action {
@@ -45,18 +48,21 @@ public:
         }
     }
 
-    message::Message encodeLatitudes(const std::string& subtype);
-    message::Message encodeLongitudes(const std::string& subtype);
+    message::Message encodeOceanLatitudes(const std::string& subtype);
+    message::Message encodeOceanLongitudes(const std::string& subtype);
 
     message::Message encodeField(const message::Message& msg);
-    message::Message encodeField(const message::Metadata& md, const double* data, size_t sz);
+    message::Message encodeField(const message::Message& msg, const double* data, size_t sz);
+
+    // TODO May be refactored
+    // int getBitsPerValue(int paramid, const std::string& levtype, double min, double max);
 
 private:
-    void setFieldMetadata(const message::Metadata& metadata);
-    void setOceanMetadata(const message::Metadata& metadata);
+    void setFieldMetadata(const message::Message& msg);
+    void setOceanMetadata(const message::Message& msg);
     
-    void setCoordMetadata(const message::Metadata& metadata);
-    void setCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig);
+    void setOceanCoordMetadata(const message::Metadata& metadata);
+    void setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig);
 
     message::Message setFieldValues(const  message::Message& msg);
     message::Message setFieldValues(const double* values, size_t count);
@@ -65,6 +71,9 @@ private:
 
     const std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",
                                           "lon_V", "lat_W", "lon_W", "lat_F", "lon_F"};
+                                          
+    // TODO: This is just included from old interface now and may require refactoring in terms of configuration and its action                                            
+    // EncodeBitsPerValue encodeBitsPerValue_;
 };
 
 inline bool isOcean(const message::Metadata& metadata) {

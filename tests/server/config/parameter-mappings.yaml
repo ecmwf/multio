@@ -1,6 +1,6 @@
 nemo-to-grib:
     source:
-        file: nemo-to-grib.yaml
+        file: ../../parameterMappings/nemo-to-grib.yaml
         path: nemo-fields
     mappings:
         - match:
@@ -10,3 +10,53 @@ nemo-to-grib:
             gridSubtype: grid-type
             domain: grid-type
             typeOfLevel: level-type
+            
+            
+grib1-pl-encoder-overwrites:
+    source:
+        file: ../../parameterMappings/grib1-encoder-overwrites.yaml
+        path: pl-overwrites
+    mappings:
+        - match:
+            paramId: paramId
+          targetPath: encoderOverwrites
+          optionalMap:
+            bitsPerValue: bitsPerValue
+            topLevel: topLevel
+            bottomLevel: bottomLevel
+            binaryScaleFactor: binaryScaleFactor
+            indicatorOfTypeOfLevel: indicatorOfTypeOfLevel
+            generatingProcessIdentifier: generatingProcessIdentifier
+            decimalScaleFactor: decimalScaleFactor
+            Nj: Nj
+            latitudeOfFirstGridPoint: latitudeOfFirstGridPoint
+            latitudeOfLastGridPoint: latitudeOfLastGridPoint
+            longitudeOfLastGridPoint: longitudeOfLastGridPoint
+            N: N
+            pl: pl
+            
+            
+grib1-sfc-encoder-overwrites:
+    source:
+        file: ../../parameterMappings/grib1-encoder-overwrites.yaml
+        path: sfc-overwrites
+    mappings:
+        - match:
+            paramId: paramId
+          targetPath: encoderOverwrites
+          optionalMap:
+            bitsPerValue: bitsPerValue
+            topLevel: topLevel
+            bottomLevel: bottomLevel
+            binaryScaleFactor: binaryScaleFactor
+            indicatorOfTypeOfLevel: indicatorOfTypeOfLevel
+            generatingProcessIdentifier: generatingProcessIdentifier
+            decimalScaleFactor: decimalScaleFactor
+            Nj: Nj
+            latitudeOfFirstGridPoint: latitudeOfFirstGridPoint
+            latitudeOfLastGridPoint: latitudeOfLastGridPoint
+            longitudeOfLastGridPoint: longitudeOfLastGridPoint
+            N: N
+            pl: pl
+
+

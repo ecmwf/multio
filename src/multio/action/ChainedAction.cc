@@ -23,9 +23,9 @@ void ChainedAction::executeNext(message::Message msg) const {
     next_->execute(std::move(msg));
 }
 
-void ChainedAction::matchedFields(message::MetadataMatchers& matchers) const {
-    Action::matchedFields(matchers);
-    next_->matchedFields(matchers);
+void ChainedAction::matchedFields(message::MetadataSelectors& selectors) const {
+    Action::matchedFields(selectors);
+    next_->matchedFields(selectors);
 }
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -29,7 +29,7 @@
 
 namespace multio {
 
-namespace message { class MetadataMatchers; }
+namespace message { class MetadataSelectors; }
 
 namespace action {
 
@@ -45,7 +45,7 @@ public:
 
     virtual void process(message::Message msg);
 
-    void matchedFields(message::MetadataMatchers& matchers) const;
+    void matchedFields(message::MetadataSelectors& selectors) const;
 
     util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&, util::DefaultFailureState&) const override;
 

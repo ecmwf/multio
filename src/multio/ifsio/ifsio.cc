@@ -13,10 +13,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "eckit/config/Configuration.h"
 #include "eckit/config/LibEcKit.h"
 #include "eckit/config/Resource.h"
 #include "eckit/config/YAMLConfiguration.h"
-#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/message/Message.h"
@@ -127,7 +127,7 @@ private:
         if (::getenv("MULTIO_PLANS_FILE")) {
             PathName path(::getenv("MULTIO_PLANS_FILE"));
             std::cout << "MultIO initialising with plans file " << path << std::endl;
-            return ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(path)), path.dirName(), path);
+            return ConfigurationContext(path);
         }
 
         if (::getenv("MULTIO_CONFIG")) {
@@ -140,8 +140,7 @@ private:
         if (::getenv("MULTIO_CONFIG_FILE")) {
             PathName path(::getenv("MULTIO_CONFIG_FILE"));
             std::cout << "MultIO initialising with config file " << path << std::endl;
-            return configureFromSinks(
-                ConfigurationContext(eckit::LocalConfiguration(eckit::YAMLConfiguration(path)), path.dirName(), path));
+            return configureFromSinks(ConfigurationContext(path));
         }
 
         eckit::Tokenizer parse(":");
@@ -272,7 +271,7 @@ fortint imultio_write_raw_(const void* configuration, const void* data, const fo
         MULTIO_TRACE_FUNC();
         ASSERT(configuration);
         const eckit::Configuration* conf = reinterpret_cast<const eckit::Configuration*>(configuration);
-        
+
         ASSERT(data);
         int ilen = (*words) * sizeof(fortint);
         ASSERT(ilen > 0);

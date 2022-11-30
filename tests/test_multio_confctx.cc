@@ -25,14 +25,12 @@
 namespace multio {
 
 using util::configuration_file;
-using util::configuration_path_name;
-using util::configuration_file_name;
 using util::ConfigurationContext;
 
 namespace test {
 
 CASE("Create default context and tranverse client plans") {
-    ConfigurationContext confCtx(configuration_file(), configuration_path_name(), configuration_file_name());
+    ConfigurationContext confCtx{};
     EXPECT(confCtx.config().has("client"));
     
     ConfigurationContext clientCtx = confCtx.subContext("client"); 

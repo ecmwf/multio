@@ -16,8 +16,8 @@
 #include "eckit/message/Message.h"
 
 #include "multio/LibMultio.h"
-#include "multio/util/logfile_name.h"
 #include "multio/util/ScopedTimer.h"
+#include "multio/util/logfile_name.h"
 
 namespace multio {
 namespace action {
@@ -73,9 +73,8 @@ void Sink::trigger(const Message& msg) const {
 
     metadata[msg.metadata().getString("trigger")] = msg.name();
 
-    eckit::Log::debug<LibMultio>()
-        << "Trigger " << msg.metadata().getString("trigger") << " with value " << msg.name()
-        << " is being called..." << std::endl;
+    eckit::Log::debug<LibMultio>() << "Trigger " << msg.metadata().getString("trigger") << " with value " << msg.name()
+                                   << " is being called..." << std::endl;
 
     mio_.trigger(metadata);
 }

@@ -140,6 +140,7 @@ eckit::Optional<double> lookUpDouble(const eckit::Configuration& c, const std::s
 eckit::Optional<float> lookUpFloat(const eckit::Configuration& c, const std::string& key);
 eckit::Optional<bool> lookUpBool(const eckit::Configuration& c, const std::string& key);
 
+//-----------------------------------------------------------------------------------------------------------------------------------------
 
 }  // namespace util
 }  // namespace multio

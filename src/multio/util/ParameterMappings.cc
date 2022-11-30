@@ -6,7 +6,7 @@ namespace multio {
 namespace util {
 
 namespace {
-eckit::LocalConfiguration getParameterMappingConfiguration(const GlobalConfCtx& globalConfCtx) {
+const YAMLFile& getParameterMappingConfiguration(const GlobalConfCtx& globalConfCtx) {
     if (globalConfCtx.globalConfig().has("parameter-mappings")) {
         return globalConfCtx.getYAMLFile(([&](){
             try {
@@ -25,7 +25,7 @@ eckit::LocalConfiguration getParameterMappingConfiguration(const GlobalConfCtx& 
 
 ParameterMappings::ParameterMappings(const GlobalConfCtx& globalConfCtx) :
     globalConfCtx_(globalConfCtx),
-    configs_{getParameterMappingConfiguration(globalConfCtx)},
+    configFile_{getParameterMappingConfiguration(globalConfCtx)},
     mappings_{} {}    
     
 
@@ -34,8 +34,8 @@ const std::vector<message::ParameterMapping>& ParameterMappings::getMappings(con
     if (search != mappings_.end()) {
         return search->second;
     }
-    if (configs_.has(mapping)) {
-        auto mappingConfig =  configs_.getSubConfiguration(mapping);
+    if (configFile_.content.has(mapping)) {
+        auto mappingConfig =  configFile_.content.getSubConfiguration(mapping);
         
         // Evaluate source block
         if (!mappingConfig.has("source")) {
@@ -58,14 +58,14 @@ const std::vector<message::ParameterMapping>& ParameterMappings::getMappings(con
         }
         auto sourcePath = sourceConfigBlock.getString("path");
         
-        auto sourceConfig = globalConfCtx_.getYAMLFile(sourceFname);
-        if (!sourceConfig.has(sourcePath)) {
+        auto sourceConfig = globalConfCtx_.getRelativeYAMLFile(configFile_.path.dirName(), sourceFname);
+        if (!sourceConfig.content.has(sourcePath)) {
             std::ostringstream oss;
             oss << "YAML file \"" << sourceFname << "\" for parameter mapping \"" << mapping << "\" does have a top-level path \"" << sourcePath << "\"" << std::endl;
             throw eckit::Exception(oss.str());
         }
         
-        std::vector<eckit::LocalConfiguration> sourceList = sourceConfig.getSubConfigurations(sourcePath);
+        std::vector<eckit::LocalConfiguration> sourceList = sourceConfig.content.getSubConfigurations(sourcePath);
         
         // Evaluate mappings block
         if (!mappingConfig.has("mappings")) {
@@ -84,9 +84,9 @@ const std::vector<message::ParameterMapping>& ParameterMappings::getMappings(con
                 oss << "Mapping #" << mcind << " of parameter mapping \"" << mapping << "\" does not list a \"match\" block" << std::endl;
                 throw eckit::Exception(oss.str());
             }
-            if (!mc.has("map")) {
+            if (!mc.has("map") && !mc.has("optionalMap")) {
                 std::ostringstream oss;
-                oss << "Mapping #" << mcind << " of parameter mapping \"" << mapping << "\" does not list a \"map\" block" << std::endl;
+                oss << "Mapping #" << mcind << " of parameter mapping \"" << mapping << "\" does not list a \"map\" or \"optionalMap\" block" << std::endl;
                 throw eckit::Exception(oss.str());
             }
             auto matchBlock = mc.getSubConfiguration("match");
@@ -100,14 +100,11 @@ const std::vector<message::ParameterMapping>& ParameterMappings::getMappings(con
             std::string targetKey = matchBlock.getString(sourceKey);
             
             auto mappings = mc.getSubConfiguration("map");             
-            auto mappingsKeys = mappings.keys();
-            if (mappingsKeys.size() <= 0) {
-                std::ostringstream oss;
-                oss << "Map block of mapping #" << mcind << " of parameter mapping \"" << mapping << "\" should list at least one mapping." << std::endl;
-                throw eckit::Exception(oss.str());
-            }
+            auto optionalMappings = mc.getSubConfiguration("optionalMap");             
             
-            v.emplace(v.end(), std::move(sourceKey), std::move(mappings), sourceList, std::move(targetKey));
+            auto targetPath = mc.has("targetPath") ? eckit::Optional<std::string>{mc.getString("targetPath")} : eckit::Optional<std::string>{};
+            
+            v.emplace(v.end(), std::move(sourceKey), std::move(mappings), std::move(optionalMappings), sourceList, std::move(targetKey), std::move(targetPath));
             ++mcind;
         }
         mappings_.emplace(mapping, std::move(v));
@@ -116,7 +113,7 @@ const std::vector<message::ParameterMapping>& ParameterMappings::getMappings(con
     
     std::ostringstream oss;
     oss << "No parameter mapping \"" << mapping << "\" found. Available mappings: " << std::endl;
-    for(const auto& k: configs_.keys()) {
+    for(const auto& k: configFile_.content.keys()) {
         oss << "  - " << k << std::endl;
     }
     throw eckit::Exception(oss.str());

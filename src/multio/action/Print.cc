@@ -12,9 +12,9 @@
 
 #include <fstream>
 
+#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
-#include "eckit/config/Configuration.h"
 
 namespace multio {
 namespace action {
@@ -23,18 +23,27 @@ Print::Print(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {
     stream_ = confCtx.config().getString("stream", "info");
 
     if (stream_ == "info") {
-        os = &eckit::Log::info();
+        os_ = &eckit::Log::info();
     }
     else if (stream_ == "error") {
-        os = &eckit::Log::error();
-    } else {
-        os = &eckit::Log::debug();
+        os_ = &eckit::Log::error();
     }
+    else if (stream_ == "cout") {
+        os_ = &std::cout;
+    }
+    else {
+        os_ = &eckit::Log::debug();
+    }
+    
+    prefix_ = confCtx.config().getString("prefix", "");
 }
 
 void Print::executeImpl(message::Message msg) const {
-    ASSERT(os);
-    (*os) << msg << std::endl;
+    ASSERT(os_);
+    if(!prefix_.empty()) {
+        (*os_) << prefix_ << ": ";
+    }
+    (*os_) << msg << std::endl;
 
     executeNext(std::move(msg));
 }

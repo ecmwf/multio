@@ -38,7 +38,7 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureA
     for (auto&& cfg : confCtx.subContexts("plans", ComponentTag::Plan)) {
         eckit::Log::debug<LibMultio>() << cfg.config() << std::endl;
         plans_.emplace_back(new action::Plan(std::move(cfg)));
-        plans_.back()->matchedFields(activeMatchers_);
+        plans_.back()->matchedFields(activeSelectors_);
     }
 
     if (confCtx.globalConfig().has("active-matchers")) {
@@ -52,10 +52,11 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureA
     }
 }
 
-util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t, const util::FailureContext& c, util::DefaultFailureState&) const {
+util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t, const util::FailureContext& c,
+                                                         util::DefaultFailureState&) const {
     // Last cascading instance, print nested contexts
     print(eckit::Log::error(), c);
-    
+
     if (t == util::OnClientError::AbortAllTransports) {
         transport::TransportRegistry::instance().abortAll();
     }
@@ -102,7 +103,7 @@ void MultioClient::dispatch(message::Message msg) {
 }
 
 bool MultioClient::isFieldMatched(const message::Metadata& metadata) const {
-    return activeMatchers_.matches(metadata);
+    return activeSelectors_.matches(metadata);
 }
 
 }  // namespace server

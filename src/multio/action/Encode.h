@@ -35,8 +35,8 @@ private:
     void print(std::ostream& os) const override;
 
     message::Message encodeField(const message::Message& msg) const;
-    message::Message encodeLatitudes(const std::string& subtype) const;
-    message::Message encodeLongitudes(const std::string& subtype) const;
+    message::Message encodeOceanLatitudes(const std::string& subtype) const;
+    message::Message encodeOceanLongitudes(const std::string& subtype) const;
 
     const std::string format_;
 

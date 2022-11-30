@@ -84,8 +84,8 @@ util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t, const util
 };
 
 
-void Plan::matchedFields(message::MetadataMatchers& matchers) const {
-    root_->matchedFields(matchers);
+void Plan::matchedFields(message::MetadataSelectors& selectors) const {
+    root_->matchedFields(selectors);
 }
 
 }  // namespace action

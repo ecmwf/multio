@@ -65,8 +65,9 @@ ConfigurationContext getEncodingConfiguration(const ConfigurationContext& confCt
                 /// @TODO Allow defining overwrites. Problem: we can not copy mappings/values from one to another configuration
                 /// without knowing it's type explicitly
                 // if (confCtx.config().has("overwrite")) {
-                //     confCtx.config().getSubConfiguration("overwrite")
-
+                //     auto overwrites = confCtx.config().getSubConfiguration("overwrite");
+                //     for (const std::string& k: overwrites.keys()) {
+                //     }
                 // }
 
                 return encoding;
@@ -132,8 +133,8 @@ void Encode::executeImpl(Message msg) const {
         else {
             LOG_DEBUG_LIB(LibMultio) << "*** Grid metadata: " << msg.metadata() << std::endl;
             if (encoder_->setGridInfo(msg)) {
-                executeNext(encodeLatitudes(msg.domain()));
-                executeNext(encodeLongitudes(msg.domain()));
+                executeNext(encodeOceanLatitudes(msg.domain()));
+                executeNext(encodeOceanLongitudes(msg.domain()));
             }
         }
     } else {
@@ -156,24 +157,24 @@ message::Message Encode::encodeField(const message::Message& msg) const {
     }
 }
 
-message::Message Encode::encodeLatitudes(const std::string& subtype) const {
+message::Message Encode::encodeOceanLatitudes(const std::string& subtype) const {
     try {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-        return encoder_->encodeLatitudes(subtype);
+        return encoder_->encodeOceanLatitudes(subtype);
     } catch (...) {
         std::ostringstream oss;
-        oss << "Encode::encodeLatitudes with subtype: " << subtype;
+        oss << "Encode::encodeOceanLatitudes with subtype: " << subtype;
         std::throw_with_nested(eckit::Exception(oss.str()));
     }
 }
 
-message::Message Encode::encodeLongitudes(const std::string& subtype) const {
+message::Message Encode::encodeOceanLongitudes(const std::string& subtype) const {
     try {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-        return encoder_->encodeLongitudes(subtype);
+        return encoder_->encodeOceanLongitudes(subtype);
     } catch (...) {
         std::ostringstream oss;
-        oss << "Encode::encodeLongitudes with subtype: " << subtype;
+        oss << "Encode::encodeOceanLongitudes with subtype: " << subtype;
         std::throw_with_nested(eckit::Exception(oss.str()));
     }
 }

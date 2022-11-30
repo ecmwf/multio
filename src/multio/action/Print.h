@@ -34,7 +34,8 @@ private:
 
     std::string stream_;
 
-    std::ostream* os;
+    std::ostream* os_;
+    std::string prefix_;
 };
 
 }  // namespace action

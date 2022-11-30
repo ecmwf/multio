@@ -17,19 +17,34 @@ std::unordered_map<std::string, eckit::LocalConfiguration> constructSourceMap(
 }
 }  // namespace
 
-ParameterMapping::ParameterMapping(const std::string& sourceKey,
-                                   const eckit::LocalConfiguration& mappings,
-                                   const std::vector<eckit::LocalConfiguration>& sourceList,
-                                   const std::string& key) :
-    sourceKey_(sourceKey), mapping_{mappings}, source_{constructSourceMap(sourceList, key)} {}
-ParameterMapping::ParameterMapping(
-    const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
-    const std::unordered_map<std::string, eckit::LocalConfiguration>& source) :
-    sourceKey_(sourceKey), mapping_{mappings}, source_{source} {}
-ParameterMapping::ParameterMapping(
-    const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
-    std::unordered_map<std::string, eckit::LocalConfiguration>&& source) :
-    sourceKey_(sourceKey), mapping_{mappings}, source_{std::move(source)} {}
+ParameterMapping::ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
+                                   const eckit::LocalConfiguration& optionalMappings,
+                                   const std::vector<eckit::LocalConfiguration>& sourceList, const std::string& key,
+                                   const eckit::Optional<std::string>& targetPath) :
+    sourceKey_(sourceKey),
+    mapping_{mappings},
+    optionalMapping_{optionalMappings},
+    source_{constructSourceMap(sourceList, key)},
+    targetPath_{targetPath} {}
+ParameterMapping::ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
+                                   const eckit::LocalConfiguration& optionalMappings,
+                                   const std::unordered_map<std::string, eckit::LocalConfiguration>& source,
+                                   const eckit::Optional<std::string>& targetPath) :
+    sourceKey_(sourceKey),
+    mapping_{mappings},
+    optionalMapping_{optionalMappings},
+    source_{source},
+    targetPath_{targetPath} {}
+ParameterMapping::ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
+                                   const eckit::LocalConfiguration& optionalMappings,
+                                   std::unordered_map<std::string, eckit::LocalConfiguration>&& source,
+                                   const eckit::Optional<std::string>& targetPath) :
+    sourceKey_(sourceKey),
+    mapping_{mappings},
+    optionalMapping_{optionalMappings},
+    source_{std::move(source)},
+    targetPath_{targetPath} {}
+
 
 void ParameterMapping::applyInplace(Metadata& m, ParameterMappingOptions options) const {
     if (!m.has(sourceKey_)) {
@@ -44,27 +59,46 @@ void ParameterMapping::applyInplace(Metadata& m, ParameterMappingOptions options
     auto from = source_.find(lookUpKey);
     if (from == source_.end()) {
         std::ostringstream oss;
-        oss << "Parameter mapping failure: Source key \"" << sourceKey_
-            << "\" in metadata is resolving to \"" << lookUpKey
-            << "\" for which no mapping has be provided in the mapping file." << std::endl;
+        oss << "Parameter mapping failure: Source key \"" << sourceKey_ << "\" in metadata is resolving to \""
+            << lookUpKey << "\" for which no mapping has be provided in the mapping file." << std::endl;
         throw eckit::Exception(oss.str());
     }
-    for (const auto& key : mapping_.keys()) {
-        if(!options.overwriteExisting && m.has(key)) {
-            continue;
+
+    // TODO handle internals without LocalConfiguration
+    eckit::Optional<eckit::LocalConfiguration> targetConfMaybe{};
+    eckit::LocalConfiguration& ms
+        = targetPath_ ? (targetConfMaybe = m.getSubConfiguration(*targetPath_), *targetConfMaybe) : m;
+
+    // Please don't blame about this [&] capture. It is really just convenient to use the lambda here and won't cause
+    // any harm. Adding all variables and members to the list is just cumbersome
+    const auto applyMapping = [&](const eckit::LocalConfiguration& mapping, bool isOptional) {
+        for (const auto& key : mapping.keys()) {
+            if (!options.overwriteExisting && m.has(key)) {
+                continue;
+            }
+            std::string lookUpMapKey = mapping.getString(key);
+            if (from->second.has(lookUpMapKey)) {
+                ms.set(key, from->second.getString(lookUpMapKey));
+            }
+            else {
+                if (!isOptional) {
+                    std::ostringstream oss;
+                    oss << "Parameter mapping failure: Source key \"" << sourceKey_
+                        << "\" in metadata is resolving to \"" << lookUpKey
+                        << "\" which mapping is not providing a mapping for key \"" << lookUpMapKey << "\"."
+                        << std::endl;
+                    throw eckit::Exception(oss.str());
+                }
+            }
         }
-        std::string lookUpMapKey = mapping_.getString(key);
-        if (!from->second.has(lookUpMapKey)) {
-            std::ostringstream oss;
-            oss << "Parameter mapping failure: Source key \"" << sourceKey_
-                << "\" in metadata is resolving to \"" << lookUpKey
-                << "\" which mapping is not providing a mapping for key \"" << lookUpMapKey << "\"."
-                << std::endl;
-            throw eckit::Exception(oss.str());
-        }
-        m.set(key, from->second.getString(lookUpMapKey));
+    };
+    applyMapping(mapping_, false);
+    applyMapping(optionalMapping_, true);
+
+    if (targetPath_) {
+        m.set(*targetPath_, ms);
     }
-};
+}
 
 Metadata ParameterMapping::apply(Metadata&& m, ParameterMappingOptions options) const {
     Metadata mc(std::move(m));

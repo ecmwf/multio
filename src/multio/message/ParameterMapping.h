@@ -17,7 +17,10 @@
 #define multio_message_ParameterMapping_H
 
 #include <unordered_map>
+
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/utils/Optional.h"
+
 #include "multio/message/Metadata.h"
 
 namespace multio {
@@ -31,12 +34,15 @@ struct ParameterMappingOptions {
 
 class ParameterMapping {
 public:
-    ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
-                     const std::vector<eckit::LocalConfiguration>& sourceList, const std::string& targetKey);
-    ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
-                     const std::unordered_map<std::string, eckit::LocalConfiguration>& source);
-    ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
-                     std::unordered_map<std::string, eckit::LocalConfiguration>&& source);
+    ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings, const eckit::LocalConfiguration& optionalMappings,
+                     const std::vector<eckit::LocalConfiguration>& sourceList, const std::string& targetKey,
+                     const eckit::Optional<std::string>& targetPath = eckit::Optional<std::string>{});
+    ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings, const eckit::LocalConfiguration& optionalMappings,
+                     const std::unordered_map<std::string, eckit::LocalConfiguration>& source,
+                     const eckit::Optional<std::string>& targetPath = eckit::Optional<std::string>{});
+    ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings, const eckit::LocalConfiguration& optionalMappings,
+                     std::unordered_map<std::string, eckit::LocalConfiguration>&& source,
+                     const eckit::Optional<std::string>& targetPath = eckit::Optional<std::string>{});
 
     void applyInplace(Metadata&, ParameterMappingOptions options = ParameterMappingOptions{}) const;
 
@@ -44,9 +50,11 @@ public:
     Metadata apply(const Metadata&, ParameterMappingOptions options = ParameterMappingOptions{}) const;
 
 private:
-    std::string sourceKey_; 
+    std::string sourceKey_;
     eckit::LocalConfiguration mapping_;
+    eckit::LocalConfiguration optionalMapping_;
     std::unordered_map<std::string, eckit::LocalConfiguration> source_;
+    eckit::Optional<std::string> targetPath_;
 };
 
 

@@ -16,7 +16,7 @@
 #include <map>
 
 #include "multio/action/Plan.h"
-#include "multio/message/MetadataMatcher.h"
+#include "multio/message/MetadataSelector.h"
 #include "multio/util/ConfigurationContext.h"
 #include "multio/util/FailureHandling.h"
 
@@ -63,7 +63,7 @@ public:
 
 private:
     std::vector<std::unique_ptr<action::Plan>> plans_;
-    message::MetadataMatchers activeMatchers_;
+    message::MetadataSelectors activeSelectors_;
 
     eckit::Timing totClientTiming_;
     eckit::Timer totClientTimer_;

@@ -34,6 +34,11 @@ ecbuild_add_option( FEATURE FDB5
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "NAME fdb5 VERSION 5.10.1" )
 
+
+ecbuild_add_option( FEATURE FORTRAN
+                    DEFAULT ON
+                    DESCRIPTION "Build Fortran API and examples" )
+
 ### legacy IFS I/O
 
 ecbuild_add_option( FEATURE LEGACY_IFSIO
@@ -45,11 +50,12 @@ ecbuild_add_option( FEATURE LEGACY_IFSIO
 ecbuild_add_option( FEATURE MULTIO_SERVER
                     DEFAULT OFF
                     CONDITION eckit_HAVE_MPI
-                    DESCRIPTION "Multio server" )
+                    DESCRIPTION "Build with I/O-server support" )
+
 
 if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
   ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
-  ecbuild_find_package( NAME fckit   VERSION 0.9.6   REQUIRED )
+  ecbuild_find_package( NAME fckit   VERSION 0.10.0   REQUIRED )
   find_package( MPI COMPONENTS Fortran) # Add explict mpi for errocodes -- isn't there a better way?
 endif()
 

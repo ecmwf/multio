@@ -36,7 +36,9 @@
 
 namespace multio {
 
-namespace message { class MetadataMatchers; }
+namespace message {
+class MetadataMatchers;
+}
 
 namespace action {
 

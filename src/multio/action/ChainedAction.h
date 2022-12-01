@@ -31,7 +31,6 @@ class ChainedAction : public Action {
 public:
 
     explicit ChainedAction(const ConfigurationContext& confCtx);
-    ~ChainedAction() override = default;
 
 protected:
 

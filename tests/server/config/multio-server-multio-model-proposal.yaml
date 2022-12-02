@@ -7,7 +7,7 @@
 mpi-communicators:
     multio-parent:
         type: passed    # Allow the model to pass communicator for all clients and server
-        defaullt: world # implicit or disabled
+        default: world  # implicit or disabled
     ocean:              # Split ocean server & clients
         type: split
         color: 1

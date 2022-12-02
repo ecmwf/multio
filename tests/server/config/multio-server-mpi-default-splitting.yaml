@@ -5,7 +5,7 @@
 mpi-communicators:
     multio:
         type: passed
-        defaullt: world
+        default: world
     multio-clients:
         type: split
         color: 777

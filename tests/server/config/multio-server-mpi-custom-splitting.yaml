@@ -5,7 +5,7 @@
 mpi-communicators:
     custom:
         type: passed
-        defaullt: world
+        default: world
     custom-clients:
         type: split
         color: 123

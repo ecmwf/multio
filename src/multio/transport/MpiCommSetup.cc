@@ -40,6 +40,7 @@ void addAlias(const std::string& name, const std::string& altName) {
 eckit::mpi::Comm& getCommPreparedCtx(
     const ConfigurationContext& confCtx, const std::string& name,
     const eckit::Optional<CommSetupOptions>& options = eckit::Optional<CommSetupOptions>{}) {
+
     auto log = [&](const std::string& msg) {
         eckit::Log::info() << " *** [" << util::translate<std::string>(confCtx.localPeerTag())
                            << "] mpi::getComm \"" << name << "\" - " << msg << std::endl;
@@ -103,10 +104,10 @@ eckit::mpi::Comm& getCommPreparedCtx(
                           auto defaultCommName =
                               hasDefault ? subConfig.getString("default") : "world";
 
-                          auto& comm =
-                              withLog(hasDefault ? getCommPreparedCtx(confCtx, defaultCommName)
-                                                 : eckit::mpi::comm(),
-                                      "defaults to " + defaultCommName);
+                          auto& comm
+                              = withLog((defaultCommName == "world") ? eckit::mpi::comm()
+                                                                     : getCommPreparedCtx(confCtx, defaultCommName),
+                                        "defaults to " + defaultCommName);
 
                           addAlias(defaultCommName, name);
                           return comm;
@@ -146,8 +147,9 @@ eckit::mpi::Comm& getCommPreparedCtx(
                     ? eckit::Optional<std::string>(subConfig.getString("parent"))
                     : (options ? options().parentCommName : eckit::Optional<std::string>());
 
-            eckit::mpi::Comm& parentComm =
-                (parentName ? getCommPreparedCtx(confCtx, parentName()) : eckit::mpi::comm());
+            eckit::mpi::Comm& parentComm
+                = ((parentName && *parentName != "world") ? getCommPreparedCtx(confCtx, parentName())
+                                                          : eckit::mpi::comm());
             std::ostringstream splitLogMsg;
             splitLogMsg << " from "
                         << (parentName ? parentName() : std::string("eckit::mpi default"))

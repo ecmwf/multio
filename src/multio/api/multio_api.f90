@@ -42,8 +42,7 @@ module multio_api
         procedure :: write_domain => multio_write_domain
         procedure :: write_mask => multio_write_mask
         procedure :: write_field => multio_write_field
-        procedure :: field_is_active => multio_field_is_active
-        procedure :: category_is_fully_active => multio_category_is_fully_active
+        procedure :: field_accepted => multio_field_accepted
     end type
 
     type multio_metadata
@@ -310,22 +309,12 @@ module multio_api
             integer(c_int) :: err
         end function
         
-        function c_multio_field_is_active(handle, field, set_value) result(err) &
-                bind(c, name='multio_field_is_active')
+        function c_multio_field_accepted(handle, metadata, set_value) result(err) &
+                bind(c, name='multio_field_accepted')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: handle
-            type(c_ptr), intent(in), value :: field
-            logical(c_bool), intent(out) :: set_value
-            integer(c_int) :: err
-        end function
-
-        function c_multio_category_is_fully_active(handle, category, set_value) result(err) &
-                bind(c, name='multio_category_is_fully_active')
-            use, intrinsic :: iso_c_binding
-            implicit none
-            type(c_ptr), intent(in), value :: handle
-            type(c_ptr), intent(in), value :: category
+            type(c_ptr), intent(in), value :: metadata
             logical(c_bool), intent(out) :: set_value
             integer(c_int) :: err
         end function
@@ -621,26 +610,15 @@ contains
         err = c_multio_write_field(handle%impl, metadata%impl, data, size)
     end function
     
-    function multio_field_is_active(handle, field, set_value) result(err)
+    function multio_field_accepted(handle, metadata, set_value) result(err)
         class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
         logical(c_bool), intent(out) :: set_value
-        character(*), intent(in) :: field
         integer :: err
         character(:), allocatable, target :: nullified_field
-        nullified_field = trim(field) // c_null_char
-        err = c_multio_field_is_active(handle%impl, c_loc(nullified_field), set_value)
+        err = c_multio_field_accepted(handle%impl, metadata%impl, set_value)
     end function
     
-    function multio_category_is_fully_active(handle, category, set_value) result(err)
-        class(multio_handle), intent(inout) :: handle
-        logical(c_bool), intent(out) :: set_value
-        character(*), intent(in) :: category
-        integer :: err
-        character(:), allocatable, target :: nullified_category
-        nullified_category = trim(category) // c_null_char
-        err = c_multio_category_is_fully_active(handle%impl, c_loc(nullified_category), set_value)
-    end function
-
     ! Methods for metadata objects
     function multio_new_metadata(metadata) result(err)
         class(multio_metadata), intent(inout) :: metadata

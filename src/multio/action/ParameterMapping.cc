@@ -15,7 +15,7 @@ std::string getMappingName(
 }  // namespace
 
 ParameterMapping::ParameterMapping(const ConfigurationContext& confCtx) :
-    Action(confCtx), name_(getMappingName(confCtx)), mappings_(confCtx.parameterMappings().getMappings(name_)), options_{} {
+    ChainedAction(confCtx), name_(getMappingName(confCtx)), mappings_(confCtx.parameterMappings().getMappings(name_)), options_{} {
     options_.enforceMatch = confCtx.config().getBool("enforce-match", true);
     options_.overwriteExisting = confCtx.config().getBool("overwrite-existing", false);
 };

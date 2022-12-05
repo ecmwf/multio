@@ -14,17 +14,16 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_actions_Print_H
-#define multio_server_actions_Print_H
+#pragma once
 
 #include <iosfwd>
 
-#include "multio/action/Action.h"
+#include "multio/action/ChainedAction.h"
 
 namespace multio {
 namespace action {
 
-class Print : public Action {
+class Print : public ChainedAction {
 public:
     explicit Print(const ConfigurationContext& config);
 
@@ -40,5 +39,3 @@ private:
 
 }  // namespace action
 }  // namespace multio
-
-#endif

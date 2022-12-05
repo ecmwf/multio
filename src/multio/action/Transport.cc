@@ -73,9 +73,6 @@ void Transport::executeImpl(Message msg) const {
 
         transport_->bufferedSend(trMsg);
     }
-
-    ASSERT(not next_);  // End of pipeline
-    executeNext(msg);
 }
 
 void Transport::print(std::ostream& os) const {

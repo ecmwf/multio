@@ -24,7 +24,7 @@ namespace action {
 
 using message::Peer;
 
-Aggregation::Aggregation(const ConfigurationContext& confCtx) : Action(confCtx) {}
+Aggregation::Aggregation(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {}
 
 void Aggregation::executeImpl(Message msg) const {
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {

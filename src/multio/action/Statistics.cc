@@ -45,7 +45,7 @@ long set_frequency(const std::string& output_freq) {
 }  // namespace
 
 Statistics::Statistics(const ConfigurationContext& confCtx) :
-    Action{confCtx},
+    ChainedAction{confCtx},
     timeUnit_{set_unit(confCtx.config().getString("output-frequency"))},
     timeSpan_{set_frequency(confCtx.config().getString("output-frequency"))},
     operations_{confCtx.config().getStringVector("operations")} {}

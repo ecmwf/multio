@@ -59,6 +59,8 @@ list( APPEND multio_action_srcs
     action/Statistics.h
     action/Null.cc
     action/Null.h
+    action/ChainedAction.cc
+    action/ChainedAction.h
     action/Action.cc
     action/Action.h
     action/Period.cc
@@ -103,6 +105,8 @@ list( APPEND multio_message_srcs
     message/Message.h
     message/Metadata.cc
     message/Metadata.h
+    message/MetadataMatcher.cc
+    message/MetadataMatcher.h
     message/Peer.cc
     message/Peer.h
     message/ParameterMapping.cc

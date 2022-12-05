@@ -14,41 +14,42 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_actions_Select_H
-#define multio_server_actions_Select_H
+#pragma once
 
 #include <iosfwd>
 #include <vector>
 #include <set>
 #include <iterator>
 
-#include "multio/action/Action.h"
+#include "multio/action/ChainedAction.h"
+#include "multio/message/MetadataMatcher.h"
 
 namespace multio {
 namespace action {
 
-using message::Message;
+//----------------------------------------------------------------------------------------------------------------------
 
-class Select : public Action {
+class Select : public ChainedAction {
 public:
     explicit Select(const ConfigurationContext& confCtx);
 
-    void executeImpl(Message msg) const override;
+private: // methods
 
-    void activeFields(std::insert_iterator<std::set<std::string>>& ins) const override;
-    void activeCategories(std::insert_iterator<std::set<std::string>>& ins) const override;
-
-private:
     void print(std::ostream &os) const override;
 
-    bool matchPlan(const Message& msg) const;
+    bool matches(const message::Message& msg) const;
 
-    std::string match_;
-    std::vector<std::string> items_;
+    void executeImpl(message::Message msg) const override;
 
+    /// @note This describes an algebra, so the function here can be significantly extended to give helpful return
+    void matchedFields(message::MetadataMatchers& matchers) const override;
+
+private: // members
+
+    message::MetadataMatchers match_;
 };
+
+//----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace action
 }  // namespace multio
-
-#endif

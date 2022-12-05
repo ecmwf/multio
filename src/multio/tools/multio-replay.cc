@@ -163,6 +163,7 @@ eckit::Buffer MultioReplay::readField(const std::string& param, size_t client_id
 
     eckit::FileHandle infile{field.fullName()};
     size_t bytes = infile.openForRead();
+    eckit::AutoClose closer(infile);
 
     eckit::Buffer buffer(bytes);
     infile.read(buffer.data(), bytes);

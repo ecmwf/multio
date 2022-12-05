@@ -19,7 +19,7 @@
 namespace multio {
 namespace action {
 
-Print::Print(const ConfigurationContext& confCtx) : Action(confCtx) {
+Print::Print(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {
     stream_ = confCtx.config().getString("stream", "info");
 
     if (stream_ == "info") {

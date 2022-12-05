@@ -384,25 +384,16 @@ int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, dou
     });
 }
 
-int multio_field_is_active(multio_handle_t* mio, const char* fname, bool* value) {
-    return wrapApiFunction([mio, fname, value]() {
+
+int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, bool* accepted) {
+    return wrapApiFunction([mio, md, accepted]() {
         ASSERT(mio);
-        ASSERT(fname);
-        ASSERT(value);
+        ASSERT(md);
+        ASSERT(accepted);
 
-        *value = mio->isFieldActive(fname);
+        *accepted = mio->isFieldMatched(*md);
     });
-};
-
-int multio_category_is_fully_active(multio_handle_t* mio, const char* cname, bool* value) {
-    return wrapApiFunction([mio, cname, value]() {
-        ASSERT(mio);
-        ASSERT(cname);
-        ASSERT(value);
-
-        *value = mio->isCategoryActive(cname);
-    });
-};
+}
 
 
 }  // extern "C"

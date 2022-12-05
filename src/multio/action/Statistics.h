@@ -13,13 +13,12 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_actions_Statistics_H
-#define multio_server_actions_Statistics_H
+#pragma once
 
 #include <iosfwd>
 #include <vector>
 
-#include "multio/action/Action.h"
+#include "multio/action/ChainedAction.h"
 
 namespace eckit { class Configuration; }
 
@@ -28,7 +27,7 @@ namespace action {
 
 class TemporalStatistics;
 
-class Statistics : public Action {
+class Statistics : public ChainedAction {
 public:
     explicit Statistics(const ConfigurationContext& confCtx);
 
@@ -47,5 +46,3 @@ private:
 
 }  // namespace action
 }  // namespace multio
-
-#endif

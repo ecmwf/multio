@@ -14,21 +14,20 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_actions_Aggregation_H
-#define multio_server_actions_Aggregation_H
+#pragma once
 
 #include <iosfwd>
 #include <unordered_map>
 #include <vector>
 
-#include "multio/action/Action.h"
+#include "multio/action/ChainedAction.h"
 
 namespace multio {
 namespace action {
 
 using message::Message;
 
-class Aggregation : public Action {
+class Aggregation : public ChainedAction {
 public:
     explicit Aggregation(const ConfigurationContext& confCtx);
 
@@ -49,5 +48,3 @@ private:
 
 }  // namespace action
 }  // namespace multio
-
-#endif

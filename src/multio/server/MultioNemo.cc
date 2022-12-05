@@ -94,7 +94,7 @@ public:
         return  mio;
     }
 
-    MultioClient& client() {
+    MultioClient& client() const {
         ASSERT(multioClient_);
         return *multioClient_;
     }
@@ -153,17 +153,17 @@ public:
     }
 
     void openConnections() {
-        MultioNemo::instance().client().openConnections();
+        client().openConnections();
     }
 
     void closeConnections() {
-        MultioNemo::instance().client().closeConnections();
+        client().closeConnections();
     }
 
     void writeStepComplete() {
         Message msg{Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}}};
 
-        MultioNemo::instance().client().dispatch(msg);
+        client().dispatch(msg);
     }
 
     void setDomain(const std::string& dname, const int* data, size_t bytes) {
@@ -177,7 +177,7 @@ public:
         Message msg{Message::Header{Message::Tag::Domain, Peer{}, Peer{}, std::move(md)},
                 std::move(domain_def)};
 
-        MultioNemo::instance().client().dispatch(msg);
+        client().dispatch(msg);
     }
 
     void writeMask(const std::string& mname, const uint8_t* data, size_t bytes) {
@@ -195,7 +195,7 @@ public:
         Message msg{Message::Header{Message::Tag::Mask, Peer{}, Peer{}, std::move(md)},
                 std::move(mask_vals)};
 
-        MultioNemo::instance().client().dispatch(msg);
+        client().dispatch(msg);
     }
 
     void writeField(const std::string& fname, const double* data, size_t bytes,
@@ -224,7 +224,7 @@ public:
         Message msg{Message::Header{Message::Tag::Field, Peer{}, Peer{}, std::move(metadata_)},
                     std::move(field_vals)};
 
-        MultioNemo::instance().client().dispatch(msg);
+        client().dispatch(msg);
     }
 
     bool useServer() const {
@@ -232,7 +232,9 @@ public:
     }
 
     bool isActive(const std::string& name) const {
-        return MultioNemo::instance().client().isFieldActive(name);
+        eckit::LocalConfiguration quickLookup;
+        quickLookup.set("name", name);
+        return client().isFieldMatched(quickLookup);
     }
 };
 

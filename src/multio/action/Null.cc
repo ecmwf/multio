@@ -19,9 +19,7 @@ namespace action {
 
 Null::Null(const ConfigurationContext& confCtx) : Action(confCtx) {}
 
-void Null::executeImpl(message::Message /*msg*/) const {
-    ASSERT(!next_);
-}
+void Null::executeImpl(message::Message /*msg*/) const {}
 
 void Null::print(std::ostream& os) const {
     os << "Null()";

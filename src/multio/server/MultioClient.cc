@@ -6,9 +6,6 @@
 #include <iomanip>
 
 #include "eckit/config/LocalConfiguration.h"
-#include "eckit/config/Resource.h"
-#include "eckit/config/YAMLConfiguration.h"
-#include "eckit/filesystem/PathName.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/types/DateTime.h"
 
@@ -67,12 +64,12 @@ util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t, 
 
 
 void MultioClient::openConnections() {
-    withFailureHandling([&]() { transport::TransportRegistry::instance().openConnections(); },
+    withFailureHandling([]() { transport::TransportRegistry::instance().openConnections(); },
                         []() { return std::string("MultioClient::openConnections"); });
 }
 
 void MultioClient::closeConnections() {
-    withFailureHandling([&]() { transport::TransportRegistry::instance().closeConnections(); },
+    withFailureHandling([]() { transport::TransportRegistry::instance().closeConnections(); },
                         []() { return std::string("MultioClient::closeConnections"); });
 }
 

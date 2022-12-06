@@ -23,7 +23,6 @@
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/message/Message.h"
-#include "multio/transport/Transport.h"
 #include "multio/util/ConfigurationContext.h"
 #include "multio/util/FailureHandling.h"
 

@@ -16,18 +16,14 @@
 #include <limits>
 #include <iostream>
 
-#include "eckit/filesystem/TmpFile.h"
 #include "eckit/testing/Test.h"
 #include "eckit/config/LocalConfiguration.h"
 
 #include "multio/util/ConfigurationPath.h"
 #include "multio/util/ConfigurationContext.h"
 
-#include "TestDataContent.h"
-#include "TestHelpers.h"
-
-
 namespace multio {
+
 using util::configuration_file;
 using util::configuration_path_name;
 using util::configuration_file_name;

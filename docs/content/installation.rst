@@ -16,8 +16,8 @@ Required
 * `CMake`_
 * `ecbuild`_
 * `eckit`_
-* `metkit`_
 * `eccodes`_
+* `metkit`_
 
 .. index:: Dependencies; Optional
 
@@ -59,6 +59,6 @@ Build & Install
 .. _`CMake`: https://cmake.org
 .. _`ecbuild`: https://github.com/ecmwf/ecbuild
 .. _`eckit`: https://github.com/ecmwf/eckit
-.. _`metkit`: https://github.com/ecmwf/metkit
 .. _`eccodes`: https://github.com/ecmwf/eccodes
+.. _`metkit`: https://github.com/ecmwf/metkit
 .. _`fdb`: https://github.com/ecmwf/fdb

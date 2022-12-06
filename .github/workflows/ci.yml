@@ -17,26 +17,155 @@ on:
   workflow_dispatch: ~
 
 env:
+  INSTALL_TOOLS: ${{ github.workspace }}/install-tools
   CTEST_PARALLEL_LEVEL: 1
+  CACHE_SUFFIX: v1
 
 jobs:
-
-  # Calls a reusable CI workflow to build & test the current repository.
-  #   It will pull in all needed dependencies and produce a code coverage report on success.
   ci:
     name: ci
-    uses: ecmwf-actions/reusable-workflows/.github/workflows/ci.yml@v1
+
     strategy:
       fail-fast: false  # false: try to complete all jobs
-    with:
-      codecov_upload: true
-      build_package_inputs: |
+
+      matrix:
+        build_type: [Release]
+        name:
+          - linux gnu-10
+          - linux clang-12
+          - macos
+
+        include:
+
+          - name: linux gnu-10
+            os: ubuntu-20.04
+            compiler: gnu-10
+            compiler_cc: gcc-10
+            compiler_cxx: g++-10
+            compiler_fc: gfortran-10
+            caching: true
+
+          - name: linux clang-12
+            os: ubuntu-20.04
+            compiler: clang-12
+            compiler_cc: clang-12
+            compiler_cxx: clang++-12
+            compiler_fc: gfortran-10
+            caching: true
+
+          - name: macos
+            # Xcode compiler requires empty environment variables, so we pass null (~) here
+            os: macos-11
+            compiler: clang-12
+            compiler_cc: ~
+            compiler_cxx: ~
+            compiler_fc: gfortran-11
+            caching: true
+            cmake_options: -DMPI_SLOTS=4 #What is this?
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Homebrew
+      id: set-up-homebrew
+      uses: Homebrew/actions/setup-homebrew@master
+
+    - name: Environment
+      run:  |
+        echo "DEPS_DIR=${{ runner.temp }}/deps" >> $GITHUB_ENV
+        echo "CC=${{ matrix.compiler_cc }}"     >> $GITHUB_ENV
+        echo "CXX=${{ matrix.compiler_cxx }}"   >> $GITHUB_ENV
+        echo "FC=${{ matrix.compiler_fc }}"     >> $GITHUB_ENV
+
+        if [[ "${{ matrix.os }}" =~ macos ]]; then
+          brew install ninja
+          brew install libomp
+        else
+          sudo apt-get update
+          sudo apt-get install ninja-build
+        fi
+
+        printenv
+
+    - name: Cache Dependencies
+      # There seems to be a problem with cached NVHPC dependencies, leading to SIGILL perhaps due to slightly different architectures
+      if: matrix.caching
+      id: deps-cache
+      uses: pat-s/always-upload-cache@v2.1.5
+      with:
+        path: ${{ env.DEPS_DIR }}
+        key: deps-${{ matrix.os }}-${{ matrix.compiler }}-v1
+
+    - name: Install MPI
+      shell: bash -eux {0}
+      run: |
+        FCFLAGS=-fPIC CFLAGS=-fPIC FFLAGS=-fPIC ${INSTALL_TOOLS}/install-mpi.sh --mpi openmpi --prefix  ${DEPS_DIR}/openmpi
+        [ -f ${DEPS_DIR}/openmpi/env.sh ] && source ${DEPS_DIR}/openmpi/env.sh
+        [ -z ${MPI_HOME+x} ] || echo "MPI_HOME=${MPI_HOME}" >> $GITHUB_ENV
+
+    - name: Install FFTW
+      shell: bash -eux {0}
+      run: |
+        ${INSTALL_TOOLS}/install-fftw.sh --version 3.3.10 --prefix ${DEPS_DIR}/fftw
+        echo "FFTW_ROOT=${DEPS_DIR}/fftw" >> $GITHUB_ENV
+
+    - name: Set Build & Test Environment
+      run: |
+
+        # Only add --oversubscribe arg for openmpi
+        [ -z ${I_MPI_ROOT+x} ] && echo "MPI_ARGS=--oversubscribe" >> $GITHUB_ENV
+
+        # Add mpirun to path for testing
+        [ -z ${MPI_HOME+x} ] || echo "${MPI_HOME}/bin" >> $GITHUB_PATH
+
+    - name: Build & Test
+      id: build-test
+      uses: ecmwf-actions/build-package@v2
+      with:
+        self_coverage: true
+        force_build: true
+        cache_suffix: "${{ matrix.build_type }}-${{ env.CACHE_SUFFIX }}"
+        recreate_cache: ${{ matrix.caching == false }}
         dependencies: |
           ecmwf/ecbuild
           ecmwf/eckit
-          ecmwf/odc
+          ecmwf/fckit
           MathisRosenhauer/libaec@master
           ecmwf/eccodes
           ecmwf/metkit
           ecmwf/fdb
         dependency_branch: develop
+        dependency_cmake_options: |
+          ecmwf/eckit: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF -DENABLE_ECKIT_CMD=OFF -DENABLE_ECKIT_SQL=OFF"
+          ecmwf/fckit: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF"
+        cmake_options: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DMULTIO_SERVER=ON ${{ matrix.cmake_options }}"
+        ctest_options: "${{ matrix.ctest_options }}"
+
+
+
+
+
+
+# jobs:
+
+#   # Calls a reusable CI workflow to build & test the current repository.
+#   #   It will pull in all needed dependencies and produce a code coverage report on success.
+#   ci:
+#     name: ci
+#     uses: ecmwf-actions/reusable-workflows/.github/workflows/ci.yml@v1
+#     strategy:
+#       fail-fast: false  # false: try to complete all jobs
+#     with:
+#       codecov_upload: true
+#       build_package_inputs: |
+#         dependencies: |
+#           ecmwf/ecbuild
+#           ecmwf/eckit
+#           ecmwf/odc
+#           MathisRosenhauer/libaec@master
+#           ecmwf/eccodes
+#           ecmwf/metkit
+#           ecmwf/fdb
+#         dependency_branch: develop

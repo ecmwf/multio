@@ -4,11 +4,6 @@ ecbuild_add_executable( TARGET    multio-hammer
                         SOURCES   multio-hammer.cc MultioTool.cc
                         LIBS      multio multio-server)
 
-ecbuild_add_executable( TARGET    multio-replay
-                        CONDITION HAVE_MULTIO_SERVER
-                        SOURCES   multio-replay.cc MultioTool.cc
-                        LIBS      multio multio-server)
-
 ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initfilepath
                         CONDITION   HAVE_MULTIO_SERVER
                         SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
@@ -92,5 +87,5 @@ ecbuild_add_executable( TARGET    multio-feed
 ecbuild_add_executable( TARGET    multio-replay-nemo-fapi
                         CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN
                         SOURCES   multio-replay-nemo-fapi.f90
-                        LIBS      multio multio-server multio-api multio-fapi fckit MPI::MPI_Fortran)
+                        LIBS      multio-fapi fckit MPI::MPI_Fortran)
 

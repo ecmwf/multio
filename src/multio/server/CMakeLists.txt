@@ -30,12 +30,8 @@ ecbuild_add_library(
         Listener.h
         MultioClient.cc
         MultioClient.h
-        MultioErrorHandling.cc
-        MultioErrorHandling.h
         NemoToGrib.cc
         NemoToGrib.h
-        MultioNemo.cc
-        MultioNemo.h
         MultioServer.cc
         MultioServer.h
 
@@ -44,21 +40,4 @@ ecbuild_add_library(
         multio
         eckit
         eckit_mpi
-)
-
-ecbuild_add_library(
-
-    TARGET multio-server-fapi
-
-    CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN
-
-    SOURCES
-        multio_nemo.f90
-        multio.f90
-
-    PUBLIC_INCLUDES
-        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module>
-
-    PUBLIC_LIBS
-        multio-server
 )

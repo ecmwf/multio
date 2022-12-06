@@ -1,25 +1,18 @@
 #include <fstream>
 #include <iomanip>
 
-#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/FileHandle.h"
-#include "eckit/io/StdFile.h"
-#include "eckit/log/JSON.h"
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-
-#include "multio/LibMultio.h"
-// #include "multio/server/MultioNemo.h"
 #include "multio/api/multio_c.h"
 #include "multio/server/NemoToGrib.h"
 #include "multio/tools/MultioTool.h"
 #include "multio/util/ConfigurationPath.h"
 
-#include "multio/message/Metadata.h"
 
 #define XSTRM(m) STRM(m)
 #define STRM(m) #m

@@ -9,7 +9,6 @@
 #include "eckit/option/SimpleOption.h"
 
 #include "multio/api/multio_c.h"
-#include "multio/server/NemoToGrib.h"
 #include "multio/tools/MultioTool.h"
 #include "multio/util/ConfigurationPath.h"
 
@@ -19,6 +18,41 @@
 
 
 using multio::util::configuration_file_name;
+using multio::util::configuration_path_name;
+
+namespace {
+// TODO: Remove this helper class and update test configs to use the parameter-mapping action
+
+using NemoKey = std::string;
+
+struct GribData {
+    long param;
+    std::string gridType;
+    std::string levelType;
+};
+
+std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& config) {
+    const auto& cfgList = config.getSubConfigurations("nemo-fields");
+    std::map<std::string, GribData> nemo_map;
+    for (auto const& cfg : cfgList) {
+        nemo_map[cfg.getString("nemo-id")] = {cfg.getLong("param-id"),
+                                              cfg.getString("grid-type"),
+                                              cfg.getString("level-type")};
+    }
+    return nemo_map;
+}
+
+class NemoToGrib {
+public:
+    NemoToGrib() :
+        parameters_{fetch_nemo_params(eckit::YAMLConfiguration{configuration_path_name() + "nemo-to-grib.yaml"})} {}
+
+    const GribData& get(const NemoKey& key) const { return parameters_.at(key); }
+
+    std::map<NemoKey, GribData> parameters_;
+};
+
+}  // namespace
 
 //----------------------------------------------------------------------------------------------------------------
 /**

@@ -30,8 +30,6 @@ ecbuild_add_library(
         Listener.h
         MultioClient.cc
         MultioClient.h
-        NemoToGrib.cc
-        NemoToGrib.h
         MultioServer.cc
         MultioServer.h
 

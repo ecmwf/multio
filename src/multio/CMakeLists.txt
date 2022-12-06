@@ -188,6 +188,13 @@ ecbuild_add_library(
     PUBLIC_LIBS
         metkit eckit eckit_mpi)
 
+
+if(ECBUILD_INSTALL_FORTRAN_MODULES)
+    install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}/ 
+	     DESTINATION ${INSTALL_INCLUDE_DIR} 
+	     COMPONENT modules)
+endif()
+
 add_subdirectory(fdb5)
 add_subdirectory(maestro)
 add_subdirectory(server)

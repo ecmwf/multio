@@ -55,10 +55,11 @@ public:
     void dispatch(message::Metadata metadata, eckit::Buffer&& payload, message::Message::Tag tag);
 
     void dispatch(message::Message msg);
-    
+
     bool isFieldMatched(const message::Metadata& matcher) const;
 
-    util::FailureHandlerResponse handleFailure(util::OnClientError, const util::FailureContext&, util::DefaultFailureState&) const override;
+    util::FailureHandlerResponse handleFailure(util::OnClientError, const util::FailureContext&,
+                                               util::DefaultFailureState&) const override;
 
 private:
     std::vector<std::unique_ptr<action::Plan>> plans_;

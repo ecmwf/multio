@@ -16,14 +16,8 @@ ecbuild_add_test( TARGET    test_multio_encode_bitspervalue
                   SOURCES   test_multio_encode_bitspervalue.cc
                   LIBS      multio )
 
-ecbuild_add_test( TARGET    test_multio_maestro
-                  SOURCES   test_multio_maestro.cc
-                  CONDITION HAVE_MAESTRO
-                  LIBS      multio multio-maestro )
-
 ecbuild_add_test( TARGET    test_multio_confctx
                   SOURCES   test_multio_confctx.cc
-                  CONDITION HAVE_MULTIO_SERVER
                   LIBS      multio
                   ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/server/config"
 )
@@ -31,17 +25,20 @@ ecbuild_add_test( TARGET    test_multio_confctx
 ecbuild_add_test( TARGET    test_multio_capi
                   SOURCES   test_multio_capi.cc
                   CONDITION HAVE_MULTIO_SERVER
-                  LIBS      multio multio-server multio-api
+                  LIBS      multio-api
                   ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/server/config"
 )
 
 ecbuild_add_test( TARGET    test_multio_fapi_general
                   SOURCES   test_multio_fapi_general.f90
                   CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN
-                  LIBS      multio multio-server multio-api multio-fapi
+                  LIBS      multio-fapi
                   ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/server/config"
 )
-
+ecbuild_add_test( TARGET    test_multio_maestro
+                  SOURCES   test_multio_maestro.cc
+                  CONDITION HAVE_MAESTRO
+                  LIBS      multio-maestro )
 
 list( APPEND _test_environment
     FDB_HOME=${CMAKE_BINARY_DIR}/multio
@@ -60,7 +57,6 @@ if( CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
 endif()
 
 list( APPEND _link_libraries
-    multio
     multio-fdb5
     eckit_option
 )

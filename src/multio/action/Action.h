@@ -23,7 +23,6 @@
 #include <iterator>
 #include <mutex>
 
-#include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/action/ActionStatistics.h"
@@ -31,8 +30,6 @@
 #include "multio/util/ConfigurationContext.h"
 #include "multio/util/FailureHandling.h"
 
-
-#include "multio/transport/Transport.h"
 
 namespace multio {
 

@@ -33,6 +33,6 @@ ecbuild_add_library(
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module>
 
     PUBLIC_LIBS
-        multio-server multio-api
+        multio-api
 )
 

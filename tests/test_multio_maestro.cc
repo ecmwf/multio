@@ -33,6 +33,11 @@ private:
     std::string data_;
 };
 
+CASE("Static type-check") {
+    static_assert(sizeof(size_t) == sizeof(uint64_t),
+                  "Error: Multio support for the Maestro middleware requires 64-bit size_t");
+}
+
 CASE("CDO construction") {
 
     TestHarness test;

@@ -10,6 +10,7 @@
 #include "mir/input/MIRInput.h"
 
 #include "multio/LibMultio.h"
+#include "multio/util/ScopedTimer.h"
 
 #include "pgen/handler/Handler.h"
 #include "pgen/prodgen/Fields.h"
@@ -22,17 +23,16 @@ namespace multio {
 MaestroWorker::MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pgen::Requirement>& queue) :
     args_{args},
     source_{args},
-    namer_{pgen::FileNamerFactory::build(args)},
     queue_{queue},
     requirement_{},
+    namer_{pgen::FileNamerFactory::build(args)},
     directory_("."),
     style_{"ecmwf"},
     legendre_loader_{"file-io"},
     matrix_loader_{"file-io"},
     point_search_{"mapped-anonymous-memory"},
     dryrun_{false},
-    log_file_{get_log_name(), std::fstream::app}
-{
+    log_file_{get_log_name(), std::fstream::app} {
     args.get("directory", directory_);
     args.get("style", style_);
     args.get("legendre-loader", legendre_loader_);
@@ -57,7 +57,7 @@ void MaestroWorker::process() {
     if (dryrun_) {
         while (queue_.pop(requirement_) > -1) {
             if (not start_.elapsed_) {
-                start_ = eckit::Timing(statistics_.timer_);
+                start_ = eckit::Timing(statistics_.timer());
                 log_file_ << "(timing) [start_] = " << start_ << std::endl;
             }
             util::ScopedTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_, maestroStatistics_.workerProcessPopWorkTiming_);
@@ -74,7 +74,7 @@ void MaestroWorker::process() {
 
         while (queue_.pop(requirement_) > -1) {
             if (not start_.elapsed_) {
-                start_ = eckit::Timing(statistics_.timer_);
+                start_ = eckit::Timing(statistics_.timer());
                 log_file_ << "(timing) [start_] = " << start_ << std::endl;
             }
             util::ScopedTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_, maestroStatistics_.workerProcessPopWorkTiming_);
@@ -140,7 +140,7 @@ void MaestroWorker::process() {
                     statistics_.failedRequirementsCount_++;
                 }
                 log_file_ << "Execute job" << std::endl;
-                util::ScopedTiming timing(statistics_.timer_, statistics_.mirTiming_);
+                util::ScopedTiming timing(statistics_.timer(), statistics_.mirTiming_);
                 util::ScopedTiming mirTiming(maestroStatistics_.mirTimer_, maestroStatistics_.mirTiming_);
                 job.execute(statistics_.mirStatistics_);
             }
@@ -148,7 +148,7 @@ void MaestroWorker::process() {
     }
 
     log_file_ << "(timing) [start_] = " << start_ << std::endl;
-    statistics_.totalTiming_ = eckit::Timing(statistics_.timer_) - start_;
+    statistics_.totalTiming_ = eckit::Timing(statistics_.timer()) - start_;
     log_file_ << "(timing) [total]  = " << statistics_.totalTiming_ << std::endl;
     statistics_.report(log_file_);
     log_file_ << "*** Worker is leaving" << std::endl;

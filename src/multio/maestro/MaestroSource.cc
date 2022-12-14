@@ -1,15 +1,17 @@
 
 #include <thread>
 #include <fstream>
+
 #include "MaestroSource.h"
+
 #include "eckit/io/Buffer.h"
-#include "eckit/log/Log.h"
+
 #include "multio/maestro/ThreadsafeMap.h"
+#include "multio/util/ScopedTimer.h"
 
 namespace multio {
 
-MaestroSource::MaestroSource(const eckit::option::CmdArgs &args): Source(args) {
-}
+MaestroSource::MaestroSource(const eckit::option::CmdArgs& args) : Source(args) {}
 
 MaestroSource::~MaestroSource() {
     std::stringstream ss;

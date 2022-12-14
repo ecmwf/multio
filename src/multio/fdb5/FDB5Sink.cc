@@ -14,7 +14,6 @@
 
 #include "multio/fdb5/FDB5Sink.h"
 
-#include "eckit/exception/Exceptions.h"
 #include "fdb5/config/Config.h"
 
 #include "multio/LibMultio.h"

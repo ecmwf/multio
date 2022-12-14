@@ -35,7 +35,7 @@ private:
 };
 
 MaestroInstigator::MaestroInstigator(int argc, char** argv) : multio::MultioTool(argc, argv) {
-    options_.push_back(new eckit::option::SimpleOption<uint64_t>(
+    options_.push_back(new eckit::option::SimpleOption<size_t>(
         "number-of-joins",
         "Wait for number-of-joins join events before sending an all-ready message"));
 }

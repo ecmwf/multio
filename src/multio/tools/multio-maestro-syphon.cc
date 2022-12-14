@@ -84,10 +84,10 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<std::string>("class", "Class (default od)"));
     options_.push_back(new eckit::option::SimpleOption<long>("date", "Data date (default today)"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("expver", "Expver (default 0001)"));
-    options_.push_back(new eckit::option::SimpleOption<uint64_t>("number", "Ensemble number"));
+    options_.push_back(new eckit::option::SimpleOption<size_t>("number", "Ensemble number"));
     options_.push_back(new eckit::option::SimpleOption<bool>("dryrun", "Run without MIR."));
     options_.push_back(new eckit::option::SimpleOption<bool>("compiled", "Batch generator"));
-    options_.push_back(new eckit::option::SimpleOption<uint64_t>("nworkers", "Number of threaded workers"));
+    options_.push_back(new eckit::option::SimpleOption<size_t>("nworkers", "Number of threaded workers"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("force-postproc", "Extra values to add to each requirements (e.g. --force-retrieve=resol=av)"));
     options_.push_back(new eckit::option::SimpleOption<bool>("all-ready", "Wait for the all-ready CDO."));
 

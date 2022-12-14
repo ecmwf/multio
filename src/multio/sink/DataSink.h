@@ -21,8 +21,6 @@
 #include <vector>
 #include <map>
 
-#include "eckit/config/Configuration.h"
-#include "eckit/config/LocalConfiguration.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/message/Message.h"
 #include <multio/util/ConfigurationContext.h>

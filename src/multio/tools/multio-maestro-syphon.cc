@@ -95,7 +95,8 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
     options_.push_back(new eckit::option::FactoryOption<mir::key::style::MIRStyleFactory>("style", "Select how the interpolations are performed"));
     options_.push_back(new eckit::option::FactoryOption<mir::caching::legendre::LegendreLoaderFactory>("legendre-loader", "Select the scheme to load coefficients"));
     options_.push_back(new eckit::option::FactoryOption<mir::caching::matrix::MatrixLoaderFactory>("matrix-loader", "Select the scheme to load matrix weights"));
-    options_.push_back(new eckit::option::FactoryOption<eckit::linalg::LinearAlgebra>("backend", "Linear algebra backend (default '" + eckit::linalg::LinearAlgebra::backend().name() + "')"));
+    options_.push_back(new eckit::option::FactoryOption<eckit::linalg::LinearAlgebraDense>("dense-backend", "Linear algebra dense backend (default '" + eckit::linalg::LinearAlgebraDense::backend().name() + "')"));
+    options_.push_back(new eckit::option::FactoryOption<eckit::linalg::LinearAlgebraSparse>("sparse-backend", "Linear algebra sparse backend (default '" + eckit::linalg::LinearAlgebraSparse::backend().name() + "')"));
     options_.push_back(new eckit::option::FactoryOption<mir::search::TreeFactory>("point-search-trees", "k-d tree control"));
 
     options_.push_back(new eckit::option::SimpleOption<std::string>("directory", "Output directory (default current directory)"));

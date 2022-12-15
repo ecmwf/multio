@@ -27,6 +27,9 @@ using message::Peer;
 Aggregation::Aggregation(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {}
 
 void Aggregation::executeImpl(Message msg) const {
+
+    eckit::Log::info() << " ***** Aggregating message " << msg << std::endl;
+
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
         executeNext(createGlobalField(std::move(msg)));
     }
@@ -45,11 +48,17 @@ bool Aggregation::handleField(const Message& msg) const {
 bool Aggregation::handleFlush(const Message& msg) const {
     // Initialise if need be
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-    if (flushes_.find(msg.fieldId()) == end(flushes_)) {
-        flushes_[msg.fieldId()] = 0;
-    }
 
-    return ++flushes_.at(msg.fieldId()) == domain::Mappings::instance().get(msg.domain()).size();
+    auto flushCount = [&msg, this]() {
+        if (flushes_.find(msg.fieldId()) == end(flushes_)) {
+            flushes_[msg.fieldId()] = 0;
+        }
+        return ++flushes_.at(msg.fieldId());
+    }();
+
+    const auto& domainMap = domain::Mappings::instance().get(msg.domain());
+
+    return domainMap.isComplete() && flushCount == domainMap.size();
 }
 
 bool Aggregation::allPartsArrived(const Message& msg) const {

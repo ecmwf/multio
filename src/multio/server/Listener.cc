@@ -45,7 +45,8 @@ Listener::Listener(const util::ConfigurationContext& confCtx, Transport& trans):
 }
 
 util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, const util::FailureContext& c, util::DefaultFailureState&) const {
-    msgQueue_.close(); // TODO: msgQueue_ pop is blocking in dispatch.... redesign to have better awareness on blocking positions to safely stop and restart
+    msgQueue_.close();  // TODO: msgQueue_ pop is blocking in dispatch.... redesign to have better awareness on blocking
+                        // positions to safely stop and restart
     continue_->store(false, std::memory_order_release);
     return util::FailureHandlerResponse::Rethrow;
 };

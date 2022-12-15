@@ -16,7 +16,7 @@
 /**
  * TODO: I've added these functionality to have more transparency in the GRIBEncoder action.
  *   Often metadata has to be extracted conditionally and different keys may be tested.
- *   Hence I try to construct `deferred look ups` and evaluate one after another. 
+ *   Hence I try to construct `deferred look ups` and evaluate one after another.
  *   This reduces a lot of boilerplate code.
  */
 

@@ -81,7 +81,7 @@ class ClientConfigurationContext;
 class GlobalConfCtx;  // TODO: hide internal implementation in separate namespace
 
 struct YAMLFile {
-    eckit::LocalConfiguration content; 
+    eckit::LocalConfiguration content;
     eckit::PathName path;
 };
 
@@ -155,7 +155,7 @@ public:
     const YAMLFile& getYAMLFile(const std::string&) const;
 
     const YAMLFile& getYAMLFile(const eckit::PathName&) const;
-    
+
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const char*) const;
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
 
@@ -204,7 +204,7 @@ public:
     const YAMLFile& getYAMLFile(const std::string&) const;
 
     const YAMLFile& getYAMLFile(const eckit::PathName&) const;
-    
+
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const char*) const;
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
 

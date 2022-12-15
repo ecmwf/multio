@@ -413,7 +413,8 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
         Metadata md;
         md.set("name", eckit::Translator<long, std::string>()(step))
             .set("category", "atms-checkpoint")
-            .set("trigger", "step");
+            .set("trigger", "step")
+            .set("domain", "grid-point");
         for (auto& server : serverPeers) {
             auto stepStr = eckit::Translator<long, std::string>()(step);
             Message flush{Message::Header{Message::Tag::StepComplete, client, *server, Metadata{md}}};
@@ -436,6 +437,8 @@ void MultioHammer::spawnClients(const PeerList& clientPeers, const PeerList& ser
 
 void MultioHammer::execute(const eckit::option::CmdArgs& args) {
     field_size() = 29;
+
+    eckit::Log::info() << " *** multio-hammer config: " << confCtx_.config() << std::endl;
 
     if (transportType_ == "none") {
         executePlans(args);
@@ -630,7 +633,9 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
         Metadata md;
         md.set("name", eckit::Translator<long, std::string>()(step))
             .set("category", "atms-checkpoint")
-            .set("trigger", "step");
+            .set("trigger", "step")
+            .set("domain", "grid-point");
+
         Message msg{Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}, Metadata{md}}};
         for (const auto& plan : plans) {
             plan->process(msg);

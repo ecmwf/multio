@@ -32,7 +32,7 @@ struct GribData {
 };
 
 std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& config) {
-    const auto& cfgList = config.getSubConfigurations("nemo-fields");
+    const auto& cfgList = config.getSubConfigurations("data");
     std::map<std::string, GribData> nemo_map;
     for (auto const& cfg : cfgList) {
         nemo_map[cfg.getString("nemo-id")] = {cfg.getLong("param-id"),

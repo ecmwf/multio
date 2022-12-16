@@ -20,7 +20,7 @@
 
 #include "multio/util/ConfigurationPath.h"
 #include "multio/util/IteratorMapper.h"
-#include "multio/util/ParameterMappings.h"
+#include "multio/util/MetadataMappings.h"
 #include "multio/util/Translate.h"
 
 #include <functional>
@@ -160,7 +160,7 @@ public:
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
 
 
-    const ParameterMappings& parameterMappings() const;
+    const MetadataMappings& metadataMappings() const;
 
 protected:
     ConfigurationContext(const eckit::LocalConfiguration& config, std::shared_ptr<GlobalConfCtx> globalConfCtx,
@@ -209,8 +209,8 @@ public:
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
 
 
-    friend util::ParameterMappings;
-    const ParameterMappings& parameterMappings() const;
+    friend util::MetadataMappings;
+    const MetadataMappings& metadataMappings() const;
 
 private:
     eckit::LocalConfiguration globalConfig_;
@@ -221,7 +221,7 @@ private:
     eckit::Optional<MPIInitInfo> mpiInitInfo_{MPIInitInfo{}};
 
     mutable std::unordered_map<std::string, YAMLFile> referencedConfigFiles_;
-    mutable eckit::Optional<ParameterMappings> parameterMappings_;
+    mutable eckit::Optional<MetadataMappings> metadataMappings_;
 };
 
 

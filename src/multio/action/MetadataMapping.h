@@ -19,14 +19,14 @@
 #include <unordered_map>
 
 #include "multio/action/ChainedAction.h"
-#include "multio/message/ParameterMapping.h"
+#include "multio/message/MetadataMapping.h"
 
 namespace multio {
 namespace action {
 
-class ParameterMapping : public ChainedAction {
+class MetadataMapping : public ChainedAction {
 public:
-    explicit ParameterMapping(const ConfigurationContext& confCtx);
+    explicit MetadataMapping(const ConfigurationContext& confCtx);
 
     void executeImpl(message::Message msg) const override;
 
@@ -39,8 +39,8 @@ private:
     void print(std::ostream& os) const override;
 
     std::string name_;
-    const std::vector<message::ParameterMapping>& mappings_;
-    message::ParameterMappingOptions options_;
+    const std::vector<message::MetadataMapping>& mappings_;
+    message::MetadataMappingOptions options_;
 };
 
 }  // namespace action

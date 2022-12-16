@@ -17,7 +17,7 @@
 
 #include "eckit/config/LocalConfiguration.h"
 
-#include "multio/message/ParameterMapping.h"
+#include "multio/message/MetadataMapping.h"
 
 #include <functional>
 #include <unordered_map>
@@ -29,16 +29,16 @@ namespace util {
 class GlobalConfCtx;  // Forward declaration
 struct YAMLFile;  // Forward declaration
 
-class ParameterMappings {
+class MetadataMappings {
 public:
-    ParameterMappings(const GlobalConfCtx& globalConfCtx);
+    MetadataMappings(const GlobalConfCtx& globalConfCtx);
 
-    const std::vector<message::ParameterMapping>& getMappings(const std::string& mapping) const;
+    const std::vector<message::MetadataMapping>& getMappings(const std::string& mapping) const;
 
 private:
     const GlobalConfCtx& globalConfCtx_;
-    const YAMLFile& configFile_;
-    mutable std::unordered_map<std::string, std::vector<message::ParameterMapping>> mappings_;
+    // const YAMLFile& configFile_;
+    mutable std::unordered_map<std::string, std::vector<message::MetadataMapping>> mappings_;
 };
 }  // namespace util
 }  // namespace multio

@@ -24,7 +24,7 @@ plans:
             - type: file
               append: false
               per-server: true # Will give you one file per server
-              path: test-ifs-ml-sh.grib
+              path: ifs-test--ml-sh1.grib
     - name: ml sh
       actions:
         - type: select
@@ -43,7 +43,7 @@ plans:
             - type: file
               append: false
               per-server: true # Will give you one file per server
-              path: test-ifs-ml-sh.grib
+              path: ifs-test--ml-sh2.grib
     - name: pl sh
       actions:
         - type: select
@@ -62,7 +62,7 @@ plans:
             - type: file
               append: false
               per-server: true # Will give you one file per server
-              path: test-ifs-pl-sh.grib
+              path: ifs-test--pl-sh1.grib
     - name: ml regular_gg
       actions:
         - type: select
@@ -82,4 +82,4 @@ plans:
             - type: file
               append: false
               per-server: true # Will give you one file per server
-              path: ifs-test-ml-gg.grib
+              path: ifs-test-ml-gg2.grib

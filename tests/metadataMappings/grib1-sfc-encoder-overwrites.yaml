@@ -1,25 +1,19 @@
-# PL fields
-pl-overwrites:
-  - paramId: 129
-  
-  - paramId: 130
-  
-  - paramId: 133
-  
-  - paramId: 135
-  
-  - paramId: 138
-  
-  - paramId: 155
-  
-  - paramId: 131
-  
-  - paramId: 132
-  
-  - paramId: 157
-  
-  
-sfc-overwrites:
+mappings:
+  - match:
+      paramId: paramId
+    targetPath: encoderOverwrites
+    optionalMap:
+      bitsPerValue: bitsPerValue
+      bottomLevel: bottomLevel
+      topLevel: topLevel
+      binaryScaleFactor: binaryScaleFactor
+      indicatorOfTypeOfLevel: indicatorOfTypeOfLevel
+      generatingProcessIdentifier: generatingProcessIdentifier
+      decimalScaleFactor: decimalScaleFactor
+      Nj: Nj
+      N: N
+      pl: pl
+data:
   - paramId: 8
   
   - paramId: 9

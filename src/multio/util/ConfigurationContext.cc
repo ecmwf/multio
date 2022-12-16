@@ -1,6 +1,6 @@
 
 #include "ConfigurationContext.h"
-#include "ParameterMappings.h"
+#include "MetadataMappings.h"
 
 using namespace multio::util;
 
@@ -121,11 +121,11 @@ const YAMLFile& GlobalConfCtx::getYAMLFile(const eckit::PathName& fname) const {
     return referencedConfigFiles_[key];
 }
 
-const ParameterMappings& GlobalConfCtx::parameterMappings() const {
-    if (!parameterMappings_) {
-        parameterMappings_.emplace(*this);
+const MetadataMappings& GlobalConfCtx::metadataMappings() const {
+    if (!metadataMappings_) {
+        metadataMappings_.emplace(*this);
     }
-    return *parameterMappings_;
+    return *metadataMappings_;
 };
 
 
@@ -263,8 +263,8 @@ const YAMLFile& ConfigurationContext::getRelativeYAMLFile(const eckit::PathName&
 }
 
 
-const ParameterMappings& ConfigurationContext::parameterMappings() const {
-    return globalConfCtx_->parameterMappings();
+const MetadataMappings& ConfigurationContext::metadataMappings() const {
+    return globalConfCtx_->metadataMappings();
 }
 
 }  // namespace util

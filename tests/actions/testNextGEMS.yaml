@@ -1,4 +1,4 @@
-parameter-mappings: ../server/config/parameter-mappings.yaml
+metadata-mappings: ../server/config/metadata-mappings.yaml
 
 plans:
     - name: Test Encode NextGEMS PL sh
@@ -7,11 +7,16 @@ plans:
           match:
             - levtype: pl
               gridType: sh
+        - type: metadata-mapping
+          mapping: ../metadataMappings/grib1-pl-encoder-overwrites.yaml
+          enforce-match: false
+          overwrite-existing: true
         - type: print
           prefix: Matched PL sh field
         - type: encode
           format: grib
           template: ../../../eccodes/experimental/templates/sh_pl_grib1.tmpl
+          # template: $VAR/templates/myTemplate.grib
         - type: sink
           sinks:
             - type: file
@@ -24,6 +29,10 @@ plans:
           match:
             - levtype: pl
               gridType: reduced_gg
+        - type: metadata-mapping
+          mapping: ../metadataMappings/grib1-pl-encoder-overwrites.yaml
+          enforce-match: false
+          overwrite-existing: true
         - type: print
           prefix: Matched PL reduced_gg field
         - type: encode
@@ -42,8 +51,8 @@ plans:
     #         - levtype: sfc
     #           # gridType: reduced_gg
     #           # gribEdition: 1
-    #     - type: parameter-mapping
-    #       mapping: grib1-sfc-encoder-overwrites
+    #     - type: metadata-mapping
+    #       mapping: ../metadataMappings/grib1-sfc-encoder-overwrites.yaml
     #       enforce-match: false
     #       overwrite-existing: true
     #     - type: print
@@ -80,8 +89,8 @@ plans:
           match:
             - levtype: sfc
               param: [228051]
-        - type: parameter-mapping
-          mapping: grib1-sfc-encoder-overwrites
+        - type: metadata-mapping
+          mapping: ../metadataMappings/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
@@ -138,8 +147,8 @@ plans:
           match:
             - levtype: sfc
               param: [141, 139, 170, 183, 236, 39, 40, 41, 42]
-        - type: parameter-mapping
-          mapping: grib1-sfc-encoder-overwrites
+        - type: metadata-mapping
+          mapping: ../metadataMappings/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
@@ -166,8 +175,8 @@ plans:
           ignore:
             - param: [228051, 141, 139, 170, 183, 236, 39, 40, 41, 42, 174098]
             # - param: [228051]
-        - type: parameter-mapping
-          mapping: grib1-sfc-encoder-overwrites
+        - type: metadata-mapping
+          mapping: ../metadataMappings/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print

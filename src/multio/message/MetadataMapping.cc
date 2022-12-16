@@ -1,5 +1,5 @@
 
-#include "ParameterMapping.h"
+#include "MetadataMapping.h"
 #include <sstream>
 #include "eckit/exception/Exceptions.h"
 
@@ -17,7 +17,7 @@ std::unordered_map<std::string, eckit::LocalConfiguration> constructSourceMap(
 }
 }  // namespace
 
-ParameterMapping::ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
+MetadataMapping::MetadataMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
                                    const eckit::LocalConfiguration& optionalMappings,
                                    const std::vector<eckit::LocalConfiguration>& sourceList, const std::string& key,
                                    const eckit::Optional<std::string>& targetPath) :
@@ -26,7 +26,7 @@ ParameterMapping::ParameterMapping(const std::string& sourceKey, const eckit::Lo
     optionalMapping_{optionalMappings},
     source_{constructSourceMap(sourceList, key)},
     targetPath_{targetPath} {}
-ParameterMapping::ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
+MetadataMapping::MetadataMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
                                    const eckit::LocalConfiguration& optionalMappings,
                                    const std::unordered_map<std::string, eckit::LocalConfiguration>& source,
                                    const eckit::Optional<std::string>& targetPath) :
@@ -35,7 +35,7 @@ ParameterMapping::ParameterMapping(const std::string& sourceKey, const eckit::Lo
     optionalMapping_{optionalMappings},
     source_{source},
     targetPath_{targetPath} {}
-ParameterMapping::ParameterMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
+MetadataMapping::MetadataMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
                                    const eckit::LocalConfiguration& optionalMappings,
                                    std::unordered_map<std::string, eckit::LocalConfiguration>&& source,
                                    const eckit::Optional<std::string>& targetPath) :
@@ -46,11 +46,11 @@ ParameterMapping::ParameterMapping(const std::string& sourceKey, const eckit::Lo
     targetPath_{targetPath} {}
 
 
-void ParameterMapping::applyInplace(Metadata& m, ParameterMappingOptions options) const {
+void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) const {
     if (!m.has(sourceKey_)) {
         if (options.enforceMatch) {
             std::ostringstream oss;
-            oss << "ParameterMapping failure: Metadata has no source key \"" << sourceKey_ << "\"";
+            oss << "MetadataMapping failure: Metadata has no source key \"" << sourceKey_ << "\"";
             throw eckit::Exception(oss.str());
         }
         return;
@@ -59,7 +59,7 @@ void ParameterMapping::applyInplace(Metadata& m, ParameterMappingOptions options
     auto from = source_.find(lookUpKey);
     if (from == source_.end()) {
         std::ostringstream oss;
-        oss << "Parameter mapping failure: Source key \"" << sourceKey_ << "\" in metadata is resolving to \""
+        oss << "Metadata mapping failure: Source key \"" << sourceKey_ << "\" in metadata is resolving to \""
             << lookUpKey << "\" for which no mapping has be provided in the mapping file." << std::endl;
         throw eckit::Exception(oss.str());
     }
@@ -83,7 +83,7 @@ void ParameterMapping::applyInplace(Metadata& m, ParameterMappingOptions options
             else {
                 if (!isOptional) {
                     std::ostringstream oss;
-                    oss << "Parameter mapping failure: Source key \"" << sourceKey_
+                    oss << "Metadata mapping failure: Source key \"" << sourceKey_
                         << "\" in metadata is resolving to \"" << lookUpKey
                         << "\" which mapping is not providing a mapping for key \"" << lookUpMapKey << "\"."
                         << std::endl;
@@ -100,12 +100,12 @@ void ParameterMapping::applyInplace(Metadata& m, ParameterMappingOptions options
     }
 }
 
-Metadata ParameterMapping::apply(Metadata&& m, ParameterMappingOptions options) const {
+Metadata MetadataMapping::apply(Metadata&& m, MetadataMappingOptions options) const {
     Metadata mc(std::move(m));
     applyInplace(mc, options);
     return mc;
 };
-Metadata ParameterMapping::apply(const Metadata& m, ParameterMappingOptions options) const {
+Metadata MetadataMapping::apply(const Metadata& m, MetadataMappingOptions options) const {
     Metadata mc(m);
     applyInplace(mc, options);
     return mc;

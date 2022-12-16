@@ -15,6 +15,7 @@ distributed meteorological and earth-system models.
    content/api
    content/reference
    content/processing-pipelines
+   content/mpi-communicators
    content/usage-examples
    content/licence
    genindex

@@ -643,7 +643,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
                         << ", levtype: " << levtype << ", level: " << level << ", param: " << param
                         << ", payload size: " << sz << std::endl;
 
-                    CODES_CHECK(codes_set_long(handle, "param", param), nullptr);
+                    CODES_CHECK(codes_set_long(handle, "paramId", param), nullptr);
 
                     CODES_CHECK(
                         codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz),

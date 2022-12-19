@@ -82,7 +82,7 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
            - type : single-field-sink
 
 
-Note that is example is using `mpi` as transport. Have a look at :ref:`mpicomms` to learn how MULTIO is setting up MPI communicators. 
+Note that is example is using `mpi` as transport. Have a look at :ref:`MPI Communicators` to learn how MULTIO is setting up MPI communicators. 
 
 Actions
 -------

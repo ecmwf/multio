@@ -92,7 +92,7 @@ int multio_vcs_version(const char** sha1);
 /** @{ */
 
 /** Creates a multio configuration context object with default configuration file name (environment variable: MULTIO_SERVER_CONFIG_FILE)
- * \param md Return a handle to the multio configuration context object
+ * \param cc Return a handle to the multio configuration context object
  * \returns Return code (#MultioErrorValues)
  */
 int multio_new_configurationcontext(multio_configurationcontext_t** cc);
@@ -105,7 +105,7 @@ int multio_new_configurationcontext(multio_configurationcontext_t** cc);
 int multio_new_configurationcontext_from_filename(multio_configurationcontext_t** cc, const char* configuration_file_name);
 
 /** Deletes a multio configuration context object
- * \param md Handle to the multio configuration context object
+ * \param cc Handle to the multio configuration context object
  * \returns Return code (#MultioErrorValues)
  */
 int multio_delete_configurationcontext(multio_configurationcontext_t* cc);
@@ -165,7 +165,7 @@ int multio_conf_mpi_client_id(multio_configurationcontext_t* cc, const char* cli
  * \param mio Return a handle to the multio (client) instance
  * \returns Return code (#MultioErrorValues)
  */
-int multio_new_handle(multio_handle_t** multio, multio_configurationcontext_t* cc);
+int multio_new_handle(multio_handle_t** mio, multio_configurationcontext_t* cc);
 
 
 /** Deletes a multio (client) instance

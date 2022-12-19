@@ -1,17 +1,21 @@
 .. index:: mpi-communicators
 
-.. _`mpicomms`:
+.. _`MPI Communicators`:
 
 MPI Communicators
 =================
 
     Note:
-    MPI splitting is very inflexible. On failure applications usually have to restart, 
+    MPI splitting is very inflexible. In case of a single node failure, applications usually have to restart, 
     as it is not possible for single nodes to reconnect.
     In future as an alternative MultIO might also support MPI via 
     `MPI_connect`/`MPI_accept` to allow more failure tolerant and dynamic setups.
 
-MultIO is trying to be purely messaged based and intents to use a general 
+    If possible, it is recommended to perform MPI splitting completely through the configuration, 
+    without passing any further information through the API (:ref:`Configuration based MPI Splitting<mpiconfsplit>`). This allows choosing the transport layer in the configuration.
+    However, if you replace an existing IO server with MultIO, you may be forced to adopt a specific scheme of handling MPI communicators.
+
+MultIO is trying to be purely message based and intents to use a general 
 concept of transports with different and multiple backends.
 Nevertheless MPI is a common and important player in HPC and also needs a 
 little bit of special handling regarding communicators.
@@ -28,38 +32,42 @@ In practice this implies that models may pass down parent communicators through 
 and have to start client as well as server nodes. Currently, in the Multio API this is the 
 only exception for configurations that are passed through the API. 
 Multio then splits a *client* or a *server* communicator and uses `MPI_Group` to compute 
-ranks of servers and clients (`mpigroups`_).
-**Important: The passed communicator are expected to be either a client or a server. 
+ranks of servers and clients (`MPI Groups`_).
+**Important: The passed communicator is expected to be either a client or a server. 
 Nodes performing other tasks should not be contained in the communicator.**
 
-In the configuration example above, you can see that client plans refer to a server through a *transport*. In the server section the *transport* is then specified to be "mpi".
-The key `group` then refers ta a MPI communicator used for communication. Using `eckit::mpi` named lookup the communicator is looked up --- i.e. using `eckit` or `fckit` communicators may be used to manage communicators. 
-Otherwise, if the communicator is not existing, a recursive lookup mechanism is triggered to setup a communicator (`mpisetup`_).
+In the configuration example above, you can see that client plans refer to a server through a *transport*. 
+In the server section the *transport* is then specified to be "mpi".
+The key `group` then refers ta a MPI communicator used for communication. 
+Using `eckit::mpi` named lookup the communicator is looked up --- 
+i.e. using `eckit` or `fckit` communicators may be used to manage communicators. 
+Otherwise, if the communicator is not existing, a recursive lookup mechanism is triggered to setup a communicator (`MPI Setup`_).
 
-.. _`mpigroups`:
+.. _`MPI Groups`:
 
 MPI Groups
 ~~~~~~~~~~
 
 MultIO MPI is working with an communicator containing all clients and server instances. 
-Yet clients do not know the server ranks in the communicator. To retrieve this information, 
+Nevertheless clients do not know the server ranks in the communicator. To retrieve this information, 
 a furter MPI split is made: All clients split from the parent communicator to a 
 separate client communicator and all servers split to a separate server communicator.
-Now with `MPI_Group` we can retrieve the parent group and one child group for each instance.
+Now with `MPI_Group` we can retrieve the parent group and one child group (server or client group) for each instance.
 By using `MPI_Group_difference` it is possible to compute the *opposite* child group, 
 i.e. clients can compute the server group and server the client group.
-Now by using `MPI_Group_translate_ranks`, it is very easy to compute all ranks of both 
+Finally by using `MPI_Group_translate_ranks`, it is very easy to compute all ranks of both 
 groups *in the parent communicator*. This now allows clients to directly communicate to servers
 by mainting a list of server ranks.
 
-This approach is very flexible. The only assumption is that a communicator containing 
-only server and client instances is passed to MultIO.
-As MultIO will split off clients and servers, it is also recommended to split whole 
-separate communicator for MultIO. Otherwise splitting colors have to be adjusted (`mpisetup`_).
+This approach is very flexible. 
+The only assumption is that the communicator passed to MultIO is only containing server and client instances.
+Hence it is also recommended to split whole separate communicator for MultIO. 
+
+MultIO allows describing communicator splitting in the configuration (`MPI Setup`_).
 
 
 
-.. _`mpisetup`:
+.. _`MPI Setup`:
 
 MPI Setup
 ~~~~~~~~~
@@ -123,6 +131,11 @@ Depending on the configuration of `mpi-communicators`, the MPI splitting behavio
 For example, if the parent communicator must not be passed within the application, it can be described completely 
 from the configuration:
 
+.. _`mpiconfsplit`:
+
+Configuration based MPI splitting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. code-block:: yaml
 
     # Default MPI setup (implicitly assumed)
@@ -143,3 +156,6 @@ from the configuration:
 Here a splitting is performed in the communicator 'multio' instead of taking the passed communicator.
 Moreover instead of naming the 'multio', you may also give it a different name.
 
+If your application is not insisting on splitting on its own and you are free 
+to choose one of the given approaches, 
+the easiest way is to use this approach and configure MPI splitting configuration based.

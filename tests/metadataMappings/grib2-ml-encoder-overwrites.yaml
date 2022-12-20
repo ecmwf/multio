@@ -31,6 +31,7 @@ data:
   
   - paramId: 157
     bitsPerValue: 16
-  
+    
   - paramId: 152
     bitsPerValue: 16
+  

@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "eckit/utils/Optional.h"
+
 #include "multio/action/GribEncoder.h"
 #include "multio/action/ChainedAction.h"
 
@@ -39,6 +41,7 @@ private:
     message::Message encodeOceanLongitudes(const std::string& subtype) const;
 
     const std::string format_;
+    eckit::Optional<eckit::LocalConfiguration> overwrite_;
 
     const std::unique_ptr<GribEncoder> encoder_ = nullptr;
 };

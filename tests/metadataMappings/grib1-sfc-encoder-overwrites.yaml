@@ -7,12 +7,7 @@ mappings:
       bottomLevel: bottomLevel
       topLevel: topLevel
       binaryScaleFactor: binaryScaleFactor
-      indicatorOfTypeOfLevel: indicatorOfTypeOfLevel
-      generatingProcessIdentifier: generatingProcessIdentifier
       decimalScaleFactor: decimalScaleFactor
-      Nj: Nj
-      N: N
-      pl: pl
 data:
   - paramId: 8
   
@@ -25,14 +20,7 @@ data:
   - paramId: 34
   
   - paramId: 129
-    generatingProcessIdentifier: 153 
     decimalScaleFactor: 0
-    # Nj: 2560
-    # latitudeOfFirstGridPoint: 89946
-    # latitudeOfLastGridPoint: -89946
-    # longitudeOfLastGridPoint: 359929
-    # N: 1280
-    # pl: 2560
     binaryScaleFactor: 1
     bitsPerValue: 16
   
@@ -118,53 +106,45 @@ data:
     bottomLevel: 7
     topLevel: 0
     binaryScaleFactor: -9
-    # indicatorOfTypeOfLevel: 112
     
   - paramId: 170
     bitsPerValue: 16
     bottomLevel: 28
     topLevel: 7
     binaryScaleFactor: -9
-    # indicatorOfTypeOfLevel: 112
     
   - paramId: 183
     bitsPerValue: 16
     bottomLevel: 100
     topLevel: 28
     binaryScaleFactor: -9
-    # indicatorOfTypeOfLevel: 112
     
   - paramId: 236
     bitsPerValue: 16
     # bottomLevel: 7
     topLevel: 100
     binaryScaleFactor: -16
-    # indicatorOfTypeOfLevel: 112
     
   - paramId: 39
     bitsPerValue: 16
     bottomLevel: 7
     topLevel: 0
     binaryScaleFactor: -16
-    # indicatorOfTypeOfLevel: 112
    
   - paramId: 40
     bitsPerValue: 16
     bottomLevel: 28
     topLevel: 7
     binaryScaleFactor: -16
-    # indicatorOfTypeOfLevel: 112
    
   - paramId: 41
     bitsPerValue: 16
     bottomLevel: 100
     topLevel: 28
     binaryScaleFactor: -16
-    # indicatorOfTypeOfLevel: 112
     
   - paramId: 42
     bitsPerValue: 16
     topLevel: 100
     binaryScaleFactor: -16
-    # indicatorOfTypeOfLevel: 112
    

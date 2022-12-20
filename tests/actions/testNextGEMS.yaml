@@ -2,6 +2,12 @@ metadata-mappings: ../server/config/metadata-mappings.yaml
 
 plans:
     - name: Test Encode NextGEMS PL sh
+      # TODO For param v, encoding has some discrepancies. A different eccodes version has been used. Maybe this results in a different laplacianOperator?
+      # -- GRIB #1 -- shortName=v paramId=132 stepRange=1 levelType=pl level=500 packingType=spectral_complex gridType=sh --
+      # double [referenceValue]: [-7.26683197021484375000e+01] != [-7.34083099365234375000e+01]
+      #         absolute diff. = 0.73999, relative diff. = 0.0100805
+      #         tolerance=3.05176e-05
+      # long [P]: [865] != [866]
       actions:
         - type: select
           match:
@@ -15,8 +21,9 @@ plans:
           prefix: Matched PL sh field
         - type: encode
           format: grib
-          template: ../../../eccodes/experimental/templates/sh_pl_grib1.tmpl
-          # template: $VAR/templates/myTemplate.grib
+          template: sh_pl_grib1.tmpl
+          overwrite:
+            generatingProcessIdentifier: 153
         - type: sink
           sinks:
             - type: file
@@ -37,52 +44,15 @@ plans:
           prefix: Matched PL reduced_gg field
         - type: encode
           format: grib
-          template: ../../../eccodes/experimental/templates/reduced_gg_pl_grib1.tmpl
+          template: reduced_gg_pl_grib1.tmpl
+          overwrite:
+            generatingProcessIdentifier: 153
         - type: sink
           sinks:
             - type: file
               append: false
               per-server: true # Will give you one file per server
               path: testEncodeNextGEMS-PL-gg.grib
-    # - name: Test Encode NextGEMS SFC gg
-    #   actions:
-    #     - type: select
-    #       match:
-    #         - levtype: sfc
-    #           # gridType: reduced_gg
-    #           # gribEdition: 1
-    #     - type: metadata-mapping
-    #       mapping: ../metadataMappings/grib1-sfc-encoder-overwrites.yaml
-    #       enforce-match: false
-    #       overwrite-existing: true
-    #     - type: print
-    #       prefix: Matched SFC reduced_gg grib1 field
-    #     - type: encode
-    #       format: grib
-    #       template: ../../../eccodes/experimental/templates/reduced_gg_sfc_grib1.tmpl
-    #     - type: sink
-    #       sinks:
-    #         - type: file
-    #           append: false
-    #           per-server: true # Will give you one file per server
-    #           path: testEncodeNextGEMS-SFC-gg1.grib
-    # - name: Test Encode NextGEMS SFC regular_gg
-    #   actions:
-    #     - type: select
-    #       match:
-    #         - levtype: sfc
-    #           gridType: reduced_gg
-    #     - type: print
-    #       prefix: Matched SFC field regular_gg
-    #     - type: encode
-    #       format: grib
-    #       template: ../../../eccodes/experimental/templates/reduced_gg_ml_grib1.tmpl
-    #     - type: sink
-    #       sinks:
-    #         - type: file
-    #           append: false
-    #           per-server: true # Will give you one file per server
-    #           path: testEncodeNextGEMSSFC.grib
     - name: Test Encode NextGEMS SFC litota
       actions:
         - type: select
@@ -97,51 +67,44 @@ plans:
           prefix: Matched SFC field 228051 (litota1)
         - type: encode
           format: grib
-          # template: /Users/mapg/tmp/nextgems-input-SFC.grib
-          # template: /Users/mapg/tmp/nextgems-input-SFC.grib
-          template: /Users/mapg/tmp/nextgems-input-SFC-litota1.grib
-          # template: ../server/config/unstr_inst_fc.tmpl
+          template: nextgems-input-SFC-litota1.grib
+          overwrite:
+            generatingProcessIdentifier: 153
         - type: sink
           sinks:
             - type: file
               append: false
               per-server: true # Will give you one file per server
-              path: testEncodeNextGEMSSFC-litota1.grib
-    # - name: Test Encode NextGEMS SFC sd
-    #   actions:
-    #     - type: select
-    #       match:
-    #         - levtype: sfc
-    #           param: [141]
-    #     - type: print
-    #       prefix: Matched SFC sd
-    #     - type: encode
-    #       format: grib
-    #       template: /Users/mapg/tmp/nextgems-input-SFC-sd.grib
-    #     - type: sink
-    #       sinks:
-    #         - type: file
-    #           append: false
-    #           per-server: true # Will give you one file per server
-    #           path: testEncodeNextGEMSSFC-sd.grib
-    # - name: Test Encode NextGEMS SFC sithick
-    #   actions:
-    #     - type: select
-    #       match:
-    #         - levtype: sfc
-    #           param: [174098]
-    #     - type: print
-    #       prefix: Matched SFC sithick
-    #     - type: encode
-    #       format: grib
-    #       template: /Users/mapg/tmp/nextgems-input-SFC-sithick.grib
-    #     - type: sink
-    #       sinks:
-    #         - type: file
-    #           append: false
-    #           per-server: true # Will give you one file per server
-    #           path: testEncodeNextGEMSSFC-sithick.grib
+              path: testEncodeNextGEMS-SFC-litota1.grib
+    - name: Test Encode NextGEMS SFC sithick
+      actions:
+        - type: select
+          match:
+            - levtype: sfc
+              param: [174098]
+        - type: metadata-mapping
+          mapping: ../metadataMappings/grib1-sfc-encoder-overwrites.yaml
+          enforce-match: false
+          overwrite-existing: true
+        - type: print
+          prefix: Matched SFC sithick
+        - type: encode
+          format: grib
+          template: nextgems-input-SFC-sithick.grib
+        - type: sink
+          sinks:
+            - type: file
+              append: false
+              per-server: true # Will give you one file per server
+              path: testEncodeNextGEMS-SFC-sithick.grib
     - name: Test Encode NextGEMS SFC different top/bottom level
+      # TODO 
+      # Comparison still results with messages like:
+      # long [indicatorOfTypeOfLevel]: [112] != [1]
+      # long [bottomLevel]: [100] != [28]
+      #
+      # setting bottomLevel seems to change topLevel and vice versa.
+      # indicatorOfTypeOfLevel is read-only
       actions:
         - type: select
           match:
@@ -155,26 +118,22 @@ plans:
           prefix: Matched SFC different top/bottom level
         - type: encode
           format: grib
-          # template: /Users/mapg/tmp/nextgems-input-SFC.grib
-          # template: /Users/mapg/tmp/nextgems-input-SFC.grib
-          # template: /Users/mapg/tmp/nextgems-input-SFC-sd.grib
-          template: /Users/mapg/tmp/nextgems-input-SFC-stl4.grib
-          # template: ../server/config/unstr_inst_fc.tmpl
+          template: nextgems-input-SFC-stl4.grib
+          overwrite:
+            generatingProcessIdentifier: 153
         - type: sink
           sinks:
             - type: file
               append: false
               per-server: true # Will give you one file per server
-              path: testEncodeNextGEMSSFC-others.grib
+              path: testEncodeNextGEMS-SFC-others.grib
     - name: Test Encode NextGEMS SFC rest
       actions:
         - type: select
           match:
             - levtype: sfc
-              # param: [8, 9, 31, 33, 34, 39, 40, 41, 42, 129, 134, 139, 141, 144, 146, 147, 151, 165, 166, 167, 168, 169, 170, 172, 175, 176, 177, 178, 179, 183, 228, 235, 236, 228051, 212, 98.174, 79, 78, 137, 228089, 228090, 228021, 164, 181, 180, 195, 196, 228246, 228247, 228029]
           ignore:
-            - param: [228051, 141, 139, 170, 183, 236, 39, 40, 41, 42, 174098]
-            # - param: [228051]
+            - param: [228051, 141, 139, 170, 183, 236, 39, 40, 41, 42]
         - type: metadata-mapping
           mapping: ../metadataMappings/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
@@ -183,14 +142,15 @@ plans:
           prefix: Matched SFC field rest
         - type: encode
           format: grib
-          template: /Users/mapg/tmp/nextgems-input-SFC-rsn.grib
-          # template: ../../../eccodes/experimental/templates/reduced_gg_sfc_grib1.tmpl
+          template: nextgems-input-SFC-rsn.grib
+          overwrite:
+            generatingProcessIdentifier: 153
         - type: print 
         - type: sink
           sinks:
             - type: file
               append: false
               per-server: true # Will give you one file per server
-              path: testEncodeNextGEMSSFC.grib
+              path: testEncodeNextGEMS-SFC.grib
               
               

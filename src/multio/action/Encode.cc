@@ -27,7 +27,7 @@ using util::configuration_path_name;
 namespace {
 
 ConfigurationContext getEncodingConfiguration(const ConfigurationContext& confCtx) {
-    return confCtx.recast(([&](){
+    return confCtx.recast(([&]() {
         if (confCtx.config().has("encoding")) {
             auto encodingKeyMaybe = ([&]() {
                 try {
@@ -62,8 +62,8 @@ ConfigurationContext getEncodingConfiguration(const ConfigurationContext& confCt
                     }
                 }());
 
-                /// @TODO Allow defining overwrites. Problem: we can not copy mappings/values from one to another configuration
-                /// without knowing it's type explicitly
+                /// @TODO Allow defining overwrites. Problem: we can not copy mappings/values from one to another
+                /// configuration without knowing it's type explicitly
                 // if (confCtx.config().has("overwrite")) {
                 //     auto overwrites = confCtx.config().getSubConfiguration("overwrite");
                 //     for (const std::string& k: overwrites.keys()) {
@@ -75,7 +75,7 @@ ConfigurationContext getEncodingConfiguration(const ConfigurationContext& confCt
             else {
                 return confCtx.config().getSubConfiguration("encoding");
             }
-        } 
+        }
         return confCtx.config();
     })());
 }
@@ -87,7 +87,9 @@ std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
         ASSERT(confCtx.config().has("template"));
         std::string tmplPath = confCtx.config().getString("template");
         // TODO provide utility to distinguish between relative and absolute paths
-        eckit::AutoStdFile fin{ tmplPath.rfind("/", 0) == 0 ? eckit::PathName{tmplPath} : (confCtx.pathName() / confCtx.config().getString("template"))};
+        eckit::AutoStdFile fin{tmplPath.rfind("/", 0) == 0
+                                   ? eckit::PathName{tmplPath}
+                                   : (confCtx.pathName() / confCtx.config().getString("template"))};
         int err;
         return std::unique_ptr<GribEncoder>{
             new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), confCtx.config()}};
@@ -106,10 +108,14 @@ using message::Message;
 using message::Peer;
 
 Encode::Encode(const ConfigurationContext& confCtx, ConfigurationContext&& encConfCtx) :
-    ChainedAction{confCtx}, format_{encConfCtx.config().getString("format")}, encoder_{make_encoder(encConfCtx)} {}
-    
-Encode::Encode(const ConfigurationContext& confCtx) :
-    Encode(confCtx, getEncodingConfiguration(confCtx)) {}
+    ChainedAction{confCtx},
+    format_{encConfCtx.config().getString("format")},
+    overwrite_{encConfCtx.config().has("overwrite")
+                   ? eckit::Optional<eckit::LocalConfiguration>{encConfCtx.config().getSubConfiguration("overwrite")}
+                   : eckit::Optional<eckit::LocalConfiguration>{}},
+    encoder_{make_encoder(encConfCtx)} {}
+
+Encode::Encode(const ConfigurationContext& confCtx) : Encode(confCtx, getEncodingConfiguration(confCtx)) {}
 
 void Encode::executeImpl(Message msg) const {
     if (msg.tag() != Message::Tag::Field) {
@@ -137,7 +143,8 @@ void Encode::executeImpl(Message msg) const {
                 executeNext(encodeOceanLongitudes(msg.domain()));
             }
         }
-    } else {
+    }
+    else {
         executeNext(encodeField(std::move(msg)));
     }
 }
@@ -146,11 +153,25 @@ void Encode::print(std::ostream& os) const {
     os << "Encode(format=" << format_ << ")";
 }
 
+namespace {
+message::Metadata applyOverwrites(const eckit::LocalConfiguration& overwrites, message::Metadata md) {
+    auto nested = md.getSubConfiguration("encoderOverwrites");
+    for (const auto& k : overwrites.keys()) {
+        // TODO handle type...
+        nested.set(k, overwrites.getString(k));
+    }
+    md.set("encoderOverwrites", nested);
+    return md;
+}
+}  // namespace
+
 message::Message Encode::encodeField(const message::Message& msg) const {
     try {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-        return encoder_->encodeField(msg);
-    } catch (...) {
+        return encoder_->encodeField(
+            this->overwrite_ ? msg.modifyMetadata(applyOverwrites(*this->overwrite_, msg.metadata())) : msg);
+    }
+    catch (...) {
         std::ostringstream oss;
         oss << "Encode::encodeField with Message: " << msg;
         std::throw_with_nested(eckit::Exception(oss.str()));
@@ -161,7 +182,8 @@ message::Message Encode::encodeOceanLatitudes(const std::string& subtype) const 
     try {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
         return encoder_->encodeOceanLatitudes(subtype);
-    } catch (...) {
+    }
+    catch (...) {
         std::ostringstream oss;
         oss << "Encode::encodeOceanLatitudes with subtype: " << subtype;
         std::throw_with_nested(eckit::Exception(oss.str()));
@@ -172,7 +194,8 @@ message::Message Encode::encodeOceanLongitudes(const std::string& subtype) const
     try {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
         return encoder_->encodeOceanLongitudes(subtype);
-    } catch (...) {
+    }
+    catch (...) {
         std::ostringstream oss;
         oss << "Encode::encodeOceanLongitudes with subtype: " << subtype;
         std::throw_with_nested(eckit::Exception(oss.str()));

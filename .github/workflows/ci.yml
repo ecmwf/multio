@@ -36,7 +36,8 @@ jobs:
           - linux clang-12
           - linux clang-14
           - linux intel
-          - macos
+          - macos appclang-12
+          - macos appclang-14
 
         include:
 
@@ -80,13 +81,22 @@ jobs:
             compiler_fc: ifort
             caching: true
 
-          - name: macos
+          - name: macos appclang-12
             # Xcode compiler requires empty environment variables, so we pass null (~) here
             os: macos-11
             compiler: clang-12
             compiler_cc: ~
             compiler_cxx: ~
             compiler_fc: gfortran-11
+            caching: true
+
+          - name: macos appclang-14
+            # Xcode compiler requires empty environment variables, so we pass null (~) here
+            os: macos-12
+            compiler: clang-14
+            compiler_cc: ~
+            compiler_cxx: ~
+            compiler_fc: gfortran-12
             caching: true
 
     runs-on: ${{ matrix.os }}
@@ -105,7 +115,7 @@ jobs:
         echo "CXX=${{ matrix.compiler_cxx }}"   >> $GITHUB_ENV
         echo "FC=${{ matrix.compiler_fc }}"     >> $GITHUB_ENV
 
-        if [[ "${{ matrix.os }}" =~ macos ]]; then
+        if [[ "${{ matrix.os }}" =~ ^macos ]]; then
           brew install ninja
           brew install libomp
         else

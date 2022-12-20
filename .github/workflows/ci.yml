@@ -61,7 +61,6 @@ jobs:
             compiler_cxx: ~
             compiler_fc: gfortran-11
             caching: true
-            cmake_options: -DMPI_SLOTS=4 #What is this?
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -140,7 +139,7 @@ jobs:
         dependency_cmake_options: |
           ecmwf/eckit: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF  -DENABLE_ECKIT_SQL=OFF"
           ecmwf/fckit: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF"
-        cmake_options: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DMULTIO_SERVER=ON -DLEGACY_IFSIO=ON ${{ matrix.cmake_options }}"
+        cmake_options: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_MULTIO_SERVER=ON -DENABLE_LEGACY_IFSIO=ON ${{ matrix.cmake_options }}"
         ctest_options: "${{ matrix.ctest_options }}"
 
 

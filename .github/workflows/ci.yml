@@ -32,7 +32,9 @@ jobs:
         build_type: [Release]
         name:
           - linux gnu-10
+          - linux gnu-12
           - linux clang-12
+          - linux clang-14
           - linux intel
           - macos
 
@@ -46,12 +48,28 @@ jobs:
             compiler_fc: gfortran-10
             caching: true
 
+          - name: linux gnu-12
+            os: ubuntu-22.04
+            compiler: gnu-12
+            compiler_cc: gcc-12
+            compiler_cxx: g++-12
+            compiler_fc: gfortran-12
+            caching: true
+
           - name: linux clang-12
             os: ubuntu-20.04
             compiler: clang-12
             compiler_cc: clang-12
             compiler_cxx: clang++-12
             compiler_fc: gfortran-10
+            caching: true
+
+          - name: linux clang-14
+            os: ubuntu-22.04
+            compiler: clang-14
+            compiler_cc: clang-14
+            compiler_cxx: clang++-14
+            compiler_fc: gfortran-12
             caching: true
 
           - name : linux intel

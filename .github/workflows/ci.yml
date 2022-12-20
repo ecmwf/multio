@@ -33,6 +33,7 @@ jobs:
         name:
           - linux gnu-10
           - linux clang-12
+          - linux intel
           - macos
 
         include:

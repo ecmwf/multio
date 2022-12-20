@@ -53,6 +53,14 @@ jobs:
             compiler_fc: gfortran-10
             caching: true
 
+          - name : linux intel
+            os: ubuntu-20.04
+            compiler: intel-oneapi
+            compiler_cc: icc
+            compiler_cxx: icpc
+            compiler_fc: ifort
+            caching: true
+
           - name: macos
             # Xcode compiler requires empty environment variables, so we pass null (~) here
             os: macos-11
@@ -96,6 +104,14 @@ jobs:
       with:
         path: ${{ env.DEPS_DIR }}
         key: deps-${{ matrix.os }}-${{ matrix.compiler }}-v1
+
+    - name: Install Intel oneAPI compiler
+      if: contains( matrix.compiler, 'intel' )
+      run: |
+        ${INSTALL_TOOLS}/install-intel-oneapi.sh
+        source /opt/intel/oneapi/setvars.sh
+        printenv >> $GITHUB_ENV
+        echo "CACHE_SUFFIX=$(icc -dumpversion)" >> $GITHUB_ENV
 
     - name: Install MPI
       shell: bash -eux {0}

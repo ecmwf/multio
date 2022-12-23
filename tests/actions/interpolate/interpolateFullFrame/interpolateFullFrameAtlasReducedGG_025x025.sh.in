@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# (C) Copyright 2005- ECMWF.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# In applying this licence, ECMWF does not waive the privileges and immunities granted to it by
+# virtue of its status as an intergovernmental organisation nor does it submit to any jurisdiction.
+#
+
+#
+# Set bash behaviour during the tests
+# set -eaux
+
+#
+# Function used to run the test
+source @CMAKE_SOURCE_DIR@/multio/tests/actions/interpolate/interpolateTestRunHelper.sh
+
+#
+#
+# ================================================================================
+# TEST CONFIGURATION
+# ================================================================================
+# Parameters used to characterize the full test
+# N.B. These parameters can in thoery be taken directly from command line, and perform all 
+#      the tests with only one script, but it has been choosen to hardcode the parameter 
+#      for every test in order to simplify the test debugging
+DIM=025
+ARGS="permissive"
+BINDIR=@CMAKE_BINARY_DIR@
+MARS_FOLDER=reducedgg-PL
+SOURCE_NAME=reducedgg-orig
+RESULT_NAME=reducedgg-${DIM}x${DIM}
+TEST_FOLDER=interpolateFullFrame
+TEST_NAME=interpolateFullFrameAtlasReducedGG_${DIM}x${DIM}
+# ================================================================================
+
+#
+# Run the interpolation test
+Interpolate ${BINDIR} ${MARS_FOLDER} ${SOURCE_NAME} ${RESULT_NAME} ${TEST_FOLDER} ${TEST_NAME} ${ARGS} 
+
+#
+# Exit condition
+exit $?

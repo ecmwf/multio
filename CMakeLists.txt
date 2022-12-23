@@ -14,7 +14,7 @@ find_package( ecbuild 3.6 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CUR
 
 project( multio LANGUAGES CXX )
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### dependencies
@@ -34,6 +34,14 @@ ecbuild_add_option( FEATURE FDB5
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "NAME fdb5 VERSION 5.10.1" )
 
+
+                    
+### legacy Interpolation action
+
+ecbuild_add_option( FEATURE MIR
+                    DEFAULT ON
+                    DESCRIPTION "Interpolate data using MIR"
+                    REQUIRED_PACKAGES "NAME mir VERSION 1.13.0" )
 
 ecbuild_add_option( FEATURE FORTRAN
                     DEFAULT ON

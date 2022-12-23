@@ -1,0 +1,18 @@
+plans:
+  - name: test-interpolate-spectral-100x100
+    actions:
+      - type: select
+        match:
+          - param: 129
+      - type: interpolate
+        from: SH1279
+        to: L360x181
+      - type: encode
+        format: grib
+        template: @CMAKE_BINARY_DIR@/multio/tests/interpolate/data/spherical-PL/mars-spherical-100x100.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: @CMAKE_BINARY_DIR@/multio/tests/interpolate/interpolateFullFrame/multio-spherical-100x100.grib

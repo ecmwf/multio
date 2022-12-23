@@ -1,0 +1,12 @@
+plans:
+  - name: test-interpolate-regularll
+    actions:
+      - type: encode
+        format: grib
+        template: @CMAKE_BINARY_DIR@/multio/tests/interpolate/data/reducedgg-PL/mars-reducedgg-100x100.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false
+            path: @CMAKE_BINARY_DIR@/multio/tests/interpolate/sanityCheckEncodeDecode/multio-reducedgg-100x100.grib

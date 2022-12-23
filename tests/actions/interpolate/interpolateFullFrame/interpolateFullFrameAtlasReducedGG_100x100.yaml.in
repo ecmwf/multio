@@ -1,0 +1,18 @@
+plans:
+  - name: test-interpolate-reducedgg-100x100
+    actions:
+      - type: select
+        match:
+          - param: 133
+      - type: interpolate
+        from: O1280
+        to: L360x181
+      - type: encode
+        format: grib
+        template: @CMAKE_BINARY_DIR@/multio/tests/interpolate/data/reducedgg-PL/mars-reducedgg-100x100.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: @CMAKE_BINARY_DIR@/multio/tests/interpolate/interpolateFullFrame/multio-reducedgg-100x100.grib

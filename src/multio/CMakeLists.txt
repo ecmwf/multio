@@ -28,51 +28,36 @@ list( APPEND multio_util_srcs
     util/FailureHandling.h
     util/MetadataMappings.cc
     util/MetadataMappings.h
+    util/PrecisionTag.h
     util/Metadata.cc
     util/Metadata.h
 )
 
+
+
+list( APPEND multio_action_utils_srcs
+    action/utils/ActionStatistics.cc
+    action/utils/ActionStatistics.h
+    action/utils/GribEncoder.cc
+    action/utils/GribEncoder.h
+    action/utils/GridInfo.cc
+    action/utils/GridInfo.h
+    action/utils/Operation.cc
+    action/utils/Operation.h
+    action/utils/Period.cc
+    action/utils/Period.h
+    action/utils/TemporalStatistics.cc
+    action/utils/TemporalStatistics.h 
+)
+
+
 list( APPEND multio_action_srcs
-    action/Aggregation.cc
-    action/Aggregation.h
-    action/Encode.cc
-    action/Encode.h
-    action/GribEncoder.cc
-    action/GribEncoder.h
-    action/GridInfo.cc
-    action/GridInfo.h
-    action/Mask.cc
-    action/Mask.h
-    action/Operation.cc
-    action/Operation.h
-    action/MetadataMapping.cc
-    action/MetadataMapping.h
-    action/Print.cc
-    action/Print.h
-    action/Select.cc
-    action/Select.h
-    action/Sink.cc
-    action/Sink.h
-    action/SingleFieldSink.cc
-    action/SingleFieldSink.h
-    action/Statistics.cc
-    action/Statistics.h
-    action/Null.cc
-    action/Null.h
-    action/ChainedAction.cc
-    action/ChainedAction.h
     action/Action.cc
     action/Action.h
-    action/Period.cc
-    action/Period.h
+    action/ChainedAction.cc
+    action/ChainedAction.h
     action/Plan.cc
     action/Plan.h
-    action/ActionStatistics.cc
-    action/ActionStatistics.h
-    action/TemporalStatistics.cc
-    action/TemporalStatistics.h
-    action/Transport.cc
-    action/Transport.h
 )
 
 list( APPEND multio_ifsio_srcs
@@ -154,6 +139,7 @@ list( APPEND multio_transport_srcs
 list( APPEND multio_srcs
     ${multio_library_srcs}
     ${multio_util_srcs}
+    ${multio_action_utils_srcs}
     ${multio_action_srcs}
     ${multio_ifsio_srcs}
     ${multio_domain_srcs}
@@ -191,6 +177,7 @@ ecbuild_add_library(
         metkit eckit eckit_mpi)
 
 add_subdirectory(fdb5)
+add_subdirectory(action)
 add_subdirectory(maestro)
 add_subdirectory(server)
 add_subdirectory(api)

@@ -73,9 +73,26 @@ if( CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
 endif()
 
 list( APPEND _link_libraries
+    multio-action-aggregation
+    multio-action-encode
+    multio-action-mask
+    multio-action-metadataMapping
+    multio-action-null
+    multio-action-print
+    multio-action-select
+    multio-action-singleFieldSink
+    multio-action-sink
+    multio-action-statistics
+    multio-action-transport
     multio-fdb5
     eckit_option
 )
+
+if( HAVE_MIR )
+    list( APPEND _link_libraries
+        multio-action-interpolate
+    )
+endif()
 
 ecbuild_add_executable( TARGET    multio-feed
                         CONDITION HAVE_FDB5

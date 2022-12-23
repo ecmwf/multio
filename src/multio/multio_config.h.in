@@ -9,5 +9,6 @@
 
 #cmakedefine MULTIO_HAVE_ECKIT
 #cmakedefine MULTIO_HAVE_FDB
+#cmakedefine MULTIO_HAVE_MIR
 
 #endif // multio_config_h

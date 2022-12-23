@@ -1,0 +1,31 @@
+plans:
+  - name: test-interpolate-spectral-050x050
+    actions:
+      - type: select
+        match:
+          - param: 129
+      - type: interpolate
+        outputSize: 259920
+        inputConfiguration:
+          setByValue:
+            gridType: sh
+            spectral: true
+            truncation: 1279
+        jobConfiguration:
+          setByValue:
+            grid: [0.5, 0.5]
+            area: [90.0, 0.0, -90.0, 360.0]
+            dont-compress-plan: true
+            interpolation: linear
+            caching: true
+        outputConfiguration:
+          empty:
+      - type: encode
+        format: grib
+        template: @CMAKE_BINARY_DIR@/multio/tests/interpolate/data/spherical-PL/mars-spherical-050x050.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: @CMAKE_BINARY_DIR@/multio/tests/interpolate/interpolateFullFrame/multio-spherical-050x050.grib

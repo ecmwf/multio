@@ -1,0 +1,15 @@
+plans:
+  - name: test-empty-interpolation-regularLL
+    actions:
+      - type: interpolate
+        from: L360x181
+        to: L360x181
+      - type: encode
+        format: grib
+        template: @CMAKE_BINARY_DIR@/multio/tests/interpolate/data/reducedgg-PL/mars-reducedgg-100x100.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false
+            path: @CMAKE_BINARY_DIR@/multio/tests/interpolate/sanityCheckEmptyInterpolation/multio-reducedgg-100x100.grib

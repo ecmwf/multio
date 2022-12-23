@@ -3,7 +3,7 @@
 
 set( multio_HAVE_FDB5    @multio_HAVE_FDB5@    )
 set( multio_HAVE_MAESTRO @multio_HAVE_MAESTRO@ )
-
+set( multio_HAVE_MIR     @multio_HAVE_MIR@     )
 
 ##################################################################
 ## Project dependencies
@@ -16,6 +16,10 @@ find_dependency( metkit  HINTS ${CMAKE_CURRENT_LIST_DIR}/../metkit  @metkit_DIR@
 
 if( multio_HAVE_FDB5 )
   find_dependency( fdb5 HINTS ${CMAKE_CURRENT_LIST_DIR}/../fdb5 @fdb5_DIR@ )
+endif()
+
+if( multio_HAVE_MIR )
+  find_dependency( mir HINTS ${CMAKE_CURRENT_LIST_DIR}/../action/interpolate @mir_DIR@ )
 endif()
 
 if( multio_HAVE_MAESTRO )

@@ -2,9 +2,7 @@
 #include "multio_c.h"
 #include "multio_c_cpp_utils.h"
 
-#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
-#include "eckit/mpi/Comm.h"
 #include "eckit/runtime/Main.h"
 
 #include "multio/message/Metadata.h"
@@ -281,7 +279,24 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
     });
 }
 
-int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
+int multio_write_float_mask(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size) {
+    return wrapApiFunction([mio, md, data, size]() {
+        ASSERT(mio);
+        ASSERT(md);
+
+        std::vector<float> mask_data{data, data + size};
+        eckit::Buffer mask_vals{size * sizeof(uint8_t)};
+        auto bit = static_cast<uint8_t*>(mask_vals.data());
+        for (const auto& mval : mask_data) {
+            *bit = static_cast<uint8_t>(mval);
+            ++bit;
+        }
+
+        mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
+    });
+}
+
+int multio_write_double_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
         ASSERT(mio);
         ASSERT(md);
@@ -298,11 +313,23 @@ int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double*
     });
 }
 
-int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
+int multio_write_float_field(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
         ASSERT(mio);
         ASSERT(md);
-        // std::cout << "multio_write_field: " << *md << std::endl;
+
+        md->set("precision", "single");
+
+        eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(float)};
+
+        mio->dispatch(*md, std::move(field_vals), Message::Tag::Field);
+    });
+}
+
+int multio_write_double_field(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
+    return wrapApiFunction([mio, md, data, size]() {
+        ASSERT(mio);
+        ASSERT(md);
 
         md->set("precision", "double");
 
@@ -385,10 +412,32 @@ int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, dou
         ASSERT(md);
         ASSERT(key);
 
-        md->set(key, value);
+        // TODO: it is unclear if we ever need to support setting metadata values as float; even if so, we are probably
+        // better off casting to double for storing it in multio::Metadata
+        md->set(key, static_cast<double>(value));
     });
 }
+/*
+int multio_field_is_active(multio_handle_t* mio, const char* fname, bool* value) {
+    return wrapApiFunction([mio, fname, value]() {
+        ASSERT(mio);
+        ASSERT(fname);
+        ASSERT(value);
 
+        *value = mio->isFieldActive(fname);
+    });
+};
+
+int multio_category_is_fully_active(multio_handle_t* mio, const char* cname, bool* value) {
+    return wrapApiFunction([mio, cname, value]() {
+        ASSERT(mio);
+        ASSERT(cname);
+        ASSERT(value);
+
+        *value = mio->isCategoryActive(cname);
+    });
+};
+*/
 
 int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, bool* accepted) {
     return wrapApiFunction([mio, md, accepted]() {

@@ -8,8 +8,7 @@
  * nor does it submit to any jurisdiction.
  */
 
-// For logging purposes
-#include <multio/util/PrecisionTag.h>
+#include "multio/util/PrecisionTag.h"
 
 #include "Interpolate.h"
 
@@ -30,11 +29,11 @@ void Interpolate::executeImpl(Message msg) const {
     switch (msg.tag()) {
         case (Message::Tag::Field): {
             if (msg.metadata().has("precision")) {
-                switch (util::decodePrecisionTag(msg.metadata().getString("precision"))) {
-                    case util::PrecisionTag::Float:
+                switch (multio::util::decodePrecisionTag(msg.metadata().getString("precision"))) {
+                    case multio::util::PrecisionTag::Float:
                         InterpolateRawMessageFloat(msg);
                         break;
-                    case util::PrecisionTag::Double:
+                    case multio::util::PrecisionTag::Double:
                         InterpolateRawMessageDouble(msg);
                         break;
                     default:
@@ -147,6 +146,8 @@ void Interpolate::InterpolateRawMessageFloat(Message& msg) const {
 
     // By default the only metadata to in the outptu message is the global size
     md.set("globalSize", outData.size());
+    // Needed by the Grib encoder always needs to be forwarded
+    md.set("precision", "single");
 
     // Fill the output metdata from configuration file
     mainConfiguration_->MIROutput(msg.metadata(), md);
@@ -211,6 +212,8 @@ void Interpolate::InterpolateRawMessageDouble(Message& msg) const {
 
     // By default the only metadata to in the outptu message is the global size
     md.set("globalSize", outData.size());
+    // Needed by the Grib encoder always needs to be forwarded
+    md.set("precision", "double");
 
     // Fill the output metdata from configuration file
     mainConfiguration_->MIROutput(msg.metadata(), md);

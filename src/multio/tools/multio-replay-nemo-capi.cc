@@ -8,7 +8,7 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "multio/api/multio_c.h"
+#include "multio/api/multio_c_cpp_utils.h"
 #include "multio/tools/MultioTool.h"
 #include "multio/util/ConfigurationPath.h"
 
@@ -35,9 +35,8 @@ std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& config
     const auto& cfgList = config.getSubConfigurations("data");
     std::map<std::string, GribData> nemo_map;
     for (auto const& cfg : cfgList) {
-        nemo_map[cfg.getString("nemo-id")] = {cfg.getLong("param-id"),
-                                              cfg.getString("grid-type"),
-                                              cfg.getString("level-type")};
+        nemo_map[cfg.getString("nemo-id")]
+            = {cfg.getLong("param-id"), cfg.getString("grid-type"), cfg.getString("level-type")};
     }
     return nemo_map;
 }
@@ -117,13 +116,11 @@ private:
 //----------------------------------------------------------------------------------------------------------------
 
 MultioReplayNemoCApi::MultioReplayNemoCApi(int argc, char** argv) : multio::MultioTool(argc, argv) {
-    options_.push_back(
-        new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("path", "Path to NEMO data"));
     options_.push_back(new eckit::option::SimpleOption<long>("nbclients", "Number of clients"));
     options_.push_back(new eckit::option::SimpleOption<long>("field", "Name of field to replay"));
-    options_.push_back(
-        new eckit::option::SimpleOption<long>("step", "Time counter for the field to replay"));
+    options_.push_back(new eckit::option::SimpleOption<long>("step", "Time counter for the field to replay"));
 }
 
 void MultioReplayNemoCApi::init(const eckit::option::CmdArgs& args) {
@@ -161,8 +158,8 @@ void MultioReplayNemoCApi::runClient() {
 void MultioReplayNemoCApi::setMetadata() {}
 
 void MultioReplayNemoCApi::setDomains() {
-    const std::map<std::string, std::string> grid_type = {
-        {"T grid", "grid_T"}, {"U grid", "grid_U"}, {"V grid", "grid_V"}, {"W grid", "grid_W"}};
+    const std::map<std::string, std::string> grid_type
+        = {{"T grid", "grid_T"}, {"U grid", "grid_U"}, {"V grid", "grid_V"}, {"W grid", "grid_W"}};
 
     multio_metadata_t* md = nullptr;
     multio_new_metadata(&md);
@@ -212,7 +209,7 @@ void MultioReplayNemoCApi::writeFields() {
 
         auto sz = static_cast<int>(buffer.size()) / sizeof(double);
         auto fname = param.c_str();
-        
+
         multio_metadata_t* md = nullptr;
         multio_new_metadata(&md);
 
@@ -234,7 +231,7 @@ void MultioReplayNemoCApi::writeFields() {
         multio_metadata_set_string_value(md, "nemoParam", fname);
 
         multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz);
-        
+
         multio_delete_metadata(md);
     }
 }
@@ -265,8 +262,8 @@ std::vector<int> MultioReplayNemoCApi::readGrid(const std::string& grid_type, si
 
 eckit::Buffer MultioReplayNemoCApi::readField(const std::string& param, size_t client_id) const {
     std::ostringstream oss;
-    oss << pathToNemoData_ << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_"
-        << std::setfill('0') << std::setw(2) << client_id;
+    oss << pathToNemoData_ << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_" << std::setfill('0')
+        << std::setw(2) << client_id;
 
     auto field = eckit::PathName{oss.str()};
 
@@ -295,9 +292,9 @@ void MultioReplayNemoCApi::initClient() {
     eckit::mpi::comm("multio").split(777, "multio-clients");
 #endif
 
-    
+
     multio_set_failure_handler(multio_throw_failure_handler, nullptr);
-    
+
 
 #if defined(INIT_BY_FILEPATH)
     multio_configurationcontext_t* multio_cc = nullptr;
@@ -337,8 +334,7 @@ void MultioReplayNemoCApi::initClient() {
 #if defined(SPECIFIC_MPI_GROUP)
     eckit::Log::info() << " *** SPCEFICI_MPI_GROUP: " << XSTRM(SPECIFIC_MPI_GROUP) << std::endl;
     const eckit::mpi::Comm& group = eckit::mpi::comm(XSTRM(SPECIFIC_MPI_GROUP));
-    const eckit::mpi::Comm& clients =
-        eckit::mpi::comm((std::string(XSTRM(SPECIFIC_MPI_GROUP)) + "-clients").c_str());
+    const eckit::mpi::Comm& clients = eckit::mpi::comm((std::string(XSTRM(SPECIFIC_MPI_GROUP)) + "-clients").c_str());
 #else
     eckit::Log::info() << " *** DEFAULT MPI GROUP: multio " << std::endl;
     const eckit::mpi::Comm& group = eckit::mpi::comm("multio");
@@ -349,8 +345,8 @@ void MultioReplayNemoCApi::initClient() {
     clientCount_ = clients.size();
     serverCount_ = group.size() - clientCount_;
 
-    eckit::Log::info() << " *** initClient - clientcount:  " << clientCount_  
-                       << ", serverCount: " << serverCount_ << std::endl;
+    eckit::Log::info() << " *** initClient - clientcount:  " << clientCount_ << ", serverCount: " << serverCount_
+                       << std::endl;
 }
 
 void MultioReplayNemoCApi::testData() {
@@ -365,8 +361,7 @@ void MultioReplayNemoCApi::testData() {
 
         std::string actual_file_path{oss.str()};
         std::ifstream infile_actual{actual_file_path};
-        std::string actual{std::istreambuf_iterator<char>(infile_actual),
-                           std::istreambuf_iterator<char>()};
+        std::string actual{std::istreambuf_iterator<char>(infile_actual), std::istreambuf_iterator<char>()};
 
         oss.str("");
         oss.clear();
@@ -374,11 +369,10 @@ void MultioReplayNemoCApi::testData() {
         auto path = eckit::PathName{oss.str()};
 
         std::ifstream infile_expected{path.fullName()};
-        std::string expected{std::istreambuf_iterator<char>(infile_expected),
-                             std::istreambuf_iterator<char>()};
+        std::string expected{std::istreambuf_iterator<char>(infile_expected), std::istreambuf_iterator<char>()};
 
-        eckit::Log::info() << " *** testData - ActualFilePath: " << actual_file_path
-                           << ", expected path: " << path << std::endl;
+        eckit::Log::info() << " *** testData - ActualFilePath: " << actual_file_path << ", expected path: " << path
+                           << std::endl;
 
         infile_actual.close();
         infile_expected.close();

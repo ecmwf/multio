@@ -37,13 +37,13 @@ public:
     void setValue(const std::string& key, double value);
     void setValue(const std::string& key, const std::string& value);
     void setValue(const std::string& key, const unsigned char* value);
-    
+
     // Convert bool to long (0/1)
     void setValue(const std::string& key, bool value);
-    
-    template<typename T>
+
+    template <typename T>
     void setValue(const std::string& key, eckit::Optional<T> v) {
-        if(v) {
+        if (v) {
             setValue(key, *v);
         }
     }
@@ -53,6 +53,7 @@ public:
 
     message::Message encodeField(const message::Message& msg);
     message::Message encodeField(const message::Message& msg, const double* data, size_t sz);
+    message::Message encodeField(const message::Message& msg, const float* data, size_t sz);
 
     // TODO May be refactored
     // int getBitsPerValue(int paramid, const std::string& levtype, double min, double max);
@@ -60,20 +61,21 @@ public:
 private:
     void setFieldMetadata(const message::Message& msg);
     void setOceanMetadata(const message::Message& msg);
-    
+
     void setOceanCoordMetadata(const message::Metadata& metadata);
     void setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig);
 
-    message::Message setFieldValues(const  message::Message& msg);
+    message::Message setFieldValues(const message::Message& msg);
     message::Message setFieldValues(const double* values, size_t count);
+    message::Message setFieldValues(const float* values, size_t count);
 
     const eckit::LocalConfiguration config_;
 
     const std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",
                                           "lon_V", "lat_W", "lon_W", "lat_F", "lon_F"};
-                                          
-    // TODO: This is just included from old interface now and may require refactoring in terms of configuration and its action                                            
-    // EncodeBitsPerValue encodeBitsPerValue_;
+
+    // TODO: This is just included from old interface now and may require refactoring in terms of configuration and its
+    // action EncodeBitsPerValue encodeBitsPerValue_;
 };
 
 inline bool isOcean(const message::Metadata& metadata) {

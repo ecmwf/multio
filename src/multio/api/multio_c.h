@@ -91,9 +91,9 @@ int multio_vcs_version(const char** sha1);
 /** \defgroup Data-routing */
 /** @{ */
 
-/** Creates a multio configuration context object with default configuration file name (environment variable: MULTIO_SERVER_CONFIG_FILE)
- * \param cc Return a handle to the multio configuration context object
- * \returns Return code (#MultioErrorValues)
+/** Creates a multio configuration context object with default configuration file name (environment variable:
+ * MULTIO_SERVER_CONFIG_FILE) \param cc Return a handle to the multio configuration context object \returns Return code
+ * (#MultioErrorValues)
  */
 int multio_new_configurationcontext(multio_configurationcontext_t** cc);
 
@@ -102,7 +102,8 @@ int multio_new_configurationcontext(multio_configurationcontext_t** cc);
  * \param cc Return a handle to the multio configuration context object
  * \returns Return code (#MultioErrorValues)
  */
-int multio_new_configurationcontext_from_filename(multio_configurationcontext_t** cc, const char* configuration_file_name);
+int multio_new_configurationcontext_from_filename(multio_configurationcontext_t** cc,
+                                                  const char* configuration_file_name);
 
 /** Deletes a multio configuration context object
  * \param cc Handle to the multio configuration context object
@@ -111,19 +112,19 @@ int multio_new_configurationcontext_from_filename(multio_configurationcontext_t*
 int multio_delete_configurationcontext(multio_configurationcontext_t* cc);
 
 
-/** Sets the configuration path which some components might use to read configuration files (default: environment variable: MULTIO_SERVER_CONFIG_PATH)
- * \param configuration_path Absolute path to configuration file folder - may be used in subcomponents?
- * \param cc Handle to the multio configuration context object
- * \returns Return code (#MultioErrorValues)
+/** Sets the configuration path which some components might use to read configuration files (default: environment
+ * variable: MULTIO_SERVER_CONFIG_PATH) \param configuration_path Absolute path to configuration file folder - may be
+ * used in subcomponents? \param cc Handle to the multio configuration context object \returns Return code
+ * (#MultioErrorValues)
  */
 int multio_conf_set_path(multio_configurationcontext_t* cc, const char* configuration_path);
 
 
 /** Overwrite global MPI options for default splitting.
  *
- * \param allow Specifies if multio is supposed to use the WORLD communicator as default if a group has not been added to eckit::mpi yet.
- * \param cc Handle to the multio configuration context object
- * \returns Return code (#MultioErrorValues)
+ * \param allow Specifies if multio is supposed to use the WORLD communicator as default if a group has not been added
+ * to eckit::mpi yet. \param cc Handle to the multio configuration context object \returns Return code
+ * (#MultioErrorValues)
  */
 int multio_conf_mpi_allow_world_default_comm(multio_configurationcontext_t* cc, bool allow);
 
@@ -138,17 +139,15 @@ int multio_conf_mpi_parent_comm(multio_configurationcontext_t* cc, int parent_co
 
 /** Set MPI specific initalization parameters
  *
- * \param return_client_comm Pointer to an integer specifying the client communicator that the multio may set on initialization
- * \param cc Handle to the multio configuration context object
- * \returns Return code (#MultioErrorValues)
+ * \param return_client_comm Pointer to an integer specifying the client communicator that the multio may set on
+ * initialization \param cc Handle to the multio configuration context object \returns Return code (#MultioErrorValues)
  */
 int multio_conf_mpi_return_client_comm(multio_configurationcontext_t* cc, int* return_client_comm);
 
 /** Set MPI specific initalization parameters
  *
- * \param return_server_comm Pointer to an integer specifying the server communicator that the multio may set on initialization
- * \param cc Handle to the multio configuration context object
- * \returns Return code (#MultioErrorValues)
+ * \param return_server_comm Pointer to an integer specifying the server communicator that the multio may set on
+ * initialization \param cc Handle to the multio configuration context object \returns Return code (#MultioErrorValues)
  */
 int multio_conf_mpi_return_server_comm(multio_configurationcontext_t* cc, int* return_server_comm);
 
@@ -220,21 +219,41 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
 /** Writes masking information (e.g. land-sea mask) to the server
  * \param mio Handle to the multio (client) instance
  * \param md Metadata information about the mask
- * \param data Pointer to the data containing the masking values
+ * \param data Pointer to the (float) data containing the masking values
  * \param size Size of the data containing the masking values
  * \returns Return code (#MultioErrorValues)
  */
-int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
+int multio_write_float_mask(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size);
+
+
+/** Writes masking information (e.g. land-sea mask) to the server
+ * \param mio Handle to the multio (client) instance
+ * \param md Metadata information about the mask
+ * \param data Pointer to the (double) data containing the masking values
+ * \param size Size of the data containing the masking values
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_write_double_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
 
 
 /** Writes (partial) fields
  * \param mio Handle to the multio (client) instance
  * \param md Metadata information about the field
- * \param data Pointer to the data containing the (partial) field values
+ * \param data Pointer to the (float) data containing the (partial) field values
  * \param size Size of the data containing the (partial) field values
  * \returns Return code (#MultioErrorValues)
  */
-int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
+int multio_write_float_field(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size);
+
+
+/** Writes (partial) fields
+ * \param mio Handle to the multio (client) instance
+ * \param md Metadata information about the field
+ * \param data Pointer to the (double) data containing the (partial) field values
+ * \param size Size of the data containing the (partial) field values
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_write_double_field(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
 
 
 /** @} */
@@ -320,6 +339,36 @@ int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, floa
 int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, double value);
 
 
+/** Query information whether a field is actively used or can be omitted
+ *
+ *  Multio is not aware on specific category <-> field relation ships.
+ *  Therefore this information should be queried together with `multio_category_is_fully_active` and combined with an
+ * logical OR. Even if a category is not fully/explicitly active, a single field may be and hence a
+ * `multio_field_is_active` query should be performed. Vice versa, a category might me explicitly active while a single
+ * field within that category is not.
+ *
+ * \param mio Handle to the multio (client) instance
+ * \param fname Name of the field
+ * \param set_value Pointer to the boolean where to store the result
+ * \returns Return code (#MultioErrorValues)
+ */
+// TODO: why is not more present?
+// int multio_field_is_active(multio_handle_t* mio, const char* fname, bool* set_value);
+
+/** Query information whether a whole category is actively used (i.e. the whole category is explicitly listed in the
+ * configuration) or can be omitted.
+ *
+ * Please read the comments in `multio_field_is_active`.
+ *
+ * \param mio Handle to the multio (client) instance
+ * \param fname Name of the field
+ * \param set_value Pointer to the boolean where to store the result
+ * \returns Return code (#MultioErrorValues)
+ */
+// TODO: why is not more present?
+// int multio_category_is_fully_active(multio_handle_t* mio, const char* cname, bool* set_value);
+
+
 /** Determines if the pipelines are configured to accept the specified data
  *
  * \param mio Handle to the multio (client) instance
@@ -328,7 +377,6 @@ int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, dou
  * \returns Return code (#MultioErrorValues)
  */
 int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, bool* accepted);
-
 
 #ifdef __cplusplus
 } /* extern "C" */

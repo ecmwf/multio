@@ -400,7 +400,8 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
                     .set("param", std::to_string(param))
                     .set("category", "model-level")
                     .set("globalSize", static_cast<long>(field_size()))
-                    .set("domain", "grid-point");
+                    .set("domain", "grid-point")
+                    .set("precision", "double");
 
                 Message msg{Message::Header{Message::Tag::Field, client, *serverPeers[id], std::move(metadata)},
                             std::move(buffer)};
@@ -414,7 +415,8 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
         md.set("name", eckit::Translator<long, std::string>()(step))
             .set("category", "atms-checkpoint")
             .set("trigger", "step")
-            .set("domain", "grid-point");
+            .set("domain", "grid-point")
+            .set("precision", "double");
         for (auto& server : serverPeers) {
             auto stepStr = eckit::Translator<long, std::string>()(step);
             Message flush{Message::Header{Message::Tag::StepComplete, client, *server, Metadata{md}}};
@@ -634,7 +636,8 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
         md.set("name", eckit::Translator<long, std::string>()(step))
             .set("category", "atms-checkpoint")
             .set("trigger", "step")
-            .set("domain", "grid-point");
+            .set("domain", "grid-point")
+            .set("precision", "double");
 
         Message msg{Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}, Metadata{md}}};
         for (const auto& plan : plans) {

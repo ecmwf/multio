@@ -12,8 +12,10 @@ module multio_api
 
     private
 
+    integer, parameter :: sp = selected_real_kind(6, 37)
     integer, parameter :: dp = selected_real_kind(15, 307)
     integer, parameter :: double_size = 8 !c_sizeof(1.0_dp) !intel compiler...
+    integer, parameter :: float_size = 4 !c_sizeof(1.0_dp) !intel compiler...
     integer, parameter :: int64 = selected_int_kind(15)
 
 
@@ -40,9 +42,15 @@ module multio_api
         procedure :: close_connections => multio_close_connections
         procedure :: write_step_complete => multio_write_step_complete
         procedure :: write_domain => multio_write_domain
-        procedure :: write_mask => multio_write_mask
-        procedure :: write_field => multio_write_field
+        procedure :: write_float_mask => multio_write_float_mask
+        procedure :: write_double_mask => multio_write_double_mask
+        generic   :: write_mask => write_float_mask, write_double_mask
+        procedure :: write_float_field => multio_write_float_field
+        procedure :: write_double_field => multio_write_double_field
+        generic   :: write_field => write_float_field, write_double_field
         procedure :: field_accepted => multio_field_accepted
+        ! procedure :: field_is_active => multio_field_is_active
+        ! procedure :: category_is_fully_active => multio_category_is_fully_active
     end type
 
     type multio_metadata
@@ -287,8 +295,19 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_write_mask(handle, metadata, data, size) result(err) &
-                bind(c, name='multio_write_mask')
+        function c_multio_write_float_mask(handle, metadata, data, size) result(err) &
+                bind(c, name='multio_write_float_mask')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: handle
+            type(c_ptr), intent(in), value :: metadata
+            real(c_float), dimension(*), intent(in) :: data
+            integer(c_int), intent(in), value :: size
+            integer(c_int) :: err
+        end function
+
+        function c_multio_write_double_mask(handle, metadata, data, size) result(err) &
+                bind(c, name='multio_write_double_mask')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: handle
@@ -298,8 +317,19 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_write_field(handle, metadata, data, size) result(err) &
-                bind(c, name='multio_write_field')
+        function c_multio_write_float_field(handle, metadata, data, size) result(err) &
+                bind(c, name='multio_write_float_field')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: handle
+            type(c_ptr), intent(in), value :: metadata
+            real(c_float), dimension(*), intent(in) :: data
+            integer(c_int), intent(in), value :: size
+            integer(c_int) :: err
+        end function
+
+        function c_multio_write_double_field(handle, metadata, data, size) result(err) &
+                bind(c, name='multio_write_double_field')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: handle
@@ -318,6 +348,26 @@ module multio_api
             logical(c_bool), intent(out) :: set_value
             integer(c_int) :: err
         end function
+        
+        !function c_multio_field_is_active(handle, field, set_value) result(err) &
+        !        bind(c, name='multio_field_is_active')
+        !    use, intrinsic :: iso_c_binding
+        !    implicit none
+        !    type(c_ptr), intent(in), value :: handle
+        !    type(c_ptr), intent(in), value :: field
+        !    logical(c_bool), intent(out) :: set_value
+        !    integer(c_int) :: err
+        !end function
+!
+        !function c_multio_category_is_fully_active(handle, category, set_value) result(err) &
+        !        bind(c, name='multio_category_is_fully_active')
+        !    use, intrinsic :: iso_c_binding
+        !    implicit none
+        !    type(c_ptr), intent(in), value :: handle
+        !    type(c_ptr), intent(in), value :: category
+        !    logical(c_bool), intent(out) :: set_value
+        !    integer(c_int) :: err
+        !end function
 
         ! Metadata object api
 
@@ -590,24 +640,44 @@ contains
         err = c_multio_write_domain(handle%impl, metadata%impl, data, size)
     end function
 
-    function multio_write_mask(handle, metadata, data, size) result(err)
+    function multio_write_float_mask(handle, metadata, data, size) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
         integer :: err
 
-        real(dp), dimension(*), intent(in) :: data
+        real(sp), dimension(*), intent(in) :: data
         integer, intent(in), value :: size
-        err = c_multio_write_mask(handle%impl, metadata%impl, data, size)
+        err = c_multio_write_float_mask(handle%impl, metadata%impl, data, size)
     end function
 
-    function multio_write_field(handle, metadata, data, size) result(err)
+    function multio_write_double_mask(handle, metadata, data, size) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
         integer :: err
 
         real(dp), dimension(*), intent(in) :: data
         integer, intent(in), value :: size
-        err = c_multio_write_field(handle%impl, metadata%impl, data, size)
+        err = c_multio_write_double_mask(handle%impl, metadata%impl, data, size)
+    end function
+
+    function multio_write_float_field(handle, metadata, data, size) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(sp), dimension(*), intent(in) :: data
+        integer, intent(in), value :: size
+        err = c_multio_write_float_field(handle%impl, metadata%impl, data, size)
+    end function
+
+    function multio_write_double_field(handle, metadata, data, size) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(dp), dimension(*), intent(in) :: data
+        integer, intent(in), value :: size
+        err = c_multio_write_double_field(handle%impl, metadata%impl, data, size)
     end function
     
     function multio_field_accepted(handle, metadata, set_value) result(err)
@@ -619,6 +689,27 @@ contains
         err = c_multio_field_accepted(handle%impl, metadata%impl, set_value)
     end function
     
+
+    !function multio_field_is_active(handle, field, set_value) result(err)
+    !    class(multio_handle), intent(inout) :: handle
+    !    logical(c_bool), intent(out) :: set_value
+    !    character(*), intent(in) :: field
+    !    integer :: err
+    !    character(:), allocatable, target :: nullified_field
+    !    nullified_field = trim(field) // c_null_char
+    !    err = c_multio_field_is_active(handle%impl, c_loc(nullified_field), set_value)
+    !end function
+    !
+    !function multio_category_is_fully_active(handle, category, set_value) result(err)
+    !    class(multio_handle), intent(inout) :: handle
+    !    logical(c_bool), intent(out) :: set_value
+    !    character(*), intent(in) :: category
+    !    integer :: err
+    !    character(:), allocatable, target :: nullified_category
+    !    nullified_category = trim(category) // c_null_char
+    !    err = c_multio_category_is_fully_active(handle%impl, c_loc(nullified_category), set_value)
+    !end function
+
     ! Methods for metadata objects
     function multio_new_metadata(metadata) result(err)
         class(multio_metadata), intent(inout) :: metadata

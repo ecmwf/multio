@@ -35,7 +35,7 @@
 #include <fstream>
 
 // Include the abstract parser class
-#include "interpolateParser.h"
+#include "InterpolateParser.h"
 
 // Namespace handling
 namespace multio {

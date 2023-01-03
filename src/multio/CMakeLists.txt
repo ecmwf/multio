@@ -28,6 +28,7 @@ list( APPEND multio_util_srcs
     util/FailureHandling.h
     util/MetadataMappings.cc
     util/MetadataMappings.h
+    util/PrecisionTag.cc
     util/PrecisionTag.h
     util/Metadata.cc
     util/Metadata.h

@@ -17,6 +17,8 @@
 #include "multio/domain/Mask.h"
 #include "multio/util/ScopedTimer.h"
 
+#include "multio/util/PrecisionTag.h"
+
 namespace multio {
 namespace action {
 
@@ -59,9 +61,8 @@ message::Message Mask::createMasked(message::Message msg) const {
     md.set("missingValue", missingValue_);
     md.set("bitmapPresent", true);
 
-    message::Message maskedMsg{
-        message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(md)},
-        std::move(msg.payload())};
+    message::Message maskedMsg{message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(md)},
+                               std::move(msg.payload())};
 
     return maskedMsg;
 }
@@ -70,15 +71,54 @@ void Mask::applyMask(message::Message msg) const {
     auto const& bkey = domain::Mask::key(msg.metadata());
     auto const& bitmask = domain::Mask::instance().get(bkey);
 
-    ASSERT(bitmask.size() == msg.size() / sizeof(double));
+    if (msg.metadata().has("precision")) {
+        switch (multio::util::decodePrecisionTag(msg.metadata().getString("precision"))) {
+            case multio::util::PrecisionTag::Float: {
+                ASSERT(bitmask.size() == msg.size() / sizeof(float));
 
-    auto git = static_cast<double*>(msg.payload().data());
+                auto git = static_cast<float*>(msg.payload().data());
 
-    for (const auto bval : bitmask) {
-        if (not bval) {
-            *git = missingValue_;
+                for (const auto bval : bitmask) {
+                    if (not bval) {
+                        *git = missingValue_;
+                    }
+                    ++git;
+                }
+            }; break;
+            case multio::util::PrecisionTag::Double: {
+                ASSERT(bitmask.size() == msg.size() / sizeof(double));
+
+                auto git = static_cast<double*>(msg.payload().data());
+
+                for (const auto bval : bitmask) {
+                    if (not bval) {
+                        *git = missingValue_;
+                    }
+                    ++git;
+                }
+            }; break;
+            default:
+                std::ostringstream oss;
+                oss << "ERROR :: Action::Mask :: Unsupported datatype for "
+                       "input message"
+                    << std::endl
+                    << "    file.....: " << __FILE__ << std::endl
+                    << "    function.: " << __FUNCTION__ << std::endl
+                    << "    line.....: " << __LINE__ << std::endl
+                    << std::endl;
+                throw eckit::BadValue{oss.str()};
         }
-        ++git;
+    }
+    else {
+        std::ostringstream oss;
+        oss << "ERROR :: Action::Mask :: Unable to find \"precision\" "
+               "keyword in input metadata"
+            << std::endl
+            << "    file.....: " << __FILE__ << std::endl
+            << "    function.: " << __FUNCTION__ << std::endl
+            << "    line.....: " << __LINE__ << std::endl
+            << std::endl;
+        throw eckit::SeriousBug{oss.str()};
     }
 }
 
@@ -86,21 +126,60 @@ void Mask::applyOffset(message::Message msg) const {
     auto const& bkey = domain::Mask::key(msg.metadata());
     auto const& bitmask = domain::Mask::instance().get(bkey);
 
-    ASSERT(bitmask.size() == msg.size() / sizeof(double));
+    if (msg.metadata().has("precision")) {
+        switch (multio::util::decodePrecisionTag(msg.metadata().getString("precision"))) {
+            case multio::util::PrecisionTag::Float: {
+                ASSERT(bitmask.size() == msg.size() / sizeof(float));
 
-    auto git = static_cast<double*>(msg.payload().data());
+                auto git = static_cast<float*>(msg.payload().data());
 
-    for (const auto bval : bitmask) {
-        if (bval) {
-            *git += offsetValue_;
+                for (const auto bval : bitmask) {
+                    if (bval) {
+                        *git += offsetValue_;
+                    }
+                    ++git;
+                }
+            }; break;
+            case multio::util::PrecisionTag::Double: {
+                ASSERT(bitmask.size() == msg.size() / sizeof(double));
+
+                auto git = static_cast<double*>(msg.payload().data());
+
+                for (const auto bval : bitmask) {
+                    if (bval) {
+                        *git += offsetValue_;
+                    }
+                    ++git;
+                }
+            }; break;
+            default:
+                std::ostringstream oss;
+                oss << "ERROR :: Action::Mask :: Unsupported datatype for "
+                       "input message"
+                    << std::endl
+                    << "    file.....: " << __FILE__ << std::endl
+                    << "    function.: " << __FUNCTION__ << std::endl
+                    << "    line.....: " << __LINE__ << std::endl
+                    << std::endl;
+                throw eckit::BadValue{oss.str()};
         }
-        ++git;
+    }
+    else {
+        std::ostringstream oss;
+        oss << "ERROR :: Action::Mask :: Unable to find \"precision\" "
+               "keyword in input metadata"
+            << std::endl
+            << "    file.....: " << __FILE__ << std::endl
+            << "    function.: " << __FUNCTION__ << std::endl
+            << "    line.....: " << __LINE__ << std::endl
+            << std::endl;
+        throw eckit::SeriousBug{oss.str()};
     }
 }
 
 void Mask::print(std::ostream& os) const {
-    os << "Mask(missing=" << missingValue_ << ", offset-fields=" << offsetFields_
-       << ", offset-value=" << offsetValue_ << ")";
+    os << "Mask(missing=" << missingValue_ << ", offset-fields=" << offsetFields_ << ", offset-value=" << offsetValue_
+       << ")";
 }
 
 static ActionBuilder<Mask> MaskBuilder("mask");

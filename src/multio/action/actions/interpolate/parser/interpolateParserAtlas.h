@@ -38,6 +38,9 @@
 #include <fstream>
 #include <string>
 
+// Include the abstract parser class
+#include "InterpolateParser.h"
+
 // Include all the mir headers (interpolation package)
 #include "eckit/value/Value.h"
 #include "mir/api/MIRJob.h"

@@ -31,7 +31,7 @@
 #include "multio/action/ChainedAction.h"
 
 // Private utils for this specifica action
-#include "parser/interpolateParserFactory.h"
+#include "parser/InterpolateParserFactory.h"
 
 // Namespace handling
 namespace multio {

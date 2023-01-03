@@ -33,11 +33,11 @@
 #define multio_action_interpolateParserFactory_H
 
 // The parser interface
-#include "interpolateParser.h"
+#include "InterpolateParser.h"
 
 // All the available parser
-#include "interpolateParserAtlas.h"
-#include "interpolateParserPureForwarding.h"
+#include "InterpolateParserAtlas.h"
+#include "InterpolateParserPureForwarding.h"
 
 // Namespace handling
 namespace multio {

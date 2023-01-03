@@ -5,6 +5,11 @@ ecbuild_add_library(
     SOURCES
         Interpolate.cc
         Interpolate.h
+        parser/InterpolateParser.h
+        parser/InterpolateParserAtlas.h
+        parser/InterpolateParserPureForwarding.h
+        parser/InterpolateParserFactory.h
+
 
 
     PRIVATE_INCLUDES

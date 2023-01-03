@@ -20,13 +20,14 @@
 #include <unordered_map>
 
 #include "multio/action/ChainedAction.h"
+#include "multio/util/PrecisionTag.h"
 
 namespace multio {
 namespace action {
 
 using message::Message;
 
-class MessageMap : private std::map<std::string, Message>{
+class MessageMap : private std::map<std::string, Message> {
 public:
     using std::map<std::string, Message>::at;
     using std::map<std::string, Message>::size;
@@ -37,7 +38,7 @@ public:
         return find(key) != end() && processedParts_.find(key) != std::end(processedParts_);
     }
 
-    std::size_t partsCount (const std::string& key) const {
+    std::size_t partsCount(const std::string& key) const {
         ASSERT(contains(key));
         return processedParts_.at(key).size();
     }
@@ -52,9 +53,41 @@ public:
 
     void addNew(const Message& msg) {
         ASSERT(not contains(msg.fieldId()));
-        emplace(msg.fieldId(),
-                Message{Message::Header{msg.header()}, eckit::Buffer{msg.globalSize() * sizeof(double)}});
-        processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
+        if (msg.metadata().has("precision")) {
+            switch (multio::util::decodePrecisionTag(msg.metadata().getString("precision"))) {
+                case multio::util::PrecisionTag::Float: {
+                    emplace(msg.fieldId(),
+                            Message{Message::Header{msg.header()}, eckit::Buffer{msg.globalSize() * sizeof(float)}});
+                    processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
+                }; break;
+                case multio::util::PrecisionTag::Double: {
+                    emplace(msg.fieldId(),
+                            Message{Message::Header{msg.header()}, eckit::Buffer{msg.globalSize() * sizeof(double)}});
+                    processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
+                }; break;
+                default:
+                    std::ostringstream oss;
+                    oss << "ERROR :: Action::Aggregation :: Unsupported datatype for "
+                           "input message"
+                        << std::endl
+                        << "    file.....: " << __FILE__ << std::endl
+                        << "    function.: " << __FUNCTION__ << std::endl
+                        << "    line.....: " << __LINE__ << std::endl
+                        << std::endl;
+                    throw eckit::BadValue{oss.str()};
+            }
+        }
+        else {
+            std::ostringstream oss;
+            oss << "ERROR :: Action::Aggregation :: Unable to find \"precision\" "
+                   "keyword in input metadata"
+                << std::endl
+                << "    file.....: " << __FILE__ << std::endl
+                << "    function.: " << __FUNCTION__ << std::endl
+                << "    line.....: " << __LINE__ << std::endl
+                << std::endl;
+            throw eckit::SeriousBug{oss.str()};
+        }
     }
 
     void reset(const std::string& key) {

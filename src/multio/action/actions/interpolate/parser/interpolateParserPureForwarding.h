@@ -83,14 +83,8 @@ private:
             }
             else {
                 std::ostringstream oss;
-                oss << "ERROR :: Action::Interpolate::Parser :: Bad input sequence in "
-                       "YAML file -> "
-                    << key << std::endl
-                    << "    file.....: " << __FILE__ << std::endl
-                    << "    function.: " << __FUNCTION__ << std::endl
-                    << "    line.....: " << __LINE__ << std::endl
-                    << std::endl;
-                throw eckit::SeriousBug(oss.str());
+                oss << "Action::Interpolate::Parser :: Bad input sequence in YAML file -> " << key << std::endl;
+                throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
             }
         }
     };
@@ -106,12 +100,8 @@ private:
             }
             else {
                 std::ostringstream oss;
-                oss << "ERROR :: Action::Interpolate::Parser :: Key already present -> " << key << std::endl
-                    << "    file.....: " << __FILE__ << std::endl
-                    << "    function.: " << __FUNCTION__ << std::endl
-                    << "    line.....: " << __LINE__ << std::endl
-                    << std::endl;
-                throw eckit::SeriousBug(oss.str());
+                oss << "Action::Interpolate::Parser :: Key already present -> " << key << std::endl;
+                throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
             }
         }
     };
@@ -172,12 +162,8 @@ private:
         }
         else {
             std::ostringstream oss;
-            oss << "ERROR :: Action::Interpolate::Parser :: Unable to open file -> " << fname << std::endl
-                << "    file.....: " << __FILE__ << std::endl
-                << "    function.: " << __FUNCTION__ << std::endl
-                << "    line.....: " << __LINE__ << std::endl
-                << std::endl;
-            throw eckit::SeriousBug(oss.str());
+            oss << "Action::Interpolate::Parser :: Unable to open file -> " << fname << std::endl;
+            throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         }
     };
 
@@ -191,14 +177,8 @@ public:
     explicit Configurator(const eckit::LocalConfiguration& base, const char* field) : base_(base), field_(field) {
         if (!base.has(field)) {
             std::ostringstream oss;
-            oss << "ERROR :: Action::Interpolate::Parser :: Field not found in the "
-                   "input YAML file -> "
-                << field << std::endl
-                << "    file.....: " << __FILE__ << std::endl
-                << "    function.: " << __FUNCTION__ << std::endl
-                << "    line.....: " << __LINE__ << std::endl
-                << std::endl;
-            throw eckit::SeriousBug(oss.str());
+            oss << "Action::Interpolate::Parser :: Field not found in the input YAML file -> " << field << std::endl;
+            throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         };
     };
 
@@ -248,15 +228,9 @@ public:
 
         // Check for empty configuration
         if (!cfg.has("empty") && cnt == 0) {
-            std::ostringstream oss;
-            oss << "ERROR :: Action::Interpolate::Parser :: unable to find a valid "
-                   "configuration in the input file"
-                << std::endl
-                << "    file.....: " << __FILE__ << std::endl
-                << "    function.: " << __FUNCTION__ << std::endl
-                << "    line.....: " << __LINE__ << std::endl
-                << std::endl;
-            throw eckit::SeriousBug(oss.str());
+            throw eckit::UserError(
+                "Action::Interpolate::Parser :: unable to find a valid configuration in the input file",
+                eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         };
     };
 };
@@ -296,15 +270,8 @@ private:
             outputSize_ = configurationContext_.getLong("outputSize");
         }
         else {
-            std::ostringstream oss;
-            oss << "ERROR :: Action::Interpolate::Parser :: Expected an output size "
-                   "for \"outputSize\""
-                << std::endl
-                << "    file.....: " << __FILE__ << std::endl
-                << "    function.: " << __FUNCTION__ << std::endl
-                << "    line.....: " << __LINE__ << std::endl
-                << std::endl;
-            throw eckit::SeriousBug(oss.str());
+            throw eckit::UserError("Action::Interpolate::Parser :: Expected an output size for \"outputSize\"",
+                                   eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         }
     }
 

@@ -9,23 +9,5 @@ PrecisionTag decodePrecisionTag(const std::string& tagStr) {
     return str2tag.at(tagStr);
 }
 
-template <typename Func>
-decltype(auto) dispatchPrecisionTag(const std::string& tagStr, Func&& f) {
-    // may throw
-    return dispatchPrecisionTag(decodePrecisionTag(tagStr), std::forward<Func>(f));
-}
-
-template <typename Func>
-decltype(auto) dispatchPrecisionTag(PrecisionTag t, Func&& f) {
-    switch (t) {
-        case PrecisionTag::Float: {
-            return std::forward<Func>(f)(PrecisionType<float>{});
-        }
-        case PrecisionTag::Double: {
-            return std::forward<Func>(f)(PrecisionType<double>{});
-        }
-    }
-}
-
 }  // namespace util
 }  // namespace multio

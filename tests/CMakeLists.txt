@@ -150,19 +150,19 @@ list( APPEND _interpolate_test_data_spherical
    "mars-spherical-orig.grib"
 )
 
-#ecbuild_get_test_multidata( 
-#    TARGET multio_get_interpolate_test_data_reducedgg  
-#    DIRNAME multio/tests/actions/interpolate/reducedgg-PL 
-#    DIRLOCAL ${CMAKE_BINARY_DIR}/multio/tests/interpolate/data/reducedgg-PL
-#    NAMES ${_interpolate_test_data_reducedgg}
-#    )
-#
-#ecbuild_get_test_multidata( 
-#    TARGET multio_get_interpolate_test_data_spherical  
-#    DIRNAME multio/tests/actions/interpolate/spherical-PL 
-#    DIRLOCAL ${CMAKE_BINARY_DIR}/multio/tests/interpolate/data/spherical-PL
-#    NAMES ${_interpolate_test_data_spherical}
-#    )    
+ecbuild_get_test_multidata( 
+    TARGET multio_get_interpolate_test_data_reducedgg  
+    DIRNAME multio/tests/actions/interpolate/reducedgg-PL 
+    DIRLOCAL ${CMAKE_BINARY_DIR}/multio/tests/interpolate/data/reducedgg-PL
+    NAMES ${_interpolate_test_data_reducedgg}
+    )
+
+ecbuild_get_test_multidata( 
+    TARGET multio_get_interpolate_test_data_spherical  
+    DIRNAME multio/tests/actions/interpolate/spherical-PL 
+    DIRLOCAL ${CMAKE_BINARY_DIR}/multio/tests/interpolate/data/spherical-PL
+    NAMES ${_interpolate_test_data_spherical}
+    )    
 
 ecbuild_add_test( 
     TARGET test_multio_encodeDecode_reducedgg

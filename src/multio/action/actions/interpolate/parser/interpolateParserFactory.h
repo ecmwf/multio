@@ -96,15 +96,8 @@ public:
             highParser = new ActionInterpolateHighParserAtlas(configurationContext);
         }
         else {
-            std::ostringstream oss;
-            oss << "ERROR :: Action::Interpolate::Parser :: Bad input sequence in "
-                   "YAML file "
-                << std::endl
-                << "    file.....: " << __FILE__ << std::endl
-                << "    function.: " << __FUNCTION__ << std::endl
-                << "    line.....: " << __LINE__ << std::endl
-                << std::endl;
-            throw eckit::SeriousBug(oss.str());
+            throw eckit::NotImplemented("Action::Interpolate ::  Bad input sequence in YAML file",
+                                        eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         }
         // Exit point
         return (highParser);

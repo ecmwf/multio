@@ -66,27 +66,13 @@ public:
                     processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
                 }; break;
                 default:
-                    std::ostringstream oss;
-                    oss << "ERROR :: Action::Aggregation :: Unsupported datatype for "
-                           "input message"
-                        << std::endl
-                        << "    file.....: " << __FILE__ << std::endl
-                        << "    function.: " << __FUNCTION__ << std::endl
-                        << "    line.....: " << __LINE__ << std::endl
-                        << std::endl;
-                    throw eckit::BadValue{oss.str()};
+                    throw eckit::BadValue("Action::Aggregation :: Unsupported datatype for input message",
+                                          eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
             }
         }
         else {
-            std::ostringstream oss;
-            oss << "ERROR :: Action::Aggregation :: Unable to find \"precision\" "
-                   "keyword in input metadata"
-                << std::endl
-                << "    file.....: " << __FILE__ << std::endl
-                << "    function.: " << __FUNCTION__ << std::endl
-                << "    line.....: " << __LINE__ << std::endl
-                << std::endl;
-            throw eckit::SeriousBug{oss.str()};
+            throw eckit::SeriousBug("Action::Aggregation :: Unable to find \"precision\" keyword in input metadata",
+                                    eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         }
     }
 

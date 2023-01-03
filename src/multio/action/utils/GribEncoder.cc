@@ -452,27 +452,13 @@ message::Message GribEncoder::setFieldValues(const message::Message& msg) {
                                std::move(buf)};
             }; break;
             default:
-                std::ostringstream oss;
-                oss << "ERROR :: Action::GribEncoder :: Unsupported datatype for "
-                       "input message"
-                    << std::endl
-                    << "    file.....: " << __FILE__ << std::endl
-                    << "    function.: " << __FUNCTION__ << std::endl
-                    << "    line.....: " << __LINE__ << std::endl
-                    << std::endl;
-                throw eckit::BadValue{oss.str()};
+                throw eckit::BadValue("GribEncoder:: Unsupported datatype for input message",
+                                      eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         }
     }
     else {
-        std::ostringstream oss;
-        oss << "ERROR :: Action::GribEncoder :: Unable to find \"precision\" "
-               "keyword in input metadata"
-            << std::endl
-            << "    file.....: " << __FILE__ << std::endl
-            << "    function.: " << __FUNCTION__ << std::endl
-            << "    line.....: " << __LINE__ << std::endl
-            << std::endl;
-        throw eckit::SeriousBug{oss.str()};
+        throw eckit::SeriousBug("GribEncoder:: Unable to find \"precision\" keyword in input metadata",
+                                eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
     }
 }
 

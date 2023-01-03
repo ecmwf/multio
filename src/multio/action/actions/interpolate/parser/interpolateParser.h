@@ -29,6 +29,7 @@
 #ifndef multio_action_interpolateParser_H
 #define multio_action_interpolateParser_H
 
+
 // Include all the mir headers (interpolation package)
 #include "eckit/value/Value.h"
 #include "mir/api/MIRJob.h"
@@ -60,13 +61,8 @@ void forwardConfiguration(const eckit::LocalConfiguration& Source, DestinationTy
     eckit::Value cfgVal = Source.getSubConfiguration(keySource).get();
     eckit::LocalConfiguration tmp;
     if (cfgVal.isMap()) {
-        std::ostringstream oss;
-        oss << "ERROR :: Action::Interpolate :: Nested forwarding is not supported" << std::endl
-            << "    file.....: " << __FILE__ << std::endl
-            << "    function.: " << __FUNCTION__ << std::endl
-            << "    line.....: " << __LINE__ << std::endl
-            << std::endl;
-        throw eckit::SeriousBug(oss.str());
+        throw eckit::NotImplemented("Action::Interpolate :: Nested forwarding is not supported",
+                                    eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
     }
     else if (cfgVal.isList()) {
         if (cfgVal.head().isDouble()) {
@@ -80,13 +76,8 @@ void forwardConfiguration(const eckit::LocalConfiguration& Source, DestinationTy
             Destination.set(keyDestination, Source.getStringVector(keySource));
         }
         else {
-            std::ostringstream oss;
-            oss << "ERROR :: Action::Interpolate :: Unsupported datatype" << std::endl
-                << "    file.....: " << __FILE__ << std::endl
-                << "    function.: " << __FUNCTION__ << std::endl
-                << "    line.....: " << __LINE__ << std::endl
-                << std::endl;
-            throw eckit::SeriousBug(oss.str());
+            throw eckit::NotImplemented("Action::Interpolate :: Unsupported datatype",
+                                        eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         };
     }
     else {
@@ -103,13 +94,8 @@ void forwardConfiguration(const eckit::LocalConfiguration& Source, DestinationTy
             Destination.set(keyDestination, Source.getString(keySource).c_str());
         }
         else {
-            std::ostringstream oss;
-            oss << "ERROR :: Action::Interpolate :: Unsupported datatype" << std::endl
-                << "    file.....: " << __FILE__ << std::endl
-                << "    function.: " << __FUNCTION__ << std::endl
-                << "    line.....: " << __LINE__ << std::endl
-                << std::endl;
-            throw eckit::SeriousBug(oss.str());
+            throw eckit::NotImplemented("Action::Interpolate :: Unsupported datatype",
+                                        eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         };
     }
 };

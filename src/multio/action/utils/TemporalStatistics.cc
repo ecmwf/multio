@@ -27,27 +27,13 @@ auto reset_statistics(const std::vector<std::string>& opNames, message::Message 
                 }
             }; break;
             default:
-                std::ostringstream oss;
-                oss << "ERROR :: TemporalStatistics :: Unsupported datatype for "
-                       "input message"
-                    << std::endl
-                    << "    file.....: " << __FILE__ << std::endl
-                    << "    function.: " << __FUNCTION__ << std::endl
-                    << "    line.....: " << __LINE__ << std::endl
-                    << std::endl;
-                throw eckit::BadValue{oss.str()};
+                throw eckit::BadValue("TemporalStatistics :: Unsupported datatype for input message",
+                                      eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         }
     }
     else {
-        std::ostringstream oss;
-        oss << "ERROR :: TemporalStatistics :: Unable to find \"precision\" "
-               "keyword in input metadata"
-            << std::endl
-            << "    file.....: " << __FILE__ << std::endl
-            << "    function.: " << __FUNCTION__ << std::endl
-            << "    line.....: " << __LINE__ << std::endl
-            << std::endl;
-        throw eckit::SeriousBug{oss.str()};
+        throw eckit::SeriousBug("TemporalStatistics :: Unable to find \"precision\" keyword in input metadata",
+                                eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
     }
     return stats;
 }

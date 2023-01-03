@@ -209,14 +209,8 @@ private:
                 auto inputGrid = atlas::Grid(inputGridName_);
                 if (!inputGrid) {
                     std::ostringstream oss;
-                    oss << "ERROR :: Action::Interpolate::Parser :: invalid input grid "
-                           "-> "
-                        << inputGridName_ << std::endl
-                        << "    file.....: " << __FILE__ << std::endl
-                        << "    function.: " << __FUNCTION__ << std::endl
-                        << "    line.....: " << __LINE__ << std::endl
-                        << std::endl;
-                    throw eckit::SeriousBug(oss.str());
+                    oss << "Action::Interpolate::Parser :: invalid input grid -> " << inputGridName_ << std::endl;
+                    throw eckit::NotImplemented(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
                 }
                 else {
                     // Check if the grid is a reduced gaussian grid
@@ -241,28 +235,18 @@ private:
                                 mirInputParams_.set("west", bb.west());
                             }
                             else {
-                                std::ostringstream oss;
-                                oss << "ERROR :: Action::Interpolate::Parser :: Unable to get "
-                                       "the bounding box "
-                                    << std::endl
-                                    << "    file.....: " << __FILE__ << std::endl
-                                    << "    function.: " << __FUNCTION__ << std::endl
-                                    << "    line.....: " << __LINE__ << std::endl
-                                    << std::endl;
-                                throw eckit::SeriousBug(oss.str());
+                                throw eckit::SeriousBug(
+                                    "Action::Interpolate::Parser :: Unable to get a valid bounding box",
+                                    eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
                             }
                             inputSize_ = inputGrid.size();
                         }
                         else {
                             std::ostringstream oss;
-                            oss << "ERROR :: Action::Interpolate::Parser :: non-reduced "
-                                   "Gaussian grids are still not supported -> "
-                                << inputGridName_ << std::endl
-                                << "    file.....: " << __FILE__ << std::endl
-                                << "    function.: " << __FUNCTION__ << std::endl
-                                << "    line.....: " << __LINE__ << std::endl
-                                << std::endl;
-                            throw eckit::SeriousBug(oss.str());
+                            oss << "Action::Interpolate::Parser :: gaussian non-reduced grids still not supported -> "
+                                << inputGridName_ << std::endl;
+                            throw eckit::NotImplemented(oss.str(),
+                                                        eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
                         }
                     }
                     else if (structuredGrid) {
@@ -276,15 +260,8 @@ private:
                             mirInputParams_.set("west", bb.west());
                         }
                         else {
-                            std::ostringstream oss;
-                            oss << "ERROR :: Action::Interpolate::Parser :: Unable to get "
-                                   "the bounding box "
-                                << std::endl
-                                << "    file.....: " << __FILE__ << std::endl
-                                << "    function.: " << __FUNCTION__ << std::endl
-                                << "    line.....: " << __LINE__ << std::endl
-                                << std::endl;
-                            throw eckit::SeriousBug(oss.str());
+                            throw eckit::SeriousBug("Action::Interpolate::Parser :: Unable to get a valid bounding box",
+                                                    eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
                         }
                         double degSN;
                         double degWE;
@@ -302,28 +279,16 @@ private:
                     }
                     else {
                         std::ostringstream oss;
-                        oss << "ERROR :: Action::Interpolate::Parser :: grid still not "
-                               "supported -> "
-                            << inputGridName_ << std::endl
-                            << "    file.....: " << __FILE__ << std::endl
-                            << "    function.: " << __FUNCTION__ << std::endl
-                            << "    line.....: " << __LINE__ << std::endl
+                        oss << "Action::Interpolate::Parser :: grid still not supported -> " << inputGridName_
                             << std::endl;
-                        throw eckit::SeriousBug(oss.str());
+                        throw eckit::NotImplemented(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
                     }
                 }
             }
         }
         else {
-            std::ostringstream oss;
-            oss << "ERROR :: Action::Interpolate::Parser :: Input grid name must be "
-                   "a string"
-                << std::endl
-                << "    file.....: " << __FILE__ << std::endl
-                << "    function.: " << __FUNCTION__ << std::endl
-                << "    line.....: " << __LINE__ << std::endl
-                << std::endl;
-            throw eckit::SeriousBug(oss.str());
+            throw eckit::UserError("Action::Interpolate::Parser :: Input grid name must be a string",
+                                   eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         };
         // Exit point
         return;
@@ -364,14 +329,8 @@ private:
                 auto outputGrid = atlas::Grid(outputGridName_);
                 if (!outputGrid) {
                     std::ostringstream oss;
-                    oss << "ERROR :: Action::Interpolate::Parser :: invalid output grid "
-                           "-> "
-                        << outputGridName_ << std::endl
-                        << "    file.....: " << __FILE__ << std::endl
-                        << "    function.: " << __FUNCTION__ << std::endl
-                        << "    line.....: " << __LINE__ << std::endl
-                        << std::endl;
-                    throw eckit::SeriousBug(oss.str());
+                    oss << "Action::Interpolate::Parser :: invalid output grid -> " << outputGridName_ << std::endl;
+                    throw eckit::NotImplemented(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
                 }
                 else {
                     // Check if the grid is a reduced gaussian grid
@@ -389,15 +348,8 @@ private:
                             mirJobParams_.set("area", tmp);
                         }
                         else {
-                            std::ostringstream oss;
-                            oss << "ERROR :: Action::Interpolate::Parser :: Unable to get "
-                                   "the bounding box "
-                                << std::endl
-                                << "    file.....: " << __FILE__ << std::endl
-                                << "    function.: " << __FUNCTION__ << std::endl
-                                << "    line.....: " << __LINE__ << std::endl
-                                << std::endl;
-                            throw eckit::SeriousBug(oss.str());
+                            throw eckit::SeriousBug("Action::Interpolate::Parser :: Unable to get a valid bounding box",
+                                                    eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
                         }
                         double degSN;
                         double degWE;
@@ -416,28 +368,16 @@ private:
                     }
                     else {
                         std::ostringstream oss;
-                        oss << "ERROR :: Action::Interpolate::Parser :: grid still not "
-                               "supported -> "
-                            << outputGridName_ << std::endl
-                            << "    file.....: " << __FILE__ << std::endl
-                            << "    function.: " << __FUNCTION__ << std::endl
-                            << "    line.....: " << __LINE__ << std::endl
+                        oss << "Action::Interpolate::Parser :: grid still not supported -> " << outputGridName_
                             << std::endl;
-                        throw eckit::SeriousBug(oss.str());
+                        throw eckit::NotImplemented(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
                     }
                 }
             }
         }
         else {
-            std::ostringstream oss;
-            oss << "ERROR :: Action::Interpolate::Parser :: Output grid name must be "
-                   "a string"
-                << std::endl
-                << "    file.....: " << __FILE__ << std::endl
-                << "    function.: " << __FUNCTION__ << std::endl
-                << "    line.....: " << __LINE__ << std::endl
-                << std::endl;
-            throw eckit::SeriousBug(oss.str());
+            throw eckit::UserError("Action::Interpolate::Parser :: Input grid name must be a string",
+                                   eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         };
         // Exit point
         return;

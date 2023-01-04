@@ -19,9 +19,14 @@ list( APPEND _link_libraries
     multio-action-sink
     multio-action-statistics
     multio-action-transport
-    multio-fdb5
     eckit_option
 )
+
+if ( HAVE_FDB5 )
+    list( APPEND _link_libraries
+        multio-fdb5
+    )
+endif()
 
 if( HAVE_MIR )
     list( APPEND _link_libraries

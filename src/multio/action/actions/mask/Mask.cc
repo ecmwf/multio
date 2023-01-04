@@ -139,27 +139,13 @@ void Mask::applyOffset(message::Message msg) const {
                 }
             }; break;
             default:
-                std::ostringstream oss;
-                oss << "ERROR :: Action::Mask :: Unsupported datatype for "
-                       "input message"
-                    << std::endl
-                    << "    file.....: " << __FILE__ << std::endl
-                    << "    function.: " << __FUNCTION__ << std::endl
-                    << "    line.....: " << __LINE__ << std::endl
-                    << std::endl;
-                throw eckit::BadValue{oss.str()};
+                throw eckit::BadValue("Action::Mask :: Unsupported datatype for input message",
+                                      eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
         }
     }
     else {
-        std::ostringstream oss;
-        oss << "ERROR :: Action::Mask :: Unable to find \"precision\" "
-               "keyword in input metadata"
-            << std::endl
-            << "    file.....: " << __FILE__ << std::endl
-            << "    function.: " << __FUNCTION__ << std::endl
-            << "    line.....: " << __LINE__ << std::endl
-            << std::endl;
-        throw eckit::SeriousBug{oss.str()};
+        throw eckit::SeriousBug("Action::Mask :: Unable to find \"precision\" keyword in input metadata",
+                                eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
     }
 }
 

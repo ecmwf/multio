@@ -219,6 +219,14 @@ fi
 # Run the values comparison between field interpolate using mars and field interpolated using multio
 # This is a value comaparison because the metadata have been already comared and are the same!!!
 if [[ ${ARGS} == "permissive" ]] ; then
+  #
+  # It would be nice to be able to make the comparison only on a cropped subset of the field 
+  # (i.e. avoid the poles due to the problems with different versions of mir). Not sure
+  # that mir-compare supports this kind of comparisons. 
+  #
+  # TODO: improve mir-compare to allow cropped comparisons.
+  # TODO: this comaprison is fake at the moment since the parameters (-P -T 1024) are too
+  # width just to pass the test with the errors at the poles
   ${DIFF_TOOL} -P -T 1024 ${TEST_EXPECTED_RESULT} ${TEST_COMPUTED_RESULT} 2>> ${TEST_OUTLOG}
 else
   ${DIFF_TOOL} ${TEST_EXPECTED_RESULT} ${TEST_COMPUTED_RESULT} 2>> ${TEST_OUTLOG}

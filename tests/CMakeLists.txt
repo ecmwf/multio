@@ -98,7 +98,9 @@ ecbuild_add_executable( TARGET    multio-legacy-hammer
                         CONDITION HAVE_FDB5 AND HAVE_LEGACY_IFSIO AND HAVE_MIR
                         LIBS      ${_link_libraries})
 
-ecbuild_get_test_multidata( TARGET multio_get_test_data DIRNAME fdb5/tests/fdb NAMES ${_test_data} )
+ecbuild_get_test_multidata( TARGET multio_get_test_data 
+                            DIRNAME fdb5/tests/fdb 
+                            NAMES ${_test_data} )
 
 ecbuild_add_test( TARGET test_multio_ifs_plans
 	              CONDITION HAVE_FDB5 AND HAVE_MIR
@@ -158,77 +160,77 @@ list( APPEND _interpolate_test_data_spherical
 ecbuild_get_test_multidata( 
     TARGET multio_get_interpolate_test_data_reducedgg  
     DIRNAME multio/tests/actions/interpolate/reducedgg-PL 
-    DIRLOCAL ${CMAKE_BINARY_DIR}/multio/tests/interpolate/data/reducedgg-PL
+    DIRLOCAL ${multio_BINARY_DIR}/tests/interpolate/data/reducedgg-PL
     NAMES ${_interpolate_test_data_reducedgg}
     )
 
 ecbuild_get_test_multidata( 
     TARGET multio_get_interpolate_test_data_spherical  
     DIRNAME multio/tests/actions/interpolate/spherical-PL 
-    DIRLOCAL ${CMAKE_BINARY_DIR}/multio/tests/interpolate/data/spherical-PL
+    DIRLOCAL ${multio_BINARY_DIR}/tests/interpolate/data/spherical-PL
     NAMES ${_interpolate_test_data_spherical}
     )    
 
 ecbuild_add_test( 
     TARGET test_multio_encodeDecode_reducedgg
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/sanityCheckEncodeDecode/sanityCheckEncodeDecodeReducedGG.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/sanityCheckEncodeDecode/sanityCheckEncodeDecodeReducedGG.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test(            
     TARGET test_multio_encodeDecode_spherical
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/sanityCheckEncodeDecode/sanityCheckEncodeDecodeSpherical.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/sanityCheckEncodeDecode/sanityCheckEncodeDecodeSpherical.sh
     TEST_DEPENDS multio_get_interpolate_test_data_spherical
  )
 
 ecbuild_add_test( 
     TARGET test_multio_encodeDecode_regularll
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/sanityCheckEncodeDecode/sanityCheckEncodeDecodeRegularLL.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/sanityCheckEncodeDecode/sanityCheckEncodeDecodeRegularLL.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_emptyInterpolation_reducedgg
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/sanityCheckEmptyInterpolation/sanityCheckEmptyInterpolationReducedGG.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/sanityCheckEmptyInterpolation/sanityCheckEmptyInterpolationReducedGG.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_emptyInterpolation_atlas_reducedgg
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/sanityCheckEmptyInterpolation/sanityCheckEmptyInterpolationAtlasReducedGG.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/sanityCheckEmptyInterpolation/sanityCheckEmptyInterpolationAtlasReducedGG.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_emptyInterpolation_regularll
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/sanityCheckEmptyInterpolation/sanityCheckEmptyInterpolationRegularLL.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/sanityCheckEmptyInterpolation/sanityCheckEmptyInterpolationRegularLL.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_emptyInterpolation_atlas_regularll
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/sanityCheckEmptyInterpolation/sanityCheckEmptyInterpolationAtlasRegularLL.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/sanityCheckEmptyInterpolation/sanityCheckEmptyInterpolationAtlasRegularLL.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_emptyInterpolation_spherical
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/sanityCheckEmptyInterpolation/sanityCheckEmptyInterpolationSpherical.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/sanityCheckEmptyInterpolation/sanityCheckEmptyInterpolationSpherical.sh
     TEST_DEPENDS multio_get_interpolate_test_data_spherical
 )
 
 ecbuild_add_test( 
     TARGET test_multio_emptyInterpolation_atlas_spherical
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/sanityCheckEmptyInterpolation/sanityCheckEmptyInterpolationAtlasSpherical.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/sanityCheckEmptyInterpolation/sanityCheckEmptyInterpolationAtlasSpherical.sh
     TEST_DEPENDS multio_get_interpolate_test_data_spherical
 )
 
@@ -237,126 +239,126 @@ ecbuild_add_test(
 ecbuild_add_test( 
     TARGET test_multio_interpolateFullFrame_reducedgg_025x025
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateFullFrame/interpolateFullFrameReducedGG_025x025.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateFullFrame/interpolateFullFrameReducedGG_025x025.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateFullFrame_reducedgg_050x050
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateFullFrame/interpolateFullFrameReducedGG_050x050.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateFullFrame/interpolateFullFrameReducedGG_050x050.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateFullFrame_reducedgg_100x100
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateFullFrame/interpolateFullFrameReducedGG_100x100.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateFullFrame/interpolateFullFrameReducedGG_100x100.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateFullFrame_spherical_025x025
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateFullFrame/interpolateFullFrameSpherical_025x025.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateFullFrame/interpolateFullFrameSpherical_025x025.sh
     TEST_DEPENDS multio_get_interpolate_test_data_spherical
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateFullFrame_spherical_050x050
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateFullFrame/interpolateFullFrameSpherical_050x050.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateFullFrame/interpolateFullFrameSpherical_050x050.sh
     TEST_DEPENDS multio_get_interpolate_test_data_spherical
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateFullFrame_spherical_100x100
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateFullFrame/interpolateFullFrameSpherical_100x100.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateFullFrame/interpolateFullFrameSpherical_100x100.sh
     TEST_DEPENDS multio_get_interpolate_test_data_spherical
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateFullFrame_atlas_reducedgg_025x025
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateFullFrame/interpolateFullFrameAtlasReducedGG_025x025.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateFullFrame/interpolateFullFrameAtlasReducedGG_025x025.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateFullFrame_atlas_reducedgg_050x050
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateFullFrame/interpolateFullFrameAtlasReducedGG_050x050.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateFullFrame/interpolateFullFrameAtlasReducedGG_050x050.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateFullFrame_atlas_reducedgg_100x100
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateFullFrame/interpolateFullFrameAtlasReducedGG_100x100.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateFullFrame/interpolateFullFrameAtlasReducedGG_100x100.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateFullFrame_atlas_spherical_025x025
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateFullFrame/interpolateFullFrameAtlasSpherical_025x025.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateFullFrame/interpolateFullFrameAtlasSpherical_025x025.sh
     TEST_DEPENDS multio_get_interpolate_test_data_spherical
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateFullFrame_atlas_spherical_050x050
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateFullFrame/interpolateFullFrameAtlasSpherical_050x050.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateFullFrame/interpolateFullFrameAtlasSpherical_050x050.sh
     TEST_DEPENDS multio_get_interpolate_test_data_spherical
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateFullFrame_atlas_spherical_100x100
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateFullFrame/interpolateFullFrameAtlasSpherical_100x100.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateFullFrame/interpolateFullFrameAtlasSpherical_100x100.sh
     TEST_DEPENDS multio_get_interpolate_test_data_spherical
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateCropped_reducedgg_025x025
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateCropped/interpolateCroppedReducedGG_025x025.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateCropped/interpolateCroppedReducedGG_025x025.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateCropped_reducedgg_050x050
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateCropped/interpolateCroppedReducedGG_050x050.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateCropped/interpolateCroppedReducedGG_050x050.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateCropped_reducedgg_100x100
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateCropped/interpolateCroppedReducedGG_100x100.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateCropped/interpolateCroppedReducedGG_100x100.sh
     TEST_DEPENDS multio_get_interpolate_test_data_reducedgg
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateCropped_spherical_025x025
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateCropped/interpolateCroppedSpherical_025x025.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateCropped/interpolateCroppedSpherical_025x025.sh
     TEST_DEPENDS multio_get_interpolate_test_data_spherical
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateCropped_spherical_050x050
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateCropped/interpolateCroppedSpherical_050x050.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateCropped/interpolateCroppedSpherical_050x050.sh
     TEST_DEPENDS multio_get_interpolate_test_data_spherical
 )
 
 ecbuild_add_test( 
     TARGET test_multio_interpolateCropped_spherical_100x100
     CONDITION HAVE_MIR
-    COMMAND ${CMAKE_BINARY_DIR}/multio/tests/interpolate/interpolateCropped/interpolateCroppedSpherical_100x100.sh
+    COMMAND ${multio_BINARY_DIR}/tests/interpolate/interpolateCropped/interpolateCroppedSpherical_100x100.sh
     TEST_DEPENDS multio_get_interpolate_test_data_spherical
 )
 

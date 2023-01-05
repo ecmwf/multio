@@ -22,10 +22,10 @@ plans:
           empty:
       - type: encode
         format: grib
-        template: @CMAKE_BINARY_DIR@/multio/tests/interpolate/data/spherical-PL/mars-spherical-025x025.grib
+        template: @multio_BINARY_DIR@/tests/interpolate/data/spherical-PL/mars-spherical-025x025.grib
       - type: sink
         sinks:
           - type: file
             append: false
             per-server: false # Will give you one file per server
-            path: @CMAKE_BINARY_DIR@/multio/tests/interpolate/interpolateFullFrame/multio-spherical-025x025.grib
+            path: @multio_BINARY_DIR@/tests/interpolate/interpolateFullFrame/multio-spherical-025x025.grib

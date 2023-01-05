@@ -6,10 +6,10 @@ plans:
         to: SH1279
       - type: encode
         format: grib
-        template: @CMAKE_BINARY_DIR@/multio/tests/interpolate/data/spherical-PL/mars-spherical-orig.grib
+        template: @multio_BINARY_DIR@/tests/interpolate/data/spherical-PL/mars-spherical-orig.grib
       - type: sink
         sinks:
           - type: file
             append: false
             per-server: false
-            path: @CMAKE_BINARY_DIR@/multio/tests/interpolate/sanityCheckEmptyInterpolation/multio-spherical-orig.grib
+            path: @multio_BINARY_DIR@/tests/interpolate/sanityCheckEmptyInterpolation/multio-spherical-orig.grib

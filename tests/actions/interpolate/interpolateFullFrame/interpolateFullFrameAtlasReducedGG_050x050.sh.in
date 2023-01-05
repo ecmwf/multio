@@ -15,7 +15,7 @@
 
 #
 # Function used to run the test
-source @CMAKE_SOURCE_DIR@/multio/tests/actions/interpolate/interpolateTestRunHelper.sh
+source @multio_SOURCE_DIR@/tests/actions/interpolate/interpolateTestRunHelper.sh
 
 
 #

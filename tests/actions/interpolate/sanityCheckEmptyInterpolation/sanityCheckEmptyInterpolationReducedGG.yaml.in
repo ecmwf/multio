@@ -5,7 +5,7 @@ plans:
         outputSize: 6599680
         inputConfiguration:
           loadFromFile:
-            pl: @CMAKE_SOURCE_DIR@/multio/tests/actions/interpolate/pointsPerLatitude.dat
+            pl: @multio_SOURCE_DIR@/tests/actions/interpolate/pointsPerLatitude.dat
           setByValue:
             gridType: reduced_gg
             gridded: true
@@ -20,10 +20,10 @@ plans:
           empty:
       - type: encode
         format: grib
-        template: @CMAKE_BINARY_DIR@/multio/tests/interpolate/data/reducedgg-PL/mars-reducedgg-orig.grib
+        template: @multio_BINARY_DIR@/tests/interpolate/data/reducedgg-PL/mars-reducedgg-orig.grib
       - type: sink
         sinks:
           - type: file
             append: false
             per-server: false
-            path: @CMAKE_BINARY_DIR@/multio/tests/interpolate/sanityCheckEmptyInterpolation/multio-reducedgg-orig.grib
+            path: @multio_BINARY_DIR@/tests/interpolate/sanityCheckEmptyInterpolation/multio-reducedgg-orig.grib

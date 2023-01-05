@@ -14,8 +14,7 @@
 
 /// @date Jan 2019
 
-#ifndef multio_transport_MpiTransport_H
-#define multio_transport_MpiTransport_H
+#pragma once
 
 #include <queue>
 #include <tuple>
@@ -42,7 +41,7 @@ public:
 
 private:
     MpiTransport(const ConfigurationContext& confCtx, MpiPeerSetup&& peerSetup);
-    
+
     void openConnections() override;
     void closeConnections() override;
 
@@ -84,5 +83,3 @@ private:
 
 }  // namespace transport
 }  // namespace multio
-
-#endif

@@ -13,14 +13,13 @@
 /// @date Dec 2015
 
 
-#ifndef multio_FileSink_H
-#define multio_FileSink_H
+#pragma once
 
 #include <iosfwd>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "eckit/filesystem/PathName.h"
 
@@ -57,5 +56,3 @@ private:  // members
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-
-#endif  // multio_FileSink_H

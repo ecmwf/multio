@@ -12,8 +12,7 @@
 
 /// @date Aug 2022
 
-#ifndef multio_util_ConfigurationContext_H
-#define multio_util_ConfigurationContext_H
+#pragma once
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/utils/Optional.h"
@@ -98,7 +97,8 @@ struct MPIInitInfo {
 
 class ConfigurationContext {
 public:
-    ConfigurationContext(const eckit::PathName& fileName = configuration_file_name(), LocalPeerTag clientOrServer = LocalPeerTag::Client,
+    ConfigurationContext(const eckit::PathName& fileName = configuration_file_name(),
+                         LocalPeerTag clientOrServer = LocalPeerTag::Client,
                          ComponentTag tag = ComponentTag::Unrelated);
 
     ConfigurationContext(const eckit::PathName& pathName, const eckit::PathName& fileName,
@@ -273,5 +273,3 @@ public:
 
 }  // namespace util
 }  // namespace multio
-
-#endif

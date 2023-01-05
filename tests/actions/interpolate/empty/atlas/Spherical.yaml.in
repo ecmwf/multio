@@ -1,0 +1,15 @@
+plans:
+  - name: test-empty-interpolation-spherical
+    actions:
+      - type: interpolate
+        from: TCO1279
+        to: TCO1279
+      - type: encode
+        format: grib
+        template: @multio_BINARY_DIR@/tests/actions/interpolate/data/spherical/MarsSphericalOrig.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false
+            path: @multio_BINARY_DIR@/tests/actions/interpolate/empty/atlas/MultioSphericalOrig.grib

@@ -14,8 +14,7 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_Listener_H
-#define multio_server_Listener_H
+#pragma once
 
 #include <atomic>
 #include <memory>
@@ -42,15 +41,16 @@ namespace server {
 
 class Dispatcher;
 
-class Listener: public util::FailureAware<util::ComponentTag::Receiver> {
+class Listener : public util::FailureAware<util::ComponentTag::Receiver> {
 public:
     Listener(const util::ConfigurationContext& confCtx, transport::Transport& trans);
 
     void start();
 
     void listen();
-    
-    util::FailureHandlerResponse handleFailure(util::OnReceiveError, const util::FailureContext&, util::DefaultFailureState&) const override;
+
+    util::FailureHandlerResponse handleFailure(util::OnReceiveError, const util::FailureContext&,
+                                               util::DefaultFailureState&) const override;
 
 private:
     bool moreConnections() const;
@@ -66,11 +66,9 @@ private:
 
 
     std::set<message::Peer> connections_;
-    mutable eckit::Queue<message::Message> msgQueue_; // Mark mutable to be able to close when handling failure in const function
-
+    mutable eckit::Queue<message::Message>
+        msgQueue_;  // Mark mutable to be able to close when handling failure in const function
 };
 
 }  // namespace server
 }  // namespace multio
-
-#endif

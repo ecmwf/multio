@@ -14,8 +14,7 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_Message_H
-#define multio_server_Message_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -69,7 +68,7 @@ public:  // types
 
         std::string category() const;
 
-        long globalSize() const ;
+        long globalSize() const;
 
         std::string domain() const;
 
@@ -79,7 +78,7 @@ public:  // types
 
         // Metadata&& metadata() &&;
         const Metadata& metadata() const&;
-        
+
         Header modifyMetadata(Metadata&& md) const;
 
     private:
@@ -90,7 +89,7 @@ public:  // types
 
         Metadata metadata_;
         // encode fieldId_ lazily
-        mutable eckit::Optional<std::string> fieldId_; // Make that a hash?
+        mutable eckit::Optional<std::string> fieldId_;  // Make that a hash?
     };
 
     // class Content {
@@ -122,7 +121,6 @@ public:  // methods
     // Message(std::shared_ptr<Header> header, std::shared_ptr<eckit::Buffer> payload);
 
 public:
-
     const Header& header() const;
 
     int version() const;
@@ -135,16 +133,16 @@ public:
 
     std::string category() const;
 
-    long globalSize() const ;
+    long globalSize() const;
 
     std::string domain() const;
 
     const std::string& fieldId() const;
-    
+
     // Metadata&& metadata() &&;
-    
+
     const Metadata& metadata() const&;
-    
+
     Message modifyMetadata(Metadata&& md) const;
 
     eckit::Buffer& payload();
@@ -167,12 +165,9 @@ private:  // members
 
     std::shared_ptr<Header> header_;
     std::shared_ptr<eckit::Buffer> payload_;
-
 };
 
 eckit::message::Message to_eckit_message(const Message& msg);
 
 }  // namespace message
 }  // namespace multio
-
-#endif

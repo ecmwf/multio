@@ -8,17 +8,16 @@
  * does it submit to any jurisdiction.
  */
 
-#ifndef multio_TestHelpers_H
-#define multio_TestHelpers_H
+#pragma once
 
 #include <cmath>
-#include <iostream>
-#include <string>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
+#include <string>
 
-#include "eckit/filesystem/TmpFile.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/filesystem/TmpFile.h"
 
 #include "multio/sink/FileSink.h"
 #include "multio/util/ConfigurationContext.h"
@@ -37,16 +36,14 @@ public:
 
 
 // Helpers for file-sink tests
-inline auto make_configured_file_sink(const eckit::PathName& file_path)
-    -> std::unique_ptr<DataSink> {
+inline auto make_configured_file_sink(const eckit::PathName& file_path) -> std::unique_ptr<DataSink> {
     eckit::LocalConfiguration config;
     config.set("path", file_path);
     util::ConfigurationContext confCtx(config, "", "");
     return std::unique_ptr<DataSink>(DataSinkFactory::instance().build("file", confCtx));
 }
 
-inline auto make_configured_file_sink(const eckit::PathName& file_path, bool append)
-    -> std::unique_ptr<DataSink> {
+inline auto make_configured_file_sink(const eckit::PathName& file_path, bool append) -> std::unique_ptr<DataSink> {
     eckit::LocalConfiguration config;
     config.set("path", file_path);
     config.set("append", append);
@@ -61,5 +58,3 @@ inline auto file_content(const eckit::PathName& file_path) -> std::string {
 
 }  // namespace test
 }  // namespace multio
-
-#endif  // multio_TestHelpers_H

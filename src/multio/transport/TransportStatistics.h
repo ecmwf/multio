@@ -1,6 +1,4 @@
-
-#ifndef multio_transport_TransportStatistics_H
-#define multio_transport_TransportStatistics_H
+#pragma once
 
 #include <iosfwd>
 
@@ -53,10 +51,8 @@ public:
     eckit::Timing totReturnTiming_;
     eckit::Timer totReturnTimer_;
 
-    void report(std::ostream &out, const char* indent = "") const;
+    void report(std::ostream& out, const char* indent = "") const;
 };
 
 }  // namespace transport
 }  // namespace multio
-
-#endif // multio_transport_TransportStatistics_H

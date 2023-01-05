@@ -20,8 +20,7 @@
  *   This reduces a lot of boilerplate code.
  */
 
-#ifndef multio_util_Metadata_H
-#define multio_util_Metadata_H
+#pragma once
 
 #include "eckit/utils/Optional.h"
 
@@ -144,5 +143,3 @@ eckit::Optional<bool> lookUpBool(const eckit::Configuration& c, const std::strin
 
 }  // namespace util
 }  // namespace multio
-
-#endif

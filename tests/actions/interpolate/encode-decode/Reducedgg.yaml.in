@@ -1,0 +1,12 @@
+plans:
+  - name: test-interpolate-reducedgg
+    actions:
+      - type: encode
+        format: grib
+        template: @multio_BINARY_DIR@/tests/actions/interpolate/data/reducedgg/MarsReducedggOrig.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false
+            path: @multio_BINARY_DIR@/tests/actions/interpolate/encode-decode/MultioReducedggOrig.grib

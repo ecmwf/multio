@@ -13,8 +13,7 @@
 
 /// @date Sep 2022
 
-#ifndef multio_message_MetadataMapping_H
-#define multio_message_MetadataMapping_H
+#pragma once
 
 #include <unordered_map>
 
@@ -63,5 +62,3 @@ private:
 
 }  // namespace message
 }  // namespace multio
-
-#endif

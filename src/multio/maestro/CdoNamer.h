@@ -1,11 +1,10 @@
-#ifndef multio_CdoNamer_H
-#define multio_CdoNamer_H
+#pragma once
 
 #include <algorithm>
-#include <string>
 #include <map>
-#include <unordered_set>
 #include <sstream>
+#include <string>
+#include <unordered_set>
 
 #include "multio/maestro/MaestroMetadata.h"
 
@@ -15,9 +14,7 @@ class CdoNamer {
 public:
     CdoNamer() = default;
 
-    std::string name(const std::map<std::string, std::string>& retrieve) const {
-        return map_to_name(retrieve);
-    }
+    std::string name(const std::map<std::string, std::string>& retrieve) const { return map_to_name(retrieve); }
 
     std::string name(MaestroMetadata& md) const {
         auto keys = md.keys();
@@ -33,10 +30,10 @@ public:
 private:
     std::string map_to_name(const std::map<std::string, std::string>& retrieve) const {
         std::map<std::string, std::string> filtered_retrieve;
-        std::copy_if(retrieve.begin(), retrieve.end(), std::inserter(filtered_retrieve,
-            filtered_retrieve.end()),[this](std::pair<std::string, std::string> const& it) {
-                return ignored_keys.find(it.first) == ignored_keys.end();
-            });
+        std::copy_if(retrieve.begin(), retrieve.end(), std::inserter(filtered_retrieve, filtered_retrieve.end()),
+                     [this](std::pair<std::string, std::string> const& it) {
+                         return ignored_keys.find(it.first) == ignored_keys.end();
+                     });
 
         std::stringstream ss;
         auto it = filtered_retrieve.cbegin();
@@ -54,5 +51,3 @@ private:
 };
 
 }  // namespace multio
-
-#endif  // multio_CdoNamer_H

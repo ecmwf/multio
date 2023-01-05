@@ -11,8 +11,7 @@
 /// @author Domokos Sarmany
 /// @date   Apr 2020
 
-#ifndef multio_MaestroSink_H
-#define multio_MaestroSink_H
+#pragma once
 
 #include <deque>
 
@@ -58,5 +57,3 @@ private:
 }  // namespace multio
 
 //--------------------------------------------------------------------------------------------------
-
-#endif

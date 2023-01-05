@@ -16,8 +16,7 @@
  * Integer_sequence and utils - simiar to C++14...
  */
 
-#ifndef multio_util_IntegerSequence_H
-#define multio_util_IntegerSequence_H
+#pragma once
 
 #include <type_traits>
 
@@ -36,5 +35,3 @@ struct integer_sequence {
 
 }  // namespace util
 }  // namespace multio
-
-#endif

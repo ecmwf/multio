@@ -1,5 +1,4 @@
-#ifndef multio_api_multio_c_cpp_utils_H
-#define multio_api_multio_c_cpp_utils_H
+#pragma once
 
 #include "multio/message/Metadata.h"
 #include "multio_c.h"
@@ -22,6 +21,3 @@ inline int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const 
 inline int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
     return (multio_write_double_mask(mio, md, data, size));
 };
-
-
-#endif

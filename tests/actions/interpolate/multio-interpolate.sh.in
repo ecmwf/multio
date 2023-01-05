@@ -1,0 +1,316 @@
+# (C) Copyright 2005- ECMWF.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+#
+# In applying this licence, ECMWF does not waive the privileges and immunities granted to it by
+# virtue of its status as an intergovernmental organisation nor does it submit to any jurisdiction.
+#
+
+#
+# \brief Function used to convert kebab case to camel case
+#
+# \param [in] String to be converted
+#
+kebab2camel()
+{
+  OLD_IFS=$IFS
+  IFS='-'
+  RES=''
+  for i in ${1} ; do
+    RES=${RES}`echo ${i:0:1}|tr '/a-z/' '/A-Z/'`${i:1};
+  done
+  IFS=${OLD_IFS}
+  echo ${RES}
+};
+
+
+#
+# \brief Function used to run an interpolation test
+#
+# \param ARGV[1] [in] TEST_CASE_NAME used only for logging is the name of the ctest case 
+# \param ARGV[2] [in] GRID_NAME Used to generate paths and file names (expected to be in camel case format i.e. "Redugedgg")
+# \param ARGV[3] [in] TEST_NAME Used to generate paths and file names (expected to be in kebab-case-format i.e "full-frame")
+# \param ARGV[4] [in] PARSER_NAME Used to generate paths and file names (i.e. "atlas" | "pure-forwarding" | "none")
+#                     Value: "none" has to used for tests that do not depend on the parser 
+# \param ARGV[5] [in] COMAPRE_KIND Used to select the comparison type to be used ( "strict", "permissive" ). 
+#                     This flag is used to handle the error on the poles for full frame interpolations.
+# \param ARGV[6] [in] SPACING Optional. Requested spacing for the interpolation (At the moement supported values are: "100", "050", "024", 
+#                     respectively: one degree, one half degree, one quarter degree) 
+
+#
+# Input parameters
+BUILDDIR=@CMAKE_BINARY_DIR@;
+
+TEST_CASE_NAME=${1};
+GRID_NAME=${2}
+TEST_NAME=${3}
+TEST_NAME_CC=`kebab2camel ${TEST_NAME}`
+PARSER_NAME=${4}
+COMPARE_KIND=${5}
+HAVE_SPACING=0
+SPACING=""
+
+if [[ $# == 6 ]] ; then
+  HAVE_SPACING=1
+  SPACING=${6}
+fi
+
+
+#
+# Generate local variables for the paths and the files needed to run the test
+if [[ ${PARSER_NAME} == "none" ]] ; then
+  TEST_FOLDER=${BUILDDIR}/multio/tests/actions/interpolate/${TEST_NAME};
+else
+  TEST_FOLDER=${BUILDDIR}/multio/tests/actions/interpolate/${TEST_NAME}/${PARSER_NAME};
+fi
+MARS_FOLDER=${BUILDDIR}/multio/tests/actions/interpolate/data/`echo ${GRID_NAME} | tr '/A-Z/' '/a-z/' `;
+
+
+#
+# Executables used to perform the test
+TEST_EXE=${BUILDDIR}/bin/multio-feed
+DIFF_TOOL=${BUILDDIR}/bin/grib_compare
+
+#
+# Data/Configuration files used to run the test
+if [[ ${HAVE_SPACING} == 1 ]] ; then
+  TEST_EXPECTED_RESULT=${MARS_FOLDER}/Mars${TEST_NAME_CC}${GRID_NAME}${SPACING}x${SPACING}.grib
+  TEST_COMPUTED_RESULT=${TEST_FOLDER}/Multio${TEST_NAME_CC}${GRID_NAME}${SPACING}x${SPACING}.grib 
+  MULTIO_PLAN=${TEST_FOLDER}/${GRID_NAME}${SPACING}x${SPACING}.yaml
+else
+  TEST_EXPECTED_RESULT=${MARS_FOLDER}/Mars${GRID_NAME}Orig.grib
+  TEST_COMPUTED_RESULT=${TEST_FOLDER}/Multio${GRID_NAME}Orig.grib
+  MULTIO_PLAN=${TEST_FOLDER}/${GRID_NAME}.yaml
+fi
+
+#
+# File used to feed multio
+MULTIO_FEED=${MARS_FOLDER}/Mars${GRID_NAME}Orig.grib
+
+#
+# Test report and logging files
+RUN_TEST="${0} $@"
+
+# TEST_REPORT=${TEST_FOLDER}/${TEST_CASE_NAME}_`date "+%m-%d-%Y_%H-%M-%S"`.report
+# TEST_OUTLOG=${TEST_FOLDER}/${TEST_CASE_NAME}_`date "+%m-%d-%Y_%H-%M-%S"`.log
+TEST_REPORT=${TEST_FOLDER}/${TEST_CASE_NAME}.report
+TEST_OUTLOG=${TEST_FOLDER}/${TEST_CASE_NAME}.log
+
+#
+# Definition of the line padding (Logging purposes)
+LINE_PADDING="..................................................";
+
+#
+# Initialize report file
+echo " + Test Report"   > ${TEST_REPORT}
+echo "   -----------"   >> ${TEST_REPORT}
+echo "   - ${RUN_TEST}" >> ${TEST_REPORT}
+echo " "                >> ${TEST_REPORT}
+echo " + Input Parameters"   >> ${TEST_REPORT}
+echo "   ----------------"   >> ${TEST_REPORT}
+echo "   - ARGC                   :: " ${#@}            >> ${TEST_REPORT}
+echo "   - ARGV[1] TEST_CASE_NAME :: " ${TEST_CASE_NAME}>> ${TEST_REPORT}
+echo "   - ARGV[2] GRID_NAME      :: " ${GRID_NAME}     >> ${TEST_REPORT}
+echo "   - ARGV[3] TEST_NAME      :: " ${TEST_NAME}     >> ${TEST_REPORT}
+echo "   - ARGV[4] PARSER_NAME    :: " ${PARSER_NAME}   >> ${TEST_REPORT}
+echo "   - ARGV[5] COMPARE_KIND   :: " ${COMPARE_KIND}  >> ${TEST_REPORT}
+if [[ ${HAVE_SPACING} == 1 ]] ; then
+echo "   - ARGS[6] SPACING        :: " ${SPACING}>> ${TEST_REPORT}
+fi
+echo " " >> ${TEST_REPORT}
+echo " + Test configuration" >> ${TEST_REPORT}
+echo "   ------------------" >> ${TEST_REPORT}
+echo "   - TEST_NAME_CC     :: " ${TEST_NAME_CC} >> ${TEST_REPORT}
+echo "   - BUILDDIR         :: " ${BUILDDIR}     >> ${TEST_REPORT}
+echo "   - MARS_FOLDER      :: " ${MARS_FOLDER}  >> ${TEST_REPORT}
+echo "   - TEST_FOLDER      :: " ${TEST_FOLDER}  >> ${TEST_REPORT}
+echo " " >> ${TEST_REPORT}
+echo " + Local variables"    >> ${TEST_REPORT}
+echo "   ------------------" >> ${TEST_REPORT}
+echo "   - TEST_EXE             :: "  ${TEST_EXE}             >> ${TEST_REPORT}
+echo "   - DIFF_TOOL            :: "  ${DIFF_TOOL}            >> ${TEST_REPORT}
+echo "   - TEST_EXPECTED_RESULT :: "  ${TEST_EXPECTED_RESULT} >> ${TEST_REPORT}
+echo "   - TEST_COMPUTED_RESULT :: "  ${TEST_COMPUTED_RESULT} >> ${TEST_REPORT}
+echo "   - MULTIO_PLAN          :: "  ${MULTIO_PLAN}          >> ${TEST_REPORT}
+echo "   - MULTIO_FEED          :: "  ${MULTIO_FEED}          >> ${TEST_REPORT}
+echo "   - TEST_REPORT          :: "  ${TEST_REPORT}          >> ${TEST_REPORT}
+echo "   - TEST_OUTLOG          :: "  ${TEST_OUTLOG}          >> ${TEST_REPORT}
+echo " " >> ${TEST_REPORT}
+echo " + Test status" >> ${TEST_REPORT}
+echo "   -----------" >> ${TEST_REPORT}
+
+#
+# Initialize logging file
+echo "Test Log:    ${0}" > ${TEST_OUTLOG}
+
+
+#
+# Beginning of the test
+MSG="Report start"
+echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_REPORT}
+MSG="Log start"
+echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_OUTLOG}
+
+
+# Check for existence of test tool "multio-feed"
+if [[ -x ${TEST_EXE} ]] ; then
+  MSG="Test executable exists";
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_REPORT}
+else
+  MSG="Test executable NOT exists";
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[KO]" >> ${TEST_REPORT}
+  cat ${TEST_OUTLOG}
+  cat ${TEST_REPORT}
+  echo "Test can be rerun manually using: " ${RUN_TEST}
+  exit 1
+fi
+
+# Check for existence of test tool "grib_compare"
+if [[ -x ${DIFF_TOOL} ]] ; then
+  MSG="Diff tool exists"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_REPORT}
+else
+  MSG="Diff tool NOT exists"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[KO]" >> ${TEST_REPORT}
+  cat ${TEST_OUTLOG}
+  cat ${TEST_REPORT}
+  echo "Test can be rerun manually using: " ${RUN_TEST}
+  exit 2
+fi
+
+# Check for existence of test plan
+if [[ -e ${MULTIO_PLAN} ]] ; then
+  MSG="Plan file exists"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_REPORT}
+else
+  MSG="Plan file NOT exists"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[KO]" >> ${TEST_REPORT}
+  cat ${TEST_OUTLOG}
+  cat ${TEST_REPORT}
+  echo "Test can be rerun manually using: " ${RUN_TEST}
+  exit 3
+fi
+
+# Check for existence of input grib file
+if [[ -e ${MULTIO_FEED} ]] ; then
+  MSG="Input grib file exist"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_REPORT}
+else
+  MSG="Input grib file NOT exists"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[KO]" >> ${TEST_REPORT}
+  cat ${TEST_OUTLOG}
+  cat ${TEST_REPORT}
+  echo "Test can be rerun manually using: " ${RUN_TEST}
+  exit 4
+fi
+
+# Check for existence of expected result
+if [[ -e ${TEST_EXPECTED_RESULT} ]] ; then
+  MSG="Expected result file exist"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_REPORT}
+else
+  MSG="Expected result file NOT exists"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[KO]" >> ${TEST_REPORT}
+  cat ${TEST_OUTLOG}
+  cat ${TEST_REPORT}
+  echo "Test can be rerun manually using: " ${RUN_TEST}
+  exit 5
+fi
+
+# Remove old test results
+if [[ -e ${TEST_COMPUTED_RESULT} ]] ; then
+  rm ${TEST_COMPUTED_RESULT}
+fi
+
+#
+# Run the test
+${TEST_EXE} --decode --plans=${MULTIO_PLAN} ${MULTIO_FEED} 2>> ${TEST_OUTLOG}
+
+#
+# Check exit status for the test
+if [[ $? == 0 ]] ; then
+  MSG="Test executed with success"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_REPORT}
+else
+  MSG="Test execution failed"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[KO]" >> ${TEST_REPORT}
+  cat ${TEST_OUTLOG}
+  cat ${TEST_REPORT}
+  echo "Test can be rerun manually using: " ${RUN_TEST}
+  exit 6
+fi
+
+#
+# Check existence of the test output grib file with interpolated data 
+if [[ -e ${TEST_COMPUTED_RESULT} ]] ; then
+  MSG="Test ouptut file exists"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_REPORT}
+else
+  MSG="Test output file not found"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[KO]" >> ${TEST_REPORT}
+  cat ${TEST_OUTLOG}
+  cat ${TEST_REPORT}
+  echo "Test can be rerun manually using: " ${RUN_TEST}
+  exit 7
+fi
+
+#
+# Run the metadata comparison between field interpolate using mars and field interpolated using multio
+${DIFF_TOOL} -H ${TEST_EXPECTED_RESULT} ${TEST_COMPUTED_RESULT} 2>> ${TEST_OUTLOG}
+
+#
+# Check exit status for the test
+if [[ $? == 0 ]] ; then
+  MSG="Metadata comparison executed with success"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_REPORT}
+else
+  MSG="Matadata comparison failed"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[KO]" >> ${TEST_REPORT}
+  cat ${TEST_OUTLOG}
+  cat ${TEST_REPORT}
+  echo "Test can be rerun manually using: " ${RUN_TEST}
+  exit 8
+fi
+
+#
+# Run the values comparison between field interpolate using mars and field interpolated using multio
+# This is a value comaparison because the metadata have been already comared and are the same!!!
+if [[ ${COMPARE_KIND} == "permissive" ]] ; then
+  #
+  # It would be nice to be able to make the comparison only on a cropped subset of the field 
+  # (i.e. avoid the poles due to the problems with different versions of mir). Not sure
+  # that mir-compare supports this kind of comparisons. 
+  #
+  # TODO: improve mir-compare to allow cropped comparisons.
+  # TODO: this comaprison is fake at the moment since the parameters (-P -T 1024) are too
+  # width just to pass the test with the errors at the poles
+  ${DIFF_TOOL} -P -T 1024 ${TEST_EXPECTED_RESULT} ${TEST_COMPUTED_RESULT} 2>> ${TEST_OUTLOG}
+else
+  ${DIFF_TOOL} ${TEST_EXPECTED_RESULT} ${TEST_COMPUTED_RESULT} 2>> ${TEST_OUTLOG}
+fi
+
+#
+# Check exit status for the test
+if [[ $? == 0 ]] ; then
+  MSG="Values comparison executed with success"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_REPORT}
+else
+  MSG="Values comparison failed"
+  echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[KO]" >> ${TEST_REPORT}
+  cat ${TEST_OUTLOG}
+  cat ${TEST_REPORT}
+  echo "Test can be rerun manually using: " ${RUN_TEST}
+  exit 9
+fi
+
+#
+# Cleanup test tmp files
+rm -f ${TEST_OUTLOG}
+rm -f ${TEST_COMPUTED_RESULT}
+
+#
+# Exit on success
+MSG="Test ended with success"
+echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_REPORT}
+exit 0

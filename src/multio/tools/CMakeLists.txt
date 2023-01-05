@@ -76,11 +76,11 @@ list( APPEND _link_libraries
     multio-action-aggregation
     multio-action-encode
     multio-action-mask
-    multio-action-metadataMapping
+    multio-action-metadata-mapping
     multio-action-null
     multio-action-print
     multio-action-select
-    multio-action-singleFieldSink
+    multio-action-single-field-sink
     multio-action-sink
     multio-action-statistics
     multio-action-transport

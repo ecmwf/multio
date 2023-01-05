@@ -21,8 +21,7 @@
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/value/Value.h"
 
-#ifndef multio_EncodeBitsPerValue_H
-#define multio_EncodeBitsPerValue_H
+#pragma once
 
 namespace multio {
 
@@ -48,8 +47,7 @@ public:
         decimalScaleFactor = cfg.getInt("decimalScaleFactor", marker());
         precision = cfg.getFloat("precision", 0.);
         if (bitsPerValue <= 0 and decimalScaleFactor == marker() and precision <= 0) {
-            throw eckit::BadValue("Invalid bitsPerValue or decimalScaleFactor or precision",
-                                  Here());
+            throw eckit::BadValue("Invalid bitsPerValue or decimalScaleFactor or precision", Here());
         }
     }
 
@@ -71,14 +69,12 @@ public:
         }
     }
 
-    bool defined() const {
-        return (bitsPerValue || decimalScaleFactor != marker() || precision > 0);
-    }
+    bool defined() const { return (bitsPerValue || decimalScaleFactor != marker() || precision > 0); }
 
 private:
     void print(std::ostream& s) const {
-        s << "Encoding(bitsPerValue=" << bitsPerValue
-          << ",decimalScaleFactor=" << decimalScaleFactor << ",precision=" << precision << ")";
+        s << "Encoding(bitsPerValue=" << bitsPerValue << ",decimalScaleFactor=" << decimalScaleFactor
+          << ",precision=" << precision << ")";
     }
 
     friend std::ostream& operator<<(std::ostream& s, const Encoding& v) {
@@ -118,11 +114,8 @@ private:
     std::map<std::string, std::unordered_map<int, Encoding>> cache_;
 
     std::map<std::string, EncodingTable*> tables_;
-
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-
-#endif  // multio_EncodeBitsPerValue_H

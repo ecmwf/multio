@@ -12,8 +12,7 @@
 
 /// @date Sep 2022
 
-#ifndef multio_util_FailureHandling_H
-#define multio_util_FailureHandling_H
+#pragma once
 
 
 #include "eckit/config/LocalConfiguration.h"
@@ -398,7 +397,7 @@ public:
 private:
     // TODO accept output stream as parameter
     int printNestedException(std::ostream& out, const std::exception& e) const {
-        int level=0;
+        int level = 0;
         try {
             std::rethrow_if_nested(e);
         }
@@ -536,5 +535,3 @@ protected:
 
 }  // namespace util
 }  // namespace multio
-
-#endif

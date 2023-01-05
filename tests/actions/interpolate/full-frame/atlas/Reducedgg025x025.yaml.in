@@ -1,0 +1,18 @@
+plans:
+  - name: test-interpolate-reducedgg-025x025
+    actions:
+      - type: select
+        match:
+          - param: 133
+      - type: interpolate
+        from: O1280
+        to: L1440x721
+      - type: encode
+        format: grib
+        template: @multio_BINARY_DIR@/tests/actions/interpolate/data/reducedgg/MarsFullFrameReducedgg025x025.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: @multio_BINARY_DIR@/tests/actions/interpolate/full-frame/atlas/MultioFullFrameReducedgg025x025.grib

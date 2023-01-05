@@ -1,6 +1,4 @@
-
-#ifndef multio_server_Mappings_H
-#define multio_server_Mappings_H
+#pragma once
 
 #include <algorithm>
 #include <map>
@@ -18,18 +16,11 @@ namespace domain {
 
 class DomainMap {
 public:
+    std::unique_ptr<Domain>& at(const message::Peer& peer) { return domainMap_.at(peer); }
 
-    std::unique_ptr<Domain>& at(const message::Peer& peer) {
-        return domainMap_.at(peer);
-    }
+    const std::unique_ptr<Domain>& at(const message::Peer& peer) const { return domainMap_.at(peer); }
 
-    const std::unique_ptr<Domain>& at(const message::Peer& peer) const {
-        return domainMap_.at(peer);
-    }
-
-    bool contains(const message::Peer& peer) {
-        return domainMap_.find(peer) != end(domainMap_);
-    }
+    bool contains(const message::Peer& peer) { return domainMap_.find(peer) != end(domainMap_); }
 
     template <typename... Args>
     void emplace(Args&&... args) {
@@ -94,5 +85,3 @@ private:  // members
 
 }  // namespace domain
 }  // namespace multio
-
-#endif

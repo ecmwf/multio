@@ -4,11 +4,10 @@
 
 /// @date Jan 2021
 
-#ifndef multio_transport_MpiStream_H
-#define multio_transport_MpiStream_H
+#pragma once
 
-#include "eckit/mpi/Comm.h"
 #include "eckit/io/Buffer.h"
+#include "eckit/mpi/Comm.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
 namespace multio {
@@ -64,5 +63,3 @@ private:
 
 }  // namespace transport
 }  // namespace multio
-
-#endif // multio_transport_MpiStream_H

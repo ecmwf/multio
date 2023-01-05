@@ -1,0 +1,18 @@
+plans:
+  - name: test-interpolate-spectral-100x100
+    actions:
+      - type: select
+        match:
+          - param: 129
+      - type: interpolate
+        from: TCO1279
+        to: L360x181
+      - type: encode
+        format: grib
+        template: @multio_BINARY_DIR@/tests/actions/interpolate/data/spherical/MarsFullFrameSpherical100x100.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: @multio_BINARY_DIR@/tests/actions/interpolate/full-frame/atlas/MultioFullFrameSpherical100x100.grib

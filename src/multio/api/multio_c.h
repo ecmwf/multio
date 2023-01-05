@@ -1,5 +1,4 @@
-#ifndef multio_api_multio_c_H
-#define multio_api_multio_c_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -380,6 +379,4 @@ int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, boo
 
 #ifdef __cplusplus
 } /* extern "C" */
-#endif
-
 #endif

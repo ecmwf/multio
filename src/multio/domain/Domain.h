@@ -1,11 +1,9 @@
-
-#ifndef multio_server_Domain_H
-#define multio_server_Domain_H
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
-#include <vector>
 #include <set>
+#include <vector>
 
 #include <eckit/io/Buffer.h>
 
@@ -43,10 +41,10 @@ private:
     void to_local(const std::vector<double>& global, std::vector<double>& local) const override;
     void to_global(const message::Message& local, message::Message& global) const override;
     void to_bitmask(const message::Message& local, std::vector<bool>& bmask) const override;
-    
+
     long local_size() const override;
     long global_size() const override;
-    
+
     void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 
     long global_size_;
@@ -75,7 +73,7 @@ private:
     void to_local(const std::vector<double>& global, std::vector<double>& local) const override;
     void to_global(const message::Message& local, message::Message& global) const override;
     void to_bitmask(const message::Message& local, std::vector<bool>& bmask) const override;
-    
+
     long local_size() const override;
     long global_size() const override;
 
@@ -84,5 +82,3 @@ private:
 
 }  // namespace domain
 }  // namespace multio
-
-#endif

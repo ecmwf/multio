@@ -14,4 +14,6 @@ ecbuild_get_test_multidata( EXTRACT TARGET multio_actions_nextGEMS_get_test_data
 
 endif(HAVE_MULTIO_SERVER)
 
+if( HAVE_MIR )
 add_subdirectory(interpolate)
+endif( HAVE_MIR )

@@ -13,6 +13,7 @@ enum class PrecisionTag : unsigned
     Double = 2,
 };
 
+
 template <typename T>
 struct PrecisionType {
     using type = T;
@@ -22,7 +23,7 @@ struct PrecisionType {
 template <typename T>
 using PrecisionType_t = typename PrecisionType<T>::type;
 
-
+// size_t decodePrecisionSize(const std::string& tagStr);
 PrecisionTag decodePrecisionTag(const std::string& tagStr);
 
 

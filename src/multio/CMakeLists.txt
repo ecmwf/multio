@@ -35,24 +35,9 @@ list( APPEND multio_util_srcs
 )
 
 
-
-list( APPEND multio_action_utils_srcs
-    action/utils/ActionStatistics.cc
-    action/utils/ActionStatistics.h
-    action/utils/GribEncoder.cc
-    action/utils/GribEncoder.h
-    action/utils/GridInfo.cc
-    action/utils/GridInfo.h
-    action/utils/Operation.cc
-    action/utils/Operation.h
-    action/utils/Period.cc
-    action/utils/Period.h
-    action/utils/TemporalStatistics.cc
-    action/utils/TemporalStatistics.h 
-)
-
-
 list( APPEND multio_action_srcs
+    action/ActionStatistics.cc
+    action/ActionStatistics.h
     action/Action.cc
     action/Action.h
     action/ChainedAction.cc
@@ -140,7 +125,6 @@ list( APPEND multio_transport_srcs
 list( APPEND multio_srcs
     ${multio_library_srcs}
     ${multio_util_srcs}
-    ${multio_action_utils_srcs}
     ${multio_action_srcs}
     ${multio_ifsio_srcs}
     ${multio_domain_srcs}

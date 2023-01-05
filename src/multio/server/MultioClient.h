@@ -7,13 +7,11 @@
  * granted to it by virtue of its status as an intergovernmental organisation nor
  * does it submit to any jurisdiction.
  */
+#pragma once
 
-#ifndef multio_server_MultioClient_H
-#define multio_server_MultioClient_H
-
+#include <map>
 #include <memory>
 #include <vector>
-#include <map>
 
 #include "multio/action/Plan.h"
 #include "multio/message/MetadataSelector.h"
@@ -30,20 +28,20 @@ class LocalConfiguration;
 
 namespace multio {
 
-using util::ConfigurationContext;
 using util::ClientConfigurationContext;
 using util::ComponentTag;
+using util::ConfigurationContext;
 
 namespace message {
 class Message;
 class Metadata;
-}
+}  // namespace message
 
 namespace server {
 
 class Transport;
 
-class MultioClient: public util::FailureAware<util::ComponentTag::Client> {
+class MultioClient : public util::FailureAware<util::ComponentTag::Client> {
 public:
     explicit MultioClient(const ClientConfigurationContext& config);
 
@@ -71,5 +69,3 @@ private:
 
 }  // namespace server
 }  // namespace multio
-
-#endif

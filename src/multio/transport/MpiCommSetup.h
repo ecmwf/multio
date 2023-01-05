@@ -12,8 +12,7 @@
 
 /// @date August 20222
 
-#ifndef multio_transport_MpiCommSetup_H
-#define multio_transport_MpiCommSetup_H
+#pragma once
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/mpi/Comm.h"
@@ -43,9 +42,8 @@ struct CommSetupOptions {
 };
 
 
-eckit::mpi::Comm& getComm(
-    const ConfigurationContext& confCtx, const std::string& name,
-    const eckit::Optional<CommSetupOptions>& options = eckit::Optional<CommSetupOptions>{});
+eckit::mpi::Comm& getComm(const ConfigurationContext& confCtx, const std::string& name,
+                          const eckit::Optional<CommSetupOptions>& options = eckit::Optional<CommSetupOptions>{});
 // eckit::mpi::Comm& getOrAddComm(
 //     const ConfigurationContext& confCtx, const std::string& name, int comm,
 //     const eckit::Optional<CommSetupOptions>& options = eckit::Optional<CommSetupOptions>{});
@@ -55,5 +53,3 @@ inline CommSetupType parseType(const std::string& typeString);
 }  // namespace mpi
 }  // namespace transport
 }  // namespace multio
-
-#endif

@@ -14,8 +14,7 @@
 
 /// @date Sep 2020
 
-#ifndef multio_test_TestDataContent_H
-#define multio_test_TestDataContent_H
+#pragma once
 
 #include "eckit/message/MessageContent.h"
 
@@ -29,15 +28,15 @@ public:
     TestDataContent(const void*, size_t size);
     TestDataContent(const void*, size_t size, const message::Metadata& metadata);
 
-    void write(eckit::DataHandle &) const override;
+    void write(eckit::DataHandle&) const override;
     eckit::DataHandle* readHandle() const override;
 
     size_t length() const override;
     const void* data() const override;
 
-    std::string getString(const std::string &key) const override;
-    long getLong(const std::string &key) const override;
-    double getDouble(const std::string &key) const override;
+    std::string getString(const std::string& key) const override;
+    long getLong(const std::string& key) const override;
+    double getDouble(const std::string& key) const override;
 
 private:
     const void* data_;
@@ -45,10 +44,8 @@ private:
 
     const message::Metadata metadata_;
 
-    void print(std::ostream &) const override;
+    void print(std::ostream&) const override;
 };
 
-}  // namespace message
+}  // namespace test
 }  // namespace multio
-
-#endif // multio_test_TestDataContent_H

@@ -12,8 +12,7 @@
 
 /// @date Aug 2022
 
-#ifndef multio_util_ParameterMappings_H
-#define multio_util_ParameterMappings_H
+#pragma once
 
 #include "eckit/config/LocalConfiguration.h"
 
@@ -27,7 +26,7 @@ namespace multio {
 namespace util {
 
 class GlobalConfCtx;  // Forward declaration
-struct YAMLFile;  // Forward declaration
+struct YAMLFile;      // Forward declaration
 
 class MetadataMappings {
 public:
@@ -42,5 +41,3 @@ private:
 };
 }  // namespace util
 }  // namespace multio
-
-#endif

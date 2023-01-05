@@ -26,14 +26,12 @@
  *
  */
 
-#ifndef multio_util_IteratorMapper_H
-#define multio_util_IteratorMapper_H
 
 #include "eckit/utils/Optional.h"
 
+#include <forward_list>
 #include <iostream>
 #include <iterator>
-#include <forward_list>
 
 
 namespace multio {
@@ -45,8 +43,8 @@ class MappedContainer;
 template <typename ForwardItContainer, class Mapper, bool is_const>
 using IteratorMapperValueType =
     typename std::conditional<is_const,
-                              typename std::decay<decltype(std::declval<Mapper>()(
-                                  *(std::begin(std::declval<const ForwardItContainer>()))))>::type, // Use std::cbegin in C++14
+                              typename std::decay<decltype(std::declval<Mapper>()(*(std::begin(
+                                  std::declval<const ForwardItContainer>()))))>::type,  // Use std::cbegin in C++14
                               typename std::decay<decltype(std::declval<Mapper>()(
                                   *(std::begin(std::declval<ForwardItContainer>()))))>::type>::type;
 
@@ -56,7 +54,7 @@ class IteratorMapper
     : std::iterator<std::forward_iterator_tag, IteratorMapperValueType<ForwardItContainer, Mapper, is_const>> {
 public:
     using This = IteratorMapper<ForwardItContainer, Mapper, is_const>;
-    using IteratorType = decltype(std::begin(std::declval<const ForwardItContainer>())); // Use std::cbegin in C++14
+    using IteratorType = decltype(std::begin(std::declval<const ForwardItContainer>()));  // Use std::cbegin in C++14
 
     using iterator_category = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
@@ -134,10 +132,11 @@ private:
 
     template <typename ItType>
     IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, ItType&& it) :
-        IteratorMapper(container, mapper, it != std::end(container), std::forward<ItType>(it)) {} // Use std::cend in C++14
+        IteratorMapper(container, mapper, it != std::end(container), std::forward<ItType>(it)) {
+    }  // Use std::cend in C++14
 
     IteratorMapper(ForwardItContainer const& container, Mapper const& mapper) :
-        IteratorMapper(container, mapper, std::begin(container)) {} // Use std::cbegin in C++14
+        IteratorMapper(container, mapper, std::begin(container)) {}  // Use std::cbegin in C++14
 
 
     ForwardItContainer const& container_;
@@ -165,7 +164,9 @@ public:
     iterator end() { return iterator(container_, mapper_, false, std::end(container_)); }
 
     iterator cbegin() const { return const_iterator(container_, mapper_); }
-    iterator cend() const { return const_iterator(container_, mapper_, false, std::end(container_)); }  // Use std::cend in C++14
+    iterator cend() const {
+        return const_iterator(container_, mapper_, false, std::end(container_));
+    }  // Use std::cend in C++14
 
 private:
     ForwardItContainer container_;
@@ -174,5 +175,3 @@ private:
 
 }  // namespace util
 }  // namespace multio
-
-#endif

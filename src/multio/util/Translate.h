@@ -17,8 +17,7 @@
  * TODO: This may be added to eckit::Translator directly.
  */
 
-#ifndef multio_util_Translate_H
-#define multio_util_Translate_H
+#pragma once
 
 #include "eckit/utils/Translator.h"
 
@@ -28,13 +27,12 @@
 namespace multio {
 namespace util {
 
-// This allows using the Translator without having to explicitly name the type of an argument. For example in case of generic string conversion: translate<std::strig>(someVariable)
-template<typename To, typename From>
+// This allows using the Translator without having to explicitly name the type of an argument. For example in case of
+// generic string conversion: translate<std::strig>(someVariable)
+template <typename To, typename From>
 To translate(From&& from) {
     return eckit::Translator<typename std::decay<From>::type, To>()(std::forward<From>(from));
 }
 
 }  // namespace util
 }  // namespace multio
-
-#endif

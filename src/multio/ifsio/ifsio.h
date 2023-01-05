@@ -15,8 +15,7 @@
 
 #include <sys/types.h>
 
-#ifndef multio_ifsio_h
-#define multio_ifsio_h
+#pragma once
 
 typedef int32_t fortint;
 
@@ -24,18 +23,12 @@ extern "C" {
 
 fortint imultio_flush_();
 fortint imultio_notify_step_(const fortint* step);
-fortint imultio_write_(const void *data, const fortint *words);
+fortint imultio_write_(const void* data, const fortint* words);
 
 // metadata is expected to be a pointer to an eckit::configuration
-fortint imultio_write_raw_(const void *metadata, const void *data, const fortint *words);
+fortint imultio_write_raw_(const void* metadata, const void* data, const fortint* words);
 
-fortint imultio_encode_bitspervalue_(fortint *bitspervalue,
-  const fortint *paramid,
-  const char* levtype,
-  const double *min,
-  const double *max,
-  int levtype_len);
+fortint imultio_encode_bitspervalue_(fortint* bitspervalue, const fortint* paramid, const char* levtype,
+                                     const double* min, const double* max, int levtype_len);
 
-} // extern C
-
-#endif
+}  // extern C

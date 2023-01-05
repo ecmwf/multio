@@ -14,8 +14,7 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_Action_H
-#define multio_server_Action_H
+#pragma once
 
 #include <iterator>
 #include <map>
@@ -23,8 +22,8 @@
 #include <mutex>
 #include <set>
 
+#include "ActionStatistics.h"
 #include "eckit/memory/NonCopyable.h"
-#include "multio/action/utils/ActionStatistics.h"
 #include "multio/message/Message.h"
 #include "multio/util/ConfigurationContext.h"
 #include "multio/util/FailureHandling.h"
@@ -42,33 +41,31 @@ using util::FailureAware;
 
 //--------------------------------------------------------------------------------------------------
 
-class Action : private eckit::NonCopyable,
-               public FailureAware<util::ComponentTag::Action> {
- public:
-  explicit Action(const ConfigurationContext& confCtx);
-  ~Action() override;
+class Action : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Action> {
+public:
+    explicit Action(const ConfigurationContext& confCtx);
+    ~Action() override;
 
-  void execute(message::Message msg) const;
+    void execute(message::Message msg) const;
 
-  virtual void matchedFields(message::MetadataSelectors& selectors) const;
+    virtual void matchedFields(message::MetadataSelectors& selectors) const;
 
-  util::FailureHandlerResponse handleFailure(
-      util::OnActionError, const util::FailureContext&,
-      util::DefaultFailureState&) const override;
+    util::FailureHandlerResponse handleFailure(util::OnActionError, const util::FailureContext&,
+                                               util::DefaultFailureState&) const override;
 
- protected:
-  ConfigurationContext confCtx_;
+protected:
+    ConfigurationContext confCtx_;
 
-  std::string type_;
+    std::string type_;
 
-  mutable ActionStatistics statistics_;
+    mutable ActionStatistics statistics_;
 
- private:
-  virtual void executeImpl(message::Message msg) const = 0;
+private:
+    virtual void executeImpl(message::Message msg) const = 0;
 
-  virtual void print(std::ostream& os) const = 0;
+    virtual void print(std::ostream& os) const = 0;
 
-  friend std::ostream& operator<<(std::ostream& os, const Action& a);
+    friend std::ostream& operator<<(std::ostream& os, const Action& a);
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -76,50 +73,46 @@ class Action : private eckit::NonCopyable,
 class ActionBuilderBase;
 
 class ActionFactory : private eckit::NonCopyable {
- private:  // methods
-  ActionFactory() {}
+private:  // methods
+    ActionFactory() {}
 
- public:  // methods
-  static ActionFactory& instance();
+public:  // methods
+    static ActionFactory& instance();
 
-  void enregister(const std::string& name, const ActionBuilderBase* builder);
-  void deregister(const std::string& name);
+    void enregister(const std::string& name, const ActionBuilderBase* builder);
+    void deregister(const std::string& name);
 
-  void list(std::ostream&);
+    void list(std::ostream&);
 
-  Action* build(const std::string&, const ConfigurationContext& confCtx);
+    Action* build(const std::string&, const ConfigurationContext& confCtx);
 
- private:  // members
-  std::map<std::string, const ActionBuilderBase*> factories_;
+private:  // members
+    std::map<std::string, const ActionBuilderBase*> factories_;
 
-  std::recursive_mutex mutex_;
+    std::recursive_mutex mutex_;
 };
 
 class ActionBuilderBase : private eckit::NonCopyable {
- public:  // methods
-  virtual Action* make(const ConfigurationContext& confCtx) const = 0;
+public:  // methods
+    virtual Action* make(const ConfigurationContext& confCtx) const = 0;
 
- protected:  // methods
-  ActionBuilderBase(const std::string&);
+protected:  // methods
+    ActionBuilderBase(const std::string&);
 
-  virtual ~ActionBuilderBase();
+    virtual ~ActionBuilderBase();
 
-  std::string name_;
+    std::string name_;
 };
 
 template <class T>
 class ActionBuilder final : public ActionBuilderBase {
-  Action* make(const ConfigurationContext& confCtx) const override {
-    return new T(confCtx);
-  }
+    Action* make(const ConfigurationContext& confCtx) const override { return new T(confCtx); }
 
- public:
-  ActionBuilder(const std::string& name) : ActionBuilderBase(name) {}
+public:
+    ActionBuilder(const std::string& name) : ActionBuilderBase(name) {}
 };
 
 //--------------------------------------------------------------------------------------------------
 
 }  // namespace action
 }  // namespace multio
-
-#endif

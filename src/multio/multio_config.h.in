@@ -1,5 +1,4 @@
-#ifndef multio_config_h
-#define multio_config_h
+#pragma once
 
 #include "multio/multio_ecbuild_config.h"
 
@@ -10,5 +9,3 @@
 #cmakedefine MULTIO_HAVE_ECKIT
 #cmakedefine MULTIO_HAVE_FDB
 #cmakedefine MULTIO_HAVE_MIR
-
-#endif // multio_config_h

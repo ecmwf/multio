@@ -1,9 +1,8 @@
 
-#ifndef multio_util_ConfigurationPath_H
-#define multio_util_ConfigurationPath_H
+#pragma once
 
-#include "eckit/config/Resource.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/config/Resource.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/utils/Optional.h"
@@ -37,5 +36,3 @@ inline const eckit::LocalConfiguration& configuration_file() {
 
 }  // namespace util
 }  // namespace multio
-
-#endif

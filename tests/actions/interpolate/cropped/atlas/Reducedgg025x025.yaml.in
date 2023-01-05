@@ -1,0 +1,20 @@
+plans:
+  - name: test-interpolate-reducedgg-025x025-cropped
+    actions:
+      - type: select
+        match:
+          - param: 133
+      - type: interpolate
+        from: O1280
+        to:
+          grid: [0.25, 0.25]
+          area: [80.0, 0.0, -80.0, 360.0]
+      - type: encode
+        format: grib
+        template: @multio_BINARY_DIR@/tests/actions/interpolate/data/reducedgg/MarsCroppedReducedgg025x025.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: @multio_BINARY_DIR@/tests/actions/interpolate/cropped/atlas/MultioCroppedReducedgg025x025.grib

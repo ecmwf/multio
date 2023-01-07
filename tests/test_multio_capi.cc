@@ -31,15 +31,13 @@ namespace test {
 
 // TODO: Can we keep this?
 // Copied from https://en.cppreference.com/w/cpp/types/numeric_limits/epsilon
-template<class T>
-typename std::enable_if<!std::numeric_limits<T>::is_integer, bool>::type
-    almost_equal(T x, T y, int ulp)
-{
+template <class T>
+typename std::enable_if<!std::numeric_limits<T>::is_integer, bool>::type almost_equal(T x, T y, int ulp) {
     // the machine epsilon has to be scaled to the magnitude of the values used
     // and multiplied by the desired precision in ULPs (units in the last place)
-    return std::fabs(x-y) <= std::numeric_limits<T>::epsilon() * std::fabs(x+y) * ulp
+    return std::fabs(x - y) <= std::numeric_limits<T>::epsilon() * std::fabs(x + y) * ulp
         // unless the result is subnormal
-        || std::fabs(x-y) < std::numeric_limits<T>::min();
+        || std::fabs(x - y) < std::numeric_limits<T>::min();
 }
 
 static std::string expectedMPIError("No communicator \"multio\" and no default given.");
@@ -51,7 +49,8 @@ CASE("Try Create handle with wrong configuration path") {
     std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
-    EXPECT(errStr.rfind("Cannot open I_AM_NOT_HERE/server/config/multio-server.yaml  (No such file or directory)") != std::string::npos);
+    EXPECT(errStr.rfind("Cannot open I_AM_NOT_HERE/server/config/multio-server.yaml  (No such file or directory)")
+           != std::string::npos);
     multio_delete_configurationcontext(cc);
 }
 
@@ -86,7 +85,6 @@ CASE("Create handle with default configuration through nullptr configuration pat
     EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
     multio_delete_configurationcontext(cc);
 }
-
 
 
 CASE("Create handle with configuration path without MPI splitting") {
@@ -156,37 +154,41 @@ CASE("Metadata can set values") {
     err = multio_new_metadata(&mdp);
     EXPECT(err == MULTIO_SUCCESS);
 
-    err = multio_metadata_set_string_value(mdp, "stringValue", "testString");
+    err = multio_metadata_set_string(mdp, "stringValue", "testString");
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_string_value(mdp, "stringEmptyValue", "");
+    err = multio_metadata_set_string(mdp, "stringEmptyValue", "");
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_bool_value(mdp, "boolMinValue", false);
+    err = multio_metadata_set_bool(mdp, "boolMinValue", false);
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_bool_value(mdp, "boolMaxValue", true);
+    err = multio_metadata_set_bool(mdp, "boolMaxValue", true);
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_int_value(mdp, "intMinValue", std::numeric_limits<int>::min());
+    err = multio_metadata_set_int(mdp, "intMinValue", std::numeric_limits<int>::min());
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_int_value(mdp, "intMaxValue", std::numeric_limits<int>::max());
+    err = multio_metadata_set_int(mdp, "intMaxValue", std::numeric_limits<int>::max());
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_long_value(mdp, "longMinValue", std::numeric_limits<long>::min());
+    err = multio_metadata_set_long(mdp, "longMinValue", std::numeric_limits<long>::min());
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_long_value(mdp, "longMaxValue", std::numeric_limits<long>::max());
+    err = multio_metadata_set_long(mdp, "longMaxValue", std::numeric_limits<long>::max());
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_longlong_value(mdp, "longlongMinValue", std::numeric_limits<long long>::min());
+    err = multio_metadata_set_longlong(mdp, "longlongMinValue", std::numeric_limits<long long>::min());
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_longlong_value(mdp, "longlongMaxValue", std::numeric_limits<long long>::max());
+    err = multio_metadata_set_longlong(mdp, "longlongMaxValue", std::numeric_limits<long long>::max());
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_float_value(mdp, "floatLowestValue", std::numeric_limits<float>::lowest() + std::numeric_limits<float>::epsilon());
+    err = multio_metadata_set_float(mdp, "floatLowestValue",
+                                    std::numeric_limits<float>::lowest() + std::numeric_limits<float>::epsilon());
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_float_value(mdp, "floatMinValue", std::numeric_limits<float>::min() * 2);
+    err = multio_metadata_set_float(mdp, "floatMinValue", std::numeric_limits<float>::min() * 2);
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_float_value(mdp, "floatMaxValue", std::numeric_limits<float>::max() - std::numeric_limits<float>::epsilon());
+    err = multio_metadata_set_float(mdp, "floatMaxValue",
+                                    std::numeric_limits<float>::max() - std::numeric_limits<float>::epsilon());
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_double_value(mdp, "doubleLowestValue", std::numeric_limits<double>::lowest() + std::numeric_limits<double>::epsilon());
+    err = multio_metadata_set_double(mdp, "doubleLowestValue",
+                                     std::numeric_limits<double>::lowest() + std::numeric_limits<double>::epsilon());
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_double_value(mdp, "doubleMinValue", std::numeric_limits<double>::min() * 2);
+    err = multio_metadata_set_double(mdp, "doubleMinValue", std::numeric_limits<double>::min() * 2);
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_double_value(mdp, "doubleMaxValue", std::numeric_limits<double>::max() - std::numeric_limits<double>::epsilon());
+    err = multio_metadata_set_double(mdp, "doubleMaxValue",
+                                     std::numeric_limits<double>::max() - std::numeric_limits<double>::epsilon());
     EXPECT(err == MULTIO_SUCCESS);
 
     Metadata* md_pCpp = multio_from_c(mdp);
@@ -205,13 +207,16 @@ CASE("Metadata can set values") {
     md_pCpp->get("longlongMaxValue", expctLongLongMax);
     EXPECT(expctLongLongMin == std::numeric_limits<long long>::min());
     EXPECT(expctLongLongMax == std::numeric_limits<long long>::max());
-    EXPECT(md_pCpp->getFloat("floatLowestValue") == (std::numeric_limits<float>::lowest() + std::numeric_limits<float>::epsilon()));
+    EXPECT(md_pCpp->getFloat("floatLowestValue")
+           == (std::numeric_limits<float>::lowest() + std::numeric_limits<float>::epsilon()));
     EXPECT(md_pCpp->getFloat("floatMinValue") == (std::numeric_limits<float>::min() * 2));
-    EXPECT(md_pCpp->getFloat("floatMaxValue") == (std::numeric_limits<float>::max() - std::numeric_limits<float>::epsilon()));
-    EXPECT(md_pCpp->getDouble("doubleLowestValue") == (std::numeric_limits<double>::lowest() + std::numeric_limits<double>::epsilon()));
+    EXPECT(md_pCpp->getFloat("floatMaxValue")
+           == (std::numeric_limits<float>::max() - std::numeric_limits<float>::epsilon()));
+    EXPECT(md_pCpp->getDouble("doubleLowestValue")
+           == (std::numeric_limits<double>::lowest() + std::numeric_limits<double>::epsilon()));
     EXPECT(md_pCpp->getDouble("doubleMinValue") == (std::numeric_limits<double>::min() * 2));
-    EXPECT(md_pCpp->getDouble("doubleMaxValue") == (std::numeric_limits<double>::max() - std::numeric_limits<double>::epsilon()));
-
+    EXPECT(md_pCpp->getDouble("doubleMaxValue")
+           == (std::numeric_limits<double>::max() - std::numeric_limits<double>::epsilon()));
 
 
     Metadata md_dec = multio::message::to_metadata(multio::message::to_string(*md_pCpp));
@@ -249,7 +254,8 @@ CASE("Metadata can set values") {
 }
 
 // TODO:
-//  * test multio_open_connections, multio_close_connections, multio_write_step_complete, multio_write_domain, multio_write_mask, multio_write_field
+//  * test multio_open_connections, multio_close_connections, multio_write_step_complete, multio_write_domain,
+//  multio_write_mask, multio_write_field
 //  * Testing these with MPI in units is not possible here, maybe use another transport layer
 //  * test other transport layers....
 }  // namespace test

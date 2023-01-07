@@ -279,7 +279,7 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
     });
 }
 
-int multio_write_float_mask(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size) {
+int multio_write_mask_float(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
         ASSERT(mio);
         ASSERT(md);
@@ -296,7 +296,7 @@ int multio_write_float_mask(multio_handle_t* mio, multio_metadata_t* md, const f
     });
 }
 
-int multio_write_double_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
+int multio_write_mask_double(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
         ASSERT(mio);
         ASSERT(md);
@@ -313,7 +313,7 @@ int multio_write_double_mask(multio_handle_t* mio, multio_metadata_t* md, const 
     });
 }
 
-int multio_write_float_field(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size) {
+int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
         ASSERT(mio);
         ASSERT(md);
@@ -326,7 +326,7 @@ int multio_write_float_field(multio_handle_t* mio, multio_metadata_t* md, const 
     });
 }
 
-int multio_write_double_field(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
+int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
         ASSERT(mio);
         ASSERT(md);
@@ -352,7 +352,7 @@ int multio_delete_metadata(multio_metadata_t* md) {
 }
 
 
-int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int value) {
+int multio_metadata_set_int(multio_metadata_t* md, const char* key, int value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -361,7 +361,7 @@ int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int va
     });
 }
 
-int multio_metadata_set_long_value(multio_metadata_t* md, const char* key, long value) {
+int multio_metadata_set_long(multio_metadata_t* md, const char* key, long value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -370,7 +370,7 @@ int multio_metadata_set_long_value(multio_metadata_t* md, const char* key, long 
     });
 }
 
-int multio_metadata_set_longlong_value(multio_metadata_t* md, const char* key, long long value) {
+int multio_metadata_set_longlong(multio_metadata_t* md, const char* key, long long value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -379,7 +379,7 @@ int multio_metadata_set_longlong_value(multio_metadata_t* md, const char* key, l
     });
 }
 
-int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, const char* value) {
+int multio_metadata_set_string(multio_metadata_t* md, const char* key, const char* value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -389,7 +389,7 @@ int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, con
     });
 }
 
-int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, bool value) {
+int multio_metadata_set_bool(multio_metadata_t* md, const char* key, bool value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -398,7 +398,7 @@ int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, bool 
     });
 }
 
-int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, float value) {
+int multio_metadata_set_float(multio_metadata_t* md, const char* key, float value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -407,7 +407,7 @@ int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, floa
     });
 }
 
-int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, double value) {
+int multio_metadata_set_double(multio_metadata_t* md, const char* key, double value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -417,27 +417,6 @@ int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, dou
         md->set(key, static_cast<double>(value));
     });
 }
-/*
-int multio_field_is_active(multio_handle_t* mio, const char* fname, bool* value) {
-    return wrapApiFunction([mio, fname, value]() {
-        ASSERT(mio);
-        ASSERT(fname);
-        ASSERT(value);
-
-        *value = mio->isFieldActive(fname);
-    });
-};
-
-int multio_category_is_fully_active(multio_handle_t* mio, const char* cname, bool* value) {
-    return wrapApiFunction([mio, cname, value]() {
-        ASSERT(mio);
-        ASSERT(cname);
-        ASSERT(value);
-
-        *value = mio->isCategoryActive(cname);
-    });
-};
-*/
 
 int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, bool* accepted) {
     return wrapApiFunction([mio, md, accepted]() {

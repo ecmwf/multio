@@ -167,12 +167,12 @@ void MultioReplayNemoCApi::setDomains() {
     for (auto const& grid : grid_type) {
         auto buffer = readGrid(grid.second, rank_);
         auto sz = static_cast<int>(buffer.size());
-        multio_metadata_set_string_value(md, "name", grid.first.c_str());
+        multio_metadata_set_string(md, "name", grid.first.c_str());
 
-        multio_metadata_set_string_value(md, "category", "ocean-domain-map");
-        multio_metadata_set_string_value(md, "representation", "structured");
-        multio_metadata_set_int_value(md, "globalSize", globalSize_);
-        multio_metadata_set_bool_value(md, "toAllServers", true);
+        multio_metadata_set_string(md, "category", "ocean-domain-map");
+        multio_metadata_set_string(md, "representation", "structured");
+        multio_metadata_set_int(md, "globalSize", globalSize_);
+        multio_metadata_set_bool(md, "toAllServers", true);
 
         multio_write_domain(multio_handle, md, buffer.data(), sz);
     }
@@ -186,7 +186,7 @@ void MultioReplayNemoCApi::writeFields() {
         {
             multio_metadata_t* md = nullptr;
             multio_new_metadata(&md);
-            multio_metadata_set_string_value(md, "category", "ocean-2d");
+            multio_metadata_set_string(md, "category", "ocean-2d");
             multio_field_accepted(multio_handle, md, &is_active);
             multio_delete_metadata(md);
             if (is_active) {
@@ -197,7 +197,7 @@ void MultioReplayNemoCApi::writeFields() {
         {
             multio_metadata_t* md = nullptr;
             multio_new_metadata(&md);
-            multio_metadata_set_string_value(md, "name", param.c_str());
+            multio_metadata_set_string(md, "name", param.c_str());
             multio_field_accepted(multio_handle, md, &is_active);
             multio_delete_metadata(md);
             if (!is_active) {
@@ -214,21 +214,20 @@ void MultioReplayNemoCApi::writeFields() {
         multio_new_metadata(&md);
 
         // Set reused fields once at the beginning
-        multio_metadata_set_string_value(md, "category", "ocean-2d");
-        multio_metadata_set_int_value(md, "globalSize", globalSize_);
-        multio_metadata_set_int_value(md, "level", level_);
-        multio_metadata_set_int_value(md, "step", step_);
+        multio_metadata_set_string(md, "category", "ocean-2d");
+        multio_metadata_set_int(md, "globalSize", globalSize_);
+        multio_metadata_set_int(md, "level", level_);
+        multio_metadata_set_int(md, "step", step_);
 
-        // TODO: May not need to be a field's metadata
-        multio_metadata_set_double_value(md, "missingValue", 0.0);
-        multio_metadata_set_bool_value(md, "bitmapPresent", false);
-        multio_metadata_set_int_value(md, "bitsPerValue", 16);
+        multio_metadata_set_double(md, "missingValue", 0.0);
+        multio_metadata_set_bool(md, "bitmapPresent", false);
+        multio_metadata_set_int(md, "bitsPerValue", 16);
 
-        multio_metadata_set_bool_value(md, "toAllServers", false);
+        multio_metadata_set_bool(md, "toAllServers", false);
 
         // Overwrite these fields in the existing metadata object
-        multio_metadata_set_string_value(md, "name", fname);
-        multio_metadata_set_string_value(md, "nemoParam", fname);
+        multio_metadata_set_string(md, "name", fname);
+        multio_metadata_set_string(md, "nemoParam", fname);
 
         multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz);
 

@@ -222,7 +222,7 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
  * \param size Size of the data containing the masking values
  * \returns Return code (#MultioErrorValues)
  */
-int multio_write_float_mask(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size);
+int multio_write_mask_float(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size);
 
 
 /** Writes masking information (e.g. land-sea mask) to the server
@@ -232,7 +232,7 @@ int multio_write_float_mask(multio_handle_t* mio, multio_metadata_t* md, const f
  * \param size Size of the data containing the masking values
  * \returns Return code (#MultioErrorValues)
  */
-int multio_write_double_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
+int multio_write_mask_double(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
 
 
 /** Writes (partial) fields
@@ -242,7 +242,7 @@ int multio_write_double_mask(multio_handle_t* mio, multio_metadata_t* md, const 
  * \param size Size of the data containing the (partial) field values
  * \returns Return code (#MultioErrorValues)
  */
-int multio_write_float_field(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size);
+int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size);
 
 
 /** Writes (partial) fields
@@ -252,7 +252,7 @@ int multio_write_float_field(multio_handle_t* mio, multio_metadata_t* md, const 
  * \param size Size of the data containing the (partial) field values
  * \returns Return code (#MultioErrorValues)
  */
-int multio_write_double_field(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
+int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
 
 
 /** @} */
@@ -280,7 +280,7 @@ int multio_delete_metadata(multio_metadata_t* md);
  * \param value Integer value to be set
  * \returns Return code (#MultioErrorValues)
  */
-int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int value);
+int multio_metadata_set_int(multio_metadata_t* md, const char* key, int value);
 
 
 /** Sets a metadata key-value pair for long values
@@ -289,7 +289,7 @@ int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int va
  * \param value Long value to be set
  * \returns Return code (#MultioErrorValues)
  */
-int multio_metadata_set_long_value(multio_metadata_t* md, const char* key, long value);
+int multio_metadata_set_long(multio_metadata_t* md, const char* key, long value);
 
 
 /** Sets a metadata key-value pair for long long values
@@ -298,7 +298,7 @@ int multio_metadata_set_long_value(multio_metadata_t* md, const char* key, long 
  * \param value Long long value to be set
  * \returns Return code (#MultioErrorValues)
  */
-int multio_metadata_set_longlong_value(multio_metadata_t* md, const char* key, long long value);
+int multio_metadata_set_longlong(multio_metadata_t* md, const char* key, long long value);
 
 
 /** Sets a metadata key-value pair for string values
@@ -307,7 +307,7 @@ int multio_metadata_set_longlong_value(multio_metadata_t* md, const char* key, l
  * \param value C-string value to be set
  * \returns Return code (#MultioErrorValues)
  */
-int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, const char* value);
+int multio_metadata_set_string(multio_metadata_t* md, const char* key, const char* value);
 
 /** @} */
 
@@ -317,7 +317,7 @@ int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, con
  * \param value Boolean/logical value
  * \returns Return code (#MultioErrorValues)
  */
-int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, bool value);
+int multio_metadata_set_bool(multio_metadata_t* md, const char* key, bool value);
 
 
 /** Sets a metadata key-value pair for float values
@@ -326,7 +326,7 @@ int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, bool 
  * \param value float value to be set
  * \returns Return code (#MultioErrorValues)
  */
-int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, float value);
+int multio_metadata_set_float(multio_metadata_t* md, const char* key, float value);
 
 
 /** Sets a metadata key-value pair for double values
@@ -335,37 +335,7 @@ int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, floa
  * \param value double value to be set
  * \returns Return code (#MultioErrorValues)
  */
-int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, double value);
-
-
-/** Query information whether a field is actively used or can be omitted
- *
- *  Multio is not aware on specific category <-> field relation ships.
- *  Therefore this information should be queried together with `multio_category_is_fully_active` and combined with an
- * logical OR. Even if a category is not fully/explicitly active, a single field may be and hence a
- * `multio_field_is_active` query should be performed. Vice versa, a category might me explicitly active while a single
- * field within that category is not.
- *
- * \param mio Handle to the multio (client) instance
- * \param fname Name of the field
- * \param set_value Pointer to the boolean where to store the result
- * \returns Return code (#MultioErrorValues)
- */
-// TODO: why is not more present?
-// int multio_field_is_active(multio_handle_t* mio, const char* fname, bool* set_value);
-
-/** Query information whether a whole category is actively used (i.e. the whole category is explicitly listed in the
- * configuration) or can be omitted.
- *
- * Please read the comments in `multio_field_is_active`.
- *
- * \param mio Handle to the multio (client) instance
- * \param fname Name of the field
- * \param set_value Pointer to the boolean where to store the result
- * \returns Return code (#MultioErrorValues)
- */
-// TODO: why is not more present?
-// int multio_category_is_fully_active(multio_handle_t* mio, const char* cname, bool* set_value);
+int multio_metadata_set_double(multio_metadata_t* md, const char* key, double value);
 
 
 /** Determines if the pipelines are configured to accept the specified data

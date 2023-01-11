@@ -8,7 +8,7 @@ endif()
 
 list( APPEND _link_libraries
     multio
-    multio-action-aggregation
+    multio-action-aggregate
     multio-action-encode
     multio-action-mask
     multio-action-metadata-mapping

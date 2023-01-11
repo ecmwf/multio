@@ -73,7 +73,7 @@ if( CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
 endif()
 
 list( APPEND _link_libraries
-    multio-action-aggregation
+    multio-action-aggregate
     multio-action-encode
     multio-action-mask
     multio-action-metadata-mapping

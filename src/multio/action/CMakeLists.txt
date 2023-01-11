@@ -1,6 +1,6 @@
 add_subdirectory(metadata-mapping)
 add_subdirectory(statistics)
-add_subdirectory(aggregation)
+add_subdirectory(aggregate)
 add_subdirectory(transport)
 add_subdirectory(sink)
 add_subdirectory(encode)

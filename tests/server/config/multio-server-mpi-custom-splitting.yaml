@@ -59,6 +59,6 @@ server:
           match :
            - category : [ocean-2d]
 
-        - type : aggregation
+        - type : aggregate
 
         - type : single-field-sink

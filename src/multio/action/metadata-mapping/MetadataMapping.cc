@@ -4,8 +4,7 @@ namespace multio {
 namespace action {
 
 namespace {
-std::string getMappingName(
-    const ConfigurationContext& confCtx) {
+std::string getMappingName(const ConfigurationContext& confCtx) {
     if (!confCtx.config().has("mapping")) {
         throw eckit::Exception(
             "An action of type \"metadata-mapping\" needs to have a field \"mapping\" pointing to a YAML file..");
@@ -15,7 +14,10 @@ std::string getMappingName(
 }  // namespace
 
 MetadataMapping::MetadataMapping(const ConfigurationContext& confCtx) :
-    ChainedAction(confCtx), name_(getMappingName(confCtx)), mappings_(confCtx.metadataMappings().getMappings(name_)), options_{} {
+    ChainedAction(confCtx),
+    name_(getMappingName(confCtx)),
+    mappings_(confCtx.metadataMappings().getMappings(name_)),
+    options_{} {
     options_.enforceMatch = confCtx.config().getBool("enforce-match", true);
     options_.overwriteExisting = confCtx.config().getBool("overwrite-existing", false);
 };
@@ -41,12 +43,11 @@ message::Metadata MetadataMapping::apply(message::Metadata&& md) const {
 };
 
 void MetadataMapping::print(std::ostream& os) const {
-    os << "MetadataMapping(mapping=" << (name_)
-       << ", enforce-match=" << (options_.enforceMatch ? "true" : "false")
+    os << "MetadataMapping(mapping=" << (name_) << ", enforce-match=" << (options_.enforceMatch ? "true" : "false")
        << ", overwrite-existing=" << (options_.overwriteExisting ? "true" : "false") << ")";
 }
 
 
-static ActionBuilder<MetadataMapping> AggregationBuilder("metadata-mapping");
+static ActionBuilder<MetadataMapping> MetadataMappingBuilder("metadata-mapping");
 }  // namespace action
 }  // namespace multio

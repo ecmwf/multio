@@ -8,7 +8,7 @@
  * does it submit to any jurisdiction.
  */
 
-#include "Aggregation.h"
+#include "Aggregate.h"
 
 #include <algorithm>
 
@@ -21,9 +21,9 @@ namespace action {
 
 using message::Peer;
 
-Aggregation::Aggregation(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {}
+Aggregate::Aggregate(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {}
 
-void Aggregation::executeImpl(Message msg) const {
+void Aggregate::executeImpl(Message msg) const {
 
     eckit::Log::info() << " ***** Aggregating message " << msg << std::endl;
 
@@ -36,7 +36,7 @@ void Aggregation::executeImpl(Message msg) const {
     }
 }
 
-bool Aggregation::handleField(const Message& msg) const {
+bool Aggregate::handleField(const Message& msg) const {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     if (not msgMap_.contains(msg.fieldId())) {
         msgMap_.addNew(msg);
@@ -47,7 +47,7 @@ bool Aggregation::handleField(const Message& msg) const {
     return allPartsArrived(msg);
 }
 
-bool Aggregation::handleFlush(const Message& msg) const {
+bool Aggregate::handleFlush(const Message& msg) const {
     // Initialise if need be
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
@@ -63,7 +63,7 @@ bool Aggregation::handleFlush(const Message& msg) const {
     return domainMap.isComplete() && flushCount == domainMap.size();
 }
 
-bool Aggregation::allPartsArrived(const Message& msg) const {
+bool Aggregate::allPartsArrived(const Message& msg) const {
     LOG_DEBUG_LIB(LibMultio) << " *** Number of messages for field " << msg.fieldId() << " are "
                              << msgMap_.partsCount(msg.fieldId()) << std::endl;
 
@@ -72,7 +72,7 @@ bool Aggregation::allPartsArrived(const Message& msg) const {
     return domainMap.isComplete() && (msgMap_.partsCount(msg.fieldId()) == domainMap.size());
 }
 
-Message Aggregation::createGlobalField(const Message& msg) const {
+Message Aggregate::createGlobalField(const Message& msg) const {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     eckit::Log::info() << "Creating global field " << std::endl;
@@ -80,7 +80,7 @@ Message Aggregation::createGlobalField(const Message& msg) const {
     const auto& fid = msg.fieldId();
 
     // TODO: checking domain consistency is skipped for now...
-    //domain::Mappings::instance().checkDomainConsistency(messages_.at(fid));
+    // domain::Mappings::instance().checkDomainConsistency(messages_.at(fid));
 
     auto msgOut = std::move(msgMap_.at(fid));
 
@@ -89,8 +89,8 @@ Message Aggregation::createGlobalField(const Message& msg) const {
     return msgOut;
 }
 
-void Aggregation::print(std::ostream& os) const {
-    os << "Aggregation(for " << msgMap_.size() << " fields = [";
+void Aggregate::print(std::ostream& os) const {
+    os << "Aggregate(for " << msgMap_.size() << " fields = [";
     for (const auto& mp : msgMap_) {
         auto const& domainMap = domain::Mappings::instance().get(mp.second.domain());
         os << '\n'
@@ -101,7 +101,7 @@ void Aggregation::print(std::ostream& os) const {
 }
 
 
-static ActionBuilder<Aggregation> AggregationBuilder("aggregation");
+static ActionBuilder<Aggregate> AggregateBuilder("aggregate");
 
 }  // namespace action
 }  // namespace multio

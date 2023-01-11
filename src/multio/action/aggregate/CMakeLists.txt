@@ -1,10 +1,10 @@
 ecbuild_add_library(
 
-	TARGET multio-action-aggregation
+	TARGET multio-action-aggregates
 
     SOURCES
-    	Aggregation.cc
-    	Aggregation.h
+    	Aggregate.cc
+    	Aggregate.h
 
 
     PRIVATE_INCLUDES

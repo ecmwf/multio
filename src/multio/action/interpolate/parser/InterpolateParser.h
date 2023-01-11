@@ -15,8 +15,6 @@
  *
  *
  * @see Action.h
- * @see Aggregation.h
- * @see Encode.h
  *
  * @author Mirco Valentini
  * @author Domokos Sarmany

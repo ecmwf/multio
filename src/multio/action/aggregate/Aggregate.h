@@ -71,9 +71,9 @@ private:
 };
 
 
-class Aggregation : public ChainedAction {
+class Aggregate : public ChainedAction {
 public:
-    explicit Aggregation(const ConfigurationContext& confCtx);
+    explicit Aggregate(const ConfigurationContext& confCtx);
 
     void executeImpl(Message msg) const override;
 

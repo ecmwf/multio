@@ -77,7 +77,7 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
              match :
               - category : [ocean-2d]
 
-           - type : aggregation
+           - type : aggregate
 
            - type : single-field-sink
 
@@ -172,7 +172,7 @@ This action will mask parts of the aggregated field, so it is designed to come a
 included in the pipelie. It will allow parts of the domain to be ignored and thus reduce the size of
 the stored message. It is particularly useful for ocean forecast data.
 
-Similar to the ``aggregation`` action, it assumes that the mask was communicated at the beginning of
+Similar to the ``aggregate`` action, it assumes that the mask was communicated at the beginning of
 the run, by colling the API function
 
 .. code-block:: c

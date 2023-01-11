@@ -51,7 +51,7 @@ private:
 
     /**
      * \brief function used to perform an interpolation when
-     * the message is raw and the data are saved in double precision
+     * the message is raw; the template is used to perform the interpolation in sigle/double precision
      *
      * \param [in] msg input message
      * \param [in] mainConfiguration all the parameters/configuration needed to
@@ -60,23 +60,8 @@ private:
      * \see executeImpl
      * \see InterpolateRawMessageFloat
      */
-    void InterpolateRawMessageDouble(message::Message& msg) const;
-
-    /**
-     * \brief function used to perform an interpolation when
-     * the message is raw and the data are saved in single precision
-     *
-     * \param [in] msg input message
-     * \param [in] mainConfiguration all the parameters/configuration needed to
-     * perform a specific interpolation
-     *
-     * \note At the moment single precision require temporary buffers and explicit
-     *       copy/cast for this reason a specific function has been implemented
-     *
-     * \see executeImpl
-     * \see InterpolateRawMessageDouble
-     */
-    void InterpolateRawMessageFloat(message::Message& msg) const;
+    template <typename T>
+    multio::message::Message InterpolateRawMessage(message::Message&& msg) const;
 
     /**
      * \brief helper used to just log useful informations

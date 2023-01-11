@@ -19,51 +19,9 @@ namespace action {
 using message::Message;
 using message::Peer;
 
-Interpolate::Interpolate(const ConfigurationContext& confCtx) :
-    ChainedAction{confCtx},
-    mainConfiguration_(interpolate::InterpolateParserFactory::instance().build(Action::confCtx_.config())) {}
 
-Interpolate::~Interpolate() {}
-
-void Interpolate::executeImpl(Message msg) const {
-    switch (msg.tag()) {
-        case (Message::Tag::Field): {
-            if (msg.metadata().has("precision")) {
-                switch (multio::util::decodePrecisionTag(msg.metadata().getString("precision"))) {
-                    case multio::util::PrecisionTag::Float:
-                        InterpolateRawMessageFloat(msg);
-                        break;
-                    case multio::util::PrecisionTag::Double:
-                        InterpolateRawMessageDouble(msg);
-                        break;
-                    default:
-                        throw eckit::BadValue("Action::Interpolate :: Unsupported datatype for input message",
-                                              eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
-                }
-            }
-            else {
-                throw eckit::SeriousBug("Action::Interpolate :: Unable to find \"precision\" keyword in input metadata",
-                                        eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
-            }
-            break;
-        }
-        case (Message::Tag::StepComplete): {
-            executeNext(msg);
-            break;
-        }
-        default: {
-            throw eckit::BadValue("Action::Interpolate :: Unsupported message tag",
-                                  eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
-            break;
-        }
-    }
-};
-
-void Interpolate::print(std::ostream& os) const {
-    os << "Interpolate";
-}
-
-void Interpolate::InterpolateRawMessageFloat(Message& msg) const {
+template <>
+multio::message::Message Interpolate::InterpolateRawMessage<float>(Message&& msg) const {
     // Print Input metadata
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: Metadata of the input message :: " << std::endl
                              << msg.metadata() << std::endl
@@ -128,6 +86,9 @@ void Interpolate::InterpolateRawMessageFloat(Message& msg) const {
     // By default the only metadata to in the outptu message is the global size
     md.set("globalSize", outData.size());
     // Needed by the Grib encoder always needs to be forwarded
+    // md.set("name", msg.name());
+    // md.set("category", msg.category());
+    // md.set("domain", msg.domain());
     md.set("precision", "single");
 
     // Fill the output metdata from configuration file
@@ -143,11 +104,12 @@ void Interpolate::InterpolateRawMessageFloat(Message& msg) const {
                              << std::endl;
 
     // Next action
-    executeNext(multio::message::Message{
+    return (multio::message::Message{
         Message::Header{Message::Tag::Field, msg.source(), msg.destination(), std::move(md)}, std::move(buffer)});
 }
 
-void Interpolate::InterpolateRawMessageDouble(Message& msg) const {
+template <>
+multio::message::Message Interpolate::InterpolateRawMessage<double>(Message&& msg) const {
     // Print Input metadata
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: Metadata of the input message :: " << std::endl
                              << msg.metadata() << std::endl
@@ -194,6 +156,9 @@ void Interpolate::InterpolateRawMessageDouble(Message& msg) const {
     // By default the only metadata to in the outptu message is the global size
     md.set("globalSize", outData.size());
     // Needed by the Grib encoder always needs to be forwarded
+    // md.set("name", msg.name());
+    // md.set("category", msg.category());
+    // md.set("domain", msg.domain());
     md.set("precision", "double");
 
     // Fill the output metdata from configuration file
@@ -209,9 +174,42 @@ void Interpolate::InterpolateRawMessageDouble(Message& msg) const {
                              << std::endl;
 
     // Next action
-    executeNext(multio::message::Message{
+    return (multio::message::Message{
         Message::Header{Message::Tag::Field, msg.source(), msg.destination(), std::move(md)}, std::move(buffer)});
 }
+
+
+Interpolate::Interpolate(const ConfigurationContext& confCtx) :
+    ChainedAction{confCtx},
+    mainConfiguration_(interpolate::InterpolateParserFactory::instance().build(Action::confCtx_.config())) {}
+
+Interpolate::~Interpolate() {}
+
+void Interpolate::executeImpl(Message msg) const {
+    switch (msg.tag()) {
+        case (Message::Tag::Field): {
+            executeNext(multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
+                using PT = typename decltype(pt)::type;
+                return InterpolateRawMessage<PT>(std::move(msg));
+            }));
+            break;
+        };
+        case (Message::Tag::StepComplete): {
+            executeNext(msg);
+            break;
+        }
+        default: {
+            throw eckit::BadValue("Action::Interpolate :: Unsupported message tag",
+                                  eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+            break;
+        }
+    };
+}
+
+void Interpolate::print(std::ostream& os) const {
+    os << "Interpolate";
+}
+
 
 static ActionBuilder<Interpolate> InterpolateBuilder("interpolate");
 

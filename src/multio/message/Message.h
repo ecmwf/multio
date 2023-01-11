@@ -21,9 +21,11 @@
 
 #include "eckit/io/Buffer.h"
 #include "eckit/utils/Optional.h"
+#include "multio/util/PrecisionTag.h"
 
 #include "multio/message/Metadata.h"
 #include "multio/message/Peer.h"
+
 
 namespace eckit {
 class Stream;
@@ -71,6 +73,8 @@ public:  // types
         long globalSize() const;
 
         std::string domain() const;
+
+        util::PrecisionTag precision() const;
 
         const std::string& fieldId() const;
 
@@ -132,6 +136,8 @@ public:
     std::string name() const;
 
     std::string category() const;
+
+    util::PrecisionTag precision() const;
 
     long globalSize() const;
 

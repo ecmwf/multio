@@ -43,18 +43,23 @@ Mask::Mask(const ConfigurationContext& confCtx) :
     offsetValue_{confCtx.config().getDouble("offset-value", 273.15)} {}
 
 void Mask::executeImpl(message::Message msg) const {
-    executeNext(createMasked(std::move(msg)));
+    executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
+        using PT = typename decltype(pt)::type;
+        return createMasked<PT>(std::move(msg));
+    }));
 }
 
+
+template <typename T>
 message::Message Mask::createMasked(message::Message msg) const {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     if (applyBitmap_) {
-        applyMask(msg);
+        applyMask<T>(msg);
     }
 
     if (setContains(offsetFields_, msg.name())) {
-        applyOffset(msg);
+        applyOffset<T>(msg);
     }
 
     message::Metadata md{msg.metadata()};
@@ -68,85 +73,37 @@ message::Message Mask::createMasked(message::Message msg) const {
 }
 
 
+template <typename T>
 void Mask::applyMask(message::Message msg) const {
     auto const& bkey = domain::Mask::key(msg.metadata());
     auto const& bitmask = domain::Mask::instance().get(bkey);
 
-    if (msg.metadata().has("precision")) {
-        switch (multio::util::decodePrecisionTag(msg.metadata().getString("precision"))) {
-            case multio::util::PrecisionTag::Float: {
-                ASSERT(bitmask.size() == msg.size() / sizeof(float));
+    ASSERT(bitmask.size() == msg.size() / sizeof(T));
 
-                auto git = static_cast<float*>(msg.payload().data());
+    auto git = static_cast<T*>(msg.payload().data());
 
-                for (const auto bval : bitmask) {
-                    if (not bval) {
-                        *git = missingValue_;
-                    }
-                    ++git;
-                }
-            }; break;
-            case multio::util::PrecisionTag::Double: {
-                ASSERT(bitmask.size() == msg.size() / sizeof(double));
-
-                auto git = static_cast<double*>(msg.payload().data());
-
-                for (const auto bval : bitmask) {
-                    if (not bval) {
-                        *git = missingValue_;
-                    }
-                    ++git;
-                }
-            }; break;
-            default:
-                throw eckit::BadValue("Action::Mask :: Unsupported datatype for input message",
-                                      eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+    for (const auto bval : bitmask) {
+        if (not bval) {
+            *git = missingValue_;
         }
-    }
-    else {
-        throw eckit::SeriousBug("Action::Mask :: Unable to find \"precision\" keyword in input metadata",
-                                eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+        ++git;
     }
 }
 
+template <typename T>
 void Mask::applyOffset(message::Message msg) const {
     auto const& bkey = domain::Mask::key(msg.metadata());
     auto const& bitmask = domain::Mask::instance().get(bkey);
 
-    if (msg.metadata().has("precision")) {
-        switch (multio::util::decodePrecisionTag(msg.metadata().getString("precision"))) {
-            case multio::util::PrecisionTag::Float: {
-                ASSERT(bitmask.size() == msg.size() / sizeof(float));
+    ASSERT(bitmask.size() == msg.size() / sizeof(T));
 
-                auto git = static_cast<float*>(msg.payload().data());
+    auto git = static_cast<T*>(msg.payload().data());
 
-                for (const auto bval : bitmask) {
-                    if (bval) {
-                        *git += offsetValue_;
-                    }
-                    ++git;
-                }
-            }; break;
-            case multio::util::PrecisionTag::Double: {
-                ASSERT(bitmask.size() == msg.size() / sizeof(double));
-
-                auto git = static_cast<double*>(msg.payload().data());
-
-                for (const auto bval : bitmask) {
-                    if (bval) {
-                        *git += offsetValue_;
-                    }
-                    ++git;
-                }
-            }; break;
-            default:
-                throw eckit::BadValue("Action::Mask :: Unsupported datatype for input message",
-                                      eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+    for (const auto bval : bitmask) {
+        if (bval) {
+            *git += offsetValue_;
         }
-    }
-    else {
-        throw eckit::SeriousBug("Action::Mask :: Unable to find \"precision\" keyword in input metadata",
-                                eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+        ++git;
     }
 }
 

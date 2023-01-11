@@ -37,6 +37,7 @@ public:
     void setValue(const std::string& key, const std::string& value);
     void setValue(const std::string& key, const unsigned char* value);
 
+
     // Convert bool to long (0/1)
     void setValue(const std::string& key, bool value);
 
@@ -64,7 +65,16 @@ private:
     void setOceanCoordMetadata(const message::Metadata& metadata);
     void setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig);
 
+    // TODO: these functions have to be removed when the
+    // single pricision support will be added to eccodes
+    using metkit::grib::GribHandle::setDataValues;
+    void setDataValues(const float*, size_t);
+
+    template <typename T>
     message::Message setFieldValues(const message::Message& msg);
+
+
+
     message::Message setFieldValues(const double* values, size_t count);
     message::Message setFieldValues(const float* values, size_t count);
 

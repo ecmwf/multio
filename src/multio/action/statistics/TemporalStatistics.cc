@@ -13,29 +13,14 @@ namespace action {
 
 namespace {
 auto reset_statistics(const std::vector<std::string>& opNames, message::Message msg) {
-    std::vector<OperationVar> stats;
-    if (msg.metadata().has("precision")) {
-        switch (multio::util::decodePrecisionTag(msg.metadata().getString("precision"))) {
-            case multio::util::PrecisionTag::Float: {
-                for (const auto& op : opNames) {
-                    stats.push_back(make_operation<float>(op, msg.size()));
-                }
-            }; break;
-            case multio::util::PrecisionTag::Double: {
-                for (const auto& op : opNames) {
-                    stats.push_back(make_operation<double>(op, msg.size()));
-                }
-            }; break;
-            default:
-                throw eckit::BadValue("TemporalStatistics :: Unsupported datatype for input message",
-                                      eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+    return multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
+        using PT = typename decltype(pt)::type;
+        std::vector<OperationVar> stats;
+        for (const auto& op : opNames) {
+            stats.push_back(make_operation<PT>(op, msg.size()));
         }
-    }
-    else {
-        throw eckit::SeriousBug("TemporalStatistics :: Unable to find \"precision\" keyword in input metadata",
-                                eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
-    }
-    return stats;
+        return stats;
+    });
 }
 
 eckit::DateTime currentDateTime(const message::Message& msg) {

@@ -19,9 +19,12 @@
 #include <iosfwd>
 
 #include "multio/action/ChainedAction.h"
+#include "multio/domain/Domain.h"
+#include "multio/domain/Mask.h"
 
 namespace multio {
 namespace action {
+
 
 class Mask : public ChainedAction {
 public:
@@ -30,9 +33,13 @@ public:
     void executeImpl(message::Message msg) const override;
 
 private:
+    template <typename T>
     message::Message createMasked(message::Message msg) const;
 
+    template <typename T>
     void applyMask(message::Message msg) const;
+
+    template <typename T>
     void applyOffset(message::Message msg) const;
 
     void print(std::ostream& os) const override;

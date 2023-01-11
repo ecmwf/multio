@@ -372,7 +372,10 @@ message::Message GribEncoder::encodeOceanLatitudes(const std::string& subtype) {
 
     setOceanCoordMetadata(msg.metadata());
 
-    return setFieldValues(msg);
+    return dispatchPrecisionTag(msg.precision(), [&](auto pt) {
+        using PT = typename decltype(pt)::type;
+        return setFieldValues<PT>(std::move(msg));
+    });
 }
 
 message::Message GribEncoder::encodeOceanLongitudes(const std::string& subtype) {
@@ -380,12 +383,18 @@ message::Message GribEncoder::encodeOceanLongitudes(const std::string& subtype) 
 
     setOceanCoordMetadata(msg.metadata());
 
-    return setFieldValues(msg);
+    return dispatchPrecisionTag(msg.precision(), [&](auto pt) {
+        using PT = typename decltype(pt)::type;
+        return setFieldValues<PT>(std::move(msg));
+    });
 }
 
 message::Message GribEncoder::encodeField(const message::Message& msg) {
     setFieldMetadata(msg);
-    return setFieldValues(msg);
+    return dispatchPrecisionTag(msg.precision(), [&](auto pt) {
+        using PT = typename decltype(pt)::type;
+        return setFieldValues<PT>(std::move(msg));
+    });
 }
 
 message::Message GribEncoder::encodeField(const message::Message& msg, const double* data, size_t sz) {
@@ -398,49 +407,34 @@ message::Message GribEncoder::encodeField(const message::Message& msg, const flo
     return setFieldValues(data, sz);
 }
 
+void GribEncoder::setDataValues(const float* data, size_t count) {
+
+    std::vector<double> dvalues(count, 0.0);
+    auto values = reinterpret_cast<const float*>(data);
+    for (int i = 0; i < count; ++i) {
+        dvalues[i] = double(values[i]);
+    }
+
+    this->setDataValues(dvalues.data(), count);
+
+    return;
+}
+
+
+template <typename T>
 message::Message GribEncoder::setFieldValues(const message::Message& msg) {
 
-    // TODO refactor
-    // this->setDataValues(beg, msg.metadata().has("globalSize") ?
-    // msg.globalSize() : msg.payload().size() / sizeof(double));
-    if (msg.metadata().has("precision")) {
-        switch (multio::util::decodePrecisionTag(msg.metadata().getString("precision"))) {
-            case multio::util::PrecisionTag::Float: {
-                std::vector<double> dvalues(msg.globalSize(), 0.0);
-                auto values = reinterpret_cast<const float*>(msg.payload().data());
-                for (int i = 0; i < msg.globalSize(); ++i) {
-                    dvalues[i] = double(values[i]);
-                }
+    auto beg = reinterpret_cast<const T*>(msg.payload().data());
 
-                this->setDataValues(dvalues.data(), msg.globalSize());
+    this->setDataValues(beg, msg.globalSize());
 
-                eckit::Buffer buf{this->length()};
-                this->write(buf);
+    eckit::Buffer buf{this->length()};
+    this->write(buf);
 
-                return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}},
-                               std::move(buf)};
-            }; break;
-            case multio::util::PrecisionTag::Double: {
-                auto beg = reinterpret_cast<const double*>(msg.payload().data());
-
-                this->setDataValues(beg, msg.globalSize());
-
-                eckit::Buffer buf{this->length()};
-                this->write(buf);
-
-                return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}},
-                               std::move(buf)};
-            }; break;
-            default:
-                throw eckit::BadValue("GribEncoder:: Unsupported datatype for input message",
-                                      eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
-        }
-    }
-    else {
-        throw eckit::SeriousBug("GribEncoder:: Unable to find \"precision\" keyword in input metadata",
-                                eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
-    }
+    return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}},
+                   std::move(buf)};
 }
+
 
 message::Message GribEncoder::setFieldValues(const double* values, size_t count) {
     this->setDataValues(values, count);

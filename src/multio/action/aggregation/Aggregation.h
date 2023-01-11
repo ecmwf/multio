@@ -53,27 +53,12 @@ public:
 
     void addNew(const Message& msg) {
         ASSERT(not contains(msg.fieldId()));
-        if (msg.metadata().has("precision")) {
-            switch (multio::util::decodePrecisionTag(msg.metadata().getString("precision"))) {
-                case multio::util::PrecisionTag::Float: {
-                    emplace(msg.fieldId(),
-                            Message{Message::Header{msg.header()}, eckit::Buffer{msg.globalSize() * sizeof(float)}});
-                    processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
-                }; break;
-                case multio::util::PrecisionTag::Double: {
-                    emplace(msg.fieldId(),
-                            Message{Message::Header{msg.header()}, eckit::Buffer{msg.globalSize() * sizeof(double)}});
-                    processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
-                }; break;
-                default:
-                    throw eckit::BadValue("Action::Aggregation :: Unsupported datatype for input message",
-                                          eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
-            }
-        }
-        else {
-            throw eckit::SeriousBug("Action::Aggregation :: Unable to find \"precision\" keyword in input metadata",
-                                    eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
-        }
+        multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
+            using PT = typename decltype(pt)::type;
+            emplace(msg.fieldId(),
+                    Message{Message::Header{msg.header()}, eckit::Buffer{msg.globalSize() * sizeof(PT)}});
+            processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
+        });
     }
 
     void reset(const std::string& key) {

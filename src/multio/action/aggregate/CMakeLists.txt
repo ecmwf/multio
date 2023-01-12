@@ -1,6 +1,6 @@
 ecbuild_add_library(
 
-	TARGET multio-action-aggregates
+	TARGET multio-action-aggregate
 
     SOURCES
     	Aggregate.cc

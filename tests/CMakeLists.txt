@@ -131,6 +131,7 @@ ecbuild_add_test( TARGET test_multio_legacy_interface
                   ENVIRONMENT "${_test_environment}" )
 
                   
+
+add_subdirectory(actions)
 add_subdirectory(multio)
 add_subdirectory(server)
-add_subdirectory(actions)

@@ -24,7 +24,7 @@ client:
             - name: [sst, ssv]
 
         - type: metadata-mapping
-          mapping: nemo-to-grib.yaml
+          mapping: <<~>>/nemo-to-grib.yaml
           enforce-match: true # default, may be omitted
           overwrite-existing: false # default, may be omitted
 
@@ -38,7 +38,7 @@ client:
             - name: [ssu, ssw]
 
         - type: metadata-mapping
-          mapping: nemo-to-grib.yaml
+          mapping: <<~>>/nemo-to-grib.yaml
           enforce-match: true # default, may be omitted
           overwrite-existing: false # default, may be omitted
 
@@ -55,6 +55,6 @@ server:
           match:
             - category: [ocean-2d]
 
-        - type: aggregat
+        - type: aggregate
 
         - type: single-field-sink

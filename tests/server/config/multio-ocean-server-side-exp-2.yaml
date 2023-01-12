@@ -82,7 +82,7 @@ active-matchers:
         vtau_ai,
         vtaun,
         woce,
-        wspd,
+        wspd
       ]
 
 client:
@@ -97,7 +97,7 @@ client:
                   ocean-mask,
                   ocean-grid-coordinate,
                   ocean-2d,
-                  ocean-3d,
+                  ocean-3d
                 ]
 
         - type: transport
@@ -116,7 +116,7 @@ server:
 
         - type: encode
           format: grib
-          template: unstr_latlon.tmpl
+          template: <<~>>/unstr_latlon.tmpl
           grid-type: eORCA1
           run:
             expver: dsfc # bilg
@@ -167,7 +167,7 @@ server:
                   uoce,
                   vocen,
                   uocee,
-                  woce,
+                  woce
                 ]
 
         - type: statistics
@@ -184,7 +184,7 @@ server:
 
         - type: encode
           format: grib
-          template: unstr_avg_fc.tmpl
+          template: <<~>>/unstr_avg_fc.tmpl
           grid-type: eORCA1
           run:
             expver: dsfc # bilg
@@ -233,7 +233,7 @@ server:
                   hcbtm,
                   ssh,
                   hst,
-                  mlddzt,
+                  mlddzt
                 ]
 
         - type: statistics
@@ -251,7 +251,7 @@ server:
 
         - type: encode
           format: grib
-          template: unstr_avg_fc.tmpl
+          template: <<~>>/unstr_avg_fc.tmpl
           grid-type: eORCA1
           run:
             expver: dsfc # bilg
@@ -289,7 +289,7 @@ server:
 
         - type: encode
           format: grib
-          template: unstr_avg_fc.tmpl
+          template: <<~>>/unstr_avg_fc.tmpl
           grid-type: eORCA1
           run:
             expver: dsfc # bilg

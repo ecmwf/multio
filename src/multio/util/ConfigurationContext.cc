@@ -100,7 +100,7 @@ const YAMLFile& GlobalConfCtx::getYAMLFile(const char* fname) const {
     return getYAMLFile(std::string(fname));
 }
 const YAMLFile& GlobalConfCtx::getYAMLFile(const std::string& fname) const {
-    return getRelativeYAMLFile(pathName_, fname);
+    return getYAMLFile(eckit::PathName{replaceFish(fname)});
 }
 const YAMLFile& GlobalConfCtx::getRelativeYAMLFile(const eckit::PathName& referedFrom, const char* fname) const {
     return getRelativeYAMLFile(referedFrom, std::string(fname));
@@ -116,9 +116,26 @@ const YAMLFile& GlobalConfCtx::getYAMLFile(const eckit::PathName& fname) const {
         return config->second;
     }
 
-    referencedConfigFiles_.emplace(std::piecewise_construct, std::forward_as_tuple(key),
-                                   std::forward_as_tuple(YAMLFile{eckit::LocalConfiguration{eckit::YAMLConfiguration{fname}}, path}));
+    referencedConfigFiles_.emplace(
+        std::piecewise_construct, std::forward_as_tuple(key),
+        std::forward_as_tuple(YAMLFile{eckit::LocalConfiguration{eckit::YAMLConfiguration{fname}}, path}));
     return referencedConfigFiles_[key];
+}
+
+std::string GlobalConfCtx::replaceFish(const std::string& s) const {
+    return ::replaceFish(s, [this](std::string_view replace){
+        if (replace == "~") {
+            return eckit::Optional<std::string>{this->pathName_.asString()};
+        }
+        std::string lookUpKey{replace};
+        char* env = ::getenv(lookUpKey.c_str());
+        if (env) {
+            return eckit::Optional<std::string>{env};
+        }
+        else {
+            return eckit::Optional<std::string>{};
+        }
+    });
 }
 
 const MetadataMappings& GlobalConfCtx::metadataMappings() const {
@@ -260,6 +277,9 @@ const YAMLFile& ConfigurationContext::getRelativeYAMLFile(const eckit::PathName&
 const YAMLFile& ConfigurationContext::getRelativeYAMLFile(const eckit::PathName& referedFrom,
                                                           const std::string& fname) const {
     return globalConfCtx_->getRelativeYAMLFile(referedFrom, fname);
+}
+std::string ConfigurationContext::replaceFish(const std::string& s) const {
+    return globalConfCtx_->replaceFish(s);
 }
 
 

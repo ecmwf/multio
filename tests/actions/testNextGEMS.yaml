@@ -14,14 +14,14 @@ plans:
             - levtype: pl
               gridType: sh
         - type: metadata-mapping
-          mapping: ../metadataMappings/grib1-pl-encoder-overwrites.yaml
+          mapping: <<~>>/../metadataMappings/grib1-pl-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
           prefix: Matched PL sh field
         - type: encode
           format: grib
-          template: sh_pl_grib1.tmpl
+          template: <<~>>/sh_pl_grib1.tmpl
           overwrite:
             generatingProcessIdentifier: 153
         - type: sink
@@ -37,14 +37,14 @@ plans:
             - levtype: pl
               gridType: reduced_gg
         - type: metadata-mapping
-          mapping: ../metadataMappings/grib1-pl-encoder-overwrites.yaml
+          mapping: <<~>>/../metadataMappings/grib1-pl-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
           prefix: Matched PL reduced_gg field
         - type: encode
           format: grib
-          template: reduced_gg_pl_grib1.tmpl
+          template: <<~>>/reduced_gg_pl_grib1.tmpl
           overwrite:
             generatingProcessIdentifier: 153
         - type: sink
@@ -60,14 +60,14 @@ plans:
             - levtype: sfc
               param: [228051]
         - type: metadata-mapping
-          mapping: ../metadataMappings/grib1-sfc-encoder-overwrites.yaml
+          mapping: <<~>>/../metadataMappings/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
           prefix: Matched SFC field 228051 (litota1)
         - type: encode
           format: grib
-          template: nextgems-input-SFC-litota1.grib
+          template: <<~>>/nextgems-input-SFC-litota1.grib
           overwrite:
             generatingProcessIdentifier: 153
         - type: sink
@@ -83,14 +83,14 @@ plans:
             - levtype: sfc
               param: [174098]
         - type: metadata-mapping
-          mapping: ../metadataMappings/grib1-sfc-encoder-overwrites.yaml
+          mapping: <<~>>/../metadataMappings/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
           prefix: Matched SFC sithick
         - type: encode
           format: grib
-          template: nextgems-input-SFC-sithick.grib
+          template: <<~>>/nextgems-input-SFC-sithick.grib
         - type: sink
           sinks:
             - type: file
@@ -111,14 +111,14 @@ plans:
             - levtype: sfc
               param: [141, 139, 170, 183, 236, 39, 40, 41, 42]
         - type: metadata-mapping
-          mapping: ../metadataMappings/grib1-sfc-encoder-overwrites.yaml
+          mapping: <<~>>/../metadataMappings/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
           prefix: Matched SFC different top/bottom level
         - type: encode
           format: grib
-          template: nextgems-input-SFC-stl4.grib
+          template: <<~>>/nextgems-input-SFC-stl4.grib
           overwrite:
             generatingProcessIdentifier: 153
         - type: sink
@@ -135,14 +135,14 @@ plans:
           ignore:
             - param: [228051, 141, 139, 170, 183, 236, 39, 40, 41, 42]
         - type: metadata-mapping
-          mapping: ../metadataMappings/grib1-sfc-encoder-overwrites.yaml
+          mapping: <<~>>/../metadataMappings/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
           prefix: Matched SFC field rest
         - type: encode
           format: grib
-          template: nextgems-input-SFC-rsn.grib
+          template: <<~>>/nextgems-input-SFC-rsn.grib
           overwrite:
             generatingProcessIdentifier: 153
         - type: print 

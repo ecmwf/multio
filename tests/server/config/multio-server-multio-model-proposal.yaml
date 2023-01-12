@@ -82,6 +82,6 @@ atmosphere-ioserver:
           match:
             - category: [atmosphere-2d]
 
-        - type: aggregat
+        - type: aggregate
 
         - type: single-field-sink

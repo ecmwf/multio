@@ -96,4 +96,8 @@ ecbuild_add_test( TARGET       test_multio_replay_nemo_fapi
                   ARGS         $<TARGET_FILE:multio-replay-nemo-fapi> $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
                   ENVIRONMENT  "${_test_environment}" )
 
+
+# Install files
+add_subdirectory(config)
+
 endif(HAVE_MULTIO_SERVER)

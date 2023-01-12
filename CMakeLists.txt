@@ -84,6 +84,7 @@ ecbuild_add_option( FEATURE SANDBOX
 
 ### export package info
 
+set( MULTIO_CONFIG_DIR     share/multio/config )
 set( MULTIO_INCLUDE_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src )
 set( MULTIO_LIBRARIES      multio )
 

@@ -15,12 +15,17 @@
 #pragma once
 
 #include "eckit/config/LocalConfiguration.h"
+// TODO: 
+//   Now on C++17; replace all 
+//     - replace all eckit::Optional with std::Optional
+//     - use string_view where copies are avoided (i.e. check for interop with eckit, for example eckit::PathName to avoid having to 
 #include "eckit/utils/Optional.h"
 
 #include "multio/util/ConfigurationPath.h"
 #include "multio/util/IteratorMapper.h"
 #include "multio/util/MetadataMappings.h"
 #include "multio/util/Translate.h"
+#include "multio/util/Substitution.h"
 
 #include <functional>
 #include <tuple>
@@ -158,6 +163,8 @@ public:
 
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const char*) const;
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
+    
+    std::string replaceFish(const std::string&) const;
 
 
     const MetadataMappings& metadataMappings() const;
@@ -207,6 +214,8 @@ public:
 
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const char*) const;
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
+    
+    std::string replaceFish(const std::string&) const;
 
 
     friend util::MetadataMappings;

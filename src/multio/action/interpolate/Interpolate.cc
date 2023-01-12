@@ -49,6 +49,11 @@ multio::message::Message Interpolate::InterpolateRawMessage<float>(Message&& msg
     mir::api::MIRJob job;
     mainConfiguration_->MIRJob(msg.metadata(), job);
 
+    // Add missing values support
+    if (msg.metadata().has("missingValue")) {
+        job.set("missing_value", msg.metadata().getDouble("missingValue"));
+    }
+
     // Show mir input configuration
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: mir input field description :: " << std::endl
                              << inputPar << std::endl
@@ -127,6 +132,11 @@ multio::message::Message Interpolate::InterpolateRawMessage<double>(Message&& ms
     // Prepare interpolation Job (configuration of the interpolation task)
     mir::api::MIRJob job;
     mainConfiguration_->MIRJob(msg.metadata(), job);
+
+    // Add missing values support
+    if (msg.metadata().has("missingValue")) {
+        job.set("missing_value", msg.metadata().getDouble("missingValue"));
+    }
 
     // Show mir input configuration
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: mir input field description :: " << std::endl

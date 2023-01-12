@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iomanip>
+#include <cstring>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/FileHandle.h"
@@ -109,18 +110,28 @@ private:
 
     size_t clientCount_ = 1;
     size_t serverCount_ = 0;
+    bool singlePrecision_;
 
     multio_handle_t* multio_handle = nullptr;
 };
 
 //----------------------------------------------------------------------------------------------------------------
 
-MultioReplayNemoCApi::MultioReplayNemoCApi(int argc, char** argv) : multio::MultioTool(argc, argv) {
+MultioReplayNemoCApi::MultioReplayNemoCApi(int argc, char** argv) :
+    multio::MultioTool(argc, argv), singlePrecision_(false) {
     options_.push_back(new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("path", "Path to NEMO data"));
     options_.push_back(new eckit::option::SimpleOption<long>("nbclients", "Number of clients"));
     options_.push_back(new eckit::option::SimpleOption<long>("field", "Name of field to replay"));
     options_.push_back(new eckit::option::SimpleOption<long>("step", "Time counter for the field to replay"));
+
+    // enable single precision testing
+    for (int i = 1; i < argc; ++i) {
+        if (::strcmp(argv[i], "--singlePrecision") == 0) {
+            singlePrecision_ = true;
+        }
+    }
+    return;
 }
 
 void MultioReplayNemoCApi::init(const eckit::option::CmdArgs& args) {
@@ -229,8 +240,17 @@ void MultioReplayNemoCApi::writeFields() {
         multio_metadata_set_string(md, "name", fname);
         multio_metadata_set_string(md, "nemoParam", fname);
 
-        multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz);
-
+        if (singlePrecision_) {
+            const double* tmp_d = reinterpret_cast<const double*>(buffer.data());
+            std::vector<float> tmp_f(sz, 0.0);
+            for (int i = 0; i < sz; ++i) {
+                tmp_f[i] = float(tmp_d[i]);
+            }
+            multio_write_field(multio_handle, md, tmp_f.data(), sz);
+        }
+        else {
+            multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz);
+        }
         multio_delete_metadata(md);
     }
 }

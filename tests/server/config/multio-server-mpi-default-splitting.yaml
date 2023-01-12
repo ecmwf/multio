@@ -30,7 +30,7 @@ client:
             - name: [sst, ssv]
 
         - type: metadata-mapping
-          mapping: nemo-to-grib.yaml
+          mapping: <<~>>/nemo-to-grib.yaml
 
         - type: transport
           target: server
@@ -42,7 +42,7 @@ client:
             - name: [ssu, ssw]
 
         - type: metadata-mapping
-          mapping: nemo-to-grib.yaml
+          mapping: <<~>>/nemo-to-grib.yaml
 
         - type: transport
           target: server

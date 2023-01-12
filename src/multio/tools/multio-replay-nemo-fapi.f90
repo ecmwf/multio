@@ -17,11 +17,11 @@ program multio_replay_nemo_fapi
 
     integer :: rank, client_count, server_count 
 
-    integer :: global_size = 105704
-    integer :: level = 1
-    integer :: step = 24
+    integer :: global_size
+    integer :: level
+    integer :: step
     
-
+    logical singlePrecision
 
     type(multio_handle) :: mio
     integer(8) :: mio_parent_comm = MPI_UNDEFINED
@@ -42,15 +42,37 @@ program multio_replay_nemo_fapi
     end interface
 
 
+   singlePrecision = hasSinglePrecison()
+   global_size = 105704
+   level = 1
+   step = 24   
+
     write(0,*) "Start programm multio_replay_nemo_fapi..."
 
     call init(mio, rank, server_count, client_count)
     call run(mio, rank, client_count, nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
-               global_size, level, step)
+               global_size, level, step, singlePrecision)
 
     call test_data(rank, nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
                global_size, level, step)
 contains
+
+
+function hasSinglePrecison() result(singlePrecision)
+    use, intrinsic :: iso_c_binding
+    character(kind=c_char,len=255) :: arg
+    integer(c_int) :: iarg
+    logical :: singlePrecision
+    singlePrecision = .FALSE.
+    search: do iarg=1,command_argument_count()+1
+      arg = repeat(' ',255)
+      call get_command_argument(iarg, arg )
+      if ( trim(adjustl(arg)) == "--singlePrecision" ) then
+        singlePrecision = .TRUE.
+        exit search
+      endif 
+    enddo search
+end function hasSinglePrecison
 
 subroutine multio_custom_error_handler(context, err)
     integer(8), intent(inout) :: context  ! Use mpi communicator as context
@@ -216,7 +238,7 @@ end subroutine init
 
 subroutine run(mio, rank, client_count, & 
         nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
-        global_size, level, step &
+        global_size, level, step, singlePrecision &
 )
     integer(kind=c_int) :: cerr
     type(multio_handle), intent(inout) :: mio
@@ -225,6 +247,7 @@ subroutine run(mio, rank, client_count, &
     integer, intent(in) :: global_size
     integer, intent(in) :: level
     integer, intent(in) :: step
+    logical, intent(in) :: singlePrecision
     character(*), dimension(2), intent(in) :: nemo_parameters 
     integer, dimension(2), intent(in) :: grib_param_id 
     character(*), dimension(2), intent(in) :: grib_grid_type 
@@ -239,7 +262,7 @@ subroutine run(mio, rank, client_count, &
     call set_domains(mio, rank, client_count)
 
     call write_fields(mio, rank, client_count, nemo_parameters, &
-      grib_param_id, grib_grid_type, grib_level_type, global_size, level, step)
+      grib_param_id, grib_grid_type, grib_level_type, global_size, level, step, singlePrecision)
 
     cerr = mio%close_connections()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 39
@@ -311,7 +334,7 @@ end subroutine set_domains
 
 
 subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
-    global_size, level, step)
+    global_size, level, step, singlePrecision)
     integer(kind=c_int) :: cerr
     type(multio_handle), intent(inout) :: mio
     integer, intent(in) :: rank
@@ -325,9 +348,13 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
     integer, intent(in):: global_size
     integer, intent(in):: level
     integer, intent(in):: step
-    integer :: i
+    logical, intent(in):: singlePrecision
 
-    real(kind=c_double), dimension(:), allocatable :: values
+
+    integer :: i, j
+
+    real(kind=c_double), dimension(:), allocatable :: values_d
+    real(kind=c_float),  dimension(:), allocatable :: values_f
 
 
     write(0,*) "write_fields", rank, client_count
@@ -356,7 +383,7 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
 
     do i=1, size(nemo_parameters)
         print *,i, nemo_parameters(i)
-        call read_field(nemo_parameters(i), rank, step, values)
+        call read_field(nemo_parameters(i), rank, step, values_d)
 
         cerr = md%set_string_value("name", nemo_parameters(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 24
@@ -371,10 +398,20 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
         cerr = md%set_string_value("typeOfLevel", grib_level_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 30
 
-        cerr = mio%write_field(md, values, size(values))
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 35
-
-        deallocate(values)
+        if ( singlePrecision ) then
+            allocate(values_f(size(values_d)))
+            do j = 1, size(values_d)
+              values_f(j) = real(values_d(j),kind=c_float)
+            enddo
+            cerr = mio%write_field(md, values_f, size(values_f))
+            if (cerr /= MULTIO_SUCCESS) ERROR STOP 35
+            deallocate(values_f)    
+        else
+            cerr = mio%write_field(md, values_d, size(values_d))
+            if (cerr /= MULTIO_SUCCESS) ERROR STOP 35
+        endif
+        
+        deallocate(values_d)
     end do
 
     cerr = md%delete()
@@ -408,7 +445,7 @@ subroutine read_field(param, client_id, step, values)
      write(0,*) "read_field file ", fname, " recl: ", C_SIZEOF(dummy_double)
 
      number_doubles =0 
-     open(FID, file=fname, status='old', action='read', access="stream", form="unformatted")
+     open(FID, file=fname, status='old', action='read', access="stream", form="unformatted", convert='little_endian')
      loop1: DO
         read(FID, iostat=ioerror, iomsg=ioerrmsg) dummy_double
         ! write(0,*) "read_field loop ", number_doubles
@@ -478,7 +515,7 @@ subroutine test_data(rank, &
        write(0,*) "comparing file ", trim(fname), " with reference ", trim(refname)
 
        open(FID1, file=fname, status='old', action='read', access="stream", form="unformatted")
-       open(FID2, file=fname, status='old', action='read', access="stream", form="unformatted")
+       open(FID2, file=refname, status='old', action='read', access="stream", form="unformatted")
        byte_num = 0
        loop1: DO
           read(FID1, iostat=ioerror, iomsg=ioerrmsg) actual

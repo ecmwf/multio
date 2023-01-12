@@ -82,7 +82,7 @@ active-matchers:
         vtau_ai,
         vtaun,
         woce,
-        wspd,
+        wspd
       ]
 
 client:
@@ -116,7 +116,7 @@ server:
 
         - type: encode
           format: grib
-          template: unstr_latlon.tmpl
+          template: <<~>>/unstr_latlon.tmpl
           grid-type: eORCA1
           run:
             expver: dsan
@@ -168,7 +168,7 @@ server:
                   uoce,
                   vocen,
                   uocee,
-                  woce,
+                  woce
                 ]
 
         - type: statistics
@@ -185,7 +185,7 @@ server:
 
         - type: encode
           format: grib
-          template: unstr_inst_an.tmpl
+          template: <<~>>/unstr_inst_an.tmpl
           grid-type: eORCA1
           run:
             expver: dsan
@@ -235,7 +235,7 @@ server:
                   hcbtm,
                   ssh,
                   hst,
-                  mlddzt,
+                  mlddzt
                 ]
 
         - type: statistics
@@ -253,7 +253,7 @@ server:
 
         - type: encode
           format: grib
-          template: unstr_inst_an.tmpl
+          template: <<~>>/unstr_inst_an.tmpl
           grid-type: eORCA1
           run:
             expver: dsan
@@ -292,7 +292,7 @@ server:
 
         - type: encode
           format: grib
-          template: unstr_inst_an.tmpl
+          template: <<~>>/unstr_inst_an.tmpl
           grid-type: eORCA1
           run:
             expver: dsan

@@ -82,7 +82,7 @@ active-matchers:
         vtau_ai,
         vtaun,
         woce,
-        wspd,
+        wspd
       ]
 
 #===================================================================================================
@@ -131,7 +131,7 @@ client:
                   uoce,
                   vocen,
                   uocee,
-                  woce,
+                  woce
                 ]
 
         - type: Statistics
@@ -173,7 +173,7 @@ client:
                   hcbtm,
                   ssh,
                   hst,
-                  mlddzt,
+                  mlddzt
                 ]
 
         - type: Statistics
@@ -213,7 +213,7 @@ server:
 
         - type: Encode
           format: grib
-          template: unstr_latlon.tmpl
+          template: <<~>>/unstr_latlon.tmpl
           grid-type: eORCA1
           run:
             expver: dsan
@@ -244,7 +244,7 @@ server:
 
         - type: Encode
           format: grib
-          template: unstr_inst_an.tmpl
+          template: <<~>>/unstr_inst_an.tmpl
           grid-type: eORCA1
           run:
             expver: dsan

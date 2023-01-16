@@ -116,7 +116,7 @@ server:
 
         - type: encode
           format: grib
-          template: <<~>>/unstr_latlon.tmpl
+          template: '{~}/unstr_latlon.tmpl'
           grid-type: eORCA1
           run:
             expver: dsfc # bilg
@@ -184,7 +184,7 @@ server:
 
         - type: encode
           format: grib
-          template: <<~>>/unstr_avg_fc.tmpl
+          template: '{~}/unstr_avg_fc.tmpl'
           grid-type: eORCA1
           run:
             expver: dsfc # bilg
@@ -251,7 +251,7 @@ server:
 
         - type: encode
           format: grib
-          template: <<~>>/unstr_avg_fc.tmpl
+          template: '{~}/unstr_avg_fc.tmpl'
           grid-type: eORCA1
           run:
             expver: dsfc # bilg
@@ -289,7 +289,7 @@ server:
 
         - type: encode
           format: grib
-          template: <<~>>/unstr_avg_fc.tmpl
+          template: '{~}/unstr_avg_fc.tmpl'
           grid-type: eORCA1
           run:
             expver: dsfc # bilg

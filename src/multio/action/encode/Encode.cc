@@ -87,7 +87,7 @@ std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
         ASSERT(confCtx.config().has("template"));
         std::string tmplPath = confCtx.config().getString("template");
         // TODO provide utility to distinguish between relative and absolute paths
-        eckit::AutoStdFile fin{confCtx.replaceFish(tmplPath)};
+        eckit::AutoStdFile fin{confCtx.replaceCurly(tmplPath)};
         int err;
         return std::unique_ptr<GribEncoder>{
             new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), confCtx.config()}};

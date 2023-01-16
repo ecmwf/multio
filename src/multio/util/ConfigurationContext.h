@@ -164,7 +164,7 @@ public:
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const char*) const;
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
     
-    std::string replaceFish(const std::string&) const;
+    std::string replaceCurly(const std::string&) const;
 
 
     const MetadataMappings& metadataMappings() const;
@@ -215,7 +215,7 @@ public:
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const char*) const;
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
     
-    std::string replaceFish(const std::string&) const;
+    std::string replaceCurly(const std::string&) const;
 
 
     friend util::MetadataMappings;

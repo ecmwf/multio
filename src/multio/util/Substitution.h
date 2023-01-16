@@ -26,29 +26,36 @@
 namespace multio {
 namespace util {
 
-static const std::string FISH_START_DELIM{"<<"};
-static const std::string FISH_END_DELIM{">>"};
-
+/*
+ * Replacement of (single) curly braces analogous to PGEN. Example: {var}
+ * Note: Explicitly wrap strings in YAML with '' to avoid problems with BASH substitution 
+ * PGEN example template: https://git.ecmwf.int/projects/PRODGEN/repos/pgen/browse/tests/fields/naming/template.yaml
+ * PGEN substitution code: https://git.ecmwf.int/projects/PRODGEN/repos/pgen/browse/src/pgen/sinks/TemplatedName.cc#89
+ 
+ * TODO: Think about an escaping mechanism, i.e. \{  and \}, or {{ and }}
+ */
 template <typename Func>
-std::string replaceFish(std::string_view s, Func&& lookup) {
+std::string replaceCurly(std::string_view s, Func&& lookup) {
+    static const std::string START_DELIM{"{"};
+    static const std::string END_DELIM{"}"};
     std::ostringstream oss;
 
     for (;;) {
-        auto pos = s.find(FISH_START_DELIM);
+        auto pos = s.find(START_DELIM);
         if (pos == std::string_view::npos) {
             oss << s;
             return oss.str();
         }
-        auto end = s.find(FISH_END_DELIM, pos + FISH_START_DELIM.size());
+        auto end = s.find(END_DELIM, pos + START_DELIM.size());
         if (end == std::string_view::npos) {
             oss << s;
             return oss.str();
         }
-        auto const key = s.substr(pos + FISH_START_DELIM.size(), end - pos - FISH_END_DELIM.size());
+        auto const key = s.substr(pos + START_DELIM.size(), end - pos - END_DELIM.size());
         auto const subMaybe = lookup(key);
         if (subMaybe) {
             oss << (s.substr(0, pos)) << (*subMaybe);
-            s = s.substr(end + FISH_END_DELIM.size());
+            s = s.substr(end + END_DELIM.size());
         }
         else {
             oss << (s.substr(0, end));
@@ -59,11 +66,11 @@ std::string replaceFish(std::string_view s, Func&& lookup) {
 
 
 // Example
-std::string replaceFish(std::string_view s, const std::map<std::string, std::string>& replacements);
+std::string replaceCurly(std::string_view s, const std::map<std::string, std::string>& replacements);
 
 
 // Example
-std::string replaceFish(std::string_view s, const eckit::Configuration& replacements);
+std::string replaceCurly(std::string_view s, const eckit::Configuration& replacements);
 
 }  // namespace util
 }  // namespace multio

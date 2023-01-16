@@ -105,7 +105,7 @@ client:
             - category: [ocean-grid-coordinate]
 
         - type: metadata-mapping
-          mapping: <<~>>/nemo-to-grib.yaml
+          mapping: '{~}/nemo-to-grib.yaml'
 
         - type: transport
           target: server
@@ -147,7 +147,7 @@ client:
                 ]
 
         - type: metadata-mapping
-          mapping: <<~>>/nemo-to-grib.yaml
+          mapping: '{~}/nemo-to-grib.yaml'
 
         - type: statistics
           output-frequency: 2d
@@ -192,7 +192,7 @@ client:
                 ]
 
         - type: metadata-mapping
-          mapping: <<~>>/nemo-to-grib.yaml
+          mapping: '{~}/nemo-to-grib.yaml'
 
         - type: statistics
           output-frequency: 1d
@@ -209,7 +209,7 @@ client:
             - name: [icethic, ice_cover, snwthic, iicevelur, iicevelvr, icettop]
 
         - type: metadata-mapping
-          mapping: <<~>>/nemo-to-grib.yaml
+          mapping: '{~}/nemo-to-grib.yaml'
 
         - type: statistics
           output-frequency: 1d
@@ -234,7 +234,7 @@ server:
 
         - type: encode
           format: grib
-          template: <<~>>/unstr_latlon.tmpl
+          template: '{~}/unstr_latlon.tmpl'
           grid-type: eORCA025
           run:
             expver: dsfc # bilg
@@ -266,7 +266,7 @@ server:
 
         - type: encode
           format: grib
-          template: <<~>>/unstr_avg_fc.tmpl
+          template: '{~}/unstr_avg_fc.tmpl'
           grid-type: eORCA025
           run:
             expver: dsfc # bilg

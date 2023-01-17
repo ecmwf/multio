@@ -59,8 +59,7 @@ void forwardConfiguration(const eckit::LocalConfiguration& Source, DestinationTy
     eckit::Value cfgVal = Source.getSubConfiguration(keySource).get();
     eckit::LocalConfiguration tmp;
     if (cfgVal.isMap()) {
-        throw eckit::NotImplemented("Action::Interpolate :: Nested forwarding is not supported",
-                                    eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+        throw eckit::NotImplemented("Action::Interpolate :: Nested forwarding is not supported", Here());
     }
     else if (cfgVal.isList()) {
         if (cfgVal.head().isDouble()) {
@@ -74,8 +73,7 @@ void forwardConfiguration(const eckit::LocalConfiguration& Source, DestinationTy
             Destination.set(keyDestination, Source.getStringVector(keySource));
         }
         else {
-            throw eckit::NotImplemented("Action::Interpolate :: Unsupported datatype",
-                                        eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+            throw eckit::NotImplemented("Action::Interpolate :: Unsupported datatype", Here());
         };
     }
     else {
@@ -92,8 +90,7 @@ void forwardConfiguration(const eckit::LocalConfiguration& Source, DestinationTy
             Destination.set(keyDestination, Source.getString(keySource).c_str());
         }
         else {
-            throw eckit::NotImplemented("Action::Interpolate :: Unsupported datatype",
-                                        eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+            throw eckit::NotImplemented("Action::Interpolate :: Unsupported datatype", Here());
         };
     }
 };
@@ -125,7 +122,7 @@ public:
     /**
      * \brief Call inherited destructors
      */
-    virtual ~ActionInterpolateHighParser() { return; };
+    virtual ~ActionInterpolateHighParser() = default;
 
     /**
      * \brief Get the expected dimension of the output field

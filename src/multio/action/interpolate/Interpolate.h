@@ -79,11 +79,6 @@ public:
     explicit Interpolate(const ConfigurationContext& confCtx);
 
     /**
-     * \brief destructor for the Action Interpolate.
-     */
-    ~Interpolate();
-
-    /**
      * \brief method used as high level wrapper for the interpolation library
      *
      * \param [in] msg perform the interpolation action

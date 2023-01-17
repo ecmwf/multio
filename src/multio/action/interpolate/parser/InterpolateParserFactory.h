@@ -94,8 +94,7 @@ public:
             highParser = new ActionInterpolateHighParserAtlas(configurationContext);
         }
         else {
-            throw eckit::NotImplemented("Action::Interpolate ::  Bad input sequence in YAML file",
-                                        eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+            throw eckit::NotImplemented("Action::Interpolate ::  Bad input sequence in YAML file", Here());
         }
         // Exit point
         return (highParser);

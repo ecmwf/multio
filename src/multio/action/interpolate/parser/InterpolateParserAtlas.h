@@ -214,7 +214,7 @@ private:
                 if (!inputGrid) {
                     std::ostringstream oss;
                     oss << "Action::Interpolate::Parser :: invalid input grid -> " << inputGridName_ << std::endl;
-                    throw eckit::NotImplemented(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                    throw eckit::NotImplemented(oss.str(), Here());
                 }
                 else {
                     // Check if the grid is a reduced gaussian grid
@@ -240,8 +240,7 @@ private:
                             }
                             else {
                                 throw eckit::SeriousBug(
-                                    "Action::Interpolate::Parser :: Unable to get a valid bounding box",
-                                    eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                                    "Action::Interpolate::Parser :: Unable to get a valid bounding box", Here());
                             }
                             inputSize_ = inputGrid.size();
                         }
@@ -249,8 +248,7 @@ private:
                             std::ostringstream oss;
                             oss << "Action::Interpolate::Parser :: gaussian non-reduced grids still not supported -> "
                                 << inputGridName_ << std::endl;
-                            throw eckit::NotImplemented(oss.str(),
-                                                        eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                            throw eckit::NotImplemented(oss.str(), Here());
                         }
                     }
                     else if (structuredGrid) {
@@ -265,7 +263,7 @@ private:
                         }
                         else {
                             throw eckit::SeriousBug("Action::Interpolate::Parser :: Unable to get a valid bounding box",
-                                                    eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                                                    Here());
                         }
                         double degSN;
                         double degWE;
@@ -285,14 +283,13 @@ private:
                         std::ostringstream oss;
                         oss << "Action::Interpolate::Parser :: grid still not supported -> " << inputGridName_
                             << std::endl;
-                        throw eckit::NotImplemented(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                        throw eckit::NotImplemented(oss.str(), Here());
                     }
                 }
             }
         }
         else {
-            throw eckit::UserError("Action::Interpolate::Parser :: Input grid name must be a string",
-                                   eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+            throw eckit::UserError("Action::Interpolate::Parser :: Input grid name must be a string", Here());
         };
         // Exit point
         return;
@@ -338,7 +335,7 @@ private:
                 if (!outputGrid) {
                     std::ostringstream oss;
                     oss << "Action::Interpolate::Parser :: invalid output grid -> " << outputGridName_ << std::endl;
-                    throw eckit::NotImplemented(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                    throw eckit::NotImplemented(oss.str(), Here());
                 }
                 else {
                     // Check if the grid is a reduced gaussian grid
@@ -357,7 +354,7 @@ private:
                         }
                         else {
                             throw eckit::SeriousBug("Action::Interpolate::Parser :: Unable to get a valid bounding box",
-                                                    eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                                                    Here());
                         }
                         double degSN;
                         double degWE;
@@ -378,7 +375,7 @@ private:
                         std::ostringstream oss;
                         oss << "Action::Interpolate::Parser :: grid still not supported -> " << outputGridName_
                             << std::endl;
-                        throw eckit::NotImplemented(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                        throw eckit::NotImplemented(oss.str(), Here());
                     }
                 }
             }
@@ -402,7 +399,7 @@ private:
                             std::ostringstream oss;
                             oss << "Action::Interpolate::Parser :: size 2 vector expected -> " << outputGridName_
                                 << std::endl;
-                            throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                            throw eckit::UserError(oss.str(), Here());
                         }
                     }
                     else {
@@ -410,20 +407,20 @@ private:
                         std::ostringstream oss;
                         oss << "Action::Interpolate::Parser :: double vector exected -> " << outputGridName_
                             << std::endl;
-                        throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                        throw eckit::UserError(oss.str(), Here());
                     }
                 }
                 else {
                     // vector expected
                     std::ostringstream oss;
                     oss << "Action::Interpolate::Parser :: vector expected -> " << outputGridName_ << std::endl;
-                    throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                    throw eckit::UserError(oss.str(), Here());
                 }
             }
             else {
                 std::ostringstream oss;
                 oss << "Action::Interpolate::Parser :: expected \"grid\" keyword -> " << outputGridName_ << std::endl;
-                throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                throw eckit::UserError(oss.str(), Here());
             };
 
 
@@ -440,7 +437,7 @@ private:
                             std::ostringstream oss;
                             oss << "Action::Interpolate::Parser :: size 4 vector expected -> " << outputGridName_
                                 << std::endl;
-                            throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                            throw eckit::UserError(oss.str(), Here());
                         }
                     }
                     else {
@@ -448,7 +445,7 @@ private:
                         std::ostringstream oss;
                         oss << "Action::Interpolate::Parser :: double vector expected -> " << outputGridName_
                             << std::endl;
-                        throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                        throw eckit::UserError(oss.str(), Here());
                     }
                 }
                 else {
@@ -456,13 +453,13 @@ private:
                     std::ostringstream oss;
                     oss << "Action::Interpolate::Parser :: expected \"area\" keyword-> " << outputGridName_
                         << std::endl;
-                    throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                    throw eckit::UserError(oss.str(), Here());
                 }
             }
             else {
                 std::ostringstream oss;
                 oss << "Action::Interpolate::Parser :: grid still not supported -> " << outputGridName_ << std::endl;
-                throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                throw eckit::UserError(oss.str(), Here());
             };
             mirJobParams_.set("interpolation", "linear");
             mirJobParams_.set("caching", true);
@@ -473,8 +470,7 @@ private:
             outputSize_ = nx * ny;
         }
         else {
-            throw eckit::UserError("Action::Interpolate::Parser :: Input grid name must be a string",
-                                   eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+            throw eckit::UserError("Action::Interpolate::Parser :: Input grid name must be a string", Here());
         };
         // Exit point
         return;

@@ -193,8 +193,6 @@ Interpolate::Interpolate(const ConfigurationContext& confCtx) :
     ChainedAction{confCtx},
     mainConfiguration_(interpolate::InterpolateParserFactory::instance().build(Action::confCtx_.config())) {}
 
-Interpolate::~Interpolate() {}
-
 void Interpolate::executeImpl(Message msg) const {
     switch (msg.tag()) {
         case (Message::Tag::Field): {

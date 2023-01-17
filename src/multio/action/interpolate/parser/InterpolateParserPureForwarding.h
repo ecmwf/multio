@@ -83,7 +83,7 @@ private:
             else {
                 std::ostringstream oss;
                 oss << "Action::Interpolate::Parser :: Bad input sequence in YAML file -> " << key << std::endl;
-                throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                throw eckit::UserError(oss.str(), Here());
             }
         }
     };
@@ -100,7 +100,7 @@ private:
             else {
                 std::ostringstream oss;
                 oss << "Action::Interpolate::Parser :: Key already present -> " << key << std::endl;
-                throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                throw eckit::UserError(oss.str(), Here());
             }
         }
     };
@@ -162,7 +162,7 @@ private:
         else {
             std::ostringstream oss;
             oss << "Action::Interpolate::Parser :: Unable to open file -> " << fname << std::endl;
-            throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+            throw eckit::UserError(oss.str(), Here());
         }
     };
 
@@ -177,7 +177,7 @@ public:
         if (!base.has(field)) {
             std::ostringstream oss;
             oss << "Action::Interpolate::Parser :: Field not found in the input YAML file -> " << field << std::endl;
-            throw eckit::UserError(oss.str(), eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+            throw eckit::UserError(oss.str(), Here());
         };
     };
 
@@ -228,8 +228,7 @@ public:
         // Check for empty configuration
         if (!cfg.has("empty") && cnt == 0) {
             throw eckit::UserError(
-                "Action::Interpolate::Parser :: unable to find a valid configuration in the input file",
-                eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+                "Action::Interpolate::Parser :: unable to find a valid configuration in the input file", Here());
         };
     };
 };
@@ -269,8 +268,7 @@ private:
             outputSize_ = configurationContext_.getLong("outputSize");
         }
         else {
-            throw eckit::UserError("Action::Interpolate::Parser :: Expected an output size for \"outputSize\"",
-                                   eckit::CodeLocation(__FILE__, __LINE__, __FUNCTION__));
+            throw eckit::UserError("Action::Interpolate::Parser :: Expected an output size for \"outputSize\"", Here());
         }
     }
 

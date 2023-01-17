@@ -169,11 +169,11 @@ Mask
 ~~~~
 
 This action will mask parts of the aggregated field, so it is designed to come after aggregation, if
-included in the pipelie. It will allow parts of the domain to be ignored and thus reduce the size of
+included in the pipeline. It will allow parts of the domain to be ignored and thus reduce the size of
 the stored message. It is particularly useful for ocean forecast data.
 
 Similar to the ``aggregate`` action, it assumes that the mask was communicated at the beginning of
-the run, by colling the API function
+the run, by calling the API function
 
 .. code-block:: c
 

@@ -20,24 +20,24 @@ concept of transports with different and multiple backends.
 Nevertheless MPI is a common and important player in HPC and also needs a 
 little bit of special handling regarding communicators.
 
-In scientific distributed applications, communication, specialization of nodes and 
+In scientific distributed applications, communication, specialisation of nodes and 
 distributing tasks is done by splitting communicators with `MPI_split` to create subgroups, 
 i.e. new intra communicators containing only a subset of nodes.
-For splitting, a unqiue *color* (i.e. a tag represented by an integer) is chosen and 
+For splitting, a unique *colour* (i.e. a tag represented by an integer) is chosen and 
 all nodes have to commit on a split at the same times within a given timeframe.
-Accordingly applications usually perform all splittings on initialization and 
+Accordingly applications usually perform all splittings on initialisation and 
 maintain the structure for their whole lifetime. 
 
 In practice this implies that models may pass down parent communicators through an interface 
-and have to start client as well as server nodes. Currently, in the Multio API this is the 
+and have to start client as well as server nodes. Currently, in the MultIO API this is the 
 only exception for configurations that are passed through the API. 
-Multio then splits a *client* or a *server* communicator and uses `MPI_Group` to compute 
+MultIO then splits a *client* or a *server* communicator and uses `MPI_Group` to compute 
 ranks of servers and clients (`MPI Groups`_).
 **Important: The passed communicator is expected to be either a client or a server. 
 Nodes performing other tasks should not be contained in the communicator.**
 
 In the configuration example above, you can see that client plans refer to a server through a *transport*. 
-In the server section the *transport* is then specified to be "mpi".
+In the server section the *transport* is then specified to be "MPI".
 The key `group` then refers ta a MPI communicator used for communication. 
 Using `eckit::mpi` named lookup the communicator is looked up --- 
 i.e. using `eckit` or `fckit` communicators may be used to manage communicators. 
@@ -50,14 +50,14 @@ MPI Groups
 
 MultIO MPI is working with an communicator containing all clients and server instances. 
 Nevertheless clients do not know the server ranks in the communicator. To retrieve this information, 
-a furter MPI split is made: All clients split from the parent communicator to a 
+a further MPI split is made: All clients split from the parent communicator to a 
 separate client communicator and all servers split to a separate server communicator.
 Now with `MPI_Group` we can retrieve the parent group and one child group (server or client group) for each instance.
 By using `MPI_Group_difference` it is possible to compute the *opposite* child group, 
 i.e. clients can compute the server group and server the client group.
 Finally by using `MPI_Group_translate_ranks`, it is very easy to compute all ranks of both 
 groups *in the parent communicator*. This now allows clients to directly communicate to servers
-by mainting a list of server ranks.
+by maintain a list of server ranks.
 
 This approach is very flexible. 
 The only assumption is that the communicator passed to MultIO is only containing server and client instances.
@@ -72,9 +72,9 @@ MultIO allows describing communicator splitting in the configuration (`MPI Setup
 MPI Setup
 ~~~~~~~~~
 
-Multio is setting up MPI communicators on a flexible way following a recursive pattern. 
+MultIO is setting up MPI communicators on a flexible way following a recursive pattern. 
 It is possible to pass parent communicators through the API, create them through `eckit` or `fckit` or simply by describing
-a splitting from the world communicator with a unique color.
+a splitting from the world communicator with a unique colour.
 
 The default behaviour is as follows:
 
@@ -117,7 +117,7 @@ which also defaults to 'world' if not specified.
 The default lookup then happens through the same scheme described here: First `eckit::mpi` then `mpi-communicators` are looked up.
 (Note: Using default can be restricted through the configuration context in the API).
 
-In contrast, a communicator specifing type *'split'* also needs to specify a key `color` and `parent` to create a new 
+In contrast, a communicator specifying type *'split'* also needs to specify a key `colour` and `parent` to create a new 
 communicator by performing a `MPI_split`. The `parent` communicator is looked up recursively through the same scheme (i.e. `eckit::mpi` or `mpi-communicators`).
 Once the communicator has been created, it is added with the same name to the `eckit::mpi` communicators. On that way future lookups will get the communicator 
 immediately through the `eckit::mpi` lookup.
@@ -125,9 +125,9 @@ immediately through the `eckit::mpi` lookup.
 Now after the parent communicator has been created or retrieved, MULTIO will also retrieve the child communicator. 
 Depending on executed on a client or server, the key `client-group` or `server-group` is looked up or generated by 
 taking the value of `group` and appending '-clients` or '-servers'. 
-Using this value the child communicator is lookuped through the recursive scheme described above.
+Using this value the child communicator is lookup ed through the recursive scheme described above.
 
-Depending on the configuration of `mpi-communicators`, the MPI splitting behaviour can be customized.
+Depending on the configuration of `mpi-communicators`, the MPI splitting behaviour can be customised.
 For example, if the parent communicator must not be passed within the application, it can be described completely 
 from the configuration:
 

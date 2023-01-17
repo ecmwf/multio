@@ -71,7 +71,7 @@ void Plan::process(message::Message msg) {
     util::ScopedTimer timer{timing_};
     withFailureHandling([&]() { root_->execute(std::move(msg)); }, [=]() {
         std::ostringstream oss;
-        oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl; 
+        oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl;
         return oss.str();
     });
 }

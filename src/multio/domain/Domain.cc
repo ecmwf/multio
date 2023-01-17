@@ -38,7 +38,7 @@ void Unstructured::to_bitmask(const message::Message&, std::vector<bool>&) const
 }
 
 long Unstructured::local_size() const {
-   return definition_.size(); 
+   return definition_.size();
 };
 long Unstructured::global_size() const {
     return global_size_;
@@ -186,15 +186,15 @@ long Structured::local_size() const {
     // Local domain's dimensions
     auto ni = definition_[3];
     auto nj = definition_[5];
-    
+
     return ni*nj;
-    
+
 };
 long Structured::global_size() const {
     // Global domain's dimenstions
     auto ni_global = definition_[0];
     auto nj_global = definition_[1];
-    
+
     return ni_global*nj_global;
 };
 

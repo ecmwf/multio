@@ -1,5 +1,5 @@
 ##################################################################
-## Project features 
+## Project features
 
 set( multio_HAVE_FDB5    @multio_HAVE_FDB5@    )
 set( multio_HAVE_MAESTRO @multio_HAVE_MAESTRO@ )

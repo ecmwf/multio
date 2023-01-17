@@ -34,7 +34,7 @@ protected:
     void applyInplace(message::Metadata& msg) const;
     message::Metadata apply(const message::Metadata& msg) const;
     message::Metadata apply(message::Metadata&& msg) const;
-    
+
 private:
     void print(std::ostream& os) const override;
 

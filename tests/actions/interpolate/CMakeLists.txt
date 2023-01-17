@@ -30,7 +30,7 @@ list( APPEND _interpolate_test_data_regularll
 )
 
 #
-# Definition of all the files related to reduced gaussian grids 
+# Definition of all the files related to reduced gaussian grids
 list( APPEND _interpolate_test_data_reducedgg
    "MarsCroppedReducedgg025x025.grib"
    "MarsCroppedReducedgg050x050.grib"
@@ -64,15 +64,15 @@ list( APPEND _interpolate_test_data_grid_definitons
 # ==================
 
 set( regularllDataTargetName ${INTERPOLATE_TEST_PREFIX}_get_regularll_data )
-set( reducedggDataTargetName ${INTERPOLATE_TEST_PREFIX}_get_reducedgg_data ) 
+set( reducedggDataTargetName ${INTERPOLATE_TEST_PREFIX}_get_reducedgg_data )
 set( sphericalDataTargetName ${INTERPOLATE_TEST_PREFIX}_get_spherical_data )
 set( pointsPerLatitudeDataTargetName ${INTERPOLATE_TEST_PREFIX}_get_points_per_latitude_data  )
 
 
 #
-# Dowload all the files related to reduced gaussian grids 
+# Dowload all the files related to reduced gaussian grids
 
-ecbuild_get_test_multidata( 
+ecbuild_get_test_multidata(
     TARGET ${regularllDataTargetName}
     DIRNAME ${INTERPOLATE_SERVER_DATA_PATH}/regularll
     DIRLOCAL ${INTERPOLATE_BUILD_PATH}/data/regularll
@@ -81,33 +81,33 @@ ecbuild_get_test_multidata(
 
  #
  # Dowload all the files related to reduced gaussian grids
- 
- ecbuild_get_test_multidata( 
+
+ ecbuild_get_test_multidata(
      TARGET ${reducedggDataTargetName}
      DIRNAME ${INTERPOLATE_SERVER_DATA_PATH}/reducedgg
      DIRLOCAL ${INTERPOLATE_BUILD_PATH}/data/reducedgg
      NAMES ${_interpolate_test_data_reducedgg}
      )
- 
+
  #
  # Download all the files related to spectral grids
- 
- ecbuild_get_test_multidata( 
+
+ ecbuild_get_test_multidata(
      TARGET ${sphericalDataTargetName}
-     DIRNAME ${INTERPOLATE_SERVER_DATA_PATH}/spherical 
+     DIRNAME ${INTERPOLATE_SERVER_DATA_PATH}/spherical
      DIRLOCAL ${INTERPOLATE_BUILD_PATH}/data/spherical
      NAMES ${_interpolate_test_data_spherical}
-     )    
- 
+     )
+
  #
  # Dowload the points per latitude file needed for O1280 grid
- 
- ecbuild_get_test_multidata( 
-     TARGET ${pointsPerLatitudeDataTargetName} 
+
+ ecbuild_get_test_multidata(
+     TARGET ${pointsPerLatitudeDataTargetName}
      DIRNAME ${INTERPOLATE_SERVER_DATA_PATH}
      DIRLOCAL ${INTERPOLATE_BUILD_PATH}/data
      NAMES ${_interpolate_test_data_grid_definitons}
-     )     
+     )
 
 
 #

@@ -98,7 +98,7 @@ plans:
               per-server: true # Will give you one file per server
               path: testEncodeNextGEMS-SFC-sithick.grib
     - name: Test Encode NextGEMS SFC different top/bottom level
-      # TODO 
+      # TODO
       # Comparison still results with messages like:
       # long [indicatorOfTypeOfLevel]: [112] != [1]
       # long [bottomLevel]: [100] != [28]
@@ -145,12 +145,11 @@ plans:
           template: <<~>>/nextgems-input-SFC-rsn.grib
           overwrite:
             generatingProcessIdentifier: 153
-        - type: print 
+        - type: print
         - type: sink
           sinks:
             - type: file
               append: false
               per-server: true # Will give you one file per server
               path: testEncodeNextGEMS-SFC.grib
-              
-              
+

@@ -109,4 +109,3 @@ ecbuild_add_executable( TARGET    multio-replay-nemo-fapi
                         CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN
                         SOURCES   multio-replay-nemo-fapi.f90
                         LIBS      multio-fapi fckit MPI::MPI_Fortran)
-

@@ -6,7 +6,7 @@ plans:
           format: grib
           template: <<~>>/../server/config/unstr_latlon.tmpl
           # template: /Users/mapg/git/ifs-bundle/testInput.grib
-        - type: print 
+        - type: print
         - type: sink
           sinks:
             - type: file

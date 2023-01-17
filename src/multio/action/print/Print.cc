@@ -34,7 +34,7 @@ Print::Print(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {
     else {
         os_ = &eckit::Log::debug();
     }
-    
+
     prefix_ = confCtx.config().getString("prefix", "");
 }
 

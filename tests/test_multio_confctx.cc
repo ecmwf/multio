@@ -32,13 +32,13 @@ namespace test {
 CASE("Create default context and tranverse client plans") {
     ConfigurationContext confCtx{};
     EXPECT(confCtx.config().has("client"));
-    
-    ConfigurationContext clientCtx = confCtx.subContext("client"); 
+
+    ConfigurationContext clientCtx = confCtx.subContext("client");
     EXPECT(clientCtx.config().has("plans"));
-    
+
     int i =0;
     for(ConfigurationContext subCtx: clientCtx.subContexts("plans")) {
-       // std::cout << subCtx.config().getString("name") << std::endl; 
+       // std::cout << subCtx.config().getString("name") << std::endl;
        switch (i) {
         case 0:
             EXPECT(subCtx.config().getString("name") == "ocean-replay-grid-info-stream");

@@ -35,7 +35,7 @@ ecbuild_add_option( FEATURE FDB5
                     REQUIRED_PACKAGES "NAME fdb5 VERSION 5.10.1" )
 
 
-                    
+
 ### legacy Interpolation action
 
 ecbuild_add_option( FEATURE MIR

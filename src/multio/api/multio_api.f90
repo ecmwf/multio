@@ -32,7 +32,7 @@ module multio_api
         procedure :: mpi_return_client_comm => multio_conf_mpi_return_client_comm
         procedure :: mpi_return_server_comm => multio_conf_mpi_return_server_comm
     end type
-    
+
     type multio_handle
         type(c_ptr) :: impl = c_null_ptr
     contains
@@ -74,8 +74,8 @@ module multio_api
         procedure :: set_string => multio_metadata_set_string
         procedure :: set_bool => multio_metadata_set_bool
         procedure :: set_float => multio_metadata_set_float
-        procedure :: set_double => multio_metadata_set_double   
-        ! Not possible to overload integers with the same dimensions     
+        procedure :: set_double => multio_metadata_set_double
+        ! Not possible to overload integers with the same dimensions
         generic   :: set => set_int, set_string, set_bool, set_float, set_double
     end type
 
@@ -153,7 +153,7 @@ module multio_api
             type(c_ptr), intent(in), value :: cc
             integer(c_int) :: err
         end function
-        
+
         function c_multio_set_failure_handler(handler, context) result(err) &
                 bind(c, name='multio_set_failure_handler')
             use, intrinsic :: iso_c_binding
@@ -170,7 +170,7 @@ module multio_api
             integer(c_int), intent(in), value :: err
             type(c_ptr) :: error_string
         end function
-        
+
         ! Configuration context api
         function c_multio_new_configurationcontext(cc) result(err) &
                 bind(c, name='multio_new_configurationcontext')
@@ -179,7 +179,7 @@ module multio_api
                 type(c_ptr), intent(out) :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_new_configurationcontext_from_filename(cc, file_name) result(err) &
                 bind(c, name='multio_new_configurationcontext_from_filename')
                 use, intrinsic :: iso_c_binding
@@ -188,7 +188,7 @@ module multio_api
                 type(c_ptr), intent(out) :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_delete_configurationcontext(cc) result(err) &
                 bind(c, name='multio_delete_configurationcontext')
                 use, intrinsic :: iso_c_binding
@@ -196,7 +196,7 @@ module multio_api
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_conf_set_path(cc, path) result(err) &
                 bind(c, name='multio_conf_set_path')
                 use, intrinsic :: iso_c_binding
@@ -205,7 +205,7 @@ module multio_api
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_conf_mpi_allow_world_default_comm(cc, allow) result(err) &
                 bind(c, name='multio_conf_mpi_allow_world_default_comm')
                 use, intrinsic :: iso_c_binding
@@ -214,16 +214,16 @@ module multio_api
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_conf_mpi_client_id(cc, client_id) result(err) &
                 bind(c, name='multio_conf_mpi_client_id')
                 use, intrinsic :: iso_c_binding
                 implicit none
-                type(c_ptr), intent(in), value :: client_id 
+                type(c_ptr), intent(in), value :: client_id
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_conf_mpi_parent_comm(cc, parent_comm) result(err) &
                 bind(c, name='multio_conf_mpi_parent_comm')
                 use, intrinsic :: iso_c_binding
@@ -232,7 +232,7 @@ module multio_api
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_conf_mpi_return_client_comm(cc, return_comm) result(err) &
                 bind(c, name='multio_conf_mpi_return_client_comm')
                 use, intrinsic :: iso_c_binding
@@ -241,7 +241,7 @@ module multio_api
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_conf_mpi_return_server_comm(cc, return_comm) result(err) &
                 bind(c, name='multio_conf_mpi_return_server_comm')
                 use, intrinsic :: iso_c_binding
@@ -250,7 +250,7 @@ module multio_api
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
 
         ! Handle object api
 
@@ -350,7 +350,7 @@ module multio_api
             integer(c_int), intent(in), value :: size
             integer(c_int) :: err
         end function
-        
+
         function c_multio_field_accepted(handle, metadata, set_value) result(err) &
                 bind(c, name='multio_field_accepted')
             use, intrinsic :: iso_c_binding
@@ -511,22 +511,22 @@ contains
         character(:), allocatable, target :: error_string
         error_string = fortranise_cstr(c_multio_error_string(err))
     end function
-    
+
     function multio_start_server(cc) result(err)
         class(multio_configurationcontext), intent(in) :: cc
         integer :: err
         err = c_multio_start_server(cc%impl)
     end function
-    
+
     ! Methods for configuration context objects
-    
-    function multio_new_configurationcontext(cc) result(err) 
+
+    function multio_new_configurationcontext(cc) result(err)
             class(multio_configurationcontext), intent(out) :: cc
             integer :: err
             err = c_multio_new_configurationcontext(cc%impl)
     end function
-    
-    function multio_new_configurationcontext_from_filename(cc, file_name) result(err) 
+
+    function multio_new_configurationcontext_from_filename(cc, file_name) result(err)
             class(multio_configurationcontext), intent(inout) :: cc
             integer :: err
             character(*), intent(in) :: file_name
@@ -534,15 +534,15 @@ contains
             nullified_path = trim(file_name) // c_null_char
             err = c_multio_new_configurationcontext_from_filename(cc%impl, c_loc(nullified_path))
     end function
-    
-    function multio_delete_configurationcontext(cc) result(err) 
+
+    function multio_delete_configurationcontext(cc) result(err)
             class(multio_configurationcontext), intent(inout) :: cc
             integer :: err
             err = c_multio_delete_configurationcontext(cc%impl)
             cc%impl = c_null_ptr
     end function
-    
-    function multio_conf_set_path(cc, path) result(err) 
+
+    function multio_conf_set_path(cc, path) result(err)
             class(multio_configurationcontext), intent(inout) :: cc
             integer :: err
             character(*), intent(in) :: path
@@ -550,15 +550,15 @@ contains
             nullified_path = trim(path) // c_null_char
             err = c_multio_conf_set_path(cc%impl, c_loc(nullified_path))
     end function
-    
-    function multio_conf_mpi_allow_world_default_comm(cc, allow) result(err) 
+
+    function multio_conf_mpi_allow_world_default_comm(cc, allow) result(err)
             class(multio_configurationcontext), intent(inout) :: cc
             logical(c_bool), intent(in), value :: allow
             integer :: err
             err = c_multio_conf_mpi_allow_world_default_comm(cc%impl, allow)
     end function
-    
-    function multio_conf_mpi_client_id(cc, client_id) result(err) 
+
+    function multio_conf_mpi_client_id(cc, client_id) result(err)
             class(multio_configurationcontext), intent(inout) :: cc
             integer :: err
             character(*), intent(in) :: client_id
@@ -566,28 +566,28 @@ contains
             nullified_client_id = trim(client_id) // c_null_char
             err = c_multio_conf_mpi_client_id(cc%impl, c_loc(nullified_client_id))
     end function
-    
-    function multio_conf_mpi_parent_comm(cc, parent_comm) result(err) 
+
+    function multio_conf_mpi_parent_comm(cc, parent_comm) result(err)
             class(multio_configurationcontext), intent(inout) :: cc
             integer(c_int), intent(in), value :: parent_comm
             integer :: err
             err = c_multio_conf_mpi_parent_comm(cc%impl, parent_comm)
     end function
-    
-    function multio_conf_mpi_return_client_comm(cc, return_comm) result(err) 
+
+    function multio_conf_mpi_return_client_comm(cc, return_comm) result(err)
             class(multio_configurationcontext), intent(inout) :: cc
             integer(c_int), intent(out) :: return_comm ! can be c_null_ptr
             integer :: err
             err = c_multio_conf_mpi_return_client_comm(cc%impl, return_comm)
     end function
-    
-    function multio_conf_mpi_return_server_comm(cc, return_comm) result(err) 
+
+    function multio_conf_mpi_return_server_comm(cc, return_comm) result(err)
             class(multio_configurationcontext), intent(inout) :: cc
             integer(c_int), intent(out) :: return_comm ! can be c_null_ptr
             integer :: err
             err = c_multio_conf_mpi_return_server_comm(cc%impl, return_comm)
     end function
-    
+
     ! Methods for handle objects
 
     function multio_new_handle(handle, cc) result(err)
@@ -671,7 +671,7 @@ contains
         integer, intent(in), value :: size
         err = c_multio_write_field_double(handle%impl, metadata%impl, data, size)
     end function
-    
+
     function multio_field_accepted(handle, metadata, set_value) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata

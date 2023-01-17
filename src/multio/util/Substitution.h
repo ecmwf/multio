@@ -28,10 +28,10 @@ namespace util {
 
 /*
  * Replacement of (single) curly braces analogous to PGEN. Example: {var}
- * Note: Explicitly wrap strings in YAML with '' to avoid problems with BASH substitution 
+ * Note: Explicitly wrap strings in YAML with '' to avoid problems with BASH substitution
  * PGEN example template: https://git.ecmwf.int/projects/PRODGEN/repos/pgen/browse/tests/fields/naming/template.yaml
  * PGEN substitution code: https://git.ecmwf.int/projects/PRODGEN/repos/pgen/browse/src/pgen/sinks/TemplatedName.cc#89
- 
+
  * TODO: Think about an escaping mechanism, i.e. \{  and \}, or {{ and }}
  */
 template <typename Func>

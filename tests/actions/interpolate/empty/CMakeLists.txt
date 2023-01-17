@@ -34,11 +34,11 @@ foreach(parser ${_interpolate_tests_parsers_kind})
     set( testCaseName ${INTERPOLATE_TEST_PREFIX}_run_${testname}_${parser_}_${gridname} )
     #
     # Set up the test case
-    ecbuild_add_test( 
+    ecbuild_add_test(
         TARGET ${testCaseName}
         CONDITION HAVE_MIR
         COMMAND ${INTERPOLATE_EXE}
-        ARGS ${testCaseName} ${grid} ${testcase} ${parser} "strict" 
+        ARGS ${testCaseName} ${grid} ${testcase} ${parser} "strict"
         TEST_DEPENDS ${_interpolate_tests_dependencies}
     )
     #

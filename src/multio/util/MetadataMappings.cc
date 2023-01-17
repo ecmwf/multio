@@ -31,7 +31,7 @@ MetadataMappings::MetadataMappings(const GlobalConfCtx& globalConfCtx) :
 
 const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const std::string& mapping) const {
     const auto& yamlFile = globalConfCtx_.getYAMLFile(mapping);
-   
+
     auto search = mappings_.find(yamlFile.path);
     if (search != mappings_.end()) {
         return search->second;

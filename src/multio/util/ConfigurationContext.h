@@ -15,10 +15,10 @@
 #pragma once
 
 #include "eckit/config/LocalConfiguration.h"
-// TODO: 
-//   Now on C++17; replace all 
+// TODO:
+//   Now on C++17; replace all
 //     - replace all eckit::Optional with std::Optional
-//     - use string_view where copies are avoided (i.e. check for interop with eckit, for example eckit::PathName to avoid having to 
+//     - use string_view where copies are avoided (i.e. check for interop with eckit, for example eckit::PathName to avoid having to
 #include "eckit/utils/Optional.h"
 
 #include "multio/util/ConfigurationPath.h"
@@ -163,7 +163,7 @@ public:
 
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const char*) const;
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
-    
+
     std::string replaceCurly(const std::string&) const;
 
 
@@ -214,7 +214,7 @@ public:
 
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const char*) const;
     const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
-    
+
     std::string replaceCurly(const std::string&) const;
 
 

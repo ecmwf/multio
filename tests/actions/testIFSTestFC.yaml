@@ -49,7 +49,7 @@ plans:
         - type: encode
           format: grib
           # TODO
-          # some comparisons fail with: long [timeRangeIndicator]: [0] != [1] 
+          # some comparisons fail with: long [timeRangeIndicator]: [0] != [1]
           template: <<~>>/ifs-pl-sh-1000-0-t-1.grib
           overwrite:
             generatingProcessIdentifier: 147

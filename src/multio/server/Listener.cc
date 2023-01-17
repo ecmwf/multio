@@ -54,7 +54,7 @@ util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, con
 void Listener::start() {
 
     eckit::ResourceUsage usage{"multio listener"};
-    
+
     // Store thread errors
     std::exception_ptr lstnExcPtr;
     std::exception_ptr dpatchExcPtr;
@@ -108,7 +108,7 @@ void Listener::start() {
     msgQueue_.close();
 
     LOG_DEBUG_LIB(LibMultio) << "*** CLOSED message queue " << std::endl;
-    
+
     // Propagate possible thread errors
     if (lstnExcPtr) {
         std::rethrow_exception(lstnExcPtr);

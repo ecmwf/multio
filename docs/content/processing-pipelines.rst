@@ -82,7 +82,8 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
            - type : single-field-sink
 
 
-Note that is example is using `mpi` as transport. Have a look at :ref:`MPI Communicators` to learn how MULTIO is setting up MPI communicators.
+Note that this example uses `mpi` as transport. Refer to :ref:`MPI Communicators` to learn how
+MultIO is setting up MPI communicators.
 
 Actions
 -------
@@ -147,7 +148,7 @@ and it designates the last action of that pipeline.
 * It is responsible for forwarding messages to the I/O-server, so a ``target`` needs to be specified.
 * It will ensure that the partial fields of the same global field will be sent to the same server
   process for aggregation.
-* Transport layer MPI is support and there is also limited support for sockets.
+* Transport layer MPI is supported and there is also limited support for sockets.
 
 
 Aggregation

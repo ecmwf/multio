@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # (C) Copyright 2005- ECMWF.
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
@@ -28,15 +30,15 @@ kebab2camel()
 #
 # \brief Function used to run an interpolation test
 #
-# \param ARGV[1] [in] TEST_CASE_NAME used only for logging is the name of the ctest case 
+# \param ARGV[1] [in] TEST_CASE_NAME used only for logging is the name of the ctest case
 # \param ARGV[2] [in] GRID_NAME Used to generate paths and file names (expected to be in camel case format i.e. "Redugedgg")
 # \param ARGV[3] [in] TEST_NAME Used to generate paths and file names (expected to be in kebab-case-format i.e "full-frame")
 # \param ARGV[4] [in] PARSER_NAME Used to generate paths and file names (i.e. "atlas" | "pure-forwarding" | "none")
-#                     Value: "none" has to used for tests that do not depend on the parser 
-# \param ARGV[5] [in] COMAPRE_KIND Used to select the comparison type to be used ( "strict", "permissive" ). 
+#                     Value: "none" has to used for tests that do not depend on the parser
+# \param ARGV[5] [in] COMAPRE_KIND Used to select the comparison type to be used ( "strict", "permissive" ).
 #                     This flag is used to handle the error on the poles for full frame interpolations.
-# \param ARGV[6] [in] SPACING Optional. Requested spacing for the interpolation (At the moement supported values are: "100", "050", "024", 
-#                     respectively: one degree, one half degree, one quarter degree) 
+# \param ARGV[6] [in] SPACING Optional. Requested spacing for the interpolation (At the moement supported values are: "100", "050", "024",
+#                     respectively: one degree, one half degree, one quarter degree)
 
 #
 # Input parameters
@@ -76,7 +78,7 @@ DIFF_TOOL=${BUILDDIR}/bin/grib_compare
 # Data/Configuration files used to run the test
 if [[ ${HAVE_SPACING} == 1 ]] ; then
   TEST_EXPECTED_RESULT=${MARS_FOLDER}/Mars${TEST_NAME_CC}${GRID_NAME}${SPACING}x${SPACING}.grib
-  TEST_COMPUTED_RESULT=${TEST_FOLDER}/Multio${TEST_NAME_CC}${GRID_NAME}${SPACING}x${SPACING}.grib 
+  TEST_COMPUTED_RESULT=${TEST_FOLDER}/Multio${TEST_NAME_CC}${GRID_NAME}${SPACING}x${SPACING}.grib
   MULTIO_PLAN=${TEST_FOLDER}/${GRID_NAME}${SPACING}x${SPACING}.yaml
 else
   TEST_EXPECTED_RESULT=${MARS_FOLDER}/Mars${GRID_NAME}Orig.grib
@@ -242,7 +244,7 @@ else
 fi
 
 #
-# Check existence of the test output grib file with interpolated data 
+# Check existence of the test output grib file with interpolated data
 if [[ -e ${TEST_COMPUTED_RESULT} ]] ; then
   MSG="Test ouptut file exists"
   echo "   - "$(date)" :: "${MSG}${LINE_PADDING:${#MSG}}"[OK]" >> ${TEST_REPORT}
@@ -278,9 +280,9 @@ fi
 # This is a value comaparison because the metadata have been already comared and are the same!!!
 if [[ ${COMPARE_KIND} == "permissive" ]] ; then
   #
-  # It would be nice to be able to make the comparison only on a cropped subset of the field 
+  # It would be nice to be able to make the comparison only on a cropped subset of the field
   # (i.e. avoid the poles due to the problems with different versions of mir). Not sure
-  # that mir-compare supports this kind of comparisons. 
+  # that mir-compare supports this kind of comparisons.
   #
   # TODO: improve mir-compare to allow cropped comparisons.
   # TODO: this comaprison is fake at the moment since the parameters (-P -T 1024) are too

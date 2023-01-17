@@ -28,6 +28,7 @@
 
 
 // Include all the mir headers (interpolation package)
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/value/Value.h"
 #include "mir/api/MIRJob.h"
 #include "mir/input/RawInput.h"

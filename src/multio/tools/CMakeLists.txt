@@ -1,7 +1,7 @@
 
 ecbuild_add_executable( TARGET    multio-hammer
                         SOURCES   multio-hammer.cc MultioTool.cc
-                        LIBS      multio-server)
+                        LIBS      multio-api)
 
 ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initfilepath
                         SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
@@ -35,11 +35,11 @@ ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initmpi-impi
 
 ecbuild_add_executable( TARGET    multio-probe
                         SOURCES   multio-probe.cc MultioTool.cc
-                        LIBS      multio-server)
+                        LIBS      multio-api)
 
 ecbuild_add_executable( TARGET    multio-encode-ocean
                         SOURCES   multio-encode-ocean.cc MultioTool.cc
-                        LIBS      multio-server)
+                        LIBS      multio-api)
 
 ecbuild_add_executable( TARGET    multio-maestro-syphon
                         CONDITION HAVE_MAESTRO

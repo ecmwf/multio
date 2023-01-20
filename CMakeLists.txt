@@ -27,6 +27,10 @@ if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
 endif()
 
+if( NOT eckit_HAVE_MPI )
+  ecbuild_critical( "eckit must be built with MPI support" )
+endif()
+
 ### fdb5 plugin
 
 ecbuild_add_option( FEATURE FDB5
@@ -34,9 +38,7 @@ ecbuild_add_option( FEATURE FDB5
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "NAME fdb5 VERSION 5.10.1" )
 
-
-
-### legacy Interpolation action
+### interpolate action
 
 ecbuild_add_option( FEATURE MIR
                     DEFAULT ON
@@ -53,15 +55,8 @@ ecbuild_add_option( FEATURE LEGACY_IFSIO
                     DEFAULT OFF
                     DESCRIPTION "Legacy (FDB4) IFS I/O interface" )
 
-### multio-server
 
-ecbuild_add_option( FEATURE MULTIO_SERVER
-                    DEFAULT ON
-                    CONDITION eckit_HAVE_MPI
-                    DESCRIPTION "Build with I/O-server support" )
-
-
-if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
+if( HAVE_FORTRAN )
   ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
   ecbuild_find_package( NAME fckit   VERSION 0.10.0   REQUIRED )
   find_package( MPI COMPONENTS Fortran) # Add explict mpi for errocodes -- isn't there a better way?

@@ -4,8 +4,6 @@ ecbuild_add_library(
 
     TARGET multio-api
 
-    CONDITION HAVE_MULTIO_SERVER
-
     SOURCES
         multio_c.cc
         multio_c.h
@@ -15,7 +13,7 @@ ecbuild_add_library(
 )
 
 # Cannot use CONDITION for (ecbuild_)configure_file
-if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
+if( HAVE_FORTRAN )
     configure_file( multio_config.f90.in multio_config.f90 )
 endif()
 
@@ -23,7 +21,7 @@ ecbuild_add_library(
 
     TARGET multio-fapi
 
-    CONDITION HAVE_MULTIO_SERVER AND HAVE_FORTRAN
+    CONDITION HAVE_FORTRAN
 
     SOURCES
         multio_api.f90

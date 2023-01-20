@@ -88,6 +88,17 @@ list( APPEND multio_message_srcs
     message/MetadataMapping.h
 )
 
+list( APPEND multio_server_srcs
+    server/Dispatcher.cc
+    server/Dispatcher.h
+    server/Listener.cc
+    server/Listener.h
+    server/MultioClient.cc
+    server/MultioClient.h
+    server/MultioServer.cc
+    server/MultioServer.h
+)
+
 list( APPEND multio_sink_srcs
     sink/DataSink.cc
     sink/DataSink.h
@@ -131,6 +142,7 @@ list( APPEND multio_srcs
     ${multio_ifsio_srcs}
     ${multio_domain_srcs}
     ${multio_message_srcs}
+    ${multio_server_srcs}
     ${multio_sink_srcs}
     ${multio_transport_srcs}
 )

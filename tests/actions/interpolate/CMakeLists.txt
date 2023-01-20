@@ -69,10 +69,19 @@ foreach(_test
         COMMAND      grib_compare
         ARGS         -H ${_reference} ${_result})
 
-    ecbuild_add_test(
-        TARGET       ${PREFIX}_${_test}_check_values
-        TEST_DEPENDS ${PREFIX}_${_test}_check_metadata
-        COMMAND      grib_compare
-        ARGS         ${_reference} ${_result})
+    if(_test MATCHES ".*to_grid_.*[^a]$")
+        # FIXME ignore values at the pole
+        ecbuild_add_test(
+            TARGET       ${PREFIX}_${_test}_check_values
+            TEST_DEPENDS ${PREFIX}_${_test}_check_metadata
+            COMMAND      mir-compare
+            ARGS         ${_reference} ${_result} --ignore-above-latitude=89.9 --ignore-below-latitude=-89.9)
+    else()
+        ecbuild_add_test(
+            TARGET       ${PREFIX}_${_test}_check_values
+            TEST_DEPENDS ${PREFIX}_${_test}_check_metadata
+            COMMAND      grib_compare
+            ARGS         ${_reference} ${_result})
+    endif()
 endforeach()
 

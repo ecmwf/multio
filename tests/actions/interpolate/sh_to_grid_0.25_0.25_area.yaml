@@ -1,11 +1,11 @@
 plans:
-  - name: test-interpolate-spectral-050x050-cropped
+  - name: sh_to_grid_0.25_0.25_area
     actions:
       - type: select
         match:
           - param: 129
       - type: interpolate
-        outputSize: 231120
+        outputSize: 923040
         inputConfiguration:
           setByValue:
             gridType: sh
@@ -13,7 +13,7 @@ plans:
             truncation: 1279
         jobConfiguration:
           setByValue:
-            grid: [0.5, 0.5]
+            grid: [0.25, 0.25]
             area: [80.0, 0.0, -80.0, 360.0]
             dont-compress-plan: true
             interpolation: linear
@@ -22,10 +22,10 @@ plans:
           empty:
       - type: encode
         format: grib
-        template: @multio_BINARY_DIR@/tests/actions/interpolate/data/spherical/MarsCroppedSpherical050x050.grib
+        template: MARS_sh_to_grid_0.25_0.25_area.grib
       - type: sink
         sinks:
           - type: file
             append: false
             per-server: false # Will give you one file per server
-            path: @multio_BINARY_DIR@/tests/actions/interpolate/cropped/pure-forwarding/MultioCroppedSpherical050x050.grib
+            path: MultIO_sh_to_grid_0.25_0.25_area.grib

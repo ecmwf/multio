@@ -1,14 +1,14 @@
 plans:
-  - name: test-interpolate-reducedgg-100x100-cropped
+  - name: reduced_gg_to_grid_0.25_0.25_area
     actions:
       - type: select
         match:
           - param: 133
       - type: interpolate
-        outputSize: 57960
+        outputSize: 923040
         inputConfiguration:
           loadFromFile:
-            pl: @multio_BINARY_DIR@/tests/actions/interpolate/data/PlO1280.dat
+            pl: PlO1280.dat
           setByValue:
             gridType: reduced_gg
             gridded: true
@@ -19,7 +19,7 @@ plans:
             N: 1280
         jobConfiguration:
           setByValue:
-            grid: [1.0, 1.0]
+            grid: [0.25, 0.25]
             area: [80.0, 0.0, -80.0, 360.0]
             #dont-compress-plan: true
             interpolation: linear
@@ -28,10 +28,10 @@ plans:
           empty:
       - type: encode
         format: grib
-        template: @multio_BINARY_DIR@/tests/actions/interpolate/data/reducedgg/MarsCroppedReducedgg100x100.grib
+        template: MARS_reduced_gg_to_grid_0.25_0.25_area.grib
       - type: sink
         sinks:
           - type: file
             append: false
             per-server: false # Will give you one file per server
-            path: @multio_BINARY_DIR@/tests/actions/interpolate/cropped/pure-forwarding/MultioCroppedReducedgg100x100.grib
+            path: MultIO_reduced_gg_to_grid_0.25_0.25_area.grib

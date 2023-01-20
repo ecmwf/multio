@@ -1,5 +1,5 @@
 plans:
-  - name: test-interpolate-reducedgg-025x025
+  - name: reduced_gg_to_grid_0.25_0.25
     actions:
       - type: select
         match:
@@ -8,7 +8,7 @@ plans:
         outputSize: 1038240
         inputConfiguration:
           loadFromFile:
-            pl: @multio_BINARY_DIR@/tests/actions/interpolate/data/PlO1280.dat
+            pl: PlO1280.dat
           setByValue:
             gridType: reduced_gg
             gridded: true
@@ -28,10 +28,10 @@ plans:
           empty:
       - type: encode
         format: grib
-        template: @multio_BINARY_DIR@/tests/actions/interpolate/data/reducedgg/MarsFullFrameReducedgg025x025.grib
+        template: MARS_reduced_gg_to_grid_0.25_0.25.grib
       - type: sink
         sinks:
           - type: file
             append: false
             per-server: false # Will give you one file per server
-            path: @multio_BINARY_DIR@/tests/actions/interpolate/full-frame/pure-forwarding/MultioFullFrameReducedgg025x025.grib
+            path: MultIO_reduced_gg_to_grid_0.25_0.25.grib

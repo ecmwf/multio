@@ -1,11 +1,11 @@
 plans:
-  - name: test-empty-interpolation-reducedGG
+  - name: reduced_gg_copy
     actions:
       - type: interpolate
         outputSize: 6599680
         inputConfiguration:
           loadFromFile:
-            pl: @multio_BINARY_DIR@/tests/actions/interpolate/data/PlO1280.dat
+            pl: PlO1280.dat
           setByValue:
             gridType: reduced_gg
             gridded: true
@@ -20,10 +20,10 @@ plans:
           empty:
       - type: encode
         format: grib
-        template: @multio_BINARY_DIR@/tests/actions/interpolate/data/reducedgg/MarsReducedggOrig.grib
+        template: MARS_reduced_gg.grib
       - type: sink
         sinks:
           - type: file
             append: false
             per-server: false
-            path: @multio_BINARY_DIR@/tests/actions/interpolate/empty/pure-forwarding/MultioReducedggOrig.grib
+            path: MultIO_reduced_gg_copy.grib

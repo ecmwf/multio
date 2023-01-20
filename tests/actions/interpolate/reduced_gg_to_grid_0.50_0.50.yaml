@@ -1,31 +1,37 @@
 plans:
-  - name: test-interpolate-spectral-025x025
+  - name: reduced_gg_to_grid_0.50_0.50
     actions:
       - type: select
         match:
-          - param: 129
+          - param: 133
       - type: interpolate
-        outputSize: 1038240
+        outputSize: 259920
         inputConfiguration:
+          loadFromFile:
+            pl: PlO1280.dat
           setByValue:
-            gridType: sh
-            spectral: true
-            truncation: 1279
+            gridType: reduced_gg
+            gridded: true
+            north: 90.0
+            south: -90.0
+            west: 0.0
+            east: 360.0
+            N: 1280
         jobConfiguration:
           setByValue:
-            grid: [0.25, 0.25]
+            grid: [0.5, 0.5]
             area: [90.0, 0.0, -90.0, 360.0]
-            dont-compress-plan: true
+            # dont-compress-plan: true
             interpolation: linear
             caching: true
         outputConfiguration:
           empty:
       - type: encode
         format: grib
-        template: @multio_BINARY_DIR@/tests/actions/interpolate/data/spherical/MarsFullFrameSpherical025x025.grib
+        template: MARS_reduced_gg_to_grid_0.50_0.50.grib
       - type: sink
         sinks:
           - type: file
             append: false
             per-server: false # Will give you one file per server
-            path: @multio_BINARY_DIR@/tests/actions/interpolate/full-frame/pure-forwarding/MultioFullFrameSpherical025x025.grib
+            path: MultIO_reduced_gg_to_grid_0.50_0.50.grib

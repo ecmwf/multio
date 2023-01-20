@@ -1,13 +1,20 @@
 plans:
-  - name: test-empty-interpolation-spherical
+  - name: regular_ll_copy
     actions:
       - type: interpolate
-        outputSize: 1639680
+        outputSize: 65160
         inputConfiguration:
           setByValue:
-            gridType: sh
-            spectral: true
-            truncation: 1279
+            gridType: regular_ll
+            gridded: true
+            north: 90.0
+            south: -90.0
+            west: 0.0
+            east: 360.0
+            south_north_increment: 1.0
+            west_east_increment: 1.0
+            Ni: 360
+            Nj: 181
         jobConfiguration:
           empty:
             #setByValue:
@@ -17,10 +24,10 @@ plans:
           empty:
       - type: encode
         format: grib
-        template: @multio_BINARY_DIR@/tests/actions/interpolate/data/spherical/MarsSphericalOrig.grib
+        template: MARS_regular_ll.grib
       - type: sink
         sinks:
           - type: file
             append: false
             per-server: false
-            path: @multio_BINARY_DIR@/tests/actions/interpolate/empty/pure-forwarding/MultioSphericalOrig.grib
+            path: MultIO_regular_ll_copy.grib

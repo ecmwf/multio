@@ -1,162 +1,78 @@
-if(HAVE_MIR)
-
-#
-# Local variables to help code readability
-# ========================================
-set(INTERPOLATE_BUILD_PATH ${multio_BINARY_DIR}/tests/actions/interpolate )
-set(INTERPOLATE_TEST_PREFIX test_multio_interpolate )
-set(INTERPOLATE_EXE ${CMAKE_BINARY_DIR}/bin/multio-interpolate.sh )
-set(INTERPOLATE_SERVER_DATA_PATH multio/tests/actions/interpolate/data )
-
-#
-# Preparation of the working directories
-# ======================================
-
-#
-# Creation of the directory subtree for interpolation data to be downloaded
-file( MAKE_DIRECTORY ${INTERPOLATE_BUILD_PATH}/data )
-file( MAKE_DIRECTORY ${INTERPOLATE_BUILD_PATH}/data/regularll )
-file( MAKE_DIRECTORY ${INTERPOLATE_BUILD_PATH}/data/reducedgg )
-file( MAKE_DIRECTORY ${INTERPOLATE_BUILD_PATH}/data/spherical )
-
-#
-# Definition of the data to be downloaded from the server
-# =======================================================
-
-#
-# Definition of all the files related to regular spaced grids
-list( APPEND _interpolate_test_data_regularll
-   "MarsRegularllOrig.grib"
-)
-
-#
-# Definition of all the files related to reduced gaussian grids
-list( APPEND _interpolate_test_data_reducedgg
-   "MarsCroppedReducedgg025x025.grib"
-   "MarsCroppedReducedgg050x050.grib"
-   "MarsCroppedReducedgg100x100.grib"
-   "MarsFullFrameReducedgg025x025.grib"
-   "MarsFullFrameReducedgg050x050.grib"
-   "MarsFullFrameReducedgg100x100.grib"
-   "MarsReducedggOrig.grib"
-)
-
-#
-# Definition of all the files related to spectral grids
-list( APPEND _interpolate_test_data_spherical
-   "MarsCroppedSpherical025x025.grib"
-   "MarsCroppedSpherical050x050.grib"
-   "MarsCroppedSpherical100x100.grib"
-   "MarsFullFrameSpherical025x025.grib"
-   "MarsFullFrameSpherical050x050.grib"
-   "MarsFullFrameSpherical100x100.grib"
-   "MarsSphericalOrig.grib"
-)
-
-#
-# Definition of the points per latitude file needed for O1280 atlas grid
-list( APPEND _interpolate_test_data_grid_definitons
-   "PlO1280.dat"
-)
-
-#
-# Download test data
-# ==================
-
-set( regularllDataTargetName ${INTERPOLATE_TEST_PREFIX}_get_regularll_data )
-set( reducedggDataTargetName ${INTERPOLATE_TEST_PREFIX}_get_reducedgg_data )
-set( sphericalDataTargetName ${INTERPOLATE_TEST_PREFIX}_get_spherical_data )
-set( pointsPerLatitudeDataTargetName ${INTERPOLATE_TEST_PREFIX}_get_points_per_latitude_data  )
-
-
-#
-# Dowload all the files related to reduced gaussian grids
+set(PREFIX multio_tests_actions_interpolate)
 
 ecbuild_get_test_multidata(
-    TARGET ${regularllDataTargetName}
-    DIRNAME ${INTERPOLATE_SERVER_DATA_PATH}/regularll
-    DIRLOCAL ${INTERPOLATE_BUILD_PATH}/data/regularll
-    NAMES ${_interpolate_test_data_regularll}
-    )
+    TARGET   ${PREFIX}_get_data
+    DIRNAME  multio/tests/actions/interpolate
+    DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
+    NAMES
+        "MARS_reduced_gg.grib"
+        "MARS_reduced_gg_to_grid_0.25_0.25.grib"
+        "MARS_reduced_gg_to_grid_0.25_0.25_area.grib"
+        "MARS_reduced_gg_to_grid_0.50_0.50.grib"
+        "MARS_reduced_gg_to_grid_0.50_0.50_area.grib"
+        "MARS_reduced_gg_to_grid_1.00_1.00.grib"
+        "MARS_reduced_gg_to_grid_1.00_1.00_area.grib"
+        "MARS_regular_ll.grib"
+        "MARS_sh.grib"
+        "MARS_sh_to_grid_0.25_0.25.grib"
+        "MARS_sh_to_grid_0.25_0.25_area.grib"
+        "MARS_sh_to_grid_0.50_0.50.grib"
+        "MARS_sh_to_grid_0.50_0.50_area.grib"
+        "MARS_sh_to_grid_1.00_1.00.grib"
+        "MARS_sh_to_grid_1.00_1.00_area.grib"
+        "PlO1280.dat")
 
- #
- # Dowload all the files related to reduced gaussian grids
+foreach(_test
+    reduced_gg_copy
+    reduced_gg_encode_decode
+    reduced_gg_to_grid_0.25_0.25
+    reduced_gg_to_grid_0.25_0.25_area
+    reduced_gg_to_grid_0.50_0.50
+    reduced_gg_to_grid_0.50_0.50_area
+    reduced_gg_to_grid_1.00_1.00
+    reduced_gg_to_grid_1.00_1.00_area
+    regular_ll_copy
+    regular_ll_encode_decode
+    sh_copy
+    sh_encode_decode
+    sh_to_grid_0.25_0.25
+    sh_to_grid_0.25_0.25_area
+    sh_to_grid_0.50_0.50
+    sh_to_grid_0.50_0.50_area
+    sh_to_grid_1.00_1.00
+    sh_to_grid_1.00_1.00_area)
+    set(_result MultIO_${_test}.grib)
 
- ecbuild_get_test_multidata(
-     TARGET ${reducedggDataTargetName}
-     DIRNAME ${INTERPOLATE_SERVER_DATA_PATH}/reducedgg
-     DIRLOCAL ${INTERPOLATE_BUILD_PATH}/data/reducedgg
-     NAMES ${_interpolate_test_data_reducedgg}
-     )
+    if(_test MATCHES "^reduced_gg.*")
+        set(_feed "MARS_reduced_gg.grib")
+    elseif(_test MATCHES "^regular_ll.*")
+        set(_feed "MARS_regular_ll.grib")
+    else()
+        set(_feed "MARS_sh.grib")
+    endif()
 
- #
- # Download all the files related to spectral grids
+    if(_test MATCHES ".*_encode_decode" OR _test MATCHES ".*_copy")
+        set(_reference ${_feed})
+    else()
+        set(_reference MARS_${_test}.grib)
+    endif()
 
- ecbuild_get_test_multidata(
-     TARGET ${sphericalDataTargetName}
-     DIRNAME ${INTERPOLATE_SERVER_DATA_PATH}/spherical
-     DIRLOCAL ${INTERPOLATE_BUILD_PATH}/data/spherical
-     NAMES ${_interpolate_test_data_spherical}
-     )
+    ecbuild_add_test(
+        TARGET       ${PREFIX}_${_test}_run
+        TEST_DEPENDS ${PREFIX}_get_data
+        COMMAND      multio-feed
+        ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/${_test}.yaml ${_feed})
 
- #
- # Dowload the points per latitude file needed for O1280 grid
+    ecbuild_add_test(
+        TARGET       ${PREFIX}_${_test}_check_metadata
+        TEST_DEPENDS ${PREFIX}_${_test}_run
+        COMMAND      grib_compare
+        ARGS         -H ${_reference} ${_result})
 
- ecbuild_get_test_multidata(
-     TARGET ${pointsPerLatitudeDataTargetName}
-     DIRNAME ${INTERPOLATE_SERVER_DATA_PATH}
-     DIRLOCAL ${INTERPOLATE_BUILD_PATH}/data
-     NAMES ${_interpolate_test_data_grid_definitons}
-     )
-
-
-#
-# Configure the interpolation helper and put it into the binary directory
-# =======================================================================
-
-configure_file( multio-interpolate.sh.in   ${CMAKE_BINARY_DIR}/bin/multio-interpolate.sh @ONLY )
-
-
-#
-# Definition of test rages
-# ========================
-
-list( APPEND _interpolate_tests_dependencies
-  ${regularllDataTargetName}
-  ${reducedggDataTargetName}
-  ${sphericalDataTargetName}
-  ${pointsPerLatitudeDataTargetName}
-)
-
-list( APPEND _interpolate_testcases
-    "encode-decode"
-    "empty"
-    "full-frame"
-    "cropped"
-)
-
-list( APPEND _interpolate_tests_parsers_kind
-    "atlas"
-    "pure-forwarding"
-)
-
-list( APPEND _interpolate_tests_grids_kind
-    "Reducedgg"
-    "Spherical"
-)
-
-list( APPEND _interpolate_tests_grid_spacings
-    "100"
-    "050"
-    "025"
-)
-
-
-#
-# Test definitions in the subdirectories
-# ======================================
-foreach( testcase ${_interpolate_testcases} )
-    add_subdirectory(${testcase})
+    ecbuild_add_test(
+        TARGET       ${PREFIX}_${_test}_check_values
+        TEST_DEPENDS ${PREFIX}_${_test}_check_metadata
+        COMMAND      grib_compare
+        ARGS         ${_reference} ${_result})
 endforeach()
 
-endif(HAVE_MIR)

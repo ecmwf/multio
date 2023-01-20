@@ -20,6 +20,18 @@ foreach( tool ${_multio_maestro_tools} )
                             LIBS multio-maestro )
 endforeach()
 
+# multio tools for testing the legacy ifsio
+
+ecbuild_add_executable( TARGET    multio-legacy
+                        SOURCES   multio-legacy.cc MultioTool.cc
+                        CONDITION HAVE_FDB5 AND HAVE_LEGACY_IFSIO
+                        LIBS      multio )
+
+ecbuild_add_executable( TARGET    multio-legacy-hammer
+                        SOURCES   multio-legacy-hammer.cc MultioTool.cc
+                        CONDITION HAVE_FDB5 AND HAVE_LEGACY_IFSIO
+                        LIBS      multio )
+
 # tools for testing the multio API
 
 ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initfilepath

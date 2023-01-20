@@ -8,29 +8,12 @@ endif()
 
 list( APPEND _link_libraries
     multio
-    multio-action-aggregate
-    multio-action-encode
-    multio-action-mask
-    multio-action-metadata-mapping
-    multio-action-null
-    multio-action-print
-    multio-action-select
-    multio-action-single-field-sink
     multio-action-sink
-    multio-action-statistics
-    multio-action-transport
-    eckit_option
 )
 
 if ( HAVE_FDB5 )
     list( APPEND _link_libraries
         multio-fdb5
-    )
-endif()
-
-if( HAVE_MIR )
-    list( APPEND _link_libraries
-        multio-action-interpolate
     )
 endif()
 
@@ -52,7 +35,7 @@ ecbuild_add_test( TARGET    test_multio_encode_bitspervalue
 
 ecbuild_add_test( TARGET    test_multio_confctx
                   SOURCES   test_multio_confctx.cc
-                  LIBS      ${_link_libraries}
+                  LIBS      multio
                   ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/server/config"
 )
 

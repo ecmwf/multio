@@ -45,11 +45,11 @@ static std::string expectedMPIError("No communicator \"multio\" and no default g
 CASE("Try Create handle with wrong configuration path") {
     multio_configurationcontext_t* cc = nullptr;
     int err;
-    err = multio_new_configurationcontext_from_filename(&cc, "I_AM_NOT_HERE/server/config/multio-server.yaml");
+    err = multio_new_configurationcontext_from_filename(&cc, "I_AM_NOT_HERE/multio/config/multio-server.yaml");
     std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
-    EXPECT(errStr.rfind("Cannot open I_AM_NOT_HERE/server/config/multio-server.yaml  (No such file or directory)")
+    EXPECT(errStr.rfind("Cannot open I_AM_NOT_HERE/multio/config/multio-server.yaml  (No such file or directory)")
            != std::string::npos);
     multio_delete_configurationcontext(cc);
 }

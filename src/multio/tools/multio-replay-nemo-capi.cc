@@ -45,7 +45,7 @@ std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& config
 class NemoToGrib {
 public:
     NemoToGrib() :
-        parameters_{fetch_nemo_params(eckit::YAMLConfiguration{configuration_path_name() + "nemo-to-grib.yaml"})} {}
+        parameters_{fetch_nemo_params(eckit::YAMLConfiguration{configuration_path_name() + "metadata-mapping/nemo-to-grib.yaml"})} {}
 
     const GribData& get(const NemoKey& key) const { return parameters_.at(key); }
 

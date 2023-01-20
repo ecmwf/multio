@@ -1,5 +1,3 @@
-metadata-mappings: ../server/config/metadata-mappings.yaml
-
 plans:
     - name: Test Encode NextGEMS PL sh
       # TODO For param v, encoding has some discrepancies. A different eccodes version has been used. Maybe this results in a different laplacianOperator?
@@ -14,22 +12,22 @@ plans:
             - levtype: pl
               gridType: sh
         - type: metadata-mapping
-          mapping: <<~>>/metadata-mapping/grib1-pl-encoder-overwrites.yaml
+          mapping: @multio_SOURCE_DIR@/tests/multio/config/metadata-mapping/grib1-pl-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
           prefix: Matched PL sh field
         - type: encode
           format: grib
-          template: <<~>>/sh_pl_grib1.tmpl
+          template: @TEST_NEXTGEMS_TEMPLATES_PATH@/nextgems_test_templates/sh_pl_grib1.tmpl
           overwrite:
             generatingProcessIdentifier: 153
         - type: sink
           sinks:
             - type: file
               append: false
-              per-server: true # Will give you one file per server
-              path: testEncodeNextGEMS-PL-sh.grib
+              per-server: false
+              path: @TEST_NEXTGEMS_OUTPUT_PATH@/testEncodeNextGEMS-PL-sh.grib
     - name: Test Encode NextGEMS PL gg
       actions:
         - type: select
@@ -37,22 +35,22 @@ plans:
             - levtype: pl
               gridType: reduced_gg
         - type: metadata-mapping
-          mapping: <<~>>/metadata-mapping/grib1-pl-encoder-overwrites.yaml
+          mapping: @multio_SOURCE_DIR@/tests/multio/config/metadata-mapping/grib1-pl-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
           prefix: Matched PL reduced_gg field
         - type: encode
           format: grib
-          template: <<~>>/reduced_gg_pl_grib1.tmpl
+          template: @TEST_NEXTGEMS_TEMPLATES_PATH@/nextgems_test_templates/reduced_gg_pl_grib1.tmpl
           overwrite:
             generatingProcessIdentifier: 153
         - type: sink
           sinks:
             - type: file
               append: false
-              per-server: true # Will give you one file per server
-              path: testEncodeNextGEMS-PL-gg.grib
+              per-server: false
+              path: @TEST_NEXTGEMS_OUTPUT_PATH@/testEncodeNextGEMS-PL-gg.grib
     - name: Test Encode NextGEMS SFC litota
       actions:
         - type: select
@@ -60,22 +58,22 @@ plans:
             - levtype: sfc
               param: [228051]
         - type: metadata-mapping
-          mapping: <<~>>/metadata-mapping/grib1-sfc-encoder-overwrites.yaml
+          mapping: @multio_SOURCE_DIR@/tests/multio/config/metadata-mapping/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
           prefix: Matched SFC field 228051 (litota1)
         - type: encode
           format: grib
-          template: <<~>>/nextgems-input-SFC-litota1.grib
+          template: @TEST_NEXTGEMS_TEMPLATES_PATH@/nextgems_test_templates/nextgems-input-SFC-litota1.grib
           overwrite:
             generatingProcessIdentifier: 153
         - type: sink
           sinks:
             - type: file
               append: false
-              per-server: true # Will give you one file per server
-              path: testEncodeNextGEMS-SFC-litota1.grib
+              per-server: false
+              path: @TEST_NEXTGEMS_OUTPUT_PATH@/testEncodeNextGEMS-SFC-litota1.grib
     - name: Test Encode NextGEMS SFC sithick
       actions:
         - type: select
@@ -83,22 +81,22 @@ plans:
             - levtype: sfc
               param: [174098]
         - type: metadata-mapping
-          mapping: <<~>>/metadata-mapping/grib1-sfc-encoder-overwrites.yaml
+          mapping: @multio_SOURCE_DIR@/tests/multio/config/metadata-mapping/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
           prefix: Matched SFC sithick
         - type: encode
           format: grib
-          template: <<~>>/nextgems-input-SFC-sithick.grib
+          template: @TEST_NEXTGEMS_TEMPLATES_PATH@/nextgems_test_templates/nextgems-input-SFC-sithick.grib
         - type: sink
           sinks:
             - type: file
               append: false
-              per-server: true # Will give you one file per server
-              path: testEncodeNextGEMS-SFC-sithick.grib
+              per-server: false
+              path: @TEST_NEXTGEMS_OUTPUT_PATH@/testEncodeNextGEMS-SFC-sithick.grib
     - name: Test Encode NextGEMS SFC different top/bottom level
-      # TODO
+      # TODO 
       # Comparison still results with messages like:
       # long [indicatorOfTypeOfLevel]: [112] != [1]
       # long [bottomLevel]: [100] != [28]
@@ -111,22 +109,22 @@ plans:
             - levtype: sfc
               param: [141, 139, 170, 183, 236, 39, 40, 41, 42]
         - type: metadata-mapping
-          mapping: <<~>>/metadata-mapping/grib1-sfc-encoder-overwrites.yaml
+          mapping: @multio_SOURCE_DIR@/tests/multio/config/metadata-mapping/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
           prefix: Matched SFC different top/bottom level
         - type: encode
           format: grib
-          template: <<~>>/nextgems-input-SFC-stl4.grib
+          template: @TEST_NEXTGEMS_TEMPLATES_PATH@/nextgems_test_templates/nextgems-input-SFC-stl4.grib
           overwrite:
             generatingProcessIdentifier: 153
         - type: sink
           sinks:
             - type: file
               append: false
-              per-server: true # Will give you one file per server
-              path: testEncodeNextGEMS-SFC-others.grib
+              per-server: false
+              path: @TEST_NEXTGEMS_OUTPUT_PATH@/testEncodeNextGEMS-SFC-others.grib
     - name: Test Encode NextGEMS SFC rest
       actions:
         - type: select
@@ -135,21 +133,22 @@ plans:
           ignore:
             - param: [228051, 141, 139, 170, 183, 236, 39, 40, 41, 42]
         - type: metadata-mapping
-          mapping: <<~>>/metadata-mapping/grib1-sfc-encoder-overwrites.yaml
+          mapping: @multio_SOURCE_DIR@/tests/multio/config/metadata-mapping/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
           prefix: Matched SFC field rest
         - type: encode
           format: grib
-          template: <<~>>/nextgems-input-SFC-rsn.grib
+          template: @TEST_NEXTGEMS_TEMPLATES_PATH@/nextgems_test_templates/nextgems-input-SFC-rsn.grib
           overwrite:
             generatingProcessIdentifier: 153
-        - type: print
+        - type: print 
         - type: sink
           sinks:
             - type: file
               append: false
-              per-server: true # Will give you one file per server
-              path: testEncodeNextGEMS-SFC.grib
-
+              per-server: false
+              path: @TEST_NEXTGEMS_OUTPUT_PATH@/testEncodeNextGEMS-SFC.grib
+              
+              

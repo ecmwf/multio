@@ -24,7 +24,7 @@ client:
             - name: [sst, ssv]
 
         - type: metadata-mapping
-          mapping: '{~}/nemo-to-grib.yaml'
+          mapping: '{~}/metadata-mapping/nemo-to-grib.yaml'
           enforce-match: true # default, may be omitted
           overwrite-existing: false # default, may be omitted
 
@@ -38,7 +38,7 @@ client:
             - name: [ssu, ssw]
 
         - type: metadata-mapping
-          mapping: '{~}/nemo-to-grib.yaml'
+          mapping: '{~}/metadata-mapping/nemo-to-grib.yaml'
           enforce-match: true # default, may be omitted
           overwrite-existing: false # default, may be omitted
 

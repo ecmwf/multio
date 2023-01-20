@@ -14,7 +14,7 @@ plans:
               gridType: sh
               gribEdition: 2
         - type: metadata-mapping
-          mapping: <<~>>/metadata-mapping/grib2-ml-encoder-overwrites.yaml
+          mapping: @multio_SOURCE_DIR@/tests/multio/config/metadata-mapping/grib2-ml-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
@@ -22,7 +22,7 @@ plans:
           prefix: Plan for leveltype "ml" and gridType "sh" (grib2)
         - type: encode
           format: grib
-          template: <<~>>/ifs-ml-sh-1-0-t-2.grib
+          template: @multio_BINARY_DIR@/tests/actions/ifs/data/ifs-ml-sh-1-0-t-2.grib
           overwrite:
             generatingProcessIdentifier: 147
             NV: 40
@@ -40,7 +40,7 @@ plans:
               gridType: sh
               gribEdition: 1
         - type: metadata-mapping
-          mapping: metadata-mapping/grib1-pl-encoder-overwrites.yaml
+          mapping: @multio_SOURCE_DIR@/tests/multio/config/metadata-Mapping/grib1-pl-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
@@ -49,8 +49,8 @@ plans:
         - type: encode
           format: grib
           # TODO
-          # some comparisons fail with: long [timeRangeIndicator]: [0] != [1]
-          template: <<~>>/ifs-pl-sh-1000-0-t-1.grib
+          # some comparisons fail with: long [timeRangeIndicator]: [0] != [1] 
+          template: @multio_BINARY_DIR@/tests/actions/ifs/data/ifs-pl-sh-1000-0-t-1.grib
           overwrite:
             generatingProcessIdentifier: 147
         - type: sink
@@ -67,7 +67,7 @@ plans:
               gridType: regular_gg
               gribEdition: 2
         - type: metadata-mapping
-          mapping: <<~>>/metadata-mapping/grib2-ml-encoder-overwrites.yaml
+          mapping: @multio_SOURCE_DIR@/tests/multio/config/metadata-Mapping/grib2-ml-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
@@ -75,7 +75,7 @@ plans:
           prefix: Plan leveltype "ml" and gridType "regular_gg"
         - type: encode
           format: grib
-          template: <<~>>/ifs-ml-regular_gg-1-0-q-2.grib
+          template: @multio_BINARY_DIR@/tests/actions/ifs/data/ifs-ml-regular_gg-1-0-q-2.grib
           overwrite:
             generatingProcessIdentifier: 147
             NV: 40

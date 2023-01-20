@@ -39,7 +39,7 @@ struct MetadataMappingOptions {
 
 /**
  * A metadata mapping is performing changes on metadata by matching a key in the metadata with a key in a custom (user)
- * provided map. As an example you may have a look in `tests/server/config/metadataMappings/nemo-to-grib.yaml`:
+ * provided map. As an example you may have a look in `tests/multio/config/metadata-mapping/nemo-to-grib.yaml`:
  * ```
  *  mappings:
  *   - match:

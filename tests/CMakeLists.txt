@@ -102,7 +102,7 @@ ecbuild_get_test_multidata( TARGET multio_get_test_data
                              NAMES ${_test_data} )
 
 ecbuild_add_test( TARGET test_multio_ifs_plans
-	              CONDITION HAVE_FDB5
+	          CONDITION HAVE_FDB5
                   COMMAND $<TARGET_FILE:multio-feed>
                   TEST_DEPENDS multio_get_test_data
                   ARGS ${_test_data}

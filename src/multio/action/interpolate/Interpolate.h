@@ -24,15 +24,12 @@
  * @date Nov 2022
  */
 
+
 #pragma once
 
-// Include the base class
 #include "multio/action/ChainedAction.h"
 
-// Private utils for this specifica action
-#include "multio/action/interpolate/Parser.h"
 
-// Namespace handling
 namespace multio {
 namespace action {
 namespace interpolate {
@@ -49,7 +46,9 @@ private:
     /**
      * \brief Configuration for the interpolation object
      */
-    const ActionInterpolateHighParserPureForwarding mainConfiguration_;
+    const eckit::LocalConfiguration configurationContext_;
+
+    int outputSize_;
 
     /**
      * \brief function used to perform an interpolation when

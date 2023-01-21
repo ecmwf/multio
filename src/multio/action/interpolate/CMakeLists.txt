@@ -5,7 +5,6 @@ ecbuild_add_library(
     SOURCES
         Interpolate.cc
         Interpolate.h
-        Parser.h
 
     PRIVATE_INCLUDES
       ${MIR_INCLUDE_DIRS}

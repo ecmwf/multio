@@ -11,10 +11,15 @@
 
 #include "multio/action/interpolate/Interpolate.h"
 
+#include <fstream>
 #include <vector>
 
+#include "eckit/exception/Exceptions.h"
+
+#include "mir/api/MIRJob.h"
 #include "mir/input/RawInput.h"
 #include "mir/output/RawOutput.h"
+#include "mir/param/SimpleParametrisation.h"
 
 #include "multio/LibMultio.h"
 #include "multio/util/PrecisionTag.h"
@@ -23,6 +28,68 @@
 namespace multio {
 namespace action {
 namespace interpolate {
+
+
+template <typename DestinationType>
+void fill(const eckit::LocalConfiguration& sub, DestinationType& destination) {
+    if (sub.has("loadFromFile")) {
+        auto cfg = sub.getSubConfiguration("loadFromFile");
+
+        for (const auto& key : cfg.keys()) {
+            std::fstream inputFile;
+            inputFile.open(cfg.getString(key));
+            ASSERT(inputFile.is_open());
+
+            std::vector<long> val;
+            std::string str;
+            while (getline(inputFile, str)) {
+                val.push_back(long(atoi(str.c_str())));
+            }
+            destination.set(key, val);
+        }
+    };
+
+    if (sub.has("setByValue")) {
+        auto cfg = sub.getSubConfiguration("setByValue");
+
+        for (const auto& key : cfg.keys()) {
+            eckit::Value cfgVal = cfg.getSubConfiguration(key).get();
+            if (cfgVal.isMap()) {
+                throw eckit::NotImplemented("Action::Interpolate :: Nested forwarding is not supported", Here());
+            }
+
+            if (cfgVal.isList()) {
+                if (cfgVal.head().isDouble()) {
+                    destination.set(key, cfg.getDoubleVector(key));
+                }
+                else if (cfgVal.head().isNumber()) {
+                    destination.set(key, cfg.getLongVector(key));
+                }
+                else if (cfgVal.head().isString()) {
+                    destination.set(key, cfg.getStringVector(key));
+                }
+                else {
+                    throw eckit::NotImplemented("Action::Interpolate :: Unsupported datatype", Here());
+                };
+            }
+            else if (cfgVal.isBool()) {
+                destination.set(key, cfg.getBool(key));
+            }
+            else if (cfgVal.isDouble()) {
+                destination.set(key, cfg.getDouble(key));
+            }
+            else if (cfgVal.isNumber()) {
+                destination.set(key, cfg.getInt(key));
+            }
+            else if (cfgVal.isString()) {
+                destination.set(key, cfg.getString(key).c_str());
+            }
+            else {
+                throw eckit::NotImplemented("Action::Interpolate :: Unsupported datatype", Here());
+            }
+        }
+    };
+};
 
 
 template <>
@@ -47,12 +114,13 @@ message::Message Interpolate::InterpolateRawMessage<float>(message::Message&& ms
 
     // Prepare input parameters (description of the input field)
     mir::param::SimpleParametrisation inputPar;
-    mainConfiguration_.MIRInput(msg.metadata(), inputPar);
+    fill(configurationContext_.getSubConfiguration("inputConfiguration"), inputPar);
+
     mir::input::RawInput input(inData.data(), size, inputPar);
 
     // Prepare interpolation Job (configuration of the interpolation task)
     mir::api::MIRJob job;
-    mainConfiguration_.MIRJob(msg.metadata(), job);
+    fill(configurationContext_.getSubConfiguration("jobConfiguration"), job);
 
     // Add missing values support
     if (msg.metadata().has("missingValue")) {
@@ -68,7 +136,7 @@ message::Message Interpolate::InterpolateRawMessage<float>(message::Message&& ms
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: nir job description " << std::endl << job << std::endl << std::endl;
 
     // Allocate and initialize the out values
-    std::vector<double> outDataDouble(mainConfiguration_.outputSize(), 0.0);
+    std::vector<double> outDataDouble(outputSize_, 0.0);
 
     // Construction of the output metadata (mir just forward the job configuration
     // in this object)
@@ -81,7 +149,7 @@ message::Message Interpolate::InterpolateRawMessage<float>(message::Message&& ms
     job.execute(input, output);
 
     // Allocation of the single precision output vector
-    std::vector<float> outData(mainConfiguration_.outputSize(), 0.0);
+    std::vector<float> outData(outputSize_, 0.0);
 
     // Recast the fata from double precision mit output data to single precion
     // buffer needed to output a single precision message
@@ -101,11 +169,10 @@ message::Message Interpolate::InterpolateRawMessage<float>(message::Message&& ms
     md.set("precision", "single");
 
     // Fill the output metdata from configuration file
-    mainConfiguration_.MIROutput(msg.metadata(), md);
+    fill(configurationContext_.getSubConfiguration("outputConfiguration"), md);
 
     // construction of the buffer
-    eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()),
-                         mainConfiguration_.outputSize() * sizeof(float));
+    eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outputSize_ * sizeof(float));
 
     // Show metadata of the output message
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: Metadata of the output message :: " << std::endl
@@ -113,7 +180,8 @@ message::Message Interpolate::InterpolateRawMessage<float>(message::Message&& ms
                              << std::endl;
 
     // Next action
-    return {message::Message::Header{message::Message::Tag::Field, msg.source(), msg.destination(), std::move(md)}, std::move(buffer)};
+    return {message::Message::Header{message::Message::Tag::Field, msg.source(), msg.destination(), std::move(md)},
+            std::move(buffer)};
 }
 
 
@@ -130,12 +198,13 @@ message::Message Interpolate::InterpolateRawMessage<double>(message::Message&& m
 
     // Prepare input parameters (description of the input field)
     mir::param::SimpleParametrisation inputPar;
-    mainConfiguration_.MIRInput(msg.metadata(), inputPar);
+    fill(configurationContext_.getSubConfiguration("inputConfiguration"), inputPar);
+
     mir::input::RawInput input(data, size, inputPar);
 
     // Prepare interpolation Job (configuration of the interpolation task)
     mir::api::MIRJob job;
-    mainConfiguration_.MIRJob(msg.metadata(), job);
+    fill(configurationContext_.getSubConfiguration("jobConfiguration"), job);
 
     // Add missing values support
     if (msg.metadata().has("missingValue")) {
@@ -151,7 +220,7 @@ message::Message Interpolate::InterpolateRawMessage<double>(message::Message&& m
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: nir job description " << std::endl << job << std::endl << std::endl;
 
     // Allocate and initialize the out values
-    std::vector<double> outData(mainConfiguration_.outputSize(), 0.0);
+    std::vector<double> outData(outputSize_, 0.0);
 
     // Construction of the output metadata (mir just forward the job configuration
     // in this object)
@@ -175,11 +244,10 @@ message::Message Interpolate::InterpolateRawMessage<double>(message::Message&& m
     md.set("precision", "double");
 
     // Fill the output metdata from configuration file
-    mainConfiguration_.MIROutput(msg.metadata(), md);
+    fill(configurationContext_.getSubConfiguration("outputConfiguration"), md);
 
     // construction of the buffer
-    eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()),
-                         mainConfiguration_.outputSize() * sizeof(double));
+    eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outputSize_ * sizeof(double));
 
     // Show metadata of the output message
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: Metadata of the output message :: " << std::endl
@@ -187,13 +255,16 @@ message::Message Interpolate::InterpolateRawMessage<double>(message::Message&& m
                              << std::endl;
 
     // Next action
-    return {message::Message::Header{message::Message::Tag::Field, msg.source(), msg.destination(), std::move(md)}, std::move(buffer)};
+    return {message::Message::Header{message::Message::Tag::Field, msg.source(), msg.destination(), std::move(md)},
+            std::move(buffer)};
 }
 
 
 Interpolate::Interpolate(const ConfigurationContext& confCtx) :
-    ChainedAction{confCtx},
-    mainConfiguration_(Action::confCtx_.config()) {}
+    ChainedAction(confCtx),
+    configurationContext_(confCtx_.config()),
+    outputSize_(configurationContext_.getLong("outputSize")) {}
+
 
 void Interpolate::executeImpl(message::Message msg) const {
     switch (msg.tag()) {
@@ -216,12 +287,14 @@ void Interpolate::executeImpl(message::Message msg) const {
     };
 }
 
+
 void Interpolate::print(std::ostream& os) const {
     os << "Interpolate";
 }
 
 
 static ActionBuilder<Interpolate> InterpolateBuilder("interpolate");
+
 
 }  // namespace interpolate
 }  // namespace action

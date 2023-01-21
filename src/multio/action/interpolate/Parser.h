@@ -33,13 +33,73 @@
 // System includes
 #include <fstream>
 
-// Include the abstract parser class
-#include "InterpolateParser.h"
+//// Include all the mir headers (interpolation package)
+#include "eckit/config/LocalConfiguration.h"
+#include "eckit/value/Value.h"
+
+#include "mir/api/MIRJob.h"
+#include "mir/param/SimpleParametrisation.h"
+
 
 // Namespace handling
 namespace multio {
 namespace action {
 namespace interpolate {
+
+
+/**
+ * \brief forwarder for the input data. The destination object is assumed
+ * to have only an overloaded set method
+ *
+ * \note bad implementation and far from beeing general, but it works for now
+ *
+ * \param [in] Source source object where to read data
+ * \param [inout] Destination bject where to forward configurations
+ * \param [in] keySource key in the source object
+ * \param [in] keyDestination key in the destination object
+ */
+template <typename DestinationType>
+void forwardConfiguration(const eckit::LocalConfiguration& Source, DestinationType& Destination,
+                          const std::string& keySource, const std::string& keyDestination) {
+    eckit::Value cfgVal = Source.getSubConfiguration(keySource).get();
+    eckit::LocalConfiguration tmp;
+    if (cfgVal.isMap()) {
+        throw eckit::NotImplemented("Action::Interpolate :: Nested forwarding is not supported", Here());
+    }
+    else if (cfgVal.isList()) {
+        if (cfgVal.head().isDouble()) {
+            Destination.set(keyDestination, Source.getDoubleVector(keySource));
+        }
+        else if (cfgVal.head().isNumber()) {
+            // Bad special case needed for handle the pl array in atlas grids
+            Destination.set(keyDestination, Source.getLongVector(keySource));
+        }
+        else if (cfgVal.head().isString()) {
+            Destination.set(keyDestination, Source.getStringVector(keySource));
+        }
+        else {
+            throw eckit::NotImplemented("Action::Interpolate :: Unsupported datatype", Here());
+        };
+    }
+    else {
+        if (cfgVal.isBool()) {
+            Destination.set(keyDestination, Source.getBool(keySource));
+        }
+        else if (cfgVal.isDouble()) {
+            Destination.set(keyDestination, Source.getDouble(keySource));
+        }
+        else if (cfgVal.isNumber()) {
+            Destination.set(keyDestination, Source.getInt(keySource));
+        }
+        else if (cfgVal.isString()) {
+            Destination.set(keyDestination, Source.getString(keySource).c_str());
+        }
+        else {
+            throw eckit::NotImplemented("Action::Interpolate :: Unsupported datatype", Here());
+        };
+    }
+};
+
 
 /**
  * \class this class is used fill the configuration parameters for mir objects
@@ -237,8 +297,13 @@ public:
  * \class this class is used to handle the configuration for an
  * interpolate Action.
  */
-class ActionInterpolateHighParserPureForwarding final : public ActionInterpolateHighParser {
+class ActionInterpolateHighParserPureForwarding {
 private:
+    /**
+     * \brief configuration context for the entire mission
+     */
+    const eckit::LocalConfiguration configurationContext_;
+
     /**
      * \brief input parameters of the interplator
      */
@@ -259,19 +324,6 @@ private:
      */
     int outputSize_;
 
-    /**
-     * \brief read the output size
-     */
-    void readOutputSize() {
-        // Read the output size ofthe interpolated field
-        if (configurationContext_.has("outputSize")) {
-            outputSize_ = configurationContext_.getLong("outputSize");
-        }
-        else {
-            throw eckit::UserError("Action::Interpolate::Parser :: Expected an output size for \"outputSize\"", Here());
-        }
-    }
-
 public:
     /**
      * \brief Constructor of the class. It is meant to be constructed only by
@@ -281,12 +333,11 @@ public:
      * action
      */
     explicit ActionInterpolateHighParserPureForwarding(const eckit::LocalConfiguration& configurationContext) :
-        ActionInterpolateHighParser(configurationContext),
+        configurationContext_(configurationContext),
         input_(configurationContext, "inputConfiguration"),
         job_(configurationContext, "jobConfiguration"),
-        output_(configurationContext, "outputConfiguration") {
-        // Read the output size
-        readOutputSize();
+        output_(configurationContext, "outputConfiguration"),
+        outputSize_(configurationContext.getLong("outputSize")) {
     };
 
     /**

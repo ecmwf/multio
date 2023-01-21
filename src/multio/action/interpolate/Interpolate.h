@@ -30,11 +30,13 @@
 #include "multio/action/ChainedAction.h"
 
 // Private utils for this specifica action
-#include "parser/InterpolateParserFactory.h"
+#include "multio/action/interpolate/Parser.h"
 
 // Namespace handling
 namespace multio {
 namespace action {
+namespace interpolate {
+
 
 /**
  * \class Object used to wrap the MIR interpolation tool in order to enable
@@ -47,7 +49,7 @@ private:
     /**
      * \brief Configuration for the interpolation object
      */
-    const std::unique_ptr<interpolate::ActionInterpolateHighParser> mainConfiguration_;
+    const ActionInterpolateHighParserPureForwarding mainConfiguration_;
 
     /**
      * \brief function used to perform an interpolation when
@@ -61,7 +63,7 @@ private:
      * \see InterpolateRawMessageFloat
      */
     template <typename T>
-    multio::message::Message InterpolateRawMessage(message::Message&& msg) const;
+    message::Message InterpolateRawMessage(message::Message&& msg) const;
 
     /**
      * \brief helper used to just log useful informations
@@ -89,5 +91,7 @@ public:
     void executeImpl(message::Message msg) const override;
 };
 
+
+}  // namespace interpolate
 }  // namespace action
 }  // namespace multio

@@ -8,20 +8,25 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "multio/util/PrecisionTag.h"
 
-#include "Interpolate.h"
+#include "multio/action/interpolate/Interpolate.h"
+
+#include <vector>
+
+#include "mir/input/RawInput.h"
+#include "mir/output/RawOutput.h"
+
+#include "multio/LibMultio.h"
+#include "multio/util/PrecisionTag.h"
 
 
 namespace multio {
 namespace action {
-
-using message::Message;
-using message::Peer;
+namespace interpolate {
 
 
 template <>
-multio::message::Message Interpolate::InterpolateRawMessage<float>(Message&& msg) const {
+message::Message Interpolate::InterpolateRawMessage<float>(message::Message&& msg) const {
     // Print Input metadata
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: Metadata of the input message :: " << std::endl
                              << msg.metadata() << std::endl
@@ -42,12 +47,12 @@ multio::message::Message Interpolate::InterpolateRawMessage<float>(Message&& msg
 
     // Prepare input parameters (description of the input field)
     mir::param::SimpleParametrisation inputPar;
-    mainConfiguration_->MIRInput(msg.metadata(), inputPar);
-    std::unique_ptr<mir::input::RawInput> input(new mir::input::RawInput(inData.data(), size, inputPar));
+    mainConfiguration_.MIRInput(msg.metadata(), inputPar);
+    mir::input::RawInput input(inData.data(), size, inputPar);
 
     // Prepare interpolation Job (configuration of the interpolation task)
     mir::api::MIRJob job;
-    mainConfiguration_->MIRJob(msg.metadata(), job);
+    mainConfiguration_.MIRJob(msg.metadata(), job);
 
     // Add missing values support
     if (msg.metadata().has("missingValue")) {
@@ -63,21 +68,20 @@ multio::message::Message Interpolate::InterpolateRawMessage<float>(Message&& msg
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: nir job description " << std::endl << job << std::endl << std::endl;
 
     // Allocate and initialize the out values
-    std::vector<double> outDataDouble(mainConfiguration_->outputSize(), 0.0);
+    std::vector<double> outDataDouble(mainConfiguration_.outputSize(), 0.0);
 
     // Construction of the output metadata (mir just forward the job configuration
     // in this object)
     mir::param::SimpleParametrisation outMetadata;
 
     // Preparation of the output object
-    std::unique_ptr<mir::output::RawOutput> output(
-        new mir::output::RawOutput(outDataDouble.data(), outDataDouble.size(), outMetadata));
+    mir::output::RawOutput output(outDataDouble.data(), outDataDouble.size(), outMetadata);
 
     // Execute the job
-    job.execute(*input, *output);
+    job.execute(input, output);
 
     // Allocation of the single precision output vector
-    std::vector<float> outData(mainConfiguration_->outputSize(), 0.0);
+    std::vector<float> outData(mainConfiguration_.outputSize(), 0.0);
 
     // Recast the fata from double precision mit output data to single precion
     // buffer needed to output a single precision message
@@ -97,11 +101,11 @@ multio::message::Message Interpolate::InterpolateRawMessage<float>(Message&& msg
     md.set("precision", "single");
 
     // Fill the output metdata from configuration file
-    mainConfiguration_->MIROutput(msg.metadata(), md);
+    mainConfiguration_.MIROutput(msg.metadata(), md);
 
     // construction of the buffer
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()),
-                         mainConfiguration_->outputSize() * sizeof(float));
+                         mainConfiguration_.outputSize() * sizeof(float));
 
     // Show metadata of the output message
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: Metadata of the output message :: " << std::endl
@@ -109,12 +113,12 @@ multio::message::Message Interpolate::InterpolateRawMessage<float>(Message&& msg
                              << std::endl;
 
     // Next action
-    return (multio::message::Message{
-        Message::Header{Message::Tag::Field, msg.source(), msg.destination(), std::move(md)}, std::move(buffer)});
+    return {message::Message::Header{message::Message::Tag::Field, msg.source(), msg.destination(), std::move(md)}, std::move(buffer)};
 }
 
+
 template <>
-multio::message::Message Interpolate::InterpolateRawMessage<double>(Message&& msg) const {
+message::Message Interpolate::InterpolateRawMessage<double>(message::Message&& msg) const {
     // Print Input metadata
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: Metadata of the input message :: " << std::endl
                              << msg.metadata() << std::endl
@@ -126,12 +130,12 @@ multio::message::Message Interpolate::InterpolateRawMessage<double>(Message&& ms
 
     // Prepare input parameters (description of the input field)
     mir::param::SimpleParametrisation inputPar;
-    mainConfiguration_->MIRInput(msg.metadata(), inputPar);
-    std::unique_ptr<mir::input::RawInput> input(new mir::input::RawInput(data, size, inputPar));
+    mainConfiguration_.MIRInput(msg.metadata(), inputPar);
+    mir::input::RawInput input(data, size, inputPar);
 
     // Prepare interpolation Job (configuration of the interpolation task)
     mir::api::MIRJob job;
-    mainConfiguration_->MIRJob(msg.metadata(), job);
+    mainConfiguration_.MIRJob(msg.metadata(), job);
 
     // Add missing values support
     if (msg.metadata().has("missingValue")) {
@@ -147,18 +151,17 @@ multio::message::Message Interpolate::InterpolateRawMessage<double>(Message&& ms
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: nir job description " << std::endl << job << std::endl << std::endl;
 
     // Allocate and initialize the out values
-    std::vector<double> outData(mainConfiguration_->outputSize(), 0.0);
+    std::vector<double> outData(mainConfiguration_.outputSize(), 0.0);
 
     // Construction of the output metadata (mir just forward the job configuration
     // in this object)
     mir::param::SimpleParametrisation outMetadata;
 
     // Preparation of the output object
-    std::unique_ptr<mir::output::RawOutput> output(
-        new mir::output::RawOutput(outData.data(), outData.size(), outMetadata));
+    mir::output::RawOutput output(outData.data(), outData.size(), outMetadata);
 
     // Execute the job
-    job.execute(*input, *output);
+    job.execute(input, output);
 
     // Construction of the output message
     message::Metadata md{};
@@ -172,11 +175,11 @@ multio::message::Message Interpolate::InterpolateRawMessage<double>(Message&& ms
     md.set("precision", "double");
 
     // Fill the output metdata from configuration file
-    mainConfiguration_->MIROutput(msg.metadata(), md);
+    mainConfiguration_.MIROutput(msg.metadata(), md);
 
     // construction of the buffer
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()),
-                         mainConfiguration_->outputSize() * sizeof(double));
+                         mainConfiguration_.outputSize() * sizeof(double));
 
     // Show metadata of the output message
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: Metadata of the output message :: " << std::endl
@@ -184,25 +187,24 @@ multio::message::Message Interpolate::InterpolateRawMessage<double>(Message&& ms
                              << std::endl;
 
     // Next action
-    return (multio::message::Message{
-        Message::Header{Message::Tag::Field, msg.source(), msg.destination(), std::move(md)}, std::move(buffer)});
+    return {message::Message::Header{message::Message::Tag::Field, msg.source(), msg.destination(), std::move(md)}, std::move(buffer)};
 }
 
 
 Interpolate::Interpolate(const ConfigurationContext& confCtx) :
     ChainedAction{confCtx},
-    mainConfiguration_(interpolate::InterpolateParserFactory::instance().build(Action::confCtx_.config())) {}
+    mainConfiguration_(Action::confCtx_.config()) {}
 
-void Interpolate::executeImpl(Message msg) const {
+void Interpolate::executeImpl(message::Message msg) const {
     switch (msg.tag()) {
-        case (Message::Tag::Field): {
-            executeNext(multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
+        case (message::Message::Tag::Field): {
+            executeNext(util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
                 using PT = typename decltype(pt)::type;
                 return InterpolateRawMessage<PT>(std::move(msg));
             }));
             break;
         };
-        case (Message::Tag::StepComplete): {
+        case (message::Message::Tag::StepComplete): {
             executeNext(msg);
             break;
         }
@@ -221,5 +223,6 @@ void Interpolate::print(std::ostream& os) const {
 
 static ActionBuilder<Interpolate> InterpolateBuilder("interpolate");
 
+}  // namespace interpolate
 }  // namespace action
 }  // namespace multio

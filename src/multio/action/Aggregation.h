@@ -14,29 +14,24 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_actions_Aggregation_H
-#define multio_server_actions_Aggregation_H
+#pragma once
 
 #include <iosfwd>
 #include <unordered_map>
 #include <vector>
 
-#include "multio/action/Action.h"
-
-namespace eckit {
-class Configuration;
-}
+#include "multio/action/ChainedAction.h"
 
 namespace multio {
 namespace action {
 
 using message::Message;
 
-class Aggregation : public Action {
+class Aggregation : public ChainedAction {
 public:
-    explicit Aggregation(const eckit::Configuration& config);
+    explicit Aggregation(const ConfigurationContext& confCtx);
 
-    void execute(Message msg) const override;
+    void executeImpl(Message msg) const override;
 
 private:
     void print(std::ostream& os) const override;
@@ -53,5 +48,3 @@ private:
 
 }  // namespace action
 }  // namespace multio
-
-#endif

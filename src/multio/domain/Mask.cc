@@ -33,12 +33,11 @@ std::string Mask::key(const message::Metadata& md) {
 void Mask::add(message::Message msg) {
     std::lock_guard<std::mutex> lock{mutex_};
 
-    messages_[msg.fieldId()].push_back(msg);
-    if (not allPartsArrived(msg)) {
-        return;
-    }
+    addPartialMask(msg);
 
-    createBitmask(msg);
+    if (allPartsArrived(msg)) {
+        createBitmask(msg);
+    }
 }
 
 const std::vector<bool>& Mask::get(const std::string& bkey) const {
@@ -49,9 +48,19 @@ const std::vector<bool>& Mask::get(const std::string& bkey) const {
     return bitmasks_.at(bkey);
 }
 
-bool Mask::allPartsArrived(message::Message msg) const {
-    return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
-           (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
+void Mask::addPartialMask(message::Message msg) {
+    // Using a lookup table for sanity check
+
+    auto& msgList = messages_[msg.fieldId()];
+
+    msgList.push_back(std::move(msg));
+}
+
+bool Mask::allPartsArrived(const message::Message& msg) const {
+
+    const auto& domainMap = domain::Mappings::instance().get(msg.domain());
+
+    return domainMap.isComplete() && (messages_.at(msg.fieldId()).size() == domainMap.size());
 }
 
 void Mask::createBitmask(message::Message inMsg) {

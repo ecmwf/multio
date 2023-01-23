@@ -8,7 +8,7 @@ parameters :
 plans :
   - name : atmosphere
     actions :
-      - type : Sink
+      - type : sink
         sinks :
           - type : maestro
             config : {}

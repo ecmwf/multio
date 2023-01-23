@@ -84,10 +84,10 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<std::string>("class", "Class (default od)"));
     options_.push_back(new eckit::option::SimpleOption<long>("date", "Data date (default today)"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("expver", "Expver (default 0001)"));
-    options_.push_back(new eckit::option::SimpleOption<uint64_t>("number", "Ensemble number"));
+    options_.push_back(new eckit::option::SimpleOption<size_t>("number", "Ensemble number"));
     options_.push_back(new eckit::option::SimpleOption<bool>("dryrun", "Run without MIR."));
     options_.push_back(new eckit::option::SimpleOption<bool>("compiled", "Batch generator"));
-    options_.push_back(new eckit::option::SimpleOption<uint64_t>("nworkers", "Number of threaded workers"));
+    options_.push_back(new eckit::option::SimpleOption<size_t>("nworkers", "Number of threaded workers"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("force-postproc", "Extra values to add to each requirements (e.g. --force-retrieve=resol=av)"));
     options_.push_back(new eckit::option::SimpleOption<bool>("all-ready", "Wait for the all-ready CDO."));
 
@@ -95,7 +95,8 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
     options_.push_back(new eckit::option::FactoryOption<mir::key::style::MIRStyleFactory>("style", "Select how the interpolations are performed"));
     options_.push_back(new eckit::option::FactoryOption<mir::caching::legendre::LegendreLoaderFactory>("legendre-loader", "Select the scheme to load coefficients"));
     options_.push_back(new eckit::option::FactoryOption<mir::caching::matrix::MatrixLoaderFactory>("matrix-loader", "Select the scheme to load matrix weights"));
-    options_.push_back(new eckit::option::FactoryOption<eckit::linalg::LinearAlgebra>("backend", "Linear algebra backend (default '" + eckit::linalg::LinearAlgebra::backend().name() + "')"));
+    options_.push_back(new eckit::option::FactoryOption<eckit::linalg::LinearAlgebraDense>("dense-backend", "Linear algebra dense backend (default '" + eckit::linalg::LinearAlgebraDense::backend().name() + "')"));
+    options_.push_back(new eckit::option::FactoryOption<eckit::linalg::LinearAlgebraSparse>("sparse-backend", "Linear algebra sparse backend (default '" + eckit::linalg::LinearAlgebraSparse::backend().name() + "')"));
     options_.push_back(new eckit::option::FactoryOption<mir::search::TreeFactory>("point-search-trees", "k-d tree control"));
 
     options_.push_back(new eckit::option::SimpleOption<std::string>("directory", "Output directory (default current directory)"));

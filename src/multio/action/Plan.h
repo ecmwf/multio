@@ -23,25 +23,33 @@
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/message/Message.h"
+#include "multio/util/ConfigurationContext.h"
+#include "multio/util/FailureHandling.h"
 
-namespace eckit {
-class Configuration;
-}
 
 namespace multio {
+
+namespace message { class MetadataMatchers; }
+
 namespace action {
+
+using util::ConfigurationContext;
+using util::FailureAware;
 
 class Action;
 
-class Plan : private eckit::NonCopyable {
+class Plan : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Plan> {
 public:
-    Plan(const eckit::Configuration& config);
-    ~Plan();
+    Plan(const ConfigurationContext& confCtx);
+    virtual ~Plan();
 
-    void process(message::Message msg);
+    virtual void process(message::Message msg);
 
-private:
+    void matchedFields(message::MetadataMatchers& matchers) const;
 
+    util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&, util::DefaultFailureState&) const override;
+
+protected:
     std::string name_;
 
     std::unique_ptr<Action> root_;

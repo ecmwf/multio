@@ -18,7 +18,7 @@ namespace multio {
 
 namespace message {
 class Message;
-using Metadata = eckit::LocalConfiguration;
+class Metadata;
 }
 
 namespace domain {
@@ -43,7 +43,9 @@ public:
 
 private:
 
-    bool allPartsArrived(message::Message msg) const;
+    void addPartialMask(message::Message msg);
+
+    bool allPartsArrived(const message::Message& msg) const;
     void createBitmask(message::Message msg);
 
     std::map<std::string, std::vector<message::Message>> messages_;

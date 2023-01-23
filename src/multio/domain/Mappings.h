@@ -2,6 +2,7 @@
 #ifndef multio_server_Mappings_H
 #define multio_server_Mappings_H
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -10,16 +11,60 @@
 
 #include "multio/domain/Domain.h"
 
+#include "multio/message/Message.h"
+
 namespace multio {
-
-namespace message {
-class Message;
-class Peer;
-}
-
 namespace domain {
 
-using DomainMap = std::map<message::Peer, std::unique_ptr<Domain>>;
+class DomainMap {
+public:
+
+    std::unique_ptr<Domain>& at(const message::Peer& peer) {
+        return domainMap_.at(peer);
+    }
+
+    const std::unique_ptr<Domain>& at(const message::Peer& peer) const {
+        return domainMap_.at(peer);
+    }
+
+    bool contains(const message::Peer& peer) {
+        return domainMap_.find(peer) != end(domainMap_);
+    }
+
+    template <typename... Args>
+    void emplace(Args&&... args) {
+        domainMap_.emplace(std::forward<Args>(args)...);
+    }
+
+    auto size() const -> std::map<message::Peer, std::unique_ptr<Domain>>::size_type {
+        if (not isComplete()) {
+            throw eckit::SeriousBug("Function size() is called before domain map is complete", Here());
+        }
+
+        return domainMap_.size();
+    }
+
+    bool isComplete() const {
+        if (isConsistent()) {
+            return true;
+        }
+
+        auto totalSize = 0;
+        std::for_each(std::begin(domainMap_), std::end(domainMap_),
+                      [&totalSize](const std::pair<const message::Peer, std::unique_ptr<Domain>>& domain) {
+                          totalSize += domain.second->local_size();
+                      });
+
+        return (totalSize == domainMap_.begin()->second->global_size());
+    };
+
+    bool isConsistent() const { return consistent_; }
+    void isConsistent(bool val) const { consistent_ = val; }
+
+private:
+    std::map<message::Peer, std::unique_ptr<Domain>> domainMap_;
+    mutable bool consistent_ = false;
+};
 
 class Mappings {
 public:  // methods
@@ -38,6 +83,8 @@ public:  // methods
     void list(std::ostream&) const;
 
     const DomainMap& get(const std::string& name) const;
+
+    void checkDomainConsistency(const std::vector<message::Message>& localDomains) const;
 
 private:  // members
     std::map<std::string, DomainMap> mappings_;

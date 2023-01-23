@@ -12,12 +12,15 @@
 #include "multio/action/Plan.h"
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
-#include "multio/server/ConfigurationPath.h"
+#include "multio/util/ConfigurationPath.h"
+#include "multio/util/ConfigurationContext.h"
 #include "multio/tools/MultioTool.h"
 
+using multio::action::Plan;
 using multio::message::Message;
 using multio::message::Peer;
-using multio::action::Plan;
+using multio::util::configuration_path_name;
+using multio::util::ConfigurationContext;
 
 //----------------------------------------------------------------------------------------------------------------
 
@@ -45,9 +48,8 @@ void codes_set_latlon_dimensions(codes_handle* handle, const std::vector<int>& g
     }
 }
 
-eckit::LocalConfiguration test_configuration() {
-    eckit::YAMLConfiguration testConfig{configuration_path() + "test-ocean-config.yaml"};
-    return eckit::LocalConfiguration{testConfig};
+ConfigurationContext test_configuration() {
+    return ConfigurationContext(configuration_path_name(), configuration_path_name() + "test-ocean-config.yaml");
 }
 
 }  // namespace
@@ -104,7 +106,7 @@ MultioEncodeOcean::MultioEncodeOcean(int argc, char** argv) : multio::MultioTool
 }
 
 void MultioEncodeOcean::init(const eckit::option::CmdArgs& args) {
-    eckit::AutoStdFile fin{configuration_path() + args(0)};
+    eckit::AutoStdFile fin{configuration_path_name() + args(0)};
 
     int err;
     handle_.reset(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err));
@@ -194,8 +196,8 @@ void MultioEncodeOcean::executePlan() {
 
     auto cfg = test_configuration();
     std::vector<std::unique_ptr<Plan>> plans;
-    for (const auto& cfg : cfg.getSubConfigurations("plans")) {
-        plans.emplace_back(new Plan{cfg});
+    for (auto&& cfg : cfg.subContexts("plans")) {
+        plans.emplace_back(new Plan{std::move(cfg)});
     }
 
     Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}},

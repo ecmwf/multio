@@ -12,7 +12,6 @@
 
 #include <fstream>
 
-#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/message/Message.h"
 
@@ -23,8 +22,8 @@
 namespace multio {
 namespace action {
 
-Sink::Sink(const eckit::Configuration& config) :
-    Action(config), report_{config.getBool("report", true)}, mio_{config} {}
+Sink::Sink(const ConfigurationContext& confCtx) :
+    Action(confCtx), report_{confCtx.config().getBool("report", true)}, mio_{confCtx} {}
 
 Sink::~Sink() {
     if (report_) {
@@ -33,23 +32,20 @@ Sink::~Sink() {
     }
 }
 
-void Sink::execute(Message msg) const {
+void Sink::executeImpl(Message msg) const {
 
     switch (msg.tag()) {
         case Message::Tag::Field:
         case Message::Tag::Grib:
             write(msg);
-            executeNext(msg);
             return;
 
         case Message::Tag::StepComplete:
             flush();
-            executeNext(msg);
             return;
 
         case Message::Tag::StepNotification:
             trigger(msg);
-            executeNext(msg);
             return;
 
         default:
@@ -75,10 +71,11 @@ void Sink::trigger(const Message& msg) const {
 
     eckit::StringDict metadata;
 
-    metadata[msg.category()] = msg.name();
+    metadata[msg.metadata().getString("trigger")] = msg.name();
 
-    eckit::Log::debug<LibMultio>() << "Trigger " << msg.category() << " with value " << msg.name()
-                                   << " is being called..." << std::endl;
+    eckit::Log::debug<LibMultio>()
+        << "Trigger " << msg.metadata().getString("trigger") << " with value " << msg.name()
+        << " is being called..." << std::endl;
 
     mio_.trigger(metadata);
 }
@@ -87,7 +84,7 @@ void Sink::print(std::ostream& os) const {
     os << "Sink(DataSink=" << mio_ << ")";
 }
 
-static ActionBuilder<Sink> SinkBuilder("Sink");
+static ActionBuilder<Sink> SinkBuilder("sink");
 
 }  // namespace action
 }  // namespace multio

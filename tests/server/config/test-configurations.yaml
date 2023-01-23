@@ -8,26 +8,26 @@ mpi-test-configuration :
   plans :
     - name : atmosphere
       actions :
-        - type : Select
-          match : category
-          categories : [model-level, pressure-level, surface-level]
+        - type : select
+          match :
+           - category : [model-level, pressure-level, surface-level]
 
-        - type : Aggregation
+        - type : aggregation
 
-        - type : Encode
-          format : none
+        - type : encode
+          format : raw
 
-        - type : SingleFieldSink
+        - type : single-field-sink
 
     - name : ocean
       actions :
-        - type : Select
-          match : category
-          categories : [ocean-model-level]
+        - type : select
+          match :
+            - category: [ocean-model-level]
 
-        - type : Aggregation
+        - type : aggregation
 
-        - type : SingleFieldSink
+        - type : single-field-sink
 
 
 thread-test-configuration :
@@ -35,10 +35,10 @@ thread-test-configuration :
   plans :
     # - name : output-only
     #   actions :
-    #     - type : Print
+    #     - type : print
     #       stream : debug
 
-    #     - type : Sink
+    #     - type : sink
     #       sinks :
     #         - type : file
     #           append : true
@@ -46,16 +46,16 @@ thread-test-configuration :
 
     - name : atmosphere
       actions :
-        - type : Select
-          match : category
-          categories : [model-level, pressure-level, surface-level]
+        - type : select
+          match :
+           - category: [model-level, pressure-level, surface-level]
 
-        - type : Aggregation
+        - type : aggregation
 
-        - type : Encode
-          format : none
+        - type : encode
+          format : raw
 
-        - type : SingleFieldSink
+        - type : single-field-sink
 
 
 tcp-test-configuration:
@@ -71,16 +71,16 @@ tcp-test-configuration:
   plans :
     - name : atmosphere
       actions :
-        - type : Select
-          match : category
-          categories : [model-level, pressure-level, surface-level]
+        - type : select
+          match :
+            - category : [model-level, pressure-level, surface-level]
 
-        - type : Aggregation
+        - type : aggregation
 
-        - type : Encode
-          format : none
+        - type : encode
+          format : raw
 
-        - type : SingleFieldSink
+        - type : single-field-sink
 
 
 no-transport-test-configuration :
@@ -88,12 +88,12 @@ no-transport-test-configuration :
   parameters :
     ml : [130, 133, 135, 138, 155, 203, 246, 247, 248, 75, 76]
     pl : [60, 129, 130, 133, 135, 138, 155, 157, 203]
-    sfc : [228001, 228011, 228012, 129, 130, 131, 132, 134, 136, 137, 139, 151, 159, 164, 170, 172, 180, 181, 182, 183, 186, 187, 188, 195, 196, 197, 198, 3017, 3063, 3066]
+    sfc : [228001, 228011, 228012, 129, 130, 131, 132, 134, 136, 137, 139, 151, 159, 164, 170, 172]
 
   plans :
     - name : atmosphere
       actions :
-        - type : Sink
+        - type : sink
           sinks :
             - type : fdb5
               config : {}

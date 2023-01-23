@@ -11,28 +11,18 @@
 #include "eckit/log/JSON.h"
 
 #include "multio/LibMultio.h"
-#include "multio/server/ConfigurationPath.h"
 #include "multio/server/MultioServer.h"
-#include "multio/server/Transport.h"
+#include "multio/util/ConfigurationPath.h"
+#include "multio/util/ConfigurationContext.h"
 #include "multio/tools/MultioTool.h"
 
+using multio::util::configuration_file;
+using multio::util::configuration_file_name;
+using multio::util::configuration_path_name;
+using multio::util::ConfigurationContext;
+using multio::util::ServerConfigurationContext;
+
 using namespace multio::server;
-
-//----------------------------------------------------------------------------------------------------------------
-
-namespace {
-eckit::LocalConfiguration test_configuration(const std::string& type) {
-    eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
-
-    std::map<std::string, std::string> configs = {{"mpi", "mpi-test-configuration"},
-                                                  {"tcp", "tcp-test-configuration"},
-                                                  {"thread", "thread-test-configuration"},
-                                                  {"none", "no-transport-test-configuration"}};
-
-    eckit::YAMLConfiguration testConfigs{configuration_path() + "test-configurations.yaml"};
-    return eckit::LocalConfiguration{testConfigs.getSubConfiguration(configs.at(type))};
-}
-}  // namespace
 
 //----------------------------------------------------------------------------------------------------------------
 
@@ -57,10 +47,11 @@ private:
 
     void testData() const;
 
+    std::string serverName_ = "server";
     std::string transport_ = "mpi";
     int port_ = 7777;
     bool test_ = false;
-    eckit::LocalConfiguration config_;
+    eckit::Optional<ServerConfigurationContext> confCtx_{};
 };
 
 MultioProbe::MultioProbe(int argc, char** argv) : multio::MultioTool(argc, argv) {
@@ -74,18 +65,10 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
     args.get("transport", transport_);
     args.get("port", port_);
     args.get("test", test_);
-
-    config_ = test_configuration(transport_);
-    config_.set("local_port", port_);
-
-    if(transport_ == "mpi") {
-        if (!eckit::mpi::hasComm("nemo")) {
-            int32_t gl_comm = eckit::mpi::comm().communicator();
-            eckit::mpi::addComm("nemo", gl_comm);
-        }
-        // TODO: find a way to come up with a unique 'colour'
-        eckit::mpi::comm("nemo").split(888, "server_comm");
-    }
+    args.get("server", serverName_);
+    
+    confCtx_ = ServerConfigurationContext(ConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name()), serverName_);
+    confCtx_->config().set("local_port", port_);
 }
 
 void MultioProbe::finish(const eckit::option::CmdArgs&) {}
@@ -102,11 +85,13 @@ void MultioProbe::execute(const eckit::option::CmdArgs&) {
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioProbe::executeLive() {
-    MultioServer server{eckit::YAMLConfiguration{configuration_file()}};
+    eckit::Log::info() << "*** Server -- executeLive "<< std::endl;
+    MultioServer server{*confCtx_};
 }
 
 void MultioProbe::executeTest() {
-    MultioServer server{config_};
+    eckit::Log::info() << "*** Server -- executeTest "<< std::endl;
+    MultioServer server{*confCtx_};
 
     testData();
 }

@@ -1,48 +1,28 @@
-/*
- * (C) Copyright 1996- ECMWF.
- *
- * This software is licensed under the terms of the Apache Licence Version 2.0
- * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
- * In applying this licence, ECMWF does not waive the privileges and immunities
- * granted to it by virtue of its status as an intergovernmental organisation nor
- * does it submit to any jurisdiction.
- */
-
-#ifndef multio_server_Listener_H
-#define multio_server_Listener_H
-
-#include "Action.h"
+#include "multio/action/Action.h"
 
 #include <fstream>
 
-#include "eckit/exception/Exceptions.h"
-#include "eckit/log/Log.h"
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/exception/Exceptions.h"
+#include "eckit/log/Log.h"
 #include "eckit/runtime/Main.h"
 
 #include "multio/LibMultio.h"
 #include "multio/util/logfile_name.h"
 
-using eckit::LocalConfiguration;
 
 namespace multio {
 namespace action {
 
-namespace {
-
-}  // namespace
-
+using eckit::LocalConfiguration;
 using eckit::Configuration;
 using eckit::Log;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-Action::Action(const eckit::Configuration& config) : type_{config.getString("type")} {
-    if (config.has("next")) {
-        const LocalConfiguration next = config.getSubConfiguration("next");
-        next_.reset(ActionFactory::instance().build(next.getString("type"), next));
-    }
+Action::Action(const ConfigurationContext& confCtx) :
+    FailureAware(confCtx), confCtx_(confCtx), type_{confCtx.config().getString("type")} {
 }
 
 Action::~Action() {
@@ -51,14 +31,24 @@ Action::~Action() {
     statistics_.report(logFile, type_);
 }
 
-void Action::executeNext(message::Message msg) const {
-    if (next_) {
-        LOG_DEBUG_LIB(multio::LibMultio)
-            << "*** [source = " << msg.source() << ", destination = " << msg.destination()
-            << "] -- Executing action -- " << *next_ << std::endl;
-        next_->execute(msg);
-    }
+void Action::execute(message::Message msg) const {
+    withFailureHandling([&]() { executeImpl(std::move(msg)); },
+                        [&, msg]() {
+                            std::ostringstream oss;
+                            oss << *this << " with Message: " << msg;
+                            return oss.str();
+                        });
 }
+
+util::FailureHandlerResponse Action::handleFailure(util::OnActionError t, const util::FailureContext&,
+                                                   util::DefaultFailureState&) const {
+    if (t == util::OnActionError::Recover) {
+        return util::FailureHandlerResponse::Retry;
+    }
+    return util::FailureHandlerResponse::Rethrow;
+};
+
+void Action::matchedFields(message::MetadataMatchers& matchers) const {}
 
 std::ostream& operator<<(std::ostream& os, const Action& a) {
     a.print(os);
@@ -72,13 +62,13 @@ ActionFactory& ActionFactory::instance() {
     return singleton;
 }
 
-void ActionFactory::add(const std::string& name, const ActionBuilderBase* builder) {
+void ActionFactory::enregister(const std::string& name, const ActionBuilderBase* builder) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(factories_.find(name) == factories_.end());
     factories_[name] = builder;
 }
 
-void ActionFactory::remove(const std::string& name) {
+void ActionFactory::deregister(const std::string& name) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(factories_.find(name) != factories_.end());
     factories_.erase(name);
@@ -94,15 +84,16 @@ void ActionFactory::list(std::ostream& out) {
     }
 }
 
-Action* ActionFactory::build(const std::string& name, const Configuration& config) {
+Action* ActionFactory::build(const std::string& name, const ConfigurationContext& confCtx) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
+    ASSERT(confCtx.componentTag() == util::ComponentTag::Action);
 
     LOG_DEBUG_LIB(LibMultio) << "Looking for ActionFactory [" << name << "]" << std::endl;
 
     auto f = factories_.find(name);
 
     if (f != factories_.end())
-        return f->second->make(config);
+        return f->second->make(confCtx);
 
     Log::error() << "No ActionFactory for [" << name << "]" << std::endl;
     Log::error() << "ActionFactories are:" << std::endl;
@@ -114,16 +105,14 @@ Action* ActionFactory::build(const std::string& name, const Configuration& confi
 
 
 ActionBuilderBase::ActionBuilderBase(const std::string& name) : name_(name) {
-    ActionFactory::instance().add(name, this);
+    ActionFactory::instance().enregister(name, this);
 }
 
 ActionBuilderBase::~ActionBuilderBase() {
-    ActionFactory::instance().remove(name_);
+    ActionFactory::instance().deregister(name_);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace action
 }  // namespace multio
-
-#endif

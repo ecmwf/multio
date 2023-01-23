@@ -21,6 +21,17 @@ list( APPEND multio_library_srcs
     multio_version.cc
 )
 
+list( APPEND multio_util_srcs
+    util/ConfigurationContext.cc
+    util/ConfigurationContext.h
+    util/FailureHandling.cc
+    util/FailureHandling.h
+    util/ParameterMappings.cc
+    util/ParameterMappings.h
+    util/Metadata.cc
+    util/Metadata.h
+)
+
 list( APPEND multio_action_srcs
     action/Aggregation.cc
     action/Aggregation.h
@@ -34,6 +45,8 @@ list( APPEND multio_action_srcs
     action/Mask.h
     action/Operation.cc
     action/Operation.h
+    action/ParameterMapping.cc
+    action/ParameterMapping.h
     action/Print.cc
     action/Print.h
     action/Select.cc
@@ -46,6 +59,8 @@ list( APPEND multio_action_srcs
     action/Statistics.h
     action/Null.cc
     action/Null.h
+    action/ChainedAction.cc
+    action/ChainedAction.h
     action/Action.cc
     action/Action.h
     action/Period.cc
@@ -56,6 +71,8 @@ list( APPEND multio_action_srcs
     action/ActionStatistics.h
     action/TemporalStatistics.cc
     action/TemporalStatistics.h
+    action/Transport.cc
+    action/Transport.h
 )
 
 list( APPEND multio_ifsio_srcs
@@ -84,13 +101,16 @@ list( APPEND multio_domain_srcs
 
 list( APPEND multio_message_srcs
     message/Message.cc
-    message/MessageContent.cc
     message/MessageHeader.cc
     message/Message.h
     message/Metadata.cc
     message/Metadata.h
+    message/MetadataMatcher.cc
+    message/MetadataMatcher.h
     message/Peer.cc
     message/Peer.h
+    message/ParameterMapping.cc
+    message/ParameterMapping.h
 )
 
 list( APPEND multio_sink_srcs
@@ -106,13 +126,38 @@ list( APPEND multio_sink_srcs
     sink/Trigger.h
 )
 
+list( APPEND multio_transport_srcs
+    transport/ThreadTransport.cc
+    transport/ThreadTransport.h
+    transport/MpiCommSetup.cc
+    transport/MpiCommSetup.h
+    transport/MpiStream.cc
+    transport/MpiStream.h
+    transport/MpiTransport.cc
+    transport/MpiTransport.h
+    transport/TcpTransport.cc
+    transport/TcpTransport.h
+    transport/Transport.cc
+    transport/Transport.h
+    transport/TransportRegistry.cc
+    transport/TransportRegistry.h
+    transport/TransportStatistics.cc
+    transport/TransportStatistics.h
+    transport/StreamPool.cc
+    transport/StreamPool.h
+    transport/StreamQueue.cc
+    transport/StreamQueue.h
+)
+
 list( APPEND multio_srcs
     ${multio_library_srcs}
+    ${multio_util_srcs}
     ${multio_action_srcs}
     ${multio_ifsio_srcs}
     ${multio_domain_srcs}
     ${multio_message_srcs}
     ${multio_sink_srcs}
+    ${multio_transport_srcs}
 )
 
 ### multio library
@@ -141,9 +186,10 @@ ecbuild_add_library(
       ${ECKIT_INCLUDE_DIRS}
 
     PUBLIC_LIBS
-        metkit eckit )
+        metkit eckit eckit_mpi)
 
 add_subdirectory(fdb5)
 add_subdirectory(maestro)
 add_subdirectory(server)
+add_subdirectory(api)
 add_subdirectory(tools)

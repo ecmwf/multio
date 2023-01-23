@@ -14,27 +14,24 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_actions_Mask_H
-#define multio_server_actions_Mask_H
+#pragma once
 
 #include <iosfwd>
 
-#include "multio/action/Action.h"
-
-namespace eckit {
-class Configuration;
-}
+#include "multio/action/ChainedAction.h"
 
 namespace multio {
 namespace action {
 
-class Mask : public Action {
+class Mask : public ChainedAction {
 public:
-    explicit Mask(const eckit::Configuration& config);
+    explicit Mask(const ConfigurationContext& confCtx);
 
-    void execute(message::Message msg) const override;
+    void executeImpl(message::Message msg) const override;
 
 private:
+    message::Message createMasked(message::Message msg) const;
+
     void applyMask(message::Message msg) const;
     void applyOffset(message::Message msg) const;
 
@@ -48,5 +45,3 @@ private:
 
 }  // namespace action
 }  // namespace multio
-
-#endif

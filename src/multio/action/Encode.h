@@ -14,26 +14,24 @@
 
 /// @date Oct 2019
 
-#ifndef multio_server_actions_Encode_H
-#define multio_server_actions_Encode_H
+#pragma once
 
 #include "multio/action/GribEncoder.h"
-#include "multio/action/Action.h"
-
-namespace eckit {
-class Configuration;
-}
+#include "multio/action/ChainedAction.h"
 
 namespace multio {
 namespace action {
 
-class Encode : public Action {
+class Encode : public ChainedAction {
 public:
-    explicit Encode(const eckit::Configuration& config);
+    explicit Encode(const ConfigurationContext& confCtx);
 
-    void execute(message::Message msg) const override;
+    void executeImpl(message::Message msg) const override;
 
 private:
+    // Internal constructor delegate with prepared configuration for specific encoder
+    explicit Encode(const ConfigurationContext& confCtx, ConfigurationContext&& encConfCtx);
+    
     void print(std::ostream& os) const override;
 
     message::Message encodeField(const message::Message& msg) const;
@@ -47,5 +45,3 @@ private:
 
 }  // namespace action
 }  // namespace multio
-
-#endif

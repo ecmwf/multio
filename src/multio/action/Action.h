@@ -19,41 +19,55 @@
 
 #include <memory>
 #include <map>
+#include <set>
+#include <iterator>
 #include <mutex>
 
-#include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/action/ActionStatistics.h"
 #include "multio/message/Message.h"
+#include "multio/util/ConfigurationContext.h"
+#include "multio/util/FailureHandling.h"
 
-namespace eckit {
-class Configuration;
-}
 
 namespace multio {
+
+namespace message {
+class MetadataMatchers;
+}
+
 namespace action {
+
+using util::ConfigurationContext;
+using util::FailureAware;
 
 //--------------------------------------------------------------------------------------------------
 
-class Action : private eckit::NonCopyable {
+class Action : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Action> {
 public:
-    Action(const eckit::Configuration& config);
-    virtual ~Action();
+    explicit Action(const ConfigurationContext& confCtx);
+    ~Action() override;
 
-    void executeNext(message::Message msg) const;
+    void execute(message::Message msg) const;
 
-    virtual void execute(message::Message msg) const = 0;
+    virtual void matchedFields(message::MetadataMatchers& matchers) const;
+
+    util::FailureHandlerResponse handleFailure(util::OnActionError,
+                                               const util::FailureContext&,
+                                               util::DefaultFailureState&) const override;
 
 protected:
+    ConfigurationContext confCtx_;
 
     std::string type_;
-
-    std::unique_ptr<Action> next_;
 
     mutable ActionStatistics statistics_;
 
 private:
+
+
+    virtual void executeImpl(message::Message msg) const = 0;
 
     virtual void print(std::ostream &os) const = 0;
 
@@ -71,13 +85,12 @@ private:  // methods
 public:  // methods
     static ActionFactory& instance();
 
-    void add(const std::string& name, const ActionBuilderBase* builder);
-
-    void remove(const std::string& name);
+    void enregister(const std::string& name, const ActionBuilderBase* builder);
+    void deregister(const std::string& name);
 
     void list(std::ostream&);
 
-    Action* build(const std::string&, const eckit::Configuration& config);
+    Action* build(const std::string&, const ConfigurationContext& confCtx);
 
 private:  // members
     std::map<std::string, const ActionBuilderBase*> factories_;
@@ -87,7 +100,7 @@ private:  // members
 
 class ActionBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual Action* make(const eckit::Configuration& config) const = 0;
+    virtual Action* make(const ConfigurationContext& confCtx) const = 0;
 
 protected:  // methods
     ActionBuilderBase(const std::string&);
@@ -99,7 +112,7 @@ protected:  // methods
 
 template <class T>
 class ActionBuilder final : public ActionBuilderBase {
-    Action* make(const eckit::Configuration& config) const override { return new T(config); }
+    Action* make(const ConfigurationContext& confCtx) const override { return new T(confCtx); }
 
 public:
     ActionBuilder(const std::string& name) : ActionBuilderBase(name) {}

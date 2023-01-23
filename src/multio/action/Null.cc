@@ -17,17 +17,15 @@
 namespace multio {
 namespace action {
 
-Null::Null(const eckit::Configuration& config) : Action(config) {}
+Null::Null(const ConfigurationContext& confCtx) : Action(confCtx) {}
 
-void Null::execute(message::Message /*msg*/) const {
-    ASSERT(!next_);
-}
+void Null::executeImpl(message::Message /*msg*/) const {}
 
 void Null::print(std::ostream& os) const {
     os << "Null()";
 }
 
-static ActionBuilder<Null> NullBuilder("Null");
+static ActionBuilder<Null> NullBuilder("null");
 
 }  // namespace actions
 }  // namespace multio

@@ -28,7 +28,7 @@ Message::Header::Header(Tag tag, Peer src, Peer dst, Metadata&& md) :
     source_{std::move(src)},
     destination_{std::move(dst)},
     metadata_{std::move(md)},
-    fieldId_{message::to_string(metadata_)} {}
+    fieldId_{} {}
 
 Message::Tag Message::Header::tag() const {
     return tag_;
@@ -42,9 +42,13 @@ Peer Message::Header::destination() const {
     return destination_;
 }
 
-const Metadata& Message::Header::metadata() const {
+const Metadata& Message::Header::metadata() const& {
     return metadata_;
 }
+
+// Metadata&& Message::Header::metadata() && {
+//     return std::move(metadata_);
+// }
 
 std::string Message::Header::name() const {
     return metadata_.getString("name");
@@ -52,10 +56,6 @@ std::string Message::Header::name() const {
 
 std::string Message::Header::category() const {
     return metadata_.getString("category");
-}
-
-size_t Message::Header::domainCount() const {
-    return metadata_.getUnsigned("domainCount");
 }
 
 long Message::Header::globalSize() const {
@@ -67,7 +67,10 @@ std::string Message::Header::domain() const {
 }
 
 const std::string& Message::Header::fieldId() const {
-    return fieldId_;
+    if (!fieldId_) {
+        fieldId_ = message::to_string(metadata_);
+    }
+    return *fieldId_;
 }
 
 void Message::Header::encode(eckit::Stream& strm) const {
@@ -79,8 +82,13 @@ void Message::Header::encode(eckit::Stream& strm) const {
     strm << destination_.group();
     strm << destination_.id();
 
-    strm << fieldId_;
+    strm << fieldId();
 }
+
+Message::Header Message::Header::modifyMetadata(Metadata&& md) const {
+    return Header{tag_, std::move(source_), std::move(destination_), std::move(md)};
+};
+
 
 }  // namespace message
 }  // namespace multio

@@ -14,16 +14,18 @@
 
 #include "multio/fdb5/FDB5Sink.h"
 
-#include "eckit/exception/Exceptions.h"
 #include "fdb5/config/Config.h"
 
 #include "multio/LibMultio.h"
+#include "multio/util/ConfigurationContext.h"
 
 namespace multio {
 
+using util::ConfigurationContext;
+
 namespace {
-fdb5::Config fdb5_configuration(const eckit::Configuration& cfg) {
-    auto fdb_configuration = cfg.getSubConfiguration("config");
+fdb5::Config fdb5_configuration(const ConfigurationContext& confCtx) {
+    auto fdb_configuration = confCtx.config().getSubConfiguration("config");
 
     eckit::LocalConfiguration userConfig;
     if (fdb_configuration.has("userConfig")) {
@@ -41,9 +43,9 @@ fdb5::Config fdb5_configuration(const eckit::Configuration& cfg) {
 }
 }  // namespace
 
-FDB5Sink::FDB5Sink(const eckit::Configuration& config) :
-    DataSink(config), fdb_{fdb5_configuration(config)} {
-    LOG_DEBUG_LIB(LibMultio) << "Config = " << config << std::endl;
+FDB5Sink::FDB5Sink(const ConfigurationContext& confCtx) :
+    DataSink(confCtx), fdb_{fdb5_configuration(confCtx)} {
+    LOG_DEBUG_LIB(LibMultio) << "Config = " << confCtx.config() << std::endl;
 }
 
 void FDB5Sink::write(eckit::message::Message msg) {

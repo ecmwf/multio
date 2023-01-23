@@ -9,6 +9,8 @@
 namespace multio {
 namespace message {
 
+Metadata::Metadata(const eckit::Configuration& config) : eckit::LocalConfiguration{config} {}
+
 std::string to_string(const Metadata& metadata) {
     std::stringstream ss;
     eckit::JSON json(ss);

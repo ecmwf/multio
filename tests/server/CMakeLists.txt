@@ -45,10 +45,55 @@ list( APPEND _nemo_test_data
 
 ecbuild_get_test_multidata( EXTRACT TARGET multio_replay_get_test_data NAMES ${_nemo_test_data} )
 
-ecbuild_add_test( TARGET       test_multio_replay_nemo
+ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_initfilepath
                   COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh
                   TEST_DEPENDS multio_replay_get_test_data
-                  ARGS         $<TARGET_FILE:multio-replay> $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
+                  ARGS         $<TARGET_FILE:multio-replay-nemo-capi-initfilepath> $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
+                  ENVIRONMENT  "${_test_environment}" )
+
+ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_initdefault_empi
+                  COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh
+                  TEST_DEPENDS multio_replay_get_test_data
+                  ARGS         $<TARGET_FILE:multio-replay-nemo-capi-initdefault-empi> $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
+                  ENVIRONMENT  "${_test_environment}" )
+
+ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_initdefault_impi1
+                  COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh
+                  TEST_DEPENDS multio_replay_get_test_data
+                  ARGS         $<TARGET_FILE:multio-replay-nemo-capi-initdefault-impi> $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
+                  ENVIRONMENT  "${_test_environment}" )
+
+ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_initdefault_impi2
+                  COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh
+                  TEST_DEPENDS multio_replay_get_test_data
+                  ARGS         $<TARGET_FILE:multio-replay-nemo-capi-initdefault-impi> $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
+                  ENVIRONMENT  "${_test_environment}" "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-server-mpi-default-splitting.yaml"
+                )
+
+ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_initdefault_impi3
+                  COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh
+                  TEST_DEPENDS multio_replay_get_test_data
+                  ARGS         $<TARGET_FILE:multio-replay-nemo-capi-initdefault-impi-custom> $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
+                  ENVIRONMENT  "${_test_environment}" "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-server-mpi-custom-splitting.yaml"
+                )
+
+ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_initmpi_empi
+                  COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh
+                  TEST_DEPENDS multio_replay_get_test_data
+                  ARGS         $<TARGET_FILE:multio-replay-nemo-capi-initmpi-empi> $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
+                  ENVIRONMENT  "${_test_environment}" )
+
+ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_initmpi_impi
+                  COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh
+                  TEST_DEPENDS multio_replay_get_test_data
+                  ARGS         $<TARGET_FILE:multio-replay-nemo-capi-initmpi-impi> $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
+                  ENVIRONMENT  "${_test_environment}" )
+
+ecbuild_add_test( TARGET       test_multio_replay_nemo_fapi
+                  CONDITION    HAVE_FORTRAN
+                  COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh
+                  TEST_DEPENDS multio_replay_get_test_data
+                  ARGS         $<TARGET_FILE:multio-replay-nemo-fapi> $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
                   ENVIRONMENT  "${_test_environment}" )
 
 endif(HAVE_MULTIO_SERVER)

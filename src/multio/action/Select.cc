@@ -12,60 +12,47 @@
 
 #include <algorithm>
 
-#include "eckit/config/Configuration.h"
+#include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
 #include "multio/util/ScopedTimer.h"
 
+using multio::message::Message;
+using multio::message::MetadataMatchers;
+
 namespace multio {
 namespace action {
 
-namespace {
-std::vector<std::string> fetch_items(const std::string& match, const eckit::Configuration& config) {
-    return (match == "category") ? config.getStringVector("categories")
-                                 : config.getStringVector("fields");
-}
-}  // namespace
+//--------------------------------------------------------------------------------------------------
 
-Select::Select(const eckit::Configuration& config) :
-    Action{config}, match_{config.getString("match")}, items_{fetch_items(match_, config)} {}
+Select::Select(const ConfigurationContext& confCtx) :
+    ChainedAction{confCtx},
+    match_(confCtx.config().getSubConfigurations("match")) {}
 
-void Select::execute(Message msg) const {
-    if (isMatched(msg)) {
-        executeNext(msg);
+void Select::executeImpl(Message msg) const {
+    if (matches(msg)) {
+        executeNext(std::move(msg));
     }
 }
 
-bool Select::isMatched(const Message& msg) const {
+bool Select::matches(const Message& msg) const {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-    return (msg.tag() != Message::Tag::Field) || matchPlan(msg);
+    return match_.matches(msg);
 }
 
-bool Select::matchPlan(const Message& msg) const {
-    auto item = (match_ == "category") ? msg.category() : msg.name();
-
-    LOG_DEBUG_LIB(LibMultio) << " *** Item " << item << " is being matched... ";
-
-    bool ret = find(begin(items_), end(items_), item) != end(items_);
-
-    LOG_DEBUG_LIB(LibMultio) << (ret ? "found" : "not found") << std::endl;
-
-    return ret;
+void Select::matchedFields(MetadataMatchers& matchers) const {
+    matchers.extend(match_);
 }
 
 void Select::print(std::ostream& os) const {
-    os << "Select(categories=";
-    bool first = true;
-    for(const auto& cat : items_) {
-        os << (first ? "" : ", ");
-        os << cat;
-        first = false;
-    }
-    os << ")";
+    os << "Select(" << match_ << ")";
 }
 
+//--------------------------------------------------------------------------------------------------
 
-static ActionBuilder<Select> SelectBuilder("Select");
+static ActionBuilder<Select> SelectBuilder("select");
+
+//--------------------------------------------------------------------------------------------------
 
 }  // namespace action
 }  // namespace multio

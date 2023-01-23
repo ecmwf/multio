@@ -20,126 +20,120 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/ResourceUsage.h"
 
-#include "multio/domain/Mappings.h"
-#include "multio/domain/Mask.h"
-
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 
-#include "multio/server/GribTemplate.h"
-#include "multio/server/ScopedThread.h"
-
+#include "multio/util/ScopedThread.h"
+#include "multio/util/ConfigurationContext.h"
 #include "multio/server/Dispatcher.h"
-#include "multio/server/ThreadTransport.h"
+#include "multio/transport/Transport.h"
 
 namespace multio {
 namespace server {
 
 using message::Message;
+using util::ScopedThread;
+using transport::Transport;
 
-Listener::Listener(const eckit::Configuration& config, Transport& trans) :
-    dispatcher_{std::make_shared<Dispatcher>(config)},
+Listener::Listener(const util::ConfigurationContext& confCtx, Transport& trans):
+        FailureAware(confCtx),
+    continue_{std::make_shared<std::atomic<bool>>(true)},
+    dispatcher_{std::make_shared<Dispatcher>(confCtx.recast(util::ComponentTag::Dispatcher), continue_)},
     transport_{trans},
-    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE",1024*1024)) {}
+    clientCount_{transport_.clientPeers().size()},
+    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE",1024*1024)) {
+}
+
+util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, const util::FailureContext& c, util::DefaultFailureState&) const {
+    msgQueue_.close(); // TODO: msgQueue_ pop is blocking in dispatch.... redesign to have better awareness on blocking positions to safely stop and restart
+    continue_->store(false, std::memory_order_release);
+    return util::FailureHandlerResponse::Rethrow;
+};
 
 void Listener::start() {
 
     eckit::ResourceUsage usage{"multio listener"};
+    
+    // Store thread errors
+    std::exception_ptr lstnExcPtr;
+    std::exception_ptr dpatchExcPtr;
 
-    ScopedThread lstnThread{std::thread{&Listener::listen, this}};
+    ScopedThread lstnThread{std::thread{[&](){ try{ this->listen(); } catch (...) { lstnExcPtr = std::current_exception(); } }}};
 
-    ScopedThread dpatchThread{std::thread{&Dispatcher::dispatch, dispatcher_, std::ref(msgQueue_)}};
+    ScopedThread dpatchThread{std::thread{[&](){ try { dispatcher_->dispatch(msgQueue_); } catch (...) { dpatchExcPtr = std::current_exception(); } }}};
 
-    do {
-        Message msg = transport_.receive();
+    withFailureHandling([&]() {
+        do {
+            Message msg = transport_.receive();
 
-        switch (msg.tag()) {
-            case Message::Tag::Open:
-                connections_.insert(msg.source());
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** OPENING connection to " << msg.source()
-                    << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
-                    << ", connections = " << connections_.size() << std::endl;
-                break;
+            switch (msg.tag()) {
+                case Message::Tag::Open:
+                    connections_.insert(msg.source());
+                    LOG_DEBUG_LIB(LibMultio)
+                        << "*** OPENING connection to " << msg.source()
+                        << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
+                        << ", connections = " << connections_.size() << std::endl;
+                    break;
 
-            case Message::Tag::Close:
-                connections_.erase(connections_.find(msg.source()));
-                ++closedCount_;
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** CLOSING connection to " << msg.source()
-                    << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
-                    << ", connections = " << connections_.size() << std::endl;
-                break;
+                case Message::Tag::Close:
+                    connections_.erase(connections_.find(msg.source()));
+                    ++closedCount_;
+                    LOG_DEBUG_LIB(LibMultio)
+                        << "*** CLOSING connection to " << msg.source()
+                        << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
+                        << ", connections = " << connections_.size() << std::endl;
+                    break;
 
-            case Message::Tag::Grib:
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Size of grib template: " << msg.size() << std::endl;
-                GribTemplate::instance().add(msg);
-                break;
+                case Message::Tag::Domain:
+                case Message::Tag::Mask:
+                case Message::Tag::StepNotification:
+                case Message::Tag::StepComplete:
+                case Message::Tag::Field:
+                    checkConnection(msg.source());
+                    LOG_DEBUG_LIB(LibMultio) << "*** Message received: " << msg << std::endl;
+                    msgQueue_.emplace(std::move(msg));
+                    break;
 
-            case Message::Tag::Domain:
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Number of maps: " << msg.domainCount() << std::endl;
-                checkConnection(msg.source());
-                clientCount_ = msg.domainCount();
-                domain::Mappings::instance().add(msg);
-                break;
-
-            case Message::Tag::Mask:
-                checkConnection(msg.source());
-                LOG_DEBUG_LIB(LibMultio)
-                    << "Mask received from " << msg.source() << ": " << msg.metadata() << std::endl;
-                domain::Mask::instance().add(msg);
-                break;
-
-            case Message::Tag::StepNotification:
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Step notification received from: " << msg.source() << std::endl;
-                break;
-
-            case Message::Tag::StepComplete:
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Flush received from: " << msg.source() << std::endl;
-                msgQueue_.push(std::move(msg));
-                break;
-
-            case Message::Tag::Field:
-                checkConnection(msg.source());
-                LOG_DEBUG_LIB(LibMultio)
-                    << "*** Field received from: " << msg.source() << " with size "
-                    << msg.size() / sizeof(double) << std::endl;
-                msgQueue_.emplace(std::move(msg));
-                break;
-
-            default:
-                std::ostringstream oss;
-                oss << "Unhandled message: " << msg << std::endl;
-                throw eckit::SeriousBug(oss.str());
-        }
-    } while (moreConnections());
+                default:
+                    std::ostringstream oss;
+                    oss << "Unhandled message: " << msg << std::endl;
+                    throw eckit::SeriousBug(oss.str());
+            }
+        } while (moreConnections() && continue_->load(std::memory_order_consume));
+    });
 
     LOG_DEBUG_LIB(LibMultio) << "*** STOPPED listening loop " << std::endl;
 
     msgQueue_.close();
 
     LOG_DEBUG_LIB(LibMultio) << "*** CLOSED message queue " << std::endl;
+    
+    // Propagate possible thread errors
+    if (lstnExcPtr) {
+        std::rethrow_exception(lstnExcPtr);
+    }
+    if (dpatchExcPtr) {
+        std::rethrow_exception(dpatchExcPtr);
+    }
 }
 
 void Listener::listen() {
-    do {
-        transport_.listen();
-    } while (not msgQueue_.closed());
+    withFailureHandling([&](){
+        do {
+            transport_.listen();
+        } while (not msgQueue_.closed() && continue_->load(std::memory_order_consume));
+    });
 }
 
 bool Listener::moreConnections() const {
     return !connections_.empty() || closedCount_ < clientCount_;
 }
 
-void Listener::checkConnection(const Peer& conn) const {
+void Listener::checkConnection(const message::Peer& conn) const {
     if (connections_.find(conn) == end(connections_)) {
         std::ostringstream oss;
         oss << "Connection to " << conn << " is not open";
-        throw oss.str();
+        throw eckit::SeriousBug{oss.str(), Here()};
     }
 }
 

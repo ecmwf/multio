@@ -19,8 +19,8 @@
 namespace multio {
 namespace action {
 
-Print::Print(const eckit::Configuration& config) : Action(config) {
-    stream_ = config.getString("stream", "info");
+Print::Print(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {
+    stream_ = confCtx.config().getString("stream", "info");
 
     if (stream_ == "info") {
         os = &eckit::Log::info();
@@ -32,11 +32,11 @@ Print::Print(const eckit::Configuration& config) : Action(config) {
     }
 }
 
-void Print::execute(message::Message msg) const {
+void Print::executeImpl(message::Message msg) const {
     ASSERT(os);
     (*os) << msg << std::endl;
 
-    executeNext(msg);
+    executeNext(std::move(msg));
 }
 
 void Print::print(std::ostream& os) const {
@@ -44,7 +44,7 @@ void Print::print(std::ostream& os) const {
 }
 
 
-static ActionBuilder<Print> PrintBuilder("Print");
+static ActionBuilder<Print> PrintBuilder("print");
 
 }  // namespace action
 }  // namespace multio

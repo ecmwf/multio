@@ -24,15 +24,15 @@ namespace action {
 
 using message::Peer;
 
-Aggregation::Aggregation(const eckit::Configuration& config) : Action(config) {}
+Aggregation::Aggregation(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {}
 
-void Aggregation::execute(Message msg) const {
+void Aggregation::executeImpl(Message msg) const {
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
-        executeNext(createGlobalField(msg));
+        executeNext(createGlobalField(std::move(msg)));
     }
 
     if ((msg.tag() == Message::Tag::StepComplete) && handleFlush(msg)) {
-        executeNext(msg);
+        executeNext(std::move(msg));
     }
 }
 
@@ -45,19 +45,20 @@ bool Aggregation::handleField(const Message& msg) const {
 bool Aggregation::handleFlush(const Message& msg) const {
     // Initialise if need be
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-    if (flushes_.find(msg.domain()) == end(flushes_)) {
-        flushes_[msg.domain()] = 0;
+    if (flushes_.find(msg.fieldId()) == end(flushes_)) {
+        flushes_[msg.fieldId()] = 0;
     }
 
-    return ++flushes_.at(msg.domain()) == msg.domainCount();
+    return ++flushes_.at(msg.fieldId()) == domain::Mappings::instance().get(msg.domain()).size();
 }
 
 bool Aggregation::allPartsArrived(const Message& msg) const {
-  LOG_DEBUG_LIB(LibMultio) << " *** Number of messages for field " << msg.fieldId()
-                           << " are " << messages_.at(msg.fieldId()).size() << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " *** Number of messages for field " << msg.fieldId() << " are "
+                             << messages_.at(msg.fieldId()).size() << std::endl;
 
-  return (msg.domainCount() == messages_.at(msg.fieldId()).size()) &&
-         (msg.domainCount() == domain::Mappings::instance().get(msg.domain()).size());
+    const auto& domainMap = domain::Mappings::instance().get(msg.domain());
+
+    return domainMap.isComplete() && (messages_.at(msg.fieldId()).size() == domainMap.size());
 }
 
 Message Aggregation::createGlobalField(const Message& msg) const {
@@ -65,12 +66,12 @@ Message Aggregation::createGlobalField(const Message& msg) const {
 
     const auto& fid = msg.fieldId();
 
-    auto levelCount = msg.metadata().getLong("levelCount", 1);
-
     auto md = msg.header().metadata();
-    Message msgOut{Message::Header{msg.header().tag(), Peer{msg.source().group()},
-                                   Peer{msg.destination()}, std::move(md)},
-                   eckit::Buffer{msg.globalSize() * levelCount * sizeof(double)}};
+    Message msgOut{
+        Message::Header{msg.header().tag(), Peer{msg.source().group()}, Peer{msg.destination()}, std::move(md)},
+        eckit::Buffer{msg.globalSize() * sizeof(double)}};
+
+    domain::Mappings::instance().checkDomainConsistency(messages_.at(fid));
 
     for (const auto& msg : messages_.at(fid)) {
         domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_global(msg, msgOut);
@@ -90,7 +91,7 @@ void Aggregation::print(std::ostream& os) const {
 }
 
 
-static ActionBuilder<Aggregation> AggregationBuilder("Aggregation");
+static ActionBuilder<Aggregation> AggregationBuilder("aggregation");
 
 }  // namespace action
 }  // namespace multio

@@ -18,6 +18,7 @@
 
 #include "multio/sink/DataSink.h"
 #include "multio/sink/FileSink.h"
+#include "multio/util/ConfigurationContext.h"
 
 using namespace eckit;
 using namespace eckit::testing;
@@ -29,11 +30,11 @@ namespace test {
 
 class TestDataSink : public DataSink {
 public:
-    TestDataSink(const Configuration& config) : DataSink(config), config_(&config) {}
+    TestDataSink(const util::ConfigurationContext& confCtx) : DataSink(confCtx), confCtx_(&confCtx) {}
 
     void write(eckit::message::Message) override {}
 
-    Configuration const* config_;
+    util::ConfigurationContext const* confCtx_;
 
 protected:
     void print(std::ostream& os) const override { os << "tmp"; }
@@ -46,7 +47,8 @@ static DataSinkBuilder<TestDataSink> testSinkBuilder("test");
 
 CASE("test_factory_generate") {
     LocalConfiguration config;
-    std::unique_ptr<DataSink> sink(DataSinkFactory::instance().build("test", config));
+    util::ConfigurationContext confCtx(config, "", "");
+    std::unique_ptr<DataSink> sink(DataSinkFactory::instance().build("test", confCtx));
 
     // Check that we generate a sink of the correct type (and implicitly that the factory
     // is correctly registered).
@@ -54,7 +56,7 @@ CASE("test_factory_generate") {
     EXPECT(testSink);
 
     // Test that the configuration is passed through the builder/factory.
-    EXPECT(testSink->config_ == &config);
+    EXPECT(testSink->confCtx_ == &confCtx);
 }
 
 CASE("test_list_factories") {

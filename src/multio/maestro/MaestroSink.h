@@ -29,7 +29,7 @@ namespace multio {
 
 class MaestroSink : public multio::DataSink {
 public:
-    MaestroSink(const eckit::Configuration& config);
+    MaestroSink(const util::ConfigurationContext& config);
     ~MaestroSink() override;
 
 private:

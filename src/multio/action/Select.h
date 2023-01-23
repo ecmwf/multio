@@ -14,40 +14,42 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_actions_Select_H
-#define multio_server_actions_Select_H
+#pragma once
 
 #include <iosfwd>
 #include <vector>
+#include <set>
+#include <iterator>
 
-#include "multio/action/Action.h"
-
-namespace eckit { class Configuration; }
+#include "multio/action/ChainedAction.h"
+#include "multio/message/MetadataMatcher.h"
 
 namespace multio {
 namespace action {
 
-using message::Message;
+//----------------------------------------------------------------------------------------------------------------------
 
-class Select : public Action {
+class Select : public ChainedAction {
 public:
-    explicit Select(const eckit::Configuration& config);
+    explicit Select(const ConfigurationContext& confCtx);
 
-    void execute(Message msg) const override;
+private: // methods
 
-private:
     void print(std::ostream &os) const override;
 
-    bool isMatched(const Message& msg) const;
+    bool matches(const message::Message& msg) const;
 
-    bool matchPlan(const Message& msg) const;
+    void executeImpl(message::Message msg) const override;
 
-    std::string match_;
-    std::vector<std::string> items_;
+    /// @note This describes an algebra, so the function here can be significantly extended to give helpful return
+    void matchedFields(message::MetadataMatchers& matchers) const override;
 
+private: // members
+
+    message::MetadataMatchers match_;
 };
+
+//----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace action
 }  // namespace multio
-
-#endif

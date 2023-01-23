@@ -33,6 +33,11 @@ private:
     std::string data_;
 };
 
+CASE("Static type-check") {
+    static_assert(sizeof(size_t) == sizeof(uint64_t),
+                  "Error: Multio support for the Maestro middleware requires 64-bit size_t");
+}
+
 CASE("CDO construction") {
 
     TestHarness test;
@@ -179,7 +184,7 @@ CASE("Selector and subscription") {
     MaestroEvent event1 = subscription.poll();
     EXPECT(!event1);
 
-    struct timespec ts = {1};
+    struct timespec ts = {1, 0};
     MaestroEvent event2 = subscription.timedwait(&ts);
     EXPECT(!event2);
     EXPECT(event2.isNull());

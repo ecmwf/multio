@@ -56,7 +56,7 @@ void DataSinkFactory::list(std::ostream& out) {
     }
 }
 
-DataSink* DataSinkFactory::build(const std::string& name, const Configuration& config) {
+DataSink* DataSinkFactory::build(const std::string& name, const util::ConfigurationContext& confCtx) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     LOG_DEBUG_LIB(LibMultio) << "Looking for DataSinkFactory [" << name << "]" << std::endl;
@@ -64,7 +64,7 @@ DataSink* DataSinkFactory::build(const std::string& name, const Configuration& c
     auto f = factories_.find(name);
 
     if (f != factories_.end())
-        return f->second->make(config);
+        return f->second->make(confCtx);
 
     Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;
     Log::error() << "DataSinkFactories are:" << std::endl;
@@ -85,9 +85,9 @@ DataSinkBuilderBase::~DataSinkBuilderBase() {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-DataSink::DataSink(const Configuration& config) :
-    failOnError_(config.getBool("failOnError", true)),
-    config_(config),
+DataSink::DataSink(const util::ConfigurationContext& confCtx) :
+    failOnError_(confCtx.config().getBool("failOnError", true)),
+    confCtx_(confCtx),
     id_(-1) {}
 
 DataSink::~DataSink() {

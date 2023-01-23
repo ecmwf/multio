@@ -18,12 +18,15 @@
 #define multio_server_Dispatcher_H
 
 #include <memory>
+#include <atomic>
 
 #include "eckit/container/Queue.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
+#include "multio/util/FailureHandling.h"
 
 #include "multio/message/Message.h"
+#include "multio/util/ConfigurationContext.h"
 
 namespace eckit {
 class Configuration;
@@ -38,19 +41,24 @@ class Plan;
 
 namespace server {
 
-class Dispatcher : private eckit::NonCopyable {
+class Dispatcher : public util::FailureAware<util::ComponentTag::Dispatcher>, private eckit::NonCopyable {
 public:
-    Dispatcher(const eckit::Configuration& config);
+    Dispatcher(const util::ConfigurationContext& confCtx, std::shared_ptr<std::atomic<bool>> cont);
     ~Dispatcher();
 
     void dispatch(eckit::Queue<message::Message>& queue);
+    
+    util::FailureHandlerResponse handleFailure(util::OnDispatchError, const util::FailureContext&, util::DefaultFailureState&) const override;
 
 private:
 
+    void handle(const message::Message& msg) const;
+
+    std::shared_ptr<std::atomic<bool>> continue_;
     std::vector<std::unique_ptr<action::Plan>> plans_;
+
     eckit::Timing timing_;
     eckit::Timer timer_;
-
 };
 
 }  // namespace server

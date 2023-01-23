@@ -15,66 +15,58 @@
 #include <vector>
 #include <map>
 
-#include "multio/message/Metadata.h"
-#include "multio/message/Peer.h"
+#include "multio/action/Plan.h"
+#include "multio/message/MetadataMatcher.h"
+#include "multio/util/ConfigurationContext.h"
+#include "multio/util/FailureHandling.h"
+
+#include "eckit/log/Statistics.h"
 
 namespace eckit {
 class Buffer;
 class Configuration;
+class LocalConfiguration;
 }  // namespace eckit
 
 namespace multio {
+
+using util::ConfigurationContext;
+using util::ClientConfigurationContext;
+using util::ComponentTag;
+
+namespace message {
+class Message;
+class Metadata;
+}
 
 namespace server {
 
 class Transport;
 
-class MultioClient {
+class MultioClient: public util::FailureAware<util::ComponentTag::Client> {
 public:
-    explicit MultioClient(const eckit::Configuration& config);
+    explicit MultioClient(const ClientConfigurationContext& config);
 
     ~MultioClient();
 
-    void openConnections() const;
+    void openConnections();
+    void closeConnections();
 
-    void closeConnections() const;
+    void dispatch(message::Metadata metadata, eckit::Buffer&& payload, message::Message::Tag tag);
 
-    void sendDomain(message::Metadata metadata, eckit::Buffer&& domain);
+    void dispatch(message::Message msg);
 
-    void sendMask(message::Metadata metadata, eckit::Buffer&& mask);
+    bool isFieldMatched(const message::Metadata& matcher) const;
 
-    void sendField(message::Metadata metadata, eckit::Buffer&& field, bool to_all_servers = false);
-
-    void sendStepComplete() const;
+    util::FailureHandlerResponse handleFailure(util::OnClientError, const util::FailureContext&,
+                                               util::DefaultFailureState&) const override;
 
 private:
-    using PeerList = std::vector<std::unique_ptr<message::Peer>>;
+    std::vector<std::unique_ptr<action::Plan>> plans_;
+    message::MetadataMatchers activeMatchers_;
 
-    size_t clientCount_;
-    size_t serverCount_;
-
-    std::shared_ptr<Transport> transport_ = nullptr;
-
-    const message::Peer client_;
-
-    size_t serverId_;
-    size_t usedServerCount_;
-    PeerList serverPeers_;
-
-    // Distribute fields
-    message::Peer chooseServer(const message::Metadata& metadata);
-    std::map<std::string, message::Peer> destinations_;
-    std::vector<uint64_t> counters_;
-
-    enum class DistributionType : unsigned
-    {
-        hashed_cyclic,
-        hashed_to_single,
-        even,
-    };
-    DistributionType distType_;
-
-    enum DistributionType distributionType();
+    eckit::Timing totClientTiming_;
+    eckit::Timer totClientTimer_;
 };
 
 }  // namespace server

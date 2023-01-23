@@ -14,24 +14,20 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_actions_Print_H
-#define multio_server_actions_Print_H
+#pragma once
 
 #include <iosfwd>
 
-#include "multio/action/Action.h"
-
-
-namespace eckit { class Configuration; }
+#include "multio/action/ChainedAction.h"
 
 namespace multio {
 namespace action {
 
-class Print : public Action {
+class Print : public ChainedAction {
 public:
-    explicit Print(const eckit::Configuration& config);
+    explicit Print(const ConfigurationContext& config);
 
-    void execute(message::Message msg) const override;
+    void executeImpl(message::Message msg) const override;
 
 private:
     void print(std::ostream& os) const override;
@@ -43,5 +39,3 @@ private:
 
 }  // namespace action
 }  // namespace multio
-
-#endif

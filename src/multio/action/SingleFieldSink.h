@@ -21,10 +21,6 @@
 
 #include "multio/action/Action.h"
 
-namespace eckit {
-class Configuration;
-}
-
 namespace multio {
 
 class DataSink;
@@ -35,9 +31,9 @@ using message::Message;
 
 class SingleFieldSink : public Action {
 public:
-    explicit SingleFieldSink(const eckit::Configuration& config);
+    explicit SingleFieldSink(const ConfigurationContext& confCtx);
 
-    void execute(message::Message msg) const override;
+    void executeImpl(message::Message msg) const override;
 
 private:
     void print(std::ostream& os) const override;

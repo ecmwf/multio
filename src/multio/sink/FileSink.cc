@@ -11,7 +11,6 @@
 /// @author Tiago Quintino
 /// @author Simon Smart
 /// @date Dec 2015
-
 #include <fstream>
 #include <iosfwd>
 
@@ -40,9 +39,9 @@ std::string create_path(const eckit::LocalConfiguration& cfg) {
 }
 
 
-FileSink::FileSink(const Configuration& config) :
-    DataSink(config), path_{create_path(config_)}, handle_(path_.fileHandle(false)) {
-    if (config_.getBool("append", false)) {
+FileSink::FileSink(const util::ConfigurationContext& confCtx) :
+    DataSink(confCtx), path_{create_path(confCtx.config())}, handle_(path_.fileHandle(false)) {
+    if (confCtx.config().getBool("append", false)) {
         handle_->openForAppend(0);
     }
     else {
@@ -60,7 +59,9 @@ void FileSink::write(eckit::message::Message msg) {
 }
 
 void FileSink::flush() {
-    eckit::Log::info() << "Flush is called..." << std::endl;
+    eckit::Log::info() << "Flushing ";
+    print(eckit::Log::info());
+    eckit::Log::info() << std::endl;
     handle_->flush();
 }
 

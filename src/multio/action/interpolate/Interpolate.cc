@@ -92,7 +92,45 @@ void fill(const eckit::LocalConfiguration& sub, mir::param::SimpleParametrisatio
 
 
 message::Message Interpolate::InterpolateInSinglePrecision(message::Message&& msg) const {
-    NOTIMP;
+    using Header = message::Message::Header;
+
+    // convert data from single into double precision
+    const size_t in_size = msg.payload().size() / sizeof(float);
+
+    eckit::Buffer dbl_buffer(in_size * sizeof(double));
+
+    auto dbl_md = msg.metadata();
+    dbl_md.set("globalSize", dbl_buffer.size()).set("precision", "double");
+
+    {
+        const auto* flt = reinterpret_cast<const float*>(msg.payload().data());
+        auto* dbl = reinterpret_cast<double*>(dbl_buffer.data());
+        for (size_t i = 0; i < in_size; ++i) {
+            *(dbl++) = static_cast<double>(*(flt++));
+        }
+    }
+
+    // interpolate
+    auto out = InterpolateInDoublePrecision(
+        {Header{msg.tag(), msg.source(), msg.destination(), std::move(dbl_md)}, std::move(dbl_buffer)});
+
+    // convert data from double into single precision
+    const size_t out_size = out.payload().size() / sizeof(double);
+
+    eckit::Buffer flt_buffer(out_size * sizeof(float));
+
+    auto flt_md = out.metadata();
+    flt_md.set("globalSize", flt_buffer.size()).set("precision", "single");
+
+    {
+        const auto* dbl = reinterpret_cast<const double*>(out.payload().data());
+        auto* flt = reinterpret_cast<float*>(flt_buffer.data());
+        for (size_t i = 0; i < out_size; ++i) {
+            *(flt++) = static_cast<float>(*(dbl++));
+        }
+    }
+
+    return {Header{out.tag(), out.source(), out.destination(), std::move(flt_md)}, std::move(flt_buffer)};
 }
 
 

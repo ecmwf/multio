@@ -7,11 +7,11 @@ ecbuild_add_library(
         Interpolate.h
 
     PRIVATE_INCLUDES
-      ${MIR_INCLUDE_DIRS}
-      ${ECKIT_INCLUDE_DIRS}
+        ${MIR_INCLUDE_DIRS}
+        ${ECKIT_INCLUDE_DIRS}
 
     CONDITION
-      HAVE_MIR
+        HAVE_MIR
 
     PUBLIC_LIBS
         multio

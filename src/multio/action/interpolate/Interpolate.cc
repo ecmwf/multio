@@ -30,8 +30,7 @@
 namespace multio::action::interpolate {
 
 
-template <typename DestinationType>
-void fill(const eckit::LocalConfiguration& sub, DestinationType& destination) {
+void fill(const eckit::LocalConfiguration& sub, mir::param::SimpleParametrisation& destination) {
     if (sub.has("loadFromFile")) {
         auto cfg = sub.getSubConfiguration("loadFromFile");
 
@@ -135,8 +134,6 @@ message::Message Interpolate::InterpolateInDoublePrecision(message::Message&& ms
     message::Metadata md;
     md.set("globalSize", outData.size());
     md.set("precision", "double");
-
-    fill(config.getSubConfiguration("outputConfiguration"), md);
 
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outputSize * sizeof(double));
 

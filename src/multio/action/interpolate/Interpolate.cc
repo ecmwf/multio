@@ -123,7 +123,6 @@ message::Message Interpolate::InterpolateInDoublePrecision(message::Message&& ms
                              << std::endl;
 
     const auto& config = Action::confCtx_.config();
-    const auto outputSize = config.getLong("outputSize");
 
     const double* data = reinterpret_cast<const double*>(msg.payload().data());
     const size_t size = msg.payload().size() / sizeof(double);
@@ -144,11 +143,9 @@ message::Message Interpolate::InterpolateInDoublePrecision(message::Message&& ms
 
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: job " << std::endl << job << std::endl << std::endl;
 
-    std::vector<double> outData(outputSize, 0.0);
-
+    std::vector<double> outData;
     mir::param::SimpleParametrisation outMetadata;
-
-    mir::output::RawOutput output(outData.data(), outData.size(), outMetadata);
+    mir::output::ResizableOutput output(outData, outMetadata);
 
     job.execute(input, output);
 
@@ -156,7 +153,7 @@ message::Message Interpolate::InterpolateInDoublePrecision(message::Message&& ms
     md.set("globalSize", outData.size());
     md.set("precision", "double");
 
-    eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outputSize * sizeof(double));
+    eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outData.size() * sizeof(double));
 
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: Metadata of the output message :: " << std::endl
                              << md << std::endl

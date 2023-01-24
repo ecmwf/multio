@@ -14,7 +14,7 @@ plans:
               gridType: sh
               gribEdition: 2
         - type: metadata-mapping
-          mapping: <<~>>/../metadataMappings/grib2-ml-encoder-overwrites.yaml
+          mapping: <<~>>/metadata-mapping/grib2-ml-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
@@ -40,7 +40,7 @@ plans:
               gridType: sh
               gribEdition: 1
         - type: metadata-mapping
-          mapping: ../metadataMappings/grib1-pl-encoder-overwrites.yaml
+          mapping: metadata-mapping/grib1-pl-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
@@ -67,7 +67,7 @@ plans:
               gridType: regular_gg
               gribEdition: 2
         - type: metadata-mapping
-          mapping: <<~>>/../metadataMappings/grib2-ml-encoder-overwrites.yaml
+          mapping: <<~>>/metadata-mapping/grib2-ml-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print

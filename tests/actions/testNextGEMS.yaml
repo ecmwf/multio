@@ -14,7 +14,7 @@ plans:
             - levtype: pl
               gridType: sh
         - type: metadata-mapping
-          mapping: <<~>>/../metadataMappings/grib1-pl-encoder-overwrites.yaml
+          mapping: <<~>>/metadata-mapping/grib1-pl-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
@@ -37,7 +37,7 @@ plans:
             - levtype: pl
               gridType: reduced_gg
         - type: metadata-mapping
-          mapping: <<~>>/../metadataMappings/grib1-pl-encoder-overwrites.yaml
+          mapping: <<~>>/metadata-mapping/grib1-pl-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
@@ -60,7 +60,7 @@ plans:
             - levtype: sfc
               param: [228051]
         - type: metadata-mapping
-          mapping: <<~>>/../metadataMappings/grib1-sfc-encoder-overwrites.yaml
+          mapping: <<~>>/metadata-mapping/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
@@ -83,7 +83,7 @@ plans:
             - levtype: sfc
               param: [174098]
         - type: metadata-mapping
-          mapping: <<~>>/../metadataMappings/grib1-sfc-encoder-overwrites.yaml
+          mapping: <<~>>/metadata-mapping/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
@@ -111,7 +111,7 @@ plans:
             - levtype: sfc
               param: [141, 139, 170, 183, 236, 39, 40, 41, 42]
         - type: metadata-mapping
-          mapping: <<~>>/../metadataMappings/grib1-sfc-encoder-overwrites.yaml
+          mapping: <<~>>/metadata-mapping/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print
@@ -135,7 +135,7 @@ plans:
           ignore:
             - param: [228051, 141, 139, 170, 183, 236, 39, 40, 41, 42]
         - type: metadata-mapping
-          mapping: <<~>>/../metadataMappings/grib1-sfc-encoder-overwrites.yaml
+          mapping: <<~>>/metadata-mapping/grib1-sfc-encoder-overwrites.yaml
           enforce-match: false
           overwrite-existing: true
         - type: print

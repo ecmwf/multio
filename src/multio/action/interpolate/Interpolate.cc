@@ -39,31 +39,65 @@ namespace multio::action::interpolate {
 
 void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& param) {
     ASSERT(cfg.has("input"));
-    const auto input = cfg.getString("input");
 
-    static const std::regex sh("(T|TCO|TL)([1-9][0-9]*)");
-    static const std::regex gg("([FNO])([1-9][0-9]*)");
+    auto regular_ll = [&param](double west_east_increment, double south_north_increment) {
+        auto N = [](double delta, double range) {
+            const auto f = eckit::Fraction(range) / eckit::Fraction(delta);
+            return static_cast<long>(f.integralPart());
+        };
 
-    std::smatch match;
-    if (std::regex_match(input, match, sh)) {
-        param.set("spectral", true);
-        param.set("truncation", std::stol(match[2].str()));
-        return;
+        param.set("gridded", true);
+        param.set("gridType", "regular_ll");
+
+        param.set("west_east_increment", west_east_increment);
+        param.set("south_north_increment", south_north_increment);
+        param.set("Ni", N(west_east_increment, 360.));
+        param.set("Nj", N(south_north_increment, 180.) + 1L /* "endpoint" */);
+
+        param.set("north", 90.).set("west", 0.).set("south", -90.).set("east", 360.);
+    };
+
+    if (cfg.getSubConfiguration("input").get().isString()){
+        const auto input = cfg.getString("input");
+
+        static const std::regex sh("(T|TCO|TL)([1-9][0-9]*)");
+        static const std::regex gg("([FNO])([1-9][0-9]*)");
+
+#define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
+        static const std::regex ll(fp "/" fp);
+#undef fp
+
+        std::smatch match;
+        if (std::regex_match(input, match, sh)) {
+            param.set("spectral", true);
+            param.set("truncation", std::stol(match[2].str()));
+            return;
+        }
+
+        if (std::regex_match(input, match, gg)) {
+            param.set("gridded", true);
+            param.set("gridType", match[1].str() == "F" ? "regular_gg" : "reduced_gg");
+            param.set("N", std::stol(match[2].str()));
+            param.set("north", 90.).set("west", 0.).set("south", -90.).set("east", 360.);
+
+            if (match[1].str() != "F") {
+                param.set("pl", mir::repres::gauss::reduced::Reduced::pls(match[0].str()));
+            }
+            return;
+        }
+
+        if (std::regex_match(input, match, ll)) {
+            regular_ll(std::stod(match[1].str()), std::stod(match[4].str()));
+            return;
+        }
     }
 
-    if (std::regex_match(input, match, gg)) {
-        param.set("gridded", true);
-        param.set("gridType", match[1].str() == "F" ? "regular_gg" : "reduced_gg");
-        param.set("N", std::stol(match[2].str()));
-        param.set("north", 90.);
-        param.set("west", 0.);
-        param.set("south", -90.);
-        param.set("east", 360.);
-
-        if (match[1].str() != "F") {
-            param.set("pl", mir::repres::gauss::reduced::Reduced::pls(match[0].str()));
+    if (cfg.getSubConfiguration("input").get().isList()) {
+        const auto input = cfg.getDoubleVector("input");
+        if (input.size() == 2) {
+            regular_ll(input[0], input[1]);
+            return;
         }
-        return;
     }
 
     NOTIMP;

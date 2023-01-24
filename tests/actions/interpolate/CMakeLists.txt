@@ -13,14 +13,15 @@ ecbuild_get_test_multidata(
         "MARS_reduced_gg_to_grid_1.00_1.00.grib"
         "MARS_reduced_gg_to_grid_1.00_1.00_area.grib"
         "MARS_regular_ll.grib"
+        "MARS_regular_ll_to_grid_3.00_6.00.grib"
+        "MARS_regular_ll_to_grid_6.00_9.00.grib"
         "MARS_sh.grib"
         "MARS_sh_to_grid_0.25_0.25.grib"
         "MARS_sh_to_grid_0.25_0.25_area.grib"
         "MARS_sh_to_grid_0.50_0.50.grib"
         "MARS_sh_to_grid_0.50_0.50_area.grib"
         "MARS_sh_to_grid_1.00_1.00.grib"
-        "MARS_sh_to_grid_1.00_1.00_area.grib"
-        "PlO1280.dat")
+        "MARS_sh_to_grid_1.00_1.00_area.grib")
 
 foreach(_test
     reduced_gg_copy
@@ -33,6 +34,8 @@ foreach(_test
     reduced_gg_to_grid_1.00_1.00_area
     regular_ll_copy
     regular_ll_encode_decode
+    regular_ll_to_grid_3.00_6.00
+    regular_ll_to_grid_6.00_9.00
     sh_copy
     sh_encode_decode
     sh_to_grid_0.25_0.25

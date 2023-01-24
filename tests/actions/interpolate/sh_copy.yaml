@@ -2,19 +2,7 @@ plans:
   - name: sh_copy
     actions:
       - type: interpolate
-        outputSize: 1639680
-        inputConfiguration:
-          setByValue:
-            gridType: sh
-            spectral: true
-            truncation: 1279
-        jobConfiguration:
-          empty:
-            #setByValue:
-            #  gridType: reduced_gg
-            #  gridded: true
-        outputConfiguration:
-          empty:
+        input: T1279
       - type: encode
         format: grib
         template: MARS_sh.grib

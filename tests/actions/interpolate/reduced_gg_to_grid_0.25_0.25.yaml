@@ -5,27 +5,13 @@ plans:
         match:
           - param: 133
       - type: interpolate
-        outputSize: 1038240
-        inputConfiguration:
-          loadFromFile:
-            pl: PlO1280.dat
-          setByValue:
-            gridType: reduced_gg
-            gridded: true
-            north: 90.0
-            south: -90.0
-            west: 0.0
-            east: 360.0
-            N: 1280
-        jobConfiguration:
-          setByValue:
-            grid: [0.25, 0.25]
-            area: [90.0, 0.0, -90.0, 360.0]
-            #dont-compress-plan: true
-            interpolation: linear
-            caching: true
-        outputConfiguration:
-          empty:
+        input: O1280
+        grid: [0.25, 0.25]
+        area: [90.0, 0.0, -90.0, 360.0]
+        interpolation: linear
+        options:
+          # dont-compress-plan: true
+          caching: true
       - type: encode
         format: grib
         template: MARS_reduced_gg_to_grid_0.25_0.25.grib

@@ -91,46 +91,29 @@ void fill(const eckit::LocalConfiguration& sub, mir::param::SimpleParametrisatio
 };
 
 
+template <typename A, typename B>
+message::Message convert_precision(message::Message&& msg) {
+    const size_t N = msg.payload().size() / sizeof(A);
+    eckit::Buffer buffer(N * sizeof(B));
+
+    auto md = msg.metadata();
+    md.set("globalSize", buffer.size());
+    md.set("precision", std::is_same<B, double>::value ? "double" : std::is_same<B, float>::value ? "single" : NOTIMP);
+
+    const auto* a = reinterpret_cast<const A*>(msg.payload().data());
+    auto* b = reinterpret_cast<B*>(buffer.data());
+    for (size_t i = 0; i < N; ++i) {
+        *(b++) = static_cast<B>(*(a++));
+    }
+
+    return {message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(md)}, std::move(buffer)};
+}
+
+
 message::Message Interpolate::InterpolateInSinglePrecision(message::Message&& msg) const {
-    using Header = message::Message::Header;
-
-    // convert data from single into double precision
-    const size_t in_size = msg.payload().size() / sizeof(float);
-
-    eckit::Buffer dbl_buffer(in_size * sizeof(double));
-
-    auto dbl_md = msg.metadata();
-    dbl_md.set("globalSize", dbl_buffer.size()).set("precision", "double");
-
-    {
-        const auto* flt = reinterpret_cast<const float*>(msg.payload().data());
-        auto* dbl = reinterpret_cast<double*>(dbl_buffer.data());
-        for (size_t i = 0; i < in_size; ++i) {
-            *(dbl++) = static_cast<double>(*(flt++));
-        }
-    }
-
-    // interpolate
-    auto out = InterpolateInDoublePrecision(
-        {Header{msg.tag(), msg.source(), msg.destination(), std::move(dbl_md)}, std::move(dbl_buffer)});
-
-    // convert data from double into single precision
-    const size_t out_size = out.payload().size() / sizeof(double);
-
-    eckit::Buffer flt_buffer(out_size * sizeof(float));
-
-    auto flt_md = out.metadata();
-    flt_md.set("globalSize", flt_buffer.size()).set("precision", "single");
-
-    {
-        const auto* dbl = reinterpret_cast<const double*>(out.payload().data());
-        auto* flt = reinterpret_cast<float*>(flt_buffer.data());
-        for (size_t i = 0; i < out_size; ++i) {
-            *(flt++) = static_cast<float>(*(dbl++));
-        }
-    }
-
-    return {Header{out.tag(), out.source(), out.destination(), std::move(flt_md)}, std::move(flt_buffer)};
+    // convert single/double precision, interpolate, convert double/single
+    return convert_precision<double, float>(
+        InterpolateInDoublePrecision(convert_precision<float, double>(std::move(msg))));
 }
 
 

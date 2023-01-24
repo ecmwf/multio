@@ -21,6 +21,7 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/parser/YAMLParser.h"
+#include "eckit/types/Fraction.h"
 
 #include "metkit/mars/MarsLanguage.h"
 
@@ -57,7 +58,7 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
         param.set("north", 90.).set("west", 0.).set("south", -90.).set("east", 360.);
     };
 
-    if (cfg.getSubConfiguration("input").get().isString()){
+    if (cfg.getSubConfiguration("input").get().isString()) {
         const auto input = cfg.getString("input");
 
         static const std::regex sh("(T|TCO|TL)([1-9][0-9]*)");
@@ -70,6 +71,7 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
         std::smatch match;
         if (std::regex_match(input, match, sh)) {
             param.set("spectral", true);
+            param.set("gridType", "sh");
             param.set("truncation", std::stol(match[2].str()));
             return;
         }

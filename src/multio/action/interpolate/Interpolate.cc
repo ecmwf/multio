@@ -13,10 +13,8 @@
 #include "multio/action/interpolate/Interpolate.h"
 
 #include <algorithm>
-#include <fstream>
 #include <regex>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 #include "eckit/exception/Exceptions.h"
@@ -32,7 +30,6 @@
 #include "mir/repres/gauss/reduced/Reduced.h"
 
 #include "multio/LibMultio.h"
-#include "multio/util/Message.h"
 #include "multio/util/PrecisionTag.h"
 
 

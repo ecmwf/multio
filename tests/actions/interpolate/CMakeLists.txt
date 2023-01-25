@@ -1,4 +1,4 @@
-set(PREFIX multio_tests_actions_interpolate)
+set(PREFIX multio_tests_action_interpolate)
 
 ecbuild_get_test_multidata(
     TARGET   ${PREFIX}_get_data

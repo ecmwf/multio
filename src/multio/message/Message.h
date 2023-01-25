@@ -175,5 +175,28 @@ private:  // members
 
 eckit::message::Message to_eckit_message(const Message& msg);
 
+
+// Utility to convert message 
+template <typename From, typename To>
+message::Message convert_precision(message::Message&& msg) {
+    const size_t N = msg.payload().size() / sizeof(From);
+    eckit::Buffer buffer(N * sizeof(To));
+
+    auto md = msg.metadata();
+    md.set("globalSize", buffer.size());
+    md.set("precision", std::is_same<To, double>::value  ? "double"
+                        : std::is_same<To, float>::value ? "single"
+                                                         : NOTIMP);
+
+    const auto* a = reinterpret_cast<const From*>(msg.payload().data());
+    auto* b = reinterpret_cast<To*>(buffer.data());
+    for (size_t i = 0; i < N; ++i) {
+        *(b++) = static_cast<To>(*(a++));
+    }
+
+    return {message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(md)}, std::move(buffer)};
+}
+
+
 }  // namespace message
 }  // namespace multio

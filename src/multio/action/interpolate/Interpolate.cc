@@ -32,6 +32,7 @@
 #include "mir/repres/gauss/reduced/Reduced.h"
 
 #include "multio/LibMultio.h"
+#include "multio/util/Message.h"
 #include "multio/util/PrecisionTag.h"
 
 
@@ -107,6 +108,7 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
 
 
 void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& destination) {
+
     static const struct PostProcKeys : std::vector<std::string> {
         PostProcKeys() {
             const auto yaml = eckit::YAMLParser::decodeFile(metkit::mars::MarsLanguage::languageYamlFile());
@@ -120,7 +122,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
     ASSERT(not postproc.contains("input"));
     ASSERT(not postproc.contains("options"));
 
-    auto set = [&destination, &cfg](const std::string& key, const eckit::Value& value) {
+    auto set = [&destination](const eckit::LocalConfiguration& cfg, const std::string& key, const eckit::Value& value) {
         if (value.isList()) {
             value.head().isDouble()   ? destination.set(key, cfg.getDoubleVector(key))
             : value.head().isNumber() ? destination.set(key, cfg.getLongVector(key))
@@ -138,46 +140,21 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
 
     for (const auto& key : postproc) {
         if (cfg.has(key)) {
-            set(key, cfg.getSubConfiguration(key).get());
+            set(cfg, key, cfg.getSubConfiguration(key).get());
         }
     }
+
 
     if (cfg.has("options")) {
         const auto& options = cfg.getSubConfiguration("options");
         for (const auto& key : options.keys()) {
-            set(key, cfg.getSubConfiguration(key).get());
+            set(options, key, options.getSubConfiguration(key).get());
         }
     }
 };
 
-
-template <typename A, typename B>
-message::Message convert_precision(message::Message&& msg) {
-    const size_t N = msg.payload().size() / sizeof(A);
-    eckit::Buffer buffer(N * sizeof(B));
-
-    auto md = msg.metadata();
-    md.set("globalSize", buffer.size());
-    md.set("precision", std::is_same<B, double>::value ? "double" : std::is_same<B, float>::value ? "single" : NOTIMP);
-
-    const auto* a = reinterpret_cast<const A*>(msg.payload().data());
-    auto* b = reinterpret_cast<B*>(buffer.data());
-    for (size_t i = 0; i < N; ++i) {
-        *(b++) = static_cast<B>(*(a++));
-    }
-
-    return {message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(md)}, std::move(buffer)};
-}
-
-
-message::Message Interpolate::InterpolateInSinglePrecision(message::Message&& msg) const {
-    // convert single/double precision, interpolate, convert double/single
-    return convert_precision<double, float>(
-        InterpolateInDoublePrecision(convert_precision<float, double>(std::move(msg))));
-}
-
-
-message::Message Interpolate::InterpolateInDoublePrecision(message::Message&& msg) const {
+template <>
+message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg) const {
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: Metadata of the input message :: " << std::endl
                              << msg.metadata() << std::endl
                              << std::endl;
@@ -223,19 +200,18 @@ message::Message Interpolate::InterpolateInDoublePrecision(message::Message&& ms
             std::move(buffer)};
 }
 
+template <>
+message::Message Interpolate::InterpolateMessage<float>(message::Message&& msg) const {
+    // convert single/double precision, interpolate, convert double/single
+    return InterpolateMessage<double>(convert_precision<float, double>(std::move(msg)));
+}
 
 void Interpolate::executeImpl(message::Message msg) const {
     switch (msg.tag()) {
         case (message::Message::Tag::Field): {
             executeNext(util::dispatchPrecisionTag(msg.precision(), [&](auto pt) -> message::Message {
                 using PT = typename decltype(pt)::type;
-                if (std::is_same<double, PT>::value) {
-                    return InterpolateInDoublePrecision(std::move(msg));
-                }
-                else if (std::is_same<float, PT>::value) {
-                    return InterpolateInSinglePrecision(std::move(msg));
-                }
-                NOTIMP;
+                return InterpolateMessage<PT>(std::move(msg));
             }));
             break;
         };

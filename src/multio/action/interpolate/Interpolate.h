@@ -26,8 +26,9 @@ public:
     using ChainedAction::ChainedAction;
 
 private:
-    message::Message InterpolateInSinglePrecision(message::Message&&) const;
-    message::Message InterpolateInDoublePrecision(message::Message&&) const;
+    template <typename T>
+    message::Message InterpolateMessage(message::Message&&) const;
+
     void print(std::ostream&) const override;
     void executeImpl(message::Message) const override;
 };

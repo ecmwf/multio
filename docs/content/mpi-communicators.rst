@@ -81,8 +81,6 @@ simply by describing a splitting from the world communicator with a unique colou
 The default behaviour is as follows.
 
 .. code-block:: yaml
-
-    # Default MPI setup (implicitly assumed)
     mpi-communicators:
         multio:
             type: passed
@@ -96,15 +94,12 @@ The default behaviour is as follows.
             color: 888
             parent: multio
 
-    ...
 
     server:
       transport: mpi
-      group: multio # implicit default
-      client-group: multio-clients  # implicit default
-      server-group: multio-servers  # implicit default
-      plans :
-        ...
+      group: multio 
+      client-group: multio-clients 
+      server-group: multio-servers 
 
 
 To make this work, MULTIO will look up the `group` key in the server section or take the default

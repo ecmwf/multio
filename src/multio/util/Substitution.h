@@ -64,12 +64,6 @@ std::string replaceCurly(std::string_view s, Func&& lookup) {
     }
 }
 
-
-// Example
-std::string replaceCurly(std::string_view s, const std::map<std::string, std::string>& replacements);
-
-
-// Example
 std::string replaceCurly(std::string_view s, const eckit::Configuration& replacements);
 
 }  // namespace util

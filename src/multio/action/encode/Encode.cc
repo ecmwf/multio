@@ -27,57 +27,12 @@ using util::configuration_path_name;
 namespace {
 
 ConfigurationContext getEncodingConfiguration(const ConfigurationContext& confCtx) {
-    return confCtx.recast(([&]() {
-        if (confCtx.config().has("encoding")) {
-            auto encodingKeyMaybe = ([&]() {
-                try {
-                    return eckit::Optional<std::string>{confCtx.config().getString("encoding")};
-                }
-                catch (...) {
-                    return eckit::Optional<std::string>{};
-                }
-            })();
-
-            if (encodingKeyMaybe) {
-                auto encodings = ([&]() {
-                    try {
-                        return confCtx.globalConfig().getSubConfiguration("encodings");
-                    }
-                    catch (...) {
-                        std::ostringstream oss;
-                        oss << "No global \"encodings\" mapping is defined to look up encoding configuration \""
-                            << *encodingKeyMaybe << "\"";
-                        std::throw_with_nested(eckit::Exception(oss.str()));
-                    }
-                }());
-                auto encoding = ([&]() {
-                    try {
-                        return encodings.getSubConfiguration(*encodingKeyMaybe);
-                    }
-                    catch (...) {
-                        std::ostringstream oss;
-                        oss << "Global \"encodings\" configuration contains no mapping for encoding configuration \""
-                            << *encodingKeyMaybe << "\"";
-                        std::throw_with_nested(eckit::Exception(oss.str()));
-                    }
-                }());
-
-                /// @TODO Allow defining overwrites. Problem: we can not copy mappings/values from one to another
-                /// configuration without knowing it's type explicitly
-                // if (confCtx.config().has("overwrite")) {
-                //     auto overwrites = confCtx.config().getSubConfiguration("overwrite");
-                //     for (const std::string& k: overwrites.keys()) {
-                //     }
-                // }
-
-                return encoding;
-            }
-            else {
-                return confCtx.config().getSubConfiguration("encoding");
-            }
-        }
-        return confCtx.config();
-    })());
+    if (confCtx.config().has("encoding")) {
+        return confCtx.recast(confCtx.config().getSubConfiguration("encoding"));
+    }
+    else {
+        return confCtx;
+    }
 }
 
 std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
@@ -89,8 +44,7 @@ std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
         // TODO provide utility to distinguish between relative and absolute paths
         eckit::AutoStdFile fin{confCtx.replaceCurly(tmplPath)};
         int err;
-        return std::unique_ptr<GribEncoder>{
-            new GribEncoder{codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), confCtx.config()}};
+        return std::make_unique<GribEncoder>(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), confCtx.config());
     }
     else if (format == "raw") {
         return nullptr;  // leave message in raw binary format

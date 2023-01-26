@@ -1,3 +1,3 @@
 
-add_subdirectory(actions)
+add_subdirectory(action)
 add_subdirectory(multio)

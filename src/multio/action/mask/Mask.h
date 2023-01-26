@@ -33,13 +33,13 @@ public:
     void executeImpl(message::Message msg) const override;
 
 private:
-    template <typename T>
+    template <typename Precision>
     message::Message createMasked(message::Message msg) const;
 
-    template <typename T>
+    template <typename Precision>
     void applyMask(message::Message msg) const;
 
-    template <typename T>
+    template <typename Precision>
     void applyOffset(message::Message msg) const;
 
     void print(std::ostream& os) const override;

@@ -28,8 +28,8 @@ std::set<std::string> fetch_offset_fields(const eckit::Configuration& cfg) {
     return std::set<std::string>{begin(vec), end(vec)};
 }
 
-template <typename T>
-bool setContains(const std::set<T>& _set, const T& key) {
+template <typename Precision>
+bool setContains(const std::set<Precision>& _set, const Precision& key) {
     return _set.find(key) != std::end(_set);
 }
 
@@ -50,16 +50,16 @@ void Mask::executeImpl(message::Message msg) const {
 }
 
 
-template <typename T>
+template <typename Precision>
 message::Message Mask::createMasked(message::Message msg) const {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     if (applyBitmap_) {
-        applyMask<T>(msg);
+        applyMask<Precision>(msg);
     }
 
     if (setContains(offsetFields_, msg.name())) {
-        applyOffset<T>(msg);
+        applyOffset<Precision>(msg);
     }
 
     message::Metadata md{msg.metadata()};
@@ -73,14 +73,14 @@ message::Message Mask::createMasked(message::Message msg) const {
 }
 
 
-template <typename T>
+template <typename Precision>
 void Mask::applyMask(message::Message msg) const {
     auto const& bkey = domain::Mask::key(msg.metadata());
     auto const& bitmask = domain::Mask::instance().get(bkey);
 
-    ASSERT(bitmask.size() == msg.size() / sizeof(T));
+    ASSERT(bitmask.size() == msg.size() / sizeof(Precision));
 
-    auto git = static_cast<T*>(msg.payload().data());
+    auto git = static_cast<Precision*>(msg.payload().data());
 
     for (const auto bval : bitmask) {
         if (not bval) {
@@ -90,14 +90,14 @@ void Mask::applyMask(message::Message msg) const {
     }
 }
 
-template <typename T>
+template <typename Precision>
 void Mask::applyOffset(message::Message msg) const {
     auto const& bkey = domain::Mask::key(msg.metadata());
     auto const& bitmask = domain::Mask::instance().get(bkey);
 
-    ASSERT(bitmask.size() == msg.size() / sizeof(T));
+    ASSERT(bitmask.size() == msg.size() / sizeof(Precision));
 
-    auto git = static_cast<T*>(msg.payload().data());
+    auto git = static_cast<Precision*>(msg.payload().data());
 
     for (const auto bval : bitmask) {
         if (bval) {

@@ -6,60 +6,70 @@
 namespace multio {
 namespace message {
 
+
 namespace {
 std::unordered_map<std::string, eckit::LocalConfiguration> constructSourceMap(
-    const std::vector<eckit::LocalConfiguration>& sourceList, const std::string& key) {
+    const std::vector<eckit::LocalConfiguration>& mapDataList, const std::string& key) {
     std::unordered_map<std::string, eckit::LocalConfiguration> map;
-    for (auto const& cfg : sourceList) {
+    for (auto const& cfg : mapDataList) {
         map.insert({cfg.getString(key), cfg});
     }
     return map;
 }
 }  // namespace
 
-MetadataMapping::MetadataMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
-                                   const eckit::LocalConfiguration& optionalMappings,
-                                   const std::vector<eckit::LocalConfiguration>& sourceList, const std::string& key,
-                                   const eckit::Optional<std::string>& targetPath) :
-    sourceKey_(sourceKey),
+MetadataMappingException::MetadataMappingException(const std::string& r) {
+    std::string s{"MetadataMapping failure: "};
+    s.append(r);
+    reason(s);
+}
+
+
+MetadataMapping::MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
+                                 const eckit::LocalConfiguration& optionalMappings,
+                                 const std::vector<eckit::LocalConfiguration>& mapDataList, const std::string& matchKey,
+                                 const eckit::Optional<std::string>& targetPath) :
+    metadataKey_(metadataKey),
     mapping_{mappings},
     optionalMapping_{optionalMappings},
-    source_{constructSourceMap(sourceList, key)},
+    mapData_{constructSourceMap(mapDataList, matchKey)},
     targetPath_{targetPath} {}
-MetadataMapping::MetadataMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
-                                   const eckit::LocalConfiguration& optionalMappings,
-                                   const std::unordered_map<std::string, eckit::LocalConfiguration>& source,
-                                   const eckit::Optional<std::string>& targetPath) :
-    sourceKey_(sourceKey),
+
+MetadataMapping::MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
+                                 const eckit::LocalConfiguration& optionalMappings,
+                                 const std::unordered_map<std::string, eckit::LocalConfiguration>& source,
+                                 const eckit::Optional<std::string>& targetPath) :
+    metadataKey_(metadataKey),
     mapping_{mappings},
     optionalMapping_{optionalMappings},
-    source_{source},
+    mapData_{source},
     targetPath_{targetPath} {}
-MetadataMapping::MetadataMapping(const std::string& sourceKey, const eckit::LocalConfiguration& mappings,
-                                   const eckit::LocalConfiguration& optionalMappings,
-                                   std::unordered_map<std::string, eckit::LocalConfiguration>&& source,
-                                   const eckit::Optional<std::string>& targetPath) :
-    sourceKey_(sourceKey),
+
+MetadataMapping::MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
+                                 const eckit::LocalConfiguration& optionalMappings,
+                                 std::unordered_map<std::string, eckit::LocalConfiguration>&& source,
+                                 const eckit::Optional<std::string>& targetPath) :
+    metadataKey_(metadataKey),
     mapping_{mappings},
     optionalMapping_{optionalMappings},
-    source_{std::move(source)},
+    mapData_{std::move(source)},
     targetPath_{targetPath} {}
 
 
 void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) const {
-    if (!m.has(sourceKey_)) {
+    if (!m.has(metadataKey_)) {
         if (options.enforceMatch) {
             std::ostringstream oss;
-            oss << "MetadataMapping failure: Metadata has no source key \"" << sourceKey_ << "\"";
-            throw eckit::Exception(oss.str());
+            oss << "Metadata has no source key \"" << metadataKey_ << "\"";
+            throw MetadataMappingException(oss.str());
         }
         return;
     }
-    std::string lookUpKey = m.getString(sourceKey_);
-    auto from = source_.find(lookUpKey);
-    if (from == source_.end()) {
+    std::string lookUpKey = m.getString(metadataKey_);
+    auto from = mapData_.find(lookUpKey);
+    if (from == mapData_.end()) {
         std::ostringstream oss;
-        oss << "Metadata mapping failure: Source key \"" << sourceKey_ << "\" in metadata is resolving to \""
+        oss << "Metadata mapping failure: Source key \"" << metadataKey_ << "\" in metadata is resolving to \""
             << lookUpKey << "\" for which no mapping has be provided in the mapping file." << std::endl;
         throw eckit::Exception(oss.str());
     }
@@ -83,7 +93,7 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
             else {
                 if (!isOptional) {
                     std::ostringstream oss;
-                    oss << "Metadata mapping failure: Source key \"" << sourceKey_
+                    oss << "Metadata mapping failure: Source key \"" << metadataKey_
                         << "\" in metadata is resolving to \"" << lookUpKey
                         << "\" which mapping is not providing a mapping for key \"" << lookUpMapKey << "\"."
                         << std::endl;
@@ -100,11 +110,13 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
     }
 }
 
+
 Metadata MetadataMapping::apply(Metadata&& m, MetadataMappingOptions options) const {
     Metadata mc(std::move(m));
     applyInplace(mc, options);
     return mc;
 };
+
 Metadata MetadataMapping::apply(const Metadata& m, MetadataMappingOptions options) const {
     Metadata mc(m);
     applyInplace(mc, options);

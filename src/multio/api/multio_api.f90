@@ -42,12 +42,16 @@ module multio_api
         procedure :: close_connections => multio_close_connections
         procedure :: write_step_complete => multio_write_step_complete
         procedure :: write_domain => multio_write_domain
-        procedure :: write_mask_float => multio_write_mask_float
-        procedure :: write_mask_double => multio_write_mask_double
-        generic   :: write_mask => write_mask_float, write_mask_double
-        procedure :: write_field_float => multio_write_field_float
-        procedure :: write_field_double => multio_write_field_double
-        generic   :: write_field => write_field_float, write_field_double
+        procedure :: write_mask_float_1d => multio_write_mask_float_1d
+        procedure :: write_mask_double_1d => multio_write_mask_double_1d
+        procedure :: write_mask_float_2d => multio_write_mask_float_2d
+        procedure :: write_mask_double_2d => multio_write_mask_double_2d
+        generic   :: write_mask => write_mask_float_1d, write_mask_float_2d, write_mask_double_1d, write_mask_double_2d
+        procedure :: write_field_float_1d => multio_write_field_float_1d
+        procedure :: write_field_double_1d => multio_write_field_double_1d
+        procedure :: write_field_float_2d => multio_write_field_float_2d
+        procedure :: write_field_double_2d => multio_write_field_double_2d
+        generic   :: write_field => write_field_float_1d, write_field_float_2d, write_field_double_1d, write_field_double_2d
         procedure :: field_accepted => multio_field_accepted
         ! procedure :: field_is_active => multio_field_is_active
         ! procedure :: category_is_fully_active => multio_category_is_fully_active
@@ -313,7 +317,8 @@ module multio_api
             implicit none
             type(c_ptr), intent(in), value :: handle
             type(c_ptr), intent(in), value :: metadata
-            real(c_float), dimension(*), intent(in) :: data
+            ! real(c_float), dimension(*), intent(in) :: data
+            type(c_ptr), intent(in), value :: data
             integer(c_int), intent(in), value :: size
             integer(c_int) :: err
         end function
@@ -324,7 +329,8 @@ module multio_api
             implicit none
             type(c_ptr), intent(in), value :: handle
             type(c_ptr), intent(in), value :: metadata
-            real(c_double), dimension(*), intent(in) :: data
+            ! real(c_double), dimension(*), intent(in) :: data
+            type(c_ptr), intent(in), value :: data
             integer(c_int), intent(in), value :: size
             integer(c_int) :: err
         end function
@@ -335,7 +341,8 @@ module multio_api
             implicit none
             type(c_ptr), intent(in), value :: handle
             type(c_ptr), intent(in), value :: metadata
-            real(c_float), dimension(*), intent(in) :: data
+            ! real(c_float), dimension(*), intent(in) :: data
+            type(c_ptr), intent(in), value :: data
             integer(c_int), intent(in), value :: size
             integer(c_int) :: err
         end function
@@ -346,7 +353,8 @@ module multio_api
             implicit none
             type(c_ptr), intent(in), value :: handle
             type(c_ptr), intent(in), value :: metadata
-            real(c_double), dimension(*), intent(in) :: data
+            ! real(c_double), dimension(*), intent(in) :: data
+            type(c_ptr), intent(in), value :: data
             integer(c_int), intent(in), value :: size
             integer(c_int) :: err
         end function
@@ -632,44 +640,84 @@ contains
         err = c_multio_write_domain(handle%impl, metadata%impl, data, size)
     end function
 
-    function multio_write_mask_float(handle, metadata, data, size) result(err)
+    function multio_write_mask_float_1d(handle, metadata, data, size) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
         integer :: err
 
-        real(sp), dimension(*), intent(in) :: data
+        real(sp), dimension(:), target, intent(in) :: data
         integer, intent(in), value :: size
-        err = c_multio_write_mask_float(handle%impl, metadata%impl, data, size)
+        err = c_multio_write_mask_float(handle%impl, metadata%impl, c_loc(data), size)
+    end function
+    
+    function multio_write_mask_float_2d(handle, metadata, data, size) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(sp), dimension(:,:), target, intent(in) :: data
+        integer, intent(in), value :: size
+        err = c_multio_write_mask_float(handle%impl, metadata%impl, c_loc(data), size)
     end function
 
-    function multio_write_mask_double(handle, metadata, data, size) result(err)
+    function multio_write_mask_double_1d(handle, metadata, data, size) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
         integer :: err
 
-        real(dp), dimension(*), intent(in) :: data
+        real(dp), dimension(:), target, intent(in) :: data
         integer, intent(in), value :: size
-        err = c_multio_write_mask_double(handle%impl, metadata%impl, data, size)
+        err = c_multio_write_mask_double(handle%impl, metadata%impl, c_loc(data), size)
+    end function
+    
+    function multio_write_mask_double_2d(handle, metadata, data, size) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(dp), dimension(:,:), target, intent(in) :: data
+        integer, intent(in), value :: size
+        err = c_multio_write_mask_double(handle%impl, metadata%impl, c_loc(data), size)
     end function
 
-    function multio_write_field_float(handle, metadata, data, size) result(err)
+    function multio_write_field_float_1d(handle, metadata, data, size) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
         integer :: err
 
-        real(sp), dimension(*), intent(in) :: data
+        real(sp), dimension(:), target, intent(in) :: data
         integer, intent(in), value :: size
-        err = c_multio_write_field_float(handle%impl, metadata%impl, data, size)
+        err = c_multio_write_field_float(handle%impl, metadata%impl, c_loc(data), size)
+    end function
+    
+    function multio_write_field_float_2d(handle, metadata, data, size) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(sp), dimension(:,:), target, intent(in) :: data
+        integer, intent(in), value :: size
+        err = c_multio_write_field_float(handle%impl, metadata%impl, c_loc(data), size)
     end function
 
-    function multio_write_field_double(handle, metadata, data, size) result(err)
+    function multio_write_field_double_1d(handle, metadata, data, size) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
         integer :: err
 
-        real(dp), dimension(*), intent(in) :: data
+        real(dp), dimension(:), target, intent(in) :: data
         integer, intent(in), value :: size
-        err = c_multio_write_field_double(handle%impl, metadata%impl, data, size)
+        err = c_multio_write_field_double(handle%impl, metadata%impl, c_loc(data), size)
+    end function
+    
+    function multio_write_field_double_2d(handle, metadata, data, size) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(dp), dimension(:,:), target, intent(in) :: data
+        integer, intent(in), value :: size
+        err = c_multio_write_field_double(handle%impl, metadata%impl, c_loc(data), size)
     end function
 
     function multio_field_accepted(handle, metadata, set_value) result(err)

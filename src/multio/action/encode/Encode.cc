@@ -111,7 +111,9 @@ void Encode::executeImpl(Message msg) {
 }
 
 void Encode::print(std::ostream& os) const {
-    os << "Encode(format=" << format_ << ")";
+    os << "Encode(format=" << format_ << ", " << "encoder="; 
+    if(encoder_) encoder_->print(os) ;
+    os << ")";
 }
 
 namespace {

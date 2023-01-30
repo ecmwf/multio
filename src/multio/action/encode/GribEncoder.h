@@ -58,6 +58,8 @@ public:
     // TODO May be refactored
     // int getBitsPerValue(int paramid, const std::string& levtype, double min, double max);
 
+    void print(std::ostream& os) const;
+
 private:
     void setFieldMetadata(const message::Message& msg);
     void setOceanMetadata(const message::Message& msg);
@@ -77,7 +79,7 @@ private:
 
     message::Message setFieldValues(const double* values, size_t count);
     message::Message setFieldValues(const float* values, size_t count);
-
+    
     const eckit::LocalConfiguration config_;
 
     const std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",
@@ -85,6 +87,8 @@ private:
 
     // TODO: This is just included from old interface now and may require refactoring in terms of configuration and its
     // action EncodeBitsPerValue encodeBitsPerValue_;
+    
+    eckit::Optional<std::ostringstream> debugStream_;
 };
 
 inline bool isOcean(const message::Metadata& metadata) {

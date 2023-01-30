@@ -69,7 +69,7 @@ void Mask::createBitmask(message::Message inMsg) {
     std::vector<bool> bitmask;
     bitmask.resize(inMsg.globalSize());
     for (const auto& msg : messages_.at(fid)) {
-        domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_bitmask(msg, bitmask);
+        domain::Mappings::instance().get(msg.domain()).at(msg.source())->toBitmask(msg, bitmask);
     }
 
     // Assert invariants such are bound to be creating this the first and last time

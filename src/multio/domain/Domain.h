@@ -20,12 +20,12 @@ public:
     Domain(std::vector<int32_t>&& def);
     virtual ~Domain() = default;
 
-    virtual void to_local(const std::vector<double>& global, std::vector<double>& local) const = 0;
-    virtual void to_global(const message::Message& local, message::Message& global) const = 0;
-    virtual void to_bitmask(const message::Message& local, std::vector<bool>& bmask) const = 0;
+    virtual void toLocal(const std::vector<double>& global, std::vector<double>& local) const = 0;
+    virtual void toGlobal(const message::Message& local, message::Message& global) const = 0;
+    virtual void toBitmask(const message::Message& local, std::vector<bool>& bmask) const = 0;
 
-    virtual long local_size() const = 0;
-    virtual long global_size() const = 0;
+    virtual long localSize() const = 0;
+    virtual long globalSize() const = 0;
 
     virtual void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const = 0;
 
@@ -38,16 +38,16 @@ public:
     Unstructured(std::vector<int32_t>&& def, long global_size);
 
 private:
-    void to_local(const std::vector<double>& global, std::vector<double>& local) const override;
-    void to_global(const message::Message& local, message::Message& global) const override;
-    void to_bitmask(const message::Message& local, std::vector<bool>& bmask) const override;
+    void toLocal(const std::vector<double>& global, std::vector<double>& local) const override;
+    void toGlobal(const message::Message& local, message::Message& global) const override;
+    void toBitmask(const message::Message& local, std::vector<bool>& bmask) const override;
 
-    long local_size() const override;
-    long global_size() const override;
+    long localSize() const override;
+    long globalSize() const override;
 
     void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 
-    long global_size_;
+    long globalSize_;
 };
 
 class Structured final : public Domain {
@@ -55,12 +55,12 @@ public:
     Structured(std::vector<int32_t>&& def);
 
 private:
-    void to_local(const std::vector<double>& global, std::vector<double>& local) const override;
-    void to_global(const message::Message& local, message::Message& global) const override;
-    void to_bitmask(const message::Message& local, std::vector<bool>& bmask) const override;
+    void toLocal(const std::vector<double>& global, std::vector<double>& local) const override;
+    void toGlobal(const message::Message& local, message::Message& global) const override;
+    void toBitmask(const message::Message& local, std::vector<bool>& bmask) const override;
 
-    long local_size() const override;
-    long global_size() const override;
+    long localSize() const override;
+    long globalSize() const override;
 
     void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 };
@@ -70,12 +70,12 @@ public:
     Spectral(std::vector<int32_t>&& def);
 
 private:
-    void to_local(const std::vector<double>& global, std::vector<double>& local) const override;
-    void to_global(const message::Message& local, message::Message& global) const override;
-    void to_bitmask(const message::Message& local, std::vector<bool>& bmask) const override;
+    void toLocal(const std::vector<double>& global, std::vector<double>& local) const override;
+    void toGlobal(const message::Message& local, message::Message& global) const override;
+    void toBitmask(const message::Message& local, std::vector<bool>& bmask) const override;
 
-    long local_size() const override;
-    long global_size() const override;
+    long localSize() const override;
+    long globalSize() const override;
 
     void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 };

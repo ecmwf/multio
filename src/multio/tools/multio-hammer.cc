@@ -388,7 +388,7 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
 
                 std::vector<double> field;
                 auto& global_field = global_test_field(field_id, field_size(), transportType_, client_list_id);
-                index_map->to_local(global_field, field);
+                index_map->toLocal(global_field, field);
 
                 // Choose server
                 auto id = std::hash<std::string>{}(field_id) % serverCount_;

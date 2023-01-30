@@ -14,16 +14,16 @@ Domain::Domain(std::vector<int32_t>&& def) : definition_(std::move(def)) {}
 
 //------------------------------------------------------------------------------------------------------------
 
-Unstructured::Unstructured(std::vector<int32_t>&& def, long global_size_val) :
-    Domain{std::move(def)}, global_size_{global_size_val} {}
+Unstructured::Unstructured(std::vector<int32_t>&& def, long globalSize_val) :
+    Domain{std::move(def)}, globalSize_{globalSize_val} {}
 
-void Unstructured::to_local(const std::vector<double>& global, std::vector<double>& local) const {
+void Unstructured::toLocal(const std::vector<double>& global, std::vector<double>& local) const {
     local.resize(0);
     std::for_each(begin(definition_), end(definition_),
                   [&](int32_t id) { local.push_back(global[id]); });
 }
 
-void Unstructured::to_global(const message::Message& local, message::Message& global) const {
+void Unstructured::toGlobal(const message::Message& local, message::Message& global) const {
     ASSERT(local.payload().size() == definition_.size() * sizeof(double));
 
     auto lit = static_cast<const double*>(local.payload().data());
@@ -33,20 +33,21 @@ void Unstructured::to_global(const message::Message& local, message::Message& gl
     }
 }
 
-void Unstructured::to_bitmask(const message::Message&, std::vector<bool>&) const {
+void Unstructured::toBitmask(const message::Message&, std::vector<bool>&) const {
     NOTIMP;
 }
 
-long Unstructured::local_size() const {
+long Unstructured::localSize() const {
    return definition_.size();
 };
-long Unstructured::global_size() const {
-    return global_size_;
+
+long Unstructured::globalSize() const {
+    return globalSize_;
 }
 
 void Unstructured::collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const {
     auto payloadSize = static_cast<long>(local.payload().size() / sizeof(double));
-    if (payloadSize != local_size()) {
+    if (payloadSize != localSize()) {
         throw eckit::SeriousBug{"Mismatch between sizes of index map and local field", Here()};
     }
 
@@ -69,11 +70,11 @@ Structured::Structured(std::vector<int32_t>&& def) : Domain{std::move(def)} {
     ASSERT(definition_.size() == 11);
 }
 
-void Structured::to_local(const std::vector<double>&, std::vector<double>&) const {
+void Structured::toLocal(const std::vector<double>&, std::vector<double>&) const {
     NOTIMP;
 }
 
-void Structured::to_global(const message::Message& local, message::Message& global) const {
+void Structured::toGlobal(const message::Message& local, message::Message& global) const {
 
     // Global domain's dimenstions
     auto ni_global = definition_[0];
@@ -112,7 +113,7 @@ void Structured::to_global(const message::Message& local, message::Message& glob
     }
 }
 
-void Structured::to_bitmask(const message::Message& local, std::vector<bool>& bmask) const {
+void Structured::toBitmask(const message::Message& local, std::vector<bool>& bmask) const {
 
     // Global domain's dimenstions
     auto ni_global = definition_[0];
@@ -182,7 +183,7 @@ void Structured::collectIndices(const message::Message& local, std::set<int32_t>
     }
 }
 
-long Structured::local_size() const {
+long Structured::localSize() const {
     // Local domain's dimensions
     auto ni = definition_[3];
     auto nj = definition_[5];
@@ -190,7 +191,7 @@ long Structured::local_size() const {
     return ni*nj;
 
 };
-long Structured::global_size() const {
+long Structured::globalSize() const {
     // Global domain's dimenstions
     auto ni_global = definition_[0];
     auto nj_global = definition_[1];
@@ -203,22 +204,22 @@ long Structured::global_size() const {
 
 Spectral::Spectral(std::vector<int32_t>&& def) : Domain{std::move(def)} {}
 
-void Spectral::to_local(const std::vector<double>&, std::vector<double>&) const {
+void Spectral::toLocal(const std::vector<double>&, std::vector<double>&) const {
     NOTIMP;
 }
 
-void Spectral::to_global(const message::Message&, message::Message&) const {
+void Spectral::toGlobal(const message::Message&, message::Message&) const {
     NOTIMP;
 }
 
-void Spectral::to_bitmask(const message::Message&, std::vector<bool>&) const {
+void Spectral::toBitmask(const message::Message&, std::vector<bool>&) const {
     NOTIMP;
 }
 
-long Spectral::local_size() const {
+long Spectral::localSize() const {
     NOTIMP;
 };
-long Spectral::global_size() const {
+long Spectral::globalSize() const {
     NOTIMP;
 };
 

@@ -43,10 +43,10 @@ public:
         auto totalSize = 0;
         std::for_each(std::begin(domainMap_), std::end(domainMap_),
                       [&totalSize](const std::pair<const message::Peer, std::unique_ptr<Domain>>& domain) {
-                          totalSize += domain.second->local_size();
+                          totalSize += domain.second->localSize();
                       });
 
-        return (totalSize == domainMap_.begin()->second->global_size());
+        return (totalSize == domainMap_.begin()->second->globalSize());
     };
 
     bool isConsistent() const { return consistent_; }

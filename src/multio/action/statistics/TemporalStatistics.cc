@@ -64,7 +64,7 @@ bool TemporalStatistics::process(message::Message& msg) {
 
 void TemporalStatistics::updateStatistics(const message::Message& msg) {
     for (auto const& stat : statistics_) {
-        std::visit(overloaded{[&msg](const std::unique_ptr<Operation<double>>& arg) {
+        std::visit(Overloaded{[&msg](const std::unique_ptr<Operation<double>>& arg) {
                                   return arg->update(msg.payload().data(), msg.size());
                               },
                               [&msg](const std::unique_ptr<Operation<float>>& arg) {
@@ -103,13 +103,13 @@ std::map<std::string, eckit::Buffer> TemporalStatistics::compute(const message::
     std::map<std::string, eckit::Buffer> retStats;
     for (auto const& stat : statistics_) {
 
-        auto buf = std::visit(overloaded{[](const std::unique_ptr<Operation<double>>& arg) { return arg->compute(); },
+        auto buf = std::visit(Overloaded{[](const std::unique_ptr<Operation<double>>& arg) { return arg->compute(); },
                                          [](const std::unique_ptr<Operation<float>>& arg) { return arg->compute(); }},
                               stat);
 
 
         const auto& name
-            = std::visit(overloaded{[](const std::unique_ptr<Operation<double>>& arg) { return arg->name(); },
+            = std::visit(Overloaded{[](const std::unique_ptr<Operation<double>>& arg) { return arg->name(); },
                                     [](const std::unique_ptr<Operation<float>>& arg) { return arg->name(); }},
                          stat);
 

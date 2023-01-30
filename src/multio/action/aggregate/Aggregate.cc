@@ -42,7 +42,7 @@ bool Aggregate::handleField(const Message& msg) const {
         msgMap_.addNew(msg);
     }
     // TODO: Perhaps call collect indices here and store it for a later call on check consistnecy
-    domain::Mappings::instance().get(msg.domain()).at(msg.source())->to_global(msg, msgMap_.at(msg.fieldId()));
+    domain::Mappings::instance().get(msg.domain()).at(msg.source())->toGlobal(msg, msgMap_.at(msg.fieldId()));
     msgMap_.bookProcessedPart(msg.fieldId(), msg.source());
     return allPartsArrived(msg);
 }

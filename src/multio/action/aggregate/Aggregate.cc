@@ -47,20 +47,22 @@ bool Aggregate::handleField(const Message& msg) const {
     return allPartsArrived(msg);
 }
 
+auto Aggregate::flushCount(const Message& msg) const {
+    if (flushes_.find(msg.fieldId()) == end(flushes_)) {
+        flushes_[msg.fieldId()] = 0;
+    }
+
+    return ++flushes_.at(msg.fieldId());
+}
+
 bool Aggregate::handleFlush(const Message& msg) const {
     // Initialise if need be
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
-    auto flushCount = [&msg, this]() {
-        if (flushes_.find(msg.fieldId()) == end(flushes_)) {
-            flushes_[msg.fieldId()] = 0;
-        }
-        return ++flushes_.at(msg.fieldId());
-    }();
-
     const auto& domainMap = domain::Mappings::instance().get(msg.domain());
+    auto flCount = flushCount(msg);
 
-    return domainMap.isComplete() && flushCount == domainMap.size();
+    return domainMap.isComplete() && flCount == domainMap.size();
 }
 
 bool Aggregate::allPartsArrived(const Message& msg) const {

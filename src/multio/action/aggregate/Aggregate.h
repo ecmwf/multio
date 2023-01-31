@@ -86,6 +86,8 @@ private:
     Message createGlobalField(const Message& msg) const;
     bool allPartsArrived(const Message& msg) const;
 
+    auto flushCount(const Message& msg) const;
+
     mutable MessageMap msgMap_;
     mutable std::map<std::string, unsigned int> flushes_;
 };

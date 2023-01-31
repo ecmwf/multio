@@ -102,13 +102,13 @@ bool GribEncoder::setGridInfo(message::Message msg) {
     return grids().at(msg.domain())->computeHashIfCan();
 }
 
-struct QueriedMarsFields {
+struct QueriedMarsKeys {
     eckit::Optional<std::string> type{};
     eckit::Optional<long> paramId{};
 };
 
-QueriedMarsFields setMarsFields(GribEncoder& g, const eckit::Configuration& md) {
-    QueriedMarsFields ret;
+QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
+    QueriedMarsKeys ret;
     // TODO we should be able to determine the type in the metadata and preserve
     // it Domain usually is always readonly withFirstOf(ValueSetter{g, "domain"},
     // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
@@ -186,7 +186,7 @@ void setEncodingSpecificFields(GribEncoder& g, const message::Message& msg) {
 }
 
 void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
-                                 const QueriedMarsFields& queriedMarsFields) {
+                                 const QueriedMarsKeys& queriedMarsFields) {
     auto date = firstOf(
         LookUpLong(md, (queriedMarsFields.type && (*queriedMarsFields.type == "an")) ? "currentDate" : "startDate"),
         LookUpLong(md, "startDate"));
@@ -249,7 +249,7 @@ void GribEncoder::setFieldMetadata(const message::Message& msg) {
         setOceanMetadata(msg);
     }
     else {
-        auto queriedMarsFields = setMarsFields(*this, msg.metadata());
+        auto queriedMarsFields = setMarsKeys(*this, msg.metadata());
         applyOverwrites(*this, msg.metadata());
         setEncodingSpecificFields(*this, msg);
         setDateAndStatisticalFields(*this, msg.metadata(), queriedMarsFields);
@@ -260,7 +260,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     auto runConfig = config_.getSubConfiguration("run");
     const auto& metadata = msg.metadata();
 
-    auto queriedMarsFields = setMarsFields(*this, runConfig);
+    auto queriedMarsFields = setMarsKeys(*this, runConfig);
     if (queriedMarsFields.type) {
         setValue("typeOfGeneratingProcess", type_of_generating_process.at(*queriedMarsFields.type));
     }
@@ -292,7 +292,7 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {
 }
 void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit::Configuration& runConfig) {
     // Set run-specific md
-    setMarsFields(*this, runConfig);
+    setMarsKeys(*this, runConfig);
 
     setValue("date", md.getLong("startDate"));
 

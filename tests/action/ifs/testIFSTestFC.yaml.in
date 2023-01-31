@@ -22,7 +22,7 @@ plans:
           prefix: Plan for leveltype "ml" and gridType "sh" (grib2)
         - type: encode
           format: grib
-          template: @multio_BINARY_DIR@/tests/actions/ifs/data/ifs-ml-sh-1-0-t-2.grib
+          template: @TEST_IFS_TEST_TEMPLATES_PATH@/ifs-ml-sh-1-0-t-2.grib
           overwrite:
             generatingProcessIdentifier: 147
             NV: 40
@@ -50,7 +50,7 @@ plans:
           format: grib
           # TODO
           # some comparisons fail with: long [timeRangeIndicator]: [0] != [1] 
-          template: @multio_BINARY_DIR@/tests/actions/ifs/data/ifs-pl-sh-1000-0-t-1.grib
+          template: @TEST_IFS_TEST_TEMPLATES_PATH@/ifs-pl-sh-700-0-t-1.grib
           overwrite:
             generatingProcessIdentifier: 147
         - type: sink
@@ -75,7 +75,7 @@ plans:
           prefix: Plan leveltype "ml" and gridType "regular_gg"
         - type: encode
           format: grib
-          template: @multio_BINARY_DIR@/tests/actions/ifs/data/ifs-ml-regular_gg-1-0-q-2.grib
+          template: @TEST_IFS_TEST_TEMPLATES_PATH@/ifs-ml-regular_gg-1-0-q-2.grib
           overwrite:
             generatingProcessIdentifier: 147
             NV: 40

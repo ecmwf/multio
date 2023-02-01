@@ -82,14 +82,7 @@ Message Aggregate::createGlobalField(const std::string& fid) const {
     // TODO: checking domain consistency is skipped for now...
     // domain::Mappings::instance().checkDomainConsistency(messages_.at(fid));
 
-    auto it = msgMap_.find(fid);
-    ASSERT(it != msgMap_.end());
-
-    auto msgOut = std::move(it->second);
-
-    msgMap_.reset(it);
-
-    return msgOut;
+    return msgMap_.extract(fid);
 }
 
 void Aggregate::print(std::ostream& os) const {

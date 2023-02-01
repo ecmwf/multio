@@ -30,9 +30,11 @@ using message::Message;
 class MessageMap : private std::map<std::string, Message> {
 public:
     using std::map<std::string, Message>::at;
+    using std::map<std::string, Message>::find;
     using std::map<std::string, Message>::size;
     using std::map<std::string, Message>::begin;
     using std::map<std::string, Message>::end;
+    using std::map<std::string, Message>::iterator;
 
     bool contains(const std::string& key) const {
         return find(key) != end() && processedParts_.find(key) != std::end(processedParts_);
@@ -61,9 +63,9 @@ public:
         });
     }
 
-    void reset(const std::string& key) {
-        erase(key);
-        processedParts_.erase(key);
+    void reset(iterator it) {
+        processedParts_.erase(it->first);
+        erase(it);
     }
 
 private:

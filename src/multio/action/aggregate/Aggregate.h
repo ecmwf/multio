@@ -83,7 +83,7 @@ private:
     bool handleField(const Message& msg) const;
     bool handleFlush(const Message& msg) const;
 
-    Message createGlobalField(const Message& msg) const;
+    Message createGlobalField(const std::string& msg) const;
     bool allPartsArrived(const Message& msg) const;
 
     auto flushCount(const Message& msg) const;

@@ -28,7 +28,7 @@ void Aggregate::executeImpl(Message msg) const {
     eckit::Log::info() << " ***** Aggregating message " << msg << std::endl;
 
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
-        executeNext(createGlobalField(std::move(msg)));
+        executeNext(createGlobalField(msg.fieldId()));
     }
 
     if ((msg.tag() == Message::Tag::StepComplete) && handleFlush(msg)) {
@@ -74,12 +74,10 @@ bool Aggregate::allPartsArrived(const Message& msg) const {
     return domainMap.isComplete() && (msgMap_.partsCount(msg.fieldId()) == domainMap.size());
 }
 
-Message Aggregate::createGlobalField(const Message& msg) const {
+Message Aggregate::createGlobalField(const std::string& fid) const {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     eckit::Log::info() << "Creating global field " << std::endl;
-
-    const auto& fid = msg.fieldId();
 
     // TODO: checking domain consistency is skipped for now...
     // domain::Mappings::instance().checkDomainConsistency(messages_.at(fid));

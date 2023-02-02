@@ -20,6 +20,7 @@
 #include <unordered_map>
 
 #include "multio/action/ChainedAction.h"
+#include "multio/domain/Mappings.h"
 #include "multio/util/PrecisionTag.h"
 
 namespace multio {
@@ -30,9 +31,6 @@ using message::Message;
 class MessageMap : private std::map<std::string, Message> {
 public:
     using std::map<std::string, Message>::at;
-    using std::map<std::string, Message>::size;
-    using std::map<std::string, Message>::begin;
-    using std::map<std::string, Message>::end;
 
     bool contains(const std::string& key) const {
         return find(key) != end() && processedParts_.find(key) != std::end(processedParts_);
@@ -72,6 +70,17 @@ public:
         erase(it);
 
         return msgOut;
+    }
+
+    void print(std::ostream& os) {
+        os << "Aggregate(for " << size() << " fields = [";
+        for (const auto& mp : *this) {
+            auto const& domainMap = domain::Mappings::instance().get(mp.second.domain());
+            os << '\n'
+               << "  --->  " << mp.first << " ---> Aggregated " << partsCount(mp.first) << " parts of a total of "
+               << (domainMap.isComplete() ? domainMap.size() : 0);
+        }
+        os << "])";
     }
 
 private:

@@ -13,7 +13,6 @@
 #include <algorithm>
 
 #include "multio/LibMultio.h"
-#include "multio/domain/Mappings.h"
 #include "multio/util/ScopedTimer.h"
 
 namespace multio {
@@ -86,14 +85,7 @@ Message Aggregate::createGlobalField(const std::string& fid) const {
 }
 
 void Aggregate::print(std::ostream& os) const {
-    os << "Aggregate(for " << msgMap_.size() << " fields = [";
-    for (const auto& mp : msgMap_) {
-        auto const& domainMap = domain::Mappings::instance().get(mp.second.domain());
-        os << '\n'
-           << "  --->  " << mp.first << " ---> Aggregated " << msgMap_.partsCount(mp.first) << " parts of a total of "
-           << (domainMap.isComplete() ? domainMap.size() : 0);
-    }
-    os << "])";
+    msgMap_.print(os);
 }
 
 

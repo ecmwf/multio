@@ -48,7 +48,7 @@ const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-3d", "oceanModelLevel"}};
 
 const std::map<const std::string, const long> type_of_generating_process{
-    {"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}};
+    {"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}, {"tpa", 0}};
 
 }  // namespace
 
@@ -92,12 +92,12 @@ void GribEncoder::setOceanMetadata(const message::Metadata& metadata) {
     setValue("type", type);
     setValue("typeOfGeneratingProcess", type_of_generating_process.at(type));
 
-    long date = (type == "an") ? metadata.getLong("currentDate") : metadata.getLong("startDate");
+    long date = (type == "fc") ? metadata.getLong("startDate") : metadata.getLong("currentDate");
     setValue("year",  date / 10000);
     setValue("month", (date % 10000) / 100);
     setValue("day", date % 100);
 
-    long time = (type == "an") ? metadata.getLong("currentTime") : metadata.getLong("startTime");
+    long time = (type == "fc") ? metadata.getLong("startTime") : metadata.getLong("currentTime");
     setValue("hour",  time / 10000);
     setValue("minute", (time % 10000) / 100);
     setValue("second", time % 100);

@@ -30,6 +30,7 @@
 #include "mir/repres/gauss/reduced/Reduced.h"
 
 #include "multio/LibMultio.h"
+#include "multio/message/Message.h"
 #include "multio/util/PrecisionTag.h"
 
 
@@ -121,18 +122,28 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
 
     auto set = [&destination](const eckit::LocalConfiguration& cfg, const std::string& key, const eckit::Value& value) {
         if (value.isList()) {
-            value.head().isDouble()   ? destination.set(key, cfg.getDoubleVector(key))
-            : value.head().isNumber() ? destination.set(key, cfg.getLongVector(key))
-            : value.head().isString() ? destination.set(key, cfg.getStringVector(key))
-                                      : NOTIMP;
-            return;
+          if ( value.head().isDouble() ) {
+            destination.set(key, cfg.getDoubleVector(key));
+          } else if ( value.head().isNumber() ) {
+             destination.set(key, cfg.getLongVector(key));
+          } else if ( value.isString() ) {
+             destination.set(key, cfg.getStringVector(key));
+          } else {
+             NOTIMP;
+          }
+          return;
         }
-
-        value.isBool()     ? destination.set(key, cfg.getBool(key))
-        : value.isDouble() ? destination.set(key, cfg.getDouble(key))
-        : value.isNumber() ? destination.set(key, cfg.getInt(key))
-        : value.isString() ? destination.set(key, cfg.getString(key).c_str())
-                           : NOTIMP;
+        if ( value.isBool() ){
+          destination.set(key, cfg.getBool(key));
+        } else if ( value.isDouble() ){
+          destination.set(key, cfg.getDouble(key));
+        } else  if ( value.isNumber() ) {
+          destination.set(key, cfg.getInt(key));
+        } else if ( value.isString()  ) {
+          destination.set(key, cfg.getString(key).c_str());
+        } else {
+          NOTIMP;
+        }
     };
 
     for (const auto& key : postproc) {
@@ -200,7 +211,7 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
 template <>
 message::Message Interpolate::InterpolateMessage<float>(message::Message&& msg) const {
     // convert single/double precision, interpolate, convert double/single
-    return InterpolateMessage<double>(convert_precision<float, double>(std::move(msg)));
+    return InterpolateMessage<double>(message::convert_precision<float, double>(std::move(msg)));
 }
 
 void Interpolate::executeImpl(message::Message msg) {

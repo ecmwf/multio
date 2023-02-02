@@ -20,73 +20,12 @@
 #include <unordered_map>
 
 #include "multio/action/ChainedAction.h"
-#include "multio/domain/Mappings.h"
-#include "multio/util/PrecisionTag.h"
+#include "multio/action/aggregate/AggregationCatalogue.h"
 
 namespace multio {
 namespace action {
 
 using message::Message;
-
-class MessageMap : private std::map<std::string, Message> {
-public:
-    using std::map<std::string, Message>::at;
-
-    bool contains(const std::string& key) const {
-        return find(key) != end() && processedParts_.find(key) != std::end(processedParts_);
-    }
-
-    std::size_t partsCount(const std::string& key) const {
-        ASSERT(contains(key));
-        return processedParts_.at(key).size();
-    }
-
-    void bookProcessedPart(const std::string& key, message::Peer peer) {
-        ASSERT(contains(key));
-        auto ret = processedParts_.at(key).insert(std::move(peer));
-        if (not ret.second) {
-            eckit::Log::warning() << " Field " << key << " has been aggregated already" << std::endl;
-        }
-    }
-
-    void addNew(const Message& msg) {
-        ASSERT(not contains(msg.fieldId()));
-        multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
-            using PT = typename decltype(pt)::type;
-            emplace(msg.fieldId(),
-                    Message{Message::Header{msg.header()}, eckit::Buffer{msg.globalSize() * sizeof(PT)}});
-            processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
-        });
-    }
-
-    Message extract(const std::string& fid) {
-
-        auto it = find(fid);
-        ASSERT(it != end());
-
-        auto msgOut = std::move(it->second);
-
-        processedParts_.erase(it->first);
-        erase(it);
-
-        return msgOut;
-    }
-
-    void print(std::ostream& os) {
-        os << "Aggregate(for " << size() << " fields = [";
-        for (const auto& mp : *this) {
-            auto const& domainMap = domain::Mappings::instance().get(mp.second.domain());
-            os << '\n'
-               << "  --->  " << mp.first << " ---> Aggregated " << partsCount(mp.first) << " parts of a total of "
-               << (domainMap.isComplete() ? domainMap.size() : 0);
-        }
-        os << "])";
-    }
-
-private:
-    std::map<std::string, std::set<message::Peer>> processedParts_;
-};
-
 
 class Aggregate : public ChainedAction {
 public:
@@ -105,7 +44,7 @@ private:
 
     auto flushCount(const Message& msg) const;
 
-    mutable MessageMap msgMap_;
+    mutable AggregationCatalogue aggCatalogue_;
     mutable std::map<std::string, unsigned int> flushes_;
 };
 

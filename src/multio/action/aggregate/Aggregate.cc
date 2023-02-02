@@ -13,6 +13,7 @@
 #include <algorithm>
 
 #include "multio/LibMultio.h"
+#include "multio/domain/Mappings.h"
 #include "multio/util/ScopedTimer.h"
 
 namespace multio {
@@ -37,12 +38,15 @@ void Aggregate::executeImpl(Message msg) const {
 
 bool Aggregate::handleField(const Message& msg) const {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-    if (not msgMap_.contains(msg.fieldId())) {
-        msgMap_.addNew(msg);
+    if (not aggCatalogue_.contains(msg.fieldId())) {
+        aggCatalogue_.addNew(msg);
     }
     // TODO: Perhaps call collect indices here and store it for a later call on check consistnecy
-    domain::Mappings::instance().get(msg.domain()).at(msg.source())->toGlobal(msg, msgMap_.at(msg.fieldId()));
-    msgMap_.bookProcessedPart(msg.fieldId(), msg.source());
+    domain::Mappings::instance()
+        .get(msg.domain())
+        .at(msg.source())
+        ->toGlobal(msg, aggCatalogue_.getMessage(msg.fieldId()));
+    aggCatalogue_.bookProcessedPart(msg.fieldId(), msg.source());
     return allPartsArrived(msg);
 }
 
@@ -66,11 +70,11 @@ bool Aggregate::handleFlush(const Message& msg) const {
 
 bool Aggregate::allPartsArrived(const Message& msg) const {
     LOG_DEBUG_LIB(LibMultio) << " *** Number of messages for field " << msg.fieldId() << " are "
-                             << msgMap_.partsCount(msg.fieldId()) << std::endl;
+                             << aggCatalogue_.partsCount(msg.fieldId()) << std::endl;
 
     const auto& domainMap = domain::Mappings::instance().get(msg.domain());
 
-    return domainMap.isComplete() && (msgMap_.partsCount(msg.fieldId()) == domainMap.size());
+    return domainMap.isComplete() && (aggCatalogue_.partsCount(msg.fieldId()) == domainMap.size());
 }
 
 Message Aggregate::createGlobalField(const std::string& fid) const {
@@ -81,11 +85,11 @@ Message Aggregate::createGlobalField(const std::string& fid) const {
     // TODO: checking domain consistency is skipped for now...
     // domain::Mappings::instance().checkDomainConsistency(messages_.at(fid));
 
-    return msgMap_.extract(fid);
+    return aggCatalogue_.extract(fid);
 }
 
 void Aggregate::print(std::ostream& os) const {
-    msgMap_.print(os);
+    os << "Aggregate(for " << aggCatalogue_.size() << " fields = [" << aggCatalogue_ << "])";
 }
 
 
@@ -93,3 +97,4 @@ static ActionBuilder<Aggregate> AggregateBuilder("aggregate");
 
 }  // namespace action
 }  // namespace multio
+

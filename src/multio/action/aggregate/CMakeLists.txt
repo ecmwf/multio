@@ -5,7 +5,8 @@ ecbuild_add_library(
     SOURCES
     	Aggregate.cc
     	Aggregate.h
-
+        AggregationCatalogue.cc
+        AggregationCatalogue.cc
 
     PRIVATE_INCLUDES
       ${ECKIT_INCLUDE_DIRS}

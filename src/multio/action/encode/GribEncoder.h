@@ -87,8 +87,6 @@ private:
 
     // TODO: This is just included from old interface now and may require refactoring in terms of configuration and its
     // action EncodeBitsPerValue encodeBitsPerValue_;
-    
-    eckit::Optional<std::ostringstream> debugStream_;
 };
 
 inline bool isOcean(const message::Metadata& metadata) {

@@ -78,10 +78,6 @@ GribEncoder::GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& 
     for (auto const& subtype : {"T grid", "U grid", "V grid", "W grid", "F grid"}) {
         grids().insert(std::make_pair(subtype, std::unique_ptr<GridInfo>{new GridInfo{}}));
     }
-    
-    if (config.has("debug") && config.getBool("debug")) {
-        debugStream_ = std::ostringstream{};
-    }
 }
 
 bool GribEncoder::gridInfoReady(const std::string& subtype) const {
@@ -342,25 +338,16 @@ void codesCheckRelaxed(int ret, const std::string& name) {
 
 void GribEncoder::setValue(const std::string& key, long value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    if(debugStream_) {
-        (*debugStream_) << "setValue(" << key << ", " << value << "), ";
-    }
     codesCheckRelaxed(codes_set_long(raw(), key.c_str(), value), key);
 }
 
 void GribEncoder::setValue(const std::string& key, double value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    if(debugStream_) {
-        (*debugStream_) << "setValue(" << key << ", " << value << "), ";
-    }
     codesCheckRelaxed(codes_set_double(raw(), key.c_str(), value), key);
 }
 
 void GribEncoder::setValue(const std::string& key, const std::string& value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    if(debugStream_) {
-        (*debugStream_) << "setValue(" << key << ", " << value << "), ";
-    }
     size_t sz = value.size();
     codesCheckRelaxed(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), key);
 }
@@ -371,9 +358,6 @@ void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
         oss << ((i == 0) ? "" : "-") << std::hex << std::setfill('0') << std::setw(2) << static_cast<short>(value[i]);
     }
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << oss.str() << " for key " << key << std::endl;
-    if(debugStream_) {
-        (*debugStream_) << "setValue(" << key << ", " << oss.str() << "), ";
-    }
     size_t sz = DIGEST_LENGTH;
     codesCheckRelaxed(codes_set_bytes(raw(), key.c_str(), value, &sz), key);
 }
@@ -381,9 +365,6 @@ void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
 void GribEncoder::setValue(const std::string& key, bool value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << "(" << static_cast<long>(value) << ") for key " << key
                              << std::endl;
-    if(debugStream_) {
-        (*debugStream_) << "setValue(" << key << ", " << value << "), ";
-    }
     codesCheckRelaxed(codes_set_long(raw(), key.c_str(), static_cast<long>(value)), key);
 }
 
@@ -482,13 +463,7 @@ message::Message GribEncoder::setFieldValues(const float* values, size_t count) 
 
 
 void GribEncoder::print(std::ostream& os) const {
-    os << "GribEncoder(config=" << config_ << ", debug=";
-    if(debugStream_) {
-        os << debugStream_->str();
-    } else {
-        os << "Enable this options by adding {\"debug\": true} to the config";
-    }
-    os << ")";
+    os << "GribEncoder(config=" << config_ << ")";
 };
 
 }  // namespace action

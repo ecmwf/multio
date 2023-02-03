@@ -62,16 +62,6 @@ module multio_api
     contains
         procedure :: new => multio_new_metadata
         procedure :: delete => multio_delete_metadata
-        ! TODO: Discuss about the trailing value and decide if it has to be used or not
-        !       For backward compatibility I leave these functions with the trailing "_value"
-        procedure :: set_int_value => multio_metadata_set_int
-        procedure :: set_long_value => multio_metadata_set_long
-        procedure :: set_longlong_value => multio_metadata_set_longlong
-        procedure :: set_string_value => multio_metadata_set_string
-        procedure :: set_bool_value => multio_metadata_set_bool
-        procedure :: set_float_value => multio_metadata_set_float
-        procedure :: set_double_value => multio_metadata_set_double
-        ! Removed the trailing "value from thenames"
         procedure :: set_int => multio_metadata_set_int
         procedure :: set_long => multio_metadata_set_long
         procedure :: set_longlong => multio_metadata_set_longlong
@@ -341,7 +331,6 @@ module multio_api
             implicit none
             type(c_ptr), intent(in), value :: handle
             type(c_ptr), intent(in), value :: metadata
-            ! real(c_float), dimension(*), intent(in) :: data
             type(c_ptr), intent(in), value :: data
             integer(c_int), intent(in), value :: size
             integer(c_int) :: err
@@ -353,7 +342,6 @@ module multio_api
             implicit none
             type(c_ptr), intent(in), value :: handle
             type(c_ptr), intent(in), value :: metadata
-            ! real(c_double), dimension(*), intent(in) :: data
             type(c_ptr), intent(in), value :: data
             integer(c_int), intent(in), value :: size
             integer(c_int) :: err

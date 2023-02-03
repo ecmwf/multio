@@ -53,8 +53,8 @@ std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
 
 const std::map<const std::string, const long> ops_to_code{{"instant", 0000}, {"average", 1000}, {"accumulate", 2000},
                                                           {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
-//  {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3},
-//  {"stddev", 6}};
+
+const std::map<const std::string, const long> type_of_statistical_processing{{"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
 
 const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
@@ -234,8 +234,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
 
         eckit::Optional<long> curDate;
         if (*operation != "instant" && (curDate = firstOf(LookUpLong(md, "currentDate")))) {
-            g.setValue("typeOfStatisticalProcessing", ops_to_code.at(*operation));
-            //  g.setValue("stepRange", metadata.getString("stepRange"));
+            g.setValue("typeOfStatisticalProcessing", type_of_statistical_processing.at(*operation));
             
             g.setValue("yearOfEndOfOverallTimeInterval", *curDate / 10000);
             g.setValue("monthOfEndOfOverallTimeInterval", (*curDate % 10000) / 100);

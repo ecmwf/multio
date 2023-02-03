@@ -224,17 +224,19 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
     if (operation) {
         // Statistics field
         if (*queriedMarsFields.type == "fc" && *operation == "instant") {
+            // stepInHours has been set by statistics action
             withFirstOf(ValueSetter{g, "step"}, LookUpLong(md, "stepInHours"));
         }
         else {
+            // stepRangeInHours has been set by statistics action
             withFirstOf(ValueSetter{g, "stepRange"}, LookUpLong(md, "stepRangeInHours"));
         }
 
         eckit::Optional<long> curDate;
         if (*operation != "instant" && (curDate = firstOf(LookUpLong(md, "currentDate")))) {
-            // g.setValue("typeOfStatisticalProcessing",
-            // ops_to_code.at(metadata.getString("operation")));
+            g.setValue("typeOfStatisticalProcessing", ops_to_code.at(*operation));
             //  g.setValue("stepRange", metadata.getString("stepRange"));
+            
             g.setValue("yearOfEndOfOverallTimeInterval", *curDate / 10000);
             g.setValue("monthOfEndOfOverallTimeInterval", (*curDate % 10000) / 100);
             g.setValue("dayOfEndOfOverallTimeInterval", *curDate % 100);

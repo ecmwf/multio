@@ -7,7 +7,7 @@ list( APPEND _action_nextGEMS_test_input
 
 
 
-set(TEST_NEXTGEMS_PATH ${multio_BINARY_DIR}/tests/action/nextGEMS )
+set(TEST_NEXTGEMS_PATH ${multio_BINARY_DIR}/tests/action/encode/nextGEMS )
 
 set(TEST_NEXTGEMS_OUTPUT_PATH ${TEST_NEXTGEMS_PATH}/output )
 

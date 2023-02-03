@@ -1,5 +1,4 @@
-add_subdirectory(ifs)
-add_subdirectory(nextGEMS)
+add_subdirectory(encode)
 
 if( HAVE_MIR )
 add_subdirectory(interpolate)

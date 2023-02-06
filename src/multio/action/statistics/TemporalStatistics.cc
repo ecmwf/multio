@@ -103,15 +103,9 @@ std::map<std::string, eckit::Buffer> TemporalStatistics::compute(const message::
     std::map<std::string, eckit::Buffer> retStats;
     for (auto const& stat : statistics_) {
 
-        auto buf = std::visit(Overloaded{[](const std::unique_ptr<Operation<double>>& arg) { return arg->compute(); },
-                                         [](const std::unique_ptr<Operation<float>>& arg) { return arg->compute(); }},
-                              stat);
+        auto buf = std::visit([](auto&& arg) { return arg->compute(); }, stat);
 
-
-        const auto& name
-            = std::visit(Overloaded{[](const std::unique_ptr<Operation<double>>& arg) { return arg->name(); },
-                                    [](const std::unique_ptr<Operation<float>>& arg) { return arg->name(); }},
-                         stat);
+        const auto& name = std::visit([](auto&& arg) { return arg->name(); }, stat);
 
         retStats.emplace(name, std::move(buf));
     }

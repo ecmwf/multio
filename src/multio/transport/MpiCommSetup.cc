@@ -41,7 +41,7 @@ eckit::mpi::Comm& getCommPreparedCtx(const ConfigurationContext& confCtx, const 
                                      = eckit::Optional<CommSetupOptions>{}) {
 
     auto log = [&confCtx, &name](const std::string& msg) {
-        eckit::Log::info() << " *** [" << util::translate<std::string>(confCtx.localPeerTag()) << "] mpi::getComm \""
+        eckit::Log::info() << " *** [" << eckit::translate<std::string>(confCtx.localPeerTag()) << "] mpi::getComm \""
                            << name << "\" - " << msg << std::endl;
     };
 

@@ -148,7 +148,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             set(options, key, options.getSubConfiguration(key).get());
         }
     }
-};
+}
 
 template <>
 message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg) const {

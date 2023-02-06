@@ -22,7 +22,6 @@
 
 #include "multio/util/ConfigurationContext.h"
 #include "multio/util/IntegerSequence.h"
-#include "multio/util/Translate.h"
 
 #include <algorithm>
 #include <string>
@@ -163,7 +162,7 @@ namespace util {
 
 template <typename T>
 std::pair<std::string, T> makeLowerCaseStringPair(T&& v) {
-    return {eckit::StringTools::lower(translate<std::string>(v)), std::forward<T>(v)};
+    return {eckit::StringTools::lower(eckit::translate<std::string>(v)), std::forward<T>(v)};
 }
 
 template <typename T, T... TS>
@@ -382,7 +381,7 @@ public:
                     }
                     catch (...) {
                         std::ostringstream oss;
-                        oss << "FailureAware configuration for component " << translate<std::string>(tag)
+                        oss << "FailureAware configuration for component " << eckit::translate<std::string>(tag)
                             << " described by key \"" << ComponentFailureTraits<tag>::configKey()
                             << "\" is supposed to map to a string or an configuration object with key \"type\"";
                         std::throw_with_nested(FailureAwareException(oss.str(), Here()));
@@ -421,8 +420,8 @@ protected:
             }
             catch (...) {
                 std::ostringstream oss;
-                oss << "FailureAware<" << translate<std::string>(tag) << "> with behaviour \""
-                    << translate<std::string>(parsedOnErrTag_) << "\" on " << translate<std::string>(peerTag_)
+                oss << "FailureAware<" << eckit::translate<std::string>(tag) << "> with behaviour \""
+                    << eckit::translate<std::string>(parsedOnErrTag_) << "\" on " << eckit::translate<std::string>(peerTag_)
                     << " for context: [" << std::endl
                     << contextString() << std::endl
                     << "]";

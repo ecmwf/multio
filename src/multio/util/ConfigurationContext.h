@@ -21,10 +21,11 @@
 //     - use string_view where copies are avoided (i.e. check for interop with eckit, for example eckit::PathName to avoid having to
 #include "eckit/utils/Optional.h"
 
+#include "eckit/utils/Translator.h"
+
 #include "multio/util/ConfigurationPath.h"
 #include "multio/util/IteratorMapper.h"
 #include "multio/util/MetadataMappings.h"
-#include "multio/util/Translate.h"
 #include "multio/util/Substitution.h"
 
 #include <functional>

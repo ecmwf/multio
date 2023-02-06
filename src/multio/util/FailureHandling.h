@@ -314,7 +314,7 @@ enum class FailureHandlerResponse : unsigned
 
 class FailureAwareException : public eckit::Exception {
 public:
-    FailureAwareException(const std::string& what) : eckit::Exception(what) {}
+    FailureAwareException(const std::string& what, const eckit::CodeLocation& l = eckit::CodeLocation()) : eckit::Exception(what, l) {}
 };
 
 struct FailureContext {
@@ -370,7 +370,7 @@ public:
                         oss << "FailureAware configuration for component " << translate<std::string>(tag)
                             << " described by key \"" << ComponentFailureTraits<tag>::configKey()
                             << "\" is supposed to map to a string or an configuration object with key \"type\"";
-                        std::throw_with_nested(eckit::Exception(oss.str()));
+                        std::throw_with_nested(FailureAwareException(oss.str(), Here()));
                     }
                 }
             })();
@@ -455,7 +455,7 @@ protected:
                     std::rethrow_exception(c.eptr);
                 }
                 catch (...) {
-                    std::throw_with_nested(FailureAwareException(c.context));
+                    std::throw_with_nested(FailureAwareException(c.context, Here()));
                 }
             }
             catch (const FailureAwareException& e) {
@@ -464,7 +464,7 @@ protected:
         }
         else {
             try {
-                throw FailureAwareException(c.context);
+                throw FailureAwareException(c.context, Here());
             }
             catch (const FailureAwareException& e) {
                 printException(out, e);
@@ -498,7 +498,7 @@ protected:
                             std::ostringstream oss2;
                             oss2 << "Retrying after catching nested exceptions: " << std::endl
                                  << oss.str() << std::endl;
-                            std::throw_with_nested(FailureAwareException(oss2.str()));
+                            std::throw_with_nested(FailureAwareException(oss2.str(), Here()));
                         }
                         catch (const FailureAwareException& e) {
                             // This is supposed to be called
@@ -508,13 +508,13 @@ protected:
                         break;
                     }
                     case FailureHandlerResponse::Rethrow: {
-                        std::throw_with_nested(FailureAwareException(oss.str()));
+                        std::throw_with_nested(FailureAwareException(oss.str(), Here()));
                     }
                     default:
                         try {
                             std::ostringstream oss2;
                             oss2 << "Ignoring nested exceptions: " << std::endl << oss.str() << std::endl;
-                            std::throw_with_nested(FailureAwareException(oss2.str()));
+                            std::throw_with_nested(FailureAwareException(oss2.str(), Here()));
                         }
                         catch (const FailureAwareException& e) {
                             // This is supposed to be called

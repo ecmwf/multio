@@ -86,7 +86,7 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
         if (!metadata.has(hashKey)) {
             std::ostringstream os;
             os << "The hash key \"" << hashKey << "\" is not defined in the metadata object: " << metadata << std::endl;
-            throw eckit::Exception(os.str());
+            throw transport::TransportException(os.str(), Here());
         }
         return metadata.getString(hashKey);
     };

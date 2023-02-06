@@ -21,6 +21,7 @@
 #include <mutex>
 #include <string>
 
+#include "eckit/exception/Exceptions.h"
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/message/Message.h"
@@ -133,6 +134,14 @@ class TransportBuilder final : public TransportBuilderBase {
 
 public:
     TransportBuilder(const std::string& name) : TransportBuilderBase(name) {}
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+
+
+class TransportException : public eckit::Exception {
+public:
+    TransportException(const std::string& reason, const eckit::CodeLocation& l = eckit::CodeLocation());
 };
 
 //----------------------------------------------------------------------------------------------------------------------

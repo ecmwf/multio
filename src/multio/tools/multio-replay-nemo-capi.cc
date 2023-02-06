@@ -61,7 +61,7 @@ public:
  */
 void rethrowMaybe(int err) {
     if (err != MULTIO_SUCCESS) {
-        throw eckit::Exception{"MULTIO C Exception:" + std::string{multio_error_string(err)}};
+        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string(err)}, Here());
     }
 }
 

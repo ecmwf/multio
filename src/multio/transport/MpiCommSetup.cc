@@ -1,7 +1,7 @@
 
 #include "MpiCommSetup.h"
+#include "Transport.h" // Import TransportException
 
-#include "eckit/exception/Exceptions.h"
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
 
@@ -91,7 +91,7 @@ eckit::mpi::Comm& getCommPreparedCtx(const ConfigurationContext& confCtx, const 
                 if (!hasDefault && !mpiInitInfo().allowWorldAsDefault) {
                     std::ostringstream oss;
                     oss << "No communicator \"" << name << "\" and no default given.";
-                    throw eckit::Exception(oss.str());
+                    throw transport::TransportException(oss.str(), Here());
                 }
                 auto defaultCommName = hasDefault ? subConfig.getString("default") : "world";
 
@@ -131,7 +131,7 @@ eckit::mpi::Comm& getCommPreparedCtx(const ConfigurationContext& confCtx, const 
                 oss << "No color given in mpi communicator configuration \"" << name
                     << "\". Add a key \"color\" mapping to an integer used for splitting the "
                        "parent communicator.";
-                throw eckit::Exception(oss.str());
+                throw transport::TransportException(oss.str(), Here());
             }
 
             eckit::Optional<std::string> parentName
@@ -143,7 +143,7 @@ eckit::mpi::Comm& getCommPreparedCtx(const ConfigurationContext& confCtx, const 
                 oss << "No parent communicator name to split \"" << name
                     << "\" from given. Set 'allowWorldAsDefault' to allow using the default world communicator as "
                        "parent.";
-                throw eckit::Exception(oss.str());
+                throw transport::TransportException(oss.str(), Here());
             }
 
             eckit::mpi::Comm& parentComm = getCommPreparedCtx(confCtx, parentName ? parentName() : "world");
@@ -176,7 +176,7 @@ eckit::mpi::Comm& getCommPreparedCtx(const ConfigurationContext& confCtx, const 
                 oss << "No default comm setup type has been passed and no key \"type\" given";
             }
             oss << " in mpi communicator configuration \"" << name << "\"";
-            throw eckit::Exception(oss.str());
+            throw transport::TransportException(oss.str(), Here());
         }
     }
 }

@@ -256,7 +256,7 @@ ConfigurationContext throwRecast_(const ConfigurationContext& confCtx, const std
         catch (...) {
             std::ostringstream oss;
             oss << "Configuration '" << key << "' not found in configuration file " << confCtx.fileName();
-            std::throw_with_nested(eckit::Exception(oss.str()));
+            std::throw_with_nested(eckit::UserError(oss.str(), Here()));
         }
     })());
 }

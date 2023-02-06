@@ -14,10 +14,10 @@ namespace action {
 namespace {
 auto reset_statistics(const std::vector<std::string>& opNames, message::Message msg) {
     return multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
-        using PT = typename decltype(pt)::type;
+        using Precision = typename decltype(pt)::type;
         std::vector<OperationVar> stats;
         for (const auto& op : opNames) {
-            stats.push_back(make_operation<PT>(op, msg.size()));
+            stats.push_back(make_operation<Precision>(op, msg.size()));
         }
         return stats;
     });

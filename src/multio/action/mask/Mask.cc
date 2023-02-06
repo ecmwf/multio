@@ -44,8 +44,8 @@ Mask::Mask(const ConfigurationContext& confCtx) :
 
 void Mask::executeImpl(message::Message msg) const {
     executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
-        using PT = typename decltype(pt)::type;
-        return createMasked<PT>(std::move(msg));
+        using Precision = typename decltype(pt)::type;
+        return createMasked<Precision>(std::move(msg));
     }));
 }
 

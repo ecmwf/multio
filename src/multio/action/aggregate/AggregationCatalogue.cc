@@ -30,9 +30,9 @@ void AggregationCatalogue::bookProcessedPart(const std::string& key, message::Pe
 void AggregationCatalogue::addNew(const message::Message& msg) {
     ASSERT(not contains(msg.fieldId()));
     multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
-        using PT = typename decltype(pt)::type;
+        using Precision = typename decltype(pt)::type;
         messageMap_.emplace(msg.fieldId(), message::Message{message::Message::Header{msg.header()},
-                                                            eckit::Buffer{msg.globalSize() * sizeof(PT)}});
+                                                            eckit::Buffer{msg.globalSize() * sizeof(Precision)}});
         processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
     });
 }

@@ -373,8 +373,8 @@ message::Message GribEncoder::encodeOceanLatitudes(const std::string& subtype) {
     setOceanCoordMetadata(msg.metadata());
 
     return dispatchPrecisionTag(msg.precision(), [&](auto pt) {
-        using PT = typename decltype(pt)::type;
-        return setFieldValues<PT>(std::move(msg));
+        using Precision = typename decltype(pt)::type;
+        return setFieldValues<Precision>(std::move(msg));
     });
 }
 
@@ -384,16 +384,16 @@ message::Message GribEncoder::encodeOceanLongitudes(const std::string& subtype) 
     setOceanCoordMetadata(msg.metadata());
 
     return dispatchPrecisionTag(msg.precision(), [&](auto pt) {
-        using PT = typename decltype(pt)::type;
-        return setFieldValues<PT>(std::move(msg));
+        using Precision = typename decltype(pt)::type;
+        return setFieldValues<Precision>(std::move(msg));
     });
 }
 
 message::Message GribEncoder::encodeField(const message::Message& msg) {
     setFieldMetadata(msg);
     return dispatchPrecisionTag(msg.precision(), [&](auto pt) {
-        using PT = typename decltype(pt)::type;
-        return setFieldValues<PT>(std::move(msg));
+        using Precision = typename decltype(pt)::type;
+        return setFieldValues<Precision>(std::move(msg));
     });
 }
 

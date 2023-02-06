@@ -207,8 +207,8 @@ void Interpolate::executeImpl(message::Message msg) const {
     switch (msg.tag()) {
         case (message::Message::Tag::Field): {
             executeNext(util::dispatchPrecisionTag(msg.precision(), [&](auto pt) -> message::Message {
-                using PT = typename decltype(pt)::type;
-                return InterpolateMessage<PT>(std::move(msg));
+                using Precision = typename decltype(pt)::type;
+                return InterpolateMessage<Precision>(std::move(msg));
             }));
             break;
         };

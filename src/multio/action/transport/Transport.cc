@@ -51,7 +51,7 @@ Transport::Transport(const ConfigurationContext& confCtx) :
     distType_{distributionType()} {
 }
 
-void Transport::executeImpl(Message msg) const {
+void Transport::executeImpl(Message msg) {
     // eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
@@ -79,7 +79,7 @@ void Transport::print(std::ostream& os) const {
     os << "Action[" << *transport_ << "]";
 }
 
-message::Peer Transport::chooseServer(const message::Metadata& metadata) const {
+message::Peer Transport::chooseServer(const message::Metadata& metadata) {
     ASSERT_MSG(serverCount_ > 0, "No server to choose from");
 
     auto getMetadataValue = [&](const std::string& hashKey) {

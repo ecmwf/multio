@@ -203,7 +203,7 @@ message::Message Interpolate::InterpolateMessage<float>(message::Message&& msg) 
     return InterpolateMessage<double>(convert_precision<float, double>(std::move(msg)));
 }
 
-void Interpolate::executeImpl(message::Message msg) const {
+void Interpolate::executeImpl(message::Message msg) {
     switch (msg.tag()) {
         case (message::Message::Tag::Field): {
             executeNext(util::dispatchPrecisionTag(msg.precision(), [&](auto pt) -> message::Message {

@@ -22,7 +22,7 @@ MetadataMapping::MetadataMapping(const ConfigurationContext& confCtx) :
     options_.overwriteExisting = confCtx.config().getBool("overwrite-existing", false);
 };
 
-void MetadataMapping::executeImpl(message::Message msg) const {
+void MetadataMapping::executeImpl(message::Message msg) {
     executeNext(msg.modifyMetadata(apply(std::move(msg).metadata())));
 };
 

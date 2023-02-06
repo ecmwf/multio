@@ -34,20 +34,20 @@ public:
     explicit Sink(const ConfigurationContext& confCtx);
     ~Sink();
 
-    void executeImpl(message::Message msg) const override;
+    void executeImpl(message::Message msg) override;
 
 private:
     void print(std::ostream& os) const override;
 
-    void write(Message msg) const;
+    void write(Message msg);
 
-    void flush() const;
+    void flush();
 
-    void trigger(const Message& msg) const;
+    void trigger(const Message& msg);
 
     bool report_;
 
-    mutable MultIO mio_;
+    MultIO mio_;
 };
 
 }  // namespace action

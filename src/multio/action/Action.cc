@@ -31,7 +31,7 @@ Action::~Action() {
     statistics_.report(logFile, type_);
 }
 
-void Action::execute(message::Message msg) const {
+void Action::execute(message::Message msg) {
     withFailureHandling([&]() { executeImpl(std::move(msg)); },
                         [&, msg]() {
                             std::ostringstream oss;

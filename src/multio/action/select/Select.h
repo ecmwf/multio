@@ -41,7 +41,7 @@ private: // methods
 
     bool matches(const message::Message& msg) const;
 
-    void executeImpl(message::Message msg) const override;
+    void executeImpl(message::Message msg) override;
 
     /// @note This describes an algebra, so the function here can be significantly extended to give helpful return
     void matchedFields(message::MetadataSelectors& selectors) const override;

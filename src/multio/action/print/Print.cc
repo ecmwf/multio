@@ -38,7 +38,7 @@ Print::Print(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {
     prefix_ = confCtx.config().getString("prefix", "");
 }
 
-void Print::executeImpl(message::Message msg) const {
+void Print::executeImpl(message::Message msg) {
     ASSERT(os_);
     if(!prefix_.empty()) {
         (*os_) << prefix_ << ": ";

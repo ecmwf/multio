@@ -30,7 +30,7 @@ private:
     message::Message InterpolateMessage(message::Message&&) const;
 
     void print(std::ostream&) const override;
-    void executeImpl(message::Message) const override;
+    void executeImpl(message::Message) override;
 };
 
 

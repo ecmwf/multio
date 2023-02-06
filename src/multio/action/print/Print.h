@@ -27,7 +27,7 @@ class Print : public ChainedAction {
 public:
     explicit Print(const ConfigurationContext& config);
 
-    void executeImpl(message::Message msg) const override;
+    void executeImpl(message::Message msg) override;
 
 private:
     void print(std::ostream& os) const override;

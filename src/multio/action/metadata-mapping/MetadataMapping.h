@@ -28,7 +28,7 @@ class MetadataMapping : public ChainedAction {
 public:
     explicit MetadataMapping(const ConfigurationContext& confCtx);
 
-    void executeImpl(message::Message msg) const override;
+    void executeImpl(message::Message msg) override;
 
 protected:
     void applyInplace(message::Metadata& msg) const;

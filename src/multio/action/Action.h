@@ -46,7 +46,7 @@ public:
     explicit Action(const ConfigurationContext& confCtx);
     ~Action() override;
 
-    void execute(message::Message msg) const;
+    void execute(message::Message msg);
 
     virtual void matchedFields(message::MetadataSelectors& selectors) const;
 
@@ -61,7 +61,7 @@ protected:
     mutable ActionStatistics statistics_;
 
 private:
-    virtual void executeImpl(message::Message msg) const = 0;
+    virtual void executeImpl(message::Message msg) = 0;
 
     virtual void print(std::ostream& os) const = 0;
 

@@ -23,7 +23,7 @@ using message::Peer;
 
 Aggregate::Aggregate(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {}
 
-void Aggregate::executeImpl(Message msg) const {
+void Aggregate::executeImpl(Message msg) {
 
     eckit::Log::info() << " ***** Aggregating message " << msg << std::endl;
 
@@ -36,7 +36,7 @@ void Aggregate::executeImpl(Message msg) const {
     }
 }
 
-bool Aggregate::handleField(const Message& msg) const {
+bool Aggregate::handleField(const Message& msg) {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     if (not aggCatalogue_.contains(msg.fieldId())) {
         aggCatalogue_.addNew(msg);
@@ -50,7 +50,7 @@ bool Aggregate::handleField(const Message& msg) const {
     return allPartsArrived(msg);
 }
 
-auto Aggregate::flushCount(const Message& msg) const {
+auto Aggregate::flushCount(const Message& msg) {
     if (flushes_.find(msg.fieldId()) == end(flushes_)) {
         flushes_[msg.fieldId()] = 0;
     }
@@ -58,7 +58,7 @@ auto Aggregate::flushCount(const Message& msg) const {
     return ++flushes_.at(msg.fieldId());
 }
 
-bool Aggregate::handleFlush(const Message& msg) const {
+bool Aggregate::handleFlush(const Message& msg) {
     // Initialise if need be
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
@@ -77,7 +77,7 @@ bool Aggregate::allPartsArrived(const Message& msg) const {
     return domainMap.isComplete() && (aggCatalogue_.partsCount(msg.fieldId()) == domainMap.size());
 }
 
-Message Aggregate::createGlobalField(const std::string& fid) const {
+Message Aggregate::createGlobalField(const std::string& fid) {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     eckit::Log::info() << "Creating global field " << std::endl;

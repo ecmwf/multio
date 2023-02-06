@@ -27,7 +27,7 @@ class Encode : public ChainedAction {
 public:
     explicit Encode(const ConfigurationContext& confCtx);
 
-    void executeImpl(message::Message msg) const override;
+    void executeImpl(message::Message msg) override;
 
 private:
     // Internal constructor delegate with prepared configuration for specific

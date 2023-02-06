@@ -78,7 +78,7 @@ Encode::Encode(const ConfigurationContext& confCtx, ConfigurationContext&& encCo
 
 Encode::Encode(const ConfigurationContext& confCtx) : Encode(confCtx, getEncodingConfiguration(confCtx)) {}
 
-void Encode::executeImpl(Message msg) const {
+void Encode::executeImpl(Message msg) {
     if (msg.tag() != Message::Tag::Field) {
         executeNext(std::move(msg));
         return;

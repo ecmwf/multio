@@ -32,18 +32,18 @@ class SingleFieldSink : public Action {
 public:
     explicit SingleFieldSink(const ConfigurationContext& confCtx);
 
-    void executeImpl(message::Message msg) const override;
+    void executeImpl(message::Message msg) override;
 
 private:
     void print(std::ostream& os) const override;
 
-    void write(Message msg) const;
+    void write(Message msg);
 
     void flush() const;
 
     std::string rootPath_;
 
-    mutable std::unique_ptr<DataSink> dataSink_ = nullptr;
+    std::unique_ptr<DataSink> dataSink_ = nullptr;
 };
 
 }  // namespace action

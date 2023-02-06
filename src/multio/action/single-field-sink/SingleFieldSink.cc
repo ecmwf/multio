@@ -25,7 +25,7 @@ namespace action {
 SingleFieldSink::SingleFieldSink(const ConfigurationContext& confCtx) :
     Action{confCtx}, rootPath_{confCtx.config().getString("root_path", "")} {}
 
-void SingleFieldSink::executeImpl(Message msg) const {
+void SingleFieldSink::executeImpl(Message msg) {
     switch (msg.tag()) {
         case Message::Tag::Field:
         case Message::Tag::Grib:
@@ -41,7 +41,7 @@ void SingleFieldSink::executeImpl(Message msg) const {
     }
 }
 
-void SingleFieldSink::write(Message msg) const {
+void SingleFieldSink::write(Message msg) {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     std::ostringstream oss;

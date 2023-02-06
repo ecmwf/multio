@@ -23,7 +23,7 @@ public:
 
     message::Message extract(const std::string& fid);
 
-    std::size_t size();
+    std::size_t size() const;
 
 private:
     void print(std::ostream& os) const;

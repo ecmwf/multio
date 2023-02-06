@@ -42,7 +42,7 @@ Mask::Mask(const ConfigurationContext& confCtx) :
     offsetFields_{fetch_offset_fields(confCtx.config())},
     offsetValue_{confCtx.config().getDouble("offset-value", 273.15)} {}
 
-void Mask::executeImpl(message::Message msg) const {
+void Mask::executeImpl(message::Message msg) {
     executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
         return createMasked<Precision>(std::move(msg));

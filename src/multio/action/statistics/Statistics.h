@@ -31,7 +31,7 @@ class Statistics : public ChainedAction {
 public:
     explicit Statistics(const ConfigurationContext& confCtx);
 
-    void executeImpl(message::Message msg) const override;
+    void executeImpl(message::Message msg) override;
 
 private:
     void print(std::ostream &os) const override;
@@ -41,7 +41,7 @@ private:
 
     const std::vector<std::string> operations_;
 
-    mutable std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
+    std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 };
 
 }  // namespace action

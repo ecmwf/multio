@@ -25,7 +25,7 @@ class Null : public Action {
 public:
     explicit Null(const ConfigurationContext& confCtx);
 
-    void executeImpl(message::Message msg) const override;
+    void executeImpl(message::Message msg) override;
 
 private:
     void print(std::ostream& os) const override;

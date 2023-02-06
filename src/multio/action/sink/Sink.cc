@@ -32,7 +32,7 @@ Sink::~Sink() {
     }
 }
 
-void Sink::executeImpl(Message msg) const {
+void Sink::executeImpl(Message msg) {
 
     switch (msg.tag()) {
         case Message::Tag::Field:
@@ -53,7 +53,7 @@ void Sink::executeImpl(Message msg) const {
     }
 }
 
-void Sink::write(Message msg) const {
+void Sink::write(Message msg) {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     eckit::message::Message blob = to_eckit_message(msg);
@@ -61,12 +61,12 @@ void Sink::write(Message msg) const {
     mio_.write(blob);
 }
 
-void Sink::flush() const {
+void Sink::flush() {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
     mio_.flush();
 }
 
-void Sink::trigger(const Message& msg) const {
+void Sink::trigger(const Message& msg) {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     eckit::StringDict metadata;

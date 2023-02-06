@@ -30,7 +30,7 @@ class Mask : public ChainedAction {
 public:
     explicit Mask(const ConfigurationContext& confCtx);
 
-    void executeImpl(message::Message msg) const override;
+    void executeImpl(message::Message msg) override;
 
 private:
     template <typename Precision>

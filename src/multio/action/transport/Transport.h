@@ -28,7 +28,7 @@ class Transport : public Action {
 public:
     explicit Transport(const ConfigurationContext& config);
 
-    void executeImpl(message::Message msg) const override;
+    void executeImpl(message::Message msg) override;
 
 private:
     void print(std::ostream& os) const override;
@@ -48,9 +48,9 @@ private:
     std::vector<std::string> hashKeys_;
 
     // Distribute fields
-    message::Peer chooseServer(const message::Metadata& metadata) const;
-    mutable std::map<std::string, message::Peer> destinations_;
-    mutable std::vector<uint64_t> counters_;
+    message::Peer chooseServer(const message::Metadata& metadata);
+    std::map<std::string, message::Peer> destinations_;
+    std::vector<uint64_t> counters_;
 
     enum class DistributionType : unsigned
     {

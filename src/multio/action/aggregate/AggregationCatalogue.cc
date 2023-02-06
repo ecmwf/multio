@@ -49,7 +49,7 @@ message::Message AggregationCatalogue::extract(const std::string& fid) {
     return msgOut;
 }
 
-std::size_t AggregationCatalogue::size() {
+std::size_t AggregationCatalogue::size() const {
     // Invariant
     ASSERT(messageMap_.size() == processedParts_.size());
 

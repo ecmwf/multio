@@ -29,7 +29,7 @@ Select::Select(const ConfigurationContext& confCtx) :
     ChainedAction{confCtx},
     selectors_{confCtx.config()} {}
 
-void Select::executeImpl(Message msg) const {
+void Select::executeImpl(Message msg) {
     if (matches(msg)) {
         executeNext(std::move(msg));
     }

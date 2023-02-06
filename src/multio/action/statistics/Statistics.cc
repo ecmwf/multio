@@ -49,7 +49,7 @@ Statistics::Statistics(const ConfigurationContext& confCtx) :
     timeSpan_{set_frequency(confCtx.config().getString("output-frequency"))},
     operations_{confCtx.config().getStringVector("operations")} {}
 
-void Statistics::executeImpl(message::Message msg) const {
+void Statistics::executeImpl(message::Message msg) {
     // Pass through -- no statistics for messages other than fields
     if (msg.tag() != message::Message::Tag::Field) {
         executeNext(msg);

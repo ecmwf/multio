@@ -31,21 +31,21 @@ class Aggregate : public ChainedAction {
 public:
     explicit Aggregate(const ConfigurationContext& confCtx);
 
-    void executeImpl(Message msg) const override;
+    void executeImpl(Message msg) override;
 
 private:
     void print(std::ostream& os) const override;
 
-    bool handleField(const Message& msg) const;
-    bool handleFlush(const Message& msg) const;
+    bool handleField(const Message& msg);
+    bool handleFlush(const Message& msg);
 
-    Message createGlobalField(const std::string& msg) const;
+    Message createGlobalField(const std::string& msg);
     bool allPartsArrived(const Message& msg) const;
 
-    auto flushCount(const Message& msg) const;
+    auto flushCount(const Message& msg);
 
-    mutable AggregationCatalogue aggCatalogue_;
-    mutable std::map<std::string, unsigned int> flushes_;
+    AggregationCatalogue aggCatalogue_;
+    std::map<std::string, unsigned int> flushes_;
 };
 
 }  // namespace action

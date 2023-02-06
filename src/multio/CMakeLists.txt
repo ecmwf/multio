@@ -32,7 +32,6 @@ list( APPEND multio_util_srcs
     util/PrecisionTag.h
     util/Metadata.cc
     util/Metadata.h
-    util/Substitution.cc
     util/Substitution.h
 )
 

@@ -26,13 +26,19 @@
 namespace multio {
 namespace util {
 
-/*
+/**
  * Replacement of (single) curly braces analogous to PGEN. Example: {var}
  * Note: Explicitly wrap strings in YAML with '' to avoid problems with BASH substitution
  * PGEN example template: https://git.ecmwf.int/projects/PRODGEN/repos/pgen/browse/tests/fields/naming/template.yaml
  * PGEN substitution code: https://git.ecmwf.int/projects/PRODGEN/repos/pgen/browse/src/pgen/sinks/TemplatedName.cc#89
-
+ *
  * TODO: Think about an escaping mechanism, i.e. \{  and \}, or {{ and }}
+ *
+ * @param s  A string_view in which curly braces are searched and matched for replacement
+ * @param func  A function accepting a string_view of a key that might be replaced. The function is supposed to return 
+ *              an std::optional, eckit::optional or pointer (anything with bool conversion and indirect access with *)
+ *              If the optional contains nothing, no replacement is peformed for this key.
+ * @return String with substitions.
  */
 template <typename Func>
 std::string replaceCurly(std::string_view s, Func&& lookup) {
@@ -63,8 +69,6 @@ std::string replaceCurly(std::string_view s, Func&& lookup) {
         }
     }
 }
-
-std::string replaceCurly(std::string_view s, const eckit::Configuration& replacements);
 
 }  // namespace util
 }  // namespace multio

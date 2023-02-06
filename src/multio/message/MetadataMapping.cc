@@ -16,12 +16,16 @@ std::unordered_map<std::string, eckit::LocalConfiguration> constructSourceMap(
     }
     return map;
 }
+
+std::string metadataMappingExceptionReason(const std::string& r) {
+    std::string s{"Metadata mapping failure: "};
+    s.append(r);
+    return s;
+}
 }  // namespace
 
-MetadataMappingException::MetadataMappingException(const std::string& r) {
-    std::string s{"MetadataMapping failure: "};
-    s.append(r);
-    reason(s);
+MetadataMappingException::MetadataMappingException(const std::string& r, const eckit::CodeLocation& location):
+    eckit::Exception(metadataMappingExceptionReason(r), location) {
 }
 
 
@@ -61,7 +65,7 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
         if (options.enforceMatch) {
             std::ostringstream oss;
             oss << "Metadata has no source key \"" << metadataKey_ << "\"";
-            throw MetadataMappingException(oss.str());
+            throw MetadataMappingException(oss.str(), Here());
         }
         return;
     }
@@ -71,7 +75,7 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
         std::ostringstream oss;
         oss << "Metadata mapping failure: Source key \"" << metadataKey_ << "\" in metadata is resolving to \""
             << lookUpKey << "\" for which no mapping has be provided in the mapping file." << std::endl;
-        throw MetadataMappingException(oss.str());
+        throw MetadataMappingException(oss.str(), Here());
     }
 
     // TODO handle internals without LocalConfiguration
@@ -97,7 +101,7 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
                         << "\" in metadata is resolving to \"" << lookUpKey
                         << "\" which mapping is not providing a mapping for key \"" << lookUpMapKey << "\"."
                         << std::endl;
-                    throw MetadataMappingException(oss.str());
+                    throw MetadataMappingException(oss.str(), Here());
                 }
             }
         }

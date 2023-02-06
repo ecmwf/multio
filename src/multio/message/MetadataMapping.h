@@ -108,7 +108,7 @@ private:
 
 class MetadataMappingException : public eckit::Exception {
 public:
-    MetadataMappingException(const std::string& reason);
+    MetadataMappingException(const std::string& reason, const eckit::CodeLocation& location = eckit::CodeLocation());
 };
 
 //=====================================================================================================================

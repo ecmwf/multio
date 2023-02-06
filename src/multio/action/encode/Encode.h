@@ -46,5 +46,15 @@ private:
     const std::unique_ptr<GribEncoder> encoder_ = nullptr;
 };
 
+//=====================================================================================================================
+
+class EncodingException : public eckit::Exception {
+public:
+    EncodingException(const std::string& reason, const eckit::CodeLocation& location = eckit::CodeLocation());
+};
+
+//=====================================================================================================================
+
+
 }  // namespace action
 }  // namespace multio

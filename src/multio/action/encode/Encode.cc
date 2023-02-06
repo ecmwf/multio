@@ -54,7 +54,16 @@ std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
     }
 }
 
+std::string encodingExceptionReason(const std::string& r) {
+    std::string s("Enocding exception: ");
+    s.append(r);
+    return s;
+}
+
 }  // namespace
+
+
+EncodingException::EncodingException(const std::string& r, const eckit::CodeLocation& l): eckit::Exception(encodingExceptionReason(r), l) {}
 
 using message::Message;
 using message::Peer;
@@ -126,7 +135,7 @@ message::Message Encode::encodeField(const message::Message& msg) const {
     catch (...) {
         std::ostringstream oss;
         oss << "Encode::encodeField with Message: " << msg;
-        std::throw_with_nested(eckit::Exception(oss.str()));
+        std::throw_with_nested(EncodingException(oss.str(), Here()));
     }
 }
 
@@ -138,7 +147,7 @@ message::Message Encode::encodeOceanLatitudes(const std::string& subtype) const 
     catch (...) {
         std::ostringstream oss;
         oss << "Encode::encodeOceanLatitudes with subtype: " << subtype;
-        std::throw_with_nested(eckit::Exception(oss.str()));
+        std::throw_with_nested(EncodingException(oss.str(), Here()));
     }
 }
 
@@ -150,7 +159,7 @@ message::Message Encode::encodeOceanLongitudes(const std::string& subtype) const
     catch (...) {
         std::ostringstream oss;
         oss << "Encode::encodeOceanLongitudes with subtype: " << subtype;
-        std::throw_with_nested(eckit::Exception(oss.str()));
+        std::throw_with_nested(EncodingException(oss.str(), Here()));
     }
 }
 

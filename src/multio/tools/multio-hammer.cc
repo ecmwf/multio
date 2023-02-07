@@ -412,13 +412,12 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
 
         // Send flush messages
         Metadata md;
-        md.set("name", eckit::Translator<long, std::string>()(step))
+        md.set("name", eckit::Translator<long, std::string>{}(step))
             .set("category", "atms-checkpoint")
             .set("trigger", "step")
             .set("domain", "grid-point")
             .set("precision", "double");
         for (auto& server : serverPeers) {
-            auto stepStr = eckit::Translator<long, std::string>()(step);
             Message flush{Message::Header{Message::Tag::StepComplete, client, *server, Metadata{md}}};
             transport->send(flush);
         }

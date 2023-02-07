@@ -39,13 +39,15 @@ private:
     bool handleField(const Message& msg);
     bool handleFlush(const Message& msg);
 
-    Message createGlobalField(const std::string& msg);
+    Message globalField(const std::string& fid);
+    Message globalFlush(const std::string& fid);
+
     bool allPartsArrived(const Message& msg) const;
 
     auto flushCount(const Message& msg);
 
     AggregationCatalogue aggCatalogue_;
-    std::map<std::string, unsigned int> flushes_;
+    std::map<std::string, std::set<message::Peer>> flushes_;
 };
 
 }  // namespace action

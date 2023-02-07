@@ -28,11 +28,11 @@ void Aggregate::executeImpl(Message msg) {
     eckit::Log::info() << " ***** Aggregating message " << msg << std::endl;
 
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
-        executeNext(createGlobalField(msg.fieldId()));
+        executeNext(globalField(msg.fieldId()));
     }
 
     if ((msg.tag() == Message::Tag::StepComplete) && handleFlush(msg)) {
-        executeNext(std::move(msg));
+        executeNext(globalFlush(msg.fieldId()));
     }
 }
 
@@ -51,11 +51,16 @@ bool Aggregate::handleField(const Message& msg) {
 }
 
 auto Aggregate::flushCount(const Message& msg) {
-    if (flushes_.find(msg.fieldId()) == end(flushes_)) {
-        flushes_[msg.fieldId()] = 0;
+
+    auto res = flushes_[msg.fieldId()].emplace(msg.source());
+
+    if (not res.second) {
+        std::ostringstream os;
+        os << "Flush message " << msg << " has already been received";
+        throw eckit::UserError(os.str(), Here());
     }
 
-    return ++flushes_.at(msg.fieldId());
+    return flushes_.at(msg.fieldId()).size();
 }
 
 bool Aggregate::handleFlush(const Message& msg) {
@@ -77,15 +82,22 @@ bool Aggregate::allPartsArrived(const Message& msg) const {
     return domainMap.isComplete() && (aggCatalogue_.partsCount(msg.fieldId()) == domainMap.size());
 }
 
-Message Aggregate::createGlobalField(const std::string& fid) {
+Message Aggregate::globalField(const std::string& fid) {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-
-    eckit::Log::info() << "Creating global field " << std::endl;
 
     // TODO: checking domain consistency is skipped for now...
     // domain::Mappings::instance().checkDomainConsistency(messages_.at(fid));
 
     return aggCatalogue_.extract(fid);
+}
+
+Message Aggregate::globalFlush(const std::string &fid)
+{
+    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+
+    auto flush = flushes_.extract(fid);
+
+    return Message{{Message::Tag::StepComplete, Peer{}, Peer{}, std::string(fid)}};
 }
 
 void Aggregate::print(std::ostream& os) const {

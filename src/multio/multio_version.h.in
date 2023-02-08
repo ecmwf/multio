@@ -1,12 +1,9 @@
-#ifndef multio_version_h
-#define multio_version_h
+#pragma once
 
-const char * multio_version();
+const char* multio_version();
 
 unsigned int multio_version_int();
 
-const char * multio_version_str();
+const char* multio_version_str();
 
-const char * multio_git_sha1();
-
-#endif
+const char* multio_git_sha1();

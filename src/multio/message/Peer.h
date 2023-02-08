@@ -14,8 +14,7 @@
 
 /// @date Jan 2019
 
-#ifndef multio_message_Peer_H
-#define multio_message_Peer_H
+#pragma once
 
 #include <limits>
 #include <string>
@@ -44,7 +43,6 @@ protected:
     size_t id_;
 
 private:  // methods
-
     void print(std::ostream& out) const;
 
     friend std::ostream& operator<<(std::ostream& s, const Peer& x) {
@@ -55,5 +53,3 @@ private:  // methods
 
 }  // namespace message
 }  // namespace multio
-
-#endif

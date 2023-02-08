@@ -14,7 +14,6 @@
 #include <fstream>
 
 #include "eckit/config/Resource.h"
-#include "eckit/exception/Exceptions.h"
 #include "eckit/maths/Functions.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/runtime/Main.h"
@@ -60,12 +59,6 @@ const size_t defaultBufferSize = 64 * 1024 * 1024;
 const size_t defaultPoolSize = 128;
 
 MpiPeerSetup setupMPI_(const ConfigurationContext& confCtx) {
-    // if (!confCtx.config().has("group")) {
-    //     std::ostringstream oss;
-    //     oss << "No key \"group\" in MPI server config found (Configuration filename:  "
-    //         << confCtx.fileName() << ")" << std::endl;
-    //     throw eckit::Exception(oss.str());
-    // }
     const std::string& groupName = confCtx.config().getString("group", "multio");
     mpi::CommSetupOptions groupOptions;
     groupOptions.defaultType = eckit::Optional<mpi::CommSetupType>(mpi::CommSetupType::Passed);

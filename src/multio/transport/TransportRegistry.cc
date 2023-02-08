@@ -1,6 +1,5 @@
 
 #include "TransportRegistry.h"
-#include "eckit/exception/Exceptions.h"
 
 namespace multio {
 namespace transport {
@@ -55,13 +54,13 @@ void TransportRegistry::add(const std::string& serverName, const ConfigurationCo
     if (!confCtx.globalConfig().has(serverName)) {
         std::ostringstream oss;
         oss << "No config for server \"" << serverName << "\" found in configuration " << confCtx.fileName() << std::endl;
-        throw eckit::Exception(oss.str());
+        throw TransportException(oss.str(), Here());
     }
     auto serverConfigCtx = confCtx.recast(confCtx.globalConfig().getSubConfiguration(serverName), util::ComponentTag::Transport);    
     if (!serverConfigCtx.config().has("transport")) {
         std::ostringstream oss;
         oss << "No key \"transport\" in server config for server \"" << serverName << "\" found (Configuration filename:  " << confCtx.fileName() << ")" << std::endl;
-        throw eckit::Exception(oss.str());
+        throw TransportException(oss.str(), Here());
     }
     transports_.insert({serverName, std::shared_ptr<transport::Transport>{
                                         transport::TransportFactory::instance().build(

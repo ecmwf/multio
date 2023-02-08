@@ -14,8 +14,7 @@
 
 /// @date Jan 2019
 
-#ifndef multio_transport_ThreadTransport_H
-#define multio_transport_ThreadTransport_H
+#pragma once
 
 #include <map>
 #include <mutex>
@@ -23,8 +22,8 @@
 
 #include "eckit/container/Queue.h"
 
-#include "multio/util/ScopedThread.h"
 #include "multio/transport/Transport.h"
+#include "multio/util/ScopedThread.h"
 
 namespace multio {
 namespace transport {
@@ -34,7 +33,6 @@ public:
     ThreadPeer(std::thread t);
 
 private:
-
     util::ScopedThread thread_;
 };
 
@@ -73,5 +71,3 @@ private:
 
 }  // namespace transport
 }  // namespace multio
-
-#endif

@@ -14,11 +14,10 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_Dispatcher_H
-#define multio_server_Dispatcher_H
+#pragma once
 
-#include <memory>
 #include <atomic>
+#include <memory>
 
 #include "eckit/container/Queue.h"
 #include "eckit/log/Statistics.h"
@@ -47,11 +46,11 @@ public:
     ~Dispatcher();
 
     void dispatch(eckit::Queue<message::Message>& queue);
-    
-    util::FailureHandlerResponse handleFailure(util::OnDispatchError, const util::FailureContext&, util::DefaultFailureState&) const override;
+
+    util::FailureHandlerResponse handleFailure(util::OnDispatchError, const util::FailureContext&,
+                                               util::DefaultFailureState&) const override;
 
 private:
-
     void handle(const message::Message& msg) const;
 
     std::shared_ptr<std::atomic<bool>> continue_;
@@ -63,5 +62,3 @@ private:
 
 }  // namespace server
 }  // namespace multio
-
-#endif

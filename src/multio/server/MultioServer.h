@@ -8,8 +8,7 @@
  * does it submit to any jurisdiction.
  */
 
-#ifndef multio_server_MultioServer_H
-#define multio_server_MultioServer_H
+#pragma once
 
 #include <memory>
 
@@ -23,8 +22,8 @@ class Configuration;
 
 namespace multio {
 
-using util::ServerConfigurationContext;
 using util::FailureAware;
+using util::ServerConfigurationContext;
 
 namespace transport {
 class Transport;
@@ -32,11 +31,12 @@ class Transport;
 
 namespace server {
 
-class MultioServer: FailureAware<util::ComponentTag::Server> {
+class MultioServer : FailureAware<util::ComponentTag::Server> {
 public:
     MultioServer(const ServerConfigurationContext& confCtx);
-    
-    util::FailureHandlerResponse handleFailure(util::OnServerError, const util::FailureContext&, util::DefaultFailureState&) const override;
+
+    util::FailureHandlerResponse handleFailure(util::OnServerError, const util::FailureContext&,
+                                               util::DefaultFailureState&) const override;
 
     ~MultioServer();
 
@@ -46,5 +46,3 @@ private:
 };
 }  // namespace server
 }  // namespace multio
-
-#endif

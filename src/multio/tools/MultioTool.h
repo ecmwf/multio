@@ -14,8 +14,7 @@
 
 /// @date Oct 2019
 
-#ifndef multio_MultioTool_H
-#define multio_MultioTool_H
+#pragma once
 
 #include "eckit/option/CmdArgs.h"
 #include "eckit/runtime/Tool.h"
@@ -24,11 +23,9 @@ namespace multio {
 
 class MultioTool : public eckit::Tool {
 public:
-
-    virtual void usage(const std::string &tool) const = 0;
+    virtual void usage(const std::string& tool) const = 0;
 
 protected:
-
     MultioTool(int argc, char** argv);
 
     std::vector<eckit::option::Option*> options_;
@@ -44,6 +41,4 @@ private:
     void run() override final;
 };
 
-} // namespace multio
-
-#endif
+}  // namespace multio

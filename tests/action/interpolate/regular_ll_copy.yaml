@@ -1,0 +1,14 @@
+plans:
+  - name: regular_ll_copy
+    actions:
+      - type: interpolate
+        input: 1/1
+      - type: encode
+        format: grib
+        template: MARS_regular_ll.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false
+            path: MultIO_regular_ll_copy.grib

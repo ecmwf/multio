@@ -41,8 +41,12 @@ MaestroWorker::MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pg
     args.get("dryrun", dryrun_);
 
     std::string backend;
-    if (args.get("backend", backend)) {
-        eckit::linalg::LinearAlgebra::backend(backend);
+    if (args.get("dense-backend", backend)) {
+        eckit::linalg::LinearAlgebraDense::backend(backend);
+    }
+    backend = std::string{};
+    if (args.get("sparse-backend", backend)) {
+        eckit::linalg::LinearAlgebraSparse::backend(backend);
     }
 }
 

@@ -53,13 +53,13 @@ Message::Message(Header&& header, const eckit::Buffer& payload) :
 
 Message::Message(Header&& header, eckit::Buffer&& payload) :
     Message(std::make_shared<Header>(std::move(header)), std::make_shared<eckit::Buffer>(std::move(payload))) {}
-    
+
 // Message::Message(std::shared_ptr<Header> header, std::shared_ptr<eckit::Buffer> payload) :
 //     Message(std::move(header), std::move(payload)) {}
-    
+
 Message::Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload) :
     version_{protocolVersion()}, header_{std::move(header)}, payload_{std::move(payload)} {}
-    
+
 Message::Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload) :
     version_{protocolVersion()}, header_{std::move(header)}, payload_{payload} {}
 
@@ -70,6 +70,11 @@ const Message::Header& Message::header() const {
 int Message::version() const {
     return version_;
 }
+
+util::PrecisionTag Message::precision() const {
+    return header().precision();
+}
+
 
 Message::Tag Message::tag() const {
     return header().tag();
@@ -110,7 +115,7 @@ const Metadata& Message::metadata() const& {
 // Metadata&& Message::metadata() && {
 //     return std::move(header_).metadata();
 // }
-    
+
 Message Message::modifyMetadata(Metadata&& md) const {
     return Message(std::make_shared<Header>(header_->modifyMetadata(std::move(md))), payload_);
 };
@@ -138,19 +143,18 @@ void Message::encode(eckit::Stream& strm) const {
 void Message::print(std::ostream& out) const {
     out << "Message("
         << "version=" << version() << ", tag=" << tag2str(tag()) << ", source=" << source()
-        << ", destination=" << destination() << ", metadata=" << fieldId()
-        << ", payload-size=" << payload().size() << ")";
+        << ", destination=" << destination() << ", metadata=" << fieldId() << ", payload-size=" << payload().size()
+        << ")";
 }
 
 eckit::message::Message to_eckit_message(const Message& msg) {
-    if(msg.tag() == Message::Tag::Grib) {
+    if (msg.tag() == Message::Tag::Grib) {
         codes_handle* h = codes_handle_new_from_message(nullptr, msg.payload().data(), msg.size());
         return eckit::message::Message{new metkit::codes::CodesContent{h, true}};
     }
 
     ASSERT(msg.tag() == Message::Tag::Field);
-    return eckit::message::Message{
-        new metkit::codes::UserDataContent(msg.payload().data(), msg.size())};
+    return eckit::message::Message{new metkit::codes::UserDataContent(msg.payload().data(), msg.size())};
 }
 
 }  // namespace message

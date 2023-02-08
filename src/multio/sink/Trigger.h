@@ -12,20 +12,21 @@
 /// @author Domokos Sarmany
 /// @date   May 2018
 
-#ifndef multio_Trigger_H
-#define multio_Trigger_H
+#pragma once
 
 #include <vector>
 
-#include "eckit/types/Types.h"
 #include "eckit/memory/NonCopyable.h"
+#include "eckit/types/Types.h"
 
 #include "eckit/message/Message.h"
 #include "multio/util/ConfigurationContext.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 
-namespace eckit { class Configuration; }
+namespace eckit {
+class Configuration;
+}
 
 namespace multio {
 
@@ -36,8 +37,7 @@ class EventTrigger;
 
 class Trigger : public eckit::NonCopyable {
 
-public: // methods
-
+public:  // methods
     Trigger(const ConfigurationContext& confCtx);
 
     ~Trigger();
@@ -45,22 +45,19 @@ public: // methods
     void events(const eckit::StringDict& metadata) const;
     void events(eckit::message::Message message) const;
 
-private: // methods
-
+private:  // methods
     void print(std::ostream&) const;
 
-    friend std::ostream& operator<<(std::ostream& s, const Trigger& p) { p.print(s); return s; }
+    friend std::ostream& operator<<(std::ostream& s, const Trigger& p) {
+        p.print(s);
+        return s;
+    }
 
 
-private: // members
-
-
+private:  // members
     std::vector<EventTrigger*> triggers_;
-
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-
-#endif

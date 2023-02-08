@@ -1,5 +1,4 @@
-#ifndef multio_MaestroWorker_H
-#define multio_MaestroWorker_H
+#pragma once
 
 #include <fstream>
 #include "eckit/container/Queue.h"
@@ -9,8 +8,8 @@
 #include "multio/maestro/MaestroStatistics.h"
 
 #include "pgen/prodgen/FileNamer.h"
-#include "pgen/prodgen/Requirement.h"
 #include "pgen/prodgen/ProdGenStatistics.h"
+#include "pgen/prodgen/Requirement.h"
 
 namespace multio {
 
@@ -19,6 +18,7 @@ public:
     MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pgen::Requirement>& queue);
     ~MaestroWorker();
     void process();
+
 private:
     std::string get_log_name();
     const eckit::option::CmdArgs& args_;
@@ -41,5 +41,3 @@ private:
 void execute_worker(const eckit::option::CmdArgs&, eckit::Queue<pgen::Requirement>&);
 
 }  // namespace multio
-
-#endif  // multio_MaestroWorker_H

@@ -1,6 +1,4 @@
-
-#ifndef multio_server_Mappings_H
-#define multio_server_Mappings_H
+#pragma once
 
 #include <algorithm>
 #include <map>
@@ -18,18 +16,11 @@ namespace domain {
 
 class DomainMap {
 public:
+    std::unique_ptr<Domain>& at(const message::Peer& peer) { return domainMap_.at(peer); }
 
-    std::unique_ptr<Domain>& at(const message::Peer& peer) {
-        return domainMap_.at(peer);
-    }
+    const std::unique_ptr<Domain>& at(const message::Peer& peer) const { return domainMap_.at(peer); }
 
-    const std::unique_ptr<Domain>& at(const message::Peer& peer) const {
-        return domainMap_.at(peer);
-    }
-
-    bool contains(const message::Peer& peer) {
-        return domainMap_.find(peer) != end(domainMap_);
-    }
+    bool contains(const message::Peer& peer) { return domainMap_.find(peer) != end(domainMap_); }
 
     template <typename... Args>
     void emplace(Args&&... args) {
@@ -52,10 +43,10 @@ public:
         auto totalSize = 0;
         std::for_each(std::begin(domainMap_), std::end(domainMap_),
                       [&totalSize](const std::pair<const message::Peer, std::unique_ptr<Domain>>& domain) {
-                          totalSize += domain.second->local_size();
+                          totalSize += domain.second->localSize();
                       });
 
-        return (totalSize == domainMap_.begin()->second->global_size());
+        return (totalSize == domainMap_.begin()->second->globalSize());
     };
 
     bool isConsistent() const { return consistent_; }
@@ -94,5 +85,3 @@ private:  // members
 
 }  // namespace domain
 }  // namespace multio
-
-#endif

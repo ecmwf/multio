@@ -1,6 +1,5 @@
 
-#ifndef multio_action_ActionStatistics_H
-#define multio_action_ActionStatistics_H
+#pragma once
 
 #include <iosfwd>
 
@@ -14,14 +13,10 @@ public:
     ActionStatistics();
 
     eckit::Timing actionTiming_;
-    eckit::Timer localTimer_; // Remove it once eckit::Statistics is fixed
+    eckit::Timer localTimer_;  // Remove it once eckit::Statistics is fixed
 
-    void report(std::ostream& out, const std::string& type = "Action",
-                const char* indent = "") const;
+    void report(std::ostream& out, const std::string& type = "Action", const char* indent = "") const;
 };
 
-}  // namespace server
+}  // namespace action
 }  // namespace multio
-
-
-#endif // multio_server_ActionStatistics_H

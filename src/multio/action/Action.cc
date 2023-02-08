@@ -31,7 +31,7 @@ Action::~Action() {
     statistics_.report(logFile, type_);
 }
 
-void Action::execute(message::Message msg) const {
+void Action::execute(message::Message msg) {
     withFailureHandling([&]() { executeImpl(std::move(msg)); },
                         [&, msg]() {
                             std::ostringstream oss;
@@ -48,7 +48,7 @@ util::FailureHandlerResponse Action::handleFailure(util::OnActionError t, const 
     return util::FailureHandlerResponse::Rethrow;
 };
 
-void Action::matchedFields(message::MetadataMatchers& matchers) const {}
+void Action::matchedFields(message::MetadataSelectors& selectors) const {}
 
 std::ostream& operator<<(std::ostream& os, const Action& a) {
     a.print(os);

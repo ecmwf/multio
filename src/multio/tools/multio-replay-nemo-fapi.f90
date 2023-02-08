@@ -1,8 +1,8 @@
 ! (C) Copyright 1996-2012 ECMWF.
-! 
+!
 ! This software is licensed under the terms of the Apache Licence Version 2.0
-! which can be obtained at http://www.apache.org/licenses/LICENSE-2.0. 
-! In applying this licence, ECMWF does not waive the privileges and immunities 
+! which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+! In applying this licence, ECMWF does not waive the privileges and immunities
 ! granted to it by virtue of its status as an intergovernmental organisation nor
 ! does it submit to any jurisdiction.
 !
@@ -13,28 +13,28 @@ program multio_replay_nemo_fapi
     use fckit_module
     use fckit_mpi_module
     use mpi_f08 ! for error codes
-    implicit none 
+    implicit none
 
-    integer :: rank, client_count, server_count 
+    integer :: rank, client_count, server_count
 
-    integer :: global_size = 105704
-    integer :: level = 1
-    integer :: step = 24
-    
+    integer :: global_size
+    integer :: level
+    integer :: step
 
+    logical singlePrecision
 
     type(multio_handle) :: mio
     integer(8) :: mio_parent_comm = MPI_UNDEFINED
 
-    character(len=3), dimension(4) :: nemo_parameters = ["sst", "ssu", "ssv", "ssw" ] 
-    integer, dimension(4) :: grib_param_id = [262101, 212101, 212151, 212202 ] 
-    character(len=6), dimension(4) :: grib_grid_type = ["T grid", "U grid", "V grid", "W grid" ] 
-    character(len=12), dimension(4) :: grib_level_type = ["oceanSurface", "oceanSurface", "oceanSurface", "oceanSurface" ] 
+    character(len=3), dimension(4) :: nemo_parameters = ["sst", "ssu", "ssv", "ssw" ]
+    integer, dimension(4) :: grib_param_id = [262101, 212101, 212151, 212202 ]
+    character(len=6), dimension(4) :: grib_grid_type = ["T grid", "U grid", "V grid", "W grid" ]
+    character(len=12), dimension(4) :: grib_level_type = ["oceanSurface", "oceanSurface", "oceanSurface", "oceanSurface" ]
 
     interface
       function strlen(s) result(l) bind(c, name='strlen')
         use, intrinsic    :: iso_c_binding
-        implicit none 
+        implicit none
 
         character(c_char) :: s
         integer(c_int)    :: l
@@ -42,25 +42,47 @@ program multio_replay_nemo_fapi
     end interface
 
 
+   singlePrecision = hasSinglePrecison()
+   global_size = 105704
+   level = 1
+   step = 24
+
     write(0,*) "Start programm multio_replay_nemo_fapi..."
 
     call init(mio, rank, server_count, client_count)
     call run(mio, rank, client_count, nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
-               global_size, level, step)
+               global_size, level, step, singlePrecision)
 
     call test_data(rank, nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
                global_size, level, step)
 contains
 
+
+function hasSinglePrecison() result(singlePrecision)
+    use, intrinsic :: iso_c_binding
+    character(kind=c_char,len=255) :: arg
+    integer(c_int) :: iarg
+    logical :: singlePrecision
+    singlePrecision = .FALSE.
+    search: do iarg=1,command_argument_count()+1
+      arg = repeat(' ',255)
+      call get_command_argument(iarg, arg )
+      if ( trim(adjustl(arg)) == "--singlePrecision" ) then
+        singlePrecision = .TRUE.
+        exit search
+      endif
+    enddo search
+end function hasSinglePrecison
+
 subroutine multio_custom_error_handler(context, err)
     integer(8), intent(inout) :: context  ! Use mpi communicator as context
     integer, intent(in) :: err
     type(fckit_mpi_comm) :: comm
-    
+
     if (err /= MULTIO_SUCCESS) then
         write (error_unit, *) 'MULTIO ERROR: ',multio_error_string(err)
         write (error_unit, *) 'Abort mpi...'
-        
+
         if (context /= MPI_UNDEFINED) then
             comm = fckit_mpi_comm(int(context))
             call comm%abort(MPI_ERR_OTHER)
@@ -84,7 +106,7 @@ subroutine init(mio, rank, server_count, client_count)
     integer(c_int) :: newcomm_id
     type(multio_handle), intent(inout) :: mio
     type(multio_metadata) :: md
-    
+
     type(multio_configurationcontext) :: cc
     ! for tests
     logical(c_bool) :: is_active
@@ -93,7 +115,7 @@ subroutine init(mio, rank, server_count, client_count)
     write(0,*) "Init..."
     cerr = cc%new()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error creating default configuration context"
-    
+
     cerr = cc%mpi_allow_world_default_comm(.FALSE._1)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting default multio mpi allow_world_default_comm"
 
@@ -127,12 +149,12 @@ subroutine init(mio, rank, server_count, client_count)
     cerr = cc%mpi_return_client_comm(newcomm_id)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi client return comm to configuration context"
     write(0,*) "create new handle..."
-    cerr = mio%new(cc) 
+    cerr = mio%new(cc)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error creating new mpi handle"
     if (newcomm_id == 0) ERROR STOP "Return communicator has not been set as expected"
     newcomm = fckit_mpi_comm(newcomm_id)
-    
-    cerr = cc%delete() 
+
+    cerr = cc%delete()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error deleting configuration context"
 
     server_count = comm%size()
@@ -141,7 +163,7 @@ subroutine init(mio, rank, server_count, client_count)
 
     write(0,*) "client_count", client_count
     write(0,*) "server_count", server_count
-    
+
     cerr = multio_set_failure_handler(multio_custom_error_handler, mio_parent_comm)
     if (cerr /= MULTIO_SUCCESS) then
          write(error_unit, *) 'setting multio failure handler failed: ',multio_error_string(cerr)
@@ -149,7 +171,7 @@ subroutine init(mio, rank, server_count, client_count)
     end if
 
 
-    
+
     ! Performing a few tests
     cerr = md%new()
     cerr = md%set_string_value("name", "sst")
@@ -157,52 +179,52 @@ subroutine init(mio, rank, server_count, client_count)
     if (.not. is_active) then
         ERROR STOP 'Field "sst" should be active'
     end if
-    
+
     cerr = md%set_string_value("name", "ssv")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
         ERROR STOP 'Field "ssv" should be active'
     end if
-    
+
     cerr = md%set_string_value("name", "ssu")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
         ERROR STOP 'Field "ssu" should be active'
     end if
-    
+
     cerr = md%set_string_value("name", "ssw")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
         ERROR STOP 'Field "ssw" should be active'
     end if
     cerr = md%delete()
-    
+
     cerr = md%new()
     cerr = md%set_string_value("category", "ocean-domain-map")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
         ERROR STOP 'Category "ocean-domain-map" should be completly active'
     end if
-    
+
     cerr = md%set_string_value("category", "ocean-mask")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
         ERROR STOP 'Category "ocean-mask" should be fully active'
     end if
-    
+
     cerr = md%set_string_value("category", "ocean-2d")
     cerr = mio%field_accepted(md, is_active)
     if (is_active) then
         ERROR STOP 'Category "ocean-2d" should not be fully active'
     end if
-    
+
     cerr = md%set_string_value("category", "ocean-3d")
     cerr = mio%field_accepted(md, is_active)
     if (is_active) then
         ERROR STOP 'Category "ocean-3d" should not be fully active'
     end if
     cerr = md%delete()
-    
+
     cerr = md%new()
     cerr = md%set_string_value("name", "notexisting")
     cerr = mio%field_accepted(md, is_active)
@@ -214,9 +236,9 @@ subroutine init(mio, rank, server_count, client_count)
 end subroutine init
 
 
-subroutine run(mio, rank, client_count, & 
+subroutine run(mio, rank, client_count, &
         nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
-        global_size, level, step &
+        global_size, level, step, singlePrecision &
 )
     integer(kind=c_int) :: cerr
     type(multio_handle), intent(inout) :: mio
@@ -225,10 +247,11 @@ subroutine run(mio, rank, client_count, &
     integer, intent(in) :: global_size
     integer, intent(in) :: level
     integer, intent(in) :: step
-    character(*), dimension(2), intent(in) :: nemo_parameters 
-    integer, dimension(2), intent(in) :: grib_param_id 
-    character(*), dimension(2), intent(in) :: grib_grid_type 
-    character(*), dimension(2), intent(in) :: grib_level_type 
+    logical, intent(in) :: singlePrecision
+    character(*), dimension(2), intent(in) :: nemo_parameters
+    integer, dimension(2), intent(in) :: grib_param_id
+    character(*), dimension(2), intent(in) :: grib_grid_type
+    character(*), dimension(2), intent(in) :: grib_level_type
 
 
     write(0,*) "Run..."
@@ -239,7 +262,7 @@ subroutine run(mio, rank, client_count, &
     call set_domains(mio, rank, client_count)
 
     call write_fields(mio, rank, client_count, nemo_parameters, &
-      grib_param_id, grib_grid_type, grib_level_type, global_size, level, step)
+      grib_param_id, grib_grid_type, grib_level_type, global_size, level, step, singlePrecision)
 
     cerr = mio%close_connections()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 39
@@ -278,8 +301,8 @@ subroutine set_domains(mio, rank, client_count)
     integer, intent(in) :: rank
     integer, intent(in) :: client_count
     type(multio_metadata) :: md
-    character(len=6), dimension(4) :: grib_grid_type = ["T grid", "U grid", "V grid", "W grid" ] 
-    character(len=6), dimension(4) :: grib_grid_fname = ["grid_T", "grid_U", "grid_V", "grid_W" ] 
+    character(len=6), dimension(4) :: grib_grid_type = ["T grid", "U grid", "V grid", "W grid" ]
+    character(len=6), dimension(4) :: grib_grid_fname = ["grid_T", "grid_U", "grid_V", "grid_W" ]
     integer, dimension(11) :: buffer
     integer :: i
 
@@ -311,23 +334,27 @@ end subroutine set_domains
 
 
 subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
-    global_size, level, step)
+    global_size, level, step, singlePrecision)
     integer(kind=c_int) :: cerr
     type(multio_handle), intent(inout) :: mio
     integer, intent(in) :: rank
     integer, intent(in) :: client_count
     type(multio_metadata) :: md
     integer, dimension(11) :: buffer
-    character(*), dimension(2), intent(in) :: nemo_parameters 
-    integer, dimension(2), intent(in) :: grib_param_id 
-    character(*), dimension(2), intent(in) :: grib_grid_type 
-    character(*), dimension(2), intent(in) :: grib_level_type 
+    character(*), dimension(2), intent(in) :: nemo_parameters
+    integer, dimension(2), intent(in) :: grib_param_id
+    character(*), dimension(2), intent(in) :: grib_grid_type
+    character(*), dimension(2), intent(in) :: grib_level_type
     integer, intent(in):: global_size
     integer, intent(in):: level
     integer, intent(in):: step
-    integer :: i
+    logical, intent(in):: singlePrecision
 
-    real(kind=c_double), dimension(:), allocatable :: values
+
+    integer :: i, j
+
+    real(kind=c_double), dimension(:), allocatable :: values_d
+    real(kind=c_float),  dimension(:), allocatable :: values_f
 
 
     write(0,*) "write_fields", rank, client_count
@@ -356,7 +383,7 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
 
     do i=1, size(nemo_parameters)
         print *,i, nemo_parameters(i)
-        call read_field(nemo_parameters(i), rank, step, values)
+        call read_field(nemo_parameters(i), rank, step, values_d)
 
         cerr = md%set_string_value("name", nemo_parameters(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 24
@@ -371,10 +398,20 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
         cerr = md%set_string_value("typeOfLevel", grib_level_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 30
 
-        cerr = mio%write_field(md, values, size(values))
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 35
+        if ( singlePrecision ) then
+            allocate(values_f(size(values_d)))
+            do j = 1, size(values_d)
+              values_f(j) = real(values_d(j),kind=c_float)
+            enddo
+            cerr = mio%write_field(md, values_f, size(values_f))
+            if (cerr /= MULTIO_SUCCESS) ERROR STOP 35
+            deallocate(values_f)
+        else
+            cerr = mio%write_field(md, values_d, size(values_d))
+            if (cerr /= MULTIO_SUCCESS) ERROR STOP 35
+        endif
 
-        deallocate(values)
+        deallocate(values_d)
     end do
 
     cerr = md%delete()
@@ -407,8 +444,8 @@ subroutine read_field(param, client_id, step, values)
 
      write(0,*) "read_field file ", fname, " recl: ", C_SIZEOF(dummy_double)
 
-     number_doubles =0 
-     open(FID, file=fname, status='old', action='read', access="stream", form="unformatted")
+     number_doubles =0
+     open(FID, file=fname, status='old', action='read', access="stream", form="unformatted", convert='little_endian')
      loop1: DO
         read(FID, iostat=ioerror, iomsg=ioerrmsg) dummy_double
         ! write(0,*) "read_field loop ", number_doubles
@@ -429,7 +466,7 @@ subroutine read_field(param, client_id, step, values)
 end subroutine read_field
 
 
-subroutine test_data(rank, & 
+subroutine test_data(rank, &
         nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
         global_size, level, step &
 )
@@ -438,10 +475,10 @@ subroutine test_data(rank, &
     integer, intent(in) :: global_size
     integer, intent(in) :: level
     integer, intent(in) :: step
-    character(*), dimension(2), intent(in) :: nemo_parameters 
-    integer, dimension(2), intent(in)      :: grib_param_id 
-    character(*), dimension(2), intent(in) :: grib_grid_type 
-    character(*), dimension(2), intent(in) :: grib_level_type 
+    character(*), dimension(2), intent(in) :: nemo_parameters
+    integer, dimension(2), intent(in)      :: grib_param_id
+    character(*), dimension(2), intent(in) :: grib_grid_type
+    character(*), dimension(2), intent(in) :: grib_level_type
 
     type(fckit_mpi_comm) :: comm
 
@@ -478,7 +515,7 @@ subroutine test_data(rank, &
        write(0,*) "comparing file ", trim(fname), " with reference ", trim(refname)
 
        open(FID1, file=fname, status='old', action='read', access="stream", form="unformatted")
-       open(FID2, file=fname, status='old', action='read', access="stream", form="unformatted")
+       open(FID2, file=refname, status='old', action='read', access="stream", form="unformatted")
        byte_num = 0
        loop1: DO
           read(FID1, iostat=ioerror, iomsg=ioerrmsg) actual

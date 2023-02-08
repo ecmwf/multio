@@ -1,0 +1,15 @@
+plans:
+    - name: test-print
+      actions:
+        - type: print
+        - type: encode
+          format: grib
+          template: <<~>>/../server/config/unstr_latlon.tmpl
+          # template: /Users/mapg/git/ifs-bundle/testInput.grib
+        - type: print
+        - type: sink
+          sinks:
+            - type: file
+              append: false
+              per-server: true # Will give you one file per server
+              path: testEncodePlanOutput.grib

@@ -1,0 +1,35 @@
+mappings:
+  - match:
+      paramId: paramId
+    targetPath: encoderOverwrites
+    optionalMap:
+      bitsPerValue: bitsPerValue
+      binaryScaleFactor: binaryScaleFactor
+data:
+  - paramId: 129
+    bitsPerValue: 16
+
+  - paramId: 130
+    bitsPerValue: 16
+    binaryScaleFactor: -6
+
+  - paramId: 133
+    bitsPerValue: 16
+
+  - paramId: 135
+    bitsPerValue: 16
+
+  - paramId: 138
+    bitsPerValue: 16
+
+  - paramId: 155
+    bitsPerValue: 16
+
+  - paramId: 131
+    bitsPerValue: 16
+
+  - paramId: 132
+    bitsPerValue: 16
+
+  - paramId: 157
+    bitsPerValue: 16

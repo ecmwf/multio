@@ -11,9 +11,7 @@
 /// @author Tiago Quintino
 /// @date Dec 2015
 
-
-#ifndef multio_IOStats_H
-#define multio_IOStats_H
+#pragma once
 
 #include <string>
 
@@ -21,9 +19,9 @@
 #include "eckit/memory/NonCopyable.h"
 
 namespace eckit {
-    class Length;
-    class Timer;
-}
+class Length;
+class Timer;
+}  // namespace eckit
 
 
 namespace multio {
@@ -33,8 +31,7 @@ namespace multio {
 class IOStats : public eckit::NonCopyable {
 
 public:
-
-    IOStats(const std::string& prefix=std::string());
+    IOStats(const std::string& prefix = std::string());
     ~IOStats();
 
     void report(std::ostream& s) const;
@@ -43,21 +40,16 @@ public:
     void logWrite(const eckit::Length& size, eckit::Timer& timer);
     void logFlush(eckit::Timer& timer);
 
-private: // methods
-
+private:  // methods
     void print(std::ostream& s) const;
 
     void reportCount(std::ostream& s, const std::string& label, size_t num) const;
     void reportBytes(std::ostream& s, const std::string& label, size_t num, size_t sum, size_t sumSquares) const;
-    void reportTimes(std::ostream& s,
-                     const std::string& label,
-                     size_t num,
-                     const eckit::Timing& sum,
+    void reportTimes(std::ostream& s, const std::string& label, size_t num, const eckit::Timing& sum,
                      double sumSquares) const;
     void reportRate(std::ostream& s, const std::string& label, size_t bytes, const eckit::Timing& time) const;
 
-private: // members
-
+private:  // members
     std::string prefix_;
 
     // The data elements that we actually want to track
@@ -78,17 +70,13 @@ private: // members
     eckit::Timing flushTiming_;
     double sumFlushTimesSquared_;
 
-private: // methods
-
-    friend std::ostream &operator<<(std::ostream &s, const IOStats &p) {
+private:  // methods
+    friend std::ostream& operator<<(std::ostream& s, const IOStats& p) {
         p.print(s);
         return s;
     }
-
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-
-#endif // multio_IOStats_H

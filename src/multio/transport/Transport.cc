@@ -13,7 +13,6 @@
 #include <iostream>
 
 #include "eckit/config/Configuration.h"
-#include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 
 #include "multio/LibMultio.h"
@@ -26,6 +25,21 @@ using eckit::Log;
 
 //--------------------------------------------------------------------------------------------------
 
+namespace {
+
+std::string transportExceptionReason(const std::string& r) {
+    std::string s("Transport exception: ");
+    s.append(r);
+    return s;
+}
+
+}  // namespace
+
+TransportException::TransportException(const std::string& r, const eckit::CodeLocation& l) :
+    eckit::Exception(transportExceptionReason(r), l) {}
+
+//--------------------------------------------------------------------------------------------------
+
 Transport::Transport(const ConfigurationContext& confCtx) : confCtx_{confCtx} {
     LOG_DEBUG_LIB(LibMultio) << "Transport config: " << confCtx.config() << std::endl;
 }
@@ -35,14 +49,14 @@ Transport::~Transport() = default;
 void Transport::listen() {}
 
 const PeerList& Transport::clientPeers() const {
-    if(peersMissing()) {
+    if (peersMissing()) {
         createPeers();
     }
     return clientPeers_;
 }
 
 const PeerList& Transport::serverPeers() const {
-    if(peersMissing()) {
+    if (peersMissing()) {
         createPeers();
     }
     return serverPeers_;
@@ -53,14 +67,14 @@ bool Transport::peersMissing() const {
 }
 
 size_t Transport::clientCount() const {
-    if(peersMissing()) {
+    if (peersMissing()) {
         createPeers();
     }
     return clientPeers_.size();
 }
 
 size_t Transport::serverCount() const {
-    if(peersMissing()) {
+    if (peersMissing()) {
         createPeers();
     }
     return serverPeers_.size();
@@ -112,7 +126,7 @@ Transport* TransportFactory::build(const std::string& name, const ConfigurationC
     for (auto const& factory : factories_) {
         Log::error() << "   " << factory.first << std::endl;
     }
-    throw eckit::SeriousBug(std::string("No TransportFactory called ") + name);
+    throw TransportException(std::string("No TransportFactory called ") + name, Here());
 }
 
 

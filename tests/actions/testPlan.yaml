@@ -1,4 +1,0 @@
-plans:
-    - name: test-print
-      actions:
-        - type: print

@@ -1,0 +1,14 @@
+plans:
+  - name: sh_copy
+    actions:
+      - type: interpolate
+        input: T1279
+      - type: encode
+        format: grib
+        template: MARS_sh.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false
+            path: MultIO_sh_copy.grib

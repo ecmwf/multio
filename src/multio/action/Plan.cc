@@ -71,7 +71,7 @@ void Plan::process(message::Message msg) {
     util::ScopedTimer timer{timing_};
     withFailureHandling([&]() { root_->execute(std::move(msg)); }, [=]() {
         std::ostringstream oss;
-        oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl; 
+        oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl;
         return oss.str();
     });
 }
@@ -84,8 +84,8 @@ util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t, const util
 };
 
 
-void Plan::matchedFields(message::MetadataMatchers& matchers) const {
-    root_->matchedFields(matchers);
+void Plan::matchedFields(message::MetadataSelectors& selectors) const {
+    root_->matchedFields(selectors);
 }
 
 }  // namespace action

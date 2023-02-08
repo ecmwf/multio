@@ -1,6 +1,4 @@
-
-#ifndef multio_util_ScopedTimer_H
-#define multio_util_ScopedTimer_H
+#pragma once
 
 #include "eckit/log/Statistics.h"
 
@@ -25,13 +23,10 @@ class ScopedTiming {
     eckit::Timing start_;
 
 public:
-    ScopedTiming(eckit::Timer& timer, eckit::Timing& timing) :
-        timer_{timer}, timing_{timing}, start_{timer} {}
+    ScopedTiming(eckit::Timer& timer, eckit::Timing& timing) : timer_{timer}, timing_{timing}, start_{timer} {}
 
     ~ScopedTiming() { timing_ += eckit::Timing{timer_} - start_; }
 };
 
 }  // namespace util
 }  // namespace multio
-
-#endif

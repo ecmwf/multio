@@ -1,6 +1,4 @@
-
-#ifndef multio_transport_StreamPool_H
-#define multio_transport_StreamPool_H
+#pragma once
 
 #include <sstream>
 
@@ -20,8 +18,7 @@ public:
 
 class StreamPool {
 public:
-    explicit StreamPool(size_t poolSize, size_t maxBufSize, const eckit::mpi::Comm& comm,
-                        TransportStatistics& stats);
+    explicit StreamPool(size_t poolSize, size_t maxBufSize, const eckit::mpi::Comm& comm, TransportStatistics& stats);
 
     MpiBuffer& buffer(size_t idx);
 
@@ -55,5 +52,3 @@ private:
 
 }  // namespace transport
 }  // namespace multio
-
-#endif // multio_transport_StreamPool_H

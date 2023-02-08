@@ -16,12 +16,11 @@
 /**
  * TODO: I've added these functionality to have more transparency in the GRIBEncoder action.
  *   Often metadata has to be extracted conditionally and different keys may be tested.
- *   Hence I try to construct `deferred look ups` and evaluate one after another. 
+ *   Hence I try to construct `deferred look ups` and evaluate one after another.
  *   This reduces a lot of boilerplate code.
  */
 
-#ifndef multio_util_Metadata_H
-#define multio_util_Metadata_H
+#pragma once
 
 #include "eckit/utils/Optional.h"
 
@@ -140,8 +139,7 @@ eckit::Optional<double> lookUpDouble(const eckit::Configuration& c, const std::s
 eckit::Optional<float> lookUpFloat(const eckit::Configuration& c, const std::string& key);
 eckit::Optional<bool> lookUpBool(const eckit::Configuration& c, const std::string& key);
 
+//-----------------------------------------------------------------------------------------------------------------------------------------
 
 }  // namespace util
 }  // namespace multio
-
-#endif

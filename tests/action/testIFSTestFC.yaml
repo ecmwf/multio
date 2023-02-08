@@ -1,0 +1,89 @@
+plans:
+    - name: print all
+      actions:
+        - type: print
+          stream: cout
+          prefix: Print all
+        - type: sink
+          sinks: []
+    - name: ml sh
+      actions:
+        - type: select
+          match:
+            - levtype: ml
+              gridType: sh
+              gribEdition: 2
+        - type: metadata-mapping
+          mapping: <<~>>/metadata-mapping/grib2-ml-encoder-overwrites.yaml
+          enforce-match: false
+          overwrite-existing: true
+        - type: print
+          stream: cout
+          prefix: Plan for leveltype "ml" and gridType "sh" (grib2)
+        - type: encode
+          format: grib
+          template: <<~>>/ifs-ml-sh-1-0-t-2.grib
+          overwrite:
+            generatingProcessIdentifier: 147
+            NV: 40
+        - type: sink
+          sinks:
+            - type: file
+              append: false
+              per-server: true # Will give you one file per server
+              path: ifs-test-ml-sh-2.grib
+    - name: pl sh
+      actions:
+        - type: select
+          match:
+            - levtype: pl
+              gridType: sh
+              gribEdition: 1
+        - type: metadata-mapping
+          mapping: metadata-mapping/grib1-pl-encoder-overwrites.yaml
+          enforce-match: false
+          overwrite-existing: true
+        - type: print
+          stream: cout
+          prefix: Plan for leveltype "pl" and gridType "sh" (grib1)
+        - type: encode
+          format: grib
+          # TODO
+          # some comparisons fail with: long [timeRangeIndicator]: [0] != [1]
+          template: <<~>>/ifs-pl-sh-1000-0-t-1.grib
+          overwrite:
+            generatingProcessIdentifier: 147
+        - type: sink
+          sinks:
+            - type: file
+              append: false
+              per-server: true # Will give you one file per server
+              path: ifs-test-pl-sh-1.grib
+    - name: ml regular_gg
+      actions:
+        - type: select
+          match:
+            - levtype: ml
+              gridType: regular_gg
+              gribEdition: 2
+        - type: metadata-mapping
+          mapping: <<~>>/metadata-mapping/grib2-ml-encoder-overwrites.yaml
+          enforce-match: false
+          overwrite-existing: true
+        - type: print
+          stream: cout
+          prefix: Plan leveltype "ml" and gridType "regular_gg"
+        - type: encode
+          format: grib
+          template: <<~>>/ifs-ml-regular_gg-1-0-q-2.grib
+          overwrite:
+            generatingProcessIdentifier: 147
+            NV: 40
+            Nj: 32
+            N: 16
+        - type: sink
+          sinks:
+            - type: file
+              append: false
+              per-server: true # Will give you one file per server
+              path: ifs-test-ml-gg-2.grib

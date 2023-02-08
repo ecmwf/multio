@@ -12,18 +12,17 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
-#ifndef multio_DataSink_H
-#define multio_DataSink_H
+#pragma once
 
 #include <iosfwd>
+#include <map>
 #include <mutex>
 #include <string>
 #include <vector>
-#include <map>
 
+#include <multio/util/ConfigurationContext.h>
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/message/Message.h"
-#include <multio/util/ConfigurationContext.h>
 
 namespace multio {
 
@@ -130,5 +129,3 @@ public:
 //--------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-
-#endif

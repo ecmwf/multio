@@ -2,9 +2,7 @@
 #include "multio_c.h"
 #include "multio_c_cpp_utils.h"
 
-#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
-#include "eckit/mpi/Comm.h"
 #include "eckit/runtime/Main.h"
 
 #include "multio/message/Metadata.h"
@@ -233,6 +231,7 @@ int multio_new_handle(multio_handle_t** mio, multio_configurationcontext_t* cc) 
 int multio_delete_handle(multio_handle_t* mio) {
     return wrapApiFunction([mio]() {
         ASSERT(mio);
+        // std::cout << "multio_delete_handle" << std::endl;
         delete mio;
     });
 }
@@ -264,6 +263,7 @@ int multio_write_step_complete(multio_handle_t* mio, multio_metadata_t* md) {
     return wrapApiFunction([mio, md]() {
         ASSERT(mio);
         ASSERT(md);
+        // std::cout << "multio_write_step_complete" << std::endl;
 
         mio->dispatch(*md, eckit::Buffer{0}, Message::Tag::StepComplete);
     });
@@ -279,7 +279,24 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
     });
 }
 
-int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
+int multio_write_mask_float(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size) {
+    return wrapApiFunction([mio, md, data, size]() {
+        ASSERT(mio);
+        ASSERT(md);
+
+        std::vector<float> mask_data{data, data + size};
+        eckit::Buffer mask_vals{size * sizeof(uint8_t)};
+        auto bit = static_cast<uint8_t*>(mask_vals.data());
+        for (const auto& mval : mask_data) {
+            *bit = static_cast<uint8_t>(mval);
+            ++bit;
+        }
+
+        mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
+    });
+}
+
+int multio_write_mask_double(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
         ASSERT(mio);
         ASSERT(md);
@@ -296,10 +313,25 @@ int multio_write_mask(multio_handle_t* mio, multio_metadata_t* md, const double*
     });
 }
 
-int multio_write_field(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
+int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size) {
     return wrapApiFunction([mio, md, data, size]() {
         ASSERT(mio);
         ASSERT(md);
+
+        md->set("precision", "single");
+
+        eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(float)};
+
+        mio->dispatch(*md, std::move(field_vals), Message::Tag::Field);
+    });
+}
+
+int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
+    return wrapApiFunction([mio, md, data, size]() {
+        ASSERT(mio);
+        ASSERT(md);
+
+        md->set("precision", "double");
 
         eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(double)};
 
@@ -320,7 +352,7 @@ int multio_delete_metadata(multio_metadata_t* md) {
 }
 
 
-int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int value) {
+int multio_metadata_set_int(multio_metadata_t* md, const char* key, int value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -329,7 +361,7 @@ int multio_metadata_set_int_value(multio_metadata_t* md, const char* key, int va
     });
 }
 
-int multio_metadata_set_long_value(multio_metadata_t* md, const char* key, long value) {
+int multio_metadata_set_long(multio_metadata_t* md, const char* key, long value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -338,7 +370,7 @@ int multio_metadata_set_long_value(multio_metadata_t* md, const char* key, long 
     });
 }
 
-int multio_metadata_set_longlong_value(multio_metadata_t* md, const char* key, long long value) {
+int multio_metadata_set_longlong(multio_metadata_t* md, const char* key, long long value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -347,7 +379,7 @@ int multio_metadata_set_longlong_value(multio_metadata_t* md, const char* key, l
     });
 }
 
-int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, const char* value) {
+int multio_metadata_set_string(multio_metadata_t* md, const char* key, const char* value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -357,7 +389,7 @@ int multio_metadata_set_string_value(multio_metadata_t* md, const char* key, con
     });
 }
 
-int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, bool value) {
+int multio_metadata_set_bool(multio_metadata_t* md, const char* key, bool value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -366,7 +398,7 @@ int multio_metadata_set_bool_value(multio_metadata_t* md, const char* key, bool 
     });
 }
 
-int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, float value) {
+int multio_metadata_set_float(multio_metadata_t* md, const char* key, float value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
@@ -375,15 +407,16 @@ int multio_metadata_set_float_value(multio_metadata_t* md, const char* key, floa
     });
 }
 
-int multio_metadata_set_double_value(multio_metadata_t* md, const char* key, double value) {
+int multio_metadata_set_double(multio_metadata_t* md, const char* key, double value) {
     return wrapApiFunction([md, key, value]() {
         ASSERT(md);
         ASSERT(key);
 
-        md->set(key, value);
+        // TODO: it is unclear if we ever need to support setting metadata values as float; even if so, we are probably
+        // better off casting to double for storing it in multio::Metadata
+        md->set(key, static_cast<double>(value));
     });
 }
-
 
 int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, bool* accepted) {
     return wrapApiFunction([mio, md, accepted]() {

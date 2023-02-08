@@ -1,0 +1,87 @@
+# Possible way of splitting multiple communicators for different servers (NOT TESTED YET, BUT EXPECTED TO WORK)
+# Currently clients will join all servers, because plans are mixed.
+
+mpi-communicators:
+  multio-parent:
+    type: passed # Allow the model to pass communicator for all clients and server
+    default: world # implicit or disabled
+  ocean: # Split ocean server & clients
+    type: split
+    color: 1
+    parent: multio-parent
+  ocean-clients: # Split ocean clients
+    type: split
+    color: 11
+    parent: ocean
+  ocean-servers: # Split ocean servers
+    type: split
+    color: 12
+    parent: ocean
+  atmosphere: # Split atmosphere server & clients
+    type: split
+    color: 2
+    parent: multio-parent
+  atmosphere-clients: # Split atmosphere clients
+    type: split
+    color: 21
+    parent: atmosphere
+  atmosphere-servers: # Split atmosphere servers
+    type: split
+    color: 22
+    parent: atmosphere
+
+client:
+  plans:
+    - name: ocean-plan1
+      # tag: ocean
+      actions:
+        - type: select
+          match:
+            - name: [whatever-ocean]
+
+        - type: transport
+          target: ocean-ioserver
+
+    - name: atmosphere-plan1
+      # tag: atmosphere
+      actions:
+        - type: select
+          match:
+            - name: [whatever-atmosphere]
+
+        - type: transport
+          target: atmos-ioserver
+
+ocean-ioserver:
+  transport: mpi
+  group: ocean
+  # tag: ocean
+  client-group: ocean-clients # implicit
+  server-group: ocean-servers # implicit
+  plans:
+    - name: ocean-fields
+      actions:
+        - type: select
+          match:
+            - category: [ocean-2d]
+
+        - type: aggregat
+
+        - type: single-field-sink
+
+atmosphere-ioserver:
+  transport: mpi
+  group: atmosphere
+  tag: atmosphere
+  client-group: atmosphere-clients # implicit
+  server-group: atmosphere-servers # implicit
+  plans:
+    - name: atmosphere-fields
+      actions:
+        - type: select
+          match:
+            - category: [atmosphere-2d]
+
+        - type: aggregate
+
+        - type: single-field-sink

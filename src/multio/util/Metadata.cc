@@ -1,6 +1,7 @@
 #include "Metadata.h"  // Include header now
 
 #include "eckit/config/Configuration.h"
+#include "eckit/config/LocalConfiguration.h"
 
 namespace multio {
 namespace util {
@@ -46,6 +47,10 @@ template <>
 eckit::Optional<bool> LookUp<bool>::operator()() const {
     return lookUpBool(c_, key_);
 }
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------------
+
 
 }  // namespace util
 }  // namespace multio

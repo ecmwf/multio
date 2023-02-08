@@ -12,8 +12,7 @@
 /// @date   Dec 2015
 
 
-#ifndef multio_fdb5_FDB5Sink_H
-#define multio_fdb5_FDB5Sink_H
+#pragma once
 
 #include <iosfwd>
 #include <string>
@@ -49,5 +48,3 @@ private:
 }  // namespace multio
 
 //----------------------------------------------------------------------------------------------------------------------
-
-#endif

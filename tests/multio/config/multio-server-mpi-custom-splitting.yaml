@@ -1,0 +1,64 @@
+# These are the defaults. Multio will do the following when accessing the mpi group "nemo" mentioned in "server"
+mpi-communicators:
+    custom:
+        type: passed
+        default: world
+    custom-clients:
+        type: split
+        color: 123
+        parent: custom
+    custom-servers:
+        type: split
+        color: 456
+        parent: custom
+
+client:
+  plans:
+
+    - name: ocean-replay-grid-info-stream
+      actions:
+        - type: select
+          match:
+           - category: [ocean-domain-map, ocean-mask]
+
+        - type: transport
+          target: server
+
+    - name: ocean-replay-test-stream1
+      actions:
+        - type: select
+          match:
+           - name: [ sst, ssv ]
+
+        - type: metadata-mapping
+          mapping: '{~}/nemo-to-grib.yaml'
+
+        - type: transport
+          target: server
+
+    - name: ocean-replay-test-stream2
+      actions:
+        - type: select
+          match:
+           - name: [ ssu, ssw ]
+
+        - type: metadata-mapping
+          mapping: '{~}/nemo-to-grib.yaml'
+
+        - type: transport
+          target: server
+
+server:
+  transport: mpi
+  group: custom
+  plans:
+
+    - name: ocean-fields
+      actions:
+        - type: select
+          match:
+           - category: [ocean-2d]
+
+        - type: aggregate
+
+        - type: single-field-sink

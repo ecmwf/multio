@@ -1,0 +1,12 @@
+plans:
+  - name: regular_ll_encode_decode
+    actions:
+      - type: encode
+        format: grib
+        template: MARS_regular_ll.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false
+            path: MultIO_regular_ll_encode_decode.grib

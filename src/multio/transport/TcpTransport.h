@@ -14,16 +14,15 @@
 
 /// @date Mar 2019
 
-#ifndef multio_transport_TcpTransport_H
-#define multio_transport_TcpTransport_H
+#pragma once
 
 #include <iosfwd>
 #include <map>
 #include <vector>
 
+#include "eckit/io/Select.h"
 #include "eckit/net/TCPClient.h"
 #include "eckit/net/TCPServer.h"
-#include "eckit/io/Select.h"
 
 #include "multio/transport/Transport.h"
 
@@ -91,5 +90,3 @@ private:
 
 }  // namespace transport
 }  // namespace multio
-
-#endif

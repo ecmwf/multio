@@ -14,8 +14,7 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_Plan_H
-#define multio_server_Plan_H
+#pragma once
 
 #include <memory>
 
@@ -29,7 +28,9 @@
 
 namespace multio {
 
-namespace message { class MetadataMatchers; }
+namespace message {
+class MetadataSelectors;
+}
 
 namespace action {
 
@@ -45,9 +46,10 @@ public:
 
     virtual void process(message::Message msg);
 
-    void matchedFields(message::MetadataMatchers& matchers) const;
+    void matchedFields(message::MetadataSelectors& selectors) const;
 
-    util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&, util::DefaultFailureState&) const override;
+    util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&,
+                                               util::DefaultFailureState&) const override;
 
 protected:
     std::string name_;
@@ -58,5 +60,3 @@ protected:
 
 }  // namespace action
 }  // namespace multio
-
-#endif

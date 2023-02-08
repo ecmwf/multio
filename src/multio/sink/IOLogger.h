@@ -12,8 +12,7 @@
 /// @date Dec 2015
 
 
-#ifndef multio_IOLogger_H
-#define multio_IOLogger_H
+#pragma once
 
 
 #include "eckit/memory/NonCopyable.h"
@@ -21,7 +20,7 @@
 #include <string>
 
 namespace eckit {
-    class Length;
+class Length;
 }
 
 
@@ -32,7 +31,6 @@ namespace multio {
 class IOLogger : public eckit::NonCopyable {
 
 public:
-
     IOLogger();
     ~IOLogger();
 
@@ -41,12 +39,10 @@ public:
     void logRead(const eckit::Length& size);
     void logWrite(const eckit::Length& size);
 
-private: // methods
-
+private:  // methods
     void print(std::ostream& s) const;
 
-private: // members
-
+private:  // members
     // The data elements that we actually want to track
 
     size_t numReads_;
@@ -66,17 +62,13 @@ private: // members
     // Todo: track stddev, min, max, mean on the fly.
 
 
-private: // methods
-
-    friend std::ostream &operator<<(std::ostream &s, const IOLogger &p) {
+private:  // methods
+    friend std::ostream& operator<<(std::ostream& s, const IOLogger& p) {
         p.print(s);
         return s;
     }
-
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-
-#endif // multio_IOLogger_H

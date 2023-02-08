@@ -45,7 +45,8 @@ Listener::Listener(const util::ConfigurationContext& confCtx, Transport& trans):
 }
 
 util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, const util::FailureContext& c, util::DefaultFailureState&) const {
-    msgQueue_.close(); // TODO: msgQueue_ pop is blocking in dispatch.... redesign to have better awareness on blocking positions to safely stop and restart
+    msgQueue_.close();  // TODO: msgQueue_ pop is blocking in dispatch.... redesign to have better awareness on blocking
+                        // positions to safely stop and restart
     continue_->store(false, std::memory_order_release);
     return util::FailureHandlerResponse::Rethrow;
 };
@@ -53,7 +54,7 @@ util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, con
 void Listener::start() {
 
     eckit::ResourceUsage usage{"multio listener"};
-    
+
     // Store thread errors
     std::exception_ptr lstnExcPtr;
     std::exception_ptr dpatchExcPtr;
@@ -107,7 +108,7 @@ void Listener::start() {
     msgQueue_.close();
 
     LOG_DEBUG_LIB(LibMultio) << "*** CLOSED message queue " << std::endl;
-    
+
     // Propagate possible thread errors
     if (lstnExcPtr) {
         std::rethrow_exception(lstnExcPtr);

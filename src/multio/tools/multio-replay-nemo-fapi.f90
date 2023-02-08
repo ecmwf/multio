@@ -174,25 +174,25 @@ subroutine init(mio, rank, server_count, client_count)
 
     ! Performing a few tests
     cerr = md%new()
-    cerr = md%set_string_value("name", "sst")
+    cerr = md%set_string("name", "sst")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
         ERROR STOP 'Field "sst" should be active'
     end if
 
-    cerr = md%set_string_value("name", "ssv")
+    cerr = md%set_string("name", "ssv")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
         ERROR STOP 'Field "ssv" should be active'
     end if
 
-    cerr = md%set_string_value("name", "ssu")
+    cerr = md%set_string("name", "ssu")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
         ERROR STOP 'Field "ssu" should be active'
     end if
 
-    cerr = md%set_string_value("name", "ssw")
+    cerr = md%set_string("name", "ssw")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
         ERROR STOP 'Field "ssw" should be active'
@@ -200,25 +200,25 @@ subroutine init(mio, rank, server_count, client_count)
     cerr = md%delete()
 
     cerr = md%new()
-    cerr = md%set_string_value("category", "ocean-domain-map")
+    cerr = md%set_string("category", "ocean-domain-map")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
         ERROR STOP 'Category "ocean-domain-map" should be completly active'
     end if
 
-    cerr = md%set_string_value("category", "ocean-mask")
+    cerr = md%set_string("category", "ocean-mask")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
         ERROR STOP 'Category "ocean-mask" should be fully active'
     end if
 
-    cerr = md%set_string_value("category", "ocean-2d")
+    cerr = md%set_string("category", "ocean-2d")
     cerr = mio%field_accepted(md, is_active)
     if (is_active) then
         ERROR STOP 'Category "ocean-2d" should not be fully active'
     end if
 
-    cerr = md%set_string_value("category", "ocean-3d")
+    cerr = md%set_string("category", "ocean-3d")
     cerr = mio%field_accepted(md, is_active)
     if (is_active) then
         ERROR STOP 'Category "ocean-3d" should not be fully active'
@@ -226,7 +226,7 @@ subroutine init(mio, rank, server_count, client_count)
     cerr = md%delete()
 
     cerr = md%new()
-    cerr = md%set_string_value("name", "notexisting")
+    cerr = md%set_string("name", "notexisting")
     cerr = mio%field_accepted(md, is_active)
     if (is_active) then
         ERROR STOP 'Field "notexisting" should not be active'
@@ -315,13 +315,13 @@ subroutine set_domains(mio, rank, client_count)
         print *,i, grib_grid_type(i)
         call read_grid(grib_grid_fname(i), rank, buffer)
 
-        cerr = md%set_string_value("name", grib_grid_type(i))
+        cerr = md%set_string("name", grib_grid_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 10
-        cerr = md%set_string_value("category", "ocean-domain-map")
+        cerr = md%set_string("category", "ocean-domain-map")
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 11
-        cerr = md%set_string_value("representation", "structured")
+        cerr = md%set_string("representation", "structured")
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 12
-        cerr = md%set_bool_value("toAllServers", .TRUE._1)
+        cerr = md%set_bool("toAllServers", .TRUE._1)
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 14
 
         cerr = mio%write_domain(md, buffer, size(buffer))
@@ -362,40 +362,40 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
     cerr = md%new()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 19
 
-    cerr = md%set_string_value("category", "ocean-2d")
+    cerr = md%set_string("category", "ocean-2d")
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 20
-    cerr = md%set_int_value("globalSize", global_size)
+    cerr = md%set_int("globalSize", global_size)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 21
-    cerr = md%set_int_value("level", level)
+    cerr = md%set_int("level", level)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 22
-    cerr = md%set_int_value("step", step)
+    cerr = md%set_int("step", step)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 23
 
-    cerr = md%set_double_value("missingValue", 0.0_8)
+    cerr = md%set_double("missingValue", 0.0_8)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 31
-    cerr = md%set_bool_value("bitmapPresent", .FALSE._1)
+    cerr = md%set_bool("bitmapPresent", .FALSE._1)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 32
-    cerr = md%set_int_value("bitsPerValue", 16)
+    cerr = md%set_int("bitsPerValue", 16)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 33
 
-    cerr = md%set_bool_value("toAllServers", .FALSE._1)
+    cerr = md%set_bool("toAllServers", .FALSE._1)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 34
 
     do i=1, size(nemo_parameters)
         print *,i, nemo_parameters(i)
         call read_field(nemo_parameters(i), rank, step, values_d)
 
-        cerr = md%set_string_value("name", nemo_parameters(i))
+        cerr = md%set_string("name", nemo_parameters(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 24
-        cerr = md%set_string_value("nemoParam", nemo_parameters(i))
+        cerr = md%set_string("nemoParam", nemo_parameters(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 25
-        cerr = md%set_int_value("param", grib_param_id(i))
+        cerr = md%set_int("param", grib_param_id(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 26
-        cerr = md%set_string_value("gridSubType", grib_grid_type(i))
+        cerr = md%set_string("gridSubType", grib_grid_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 27
-        cerr = md%set_string_value("domain", grib_grid_type(i))
+        cerr = md%set_string("domain", grib_grid_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 29
-        cerr = md%set_string_value("typeOfLevel", grib_level_type(i))
+        cerr = md%set_string("typeOfLevel", grib_level_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 30
 
         if ( singlePrecision ) then

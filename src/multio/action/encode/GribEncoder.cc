@@ -53,8 +53,8 @@ std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
 
 const std::map<const std::string, const long> ops_to_code{{"instant", 0000}, {"average", 1000}, {"accumulate", 2000},
                                                           {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
-//  {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3},
-//  {"stddev", 6}};
+
+const std::map<const std::string, const long> type_of_statistical_processing{{"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
 
 const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
@@ -181,8 +181,9 @@ void setEncodingSpecificFields(GribEncoder& g, const message::Message& msg) {
     withFirstOf(ValueSetter{g, "numberOfDataPoints"}, gls);
     withFirstOf(ValueSetter{g, "numberOfValues"}, gls);
 
-    withFirstOf(ValueSetter{g, "missingValue"}, LookUpString(md, "missingValue"));
+    withFirstOf(ValueSetter{g, "missingValue"}, LookUpDouble(md, "missingValue"));
     withFirstOf(ValueSetter{g, "bitmapPresent"}, LookUpBool(md, "bitmapPresent"));
+    withFirstOf(ValueSetter{g, "bitsPerValue"}, LookUpLong(md, "bitsPerValue"));
 }
 
 void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
@@ -223,17 +224,18 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
     if (operation) {
         // Statistics field
         if (*queriedMarsFields.type == "fc" && *operation == "instant") {
+            // stepInHours has been set by statistics action
             withFirstOf(ValueSetter{g, "step"}, LookUpLong(md, "stepInHours"));
         }
         else {
+            // stepRangeInHours has been set by statistics action
             withFirstOf(ValueSetter{g, "stepRange"}, LookUpLong(md, "stepRangeInHours"));
         }
 
         eckit::Optional<long> curDate;
         if (*operation != "instant" && (curDate = firstOf(LookUpLong(md, "currentDate")))) {
-            // g.setValue("typeOfStatisticalProcessing",
-            // ops_to_code.at(metadata.getString("operation")));
-            //  g.setValue("stepRange", metadata.getString("stepRange"));
+            g.setValue("typeOfStatisticalProcessing", type_of_statistical_processing.at(*operation));
+            
             g.setValue("yearOfEndOfOverallTimeInterval", *curDate / 10000);
             g.setValue("monthOfEndOfOverallTimeInterval", (*curDate % 10000) / 100);
             g.setValue("dayOfEndOfOverallTimeInterval", *curDate % 100);
@@ -459,6 +461,11 @@ message::Message GribEncoder::setFieldValues(const float* values, size_t count) 
 
     return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
 }
+
+
+void GribEncoder::print(std::ostream& os) const {
+    os << "GribEncoder(config=" << config_ << ")";
+};
 
 }  // namespace action
 }  // namespace multio

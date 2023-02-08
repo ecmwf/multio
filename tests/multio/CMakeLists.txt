@@ -52,7 +52,7 @@ ecbuild_add_test( TARGET    test_multio_encode_bitspervalue
 ecbuild_add_test( TARGET    test_multio_confctx
                   SOURCES   test_multio_confctx.cc
                   LIBS      multio
-                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_SOURCE_DIR}/multio/tests/multio/config"
+                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
 )
 
 # Test api
@@ -60,14 +60,14 @@ ecbuild_add_test( TARGET    test_multio_confctx
 ecbuild_add_test( TARGET    test_multio_capi
                   SOURCES   test_multio_capi.cc
                   LIBS      multio-api
-                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_SOURCE_DIR}/multio/tests/multio/config"
+                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
 )
 
 ecbuild_add_test( TARGET    test_multio_fapi_general
                   SOURCES   test_multio_fapi_general.f90
                   CONDITION HAVE_FORTRAN
                   LIBS      multio-fapi
-                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_SOURCE_DIR}/multio/tests/multio/config"
+                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
 )
 
 # Test maestro
@@ -123,7 +123,7 @@ ecbuild_add_test( TARGET test_multio_legacy_interface
 
 
 list( APPEND _test_environment
-    MULTIO_SERVER_CONFIG_PATH=${CMAKE_SOURCE_DIR}/multio/tests/multio/config
+    MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config
 )
 
 ecbuild_add_test( TARGET test_multio_hammer_thread

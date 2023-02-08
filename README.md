@@ -1,7 +1,7 @@
 multio
 ======
 
-[![Build Status](https://img.shields.io/github/workflow/status/ecmwf/multio/ci/develop)](https://github.com/ecmwf/multio/actions/workflows/ci.yml)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/ecmwf/multio/ci.yml?branch=develop)](https://github.com/ecmwf/multio/actions/workflows/ci.yml?query=branch%3Adevelop)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/ecmwf/multio/blob/develop/LICENSE)
 
 multio is a package developed by ECMWF that provides an application programming interface (API) for

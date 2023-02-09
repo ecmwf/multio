@@ -21,7 +21,6 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
         if (cfgK.get().isList()) {
             auto v = cfg.getStringVector(k);
             matcher_.emplace(k, std::set<std::string>(v.begin(), v.end()));
-            break;
         }
         else {
             matcher_.emplace(k, std::set<std::string>{cfg.getString(k)});

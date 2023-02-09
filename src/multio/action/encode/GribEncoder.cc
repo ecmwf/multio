@@ -59,7 +59,8 @@ const std::map<const std::string, const long> type_of_statistical_processing{{"a
 const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
 
-const std::map<const std::string, const long> type_of_generating_process{{"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}};
+const std::map<const std::string, const long> type_of_generating_process{
+    {"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}, {"tpa", 12}};
 
 struct ValueSetter {
     GribEncoder& g_;
@@ -189,7 +190,7 @@ void setEncodingSpecificFields(GribEncoder& g, const message::Message& msg) {
 void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
                                  const QueriedMarsKeys& queriedMarsFields) {
     auto date = firstOf(
-        LookUpLong(md, (queriedMarsFields.type && (*queriedMarsFields.type == "an")) ? "currentDate" : "startDate"),
+        LookUpLong(md, (queriedMarsFields.type && (*queriedMarsFields.type == "fc")) ? "startTime" : "currentDate"),
         LookUpLong(md, "startDate"));
     if (date) {
         g.setValue("year", *date / 10000);
@@ -197,7 +198,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
         g.setValue("day", *date % 100);
     }
     auto time = firstOf(
-        LookUpLong(md, (queriedMarsFields.type && (*queriedMarsFields.type == "an")) ? "currentTime" : "startTime"),
+        LookUpLong(md, (queriedMarsFields.type && (*queriedMarsFields.type == "fc")) ? "startTime" : "currentDate"),
         LookUpLong(md, "startTime"));
     if (time) {
         g.setValue("hour", *time / 10000);

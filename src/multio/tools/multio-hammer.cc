@@ -415,8 +415,7 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
         md.set("name", eckit::Translator<long, std::string>{}(step))
             .set("category", "atms-checkpoint")
             .set("trigger", "step")
-            .set("domain", "grid-point")
-            .set("precision", "double");
+            .set("domain", "grid-point");
         for (auto& server : serverPeers) {
             Message flush{Message::Header{Message::Tag::StepComplete, client, *server, Metadata{md}}};
             transport->send(flush);

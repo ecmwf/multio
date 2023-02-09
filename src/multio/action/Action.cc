@@ -22,8 +22,7 @@ using eckit::Log;
 //----------------------------------------------------------------------------------------------------------------------
 
 Action::Action(const ConfigurationContext& confCtx) :
-    FailureAware(confCtx), confCtx_(confCtx), type_{confCtx.config().getString("type")} {
-}
+    FailureAware(confCtx), confCtx_(confCtx), type_{confCtx.config().getString("type")} {}
 
 Action::~Action() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};

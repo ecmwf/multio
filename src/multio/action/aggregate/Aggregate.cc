@@ -25,8 +25,6 @@ Aggregate::Aggregate(const ConfigurationContext& confCtx) : ChainedAction(confCt
 
 void Aggregate::executeImpl(Message msg) {
 
-    eckit::Log::info() << " ***** Aggregating message " << msg << std::endl;
-
     if ((msg.tag() == Message::Tag::Field) && handleField(msg)) {
         executeNext(globalField(msg.fieldId()));
     }

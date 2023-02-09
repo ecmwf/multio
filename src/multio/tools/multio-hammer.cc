@@ -219,6 +219,176 @@ public:  // methods
 private:
     using PeerList = std::vector<std::unique_ptr<Peer>>;
 
+    class TestPolicy {
+    public:
+        TestPolicy(ConfigurationContext& configurationContext, size_t clientCount) : configurationContext_(configurationContext), clientCount_(clientCount) {}
+        virtual ~TestPolicy() = default;
+
+        virtual PeerList computeServerPeers() = 0;
+        virtual int computeRank() = 0;
+        virtual std::shared_ptr<Transport> createTransport() const = 0;
+
+        virtual void execute(MultioHammer& hammer, const eckit::option::CmdArgs&) const {
+            hammer.executeGeneric();
+        }
+
+        virtual void checkData(MultioHammer& hammer) const {
+            hammer.testData();
+        }
+
+    protected:
+        ConfigurationContext& configurationContext_;
+        size_t const clientCount_;
+    };
+
+    class MPITestPolicy : public TestPolicy {
+    public:
+        MPITestPolicy(ConfigurationContext& configurationContext, size_t clientCount) : 
+            TestPolicy(configurationContext, clientCount),
+            commName_(configurationContext_.config().getString("group")),
+            comm_(eckit::mpi::comm(commName_.c_str()))
+        {
+        }
+
+        virtual ~MPITestPolicy() = default;
+
+        virtual PeerList computeServerPeers() override {
+            auto comm_size = comm_.size();
+
+            PeerList serverPeers;
+            size_t i = clientCount_;
+            while (i != comm_size) {
+                serverPeers.emplace_back(new MpiPeer{commName_, i++});
+            }
+            return serverPeers;
+        }
+
+        virtual int computeRank() override {
+            return comm_.rank();
+        }
+
+        virtual std::shared_ptr<Transport> createTransport() const override {
+            return std::shared_ptr<Transport>(TransportFactory::instance().build("mpi",
+                (comm_.rank() < clientCount_ ? configurationContext_.tagServer() : configurationContext_.tagClient()).recast(ComponentTag::Transport))); 
+        };
+
+        virtual void checkData(MultioHammer& hammer) const override {
+            eckit::mpi::comm().barrier();
+            if (eckit::mpi::comm().rank() != root()) {
+                return;
+            }
+
+            hammer.testData();
+        }
+
+    private:
+        std::string const commName_;
+        eckit::mpi::Comm const& comm_;
+    };
+
+    class TCPTestPolicy : public TestPolicy {
+    public:
+        TCPTestPolicy(ConfigurationContext& configurationContext, size_t clientCount, int localPort) : 
+            TestPolicy(configurationContext, clientCount),
+            port_(localPort),
+            rank_(-1)
+        {
+        }
+
+        virtual ~TCPTestPolicy() = default;
+
+        virtual PeerList computeServerPeers() override {
+            PeerList serverPeers;
+            for (auto cfg : configurationContext_.config().getSubConfigurations("servers")) {
+                auto const host = cfg.getString("host");
+                auto const localhost = (host == "localhost");
+                for (auto port : cfg.getUnsignedVector("ports")) {
+                    rank_ = (localhost && (port_ == port)) ? serverPeers.size() + clientCount_ : rank_;
+                    serverPeers.emplace_back(new TcpPeer{host, port});
+                }
+            }
+
+            return serverPeers;
+        }
+
+        virtual int computeRank() override {
+            if (rank_ < 0) {
+                auto currentClientNumber = 0;
+                for (auto cfg : configurationContext_.config().getSubConfigurations("clients")) {
+                    for (auto port : cfg.getUnsignedVector("ports")) {
+                        // A client can only originate from localhost so if the port matches,
+                        // we use the current client number as the rank.
+                        rank_ = (port_ == port) ? currentClientNumber : rank_;
+                        ++currentClientNumber;
+                    }
+                }
+            }
+
+            return rank_;
+        }
+
+        virtual std::shared_ptr<Transport> createTransport() const override {
+            configurationContext_.config().set("local_port", port_);
+            return std::shared_ptr<Transport>(TransportFactory::instance().build("tcp", configurationContext_.recast(ComponentTag::Transport))); 
+        };
+
+        virtual void checkData(MultioHammer& hammer) const override {
+            // Wait for the plan to finish.
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+
+            if (rank_ == 0) {
+                // Test is destructive(deletes the output files), only perform the test on the first process.
+                hammer.testData();
+            }
+        }
+
+    private:
+        int port_;
+        int rank_;
+    };
+
+    class ThreadTestPolicy : public TestPolicy {
+    public:
+        ThreadTestPolicy(ConfigurationContext& configurationContext, size_t clientCount): TestPolicy(configurationContext, clientCount) {}
+        virtual ~ThreadTestPolicy() = default;
+
+        virtual PeerList computeServerPeers() override {
+            //No peers for this communcation policy
+            return PeerList();
+        }
+
+        virtual int computeRank() override { return 0; }
+
+        virtual std::shared_ptr<Transport> createTransport() const override {
+            return std::shared_ptr<Transport>(TransportFactory::instance().build("thread", configurationContext_.recast(ComponentTag::Transport))); 
+        };
+
+        virtual void execute(MultioHammer& hammer, const eckit::option::CmdArgs&) const override {
+            hammer.executeThread();
+        }
+    };
+
+    class PlanOnlyTestPolicy : public TestPolicy {
+    public:
+        PlanOnlyTestPolicy(ConfigurationContext& configurationContext, size_t clientCount): TestPolicy(configurationContext, clientCount) {}
+        virtual ~PlanOnlyTestPolicy() = default;
+
+        virtual PeerList computeServerPeers() override {
+            //No peers for this communcation policy
+            return PeerList();
+        }
+
+        virtual int computeRank() override { return 0; }
+
+        virtual std::shared_ptr<Transport> createTransport() const override { return nullptr; };
+
+        virtual void execute(MultioHammer& hammer, const eckit::option::CmdArgs& args) const override {
+            hammer.executePlans(args);
+        }
+
+        virtual void checkData(MultioHammer& hammer) const override {}
+    };
+
     void usage(const std::string& tool) const override {
         eckit::Log::info() << std::endl
                            << "Usage: " << tool << " [options]" << std::endl
@@ -238,22 +408,18 @@ private:
     void execute(const eckit::option::CmdArgs& args) override;
 
     void executePlans(const eckit::option::CmdArgs& args);
-    void executeMpi();
-    void executeTcp();
+    void executeGeneric();
     void executeThread();
 
     void startListening(std::shared_ptr<Transport> transport);
-    void spawnServers(const PeerList& serverPeers, std::shared_ptr<Transport> transport);
-
     void sendData(const PeerList& serverPeers, std::shared_ptr<Transport> transport, const size_t client_list_id) const;
-    void spawnClients(const PeerList& clientPeers, const PeerList& serverPeers, std::shared_ptr<Transport> transport);
 
-    bool skipTest();
     void testData();
 
     std::string configPath_ = "";
     std::string transportType_ = "none";
     int port_ = 7777;
+    int rank_ = 0;
 
     size_t clientCount_ = 1;
     size_t serverCount_ = 1;
@@ -263,6 +429,10 @@ private:
 
     long ensMember_ = 1;
     long sleep_ = 0;
+
+    PeerList serverPeers_;
+    std::shared_ptr<Transport> transport_;
+    std::unique_ptr<TestPolicy> testPolicy_;
 
     ConfigurationContext confCtx_{eckit::LocalConfiguration(), "", ""};
 
@@ -324,13 +494,21 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
 
     confCtx_.config().set("clientCount", clientCount_);
 
+    using PolicyBuilder = std::function<std::unique_ptr<TestPolicy>()>;
+    std::map<std::string, PolicyBuilder> const policyFactory = {
+        { "mpi", [&]() { return std::make_unique<MPITestPolicy>(confCtx_, clientCount_); }},
+        { "tcp", [&]() { return std::make_unique<TCPTestPolicy>(confCtx_, clientCount_, port_); }},
+        { "thread", [&]() { return std::make_unique<ThreadTestPolicy>(confCtx_, clientCount_); }},
+        { "none", [&]() { return std::make_unique<PlanOnlyTestPolicy>(confCtx_, clientCount_); }},
+    };
+
     transportType_ = confCtx_.config().getString("transport");
-    if (transportType_ == "mpi") {
-        auto comm_size = eckit::mpi::comm(confCtx_.config().getString("group").c_str()).size();
-        if (comm_size != clientCount_ + serverCount_) {
-            throw eckit::SeriousBug("Number of MPI ranks does not match the number of clients and servers");
-        }
-    }
+
+    testPolicy_ = policyFactory.at(transportType_)();
+
+    serverPeers_ = testPolicy_->computeServerPeers();
+    rank_ = testPolicy_->computeRank();
+    transport_ = testPolicy_->createTransport();
 }
 
 void MultioHammer::finish(const eckit::option::CmdArgs&) {}
@@ -340,14 +518,6 @@ void MultioHammer::finish(const eckit::option::CmdArgs&) {}
 void MultioHammer::startListening(std::shared_ptr<Transport> transport) {
     Listener listener(confCtx_.recast(ComponentTag::Receiver), *transport);
     listener.start();
-}
-
-void MultioHammer::spawnServers(const PeerList& serverPeers, std::shared_ptr<Transport> transport) {
-    if (find_if(begin(serverPeers), end(serverPeers),
-                [&transport](const std::unique_ptr<Peer>& peer) { return *peer == transport->localPeer(); })
-        != end(serverPeers)) {
-        startListening(transport);
-    }
 }
 
 void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transport> transport,
@@ -423,16 +593,6 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
     }
 }
 
-void MultioHammer::spawnClients(const PeerList& clientPeers, const PeerList& serverPeers,
-                                std::shared_ptr<Transport> transport) {
-    auto it = find_if(begin(clientPeers), end(clientPeers),
-                      [&transport](const std::unique_ptr<Peer>& peer) { return *peer == transport->localPeer(); });
-    if (it != end(clientPeers)) {
-        auto client_id = static_cast<size_t>(std::distance(begin(clientPeers), it));
-        sendData(serverPeers, transport, client_id);
-    }
-}
-
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioHammer::execute(const eckit::option::CmdArgs& args) {
@@ -440,42 +600,11 @@ void MultioHammer::execute(const eckit::option::CmdArgs& args) {
 
     eckit::Log::info() << " *** multio-hammer config: " << confCtx_.config() << std::endl;
 
-    if (transportType_ == "none") {
-        executePlans(args);
-    }
-    if (transportType_ == "mpi") {
-        executeMpi();
-    }
-    if (transportType_ == "tcp") {
-        executeTcp();
-    }
-    if (transportType_ == "thread") {
-        executeThread();
-    }
-
-    testData();
-}
-
-bool MultioHammer::skipTest() {
-    bool doTest = false;
-
-    if (transportType_ == "thread") {
-        doTest = true;
-    }
-
-    if (transportType_ == "mpi") {
-        eckit::mpi::comm().barrier();
-        doTest = (eckit::mpi::comm().rank() == root());
-    }
-
-    return !doTest;
+    testPolicy_->execute(*this, args);
+    testPolicy_->checkData(*this);
 }
 
 void MultioHammer::testData() {
-    if (skipTest()) {
-        return;
-    }
-
     for (auto step : sequence(stepCount_, 1)) {
         for (auto param : sequence(paramCount_, 1)) {
             for (auto level : sequence(levelCount_, 1)) {
@@ -503,72 +632,29 @@ void MultioHammer::testData() {
     }
 }
 
-void MultioHammer::executeMpi() {
-    auto rank = eckit::mpi::comm(confCtx_.config().getString("group").c_str()).rank();
-    std::shared_ptr<Transport> transport{TransportFactory::instance().build(
-        "mpi", (rank < clientCount_ ? confCtx_.tagClient() : confCtx_.tagServer()).recast(ComponentTag::Transport))};
+void MultioHammer::executeGeneric() {
+    auto const iAmServer = (rank_ >= clientCount_);
 
-    auto comm = confCtx_.config().getString("group");
-
-    PeerList clientPeers;
-    auto i = 0u;
-    while (i != clientCount_) {
-        clientPeers.emplace_back(std::make_unique<MpiPeer>(comm, i++));
+    if (iAmServer) {
+        startListening(transport_);
+    } else {
+        sendData(serverPeers_, transport_, rank_);
     }
-
-    PeerList serverPeers;
-    auto comm_size = clientCount_ + serverCount_;
-    while (i != comm_size) {
-        serverPeers.emplace_back(std::make_unique<MpiPeer>(comm, i++));
-    }
-
-    spawnServers(serverPeers, transport);
-    spawnClients(clientPeers, serverPeers, transport);
-}
-
-void MultioHammer::executeTcp() {
-    confCtx_.config().set("local_port", port_);
-    std::shared_ptr<Transport> transport{
-        TransportFactory::instance().build("tcp", confCtx_.recast(ComponentTag::Transport))};
-
-    PeerList serverPeers;
-    for (auto cfg : confCtx_.config().getSubConfigurations("servers")) {
-        auto host = cfg.getString("host");
-        for (auto port : cfg.getUnsignedVector("ports")) {
-            serverPeers.emplace_back(std::make_unique<TcpPeer>(host, port));
-        }
-    }
-
-    PeerList clientPeers;
-    for (auto cfg : confCtx_.config().getSubConfigurations("clients")) {
-        auto host = cfg.getString("host");
-        for (auto port : cfg.getUnsignedVector("ports")) {
-            clientPeers.emplace_back(std::make_unique<TcpPeer>(host, port));
-        }
-    }
-
-    clientCount_ = clientPeers.size();
-    serverCount_ = serverPeers.size();
-
-    spawnServers(serverPeers, transport);
-    spawnClients(clientPeers, serverPeers, transport);
 }
 
 void MultioHammer::executeThread() {
-    std::shared_ptr<Transport> transport{
-        TransportFactory::instance().build("thread", confCtx_.recast(ComponentTag::Transport))};
-
     // Spawn servers
     PeerList serverPeers;
     for (size_t i = 0; i != serverCount_; ++i) {
-        serverPeers.emplace_back(std::make_unique<ThreadPeer>(std::thread{&MultioHammer::startListening, this, transport}));
+        serverPeers.emplace_back(
+            std::make_unique<ThreadPeer>(std::thread{&MultioHammer::startListening, this, transport_}));
     }
 
     // Spawn clients
     PeerList clientPeers;
     for (auto client : sequence(clientCount_, 0)) {
-        clientPeers.emplace_back(
-            std::make_unique<ThreadPeer>(std::thread{&MultioHammer::sendData, this, std::cref(serverPeers), transport, client}));
+        clientPeers.emplace_back(std::make_unique<ThreadPeer>(
+            std::thread{&MultioHammer::sendData, this, std::cref(serverPeers), transport_, client}));
     }
 }
 

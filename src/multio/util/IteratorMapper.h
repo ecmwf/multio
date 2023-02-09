@@ -43,18 +43,16 @@ class MappedContainer;
 template <typename ForwardItContainer, class Mapper, bool is_const>
 using IteratorMapperValueType =
     typename std::conditional<is_const,
-                              typename std::decay<decltype(std::declval<Mapper>()(*(std::begin(
-                                  std::declval<const ForwardItContainer>()))))>::type,  // Use std::cbegin in C++14
+                              typename std::decay<decltype(std::declval<Mapper>()(
+                                  *(std::cbegin(std::declval<const ForwardItContainer>()))))>::type,
                               typename std::decay<decltype(std::declval<Mapper>()(
                                   *(std::begin(std::declval<ForwardItContainer>()))))>::type>::type;
 
-// TODO std::iterator is deprecated in c++17
 template <typename ForwardItContainer, class Mapper, bool is_const = false>
-class IteratorMapper
-    : std::iterator<std::forward_iterator_tag, IteratorMapperValueType<ForwardItContainer, Mapper, is_const>> {
+class IteratorMapper {
 public:
     using This = IteratorMapper<ForwardItContainer, Mapper, is_const>;
-    using IteratorType = decltype(std::begin(std::declval<const ForwardItContainer>()));  // Use std::cbegin in C++14
+    using IteratorType = decltype(std::cbegin(std::declval<const ForwardItContainer>()));
 
     using iterator_category = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
@@ -97,7 +95,7 @@ public:
     This& operator++() {
         ++it_;
 
-        if (it_ != std::end(container_)) {
+        if (it_ != std::cend(container_)) {
             val_ = mapper_(*it_);
         }
         return *this;
@@ -132,11 +130,10 @@ private:
 
     template <typename ItType>
     IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, ItType&& it) :
-        IteratorMapper(container, mapper, it != std::end(container), std::forward<ItType>(it)) {
-    }  // Use std::cend in C++14
+        IteratorMapper(container, mapper, it != std::cend(container), std::forward<ItType>(it)) {}
 
     IteratorMapper(ForwardItContainer const& container, Mapper const& mapper) :
-        IteratorMapper(container, mapper, std::begin(container)) {}  // Use std::cbegin in C++14
+        IteratorMapper(container, mapper, std::cbegin(container)) {}
 
 
     ForwardItContainer const& container_;
@@ -163,10 +160,8 @@ public:
     iterator begin() { return iterator(container_, mapper_); }
     iterator end() { return iterator(container_, mapper_, false, std::end(container_)); }
 
-    iterator cbegin() const { return const_iterator(container_, mapper_); }
-    iterator cend() const {
-        return const_iterator(container_, mapper_, false, std::end(container_));
-    }  // Use std::cend in C++14
+    const_iterator cbegin() const { return const_iterator(container_, mapper_); }
+    const_iterator cend() const { return const_iterator(container_, mapper_, false, std::cend(container_)); }
 
 private:
     ForwardItContainer container_;

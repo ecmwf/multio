@@ -49,15 +49,6 @@ public:
 };
 
 class MetadataSetter : public eckit::LocalConfiguration {
-    // void print(std::ostream& os) const {
-    //     os << *root_ << std::endl;
-    // }
-    // friend std::ostream& operator<<(std::ostream& os, const MetadataSetter& md)
-    // {
-    //     md.print(os);
-    //     return os;
-    // }
-
 public:
     using eckit::LocalConfiguration::getDouble;
     using eckit::LocalConfiguration::getLong;

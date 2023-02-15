@@ -44,6 +44,7 @@ class Dispatcher;
 class Listener : public util::FailureAware<util::ComponentTag::Receiver> {
 public:
     Listener(const util::ConfigurationContext& confCtx, transport::Transport& trans);
+    ~Listener();
 
     void start();
 
@@ -57,7 +58,7 @@ private:
     void checkConnection(const message::Peer& conn) const;
 
     std::shared_ptr<std::atomic<bool>> continue_;
-    std::shared_ptr<Dispatcher> dispatcher_;
+    std::unique_ptr<Dispatcher> dispatcher_;
 
     transport::Transport& transport_;
 

@@ -38,11 +38,13 @@ using transport::Transport;
 Listener::Listener(const util::ConfigurationContext& confCtx, Transport& trans):
         FailureAware(confCtx),
     continue_{std::make_shared<std::atomic<bool>>(true)},
-    dispatcher_{std::make_shared<Dispatcher>(confCtx.recast(util::ComponentTag::Dispatcher), continue_)},
+    dispatcher_{std::make_unique<Dispatcher>(confCtx.recast(util::ComponentTag::Dispatcher), continue_)},
     transport_{trans},
     clientCount_{transport_.clientPeers().size()},
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE",1024*1024)) {
 }
+
+Listener::~Listener() = default;
 
 util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, const util::FailureContext& c, util::DefaultFailureState&) const {
     msgQueue_.close();  // TODO: msgQueue_ pop is blocking in dispatch.... redesign to have better awareness on blocking

@@ -77,7 +77,7 @@ struct ValueSetter {
 GribEncoder::GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config) :
     metkit::grib::GribHandle{handle}, config_{config} /*, encodeBitsPerValue_(config)*/ {
     for (auto const& subtype : {"T grid", "U grid", "V grid", "W grid", "F grid"}) {
-        grids().insert(std::make_pair(subtype, std::unique_ptr<GridInfo>{new GridInfo{}}));
+        grids().insert(std::make_pair(subtype, std::make_unique<GridInfo>()));
     }
 }
 

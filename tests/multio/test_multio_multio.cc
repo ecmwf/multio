@@ -120,7 +120,7 @@ CASE("test_multio_with_event_trigger") {
     eckit::LocalConfiguration config{eckit::YAMLConfiguration(sinks)};
     ConfigurationContext confCtx(config, config, "" , "");
     {
-        auto mio = std::unique_ptr<MultIO>(new MultIO{confCtx});
+        auto mio = std::make_unique<MultIO>(confCtx);
 
         for (int step = 0; step <= 24; step++) {
             for (int level = 1; level <= 5; level++) {

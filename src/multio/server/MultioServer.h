@@ -41,7 +41,7 @@ public:
     ~MultioServer();
 
 private:
-    std::shared_ptr<transport::Transport> transport_ = nullptr;
+    std::unique_ptr<transport::Transport> transport_;
     Listener listener_;
 };
 }  // namespace server

@@ -82,14 +82,14 @@ bool GridInfo::computeHashIfCan() {
     addToHash(latitudes_.payload());
     addToHash(longitudes_.payload());
 
-    hashValue_.reset(new unsigned char[DIGEST_LENGTH]);
-    hashFunction_.numericalDigest(hashValue_.get());
+    hashValue_.emplace(DIGEST_LENGTH);
+    hashFunction_.numericalDigest(hashValue_.value().data());
 
     std::ostringstream oss;
     oss << "*** Computed hash value: ";
     for (int i = 0; i < DIGEST_LENGTH; ++i) {
         oss << ((i == 0) ? "" : "-") << std::hex << std::setfill('0') << std::setw(2)
-            << static_cast<short>(hashValue_[i]);
+            << static_cast<short>(hashValue_.value()[i]);
     }
     LOG_DEBUG_LIB(LibMultio) << oss.str() << std::endl;
 
@@ -101,7 +101,7 @@ bool GridInfo::hashExists() const {
 }
 
 const unsigned char* GridInfo::hashValue() const {
-    return hashValue_.get();
+    return hashValue_.value().data();
 }
 
 void GridInfo::addToHash(const eckit::Buffer& buf) {

@@ -357,12 +357,12 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
     // Open all servers and close them when going out of scope
     std::vector<std::unique_ptr<Connection>> connections;
     for (auto& server : serverPeers) {
-        connections.emplace_back(new Connection{transport, client, *server});
+        connections.emplace_back(std::make_unique<Connection>(transport, client, *server));
     }
 
     auto idxm = generate_index_map(client_list_id, clientCount_);
     eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(int32_t));
-    std::unique_ptr<Domain> index_map{new Unstructured{std::move(idxm), static_cast<long>(field_size())}};
+    std::unique_ptr<Domain> index_map = std::make_unique<Unstructured>(std::move(idxm), static_cast<long>(field_size()));
 
     // send partial mapping
     for (auto& server : serverPeers) {
@@ -513,13 +513,13 @@ void MultioHammer::executeMpi() {
     PeerList clientPeers;
     auto i = 0u;
     while (i != clientCount_) {
-        clientPeers.emplace_back(new MpiPeer{comm, i++});
+        clientPeers.emplace_back(std::make_unique<MpiPeer>(comm, i++));
     }
 
     PeerList serverPeers;
     auto comm_size = clientCount_ + serverCount_;
     while (i != comm_size) {
-        serverPeers.emplace_back(new MpiPeer{comm, i++});
+        serverPeers.emplace_back(std::make_unique<MpiPeer>(comm, i++));
     }
 
     spawnServers(serverPeers, transport);
@@ -535,7 +535,7 @@ void MultioHammer::executeTcp() {
     for (auto cfg : confCtx_.config().getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
-            serverPeers.emplace_back(new TcpPeer{host, port});
+            serverPeers.emplace_back(std::make_unique<TcpPeer>(host, port));
         }
     }
 
@@ -543,7 +543,7 @@ void MultioHammer::executeTcp() {
     for (auto cfg : confCtx_.config().getSubConfigurations("clients")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
-            clientPeers.emplace_back(new TcpPeer{host, port});
+            clientPeers.emplace_back(std::make_unique<TcpPeer>(host, port));
         }
     }
 
@@ -561,14 +561,14 @@ void MultioHammer::executeThread() {
     // Spawn servers
     PeerList serverPeers;
     for (size_t i = 0; i != serverCount_; ++i) {
-        serverPeers.emplace_back(new ThreadPeer{std::thread{&MultioHammer::startListening, this, transport}});
+        serverPeers.emplace_back(std::make_unique<ThreadPeer>(std::thread{&MultioHammer::startListening, this, transport}));
     }
 
     // Spawn clients
     PeerList clientPeers;
     for (auto client : sequence(clientCount_, 0)) {
         clientPeers.emplace_back(
-            new ThreadPeer{std::thread{&MultioHammer::sendData, this, std::cref(serverPeers), transport, client}});
+            std::make_unique<ThreadPeer>(std::thread{&MultioHammer::sendData, this, std::cref(serverPeers), transport, client}));
     }
 }
 
@@ -582,7 +582,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
     std::vector<std::unique_ptr<Plan>> plans;
     for (auto&& subCtx : confCtx_.subContexts("plans", ComponentTag::Plan)) {
         eckit::Log::debug<multio::LibMultio>() << subCtx.config() << std::endl;
-        plans.emplace_back(new Plan(std::move(subCtx)));
+        plans.emplace_back(std::make_unique<Plan>(std::move(subCtx)));
     }
 
     std::string expver = "xxxx";

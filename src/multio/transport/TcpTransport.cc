@@ -92,8 +92,9 @@ TcpTransport::TcpTransport(const ConfigurationContext& confCtx) :
         auto ports = cfg.getUnsignedVector("ports");
 
         if (amIServer(host, ports)) {
-            server_.reset(new eckit::net::TCPServer{static_cast<int>(local_.port()),
-                                                    eckit::net::SocketOptions::server()});
+            server_ = std::make_unique<eckit::net::TCPServer>(
+                static_cast<int>(local_.port()),
+                eckit::net::SocketOptions::server());
             select_.add(*server_);
         }
         else {
@@ -101,8 +102,8 @@ TcpTransport::TcpTransport(const ConfigurationContext& confCtx) :
             for (const auto port : ports) {
                 try {
                     eckit::net::TCPClient client;
-                    std::unique_ptr<eckit::net::TCPSocket> socket{
-                        new eckit::net::TCPSocket{client.connect(host, port, 5, 10)}};
+                    std::unique_ptr<eckit::net::TCPSocket> socket = 
+                        std::make_unique<eckit::net::TCPSocket>(client.connect(host, port, 5, 10));
                     outgoing_.emplace(TcpPeer{host, port}, std::move(socket));
                 }
                 catch (eckit::TooManyRetries& e) {
@@ -113,7 +114,6 @@ TcpTransport::TcpTransport(const ConfigurationContext& confCtx) :
         }
     }
 }
-
 
 void TcpTransport::openConnections() {
     for (auto& server : createServerPeers()) {
@@ -200,7 +200,7 @@ PeerList TcpTransport::createServerPeers() const {
     for (auto cfg : confCtx_.config().getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
-            serverPeers.emplace_back(new TcpPeer{host, port});
+            serverPeers.emplace_back(std::make_unique<TcpPeer>(host, port));
         }
     }
     return serverPeers;
@@ -211,7 +211,7 @@ void TcpTransport::createPeers() const {
     for (auto cfg : confCtx_.config().getSubConfigurations("clients")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
-            clientPeers_.emplace_back(new TcpPeer{host, port});
+            clientPeers_.emplace_back(std::make_unique<TcpPeer>(host, port));
         }
     }
 
@@ -219,7 +219,7 @@ void TcpTransport::createPeers() const {
     for (auto cfg : confCtx_.config().getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
-            serverPeers_.emplace_back(new TcpPeer{host, port});
+            serverPeers_.emplace_back(std::make_unique<TcpPeer>(host, port));
         }
     }
 }
@@ -234,7 +234,7 @@ bool TcpTransport::acceptConnection() {
     }
 
     eckit::net::TCPSocket socket{server_->accept()};
-    incoming_.emplace_back(new Connection{select_, socket});
+    incoming_.emplace_back(std::make_unique<Connection>(select_, socket));
 
     return true;
 }

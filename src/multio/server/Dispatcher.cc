@@ -26,7 +26,7 @@ Dispatcher::Dispatcher(const util::ConfigurationContext& confCtx, std::shared_pt
     util::ConfigurationContext::SubConfigurationContexts plans = confCtx.subContexts("plans", util::ComponentTag::Plan);
     for (auto&& subCtx: plans) {
         eckit::Log::debug<LibMultio>() << subCtx.config() << std::endl;
-        plans_.emplace_back(new action::Plan(std::move(subCtx)));
+        plans_.emplace_back(std::make_unique<action::Plan>(std::move(subCtx)));
     }
 }
 

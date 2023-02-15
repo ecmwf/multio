@@ -55,7 +55,7 @@ private:  // methods
 
 
 private:  // members
-    std::vector<EventTrigger*> triggers_;
+    std::vector<std::unique_ptr<EventTrigger>> triggers_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

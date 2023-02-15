@@ -121,7 +121,7 @@ void MaestroWorker::process() {
                 mir::output::MIROutput &output = o.output(handler, statistics_);
 
                 try {
-                    std::unique_ptr<mir::api::MIRJob> mj(new mir::api::MIRJob());
+                    std::unique_ptr<mir::api::MIRJob> mj = std::make_unique<mir::api::MIRJob>();
                     if (!handler.prepare(*mj, requirement_, *input, output, statistics_)) {
                         log_file_ << "Handler did not prepare" << std::endl;
                         continue;

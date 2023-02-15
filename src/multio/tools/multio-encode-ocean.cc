@@ -197,7 +197,7 @@ void MultioEncodeOcean::executePlan() {
     auto cfg = test_configuration();
     std::vector<std::unique_ptr<Plan>> plans;
     for (auto&& cfg : cfg.subContexts("plans")) {
-        plans.emplace_back(new Plan{std::move(cfg)});
+        plans.emplace_back(std::make_unique<Plan>(std::move(cfg)));
     }
 
     Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}},

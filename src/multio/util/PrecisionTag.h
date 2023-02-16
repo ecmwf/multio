@@ -45,6 +45,10 @@ decltype(auto) dispatchPrecisionTag(PrecisionTag t, Func&& f) {
         case PrecisionTag::Double: {
             return std::forward<Func>(f)(PrecisionType<double>{});
         }
+        default:
+            std::ostringstream oss;
+            oss << "Error in dispatchPrecisionTag: Unkown tag " << ((unsigned) t) << std::endl;;
+            throw eckit::SeriousBug(oss.str(), Here());
     }
 }
 

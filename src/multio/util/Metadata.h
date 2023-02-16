@@ -43,33 +43,61 @@ struct IsOptional<eckit::Optional<T>> {
 };
 
 
+template <typename T>
+struct WrapOptional {
+    using type = eckit::Optional<T>;
+};
+template <typename T>
+struct WrapOptional<eckit::Optional<T>> {
+    using type = eckit::Optional<T>;
+};
+
+template<typename T>
+using WrapOptional_t = typename WrapOptional<T>::type;
+
+
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
 // Idenitiy function for Optionals
-template <typename T, typename enable = typename std::enable_if<IsOptional<typename std::decay<T>::type>::value>::type>
-T evalOptional(T&& opt) {
+template <typename T, std::enable_if_t<IsOptional<std::decay_t<T>>::value, bool> = true>
+T/*&&*/ evalToOptional(T&& opt) noexcept {
     return std::forward<T>(opt);
 }
 
 // Evaluate functions, assume to return optional
 template <typename T,
-          typename enable = typename std::enable_if<(!(IsOptional<typename std::decay<T>::type>::value))>::type>
-auto evalOptional(T&& call) -> decltype(std::forward<T>(call)()) {
+          std::enable_if_t<(!(IsOptional<std::decay_t<T>>::value)), bool> = true>
+auto evalToOptional(T&& call) noexcept(noexcept(std::forward<T>(call)())) {
     return std::forward<T>(call)();
+}
+
+
+// Idenitiy function for Optionals
+template <typename T, std::enable_if_t<IsOptional<std::decay_t<T>>::value, bool> = true>
+T/*&&*/ makeOptional(T&& opt) noexcept {
+    return std::forward<T>(opt);
+}
+
+// Evaluate functions, assume to return optional
+template <typename T,
+          std::enable_if_t<(!(IsOptional<std::decay_t<T>>::value)), bool> = true>
+auto makeOptional(T&& noOpt) noexcept(noexcept(eckit::Optional<std::decay_t<T>>{std::forward<T>(noOpt)})) {
+    return eckit::Optional<std::decay_t<T>>{std::forward<T>(noOpt)};
 }
 
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
 template <typename Res>
-Res firstOfTyped() {
+Res firstOfTyped() noexcept(noexcept(Res{})) {
     return Res{};
 }
 
 template <typename Res, typename T, typename... TS>
-Res firstOfTyped(T&& m, TS&&... ts) {
-    auto em = evalOptional(std::forward<T>(m));
+Res firstOfTyped(T&& m, TS&&... ts) noexcept(noexcept(evalToOptional(std::forward<T>(m))) && noexcept(firstOfTyped<Res>(std::forward<TS>(ts)...))) {
+    auto em = evalToOptional(std::forward<T>(m));
     if (em) {
+        // Return with RVO
         return em;
     }
     return firstOfTyped<Res>(std::forward<TS>(ts)...);
@@ -77,37 +105,43 @@ Res firstOfTyped(T&& m, TS&&... ts) {
 
 // Evaluates the arguments lazily and returns the first value containing a value
 template <typename T, typename... TS>
-auto firstOf(T&& m, TS&&... ts) -> decltype(evalOptional(std::forward<T>(m))) {
-    return firstOfTyped<decltype(evalOptional(std::forward<T>(m)))>(std::forward<T>(m), std::forward<TS>(ts)...);
+auto firstOf(T&& m, TS&&... ts) noexcept(noexcept(firstOfTyped<decltype(evalToOptional(std::forward<T>(m)))>(std::forward<T>(m), std::forward<TS>(ts)...))) {
+    return firstOfTyped<decltype(evalToOptional(std::forward<T>(m)))>(std::forward<T>(m), std::forward<TS>(ts)...);
 }
 
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
-template <typename Res, typename ArgType, typename Func>
-Res withFirstOfTyped(Func&& func) {
-    return std::forward<Func>(func)(ArgType{});
+template <typename ArgType, typename Func>
+auto withFirstOfTyped(Func&& func) noexcept(noexcept(makeOptional(std::forward<Func>(func)(ArgType{})))) {
+    return makeOptional(std::forward<Func>(func)(ArgType{}));
 }
-template <typename Res, typename ArgType, typename Func, typename T, typename... TS>
-Res withFirstOfTyped(Func&& func, T&& m, TS&&... ts) {
-    auto em = evalOptional(std::forward<T>(m));
+template <typename ArgType, typename Func, typename T, typename... TS>
+auto withFirstOfTyped(Func&& func, T&& m, TS&&... ts) 
+        noexcept(
+            noexcept(evalToOptional(std::forward<T>(m))) && 
+            noexcept(makeOptional(std::forward<Func>(func)(evalToOptional(std::forward<T>(m))))) && 
+            noexcept(withFirstOfTyped<ArgType>(std::forward<Func>(func), std::forward<TS>(ts)...)) ) {
+    auto em = evalToOptional(std::forward<T>(m));
     if (em) {
-        return std::forward<Func>(func)(std::move(em));
+        return makeOptional(std::forward<Func>(func)(std::move(em)));
     }
     else {
-        return withFirstOfTyped<Res, ArgType>(std::forward<Func>(func), std::forward<TS>(ts)...);
+        return withFirstOfTyped<ArgType>(std::forward<Func>(func), std::forward<TS>(ts)...);
     }
 }
 
 // Evaluates the arguments lazily and calls the `func` with the result of the first argument containing a value
 // I.e. Syntastic sugar to test a metadata object for a lot of keys (of different types) and pass the type to a setter
 // function
-template <typename Func, typename T, typename... TS>
-auto withFirstOf(Func&& func, T&& m, TS&&... ts)
-    -> decltype(std::forward<Func>(func)(evalOptional(std::forward<T>(m)))) {
-    using ArgType = typename std::decay<decltype(evalOptional(std::forward<T>(m)))>::type;
-    using Ret = decltype(std::forward<Func>(func)(evalOptional(std::forward<T>(m))));
-    return withFirstOfTyped<Ret, ArgType>(std::forward<Func>(func), std::forward<T>(m), std::forward<TS>(ts)...);
+template <typename OptFunc, typename T, typename... TS>
+auto withFirstOf(OptFunc&& func, T&& m, TS&&... ts) noexcept(noexcept(bool(func)) && noexcept(withFirstOfTyped<std::decay_t<decltype(evalToOptional(std::forward<T>(m)))>>((*(std::forward<OptFunc>(func))), std::forward<T>(m), std::forward<TS>(ts)...))) {
+    using ArgType = std::decay_t<decltype(evalToOptional(std::forward<T>(m)))>;
+    using OptRetType = decltype(withFirstOfTyped<ArgType>((*(std::forward<OptFunc>(func))), std::forward<T>(m), std::forward<TS>(ts)...));
+    if(func) {
+        return withFirstOfTyped<ArgType>((*(std::forward<OptFunc>(func))), std::forward<T>(m), std::forward<TS>(ts)...);
+    } 
+    return OptRetType{};
 }
 
 

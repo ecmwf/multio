@@ -79,7 +79,7 @@ private:
 
     message::Message setFieldValues(const double* values, size_t count);
     message::Message setFieldValues(const float* values, size_t count);
-    
+
     const eckit::LocalConfiguration config_;
 
     const std::set<std::string> coordSet_{"lat_T", "lon_T", "lat_U", "lon_U", "lat_V",

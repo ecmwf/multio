@@ -198,17 +198,17 @@ void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
 
 void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
                                  const QueriedMarsKeys& queriedMarsFields) {
-    auto date = firstOf(
-        LookUpLong(md, (queriedMarsFields.type && (*queriedMarsFields.type == "fc")) ? "startTime" : "currentDate"),
-        LookUpLong(md, "startDate"));
+    auto date = (queriedMarsFields.type && (*queriedMarsFields.type == "fc")) 
+        ? firstOf(LookUpLong(md, "startDate"), LookUpLong(md, "currentDate")) 
+        : firstOf(LookUpLong(md, "currentDate"), LookUpLong(md, "startDate"));
     if (date) {
         withFirstOf(valueSetter(g,"year"), eckit::Optional<long>{*date / 10000});
         withFirstOf(valueSetter(g,"month"), eckit::Optional<long>{(*date % 10000) / 100});
         withFirstOf(valueSetter(g,"day"), eckit::Optional<long>{*date % 100});
     }
-    auto time = firstOf(
-        LookUpLong(md, (queriedMarsFields.type && (*queriedMarsFields.type == "fc")) ? "startTime" : "currentDate"),
-        LookUpLong(md, "startTime"));
+    auto time = (queriedMarsFields.type && (*queriedMarsFields.type == "fc")) 
+        ? firstOf(LookUpLong(md, "startTime"), LookUpLong(md, "currentTime")) 
+        : firstOf(LookUpLong(md, "currentTime"), LookUpLong(md, "startTime"));
     if (time) {
         withFirstOf(valueSetter(g,"hour"), eckit::Optional<long>{*time / 10000});
         withFirstOf(valueSetter(g,"minute"), eckit::Optional<long>{(*time % 10000) / 100});
@@ -339,15 +339,14 @@ template<typename T>
 void codesCheckRelaxed(int ret, const std::string& name, const T& value) {
     if (ret == CODES_READ_ONLY) {
         // If value is read only, do not panic...
-        eckit::Log::info() << "Multio GribEncoder: Ignoring readonly field " << name << std::endl;
+        eckit::Log::info() << "Multio GribEncoder: Ignoring readonly field " << name << " (tried to set value " << value << ")" << std::endl;
         return;
     }
     // Avoid calling  CODES_CHECK and throw an exception instead. CODES_CHECK often panics with logs properly being flushed
     if (ret != 0) {
         std::ostringstream oss;
-        oss << "Multio GribEncoder: CODES return value != NULL for "
-                              "operation on field: "
-                           << name << ". EECODES error message: " << codes_get_error_message(ret) << std::endl;
+        oss << "Multio GribEncoder: CODES return value != NULL for operation on field: "
+           << name << " with value " << value << ". EECODES error message: " << codes_get_error_message(ret) << std::endl;
        throw eckit::SeriousBug(oss.str(), Here());
     }
     CODES_CHECK(ret, NULL);

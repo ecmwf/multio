@@ -40,7 +40,6 @@ list( APPEND _action_nextGEMS_test_dependencies
 )
 ecbuild_add_test( 
     TARGET test_multio_nextGEMS_encoding
-    CONDITION HAVE_MULTIO_SERVER
     COMMAND ${TEST_NEXTGEMS_SCRIPT}
     TEST_DEPENDS ${_action_nextGEMS_test_dependencies}
 )

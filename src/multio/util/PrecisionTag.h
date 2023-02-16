@@ -3,6 +3,10 @@
 
 #include <map>
 #include <string>
+#include <iostream>
+#include <sstream>
+
+#include "eckit/exception/Exceptions.h"
 
 namespace multio {
 namespace util {

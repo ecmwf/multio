@@ -60,7 +60,7 @@ using WrapOptional_t = typename WrapOptional<T>::type;
 
 // Idenitiy function for Optionals
 template <typename T, std::enable_if_t<IsOptional<std::decay_t<T>>::value, bool> = true>
-T/*&&*/ evalToOptional(T&& opt) noexcept {
+T&& evalToOptional(T&& opt) noexcept {
     return std::forward<T>(opt);
 }
 
@@ -74,7 +74,7 @@ auto evalToOptional(T&& call) noexcept(noexcept(std::forward<T>(call)())) {
 
 // Idenitiy function for Optionals
 template <typename T, std::enable_if_t<IsOptional<std::decay_t<T>>::value, bool> = true>
-T/*&&*/ makeOptional(T&& opt) noexcept {
+T&& makeOptional(T&& opt) noexcept {
     return std::forward<T>(opt);
 }
 
@@ -135,7 +135,11 @@ auto withFirstOfTyped(Func&& func, T&& m, TS&&... ts)
 // I.e. Syntastic sugar to test a metadata object for a lot of keys (of different types) and pass the type to a setter
 // function
 template <typename OptFunc, typename T, typename... TS>
-auto withFirstOf(OptFunc&& func, T&& m, TS&&... ts) noexcept(noexcept(bool(func)) && noexcept(withFirstOfTyped<std::decay_t<decltype(evalToOptional(std::forward<T>(m)))>>((*(std::forward<OptFunc>(func))), std::forward<T>(m), std::forward<TS>(ts)...))) {
+auto withFirstOf(OptFunc&& func, T&& m, TS&&... ts) 
+        noexcept(
+            noexcept(bool(func)) && 
+            noexcept(withFirstOfTyped<std::decay_t<decltype(evalToOptional(std::forward<T>(m)))>>((*(std::forward<OptFunc>(func))), std::forward<T>(m), std::forward<TS>(ts)...))
+            ) {
     using ArgType = std::decay_t<decltype(evalToOptional(std::forward<T>(m)))>;
     using OptRetType = decltype(withFirstOfTyped<ArgType>((*(std::forward<OptFunc>(func))), std::forward<T>(m), std::forward<TS>(ts)...));
     if(func) {

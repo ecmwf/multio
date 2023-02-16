@@ -68,7 +68,7 @@ struct ValueSetter {
     std::string key_;
 
     template <typename T>
-    T operator()(T&& t) {
+    T&& operator()(T&& t) {
         g_.setValue(key_, t);
         return std::forward<T>(t);
     }
@@ -76,7 +76,7 @@ struct ValueSetter {
 
 eckit::Optional<ValueSetter> valueSetter(GribEncoder& g, const std::string& key) {
     if(g.hasKey(key.c_str())) {
-        return eckit::Optional<ValueSetter>(valueSetter(g, key));
+        return eckit::Optional<ValueSetter>(ValueSetter{g, key});
     } else {
         return eckit::Optional<ValueSetter>();
     }
@@ -342,6 +342,7 @@ void codesCheckRelaxed(int ret, const std::string& name, const T& value) {
         eckit::Log::info() << "Multio GribEncoder: Ignoring readonly field " << name << std::endl;
         return;
     }
+    // Avoid calling  CODES_CHECK and throw an exception instead. CODES_CHECK often panics with logs properly being flushed
     if (ret != 0) {
         std::ostringstream oss;
         oss << "Multio GribEncoder: CODES return value != NULL for "

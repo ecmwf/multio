@@ -82,7 +82,7 @@ class MIO : public util::FailureAware<ComponentTag::Client> {
       util::DefaultFailureState&) const override {
     // Last cascading instance, print nested contexts
     std::ostringstream oss;
-    print(oss, c);
+    oss << c;
     throw FailureAwareException(oss.str());
     // return util::FailureHandlerResponse::Ignore;
   };

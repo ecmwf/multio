@@ -11,6 +11,7 @@
 #include "multio/server/MultioServer.h"
 #include "multio/util/ConfigurationContext.h"
 #include "multio/util/ConfigurationPath.h"
+#include "multio/util/FailureHandling.h"
 
 #include <functional>
 
@@ -27,6 +28,7 @@ using multio::util::configuration_path_name;
 using multio::util::ConfigurationContext;
 using multio::util::MPIInitInfo;
 using multio::util::ServerConfigurationContext;
+using multio::util::FailureAwareException;
 
 namespace {
 
@@ -58,10 +60,57 @@ int innerWrapFn(std::function<void()> f) {
     return MULTIO_SUCCESS;
 }
 
+MultioErrorValues errorValue(const FailureAwareException& e) {
+    return MULTIO_ERROR_ECKIT_EXCEPTION;
+}
+MultioErrorValues errorValue(const eckit::Exception& e) {
+    return MULTIO_ERROR_ECKIT_EXCEPTION;
+}
+MultioErrorValues errorValue(const std::exception& e) {
+    return MULTIO_ERROR_GENERAL_EXCEPTION;
+}
+template<class E>
+MultioErrorValues errorValue(const E& e) {
+    return MULTIO_ERROR_UNKNOWN_EXCEPTION;
+}
+
+template<class E> 
+MultioErrorValues getNestedErrorValue(const E& e) {
+    try {
+        std::rethrow_if_nested(e);
+        // Return passed error value if not nested
+        return errorValue(e);
+    }
+    catch (const FailureAwareException& nestedException) {
+        return getNestedErrorValue(nestedException);
+    }
+    catch (const eckit::Exception& nestedException) {
+        return getNestedErrorValue(nestedException);
+    }
+    catch (const std::exception& nestedException) {
+        return getNestedErrorValue(nestedException);
+    }
+    catch (...) {
+        return MULTIO_ERROR_UNKNOWN_EXCEPTION;
+    }
+}
+
 template <typename FN>
 int wrapApiFunction(FN f) {
     try {
         return innerWrapFn(f);
+    }
+    catch (FailureAwareException& e) {
+        std::ostringstream oss;
+        oss << "Caught a nested exception on C-C++ API boundary: "; 
+        oss << e;
+        
+        g_current_error_str = oss.str();
+        MultioErrorValues error = getNestedErrorValue(e);
+        if (g_failure_handler) {
+            g_failure_handler(g_failure_handler_context, error);
+        }
+        return error;
     }
     catch (eckit::Exception& e) {
         Log::error() << "Caught eckit exception on C-C++ API boundary: " << e.what() << std::endl;

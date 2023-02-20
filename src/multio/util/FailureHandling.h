@@ -315,12 +315,27 @@ enum class FailureHandlerResponse : unsigned
 class FailureAwareException : public eckit::Exception {
 public:
     FailureAwareException(const std::string& what, const eckit::CodeLocation& l = eckit::CodeLocation()) : eckit::Exception(what, l) {}
+    
+    friend std::ostream& operator<<(std::ostream& os, const FailureAwareException& dt);
 };
+
+std::ostream& operator<<(std::ostream& os, const FailureAwareException& dt);
 
 struct FailureContext {
     std::exception_ptr eptr;
     std::string context;
+    
+    friend std::ostream& operator<<(std::ostream& os, const FailureContext& dt);
 };
+
+std::ostream& operator<<(std::ostream& os, const FailureContext& dt);
+
+void printException(std::ostream& out, const std::exception& e);
+void printException(std::ostream& out, const eckit::Exception& e);
+void printException(std::ostream& out, const FailureAwareException& e);
+
+void printFailureContext(std::ostream& out, const FailureContext& c);
+
 
 template <ComponentTag tag>
 class FailureAware {
@@ -394,85 +409,7 @@ public:
 
     virtual ~FailureAware() = default;
 
-private:
-    // TODO accept output stream as parameter
-    int printNestedException(std::ostream& out, const std::exception& e) const {
-        int level = 0;
-        try {
-            std::rethrow_if_nested(e);
-        }
-        catch (const FailureAwareException& nestedException) {
-            level = printNestedException(out, nestedException);
-        }
-        catch (const eckit::Exception& nestedException) {
-            level = printNestedException(out, nestedException);
-        }
-        catch (const std::exception& nestedException) {
-            level = printNestedException(out, nestedException);
-        }
-        catch (...) {
-            return level + 1;
-        }
-        printExceptionHeader(out, e, level);
-        return level + 1;
-    }
-
-    inline void printExceptionHeader(std::ostream& out, const std::exception& e, int level = 0) const {
-        out << std::endl << "  * " << (level + 1) << ": " << e.what() << std::endl;
-        ;
-    }
-
 protected:
-    void printException(std::ostream& out, const std::exception& e) const {
-        out << std::endl;
-        out << "Nested std::Exception: " << std::endl;
-        printNestedException(out, e);
-        out << std::endl;
-    }
-    void printException(std::ostream& out, const eckit::Exception& e) const {
-        out << std::endl;
-        out << "Nested eckit::Exception: " << std::endl;
-        printNestedException(out, e);
-        out << std::endl;
-        e.exceptionStack(out, true);
-        out << std::endl;
-        out << std::endl;
-    }
-    void printException(std::ostream& out, const FailureAwareException& e) const {
-        out << std::endl;
-        out << "Nested FailureAwareException: " << std::endl;
-        printNestedException(out, e);
-        out << std::endl;
-        e.exceptionStack(out, true);
-        out << std::endl;
-        out << std::endl;
-    }
-
-    void print(std::ostream& out, const FailureContext& c) const {
-        if (c.eptr) {
-            try {
-                try {
-                    std::rethrow_exception(c.eptr);
-                }
-                catch (...) {
-                    std::throw_with_nested(FailureAwareException(c.context, Here()));
-                }
-            }
-            catch (const FailureAwareException& e) {
-                printException(out, e);
-            }
-        }
-        else {
-            try {
-                throw FailureAwareException(c.context, Here());
-            }
-            catch (const FailureAwareException& e) {
-                printException(out, e);
-            }
-        }
-    }
-
-
     template <typename T, typename P>
     void withFailureHandling(T&& callable, P&& contextString) const {
         bool doRetry;

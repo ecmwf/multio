@@ -69,5 +69,92 @@ std::string eckit::Translator<OnDispatchError, std::string>::operator()(OnDispat
 namespace multio {
 namespace util {
 
+namespace {
+inline void printExceptionHeader(std::ostream& out, const std::exception& e, int level = 0) {
+    out << std::endl << "  * " << (level + 1) << ": " << e.what() << std::endl;
+}
+
+int printNestedException(std::ostream& out, const std::exception& e) {
+    int level = 0;
+    try {
+        std::rethrow_if_nested(e);
+    }
+    catch (const FailureAwareException& nestedException) {
+        level = printNestedException(out, nestedException);
+    }
+    catch (const eckit::Exception& nestedException) {
+        level = printNestedException(out, nestedException);
+    }
+    catch (const std::exception& nestedException) {
+        level = printNestedException(out, nestedException);
+    }
+    catch (...) {
+        return level + 1;
+    }
+    printExceptionHeader(out, e, level);
+    return level + 1;
+}
+}  // namespace
+
+void printException(std::ostream& out, const std::exception& e) {
+    out << std::endl;
+    out << "Nested std::Exception: " << std::endl;
+    printNestedException(out, e);
+    out << std::endl;
+}
+void printException(std::ostream& out, const eckit::Exception& e) {
+    out << std::endl;
+    out << "Nested eckit::Exception: " << std::endl;
+    printNestedException(out, e);
+    out << std::endl;
+    e.exceptionStack(out, true);
+    out << std::endl;
+    out << std::endl;
+}
+void printException(std::ostream& out, const FailureAwareException& e) {
+    out << std::endl;
+    out << "Nested FailureAwareException: " << std::endl;
+    printNestedException(out, e);
+    out << std::endl;
+    e.exceptionStack(out, true);
+    out << std::endl;
+    out << std::endl;
+}
+
+void printFailureContext(std::ostream& out, const FailureContext& c) {
+    if (c.eptr) {
+        try {
+            try {
+                std::rethrow_exception(c.eptr);
+            }
+            catch (...) {
+                std::throw_with_nested(FailureAwareException(c.context, Here()));
+            }
+        }
+        catch (const FailureAwareException& e) {
+            printException(out, e);
+        }
+    }
+    else {
+        try {
+            throw FailureAwareException(c.context, Here());
+        }
+        catch (const FailureAwareException& e) {
+            printException(out, e);
+        }
+    }
+}
+
+std::ostream& operator<<(std::ostream& os, const FailureAwareException& dt) {
+    printException(os, dt);
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const FailureContext& dt) {
+    printFailureContext(os, dt);
+    return os;
+}
+
+
 }  // namespace util
 }  // namespace multio

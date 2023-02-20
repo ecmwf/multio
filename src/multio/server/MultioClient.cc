@@ -55,7 +55,7 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureA
 util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t, const util::FailureContext& c,
                                                          util::DefaultFailureState&) const {
     // Last cascading instance, print nested contexts
-    print(eckit::Log::error(), c);
+    eckit::Log::error() << c;
 
     if (t == util::OnClientError::AbortAllTransports) {
         transport::TransportRegistry::instance().abortAll();

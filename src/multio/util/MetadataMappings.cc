@@ -42,9 +42,9 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
                 oss << "Mapping #" << mcind << " of parameter mapping \"" << mapping << "\" does not list a \"match\" block" << std::endl;
                 throw message::MetadataMappingException(oss.str(), Here());
             }
-            if (!mc.has("map") && !mc.has("optionalMap")) {
+            if (!mc.has("map") && !mc.has("optional-map")) {
                 std::ostringstream oss;
-                oss << "Mapping #" << mcind << " of parameter mapping \"" << mapping << "\" does not list a \"map\" or \"optionalMap\" block" << std::endl;
+                oss << "Mapping #" << mcind << " of parameter mapping \"" << mapping << "\" does not list a \"map\" or \"optional-map\" block" << std::endl;
                 throw message::MetadataMappingException(oss.str(), Here());
             }
             auto matchBlock = mc.getSubConfiguration("match");
@@ -58,7 +58,7 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
             std::string targetKey = matchBlock.getString(sourceKey);
 
             auto mappings = mc.getSubConfiguration("map");
-            auto optionalMappings = mc.getSubConfiguration("optionalMap");
+            auto optionalMappings = mc.getSubConfiguration("optional-map");
 
             auto targetPath = mc.has("targetPath") ? eckit::Optional<std::string>{mc.getString("targetPath")} : eckit::Optional<std::string>{};
 

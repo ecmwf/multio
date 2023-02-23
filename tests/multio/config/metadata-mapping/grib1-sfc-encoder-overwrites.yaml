@@ -1,8 +1,8 @@
 mappings:
   - match:
       paramId: paramId
-    targetPath: encoderOverwrites
-    optionalMap:
+    target-path: encoderOverwrites
+    optional-map:
       bitsPerValue: bitsPerValue
       bottomLevel: bottomLevel
       topLevel: topLevel

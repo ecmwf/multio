@@ -81,8 +81,10 @@ class MIO : public util::FailureAware<ComponentTag::Client> {
       util::OnClientError, const util::FailureContext& c,
       util::DefaultFailureState&) const override {
     // Last cascading instance, print nested contexts
-    print(eckit::Log::error(), c);
-    return util::FailureHandlerResponse::Rethrow;
+    std::ostringstream oss;
+    oss << c;
+    throw FailureAwareException(oss.str());
+    // return util::FailureHandlerResponse::Ignore;
   };
 
  private:

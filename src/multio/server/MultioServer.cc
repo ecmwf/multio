@@ -47,7 +47,7 @@ MultioServer::MultioServer(const ServerConfigurationContext& confCtx) :
 
 util::FailureHandlerResponse MultioServer::handleFailure(util::OnServerError t, const util::FailureContext& c, util::DefaultFailureState&) const {
     // Last cascading instace - print nested contexts
-    print(eckit::Log::error(), c);
+    eckit::Log::error() << c;
     
     if (t == util::OnServerError::AbortTransport) {
         transport_->abort();

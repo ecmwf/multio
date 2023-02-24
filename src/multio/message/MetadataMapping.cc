@@ -72,10 +72,13 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
     std::string lookUpKey = m.getString(metadataKey_);
     auto from = mapData_.find(lookUpKey);
     if (from == mapData_.end()) {
-        std::ostringstream oss;
-        oss << "Metadata mapping failure: Source key \"" << metadataKey_ << "\" in metadata is resolving to \""
-            << lookUpKey << "\" for which no mapping has be provided in the mapping file." << std::endl;
-        throw MetadataMappingException(oss.str(), Here());
+        if (options.enforceMatch) {
+            std::ostringstream oss;
+            oss << "Metadata mapping failure: Source key \"" << metadataKey_ << "\" in metadata is resolving to \""
+                << lookUpKey << "\" for which no mapping has be provided in the mapping file." << std::endl;
+            throw MetadataMappingException(oss.str(), Here());
+        }
+        return;
     }
 
     // TODO handle internals without LocalConfiguration

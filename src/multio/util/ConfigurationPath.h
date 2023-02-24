@@ -11,21 +11,14 @@ namespace multio {
 namespace util {
 
 inline eckit::PathName configuration_path_name(const eckit::PathName& pathOfFile = "") {
-    // TODO We should use resource, but this changes the current default behaviour
-    // static eckit::PathName basepath(eckit::Resource<eckit::PathName>("$MULTIO_SERVER_CONFIG_PATH", "~multio/etc"));
-    // return basepath;
-
-    eckit::PathName base = (::getenv("MULTIO_SERVER_CONFIG_PATH"))
-                             ? eckit::PathName{::getenv("MULTIO_SERVER_CONFIG_PATH")}
-                             : pathOfFile.dirName();
-
+    char * path = std::getenv("MULTIO_SERVER_CONFIG_PATH");
+    eckit::PathName base = (path != NULL && (strlen(path) > 0))  ? eckit::PathName{path} : pathOfFile.dirName();
     return base + "/";
 }
 
 inline eckit::PathName configuration_file_name() {
-    const auto configFile = "MULTIO_SERVER_CONFIG_FILE";
-    return (::getenv(configFile)) ? eckit::PathName{::getenv(configFile)}
-                                  : eckit::PathName{configuration_path_name() + "multio-server.yaml"};
+    char * file = std::getenv("MULTIO_SERVER_CONFIG_FILE");
+    return (file != NULL && (strlen(file) > 0)) ? eckit::PathName{file} : eckit::PathName{configuration_path_name() + "multio-server.yaml"};
 }
 
 inline const eckit::LocalConfiguration& configuration_file() {

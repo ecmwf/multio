@@ -28,19 +28,21 @@ using namespace eckit;
 namespace multio {
 
 namespace  {
-std::string create_path(const eckit::LocalConfiguration& cfg) {
+std::string create_path(const util::ConfigurationContext& confCtx) {
+    const auto& cfg = confCtx.config();
     auto path = cfg.getString("path");
-    eckit::Log::info() << "path = " << path << std::endl;
+    auto expanded_path = confCtx.replaceCurly(path);
+    eckit::Log::info() << "path = " << expanded_path << std::endl;
     if (cfg.getBool("per-server", false)) {
-        return util::filename_prefix() + "-" + path;
+        return util::filename_prefix() + "-" + expanded_path;
     }
-    return path;
+    return expanded_path;
 }
 }
 
 
 FileSink::FileSink(const util::ConfigurationContext& confCtx) :
-    DataSink(confCtx), path_{create_path(confCtx.config())}, handle_(path_.fileHandle(false)) {
+    DataSink(confCtx), path_{create_path(confCtx)}, handle_(path_.fileHandle(false)) {
     if (confCtx.config().getBool("append", false)) {
         handle_->openForAppend(0);
     }

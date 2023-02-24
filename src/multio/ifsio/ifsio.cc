@@ -106,9 +106,9 @@ class MIO : public util::FailureAware<ComponentTag::Client> {
   MIO(const ConfigurationContext& confCtx)
       : FailureAware(confCtx), log_(false), dirty_(false) {
     for (auto&& cfg : confCtx.subContexts("plans", ComponentTag::Plan)) {
-      plans_.emplace_back(new action::Plan(std::move(cfg)));
+      plans_.emplace_back(std::make_unique<action::Plan>(std::move(cfg)));
     }
-    bpv_.reset(new EncodeBitsPerValue(confCtx.config()));
+    bpv_ = std::make_unique<EncodeBitsPerValue>(confCtx.config());
   }
 
   MIO()

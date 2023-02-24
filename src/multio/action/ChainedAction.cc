@@ -13,7 +13,7 @@ ChainedAction::ChainedAction(const ConfigurationContext& confCtx) :
     ASSERT(confCtx.config().has("next"));
 
     const ConfigurationContext nextCtx = confCtx.subContext("next", util::ComponentTag::Action);
-    next_.reset(ActionFactory::instance().build(nextCtx.config().getString("type"), nextCtx));
+    next_ = ActionFactory::instance().build(nextCtx.config().getString("type"), nextCtx);
 }
 
 void ChainedAction::executeNext(message::Message msg) const {

@@ -106,7 +106,7 @@ public:
 
     void list(std::ostream&) const;
 
-    Transport* build(const std::string&, const ConfigurationContext& confCtx);
+    std::unique_ptr<Transport> build(const std::string&, const ConfigurationContext& confCtx);
 
 private:
     TransportFactory() = default;
@@ -118,7 +118,7 @@ private:
 
 class TransportBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual Transport* make(const ConfigurationContext& confCtx) const = 0;
+    virtual std::unique_ptr<Transport> make(const ConfigurationContext& confCtx) const = 0;
 
 protected:  // methods
     TransportBuilderBase(const std::string&);
@@ -130,7 +130,7 @@ protected:  // methods
 
 template <class T>
 class TransportBuilder final : public TransportBuilderBase {
-    Transport* make(const ConfigurationContext& confCtx) const override { return new T(confCtx); }
+    std::unique_ptr<Transport> make(const ConfigurationContext& confCtx) const override { return std::make_unique<T>(confCtx); }
 
 public:
     TransportBuilder(const std::string& name) : TransportBuilderBase(name) {}

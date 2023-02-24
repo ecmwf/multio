@@ -58,8 +58,7 @@ Plan::Plan(const ConfigurationContext& confCtx) : FailureAware(confCtx) {
     ASSERT(confCtx.componentTag() == util::ComponentTag::Plan);
     name_ = confCtx.config().getString("name", "anonymous");
     auto root = rootConfig(confCtx.config());
-    root_.reset(
-        ActionFactory::instance().build(root.getString("type"), confCtx.recast(root, util::ComponentTag::Action)));
+    root_ = ActionFactory::instance().build(root.getString("type"), confCtx.recast(root, util::ComponentTag::Action));
 }
 
 Plan::~Plan() {

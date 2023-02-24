@@ -37,8 +37,7 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureA
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << confCtx.config() << std::endl;
     for (auto&& cfg : confCtx.subContexts("plans", ComponentTag::Plan)) {
         eckit::Log::debug<LibMultio>() << cfg.config() << std::endl;
-        plans_.emplace_back(new action::Plan(std::move(cfg)));
-        plans_.back()->matchedFields(activeSelectors_);
+        plans_.emplace_back(std::make_unique<action::Plan>(std::move(cfg)))->matchedFields(activeSelectors_);
     }
 
     if (confCtx.globalConfig().has("active-matchers")) {

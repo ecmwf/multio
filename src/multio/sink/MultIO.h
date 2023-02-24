@@ -57,7 +57,7 @@ protected:  // methods
 protected:  // members
     IOStats stats_;
 
-    std::vector<std::shared_ptr<DataSink>> sinks_;
+    std::vector<std::unique_ptr<DataSink>> sinks_;
 
     Trigger trigger_;
 

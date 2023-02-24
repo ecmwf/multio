@@ -98,7 +98,7 @@ public:  // methods
 
     void list(std::ostream&);
 
-    DataSink* build(const std::string&, const util::ConfigurationContext& confCtx);
+    std::unique_ptr<DataSink> build(const std::string&, const util::ConfigurationContext& confCtx);
 
 private:  // members
     std::map<std::string, const DataSinkBuilderBase*> factories_;
@@ -108,7 +108,7 @@ private:  // members
 
 class DataSinkBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual DataSink* make(const util::ConfigurationContext& confCtx) const = 0;
+    virtual std::unique_ptr<DataSink> make(const util::ConfigurationContext& confCtx) const = 0;
 
 protected:  // methods
     DataSinkBuilderBase(const std::string&);
@@ -120,7 +120,7 @@ protected:  // methods
 
 template <class T>
 class DataSinkBuilder final : public DataSinkBuilderBase {
-    DataSink* make(const util::ConfigurationContext& confCtx) const override { return new T(confCtx); }
+    std::unique_ptr<DataSink> make(const util::ConfigurationContext& confCtx) const override { return std::make_unique<T>(confCtx); }
 
 public:
     DataSinkBuilder(const std::string& name) : DataSinkBuilderBase(name) {}

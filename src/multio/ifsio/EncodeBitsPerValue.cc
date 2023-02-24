@@ -113,17 +113,13 @@ EncodeBitsPerValue::EncodeBitsPerValue(const Configuration& config) {
         YAMLConfiguration tablecfg{PathName{path}};
         for (auto k : tablecfg.keys()) {
             LocalConfiguration cfg = tablecfg.getSubConfiguration(k);
-            tables_[k] = new EncodingTable(cfg);
+            tables_.emplace(k, std::make_unique<EncodingTable>(cfg));
             LOG_DEBUG(multio_debug, LibMultio) << "Encoding table built: " << *tables_[k] << std::endl;
         }
     }
 }
 
-EncodeBitsPerValue::~EncodeBitsPerValue() {
-    for (auto v : tables_) {
-        delete v.second;
-    }
-}
+EncodeBitsPerValue::~EncodeBitsPerValue() = default;
 
 static std::string fix_levtype(const std::string& levtype) {
     std::string result(levtype);

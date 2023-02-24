@@ -83,7 +83,7 @@ void ActionFactory::list(std::ostream& out) {
     }
 }
 
-Action* ActionFactory::build(const std::string& name, const ConfigurationContext& confCtx) {
+std::unique_ptr<Action> ActionFactory::build(const std::string& name, const ConfigurationContext& confCtx) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(confCtx.componentTag() == util::ComponentTag::Action);
 

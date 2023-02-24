@@ -165,7 +165,7 @@ ConfigurationContext::ConfigurationContext(const eckit::LocalConfiguration& conf
                                            const eckit::PathName& pathName, const eckit::PathName& fileName,
                                            LocalPeerTag localPeerTag, ComponentTag tag) :
     ConfigurationContext::ConfigurationContext(
-        config, std::shared_ptr<GlobalConfCtx>{new GlobalConfCtx(globalConfig, pathName, fileName, localPeerTag)},
+        config, std::make_shared<GlobalConfCtx>(globalConfig, pathName, fileName, localPeerTag),
         tag) {}
 
 ConfigurationContext::ConfigurationContext(const eckit::LocalConfiguration& config, const eckit::PathName& pathName,

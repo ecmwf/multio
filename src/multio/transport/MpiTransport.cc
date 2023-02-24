@@ -257,10 +257,10 @@ void MpiTransport::createPeers() const {
     auto serverRankMap = parentGroup_.translate_ranks(parentRanks, serverGroup_);
 
     for (auto& it : clientRankMap) {
-        clientPeers_.emplace_back(new MpiPeer{local_.group(), (unsigned long)it.first});
+        clientPeers_.emplace_back(std::make_unique<MpiPeer>(local_.group(), (unsigned long)it.first));
     }
     for (auto& it : serverRankMap) {
-        serverPeers_.emplace_back(new MpiPeer{local_.group(), (unsigned long)it.first});
+        serverPeers_.emplace_back(std::make_unique<MpiPeer>(local_.group(), (unsigned long)it.first));
     }
 
     eckit::Log::info() << " *** MpiTransport::createPeers clientCount: " << clientPeers_.size()
@@ -300,7 +300,7 @@ PeerList MpiTransport::createServerPeers() const {
     auto serverRankMap = parentGroup_.translate_ranks(parentRanks, serverGroup_);
 
     for (auto& it : serverRankMap) {
-        serverPeers_.emplace_back(new MpiPeer{local_.group(), (unsigned long)it.first});
+        serverPeers_.emplace_back(std::make_unique<MpiPeer>(local_.group(), (unsigned long)it.first));
     }
     eckit::Log::info() << " *** MpiTransport::createServerPeers serverCount: " << serverPeers.size()
                        << ", commSize: " << parentSize << std::endl;

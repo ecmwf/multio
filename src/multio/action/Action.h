@@ -84,7 +84,7 @@ public:  // methods
 
     void list(std::ostream&);
 
-    Action* build(const std::string&, const ConfigurationContext& confCtx);
+    std::unique_ptr<Action> build(const std::string&, const ConfigurationContext& confCtx);
 
 private:  // members
     std::map<std::string, const ActionBuilderBase*> factories_;
@@ -94,7 +94,7 @@ private:  // members
 
 class ActionBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual Action* make(const ConfigurationContext& confCtx) const = 0;
+    virtual std::unique_ptr<Action> make(const ConfigurationContext& confCtx) const = 0;
 
 protected:  // methods
     ActionBuilderBase(const std::string&);
@@ -106,7 +106,7 @@ protected:  // methods
 
 template <class T>
 class ActionBuilder final : public ActionBuilderBase {
-    Action* make(const ConfigurationContext& confCtx) const override { return new T(confCtx); }
+    std::unique_ptr<Action> make(const ConfigurationContext& confCtx) const override { return std::make_unique<T>(confCtx); }
 
 public:
     ActionBuilder(const std::string& name) : ActionBuilderBase(name) {}

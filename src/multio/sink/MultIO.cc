@@ -59,10 +59,8 @@ MultIO::MultIO(const ConfigurationContext& confCtx) :
     trigger_(confCtx_) {
 
     for(auto&& subCtx: confCtx.subContexts("sinks")) {
-        DataSink* sink = DataSinkFactory::instance().build(subCtx.config().getString("type"), std::move(subCtx));
-        ASSERT(sink);
-        sink->setId(sinks_.size());
-        sinks_.emplace_back(sink);
+        auto sinkId = sinks_.size();
+        sinks_.emplace_back(DataSinkFactory::instance().build(subCtx.config().getString("type"), std::move(subCtx)))->setId(sinkId);
     }
 }
 

@@ -221,20 +221,17 @@ private:
 
     class TestPolicy {
     public:
-        TestPolicy(ConfigurationContext& configurationContext, size_t clientCount) : configurationContext_(configurationContext), clientCount_(clientCount) {}
+        TestPolicy(ConfigurationContext& configurationContext, size_t clientCount) :
+            configurationContext_(configurationContext), clientCount_(clientCount) {}
         virtual ~TestPolicy() = default;
 
         virtual PeerList computeServerPeers() = 0;
         virtual int computeRank() = 0;
         virtual std::shared_ptr<Transport> createTransport() const = 0;
 
-        virtual void execute(MultioHammer& hammer, const eckit::option::CmdArgs&) const {
-            hammer.executeGeneric();
-        }
+        virtual void execute(MultioHammer& hammer, const eckit::option::CmdArgs&) const { hammer.executeGeneric(); }
 
-        virtual void checkData(MultioHammer& hammer) const {
-            hammer.testData();
-        }
+        virtual void checkData(MultioHammer& hammer) const { hammer.testData(); }
 
     protected:
         ConfigurationContext& configurationContext_;
@@ -243,12 +240,10 @@ private:
 
     class MPITestPolicy : public TestPolicy {
     public:
-        MPITestPolicy(ConfigurationContext& configurationContext, size_t clientCount) : 
+        MPITestPolicy(ConfigurationContext& configurationContext, size_t clientCount) :
             TestPolicy(configurationContext, clientCount),
             commName_(configurationContext_.config().getString("group")),
-            comm_(eckit::mpi::comm(commName_.c_str()))
-        {
-        }
+            comm_(eckit::mpi::comm(commName_.c_str())) {}
 
         virtual ~MPITestPolicy() = default;
 
@@ -263,13 +258,13 @@ private:
             return serverPeers;
         }
 
-        virtual int computeRank() override {
-            return comm_.rank();
-        }
+        virtual int computeRank() override { return comm_.rank(); }
 
         virtual std::shared_ptr<Transport> createTransport() const override {
-            return std::shared_ptr<Transport>(TransportFactory::instance().build("mpi",
-                (comm_.rank() < clientCount_ ? configurationContext_.tagServer() : configurationContext_.tagClient()).recast(ComponentTag::Transport))); 
+            return std::shared_ptr<Transport>(TransportFactory::instance().build(
+                "mpi",
+                (comm_.rank() < clientCount_ ? configurationContext_.tagServer() : configurationContext_.tagClient())
+                    .recast(ComponentTag::Transport)));
         };
 
         virtual void checkData(MultioHammer& hammer) const override {
@@ -288,12 +283,8 @@ private:
 
     class TCPTestPolicy : public TestPolicy {
     public:
-        TCPTestPolicy(ConfigurationContext& configurationContext, size_t clientCount, int localPort) : 
-            TestPolicy(configurationContext, clientCount),
-            port_(localPort),
-            rank_(-1)
-        {
-        }
+        TCPTestPolicy(ConfigurationContext& configurationContext, size_t clientCount, int localPort) :
+            TestPolicy(configurationContext, clientCount), port_(localPort), rank_(-1) {}
 
         virtual ~TCPTestPolicy() = default;
 
@@ -329,7 +320,8 @@ private:
 
         virtual std::shared_ptr<Transport> createTransport() const override {
             configurationContext_.config().set("local_port", port_);
-            return std::shared_ptr<Transport>(TransportFactory::instance().build("tcp", configurationContext_.recast(ComponentTag::Transport))); 
+            return std::shared_ptr<Transport>(
+                TransportFactory::instance().build("tcp", configurationContext_.recast(ComponentTag::Transport)));
         };
 
         virtual void checkData(MultioHammer& hammer) const override {
@@ -349,18 +341,20 @@ private:
 
     class ThreadTestPolicy : public TestPolicy {
     public:
-        ThreadTestPolicy(ConfigurationContext& configurationContext, size_t clientCount): TestPolicy(configurationContext, clientCount) {}
+        ThreadTestPolicy(ConfigurationContext& configurationContext, size_t clientCount) :
+            TestPolicy(configurationContext, clientCount) {}
         virtual ~ThreadTestPolicy() = default;
 
         virtual PeerList computeServerPeers() override {
-            //No peers for this communcation policy
+            // No peers for this communcation policy
             return PeerList();
         }
 
         virtual int computeRank() override { return 0; }
 
         virtual std::shared_ptr<Transport> createTransport() const override {
-            return std::shared_ptr<Transport>(TransportFactory::instance().build("thread", configurationContext_.recast(ComponentTag::Transport))); 
+            return std::shared_ptr<Transport>(
+                TransportFactory::instance().build("thread", configurationContext_.recast(ComponentTag::Transport)));
         };
 
         virtual void execute(MultioHammer& hammer, const eckit::option::CmdArgs&) const override {
@@ -370,11 +364,12 @@ private:
 
     class PlanOnlyTestPolicy : public TestPolicy {
     public:
-        PlanOnlyTestPolicy(ConfigurationContext& configurationContext, size_t clientCount): TestPolicy(configurationContext, clientCount) {}
+        PlanOnlyTestPolicy(ConfigurationContext& configurationContext, size_t clientCount) :
+            TestPolicy(configurationContext, clientCount) {}
         virtual ~PlanOnlyTestPolicy() = default;
 
         virtual PeerList computeServerPeers() override {
-            //No peers for this communcation policy
+            // No peers for this communcation policy
             return PeerList();
         }
 
@@ -496,10 +491,10 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
 
     using PolicyBuilder = std::function<std::unique_ptr<TestPolicy>()>;
     std::map<std::string, PolicyBuilder> const policyFactory = {
-        { "mpi", [&]() { return std::make_unique<MPITestPolicy>(confCtx_, clientCount_); }},
-        { "tcp", [&]() { return std::make_unique<TCPTestPolicy>(confCtx_, clientCount_, port_); }},
-        { "thread", [&]() { return std::make_unique<ThreadTestPolicy>(confCtx_, clientCount_); }},
-        { "none", [&]() { return std::make_unique<PlanOnlyTestPolicy>(confCtx_, clientCount_); }},
+        {"mpi", [&]() { return std::make_unique<MPITestPolicy>(confCtx_, clientCount_); }},
+        {"tcp", [&]() { return std::make_unique<TCPTestPolicy>(confCtx_, clientCount_, port_); }},
+        {"thread", [&]() { return std::make_unique<ThreadTestPolicy>(confCtx_, clientCount_); }},
+        {"none", [&]() { return std::make_unique<PlanOnlyTestPolicy>(confCtx_, clientCount_); }},
     };
 
     transportType_ = confCtx_.config().getString("transport");
@@ -532,7 +527,8 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
 
     auto idxm = generate_index_map(client_list_id, clientCount_);
     eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(int32_t));
-    std::unique_ptr<Domain> index_map = std::make_unique<Unstructured>(std::move(idxm), static_cast<long>(field_size()));
+    std::unique_ptr<Domain> index_map
+        = std::make_unique<Unstructured>(std::move(idxm), static_cast<long>(field_size()));
 
     // send partial mapping
     for (auto& server : serverPeers) {
@@ -637,7 +633,8 @@ void MultioHammer::executeGeneric() {
 
     if (iAmServer) {
         startListening(transport_);
-    } else {
+    }
+    else {
         sendData(serverPeers_, transport_, rank_);
     }
 }

@@ -253,7 +253,7 @@ private:
             PeerList serverPeers;
             size_t i = clientCount_;
             while (i != comm_size) {
-                serverPeers.emplace_back(new MpiPeer{commName_, i++});
+                serverPeers.emplace_back(std::make_unique<MpiPeer>(commName_, i++));
             }
             return serverPeers;
         }
@@ -295,7 +295,7 @@ private:
                 auto const localhost = (host == "localhost");
                 for (auto port : cfg.getUnsignedVector("ports")) {
                     rank_ = (localhost && (port_ == port)) ? serverPeers.size() + clientCount_ : rank_;
-                    serverPeers.emplace_back(new TcpPeer{host, port});
+                    serverPeers.emplace_back(std::make_unique<TcpPeer>(host, port));
                 }
             }
 

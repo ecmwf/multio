@@ -491,10 +491,10 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
 
     using PolicyBuilder = std::function<std::unique_ptr<TestPolicy>()>;
     std::map<std::string, PolicyBuilder> const policyFactory = {
-        {"mpi", [&]() { return std::make_unique<MPITestPolicy>(confCtx_, clientCount_); }},
-        {"tcp", [&]() { return std::make_unique<TCPTestPolicy>(confCtx_, clientCount_, port_); }},
-        {"thread", [&]() { return std::make_unique<ThreadTestPolicy>(confCtx_, clientCount_); }},
-        {"none", [&]() { return std::make_unique<PlanOnlyTestPolicy>(confCtx_, clientCount_); }},
+        {"mpi", [this]() { return std::make_unique<MPITestPolicy>(confCtx_, clientCount_); }},
+        {"tcp", [this]() { return std::make_unique<TCPTestPolicy>(confCtx_, clientCount_, port_); }},
+        {"thread", [this]() { return std::make_unique<ThreadTestPolicy>(confCtx_, clientCount_); }},
+        {"none", [this]() { return std::make_unique<PlanOnlyTestPolicy>(confCtx_, clientCount_); }},
     };
 
     transportType_ = confCtx_.config().getString("transport");

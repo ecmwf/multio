@@ -6,8 +6,7 @@
 namespace multio {
 namespace action {
 
-DatePeriod::DatePeriod(const eckit::Date& startPoint, long duration) :
-    startPoint_{startPoint}, duration_{duration} {}
+DatePeriod::DatePeriod(const eckit::Date& startPoint, long duration) : startPoint_{startPoint}, duration_{duration} {}
 
 void DatePeriod::reset(const eckit::Date& startPoint) {
     startPoint_ = startPoint;
@@ -16,8 +15,8 @@ void DatePeriod::reset(const eckit::Date& startPoint) {
 bool DatePeriod::isWithin(const eckit::Date& dt) {
     ASSERT(startPoint_ <= dt);
     auto ret = (dt <= endPoint());
-    LOG_DEBUG_LIB(LibMultio) << " ------ Is " << dt << " within " << *this << "? -- "
-                             << (ret ? "yes" : "no") << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " ------ Is " << dt << " within " << *this << "? -- " << (ret ? "yes" : "no")
+                             << std::endl;
     return ret;
 }
 
@@ -56,15 +55,15 @@ void DateTimePeriod::reset(const eckit::DateTime& startPoint, const eckit::DateT
 bool DateTimePeriod::isWithin(const eckit::DateTime& dt) {
     ASSERT(startPoint_ <= dt);
     auto ret = (dt <= endPoint() + eckit::Second{1.0});
-    LOG_DEBUG_LIB(LibMultio) << " ------ Is " << dt << " within " << *this << "? -- "
-                             << (ret ? "yes" : "no") << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " ------ Is " << dt << " within " << *this << "? -- " << (ret ? "yes" : "no")
+                             << std::endl;
     return ret;
 }
 
 long DateTimePeriod::timeSpanInHours() const {
-    return (eckit::DateTime{endPoint().date().yyyymmdd(), eckit::Time{0,0,0}}
-            - eckit::DateTime{startPoint().date().yyyymmdd(), eckit::Time{0,0,0}})
-            / (3600);
+    return (eckit::DateTime{endPoint().date().yyyymmdd(), eckit::Time{0, 0, 0}}
+            - eckit::DateTime{startPoint().date().yyyymmdd(), eckit::Time{0, 0, 0}})
+         / (3600);
 }
 
 eckit::DateTime DateTimePeriod::startPoint() const {

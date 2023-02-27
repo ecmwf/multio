@@ -7,7 +7,8 @@ namespace {
 std::string getMappingName(const ConfigurationContext& confCtx) {
     if (!confCtx.config().has("mapping")) {
         throw message::MetadataMappingException(
-            "An action of type \"metadata-mapping\" needs to have a field \"mapping\" pointing to a YAML file..", Here());
+            "An action of type \"metadata-mapping\" needs to have a field \"mapping\" pointing to a YAML file..",
+            Here());
     }
     return confCtx.config().getString("mapping");
 }

@@ -23,7 +23,16 @@ MetadataMapping::MetadataMapping(const ConfigurationContext& confCtx) :
 };
 
 void MetadataMapping::executeImpl(message::Message msg) {
-    executeNext(msg.modifyMetadata(apply(std::move(msg).metadata())));
+    switch (msg.tag()) {
+        case (message::Message::Tag::Field): {
+            executeNext(msg.modifyMetadata(apply(std::move(msg).metadata())));
+            break;
+        }
+        default: {
+            executeNext(msg);
+            break;
+        }
+    };
 };
 
 void MetadataMapping::applyInplace(message::Metadata& md) const {

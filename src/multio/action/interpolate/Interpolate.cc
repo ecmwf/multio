@@ -194,9 +194,10 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
 
     job.execute(input, output);
 
-    message::Metadata md;
+    message::Metadata md=msg.metadata();
     md.set("globalSize", outData.size());
     md.set("precision", "double");
+    md.set("gridType", "regular_ll");
 
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outData.size() * sizeof(double));
 
@@ -222,13 +223,9 @@ void Interpolate::executeImpl(message::Message msg) {
                 return InterpolateMessage<Precision>(std::move(msg));
             }));
             break;
-        };
-        case (message::Message::Tag::StepComplete): {
-            executeNext(msg);
-            break;
         }
         default: {
-            throw eckit::BadValue("Action::Interpolate :: Unsupported message tag", Here());
+            executeNext(msg);
             break;
         }
     };

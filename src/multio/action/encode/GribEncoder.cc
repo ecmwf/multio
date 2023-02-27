@@ -135,8 +135,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     }
 
     // Additional parameters passed through for spherical harmonics
-    withFirstOf(ValueSetter{g, "complexPacking"}, LookUpLong(md, "complexPacking"));
     if (md.has("gridType") && md.getString("gridType") == "sh") {
+        withFirstOf(ValueSetter{g, "complexPacking"}, LookUpLong(md, "complexPacking"));
         withFirstOf(ValueSetter{g, "pentagonalResolutionParameterJ"}, LookUpLong(md, "pentagonalResolutionParameterJ"),
                     LookUpLong(md, "J"));
         withFirstOf(ValueSetter{g, "pentagonalResolutionParameterK"}, LookUpLong(md, "pentagonalResolutionParameterK"),

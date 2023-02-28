@@ -122,27 +122,34 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
 
     auto set = [&destination](const eckit::LocalConfiguration& cfg, const std::string& key, const eckit::Value& value) {
         if (value.isList()) {
-          if ( value.head().isDouble() ) {
-            destination.set(key, cfg.getDoubleVector(key));
-          } else if ( value.head().isNumber() ) {
-             destination.set(key, cfg.getLongVector(key));
-          } else if ( value.isString() ) {
-             destination.set(key, cfg.getStringVector(key));
-          } else {
-             NOTIMP;
-          }
-          return;
+            if (value.head().isDouble()) {
+                destination.set(key, cfg.getDoubleVector(key));
+            }
+            else if (value.head().isNumber()) {
+                destination.set(key, cfg.getLongVector(key));
+            }
+            else if (value.isString()) {
+                destination.set(key, cfg.getStringVector(key));
+            }
+            else {
+                NOTIMP;
+            }
+            return;
         }
-        if ( value.isBool() ){
-          destination.set(key, cfg.getBool(key));
-        } else if ( value.isDouble() ){
-          destination.set(key, cfg.getDouble(key));
-        } else  if ( value.isNumber() ) {
-          destination.set(key, cfg.getInt(key));
-        } else if ( value.isString()  ) {
-          destination.set(key, cfg.getString(key).c_str());
-        } else {
-          NOTIMP;
+        if (value.isBool()) {
+            destination.set(key, cfg.getBool(key));
+        }
+        else if (value.isDouble()) {
+            destination.set(key, cfg.getDouble(key));
+        }
+        else if (value.isNumber()) {
+            destination.set(key, cfg.getInt(key));
+        }
+        else if (value.isString()) {
+            destination.set(key, cfg.getString(key).c_str());
+        }
+        else {
+            NOTIMP;
         }
     };
 
@@ -194,9 +201,10 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
 
     job.execute(input, output);
 
-    message::Metadata md;
+    message::Metadata md = msg.metadata();
     md.set("globalSize", outData.size());
     md.set("precision", "double");
+    md.set("gridType", "regular_ll");
 
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outData.size() * sizeof(double));
 
@@ -222,13 +230,9 @@ void Interpolate::executeImpl(message::Message msg) {
                 return InterpolateMessage<Precision>(std::move(msg));
             }));
             break;
-        };
-        case (message::Message::Tag::StepComplete): {
-            executeNext(msg);
-            break;
         }
         default: {
-            throw eckit::BadValue("Action::Interpolate :: Unsupported message tag", Here());
+            executeNext(msg);
             break;
         }
     };

@@ -32,7 +32,9 @@ public:
 
     bool isWithin(const eckit::DateTime& dt);
 
+    long timeSpanInHours() const;
     eckit::DateTime endPoint() const;
+    eckit::DateTime startPoint() const;
 
 private:
     eckit::DateTime startPoint_;

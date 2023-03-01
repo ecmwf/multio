@@ -29,6 +29,11 @@ endif()
 
 # Test sinks
 
+ecbuild_add_test( TARGET    test_multio_adam
+                  SOURCES   test_multio_adam.cc MultioTool.cc
+                  ARGS      ${_args}
+                  LIBS      ${_link_libraries} multio-api )
+
 ecbuild_add_test( TARGET    test_multio_datasink_factory
                   SOURCES   test_multio_datasink_factory.cc
                   LIBS      ${_link_libraries} )

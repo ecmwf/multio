@@ -29,7 +29,7 @@ void Aggregate::executeImpl(Message msg) {
         executeNext(globalField(msg.fieldId()));
     }
 
-    if ((msg.tag() == Message::Tag::StepComplete) && handleFlush(msg)) {
+    if ((msg.tag() == Message::Tag::Flush) && handleFlush(msg)) {
         executeNext(globalFlush(msg.fieldId()));
     }
 }
@@ -95,7 +95,7 @@ Message Aggregate::globalFlush(const std::string &fid)
 
     auto flush = flushes_.extract(fid);
 
-    return Message{{Message::Tag::StepComplete, Peer{}, Peer{}, std::string(fid)}};
+    return Message{{Message::Tag::Flush, Peer{}, Peer{}, std::string(fid)}};
 }
 
 void Aggregate::print(std::ostream& os) const {

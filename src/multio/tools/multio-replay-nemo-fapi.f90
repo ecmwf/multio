@@ -107,14 +107,14 @@ subroutine init(mio, rank, server_count, client_count)
     type(multio_handle), intent(inout) :: mio
     type(multio_metadata) :: md
 
-    type(multio_configurationcontext) :: cc
+    type(multio_configuration) :: cc
     ! for tests
     logical(c_bool) :: is_active
 
 
     write(0,*) "Init..."
     cerr = cc%new()
-    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error creating default configuration context"
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error creating default configuration"
 
     cerr = cc%mpi_allow_world_default_comm(.FALSE._1)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting default multio mpi allow_world_default_comm"
@@ -139,15 +139,15 @@ subroutine init(mio, rank, server_count, client_count)
     newcomm_id = 0
     write(0,*) "set client id..."
     cerr = cc%mpi_client_id("oce")
-    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi client id to configuration context"
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi client id to configuration"
     write(0,*) "set parent comm..."
     mio_parent_comm = comm%communicator()
     cerr = cc%mpi_parent_comm(int(mio_parent_comm))
-    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi parent comm to configuration context"
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi parent comm to configuration"
     write(0,*) "set return client comm..."
     ! write (*,*) "newcomm_id ptr",loc(newcomm_id)
     cerr = cc%mpi_return_client_comm(newcomm_id)
-    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi client return comm to configuration context"
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi client return comm to configuration"
     write(0,*) "create new handle..."
     cerr = mio%new(cc)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error creating new mpi handle"
@@ -155,7 +155,7 @@ subroutine init(mio, rank, server_count, client_count)
     newcomm = fckit_mpi_comm(newcomm_id)
 
     cerr = cc%delete()
-    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error deleting configuration context"
+    if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error deleting configuration"
 
     server_count = comm%size()
     client_count = newcomm%size()

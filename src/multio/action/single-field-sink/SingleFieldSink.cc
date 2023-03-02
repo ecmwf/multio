@@ -32,7 +32,7 @@ void SingleFieldSink::executeImpl(Message msg) {
             write(msg);
             break;
 
-        case Message::Tag::StepComplete:
+        case Message::Tag::Flush:
             flush();
             break;
 

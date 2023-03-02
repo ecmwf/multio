@@ -38,8 +38,8 @@ std::string Message::tag2str(Tag t) {
                                            {Tag::Domain, "Domain"},
                                            {Tag::Mask, "Mask"},
                                            {Tag::Field, "Field"},
-                                           {Tag::StepComplete, "StepComplete"},
-                                           {Tag::StepNotification, "StepNotification"}};
+                                           {Tag::Flush, "Flush"},
+                                           {Tag::Notification, "Notification"}};
 
     ASSERT(t < Tag::ENDTAG);
 

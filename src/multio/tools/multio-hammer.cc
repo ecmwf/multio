@@ -583,7 +583,7 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
             .set("trigger", "step")
             .set("domain", "grid-point");
         for (auto& server : serverPeers) {
-            Message flush{Message::Header{Message::Tag::StepComplete, client, *server, Metadata{md}}};
+            Message flush{Message::Header{Message::Tag::Flush, client, *server, Metadata{md}}};
             transport->send(flush);
         }
     }
@@ -720,14 +720,14 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
             .set("domain", "grid-point")
             .set("precision", "double");
 
-        Message msg{Message::Header{Message::Tag::StepComplete, Peer{}, Peer{}, Metadata{md}}};
+        Message msg{Message::Header{Message::Tag::Flush, Peer{}, Peer{}, Metadata{md}}};
         for (const auto& plan : plans) {
             plan->process(msg);
         }
 
         // This message need only be sent by one server per ENS. Some sort of synchronisation
         // between the servers will be required -- OK for multio-hammer for now.
-        msg = Message{Message::Header{Message::Tag::StepNotification, Peer{}, Peer{}, std::move(md)}};
+        msg = Message{Message::Header{Message::Tag::Notification, Peer{}, Peer{}, std::move(md)}};
         for (const auto& plan : plans) {
             plan->process(msg);
         }

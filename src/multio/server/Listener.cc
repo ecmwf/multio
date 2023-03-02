@@ -89,8 +89,8 @@ void Listener::start() {
 
                 case Message::Tag::Domain:
                 case Message::Tag::Mask:
-                case Message::Tag::StepNotification:
-                case Message::Tag::StepComplete:
+                case Message::Tag::Notification:
+                case Message::Tag::Flush:
                 case Message::Tag::Field:
                     checkConnection(msg.source());
                     LOG_DEBUG_LIB(LibMultio) << "*** Message received: " << msg << std::endl;

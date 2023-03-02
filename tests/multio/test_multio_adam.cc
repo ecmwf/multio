@@ -98,24 +98,63 @@ namespace multio {
 namespace test{
 
 CASE("Initial Test for version") {
-    std::cout << "Running Test" << std::endl;
+    //std::cout << "Running Test" << std::endl;
     const char *version = nullptr;
-    multio_version(&version);
-    std::cout << "Version " << version << std::endl;
-    EXPECT(strcmp(version, "1.9.0")==0);
+    int rc;
+    rc = multio_version(&version);
+    if (rc != MULTIO_SUCCESS){
+        std::cout << "Error getting Version" << std::endl;
+    }
+    else{
+        std::cout << "Version " << version << std::endl;
+    }
+    EXPECT(rc==MULTIO_SUCCESS);
 }
 
 CASE("Test loading config") {
     multio_handle_t* multio_handle = nullptr;
     multio_configurationcontext_t* multio_cc = nullptr;
-    auto configPath = configuration_file_name();
-    std::cout << "Configuration File: " << configPath.asString().c_str() << std::endl;
-    multio_new_configurationcontext_from_filename(&multio_cc, configPath.asString().c_str());
+    int rc;
+
+    rc = multio_new_configurationcontext(&multio_cc);
+    const char *conf_path = "/Users/maaw/multio/tests/multio/";
+    std::cout << conf_path << std::endl;
+
+    rc = multio_conf_set_path(multio_cc, conf_path);
+    if(rc==MULTIO_SUCCESS){
+        std::cout << "Config Path set" << std::endl;
+    }
+    else{
+        std::cout << "Config Path NOT set" << std::endl;
+    }
+
+    auto configPath = configuration_path_name();
+    auto configFile = configuration_file_name();
+    std::cout << "Configuration Path: " << configPath.asString().c_str() << std::endl;
+    std::cout << "Configuration File: " << configFile.asString().c_str() << std::endl;
+    rc = multio_new_configurationcontext_from_filename(&multio_cc, configFile.asString().c_str());
+    if(rc==MULTIO_SUCCESS){
+        std::cout << "Config created from Filename" << std::endl;
+    }
+    else{
+        std::cout << "Config NOT created from filename" << std::endl;
+    }
     multio_new_handle(&multio_handle, multio_cc);
     multio_delete_configurationcontext(multio_cc);
-    EXPECT(1==1);
+    EXPECT(rc==MULTIO_SUCCESS);
 }
 
+CASE("Test Multio Initialisation") {
+    int rc;
+    rc = multio_initialise();
+    if (rc != MULTIO_SUCCESS) {
+        std::cout << "Multio NOT Initialised" << std::endl;
+    }
+    else{ 
+        std::cout << "Multio Initialised" << std::endl;
+    }
+    EXPECT(rc==MULTIO_SUCCESS);
+}
 
 }
 }

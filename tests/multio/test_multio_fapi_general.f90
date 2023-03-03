@@ -68,7 +68,8 @@ contains
                 success = .false.
             end if
             
-            if (multio_error_string(err) /= "Cannot open invalid-path  (No such file or directory)") then
+            if (TRIM(multio_error_string(err)) /= "Caught eckit exception on C-C++ API boundary: &
+            &Cannot open invalid-path  (No such file or directory)") then
                 write(error_unit, *) 'unexpected error message: ', multio_error_string(err)
                 success = .false.
             endif

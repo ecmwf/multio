@@ -9,7 +9,8 @@ ecbuild_add_library(
       GribEncoder.h
       GridInfo.cc
       GridInfo.h
-
+      OrcaGridDownloader.cc
+      OrcaGridDownloader.h
 
     PRIVATE_INCLUDES
       ${ECKIT_INCLUDE_DIRS}
@@ -18,4 +19,6 @@ ecbuild_add_library(
 
     PUBLIC_LIBS
         multio
+        atlas
+        atlas-orca
 )

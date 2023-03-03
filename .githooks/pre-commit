@@ -1,0 +1,16 @@
+#!/bin/sh
+
+staged_files=$(git diff --name-only --cached)
+
+format_result=$(git clang-format -q --style=file $staged_files)
+
+git add $staged_files
+
+exec 1>&2
+
+if [ "$format_result" != "" ]
+then
+	echo "Automatic format error!"
+	echo "Please run clang-format manually!"
+	exit 1
+fi

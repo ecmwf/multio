@@ -118,7 +118,7 @@ int wrapApiFunction(FN f) {
     }
     catch (eckit::Exception& e) {
         std::ostringstream oss;
-        oss << "Caught eckit exception on C-C++ API boundary: " << e.what() << std::endl;
+        oss << "Caught eckit exception on C-C++ API boundary: " << e.what();
         g_current_error_str = oss.str();
         if (g_failure_handler) {
             g_failure_handler(g_failure_handler_context, MULTIO_ERROR_ECKIT_EXCEPTION);
@@ -131,7 +131,7 @@ int wrapApiFunction(FN f) {
     }
     catch (std::exception& e) {
         std::ostringstream oss;
-        oss << "Caught exception on C-C++ API boundary: " << e.what() << std::endl;
+        oss << "Caught exception on C-C++ API boundary: " << e.what();
         g_current_error_str = oss.str();
         if (g_failure_handler) {
             g_failure_handler(g_failure_handler_context, MULTIO_ERROR_GENERAL_EXCEPTION);

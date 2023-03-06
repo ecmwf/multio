@@ -89,15 +89,6 @@ active-matchers:
 
 client:
   plans:
-    - name: ocean-grids
-      actions:
-        - type: Select
-          match:
-            - category: [ocean-grid-coordinate]
-
-        - type: Transport
-          target: server
-
     - name: stream-2 # mainly 3d fields output monthly (standard) or daily (highout)
       actions:
         - type: Select
@@ -203,35 +194,6 @@ client:
 server:
   transport: mpi
   plans:
-    - name: ocean-grids
-      actions:
-        - type: Select
-          match:
-            - category: [ocean-grid-coordinate]
-
-        - type: Aggregate
-
-        - type: Encode
-          format: grib
-          template: '{~}/unstr_latlon.tmpl'
-          grid-type: eORCA1
-          run:
-            expver: dsan
-            class: rd
-            stream: olda
-            type: an
-            date-of-analysis: 20170916
-
-        - type: Sink
-          sinks:
-            # - type : fdb5
-            #   config : {}
-
-            - type: file
-              append: true
-              per-server: true # Will give you one file per server
-              path: ocean-output-grid.grib
-
     - name: ocean-fields # mainly 3d fields output monthly (standard) or daily (highout)
       actions:
         - type: Select
@@ -243,9 +205,10 @@ server:
         - type: Mask
 
         - type: Encode
+          grid-type: eORCA1
+          grid-downloader-template: '{~}/unstr_latlon.tmpl'
           format: grib
           template: '{~}/unstr_inst_an.tmpl'
-          grid-type: eORCA1
           run:
             expver: dsan
             class: rd

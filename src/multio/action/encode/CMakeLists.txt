@@ -7,10 +7,8 @@ ecbuild_add_library(
       Encode.h
       GribEncoder.cc
       GribEncoder.h
-      GridInfo.cc
-      GridInfo.h
-      OrcaGridDownloader.cc
-      OrcaGridDownloader.h
+      GridDownloader.cc
+      GridDownloader.h
 
     PRIVATE_INCLUDES
       ${ECKIT_INCLUDE_DIRS}

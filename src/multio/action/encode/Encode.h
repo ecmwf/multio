@@ -23,6 +23,8 @@
 namespace multio {
 namespace action {
 
+class GridDownloader;
+
 class Encode : public ChainedAction {
 public:
     explicit Encode(const ConfigurationContext& confCtx);
@@ -37,13 +39,12 @@ private:
     void print(std::ostream& os) const override;
 
     message::Message encodeField(const message::Message& msg) const;
-    message::Message encodeOceanLatitudes(const std::string& subtype) const;
-    message::Message encodeOceanLongitudes(const std::string& subtype) const;
 
     const std::string format_;
     eckit::Optional<eckit::LocalConfiguration> overwrite_;
 
     const std::unique_ptr<GribEncoder> encoder_ = nullptr;
+    const std::unique_ptr<GridDownloader> gridDownloader_ = nullptr;
 };
 
 //=====================================================================================================================

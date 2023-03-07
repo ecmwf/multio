@@ -14,11 +14,8 @@
 
 #include "multio/util/ConfigurationContext.h"
 
-#include "atlas-orca/Library.h"
-#include "atlas-orca/util/AtlasIOReader.h"
-#include "atlas-orca/util/Download.h"
-#include "atlas-orca/util/OrcaData.h"
-#include "atlas/util/Config.h"
+#include "atlas-orca/grid/OrcaGrid.h"
+#include "atlas/grid/Iterator.h"
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/TmpFile.h"
@@ -55,37 +52,12 @@ std::unique_ptr<multio::action::GribEncoder> createEncoder(const multio::util::C
     auto encoder = std::make_unique<multio::action::GribEncoder>(
         codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), confCtx.config());
     if (err != 0) {
-        // TODO: throw something
+        std::ostringstream oss;
+        oss << "Could not create a GribEncoder for the grid coordinates due to an error in ecCodes: " << err;
+        throw eckit::SeriousBug(oss.str(), Here());
     }
 
     return encoder;
-}
-
-void checkOrcaGridConfigAndThrowOnError(const atlas::util::Config& specs, const std::string& completeGridName) {
-    if (not specs.has(completeGridName)) {
-        throw eckit::SeriousBug("Configured grid not supported: " + completeGridName, Here());
-    }
-
-    const auto gridSpec = specs.getSubConfiguration(completeGridName);
-    if (not gridSpec.has("uid")) {
-        throw eckit::SeriousBug("Configured grid: " + completeGridName + " has no uid!", Here());
-    }
-    if (not gridSpec.has("data")) {
-        throw eckit::SeriousBug("Configured grid: " + completeGridName + " has no data!", Here());
-    }
-}
-
-atlas::orca::OrcaData downloadOrcaGrid(const std::string& downloadLink) {
-    const eckit::TmpFile downloadedGrid{};
-    const auto gridLength = atlas::orca::download(downloadLink, downloadedGrid);
-    if (gridLength == 0) {
-        // TODO: throw something
-    }
-
-    atlas::orca::OrcaData data;
-    atlas::orca::AtlasIOReader{atlas::util::NoConfig()}.read(downloadedGrid.path(), data);
-
-    return data;
 }
 }  // namespace
 
@@ -154,31 +126,34 @@ multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gr
 
 void GridDownloader::downloadOrcaGridCoordinates(const util::ConfigurationContext& confCtx,
                                                  std::unique_ptr<GribEncoder> encoder) {
-    const atlas::util::Config specs{atlas::orca::Library::instance().gridsPath()};
-
     const auto baseGridName = confCtx.config().getString("grid-type");
     for (auto const& gridSubtype : {"T", "U", "V", "W", "F"}) {
         const auto completeGridName = baseGridName + "_" + gridSubtype;
 
-        checkOrcaGridConfigAndThrowOnError(specs, completeGridName);
+        const atlas::OrcaGrid grid(completeGridName);
 
-        const auto gridSpec = specs.getSubConfiguration(completeGridName);
+        const auto gridUID = grid.uid();
+        const auto gridSize = grid.size();
 
-        const auto gridUID = gridSpec.getString("uid");
+        std::vector<double> lon(grid.size());
+        std::vector<double> lat(grid.size());
+        size_t n{0};
 
-        const auto gridDownloadLink = gridSpec.getString("data");
-        const auto data = downloadOrcaGrid(gridDownloadLink);
+        for (const auto p : grid.lonlat()) {
+            lon[n] = p.lon();
+            lat[n] = p.lat();
+            ++n;
+        }
 
-        const auto gridSize = data.lat.size() * data.lon.size();  // TODO: is this correct?
         auto latMetadata = createMetadataFromCoordsData(
             gridSize, gridSubtype, gridUID, std::string("lat") + "_" + gridSubtype, latParamIds.at(gridSubtype));
         auto lonMetadata = createMetadataFromCoordsData(
             gridSize, gridSubtype, gridUID, std::string("lon") + "_" + gridSubtype, lonParamIds.at(gridSubtype));
 
         multio::message::Message latMessage{{multio::message::Message::Tag::Field, {}, {}, std::move(latMetadata)},
-                                            {data.lat.data(), data.lat.size() * sizeof(data.lat[0])}};
+                                            {lon.data(), grid.ny() * sizeof(double)}};
         multio::message::Message lonMessage{{multio::message::Message::Tag::Field, {}, {}, std::move(lonMetadata)},
-                                            {data.lon.data(), data.lon.size() * sizeof(data.lon[0])}};
+                                            {lat.data(), grid.nx() * sizeof(double)}};
 
         auto encodedLat = encoder->encodeOceanCoordinates(std::move(latMessage));
         auto encodedLon = encoder->encodeOceanCoordinates(std::move(lonMessage));

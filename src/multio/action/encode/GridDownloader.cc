@@ -16,6 +16,7 @@
 
 #include "atlas-orca/grid/OrcaGrid.h"
 #include "atlas/grid/Iterator.h"
+#include "atlas/library/Library.h"
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/TmpFile.h"
@@ -111,6 +112,8 @@ multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gr
 }
 
 void GridDownloader::downloadOrcaGridCoordinates(const util::ConfigurationContext& confCtx) {
+    atlas::Library::instance().initialise();
+
     const auto baseGridName = confCtx.config().getString("grid-type");
     for (auto const& gridSubtype : {"T", "U", "V", "W", "F"}) {
         const auto completeGridName = baseGridName + "_" + gridSubtype;

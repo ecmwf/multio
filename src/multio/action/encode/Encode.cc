@@ -105,10 +105,12 @@ void Encode::executeImpl(Message msg) {
         LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain() << std::endl;
 
         if (gridDownloader_ != nullptr) {
-            auto gridCoords = gridDownloader_->getGridCoords(msg.domain());
+            const auto& md = msg.metadata();
+            auto gridCoords
+                = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
             if (gridCoords) {
-                executeNext(gridCoords.value().first);
-                executeNext(gridCoords.value().second);
+                executeNext(gridCoords.value().Lat);
+                executeNext(gridCoords.value().Lon);
             }
         }
     }

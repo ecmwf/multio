@@ -30,26 +30,34 @@ namespace action {
 
 class GribEncoder;
 
-class GridDownloader : eckit::NonCopyable {
-public:
+struct GridCoordinates {
     using LatitudeCoord = multio::message::Message;
     using LongitudeCoord = multio::message::Message;
-    using GridCoordinates = std::pair<LatitudeCoord, LongitudeCoord>;
+
+    GridCoordinates(LatitudeCoord lat, LongitudeCoord lon): Lat(lat), Lon(lon) {}
+
+    LatitudeCoord Lat;
+    LongitudeCoord Lon;
+};
+
+class GridDownloader : eckit::NonCopyable {
+public:
     using DomainType = std::string;
 
     explicit GridDownloader(const util::ConfigurationContext& confCtx);
 
-    std::optional<GridCoordinates> getGridCoords(const DomainType& gridId);
+    std::optional<GridCoordinates> getGridCoords(const DomainType& gridI, int startDate, int startTime);
 
 private:
     using GridCoordinateCache = std::unordered_map<DomainType, GridCoordinates>;
 
     void initTemplateMetadata();
     multio::message::Metadata createMetadataFromCoordsData(size_t gridSize, const std::string& gridSubtype,
-                                                           const std::string& gridUID, std::string&& paramName,
-                                                           int paramId);
-    void downloadOrcaGridCoordinates(const util::ConfigurationContext& confCtx, std::unique_ptr<GribEncoder> encoder);
+                                                           const std::string& gridUID, int paramId);
+    void downloadOrcaGridCoordinates(const util::ConfigurationContext& confCtx);
+    multio::message::Message encodeMessage(multio::message::Message&& message, int startDate, int startTime);
 
+    const std::unique_ptr<GribEncoder> encoder_;
     multio::message::Metadata templateMetadata_;
     GridCoordinateCache gridCoordinatesCache_;
 };

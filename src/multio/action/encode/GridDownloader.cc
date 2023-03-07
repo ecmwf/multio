@@ -37,13 +37,12 @@ void checkConfigAndThrowOnError(const multio::util::ConfigurationContext& confCt
     if (gridType.find("ORCA") == std::string::npos) {
         throw eckit::SeriousBug("Grid downloader only supports ORCA grids.", Here());
     }
-
-    if (not confCtx.config().has("grid-downloader-template")) {
-        throw eckit::SeriousBug("Grid downloader configuration is missing the coordinates encoder template.", Here());
-    }
 }
 
 std::unique_ptr<multio::action::GribEncoder> createEncoder(const multio::util::ConfigurationContext& confCtx) {
+    if (not confCtx.config().has("grid-downloader-template")) {
+        throw eckit::SeriousBug("Grid downloader configuration is missing the coordinates encoder template.", Here());
+    }
     const auto tmplPath = confCtx.config().getString("grid-downloader-template");
 
     eckit::AutoStdFile fin{confCtx.replaceCurly(tmplPath)};
@@ -65,17 +64,16 @@ namespace multio {
 namespace action {
 
 GridDownloader::GridDownloader(const util::ConfigurationContext& confCtx) :
-    templateMetadata_(), gridCoordinatesCache_() {
+    encoder_(createEncoder(confCtx)), templateMetadata_(), gridCoordinatesCache_() {
     checkConfigAndThrowOnError(confCtx);
-
-    auto encoder = createEncoder(confCtx);
 
     initTemplateMetadata();
 
-    downloadOrcaGridCoordinates(confCtx, std::move(encoder));
+    downloadOrcaGridCoordinates(confCtx);
 }
 
-std::optional<GridDownloader::GridCoordinates> GridDownloader::getGridCoords(const GridDownloader::DomainType& gridId) {
+std::optional<GridCoordinates> GridDownloader::getGridCoords(const GridDownloader::DomainType& gridId, int startDate,
+                                                             int startTime) {
     if (gridCoordinatesCache_.count(gridId) == 0) {
         return {};
     }
@@ -84,48 +82,35 @@ std::optional<GridDownloader::GridCoordinates> GridDownloader::getGridCoords(con
 
     gridCoordinatesCache_.erase(gridId);
 
-    return coords;
+    auto encodedLat = encodeMessage(std::move(coords.Lat), startDate, startTime);
+    auto encodedLon = encodeMessage(std::move(coords.Lon), startDate, startTime);
+
+    return GridCoordinates{encodedLat, encodedLon};
 }
 
 void GridDownloader::initTemplateMetadata() {
     templateMetadata_.set("step", 0);
-    templateMetadata_.set("typeOfLevel", 0);  // TODO: where to get this?
-    templateMetadata_.set("levtype", 0);      // TODO: where to get this?
+    templateMetadata_.set("typeOfLevel", "oceanSurface");
     templateMetadata_.set("level", 0);
-    templateMetadata_.set("timeStep", 0);                        // TODO: is this really necessary
-    templateMetadata_.set("startDate", 0);                       // TODO: set this correctly
-    templateMetadata_.set("date", 0);                            // TODO: set this correctly
-    templateMetadata_.set("startTime", 0);                       // TODO: is this really necessary
-    templateMetadata_.set("time", 0);                            // TODO: set this correctly
-    templateMetadata_.set("category", "ocean-grid-coordinate");  // TODO: is this really necessary?
-    templateMetadata_.set("missingValue", 0.0);                  // TODO: is this really necessary
+    templateMetadata_.set("category", "ocean-grid-coordinate");
     templateMetadata_.set("bitsPerValue", 16);
-    templateMetadata_.set("toAllServers", true);  // TODO: is this really necessary?
-    templateMetadata_.set("class", 0);            // TODO: where to get this?
-    templateMetadata_.set("stream", 0);           // TODO: where to get this?
-    templateMetadata_.set("expver", 0);           // TODO: where to get this?
-    templateMetadata_.set("type", 0);             // TODO: where to get this?
     templateMetadata_.set("precision", "double");
 }
 
 multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gridSize, const std::string& gridSubtype,
-                                                                       const std::string& gridUID,
-                                                                       std::string&& paramName, int paramId) {
+                                                                       const std::string& gridUID, int paramId) {
     multio::message::Metadata md(templateMetadata_);
 
     md.set("globalSize", gridSize);
     md.set("gridSubtype", gridSubtype);
     md.set("uuidOfHGrid", gridUID);
 
-    md.set("name", std::move(paramName));  // TODO: is this really necessary
-
     md.set("param", paramId);
 
     return md;
 }
 
-void GridDownloader::downloadOrcaGridCoordinates(const util::ConfigurationContext& confCtx,
-                                                 std::unique_ptr<GribEncoder> encoder) {
+void GridDownloader::downloadOrcaGridCoordinates(const util::ConfigurationContext& confCtx) {
     const auto baseGridName = confCtx.config().getString("grid-type");
     for (auto const& gridSubtype : {"T", "U", "V", "W", "F"}) {
         const auto completeGridName = baseGridName + "_" + gridSubtype;
@@ -145,22 +130,28 @@ void GridDownloader::downloadOrcaGridCoordinates(const util::ConfigurationContex
             ++n;
         }
 
-        auto latMetadata = createMetadataFromCoordsData(
-            gridSize, gridSubtype, gridUID, std::string("lat") + "_" + gridSubtype, latParamIds.at(gridSubtype));
-        auto lonMetadata = createMetadataFromCoordsData(
-            gridSize, gridSubtype, gridUID, std::string("lon") + "_" + gridSubtype, lonParamIds.at(gridSubtype));
+        auto latMetadata = createMetadataFromCoordsData(gridSize, gridSubtype, gridUID, latParamIds.at(gridSubtype));
+        auto lonMetadata = createMetadataFromCoordsData(gridSize, gridSubtype, gridUID, lonParamIds.at(gridSubtype));
 
         multio::message::Message latMessage{{multio::message::Message::Tag::Field, {}, {}, std::move(latMetadata)},
                                             {lon.data(), grid.ny() * sizeof(double)}};
         multio::message::Message lonMessage{{multio::message::Message::Tag::Field, {}, {}, std::move(lonMetadata)},
                                             {lat.data(), grid.nx() * sizeof(double)}};
 
-        auto encodedLat = encoder->encodeOceanCoordinates(std::move(latMessage));
-        auto encodedLon = encoder->encodeOceanCoordinates(std::move(lonMessage));
-
         gridCoordinatesCache_.emplace(std::piecewise_construct, std::tuple(std::string(gridSubtype) + " grid"),
-                                      std::tuple(encodedLat, encodedLon));
+                                      std::tuple(latMessage, lonMessage));
     }
+}
+
+multio::message::Message GridDownloader::encodeMessage(multio::message::Message&& message, int startDate,
+                                                       int startTime) {
+    multio::message::Metadata md{message.metadata()};
+    md.set("startDate", startDate);
+    md.set("startTime", startTime);
+
+    auto updateMessage = message.modifyMetadata(std::move(md));
+
+    return encoder_->encodeOceanCoordinates(std::move(updateMessage));
 }
 
 }  // namespace action

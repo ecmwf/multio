@@ -10,6 +10,8 @@
 #include "eckit/mpi/Comm.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
+#include <atomic>
+
 namespace multio::transport {
 
 enum class BufferStatus : uint8_t
@@ -22,10 +24,15 @@ enum class BufferStatus : uint8_t
 class MpiBuffer {
 public:
     explicit MpiBuffer(size_t maxBufSize);
-
+    
+    MpiBuffer(MpiBuffer&&);
+    
+ 
+    MpiBuffer& operator=(MpiBuffer&& other);
+    
     bool isFree();
 
-    BufferStatus status = BufferStatus::available;
+    std::atomic<BufferStatus> status{BufferStatus::available};
     eckit::mpi::Request request;
     eckit::Buffer content;
 };
@@ -45,6 +52,8 @@ private:
     MpiBuffer& buf_;
 };
 
+
+// TODO Remove now
 class MpiInputStream : public eckit::ResizableMemoryStream {
 public:
     MpiInputStream(MpiBuffer& buf, size_t sz);

@@ -271,14 +271,15 @@ Message MpiTransport::receive() {
             return msg;
         }
 
-        //! TODO For switch to MPMC queue: combine front() and pop()
-        if (auto strm = streamQueue_.front()) {
-            while (strm->position() < strm->size()) {
+        ReceivedBuffer streamArgs;
+        if (streamQueue_.pop(streamArgs) && streamArgs.buffer) {
+            eckit::ResizableMemoryStream strm{streamArgs.buffer->content};
+            while (strm.position() < streamArgs.size) {
                 util::ScopedTiming decodeTiming{statistics_.decodeTimer_, statistics_.decodeTiming_};
-                auto msg = decodeMessage(*strm);
+                auto msg = decodeMessage(strm);
                 msgPack_.push(msg);
             }
-            streamQueue_.pop();
+            streamArgs.buffer->status.store(BufferStatus::available, std::memory_order_release);
         }
 
     } while (true);
@@ -357,10 +358,10 @@ void MpiTransport::listen() {
     }
     // TODO status contains information on required message size - use that to retrieve a sufficient
     // large buffer?
-    auto& buf = pool_.findAvailableBuffer();
+    auto& buf = pool_.acquireAvailableBuffer(BufferStatus::fillingUp);
     auto sz = blockingReceive(status, buf);
     util::ScopedTiming timing{statistics_.pushToQueueTimer_, statistics_.pushToQueueTiming_};
-    streamQueue_.emplace(buf, sz);
+    streamQueue_.push(ReceivedBuffer{&buf, sz});
 }
 
 PeerList MpiTransport::createServerPeers() const {

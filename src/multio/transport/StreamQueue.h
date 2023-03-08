@@ -7,26 +7,27 @@
 
 namespace multio::transport {
 
+struct ReceivedBuffer {
+    MpiBuffer* buffer;
+    size_t size;
+};
+
+
+
 class StreamQueue {
+private:
+    
 public:
     StreamQueue();
 
-    // TODO: Decoupling front & pop is bad when multiple consumers (i.e. multiple threads) race for the next value.
-    // Currently tthe Queue is used in a SPSC (single-produces, single-consumer) fashion. # Philipp Geier
-    MpiInputStream* front() {
+    bool pop(ReceivedBuffer& b) {
         std::lock_guard<std::mutex> lock{mutex_};
         if (queue_.empty()) {
-            return nullptr;
+            return false;
         }
-        auto& strm = queue_.front();
-        return &strm;
-    }
-
-    void pop() {
-        const auto strm = front();
-        std::lock_guard<std::mutex> lock{mutex_};
-        strm->buffer().status = BufferStatus::available;
+        b = queue_.front();
         queue_.pop();
+        return true;
     }
 
     template <typename... Args>
@@ -34,9 +35,19 @@ public:
         std::lock_guard<std::mutex> lock{mutex_};
         queue_.emplace(std::forward<Args>(args)...);
     }
+    
+    void push(const ReceivedBuffer& b) {
+        std::lock_guard<std::mutex> lock{mutex_};
+        queue_.push(b);
+    }
+    
+    void push(ReceivedBuffer&& b) {
+        std::lock_guard<std::mutex> lock{mutex_};
+        queue_.push(std::move(b));
+    }
 
 private:
-    std::queue<MpiInputStream> queue_;
+    std::queue<ReceivedBuffer> queue_;
     std::mutex mutex_;
 };
 

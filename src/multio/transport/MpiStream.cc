@@ -8,10 +8,28 @@ namespace multio::transport {
 MpiBuffer::MpiBuffer(size_t maxBufSize) : content{maxBufSize} {}
 
 bool MpiBuffer::isFree() {
-    return status == BufferStatus::available || (status == BufferStatus::transmitting && request.test());
+    // Soft check
+    BufferStatus s = status.load(std::memory_order_relaxed);
+    return s == BufferStatus::available ||
+           (s == BufferStatus::transmitting && request.test());
 }
 
-MpiOutputStream::MpiOutputStream(MpiBuffer& buf) : eckit::ResizableMemoryStream{buf.content}, buf_{buf} {}
+MpiBuffer& MpiBuffer::operator=(MpiBuffer&& other) {
+    this->status.exchange(other.status);
+    this->request = std::move(other.request);
+    this->content = std::move(other.content);
+    return *this;
+}
+
+MpiBuffer::MpiBuffer(MpiBuffer&& other) {
+    this->status.exchange(other.status);
+    this->request = std::move(other.request);
+    this->content = std::move(other.content);
+}
+
+
+MpiOutputStream::MpiOutputStream(MpiBuffer& buf) :
+    eckit::ResizableMemoryStream{buf.content}, buf_{buf} {}
 
 bool MpiOutputStream::canFitMessage(size_t sz) {
     return (position() + sz + 4096 < buf_.content.size());

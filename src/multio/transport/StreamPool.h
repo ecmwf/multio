@@ -25,7 +25,7 @@ public:
 
     void sendBuffer(const message::Peer& dest, int msg_tag);
 
-    MpiBuffer& findAvailableBuffer(std::ostream& os = eckit::Log::debug<LibMultio>());
+    MpiBuffer& acquireAvailableBuffer(BufferStatus newStatus, std::ostream& os = eckit::Log::debug<LibMultio>());
 
     void waitAll();
 

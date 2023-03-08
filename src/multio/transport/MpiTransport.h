@@ -20,6 +20,7 @@
 #include <tuple>
 
 #include "eckit/io/Buffer.h"
+#include "eckit/container/Queue.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/mpi/Group.h"

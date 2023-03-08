@@ -38,7 +38,7 @@ private:
 
     void print(std::ostream& os) const override;
 
-    message::Message encodeField(const message::Message& msg) const;
+    message::Message encodeField(const message::Message& msg, const std::string& gridUID) const;
 
     const std::string format_;
     eckit::Optional<eckit::LocalConfiguration> overwrite_;

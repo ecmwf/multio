@@ -14,6 +14,7 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
+#include "eckit/log/Log.h"
 
 #include "GridDownloader.h"
 #include "multio/LibMultio.h"
@@ -60,15 +61,6 @@ std::string encodingExceptionReason(const std::string& r) {
     s.append(r);
     return s;
 }
-
-std::unique_ptr<multio::action::GridDownloader> make_grid_downloader(const ConfigurationContext& confCtx) {
-    if (not confCtx.config().has("grid-downloader-template")) {
-        return nullptr;
-    }
-
-    return std::make_unique<multio::action::GridDownloader>(confCtx);
-}
-
 }  // namespace
 
 
@@ -84,7 +76,7 @@ Encode::Encode(const ConfigurationContext& confCtx, ConfigurationContext&& encCo
                    ? eckit::Optional<eckit::LocalConfiguration>{encConfCtx.config().getSubConfiguration("overwrite")}
                    : eckit::Optional<eckit::LocalConfiguration>{}},
     encoder_{make_encoder(encConfCtx)},
-    gridDownloader_{make_grid_downloader(confCtx)} {}
+    gridDownloader_{std::make_unique<multio::action::GridDownloader>(confCtx)} {}
 
 Encode::Encode(const ConfigurationContext& confCtx) : Encode(confCtx, getEncodingConfiguration(confCtx)) {}
 
@@ -104,18 +96,16 @@ void Encode::executeImpl(Message msg) {
 
         LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain() << std::endl;
 
-        if (gridDownloader_ != nullptr) {
-            const auto& md = msg.metadata();
-            auto gridCoords
-                = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
-            if (gridCoords) {
-                executeNext(gridCoords.value().Lat);
-                executeNext(gridCoords.value().Lon);
-            }
+        const auto& md = msg.metadata();
+        auto gridCoords = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
+        if (gridCoords) {
+            executeNext(gridCoords.value().Lat);
+            executeNext(gridCoords.value().Lon);
         }
     }
 
-    executeNext(encodeField(std::move(msg)));
+    auto gridUID = gridDownloader_->getGridUID(msg.domain());
+    executeNext(encodeField(std::move(msg), gridUID));
 }
 
 void Encode::print(std::ostream& os) const {
@@ -136,11 +126,12 @@ message::Metadata applyOverwrites(const eckit::LocalConfiguration& overwrites, m
 }
 }  // namespace
 
-message::Message Encode::encodeField(const message::Message& msg) const {
+message::Message Encode::encodeField(const message::Message& msg, const std::string& gridUID) const {
     try {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-        return encoder_->encodeField(
-            this->overwrite_ ? msg.modifyMetadata(applyOverwrites(*this->overwrite_, msg.metadata())) : msg);
+        auto md = this->overwrite_ ? applyOverwrites(*this->overwrite_, msg.metadata()) : msg.metadata();
+        md.set("uuidOfHGrid", gridUID);
+        return encoder_->encodeField(msg.modifyMetadata(std::move(md)));
     }
     catch (...) {
         std::ostringstream oss;

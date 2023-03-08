@@ -17,5 +17,5 @@ ecbuild_add_library(
 
     PUBLIC_LIBS
         multio
-        atlas-orca
+        atlas
 )

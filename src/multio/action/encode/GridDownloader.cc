@@ -14,13 +14,15 @@
 
 #include "multio/util/ConfigurationContext.h"
 
-#include "atlas-orca/grid/OrcaGrid.h"
+#include "atlas/grid/Grid.h"
 #include "atlas/grid/Iterator.h"
-#include "atlas/library/Library.h"
+#include "atlas/library.h"
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/TmpFile.h"
 #include "eckit/io/StdFile.h"
+#include "eckit/log/Log.h"
+#include "eckit/mpi/Comm.h"
 
 namespace {
 const std::unordered_map<std::string, int> latParamIds{
@@ -42,7 +44,8 @@ void checkConfigAndThrowOnError(const multio::util::ConfigurationContext& confCt
 
 std::unique_ptr<multio::action::GribEncoder> createEncoder(const multio::util::ConfigurationContext& confCtx) {
     if (not confCtx.config().has("grid-downloader-template")) {
-        throw eckit::SeriousBug("Grid downloader configuration is missing the coordinates encoder template.", Here());
+        eckit::Log::warning() << "Multio GridDownloader: configuration is missing the coordinates encoder template, running without encoding!" << std::endl;
+        return nullptr;
     }
     const auto tmplPath = confCtx.config().getString("grid-downloader-template");
 
@@ -65,10 +68,12 @@ namespace multio {
 namespace action {
 
 GridDownloader::GridDownloader(const util::ConfigurationContext& confCtx) :
-    encoder_(createEncoder(confCtx)), templateMetadata_(), gridCoordinatesCache_() {
+    encoder_(createEncoder(confCtx)), templateMetadata_(), gridCoordinatesCache_(), gridUIDCache_() {
     checkConfigAndThrowOnError(confCtx);
 
     initTemplateMetadata();
+
+    eckit::Log::info() << "Grid downloader initialized, starting grid download!" << std::endl;
 
     downloadOrcaGridCoordinates(confCtx);
 }
@@ -112,38 +117,58 @@ multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gr
 }
 
 void GridDownloader::downloadOrcaGridCoordinates(const util::ConfigurationContext& confCtx) {
-    atlas::Library::instance().initialise();
+    atlas::initialize();
 
     const auto baseGridName = confCtx.config().getString("grid-type");
     for (auto const& gridSubtype : {"T", "U", "V", "W", "F"}) {
         const auto completeGridName = baseGridName + "_" + gridSubtype;
 
-        const atlas::OrcaGrid grid(completeGridName);
+        eckit::Log::info() << "Multio GridDownloader: starting download for grid: " << completeGridName << std::endl;
+
+        auto& originalComm = eckit::mpi::comm();
+        eckit::mpi::setCommDefault("self");
+
+        const atlas::Grid grid(completeGridName);
+
+        eckit::mpi::setCommDefault(originalComm.name().c_str());
+
+        eckit::Log::info() << "Multio GridDownloader: grid " << completeGridName << " downloaded!" << std::endl;
 
         const auto gridUID = grid.uid();
-        const auto gridSize = grid.size();
 
-        std::vector<double> lon(grid.size());
-        std::vector<double> lat(grid.size());
-        size_t n{0};
+        gridUIDCache_.emplace(std::piecewise_construct, std::tuple(std::string(gridSubtype) + " grid"), std::tuple(gridUID));
+        
+        if (encoder_ != nullptr) {
+            const auto gridSize = grid.size();
 
-        for (const auto p : grid.lonlat()) {
-            lon[n] = p.lon();
-            lat[n] = p.lat();
-            ++n;
+            std::vector<double> lon(grid.size());
+            std::vector<double> lat(grid.size());
+            size_t n{0};
+
+            for (const auto p : grid.lonlat()) {
+                lon[n] = p.lon();
+                lat[n] = p.lat();
+                ++n;
+            }
+
+            eckit::Log::info() << "Multio GridDownloader: data from " << completeGridName << " extracted!" << std::endl;
+
+            auto latMetadata = createMetadataFromCoordsData(gridSize, gridSubtype, gridUID, latParamIds.at(gridSubtype));
+            auto lonMetadata = createMetadataFromCoordsData(gridSize, gridSubtype, gridUID, lonParamIds.at(gridSubtype));
+
+            multio::message::Message latMessage{{multio::message::Message::Tag::Field, {}, {}, std::move(latMetadata)},
+                                                {lat.data(), grid.size() * sizeof(double)}};
+            multio::message::Message lonMessage{{multio::message::Message::Tag::Field, {}, {}, std::move(lonMetadata)},
+                                                {lon.data(), grid.size() * sizeof(double)}};
+
+            gridCoordinatesCache_.emplace(std::piecewise_construct, std::tuple(std::string(gridSubtype) + " grid"),
+                                        std::tuple(latMessage, lonMessage));
+
+            eckit::Log::info() << "Multio GridDownloader: cached data for grid: " << completeGridName << std::endl;
         }
-
-        auto latMetadata = createMetadataFromCoordsData(gridSize, gridSubtype, gridUID, latParamIds.at(gridSubtype));
-        auto lonMetadata = createMetadataFromCoordsData(gridSize, gridSubtype, gridUID, lonParamIds.at(gridSubtype));
-
-        multio::message::Message latMessage{{multio::message::Message::Tag::Field, {}, {}, std::move(latMetadata)},
-                                            {lon.data(), grid.ny() * sizeof(double)}};
-        multio::message::Message lonMessage{{multio::message::Message::Tag::Field, {}, {}, std::move(lonMetadata)},
-                                            {lat.data(), grid.nx() * sizeof(double)}};
-
-        gridCoordinatesCache_.emplace(std::piecewise_construct, std::tuple(std::string(gridSubtype) + " grid"),
-                                      std::tuple(latMessage, lonMessage));
     }
+
+    atlas::finalize();
 }
 
 multio::message::Message GridDownloader::encodeMessage(multio::message::Message&& message, int startDate,

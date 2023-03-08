@@ -43,13 +43,16 @@ struct GridCoordinates {
 class GridDownloader : eckit::NonCopyable {
 public:
     using DomainType = std::string;
+    using GridUIDType = std::string;
 
     explicit GridDownloader(const util::ConfigurationContext& confCtx);
 
-    std::optional<GridCoordinates> getGridCoords(const DomainType& gridI, int startDate, int startTime);
+    std::optional<GridCoordinates> getGridCoords(const DomainType& gridId, int startDate, int startTime);
+    GridUIDType getGridUID(const DomainType& gridId) const { return gridUIDCache_.at(gridId); }
 
 private:
     using GridCoordinateCache = std::unordered_map<DomainType, GridCoordinates>;
+    using GridUIDCache = std::unordered_map<DomainType, GridUIDType>;
 
     void initTemplateMetadata();
     multio::message::Metadata createMetadataFromCoordsData(size_t gridSize, const std::string& gridSubtype,
@@ -60,6 +63,7 @@ private:
     const std::unique_ptr<GribEncoder> encoder_;
     multio::message::Metadata templateMetadata_;
     GridCoordinateCache gridCoordinatesCache_;
+    GridUIDCache gridUIDCache_;
 };
 
 }  // namespace action

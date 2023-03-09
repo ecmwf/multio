@@ -140,7 +140,23 @@ CASE("Test loading config") {
         std::cout << "Config NOT created from filename" << std::endl;
     }
     multio_new_handle(&multio_handle, multio_cc);
-    multio_delete_configurationcontext(multio_cc);
+
+    rc = multio_start_server(multio_cc);
+    if(rc==MULTIO_SUCCESS){
+        std::cout << "Server started" << std::endl;
+    }
+    else{
+        std::cout << "Server NOT started" << std::endl;
+    }
+
+    rc = multio_delete_configurationcontext(multio_cc);
+    if(rc==MULTIO_SUCCESS){
+        std::cout << "Config deleted" << std::endl;
+    }
+    else{
+        std::cout << "Config NOT deleted" << std::endl;
+    }
+    
     EXPECT(rc==MULTIO_SUCCESS);
 }
 
@@ -155,6 +171,39 @@ CASE("Test Multio Initialisation") {
     }
     EXPECT(rc==MULTIO_SUCCESS);
 }
+
+CASE("Test creating metadata"){
+    int rc;
+    multio_metadata_t* md = nullptr;
+    rc = multio_new_metadata(&md);
+    
+    const char* key = "test";
+    int value=1;
+
+    multio_metadata_set_int(md, key, value);
+
+    long long_value = 1;
+    
+    multio_metadata_set_long(md, key, long_value);
+    
+    long long ll_value = 1;
+
+    multio_metadata_set_longlong(md, key, ll_value);
+
+    const char * s_value = "test_val";
+
+    multio_metadata_set_string(md, key, s_value);
+
+    multio_handle_t* multio_handle = nullptr;
+    multio_configurationcontext_t* multio_cc = nullptr;
+ 
+    //multio_new_handle(&multio_handle, multio_cc);    
+    
+    rc = multio_delete_metadata(md);
+    EXPECT(rc==MULTIO_SUCCESS);
+
+}
+
 
 }
 }

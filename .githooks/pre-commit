@@ -6,25 +6,25 @@ errors=""
 
 for file in $staged_files
 do
-	if [ -f "$file" ]
-	then
-		filename=$(basename -- "$file")
-		extension="${filename##*.}"
-		if [ "$extenstion" == "h" ] || [ "$extension" == "cc" ]
-		then
-			format_result=$(git clang-format -q --style=file $file)
-			errors="$errors$format_result"
-			git add $file
-		fi
-	fi
+    if [ -f "$file" ]
+    then
+        filename=$(basename -- "$file")
+        extension="${filename##*.}"
+        if [ "$extenstion" == "h" ] || [ "$extension" == "cc" ]
+        then
+            format_result=$(git clang-format -q --style=file $file)
+            errors="$errors$format_result"
+            git add $file
+        fi
+    fi
 done
 
 exec 1>&2
 
 if [ "$errors" != "" ]
 then
-	echo "Automatic format error:"
-	echo $errors
-	echo "Please run clang-format manually!"
-	exit 1
+    echo "Automatic format error:"
+    echo $errors
+    echo "Please run clang-format manually!"
+    exit 1
 fi

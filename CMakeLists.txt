@@ -43,7 +43,7 @@ ecbuild_add_option( FEATURE FDB5
 ecbuild_add_option( FEATURE MIR
                     DEFAULT ON
                     DESCRIPTION "Interpolate data using MIR"
-                    REQUIRED_PACKAGES "NAME mir VERSION 1.13.0" )
+                    REQUIRED_PACKAGES "NAME mir VERSION 1.14.1" )
 
 ecbuild_add_option( FEATURE FORTRAN
                     DEFAULT ON

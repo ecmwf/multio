@@ -13,16 +13,16 @@ set(TEST_NEXTGEMS_OUTPUT_PATH ${TEST_NEXTGEMS_PATH}/output )
 
 set(TEST_NEXTGEMS_TEMPLATES_PATH ${TEST_NEXTGEMS_PATH}/templates )
 file(MAKE_DIRECTORY ${TEST_NEXTGEMS_TEMPLATES_PATH})
-ecbuild_get_test_multidata( EXTRACT 
-    TARGET multio_action_nextGEMS_get_test_templates 
+ecbuild_get_test_multidata( EXTRACT
+    TARGET multio_action_nextGEMS_get_test_templates
     DIRNAME multio/tests/actions
     DIRLOCAL ${TEST_NEXTGEMS_TEMPLATES_PATH}
     NAMES ${_action_nextGEMS_test_templates} )
 
 set(TEST_NEXTGEMS_INPUT_PATH ${TEST_NEXTGEMS_PATH}/input )
 file(MAKE_DIRECTORY ${TEST_NEXTGEMS_INPUT_PATH})
-ecbuild_get_test_multidata( EXTRACT 
-    TARGET multio_action_nextGEMS_get_test_input 
+ecbuild_get_test_multidata( EXTRACT
+    TARGET multio_action_nextGEMS_get_test_input
     DIRNAME multio/tests/actions
     DIRLOCAL ${TEST_NEXTGEMS_INPUT_PATH}
     NAMES ${_action_nextGEMS_test_input} )
@@ -35,12 +35,11 @@ configure_file( multio_test_nextGEMS.sh.in ${TEST_NEXTGEMS_SCRIPT} @ONLY )
 
 
 list( APPEND _action_nextGEMS_test_dependencies
-    multio_action_nextGEMS_get_test_templates 
-    multio_action_nextGEMS_get_test_templates 
+    multio_action_nextGEMS_get_test_templates
+    multio_action_nextGEMS_get_test_templates
 )
-ecbuild_add_test( 
+ecbuild_add_test(
     TARGET test_multio_nextGEMS_encoding
     COMMAND ${TEST_NEXTGEMS_SCRIPT}
     TEST_DEPENDS ${_action_nextGEMS_test_dependencies}
 )
-

@@ -15,8 +15,6 @@
 
 #include <functional>
 
-using eckit::Log;
-
 using multio::message::Message;
 using multio::message::Metadata;
 using multio::message::Peer;
@@ -143,7 +141,7 @@ int wrapApiFunction(FN f) {
         return MULTIO_ERROR_GENERAL_EXCEPTION;
     }
     catch (...) {
-        g_current_error_str = "Cauth unkown exception on C-C++ API boundary";
+        g_current_error_str = "Caugth unkown exception on C-C++ API boundary";
         if (g_failure_handler) {
             g_failure_handler(g_failure_handler_context, MULTIO_ERROR_UNKNOWN_EXCEPTION);
         } else {
@@ -179,7 +177,7 @@ int multio_initialise() {
         static bool initialised = false;
 
         if (initialised) {
-            Log::warning() << "Initialising MultIO library twice" << std::endl;
+            eckit::Log::warning() << "Initialising MultIO library twice" << std::endl;
         }
 
         if (!initialised) {

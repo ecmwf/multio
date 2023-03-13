@@ -20,7 +20,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ### dependencies
 
 ecbuild_find_package( NAME eccodes VERSION  2.18   REQUIRED )
-ecbuild_find_package( NAME eckit   VERSION  1.22   REQUIRED )
+ecbuild_find_package( NAME eckit   VERSION  1.21   REQUIRED )
 ecbuild_find_package( NAME metkit  VERSION  1.7    REQUIRED )
 
 if( NOT metkit_HAVE_GRIB )
@@ -43,7 +43,7 @@ ecbuild_add_option( FEATURE FDB5
 ecbuild_add_option( FEATURE MIR
                     DEFAULT ON
                     DESCRIPTION "Interpolate data using MIR"
-                    REQUIRED_PACKAGES "NAME mir VERSION 1.14.1" )
+                    REQUIRED_PACKAGES "NAME mir VERSION 1.16.0" )
 
 ecbuild_add_option( FEATURE FORTRAN
                     DEFAULT ON

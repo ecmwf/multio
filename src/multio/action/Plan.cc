@@ -57,6 +57,7 @@ LocalConfiguration rootConfig(const LocalConfiguration& config) {
 Plan::Plan(const ConfigurationContext& confCtx) : FailureAware(confCtx) {
     ASSERT(confCtx.componentTag() == util::ComponentTag::Plan);
     name_ = confCtx.config().getString("name", "anonymous");
+    enabled_ = confCtx.config().getBool("enable",true);
     auto root = rootConfig(confCtx.config());
     root_ = ActionFactory::instance().build(root.getString("type"), confCtx.recast(root, util::ComponentTag::Action));
 }
@@ -68,11 +69,13 @@ Plan::~Plan() {
 
 void Plan::process(message::Message msg) {
     util::ScopedTimer timer{timing_};
-    withFailureHandling([&]() { root_->execute(std::move(msg)); }, [=]() {
-        std::ostringstream oss;
-        oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl;
-        return oss.str();
-    });
+    if (enabled_) {
+        withFailureHandling([&]() { root_->execute(std::move(msg)); }, [=]() {
+            std::ostringstream oss;
+            oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl;
+            return oss.str();
+        });
+    }
 }
 
 util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t, const util::FailureContext&, util::DefaultFailureState&) const {

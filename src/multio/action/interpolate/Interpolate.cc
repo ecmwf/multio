@@ -32,7 +32,7 @@
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 #include "multio/util/PrecisionTag.h"
-
+#include "eckit/mpi/Comm.h"
 
 namespace multio::action::interpolate {
 
@@ -199,7 +199,10 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     mir::param::SimpleParametrisation outMetadata;
     mir::output::ResizableOutput output(outData, outMetadata);
 
+    auto& originalComm = eckit::mpi::comm();
+    eckit::mpi::setCommDefault( "self" );
     job.execute(input, output);
+    eckit::mpi::setCommDefault( originalComm.name().c_str() );
 
     message::Metadata md = msg.metadata();
     md.set("globalSize", outData.size());

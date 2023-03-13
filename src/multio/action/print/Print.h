@@ -32,6 +32,7 @@ public:
 private:
     void print(std::ostream& os) const override;
 
+    bool onlyFields_;
     std::string stream_;
 
     std::ostream* os_;

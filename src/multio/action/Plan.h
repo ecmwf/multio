@@ -52,8 +52,8 @@ public:
                                                util::DefaultFailureState&) const override;
 
 protected:
+    bool enabled_;
     std::string name_;
-
     std::unique_ptr<Action> root_;
     eckit::Timing timing_;
 };

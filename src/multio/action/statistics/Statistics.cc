@@ -54,15 +54,25 @@ void Statistics::executeImpl(message::Message msg) {
         return;
     }
 
-    std::ostringstream os;
     auto md = msg.metadata();
+    if ( !md.has("startDate") ){
+        md.set( "startDate", md.getLong("date") );
+    }
+    if ( !md.has("startTime") ) {
+        md.set( "startTime", md.getLong("time") );
+    }
+    if ( !md.has("step") || !md.has("timeStep") || !md.has("step-frequency") ){
+        throw eckit::SeriousBug( "MULTIO ACTION STATISTICS :: missing metadata", Here() );
+    }
+
+    std::ostringstream os;
     {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
         LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << md << std::endl;
 
         // Create a unique key for the fieldStats_ map
-        os << msg.metadata().getString("param") << msg.metadata().getLong("level") << msg.source();
+        os << msg.metadata().getString("param","xxx.yyy") << msg.metadata().getLong("level",0L) << msg.source();
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {
             fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
@@ -85,7 +95,7 @@ void Statistics::executeImpl(message::Message msg) {
             auto stepInHours = stepInSeconds / 3600;
             md.set("stepInHours", stepInHours);
 
-            auto prevStep = stepInHours - timeSpanInHours;
+            auto prevStep = stepInHours - timeSpanInHours + 1;
             auto stepRangeInHours = std::to_string(prevStep) + "-" + std::to_string(stepInHours);
             md.set("stepRangeInHours", stepRangeInHours);
         }

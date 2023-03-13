@@ -54,7 +54,7 @@ const Metadata& Message::Header::metadata() const& {
 // }
 
 std::string Message::Header::name() const {
-    return metadata_.getString("name");
+    return metadata_.getString("name","unknown");
 }
 
 std::string Message::Header::category() const {

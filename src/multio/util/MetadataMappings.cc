@@ -60,7 +60,7 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
             auto mappings = mc.getSubConfiguration("map");
             auto optionalMappings = mc.getSubConfiguration("optional-map");
 
-            auto targetPath = mc.has("targetPath") ? eckit::Optional<std::string>{mc.getString("targetPath")} : eckit::Optional<std::string>{};
+            auto targetPath = mc.has("target-path") ? eckit::Optional<std::string>{mc.getString("target-path")} : eckit::Optional<std::string>{};
 
             v.emplace(v.end(), std::move(sourceKey), std::move(mappings), std::move(optionalMappings), sourceList, std::move(targetKey), std::move(targetPath));
             ++mcind;

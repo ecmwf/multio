@@ -167,14 +167,16 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 }
 
 void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
-    if (md.has("encoderOverwrites")) {
+    if (md.has("encoder-overwrites")) {
         // TODO Refactor with visitor
-        auto overwrites = md.getSubConfiguration("encoderOverwrites");
+        auto overwrites = md.getSubConfiguration("encoder-overwrites");
         for (const auto& k : overwrites.keys()) {
             // TODO handle type... however eccodes should support string as well. For
             // some representations the string and integer representation in eccodes
             // differ significantly and my produce wrong results
-            g.setValue(k, overwrites.getString(k));
+            if(g.hasKey(k.c_str())) {
+                g.setValue(k, overwrites.getString(k));
+            }
         }
     }
 }

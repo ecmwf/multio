@@ -65,7 +65,7 @@ struct MetadataMappingOptions {
  *
  * Moveover this mapping mechanism is also used to customised encoding for specific params.
  * This is achieved by conditionally performing mappings (for example on "param") and storing them at a sub dictionary
- * in the metadata (with target path "encoderOverwrites").
+ * in the metadata (with target path "encoder-overwrites").
  */
 class MetadataMapping {
 public:

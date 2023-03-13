@@ -51,8 +51,8 @@ public:  // types
         Domain,
         Mask,
         Field,
-        StepComplete,
-        StepNotification,
+        Flush,
+        Notification,
         ENDTAG
     };
 

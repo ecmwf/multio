@@ -316,29 +316,29 @@ void MultioReplayNemoCApi::initClient() {
 
 
 #if defined(INIT_BY_FILEPATH)
-    multio_configurationcontext_t* multio_cc = nullptr;
+    multio_configuration_t* multio_cc = nullptr;
     auto configPath = configuration_file_name();
-    multio_new_configurationcontext_from_filename(&multio_cc, configPath.asString().c_str());
+    multio_new_configuration_from_filename(&multio_cc, configPath.asString().c_str());
     multio_new_handle(&multio_handle, multio_cc);
-    multio_delete_configurationcontext(multio_cc);
+    multio_delete_configuration(multio_cc);
 #endif
 #if defined(INIT_BY_MPI)
-    multio_configurationcontext_t* multio_cc = nullptr;
+    multio_configuration_t* multio_cc = nullptr;
     int retComm = 0;
-    multio_new_configurationcontext(&multio_cc);
+    multio_new_configuration(&multio_cc);
     multio_conf_mpi_client_id(multio_cc, "oce");
     multio_conf_mpi_parent_comm(multio_cc, eckit::mpi::comm("multio").communicator());
     multio_conf_mpi_return_client_comm(multio_cc, &retComm);
     multio_new_handle(&multio_handle, multio_cc);
     eckit::Log::info() << " *** multio_new_handle mpi returned comm: " << retComm << std::endl;
     ASSERT(retComm != 0);
-    multio_delete_configurationcontext(multio_cc);
+    multio_delete_configuration(multio_cc);
 #endif
 #if defined(INIT_BY_ENV)
-    multio_configurationcontext_t* multio_cc = nullptr;
-    multio_new_configurationcontext(&multio_cc);
+    multio_configuration_t* multio_cc = nullptr;
+    multio_new_configuration(&multio_cc);
     multio_new_handle(&multio_handle, multio_cc);
-    multio_delete_configurationcontext(multio_cc);
+    multio_delete_configuration(multio_cc);
 #endif
     //! Not required in new transport based api?
     // multio_init_client("oce", eckit::mpi::comm().communicator());

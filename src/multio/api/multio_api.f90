@@ -19,12 +19,13 @@ module multio_api
     integer, parameter :: int64 = selected_int_kind(15)
 
 
-    type multio_configurationcontext
+    type multio_configuration
         type(c_ptr) :: impl = c_null_ptr
     contains
-        procedure :: new => multio_new_configurationcontext
-        procedure :: new_from_filename => multio_new_configurationcontext_from_filename
-        procedure :: delete => multio_delete_configurationcontext
+        procedure :: new_default => multio_new_configuration
+        procedure :: new_from_filename => multio_new_configuration_from_filename
+        generic   :: new => new_default, new_from_filename
+        procedure :: delete => multio_delete_configuration
         procedure :: set_path => multio_conf_set_path
         procedure :: mpi_allow_world_default_comm => multio_conf_mpi_allow_world_default_comm
         procedure :: mpi_client_id => multio_conf_mpi_client_id
@@ -40,7 +41,8 @@ module multio_api
         procedure :: delete => multio_delete_handle
         procedure :: open_connections => multio_open_connections
         procedure :: close_connections => multio_close_connections
-        procedure :: write_step_complete => multio_write_step_complete
+        procedure :: flush => multio_flush
+        procedure :: notify => multio_notify
         procedure :: write_domain => multio_write_domain
         procedure :: write_mask_float_1d => multio_write_mask_float_1d
         procedure :: write_mask_double_1d => multio_write_mask_double_1d
@@ -75,7 +77,7 @@ module multio_api
 
     ! Type declarations
 
-    public :: multio_configurationcontext
+    public :: multio_configuration
     public :: multio_handle
     public :: multio_metadata
 
@@ -165,17 +167,17 @@ module multio_api
             type(c_ptr) :: error_string
         end function
 
-        ! Configuration context api
-        function c_multio_new_configurationcontext(cc) result(err) &
-                bind(c, name='multio_new_configurationcontext')
+        ! Configuration api
+        function c_multio_new_configuration(cc) result(err) &
+                bind(c, name='multio_new_configuration')
                 use, intrinsic :: iso_c_binding
                 implicit none
                 type(c_ptr), intent(out) :: cc
                 integer(c_int) :: err
         end function
 
-        function c_multio_new_configurationcontext_from_filename(cc, file_name) result(err) &
-                bind(c, name='multio_new_configurationcontext_from_filename')
+        function c_multio_new_configuration_from_filename(cc, file_name) result(err) &
+                bind(c, name='multio_new_configuration_from_filename')
                 use, intrinsic :: iso_c_binding
                 implicit none
                 type(c_ptr), intent(in), value :: file_name
@@ -183,8 +185,8 @@ module multio_api
                 integer(c_int) :: err
         end function
 
-        function c_multio_delete_configurationcontext(cc) result(err) &
-                bind(c, name='multio_delete_configurationcontext')
+        function c_multio_delete_configuration(cc) result(err) &
+                bind(c, name='multio_delete_configuration')
                 use, intrinsic :: iso_c_binding
                 implicit none
                 type(c_ptr), intent(in), value :: cc
@@ -281,8 +283,17 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_write_step_complete(handle, metadata) result(err) &
-                bind(c, name='multio_write_step_complete')
+        function c_multio_flush(handle, metadata) result(err) &
+                bind(c, name='multio_flush')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: handle
+            type(c_ptr), intent(in), value :: metadata
+            integer(c_int) :: err
+        end function
+        
+        function c_multio_notify(handle, metadata) result(err) &
+                bind(c, name='multio_notify')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: handle
@@ -509,37 +520,37 @@ contains
     end function
 
     function multio_start_server(cc) result(err)
-        class(multio_configurationcontext), intent(in) :: cc
+        class(multio_configuration), intent(in) :: cc
         integer :: err
         err = c_multio_start_server(cc%impl)
     end function
 
     ! Methods for configuration context objects
 
-    function multio_new_configurationcontext(cc) result(err)
-            class(multio_configurationcontext), intent(out) :: cc
+    function multio_new_configuration(cc) result(err)
+            class(multio_configuration), intent(out) :: cc
             integer :: err
-            err = c_multio_new_configurationcontext(cc%impl)
+            err = c_multio_new_configuration(cc%impl)
     end function
 
-    function multio_new_configurationcontext_from_filename(cc, file_name) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+    function multio_new_configuration_from_filename(cc, file_name) result(err)
+            class(multio_configuration), intent(inout) :: cc
             integer :: err
             character(*), intent(in) :: file_name
             character(:), allocatable, target :: nullified_path
             nullified_path = trim(file_name) // c_null_char
-            err = c_multio_new_configurationcontext_from_filename(cc%impl, c_loc(nullified_path))
+            err = c_multio_new_configuration_from_filename(cc%impl, c_loc(nullified_path))
     end function
 
-    function multio_delete_configurationcontext(cc) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+    function multio_delete_configuration(cc) result(err)
+            class(multio_configuration), intent(inout) :: cc
             integer :: err
-            err = c_multio_delete_configurationcontext(cc%impl)
+            err = c_multio_delete_configuration(cc%impl)
             cc%impl = c_null_ptr
     end function
 
     function multio_conf_set_path(cc, path) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+            class(multio_configuration), intent(inout) :: cc
             integer :: err
             character(*), intent(in) :: path
             character(:), allocatable, target :: nullified_path
@@ -548,14 +559,14 @@ contains
     end function
 
     function multio_conf_mpi_allow_world_default_comm(cc, allow) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+            class(multio_configuration), intent(inout) :: cc
             logical(c_bool), intent(in), value :: allow
             integer :: err
             err = c_multio_conf_mpi_allow_world_default_comm(cc%impl, allow)
     end function
 
     function multio_conf_mpi_client_id(cc, client_id) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+            class(multio_configuration), intent(inout) :: cc
             integer :: err
             character(*), intent(in) :: client_id
             character(:), allocatable, target :: nullified_client_id
@@ -564,21 +575,21 @@ contains
     end function
 
     function multio_conf_mpi_parent_comm(cc, parent_comm) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+            class(multio_configuration), intent(inout) :: cc
             integer(c_int), intent(in), value :: parent_comm
             integer :: err
             err = c_multio_conf_mpi_parent_comm(cc%impl, parent_comm)
     end function
 
     function multio_conf_mpi_return_client_comm(cc, return_comm) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+            class(multio_configuration), intent(inout) :: cc
             integer(c_int), intent(out) :: return_comm ! can be c_null_ptr
             integer :: err
             err = c_multio_conf_mpi_return_client_comm(cc%impl, return_comm)
     end function
 
     function multio_conf_mpi_return_server_comm(cc, return_comm) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+            class(multio_configuration), intent(inout) :: cc
             integer(c_int), intent(out) :: return_comm ! can be c_null_ptr
             integer :: err
             err = c_multio_conf_mpi_return_server_comm(cc%impl, return_comm)
@@ -588,7 +599,7 @@ contains
 
     function multio_new_handle(handle, cc) result(err)
         class(multio_handle), intent(inout) :: handle
-        class(multio_configurationcontext), intent(in) :: cc
+        class(multio_configuration), intent(in) :: cc
         integer :: err
         err = c_multio_new_handle(handle%impl, cc%impl)
     end function
@@ -612,11 +623,18 @@ contains
         err = c_multio_close_connections(handle%impl)
     end function
 
-    function multio_write_step_complete(handle, metadata) result(err)
+    function multio_flush(handle, metadata) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
         integer :: err
-        err = c_multio_write_step_complete(handle%impl, metadata%impl)
+        err = c_multio_flush(handle%impl, metadata%impl)
+    end function
+    
+    function multio_notify(handle, metadata) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+        err = c_multio_notify(handle%impl, metadata%impl)
     end function
 
     function multio_write_domain(handle, metadata, data) result(err)

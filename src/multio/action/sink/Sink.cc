@@ -40,11 +40,11 @@ void Sink::executeImpl(Message msg) {
             write(msg);
             return;
 
-        case Message::Tag::StepComplete:
+        case Message::Tag::Flush:
             flush();
             return;
 
-        case Message::Tag::StepNotification:
+        case Message::Tag::Notification:
             trigger(msg);
             return;
 

@@ -57,30 +57,31 @@ contains
 
     function test_error_handling() result(success)
         logical :: success
-        type(multio_configurationcontext) :: cc
+        type(multio_configuration) :: cc
         integer :: j, err
         success = .true.
         
         do j = 1, 2
-            err = cc%new_from_filename('invalid-path')
+            err = cc%new('invalid-path')
             if (err == MULTIO_SUCCESS) then
-                write(error_unit, *) 'multio_configurationcontext%new_from_filename succeeded unexpectedly with "invalid-path"'
+                write(error_unit, *) 'multio_configuration%new (new_from_filename) succeeded unexpectedly with "invalid-path"'
                 success = .false.
             end if
             
-            if (multio_error_string(err) /= "Cannot open invalid-path  (No such file or directory)") then
+            if (TRIM(multio_error_string(err)) /= "Caught eckit exception on C-C++ API boundary: &
+            &Cannot open invalid-path  (No such file or directory)") then
                 write(error_unit, *) 'unexpected error message: ', multio_error_string(err)
                 success = .false.
             endif
             
             ! err = cc%delete()
             ! if (err /= MULTIO_SUCCESS) then
-            !     write(error_unit, *) 'Could not delete configuration context'
+            !     write(error_unit, *) 'Could not delete configuration'
             !     success = .false.
             ! end if
             
             ! if (.not. c_associated(cc%impl)) then
-            !     write(error_unit, *) 'configurationcontext ptr has not been reset'
+            !     write(error_unit, *) 'configuration ptr has not been reset'
             !     success = .false.
             ! end if
         end do
@@ -94,7 +95,7 @@ contains
         integer(8) :: original_context = 123456
         integer(8) :: context 
         integer :: err
-        type(multio_configurationcontext) :: cc
+        type(multio_configuration) :: cc
         type(multio_handle) :: mio
         character(:), allocatable :: name
 
@@ -108,9 +109,9 @@ contains
         end if
 
         ! Trigger an error
-        err = cc%new_from_filename("invalid-path")
+        err = cc%new("invalid-path")
         if (err == MULTIO_SUCCESS) then
-            write(error_unit, *) 'multio_configurationcontext%new_from_filename succeeded unexpectedly with "invalid-path"'
+            write(error_unit, *) 'multio_configuration%new (new_from_filename) succeeded unexpectedly with "invalid-path"'
             success = .false.
         end if
 
@@ -137,13 +138,13 @@ contains
         
         err = cc%new()
         if (err /= MULTIO_SUCCESS) then
-            write(error_unit, *) 'multio_configurationcontext%new failed unexpectedly: ',multio_error_string(err)
+            write(error_unit, *) 'multio_configuration%new failed unexpectedly: ',multio_error_string(err)
             success = .false.
         end if
         
         err = cc%mpi_allow_world_default_comm( .FALSE._1 )
         if (err /= MULTIO_SUCCESS) then
-            write(error_unit, *) 'multio_configurationcontext%allowWorldAsDefault failed unexpectedly: ',multio_error_string(err)
+            write(error_unit, *) 'multio_configuration%allowWorldAsDefault failed unexpectedly: ',multio_error_string(err)
             success = .false.
         end if
 

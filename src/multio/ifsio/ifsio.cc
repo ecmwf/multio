@@ -210,7 +210,7 @@ fortint imultio_flush_() {
 
     multio::message::Metadata metadata;
     multio::message::Message message{
-        multio::message::Message::Header{Message::Tag::StepComplete, Peer{},
+        multio::message::Message::Header{Message::Tag::Flush, Peer{},
                                          Peer{}, std::move(metadata)},
         eckit::Buffer{0}};
     MIO::instance().dispatch(message);
@@ -234,7 +234,7 @@ fortint imultio_notify_step_(const fortint* step) {
     metadata.set("trigger", "step");
     metadata.set("name", eckit::Translator<fortint, std::string>()(*step));
     multio::message::Message message{
-        multio::message::Message::Header{Message::Tag::StepNotification, Peer{},
+        multio::message::Message::Header{Message::Tag::Notification, Peer{},
                                          Peer{}, std::move(metadata)},
         eckit::Buffer{0}};
     MIO::instance().dispatch(message);

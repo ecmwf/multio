@@ -126,11 +126,13 @@ message::Metadata applyOverwrites(const eckit::LocalConfiguration& overwrites, m
 }
 }  // namespace
 
-message::Message Encode::encodeField(const message::Message& msg, const std::string& gridUID) const {
+message::Message Encode::encodeField(const message::Message& msg, const std::optional<std::string>& gridUID) const {
     try {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
         auto md = this->overwrite_ ? applyOverwrites(*this->overwrite_, msg.metadata()) : msg.metadata();
-        md.set("uuidOfHGrid", gridUID);
+        if (gridUID) {
+            md.set("uuidOfHGrid", gridUID.value());
+        }
         return encoder_->encodeField(msg.modifyMetadata(std::move(md)));
     }
     catch (...) {

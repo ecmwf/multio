@@ -48,7 +48,7 @@ public:
     explicit GridDownloader(const util::ConfigurationContext& confCtx);
 
     std::optional<GridCoordinates> getGridCoords(const DomainType& gridId, int startDate, int startTime);
-    GridUIDType getGridUID(const DomainType& gridId) const { return gridUIDCache_.at(gridId); }
+    std::optional<GridUIDType> getGridUID(const DomainType& gridId) const { return (gridUIDCache_.count(gridId) != 0) ? gridUIDCache_.at(gridId) : std::optional<GridUIDType>{}; }
 
 private:
     using GridCoordinateCache = std::unordered_map<DomainType, GridCoordinates>;

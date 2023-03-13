@@ -31,17 +31,6 @@ const std::unordered_map<std::string, int> latParamIds{
 const std::unordered_map<std::string, int> lonParamIds{
     {"T", 250004}, {"U", 250006}, {"V", 250008}, {"W", 250010}, {"F", 250012}};
 
-void checkConfigAndThrowOnError(const multio::util::ConfigurationContext& confCtx) {
-    if (not confCtx.config().has("grid-type")) {
-        throw eckit::SeriousBug("Grid downloader configuration is missing the grid type.", Here());
-    }
-
-    const auto gridType = confCtx.config().getString("grid-type");
-    if (gridType.find("ORCA") == std::string::npos) {
-        throw eckit::SeriousBug("Grid downloader only supports ORCA grids.", Here());
-    }
-}
-
 std::unique_ptr<multio::action::GribEncoder> createEncoder(const multio::util::ConfigurationContext& confCtx) {
     if (not confCtx.config().has("grid-downloader-template")) {
         eckit::Log::warning() << "Multio GridDownloader: configuration is missing the coordinates encoder template, running without encoding!" << std::endl;
@@ -69,13 +58,16 @@ namespace action {
 
 GridDownloader::GridDownloader(const util::ConfigurationContext& confCtx) :
     encoder_(createEncoder(confCtx)), templateMetadata_(), gridCoordinatesCache_(), gridUIDCache_() {
-    checkConfigAndThrowOnError(confCtx);
-
     initTemplateMetadata();
 
-    eckit::Log::info() << "Grid downloader initialized, starting grid download!" << std::endl;
+    if (confCtx.config().has("grid-type")) {
+        const auto gridType = confCtx.config().getString("grid-type");
+        if (gridType.find("ORCA") != std::string::npos) { 
+            eckit::Log::info() << "Grid downloader initialized, starting ORCA grid download!" << std::endl;
 
-    downloadOrcaGridCoordinates(confCtx);
+            downloadOrcaGridCoordinates(confCtx);
+        }
+    }
 }
 
 std::optional<GridCoordinates> GridDownloader::getGridCoords(const GridDownloader::DomainType& gridId, int startDate,

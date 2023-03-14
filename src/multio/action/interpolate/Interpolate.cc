@@ -29,32 +29,110 @@
 #include "mir/param/SimpleParametrisation.h"
 #include "mir/repres/gauss/reduced/Reduced.h"
 
+#include "eckit/mpi/Comm.h"
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 #include "multio/util/PrecisionTag.h"
-#include "eckit/mpi/Comm.h"
+
 
 namespace multio::action::interpolate {
+
+namespace {
+
+// Quick and dirty fix to avoid encoding problems with spherical harmonics
+const std::vector<std::string> metadata_black_list{"sphericalHarmonics",
+                                                   "complexPacking",
+                                                   "pentagonalResolutionParameterJ",
+                                                   "pentagonalResolutionParameterK",
+                                                   "pentagonalResolutionParameterM",
+                                                   "subSetJ",
+                                                   "subSetK",
+                                                   "subSetM"};
+
+const std::vector<double> full_area{90.0, 0.0, -90.0, 360.0};
+
+template <typename DestType>
+void forwardMetadata(const eckit::LocalConfiguration& cfg, DestType& destination, const std::string& key,
+                     const eckit::Value& value) {
+    if (value.isList()) {
+        if (value.head().isDouble()) {
+            destination.set(key, cfg.getDoubleVector(key));
+        }
+        else if (value.head().isNumber()) {
+            destination.set(key, cfg.getLongVector(key));
+        }
+        else if (value.isString()) {
+            destination.set(key, cfg.getStringVector(key));
+        }
+        else {
+            NOTIMP;
+        }
+        return;
+    }
+    if (value.isBool()) {
+        destination.set(key, cfg.getBool(key));
+    }
+    else if (value.isDouble()) {
+        destination.set(key, cfg.getDouble(key));
+    }
+    else if (value.isNumber()) {
+        destination.set(key, cfg.getInt(key));
+    }
+    else if (value.isString()) {
+        destination.set(key, cfg.getString(key).c_str());
+    }
+    else {
+        NOTIMP;
+    }
+};
+
+template <typename DestType>
+void regularLatLongMetadata(DestType& param, std::vector<double> grid, std::vector<double> area) {
+
+    auto N = [](double delta, double range) {
+        const auto f = eckit::Fraction(range) / eckit::Fraction(delta);
+        return static_cast<long>(f.integralPart());
+    };
+
+    const double west_east_increment = grid[0];
+    const double south_north_increment = grid[1];
+    const double north = area[0];
+    const double west = area[1];
+    const double south = area[2];
+    const double east = area[3];
+
+    param.set("gridded", true);
+    param.set("gridType", "regular_ll");
+
+    long Ni = N(west_east_increment, std::fabs(east - west));
+    long Nj = N(south_north_increment, std::fabs(south - north)) + 1L /* "endpoint" */;
+    param.set("west_east_increment", west_east_increment);
+    param.set("south_north_increment", south_north_increment);
+    param.set("Ni", Ni);
+    param.set("Nj", Nj);
+
+    param.set("north", north).set("west", west).set("south", south).set("east", east);
+
+    return;
+};
+
+}  // namespace
+
+void fill_out_metadata(const message::Metadata& in_md, message::Metadata& out_md) {
+    for (auto& key : in_md.keys()) {
+        if (std::find(metadata_black_list.cbegin(), metadata_black_list.cend(), key) == metadata_black_list.cend()) {
+            forwardMetadata<message::Metadata>(in_md, out_md, key, in_md.getSubConfiguration(key).get());
+        }
+    }
+    return;
+};
 
 
 void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& param) {
     ASSERT(cfg.has("input"));
 
     auto regular_ll = [&param](double west_east_increment, double south_north_increment) {
-        auto N = [](double delta, double range) {
-            const auto f = eckit::Fraction(range) / eckit::Fraction(delta);
-            return static_cast<long>(f.integralPart());
-        };
-
-        param.set("gridded", true);
-        param.set("gridType", "regular_ll");
-
-        param.set("west_east_increment", west_east_increment);
-        param.set("south_north_increment", south_north_increment);
-        param.set("Ni", N(west_east_increment, 360.));
-        param.set("Nj", N(south_north_increment, 180.) + 1L /* "endpoint" */);
-
-        param.set("north", 90.).set("west", 0.).set("south", -90.).set("east", 360.);
+        regularLatLongMetadata(param, std::vector<double>{west_east_increment, south_north_increment}, full_area);
     };
 
     if (cfg.getSubConfiguration("input").get().isString()) {
@@ -105,7 +183,8 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
 }
 
 
-void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& destination) {
+void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& destination,
+              message::Metadata& md) {
 
     static const struct PostProcKeys : std::vector<std::string> {
         PostProcKeys() {
@@ -121,36 +200,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
     ASSERT(not postproc.contains("options"));
 
     auto set = [&destination](const eckit::LocalConfiguration& cfg, const std::string& key, const eckit::Value& value) {
-        if (value.isList()) {
-            if (value.head().isDouble()) {
-                destination.set(key, cfg.getDoubleVector(key));
-            }
-            else if (value.head().isNumber()) {
-                destination.set(key, cfg.getLongVector(key));
-            }
-            else if (value.isString()) {
-                destination.set(key, cfg.getStringVector(key));
-            }
-            else {
-                NOTIMP;
-            }
-            return;
-        }
-        if (value.isBool()) {
-            destination.set(key, cfg.getBool(key));
-        }
-        else if (value.isDouble()) {
-            destination.set(key, cfg.getDouble(key));
-        }
-        else if (value.isNumber()) {
-            destination.set(key, cfg.getInt(key));
-        }
-        else if (value.isString()) {
-            destination.set(key, cfg.getString(key).c_str());
-        }
-        else {
-            NOTIMP;
-        }
+        forwardMetadata<mir::param::SimpleParametrisation>(cfg, destination, key, value);
     };
 
     for (const auto& key : postproc) {
@@ -166,6 +216,34 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             set(options, key, options.getSubConfiguration(key).get());
         }
     }
+
+    if (cfg.has("grid")) {
+        std::vector<double> grid(2, 0.0);
+        if (cfg.getSubConfiguration("grid").get().isString()) {
+#define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
+            static const std::regex ll(fp "/" fp);
+#undef fp
+            std::smatch match;
+            const auto input = cfg.getString("grid");
+            if (std::regex_match(input, match, ll)) {
+                grid[0] = std::stod(match[1].str());
+                grid[1] = std::stod(match[4].str());
+            }
+        }
+        else if (cfg.getSubConfiguration("grid").get().isList()
+                 && cfg.getSubConfiguration("grid").get().head().isDouble()) {
+            grid = cfg.getDoubleVector("grid");
+        }
+        if (cfg.has("area")) {
+            const auto& area = cfg.getDoubleVector("area");
+            regularLatLongMetadata<message::Metadata>(md, grid, area);
+        }
+        else {
+            regularLatLongMetadata<message::Metadata>(md, grid, full_area);
+        }
+        // Allow the encoder to work on regridded grids
+        md.set("gridType", "regular_ll");
+    }
 }
 
 template <>
@@ -179,13 +257,17 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     const double* data = reinterpret_cast<const double*>(msg.payload().data());
     const size_t size = msg.payload().size() / sizeof(double);
 
+    message::Metadata md;
+    fill_out_metadata(msg.metadata(), md);
+    md.set("precision", "double");
+
     mir::param::SimpleParametrisation inputPar;
     fill_input(config, inputPar);
 
     mir::input::RawInput input(data, size, inputPar);
 
     mir::api::MIRJob job;
-    fill_job(config, job);
+    fill_job(config, job, md);
 
     if (msg.metadata().has("missingValue")) {
         job.set("missing_value", msg.metadata().getDouble("missingValue"));
@@ -199,15 +281,14 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     mir::param::SimpleParametrisation outMetadata;
     mir::output::ResizableOutput output(outData, outMetadata);
 
+    // TODO: Probably this operation needs to be when to plans are called, in this way
+    //       it is walid for all the IO actions as it should be
     auto& originalComm = eckit::mpi::comm();
-    eckit::mpi::setCommDefault( "self" );
+    eckit::mpi::setCommDefault("self");
     job.execute(input, output);
-    eckit::mpi::setCommDefault( originalComm.name().c_str() );
-
-    message::Metadata md = msg.metadata();
+    eckit::mpi::setCommDefault(originalComm.name().c_str());
     md.set("globalSize", outData.size());
-    md.set("precision", "double");
-    md.set("gridType", "regular_ll");
+
 
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outData.size() * sizeof(double));
 
@@ -226,19 +307,16 @@ message::Message Interpolate::InterpolateMessage<float>(message::Message&& msg) 
 }
 
 void Interpolate::executeImpl(message::Message msg) {
-    switch (msg.tag()) {
-        case (message::Message::Tag::Field): {
-            executeNext(util::dispatchPrecisionTag(msg.precision(), [&](auto pt) -> message::Message {
-                using Precision = typename decltype(pt)::type;
-                return InterpolateMessage<Precision>(std::move(msg));
-            }));
-            break;
-        }
-        default: {
-            executeNext(msg);
-            break;
-        }
-    };
+
+    if (msg.tag() != message::Message::Tag::Field) {
+        executeNext(msg);
+        return;
+    }
+
+    executeNext(util::dispatchPrecisionTag(msg.precision(), [&](auto pt) -> message::Message {
+        using Precision = typename decltype(pt)::type;
+        return InterpolateMessage<Precision>(std::move(msg));
+    }));
 }
 
 

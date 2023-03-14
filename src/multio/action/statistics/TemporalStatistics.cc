@@ -36,7 +36,8 @@ eckit::DateTime currentDateTime(const message::Message& msg) {
 }
 
 eckit::DateTime nextDateTime(const message::Message& msg) {
-    return currentDateTime(msg) + static_cast<eckit::Second>(msg.metadata().getLong("step-frequency")*msg.metadata().getLong("timeStep"));
+    return currentDateTime(msg)
+         + static_cast<eckit::Second>(msg.metadata().getLong("step-frequency") * msg.metadata().getLong("timeStep"));
 }
 
 }  // namespace
@@ -103,11 +104,11 @@ void TemporalStatistics::resetPeriod(const message::Message& msg) {
     current_.reset(currentDateTime(msg));
 }
 
-eckit::DateTime computeMonthStart( const eckit::DateTime& currentTime ){
-  return eckit::DateTime{eckit::Date{currentTime.date().year(),currentTime.date().month(),1}, eckit::Time{0}};
+eckit::DateTime computeMonthStart(const eckit::DateTime& currentTime) {
+    return eckit::DateTime{eckit::Date{currentTime.date().year(), currentTime.date().month(), 1}, eckit::Time{0}};
 };
 
-eckit::DateTime computeMonthEnd( const eckit::DateTime& startPoint, long span ){
+eckit::DateTime computeMonthEnd(const eckit::DateTime& startPoint, long span) {
     auto totalSpan = startPoint.date().month() + span - 1;  // Make it zero-based
     auto endYear = startPoint.date().year() + totalSpan / 12;
     auto endMonth = totalSpan % 12 + 1;
@@ -115,9 +116,9 @@ eckit::DateTime computeMonthEnd( const eckit::DateTime& startPoint, long span ){
 };
 
 void MonthlyStatistics::resetPeriod(const message::Message& msg) {
-    eckit::DateTime startPoint = computeMonthStart( currentDateTime(msg) );
-    eckit::DateTime endPoint   = computeMonthEnd( startPoint, span_ );
-    current_.reset(startPoint,endPoint);
+    eckit::DateTime startPoint = computeMonthStart(currentDateTime(msg));
+    eckit::DateTime endPoint = computeMonthEnd(startPoint, span_);
+    current_.reset(startPoint, endPoint);
 }
 
 
@@ -179,14 +180,14 @@ void DailyStatistics::print(std::ostream& os) const {
 
 namespace {
 DateTimePeriod setMonthlyPeriod(long span, const message::Message& msg) {
-    eckit::DateTime startPoint{computeMonthStart( currentDateTime(msg) )};
-    eckit::DateTime endPoint{computeMonthEnd( startPoint, span )};
+    eckit::DateTime startPoint{computeMonthStart(currentDateTime(msg))};
+    eckit::DateTime endPoint{computeMonthEnd(startPoint, span)};
     return DateTimePeriod{startPoint, endPoint};
 }
 }  // namespace
 
 MonthlyStatistics::MonthlyStatistics(const std::vector<std::string> operations, long span, message::Message msg) :
-    TemporalStatistics{operations, setMonthlyPeriod(span, msg), msg},span_(span) {}
+    TemporalStatistics{operations, setMonthlyPeriod(span, msg), msg}, span_(span) {}
 
 void MonthlyStatistics::print(std::ostream& os) const {
     os << "Monthly Statistics(" << current_ << ")";

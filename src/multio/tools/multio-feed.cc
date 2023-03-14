@@ -206,6 +206,14 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
                 metadata.set("level", metadataDetailed.getString("level"));
             }
 
+            // Inject metadata needed for statistics
+            if (!metadata.has("timeStep")) {
+                metadata.set("timeStep", 3600);
+            }
+            if (!metadata.has("step-frequency")) {
+                metadata.set("step-frequency", 1);
+            }
+
             eckit::Buffer data = msg.decode();
 
             metadata.set("globalSize", data.size() / sizeof(double));

@@ -75,9 +75,10 @@ struct ValueSetter {
 };
 
 eckit::Optional<ValueSetter> valueSetter(GribEncoder& g, const std::string& key) {
-    if(g.hasKey(key.c_str())) {
+    if (g.hasKey(key.c_str())) {
         return eckit::Optional<ValueSetter>(ValueSetter{g, key});
-    } else {
+    }
+    else {
         return eckit::Optional<ValueSetter>();
     }
 }
@@ -145,19 +146,43 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     }
 
     // Additional parameters passed through for spherical harmonics
-    withFirstOf(valueSetter(g, "complexPacking"), LookUpLong(md, "complexPacking"));
-    if (md.has("gridType") && md.getString("gridType") == "sh") {
-        withFirstOf(valueSetter(g, "pentagonalResolutionParameterJ"), LookUpLong(md, "pentagonalResolutionParameterJ"),
-                    LookUpLong(md, "J"));
-        withFirstOf(valueSetter(g, "pentagonalResolutionParameterK"), LookUpLong(md, "pentagonalResolutionParameterK"),
-                    LookUpLong(md, "K"));
-        withFirstOf(valueSetter(g, "pentagonalResolutionParameterM"), LookUpLong(md, "pentagonalResolutionParameterM"),
-                    LookUpLong(md, "M"));
-        // withFirstOf(valueSetter(g, "unpackedSubsetPrecision"), LookUpLong(md,
-        // "unpackedSubsetPrecision"));
-        withFirstOf(valueSetter(g, "subSetJ"), LookUpLong(md, "subSetJ"), LookUpLong(md, "JS"));
-        withFirstOf(valueSetter(g, "subSetK"), LookUpLong(md, "subSetK"), LookUpLong(md, "KS"));
-        withFirstOf(valueSetter(g, "subSetM"), LookUpLong(md, "subSetM"), LookUpLong(md, "MS"));
+    if (md.has("gridType")) {
+        auto hasRegularLLInterpData = [&]() {
+            return md.has("Ni") && md.has("Nj") && md.has("north") && md.has("south") && md.has("west")
+                && md.has("east") && md.has("west_east_increment") && md.has("south_north_increment");
+        };
+        if (md.getString("gridType") == "sh") {
+            withFirstOf(valueSetter(g, "complexPacking"), LookUpLong(md, "complexPacking"));
+            withFirstOf(valueSetter(g, "pentagonalResolutionParameterJ"),
+                        LookUpLong(md, "pentagonalResolutionParameterJ"), LookUpLong(md, "J"));
+            withFirstOf(valueSetter(g, "pentagonalResolutionParameterK"),
+                        LookUpLong(md, "pentagonalResolutionParameterK"), LookUpLong(md, "K"));
+            withFirstOf(valueSetter(g, "pentagonalResolutionParameterM"),
+                        LookUpLong(md, "pentagonalResolutionParameterM"), LookUpLong(md, "M"));
+            // withFirstOf(ValueSetter{g, "unpackedSubsetPrecision"}, LookUpLong(md,
+            // "unpackedSubsetPrecision"));
+            withFirstOf(valueSetter(g, "subSetJ"), LookUpLong(md, "subSetJ"), LookUpLong(md, "JS"));
+            withFirstOf(valueSetter(g, "subSetK"), LookUpLong(md, "subSetK"), LookUpLong(md, "KS"));
+            withFirstOf(valueSetter(g, "subSetM"), LookUpLong(md, "subSetM"), LookUpLong(md, "MS"));
+        }
+        else if (md.getString("gridType") == "regular_ll" && hasRegularLLInterpData()) {
+            long scale = 0;
+            if (md.getString("gribEdition") == "1") {
+                scale = 1000;
+            }
+            else if (md.getString("gribEdition") == "2") {
+                scale = 1000000;
+            }
+            g.setValue("Ni", md.getLong("Ni"));
+            g.setValue("Nj", md.getLong("Nj"));
+            double east = md.getDouble("east") - md.getDouble("west_east_increment");
+            g.setValue("latitudeOfFirstGridPoint", scale * md.getDouble("north"));
+            g.setValue("longitudeOfFirstGridPoint", scale * md.getDouble("west"));
+            g.setValue("latitudeOfLastGridPoint", scale * md.getDouble("south"));
+            g.setValue("longitudeOfLastGridPoint", scale * east);
+            g.setValue("iDirectionIncrement", scale * md.getDouble("west_east_increment"));
+            g.setValue("jDirectionIncrement", scale * md.getDouble("south_north_increment"));
+        }
     }
     // TODO Remove Part of parameter mapping now
     // withFirstOf(valueSetter(g, "generatingProcessIdentifier"), LookUpLong(md,
@@ -174,7 +199,7 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
             // TODO handle type... however eccodes should support string as well. For
             // some representations the string and integer representation in eccodes
             // differ significantly and my produce wrong results
-            if(g.hasKey(k.c_str())) {
+            if (g.hasKey(k.c_str())) {
                 g.setValue(k, overwrites.getString(k));
             }
         }
@@ -200,34 +225,34 @@ void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
 
 void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
                                  const QueriedMarsKeys& queriedMarsFields) {
-    auto date = (queriedMarsFields.type && (*queriedMarsFields.type == "fc")) 
-        ? firstOf(LookUpLong(md, "startDate"), LookUpLong(md, "currentDate")) 
-        : firstOf(LookUpLong(md, "currentDate"), LookUpLong(md, "startDate"));
+    auto date = (queriedMarsFields.type && (*queriedMarsFields.type == "fc"))
+                  ? firstOf(LookUpLong(md, "startDate"), LookUpLong(md, "currentDate"))
+                  : firstOf(LookUpLong(md, "currentDate"), LookUpLong(md, "startDate"));
     if (date) {
-        withFirstOf(valueSetter(g,"year"), eckit::Optional<long>{*date / 10000});
-        withFirstOf(valueSetter(g,"month"), eckit::Optional<long>{(*date % 10000) / 100});
-        withFirstOf(valueSetter(g,"day"), eckit::Optional<long>{*date % 100});
+        withFirstOf(valueSetter(g, "year"), eckit::Optional<long>{*date / 10000});
+        withFirstOf(valueSetter(g, "month"), eckit::Optional<long>{(*date % 10000) / 100});
+        withFirstOf(valueSetter(g, "day"), eckit::Optional<long>{*date % 100});
     }
-    auto time = (queriedMarsFields.type && (*queriedMarsFields.type == "fc")) 
-        ? firstOf(LookUpLong(md, "startTime"), LookUpLong(md, "currentTime")) 
-        : firstOf(LookUpLong(md, "currentTime"), LookUpLong(md, "startTime"));
+    auto time = (queriedMarsFields.type && (*queriedMarsFields.type == "fc"))
+                  ? firstOf(LookUpLong(md, "startTime"), LookUpLong(md, "currentTime"))
+                  : firstOf(LookUpLong(md, "currentTime"), LookUpLong(md, "startTime"));
     if (time) {
-        withFirstOf(valueSetter(g,"hour"), eckit::Optional<long>{*time / 10000});
-        withFirstOf(valueSetter(g,"minute"), eckit::Optional<long>{(*time % 10000) / 100});
-        withFirstOf(valueSetter(g,"second"), eckit::Optional<long>{*time % 100});
+        withFirstOf(valueSetter(g, "hour"), eckit::Optional<long>{*time / 10000});
+        withFirstOf(valueSetter(g, "minute"), eckit::Optional<long>{(*time % 10000) / 100});
+        withFirstOf(valueSetter(g, "second"), eckit::Optional<long>{*time % 100});
     }
 
     auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
     if (dateOfAnalysis) {
-        withFirstOf(valueSetter(g,"yearOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis / 10000});
-        withFirstOf(valueSetter(g,"monthOfAnalysis"), eckit::Optional<long>{(*dateOfAnalysis % 10000) / 100});
-        withFirstOf(valueSetter(g,"dayOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis % 100});
+        withFirstOf(valueSetter(g, "yearOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis / 10000});
+        withFirstOf(valueSetter(g, "monthOfAnalysis"), eckit::Optional<long>{(*dateOfAnalysis % 10000) / 100});
+        withFirstOf(valueSetter(g, "dayOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis % 100});
     }
 
     auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis"));
     if (timeOfAnalysis) {
-        withFirstOf(valueSetter(g,"hourOfAnalysis"), eckit::Optional<long>{*timeOfAnalysis / 10000});
-        withFirstOf(valueSetter(g,"minuteOfAnalysis"), eckit::Optional<long>{(*timeOfAnalysis % 10000) / 100});
+        withFirstOf(valueSetter(g, "hourOfAnalysis"), eckit::Optional<long>{*timeOfAnalysis / 10000});
+        withFirstOf(valueSetter(g, "minuteOfAnalysis"), eckit::Optional<long>{(*timeOfAnalysis % 10000) / 100});
     }
 
     withFirstOf(valueSetter(g, "number"), LookUpLong(md, "number"));
@@ -246,15 +271,18 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
 
         eckit::Optional<long> curDate;
         if (*operation != "instant" && (curDate = firstOf(LookUpLong(md, "currentDate")))) {
-            withFirstOf(valueSetter(g,"typeOfStatisticalProcessing"), eckit::Optional<long>{type_of_statistical_processing.at(*operation)});
+            withFirstOf(valueSetter(g, "typeOfStatisticalProcessing"),
+                        eckit::Optional<long>{type_of_statistical_processing.at(*operation)});
 
-            withFirstOf(valueSetter(g,"yearOfEndOfOverallTimeInterval"), eckit::Optional<long>{*curDate / 10000});
-            withFirstOf(valueSetter(g,"monthOfEndOfOverallTimeInterval"), eckit::Optional<long>{(*curDate % 10000) / 100});
-            withFirstOf(valueSetter(g,"dayOfEndOfOverallTimeInterval"), eckit::Optional<long>{*curDate % 100});
+            withFirstOf(valueSetter(g, "yearOfEndOfOverallTimeInterval"), eckit::Optional<long>{*curDate / 10000});
+            withFirstOf(valueSetter(g, "monthOfEndOfOverallTimeInterval"),
+                        eckit::Optional<long>{(*curDate % 10000) / 100});
+            withFirstOf(valueSetter(g, "dayOfEndOfOverallTimeInterval"), eckit::Optional<long>{*curDate % 100});
 
-            withFirstOf(valueSetter(g,"lengthOfTimeRange"), LookUpLong(md, "timeSpanInHours"));
-            withFirstOf(valueSetter(g,"indicatorOfUnitForTimeIncrement"), eckit::Optional<long>{13l});  // always seconds
-            withFirstOf(valueSetter(g,"timeIncrement"), LookUpLong(md, "timeStep"));
+            withFirstOf(valueSetter(g, "lengthOfTimeRange"), LookUpLong(md, "timeSpanInHours"));
+            withFirstOf(valueSetter(g, "indicatorOfUnitForTimeIncrement"),
+                        eckit::Optional<long>{13l});  // always seconds
+            withFirstOf(valueSetter(g, "timeIncrement"), LookUpLong(md, "timeStep"));
         }
     }
 }
@@ -337,19 +365,21 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit
 
 // TODO refactor - maybe throw exception instead of letting eccodes panic and
 // disrupt exception system
-template<typename T>
+template <typename T>
 void codesCheckRelaxed(int ret, const std::string& name, const T& value) {
     if (ret == CODES_READ_ONLY) {
         // If value is read only, do not panic...
-        eckit::Log::info() << "Multio GribEncoder: Ignoring readonly field " << name << " (tried to set value " << value << ")" << std::endl;
+        eckit::Log::info() << "Multio GribEncoder: Ignoring readonly field " << name << " (tried to set value " << value
+                           << ")" << std::endl;
         return;
     }
-    // Avoid calling  CODES_CHECK and throw an exception instead. CODES_CHECK often panics with logs properly being flushed
+    // Avoid calling  CODES_CHECK and throw an exception instead. CODES_CHECK often panics with logs properly being
+    // flushed
     if (ret != 0) {
         std::ostringstream oss;
-        oss << "Multio GribEncoder: CODES return value != NULL for operation on field: "
-           << name << " with value " << value << ". EECODES error message: " << codes_get_error_message(ret) << std::endl;
-       throw eckit::SeriousBug(oss.str(), Here());
+        oss << "Multio GribEncoder: CODES return value != NULL for operation on field: " << name << " with value "
+            << value << ". EECODES error message: " << codes_get_error_message(ret) << std::endl;
+        throw eckit::SeriousBug(oss.str(), Here());
     }
     CODES_CHECK(ret, NULL);
 }
@@ -382,8 +412,7 @@ void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
 
 void GribEncoder::setValue(const std::string& key, bool value) {
     long longValue = value;
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << "(" << longValue << ") for key " << key
-                             << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << "(" << longValue << ") for key " << key << std::endl;
     codesCheckRelaxed(codes_set_long(raw(), key.c_str(), longValue), key, value);
 }
 

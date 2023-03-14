@@ -55,14 +55,14 @@ void Statistics::executeImpl(message::Message msg) {
     }
 
     auto md = msg.metadata();
-    if ( !md.has("startDate") ){
-        md.set( "startDate", md.getLong("date") );
+    if (!md.has("startDate")) {
+        md.set("startDate", md.getLong("date"));
     }
-    if ( !md.has("startTime") ) {
-        md.set( "startTime", md.getLong("time") );
+    if (!md.has("startTime")) {
+        md.set("startTime", md.getLong("time"));
     }
-    if ( !md.has("step") || !md.has("timeStep") || !md.has("step-frequency") ){
-        throw eckit::SeriousBug( "MULTIO ACTION STATISTICS :: missing metadata", Here() );
+    if (!md.has("step") || !md.has("timeStep") || !md.has("step-frequency")) {
+        throw eckit::SeriousBug("MULTIO ACTION STATISTICS :: missing metadata", Here());
     }
 
     std::ostringstream os;
@@ -72,7 +72,7 @@ void Statistics::executeImpl(message::Message msg) {
         LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << md << std::endl;
 
         // Create a unique key for the fieldStats_ map
-        os << msg.metadata().getString("param","xxx.yyy") << msg.metadata().getLong("level",0L) << msg.source();
+        os << msg.metadata().getString("param", "xxx.yyy") << msg.metadata().getLong("level", 0L) << msg.source();
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {
             fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
@@ -94,8 +94,8 @@ void Statistics::executeImpl(message::Message msg) {
             ASSERT(stepInSeconds % 3600 == 0);
             auto stepInHours = stepInSeconds / 3600;
             md.set("stepInHours", stepInHours);
-
-            auto prevStep = stepInHours - timeSpanInHours + 1;
+            // Fix negative ranges (timespan can be bigger than step )
+            auto prevStep = std::max(stepInHours - timeSpanInHours, 0L);
             auto stepRangeInHours = std::to_string(prevStep) + "-" + std::to_string(stepInHours);
             md.set("stepRangeInHours", stepRangeInHours);
         }

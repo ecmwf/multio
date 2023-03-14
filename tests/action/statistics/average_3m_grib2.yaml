@@ -1,0 +1,18 @@
+plans:
+  - name: test_average_3m_grib2
+    actions:
+
+      - type: statistics
+        output-frequency: 3m
+        operations: [ average ]
+
+      - type: encode
+        format: grib
+        template: reduced_gg_pl_80_avg_grib2.tmpl
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: Result_average_3m_grib2.grib

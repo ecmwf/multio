@@ -74,6 +74,7 @@ public:
 
 class MonthlyStatistics : public TemporalStatistics {
     long span_;
+
 public:
     MonthlyStatistics(const std::vector<std::string> operations, long span, message::Message msg);
     void resetPeriod(const message::Message& msg) override;

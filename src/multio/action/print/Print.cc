@@ -42,11 +42,11 @@ Print::Print(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {
 void Print::executeImpl(message::Message msg) {
     ASSERT(os_);
     bool doOutput = onlyFields_ ? msg.tag() == message::Message::Tag::Field ? true : false : true;
-    if ( doOutput ){
-        if(!prefix_.empty()) {
+    if (doOutput) {
+        if (!prefix_.empty()) {
             (*os_) << prefix_ << ": ";
         }
-        (*os_) << msg << std::endl; 
+        (*os_) << msg << std::endl;
     }
     executeNext(std::move(msg));
 }

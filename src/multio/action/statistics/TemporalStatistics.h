@@ -16,10 +16,10 @@ class TemporalStatistics {
 public:
     static std::unique_ptr<TemporalStatistics> build(const std::string& unit, long span,
                                                      const std::vector<std::string>& operations,
-                                                     const message::Message& msg);
+                                                     const message::Message& msg, bool useCurrentTime);
 
     TemporalStatistics(const std::vector<std::string>& operations, const DateTimePeriod& period,
-                       const message::Message& msg);
+                       const message::Message& msg, bool useCurrentTime);
 
     virtual ~TemporalStatistics() = default;
 
@@ -32,6 +32,7 @@ public:
 protected:
     std::string name_;
     DateTimePeriod current_;
+    bool useCurrentTime_;
 
     void updateStatistics(const message::Message& msg);
 
@@ -56,7 +57,7 @@ private:
 
 class HourlyStatistics : public TemporalStatistics {
 public:
-    HourlyStatistics(const std::vector<std::string> operations, long span, message::Message msg);
+    HourlyStatistics(const std::vector<std::string> operations, long span, message::Message msg, bool useCurrentTime);
 
     void print(std::ostream& os) const override;
 };
@@ -65,7 +66,7 @@ public:
 
 class DailyStatistics : public TemporalStatistics {
 public:
-    DailyStatistics(const std::vector<std::string> operations, long span, message::Message msg);
+    DailyStatistics(const std::vector<std::string> operations, long span, message::Message msg, bool useCurrentTime);
 
     void print(std::ostream& os) const override;
 };
@@ -76,7 +77,7 @@ class MonthlyStatistics : public TemporalStatistics {
     long span_;
 
 public:
-    MonthlyStatistics(const std::vector<std::string> operations, long span, message::Message msg);
+    MonthlyStatistics(const std::vector<std::string> operations, long span, message::Message msg, bool useCurrentTime);
     void resetPeriod(const message::Message& msg) override;
     void print(std::ostream& os) const override;
 };

@@ -3,6 +3,7 @@ plans:
     actions:
 
       - type: statistics
+        use-current-time: true
         output-frequency: 3m
         operations: [ average ]
 

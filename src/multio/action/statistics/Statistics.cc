@@ -45,7 +45,8 @@ Statistics::Statistics(const ConfigurationContext& confCtx) :
     ChainedAction{confCtx},
     timeUnit_{set_unit(confCtx.config().getString("output-frequency"))},
     timeSpan_{set_frequency(confCtx.config().getString("output-frequency"))},
-    operations_{confCtx.config().getStringVector("operations")} {}
+    operations_{confCtx.config().getStringVector("operations")},
+    useCurrentTime_{confCtx.config().getBool("use-current-time", false)} {}
 
 void Statistics::executeImpl(message::Message msg) {
     // Pass through -- no statistics for messages other than fields
@@ -69,13 +70,13 @@ void Statistics::executeImpl(message::Message msg) {
     {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
-        LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << md << std::endl;
+        LOG_DEBUG_LIB(multio::LibMultio) << "*** " << msg.destination() << " -- metadata: " << md << std::endl;
 
         // Create a unique key for the fieldStats_ map
         os << msg.metadata().getString("param", "xxx.yyy") << msg.metadata().getLong("level", 0L) << msg.source();
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {
-            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
+            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg, useCurrentTime_);
         }
 
         if (fieldStats_.at(os.str())->process(msg)) {

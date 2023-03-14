@@ -78,3 +78,19 @@ ecbuild_add_library(
         multio-api
 )
 
+
+ecbuild_add_library(
+
+    TARGET multio-dummy-fapi
+
+    CONDITION HAVE_FORTRAN
+
+    SOURCES
+        multio_dummy_api.f90
+
+    PUBLIC_INCLUDES
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module>
+
+    PUBLIC_LIBS
+)
+

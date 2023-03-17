@@ -24,6 +24,8 @@
 #include "eckit/types/Types.h"
 
 #include "multio/LibMultio.h"
+#include "multio/util/Environment.h"
+
 
 using namespace eckit;
 using namespace eckit::net;
@@ -318,10 +320,10 @@ Trigger::Trigger(const ConfigurationContext& confCtx) {
     }
 
     /// @note this doesn't quite work for reentrant MultIO objects (MultIO as a DataSink itself)
-    const char* conf = ::getenv("MULTIO_CONFIG_TRIGGERS");
+    auto conf = util::getEnv("MULTIO_CONFIG_TRIGGERS");
     if (conf) {
-        std::string confString(conf);
-        ConfigurationContext confCtx2(eckit::LocalConfiguration(eckit::YAMLConfiguration(confString)), confCtx.pathName(), confString);
+        std::string confString(*conf);
+        ConfigurationContext confCtx2(eckit::LocalConfiguration(eckit::YAMLConfiguration(std::string{confString})), confCtx.pathName(), confString);
 
         for (auto&& subCtx: confCtx2.subContexts("triggers")) {
             triggers_.emplace_back(EventTrigger::build(std::move(subCtx)));

@@ -1,6 +1,9 @@
 
-#include "ConfigurationContext.h"
-#include "MetadataMappings.h"
+#include "multio/util/ConfigurationContext.h"
+#include "multio/util/MetadataMappings.h"
+
+#include "multio/util/Environment.h"
+
 
 using namespace multio::util;
 
@@ -133,15 +136,15 @@ const YAMLFile& GlobalConfCtx::getYAMLFile(const eckit::PathName& fname) const {
 std::string GlobalConfCtx::replaceCurly(const std::string& s) const {
     return ::replaceCurly(s, [this](std::string_view replace){
         if (replace == "~") {
-            return eckit::Optional<std::string>{this->pathName_.asString()};
+            return std::optional<std::string>{this->pathName_.asString()};
         }
         std::string lookUpKey{replace};
-        char* env = ::getenv(lookUpKey.c_str());
+        auto env = getEnv(lookUpKey);
         if (env) {
-            return eckit::Optional<std::string>{env};
+            return std::optional<std::string>{*env};
         }
         else {
-            return eckit::Optional<std::string>{};
+            return std::optional<std::string>{};
         }
     });
 }

@@ -137,16 +137,10 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
     };
 
     if (cfg.getSubConfiguration("input").get().isString()) {
-        // const auto input = GlobalConfCtx::replaceCurly(cfg.getString("input"));
         const std::string input = util::replaceCurly(cfg.getString("input"), [](std::string_view replace) {
             std::string lookUpKey{replace};
             char* env = ::getenv(lookUpKey.c_str());
-            if (env) {
-                return eckit::Optional<std::string>{env};
-            }
-            else {
-                return eckit::Optional<std::string>{};
-            }
+            return env ? eckit::Optional<std::string>{env} : eckit::Optional<std::string>{};
         });
 
         static const std::regex sh("(T|TCO|TL)([1-9][0-9]*)");

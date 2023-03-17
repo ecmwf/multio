@@ -42,7 +42,6 @@ LocalConfiguration createActionList(std::vector<LocalConfiguration> actions) {
     return current;
 }
 
-
 LocalConfiguration rootConfig(const LocalConfiguration& config, const std::string& planName) {
     const auto actions
         = config.has("actions") ? config.getSubConfigurations("actions") : std::vector<LocalConfiguration>{};
@@ -64,23 +63,23 @@ const util::YAMLFile* getPlanConfiguration(const ConfigurationContext& confCtx) 
 
 }  // namespace
 
-
 Plan::Plan(const ConfigurationContext& confCtx, const util::YAMLFile* file) :
     FailureAware(file ? confCtx.recast(file->content, confCtx.componentTag()) : confCtx) {
     name_ = (file && file->content.has("name"))
               ? file->content.getString("name")
               : (confCtx.config().has("name") ? confCtx.config().getString("name")
                                               : (file ? file->path.asString() : "anonymous"));
-    auto tmp = util::parseEnabled( (file) ? file->content : confCtx.config(), true );
-    if ( tmp ){ 
+    auto tmp = util::parseEnabled((file) ? file->content : confCtx.config(), true);
+    if (tmp) {
         enabled_ = *tmp;
-    } else 
-    {
-        throw eckit::UserError( "Bool expected", Here() );
+    }
+    else {
+        throw eckit::UserError("Bool expected", Here());
     };
     auto root = rootConfig(file ? file->content : confCtx.config(), name_);
     root_ = ActionFactory::instance().build(root.getString("type"), confCtx.recast(root, util::ComponentTag::Action));
-};
+}
+
 Plan::Plan(const ConfigurationContext& confCtx) : Plan(confCtx, getPlanConfiguration(confCtx)) {}
 
 Plan::~Plan() {
@@ -90,10 +89,9 @@ Plan::~Plan() {
 
 void Plan::process(message::Message msg) {
     util::ScopedTimer timer{timing_};
-
     if (enabled_) {
-        withFailureHandling([&]() { root_->execute(std::move(msg)); },
-                            [=]() {
+        withFailureHandling([this, &msg]() { root_->execute(std::move(msg)); },
+                            [this, &msg]() {
                                 std::ostringstream oss;
                                 oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl;
                                 return oss.str();

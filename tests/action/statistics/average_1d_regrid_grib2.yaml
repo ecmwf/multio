@@ -3,9 +3,12 @@ plans:
     actions:
 
       - type: statistics
-        use-current-time: true
         output-frequency: 1d
         operations: [ average ]
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
 
       - type: interpolate
         input: O80

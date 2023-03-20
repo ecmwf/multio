@@ -46,7 +46,7 @@ namespace {
         size_t n{0};
         double maxLongitude = 0;
         for (const auto p : grid.xy()) {
-            values[n] = p.x();
+            values[n] = 0;
             if (maxLongitude < p.x()) {
                 maxLongitude = p.x();
             }

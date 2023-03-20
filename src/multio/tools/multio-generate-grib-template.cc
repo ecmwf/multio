@@ -33,13 +33,18 @@ namespace {
         eckit::mpi::setCommDefault(originalComm.name().c_str());
 
         auto structuredGrid = atlas::StructuredGrid(grid);
+
+        auto gaussianGrid = atlas::GaussianGrid(structuredGrid);
+        int err = codes_set_long(handle, "N", gaussianGrid.N());
+        handleCodesError("eccodes error while setting the N value: ", err, Here());
+
         auto tmp = structuredGrid.nx();
         std::vector<long> pl(tmp.size(), 0);
         for (int i = 0; i < tmp.size(); ++i) {
             pl[i] = long(tmp[i]);
         }
 
-        int err = codes_set_long_array(handle, "pl", pl.data(), pl.size());
+        err = codes_set_long_array(handle, "pl", pl.data(), pl.size());
         handleCodesError("eccodes error while setting the PL array: ", err, Here());
 
         std::vector<double> values(grid.size());
@@ -52,6 +57,17 @@ namespace {
             }
             ++n;
         }
+
+        auto it = grid.lonlat().begin();
+        err = codes_set_double(handle, "latitudeOfFirstGridPointInDegrees", (*it)[1]);
+        handleCodesError("eccodes error while setting the latitudeOfFirstGridPointInDegrees: ", err, Here());
+        err = codes_set_double(handle, "longitudeOfFirstGridPointInDegrees", (*it)[0]);
+        handleCodesError("eccodes error while setting the longitudeOfFirstGridPointInDegrees: ", err, Here());
+        it += grid.size() - 1;
+        err = codes_set_double(handle, "latitudeOfLastGridPointInDegrees", (*it)[1]);
+        handleCodesError("eccodes error while setting the latitudeOfLastGridPointInDegrees: ", err, Here());
+        err = codes_set_double(handle, "longitudeOfLastGridPointInDegrees", (*it)[0]);
+        handleCodesError("eccodes error while setting the longitudeOfLastGridPointInDegrees: ", err, Here());
 
         err = codes_set_double_array(handle, "values", values.data(), values.size());
         handleCodesError("eccodes error while setting the values array: ", err, Here());

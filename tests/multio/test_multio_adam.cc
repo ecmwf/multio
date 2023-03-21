@@ -204,6 +204,27 @@ CASE("Test creating metadata"){
 
 }
 
+CASE("Read from grib file"){
+    const char* path = "/Users/maaw/multio/tests/multio/test.grib";
+    auto field = eckit::PathName{path};
+
+    std::cout << field << std::endl;
+
+    eckit::FileHandle infile{field.fullName()};
+    size_t bytes = infile.openForRead();
+
+    eckit::Buffer buffer(bytes);
+    infile.read(buffer.data(), bytes);
+
+    infile.close();
+   
+    auto sz = static_cast<int>(buffer.size()) / sizeof(double);
+    std::cout << "Size of Buffer: " << sz << std::endl;
+    
+    EXPECT(1==1);
+
+}
+
 
 }
 }

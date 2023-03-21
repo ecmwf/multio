@@ -98,7 +98,6 @@ namespace multio {
 namespace test{
 
 CASE("Initial Test for version") {
-    //std::cout << "Running Test" << std::endl;
     const char *version = nullptr;
     int rc;
     rc = multio_version(&version);
@@ -222,6 +221,65 @@ CASE("Read from grib file"){
     std::cout << "Size of Buffer: " << sz << std::endl;
     
     EXPECT(1==1);
+
+}
+
+CASE("Write to field"){
+
+    multio_handle_t* multio_handle = nullptr;
+    multio_configurationcontext_t* multio_cc = nullptr;
+    int rc;
+
+    rc = multio_new_configurationcontext(&multio_cc);
+    const char *conf_path = "/Users/maaw/multio/tests/multio/";
+    std::cout << conf_path << std::endl;
+
+    rc = multio_conf_set_path(multio_cc, conf_path);
+    if(rc==MULTIO_SUCCESS){
+        std::cout << "Config Path set" << std::endl;
+    }
+    else{
+        std::cout << "Config Path NOT set" << std::endl;
+    }
+    multio_new_handle(&multio_handle, multio_cc);
+    EXPECT(rc==MULTIO_SUCCESS);
+
+    const char* path = "/Users/maaw/multio/tests/multio/test.grib";
+    auto field = eckit::PathName{path};
+
+    std::cout << field << std::endl;
+
+    eckit::FileHandle infile{field.fullName()};
+    size_t bytes = infile.openForRead();
+
+    eckit::Buffer buffer(bytes);
+    infile.read(buffer.data(), bytes);
+
+    infile.close();
+   
+    auto sz = static_cast<int>(buffer.size()) / sizeof(double);
+    std::cout << "Size of Buffer: " << sz << std::endl;
+
+    multio_metadata_t* md = nullptr;
+    multio_new_metadata(&md);
+
+    multio_metadata_set_string(md, "category", "test_data");
+    multio_metadata_set_int(md, "globalSize", sz);
+    multio_metadata_set_int(md, "level", 1);
+    multio_metadata_set_int(md, "step", 1);
+
+    multio_metadata_set_double(md, "missingValue", 0.0);
+    multio_metadata_set_bool(md, "bitmapPresent", false);
+    multio_metadata_set_int(md, "bitsPerValue", 16);
+
+    multio_metadata_set_bool(md, "toAllServers", false);
+
+    // Overwrite these fields in the existing metadata object
+    multio_metadata_set_string(md, "name", "test");
+
+    rc = multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz);
+    
+    EXPECT(rc==MULTIO_SUCCESS);
 
 }
 

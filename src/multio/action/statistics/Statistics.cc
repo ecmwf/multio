@@ -46,7 +46,7 @@ Statistics::Statistics(const ConfigurationContext& confCtx) :
     timeUnit_{set_unit(confCtx.config().getString("output-frequency"))},
     timeSpan_{set_frequency(confCtx.config().getString("output-frequency"))},
     operations_{confCtx.config().getStringVector("operations")},
-    useCurrentTime_{confCtx.config().getBool("use-current-time", false)} {}
+    options_{confCtx.config()} {}
 
 void Statistics::executeImpl(message::Message msg) {
     // Pass through -- no statistics for messages other than fields
@@ -55,6 +55,7 @@ void Statistics::executeImpl(message::Message msg) {
         return;
     }
 
+    // TODO: Improve metadata handling
     auto md = msg.metadata();
     if (!md.has("startDate")) {
         md.set("startDate", md.getLong("date"));
@@ -62,7 +63,7 @@ void Statistics::executeImpl(message::Message msg) {
     if (!md.has("startTime")) {
         md.set("startTime", md.getLong("time"));
     }
-    if (!md.has("step") || !md.has("timeStep") || !md.has("step-frequency")) {
+    if (!md.has("step") || !md.has("timeStep") ) {
         throw eckit::SeriousBug("MULTIO ACTION STATISTICS :: missing metadata", Here());
     }
 
@@ -76,7 +77,7 @@ void Statistics::executeImpl(message::Message msg) {
         os << msg.metadata().getString("param", "xxx.yyy") << msg.metadata().getLong("level", 0L) << msg.source();
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {
-            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg, useCurrentTime_);
+            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg, options_);
         }
 
         if (fieldStats_.at(os.str())->process(msg)) {

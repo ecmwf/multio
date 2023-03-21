@@ -1,0 +1,769 @@
+plans:
+
+  - name: '[1.1.1] SFC variables, 1 Hourly, Original grid (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+         - levtype: sfc
+           paramId: [8, 9, 31, 33, 34, 39, 40, 41, 42, 78, 79, 98.174, 129, 134, 137, 139, 141, 144, 146, 147, 151, 164, 165, 166, 167, 168, 169, 170, 172, 175, 176, 177, 178, 179, 180, 181, 183, 195, 196, 212, 228, 235, 236, 228021, 228029, 228089, 228090, 228246, 228247]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [1.1.1] SFC variables, 1 Hourly, original grid (grib1)"
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_sfc_80_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/01-OriginalGrids/01-HourlySurfaces/SFCvariables-1Hourly-OriginalGrid-grib1.grib'
+
+
+  - name: '[1.1.2] SFC variables, 1 Hourly, Original grid (grib2)'
+    enable: true
+    actions:
+      - type: select
+        match:
+         - levtype: sfc
+           paramId: [228051]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [1.1.2] SFC variables, 1 Hourly, original grid (grib2)"
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_sfc_80_grib2_litota1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/01-OriginalGrids/01-HourlySurfaces/SFCvariables-1Hourly-OriginalGrid-grib2.grib'
+
+
+  - name: '[1.1.3] Special variable lnsp with typeOfLevel hybrid'
+    enable: true
+    actions:
+      - type: select
+        match:
+         - paramId: [152]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [1.1.3] Special variable lnsp with typeOfLevel hybrid"
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_sfc_80_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/01-OriginalGrids/01-HourlySurfaces/lnsp.grib'
+
+
+  - name: '[1.2.2a] 3D variables, 6 Hourly, Original grid (grib1, step-frequency 1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - paramId: [75,76,120,129,130,131,132,133,135,246,247,248 ]
+            levelist: [ 700, 750, 800, 850, 875, 900, 925, 950, 975, 1000 ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [1.2.2a] 3D variables, 6 Hourly, Original grid (grib1, step-frequency 1)"
+
+      - type: statistics
+        output-frequency: 6h
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - instant
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_pl_80_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/01-OriginalGrids/02-6Hourly3D/3Dvariables-6Hourly-OriginalGrid-grib1-StepFrequency-1.grib'
+
+
+  - name: '[1.2.2b] 3D variables, 6 Hourly, Original grid (grib1, step-frequency 6)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - paramId: [75,76,120,129,130,131,132,133,135,246,247,248]
+            levelist: [700, 750, 800, 850, 875, 900, 925, 950, 975, 1000]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: '[1.2.2b] 3D variables, 6 Hourly, Original grid (grib1, step-frequency 6)"
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_pl_80_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/01-OriginalGrids/02-6Hourly3D/3Dvariables-6Hourly-OriginalGrid-grib1-StepFrequency-6.grib'
+
+
+  - name: '[1.3.1] 3D variables, 1 Hourly, Original grid (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - paramId: 129
+            levelist: [ 300, 500, 850 ]
+          - paramId: 130
+            levelist: 700
+          - paramId: [131, 132]
+            levelist: 850
+          - paramId: [120, 135]
+            levelist: [ 500, 850 ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [1.3.1] 3D variables, 1 Hourly, Original grid (grib1)"
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_pl_80_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/01-OriginalGrids/03-Hourly3D/3Dvariables-1Hourly-OriginalGrid-grib1.grib'
+
+
+  - name: '[2.1.1] SFC variables, 1 Hourly, 1.0x1.0 (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - levtype: sfc
+            paramId: [ 8, 9, 31, 33, 34, 39, 40, 41, 42, 78, 79, 98, 129, 134, 137, 139, 141, 144, 146, 147, 151, 164, 165, 166, 167, 168, 169, 170, 172, 175, 176, 177, 178, 179, 180, 181, 183, 186, 187, 188, 195, 196, 212, 228, 235, 236, 228021, 228029, 228089, 228090, 228246, 228247 ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [2.1.1] SFC variables, 1 Hourly, 1.0x1.0 (grib1)"
+
+      - type: interpolate
+        input: O80
+        grid: [1.0,1.0]
+        area: [90.0,0.0,-90.0,360.0]
+        interpolate: grid-box-average
+        options:
+          caching: true
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/02-InterpolatedFields/01-RegularLatLong_1.0x1.0/SFCvariables-1Hourly-1.0x1.0-grib1.grib'
+
+
+  - name: '[2.1.2] SFC variables, 6 Hourly, 1.0x1.0 (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - paramId: [ 75, 76, 120, 129, 130, 131, 132, 133, 135, 246, 247, 248 ]
+            levelist: [ 1, 5, 10, 20, 30, 50, 70, 100, 150, 200, 250, 300, 400, 500, 600, 700, 750, 800, 850, 875, 900, 925, 950, 975, 1000 ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [2.1.2] SFC variables, 6 Hourly, 1.0x1.0 (grib1)"
+
+      - type: statistics
+        output-frequency: 6h
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - instant
+
+      - type: interpolate
+        input: O80
+        grid: [1.0, 1.0]
+        area: [90.0,0.0,-90.0,360.0]
+        interpolate: grid-box-average
+        options:
+          caching: true
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_pl_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/02-InterpolatedFields/01-RegularLatLong_1.0x1.0/SFCvariables-6Hourly-1.0x1.0-grib1.grib'
+
+
+  - name: '[2.2.1] SFC variables, 1 Hourly, 0.25x0.25 (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - levtype: sfc
+            paramId: [ 8, 9, 31, 33, 34, 39, 40, 41, 42, 78, 79, 98, 129, 134, 137, 139, 141, 144, 146, 147, 151, 164, 165, 166, 167, 168, 169, 170, 172, 175, 176, 177, 178, 179, 180, 181, 183, 186, 187, 188, 195, 196, 212, 228, 235, 236, 228021, 228029, 228089, 228090, 228246, 228247]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [2.2.1] SFC variables, 1 Hourly, 0.25x0.25 (grib1)"
+
+      - type: interpolate
+        input: O80
+        grid: [0.25,0.25]
+        area: [90.0,0.0,-90.0,360.0]
+        interpolate: grid-box-average
+        options:
+          caching: true
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/02-InterpolatedFields/02-RegularLatLong_0.25x0.25/SFCvariables-1Hourly-0.25x0.25-grib1.grib'
+
+
+  - name: '[2.2.2] 3D variables, 6 Hourly, 0.25x0.25 (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - paramId: [ 75, 76, 120, 129, 130, 131, 132, 133, 135, 246, 247, 248 ]
+            levelist: [ 1, 5, 10, 20, 30, 50, 70, 100, 150, 200, 250, 300, 400, 500, 600, 700, 750, 800, 850, 875, 900, 925, 950, 975, 1000 ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [2.2.2] 3D variables, 6 Hourly, 0.25x0.25 (grib1)"
+
+      - type: statistics
+        output-frequency: 6h
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - instant
+
+      - type: interpolate
+        input: O80
+        grid: [0.25,0.25]
+        area: [90.0,0.0,-90.0,360.0]
+        interpolate: grid-box-average
+        options:
+         caching: true
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_pl_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/02-InterpolatedFields/02-RegularLatLong_0.25x0.25/3Dvariables-6Hourly-0.25x0.25-grib1.grib'
+
+
+  - name: '[3.1.1] SFC variables, m1 Monthly Average, Accumulated Fields, Original Grid (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+         - levtype: sfc
+           paramId: [8,9,144,146,147,169,175,176,177,178,179,180,181,195,196,212,228,228021]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [3.1.1] SFC variables, m1 Monthly Average, Accumulated Fields, Original Grid (grib1)"
+
+      - type: statistics
+        output-frequency: 1m
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - divide-accumulated-field
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_sfc_80_average_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/01-OriginalGrids/SFCvariables-1MonthlyAverage_AccumulatedFields_OriginalGrid_grib1.grib'
+
+
+  - name: '[3.1.2a] SFC variables, 1 Monthly Average, Instantaneous Fields Fields, Original Grid (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+         - levtype: sfc
+           paramId: [ 31, 33, 34, 39, 40, 41, 42, 78, 79, 98.174, 129, 134, 137, 139, 141, 151, 164, 165, 166, 167, 168, 170, 172, 183, 235, 236, 228029, 228089, 228090, 228246, 228247 ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [3.1.2a] SFC variables, 1 Monthly Average, Instantaneous Fields Fields, Original Grid (grib1)"
+
+      - type: statistics
+        output-frequency: 1m
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - running-average
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_sfc_80_average_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/01-OriginalGrids/SFCvariables-1MonthlyAverage_InstantaneousFields_OriginalGrid_grib1.grib'
+
+
+  - name: '[3.1.3] 3D variables, Monthly Average, Original Grid (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - paramId: [75,76,120,129,130,131,132,133,135,246,247,248 ]
+            levelist: [ 1, 5, 10, 20, 30, 50, 70, 100, 150, 200, 250, 300, 400, 500, 600, 700, 750, 800, 850, 875, 900, 925, 950, 975, 1000  ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [3.1.3] 3D variables, Monthly Average, Original Grid (grib1)"
+
+      - type: statistics
+        output-frequency: 1m
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - running-average
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_pl_80_average_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/01-OriginalGrids/3Dvariables-MonthlyAverage-OriginalGrid-grib1.grib'
+
+
+
+  - name: '[3.1.2b] SFC variables, 1 Monthly Average, Instantaneous Fields Fields, Original Grid (grib2)'
+    enable: true
+    actions:
+      - type: select
+        match:
+         - levtype: sfc
+           paramId: [ 228051 ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [3.1.2b] SFC variables, 1 Monthly Average, Instantaneous Fields Fields, Original Grid (grib2)"
+
+      - type: statistics
+        output-frequency: 1m
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - running-average
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_sfc_80_average_grib2_litota1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/01-OriginalGrids/SFCvariables-1MonthlyAverage_InstantaneousFields_OriginalGrid_grib2.grib'
+
+
+  - name: '[3.2.1] SFC variables, 1 Monthly Average, Accumulated Fields, 1.0x1.0 (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+         - levtype: sfc
+           paramId: [8,9,144,146,147,169,175,176,177,178,179,180,181,195,196,212,228,228021]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [3.2.1] SFC variables, 1 Monthly Average, Accumulated Fields, 1.0x1.0 (grib1)"
+
+      - type: statistics
+        output-frequency: 1m
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - divide-accumulated-field
+
+      - type: interpolate
+        input: O80
+        grid: [1.0,1.0]
+        area: [90.0,0.0,-90.0,360.0]
+        interpolate: grid-box-average
+        options:
+          caching: true
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_average_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/02-RegularLL-1.0x1.0/SFCvariables-1mAverage_AccumulatedFileds-1.0x1.0-grib1.grib'
+
+
+
+  - name: '[3.2.2a] SFC variables, 1 Monthly Average, Instantaneous Fields, 1.0x1.0 (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - levtype: sfc
+            paramId: [ 31, 33, 34, 39, 40, 41, 42, 78, 79, 98.174, 129, 134, 137, 139, 141, 151, 164, 165, 166, 167, 168, 170, 172, 183, 186, 187, 188, 235, 236, 228021, 228029, 228089, 228090, 228246, 228247 ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [3.2.2a] SFC variables, 1 Monthly Average, Instantaneous Fields, 1.0x1.0 (grib1)"
+
+      - type: statistics
+        output-frequency: 1m
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - running-average
+
+      - type: interpolate
+        input: O80
+        grid: [1.0,1.0]
+        area: [90.0,0.0,-90.0,360.0]
+        interpolate: grid-box-average
+        options:
+          caching: true
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_average_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/02-RegularLL-1.0x1.0/SFCvariables-1mAverage_InstantaneousFileds-1.0x1.0-grib1.grib'
+
+
+  - name: '[3.2.3] 3D variables, 1 Monthly Average, 1.0x1.0 (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - paramId: [75,76,120,129,130,131,132,133,135,246,247,248 ]
+            levelist: [ 1, 5, 10, 20, 30, 50, 70, 100, 150, 200, 250, 300, 400, 500, 600, 700, 750, 800, 850, 875, 900, 925, 950, 975, 1000  ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [3.2.3] 3D variables, 1 Monthly Average, 1.0x1.0 (grib1)"
+
+      - type: statistics
+        output-frequency: 1m
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - running-average
+
+      - type: interpolate
+        input: O80
+        grid: [1.0,1.0]
+        area: [90.0,0.0,-90.0,360.0]
+        interpolate: grid-box-average
+        options:
+           caching: true
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_pl_average_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/02-RegularLL-1.0x1.0/3Dvariables-1MonthlyAverage-1.0x1.0-grib1.grib'
+
+
+  - name: '[3.3.1] SFC variables, 1 Monthly Average, Accumulated Fields, 0.25x0.25 (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - levtype: sfc
+            paramId: [8,9,144,146,147,169,175,176,177,178,179,180,181,195,196,212,228,228021]
+
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [3.3.1] SFC variables, 1 Monthly Average, Accumulated Fields, 0.25x0.25 (grib1)"
+
+      - type: statistics
+        output-frequency: 1m
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - divide-accumulated-field
+
+      - type: interpolate
+        input: O80
+        grid: [0.25,0.25]
+        area: [90.0,0.0,-90.0,360.0]
+        interpolate: grid-box-average
+        options:
+          caching: true
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_average_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/03-RegularLL-0.25x0.25/SFCvariables-1mAverage_AccumulatedFileds-0.25x0.25-grib1.grib'
+
+
+  - name: '[3.3.2a] SFC variables, 1 Monthly Average, Instantaneous Fields, 0.25x0.25 (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - levtype: sfc
+            paramId: [ 31, 33, 34, 39, 40, 41, 42, 78, 79, 98.174, 129, 134, 137, 139, 141, 151, 164, 165, 166, 167, 168, 170, 172, 183, 186, 187, 188, 235, 236, 228021, 228029, 228089, 228090, 228246, 228247 ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [3.3.2a] SFC variables, 1 Monthly Average, Instantaneous Fields, 0.25x0.25 (grib1)"
+
+      - type: statistics
+        output-frequency: 1m
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - running-average
+
+      - type: interpolate
+        input: O80
+        grid: [0.25,0.25]
+        area: [90.0,0.0,-90.0,360.0]
+        interpolate: grid-box-average
+        options:
+          caching: true
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_average_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/03-RegularLL-0.25x0.25/SFCvariables-1mAverage_InstantaneousFileds-0.25x0.25-grib1.grib'
+
+
+  - name: '[3.3.3] 3D variables, 1 Monthly Average, 0.25x0.25 (grib1)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - paramId: [75,76,120,129,130,131,132,133,135,246,247,248 ]
+            levelist: [ 1, 5, 10, 20, 30, 50, 70, 100, 150, 200, 250, 300, 400, 500, 600, 700, 750, 800, 850, 875, 900, 925, 950, 975, 1000  ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [3.3.3] 3D variables, 1 Monthly Average, 0.25x0.25 (grib1)"
+
+      - type: statistics
+        output-frequency: 1m
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - running-average
+
+      - type: interpolate
+        input: O80
+        grid: [0.25,0.25]
+        area: [90.0,0.0,-90.0,360.0]
+        interpolate: grid-box-average
+        options:
+          caching: true
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_pl_average_grib1.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/03-RegularLL-0.25x0.25/3Dvariables-1MonthlyAverage-0.25x0.25-grib1.grib'
+
+
+
+  - name: '[3.3.2b] SFC variables, 1 Monthly Average, Instantaneous Fields, 0.25x0.25 (grib2)'
+    enable: true
+    actions:
+      - type: select
+        match:
+        - levtype: sfc
+          paramId: [ 228051 ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [3.3.2b] SFC variables, 1 Monthly Average, Instantaneous Fields, 0.25x0.25 (grib2)"
+
+      - type: statistics
+        output-frequency: 1m
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - running-average
+
+      - type: interpolate
+        input: O80
+        area: [90.0,0.0,-90.0,360.0]
+        grid: [0.25,0.25]
+        interpolate: grid-box-average
+        options:
+          caching: true
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_average_grib2.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/03-RegularLL-0.25x0.25/SFCvariables-1mAverage_InstantaneousFileds-0.25x0.25-grib2.grib'
+
+
+  - name: '[3.2.2b] SFC variables, 1 Monthly Average, Instantaneous Fields, 1.0x1.0 (grib2)'
+    enable: true
+    actions:
+      - type: select
+        match:
+          - levtype: sfc
+            paramId: [ 228051 ]
+
+      - type: print
+        only-fields: true
+        prefix: " ++ MULTIO-PRINT :: [3.2.2b] SFC variables, 1 Monthly Average, Instantaneous Fields, 1.0x1.0 (grib2)"
+
+      - type: statistics
+        output-frequency: 1m
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+        operations:
+          - running-average
+
+      - type: interpolate
+        input: O80
+        grid: [1.0,1.0]
+        area: [90.0,0.0,-90.0,360.0]
+        interpolate: grid-box-average
+        options:
+          caching: true
+
+      - type: encode
+        format: grib
+        template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_average_grib2.tmpl'
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: true
+            path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/02-RegularLL-1.0x1.0/SFCvariables-1mAverage_InstantaneousFileds-1.0x1.0-grib2.grib'
+

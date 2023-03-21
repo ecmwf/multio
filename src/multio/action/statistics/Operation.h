@@ -1,8 +1,11 @@
 #pragma once
 
+#include <StatisticsOptions.h>
 #include <eckit/exception/Exceptions.h>
 #include <eckit/io/Buffer.h>
 #include <multio/util/VariantHelpers.h>
+#include "eckit/log/Log.h"
+#include "multio/LibMultio.h"
 
 #include <memory>
 #include <string>
@@ -18,7 +21,8 @@ namespace action {
 template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>
 class Operation {
 public:
-    Operation(const std::string& name, long sz) : name_{name}, values_{std::vector<T>(sz /= sizeof(T))} {}
+    Operation(const std::string& name, long sz, const StatisticsOptions& options) :
+        name_{name}, values_{std::vector<T>(sz /= sizeof(T),0.0)}, options_{options} {}
     const std::string& name() { return name_; }
 
     virtual eckit::Buffer compute() = 0;
@@ -29,6 +33,7 @@ public:
 protected:
     virtual void print(std::ostream& os) const = 0;
 
+    const StatisticsOptions& options_;
     std::string name_;
     std::vector<T> values_;
 
@@ -47,8 +52,9 @@ template <typename T>
 class Instant final : public Operation<T> {
 public:
     using Operation<T>::values_;
+    using Operation<T>::options_;
 
-    Instant(const std::string& name, long sz = 0) : Operation<T>{name, sz} {}
+    Instant(const std::string& name, long sz, const StatisticsOptions& options) : Operation<T>{name, sz, options} {}
 
     eckit::Buffer compute() override { return eckit::Buffer{values_.data(), values_.size() * sizeof(T)}; }
 
@@ -66,14 +72,16 @@ private:
     void print(std::ostream& os) const override { os << "Operation(instant)"; }
 };
 
+
 template <typename T>
 class Average final : public Operation<T> {
     long count_ = 0;
 
 public:
     using Operation<T>::values_;
+    using Operation<T>::options_;
 
-    Average(const std::string& name, long sz = 0) : Operation<T>{name, sz} {}
+    Average(const std::string& name, long sz, const StatisticsOptions& options) : Operation<T>{name, sz, options} {}
 
     eckit::Buffer compute() override {
 
@@ -105,11 +113,149 @@ private:
 
 
 template <typename T>
+class RunningAverage final : public Operation<T> {
+    long count_ = 0;
+
+public:
+    using Operation<T>::values_;
+    using Operation<T>::options_;
+
+    RunningAverage(const std::string& name, long sz, const StatisticsOptions& options) :
+        Operation<T>{name, sz, options} {}
+
+    eckit::Buffer compute() override {
+
+        return eckit::Buffer{values_.data(), values_.size() * sizeof(T)};
+    }
+
+    void update(const void* data, long sz) override {
+        auto val = static_cast<const T*>(data);
+        sz /= sizeof(T);
+
+        if (values_.size() != static_cast<size_t>(sz)) {
+            throw eckit::AssertionFailed("Expected size: " + std::to_string(values_.size())
+                                         + " -- actual size: " + std::to_string(sz));
+        }
+
+        try {
+            // Compute the running average in order to avoid precison problems
+            // TODO: the scale factor can be always double we need to understand
+            // the impact of having
+            // TODO: Handling missing values
+            T cntpp = static_cast<T>(count_ + 1);
+            T sc = static_cast<T>(count_) / cntpp;
+            for (auto& v : values_) {
+                v = v * sc + (*val++) / cntpp;
+            }
+            ++count_;
+        }
+        catch (...) {
+            LOG_DEBUG_LIB(LibMultio) << "ACCUMULATED DATA" << std::endl;
+            for (auto& v : values_) {
+                LOG_DEBUG_LIB(LibMultio) << v << ", ";
+            }
+            LOG_DEBUG_LIB(LibMultio) << std::endl;
+            LOG_DEBUG_LIB(LibMultio) << "NEW DATA" << std::endl;
+            val = static_cast<const T*>(data);
+            for (auto& v : values_) {
+                LOG_DEBUG_LIB(LibMultio) << val++ << ", ";
+            }
+            LOG_DEBUG_LIB(LibMultio) << std::endl;
+            ASSERT(false);
+        }
+    }
+
+private:
+    void print(std::ostream& os) const override { os << "Operation(running-average)"; }
+};
+
+
+template <typename T>
+class WeightedAverage final : public Operation<T> {
+    long count_ = 0;
+
+public:
+    using Operation<T>::values_;
+    using Operation<T>::options_;
+
+    WeightedAverage(const std::string& name, long sz, const StatisticsOptions& options) :
+        Operation<T>{name, sz, options} {}
+
+    eckit::Buffer compute() override {
+
+        for (auto& val : values_) {
+            val /= static_cast<T>(count_ * options_.stepFreq());
+        }
+
+        return eckit::Buffer{values_.data(), values_.size() * sizeof(T)};
+    }
+
+    void update(const void* data, long sz) override {
+        auto val = static_cast<const T*>(data);
+        sz /= sizeof(T);
+
+        if (values_.size() != static_cast<size_t>(sz)) {
+            throw eckit::AssertionFailed("Expected size: " + std::to_string(values_.size())
+                                         + " -- actual size: " + std::to_string(sz));
+        }
+
+        // Integration is done by considering the current step constant for the last stepFreq steps
+        for (auto& v : values_) {
+            v += (*val++) * options_.stepFreq();
+        }
+        ++count_;
+    }
+
+private:
+    void print(std::ostream& os) const override { os << "Operation(weighted-average)"; }
+};
+
+
+template <typename T>
+class DivideAccumulatedField final : public Operation<T> {
+    long count_ = 0;
+
+public:
+    using Operation<T>::values_;
+    using Operation<T>::options_;
+
+    DivideAccumulatedField(const std::string& name, long sz, const StatisticsOptions& options) :
+        Operation<T>{name, sz, options} {}
+
+    eckit::Buffer compute() override {
+
+        // TODO: take care of the missing values
+        for (auto& val : values_) {
+            val /= static_cast<T>(count_ * options_.stepFreq());
+        }
+
+        return eckit::Buffer{values_.data(), values_.size() * sizeof(T)};
+    }
+
+    void update(const void* data, long sz) override {
+        auto val = static_cast<const T*>(data);
+        sz /= sizeof(T);
+        if (values_.size() != static_cast<size_t>(sz)) {
+            throw eckit::AssertionFailed("Expected size: " + std::to_string(values_.size())
+                                         + " -- actual size: " + std::to_string(sz));
+        }
+        // May never be needed -- just creates an unnecessarily copy
+        std::copy(val, val + sz, values_.begin());
+        ++count_;
+    }
+
+private:
+    void print(std::ostream& os) const override { os << "Operation(divide)"; }
+};
+
+
+template <typename T>
 class Minimum final : public Operation<T> {
 public:
     using Operation<T>::values_;
+    using Operation<T>::options_;
 
-    Minimum(const std::string& name, long sz = 0) : Operation<T>{name, sz} {}
+    Minimum(const std::string& name, long sz, const StatisticsOptions& options) : Operation<T>{name, sz, options} {}
 
     eckit::Buffer compute() override { return eckit::Buffer{values_.data(), values_.size() * sizeof(T)}; }
 
@@ -134,8 +280,9 @@ template <typename T>
 class Maximum final : public Operation<T> {
 public:
     using Operation<T>::values_;
+    using Operation<T>::options_;
 
-    Maximum(const std::string& name, long sz = 0) : Operation<T>{name, sz} {}
+    Maximum(const std::string& name, long sz, const StatisticsOptions& options) : Operation<T>{name, sz, options} {}
 
     eckit::Buffer compute() override { return eckit::Buffer{values_.data(), values_.size() * sizeof(T)}; }
 
@@ -160,8 +307,9 @@ template <typename T>
 class Accumulate final : public Operation<T> {
 public:
     using Operation<T>::values_;
+    using Operation<T>::options_;
 
-    Accumulate(const std::string& name, long sz = 0) : Operation<T>{name, sz} {};
+    Accumulate(const std::string& name, long sz, const StatisticsOptions& options) : Operation<T>{name, sz, options} {};
 
     eckit::Buffer compute() override { return eckit::Buffer{values_.data(), values_.size() * sizeof(T)}; }
 
@@ -182,22 +330,33 @@ private:
 
 //==== Factory function ============================
 template <typename T>
-std::unique_ptr<Operation<T>> make_operation(const std::string& opname, long sz) {
+std::unique_ptr<Operation<T>> make_operation(const std::string& opname, long sz, const StatisticsOptions& options) {
 
     if (opname == "instant") {
-        return std::make_unique<Instant<T>>(opname, sz);
+        return std::make_unique<Instant<T>>("instant", sz, options);
     }
+    // All different kind of averages are "averages".
+    // This name is used by the encoder, and changing this wil cause
     if (opname == "average") {
-        return std::make_unique<Average<T>>(opname, sz);
+        return std::make_unique<Average<T>>("average", sz, options);
+    }
+    if (opname == "running-average") {
+        return std::make_unique<RunningAverage<T>>("average", sz, options);
+    }
+    if (opname == "weighted-average") {
+        return std::make_unique<WeightedAverage<T>>("average", sz, options);
+    }
+    if (opname == "divide-accumulated-field") {
+        return std::make_unique<DivideAccumulatedField<T>>("average", sz, options);
     }
     if (opname == "minimum") {
-        return std::make_unique<Minimum<T>>(opname, sz);
+        return std::make_unique<Minimum<T>>("minimum", sz, options);
     }
     if (opname == "maximum") {
-        return std::make_unique<Maximum<T>>(opname, sz);
+        return std::make_unique<Maximum<T>>("maximum", sz, options);
     }
     ASSERT(opname == "accumulate");
-    return std::make_unique<Accumulate<T>>(opname, sz);
+    return std::make_unique<Accumulate<T>>("accumulate", sz, options);
 }
 
 }  // namespace action

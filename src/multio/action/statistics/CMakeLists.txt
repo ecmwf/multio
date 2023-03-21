@@ -3,6 +3,8 @@ ecbuild_add_library(
 	TARGET multio-action-statistics
 
     SOURCES
+      StatisticsOptions.cc
+      StatisticsOptions.h
     	Statistics.cc
     	Statistics.h
       Period.cc

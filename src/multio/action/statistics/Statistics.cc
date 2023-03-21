@@ -63,7 +63,7 @@ void Statistics::executeImpl(message::Message msg) {
     if (!md.has("startTime")) {
         md.set("startTime", md.getLong("time"));
     }
-    if (!md.has("step") || !md.has("timeStep") ) {
+    if (!md.has("step")) {
         throw eckit::SeriousBug("MULTIO ACTION STATISTICS :: missing metadata", Here());
     }
 

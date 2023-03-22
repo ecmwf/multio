@@ -63,8 +63,8 @@ std::unique_ptr<TemporalStatistics> TemporalStatistics::build(const std::string&
 TemporalStatistics::TemporalStatistics(const std::vector<std::string>& operations, const DateTimePeriod& period,
                                        const message::Message& msg, const StatisticsOptions& options) :
     name_{msg.name()},
-    options_{options},
     current_{period},
+    options_{options},
     opNames_{operations},
     statistics_{reset_statistics(operations, msg, options)} {}
 

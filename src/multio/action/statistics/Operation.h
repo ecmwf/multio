@@ -33,9 +33,9 @@ public:
 protected:
     virtual void print(std::ostream& os) const = 0;
 
-    const StatisticsOptions& options_;
     std::string name_;
     std::vector<T> values_;
+    const StatisticsOptions& options_;
 
     friend std::ostream& operator<<(std::ostream& os, const Operation& a) {
         a.print(os);

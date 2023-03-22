@@ -38,10 +38,10 @@ public:
 
 private:
     void print(std::ostream& os) const override;
-    const StatisticsOptions options_;
     const std::string timeUnit_;
     const long timeSpan_;
     const std::vector<std::string> operations_;
+    const StatisticsOptions options_;
 
     std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 };

@@ -121,7 +121,7 @@ void MultioFeed::init(const eckit::option::CmdArgs& args) {
     args.get("decodeSingle", decodeSingleData_);
 
     if (decodeDoubleData_ && decodeSingleData_) {
-        throw eckit::BadValue{"Both double and single precision requested"};
+        throw eckit::UserError{"Both double and single precision requested", Here()};
     }
 
     args.get("plans", configPath_);

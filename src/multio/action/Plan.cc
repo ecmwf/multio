@@ -42,8 +42,8 @@ LocalConfiguration createActionList(std::vector<LocalConfiguration> actions) {
 }
 
 LocalConfiguration rootConfig(const LocalConfiguration& config) {
-    const auto actions =
-        config.has("actions") ? config.getSubConfigurations("actions") : std::vector<LocalConfiguration>{};
+    const auto actions
+        = config.has("actions") ? config.getSubConfigurations("actions") : std::vector<LocalConfiguration>{};
 
     if (actions.empty()) {
         throw eckit::UserError("Plan config must define at least one action");
@@ -57,6 +57,7 @@ LocalConfiguration rootConfig(const LocalConfiguration& config) {
 Plan::Plan(const ConfigurationContext& confCtx) : FailureAware(confCtx) {
     ASSERT(confCtx.componentTag() == util::ComponentTag::Plan);
     name_ = confCtx.config().getString("name", "anonymous");
+    enabled_ = confCtx.config().getBool("enable", true);
     auto root = rootConfig(confCtx.config());
     root_ = ActionFactory::instance().build(root.getString("type"), confCtx.recast(root, util::ComponentTag::Action));
 }
@@ -68,14 +69,18 @@ Plan::~Plan() {
 
 void Plan::process(message::Message msg) {
     util::ScopedTimer timer{timing_};
-    withFailureHandling([&]() { root_->execute(std::move(msg)); }, [=]() {
-        std::ostringstream oss;
-        oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl;
-        return oss.str();
-    });
+    if (enabled_) {
+        withFailureHandling([&]() { root_->execute(std::move(msg)); },
+                            [=]() {
+                                std::ostringstream oss;
+                                oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl;
+                                return oss.str();
+                            });
+    }
 }
 
-util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t, const util::FailureContext&, util::DefaultFailureState&) const {
+util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t, const util::FailureContext&,
+                                                 util::DefaultFailureState&) const {
     if (t == util::OnPlanError::Recover) {
         return util::FailureHandlerResponse::Retry;
     }

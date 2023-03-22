@@ -45,7 +45,8 @@ Statistics::Statistics(const ConfigurationContext& confCtx) :
     ChainedAction{confCtx},
     timeUnit_{set_unit(confCtx.config().getString("output-frequency"))},
     timeSpan_{set_frequency(confCtx.config().getString("output-frequency"))},
-    operations_{confCtx.config().getStringVector("operations")} {}
+    operations_{confCtx.config().getStringVector("operations")},
+    options_{confCtx.config()} {}
 
 void Statistics::executeImpl(message::Message msg) {
     // Pass through -- no statistics for messages other than fields
@@ -54,18 +55,29 @@ void Statistics::executeImpl(message::Message msg) {
         return;
     }
 
-    std::ostringstream os;
+    // TODO: Improve metadata handling
     auto md = msg.metadata();
+    if (!md.has("startDate")) {
+        md.set("startDate", md.getLong("date"));
+    }
+    if (!md.has("startTime")) {
+        md.set("startTime", md.getLong("time"));
+    }
+    if (!md.has("step")) {
+        throw eckit::SeriousBug("MULTIO ACTION STATISTICS :: missing metadata", Here());
+    }
+
+    std::ostringstream os;
     {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
-        LOG_DEBUG_LIB(LibMultio) << "*** " << msg.destination() << " -- metadata: " << md << std::endl;
+        LOG_DEBUG_LIB(multio::LibMultio) << "*** " << msg.destination() << " -- metadata: " << md << std::endl;
 
         // Create a unique key for the fieldStats_ map
-        os << msg.metadata().getString("param") << msg.metadata().getLong("level") << msg.source();
+        os << msg.metadata().getString("param", "xxx.yyy") << msg.metadata().getLong("level", 0L) << msg.source();
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {
-            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg);
+            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg, options_);
         }
 
         if (fieldStats_.at(os.str())->process(msg)) {
@@ -84,8 +96,8 @@ void Statistics::executeImpl(message::Message msg) {
             ASSERT(stepInSeconds % 3600 == 0);
             auto stepInHours = stepInSeconds / 3600;
             md.set("stepInHours", stepInHours);
-
-            auto prevStep = stepInHours - timeSpanInHours;
+            // Fix negative ranges (timespan can be bigger than step )
+            auto prevStep = std::max(stepInHours - timeSpanInHours, 0L);
             auto stepRangeInHours = std::to_string(prevStep) + "-" + std::to_string(stepInHours);
             md.set("stepRangeInHours", stepRangeInHours);
         }

@@ -1,10 +1,11 @@
 mappings:
   - match:
       paramId: paramId
-    target-path: encoderOverwrites
+    target-path: encoder-overwrites
     optional-map:
       bitsPerValue: bitsPerValue
       bottomLevel: bottomLevel
+      # level: level
       topLevel: topLevel
       binaryScaleFactor: binaryScaleFactor
       decimalScaleFactor: decimalScaleFactor
@@ -105,46 +106,54 @@ data:
     bitsPerValue: 16
     bottomLevel: 7
     topLevel: 0
+    # level: 0
     binaryScaleFactor: -9
     
   - paramId: 170
     bitsPerValue: 16
     bottomLevel: 28
     topLevel: 7
+    # level: 7
     binaryScaleFactor: -9
     
   - paramId: 183
     bitsPerValue: 16
     bottomLevel: 100
     topLevel: 28
+    # level: 28
     binaryScaleFactor: -9
     
   - paramId: 236
     bitsPerValue: 16
     # bottomLevel: 7
     topLevel: 100
+    # level: 100
     binaryScaleFactor: -16
     
   - paramId: 39
     bitsPerValue: 16
     bottomLevel: 7
     topLevel: 0
+    # level: 0
     binaryScaleFactor: -16
    
   - paramId: 40
     bitsPerValue: 16
     bottomLevel: 28
     topLevel: 7
+    # level: 7
     binaryScaleFactor: -16
    
   - paramId: 41
     bitsPerValue: 16
     bottomLevel: 100
     topLevel: 28
+    # level: 28
     binaryScaleFactor: -16
     
   - paramId: 42
     bitsPerValue: 16
     topLevel: 100
+    # level: 100
     binaryScaleFactor: -16
    

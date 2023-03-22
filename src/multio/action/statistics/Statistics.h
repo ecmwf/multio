@@ -18,9 +18,12 @@
 #include <iosfwd>
 #include <vector>
 
+#include "StatisticsOptions.h"
 #include "multio/action/ChainedAction.h"
 
-namespace eckit { class Configuration; }
+namespace eckit {
+class Configuration;
+}
 
 namespace multio {
 namespace action {
@@ -34,12 +37,11 @@ public:
     void executeImpl(message::Message msg) override;
 
 private:
-    void print(std::ostream &os) const override;
-
+    void print(std::ostream& os) const override;
     const std::string timeUnit_;
     const long timeSpan_;
-
     const std::vector<std::string> operations_;
+    const StatisticsOptions options_;
 
     std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 };

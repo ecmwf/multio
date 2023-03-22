@@ -74,3 +74,7 @@ ecbuild_add_executable( TARGET    multio-replay-nemo-fapi
                         CONDITION HAVE_FORTRAN
                         SOURCES   multio-replay-nemo-fapi.f90
                         LIBS      multio-fapi fckit MPI::MPI_Fortran)
+
+ecbuild_add_executable( TARGET    multio-generate-grib-template
+                        SOURCES   multio-generate-grib-template.cc MultioTool.cc
+                        LIBS      multio atlas eccodes eckit)

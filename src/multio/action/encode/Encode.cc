@@ -118,12 +118,12 @@ void Encode::print(std::ostream& os) const {
 
 namespace {
 message::Metadata applyOverwrites(const eckit::LocalConfiguration& overwrites, message::Metadata md) {
-    auto nested = md.getSubConfiguration("encoderOverwrites");
+    auto nested = md.getSubConfiguration("encoder-overwrites");
     for (const auto& k : overwrites.keys()) {
         // TODO handle type...
         nested.set(k, overwrites.getString(k));
     }
-    md.set("encoderOverwrites", nested);
+    md.set("encoder-overwrites", nested);
     return md;
 }
 }  // namespace

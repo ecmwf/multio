@@ -121,7 +121,7 @@ void MultioFeed::init(const eckit::option::CmdArgs& args) {
     args.get("decodeSingle", decodeSingleData_);
 
     if (decodeDoubleData_ && decodeSingleData_) {
-        throw eckit::BadValue{"Both double and single precision requested"};
+        throw eckit::UserError{"Both double and single precision requested", Here()};
     }
 
     args.get("plans", configPath_);
@@ -204,6 +204,14 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
             }
             if (!metadata.has("level") && metadataDetailed.has("level")) {
                 metadata.set("level", metadataDetailed.getString("level"));
+            }
+
+            // Inject metadata needed for statistics
+            if (!metadata.has("timeStep")) {
+                metadata.set("timeStep", 3600);
+            }
+            if (!metadata.has("step-frequency")) {
+                metadata.set("step-frequency", 1);
             }
 
             eckit::Buffer data = msg.decode();

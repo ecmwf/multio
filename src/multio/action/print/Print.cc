@@ -21,6 +21,7 @@ namespace action {
 
 Print::Print(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {
     stream_ = confCtx.config().getString("stream", "info");
+    onlyFields_ = confCtx.config().getBool("only-fields", false);
 
     if (stream_ == "info") {
         os_ = &eckit::Log::info();
@@ -40,11 +41,13 @@ Print::Print(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {
 
 void Print::executeImpl(message::Message msg) {
     ASSERT(os_);
-    if(!prefix_.empty()) {
-        (*os_) << prefix_ << ": ";
+    bool doOutput = onlyFields_ ? msg.tag() == message::Message::Tag::Field ? true : false : true;
+    if (doOutput) {
+        if (!prefix_.empty()) {
+            (*os_) << prefix_ << ": ";
+        }
+        (*os_) << msg << std::endl;
     }
-    (*os_) << msg << std::endl;
-
     executeNext(std::move(msg));
 }
 

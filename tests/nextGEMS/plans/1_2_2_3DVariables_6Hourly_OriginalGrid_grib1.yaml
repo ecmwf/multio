@@ -10,6 +10,11 @@ actions:
     only-fields: true
     prefix: ' ++ MULTIO-PRINT :: [1.2.2] 3D variables, 6 Hourly, Original grid (grib1, step-frequency 1)'
 
+  - type: metadata-mapping
+    mapping: '{MULTIO_RAPS_PLANS_PATH}/mapping-lwda-to-lwda.yaml'
+    overwrite-existing: true
+    enforce-match: true
+
   - type: statistics
     output-frequency: 6h
     options:

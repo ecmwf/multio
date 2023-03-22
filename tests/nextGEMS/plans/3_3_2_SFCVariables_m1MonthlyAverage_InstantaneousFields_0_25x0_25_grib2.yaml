@@ -10,6 +10,11 @@ actions:
     only-fields: true
     prefix: ' ++ MULTIO-PRINT :: [3.3.2b] SFC variables, 1 Monthly Average, Instantaneous Fields, 0.25x0.25 (grib2)'
 
+  - type: metadata-mapping
+    mapping: '{MULTIO_RAPS_PLANS_PATH}/mapping-lwda-to-moda.yaml'
+    overwrite-existing: true
+    enforce-match: true
+
   - type: statistics
     output-frequency: 1m
     options:

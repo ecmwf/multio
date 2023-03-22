@@ -10,6 +10,11 @@ actions:
     only-fields: true
     prefix: ' ++ MULTIO-PRINT :: [2.2.2] 3D variables, 6 Hourly, 0.25x0.25 (grib1)'
 
+  - type: metadata-mapping
+    mapping: '{MULTIO_RAPS_PLANS_PATH}/mapping-lwda-to-dcda.yaml'
+    overwrite-existing: true
+    enforce-match: true
+
   - type: statistics
     output-frequency: 6h
     options:

@@ -10,6 +10,11 @@ actions:
     only-fields: true
     prefix: ' ++ MULTIO-PRINT :: [2.2.1] SFC variables, 1 Hourly, 0.25x0.25 (grib1)'
 
+  - type: metadata-mapping
+    mapping: '{MULTIO_RAPS_PLANS_PATH}/mapping-lwda-to-dcda.yaml'
+    overwrite-existing: true
+    enforce-match: true
+
   - type: interpolate
     input: '{MULTIO_RAPS_GRID_TYPE}'
     grid: [0.25,0.25]

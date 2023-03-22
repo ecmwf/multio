@@ -1,0 +1,8 @@
+name: 'debug-print'
+enable: '{MULTIO_RAPS_ENABLE_PLAN_0_0_0}'
+actions:
+  - type: print
+    stream: cout
+    prefix: ' ++ MULTIO-PRINT-ALL-DEBUG :: '
+  - type: sink
+    sinks: []

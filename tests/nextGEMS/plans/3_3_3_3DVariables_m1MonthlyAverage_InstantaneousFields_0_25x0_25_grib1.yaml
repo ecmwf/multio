@@ -10,6 +10,11 @@ actions:
     only-fields: true
     prefix: ' ++ MULTIO-PRINT :: [3.3.3] 3D variables, 1 Monthly Average, 0.25x0.25 (grib1)'
 
+  - type: metadata-mapping
+    mapping: '{MULTIO_RAPS_PLANS_PATH}/mapping-lwda-to-moda.yaml'
+    overwrite-existing: true
+    enforce-match: true
+
   - type: statistics
     output-frequency: 1m
     options:

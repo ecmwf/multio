@@ -1,5 +1,9 @@
 plans:
 
+  - file: '{MULTIO_RAPS_PLANS_PATH}/0_0_0_debug.yaml'
+  
+  
+  
   - file: '{MULTIO_RAPS_PLANS_PATH}/1_1_1_SFCVariables_1Hourly_OriginalGrid_grib1.yaml'
 
   - file: '{MULTIO_RAPS_PLANS_PATH}/1_1_2_SFCVariables_1Hourly_OriginalGrid_grib2.yaml'

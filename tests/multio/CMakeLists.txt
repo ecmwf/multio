@@ -29,7 +29,7 @@ endif()
 
 # Test sinks
 
-ecbuild_add_test( TARGET    test_multio_adam
+ecbuild_add_test( TARGET    test_multio_example
                   SOURCES   test_multio_adam.cc MultioTool.cc
                   ARGS      ${_args}
                   LIBS      ${_link_libraries} multio-api )

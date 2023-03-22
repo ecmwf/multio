@@ -24,16 +24,13 @@
 #include "multio/tools/MultioTool.h"
 #include "multio/util/ConfigurationPath.h"
 
-//#include "TestDataContent.h"
-//#include "testHelpers.h"
-
 using multio::util::configuration_file_name;
 using multio::util::configuration_path_name;
 
 
-class MultioReplayAdamCApi final : public multio::MultioTool {
+class MultioReplayExampleCApi final : public multio::MultioTool {
 public:
-    MultioReplayAdamCApi(int argc, char** argv);
+    MultioReplayExampleCApi(int argc, char** argv);
 
 private:
     void usage(const std::string& tool) const override {
@@ -47,18 +44,17 @@ private:
     void execute(const eckit::option::CmdArgs& args) override;
 
     
-    std::string transportType_ = "";
-    std::string pathtodata_="";
+    std::string transportType_ = "mpi";
+    std::string pathtodata_="/Users/maaw/multio/tests/multio/test.grib";
 
-    size_t clientCount_ = 1;
+    //size_t clientCount_ = 1;
     std::string replayField_ = "";
     int step_ = 1;
     
-
     bool singlePrecision_;
 };
 
-MultioReplayAdamCApi::MultioReplayAdamCApi(int argc, char** argv) :
+MultioReplayExampleCApi::MultioReplayExampleCApi(int argc, char** argv) :
     multio::MultioTool(argc, argv), singlePrecision_(false) {
     options_.push_back(new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("path", "Path to data"));
@@ -75,7 +71,7 @@ MultioReplayAdamCApi::MultioReplayAdamCApi(int argc, char** argv) :
     return;
 }
 
-void MultioReplayAdamCApi::init(const eckit::option::CmdArgs& args) {
+void MultioReplayExampleCApi::init(const eckit::option::CmdArgs& args) {
     std::cout << "INIT" << std::endl;
     args.get("transport", transportType_);
     args.get("path", pathtodata_);
@@ -86,11 +82,11 @@ void MultioReplayAdamCApi::init(const eckit::option::CmdArgs& args) {
     std::cout << "Step: " << step_ << std::endl;
 }
 
-void MultioReplayAdamCApi::finish(const eckit::option::CmdArgs&) {
+void MultioReplayExampleCApi::finish(const eckit::option::CmdArgs&) {
     std::cout << "FINISH" << std::endl;
 }
 
-void MultioReplayAdamCApi::execute(const eckit::option::CmdArgs&) {
+void MultioReplayExampleCApi::execute(const eckit::option::CmdArgs&) {
     std::cout << "EXECUTE" << std::endl;
 }
 
@@ -110,14 +106,33 @@ CASE("Initial Test for version") {
     EXPECT(rc==MULTIO_SUCCESS);
 }
 
+CASE("Test Multio Initialisation") {
+    int rc;
+    rc = multio_initialise();
+    if (rc != MULTIO_SUCCESS) {
+        std::cout << "Multio NOT Initialised" << std::endl;
+    }
+    else{ 
+        std::cout << "Multio Initialised" << std::endl;
+    }
+    EXPECT(rc==MULTIO_SUCCESS);
+}
+
 CASE("Test loading config") {
     multio_handle_t* multio_handle = nullptr;
     multio_configurationcontext_t* multio_cc = nullptr;
     int rc;
 
     rc = multio_new_configurationcontext(&multio_cc);
+    if(rc==MULTIO_SUCCESS){
+        std::cout << "Config created from environment path" << std::endl;
+    }
+    else{
+        std::cout << "Config NOT created from environment path" << std::endl;
+    }
+
     const char *conf_path = "/Users/maaw/multio/tests/multio/";
-    std::cout << conf_path << std::endl;
+    //std::cout << conf_path << std::endl;
 
     rc = multio_conf_set_path(multio_cc, conf_path);
     if(rc==MULTIO_SUCCESS){
@@ -138,6 +153,7 @@ CASE("Test loading config") {
     else{
         std::cout << "Config NOT created from filename" << std::endl;
     }
+
     multio_new_handle(&multio_handle, multio_cc);
 
     rc = multio_start_server(multio_cc);
@@ -148,6 +164,22 @@ CASE("Test loading config") {
         std::cout << "Server NOT started" << std::endl;
     }
 
+    rc = multio_open_connections(multio_handle);
+    if(rc==MULTIO_SUCCESS){
+        std::cout << "Connections opened" << std::endl;
+    }
+    else{
+        std::cout << "Connections NOT opened" << std::endl;
+    }
+
+    rc = multio_close_connections(multio_handle);
+    if(rc==MULTIO_SUCCESS){
+        std::cout << "Connections closed" << std::endl;
+    }
+    else{
+        std::cout << "Connections NOT closed" << std::endl;
+    }
+
     rc = multio_delete_configurationcontext(multio_cc);
     if(rc==MULTIO_SUCCESS){
         std::cout << "Config deleted" << std::endl;
@@ -155,48 +187,43 @@ CASE("Test loading config") {
     else{
         std::cout << "Config NOT deleted" << std::endl;
     }
+
+    rc = multio_delete_handle(multio_handle);
+    if(rc==MULTIO_SUCCESS){
+        std::cout << "Handle deleted" << std::endl;
+    }
+    else{
+        std::cout << "Handle NOT deleted" << std::endl;
+    }
     
     EXPECT(rc==MULTIO_SUCCESS);
 }
 
-CASE("Test Multio Initialisation") {
-    int rc;
-    rc = multio_initialise();
-    if (rc != MULTIO_SUCCESS) {
-        std::cout << "Multio NOT Initialised" << std::endl;
-    }
-    else{ 
-        std::cout << "Multio Initialised" << std::endl;
-    }
-    EXPECT(rc==MULTIO_SUCCESS);
-}
 
 CASE("Test creating metadata"){
     int rc;
     multio_metadata_t* md = nullptr;
     rc = multio_new_metadata(&md);
     
-    const char* key = "test";
+    const char* key = "test_int";
     int value=1;
 
     multio_metadata_set_int(md, key, value);
 
+    key = "test_long";
     long long_value = 1;
     
     multio_metadata_set_long(md, key, long_value);
     
+    key = "test_long_long";
     long long ll_value = 1;
 
     multio_metadata_set_longlong(md, key, ll_value);
 
+    key = "test_string";
     const char * s_value = "test_val";
 
-    multio_metadata_set_string(md, key, s_value);
-
-    multio_handle_t* multio_handle = nullptr;
-    multio_configurationcontext_t* multio_cc = nullptr;
- 
-    //multio_new_handle(&multio_handle, multio_cc);    
+    multio_metadata_set_string(md, key, s_value);   
     
     rc = multio_delete_metadata(md);
     EXPECT(rc==MULTIO_SUCCESS);
@@ -206,6 +233,7 @@ CASE("Test creating metadata"){
 CASE("Read from grib file"){
     const char* path = "/Users/maaw/multio/tests/multio/test.grib";
     auto field = eckit::PathName{path};
+    int rc;
 
     std::cout << field << std::endl;
 
@@ -289,7 +317,7 @@ CASE("Write to field"){
 
 int main(int argc, char** argv){
     std::cout << "Start Test!" << std::endl;
-    MultioReplayAdamCApi tool(argc, argv);
+    MultioReplayExampleCApi tool(argc, argv);
     tool.start();
     return eckit::testing::run_tests(argc, argv);
 }

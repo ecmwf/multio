@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "eckit/exception/Exceptions.h"
+#include "eckit/mpi/Comm.h"
 #include "eckit/parser/YAMLParser.h"
 #include "eckit/types/Fraction.h"
 
@@ -29,10 +30,10 @@
 #include "mir/param/SimpleParametrisation.h"
 #include "mir/repres/gauss/reduced/Reduced.h"
 
-#include "eckit/mpi/Comm.h"
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 #include "multio/util/PrecisionTag.h"
+#include "multio/util/Substitution.h"
 
 
 namespace multio::action::interpolate {
@@ -136,7 +137,17 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
     };
 
     if (cfg.getSubConfiguration("input").get().isString()) {
-        const auto input = cfg.getString("input");
+        // const auto input = GlobalConfCtx::replaceCurly(cfg.getString("input"));
+        const std::string input = util::replaceCurly(cfg.getString("input"), [](std::string_view replace) {
+            std::string lookUpKey{replace};
+            char* env = ::getenv(lookUpKey.c_str());
+            if (env) {
+                return eckit::Optional<std::string>{env};
+            }
+            else {
+                return eckit::Optional<std::string>{};
+            }
+        });
 
         static const std::regex sh("(T|TCO|TL)([1-9][0-9]*)");
         static const std::regex gg("([FNO])([1-9][0-9]*)");

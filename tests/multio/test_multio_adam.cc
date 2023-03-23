@@ -12,6 +12,7 @@
 #include "multio/api/multio_c.h"
 #include "multio/api/multio_c_cpp_utils.h"
 #include "multio/message/Metadata.h"
+#include "multio/multio_version.h"
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/FileHandle.h"
@@ -26,6 +27,114 @@
 
 using multio::util::configuration_file_name;
 using multio::util::configuration_path_name;
+
+
+namespace std {
+template <> struct default_delete<multio_metadata_t> {
+    void operator() (multio_metadata_t* m) { 
+        EXPECT(multio_delete_metadata(m) == MULTIO_SUCCESS);
+    }
+};
+
+template <> struct default_delete<multio_handle_t> {
+    void operator() (multio_handle_t* m) { 
+        EXPECT(multio_delete_handle(m) == MULTIO_SUCCESS);
+    }
+};
+}
+
+/***
+
+
+namespace std {
+
+
+    template <typename T>
+    struct default_delete {
+        void operator() (const T* p) { delete p; }
+    }
+
+
+    template <typename T>
+    struct unique_ptr {
+        unique_ptr(T* p) : ptr_(p) {}
+        unique_ptr(unique_ptr<T>&& rhs) { ... }
+        ~unique_ptr() {
+            default_delete<T>{}(p);
+        }
+        const T& operator*() const { return *ptr_; }
+        T& operator*() { return *ptr_; }
+    private:
+        T* ptr_;
+    };
+
+
+    template <>
+    struct default_delete<multio_metadata_t> {
+        void operator() (const multio_metadata_t* p) { EXPECT(multio_metadata_delete(p) == MULTIO_SUCCESS); }
+    };
+}
+
+
+multio_metadata_t* md;
+EXPECT(multio_new_metadata(&md) == MULTIO_SUCCESS);
+unique_ptr<multio_metdata_t> del(md);
+...
+
+
+
+int abcd = 1234;
+std::vector<int> v {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+
+eckit::Log::info() << "My value: " << abcd << std::endl;
+
+template <typename T>
+struct eckit_vector_print_condense {
+    static bool condense = false;
+}
+
+
+template <> struct eckit_vector_print_condense<int> {
+    static bool condense = true;
+}
+
+
+
+std::ostream& operator<<(std::ostream& s, const std::vector<T>& v) {
+
+    if (eckit_vector_print_condense<T>:±condense) {}
+    [1, 2, ..., 10]
+    ...
+    return s;
+}
+
+
+
+
+
+{
+    {
+        // std::unique_ptr<MY_TYPE> p{new MY_TYPE(a, b, c)};
+        MY_TYPE* p = new MY_TYPE(a, b, c)
+        
+        try {
+            ...
+            ...
+            throw Exception();
+            ...
+            ...
+        } catch (...) {
+            delete p;
+            throw;
+        }
+
+        delete p;
+    }
+}
+
+***/
+
 
 
 class MultioReplayExampleCApi final : public multio::MultioTool {
@@ -48,7 +157,7 @@ private:
     std::string pathtodata_="/Users/maaw/multio/tests/multio/test.grib";
 
     //size_t clientCount_ = 1;
-    std::string replayField_ = "";
+    //std::string replayField_ = "";
     int step_ = 1;
     
     bool singlePrecision_;
@@ -95,27 +204,13 @@ namespace test{
 
 CASE("Initial Test for version") {
     const char *version = nullptr;
-    int rc;
-    rc = multio_version(&version);
-    if (rc != MULTIO_SUCCESS){
-        std::cout << "Error getting Version" << std::endl;
-    }
-    else{
-        std::cout << "Version " << version << std::endl;
-    }
-    EXPECT(rc==MULTIO_SUCCESS);
+    EXPECT(multio_version(&version) == MULTIO_SUCCESS);
+    EXPECT(std::strcmp(version, multio_version_str())==0);
 }
 
 CASE("Test Multio Initialisation") {
-    int rc;
-    rc = multio_initialise();
-    if (rc != MULTIO_SUCCESS) {
-        std::cout << "Multio NOT Initialised" << std::endl;
-    }
-    else{ 
-        std::cout << "Multio Initialised" << std::endl;
-    }
-    EXPECT(rc==MULTIO_SUCCESS);
+    EXPECT(multio_initialise() == MULTIO_SUCCESS);
+    eckit::Main::instance(); // throws if not initialised
 }
 
 CASE("Test loading config") {
@@ -154,7 +249,13 @@ CASE("Test loading config") {
         std::cout << "Config NOT created from filename" << std::endl;
     }
 
-    multio_new_handle(&multio_handle, multio_cc);
+    rc = multio_new_handle(&multio_handle, multio_cc);
+    if(rc==MULTIO_SUCCESS){
+        std::cout << "Config handle" << std::endl;
+    }
+    else{
+        std::cout << "Config NOT handle" << std::endl;
+    }
 
     rc = multio_start_server(multio_cc);
     if(rc==MULTIO_SUCCESS){
@@ -203,7 +304,10 @@ CASE("Test loading config") {
 CASE("Test creating metadata"){
     int rc;
     multio_metadata_t* md = nullptr;
-    rc = multio_new_metadata(&md);
+    EXPECT(multio_new_metadata(&md) == MULTIO_SUCCESS);
+    EXPECT(md != nullptr);
+
+    std::unique_ptr<multio_metadata_t> multio_deleter(md);
     
     const char* key = "test_int";
     int value=1;
@@ -212,6 +316,8 @@ CASE("Test creating metadata"){
 
     key = "test_long";
     long long_value = 1;
+
+    //EXPECT(...);
     
     multio_metadata_set_long(md, key, long_value);
     
@@ -224,13 +330,10 @@ CASE("Test creating metadata"){
     const char * s_value = "test_val";
 
     multio_metadata_set_string(md, key, s_value);   
-    
-    rc = multio_delete_metadata(md);
-    EXPECT(rc==MULTIO_SUCCESS);
-
+ 
 }
 
-CASE("Read from grib file"){
+CASE("Test read from grib file"){
     const char* path = "/Users/maaw/multio/tests/multio/test.grib";
     auto field = eckit::PathName{path};
     int rc;
@@ -252,9 +355,8 @@ CASE("Read from grib file"){
 
 }
 
-CASE("Write to field"){
+CASE("Test write field"){
 
-    multio_handle_t* multio_handle = nullptr;
     multio_configurationcontext_t* multio_cc = nullptr;
     int rc;
 
@@ -269,27 +371,30 @@ CASE("Write to field"){
     else{
         std::cout << "Config Path NOT set" << std::endl;
     }
-    multio_new_handle(&multio_handle, multio_cc);
-    EXPECT(rc==MULTIO_SUCCESS);
 
-    const char* path = "/Users/maaw/multio/tests/multio/test.grib";
-    auto field = eckit::PathName{path};
+    multio_handle_t* multio_handle = nullptr;
+    EXPECT(multio_new_handle(&multio_handle, multio_cc) == MULTIO_SUCCESS);
+    EXPECT(multio_handle);
+    std::unique_ptr<multio_handle_t> handle_deleter(multio_handle);
 
-    std::cout << field << std::endl;
+    eckit::PathName field{"/Users/maaw/multio/tests/multio/test.grib"};
+    eckit::Length len = field.size();
+    eckit::Buffer buffer(len);
 
-    eckit::FileHandle infile{field.fullName()};
-    size_t bytes = infile.openForRead();
-
-    eckit::Buffer buffer(bytes);
-    infile.read(buffer.data(), bytes);
-
-    infile.close();
+    eckit::FileHandle infile{field};
+    infile.openForRead();
+    {
+        eckit::AutoClose closer(infile);
+        EXPECT(infile.read(buffer.data(), len) == len);
+    }
    
     auto sz = static_cast<int>(buffer.size()) / sizeof(double);
     std::cout << "Size of Buffer: " << sz << std::endl;
 
     multio_metadata_t* md = nullptr;
     multio_new_metadata(&md);
+
+    std::unique_ptr<multio_metadata_t> multio_deleter(md);
 
     multio_metadata_set_string(md, "category", "test_data");
     multio_metadata_set_int(md, "globalSize", sz);
@@ -310,8 +415,6 @@ CASE("Write to field"){
     EXPECT(rc==MULTIO_SUCCESS);
 
 }
-
-
 }
 }
 

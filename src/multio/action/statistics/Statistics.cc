@@ -66,7 +66,7 @@ void Statistics::executeImpl(message::Message msg) {
     if (!md.has("step")) {
         throw eckit::SeriousBug("MULTIO ACTION STATISTICS :: missing metadata", Here());
     }
-
+    StatisticsOptions opt{options_, msg};
     std::ostringstream os;
     {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
@@ -77,7 +77,7 @@ void Statistics::executeImpl(message::Message msg) {
         os << msg.metadata().getString("param", "xxx.yyy") << msg.metadata().getLong("level", 0L) << msg.source();
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {
-            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg, options_);
+            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg, opt);
         }
 
         if (fieldStats_.at(os.str())->process(msg)) {

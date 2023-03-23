@@ -323,7 +323,7 @@ plans:
           time-step: 3600
           use-current-time: true
         operations:
-          - divide-accumulated-field
+          - field-average
 
       - type: encode
         format: grib
@@ -356,7 +356,7 @@ plans:
           time-step: 3600
           use-current-time: true
         operations:
-          - running-average
+          - average
 
       - type: encode
         format: grib
@@ -389,7 +389,7 @@ plans:
           time-step: 3600
           use-current-time: true
         operations:
-          - running-average
+          - average
 
       - type: encode
         format: grib
@@ -423,7 +423,7 @@ plans:
           time-step: 3600
           use-current-time: true
         operations:
-          - running-average
+          - average
 
       - type: encode
         format: grib
@@ -456,7 +456,7 @@ plans:
           time-step: 3600
           use-current-time: true
         operations:
-          - divide-accumulated-field
+          - field-average
 
       - type: interpolate
         input: O80
@@ -498,7 +498,7 @@ plans:
           time-step: 3600
           use-current-time: true
         operations:
-          - running-average
+          - average
 
       - type: interpolate
         input: O80
@@ -539,7 +539,7 @@ plans:
           time-step: 3600
           use-current-time: true
         operations:
-          - running-average
+          - average
 
       - type: interpolate
         input: O80
@@ -581,7 +581,7 @@ plans:
           time-step: 3600
           use-current-time: true
         operations:
-          - divide-accumulated-field
+          - field-average
 
       - type: interpolate
         input: O80
@@ -622,7 +622,7 @@ plans:
           time-step: 3600
           use-current-time: true
         operations:
-          - running-average
+          - average
 
       - type: interpolate
         input: O80
@@ -663,7 +663,7 @@ plans:
           time-step: 3600
           use-current-time: true
         operations:
-          - running-average
+          - average
 
       - type: interpolate
         input: O80
@@ -705,7 +705,7 @@ plans:
           time-step: 3600
           use-current-time: true
         operations:
-          - running-average
+          - average
 
       - type: interpolate
         input: O80
@@ -746,7 +746,7 @@ plans:
           time-step: 3600
           use-current-time: true
         operations:
-          - running-average
+          - average
 
       - type: interpolate
         input: O80
@@ -766,4 +766,3 @@ plans:
             append: false
             per-server: true
             path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/02-RegularLL-1.0x1.0/SFCvariables-1mAverage_InstantaneousFileds-1.0x1.0-grib2.grib'
-

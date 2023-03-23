@@ -1,6 +1,7 @@
 #include "multio/LibMultio.h"
 #include "multio/tools/MultioTool.h"
 
+#include "atlas/functionspace.h"
 #include "atlas/grid.h"
 #include "atlas/library.h"
 
@@ -47,15 +48,12 @@ namespace {
         err = codes_set_long_array(handle, "pl", pl.data(), pl.size());
         handleCodesError("eccodes error while setting the PL array: ", err, Here());
 
-        std::vector<double> values(grid.size());
-        size_t n{0};
+        std::vector<double> values(grid.size(), 0.0);
         double maxLongitude = 0;
         for (const auto p : grid.xy()) {
-            values[n] = 0;
             if (maxLongitude < p.x()) {
                 maxLongitude = p.x();
             }
-            ++n;
         }
 
         auto it = grid.lonlat().begin();
@@ -88,9 +86,27 @@ namespace {
         }
     }
 
-    void setSHFields(codes_handle* handle, const eckit::option::CmdArgs&) {
+    void setSHFields(codes_handle* handle, const eckit::option::CmdArgs& args) {
         int err = codes_set_long(handle, "grib2LocalSectionPresent", 1);
         handleCodesError("eccodes error while enabling section 2 in sh sample: ", err, Here());
+
+        long spectralTruncation = 79;
+        args.get("spectralTruncation", spectralTruncation);
+
+        err = codes_set_long(handle, "J", spectralTruncation);
+        handleCodesError("eccodes error while setting J: ", err, Here());
+
+        err = codes_set_long(handle, "K", spectralTruncation);
+        handleCodesError("eccodes error while setting K: ", err, Here());
+
+        err = codes_set_long(handle, "M", spectralTruncation);
+        handleCodesError("eccodes error while setting M: ", err, Here());
+
+        auto spectral = atlas::functionspace::Spectral(spectralTruncation);
+        auto size = spectral.nb_spectral_coefficients_global();
+        std::vector<double> values(size, 0.0);
+        err = codes_set_double_array(handle, "values", values.data(), values.size());
+        handleCodesError("eccodes error while setting the values array: ", err, Here());
     }
 }
 
@@ -119,6 +135,7 @@ MultioGenerateGribTemplate::MultioGenerateGribTemplate(int argc, char** argv) : 
     options_.push_back(new eckit::option::SimpleOption<std::string>("output", "Output grib file path"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("indicatorOfTypeOfLevel", "Level type"));
     options_.push_back(new eckit::option::SimpleOption<long>("generatingProcessIdentifier", "Generating process identifier"));
+    options_.push_back(new eckit::option::SimpleOption<long>("spectralTruncation", "Spectral truncation number"));
 }
 
 void MultioGenerateGribTemplate::init(const eckit::option::CmdArgs& args) {

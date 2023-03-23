@@ -172,14 +172,14 @@ private:
 
 
 template <typename T>
-class FieldAverage final : public Operation<T> {
+class FluxAverage final : public Operation<T> {
     long count_ = 0;
 
 public:
     using Operation<T>::values_;
     using Operation<T>::options_;
 
-    FieldAverage(const std::string& name, long sz, const StatisticsOptions& options) :
+    FluxAverage(const std::string& name, long sz, const StatisticsOptions& options) :
         Operation<T>{name, "average", sz, options} {}
 
     eckit::Buffer compute() override {
@@ -304,8 +304,8 @@ std::unique_ptr<Operation<T>> make_operation(const std::string& opname, long sz,
     if (opname == "weighted-average") {
         return std::make_unique<WeightedAverage<T>>(opname, sz, options);
     }
-    if (opname == "field-average") {
-        return std::make_unique<FieldAverage<T>>(opname, sz, options);
+    if (opname == "flux-average") {
+        return std::make_unique<FluxAverage<T>>(opname, sz, options);
     }
     if (opname == "minimum") {
         return std::make_unique<Minimum<T>>(opname, sz, options);

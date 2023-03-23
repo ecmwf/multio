@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include <multio/util/ConfigurationContext.h>
+#include "multio/util/ConfigurationContext.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/message/Message.h"
 

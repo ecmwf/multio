@@ -17,8 +17,6 @@
 #include <mutex>
 
 #include "eckit/exception/Exceptions.h"
-#include "eckit/log/JSON.h"
-#include "eckit/value/Value.h"
 
 #include "multio/LibMultio.h"
 

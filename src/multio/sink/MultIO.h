@@ -24,10 +24,10 @@
 #include "eckit/message/Message.h"
 #include "eckit/types/Types.h"
 
-#include <multio/util/ConfigurationContext.h>
 #include "multio/sink/DataSink.h"
 #include "multio/sink/IOStats.h"
 #include "multio/sink/Trigger.h"
+#include "multio/util/ConfigurationContext.h"
 
 namespace multio {
 

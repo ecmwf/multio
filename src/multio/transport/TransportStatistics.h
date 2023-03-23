@@ -2,7 +2,7 @@
 
 #include <iosfwd>
 
-#include <eckit/log/Statistics.h>
+#include "eckit/log/Statistics.h"
 
 namespace multio {
 namespace transport {

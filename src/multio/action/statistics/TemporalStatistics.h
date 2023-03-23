@@ -4,10 +4,9 @@
 #include <memory>
 #include <string>
 
-#include "Operation.h"
-#include "Period.h"
-#include "StatisticsOptions.h"
-#include "eckit/types/DateTime.h"
+#include "multio/action/statistics/Operation.h"
+#include "multio/action/statistics/Period.h"
+#include "multio/action/statistics/StatisticsOptions.h"
 #include "multio/message/Message.h"
 
 namespace multio {

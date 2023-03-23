@@ -1,17 +1,17 @@
 #pragma once
 
-#include <StatisticsOptions.h>
-#include <eckit/exception/Exceptions.h>
-#include <eckit/io/Buffer.h>
-#include <multio/util/VariantHelpers.h>
-#include "eckit/log/Log.h"
-#include "multio/LibMultio.h"
-
-#include <memory>
 #include <string>
-#include <variant>
+#include <memory>
 #include <vector>
+#include <variant>
 
+#include "eckit/exception/Exceptions.h"
+#include "eckit/io/Buffer.h"
+#include "eckit/log/Log.h"
+
+#include "multio/LibMultio.h"
+#include "multio/action/statistics/StatisticsOptions.h"
+#include "multio/util/VariantHelpers.h"
 
 namespace multio {
 namespace action {

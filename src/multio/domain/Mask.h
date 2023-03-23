@@ -6,8 +6,6 @@
 #include <mutex>
 #include <vector>
 
-#include <eckit/io/Buffer.h>
-
 namespace eckit {
 class LocalConfiguration;
 }

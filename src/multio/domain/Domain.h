@@ -5,8 +5,6 @@
 #include <set>
 #include <vector>
 
-#include <eckit/io/Buffer.h>
-
 namespace multio {
 
 namespace message {

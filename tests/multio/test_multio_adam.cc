@@ -145,8 +145,6 @@ CASE("Test loading configuration") {
     
     multio_configurationcontext_t* multio_cc = nullptr;
 
-    //int rc;
-
     test_check(multio_new_configurationcontext(&multio_cc), "Config Created from Environment Path");
     std::unique_ptr<multio_configurationcontext_t> configuration_context_deleter(multio_cc);
 
@@ -176,9 +174,32 @@ CASE("Test loading configuration") {
     //test_check(multio_delete_handle(multio_handle), "Delete Handle");   
 }
 
+CASE("Test MPI Functionality"){
+    multio_handle_t* multio_handle = nullptr;
+    
+    multio_configurationcontext_t* multio_cc = nullptr;
+
+    test_check(multio_new_configurationcontext(&multio_cc), "Config Created from Environment Path");
+    std::unique_ptr<multio_configurationcontext_t> configuration_context_deleter(multio_cc);
+
+    bool allow = true;
+    test_check(multio_conf_mpi_allow_world_default_comm(multio_cc, allow), "Allow World Default Comm");
+
+    int parent_comm = 0;
+    test_check(multio_conf_mpi_parent_comm(multio_cc, parent_comm), "Set MPI specific initalization parameters for parent Comm");
+
+    int * client_comm = 0;
+    test_check(multio_conf_mpi_return_client_comm(multio_cc, client_comm), "Set MPI specific initalization parameters for client Comm");
+
+    int * server_comm = 0;
+    test_check(multio_conf_mpi_return_server_comm(multio_cc, server_comm), "Set MPI specific initalization parameters for server Comm");
+
+    const char * client_id = "test_client";
+    test_check(multio_conf_mpi_client_id(multio_cc, client_id), "Set MPI client ID");
+}
+
 
 CASE("Test creating metadata"){
-    int rc;
     multio_metadata_t* md = nullptr;
 
     test_check(multio_new_metadata(&md), "Create New Metadata");
@@ -227,7 +248,6 @@ CASE("Test read from grib file"){
 }
 
 CASE("Test write field"){
-
     multio_configurationcontext_t* multio_cc = nullptr;
 
     test_check(multio_new_configurationcontext(&multio_cc), "Configuration Context Created");

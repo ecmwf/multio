@@ -61,9 +61,7 @@ bool DateTimePeriod::isWithin(const eckit::DateTime& dt) {
 }
 
 long DateTimePeriod::timeSpanInHours() const {
-    return (eckit::DateTime{endPoint().date().yyyymmdd(), eckit::Time{0, 0, 0}}
-            - eckit::DateTime{startPoint().date().yyyymmdd(), eckit::Time{0, 0, 0}})
-         / (3600);
+    return (endPoint_ - startPoint_) / 3600;
 }
 
 eckit::DateTime DateTimePeriod::startPoint() const {

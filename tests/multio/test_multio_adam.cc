@@ -5,6 +5,7 @@
 #include <cstring>
 #include <iostream>
 #include <string.h>
+#include <filesystem>
 
 #include "eckit/filesystem/TmpFile.h"
 #include "eckit/testing/Test.h"
@@ -64,68 +65,6 @@ void test_check(int rc, const char* doc){
 }
 
 
-class MultioReplayExampleCApi final : public multio::MultioTool {
-public:
-    MultioReplayExampleCApi(int argc, char** argv);
-
-private:
-    void usage(const std::string& tool) const override {
-        eckit::Log::info() << std::endl << "Usage: " << tool << " [options]" << std::endl;
-    }
-
-    void init(const eckit::option::CmdArgs& args) override;
-
-    void finish(const eckit::option::CmdArgs& args) override;
-
-    void execute(const eckit::option::CmdArgs& args) override;
-
-    
-    std::string transportType_ = "mpi";
-    std::string pathtodata_="/Users/maaw/multio/tests/multio/test.grib";
-
-    //size_t clientCount_ = 1;
-    //std::string replayField_ = "";
-    int step_ = 1;
-    
-    bool singlePrecision_;
-};
-
-MultioReplayExampleCApi::MultioReplayExampleCApi(int argc, char** argv) :
-    multio::MultioTool(argc, argv), singlePrecision_(false) {
-    options_.push_back(new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
-    options_.push_back(new eckit::option::SimpleOption<std::string>("path", "Path to data"));
-    options_.push_back(new eckit::option::SimpleOption<long>("nbclients", "Number of clients"));
-    options_.push_back(new eckit::option::SimpleOption<long>("field", "Name of field to replay"));
-    options_.push_back(new eckit::option::SimpleOption<long>("step", "Time counter for the field to replay"));
-
-    std::cout << "Tool Created" << std::endl;
-    std::cout << "Command line arguments:" << std::endl;
-    for(int i = 0; i < argc; i++){
-        std::cout << argv[i] << std::endl;
-    }
-    std::cout << std::endl;
-    return;
-}
-
-void MultioReplayExampleCApi::init(const eckit::option::CmdArgs& args) {
-    std::cout << "INIT" << std::endl;
-    args.get("transport", transportType_);
-    args.get("path", pathtodata_);
-    args.get("step", step_);
-
-    std::cout << "Transport: " << transportType_ << std::endl;
-    std::cout << "Path to data: " << pathtodata_ << std::endl;
-    std::cout << "Step: " << step_ << std::endl;
-}
-
-void MultioReplayExampleCApi::finish(const eckit::option::CmdArgs&) {
-    std::cout << "FINISH" << std::endl;
-}
-
-void MultioReplayExampleCApi::execute(const eckit::option::CmdArgs&) {
-    std::cout << "EXECUTE" << std::endl;
-}
-
 namespace multio {
 namespace test{
 
@@ -148,12 +87,12 @@ CASE("Test loading configuration") {
     test_check(multio_new_configurationcontext(&multio_cc), "Config Created from Environment Path");
     std::unique_ptr<multio_configurationcontext_t> configuration_context_deleter(multio_cc);
 
-    const char *conf_path = "/Users/maaw/multio/tests/multio/";
+    auto configFile = configuration_file_name();
+    const char *conf_path = configFile.asString().c_str();
 
     test_check(multio_conf_set_path(multio_cc, conf_path), "Configuration Path Changed");
 
     auto configPath = configuration_path_name();
-    auto configFile = configuration_file_name();
     eckit::Log::error() << "Configuration Path: " << configPath.asString().c_str() << std::endl;
     eckit::Log::error() << "Configuration File: " << configFile.asString().c_str() << std::endl;
 
@@ -168,7 +107,7 @@ CASE("Test loading configuration") {
 
     test_check(multio_close_connections(multio_handle), "Close Connections");
 
-    //Dont know if these needed as objects already auto deleted using type traits
+    //Dont know if these needed as objects already auto deleted using type traits but want to test delete functions
     //test_check(multio_delete_configurationcontext(multio_cc), "Delete Configuration object");
 
     //test_check(multio_delete_handle(multio_handle), "Delete Handle");   
@@ -227,8 +166,13 @@ CASE("Test creating metadata"){
 }
 
 CASE("Test read from grib file"){
-    const char* path = "/Users/maaw/multio/tests/multio/test.grib";
-    auto field = eckit::PathName{path};
+    auto config_file = configuration_path_name();
+    std::string file_name = "test.grib";
+    std::string full_path = config_file.asString() + file_name;
+    const char *conf_path = full_path.c_str();
+
+    //const char* path = "/Users/maaw/multio/tests/multio/test.grib";
+    auto field = eckit::PathName{conf_path};
 
     eckit::Log::error() << field << std::endl;
 
@@ -258,7 +202,12 @@ CASE("Test write field"){
     EXPECT(multio_handle);
     std::unique_ptr<multio_handle_t> handle_deleter(multio_handle);
 
-    eckit::PathName field{"/Users/maaw/multio/tests/multio/test.grib"};
+    //eckit::PathName field{"/Users/maaw/multio/tests/multio/test.grib"};
+    auto config_file = configuration_path_name();
+    std::string file_name = "test.grib";
+    std::string full_path = config_file.asString() + file_name;
+    const char *conf_path = full_path.c_str();
+    eckit::PathName field{conf_path};
     eckit::Length len = field.size();
     eckit::Buffer buffer(len);
 
@@ -288,9 +237,14 @@ CASE("Test write field"){
     test_check(multio_metadata_set_bool(md, "toAllServers", false), "Set Bool");
 
     // Overwrite these fields in the existing metadata object
-    test_check(multio_metadata_set_string(md, "name", "test"), "Set String)");
+    test_check(multio_metadata_set_string(md, "name", "test"), "Set String");
 
     test_check(multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz), "Write Field");
+
+    //test_check(multio_write_mask(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz), "Write Mask");
+
+    //int domain_dims[4] = {1,2,3,4};
+    //test_check(multio_write_domain(multio_handle, md, domain_dims, 4), "Write Domain");
 
 }
 }
@@ -298,7 +252,5 @@ CASE("Test write field"){
 
 int main(int argc, char** argv){
     std::cout << "Start Test!" << std::endl;
-    MultioReplayExampleCApi tool(argc, argv);
-    tool.start();
     return eckit::testing::run_tests(argc, argv);
 }

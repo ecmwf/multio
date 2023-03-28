@@ -185,7 +185,7 @@ CASE("Test read from grib file"){
         EXPECT(infile.read(buffer.data(), len) == len);
     }
 
-    infile.close();
+    //infile.close();
    
     auto sz = static_cast<int>(buffer.size()) / sizeof(double);
     std::cout << "Size of Buffer: " << sz << std::endl;
@@ -245,7 +245,6 @@ CASE("Test write field"){
 
     //int domain_dims[4] = {1,2,3,4};
     //test_check(multio_write_domain(multio_handle, md, domain_dims, 4), "Write Domain");
-
 }
 }
 }

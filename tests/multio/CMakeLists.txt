@@ -27,6 +27,12 @@ if ( HAVE_FDB5 )
     )
 endif()
 
+# Example 
+
+ecbuild_add_executable( TARGET    multio-example
+                        SOURCES   multio_example.cc MultioTool.cc
+                        LIBS      ${_link_libraries} multio-api )
+
 # Test sinks
 
 ecbuild_add_test( TARGET    test_multio_example

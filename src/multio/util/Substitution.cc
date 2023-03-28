@@ -7,7 +7,7 @@ namespace multio {
 namespace util {
 
 eckit::Optional<bool> parseEnabled( const eckit::LocalConfiguration& cfg ){
-    
+
     eckit::Value input = cfg.has("enable") ? 
         cfg.getSubConfiguration("enable").get().isString() ? 
             eckit::Value{ 
@@ -16,7 +16,6 @@ eckit::Optional<bool> parseEnabled( const eckit::LocalConfiguration& cfg ){
                     [ ](std::string_view replace) {
                         std::string lookUpKey{replace};
                         char* env = ::getenv(lookUpKey.c_str());
-                        std::cout << "Ho sostituito una variabile e ora il risultato e :: " << env << std::endl;
                         return env ? eckit::Optional<std::string>{env} : eckit::Optional<std::string>{};
                     }
                 )) 

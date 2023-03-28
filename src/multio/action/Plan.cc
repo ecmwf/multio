@@ -21,6 +21,7 @@
 #include "multio/action/Action.h"
 #include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
+#include "multio/util/Substitution.h"
 
 using eckit::LocalConfiguration;
 
@@ -70,7 +71,13 @@ Plan::Plan(const ConfigurationContext& confCtx, const util::YAMLFile* file) :
               ? file->content.getString("name")
               : (confCtx.config().has("name") ? confCtx.config().getString("name")
                                               : (file ? file->path.asString() : "anonymous"));
-    enabled_ = (file) ? file->content.getBool("enable", true) : confCtx.config().getBool("enable", true);
+    auto tmp = util::parseEnabled( (file) ? file->content : confCtx.config() );
+    if ( tmp ){ 
+        enabled_ = *tmp;
+    } else 
+    {
+        throw eckit::UserError( "Bool expected", Here() );
+    };
     auto root = rootConfig(file ? file->content : confCtx.config(), name_);
     root_ = ActionFactory::instance().build(root.getString("type"), confCtx.recast(root, util::ComponentTag::Action));
 };

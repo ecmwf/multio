@@ -28,10 +28,10 @@ StatisticsOptions::StatisticsOptions(const StatisticsOptions& opt, const message
     startDate_{0},
     startTime_{0} {
     if (useDateTime() && msg.metadata().has("time")) {
-        startDate_ = msg.metadata().getLong("time");
+        startTime_ = msg.metadata().getLong("time");
     }
     else if (!useDateTime() && msg.metadata().has("startTime")) {
-        startDate_ = msg.metadata().getLong("startTime");
+        startTime_ = msg.metadata().getLong("startTime");
     }
     else {
         throw eckit::UserError{"Unable to find start time", Here()};
@@ -46,6 +46,10 @@ StatisticsOptions::StatisticsOptions(const StatisticsOptions& opt, const message
     else {
         throw eckit::UserError{"Unable to find start date", Here()};
     }
+
+    timeStep_ = msg.metadata().getLong("timeStep", timeStep_);
+    stepFreq_ = msg.metadata().getLong("step-frequency", stepFreq_);
+
     return;
 };
 

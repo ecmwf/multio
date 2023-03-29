@@ -77,7 +77,7 @@ namespace {
         err = codes_get_long(handle, "editionNumber", &gribVersion);
         handleCodesError("eccodes error while reading the GRIB version: ", err, Here());
 
-        if (gribVersion == 1) {
+        if ((gribVersion == 1) && args.has("indicatorOfTypeOfLevel")) {
             std::string indicatorOfTypeOfLevel = "sfc";
             args.get("indicatorOfTypeOfLevel", indicatorOfTypeOfLevel);
             auto size = indicatorOfTypeOfLevel.size();
@@ -175,10 +175,12 @@ void MultioGenerateGribTemplate::execute(const eckit::option::CmdArgs& args) {
         throw eckit::Exception(oss.str(), Here());
     }
 
-    long generatingProcessIdentifier = 153;
-    args.get("generatingProcessIdentifier", generatingProcessIdentifier);
-    err = codes_set_long(sampleHandle, "generatingProcessIdentifier", generatingProcessIdentifier);
-    handleCodesError("eccodes error while setting the generatingProcessIdentifier: ", err, Here());
+    if (args.has("generatingProcessIdentifier")) {
+        long generatingProcessIdentifier = 153;
+        args.get("generatingProcessIdentifier", generatingProcessIdentifier);
+        err = codes_set_long(sampleHandle, "generatingProcessIdentifier", generatingProcessIdentifier);
+        handleCodesError("eccodes error while setting the generatingProcessIdentifier: ", err, Here());
+    }
 
     std::string outputFilePath = "";
     args.get("output", outputFilePath);

@@ -1,0 +1,35 @@
+name: '[2.2.1] SFC variables, 1 Hourly, 0.25x0.25 (grib1)'
+enable: '{MULTIO_RAPS_ENABLE_PLAN_2_2_1}'
+actions:
+  - type: select
+    match:
+      - levtype: sfc
+        paramId: [ 8, 9, 31, 33, 34, 39, 40, 41, 42, 78, 79, 98, 129, 134, 137, 139, 141, 144, 146, 147, 151, 164, 165, 166, 167, 168, 169, 170, 172, 175, 176, 177, 178, 179, 180, 181, 183, 186, 187, 188, 195, 196, 212, 228, 235, 236, 228021, 228029, 228089, 228090, 228246, 228247]
+
+  - type: print
+    only-fields: true
+    prefix: ' ++ MULTIO-PRINT :: [2.2.1] SFC variables, 1 Hourly, 0.25x0.25 (grib1)'
+
+  - type: interpolate
+    input: '{MULTIO_RAPS_GRID_TYPE}'
+    grid: [0.25,0.25]
+    area: [90.0,0.0,-90.0,360.0]
+    interpolation: grid-box-average
+    options:
+      caching: true
+
+  - type: encode
+    format: grib
+    template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_grib1.tmpl'
+
+  - type: sink
+    sinks:
+      - type: file
+        enable: '{MULTIO_RAPS_ENABLE_FILE_2_2_1}'
+        append: false
+        per-server: true
+        path: '{MULTIO_RAPS_OUTPUT_PATH}/02-InterpolatedFields/02-RegularLatLong_0.25x0.25/SFCvariables-1Hourly-0.25x0.25-grib1.grib'
+      - type: fdb5
+        enable: '{MULTIO_RAPS_ENABLE_FDB5_2_2_1}'
+        config: {}
+

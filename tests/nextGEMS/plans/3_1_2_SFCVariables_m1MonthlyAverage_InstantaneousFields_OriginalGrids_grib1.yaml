@@ -1,0 +1,35 @@
+name: '[3.1.2a] SFC variables, 1 Monthly Average, Instantaneous Fields, Original Grid (grib1)'
+enable: '{MULTIO_RAPS_ENABLE_PLAN_3_1_2a}'
+actions:
+  - type: select
+    match:
+     - levtype: sfc
+       paramId: [ 31, 33, 34, 39, 40, 41, 42, 78, 79, 98.174, 129, 134, 137, 139, 141, 151, 164, 165, 166, 167, 168, 170, 172, 183, 235, 236, 228029, 228089, 228090, 228246, 228247 ]
+
+  - type: print
+    only-fields: true
+    prefix: ' ++ MULTIO-PRINT :: [3.1.2a] SFC variables, 1 Monthly Average, Instantaneous Fields, Original Grid (grib1)'
+
+  - type: statistics
+    output-frequency: 1m
+    options:
+      step-frequency: 1
+      time-step: 3600
+      use-current-time: true
+    operations:
+      - average
+
+  - type: encode
+    format: grib
+    template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_sfc_average_grib1.tmpl'
+
+  - type: sink
+    sinks:
+      - type: file
+        enable: '{MULTIO_RAPS_ENABLE_FILE_3_1_2a}'
+        append: false
+        per-server: true
+        path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/01-OriginalGrids/SFCvariables-1MonthlyAverage_InstantaneousFields_OriginalGrid_grib1.grib'
+      - type: fdb5
+        enable: '{MULTIO_RAPS_ENABLE_FDB5_3_1_2a}'
+        config: {}

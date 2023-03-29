@@ -1,0 +1,35 @@
+name: '[1.2.2] 3D variables, 6 Hourly, Original grid (grib1, step-frequency 1)'
+enable: '{MULTIO_RAPS_ENABLE_PLAN_1_2_2}'
+actions:
+  - type: select
+    match:
+      - paramId: [75,76,120,129,130,131,132,133,135,246,247,248 ]
+        levelist: [ 700, 750, 800, 850, 875, 900, 925, 950, 975, 1000 ]
+
+  - type: print
+    only-fields: true
+    prefix: ' ++ MULTIO-PRINT :: [1.2.2] 3D variables, 6 Hourly, Original grid (grib1, step-frequency 1)'
+
+  - type: statistics
+    output-frequency: 6h
+    options:
+      step-frequency: 1
+      time-step: 3600
+      use-current-time: true
+    operations:
+      - instant
+
+  - type: encode
+    format: grib
+    template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_pl_grib1.tmpl'
+
+  - type: sink
+    sinks:
+      - type: file
+        enable: '{MULTIO_RAPS_ENABLE_FILE_1_2_2}'
+        append: false
+        per-server: true
+        path: '{MULTIO_RAPS_OUTPUT_PATH}/01-OriginalGrids/02-6Hourly3D/3Dvariables-6Hourly-OriginalGrid-grib1-StepFrequency-1.grib'
+      - type: fdb5
+        enable: '{MULTIO_RAPS_ENABLE_FDB5_1_2_2}'
+        config: {}

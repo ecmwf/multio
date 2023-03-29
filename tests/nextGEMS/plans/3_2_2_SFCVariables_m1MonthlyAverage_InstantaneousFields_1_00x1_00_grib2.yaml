@@ -1,0 +1,43 @@
+name: '[3.2.2b] SFC variables, 1 Monthly Average, Instantaneous Fields, 1.0x1.0 (grib2)'
+enable: '{MULTIO_RAPS_ENABLE_PLAN_3_2_2b}'
+actions:
+  - type: select
+    match:
+      - levtype: sfc
+        paramId: [ 228051 ]
+
+  - type: print
+    only-fields: true
+    prefix: ' ++ MULTIO-PRINT :: [3.2.2b] SFC variables, 1 Monthly Average, Instantaneous Fields, 1.0x1.0 (grib2)'
+
+  - type: statistics
+    output-frequency: 1m
+    options:
+      step-frequency: 1
+      time-step: 3600
+      use-current-time: true
+    operations:
+      - average
+
+  - type: interpolate
+    input: '{MULTIO_RAPS_GRID_TYPE}'
+    grid: [1.0,1.0]
+    area: [90.0,0.0,-90.0,360.0]
+    interpolation: grid-box-average
+    options:
+      caching: true
+
+  - type: encode
+    format: grib
+    template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_average_grib2.tmpl'
+
+  - type: sink
+    sinks:
+      - type: file
+        enable: '{MULTIO_RAPS_ENABLE_FILE_3_2_2b}'
+        append: false
+        per-server: true
+        path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/02-RegularLL-1.0x1.0/SFCvariables-1mAverage_InstantaneousFileds-1.0x1.0-grib2.grib'
+      - type: fdb5
+        enable: '{MULTIO_RAPS_ENABLE_FDB5_3_2_2b}'
+        config: {}

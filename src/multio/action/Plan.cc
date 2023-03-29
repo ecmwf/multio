@@ -57,7 +57,7 @@ LocalConfiguration rootConfig(const LocalConfiguration& config, const std::strin
 const util::YAMLFile* getPlanConfiguration(const ConfigurationContext& confCtx) {
     ASSERT(confCtx.componentTag() == util::ComponentTag::Plan);
     if (confCtx.config().has("file")) {
-        return &confCtx.getYAMLFile(confCtx.config().getString("file"));
+        return &confCtx.getYAMLFile(confCtx.replaceCurly(confCtx.config().getString("file")));
     }
     return NULL;
 }
@@ -71,7 +71,7 @@ Plan::Plan(const ConfigurationContext& confCtx, const util::YAMLFile* file) :
               ? file->content.getString("name")
               : (confCtx.config().has("name") ? confCtx.config().getString("name")
                                               : (file ? file->path.asString() : "anonymous"));
-    auto tmp = util::parseEnabled( (file) ? file->content : confCtx.config() );
+    auto tmp = util::parseEnabled( (file) ? file->content : confCtx.config(), true );
     if ( tmp ){ 
         enabled_ = *tmp;
     } else 

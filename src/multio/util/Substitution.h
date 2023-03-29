@@ -72,7 +72,7 @@ std::string replaceCurly(std::string_view s, Func&& lookup) {
     }
 }
 
-eckit::Optional<bool> parseEnabled( const eckit::LocalConfiguration& cfg );
+eckit::Optional<bool> parseEnabled( const eckit::LocalConfiguration& cfg, bool defaultValue );
 
 }  // namespace util
 }  // namespace multio

@@ -6,7 +6,7 @@
 namespace multio {
 namespace util {
 
-eckit::Optional<bool> parseEnabled( const eckit::LocalConfiguration& cfg ){
+eckit::Optional<bool> parseEnabled( const eckit::LocalConfiguration& cfg, bool defaultValue ){
 
     eckit::Value input = cfg.has("enable") ? 
         cfg.getSubConfiguration("enable").get().isString() ? 
@@ -20,7 +20,7 @@ eckit::Optional<bool> parseEnabled( const eckit::LocalConfiguration& cfg ){
                     }
                 )) 
             } : cfg.getSubConfiguration("enable").get() 
-        : eckit::Value{true};
+        : eckit::Value{defaultValue};
     return input.isBool() ? eckit::Optional<bool>{input.as<bool>()} : eckit::Optional<bool>{};
 };
 

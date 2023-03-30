@@ -47,6 +47,9 @@ private:
 
     void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 
+    template <typename Precision>
+    void toGlobalImpl(const message::Message& local, message::Message& global) const;
+
     long globalSize_;
 };
 
@@ -64,6 +67,12 @@ private:
     long partialSize() const override;
 
     void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
+
+    template <typename Precision>
+    void toGlobalImpl(const message::Message& local, message::Message& global) const;
+
+    template <typename Precision>
+    void collectIndicesImpl(const message::Message& local, std::set<int32_t>& glIndices) const;
 };
 
 class Spectral final : public Domain {

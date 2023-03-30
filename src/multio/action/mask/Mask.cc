@@ -38,7 +38,7 @@ bool setContains(const std::set<Precision>& _set, const Precision& key) {
 Mask::Mask(const ConfigurationContext& confCtx) :
     ChainedAction(confCtx),
     applyBitmap_{confCtx.config().getBool("apply-bitmap", true)},
-    missingValue_{confCtx.config().getDouble("missing-value", std::numeric_limits<double>::max())},
+    missingValue_{confCtx.config().getDouble("missing-value", std::numeric_limits<float>::max())},
     offsetFields_{fetch_offset_fields(confCtx.config())},
     offsetValue_{confCtx.config().getDouble("offset-value", 273.15)} {}
 
@@ -89,7 +89,7 @@ void Mask::applyMask(message::Message msg) const {
 
     for (const auto bval : bitmask) {
         if (not bval) {
-            *git = missingValue_;
+            *git = static_cast<Precision>(missingValue_);
         }
         ++git;
     }
@@ -106,7 +106,7 @@ void Mask::applyOffset(message::Message msg) const {
 
     for (const auto bval : bitmask) {
         if (bval) {
-            *git += offsetValue_;
+            *git += static_cast<Precision>(offsetValue_);
         }
         ++git;
     }

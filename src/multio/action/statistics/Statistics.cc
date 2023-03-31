@@ -74,6 +74,7 @@ void Statistics::executeImpl(message::Message msg) {
         LOG_DEBUG_LIB(multio::LibMultio) << "*** " << msg.destination() << " -- metadata: " << md << std::endl;
 
         // Create a unique key for the fieldStats_ map
+        // TODO: Improve key genration with hash
         os << msg.metadata().getString("param", "xxx.yyy") << msg.metadata().getLong("level", 0L) << msg.source();
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {
@@ -96,7 +97,6 @@ void Statistics::executeImpl(message::Message msg) {
             ASSERT(stepInSeconds % 3600 == 0);
             auto stepInHours = stepInSeconds / 3600;
             md.set("stepInHours", stepInHours);
-            // Fix negative ranges (timespan can be bigger than step )
             auto prevStep = std::max(stepInHours - timeSpanInHours, 0L);
             auto stepRangeInHours = std::to_string(prevStep) + "-" + std::to_string(stepInHours);
             md.set("stepRangeInHours", stepRangeInHours);

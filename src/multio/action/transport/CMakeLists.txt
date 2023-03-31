@@ -1,14 +1,13 @@
 ecbuild_add_library(
 
-	TARGET multio-action-transport
+    TARGET multio-action-transport
 
     SOURCES
-    	Transport.cc
-    	Transport.h
-
+        Transport.cc
+        Transport.h
 
     PRIVATE_INCLUDES
-      ${ECKIT_INCLUDE_DIRS}
+        ${ECKIT_INCLUDE_DIRS}
 
     CONDITION
 

@@ -163,7 +163,7 @@ public:
     }
 
 private:
-    void print(std::ostream& os) const override { os << "Operation(field-average)"; }
+    void print(std::ostream& os) const override { os << "Operation(flux-average)"; }
 };
 
 

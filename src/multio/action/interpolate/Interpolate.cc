@@ -130,7 +130,7 @@ void fill_out_metadata(const message::Metadata& in_md, message::Metadata& out_md
 
 eckit::Value getInputGrid( const eckit::LocalConfiguration& cfg, message::Metadata& md ){
   if ( md.has( "atlas-grid-kind" ) ){ // metadata has always precedence
-    // TODO: name is bad purposely (no software support this at the moment)
+    // TODO: name is bad on purpose (no software support this at the moment)
     return eckit::Value{md.getSubConfiguration("atlas-grid-kind").get()};
   } 
 

@@ -129,49 +129,6 @@ private:
     void print(std::ostream& os) const override { os << "Operation(average)"; }
 };
 
-
-template <typename T>
-class WeightedAverage final : public Operation<T> {
-    long count_ = 0;
-
-public:
-    using Operation<T>::values_;
-    using Operation<T>::options_;
-
-    WeightedAverage(const std::string& name, long sz, const StatisticsOptions& options) :
-        Operation<T>{name, "average", sz, options},valuesOld_{std::vector<T>(sz /= sizeof(T), 0.0)} {}
-
-    eckit::Buffer compute() override {
-        // TODO: handle
-        for (auto& val : values_) {
-            val /= static_cast<T>(count_ * options_.stepFreq());
-        }
-
-        return eckit::Buffer{values_.data(), values_.size() * sizeof(T)};
-    }
-
-    void update(const void* data, long sz) override {
-        auto val = static_cast<const T*>(data);
-        sz /= sizeof(T);
-
-        if (values_.size() != static_cast<size_t>(sz)) {
-            throw eckit::AssertionFailed("Expected size: " + std::to_string(values_.size())
-                                         + " -- actual size: " + std::to_string(sz));
-        }
-
-        // Integration is done by considering the current step constant for the last stepFreq steps
-        for (auto& v : values_) {
-            v += (*val++) * options_.stepFreq();
-        }
-        ++count_;
-    }
-
-private:
-    std::vector<T> valuesOld_;
-    void print(std::ostream& os) const override { os << "Operation(weighted-average)"; }
-};
-
-
 template <typename T>
 class FluxAverage final : public Operation<T> {
     long count_ = 0;
@@ -301,9 +258,6 @@ std::unique_ptr<Operation<T>> make_operation(const std::string& opname, long sz,
     }
     if (opname == "average") {
         return std::make_unique<Average<T>>(opname, sz, options);
-    }
-    if (opname == "weighted-average") {
-        return std::make_unique<WeightedAverage<T>>(opname, sz, options);
     }
     if (opname == "flux-average") {
         return std::make_unique<FluxAverage<T>>(opname, sz, options);

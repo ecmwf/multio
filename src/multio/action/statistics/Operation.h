@@ -139,7 +139,7 @@ public:
     using Operation<T>::options_;
 
     WeightedAverage(const std::string& name, long sz, const StatisticsOptions& options) :
-        Operation<T>{name, "average", sz, options} {}
+        Operation<T>{name, "average", sz, options},valuesOld_{std::vector<T>(sz /= sizeof(T), 0.0)} {}
 
     eckit::Buffer compute() override {
         // TODO: handle
@@ -167,6 +167,7 @@ public:
     }
 
 private:
+    std::vector<T> valuesOld_;
     void print(std::ostream& os) const override { os << "Operation(weighted-average)"; }
 };
 

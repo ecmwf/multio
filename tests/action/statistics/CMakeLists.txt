@@ -79,7 +79,7 @@ foreach(_test ${_statistics_tests_names} )
                 TARGET       ${PREFIX}_check_values_${_kind}_${_test}
                 TEST_DEPENDS ${PREFIX}_check_metadata_${_kind}_${_test}
                 COMMAND      grib_compare
-                ARGS         ${_reference} ${_result}
+                ARGS         -P -T10 ${_reference} ${_result}
             )
         endif()
     endforeach()

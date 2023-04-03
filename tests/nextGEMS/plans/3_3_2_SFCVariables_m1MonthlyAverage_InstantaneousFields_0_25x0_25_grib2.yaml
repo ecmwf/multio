@@ -1,0 +1,49 @@
+name: '[3.3.2b] SFC variables, 1 Monthly Average, Instantaneous Fields, 0.25x0.25 (grib2)'
+enable: '{MULTIO_RAPS_ENABLE_PLAN_3_3_2b}'
+actions:
+  - type: select
+    match:
+    - levtype: sfc
+      paramId: [ 228051 ]
+
+  - type: print
+    only-fields: true
+    prefix: ' ++ MULTIO-PRINT :: [3.3.2b] SFC variables, 1 Monthly Average, Instantaneous Fields, 0.25x0.25 (grib2)'
+
+  - type: metadata-mapping
+    mapping: '{MULTIO_RAPS_PLANS_PATH}/mapping-lwda-to-moda.yaml'
+    overwrite-existing: true
+    enforce-match: true
+
+  - type: statistics
+    output-frequency: 1m
+    options:
+      step-frequency: 1
+      time-step: 3600
+      use-current-time: true
+    operations:
+      - average
+
+  - type: interpolate
+    input: '{MULTIO_RAPS_GRID_TYPE}'
+    area: [90.0,0.0,-90.0,360.0]
+    grid: [0.25,0.25]
+    interpolation: grid-box-average
+    options:
+      caching: true
+
+  - type: encode
+    format: grib
+    template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_average_grib2.tmpl'
+
+  - type: sink
+    sinks:
+      - type: file
+        enable: '{MULTIO_RAPS_ENABLE_FILE_3_3_2b}'
+        append: false
+        per-server: true
+        path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/03-RegularLL-0.25x0.25/SFCvariables-1mAverage_InstantaneousFileds-0.25x0.25-grib2.grib'
+      - type: fdb5
+        enable: '{MULTIO_RAPS_ENABLE_FDB5_3_3_2b}'
+        config: {}
+

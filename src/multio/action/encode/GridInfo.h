@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include "eckit/utils/MD5.h"
 
 #include "multio/message/Message.h"

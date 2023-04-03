@@ -1,0 +1,9 @@
+mappings:
+  - match:
+      stream: mod-mars-stream
+    map:
+      stream: stream
+data:
+  - mod-mars-stream: "lwda"
+    stream: "dcda"
+

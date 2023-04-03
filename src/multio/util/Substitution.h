@@ -21,7 +21,9 @@
 #include <string>
 #include <string_view>  // C++17 available at the point of using
 
-#include "eckit/config/Configuration.h"
+#include "eckit/config/LocalConfiguration.h"
+#include "eckit/utils/Optional.h" 
+
 
 namespace multio {
 namespace util {
@@ -69,6 +71,8 @@ std::string replaceCurly(std::string_view s, Func&& lookup) {
         }
     }
 }
+
+eckit::Optional<bool> parseEnabled( const eckit::LocalConfiguration& cfg, bool defaultValue );
 
 }  // namespace util
 }  // namespace multio

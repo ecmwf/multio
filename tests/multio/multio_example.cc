@@ -27,97 +27,6 @@
 using multio::util::configuration_file_name;
 using multio::util::configuration_path_name;
 
-/***
-
-
-namespace std {
-
-
-    template <typename T>
-    struct default_delete {
-        void operator() (const T* p) { delete p; }
-    }
-
-
-    template <typename T>
-    struct unique_ptr {
-        unique_ptr(T* p) : ptr_(p) {}
-        unique_ptr(unique_ptr<T>&& rhs) { ... }
-        ~unique_ptr() {
-            default_delete<T>{}(p);
-        }
-        const T& operator*() const { return *ptr_; }
-        T& operator*() { return *ptr_; }
-    private:
-        T* ptr_;
-    };
-
-
-    template <>
-    struct default_delete<multio_metadata_t> {
-        void operator() (const multio_metadata_t* p) { EXPECT(multio_metadata_delete(p) == MULTIO_SUCCESS); }
-    };
-}
-
-
-multio_metadata_t* md;
-EXPECT(multio_new_metadata(&md) == MULTIO_SUCCESS);
-unique_ptr<multio_metdata_t> del(md);
-...
-
-
-
-int abcd = 1234;
-std::vector<int> v {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-
-
-eckit::Log::info() << "My value: " << abcd << std::endl;
-
-template <typename T>
-struct eckit_vector_print_condense {
-    static bool condense = false;
-}
-
-
-template <> struct eckit_vector_print_condense<int> {
-    static bool condense = true;
-}
-
-
-
-std::ostream& operator<<(std::ostream& s, const std::vector<T>& v) {
-
-    if (eckit_vector_print_condense<T>:±condense) {}
-    [1, 2, ..., 10]
-    ...
-    return s;
-}
-
-
-
-
-
-{
-    {
-        // std::unique_ptr<MY_TYPE> p{new MY_TYPE(a, b, c)};
-        MY_TYPE* p = new MY_TYPE(a, b, c)
-        
-        try {
-            ...
-            ...
-            throw Exception();
-            ...
-            ...
-        } catch (...) {
-            delete p;
-            throw;
-        }
-
-        delete p;
-    }
-}
-
-***/
 
 
 class MultioReplayExampleCApi final : public multio::MultioTool {
@@ -143,7 +52,7 @@ private:
 
     
     std::string transportType_ = "mpi";
-    std::string pathtodata_="/Users/maaw/multio/tests/multio/test.grib";
+    std::string pathtodata_;//"/Users/maaw/multio/tests/multio/test.grib";
 
     //size_t clientCount_ = 1;
     //std::string replayField_ = "";

@@ -66,7 +66,7 @@ void Statistics::executeImpl(message::Message msg) {
     if (!md.has("step")) {
         throw eckit::SeriousBug("MULTIO ACTION STATISTICS :: missing metadata", Here());
     }
-
+    StatisticsOptions opt{options_, msg};
     std::ostringstream os;
     {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
@@ -74,10 +74,11 @@ void Statistics::executeImpl(message::Message msg) {
         LOG_DEBUG_LIB(multio::LibMultio) << "*** " << msg.destination() << " -- metadata: " << md << std::endl;
 
         // Create a unique key for the fieldStats_ map
+        // TODO: Improve key genration with hash
         os << msg.metadata().getString("param", "xxx.yyy") << msg.metadata().getLong("level", 0L) << msg.source();
 
         if (fieldStats_.find(os.str()) == end(fieldStats_)) {
-            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg, options_);
+            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg, opt);
         }
 
         if (fieldStats_.at(os.str())->process(msg)) {
@@ -96,7 +97,6 @@ void Statistics::executeImpl(message::Message msg) {
             ASSERT(stepInSeconds % 3600 == 0);
             auto stepInHours = stepInSeconds / 3600;
             md.set("stepInHours", stepInHours);
-            // Fix negative ranges (timespan can be bigger than step )
             auto prevStep = std::max(stepInHours - timeSpanInHours, 0L);
             auto stepRangeInHours = std::to_string(prevStep) + "-" + std::to_string(stepInHours);
             md.set("stepRangeInHours", stepRangeInHours);

@@ -1,0 +1,49 @@
+name: '[3.2.1] SFC variables, 1 Monthly Average, Accumulated Fields, 1.0x1.0 (grib1)'
+enable: '{MULTIO_RAPS_ENABLE_PLAN_3_2_1}'
+actions:
+  - type: select
+    match:
+     - levtype: sfc
+       paramId: [8,9,144,146,147,169,175,176,177,178,179,180,181,195,196,212,228,228021]
+
+  - type: print
+    only-fields: true
+    prefix: " ++ MULTIO-PRINT :: [3.2.1] SFC variables, 1 Monthly Average, Accumulated Fields, 1.0x1.0 (grib1)"
+
+  - type: metadata-mapping
+    mapping: '{MULTIO_RAPS_PLANS_PATH}/mapping-lwda-to-monr.yaml'
+    overwrite-existing: true
+    enforce-match: true
+
+  - type: statistics
+    output-frequency: 1m
+    options:
+      step-frequency: 1
+      time-step: 3600
+      use-current-time: true
+    operations:
+      - flux-average
+
+  - type: interpolate
+    input: '{MULTIO_RAPS_GRID_TYPE}'
+    grid: [1.0,1.0]
+    area: [90.0,0.0,-90.0,360.0]
+    interpolation: grid-box-average
+    options:
+      caching: true
+
+  - type: encode
+    format: grib
+    template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_average_grib1.tmpl'
+
+  - type: sink
+    sinks:
+      - type: file
+        enable: '{MULTIO_RAPS_ENABLE_FILE_3_2_1}'
+        append: false
+        per-server: true
+        path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/02-RegularLL-1.0x1.0/SFCvariables-1mAverage_AccumulatedFileds-1.0x1.0-grib1.grib'
+      - type: fdb5
+        enable: '{MULTIO_RAPS_ENABLE_FDB5_3_2_1}'
+        config: {}
+

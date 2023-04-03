@@ -17,6 +17,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
 #include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
@@ -40,6 +41,10 @@ using util::FailureAware;
 class Action;
 
 class Plan : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Plan> {
+private:
+    // Delegate constructor with loaded config (from file or list entry)
+    Plan(const ConfigurationContext& confCtx, const util::YAMLFile* file);
+    
 public:
     Plan(const ConfigurationContext& confCtx);
     virtual ~Plan();

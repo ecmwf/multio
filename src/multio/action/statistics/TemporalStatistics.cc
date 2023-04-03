@@ -24,10 +24,8 @@ auto reset_statistics(const std::vector<std::string>& opNames, message::Message 
 }
 
 eckit::DateTime currentDateTime(const message::Message& msg, const StatisticsOptions& options) {
-
-    eckit::Date startDate{options.useDateTime() ? eckit::Date{msg.metadata().getLong("date")}
-                                                : eckit::Date{msg.metadata().getLong("startDate")}};
-    auto startTime = options.useDateTime() ? msg.metadata().getLong("time") : msg.metadata().getLong("startTime");
+    eckit::Date startDate{options.startDate()};
+    long startTime = options.startTime();
     auto hour = startTime / 10000;
     auto minute = (startTime % 10000) / 100;
     eckit::DateTime startDateTime{startDate, eckit::Time{hour, minute, 0}};
@@ -44,29 +42,32 @@ eckit::DateTime nextDateTime(const message::Message& msg, const StatisticsOption
 std::unique_ptr<TemporalStatistics> TemporalStatistics::build(const std::string& unit, long span,
                                                               const std::vector<std::string>& operations,
                                                               const message::Message& msg,
-                                                              const StatisticsOptions& options) {
+                                                              const StatisticsOptions& options ) {
+    long step = msg.metadata().getLong("step");
+
     if (unit == "month") {
-        return std::make_unique<MonthlyStatistics>(operations, span, msg, options);
+        return std::make_unique<MonthlyStatistics>(operations, span, msg, options, step);
     }
 
     if (unit == "day") {
-        return std::make_unique<DailyStatistics>(operations, span, msg, options);
+        return std::make_unique<DailyStatistics>(operations, span, msg, options, step );
     }
 
     if (unit == "hour") {
-        return std::make_unique<HourlyStatistics>(operations, span, msg, options);
+        return std::make_unique<HourlyStatistics>(operations, span, msg, options, step );
     }
 
     throw eckit::SeriousBug{"Temporal statistics for base period " + unit + " is not defined"};
 }
 
 TemporalStatistics::TemporalStatistics(const std::vector<std::string>& operations, const DateTimePeriod& period,
-                                       const message::Message& msg, const StatisticsOptions& options) :
+                                       const message::Message& msg, const StatisticsOptions& options, long step) :
     name_{msg.name()},
     current_{period},
     options_{options},
     opNames_{operations},
-    statistics_{reset_statistics(operations, msg, options)} {}
+    statistics_{reset_statistics(operations, msg, options)},
+    prevStep_{step} {}
 
 
 bool TemporalStatistics::process(message::Message& msg) {
@@ -95,7 +96,7 @@ bool TemporalStatistics::process_next(message::Message& msg) {
     if (!current_.isWithin(dateTime)) {
         std::ostringstream os;
         os << dateTime << " is outside of current period " << current_ << std::endl;
-        throw eckit::AssertionFailed(os.str());
+        throw eckit::UserError(os.str(), Here());
     }
 
     updateStatistics(msg);
@@ -109,7 +110,11 @@ void TemporalStatistics::resetPeriod(const message::Message& msg) {
 }
 
 eckit::DateTime computeMonthStart(const eckit::DateTime& currentTime) {
-    return eckit::DateTime{eckit::Date{currentTime.date().year(), currentTime.date().month(), 1}, eckit::Time{0}};
+    return currentTime;
+};
+
+eckit::DateTime computeDayStart(const eckit::DateTime& currentTime) {
+    return eckit::DateTime{currentTime.date(), eckit::Time{0}};
 };
 
 eckit::DateTime computeMonthEnd(const eckit::DateTime& startPoint, long span) {
@@ -132,9 +137,9 @@ std::map<std::string, eckit::Buffer> TemporalStatistics::compute(const message::
 
         auto buf = std::visit([](auto&& arg) { return arg->compute(); }, stat);
 
-        const auto& name = std::visit([](auto&& arg) { return arg->name(); }, stat);
+        const auto& operation = std::visit([](auto&& arg) { return arg->operation(); }, stat);
 
-        retStats.emplace(name, std::move(buf));
+        retStats.emplace(operation, std::move(buf));
     }
     return retStats;
 }
@@ -159,14 +164,10 @@ void TemporalStatistics::reset(const message::Message& msg) {
 //-------------------------------------------------------------------------------------------------
 
 HourlyStatistics::HourlyStatistics(const std::vector<std::string> operations, long span, message::Message msg,
-                                   const StatisticsOptions& options) :
-    TemporalStatistics{
-        operations,
-        DateTimePeriod{eckit::DateTime{eckit::Date{options.useDateTime() ? msg.metadata().getLong("date")
-                                                                         : msg.metadata().getLong("startDate")},
-                                       eckit::Time{0}},
-                       static_cast<eckit::Second>(3600 * span)},
-        msg, options} {}
+                                   const StatisticsOptions& options, long step) :
+    TemporalStatistics{operations,
+                       DateTimePeriod{currentDateTime(msg, options), static_cast<eckit::Second>(3600 * span)}, msg,
+                       options, step} {}
 
 void HourlyStatistics::print(std::ostream& os) const {
     os << "Hourly Statistics(" << current_ << ")";
@@ -175,14 +176,12 @@ void HourlyStatistics::print(std::ostream& os) const {
 //-------------------------------------------------------------------------------------------------
 
 DailyStatistics::DailyStatistics(const std::vector<std::string> operations, long span, message::Message msg,
-                                 const StatisticsOptions& options) :
+                                 const StatisticsOptions& options, long step) :
     TemporalStatistics{
         operations,
-        DateTimePeriod{eckit::DateTime{eckit::Date{options.useDateTime() ? msg.metadata().getLong("date")
-                                                                         : msg.metadata().getLong("startDate")},
-                                       eckit::Time{0}},
-                       static_cast<eckit::Second>(24 * 3600 * span)},
-        msg, options} {}
+        DateTimePeriod{computeDayStart(currentDateTime(msg, options)), static_cast<eckit::Second>(24 * 3600 * span)},
+        msg, options, step} {}
+
 
 void DailyStatistics::print(std::ostream& os) const {
     os << "Daily Statistics(" << current_ << ")";
@@ -199,8 +198,8 @@ DateTimePeriod setMonthlyPeriod(long span, const message::Message& msg, const St
 }  // namespace
 
 MonthlyStatistics::MonthlyStatistics(const std::vector<std::string> operations, long span, message::Message msg,
-                                     const StatisticsOptions& options) :
-    TemporalStatistics{operations, setMonthlyPeriod(span, msg, options), msg, options}, span_(span) {}
+                                     const StatisticsOptions& options,long step) :
+    TemporalStatistics{operations, setMonthlyPeriod(span, msg, options), msg, options,step}, span_(span) {}
 
 void MonthlyStatistics::print(std::ostream& os) const {
     os << "Monthly Statistics(" << current_ << ")";

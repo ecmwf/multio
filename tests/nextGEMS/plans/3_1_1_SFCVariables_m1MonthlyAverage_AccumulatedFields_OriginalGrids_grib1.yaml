@@ -1,0 +1,40 @@
+name: '[3.1.1] SFC variables, m1 Monthly Average, Accumulated Fields, Original Grid (grib1)'
+enable: '{MULTIO_RAPS_ENABLE_PLAN_3_1_1}'
+actions:
+  - type: select
+    match:
+     - levtype: sfc
+       paramId: [8,9,144,146,147,169,175,176,177,178,179,180,181,195,196,212,228,228021]
+
+  - type: print
+    only-fields: true
+    prefix: ' ++ MULTIO-PRINT :: [3.1.1] SFC variables, m1 Monthly Average, Accumulated Fields, Original Grid (grib1)'
+
+  - type: metadata-mapping
+    mapping: '{MULTIO_RAPS_PLANS_PATH}/mapping-lwda-to-mnth.yaml'
+    overwrite-existing: true
+    enforce-match: true
+
+  - type: statistics
+    output-frequency: 1m
+    options:
+      step-frequency: 1
+      time-step: 3600
+      use-current-time: true
+    operations:
+      - flux-average
+
+  - type: encode
+    format: grib
+    template: '{MULTIO_RAPS_TEMPLATES_PATH}/reduced_gg_sfc_average_grib1.tmpl'
+
+  - type: sink
+    sinks:
+      - type: file
+        enable: '{MULTIO_RAPS_ENABLE_FILE_3_1_1}'
+        append: false
+        per-server: true
+        path: '{MULTIO_RAPS_OUTPUT_PATH}/03-MonthlyAverages/01-OriginalGrids/SFCvariables-1MonthlyAverage_AccumulatedFields_OriginalGrid_grib1.grib'
+      - type: fdb5
+        enable: '{MULTIO_RAPS_ENABLE_FDB5_3_1_1}'
+        config: {}

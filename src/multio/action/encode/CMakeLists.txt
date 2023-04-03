@@ -3,8 +3,8 @@ ecbuild_add_library(
 	TARGET multio-action-encode
 
     SOURCES
-    	Encode.cc
-    	Encode.h
+      Encode.cc
+      Encode.h
       GribEncoder.cc
       GribEncoder.h
       GridInfo.cc

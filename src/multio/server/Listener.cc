@@ -72,19 +72,19 @@ void Listener::start() {
             switch (msg.tag()) {
                 case Message::Tag::Open:
                     connections_.insert(msg.source());
+                    ++openedCount_;
                     LOG_DEBUG_LIB(LibMultio)
                         << "*** OPENING connection to " << msg.source()
-                        << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
-                        << ", connections = " << connections_.size() << std::endl;
+                        << ":    client count = " << clientCount_ << ", opened count = " << openedCount_
+                        << ", active connections = " << connections_.size() << std::endl;
                     break;
 
                 case Message::Tag::Close:
                     connections_.erase(connections_.find(msg.source()));
-                    ++closedCount_;
                     LOG_DEBUG_LIB(LibMultio)
                         << "*** CLOSING connection to " << msg.source()
-                        << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
-                        << ", connections = " << connections_.size() << std::endl;
+                        << ":    client count = " << clientCount_ << ", opened count = " << openedCount_
+                        << ", active connections = " << connections_.size() << std::endl;
                     break;
 
                 case Message::Tag::Domain:
@@ -121,7 +121,7 @@ void Listener::start() {
 }
 
 void Listener::listen() {
-    withFailureHandling([&](){
+    withFailureHandling([this](){
         do {
             transport_.listen();
         } while (not msgQueue_.closed() && continue_->load(std::memory_order_consume));
@@ -129,7 +129,7 @@ void Listener::listen() {
 }
 
 bool Listener::moreConnections() const {
-    return !connections_.empty() || closedCount_ < clientCount_;
+    return !connections_.empty() || openedCount_ != clientCount_;
 }
 
 void Listener::checkConnection(const message::Peer& conn) const {

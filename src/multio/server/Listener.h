@@ -62,7 +62,7 @@ private:
 
     transport::Transport& transport_;
 
-    size_t closedCount_ = 0;
+    size_t openedCount_ = 0;
     size_t clientCount_ = 0;
 
 

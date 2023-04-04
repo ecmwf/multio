@@ -263,7 +263,7 @@ private:
         virtual std::shared_ptr<Transport> createTransport() const override {
             return std::shared_ptr<Transport>(TransportFactory::instance().build(
                 "mpi",
-                (comm_.rank() < clientCount_ ? configurationContext_.tagServer() : configurationContext_.tagClient())
+                (comm_.rank() < clientCount_ ? configurationContext_.tagClient() : configurationContext_.tagServer())
                     .recast(ComponentTag::Transport)));
         };
 

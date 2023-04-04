@@ -238,16 +238,14 @@ private:
         size_t const clientCount_;
     };
 
-    class MPITestPolicy : public TestPolicy {
+    class MPITestPolicy final : public TestPolicy {
     public:
         MPITestPolicy(ConfigurationContext& configurationContext, size_t clientCount) :
             TestPolicy(configurationContext, clientCount),
             commName_(configurationContext_.config().getString("group")),
             comm_(eckit::mpi::comm(commName_.c_str())) {}
 
-        virtual ~MPITestPolicy() = default;
-
-        virtual PeerList computeServerPeers() override {
+        PeerList computeServerPeers() override {
             auto comm_size = comm_.size();
 
             PeerList serverPeers;
@@ -258,16 +256,16 @@ private:
             return serverPeers;
         }
 
-        virtual int computeRank() override { return comm_.rank(); }
+        int computeRank() override { return comm_.rank(); }
 
-        virtual std::shared_ptr<Transport> createTransport() const override {
+        std::shared_ptr<Transport> createTransport() const override {
             return std::shared_ptr<Transport>(TransportFactory::instance().build(
                 "mpi",
                 (comm_.rank() < clientCount_ ? configurationContext_.tagClient() : configurationContext_.tagServer())
                     .recast(ComponentTag::Transport)));
         };
 
-        virtual void checkData(MultioHammer& hammer) const override {
+        void checkData(MultioHammer& hammer) const override {
             eckit::mpi::comm().barrier();
             if (eckit::mpi::comm().rank() != root()) {
                 return;
@@ -281,14 +279,12 @@ private:
         eckit::mpi::Comm const& comm_;
     };
 
-    class TCPTestPolicy : public TestPolicy {
+    class TCPTestPolicy final : public TestPolicy {
     public:
         TCPTestPolicy(ConfigurationContext& configurationContext, size_t clientCount, int localPort) :
             TestPolicy(configurationContext, clientCount), port_(localPort), rank_(-1) {}
 
-        virtual ~TCPTestPolicy() = default;
-
-        virtual PeerList computeServerPeers() override {
+         PeerList computeServerPeers() override {
             PeerList serverPeers;
             for (auto cfg : configurationContext_.config().getSubConfigurations("servers")) {
                 auto const host = cfg.getString("host");
@@ -302,7 +298,7 @@ private:
             return serverPeers;
         }
 
-        virtual int computeRank() override {
+        int computeRank() override {
             if (rank_ < 0) {
                 auto currentClientNumber = 0;
                 for (auto cfg : configurationContext_.config().getSubConfigurations("clients")) {
@@ -318,13 +314,13 @@ private:
             return rank_;
         }
 
-        virtual std::shared_ptr<Transport> createTransport() const override {
+        std::shared_ptr<Transport> createTransport() const override {
             configurationContext_.config().set("local_port", port_);
             return std::shared_ptr<Transport>(
                 TransportFactory::instance().build("tcp", configurationContext_.recast(ComponentTag::Transport)));
         };
 
-        virtual void checkData(MultioHammer& hammer) const override {
+        void checkData(MultioHammer& hammer) const override {
             // Wait for the plan to finish.
             std::this_thread::sleep_for(std::chrono::seconds(1));
 
@@ -339,49 +335,47 @@ private:
         int rank_;
     };
 
-    class ThreadTestPolicy : public TestPolicy {
+    class ThreadTestPolicy final : public TestPolicy {
     public:
         ThreadTestPolicy(ConfigurationContext& configurationContext, size_t clientCount) :
             TestPolicy(configurationContext, clientCount) {}
-        virtual ~ThreadTestPolicy() = default;
 
-        virtual PeerList computeServerPeers() override {
+        PeerList computeServerPeers() override {
             // No peers for this communcation policy
             return PeerList();
         }
 
-        virtual int computeRank() override { return 0; }
+        int computeRank() override { return 0; }
 
-        virtual std::shared_ptr<Transport> createTransport() const override {
+        std::shared_ptr<Transport> createTransport() const override {
             return std::shared_ptr<Transport>(
                 TransportFactory::instance().build("thread", configurationContext_.recast(ComponentTag::Transport)));
         };
 
-        virtual void execute(MultioHammer& hammer, const eckit::option::CmdArgs&) const override {
+        void execute(MultioHammer& hammer, const eckit::option::CmdArgs&) const override {
             hammer.executeThread();
         }
     };
 
-    class PlanOnlyTestPolicy : public TestPolicy {
+    class PlanOnlyTestPolicy final : public TestPolicy {
     public:
         PlanOnlyTestPolicy(ConfigurationContext& configurationContext, size_t clientCount) :
             TestPolicy(configurationContext, clientCount) {}
-        virtual ~PlanOnlyTestPolicy() = default;
 
-        virtual PeerList computeServerPeers() override {
+        PeerList computeServerPeers() override {
             // No peers for this communcation policy
             return PeerList();
         }
 
-        virtual int computeRank() override { return 0; }
+        int computeRank() override { return 0; }
 
-        virtual std::shared_ptr<Transport> createTransport() const override { return nullptr; };
+        std::shared_ptr<Transport> createTransport() const override { return nullptr; };
 
-        virtual void execute(MultioHammer& hammer, const eckit::option::CmdArgs& args) const override {
+        void execute(MultioHammer& hammer, const eckit::option::CmdArgs& args) const override {
             hammer.executePlans(args);
         }
 
-        virtual void checkData(MultioHammer& hammer) const override {}
+        void checkData(MultioHammer& hammer) const override {}
     };
 
     void usage(const std::string& tool) const override {

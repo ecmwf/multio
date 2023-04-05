@@ -43,7 +43,7 @@ private:
 
     std::string rootPath_;
 
-    std::unique_ptr<DataSink> dataSink_ = nullptr;
+    std::vector<std::unique_ptr<DataSink>> dataSinks_;
 };
 
 }  // namespace action

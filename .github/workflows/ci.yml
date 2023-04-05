@@ -168,7 +168,8 @@ jobs:
       id: build-test
       uses: ecmwf-actions/build-package@v2
       with:
-        self_coverage: true
+        # lcov fails for gcc-12, re-enable self_coverage later
+        self_coverage: false
         force_build: true
         cache_suffix: "${{ matrix.build_type }}-${{ env.CACHE_SUFFIX }}"
         recreate_cache: ${{ matrix.caching == false }}

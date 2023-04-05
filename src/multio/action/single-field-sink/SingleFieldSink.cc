@@ -52,29 +52,33 @@ void SingleFieldSink::write(Message msg) {
     LOG_DEBUG_LIB(LibMultio) << "Writing output path: " << oss.str() << std::endl;
     config.set("path", oss.str());
     ConfigurationContext subCtx = confCtx_.recast(config);
-    dataSink_ = DataSinkFactory::instance().build("file", subCtx);
+    dataSinks_.push_back(DataSinkFactory::instance().build("file", subCtx));
 
     eckit::message::Message blob = to_eckit_message(msg);
 
-    dataSink_->write(blob);
+    dataSinks_.back()->write(blob);
 }
 
 void SingleFieldSink::flush() const {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
-    eckit::Log::debug<LibMultio>()
-        << "*** Executing single-field flush for data sink... " << std::endl;
-    if (dataSink_) {
-        dataSink_->flush();
+    eckit::Log::debug<LibMultio>() << "*** Executing single-field flush for data sinks... " << std::endl;
+
+    for (const auto& sink : dataSinks_) {
+        if (sink) {
+            sink->flush();
+        }
     }
 }
 
 void SingleFieldSink::print(std::ostream& os) const {
-    if (dataSink_) {
-        os << "Sink(DataSink=" << *dataSink_ << ")";
-    }
-    else {
-        os << "Sink(DataSink=NULL)";
+    for (const auto& sink : dataSinks_) {
+        if (sink) {
+            os << "Sink(DataSink=" << *sink << ")";
+        }
+        else {
+            os << "Sink(DataSink=NULL)";
+        }
     }
 }
 

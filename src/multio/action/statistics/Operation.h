@@ -268,7 +268,11 @@ std::unique_ptr<Operation<T>> make_operation(const std::string& opname, long sz,
     if (opname == "maximum") {
         return std::make_unique<Maximum<T>>(opname, sz, options);
     }
-    ASSERT(opname == "accumulate");
+    if ( opname != "accumulate" ) {
+        std::ostringstream os;
+        os << "Invalid opname in statistics operation :: " << opname << std::endl;
+        throw eckit::UserError(os.str(), Here());
+    }
     return std::make_unique<Accumulate<T>>(opname, sz, options);
 }
 

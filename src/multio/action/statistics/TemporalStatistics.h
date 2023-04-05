@@ -17,11 +17,11 @@ class TemporalStatistics {
 public:
     static std::unique_ptr<TemporalStatistics> build(const std::string& unit, long span,
                                                      const std::vector<std::string>& operations,
-                                                     const message::Message& msg, 
+                                                     const message::Message& msg,
                                                      const StatisticsOptions& options );
 
     TemporalStatistics(const std::vector<std::string>& operations, const DateTimePeriod& period,
-                       const message::Message& msg, const StatisticsOptions& options, long step);
+                       const message::Message& msg, const StatisticsOptions& options, long span, long step);
 
     virtual ~TemporalStatistics() = default;
 
@@ -33,6 +33,7 @@ public:
     long startStep() const { return prevStep_; };
 
 protected:
+    long span_;
     std::string name_;
     DateTimePeriod current_;
     const StatisticsOptions& options_;
@@ -62,7 +63,7 @@ class HourlyStatistics : public TemporalStatistics {
 public:
     HourlyStatistics(const std::vector<std::string> operations, long span, message::Message msg,
                      const StatisticsOptions& options, long step);
-
+    void resetPeriod(const message::Message& msg) override;
     void print(std::ostream& os) const override;
 };
 
@@ -72,16 +73,14 @@ class DailyStatistics : public TemporalStatistics {
 public:
     DailyStatistics(const std::vector<std::string> operations, long span, message::Message msg,
                     const StatisticsOptions& options, long step);
-
+    void resetPeriod(const message::Message& msg) override;
     void print(std::ostream& os) const override;
 };
 
 //-------------------------------------------------------------------------------------------------
 
 class MonthlyStatistics : public TemporalStatistics {
-    long span_;
-
-public:
+ public:
     MonthlyStatistics(const std::vector<std::string> operations, long span, message::Message msg,
                       const StatisticsOptions& options, long step);
     void resetPeriod(const message::Message& msg) override;

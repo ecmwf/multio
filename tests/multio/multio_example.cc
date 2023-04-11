@@ -52,19 +52,15 @@ private:
 
     
     std::string transportType_ = "mpi";
-    std::string pathtodata_;//"/Users/maaw/multio/tests/multio/test.grib";
+    std::string pathtodata_;
 
-    //size_t clientCount_ = 1;
-    //std::string replayField_ = "";
     int step_ = 1;
-    
-    bool singlePrecision_;
 
     multio_handle_t* multio_handle = nullptr;
 };
 
 MultioReplayExampleCApi::MultioReplayExampleCApi(int argc, char** argv) :
-    multio::MultioTool(argc, argv), singlePrecision_(false) {
+    multio::MultioTool(argc, argv) {
     options_.push_back(new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("path", "Path to data"));
     options_.push_back(new eckit::option::SimpleOption<long>("nbclients", "Number of clients"));

@@ -36,7 +36,7 @@ ecbuild_add_executable( TARGET    multio-example
 # Test sinks
 
 ecbuild_add_test( TARGET    test_multio_example
-                  SOURCES   test_multio_adam.cc MultioTool.cc
+                  SOURCES   test_multio_example.cc MultioTool.cc
                   ARGS      ${_args}
                   LIBS      ${_link_libraries} multio-api )
 

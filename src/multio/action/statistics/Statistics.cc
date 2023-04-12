@@ -60,18 +60,16 @@ Statistics::~Statistics() {
             }
         }
     }
-    catch (...){
+    catch (...) {
         std::cout << "ERROR UNABLE TO WRITE RESTART FILE" << std::endl;
     }
-
-
 }
 
 std::string Statistics::getKey(const message::Message& msg) const {
     std::ostringstream os;
-    // TODO: "param" and "level" are needed. check and throw
-    os << std::to_string(std::hash<std::string>{}(msg.metadata().getString("param", "unknown")))
-       << std::to_string(std::hash<long>{}(msg.metadata().getLong("level", 999999999L)))
+    os << std::to_string(
+        std::hash<std::string>{}(msg.metadata().getString("param", "") + msg.metadata().getString("paramId", "")))
+       << std::to_string(std::hash<long>{}(msg.metadata().getLong("level", 0) | msg.metadata().getLong("levelist", 0)))
        << std::to_string(std::hash<std::string>{}(msg.source()));
     return os.str();
 }

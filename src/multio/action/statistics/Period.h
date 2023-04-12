@@ -4,41 +4,29 @@
 
 namespace multio {
 namespace action {
-
-class DatePeriod {
-public:
-    DatePeriod(const eckit::Date& startPoint, long duration);
-
-    void reset(const eckit::Date& startPoint);
-    bool isWithin(const eckit::Date& dt);
-
-private:
-    eckit::Date endPoint() const;
-    void print(std::ostream& os) const;
-
-    eckit::Date startPoint_;
-    long duration_;
-
-    friend std::ostream& operator<<(std::ostream& os, const DatePeriod& a);
-};
-
 class DateTimePeriod {
 public:
+    DateTimePeriod(const std::string& name);
+    DateTimePeriod(const eckit::DateTime& startPoint, eckit::Second duration, long offset);
+    DateTimePeriod(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint, long offset);
     DateTimePeriod(const eckit::DateTime& startPoint, eckit::Second duration);
     DateTimePeriod(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
+
 
     void reset(const eckit::DateTime& current);
     void reset(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
 
     bool isWithin(const eckit::DateTime& dt);
 
-    long timeSpanInHours() const;
+    long timeSpanInSeconds() const;
     eckit::DateTime endPoint() const;
     eckit::DateTime startPoint() const;
+    void dump(const std::string& name) const;
 
 private:
     eckit::DateTime startPoint_;
     eckit::DateTime endPoint_;
+    long offset_;
 
     void print(std::ostream& os) const;
 

@@ -1,0 +1,30 @@
+plans:
+  - name: test_average_15d_grib2
+    actions:
+
+      - type: statistics
+        output-frequency: 1d
+        operations: [ average ]
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+
+      - type: interpolate
+        input: O80
+        grid: [1.0, 1.0]
+        area: [90.0, 0.0, -90.0, 360.0]
+        interpolation: linear
+        options:
+          caching: true
+
+      - type: encode
+        format: grib
+        template: regular_ll_pl_grib2.tmpl
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: Result_standard_1_average_1d_regrid_grib2.grib

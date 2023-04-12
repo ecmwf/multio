@@ -17,11 +17,13 @@ class TemporalStatistics {
 public:
     static std::unique_ptr<TemporalStatistics> build(const std::string& unit, long span,
                                                      const std::vector<std::string>& operations,
-                                                     const message::Message& msg, 
-                                                     const StatisticsOptions& options );
+                                                     const message::Message& msg, const std::string& partialPath,
+                                                     const StatisticsOptions& options);
 
+    // Restart constructor
     TemporalStatistics(const std::vector<std::string>& operations, const DateTimePeriod& period,
-                       const message::Message& msg, const StatisticsOptions& options, long step);
+                       const message::Message& msg, const std::string& partialPath, const StatisticsOptions& options,
+                       long span);
 
     virtual ~TemporalStatistics() = default;
 
@@ -31,11 +33,18 @@ public:
     const DateTimePeriod& current() const;
     void reset(const message::Message& msg);
     long startStep() const { return prevStep_; };
+    virtual void print(std::ostream& os) const = 0;
+    void dump() const;
 
 protected:
+    long span_;
     std::string name_;
+    std::string partialPath_;
+    long prevStep_;
     DateTimePeriod current_;
     const StatisticsOptions& options_;
+    std::vector<std::string> opNames_;
+    std::vector<OperationVar> statistics_;
 
     void updateStatistics(const message::Message& msg);
 
@@ -44,16 +53,14 @@ private:
 
     virtual void resetPeriod(const message::Message& msg);
 
-    virtual void print(std::ostream& os) const = 0;
 
     friend std::ostream& operator<<(std::ostream& os, const TemporalStatistics& a) {
         a.print(os);
         return os;
     }
 
-    std::vector<std::string> opNames_;
-    std::vector<OperationVar> statistics_;
-    long prevStep_ = 0;
+
+
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -61,8 +68,8 @@ private:
 class HourlyStatistics : public TemporalStatistics {
 public:
     HourlyStatistics(const std::vector<std::string> operations, long span, message::Message msg,
-                     const StatisticsOptions& options, long step);
-
+                     const std::string& partialPath, const StatisticsOptions& options);
+    void resetPeriod(const message::Message& msg) override;
     void print(std::ostream& os) const override;
 };
 
@@ -71,19 +78,17 @@ public:
 class DailyStatistics : public TemporalStatistics {
 public:
     DailyStatistics(const std::vector<std::string> operations, long span, message::Message msg,
-                    const StatisticsOptions& options, long step);
-
+                    const std::string& partialPath, const StatisticsOptions& options);
+    void resetPeriod(const message::Message& msg) override;
     void print(std::ostream& os) const override;
 };
 
 //-------------------------------------------------------------------------------------------------
 
 class MonthlyStatistics : public TemporalStatistics {
-    long span_;
-
 public:
     MonthlyStatistics(const std::vector<std::string> operations, long span, message::Message msg,
-                      const StatisticsOptions& options, long step);
+                      const std::string& partialPath, const StatisticsOptions& options);
     void resetPeriod(const message::Message& msg) override;
     void print(std::ostream& os) const override;
 };

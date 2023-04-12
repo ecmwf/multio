@@ -1,9 +1,9 @@
 plans:
-  - name: test_average_10d_grib2
+  - name: test_average_1m_grib2
     actions:
 
       - type: statistics
-        output-frequency: 10d
+        output-frequency: 1m
         operations: [ average ]
         options:
           step-frequency: 1
@@ -19,4 +19,4 @@ plans:
           - type: file
             append: false
             per-server: false # Will give you one file per server
-            path: Result_standard_average_10d_grib2.grib
+            path: Result_restart_1_average_1m_grib2.grib

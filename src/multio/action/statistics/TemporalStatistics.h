@@ -34,7 +34,7 @@ public:
     void reset(const message::Message& msg);
     long startStep() const { return prevStep_; };
     virtual void print(std::ostream& os) const = 0;
-    void dump(bool noThrow) const;
+    void dump() const;
 
 protected:
     long span_;

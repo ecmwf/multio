@@ -32,7 +32,7 @@ public:
     virtual void update(const void* val, long sz) = 0;
 
     virtual ~Operation() = default;
-    virtual void dump(const std::string& partialPath, bool noThrow) const = 0;
+    virtual void dump(const std::string& partialPath) const = 0;
 
 protected:
     virtual void print(std::ostream& os) const = 0;
@@ -64,62 +64,12 @@ public:
 
     Instant(const std::string& name, long sz, const std::string& partialPath, const StatisticsOptions& options) :
         Operation<T>{name, "instant", sz, options} {
-#if 0
-        std::ostringstream os;
-        os << partialPath << "-instant-data.bin";
-        std::string fname = os.str();
-        std::ifstream wf(fname, std::ios::binary);
-        if (!wf) {
-            throw eckit::SeriousBug("Cannot open file!", Here());
-        }
-        long dim;
-        // wf.write((char *) &count_, sizeof(long));
-        wf.read((char*)&dim, sizeof(long));
-        values_.resize(dim);
-        for (int i = 0; i < dim; ++i) {
-            double tmp;
-            wf.read((char*)&tmp, sizeof(double));
-            values_[i] = static_cast<T>(tmp);
-        }
-        wf.close();
-        if (!wf.good()) {
-            throw eckit::SeriousBug("Error occurred at writing time!", Here());
-        }
-#endif
+
         return;
     };
 
-    void dump(const std::string& partialPath, bool noThrow) const override {
-#if 0
-        std::ostringstream os;
-        os << partialPath << "-insatant-data.bin";
-        std::string fname = os.str();
-        std::ofstream wf(fname, std::ios::binary);
-        if (!wf) {
-            if (noThrow) {
-                LOG_DEBUG_LIB(LibMultio) << "Cannot open dump file: fname" << std::endl;
-            }
-            else {
-                throw eckit::SeriousBug("Cannot open file!", Here());
-            }
-        }
-        long sz = values_.size();
-        // wf.write((char *) &count_, sizeof(long));
-        wf.write((char*)&sz, sizeof(long));
-        for (int i = 0; i < sz; ++i) {
-            double tmp = double(values_[i]);
-            wf.write((char*)&tmp, sizeof(double));
-        }
-        wf.close();
-        if (!wf.good()) {
-            if (noThrow) {
-                LOG_DEBUG_LIB(LibMultio) << "Error occurred at writing time: fname" << std::endl;
-            }
-            else {
-                throw eckit::SeriousBug("Error occurred at writing time!", Here());
-            }
-        }
-#endif
+    void dump(const std::string& partialPath) const override {
+
     }
 
     eckit::Buffer compute() override { return eckit::Buffer{values_.data(), values_.size() * sizeof(T)}; }
@@ -163,6 +113,10 @@ public:
         long dim;
         wf.read((char*)&count_, sizeof(long));
         wf.read((char*)&dim, sizeof(long));
+        long checksum=0;
+        long cs=0;
+        checksum ^= count_;
+        checksum ^= dim;
         if (dim != sz / sizeof(T)) {
             std::ostringstream err;
             err << "Wrong size during restart of average-statistics :: " << dim << ", " << sz;
@@ -173,43 +127,47 @@ public:
         for (int i = 0; i < dim; ++i) {
             double tmp;
             wf.read((char*)&tmp, sizeof(double));
+            checksum ^= static_cast<long>(tmp);
             values_[i] = static_cast<T>(tmp);
         }
+        wf.read((char*)&cs, sizeof(long));
         wf.close();
         if (!wf.good()) {
-            throw eckit::SeriousBug("Error occurred at writing time!", Here());
+            std::ostringstream err;
+            err << "Error occurred at writing time :: " << fname;
+            throw eckit::SeriousBug(err.str(), Here());
+        }
+        if (cs != checksum ) {
+            std::ostringstream err;
+            err << "Error checksum not correct :: " << cs << ", " << checksum;
+            throw eckit::SeriousBug(err.str(), Here());
         }
         return;
     };
 
-    void dump(const std::string& partialPath, bool noThrow) const override  {
+    void dump(const std::string& partialPath) const override  {
         std::ostringstream os;
         os << partialPath << "-average-data.bin";
         std::string fname = os.str();
         std::ofstream wf(fname, std::ios::binary);
         if (!wf) {
-            if (noThrow) {
-                LOG_DEBUG_LIB(LibMultio) << "Cannot open dump file: fname" << std::endl;
-            }
-            else {
-                throw eckit::SeriousBug("Cannot open file!", Here());
-            }
+            throw eckit::SeriousBug("Cannot open file!", Here());
         }
         long sz = values_.size();
+        long checksum=0;
         wf.write((char*)&count_, sizeof(long));
         wf.write((char*)&sz, sizeof(long));
+        checksum ^= count_;
+        checksum ^= sz;
         for (int i = 0; i < sz; ++i) {
             double tmp = double(values_[i]);
+            checksum ^= static_cast<long>(tmp);
             wf.write((char*)&tmp, sizeof(double));
         }
+        wf.write((char*)&checksum, sizeof(long));
         wf.close();
         if (!wf.good()) {
-            if (noThrow) {
-                LOG_DEBUG_LIB(LibMultio) << "Error occurred at writing time: fname" << std::endl;
-            }
-            else {
-                throw eckit::SeriousBug("Error occurred at writing time!", Here());
-            }
+            throw eckit::SeriousBug("Error occurred at writing time!", Here());
         }
     }
 
@@ -283,50 +241,61 @@ public:
         long dim;
         wf.read((char*)&count_, sizeof(long));
         wf.read((char*)&dim, sizeof(long));
+        long checksum=0;
+        long cs=0;
+        checksum ^= count_;
+        checksum ^= dim;
         if (dim != sz / sizeof(T)) {
-            throw eckit::SeriousBug("Wrong size during restart of flux-average-statistics", Here());
+            std::ostringstream err;
+            err << "Wrong size during restart of average-statistics :: " << dim << ", " << sz;
+            throw eckit::SeriousBug(err.str(), Here());
         }
+        LOG_DEBUG_LIB(LibMultio) << "The counter is :: " << count_ << std::endl;
         values_.resize(dim);
         for (int i = 0; i < dim; ++i) {
             double tmp;
             wf.read((char*)&tmp, sizeof(double));
+            checksum ^= static_cast<long>(tmp);
             values_[i] = static_cast<T>(tmp);
         }
+        wf.read((char*)&cs, sizeof(long));
         wf.close();
         if (!wf.good()) {
-            throw eckit::SeriousBug("Error occurred at writing time!", Here());
+            std::ostringstream err;
+            err << "Error occurred at writing time :: " << fname;
+            throw eckit::SeriousBug(err.str(), Here());
+        }
+        if (cs != checksum ) {
+            std::ostringstream err;
+            err << "Error checksum not correct :: " << cs << ", " << checksum;
+            throw eckit::SeriousBug(err.str(), Here());
         }
         return;
     };
 
-    void dump(const std::string& partialPath, bool noThrow) const override  {
+    void dump(const std::string& partialPath) const override  {
         std::ostringstream os;
         os << partialPath << "-flux-average-data.bin";
         std::string fname = os.str();
         std::ofstream wf(fname, std::ios::binary);
         if (!wf) {
-            if (noThrow) {
-                LOG_DEBUG_LIB(LibMultio) << "Cannot open dump file: fname" << std::endl;
-            }
-            else {
-                throw eckit::SeriousBug("Cannot open file!", Here());
-            }
+            throw eckit::SeriousBug("Cannot open file!", Here());
         }
         long sz = values_.size();
+        long checksum=0;
         wf.write((char*)&count_, sizeof(long));
         wf.write((char*)&sz, sizeof(long));
+        checksum ^= count_;
+        checksum ^= sz;
         for (int i = 0; i < sz; ++i) {
             double tmp = double(values_[i]);
+            checksum ^= static_cast<long>(tmp);
             wf.write((char*)&tmp, sizeof(double));
         }
+        wf.write((char*)&checksum, sizeof(long));
         wf.close();
         if (!wf.good()) {
-            if (noThrow) {
-                LOG_DEBUG_LIB(LibMultio) << "Error occurred at writing time: fname" << std::endl;
-            }
-            else {
-                throw eckit::SeriousBug("Error occurred at writing time!", Here());
-            }
+            throw eckit::SeriousBug("Error occurred at writing time!", Here());
         }
     }
 
@@ -369,62 +338,11 @@ public:
 
     Minimum(const std::string& name, long sz, const std::string& partialPath, const StatisticsOptions& options) :
         Operation<T>{name, "minimum", sz, options} {
-#if 0
-        std::ostringstream os;
-        os << partialPath << "-minimum-data.bin";
-        std::string fname = os.str();
-        std::ifstream wf(fname, std::ios::binary);
-        if (!wf) {
-            throw eckit::SeriousBug("Cannot open file!", Here());
-        }
-        long dim;
-        // wf.write((char *) &count_, sizeof(long));
-        wf.read((char*)&dim, sizeof(long));
-        values_.resize(dim);
-        for (int i = 0; i < dim; ++i) {
-            double tmp;
-            wf.read((char*)&tmp, sizeof(double));
-            values_[i] = static_cast<T>(tmp);
-        }
-        wf.close();
-        if (!wf.good()) {
-            throw eckit::SeriousBug("Error occurred at writing time!", Here());
-        }
-#endif
         return;
     };
 
-    void dump(const std::string& partialPath, bool noThrow) const override  {
-#if 0
-        std::ostringstream os;
-        os << partialPath << "-minimum-data.bin";
-        std::string fname = os.str();
-        std::ofstream wf(fname, std::ios::binary);
-        if (!wf) {
-            if (noThrow) {
-                LOG_DEBUG_LIB(LibMultio) << "Cannot open dump file: fname" << std::endl;
-            }
-            else {
-                throw eckit::SeriousBug("Cannot open file!", Here());
-            }
-        }
-        long sz = values_.size();
-        // wf.write((char *) &count_, sizeof(long));
-        wf.write((char*)&sz, sizeof(long));
-        for (int i = 0; i < sz; ++i) {
-            double tmp = double(values_[i]);
-            wf.write((char*)&tmp, sizeof(double));
-        }
-        wf.close();
-        if (!wf.good()) {
-            if (noThrow) {
-                LOG_DEBUG_LIB(LibMultio) << "Error occurred at writing time: fname" << std::endl;
-            }
-            else {
-                throw eckit::SeriousBug("Error occurred at writing time!", Here());
-            }
-        }
-#endif
+    void dump(const std::string& partialPath) const override  {
+
     }
 
 
@@ -458,60 +376,11 @@ public:
 
     Maximum(const std::string& name, long sz, const std::string& partialPath, const StatisticsOptions& options) :
         Operation<T>{name, "maximum", sz, options} {
-#if 0
-        std::ostringstream os;
-        os << partialPath << "-maximum-data.bin";
-        std::string fname = os.str();
-        std::ifstream wf(fname, std::ios::binary);
-        if (!wf) {
-            throw eckit::SeriousBug("Cannot open file!", Here());
-        }
-        long dim;
-        wf.read((char*)&dim, sizeof(long));
-        values_.resize(dim);
-        for (int i = 0; i < dim; ++i) {
-            double tmp;
-            wf.read((char*)&tmp, sizeof(double));
-            values_[i] = static_cast<T>(tmp);
-        }
-        wf.close();
-        if (!wf.good()) {
-            throw eckit::SeriousBug("Error occurred at writing time!", Here());
-        }
-#endif
         return;
     };
 
-    void dump(const std::string& partialPath, bool noThrow) const override  {
-#if 0
-        std::ostringstream os;
-        os << partialPath << "-maximum-data.bin";
-        std::string fname = os.str();
-        std::ofstream wf(fname, std::ios::binary);
-        if (!wf) {
-            if (noThrow) {
-                LOG_DEBUG_LIB(LibMultio) << "Cannot open dump file: fname" << std::endl;
-            }
-            else {
-                throw eckit::SeriousBug("Cannot open file!", Here());
-            }
-        }
-        long sz = values_.size();
-        wf.write((char*)&sz, sizeof(long));
-        for (int i = 0; i < sz; ++i) {
-            double tmp = double(values_[i]);
-            wf.write((char*)&tmp, sizeof(double));
-        }
-        wf.close();
-        if (!wf.good()) {
-            if (noThrow) {
-                LOG_DEBUG_LIB(LibMultio) << "Error occurred at writing time: fname" << std::endl;
-            }
-            else {
-                throw eckit::SeriousBug("Error occurred at writing time!", Here());
-            }
-        }
-#endif
+    void dump(const std::string& partialPath) const override  {
+
     }
 
 
@@ -554,49 +423,57 @@ public:
         }
         long dim;
         wf.read((char*)&dim, sizeof(long));
+        long checksum=0;
+        long cs=0;
+        checksum ^= dim;
         if (dim != sz / sizeof(T)) {
-            throw eckit::SeriousBug("Wrong size during restart of accumulate-statistics", Here());
+            std::ostringstream err;
+            err << "Wrong size during restart of average-statistics :: " << dim << ", " << sz;
+            throw eckit::SeriousBug(err.str(), Here());
         }
         values_.resize(dim);
         for (int i = 0; i < dim; ++i) {
             double tmp;
             wf.read((char*)&tmp, sizeof(double));
+            checksum ^= static_cast<long>(tmp);
             values_[i] = static_cast<T>(tmp);
         }
+        wf.read((char*)&cs, sizeof(long));
         wf.close();
         if (!wf.good()) {
-            throw eckit::SeriousBug("Error occurred at writing time!", Here());
+            std::ostringstream err;
+            err << "Error occurred at writing time :: " << fname;
+            throw eckit::SeriousBug(err.str(), Here());
+        }
+        if (cs != checksum ) {
+            std::ostringstream err;
+            err << "Error checksum not correct :: " << cs << ", " << checksum;
+            throw eckit::SeriousBug(err.str(), Here());
         }
         return;
     };
 
-    void dump(const std::string& partialPath, bool noThrow) const override  {
+    void dump(const std::string& partialPath) const override  {
         std::ostringstream os;
         os << partialPath << "-accumulate-data.bin";
         std::string fname = os.str();
         std::ofstream wf(fname, std::ios::binary);
         if (!wf) {
-            if (noThrow) {
-                LOG_DEBUG_LIB(LibMultio) << "Cannot open dump file: fname" << std::endl;
-            }
-            else {
-                throw eckit::SeriousBug("Cannot open file!", Here());
-            }
+            throw eckit::SeriousBug("Cannot open file!", Here());
         }
         long sz = values_.size();
+        long checksum=0;
         wf.write((char*)&sz, sizeof(long));
+        checksum ^= sz;
         for (int i = 0; i < sz; ++i) {
             double tmp = double(values_[i]);
+            checksum ^= static_cast<long>(tmp);
             wf.write((char*)&tmp, sizeof(double));
         }
+        wf.write((char*)&checksum, sizeof(long));
         wf.close();
         if (!wf.good()) {
-            if (noThrow) {
-                LOG_DEBUG_LIB(LibMultio) << "Error occurred at writing time: fname" << std::endl;
-            }
-            else {
-                throw eckit::SeriousBug("Error occurred at writing time!", Here());
-            }
+            throw eckit::SeriousBug("Error occurred at writing time!", Here());
         }
     }
 

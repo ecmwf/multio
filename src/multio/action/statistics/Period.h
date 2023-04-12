@@ -21,7 +21,7 @@ public:
     long timeSpanInSeconds() const;
     eckit::DateTime endPoint() const;
     eckit::DateTime startPoint() const;
-    void dump(const std::string& name, bool noThrow) const;
+    void dump(const std::string& name) const;
 
 private:
     eckit::DateTime startPoint_;

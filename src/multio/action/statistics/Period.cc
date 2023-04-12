@@ -15,6 +15,7 @@ DateTimePeriod::DateTimePeriod(const std::string& partialPath) :
     long ed;
     long et;
     long of;
+    long cs;
     std::ostringstream os;
     os << partialPath << "-period.bin";
     std::string fname = os.str();
@@ -29,11 +30,23 @@ DateTimePeriod::DateTimePeriod(const std::string& partialPath) :
     wf.read((char*)&ed, sizeof(long));
     wf.read((char*)&et, sizeof(long));
     wf.read((char*)&of, sizeof(long));
+    wf.read((char*)&cs, sizeof(long));
     wf.close();
+    long checksum=0;
+    checksum ^= sd;
+    checksum ^= st;
+    checksum ^= ed;
+    checksum ^= et;
+    checksum ^= of;
     if (!wf.good()) {
         std::ostringstream err;
         err << "Error occurred at writing time :: " << fname;
-        throw eckit::SeriousBug("Error occurred at writing time", Here());
+        throw eckit::SeriousBug(err.str(), Here());
+    }
+    if (cs != checksum ) {
+        std::ostringstream err;
+        err << "Error checksum not correct :: " << cs << ", " << checksum;
+        throw eckit::SeriousBug(err.str(), Here());
     }
     startPoint_ = eckit::DateTime{eckit::Date{sd}, eckit::Time{st}};
     endPoint_ = eckit::DateTime{eckit::Date{ed}, eckit::Time{et}};
@@ -93,38 +106,34 @@ eckit::DateTime DateTimePeriod::endPoint() const {
     return endPoint_;
 }
 
-void DateTimePeriod::dump(const std::string& partialPath, bool noThrow) const {
+void DateTimePeriod::dump(const std::string& partialPath) const {
     std::ostringstream os;
     os << partialPath << "-period.bin";
     std::string fname = os.str();
     std::ofstream wf(fname, std::ios::binary);
     if (!wf) {
-        if (noThrow) {
-            LOG_DEBUG_LIB(LibMultio) << "Cannot open dump file: fname" << std::endl;
-        }
-        else {
             throw eckit::SeriousBug("Cannot open file!", Here());
-        }
     }
     long dim;
-    // wf.read((char*)&count_, sizeof(long));
     long sd = startPoint_.date().yyyymmdd();
     long st = startPoint_.time().hhmmss();
     long ed = endPoint_.date().yyyymmdd();
     long et = endPoint_.time().hhmmss();
+    long checksum=0;
+    checksum ^= sd;
+    checksum ^= st;
+    checksum ^= ed;
+    checksum ^= et;
+    checksum ^= offset_;
     wf.write((char*)&sd, sizeof(long));
     wf.write((char*)&st, sizeof(long));
     wf.write((char*)&ed, sizeof(long));
     wf.write((char*)&et, sizeof(long));
     wf.write((char*)&offset_, sizeof(long));
+    wf.write((char*)&checksum, sizeof(long));
     wf.close();
     if (!wf.good()) {
-        if (noThrow) {
-            LOG_DEBUG_LIB(LibMultio) << "Error occurred at writing time: fname" << std::endl;
-        }
-        else {
             throw eckit::SeriousBug("Error occurred at writing time!", Here());
-        }
     }
     return;
 }

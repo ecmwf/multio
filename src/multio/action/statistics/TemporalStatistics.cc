@@ -15,6 +15,7 @@ namespace {
 
 auto reset_statistics(const std::vector<std::string>& opNames, message::Message msg, const std::string& partialPath,
                       const StatisticsOptions& options, bool restart) {
+    // NOTE: in this case the lambda must catch everything
     return multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
         std::vector<OperationVar> stats;
@@ -78,13 +79,13 @@ TemporalStatistics::TemporalStatistics(const std::vector<std::string>& operation
      {}
 
 
-void TemporalStatistics::dump(bool noThrow) const {
-    current_.dump(partialPath_, noThrow);
+void TemporalStatistics::dump( ) const {
+    current_.dump(partialPath_);
     for (auto const& stat : statistics_) {
         std::visit(
             Overloaded{
-                [&](const std::unique_ptr<Operation<double>>& arg) { return arg->dump(this->partialPath_, noThrow); },
-                [&](const std::unique_ptr<Operation<float>>& arg) { return arg->dump(this->partialPath_, noThrow); }},
+                [this](const std::unique_ptr<Operation<double>>& arg) { return arg->dump(this->partialPath_); },
+                [this](const std::unique_ptr<Operation<float>>& arg) { return arg->dump(this->partialPath_); }},
             stat);
     }
     return;

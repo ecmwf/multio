@@ -53,11 +53,18 @@ Statistics::Statistics(const ConfigurationContext& confCtx) :
 
 Statistics::~Statistics() {
     // Dump restart for all non emitted statistics
-    if (options_.restart()) {
-        for (auto it = fieldStats_.begin(); it != fieldStats_.end(); it++) {
-            it->second->dump(true);
+    try {
+        if (options_.restart()) {
+            for (auto it = fieldStats_.begin(); it != fieldStats_.end(); it++) {
+                it->second->dump();
+            }
         }
     }
+    catch (...){
+        std::cout << "ERROR UNABLE TO WRITE RESTART FILE" << std::endl;
+    }
+
+
 }
 
 std::string Statistics::getKey(const message::Message& msg) const {
@@ -157,9 +164,6 @@ void Statistics::executeImpl(message::Message msg) {
             LOG_DEBUG_LIB(LibMultio) << "Exit span in seconds :: " << timeSpanInSeconds << std::endl;
             if (timeSpanInSeconds > 0) {
                 executeNext(newMsg);
-            }
-            else {
-                LOG_DEBUG_LIB(LibMultio) << "Rejected stats" << std::endl;
             }
         }
     }

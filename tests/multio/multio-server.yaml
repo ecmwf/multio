@@ -1,23 +1,6 @@
-client:
-  on-error: abort-all-transports
-  plans:
+plans:
     - name: test-print
       actions:
-        - type: select
-          match:
-            - category: [ocean-domain-map]
-
-        - type: transport
-          target: server
-
-server:
-  transport: mpi
-  on-error: abort-transport
-  plans:
-    - name: test-server-print
-      actions:
-        - type: select
-          match:
-            - category: [ocean-2d]
-
-        - type: single-field-sink
+        - type: print
+        - type: sink
+          sinks: []

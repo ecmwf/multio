@@ -101,7 +101,6 @@ CASE("Test loading configuration") {
     test_check(multio_new_handle(&multio_handle, multio_cc), "Create Handle");
     std::unique_ptr<multio_handle_t> handle_deleter(multio_handle);
 
-    //test_check(multio_start_server(multio_cc), "Start Server");
 
     test_check(multio_open_connections(multio_handle), "Open Connections");
 
@@ -171,7 +170,6 @@ CASE("Test read from grib file"){
     std::string full_path = config_file.asString() + file_name;
     const char *conf_path = full_path.c_str();
 
-    //const char* path = "/Users/maaw/multio/tests/multio/test.grib";
     auto field = eckit::PathName{conf_path};
 
     eckit::Log::error() << field << std::endl;
@@ -241,10 +239,6 @@ CASE("Test write field"){
 
     test_check(multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz), "Write Field");
 
-    //test_check(multio_write_mask(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz), "Write Mask");
-
-    //int domain_dims[4] = {1,2,3,4};
-    //test_check(multio_write_domain(multio_handle, md, domain_dims, 4), "Write Domain");
 }
 }
 }

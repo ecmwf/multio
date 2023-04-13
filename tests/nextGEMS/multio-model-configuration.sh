@@ -76,3 +76,6 @@ MULTIO_RAPS_GRID_TYPE=O80
 MULTIO_RAPS_OUTPUT_PATH=/ec/res4/scratch/mavm/RAPSrun/out.${MULTIO_RAPS_GRID_TYPE}
 MULTIO_RAPS_TEMPLATES_PATH=/ec/res4/scratch/mavm/RAPSrun/templates.${MULTIO_RAPS_GRID_TYPE}
 MULTIO_RAPS_PLANS_PATH=/ec/res4/scratch/mavm/RAPSrun/cfg.tco79/plans
+
+MULTIO_RAPS_DO_STATISTICS_RESTART=1
+MULTIO_RAPS_STATISTICS_RESTART_PATH=/ec/res4/scratch/mavm/RAPSrun/statistics-restart

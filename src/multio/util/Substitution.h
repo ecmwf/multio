@@ -22,7 +22,7 @@
 #include <string_view>  // C++17 available at the point of using
 
 #include "eckit/config/LocalConfiguration.h"
-#include "eckit/utils/Optional.h" 
+#include "eckit/utils/Optional.h"
 
 
 namespace multio {
@@ -37,7 +37,7 @@ namespace util {
  * TODO: Think about an escaping mechanism, i.e. \{  and \}, or {{ and }}
  *
  * @param s  A string_view in which curly braces are searched and matched for replacement
- * @param func  A function accepting a string_view of a key that might be replaced. The function is supposed to return 
+ * @param func  A function accepting a string_view of a key that might be replaced. The function is supposed to return
  *              an std::optional, eckit::optional or pointer (anything with bool conversion and indirect access with *)
  *              If the optional contains nothing, no replacement is peformed for this key.
  * @return String with substitions.
@@ -72,7 +72,9 @@ std::string replaceCurly(std::string_view s, Func&& lookup) {
     }
 }
 
-eckit::Optional<bool> parseEnabled( const eckit::LocalConfiguration& cfg, bool defaultValue );
+
+eckit::Optional<bool> parseBool(const eckit::LocalConfiguration& cfg, const std::string& key, bool defaultValue);
+eckit::Optional<bool> parseEnabled(const eckit::LocalConfiguration& cfg, bool defaultValue);
 
 }  // namespace util
 }  // namespace multio

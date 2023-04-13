@@ -18,6 +18,10 @@ actions:
   - type: statistics
     output-frequency: 1m
     options:
+      initial-condition-present: true
+      restart: '{MULTIO_RAPS_DO_STATISTICS_RESTART}'
+      restart-prefix: '3-1-2a'
+      restart-path: '{MULTIO_RAPS_STATISTICS_RESTART_PATH}'
       step-frequency: 1
       time-step: 3600
       use-current-time: true

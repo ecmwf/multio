@@ -19,7 +19,7 @@ StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& confCtx) :
     step_{-1},
     solverSendInitStep_{false},
     restartPath_{"."},
-    restartPrefix_{"StatisticsDump"} {
+    restartPrefix_{"StatisticsRestartFile"} {
 
     if (!confCtx.has("options")) {
         return;
@@ -43,9 +43,16 @@ StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& confCtx) :
     useDateTime_ = opt.getBool("use-current-time", false);
     stepFreq_ = opt.getLong("step-frequency", 1L);
     timeStep_ = opt.getLong("time-step", 3600L);
-    restart_ = opt.getBool("restart", false);
     solverSendInitStep_ = opt.getBool("initial-condition-present", false);
-
+    eckit::Optional<bool> r = util::parseBool(opt, "restart", false);
+    if (r) {
+        restart_ = *r;
+    }
+    else {
+        throw eckit::SeriousBug{"Unable to restart value", Here()};
+    }
+    // TODO: Add functionality to automatically create restart path if it not exists
+    // (same improvement can be done in sink). Feature already present in eckit::PathName
     if (opt.has("restart-path")) {
         restartPath_ = util::replaceCurly(opt.getString("restart-path", "."), env);
         eckit::PathName path{restartPath_};

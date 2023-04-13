@@ -11,6 +11,8 @@
 #include "Statistics.h"
 
 #include <algorithm>
+#include <unordered_map>
+
 
 #include "TemporalStatistics.h"
 #include "eckit/exception/Exceptions.h"
@@ -29,7 +31,7 @@ std::string set_unit(std::string const& output_freq) {
     const auto& symbol = output_freq.back();
 
     if (symbol_to_unit.find(symbol) == end(symbol_to_unit)) {
-        throw eckit::SeriousBug{"Time unit for symbol " + std::string{symbol} + " is not supported"};
+        throw eckit::SeriousBug{"Time unit for symbol " + std::string{symbol} + " is not supported", Here()};
     }
     return symbol_to_unit.at(symbol);
 }
@@ -48,72 +50,127 @@ Statistics::Statistics(const ConfigurationContext& confCtx) :
     operations_{confCtx.config().getStringVector("operations")},
     options_{confCtx.config()} {}
 
+
+Statistics::~Statistics() {
+    // Dump restart for all non emitted statistics
+    try {
+        if (options_.restart()) {
+            for (auto it = fieldStats_.begin(); it != fieldStats_.end(); it++) {
+                it->second->dump();
+            }
+        }
+    }
+    catch (...){
+        std::cout << "ERROR UNABLE TO WRITE RESTART FILE" << std::endl;
+    }
+
+
+}
+
+std::string Statistics::getKey(const message::Message& msg) const {
+    std::ostringstream os;
+    // TODO: "param" and "level" are needed. check and throw
+    os << std::to_string(std::hash<std::string>{}(msg.metadata().getString("param", "unknown")))
+       << std::to_string(std::hash<long>{}(msg.metadata().getLong("level", 999999999L)))
+       << std::to_string(std::hash<std::string>{}(msg.source()));
+    return os.str();
+}
+
+std::string Statistics::getRestartPartialPath(const message::Message& msg, const StatisticsOptions& opt) const {
+    // Easy way to change (if needed in future) the name of the restart file
+    std::ostringstream os;
+    os << opt.restartPath() << "/" << opt.restartPrefix() << "-" << getKey(msg);
+    return os.str();
+}
+
+message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetadata, const StatisticsOptions& opt,
+                                             const std::string& key, long timeSpanInSeconds) const {
+    // Handling metadata
+    auto md = inputMetadata;
+    md.set("timeUnit", timeUnit_);
+    md.set("startDate", opt.startDate());
+    md.set("startTime", opt.startTime());
+    long timeSpanInHours = timeSpanInSeconds / 3600;
+    md.set("timeSpanInHours", timeSpanInHours);
+    md.set("stepRange", fieldStats_.at(key)->stepRange(md.getLong("step")));
+    md.set("currentDate", fieldStats_.at(key)->current().endPoint().date().yyyymmdd());
+    md.set("currentTime", fieldStats_.at(key)->current().endPoint().time().hhmmss());
+    auto stepInSeconds = md.getLong("step") * opt.timeStep();
+    LOG_DEBUG_LIB(LibMultio) << "The step is :: " << md.getLong("step") << std::endl;
+    if (stepInSeconds % 3600 != 0L) {
+        std::ostringstream os;
+        os << "Step in seconds needs to be a multiple of 3600 :: " << stepInSeconds << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+    auto stepInHours = stepInSeconds / 3600;
+    LOG_DEBUG_LIB(LibMultio) << "The step (in hours) is :: " << stepInHours << std::endl;
+    md.set("stepInHours", stepInHours);
+    auto prevStep = std::max(stepInHours - timeSpanInHours, 0L);
+    auto stepRangeInHours = std::to_string(prevStep) + "-" + std::to_string(stepInHours);
+    LOG_DEBUG_LIB(LibMultio) << "The step range (in hours) is :: " << stepRangeInHours << std::endl;
+    md.set("stepRangeInHours", stepRangeInHours);
+    return md;
+}
+
+bool Statistics::restartExist(const std::string& key, const StatisticsOptions& opt) const {
+    return true;
+}
+
 void Statistics::executeImpl(message::Message msg) {
+
     // Pass through -- no statistics for messages other than fields
     if (msg.tag() != message::Message::Tag::Field) {
         executeNext(msg);
         return;
     }
 
-    // TODO: Improve metadata handling
-    auto md = msg.metadata();
-    if (!md.has("startDate")) {
-        md.set("startDate", md.getLong("date"));
-    }
-    if (!md.has("startTime")) {
-        md.set("startTime", md.getLong("time"));
-    }
-    if (!md.has("step")) {
-        throw eckit::SeriousBug("MULTIO ACTION STATISTICS :: missing metadata", Here());
-    }
+    std::string key = getKey(msg);
+
+
+    long timeSpanInSeconds;
     StatisticsOptions opt{options_, msg};
-    std::ostringstream os;
+
     {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
-        LOG_DEBUG_LIB(multio::LibMultio) << "*** " << msg.destination() << " -- metadata: " << md << std::endl;
-
-        // Create a unique key for the fieldStats_ map
-        // TODO: Improve key genration with hash
-        os << msg.metadata().getString("param", "xxx.yyy") << msg.metadata().getLong("level", 0L) << msg.source();
-
-        if (fieldStats_.find(os.str()) == end(fieldStats_)) {
-            fieldStats_[os.str()] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg, opt);
+        // Push new statistics
+        LOG_DEBUG_LIB(multio::LibMultio) << "*** " << msg.destination() << " -- metadata: " << msg.metadata()
+                                         << std::endl;
+        if (fieldStats_.find(key) == end(fieldStats_)) {
+            // Create a new statistics
+            fieldStats_[key] = TemporalStatistics::build(timeUnit_, timeSpan_, operations_, msg,
+                                                         getRestartPartialPath(msg, opt), opt);
+            // Initial conditions don't need to be used in computation
+            if (opt.solver_send_initial_condition()) {
+                return;
+            }
         }
 
-        if (fieldStats_.at(os.str())->process(msg)) {
+        // Time span needs to be computed here because otherwise it will be the timespan of the next window
+        timeSpanInSeconds = fieldStats_.at(key)->current().timeSpanInSeconds();
+        if (fieldStats_.at(key)->process(msg)) {
             return;
         }
 
-        md.set("timeUnit", timeUnit_);
-        auto timeSpanInHours = fieldStats_.at(os.str())->current().timeSpanInHours();
-        md.set("timeSpanInHours", timeSpanInHours);
-        md.set("stepRange", fieldStats_.at(os.str())->stepRange(md.getLong("step")));
-        md.set("currentDate", fieldStats_.at(os.str())->current().endPoint().date().yyyymmdd());
-        md.set("currentTime", fieldStats_.at(os.str())->current().endPoint().time().hhmmss());
+        // Construct output metadata
+        auto md = outputMetadata(msg.metadata(), opt, key, timeSpanInSeconds);
 
-        if (md.has("step") && md.has("timeStep")) {
-            auto stepInSeconds = md.getLong("step") * md.getLong("timeStep");
-            ASSERT(stepInSeconds % 3600 == 0);
-            auto stepInHours = stepInSeconds / 3600;
-            md.set("stepInHours", stepInHours);
-            auto prevStep = std::max(stepInHours - timeSpanInHours, 0L);
-            auto stepRangeInHours = std::to_string(prevStep) + "-" + std::to_string(stepInHours);
-            md.set("stepRangeInHours", stepRangeInHours);
+        // Emit finished statistics
+        for (auto&& stat : fieldStats_.at(key)->compute(msg)) {
+            md.set("operation", stat.first);
+            message::Message newMsg{message::Message::Header{message::Message::Tag::Field, msg.source(),
+                                                             msg.destination(), message::Metadata{md}},
+                                    std::move(stat.second)};
+            LOG_DEBUG_LIB(LibMultio) << "Exit span in seconds :: " << timeSpanInSeconds << std::endl;
+            if (timeSpanInSeconds > 0) {
+                executeNext(newMsg);
+            }
         }
-    }
-    for (auto&& stat : fieldStats_.at(os.str())->compute(msg)) {
-        md.set("operation", stat.first);
-        message::Message newMsg{message::Message::Header{message::Message::Tag::Field, msg.source(), msg.destination(),
-                                                         message::Metadata{md}},
-                                std::move(stat.second)};
-
-        executeNext(newMsg);
     }
 
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
-    fieldStats_.at(os.str())->reset(msg);
+    fieldStats_.at(key)->reset(msg);
 }
 
 void Statistics::print(std::ostream& os) const {

@@ -18,6 +18,7 @@ plans:
 
   - file: '{MULTIO_RAPS_PLANS_PATH}/2_1_1_SFCVariables_1Hourly_1_00x1_00_grib1.yaml'
   - file: '{MULTIO_RAPS_PLANS_PATH}/2_1_2_SFCVariables_6Hourly_1_00x1_00_grib1.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/2_1_3_SFCVariables_1Hourly_1_00x1_00_grib2.yaml'
 
   - file: '{MULTIO_RAPS_PLANS_PATH}/2_2_1_SFCVariables_1Hourly_0_25x0_25_grib1.yaml'
   - file: '{MULTIO_RAPS_PLANS_PATH}/2_2_2_3DVariables_6Hourly_0_25x0_25_grib1.yaml'

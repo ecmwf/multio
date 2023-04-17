@@ -1,0 +1,40 @@
+name: '[2.1.3] SFC variables, 1 Hourly, 1.0x1.0 (grib2)'
+enable: '{MULTIO_RAPS_ENABLE_PLAN_2_1_3}'
+actions:
+  - type: select
+    match:
+     - levtype: sfc
+       paramId: [228051]
+
+  - type: print
+    only-fields: true
+    prefix: ' ++ MULTIO-PRINT :: [2.1.3] SFC variables, 1 Hourly, 1.0x1.0 (grib2)'
+
+  - type: metadata-mapping
+    mapping: '{MULTIO_RAPS_PLANS_PATH}/mapping-lwda-to-lwda.yaml'
+    overwrite-existing: true
+    enforce-match: true
+
+  - type: interpolate
+    input: '{MULTIO_RAPS_GRID_TYPE}'
+    grid: [1.00,1.00]
+    area: [90.0,0.0,-90.0,360.0]
+    interpolation: grid-box-average
+    options:
+      caching: true
+
+  - type: encode
+    format: grib
+    template: '{MULTIO_RAPS_TEMPLATES_PATH}/regular_ll_sfc_grib2_litota1.tmpl'
+
+  - type: sink
+    sinks:
+      - type: file
+        enable: '{MULTIO_RAPS_ENABLE_FILE_2_1_3}'
+        append: false
+        per-server: true
+        path: '{MULTIO_RAPS_OUTPUT_PATH}/02-InterpolatedFields/01-RegularLatLong_1.0x1.0/SFCvariables-1Hourly-OriginalGrid-grib2.grib'
+      - type: fdb5
+        enable: '{MULTIO_RAPS_ENABLE_FDB5_2_1_3}'
+        config: {}
+

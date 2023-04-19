@@ -24,6 +24,8 @@ list( APPEND multio_library_srcs
 list( APPEND multio_util_srcs
     util/ConfigurationContext.cc
     util/ConfigurationContext.h
+    util/Environment.cc
+    util/Environment.h
     util/FailureHandling.cc
     util/FailureHandling.h
     util/MetadataMappings.cc

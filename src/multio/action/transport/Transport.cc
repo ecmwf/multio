@@ -18,6 +18,7 @@
 #include "multio/util/ConfigurationPath.h"
 #include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
+#include "multio/util/Environment.h" 
 
 namespace multio {
 namespace action {
@@ -146,13 +147,25 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
 }
 
 Transport::DistributionType Transport::distributionType() {
-    const std::map<std::string, enum DistributionType> str2dist = {
-        {"hashed_cyclic", DistributionType::hashed_cyclic},
-        {"hashed_to_single", DistributionType::hashed_to_single},
-        {"even", DistributionType::even}};
+    // std::map with transparent comparator std::less<> for string_view
+    const std::map<std::string, enum DistributionType, std::less<>> str2dist
+        = {{"hashed_cyclic", DistributionType::hashed_cyclic},
+           {"hashed_to_single", DistributionType::hashed_to_single},
+           {"even", DistributionType::even}};
 
-    auto key = std::getenv("MULTIO_SERVER_DISTRIBUTION");
-    return key ? str2dist.at(key) : DistributionType::hashed_to_single;
+    const char* envVar = "MULTIO_SERVER_DISTRIBUTION";
+    auto key = util::getEnv(envVar);
+    if (!key)
+        return DistributionType::hashed_to_single;
+
+    auto it = str2dist.find(*key);
+    if (it == str2dist.end()) {
+        std::ostringstream oss;
+        oss << "Transport::distributionType(): Unsupported distribution type \"" << (*key)
+            << "\" read from environment variable " << envVar << std::endl;
+        throw transport::TransportException(oss.str(), Here());
+    }
+    return it->second;
 }
 
 static ActionBuilder<Transport> TransportBuilder("transport");

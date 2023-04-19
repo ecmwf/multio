@@ -147,20 +147,22 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
 }
 
 Transport::DistributionType Transport::distributionType() {
-    // map witg transparent comparator std::less<> for string_view
-    const std::map<std::string, enum DistributionType, std::less<>> str2dist = {
-        {"hashed_cyclic", DistributionType::hashed_cyclic},
-        {"hashed_to_single", DistributionType::hashed_to_single},
-        {"even", DistributionType::even}};
+    // std::map with transparent comparator std::less<> for string_view
+    const std::map<std::string, enum DistributionType, std::less<>> str2dist
+        = {{"hashed_cyclic", DistributionType::hashed_cyclic},
+           {"hashed_to_single", DistributionType::hashed_to_single},
+           {"even", DistributionType::even}};
 
     const char* envVar = "MULTIO_SERVER_DISTRIBUTION";
     auto key = util::getEnv(envVar);
-    if (!key) return DistributionType::hashed_to_single;
-    
+    if (!key)
+        return DistributionType::hashed_to_single;
+
     auto it = str2dist.find(*key);
     if (it == str2dist.end()) {
         std::ostringstream oss;
-        oss << "Transport::distributionType(): Unsupported distribution type \"" << (*key) << "\" read from environment variable " << envVar << std::endl;
+        oss << "Transport::distributionType(): Unsupported distribution type \"" << (*key)
+            << "\" read from environment variable " << envVar << std::endl;
         throw transport::TransportException(oss.str(), Here());
     }
     return it->second;

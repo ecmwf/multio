@@ -134,7 +134,7 @@ const YAMLFile& GlobalConfCtx::getYAMLFile(const eckit::PathName& fname) const {
 // Moreover to allow looking environment variables or cli arguments, for eckit::Resource would enforce us to construct a string like "var;$var;-var" which
 // will be reparsed again instead of passing 3 arguments directly...
 std::string GlobalConfCtx::replaceCurly(const std::string& s) const {
-    return ::replaceCurly(s, [this](std::string_view replace){
+    return ::replaceCurly(s, [this](std::string_view replace) {
         if (replace == "~") {
             return std::optional<std::string>{this->pathName_.asString()};
         }

@@ -141,6 +141,7 @@ MpiPeerSetup setupMPI_(const ConfigurationContext& confCtx) {
 }
 
 size_t getMpiPoolSize(const ConfigurationContext& confCtx) {
+
     switch (confCtx.localPeerTag()) {
         case util::LocalPeerTag::Server: {
             auto pServ = util::getEnv("MULTIO_SERVER_MPI_POOL_SIZE");
@@ -153,6 +154,7 @@ size_t getMpiPoolSize(const ConfigurationContext& confCtx) {
             };
             return defaultPoolSize;
         }
+
         case util::LocalPeerTag::Client: {
             auto pClient = util::getEnv("MULTIO_CLIENT_MPI_POOL_SIZE");
             if (pClient) {
@@ -164,17 +166,21 @@ size_t getMpiPoolSize(const ConfigurationContext& confCtx) {
             };
             return defaultPoolSize;
         }
+
         default:
             std::ostringstream oss;
-            oss << "getMpiBufferSize: localPeerTag is neither Server (" << ((unsigned)util::LocalPeerTag::Server)
-                << ") nor Client (" << ((unsigned)util::LocalPeerTag::Server)
-                << "). Value: " << ((unsigned)confCtx.localPeerTag()) << std::endl;
+            oss << "getMpiPoolSize: localPeerTag is neither Server ("
+                << static_cast<unsigned>(util::LocalPeerTag::Server) << ") nor Client ("
+                << static_cast<unsigned>(util::LocalPeerTag::Client)
+                << "). Value: " << static_cast<unsigned>(confCtx.localPeerTag()) << std::endl;
             throw TransportException("", Here());
     }
 }
 
 size_t getMpiBufferSize(const ConfigurationContext& confCtx) {
+
     switch (confCtx.localPeerTag()) {
+
         case util::LocalPeerTag::Server: {
             auto pServ = util::getEnv("MULTIO_SERVER_MPI_BUFFER_SIZE");
             if (pServ) {
@@ -186,6 +192,7 @@ size_t getMpiBufferSize(const ConfigurationContext& confCtx) {
             };
             return defaultBufferSize;
         }
+
         case util::LocalPeerTag::Client: {
             auto pClient = util::getEnv("MULTIO_CLIENT_MPI_BUFFER_SIZE");
             if (pClient) {
@@ -197,11 +204,13 @@ size_t getMpiBufferSize(const ConfigurationContext& confCtx) {
             };
             return defaultBufferSize;
         }
+
         default:
             std::ostringstream oss;
-            oss << "getMpiBufferSize: localPeerTag is neither Server (" << ((unsigned)util::LocalPeerTag::Server)
-                << ") nor Client (" << ((unsigned)util::LocalPeerTag::Server)
-                << "). Value: " << ((unsigned)confCtx.localPeerTag()) << std::endl;
+            oss << "getMpiBufferSize: localPeerTag is neither Server ("
+                << static_cast<unsigned>(util::LocalPeerTag::Server) << ") nor Client ("
+                << static_cast<unsigned>(util::LocalPeerTag::Client)
+                << "). Value: " << static_cast<unsigned>(confCtx.localPeerTag()) << std::endl;
             throw TransportException("", Here());
     }
 }

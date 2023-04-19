@@ -1,4 +1,7 @@
+
 #include "multio/util/Environment.h"
+
+#include <cstring>
 
 namespace multio {
 namespace util {

@@ -7,18 +7,21 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
 
+#include "multio/util/Environment.h"
+
 namespace multio {
 namespace util {
 
 inline eckit::PathName configuration_path_name(const eckit::PathName& pathOfFile = "") {
-    char * path = std::getenv("MULTIO_SERVER_CONFIG_PATH");
-    eckit::PathName base = (path != NULL && (std::strlen(path) > 0))  ? eckit::PathName{path} : pathOfFile.dirName();
+    auto path = getEnv("MULTIO_SERVER_CONFIG_PATH");
+    eckit::PathName base = path ? eckit::PathName{std::string{*path}} : pathOfFile.dirName();
     return base + "/";
 }
 
 inline eckit::PathName configuration_file_name() {
-    char * file = std::getenv("MULTIO_SERVER_CONFIG_FILE");
-    return (file != NULL && (std::strlen(file) > 0)) ? eckit::PathName{file} : eckit::PathName{configuration_path_name() + "multio-server.yaml"};
+    auto file = getEnv("MULTIO_SERVER_CONFIG_FILE");
+    return file ? eckit::PathName{std::string{*file}}
+                : eckit::PathName{configuration_path_name() + "multio-server.yaml"};
 }
 
 inline const eckit::LocalConfiguration& configuration_file() {

@@ -44,10 +44,9 @@ private:
     void execute(const eckit::option::CmdArgs& args) override;
 
     void initClient();
-    void runClient();
 
     eckit::Buffer readFields();
-    void writeFields(const eckit::Buffer&);
+    void writeFields(const eckit::Buffer& data);
 
     std::string transportType_ = "mpi";
     std::string pathtodata_;

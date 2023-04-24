@@ -102,6 +102,8 @@ CASE("Test loading configuration") {
 
     test_check(multio_open_connections(multio_handle), "Open Connections");
 
+    // test_check(multio_start_server(multio_cc), "Start Server");
+
     test_check(multio_close_connections(multio_handle), "Close Connections");
 }
 
@@ -192,7 +194,7 @@ CASE("Test write field") {
     test_check(multio_metadata_set_int(md, "level", 1), "Set Int");
     test_check(multio_metadata_set_int(md, "step", 1), "Set Int");
 
-    test_check(multio_metadata_set_double(md, "missingValue", 0.0), "Set Doubel");
+    test_check(multio_metadata_set_double(md, "missingValue", 0.0), "Set Double");
     test_check(multio_metadata_set_bool(md, "bitmapPresent", false), "Set bool");
     test_check(multio_metadata_set_int(md, "bitsPerValue", 16), "Set Int");
 
@@ -203,6 +205,10 @@ CASE("Test write field") {
 
     test_check(multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), len),
                "Write Field");
+
+    auto file_name = configuration_path_name() / "../../build/tests/multio/testWriteOutput.grib";
+    std::cout << file_name.localPath() << std::endl;
+    EXPECT(std::filesystem::exists(file_name.localPath()));
 }
 }  // namespace test
 }  // namespace multio

@@ -1,6 +1,11 @@
 plans:
-    - name: test-print
+    - name: test-write
       actions:
         - type: print
+          stream: cout
         - type: sink
-          sinks: []
+          sinks:
+            - type: file
+              append: false
+              per-server: false # Will give you one file per server
+              path: testWriteOutput.grib

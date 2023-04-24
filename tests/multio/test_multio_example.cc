@@ -174,37 +174,43 @@ CASE("Test write field") {
     EXPECT(multio_handle);
     std::unique_ptr<multio_handle_t> handle_deleter(multio_handle);
 
-    auto field = configuration_path_name() / "test.grib";
-    eckit::Length len = field.size();
-    eckit::Buffer buffer(len);
+    const char* files[2] = {"test.grib", "test2.grib"};
 
-    eckit::FileHandle infile{field};
-    infile.openForRead();
-    {
-        eckit::AutoClose closer(infile);
-        EXPECT(infile.read(buffer.data(), len) == len);
+    for (const char* file : files) {
+        auto field = configuration_path_name() / file;
+        eckit::Length len = field.size();
+        eckit::Buffer buffer(len);
+
+        eckit::FileHandle infile{field};
+        infile.openForRead();
+        {
+            eckit::AutoClose closer(infile);
+            EXPECT(infile.read(buffer.data(), len) == len);
+        }
+
+        multio_metadata_t* md = nullptr;
+        test_check(multio_new_metadata(&md), "Create New Metadata Object");
+        std::unique_ptr<multio_metadata_t> multio_deleter(md);
+
+        test_check(multio_metadata_set_string(md, "category", file), "Set String");
+        test_check(multio_metadata_set_int(md, "globalSize", len), "Set Int");
+        test_check(multio_metadata_set_int(md, "level", 1), "Set Int");
+        test_check(multio_metadata_set_int(md, "step", 1), "Set Int");
+
+        test_check(multio_metadata_set_double(md, "missingValue", 0.0), "Set Double");
+        test_check(multio_metadata_set_bool(md, "bitmapPresent", false), "Set bool");
+        test_check(multio_metadata_set_int(md, "bitsPerValue", 16), "Set Int");
+
+        test_check(multio_metadata_set_bool(md, "toAllServers", false), "Set Bool");
+
+        // Overwrite these fields in the existing metadata object
+        test_check(multio_metadata_set_string(md, "name", "test"), "Set String");
+
+        test_check(multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), len),
+                   "Write Field");
+
+        test_check(multio_write_step_complete(multio_handle, md), "Field Written");
     }
-
-    multio_metadata_t* md = nullptr;
-    test_check(multio_new_metadata(&md), "Create New Metadata Object");
-    std::unique_ptr<multio_metadata_t> multio_deleter(md);
-
-    test_check(multio_metadata_set_string(md, "category", "test_data"), "Set String");
-    test_check(multio_metadata_set_int(md, "globalSize", len), "Set Int");
-    test_check(multio_metadata_set_int(md, "level", 1), "Set Int");
-    test_check(multio_metadata_set_int(md, "step", 1), "Set Int");
-
-    test_check(multio_metadata_set_double(md, "missingValue", 0.0), "Set Double");
-    test_check(multio_metadata_set_bool(md, "bitmapPresent", false), "Set bool");
-    test_check(multio_metadata_set_int(md, "bitsPerValue", 16), "Set Int");
-
-    test_check(multio_metadata_set_bool(md, "toAllServers", false), "Set Bool");
-
-    // Overwrite these fields in the existing metadata object
-    test_check(multio_metadata_set_string(md, "name", "test"), "Set String");
-
-    test_check(multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), len),
-               "Write Field");
 
     auto file_name = configuration_path_name() / "../../build/tests/multio/testWriteOutput.grib";
     std::cout << file_name.localPath() << std::endl;

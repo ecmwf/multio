@@ -94,45 +94,47 @@ CASE("Initial Test for version") {
 CASE("Try Create handle with wrong configuration path") {
     multio_configuration_t* cc = nullptr;
     int err;
-    err = multio_new_configuration_from_filename(&cc, "I_AM_NOT_HERE/multio/config/multio-server.yaml");
+    err = multio_new_configurationcontext_from_filename(&cc, "I_AM_NOT_HERE/multio/config/multio-server.yaml");
+    std::unique_ptr<multio_configurationcontext_t> configuration_context_deleter(cc);
     std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind("Cannot open I_AM_NOT_HERE/multio/config/multio-server.yaml  (No such file or directory)")
            != std::string::npos);
-    multio_delete_configuration(cc);
 }
 
 CASE("Create handle with default configuration without MPI splitting") {
     multio_configuration_t* cc = nullptr;
     multio_handle_t* mdp = nullptr;
     int err;
-    err = multio_new_configuration(&cc);
+    err = multio_new_configurationcontext(&cc);
+    std::unique_ptr<multio_configurationcontext_t> configuration_context_deleter(cc);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_conf_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_new_handle(&mdp, cc);
+    std::unique_ptr<multio_handle_t> handle_deleter(mdp);
     std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
-    multio_delete_configuration(cc);
 }
 
 CASE("Create handle with default configuration through nullptr configuration path without MPI splitting") {
     multio_configuration_t* cc = nullptr;
     multio_handle_t* mdp = nullptr;
     int err;
-    err = multio_new_configuration_from_filename(&cc, nullptr);
+    err = multio_new_configurationcontext_from_filename(&cc, nullptr);
+    std::unique_ptr<multio_configurationcontext_t> configuration_context_deleter(cc);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_conf_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_new_handle(&mdp, cc);
+    std::unique_ptr<multio_handle_t> handle_deleter(mdp);
     std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
-    multio_delete_configuration(cc);
 }
 
 
@@ -145,16 +147,17 @@ CASE("Create handle with configuration path without MPI splitting") {
     std::ostringstream oss;
     oss << env_config_path << "/multio-server.yaml";
     std::string path = oss.str();
-    err = multio_new_configuration_from_filename(&cc, path.c_str());
+    err = multio_new_configurationcontext_from_filename(&cc, path.c_str());
+    std::unique_ptr<multio_configurationcontext_t> configuration_context_deleter(cc);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_conf_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_new_handle(&mdp, cc);
+    std::unique_ptr<multio_handle_t> handle_deleter(mdp);
     std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
-    multio_delete_configuration(cc);
 }
 
 // CASE("Start server with default configuration & unknown server name") {
@@ -175,7 +178,8 @@ CASE("Create handle with configuration path without MPI splitting") {
 CASE("Start server with default configuration") {
     multio_configuration_t* cc = nullptr;
     int err;
-    err = multio_new_configuration(&cc);
+    err = multio_new_configurationcontext(&cc);
+    std::unique_ptr<multio_configurationcontext_t> configuration_context_deleter(cc);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_conf_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
@@ -184,7 +188,6 @@ CASE("Start server with default configuration") {
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
-    multio_delete_configuration(cc);
 }
 
 CASE("Test loading configuration") {
@@ -227,6 +230,7 @@ CASE("Metadata can set values") {
     multio_metadata_t* mdp = nullptr;
     int err;
     err = multio_new_metadata(&mdp);
+    std::unique_ptr<multio_metadata_t> multio_deleter(mdp);
     EXPECT(err == MULTIO_SUCCESS);
 
     err = multio_metadata_set_string(mdp, "stringValue", "testString");
@@ -324,7 +328,6 @@ CASE("Metadata can set values") {
     // EXPECT(!md_moved.empty());
     // // EXPECT(md_pCpp->empty()); // THIS IS FAILING; Change request: https://jira.ecmwf.int/browse/ECKIT-601
 
-    err = multio_delete_metadata(mdp);
     EXPECT(err == MULTIO_SUCCESS);
 }
 
@@ -342,37 +345,43 @@ CASE("Test write field") {
     EXPECT(multio_handle);
     std::unique_ptr<multio_handle_t> handle_deleter(multio_handle);
 
-    auto field = configuration_path_name() / "../test.grib";
-    eckit::Length len = field.size();
-    eckit::Buffer buffer(len);
+    const char* files[2] = {"test.grib", "test2.grib"};
 
-    eckit::FileHandle infile{field};
-    infile.openForRead();
-    {
-        eckit::AutoClose closer(infile);
-        EXPECT(infile.read(buffer.data(), len) == len);
+    for (const char* file : files) {
+        auto field = configuration_path_name() / "../" / file;
+        eckit::Length len = field.size();
+        eckit::Buffer buffer(len);
+
+        eckit::FileHandle infile{field};
+        infile.openForRead();
+        {
+            eckit::AutoClose closer(infile);
+            EXPECT(infile.read(buffer.data(), len) == len);
+        }
+
+        multio_metadata_t* md = nullptr;
+        test_check(multio_new_metadata(&md), "Create New Metadata Object");
+        std::unique_ptr<multio_metadata_t> multio_deleter(md);
+
+        test_check(multio_metadata_set_string(md, "category", file), "Set String");
+        test_check(multio_metadata_set_int(md, "globalSize", len), "Set Int");
+        test_check(multio_metadata_set_int(md, "level", 1), "Set Int");
+        test_check(multio_metadata_set_int(md, "step", 1), "Set Int");
+
+        test_check(multio_metadata_set_double(md, "missingValue", 0.0), "Set Double");
+        test_check(multio_metadata_set_bool(md, "bitmapPresent", false), "Set bool");
+        test_check(multio_metadata_set_int(md, "bitsPerValue", 16), "Set Int");
+
+        test_check(multio_metadata_set_bool(md, "toAllServers", false), "Set Bool");
+
+        // Overwrite these fields in the existing metadata object
+        test_check(multio_metadata_set_string(md, "name", "test"), "Set String");
+
+        test_check(multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), len),
+                   "Write Field");
+
+        test_check(multio_write_step_complete(multio_handle, md), "Field Written");
     }
-
-    multio_metadata_t* md = nullptr;
-    test_check(multio_new_metadata(&md), "Create New Metadata Object");
-    std::unique_ptr<multio_metadata_t> multio_deleter(md);
-
-    test_check(multio_metadata_set_string(md, "category", "test_data"), "Set String");
-    test_check(multio_metadata_set_int(md, "globalSize", len), "Set Int");
-    test_check(multio_metadata_set_int(md, "level", 1), "Set Int");
-    test_check(multio_metadata_set_int(md, "step", 1), "Set Int");
-
-    test_check(multio_metadata_set_double(md, "missingValue", 0.0), "Set Double");
-    test_check(multio_metadata_set_bool(md, "bitmapPresent", false), "Set bool");
-    test_check(multio_metadata_set_int(md, "bitsPerValue", 16), "Set Int");
-
-    test_check(multio_metadata_set_bool(md, "toAllServers", false), "Set Bool");
-
-    // Overwrite these fields in the existing metadata object
-    test_check(multio_metadata_set_string(md, "name", "test"), "Set String");
-
-    test_check(multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), len),
-               "Write Field");
 
     auto file_name = configuration_path_name() / "../../../build/tests/multio/testWriteOutput.grib";
     std::cout << file_name.localPath() << std::endl;

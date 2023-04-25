@@ -574,6 +574,54 @@ data:
     grid-type : "T grid"
     level-type : "entireMeltPond"
 
+  # Temperature tendency from assimilation increment
+  - nemo-id : bckint
+    param-id : 262510
+    grid-type : "T grid"
+    level-type : "oceanModelLayer"
+
+  # Salinity tendency from assimilation increment
+  - nemo-id : bckins
+    param-id : 262511
+    grid-type : "T grid"
+    level-type : "oceanModelLayer"
+
+  # Sea-surface height tendency from assimilation increment
+  - nemo-id : bckineta
+    param-id : 262142
+    grid-type : "T grid"
+    level-type : "mixingLayer"
+
+  # Sea-ice concentration tendency from assimilation increment
+  - nemo-id : bckinseaice
+    param-id : 262020
+    grid-type : "T grid"
+    level-type : "iceTopOnWater"
+
+  # Zonal velocity tendency from assimilation increment
+  - nemo-id : bckinu
+    param-id : 262512
+    grid-type : "U grid"
+    level-type : "oceanModelLayer"
+
+  # Meridional tendency from assimilation increment
+  - nemo-id : bckinv
+    param-id : 262513
+    grid-type : "V grid"
+    level-type : "oceanModelLayer"
+
+  # Temperature tendency from direct bias correction
+  - nemo-id : votbiasd
+    param-id : 262514
+    grid-type : "T grid"
+    level-type : "oceanModelLayer"
+
+  # Salinity tendency from direct bias correction
+  - nemo-id : vosbiasd
+    param-id : 262515
+    grid-type : "T grid"
+    level-type : "oceanModelLayer"
+
   - nemo-id : iceconc_cat
     param-id : 212213 # Still experimental
     grid-type : "T grid"

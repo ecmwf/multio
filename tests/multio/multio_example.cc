@@ -110,8 +110,6 @@ eckit::Buffer MultioReplayExampleCApi::readFields() {
         EXPECT(infile.read(buffer.data(), len) == len);
     }
 
-    // infile.close();
-
     return buffer;
 }
 
@@ -139,6 +137,8 @@ void MultioReplayExampleCApi::writeFields(const eckit::Buffer& data) {
     multio_metadata_set_string(md, key, s_value);
 
     multio_write_field(multio_handle, md, reinterpret_cast<const double*>(data.data()), data.size());
+
+    multio_write_step_complete(multio_handle, md);
 
     multio_delete_metadata(md);
 }

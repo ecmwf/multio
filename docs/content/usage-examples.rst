@@ -15,3 +15,13 @@ global forecast system at ECMWF. The primary motivation for using **multio** is 
 be able to encode and archive ocean fields in GRIB2 format.
 
 .. _`nemo`: https://www.nemo-ocean.eu/
+
+Multio Examples
+---------------
+
+An example that reads fields and writes them as output to a file using a config.
+
+.. toctree::
+   :maxdepth: 1
+
+   usage-examples/multio_example

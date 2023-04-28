@@ -1,32 +1,31 @@
-#include <string.h>
+/*
+ * (C) Copyright 1996- ECMWF.
+ *
+ * This software is licensed under the terms of the Apache Licence Version 2.0
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ * In applying this licence, ECMWF does not waive the privileges and immunities
+ * granted to it by virtue of its status as an intergovernmental organisation nor
+ * does it submit to any jurisdiction.
+ */
+
+// @author Adam Warde
+
 #include <unistd.h>
 #include <cstring>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 #include <limits>
 
-#include "eckit/filesystem/TmpFile.h"
-#include "eckit/testing/Test.h"
-
 #include "multio/api/multio_c.h"
-#include "multio/api/multio_c_cpp_utils.h"
-#include "multio/message/Metadata.h"
-
-#include "eckit/exception/Exceptions.h"
-#include "eckit/io/FileHandle.h"
-#include "eckit/log/Log.h"
-#include "eckit/mpi/Comm.h"
-#include "eckit/option/CmdArgs.h"
-#include "eckit/option/SimpleOption.h"
-
 #include "multio/api/multio_c_cpp_utils.h"
 #include "multio/tools/MultioTool.h"
 #include "multio/util/ConfigurationPath.h"
 
+#include "eckit/io/FileHandle.h"
+#include "eckit/log/Log.h"
+#include "eckit/option/CmdArgs.h"
+#include "eckit/option/SimpleOption.h"
+
 using multio::util::configuration_file_name;
 using multio::util::configuration_path_name;
-
 
 class MultioReplayExampleCApi final : public multio::MultioTool {
 public:
@@ -67,9 +66,9 @@ void MultioReplayExampleCApi::init(const eckit::option::CmdArgs& args) {
     args.get("path", pathtodata_);
     args.get("step", step_);
 
-    eckit::Log::info() << "Transport: " << transportType_ << std::endl;
-    eckit::Log::info() << "Path to data: " << pathtodata_ << std::endl;
-    eckit::Log::info() << "Step: " << step_ << std::endl;
+    // eckit::Log::info() << "Transport: " << transportType_ << std::endl;
+    // eckit::Log::info() << "Path to data: " << pathtodata_ << std::endl;
+    // eckit::Log::info() << "Step: " << step_ << std::endl;
 
     initClient();
 }
@@ -88,10 +87,10 @@ void MultioReplayExampleCApi::execute(const eckit::option::CmdArgs&) {
 }
 
 void MultioReplayExampleCApi::initClient() {
-    multio_configurationcontext_t* multio_cc = nullptr;
-    multio_new_configurationcontext_from_filename(&multio_cc, configuration_file_name().localPath());
+    multio_configuration_t* multio_cc = nullptr;
+    multio_new_configuration_from_filename(&multio_cc, configuration_file_name().localPath());
     multio_new_handle(&multio_handle, multio_cc);
-    multio_delete_configurationcontext(multio_cc);
+    multio_delete_configuration(multio_cc);
 }
 
 eckit::Buffer MultioReplayExampleCApi::readFields() {
@@ -99,7 +98,7 @@ eckit::Buffer MultioReplayExampleCApi::readFields() {
 
     auto field = eckit::PathName{conf_path};
 
-    eckit::Log::error() << field << std::endl;
+    // eckit::Log::error() << field << std::endl;
 
     eckit::FileHandle infile{field.fullName()};
     size_t bytes = infile.openForRead();
@@ -107,7 +106,7 @@ eckit::Buffer MultioReplayExampleCApi::readFields() {
     eckit::Buffer buffer(len);
     {
         eckit::AutoClose closer(infile);
-        EXPECT(infile.read(buffer.data(), len) == len);
+        infile.read(buffer.data(), len);
     }
 
     return buffer;
@@ -138,13 +137,10 @@ void MultioReplayExampleCApi::writeFields(const eckit::Buffer& data) {
 
     multio_write_field(multio_handle, md, reinterpret_cast<const double*>(data.data()), data.size());
 
-    multio_write_step_complete(multio_handle, md);
-
     multio_delete_metadata(md);
 }
 
 int main(int argc, char** argv) {
-    std::cout << "Start Test!" << std::endl;
     MultioReplayExampleCApi tool(argc, argv);
     return tool.start();
 }

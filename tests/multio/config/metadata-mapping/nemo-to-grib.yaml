@@ -474,13 +474,13 @@ data:
 
   # X-component of sea-ice volocity
   - nemo-id : uice
-    param-id : 262003
+    param-id : 212218 # Still experimental to replace 262003
     grid-type : "U grid"
     level-type : "oceanSurface"
 
   # Y-component of sea-ice velocity
   - nemo-id : vice
-    param-id : 262004
+    param-id : 212219 # Still experimental to replace 262004
     grid-type : "V grid"
     level-type : "oceanSurface"
 

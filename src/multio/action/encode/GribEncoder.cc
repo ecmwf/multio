@@ -313,7 +313,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     setEncodingSpecificFields(*this, metadata);
 
     // Setting parameter ID
-    if (metadata.getLong("param") / 1000 == 212000) {
+    if (metadata.getLong("param") / 1000 == 212) {
         // HACK! Support experimental averages.
         setValue("paramId", metadata.getLong("param") + 4000);
     } else {

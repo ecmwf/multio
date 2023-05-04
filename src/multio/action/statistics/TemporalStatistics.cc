@@ -1,5 +1,6 @@
 #include "TemporalStatistics.h"
 
+#include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -26,18 +27,28 @@ auto reset_statistics(const std::vector<std::string>& opNames, message::Message 
     });
 }
 
-eckit::DateTime currentDateTime(const message::Message& msg, const StatisticsOptions& options) {
+
+eckit::DateTime epochDateTime(const message::Message& msg, const StatisticsOptions& options) {
     eckit::Date startDate{options.startDate()};
     long startTime = options.startTime();
     auto hour = startTime / 10000;
     auto minute = (startTime % 10000) / 100;
-    eckit::DateTime startDateTime{startDate, eckit::Time{hour, minute, 0}};
+    return eckit::DateTime{startDate, eckit::Time{hour, minute, 0}};
+}
 
-    return startDateTime + static_cast<eckit::Second>(options.step() * options.timeStep());
+
+eckit::DateTime prevDateTime(const message::Message& msg, const StatisticsOptions& options) {
+    return epochDateTime(msg, options)
+         + static_cast<eckit::Second>(std::max((options.step() - 1L), 0L) * options.timeStep());
+}
+
+
+eckit::DateTime currentDateTime(const message::Message& msg, const StatisticsOptions& options) {
+    return epochDateTime(msg, options) + static_cast<eckit::Second>(options.step() * options.timeStep());
 }
 
 eckit::DateTime nextDateTime(const message::Message& msg, const StatisticsOptions& options) {
-    return currentDateTime(msg, options) + static_cast<eckit::Second>(options.stepFreq() * options.timeStep());
+    return epochDateTime(msg, options) + static_cast<eckit::Second>((options.step() + 1) * options.timeStep());
 }
 
 
@@ -236,13 +247,12 @@ void TemporalStatistics::reset(const message::Message& msg) {
 
 namespace {
 DateTimePeriod setHourlyPeriod(long span, const message::Message& msg, const StatisticsOptions& options) {
-    eckit::DateTime startPoint{computeHourStart(currentDateTime(msg, options))};
+    eckit::DateTime startPoint{computeHourStart(options.solver_send_initial_condition() ? currentDateTime(msg, options)
+                                                                                        : prevDateTime(msg, options))};
     eckit::DateTime endPoint{computeHourEnd(startPoint, span)};
     // First window is shorter, for this reason we need to pass the dimensions of a timestep in order to catch
     // the correct time span in hours
-    return options.solver_send_initial_condition()
-             ? DateTimePeriod{startPoint, endPoint}
-             : DateTimePeriod{startPoint, endPoint, options.stepFreq() * options.timeStep()};
+    return DateTimePeriod{startPoint, endPoint};
 }
 }  // namespace
 
@@ -266,11 +276,10 @@ void HourlyStatistics::print(std::ostream& os) const {
 
 namespace {
 DateTimePeriod setDailyPeriod(long span, const message::Message& msg, const StatisticsOptions& options) {
-    eckit::DateTime startPoint{computeDayStart(currentDateTime(msg, options))};
+    eckit::DateTime startPoint{computeDayStart(options.solver_send_initial_condition() ? currentDateTime(msg, options)
+                                                                                       : prevDateTime(msg, options))};
     eckit::DateTime endPoint{computeDayEnd(startPoint, span)};
-    return options.solver_send_initial_condition()
-             ? DateTimePeriod{startPoint, endPoint}
-             : DateTimePeriod{startPoint, endPoint, options.stepFreq() * options.timeStep()};
+    return DateTimePeriod{startPoint, endPoint};
 }
 }  // namespace
 
@@ -294,11 +303,10 @@ void DailyStatistics::print(std::ostream& os) const {
 
 namespace {
 DateTimePeriod setMonthlyPeriod(long span, const message::Message& msg, const StatisticsOptions& options) {
-    eckit::DateTime startPoint{computeMonthStart(currentDateTime(msg, options))};
+    eckit::DateTime startPoint{computeMonthStart(options.solver_send_initial_condition() ? currentDateTime(msg, options)
+                                                                                         : prevDateTime(msg, options))};
     eckit::DateTime endPoint{computeMonthEnd(startPoint, span)};
-    return options.solver_send_initial_condition()
-             ? DateTimePeriod{startPoint, endPoint}
-             : DateTimePeriod{startPoint, endPoint, options.stepFreq() * options.timeStep()};
+    return DateTimePeriod{startPoint, endPoint};
 }
 }  // namespace
 

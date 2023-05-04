@@ -473,14 +473,14 @@ data:
     level-type : "snowLayerOverIceOnWater"
 
   # X-component of sea-ice volocity
-  - nemo-id : uice_ipa
-    param-id : 262003
+  - nemo-id : uice
+    param-id : 212218 # Still experimental to replace 262003
     grid-type : "U grid"
     level-type : "oceanSurface"
 
   # Y-component of sea-ice velocity
-  - nemo-id : vice_ipa
-    param-id : 262004
+  - nemo-id : vice
+    param-id : 212219 # Still experimental to replace 262004
     grid-type : "V grid"
     level-type : "oceanSurface"
 
@@ -515,7 +515,7 @@ data:
     level-type : "oceanSurface"
 
   # Mean ice temperature
-  - nemo-id : micet
+  - nemo-id : icetemp
     param-id : 262010
     grid-type : "T grid"
     level-type : "iceLayerOnWater"

@@ -313,7 +313,12 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     setEncodingSpecificFields(*this, metadata);
 
     // Setting parameter ID
-    setValue("paramId", metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
+    if (metadata.getLong("param") / 1000 == 212) {
+        // HACK! Support experimental averages.
+        setValue("paramId", metadata.getLong("param") + 4000);
+    } else {
+        setValue("paramId", metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
+    }
     setValue("typeOfLevel", metadata.getString("typeOfLevel"));
     if (metadata.getString("category") == "ocean-3d") {
         auto level = metadata.getLong("level");

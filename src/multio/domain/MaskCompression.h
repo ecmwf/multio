@@ -16,8 +16,6 @@
 
 #include "eckit/exception/Exceptions.h"
 
-// #include "eckit/io/Buffer.h"
-
 #include <array>
 #include <cstdint>
 
@@ -55,12 +53,12 @@ enum class MaskPayloadFormat : unsigned char
 struct MaskPayloadHeader {
     MaskPayloadFormat format;
     std::size_t numBits;
-    std::size_t sparseNumBitsPerInt
-        = 0;  // For sparse representation Payload is described by sequence of numbers that nominate the
+    std::size_t runLengthNumBitsPerInt
+        = 0;  // For runLength representation Payload is described by sequence of numbers that nominate the
               // numbers of consecutive 1 and 0 in alternating order. Depending on the mask, these
               // numbers can be small or may be very large. In case of small numbers we avoid reserving
               // 4 or 8 bytes for one number and instead allow less bits...
-    bool sparseStartValue = 0;
+    bool runLengthStartValue = 0;
 };
 
 static constexpr std::size_t MASK_PAYLOAD_HEADER_SIZE = 5;
@@ -100,6 +98,7 @@ eckit::Buffer encodeMask(const T* maskVals, const std::size_t size);
 template <typename T>
 eckit::Buffer encodeMask(const T* maskVals, const std::size_t size, const MaskRunLengthProperties props);
 
+
 //==============================================================================
 
 // Iterator for decoding...
@@ -113,15 +112,11 @@ public:
     using pointer = const bool*;
     using reference = const bool&;
 
-    MaskPayloadIterator(eckit::Buffer const& payload, MaskPayloadHeader header, bool checkConsistency = true,
-                        bool toEnd = false);
-    MaskPayloadIterator(eckit::Buffer const& payload, bool checkConsistency = true);
+    MaskPayloadIterator(eckit::Buffer const& payload, MaskPayloadHeader header, bool toEnd = false);
+    MaskPayloadIterator(eckit::Buffer const& payload);
 
     MaskPayloadIterator(const This& other);
     MaskPayloadIterator(This&& other) noexcept;
-
-    // This& operator=(const This& other);
-    // This& operator=(This&& other);
 
     reference operator*() const;
     reference operator*();
@@ -141,12 +136,12 @@ private:
     eckit::Buffer const& payload_;
     MaskPayloadHeader header_;
     std::size_t index_;                // Global index of the bit
-    std::size_t sparseOffset_;         // sparse only: offset of the payload...
-    std::size_t sparseRemainingBits_;  // sparse only
+    std::size_t runLengthOffset_;      // runLength only: offset of the payload...
+    std::size_t runLengthRemainingBits_;  // runLength only
 
-    uint64_t sparseNum_;         // sparse only: decoded number of consecutive 0 or 1
-    uint64_t sparseNumCounter_;  // sparse only: count up to sparseNum_ - then the next offset and sparseNum is
-                                 // evaluated. Val_ then toggles
+    uint64_t runLengthNum_;         // runLength only: decoded number of consecutive 0 or 1
+    uint64_t runLengthNumCounter_;  // runLength only: count up to runLengthNum_ - then the next offset and runLengthNum
+                                    // is evaluated. Val_ then toggles
     bool val_;
 
     void updateValue_() noexcept;
@@ -157,14 +152,13 @@ private:
 
 class EncodedMaskPayload {
 public:
-    EncodedMaskPayload(eckit::Buffer const& payload, bool checkConsistency = false) :
-        payload_(payload), header_(decodeMaskPayloadHeader(payload_)), checkConsistency_(checkConsistency) {}
+    EncodedMaskPayload(eckit::Buffer const& payload) : payload_(payload), header_(decodeMaskPayloadHeader(payload_)) {}
 
-    MaskPayloadIterator begin() const { return MaskPayloadIterator(payload_, header_, checkConsistency_); }
+    MaskPayloadIterator begin() const { return MaskPayloadIterator(payload_, header_); }
 
-    MaskPayloadIterator cbegin() const { return MaskPayloadIterator(payload_, header_, checkConsistency_); }
+    MaskPayloadIterator cbegin() const { return MaskPayloadIterator(payload_, header_); }
 
-    MaskPayloadIterator end() const { return MaskPayloadIterator(payload_, header_, false, true); }
+    MaskPayloadIterator end() const { return MaskPayloadIterator(payload_, header_, true); }
 
     MaskPayloadIterator cend() const { return MaskPayloadIterator(payload_, header_, false, true); }
 
@@ -173,7 +167,6 @@ public:
 private:
     const eckit::Buffer& payload_;
     MaskPayloadHeader header_;
-    bool checkConsistency_;
 };
 
 

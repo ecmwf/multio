@@ -40,29 +40,30 @@ using multio::domain::MaskRunLengthProperties;
 
 bool equalsMaskPayloadHeader(const MaskPayloadHeader& lhs, const MaskPayloadHeader& rhs) {
     return (lhs.format == rhs.format) && (lhs.numBits == rhs.numBits)
-        && (lhs.sparseNumBitsPerInt == rhs.sparseNumBitsPerInt) && (lhs.sparseStartValue == rhs.sparseStartValue);
+        && (lhs.runLengthNumBitsPerInt == rhs.runLengthNumBitsPerInt)
+        && (lhs.runLengthStartValue == rhs.runLengthStartValue);
 }
 
 CASE("Encode/Decode MaskPayloadHeader") {
     MaskPayloadHeader h1;
     h1.format = domain::MaskPayloadFormat::BitMask;
     h1.numBits = 64;
-    h1.sparseNumBitsPerInt = 0;
-    h1.sparseStartValue = false;
+    h1.runLengthNumBitsPerInt = 0;
+    h1.runLengthStartValue = false;
     EXPECT(equalsMaskPayloadHeader(h1, decodeMaskPayloadHeader(encodeMaskPayloadHeader(h1))));
 
     MaskPayloadHeader h2;
     h2.format = domain::MaskPayloadFormat::RunLength;
     h2.numBits = 64;
-    h2.sparseNumBitsPerInt = 5;
-    h2.sparseStartValue = true;
+    h2.runLengthNumBitsPerInt = 5;
+    h2.runLengthStartValue = true;
     EXPECT(equalsMaskPayloadHeader(h2, decodeMaskPayloadHeader(encodeMaskPayloadHeader(h2))));
 
     MaskPayloadHeader h3;
     h3.format = domain::MaskPayloadFormat::RunLength;
     h3.numBits = 64;
-    h3.sparseNumBitsPerInt = 65;
-    h3.sparseStartValue = false;
+    h3.runLengthNumBitsPerInt = 65;
+    h3.runLengthStartValue = false;
     EXPECT_THROWS_AS(equalsMaskPayloadHeader(h3, decodeMaskPayloadHeader(encodeMaskPayloadHeader(h3))),
                      MaskCompressionException);
 
@@ -150,8 +151,10 @@ CASE("Test compute expected buffer sizes") {
     std::cout << "bufSize " << prop4.bufSize << std::endl;
     EXPECT(prop4.startValue == true);
     EXPECT(prop4.numValues == 11);  // From 2**10 to 2**19 -> 10 numbers + 1 last number that fills up to 1**20
-    EXPECT(prop4.numBitsPerInt == 20);
-    EXPECT(prop4.bufSize == (28 + 5));
+    EXPECT(
+        prop4.numBitsPerInt
+        == 19);  // largest value to fit in is 1 << 19.. (20bits). But because 0 is not used, encoding derements by one
+    EXPECT(prop4.bufSize == (27 + 5));
 }
 
 CASE("Test encode/decode bitmask") {
@@ -168,7 +171,7 @@ CASE("Test encode/decode bitmask") {
     //     std::resetiosflags(std::ios::hex) << std::endl;
     // }
 
-    EncodedMaskPayload em1(b1, true);
+    EncodedMaskPayload em1(b1);
     std::size_t i1 = 0;
     for (bool v : em1) {
         // std::cout << i1 << ": " << v << std::endl;
@@ -176,8 +179,7 @@ CASE("Test encode/decode bitmask") {
         ++i1;
     }
 
-
-    // Fill vector with 2 0 2 0 2 0 ....
+    // Fill vector with 1 0 0 0 0 0 0 0 1 ....
     std::vector<float> v2(250);
     std::size_t v2Ind = 7;
     auto v2g = [&v2Ind]() { return ((++v2Ind) % 8 == 0) ? 1.0f : 0.0f; };
@@ -190,7 +192,7 @@ CASE("Test encode/decode bitmask") {
     //     std::resetiosflags(std::ios::hex) << std::endl;
     // }
 
-    EncodedMaskPayload em2(b2, true);
+    EncodedMaskPayload em2(b2);
     std::size_t i2 = 0;
     for (bool v : em2) {
         // std::cout << i2 << ": " << v << std::endl;
@@ -212,7 +214,7 @@ CASE("Test encode/decode bitmask") {
     //     std::resetiosflags(std::ios::hex) << std::endl;
     // }
 
-    EncodedMaskPayload em3(b3, true);
+    EncodedMaskPayload em3(b3);
     std::size_t i3 = 0;
     for (bool v : em3) {
         // std::cout << i3 << ": " << v << std::endl;
@@ -231,21 +233,21 @@ CASE("Test encode/decode run length") {
 
     eckit::Buffer b1 = encodeMaskRunLength(v1.data(), v1.size());
 
-    // for(unsigned int i=0; i < b1.size(); ++i) {
-    //     std::cout << "b1[" << i << "]: " << std::hex << std::setiosflags (std::ios::showbase) << ((int) b1[i]) <<
-    //     std::resetiosflags(std::ios::hex) << std::endl;
-    // }
+    for (unsigned int i = 0; i < b1.size(); ++i) {
+        std::cout << "b1[" << i << "]: " << std::hex << std::setiosflags(std::ios::showbase) << ((int)b1[i])
+                  << std::resetiosflags(std::ios::hex) << std::endl;
+    }
 
-    EncodedMaskPayload em1(b1, true);
+    EncodedMaskPayload em1(b1);
     std::size_t i1 = 0;
     for (bool v : em1) {
-        // std::cout << i1 << ": " << v << " - " << static_cast<bool>(v1[i1]) << std::endl;
+        std::cout << i1 << ": " << v << " - " << static_cast<bool>(v1[i1]) << std::endl;
         EXPECT(v == static_cast<bool>(v1[i1]));
         ++i1;
     }
 
 
-    // Fill vector with 2 0 2 0 2 0 ....
+    // Fill vector with 1 0 0 0 0 0 0 0 1 ....
     std::vector<float> v2(250);
     std::size_t v2Ind = 7;
     auto v2g = [&v2Ind]() { return ((++v2Ind) % 8 == 0) ? 1.0f : 0.0f; };
@@ -258,7 +260,7 @@ CASE("Test encode/decode run length") {
     //     std::resetiosflags(std::ios::hex) << std::endl;
     // }
 
-    EncodedMaskPayload em2(b2, true);
+    EncodedMaskPayload em2(b2);
     std::size_t i2 = 0;
     for (bool v : em2) {
         // std::cout << i2 << ": " << v << std::endl;
@@ -280,7 +282,7 @@ CASE("Test encode/decode run length") {
     //     std::resetiosflags(std::ios::hex) << std::endl;
     // }
 
-    EncodedMaskPayload em3(b3, true);
+    EncodedMaskPayload em3(b3);
     std::size_t i3 = 0;
     for (bool v : em3) {
         // std::cout << i3 << ": " << v << std::endl;
@@ -313,7 +315,7 @@ CASE("Test encode/decode run length") {
     //     std::resetiosflags(std::ios::hex) << std::endl;
     // }
 
-    EncodedMaskPayload em4(b4, true);
+    EncodedMaskPayload em4(b4);
     std::size_t i4 = 0;
     for (bool v : em4) {
         // std::cout << i4 << ": " << v << std::endl;

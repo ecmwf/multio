@@ -42,11 +42,11 @@ MaskPayloadHeader decodeMaskPayloadHeader(const unsigned char* b, std::size_t si
               | (static_cast<std::size_t>(b[3]) << 8) | static_cast<std::size_t>(b[4]);
     if (h.format == MaskPayloadFormat::RunLength) {
         // 6 Last bits of the first byte are used to store the number of byts per int (up to 64...)
-        h.sparseNumBitsPerInt = ((b[0] & ((1UL << 6) - 1)) + 1);
-        h.sparseStartValue = static_cast<bool>((b[0] >> 6) & 0x01);
+        h.runLengthNumBitsPerInt = ((b[0] & ((1UL << 6) - 1)) + 1);
+        h.runLengthStartValue = static_cast<bool>((b[0] >> 6) & 0x01);
     }
     else {
-        h.sparseNumBitsPerInt = 0;
+        h.runLengthNumBitsPerInt = 0;
     }
 
     return h;
@@ -61,15 +61,17 @@ MaskPayloadHeader decodeMaskPayloadHeader(const std::array<unsigned char, MASK_P
 
 
 std::array<unsigned char, MASK_PAYLOAD_HEADER_SIZE> encodeMaskPayloadHeader(MaskPayloadHeader h) {
+    static_assert(CHAR_BIT == 8, "code is written for platforms with a char width of 8 bits");
+
     std::array<unsigned char, MASK_PAYLOAD_HEADER_SIZE> b;
     b[0] = (static_cast<unsigned char>(h.format) << 7);
     if (h.format == MaskPayloadFormat::RunLength) {
-        b[0] |= (h.sparseStartValue ? 0x01 : 0x00) << 6;
-        if (h.sparseNumBitsPerInt > MASK_PAYLOAD_SPARSE_MAX_NUM_BITS) {
+        b[0] |= (h.runLengthStartValue ? 0x01 : 0x00) << 6;
+        if (h.runLengthNumBitsPerInt > MASK_PAYLOAD_SPARSE_MAX_NUM_BITS) {
             throw MaskCompressionException(
                 std::string("RunLength format must provide a number of bits <=64 for integer representation"));
         }
-        b[0] |= ((h.sparseNumBitsPerInt - 1) & 0xFF);
+        b[0] |= ((h.runLengthNumBitsPerInt - 1) & 0xFF);
     }
     if (h.numBits > ((1UL << 32) - 1)) {
         throw MaskCompressionException(
@@ -122,10 +124,11 @@ MaskRunLengthProperties computeMaskRunLengthProperties(const T* maskVals, std::s
     ++p.numValues;
     maxNum = std::max(maxNum, counter);
 
-    p.numBitsPerInt = multio::util::bitWidth(maxNum);
+    // Compute bitWidth for storing numbers with 1 offset - 0 have no meaning here, that's why it's possible to shift
+    p.numBitsPerInt = multio::util::bitWidth(maxNum > 1 ? maxNum - 1 : 1);
     std::size_t bufSizeBits = p.numBitsPerInt * p.numValues;
     // Round up to 8 and add header size
-    p.bufSize = bufSizeBits / 8 + (((bufSizeBits & ((1 << 3) - 1)) == 0) ? 0 : 1) + MASK_PAYLOAD_HEADER_SIZE;
+    p.bufSize = (bufSizeBits >> 3) + (((bufSizeBits & ((1 << 3) - 1)) == 0) ? 0 : 1) + MASK_PAYLOAD_HEADER_SIZE;
 
     return p;
 }
@@ -163,8 +166,8 @@ eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size, con
     MaskPayloadHeader h;
     h.format = MaskPayloadFormat::RunLength;
     h.numBits = size;
-    h.sparseNumBitsPerInt = props.numBitsPerInt;
-    h.sparseStartValue = props.startValue;
+    h.runLengthNumBitsPerInt = props.numBitsPerInt;
+    h.runLengthStartValue = props.startValue;
     auto encodedHeader = encodeMaskPayloadHeader(h);
 
     eckit::Buffer b{props.bufSize * sizeof(uint8_t)};
@@ -178,17 +181,18 @@ eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size, con
 
     auto writeCounter = [&b, &counter, &remainingBits, &bufOffset, &props]() {
         std::size_t numBitsToWrite = props.numBitsPerInt;
+        std::size_t valToWrite = counter - 1;  // 0 Have no meaning, thats why we reduce and reincrement on decoding
         do {
             // Write bytes in big endian order
             if (remainingBits >= numBitsToWrite) {
                 std::size_t nextRemainingBits = remainingBits - numBitsToWrite;
-                b[bufOffset] |= ((counter & ((1UL << numBitsToWrite) - 1)) << nextRemainingBits);
+                b[bufOffset] |= ((valToWrite & ((1UL << numBitsToWrite) - 1)) << nextRemainingBits);
                 remainingBits = nextRemainingBits;
                 numBitsToWrite = 0;
             }
             else {
                 std::size_t nextNumBitsToWrite = numBitsToWrite - remainingBits;
-                b[bufOffset] |= ((counter >> nextNumBitsToWrite) & ((1UL << remainingBits) - 1));
+                b[bufOffset] |= ((valToWrite >> nextNumBitsToWrite) & ((1UL << remainingBits) - 1));
                 numBitsToWrite = nextNumBitsToWrite;
                 remainingBits = 0;
             }
@@ -253,93 +257,15 @@ template eckit::Buffer encodeMask<unsigned char>(const unsigned char* maskVals, 
 
 
 // Iterator for decoding...
-MaskPayloadIterator::MaskPayloadIterator(eckit::Buffer const& payload, MaskPayloadHeader header, bool checkConsistency,
-                                         bool toEnd) :
+MaskPayloadIterator::MaskPayloadIterator(eckit::Buffer const& payload, MaskPayloadHeader header, bool toEnd) :
     payload_(payload),
     header_(header),
     index_(0),
-    sparseOffset_{MASK_PAYLOAD_HEADER_SIZE},
-    sparseRemainingBits_{8},
-    sparseNum_{0},
-    sparseNumCounter_{0},
-    val_{header_.sparseStartValue}  // Default value initialize value to false.
-                                    // For sparse formatting this is important as the next updateValue_ call will toggle
-                                    // the value and start with writing 1.
-{
-    // Check payload sizes...
-    if (checkConsistency) {
-        switch (header_.format) {
-            case MaskPayloadFormat::RunLength: {
-                // Payload is described by sequence of numbers that nominate the
-                // numbers of consecutive 1 and 0 in alternating order
-                // Hence all numbers must sum up to this size
-                std::size_t countTotalBits = 0;
-
-                const std::size_t NUM_BITS = header_.sparseNumBitsPerInt;
-
-                // Parse bytes to num big endian order
-                uint64_t num = 0;
-                std::size_t remainingBits = 8;
-                std::size_t numBitsToRead = NUM_BITS;
-                std::size_t bufOffset = MASK_PAYLOAD_HEADER_SIZE;
-                unsigned char b = payload_[bufOffset];
-                for (;;) {
-                    if (remainingBits >= numBitsToRead) {
-                        std::size_t nextRemainingBits = remainingBits - numBitsToRead;
-                        num |= (b & (((1 << numBitsToRead) - 1) << nextRemainingBits)) >> nextRemainingBits;
-
-                        countTotalBits += num;
-
-                        num = 0;
-
-                        remainingBits = nextRemainingBits;
-                        numBitsToRead = NUM_BITS;
-                    }
-                    else {
-                        std::size_t nextNumBitsToRead = numBitsToRead - remainingBits;
-                        num |= (b & ((1 << remainingBits) - 1)) << nextNumBitsToRead;
-
-                        if (nextNumBitsToRead == 0) {
-                            countTotalBits += num;
-
-                            num = 0;
-                            numBitsToRead = NUM_BITS;
-                        }
-                        else {
-                            numBitsToRead = nextNumBitsToRead;
-                        }
-                        remainingBits = 0;
-                    }
-                    if (remainingBits == 0) {
-                        ++bufOffset;
-                        if (bufOffset >= payload_.size()) {
-                            break;
-                        }
-                        b = payload_[bufOffset];
-                        remainingBits = 8;
-                    }
-                }
-                if (header_.numBits != countTotalBits) {
-                    std::ostringstream oss;
-                    oss << "RunLength mask compression unconsistent. Counted " << countTotalBits << " bits "
-                        << " but the header specified " << header_.numBits;
-                    throw MaskCompressionException(oss.str());
-                }
-            } break;
-            case MaskPayloadFormat::BitMask:
-            default: {
-                std::size_t exptPayloadSize = MASK_PAYLOAD_HEADER_SIZE + (header_.numBits >> 3)
-                                            + ((header_.numBits & ((1 << 3) - 1)) == 0 ? 0 : 1);
-                if (!(exptPayloadSize == payload_.size())) {
-                    std::ostringstream oss;
-                    oss << "Payload size unexpected - size: " << payload_.size() << " expected: ceil("
-                        << header_.numBits << " / 8) + " << MASK_PAYLOAD_HEADER_SIZE << " = " << exptPayloadSize;
-                    throw MaskCompressionException(oss.str());
-                }
-            }
-        }
-    }
-
+    runLengthOffset_{MASK_PAYLOAD_HEADER_SIZE},
+    runLengthRemainingBits_{8},
+    runLengthNum_{0},
+    runLengthNumCounter_{0},
+    val_{header_.runLengthStartValue} {
     if (toEnd) {
         index_ = header_.numBits - 1;
     }
@@ -347,55 +273,28 @@ MaskPayloadIterator::MaskPayloadIterator(eckit::Buffer const& payload, MaskPaylo
         updateValue_();
     }
 }
-MaskPayloadIterator::MaskPayloadIterator(eckit::Buffer const& payload, bool checkConsistency) :
-    MaskPayloadIterator(payload, decodeMaskPayloadHeader(payload), checkConsistency) {}
+
+MaskPayloadIterator::MaskPayloadIterator(eckit::Buffer const& payload) :
+    MaskPayloadIterator(payload, decodeMaskPayloadHeader(payload)) {}
 
 MaskPayloadIterator::MaskPayloadIterator(const MaskPayloadIterator& other) :
     payload_{other.payload_},
     header_{other.header_},
     index_{other.index_},
-    sparseOffset_{other.sparseOffset_},
-    sparseRemainingBits_{other.sparseRemainingBits_},
-    sparseNumCounter_{other.sparseNumCounter_},
+    runLengthOffset_{other.runLengthOffset_},
+    runLengthRemainingBits_{other.runLengthRemainingBits_},
+    runLengthNumCounter_{other.runLengthNumCounter_},
     val_{other.val_} {}
 
 MaskPayloadIterator::MaskPayloadIterator(MaskPayloadIterator&& other) noexcept :
     payload_{other.payload_},
     header_{other.header_},
     index_{other.index_},
-    sparseOffset_{other.sparseOffset_},
-    sparseRemainingBits_{other.sparseRemainingBits_},
-    sparseNum_{other.sparseNum_},
-    sparseNumCounter_{other.sparseNumCounter_},
+    runLengthOffset_{other.runLengthOffset_},
+    runLengthRemainingBits_{other.runLengthRemainingBits_},
+    runLengthNum_{other.runLengthNum_},
+    runLengthNumCounter_{other.runLengthNumCounter_},
     val_{other.val_} {}
-
-// MaskPayloadIterator& MaskPayloadIterator::operator=(const MaskPayloadIterator& other) {
-//     payload_ = other.payload_;
-//     header_ = other.header_;
-//     index_ = other.index_;
-
-//     sparseOffset_ = other.sparseOffset_;
-//     sparseRemainingBits_ = other.sparseRemainingBits_;
-//     sparseNum_ = other.sparseNum_;
-//     sparseNumCounter_ = other.sparseNumCounter_;
-
-//     val_ = other.val_;
-//     return *this;
-// }
-
-// MaskPayloadIterator& MaskPayloadIterator::operator=(MaskPayloadIterator&& other) {
-//     payload_ = other.payload_;
-//     header_ = other.header_;
-//     index_ = other.index_;
-
-//     sparseOffset_ = other.sparseOffset_;
-//     sparseRemainingBits_ = other.sparseRemainingBits_;
-//     sparseNum_ = other.sparseNum_;
-//     sparseNumCounter_ = other.sparseNumCounter_;
-
-//     val_ = other.val_;
-//     return *this;
-// }
 
 MaskPayloadIterator::reference MaskPayloadIterator::operator*() const {
     return val_;
@@ -416,10 +315,10 @@ MaskPayloadIterator& MaskPayloadIterator::operator++() {
         case MaskPayloadFormat::RunLength: {
             if ((index_ + 1) < header_.numBits) {
                 ++index_;
-                ++sparseNumCounter_;
-                if (sparseNumCounter_ >= sparseNum_) {
+                ++runLengthNumCounter_;
+                if (runLengthNumCounter_ >= runLengthNum_) {
                     updateValue_();
-                    sparseNumCounter_ = 0;
+                    runLengthNumCounter_ = 0;
                     val_ = !val_;
                 }
             }
@@ -453,34 +352,37 @@ bool MaskPayloadIterator::operator!=(const MaskPayloadIterator& other) const noe
 void MaskPayloadIterator::updateValue_() noexcept {
     switch (header_.format) {
         case MaskPayloadFormat::RunLength: {
-            const std::size_t NUM_BITS = header_.sparseNumBitsPerInt;
+            const std::size_t NUM_BITS = header_.runLengthNumBitsPerInt;
 
             std::size_t numBitsToRead = NUM_BITS;
-            unsigned char b = payload_[sparseOffset_];
-            sparseNum_ = 0;
+            unsigned char b = payload_[runLengthOffset_];
+            runLengthNum_ = 0;
             do {
-                if (sparseRemainingBits_ >= numBitsToRead) {
-                    std::size_t nextRemainingBits = sparseRemainingBits_ - numBitsToRead;
-                    sparseNum_ |= (b & (((1 << numBitsToRead) - 1) << nextRemainingBits)) >> nextRemainingBits;
+                if (runLengthRemainingBits_ >= numBitsToRead) {
+                    std::size_t nextRemainingBits = runLengthRemainingBits_ - numBitsToRead;
+                    runLengthNum_ |= (b & (((1 << numBitsToRead) - 1) << nextRemainingBits)) >> nextRemainingBits;
 
-                    sparseRemainingBits_ = nextRemainingBits;
+                    runLengthRemainingBits_ = nextRemainingBits;
                     numBitsToRead = 0;
                 }
                 else {
-                    std::size_t nextNumBitsToRead = numBitsToRead - sparseRemainingBits_;
-                    sparseNum_ |= (b & ((1 << sparseRemainingBits_) - 1)) << nextNumBitsToRead;
+                    std::size_t nextNumBitsToRead = numBitsToRead - runLengthRemainingBits_;
+                    runLengthNum_ |= (b & ((1 << runLengthRemainingBits_) - 1)) << nextNumBitsToRead;
                     numBitsToRead = nextNumBitsToRead;
-                    sparseRemainingBits_ = 0;
+                    runLengthRemainingBits_ = 0;
                 }
-                if (sparseRemainingBits_ == 0) {
-                    ++sparseOffset_;
-                    if (sparseOffset_ >= payload_.size()) {
+                if (runLengthRemainingBits_ == 0) {
+                    ++runLengthOffset_;
+                    if (runLengthOffset_ >= payload_.size()) {
                         break;
                     }
-                    b = payload_[sparseOffset_];
-                    sparseRemainingBits_ = 8;
+                    b = payload_[runLengthOffset_];
+                    runLengthRemainingBits_ = 8;
                 }
             } while (numBitsToRead > 0);
+
+            // Eventually increase number by one as the encoding step decremnets by 1
+            runLengthNum_ += 1;
         } break;
         case MaskPayloadFormat::BitMask:
         default: {

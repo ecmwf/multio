@@ -57,6 +57,12 @@ ecbuild_add_test( TARGET    test_multio_conf
                   ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
 )
 
+# Test Mask compression
+
+ecbuild_add_test( TARGET    test_multio_mask_compression
+                  SOURCES   test_multio_mask_compression.cc
+                  LIBS      ${_link_libraries} )
+
 # Test api
 
 list( APPEND _api_test_environment

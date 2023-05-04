@@ -8,6 +8,7 @@
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/config/ConfigurationPath.h"
 #include "multio/config/MultioConfiguration.h"
+#include "multio/domain/MaskCompression.h"
 #include "multio/message/Metadata.h"
 #include "multio/multio_version.h"
 #include "multio/server/MultioClient.h"
@@ -458,15 +459,8 @@ int multio_write_mask_float(multio_handle_t* mio, multio_metadata_t* md, const f
             ASSERT(mio);
             ASSERT(md);
 
-            std::vector<float> mask_data{data, data + size};
-            eckit::Buffer mask_vals{size * sizeof(uint8_t)};
-            auto bit = static_cast<uint8_t*>(mask_vals.data());
-            for (const auto& mval : mask_data) {
-                *bit = static_cast<uint8_t>(mval);
-                ++bit;
-            }
-
-            mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
+            eckit::Buffer mask_vals = multio::domain::encodeMask(data, size);
+           mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
         },
         mio);
 }
@@ -477,14 +471,7 @@ int multio_write_mask_double(multio_handle_t* mio, multio_metadata_t* md, const 
             ASSERT(mio);
             ASSERT(md);
 
-            std::vector<double> mask_data{data, data + size};
-            eckit::Buffer mask_vals{size * sizeof(uint8_t)};
-            auto bit = static_cast<uint8_t*>(mask_vals.data());
-            for (const auto& mval : mask_data) {
-                *bit = static_cast<uint8_t>(mval);
-                ++bit;
-            }
-
+            eckit::Buffer mask_vals = multio::domain::encodeMask(data, size);
             mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
         },
         mio);

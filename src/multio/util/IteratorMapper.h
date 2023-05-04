@@ -57,15 +57,17 @@ public:
     using value_type = IteratorMapperValueType<ForwardItContainer, Mapper, is_const>;
     using pointer = typename std::conditional<is_const, value_type const*, value_type*>::type;
     using reference = typename std::conditional<is_const, value_type const&, value_type&>::type;
+    using OptValueType = std::optional<value_type>;
 
 
     IteratorMapper(const This& other) :
         container_{other.container_}, mapper_{other.mapper_}, it_{other.it_}, val_{other.val_} {}
 
-    IteratorMapper(This&& other) :
+    IteratorMapper(This&& other) noexcept(
+        std::is_nothrow_move_constructible_v<IteratorType>&& std::is_nothrow_move_constructible_v<OptValueType>) :
         container_{other.container_}, mapper_{other.mapper_}, it_{std::move(other.it_)}, val_{std::move(other.val_)} {}
 
-    reference operator=(const This& other) {
+    This& operator=(const This& other) {
         if (it_ != other.it_) {
             container_ = other.container_;
             mapper_ = other.mapper_;
@@ -74,7 +76,7 @@ public:
         }
         return *this;
     }
-    reference operator=(This&& other) {
+    This& operator=(This&& other) {
         if (it_ != other.it_) {
             container_ = other.container_;
             mapper_ = other.mapper_;
@@ -123,8 +125,7 @@ private:
         container_(container),
         mapper_(mapper),
         it_(std::forward<ItType>(it)),
-        val_{hasValue ? std::optional<value_type>{value_type(mapper(*it_))} : std::optional<value_type>{}} {}
-
+        val_{hasValue ? OptValueType{value_type(mapper(*it_))} : OptValueType{}} {}
 
     template <typename ItType>
     IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, ItType&& it) :
@@ -137,7 +138,7 @@ private:
     ForwardItContainer const& container_;
     Mapper const& mapper_;
     IteratorType it_;
-    std::optional<value_type> val_;
+    OptValueType val_;
 
     friend class MappedContainer<ForwardItContainer, Mapper>;
 };

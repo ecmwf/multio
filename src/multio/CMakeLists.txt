@@ -32,6 +32,7 @@ list( APPEND multio_util_srcs
     util/Metadata.h
     util/Substitution.cc
     util/Substitution.h
+    util/BinaryUtils.h
 )
 
 list( APPEND multio_config_srcs
@@ -78,6 +79,8 @@ list( APPEND multio_domain_srcs
     domain/Mappings.h
     domain/Mask.cc
     domain/Mask.h
+    domain/MaskCompression.cc
+    domain/MaskCompression.h
 )
 
 list( APPEND multio_message_srcs

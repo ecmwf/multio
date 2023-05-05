@@ -1,0 +1,79 @@
+run:
+  expver: bilg
+  class: rd
+  stream: ocda
+  type: an
+  date-of-analysis: 20170909
+
+
+mpi-communicators:
+  multio:
+    type: split
+    color: 123
+    parent: world
+  multio-clients:
+    type: split
+    color: 777
+    parent: multio
+  multio-servers:
+    type: split
+    color: 888
+    parent: multio
+
+
+client:
+  on-error: abort-all-transports
+  plans:
+    - name: ocean-replay-grid-info-stream
+      actions:
+        - type: select
+          match:
+            - category: [ocean-domain-map, ocean-mask]
+
+        - type: transport
+          target: server
+
+    - name: ocean-replay-test-stream1
+      actions:
+        - type: select
+          match:
+            - name: [sst, ssv]
+
+        - type: metadata-mapping
+          mapping: '{~}/metadata-mapping/nemo-to-grib.yaml'
+          enforce-match: true # default, may be omitted
+          overwrite-existing: false # default, may be omitted
+
+        - type: transport
+          target: server
+
+    - name: ocean-replay-test-stream2
+      actions:
+        - type: select
+          match:
+            - name: [ssu, ssw]
+
+        - type: metadata-mapping
+          mapping: '{~}/metadata-mapping/nemo-to-grib.yaml'
+          enforce-match: true # default, may be omitted
+          overwrite-existing: false # default, may be omitted
+
+        - type: transport
+          target: server
+
+server:
+  transport: mpi
+  on-error: abort-transport
+  plans:
+    - name: ocean-fields
+      actions:
+        - type: select
+          match:
+            - category: [ocean-2d]
+
+        - type: aggregate
+
+        - type: mask
+          missing-value: 1.234
+
+        - type: single-field-sink

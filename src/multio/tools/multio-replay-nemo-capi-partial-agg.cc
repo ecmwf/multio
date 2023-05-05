@@ -14,6 +14,11 @@
 #include "multio/util/ConfigurationPath.h"
 
 
+#define XSTRM(m) STRM(m)
+#define STRM(m) #m
+
+
+using multio::util::configuration_file_name;
 using multio::util::configuration_path_name;
 
 namespace {
@@ -104,18 +109,18 @@ private:
     int level_ = 1;
     int step_ = 24;
     size_t rank_ = 0;
+    // Use a value that is not showing up in the test data and that
+    // can be en and decoded without changing binary layout
+    // For partial aggregation test, we compare mask binary...
+    //
+    // Needs to be the same in the YAML files mask action...
+    double missingValue = 1.234;
 
     size_t clientCount_ = 1;
     size_t serverCount_ = 0;
     bool singlePrecision_;
 
     std::map<std::string, std::vector<int>> domainDefinitions_;
-
-    std::string mpiGroup_ = "";
-    std::string configFile_ = "";
-    bool initMPIExternally_ = false;
-    bool passDownMPIComm_ = false;
-    bool sendMasks_ = false;
 
     multio_handle_t* multio_handle = nullptr;
 };
@@ -127,17 +132,6 @@ MultioReplayNemoCApi::MultioReplayNemoCApi(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("path", "Path to NEMO data"));
     options_.push_back(new eckit::option::SimpleOption<long>("step", "Time counter for the field to replay"));
-    options_.push_back(
-        new eckit::option::SimpleOption<std::string>("mpi-group", "Name of the mpi group - default 'multio'"));
-    options_.push_back(
-        new eckit::option::SimpleOption<std::string>("config-file", "Path to the multio config file (optional)"));
-    options_.push_back(
-        new eckit::option::SimpleOption<bool>("init-mpi-external",
-                                              "Will use eckit::mpi to split communicators. Multio will access these "
-                                              "communictors by looking up eckit named communicator map."));
-    options_.push_back(new eckit::option::SimpleOption<bool>(
-        "pass-down-mpi-comm", "Passdown MPI commincators as fortran INT through the API"));
-    options_.push_back(new eckit::option::SimpleOption<bool>("send-masks", "Sending masks with 1 for all nodes"));
 
     // enable single precision testing
     for (int i = 1; i < argc; ++i) {
@@ -154,27 +148,32 @@ void MultioReplayNemoCApi::init(const eckit::option::CmdArgs& args) {
 
     args.get("step", step_);
 
-    mpiGroup_ = args.getString("mpi-group", "multio");
-
-    if (args.has("config-file")) {
-        configFile_ = args.getString("config-file");
+    if (eckit::mpi::comm().rank() != 0) {
+        initClient();
     }
-
-    initMPIExternally_ = args.getBool("init-mpi-external", false);
-    passDownMPIComm_ = args.getBool("pass-down-mpi-comm", false);
-    sendMasks_ = args.getBool("send-masks", false);
-
-    initClient();
+    else {
+        // All clients and server split from world with 123 (defined in the yaml)
+        // As we want to exclude this node, it has to split to another node
+        eckit::mpi::comm().split(999, "non-multio");
+    }
 }
 
 void MultioReplayNemoCApi::finish(const eckit::option::CmdArgs&) {
-    multio_delete_handle(multio_handle);
+    if (eckit::mpi::comm().rank() != 0) {
+        multio_delete_handle(multio_handle);
+    }
 }
 
 
 void MultioReplayNemoCApi::execute(const eckit::option::CmdArgs&) {
-
-    runClient();
+    // For partial aggregation, client with rank 0 will send nothing
+    if (eckit::mpi::comm().rank() != 0) {
+        runClient();
+    }
+    else {
+        // Load grid definitions for later testing
+        setDomains(true);
+    }
 
     testData();
 }
@@ -186,9 +185,7 @@ void MultioReplayNemoCApi::runClient() {
 
     setDomains();
 
-    if (sendMasks_) {
-        writeMasks();
-    }
+    writeMasks();
 
     writeFields();
 
@@ -207,6 +204,14 @@ void MultioReplayNemoCApi::setDomains(bool onlyLoadDefinitions) {
 
     for (auto const& grid : grid_type) {
         auto buffer = readGrid(grid.second, rank_);
+        // Compute the partial size for all multio clients
+        if (eckit::mpi::comm().rank() != 0) {
+            int partialSize = 0;
+            eckit::mpi::comm("multio-clients").allReduce(buffer[3] * buffer[5], partialSize, eckit::mpi::sum());
+            buffer.push_back(partialSize);
+            eckit::Log::info() << " *** Compute partial size for " << grid.first << ": " << partialSize << "/"
+                               << (buffer[0] * buffer[1]) << std::endl;
+        }
         auto sz = static_cast<int>(buffer.size());
 
 
@@ -302,8 +307,6 @@ void MultioReplayNemoCApi::writeFields() {
         multio_metadata_set_int(md, "level", level_);
         multio_metadata_set_int(md, "step", step_);
 
-        // To mimic nemoV4; it will be overwritten
-        multio_metadata_set_double(md, "missingValue", 0.0);
         multio_metadata_set_bool(md, "bitmapPresent", false);
         multio_metadata_set_int(md, "bitsPerValue", 16);
 
@@ -376,51 +379,19 @@ void MultioReplayNemoCApi::initClient() {
         throw eckit::SeriousBug("Only MPI transport is supported for this tool");
     }
 
-
-    if (initMPIExternally_ || passDownMPIComm_) {
-        eckit::Log::info() << " *** initializing mpi communicators before multio " << std::endl;
-        eckit::mpi::addComm(mpiGroup_.c_str(), eckit::mpi::comm().communicator());
-        std::string clientGroup = mpiGroup_ + "-clients";
-        eckit::mpi::comm(mpiGroup_.c_str()).split(777, clientGroup.c_str());
-    }
-
     multio_set_failure_handler(multio_throw_failure_handler, nullptr);
 
 
     multio_configuration_t* multio_cc = nullptr;
-
-    if (configFile_ == "") {
-        // Init through environment variable or default file
-        multio_new_configuration(&multio_cc);
-    }
-    else {
-        eckit::Log::info() << " *** multio_new_handle_from_filename " << configFile_ << std::endl;
-        multio_new_configuration_from_filename(&multio_cc, configFile_.c_str());
-    }
-
-    int retComm = 0;
-    if (passDownMPIComm_) {
-        multio_conf_mpi_client_id(multio_cc, "oce");
-        multio_conf_mpi_parent_comm(multio_cc, eckit::mpi::comm(mpiGroup_.c_str()).communicator());
-        multio_conf_mpi_return_client_comm(multio_cc, &retComm);
-    }
-
-
+    multio_new_configuration(&multio_cc);
     multio_new_handle(&multio_handle, multio_cc);
     multio_delete_configuration(multio_cc);
 
-    if (passDownMPIComm_) {
-        eckit::Log::info() << " *** multio_new_handle mpi returned comm: " << retComm << std::endl;
-        ASSERT(retComm != 0);
-        ASSERT(eckit::mpi::comm("oce").communicator() == retComm);
-        ASSERT(eckit::mpi::comm("multio-clients").communicator() == retComm);
-    }
+    eckit::Log::info() << " *** DEFAULT MPI GROUP: multio " << std::endl;
+    const eckit::mpi::Comm& group = eckit::mpi::comm("multio");
+    const eckit::mpi::Comm& clients = eckit::mpi::comm("multio-clients");
 
-    const eckit::mpi::Comm& group = eckit::mpi::comm(mpiGroup_.c_str());
-    std::string clientGroup = mpiGroup_ + "-clients";
-    const eckit::mpi::Comm& clients = eckit::mpi::comm(clientGroup.c_str());
-
-    rank_ = group.rank();
+    rank_ = eckit::mpi::comm().rank();  // Use world rank instead of group rank because we exclude one node explicitly
     clientCount_ = clients.size();
     serverCount_ = group.size() - clientCount_;
 
@@ -474,10 +445,54 @@ void MultioReplayNemoCApi::testData() {
         bool isOutputEqual = true;
         std::size_t fidx = 0;
 
+        auto definitionPair = domainDefinitions_.find(paramMap_.get(param).gridType);
+        if (definitionPair == domainDefinitions_.end()) {
+            throw eckit::SeriousBug{"No domain definitons for this gridType found", Here()};
+        }
+        auto& definition = definitionPair->second;
+        auto ni_global = definition[0];
+
+        auto ibegin = definition[2];
+        auto ni = definition[3];
+        auto jbegin = definition[4];
+        auto nj = definition[5];
+
+        auto data_ibegin = definition[7];
+        auto data_ni = definition[8];
+        auto data_jbegin = definition[9];
+        auto data_nj = definition[10];
+
+
+        for (unsigned int i = 0; i < (singlePrecision_ ? sizeof(float) : sizeof(double)); ++i) {
+            char c = singlePrecision_ ? getCharRepr(static_cast<float>(missingValue), i) : getCharRepr(missingValue, i);
+            eckit::Log::info() << " *** Missing value char repr " << i << ": " << std::hex
+                               << std::setiosflags(std::ios::showbase) << (int)c << std::resetiosflags(std::ios::hex)
+                               << std::endl;
+        }
+
+
         for (; (begin1 != end1) && (begin2 != end2); ++begin1, ++begin2, ++fidx) {
             char b1 = *begin1;
             char b2 = *begin2;
             bool isByteEqual = (b1 == b2);
+            std::size_t dIndex = fidx / (singlePrecision_ ? sizeof(float) : sizeof(double));
+            std::size_t iglob = dIndex % ni_global;
+            std::size_t jglob = dIndex / ni_global;
+
+            // Test if in local domain
+            if (((jglob >= jbegin) && (jglob < (jbegin + nj))) && ((iglob >= ibegin) && (iglob < (ibegin + ni)))) {
+                // The data has been masked, set b1 to the byte of the missing value
+                // However, as the expectation data is also not masked, we can ignore these bytes in the comparison
+                isByteEqual = true;
+
+                // Test if masking has been done right
+                if (singlePrecision_) {
+                    ASSERT(b1 == getCharRepr(static_cast<float>(missingValue), fidx % sizeof(float)));
+                }
+                else {
+                    ASSERT(b1 == getCharRepr(missingValue, fidx % sizeof(double)));
+                }
+            }
 
             isOutputEqual &= isByteEqual;
 

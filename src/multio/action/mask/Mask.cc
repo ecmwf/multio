@@ -78,7 +78,12 @@ void Mask::applyMask(message::Message msg) const {
     auto const& bkey = domain::Mask::key(msg.metadata());
     auto const& bitmask = domain::Mask::instance().get(bkey);
 
-    ASSERT(bitmask.size() == msg.size() / sizeof(Precision));
+    if (bitmask.size() * sizeof(Precision) != msg.size()) {
+        std::ostringstream oss;
+        oss << "Mask::applyMask: Mask for key \"" << bkey << "\" has a size of " << bitmask.size()
+            << " but the message contains " << (msg.size() / sizeof(Precision)) << " values. " << std::endl;
+        throw eckit::SeriousBug(oss.str(), Here());
+    }
 
     auto git = static_cast<Precision*>(msg.payload().data());
 

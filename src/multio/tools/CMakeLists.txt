@@ -34,55 +34,28 @@ ecbuild_add_executable( TARGET    multio-legacy-hammer
 
 # tools for testing the multio API
 
-ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initfilepath
+ecbuild_add_executable( TARGET      multio-replay-nemo-capi
                         SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS        multio-api
-                        DEFINITIONS "INIT_BY_FILEPATH" "EXPLICIT_MPI")
-
-ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initdefault-empi
-                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS        multio-api
-                        DEFINITIONS "INIT_BY_ENV" "EXPLICIT_MPI")
-
-ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initdefault-impi
-                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS        multio-api
-                        DEFINITIONS "INIT_BY_ENV" "IMPLICIT_MPI")
-
-ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initdefault-impi-custom
-                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS        multio-api
-                        DEFINITIONS "INIT_BY_ENV" "IMPLICIT_MPI" "SPECIFIC_MPI_GROUP=custom")
-
-ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initmpi-empi
-                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS        multio-api
-                        DEFINITIONS "INIT_BY_MPI" "EXPLICIT_MPI")
-
-ecbuild_add_executable( TARGET      multio-replay-nemo-capi-initmpi-impi
-                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS        multio-api
-                        DEFINITIONS "INIT_BY_MPI" "EXPLICIT_MPI")
+                        LIBS        multio-api )
 
 ecbuild_add_executable( TARGET    multio-feed
                         CONDITION HAVE_FDB5
                         SOURCES   multio-feed.cc MultioTool.cc
-                        LIBS      multio-api)
+                        LIBS      multio-api )
 
 # TODO ADD SOME FCKIT condition
 ecbuild_add_executable( TARGET    multio-replay-nemo-fapi
                         CONDITION HAVE_FORTRAN
                         SOURCES   multio-replay-nemo-fapi.f90
-                        LIBS      multio-fapi fckit MPI::MPI_Fortran)
+                        LIBS      multio-fapi fckit MPI::MPI_Fortran )
 
 # TODO: add atlas condition/dependency
 ecbuild_add_executable( TARGET    multio-generate-grib-template
                         CONDITION HAVE_MIR
                         SOURCES   multio-generate-grib-template.cc MultioTool.cc
-                        LIBS      multio atlas eccodes eckit)
+                        LIBS      multio atlas eccodes eckit )
 
 ecbuild_add_executable( TARGET      multio-replay-nemo-capi-partial-agg
-                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
-                        LIBS        multio-api
-                        DEFINITIONS "INIT_BY_ENV" "IMPLICIT_MPI" "TEST_PARTIAL_AGG")
+                        SOURCES     multio-replay-nemo-capi-partial-agg.cc MultioTool.cc
+                        LIBS        multio-api )
 

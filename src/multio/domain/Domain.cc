@@ -19,8 +19,7 @@ Unstructured::Unstructured(std::vector<int32_t>&& def, long globalSize_val) :
 
 void Unstructured::toLocal(const std::vector<double>& global, std::vector<double>& local) const {
     local.resize(0);
-    std::for_each(begin(definition_), end(definition_),
-                  [&](int32_t id) { local.push_back(global[id]); });
+    std::for_each(begin(definition_), end(definition_), [&](int32_t id) { local.push_back(global[id]); });
 }
 
 void Unstructured::toGlobal(const message::Message& local, message::Message& global) const {
@@ -38,10 +37,14 @@ void Unstructured::toBitmask(const message::Message&, std::vector<bool>&) const 
 }
 
 long Unstructured::localSize() const {
-   return definition_.size();
-};
+    return definition_.size();
+}
 
 long Unstructured::globalSize() const {
+    return globalSize_;
+}
+
+long Unstructured::partialSize() const {
     return globalSize_;
 }
 
@@ -51,7 +54,7 @@ void Unstructured::collectIndices(const message::Message& local, std::set<int32_
         throw eckit::SeriousBug{"Mismatch between sizes of index map and local field", Here()};
     }
 
-    for(const auto& idx : definition_) {
+    for (const auto& idx : definition_) {
         glIndices.insert(idx);
     }
 }
@@ -63,11 +66,20 @@ namespace {
 constexpr bool inRange(int32_t val, int32_t low, int32_t upp) {
     return (low <= val) && (val < upp);
 }
+
+inline std::vector<int32_t>&& addPartialDomainSizeToDefinition(std::vector<int32_t>&& def) {
+    if (def.size() == 11) {
+        // The 12entry is ment to be to partial size of the grid. If it is not set, it is assumed to be equal to the
+        // the global size which is computed by ni_global*nj_global
+        def.push_back(def[0] * def[1]);
+    }
+    return std::move(def);
+}
 }  // namespace
 
 
-Structured::Structured(std::vector<int32_t>&& def) : Domain{std::move(def)} {
-    ASSERT(definition_.size() == 11);
+Structured::Structured(std::vector<int32_t>&& def) : Domain{addPartialDomainSizeToDefinition(std::move(def))} {
+    ASSERT((definition_.size() == 12));
 }
 
 void Structured::toLocal(const std::vector<double>&, std::vector<double>&) const {
@@ -93,7 +105,10 @@ void Structured::toGlobal(const message::Message& local, message::Message& globa
     auto data_nj = definition_[10];
     // auto data_dim = definition_[6]; -- Unused here
 
+    auto data_partial_size = definition_[11];
+
     ASSERT(sizeof(double) * ni_global * nj_global == global.size());
+    ASSERT(data_partial_size <= (ni_global * nj_global));
 
     if (sizeof(double) * data_ni * data_nj != local.size()) {
         throw eckit::AssertionFailed("Local size is " + std::to_string(local.payload().size() / sizeof(double))
@@ -167,7 +182,7 @@ void Structured::collectIndices(const message::Message& local, std::set<int32_t>
     ASSERT(glIndices.size() < static_cast<std::set<int32_t>::size_type>(ni_global * nj_global));
 
     auto payloadSize = static_cast<long>(local.payload().size() / sizeof(double));
-    if (payloadSize != data_ni * data_nj) { // Payload contains halo informat$ion
+    if (payloadSize != data_ni * data_nj) {  // Payload contains halo informat$ion
         throw eckit::SeriousBug{"Mismatch between sizes of index map and local field", Here()};
     }
 
@@ -188,16 +203,18 @@ long Structured::localSize() const {
     auto ni = definition_[3];
     auto nj = definition_[5];
 
-    return ni*nj;
-
+    return ni * nj;
 };
 long Structured::globalSize() const {
     // Global domain's dimenstions
     auto ni_global = definition_[0];
     auto nj_global = definition_[1];
 
-    return ni_global*nj_global;
+    return ni_global * nj_global;
 };
+long Structured::partialSize() const {
+    return definition_[11];
+}
 
 
 //------------------------------------------------------------------------------------------------------------
@@ -220,6 +237,9 @@ long Spectral::localSize() const {
     NOTIMP;
 };
 long Spectral::globalSize() const {
+    NOTIMP;
+};
+long Spectral::partialSize() const {
     NOTIMP;
 };
 

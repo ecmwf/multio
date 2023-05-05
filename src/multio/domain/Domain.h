@@ -24,6 +24,7 @@ public:
 
     virtual long localSize() const = 0;
     virtual long globalSize() const = 0;
+    virtual long partialSize() const = 0;
 
     virtual void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const = 0;
 
@@ -42,6 +43,7 @@ private:
 
     long localSize() const override;
     long globalSize() const override;
+    long partialSize() const override;
 
     void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 
@@ -59,6 +61,7 @@ private:
 
     long localSize() const override;
     long globalSize() const override;
+    long partialSize() const override;
 
     void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 };
@@ -74,6 +77,7 @@ private:
 
     long localSize() const override;
     long globalSize() const override;
+    long partialSize() const override;
 
     void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 };

@@ -179,6 +179,7 @@ CASE("Test encode/decode bitmask") {
         ++i1;
     }
 
+
     // Fill vector with 1 0 0 0 0 0 0 0 1 ....
     std::vector<float> v2(250);
     std::size_t v2Ind = 7;

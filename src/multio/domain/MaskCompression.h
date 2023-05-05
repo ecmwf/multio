@@ -135,8 +135,8 @@ public:
 private:
     eckit::Buffer const& payload_;
     MaskPayloadHeader header_;
-    std::size_t index_;                // Global index of the bit
-    std::size_t runLengthOffset_;      // runLength only: offset of the payload...
+    std::size_t index_;                   // Global index of the bit
+    std::size_t runLengthOffset_;         // runLength only: offset of the payload...
     std::size_t runLengthRemainingBits_;  // runLength only
 
     uint64_t runLengthNum_;         // runLength only: decoded number of consecutive 0 or 1
@@ -160,7 +160,7 @@ public:
 
     MaskPayloadIterator end() const { return MaskPayloadIterator(payload_, header_, true); }
 
-    MaskPayloadIterator cend() const { return MaskPayloadIterator(payload_, header_, false, true); }
+    MaskPayloadIterator cend() const { return MaskPayloadIterator(payload_, header_, true); }
 
     std::size_t size() const noexcept { return header_.numBits; }
 

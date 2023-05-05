@@ -1,6 +1,6 @@
+#include <cstring>
 #include <fstream>
 #include <iomanip>
-#include <cstring>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/FileHandle.h"
@@ -45,7 +45,8 @@ std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& config
 class NemoToGrib {
 public:
     NemoToGrib() :
-        parameters_{fetch_nemo_params(eckit::YAMLConfiguration{configuration_path_name() + "metadata-mapping/nemo-to-grib.yaml"})} {}
+        parameters_{fetch_nemo_params(
+            eckit::YAMLConfiguration{configuration_path_name() + "metadata-mapping/nemo-to-grib.yaml"})} {}
 
     const GribData& get(const NemoKey& key) const { return parameters_.at(key); }
 
@@ -87,7 +88,8 @@ private:
     void runClient();
 
     void setMetadata();
-    void setDomains();
+    void setDomains(bool onlyLoadDefinitions = false);
+    void writeMasks();
     void writeFields();
 
     std::vector<int> readGrid(const std::string& grid_type, size_t client_id);
@@ -108,9 +110,15 @@ private:
     int step_ = 24;
     size_t rank_ = 0;
 
+    // Need to be the same as in the test configuration for the check to be successful. In actual production, the Mask
+    // action, if applied, will overwrite it.
+    double missingValue = 1.234;
+
     size_t clientCount_ = 1;
     size_t serverCount_ = 0;
     bool singlePrecision_;
+
+    std::map<std::string, std::vector<int>> domainDefinitions_;
 
     multio_handle_t* multio_handle = nullptr;
 };
@@ -140,16 +148,44 @@ void MultioReplayNemoCApi::init(const eckit::option::CmdArgs& args) {
 
     args.get("step", step_);
 
-    initClient();
+#if (defined TEST_PARTIAL_AGG)
+    if (eckit::mpi::comm().rank() != 0) {
+#endif
+        initClient();
+#if (defined TEST_PARTIAL_AGG)
+    }
+    else {
+        // All clients and server split from world with 123 (defined in the yaml)
+        // As we want to exclude this node, it has to split to another node
+        eckit::mpi::comm().split(999, "non-multio");
+    }
+#endif
 }
 
 void MultioReplayNemoCApi::finish(const eckit::option::CmdArgs&) {
-    multio_delete_handle(multio_handle);
+#if (defined TEST_PARTIAL_AGG)
+    if (eckit::mpi::comm().rank() != 0) {
+#endif
+        multio_delete_handle(multio_handle);
+#if (defined TEST_PARTIAL_AGG)
+    }
+#endif
 }
 
 
 void MultioReplayNemoCApi::execute(const eckit::option::CmdArgs&) {
-    runClient();
+// For partial aggregation, client with rank 0 will send nothing
+#if (defined TEST_PARTIAL_AGG)
+    if (eckit::mpi::comm().rank() != 0) {
+#endif
+        runClient();
+#if (defined TEST_PARTIAL_AGG)
+    }
+    else {
+        // Load grid definitions for later testing
+        setDomains(true);
+    }
+#endif
 
     testData();
 }
@@ -161,6 +197,8 @@ void MultioReplayNemoCApi::runClient() {
 
     setDomains();
 
+    writeMasks();
+
     writeFields();
 
     multio_close_connections(multio_handle);
@@ -168,27 +206,80 @@ void MultioReplayNemoCApi::runClient() {
 
 void MultioReplayNemoCApi::setMetadata() {}
 
-void MultioReplayNemoCApi::setDomains() {
+void MultioReplayNemoCApi::setDomains(bool onlyLoadDefinitions) {
     const std::map<std::string, std::string> grid_type
         = {{"T grid", "grid_T"}, {"U grid", "grid_U"}, {"V grid", "grid_V"}, {"W grid", "grid_W"}};
 
     multio_metadata_t* md = nullptr;
-    multio_new_metadata(&md);
+    if (!onlyLoadDefinitions)
+        multio_new_metadata(&md);
 
     for (auto const& grid : grid_type) {
         auto buffer = readGrid(grid.second, rank_);
+#if (defined TEST_PARTIAL_AGG)
+        // Compute the partial size for all multio clients
+        if (eckit::mpi::comm().rank() != 0) {
+            int partialSize = 0;
+            eckit::mpi::comm("multio-clients").allReduce(buffer[3] * buffer[5], partialSize, eckit::mpi::sum());
+            buffer.push_back(partialSize);
+            eckit::Log::info() << " *** Compute partial size for " << grid.first << ": " << partialSize << "/"
+                               << (buffer[0] * buffer[1]) << std::endl;
+        }
+#endif
         auto sz = static_cast<int>(buffer.size());
-        multio_metadata_set_string(md, "name", grid.first.c_str());
 
-        multio_metadata_set_string(md, "category", "ocean-domain-map");
-        multio_metadata_set_string(md, "representation", "structured");
+
+        if (!onlyLoadDefinitions) {
+            multio_metadata_set_string(md, "name", grid.first.c_str());
+
+            multio_metadata_set_string(md, "category", "ocean-domain-map");
+            multio_metadata_set_string(md, "representation", "structured");
+            multio_metadata_set_int(md, "globalSize", globalSize_);
+            multio_metadata_set_bool(md, "toAllServers", true);
+
+            multio_write_domain(multio_handle, md, buffer.data(), sz);
+        }
+
+        domainDefinitions_.emplace(std::make_pair(grid.first, std::move(buffer)));
+    }
+    if (!onlyLoadDefinitions)
+        multio_delete_metadata(md);
+}
+
+void MultioReplayNemoCApi::writeMasks() {
+    const std::string grid_prefix[4] = {"T", "U", "V", "W"};
+
+    for (const auto& param : parameters_) {
+        const char gridPrefix = paramMap_.get(param).gridType[0];
+
+        auto definition = domainDefinitions_.find(paramMap_.get(param).gridType);
+        if (definition == domainDefinitions_.end()) {
+            throw eckit::SeriousBug{"No domain definitons for this gridType found", Here()};
+        }
+
+        // Create masks all set to 1, ceil the number of elemns to a multiple of 4 because mask is send as int32_t
+        std::vector<float> masks(definition->second[8] * definition->second[10], 1.0);
+
+        multio_metadata_t* md = nullptr;
+        multio_new_metadata(&md);
+
+        std::string name = gridPrefix + std::string(" mask");
+        multio_metadata_set_string(md, "name", name.c_str());
+
+        std::string domain = gridPrefix + std::string(" grid");
+        multio_metadata_set_string(md, "domain", domain.c_str());
+
+        multio_metadata_set_string(md, "category", "ocean-mask");
         multio_metadata_set_int(md, "globalSize", globalSize_);
+        multio_metadata_set_int(md, "level", level_);
         multio_metadata_set_bool(md, "toAllServers", true);
 
-        multio_write_domain(multio_handle, md, buffer.data(), sz);
+        multio_write_mask(multio_handle, md, masks.data(), masks.size());
+
+        multio_delete_metadata(md);
     }
-    multio_delete_metadata(md);
 }
+
 
 void MultioReplayNemoCApi::writeFields() {
 
@@ -230,6 +321,7 @@ void MultioReplayNemoCApi::writeFields() {
         multio_metadata_set_int(md, "level", level_);
         multio_metadata_set_int(md, "step", step_);
 
+        // To mimic nemoV4; it will be overwritten
         multio_metadata_set_double(md, "missingValue", 0.0);
         multio_metadata_set_bool(md, "bitmapPresent", false);
         multio_metadata_set_int(md, "bitsPerValue", 16);
@@ -360,13 +452,32 @@ void MultioReplayNemoCApi::initClient() {
     const eckit::mpi::Comm& clients = eckit::mpi::comm("multio-clients");
 #endif
 
+#if (defined TEST_PARTIAL_AGG)
+    rank_ = eckit::mpi::comm().rank();
+#else
     rank_ = group.rank();
+#endif
     clientCount_ = clients.size();
     serverCount_ = group.size() - clientCount_;
 
     eckit::Log::info() << " *** initClient - clientcount:  " << clientCount_ << ", serverCount: " << serverCount_
                        << std::endl;
 }
+
+namespace {
+template <typename T>
+union TypeToChar {
+    char c[sizeof(T)];
+    T v;
+};
+
+template <typename T, typename Ind>
+char getCharRepr(T v, Ind ind) {
+    TypeToChar<T> ttc;
+    ttc.v = v;
+    return ttc.c[ind];
+}
+}  // namespace
 
 void MultioReplayNemoCApi::testData() {
     eckit::mpi::comm().barrier();
@@ -380,7 +491,6 @@ void MultioReplayNemoCApi::testData() {
 
         std::string actual_file_path{oss.str()};
         std::ifstream infile_actual{actual_file_path};
-        std::string actual{std::istreambuf_iterator<char>(infile_actual), std::istreambuf_iterator<char>()};
 
         oss.str("");
         oss.clear();
@@ -388,14 +498,92 @@ void MultioReplayNemoCApi::testData() {
         auto path = eckit::PathName{oss.str()};
 
         std::ifstream infile_expected{path.fullName()};
-        std::string expected{std::istreambuf_iterator<char>(infile_expected), std::istreambuf_iterator<char>()};
 
         eckit::Log::info() << " *** testData - ActualFilePath: " << actual_file_path << ", expected path: " << path
                            << std::endl;
 
+
+        auto begin1 = std::istreambuf_iterator<char>(infile_actual);
+        auto end1 = std::istreambuf_iterator<char>();
+        auto begin2 = std::istreambuf_iterator<char>(infile_expected);
+        auto end2 = std::istreambuf_iterator<char>();
+        bool isOutputEqual = true;
+        std::size_t fidx = 0;
+
+#if defined(TEST_PARTIAL_AGG)
+        auto definitionPair = domainDefinitions_.find(paramMap_.get(param).gridType);
+        if (definitionPair == domainDefinitions_.end()) {
+            throw eckit::SeriousBug{"No domain definitons for this gridType found", Here()};
+        }
+        auto& definition = definitionPair->second;
+        auto ni_global = definition[0];
+
+        auto ibegin = definition[2];
+        auto ni = definition[3];
+        auto jbegin = definition[4];
+        auto nj = definition[5];
+
+        auto data_ibegin = definition[7];
+        auto data_ni = definition[8];
+        auto data_jbegin = definition[9];
+        auto data_nj = definition[10];
+
+
+        for (unsigned int i = 0; i < (singlePrecision_ ? sizeof(float) : sizeof(double)); ++i) {
+            char c = singlePrecision_ ? getCharRepr(static_cast<float>(missingValue), i) : getCharRepr(missingValue, i);
+            eckit::Log::info() << " *** Missing value char repr " << i << ": " << std::hex
+                               << std::setiosflags(std::ios::showbase) << (int)c << std::resetiosflags(std::ios::hex)
+                               << std::endl;
+        }
+#endif
+
+
+        for (; (begin1 != end1) && (begin2 != end2); ++begin1, ++begin2, ++fidx) {
+            char b1 = *begin1;
+            char b2 = *begin2;
+            bool isByteEqual = (b1 == b2);
+#if defined(TEST_PARTIAL_AGG)
+            std::size_t dIndex = fidx / (singlePrecision_ ? sizeof(float) : sizeof(double));
+            std::size_t iglob = dIndex % ni_global;
+            std::size_t jglob = dIndex / ni_global;
+
+            // Test if in local domain
+            if (((jglob >= jbegin) && (jglob < (jbegin + nj))) && ((iglob >= ibegin) && (iglob < (ibegin + ni)))) {
+                // The data has been masked, set b1 to the byte of the missing value
+                // However, as the expectation data is also not masked, we can ignore these bytes in the comparison
+                isByteEqual = true;
+
+                // Test if masking has been done right
+                if (singlePrecision_) {
+                    ASSERT(b1 == getCharRepr(static_cast<float>(missingValue), fidx % sizeof(float)));
+                }
+                else {
+                    ASSERT(b1 == getCharRepr(missingValue, fidx % sizeof(double)));
+                }
+            }
+#endif
+
+            isOutputEqual &= isByteEqual;
+
+            // eckit::Log::info() << " *** Compare index " << fidx << ": " << std::hex << std::setiosflags
+            // (std::ios::showbase) << (int) b1 << " (actual) " << (isByteEqual ? "==" : "!=") << " " << (int) b2 << "
+            // (expected)" << std::resetiosflags(std::ios::hex) << std::endl;
+        }
+        if ((begin1 != end1) || (begin2 != end2)) {
+            isOutputEqual = false;
+            if (begin1 != end1) {
+                eckit::Log::info() << "Expected file is shorter than actual file" << std::endl;
+                ;
+            }
+            if (begin2 != end2) {
+                eckit::Log::info() << "Actual file is shorter than expected file" << std::endl;
+                ;
+            }
+        }
+        ASSERT(isOutputEqual);
+
         infile_actual.close();
         infile_expected.close();
-        ASSERT(actual == expected);
         std::remove(actual_file_path.c_str());
     }
 }

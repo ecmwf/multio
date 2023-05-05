@@ -29,7 +29,7 @@ public:
 
     auto size() const -> std::map<message::Peer, std::unique_ptr<Domain>>::size_type {
         if (not isComplete()) {
-            throw eckit::SeriousBug("Function size() is called before domain map is complete", Here());
+            throw eckit::SeriousBug("Function size() is called before domain map is partially complete", Here());
         }
 
         return domainMap_.size();
@@ -46,7 +46,7 @@ public:
                           totalSize += domain.second->localSize();
                       });
 
-        return (totalSize == domainMap_.begin()->second->globalSize());
+        return (totalSize == domainMap_.begin()->second->partialSize());
     };
 
     bool isConsistent() const { return consistent_; }

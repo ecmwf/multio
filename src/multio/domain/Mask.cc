@@ -57,7 +57,6 @@ void Mask::addPartialMask(message::Message msg) {
 }
 
 bool Mask::allPartsArrived(const message::Message& msg) const {
-
     const auto& domainMap = domain::Mappings::instance().get(msg.domain());
 
     return domainMap.isComplete() && (messages_.at(msg.fieldId()).size() == domainMap.size());
@@ -68,6 +67,9 @@ void Mask::createBitmask(message::Message inMsg) {
 
     std::vector<bool> bitmask;
     bitmask.resize(inMsg.globalSize());
+    // Important note: Resize is also value initializing the std::vector to 0.
+    // This means by default all fields are masked. This is important, especially for
+    // partial aggregation when some nodes are not even set up and do not send masks at all.
     for (const auto& msg : messages_.at(fid)) {
         domain::Mappings::instance().get(msg.domain()).at(msg.source())->toBitmask(msg, bitmask);
     }

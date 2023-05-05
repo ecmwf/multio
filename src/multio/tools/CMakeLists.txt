@@ -80,3 +80,9 @@ ecbuild_add_executable( TARGET    multio-generate-grib-template
                         CONDITION HAVE_MIR
                         SOURCES   multio-generate-grib-template.cc MultioTool.cc
                         LIBS      multio atlas eccodes eckit)
+
+ecbuild_add_executable( TARGET      multio-replay-nemo-capi-partial-agg
+                        SOURCES     multio-replay-nemo-capi.cc MultioTool.cc
+                        LIBS        multio-api
+                        DEFINITIONS "INIT_BY_ENV" "IMPLICIT_MPI" "TEST_PARTIAL_AGG")
+

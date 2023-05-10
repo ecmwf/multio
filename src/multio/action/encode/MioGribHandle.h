@@ -9,7 +9,7 @@ public:
     MioGribHandle(codes_handle* hdl);
     ~MioGribHandle() = default;
     using metkit::grib::GribHandle::setDataValues;
-    MioGribHandle* MioGribHandle::duplicate() const;
+    MioGribHandle* duplicate() const;
     void setValue(const std::string& key, long value);
 
     void setValue(const std::string& key, double value);

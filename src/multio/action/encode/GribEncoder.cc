@@ -86,7 +86,7 @@ eckit::Optional<ValueSetter> valueSetter(GribEncoder& g, const std::string& key)
 }  // namespace
 
 GribEncoder::GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config) :
-    metkit::grib::GribHandle{handle}, config_{config} /*, encodeBitsPerValue_(config)*/ {
+    template_{handle}, encoder_{nullptr}, config_{config} /*, encodeBitsPerValue_(config)*/ {
     for (auto const& subtype : {"T grid", "U grid", "V grid", "W grid", "F grid"}) {
         grids().insert(std::make_pair(subtype, std::make_unique<GridInfo>()));
     }
@@ -363,60 +363,18 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit
     setValue("bitsPerValue", md.getLong("bitsPerValue"));
 }
 
-// TODO refactor - maybe throw exception instead of letting eccodes panic and
-// disrupt exception system
-template <typename T>
-void codesCheckRelaxed(int ret, const std::string& name, const T& value) {
-    if (ret == CODES_READ_ONLY) {
-        // If value is read only, do not panic...
-        eckit::Log::info() << "Multio GribEncoder: Ignoring readonly field " << name << " (tried to set value " << value
-                           << ")" << std::endl;
-        return;
-    }
-    // Avoid calling  CODES_CHECK and throw an exception instead. CODES_CHECK often panics with logs properly being
-    // flushed
-    if (ret != 0) {
-        std::ostringstream oss;
-        oss << "Multio GribEncoder: CODES return value != NULL for operation on field: " << name << " with value "
-            << value << ". EECODES error message: " << codes_get_error_message(ret) << std::endl;
-        throw eckit::SeriousBug(oss.str(), Here());
-    }
-    CODES_CHECK(ret, NULL);
-}
 
-void GribEncoder::setValue(const std::string& key, long value) {
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    codesCheckRelaxed(codes_set_long(raw(), key.c_str(), value), key, value);
-}
+void GribEncoder::initEncoder() {
+    encoder_.reset(template_.duplicate());
+    return;
+};
 
-void GribEncoder::setValue(const std::string& key, double value) {
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    codesCheckRelaxed(codes_set_double(raw(), key.c_str(), value), key, value);
-}
-
-void GribEncoder::setValue(const std::string& key, const std::string& value) {
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    size_t sz = value.size();
-    codesCheckRelaxed(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), key, value);
-}
-
-void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
-    std::ostringstream oss;
-    for (int i = 0; i < DIGEST_LENGTH; ++i) {
-        oss << ((i == 0) ? "" : "-") << std::hex << std::setfill('0') << std::setw(2) << static_cast<short>(value[i]);
-    }
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << oss.str() << " for key " << key << std::endl;
-    size_t sz = DIGEST_LENGTH;
-    codesCheckRelaxed(codes_set_bytes(raw(), key.c_str(), value, &sz), key, value);
-}
-
-void GribEncoder::setValue(const std::string& key, bool value) {
-    long longValue = value;
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << "(" << longValue << ") for key " << key << std::endl;
-    codesCheckRelaxed(codes_set_long(raw(), key.c_str(), longValue), key, value);
-}
+bool GribEncoder::hasKey(const char* key) {
+    return encoder_->hasKey(key);
+};
 
 message::Message GribEncoder::encodeOceanLatitudes(const std::string& subtype) {
+    initEncoder();
     auto msg = grids().at(subtype)->latitudes();
 
     setOceanCoordMetadata(msg.metadata());
@@ -428,6 +386,7 @@ message::Message GribEncoder::encodeOceanLatitudes(const std::string& subtype) {
 }
 
 message::Message GribEncoder::encodeOceanLongitudes(const std::string& subtype) {
+    initEncoder();
     auto msg = grids().at(subtype)->longitudes();
 
     setOceanCoordMetadata(msg.metadata());
@@ -439,6 +398,7 @@ message::Message GribEncoder::encodeOceanLongitudes(const std::string& subtype) 
 }
 
 message::Message GribEncoder::encodeField(const message::Message& msg) {
+    initEncoder();
     setFieldMetadata(msg);
     return dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
@@ -447,38 +407,26 @@ message::Message GribEncoder::encodeField(const message::Message& msg) {
 }
 
 message::Message GribEncoder::encodeField(const message::Message& msg, const double* data, size_t sz) {
+    initEncoder();
     setFieldMetadata(msg);
     return setFieldValues(data, sz);
 }
 
 message::Message GribEncoder::encodeField(const message::Message& msg, const float* data, size_t sz) {
+    initEncoder();
     setFieldMetadata(msg);
     return setFieldValues(data, sz);
-}
-
-void GribEncoder::setDataValues(const float* data, size_t count) {
-
-    std::vector<double> dvalues(count, 0.0);
-    auto values = reinterpret_cast<const float*>(data);
-    for (int i = 0; i < count; ++i) {
-        dvalues[i] = double(values[i]);
-    }
-
-    this->setDataValues(dvalues.data(), count);
-
-    return;
 }
 
 
 template <typename T>
 message::Message GribEncoder::setFieldValues(const message::Message& msg) {
-
     auto beg = reinterpret_cast<const T*>(msg.payload().data());
 
     this->setDataValues(beg, msg.globalSize());
 
-    eckit::Buffer buf{this->length()};
-    this->write(buf);
+    eckit::Buffer buf{this->encoder_->length()};
+    encoder_->write(buf);
 
     return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}},
                    std::move(buf)};
@@ -486,25 +434,24 @@ message::Message GribEncoder::setFieldValues(const message::Message& msg) {
 
 
 message::Message GribEncoder::setFieldValues(const double* values, size_t count) {
-    this->setDataValues(values, count);
+    encoder_->setDataValues(values, count);
 
-    eckit::Buffer buf{this->length()};
-    this->write(buf);
+    eckit::Buffer buf{this->encoder_->length()};
+    encoder_->write(buf);
 
     return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
 }
 
 message::Message GribEncoder::setFieldValues(const float* values, size_t count) {
-
     std::vector<double> dvalues(count, 0.0);
     for (int i = 0; i < count; ++i) {
         dvalues[i] = double(values[i]);
     }
 
-    this->setDataValues(dvalues.data(), count);
+    encoder_->setDataValues(dvalues.data(), count);
 
-    eckit::Buffer buf{this->length()};
-    this->write(buf);
+    eckit::Buffer buf{this->encoder_->length()};
+    encoder_->write(buf);
 
     return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
 }

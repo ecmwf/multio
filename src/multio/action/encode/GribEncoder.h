@@ -14,39 +14,41 @@
 
 #pragma once
 
-#include "eccodes.h"
+#include <memory>
 
+#include "MioGribHandle.h"
+#include "eccodes.h"
 #include "metkit/codes/GribHandle.h"
 
 #include "multio/message/Message.h"
-
 // #include "multio/ifsio/EncodeBitsPerValue.h"
 
 namespace multio {
 namespace action {
 
-class GribEncoder : public metkit::grib::GribHandle {
+
+class GribEncoder {
 public:
     GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config);
 
     bool gridInfoReady(const std::string& subtype) const;
     bool setGridInfo(message::Message msg);
 
-    void setValue(const std::string& key, long value);
-    void setValue(const std::string& key, double value);
-    void setValue(const std::string& key, const std::string& value);
-    void setValue(const std::string& key, const unsigned char* value);
-
-
-    // Convert bool to long (0/1)
-    void setValue(const std::string& key, bool value);
-
     template <typename T>
     void setValue(const std::string& key, eckit::Optional<T> v) {
         if (v) {
-            setValue(key, *v);
+            encoder_->setValue(key, *v);
         }
-    }
+    };
+    template <typename T>
+    void setValue(const std::string& key, T v) {
+        encoder_->setValue(key, v);
+    };
+    template <typename T>
+    void setDataValues(const T* data, size_t count) {
+        encoder_->setDataValues(data, count);
+    };
+    bool hasKey(const char* key);
 
     message::Message encodeOceanLatitudes(const std::string& subtype);
     message::Message encodeOceanLongitudes(const std::string& subtype);
@@ -61,20 +63,20 @@ public:
     void print(std::ostream& os) const;
 
 private:
+    // Encoder is now a member of the action
+    const MioGribHandle template_;
+    std::unique_ptr<MioGribHandle> encoder_;
+
+    void initEncoder();
+
     void setFieldMetadata(const message::Message& msg);
     void setOceanMetadata(const message::Message& msg);
 
     void setOceanCoordMetadata(const message::Metadata& metadata);
     void setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig);
 
-    // TODO: these functions have to be removed when the
-    // single pricision support will be added to eccodes
-    using metkit::grib::GribHandle::setDataValues;
-    void setDataValues(const float*, size_t);
-
     template <typename T>
     message::Message setFieldValues(const message::Message& msg);
-
 
 
     message::Message setFieldValues(const double* values, size_t count);

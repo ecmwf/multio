@@ -3,7 +3,6 @@
 #include <iomanip>
 
 #include "GridInfo.h"
-#include "eccodes.h"
 #include "multio/LibMultio.h"
 
 
@@ -30,6 +29,11 @@ void codesCheckRelaxed(int ret, const std::string& name, const T& value) {
     CODES_CHECK(ret, NULL);
 }
 }  // namespace
+
+
+MioGribHandle::MioGribHandle(metkit::grib::GribHandle* hdl) : metkit::grib::GribHandle{hdl->raw()} {};
+MioGribHandle::MioGribHandle(codes_handle* hdl) : metkit::grib::GribHandle{hdl} {};
+
 
 void MioGribHandle::setValue(const std::string& key, long value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
@@ -64,7 +68,7 @@ void MioGribHandle::setValue(const std::string& key, bool value) {
 }
 
 // Set values
-void MioGribHandle::setDataValues(const double* data, size_t count) {
+void MioGribHandle::setDataValues(const float* data, size_t count) {
     std::vector<double> dvalues(count, 0.0);
     auto values = reinterpret_cast<const float*>(data);
     for (int i = 0; i < count; ++i) {

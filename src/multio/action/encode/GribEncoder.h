@@ -16,8 +16,8 @@
 
 #include <memory>
 
+#include "MioGribHandle.h"
 #include "eccodes.h"
-
 #include "metkit/codes/GribHandle.h"
 
 #include "multio/message/Message.h"
@@ -34,21 +34,21 @@ public:
     bool gridInfoReady(const std::string& subtype) const;
     bool setGridInfo(message::Message msg);
 
-    void setValue(const std::string& key, long value);
-    void setValue(const std::string& key, double value);
-    void setValue(const std::string& key, const std::string& value);
-    void setValue(const std::string& key, const unsigned char* value);
-
-
-    // Convert bool to long (0/1)
-    void setValue(const std::string& key, bool value);
-
     template <typename T>
     void setValue(const std::string& key, eckit::Optional<T> v) {
         if (v) {
-            setValue(key, *v);
+            encoder_->setValue(key, *v);
         }
-    }
+    };
+    template <typename T>
+    void setValue(const std::string& key, T v) {
+        encoder_->setValue(key, v);
+    };
+    template <typename T>
+    void setDataValues(const T* data, size_t count) {
+        encoder_->setDataValues(data, count);
+    };
+    bool hasKey(const char* key);
 
     message::Message encodeOceanLatitudes(const std::string& subtype);
     message::Message encodeOceanLongitudes(const std::string& subtype);
@@ -56,7 +56,6 @@ public:
     message::Message encodeField(const message::Message& msg);
     message::Message encodeField(const message::Message& msg, const double* data, size_t sz);
     message::Message encodeField(const message::Message& msg, const float* data, size_t sz);
-    bool hasKey(const char* key) { return encoder_->hasKey(key); };
 
     // TODO May be refactored
     // int getBitsPerValue(int paramid, const std::string& levtype, double min, double max);
@@ -65,25 +64,16 @@ public:
 
 private:
     // Encoder is now a member of the action
-    const metkit::grib::GribHandle template_;
-    std::unique_ptr<metkit::grib::GribHandle> encoder_;
+    const MioGribHandle template_;
+    std::unique_ptr<MioGribHandle> encoder_;
 
-    void initEncoder() {
-        encoder_.reset(template_.clone());
-        return;
-    };
+    void initEncoder();
 
     void setFieldMetadata(const message::Message& msg);
     void setOceanMetadata(const message::Message& msg);
 
     void setOceanCoordMetadata(const message::Metadata& metadata);
     void setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig);
-
-    // TODO: these functions have to be removed when the
-    // single pricision support will be added to eccodes
-    // using metkit::grib::GribHandle::setDataValues;
-    void setDataValues(const float*, size_t);
-    void setDataValues(const double*, size_t);
 
     template <typename T>
     message::Message setFieldValues(const message::Message& msg);

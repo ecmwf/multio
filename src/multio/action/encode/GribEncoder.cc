@@ -363,58 +363,15 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit
     setValue("bitsPerValue", md.getLong("bitsPerValue"));
 }
 
-// TODO refactor - maybe throw exception instead of letting eccodes panic and
-// disrupt exception system
-template <typename T>
-void codesCheckRelaxed(int ret, const std::string& name, const T& value) {
-    if (ret == CODES_READ_ONLY) {
-        // If value is read only, do not panic...
-        eckit::Log::info() << "Multio GribEncoder: Ignoring readonly field " << name << " (tried to set value " << value
-                           << ")" << std::endl;
-        return;
-    }
-    // Avoid calling  CODES_CHECK and throw an exception instead. CODES_CHECK often panics with logs properly being
-    // flushed
-    if (ret != 0) {
-        std::ostringstream oss;
-        oss << "Multio GribEncoder: CODES return value != NULL for operation on field: " << name << " with value "
-            << value << ". EECODES error message: " << codes_get_error_message(ret) << std::endl;
-        throw eckit::SeriousBug(oss.str(), Here());
-    }
-    CODES_CHECK(ret, NULL);
-}
 
-void GribEncoder::setValue(const std::string& key, long value) {
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    codesCheckRelaxed(codes_set_long(encoder_->raw(), key.c_str(), value), key, value);
-}
+void GribEncoder::initEncoder() {
+    encoder_.reset(new MioGribHandle{template_.clone()});
+    return;
+};
 
-void GribEncoder::setValue(const std::string& key, double value) {
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    codesCheckRelaxed(codes_set_double(encoder_->raw(), key.c_str(), value), key, value);
-}
-
-void GribEncoder::setValue(const std::string& key, const std::string& value) {
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
-    size_t sz = value.size();
-    codesCheckRelaxed(codes_set_string(encoder_->raw(), key.c_str(), value.c_str(), &sz), key, value);
-}
-
-void GribEncoder::setValue(const std::string& key, const unsigned char* value) {
-    std::ostringstream oss;
-    for (int i = 0; i < DIGEST_LENGTH; ++i) {
-        oss << ((i == 0) ? "" : "-") << std::hex << std::setfill('0') << std::setw(2) << static_cast<short>(value[i]);
-    }
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << oss.str() << " for key " << key << std::endl;
-    size_t sz = DIGEST_LENGTH;
-    codesCheckRelaxed(codes_set_bytes(encoder_->raw(), key.c_str(), value, &sz), key, value);
-}
-
-void GribEncoder::setValue(const std::string& key, bool value) {
-    long longValue = value;
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << "(" << longValue << ") for key " << key << std::endl;
-    codesCheckRelaxed(codes_set_long(encoder_->raw(), key.c_str(), longValue), key, value);
-}
+bool GribEncoder::hasKey(const char* key) {
+    return encoder_->hasKey(key);
+};
 
 message::Message GribEncoder::encodeOceanLatitudes(const std::string& subtype) {
     initEncoder();
@@ -459,25 +416,6 @@ message::Message GribEncoder::encodeField(const message::Message& msg, const flo
     initEncoder();
     setFieldMetadata(msg);
     return setFieldValues(data, sz);
-}
-
-void GribEncoder::setDataValues(const float* data, size_t count) {
-    std::vector<double> dvalues(count, 0.0);
-    auto values = reinterpret_cast<const float*>(data);
-    for (int i = 0; i < count; ++i) {
-        dvalues[i] = double(values[i]);
-    }
-
-    encoder_->setDataValues(dvalues.data(), count);
-
-    return;
-}
-
-void GribEncoder::setDataValues(const double* data, size_t count) {
-
-    encoder_->setDataValues(data, count);
-
-    return;
 }
 
 

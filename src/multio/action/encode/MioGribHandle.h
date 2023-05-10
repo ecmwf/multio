@@ -1,10 +1,14 @@
 #include "metkit/codes/GribHandle.h"
 
+#include "eccodes.h"
 namespace multio {
 namespace action {
 
 class MioGribHandle : public metkit::grib::GribHandle {
 public:
+    MioGribHandle(metkit::grib::GribHandle* hdl);
+    MioGribHandle(codes_handle* hdl);
+    ~MioGribHandle() = default;
     using metkit::grib::GribHandle::setDataValues;
 
     void setValue(const std::string& key, long value);
@@ -18,7 +22,7 @@ public:
     void setValue(const std::string& key, bool value);
 
     // Set values
-    void setDataValues(const double* data, size_t count);
+    void setDataValues(const float* data, size_t count);
 };
 
 

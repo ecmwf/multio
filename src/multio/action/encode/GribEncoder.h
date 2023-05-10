@@ -14,18 +14,20 @@
 
 #pragma once
 
+#include <memory>
+
 #include "eccodes.h"
 
 #include "metkit/codes/GribHandle.h"
 
 #include "multio/message/Message.h"
-
 // #include "multio/ifsio/EncodeBitsPerValue.h"
 
 namespace multio {
 namespace action {
 
-class GribEncoder : public metkit::grib::GribHandle {
+
+class GribEncoder {
 public:
     GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config);
 
@@ -54,6 +56,7 @@ public:
     message::Message encodeField(const message::Message& msg);
     message::Message encodeField(const message::Message& msg, const double* data, size_t sz);
     message::Message encodeField(const message::Message& msg, const float* data, size_t sz);
+    bool hasKey(const char* key) { return encoder_->hasKey(key); };
 
     // TODO May be refactored
     // int getBitsPerValue(int paramid, const std::string& levtype, double min, double max);
@@ -61,6 +64,15 @@ public:
     void print(std::ostream& os) const;
 
 private:
+    // Encoder is now a member of the action
+    const metkit::grib::GribHandle template_;
+    std::unique_ptr<metkit::grib::GribHandle> encoder_;
+
+    void initEncoder() {
+        encoder_.reset(template_.clone());
+        return;
+    };
+
     void setFieldMetadata(const message::Message& msg);
     void setOceanMetadata(const message::Message& msg);
 
@@ -69,12 +81,12 @@ private:
 
     // TODO: these functions have to be removed when the
     // single pricision support will be added to eccodes
-    using metkit::grib::GribHandle::setDataValues;
+    // using metkit::grib::GribHandle::setDataValues;
     void setDataValues(const float*, size_t);
+    void setDataValues(const double*, size_t);
 
     template <typename T>
     message::Message setFieldValues(const message::Message& msg);
-
 
 
     message::Message setFieldValues(const double* values, size_t count);

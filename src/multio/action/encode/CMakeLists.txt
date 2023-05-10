@@ -9,6 +9,8 @@ ecbuild_add_library(
       GribEncoder.h
       GridInfo.cc
       GridInfo.h
+      MioGribHandle.cc
+      MioGribHandle.h
 
 
     PRIVATE_INCLUDES

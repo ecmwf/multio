@@ -3,6 +3,7 @@
 #include <iomanip>
 
 #include "GridInfo.h"
+#include "eckit/exception/Exceptions.h"
 #include "multio/LibMultio.h"
 
 
@@ -31,9 +32,15 @@ void codesCheckRelaxed(int ret, const std::string& name, const T& value) {
 }  // namespace
 
 
-MioGribHandle::MioGribHandle(metkit::grib::GribHandle* hdl) : metkit::grib::GribHandle{hdl->raw()} {};
 MioGribHandle::MioGribHandle(codes_handle* hdl) : metkit::grib::GribHandle{hdl} {};
 
+MioGribHandle* MioGribHandle::duplicate() const {
+    codes_handle* h = codes_handle_clone(raw());
+    if (!h) {
+        throw eckit::SeriousBug("failed to clone output grib", Here());
+    }
+    return new MioGribHandle(h);
+}
 
 void MioGribHandle::setValue(const std::string& key, long value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;

@@ -6,11 +6,10 @@ namespace action {
 
 class MioGribHandle : public metkit::grib::GribHandle {
 public:
-    MioGribHandle(metkit::grib::GribHandle* hdl);
     MioGribHandle(codes_handle* hdl);
     ~MioGribHandle() = default;
     using metkit::grib::GribHandle::setDataValues;
-
+    MioGribHandle* MioGribHandle::duplicate() const;
     void setValue(const std::string& key, long value);
 
     void setValue(const std::string& key, double value);

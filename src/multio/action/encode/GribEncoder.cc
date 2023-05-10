@@ -365,7 +365,7 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit
 
 
 void GribEncoder::initEncoder() {
-    encoder_.reset(new MioGribHandle{template_.clone()});
+    encoder_.reset(template_.duplicate());
     return;
 };
 

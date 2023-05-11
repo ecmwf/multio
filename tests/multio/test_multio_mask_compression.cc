@@ -234,15 +234,15 @@ CASE("Test encode/decode run length") {
 
     eckit::Buffer b1 = encodeMaskRunLength(v1.data(), v1.size());
 
-    for (unsigned int i = 0; i < b1.size(); ++i) {
-        std::cout << "b1[" << i << "]: " << std::hex << std::setiosflags(std::ios::showbase) << ((int)b1[i])
-                  << std::resetiosflags(std::ios::hex) << std::endl;
-    }
+    // for (unsigned int i = 0; i < b1.size(); ++i) {
+    //     std::cout << "b1[" << i << "]: " << std::hex << std::setiosflags(std::ios::showbase) << ((int)b1[i])
+    //               << std::resetiosflags(std::ios::hex) << std::endl;
+    // }
 
     EncodedMaskPayload em1(b1);
     std::size_t i1 = 0;
     for (bool v : em1) {
-        std::cout << i1 << ": " << v << " - " << static_cast<bool>(v1[i1]) << std::endl;
+        // std::cout << i1 << ": " << v << " - " << static_cast<bool>(v1[i1]) << std::endl;
         EXPECT(v == static_cast<bool>(v1[i1]));
         ++i1;
     }
@@ -286,7 +286,7 @@ CASE("Test encode/decode run length") {
     EncodedMaskPayload em3(b3);
     std::size_t i3 = 0;
     for (bool v : em3) {
-        // std::cout << i3 << ": " << v << std::endl;
+        // std::cout << i3 << ": " << v << " - " << static_cast<bool>(v3[i3]) << std::endl;
         EXPECT(v == static_cast<bool>(v3[i3]));
         ++i3;
     }

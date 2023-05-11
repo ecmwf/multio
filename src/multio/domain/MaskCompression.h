@@ -14,10 +14,14 @@
 #pragma once
 
 
+#include "multio/util/BinaryUtils.h"
+
+#include "eckit/io/Buffer.h"
 #include "eckit/exception/Exceptions.h"
 
 #include <array>
 #include <cstdint>
+#include <cstring> // memcpy
 
 namespace eckit {
 class Buffer;
@@ -82,21 +86,170 @@ struct MaskRunLengthProperties {
     bool startValue;
 };
 
-template <typename T>
-MaskRunLengthProperties computeMaskRunLengthProperties(const T* maskVals, std::size_t size) noexcept;
 
 template <typename T>
-eckit::Buffer encodeMaskBitMask(const T* maskVals, const std::size_t size);
+MaskRunLengthProperties computeMaskRunLengthProperties(const T* maskVals, std::size_t size) noexcept {
+    MaskRunLengthProperties p;
+    p.bufSize = 0;
+    p.numValues = 0;
+    p.numBitsPerInt = 0;
+    p.startValue = false;
+
+    if (size == 0)
+        return p;
+
+    p.startValue = static_cast<bool>(maskVals[0]);
+
+    std::size_t maxNum = 0;
+
+    std::size_t counter = 1;
+    bool currentSign = p.startValue;
+    for (unsigned int i = 1; i < size; ++i) {
+        bool v = static_cast<bool>(maskVals[i]);
+        if (v == currentSign) {
+            ++counter;
+        }
+        else {
+            ++p.numValues;
+            maxNum = std::max(maxNum, counter);
+            currentSign = v;
+            counter = 1;
+        }
+    }
+    ++p.numValues;
+    maxNum = std::max(maxNum, counter);
+
+    // Compute bitWidth for storing numbers with 1 offset - 0 have no meaning here, that's why it's possible to shift
+    p.numBitsPerInt = multio::util::bitWidth(maxNum > 1 ? maxNum - 1 : 1);
+    std::size_t bufSizeBits = p.numBitsPerInt * p.numValues;
+    // Round up to 8 and add header size
+    p.bufSize = (bufSizeBits >> 3) + (((bufSizeBits & ((1 << 3) - 1)) == 0) ? 0 : 1) + MASK_PAYLOAD_HEADER_SIZE;
+
+    return p;
+}
+
+
+//==============================================================================
 
 template <typename T>
-eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size);
-template <typename T>
-eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size, const MaskRunLengthProperties props);
+eckit::Buffer encodeMaskBitMask(const T* maskVals, const std::size_t size) {
+    MaskPayloadHeader h;
+    h.format = MaskPayloadFormat::BitMask;
+    h.numBits = size;
+    auto encodedHeader = encodeMaskPayloadHeader(h);
+
+    eckit::Buffer b{computeBufferSizeMaskBitMask(size) * sizeof(uint8_t)};
+
+    std::memcpy(b.data(), encodedHeader.data(), encodedHeader.size());
+
+    for (unsigned int i = 0; i < size; ++i) {
+        std::size_t offset = MASK_PAYLOAD_HEADER_SIZE + (i >> 3);
+        std::size_t r8 = i & ((1 << 3) - 1);
+
+        // Initialize
+        if (r8 == 0) {
+            b[offset] = 0;
+        }
+
+        if (static_cast<bool>(maskVals[i])) {
+            b[offset] |= (0x01 << r8);
+        }
+    }
+
+    return b;
+}
+
+
+//==============================================================================
 
 template <typename T>
-eckit::Buffer encodeMask(const T* maskVals, const std::size_t size);
+eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size, const MaskRunLengthProperties props) {
+    MaskPayloadHeader h;
+    h.format = MaskPayloadFormat::RunLength;
+    h.numBits = size;
+    h.runLengthNumBitsPerInt = props.numBitsPerInt;
+    h.runLengthStartValue = props.startValue;
+    auto encodedHeader = encodeMaskPayloadHeader(h);
+
+    eckit::Buffer b{props.bufSize * sizeof(uint8_t)};
+
+    std::memcpy(b.data(), encodedHeader.data(), encodedHeader.size());
+
+    std::size_t counter = 1;
+    std::size_t bufOffset = MASK_PAYLOAD_HEADER_SIZE;
+    b[bufOffset] = 0;
+    std::size_t remainingBits = 8;
+    bool currentSign = props.startValue;
+
+    auto writeCounter = [&b, &counter, &remainingBits, &bufOffset, &props]() {
+        std::size_t numBitsToWrite = props.numBitsPerInt;
+        std::size_t valToWrite = counter - 1;  // 0 Have no meaning, thats why we reduce and reincrement on decoding
+        do {
+            // Write bytes in big endian order
+            if (remainingBits >= numBitsToWrite) {
+                std::size_t nextRemainingBits = remainingBits - numBitsToWrite;
+                b[bufOffset] |= ((valToWrite & ((1UL << numBitsToWrite) - 1)) << nextRemainingBits);
+                remainingBits = nextRemainingBits;
+                numBitsToWrite = 0;
+            }
+            else {
+                std::size_t nextNumBitsToWrite = numBitsToWrite - remainingBits;
+                b[bufOffset] |= ((valToWrite >> nextNumBitsToWrite) & ((1UL << remainingBits) - 1));
+                numBitsToWrite = nextNumBitsToWrite;
+                remainingBits = 0;
+            }
+            // Step to next byte
+            if (remainingBits == 0) {
+                ++bufOffset;
+                b[bufOffset] = 0;
+                remainingBits = 8;
+            }
+        } while (numBitsToWrite > 0);
+    };
+
+    for (unsigned int i = 1; i < size; ++i) {
+        bool v = static_cast<bool>(maskVals[i]);
+        if (v == currentSign) {
+            ++counter;
+        }
+        else {
+            // Now counter contains the number of iterest
+            writeCounter();
+            currentSign = v;
+            counter = 1;
+        }
+    }
+
+    // Write for the last time...
+    writeCounter();
+
+    return b;
+}
+
+
 template <typename T>
-eckit::Buffer encodeMask(const T* maskVals, const std::size_t size, const MaskRunLengthProperties props);
+eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size) {
+    return encodeMaskRunLength(maskVals, size, computeMaskRunLengthProperties(maskVals, size));
+}
+
+
+//==============================================================================
+
+template <typename T>
+eckit::Buffer encodeMask(const T* maskVals, const std::size_t size, const MaskRunLengthProperties props) {
+    if (computeBufferSizeMaskBitMask(size) < props.bufSize) {
+        return encodeMaskBitMask(maskVals, size);
+    }
+    else {
+        return encodeMaskRunLength(maskVals, size, std::move(props));
+    }
+}
+template <typename T>
+eckit::Buffer encodeMask(const T* maskVals, const std::size_t size) {
+    return encodeMask(maskVals, size, computeMaskRunLengthProperties(maskVals, size));
+}
+
+
 
 
 //==============================================================================

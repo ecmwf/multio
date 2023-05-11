@@ -15,6 +15,7 @@
 #pragma once
 
 #include <limits>
+#include <limits.h>
 #include <type_traits>
 
 namespace multio {

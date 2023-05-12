@@ -18,14 +18,16 @@
 #include <iomanip>
 #include <iostream>
 
-#include "GridInfo.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
+#include "eckit/utils/MD5.h"
 #include "multio/LibMultio.h"
 #include "multio/util/Metadata.h"
 
 
 #include "multio/util/PrecisionTag.h"
+
+#define DIGEST_LENGTH MD5_DIGEST_LENGTH
 
 namespace multio {
 namespace action {
@@ -45,12 +47,6 @@ using util::lookUpString;
 using util::withFirstOf;
 
 namespace {
-// TODO: perhaps move this to Mappings as that is already a singleton
-std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
-    static std::map<std::string, std::unique_ptr<GridInfo>> grids_;
-    return grids_;
-}
-
 const std::map<const std::string, const long> ops_to_code{{"instant", 0000}, {"average", 1000}, {"accumulate", 2000},
                                                           {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
 
@@ -87,31 +83,6 @@ eckit::Optional<ValueSetter> valueSetter(GribEncoder& g, const std::string& key)
 
 GribEncoder::GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config) :
     metkit::grib::GribHandle{handle}, config_{config} /*, encodeBitsPerValue_(config)*/ {
-    for (auto const& subtype : {"T grid", "U grid", "V grid", "W grid", "F grid"}) {
-        grids().insert(std::make_pair(subtype, std::make_unique<GridInfo>()));
-    }
-}
-
-bool GribEncoder::gridInfoReady(const std::string& subtype) const {
-    return grids().at(subtype)->hashExists();
-}
-
-bool GribEncoder::setGridInfo(message::Message msg) {
-    ASSERT(not gridInfoReady(msg.domain()));  // Panic check during development
-
-    ASSERT(coordSet_.find(msg.metadata().getString("nemoParam")) != end(coordSet_));
-
-    grids().at(msg.domain())->setSubtype(msg.domain());
-
-    if (msg.metadata().getString("nemoParam").substr(0, 3) == "lat") {
-        grids().at(msg.domain())->setLatitudes(msg);
-    }
-
-    if (msg.metadata().getString("nemoParam").substr(0, 3) == "lon") {
-        grids().at(msg.domain())->setLongitudes(msg);
-    }
-
-    return grids().at(msg.domain())->computeHashIfCan();
 }
 
 struct QueriedMarsKeys {
@@ -333,7 +304,8 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     const auto& gridSubtype = metadata.getString("gridSubtype");
     setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
 
-    setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
+    const auto& gridUID = metadata.getString("uuidOfHGrid");
+    setValue("uuidOfHGrid", gridUID);
 }
 
 void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {
@@ -361,7 +333,8 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit
     const auto& gridSubtype = md.getString("gridSubtype");
     setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
 
-    setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
+    const auto& gridUID = md.getString("uuidOfHGrid");
+    setValue("uuidOfHGrid", gridUID);
 
     // Set encoding for missing value support
     setValue("bitmapPresent", false);
@@ -421,20 +394,7 @@ void GribEncoder::setValue(const std::string& key, bool value) {
     codesCheckRelaxed(codes_set_long(raw(), key.c_str(), longValue), key, value);
 }
 
-message::Message GribEncoder::encodeOceanLatitudes(const std::string& subtype) {
-    auto msg = grids().at(subtype)->latitudes();
-
-    setOceanCoordMetadata(msg.metadata());
-
-    return dispatchPrecisionTag(msg.precision(), [&](auto pt) {
-        using Precision = typename decltype(pt)::type;
-        return setFieldValues<Precision>(std::move(msg));
-    });
-}
-
-message::Message GribEncoder::encodeOceanLongitudes(const std::string& subtype) {
-    auto msg = grids().at(subtype)->longitudes();
-
+message::Message GribEncoder::encodeOceanCoordinates(message::Message&& msg) {
     setOceanCoordMetadata(msg.metadata());
 
     return dispatchPrecisionTag(msg.precision(), [&](auto pt) {

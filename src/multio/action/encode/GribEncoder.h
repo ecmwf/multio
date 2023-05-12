@@ -29,9 +29,6 @@ class GribEncoder : public metkit::grib::GribHandle {
 public:
     GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config);
 
-    bool gridInfoReady(const std::string& subtype) const;
-    bool setGridInfo(message::Message msg);
-
     void setValue(const std::string& key, long value);
     void setValue(const std::string& key, double value);
     void setValue(const std::string& key, const std::string& value);
@@ -48,8 +45,7 @@ public:
         }
     }
 
-    message::Message encodeOceanLatitudes(const std::string& subtype);
-    message::Message encodeOceanLongitudes(const std::string& subtype);
+    message::Message encodeOceanCoordinates(message::Message&& msg);
 
     message::Message encodeField(const message::Message& msg);
     message::Message encodeField(const message::Message& msg, const double* data, size_t sz);

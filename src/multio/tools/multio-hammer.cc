@@ -572,7 +572,7 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
 
         // Send flush messages
         Metadata md;
-        md.set("name", eckit::Translator<long, std::string>{}(step))
+        md.set("step", eckit::Translator<long, std::string>{}(step))
             .set("category", "atms-checkpoint")
             .set("trigger", "step")
             .set("domain", "grid-point");
@@ -708,7 +708,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
         }
 
         Metadata md;
-        md.set("name", eckit::Translator<long, std::string>()(step))
+        md.set("step", eckit::Translator<long, std::string>()(step))
             .set("category", "atms-checkpoint")
             .set("trigger", "step")
             .set("domain", "grid-point")

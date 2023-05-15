@@ -232,7 +232,7 @@ fortint imultio_notify_step_(const fortint* step) {
 
     multio::message::Metadata metadata;
     metadata.set("trigger", "step");
-    metadata.set("name", eckit::Translator<fortint, std::string>()(*step));
+    metadata.set("step", eckit::Translator<fortint, std::string>()(*step));
     multio::message::Message message{
         multio::message::Message::Header{Message::Tag::Notification, Peer{},
                                          Peer{}, std::move(metadata)},

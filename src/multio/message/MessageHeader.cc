@@ -54,22 +54,37 @@ const Metadata& Message::Header::metadata() const& {
 // }
 
 std::string Message::Header::name() const {
-    return metadata_.getString("name","unknown");
+    if(!metadata_.has("name")) {
+        throw MetadataMissingKeyException("name", Here());
+    }
+    return metadata_.getString("name");
 }
 
 std::string Message::Header::category() const {
+    if(!metadata_.has("category")) {
+        throw MetadataMissingKeyException("category", Here());
+    }
     return metadata_.getString("category");
 }
 
 long Message::Header::globalSize() const {
+    if(!metadata_.has("globalSize")) {
+        throw MetadataMissingKeyException("globalSize", Here());
+    }
     return metadata_.getLong("globalSize");
 }
 
 std::string Message::Header::domain() const {
+    if(!metadata_.has("domain")) {
+        throw MetadataMissingKeyException("domain", Here());
+    }
     return metadata_.getString("domain");
 }
 
 util::PrecisionTag Message::Header::precision() const {
+    if(!metadata_.has("precision")) {
+        throw MetadataMissingKeyException("precision", Here());
+    }
     return util::decodePrecisionTag(metadata_.getString("precision"));
 }
 

@@ -384,7 +384,7 @@ CASE("Test write field") {
         test_check(multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), len),
                    "Write Field");
 
-        // test_check(multio_notify(multio_handle, md), "Field Written");
+        test_check(multio_notify(multio_handle, md), "Field Written");
     }
 
     auto path = util::getEnv("CMAKE_BINARY_HOME");

@@ -10,7 +10,7 @@ The example reads a field from a grib file and then outputs this to a location b
 
 This example code using the following config file:
 
-.. literalinclude:: ../../../tests/multio/config/testPlan.yaml
+.. literalinclude:: testPlan.yaml
     :language: yaml
     :class: copybutton
 

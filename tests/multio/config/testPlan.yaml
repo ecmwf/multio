@@ -7,5 +7,5 @@ plans:
           sinks:
             - type: file
               append: false
-              per-server: false # Will give you one file per server
+              per-server: false
               path: testWriteOutput.grib

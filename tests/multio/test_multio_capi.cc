@@ -362,29 +362,38 @@ CASE("Test write field") {
             EXPECT(infile.read(buffer.data(), len) == len);
         }
 
+        {
+            multio_metadata_t* md = nullptr;
+            test_check(multio_new_metadata(&md), "Create New Metadata Object");
+            std::unique_ptr<multio_metadata_t> multio_deleter(md);
+
+            test_check(multio_metadata_set_string(md, "category", file), "Set category");
+            test_check(multio_metadata_set_int(md, "globalSize", len), "Set globalsize");
+            test_check(multio_metadata_set_int(md, "level", 1), "Set level");
+            test_check(multio_metadata_set_int(md, "step", 1), "Set step");
+
+            test_check(multio_metadata_set_double(md, "missingValue", 0.0), "Set missingValue");
+            test_check(multio_metadata_set_bool(md, "bitmapPresent", false), "Set bitmapPresent");
+            test_check(multio_metadata_set_int(md, "bitsPerValue", 16), "Set bitsPerValue");
+
+            test_check(multio_metadata_set_bool(md, "toAllServers", false), "Set toAllServers");
+
+            // Overwrite these fields in the existing metadata object
+            test_check(multio_metadata_set_string(md, "name", "test"), "Set name");
+
+            test_check(multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), len),
+                       "Write Field");
+        }
+    }
+
+    {
         multio_metadata_t* md = nullptr;
         test_check(multio_new_metadata(&md), "Create New Metadata Object");
         std::unique_ptr<multio_metadata_t> multio_deleter(md);
 
-        test_check(multio_metadata_set_string(md, "category", file), "Set String");
-        test_check(multio_metadata_set_int(md, "globalSize", len), "Set Int");
-        test_check(multio_metadata_set_int(md, "level", 1), "Set Int");
-        test_check(multio_metadata_set_int(md, "step", 1), "Set Int");
-
-        test_check(multio_metadata_set_double(md, "missingValue", 0.0), "Set Double");
-        test_check(multio_metadata_set_bool(md, "bitmapPresent", false), "Set bool");
-        test_check(multio_metadata_set_int(md, "bitsPerValue", 16), "Set Int");
-
-        test_check(multio_metadata_set_bool(md, "toAllServers", false), "Set Bool");
-
-        // Overwrite these fields in the existing metadata object
-        test_check(multio_metadata_set_string(md, "name", "test"), "Set String");
-        test_check(multio_metadata_set_string(md, "trigger", "test"), "Set String");
-
-        test_check(multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), len),
-                   "Write Field");
-
-        test_check(multio_notify(multio_handle, md), "Field Written");
+        test_check(multio_metadata_set_int(md, "step", 123), "Set step");
+        test_check(multio_metadata_set_string(md, "trigger", "step"), "Set trigger");
+        test_check(multio_notify(multio_handle, md), "Trigger step notification");
     }
 
     auto path = util::getEnv("CMAKE_BINARY_HOME");

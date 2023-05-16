@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <unordered_map>
 
+
 #include "TemporalStatistics.h"
 #include "eckit/exception/Exceptions.h"
 #include "multio/LibMultio.h"
@@ -91,6 +92,8 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
     long timeSpanInHours = timeSpanInSeconds / 3600;
     md.set("timeSpanInHours", timeSpanInHours);
     md.set("stepRange", fieldStats_.at(key)->stepRange(md.getLong("step")));
+    md.set("previousDate", fieldStats_.at(key)->current().startPoint().date().yyyymmdd());
+    md.set("previousTime", fieldStats_.at(key)->current().startPoint().time().hhmmss());
     md.set("currentDate", fieldStats_.at(key)->current().endPoint().date().yyyymmdd());
     md.set("currentTime", fieldStats_.at(key)->current().endPoint().time().hhmmss());
     auto stepInSeconds = md.getLong("step") * opt.timeStep();
@@ -103,10 +106,6 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
     auto stepInHours = stepInSeconds / 3600;
     LOG_DEBUG_LIB(LibMultio) << "The step (in hours) is :: " << stepInHours << std::endl;
     md.set("stepInHours", stepInHours);
-    auto prevStep = std::max(stepInHours - timeSpanInHours, 0L);
-    auto stepRangeInHours = std::to_string(prevStep) + "-" + std::to_string(stepInHours);
-    LOG_DEBUG_LIB(LibMultio) << "The step range (in hours) is :: " << stepRangeInHours << std::endl;
-    md.set("stepRangeInHours", stepRangeInHours);
     return md;
 }
 

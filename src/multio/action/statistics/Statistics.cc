@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <unordered_map>
 
-
 #include "TemporalStatistics.h"
 #include "eckit/exception/Exceptions.h"
 #include "multio/LibMultio.h"

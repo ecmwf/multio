@@ -4,11 +4,10 @@
 
 namespace multio {
 namespace action {
+
 class DateTimePeriod {
 public:
     DateTimePeriod(const std::string& name);
-    DateTimePeriod(const eckit::DateTime& startPoint, eckit::Second duration, long offset);
-    DateTimePeriod(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint, long offset);
     DateTimePeriod(const eckit::DateTime& startPoint, eckit::Second duration);
     DateTimePeriod(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
 
@@ -26,7 +25,6 @@ public:
 private:
     eckit::DateTime startPoint_;
     eckit::DateTime endPoint_;
-    long offset_;
 
     void print(std::ostream& os) const;
 

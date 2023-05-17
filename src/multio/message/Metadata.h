@@ -17,9 +17,12 @@
 #pragma once
 
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/exception/Exceptions.h"
 
 namespace multio {
 namespace message {
+
+//=============================================================================
 
 class Metadata : public eckit::LocalConfiguration {
 public:
@@ -29,6 +32,22 @@ public:
 
 std::string to_string(const Metadata& metadata);
 Metadata to_metadata(const std::string& fieldId);
+
+//=============================================================================
+
+
+class MetadataException : public eckit::Exception {
+public:
+    MetadataException(const std::string& reason, const eckit::CodeLocation& l = eckit::CodeLocation());
+};
+
+class MetadataMissingKeyException : public MetadataException {
+public:
+    MetadataMissingKeyException(const std::string& missingKey, const eckit::CodeLocation& l = eckit::CodeLocation());
+};
+
+
+//=============================================================================
 
 }  // namespace message
 }  // namespace multio

@@ -27,7 +27,9 @@ if ( HAVE_FDB5 )
     )
 endif()
 
+
 # Test sinks
+
 
 ecbuild_add_test( TARGET    test_multio_datasink_factory
                   SOURCES   test_multio_datasink_factory.cc
@@ -57,10 +59,16 @@ ecbuild_add_test( TARGET    test_multio_confctx
 
 # Test api
 
+list( APPEND _api_test_environment
+    CMAKE_BINARY_HOME=${CMAKE_BINARY_DIR}
+    MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config
+)
+
+
 ecbuild_add_test( TARGET    test_multio_capi
                   SOURCES   test_multio_capi.cc
                   LIBS      multio-api
-                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
+                  ENVIRONMENT "${_api_test_environment}"
 )
 
 ecbuild_add_test( TARGET    test_multio_fapi_general

@@ -91,7 +91,8 @@ void Plan::process(message::Message msg) {
     util::ScopedTimer timer{timing_};
     if (enabled_) {
         withFailureHandling([this, &msg]() { root_->execute(std::move(msg)); },
-                            [this, &msg]() {
+        // For failure handling a copy of the message needs to be captured... Note than the move above happens after the lambdas are initiated
+                            [this, msg]() {
                                 std::ostringstream oss;
                                 oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl;
                                 return oss.str();

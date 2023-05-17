@@ -18,14 +18,14 @@ std::unordered_map<std::string, eckit::LocalConfiguration> constructSourceMap(
 }
 
 std::string metadataMappingExceptionReason(const std::string& r) {
-    std::string s{"Metadata mapping failure: "};
+    std::string s{"Mapping failure: "};
     s.append(r);
     return s;
 }
 }  // namespace
 
 MetadataMappingException::MetadataMappingException(const std::string& r, const eckit::CodeLocation& location):
-    eckit::Exception(metadataMappingExceptionReason(r), location) {
+    MetadataException(metadataMappingExceptionReason(r), location) {
 }
 
 

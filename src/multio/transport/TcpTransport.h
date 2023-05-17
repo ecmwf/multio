@@ -33,8 +33,7 @@ class TCPSocket;
 }
 }  // namespace eckit
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 class TcpPeer : public Peer {
 public:
@@ -49,7 +48,7 @@ struct Connection;
 
 class TcpTransport final : public Transport {
 public:
-    TcpTransport(const ConfigurationContext& confCtx);
+    TcpTransport(const ComponentConfiguration& compConf);
 
 private:
     void openConnections() override;
@@ -88,5 +87,4 @@ private:
     std::vector<std::unique_ptr<Connection>> incoming_;
 };
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

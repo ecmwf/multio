@@ -25,7 +25,7 @@
 #include "multio/util/FailureHandling.h"
 
 #include "multio/message/Message.h"
-#include "multio/util/ConfigurationContext.h"
+#include "multio/config/ComponentConfiguration.h"
 
 namespace eckit {
 class Configuration;
@@ -40,9 +40,9 @@ class Plan;
 
 namespace server {
 
-class Dispatcher : public util::FailureAware<util::ComponentTag::Dispatcher>, private eckit::NonCopyable {
+class Dispatcher : public util::FailureAware<config::ComponentTag::Dispatcher>, private eckit::NonCopyable {
 public:
-    Dispatcher(const util::ConfigurationContext& confCtx, std::shared_ptr<std::atomic<bool>> cont);
+    Dispatcher(const config::ComponentConfiguration& compConf, std::shared_ptr<std::atomic<bool>> cont);
     ~Dispatcher();
 
     void dispatch(eckit::Queue<message::Message>& queue);

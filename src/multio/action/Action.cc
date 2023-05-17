@@ -12,17 +12,16 @@
 #include "multio/util/logfile_name.h"
 
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
-using eckit::LocalConfiguration;
 using eckit::Configuration;
+using eckit::LocalConfiguration;
 using eckit::Log;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-Action::Action(const ConfigurationContext& confCtx) :
-    FailureAware(confCtx), confCtx_(confCtx), type_{confCtx.config().getString("type")} {}
+Action::Action(const ComponentConfiguration& compConf) :
+    FailureAware(compConf), compConf_(compConf), type_{compConf.YAML().getString("type")} {}
 
 Action::~Action() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
@@ -83,16 +82,16 @@ void ActionFactory::list(std::ostream& out) {
     }
 }
 
-std::unique_ptr<Action> ActionFactory::build(const std::string& name, const ConfigurationContext& confCtx) {
+std::unique_ptr<Action> ActionFactory::build(const std::string& name, const ComponentConfiguration& compConf) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
-    ASSERT(confCtx.componentTag() == util::ComponentTag::Action);
+    ASSERT(compConf.componentTag() == config::ComponentTag::Action);
 
     LOG_DEBUG_LIB(LibMultio) << "Looking for ActionFactory [" << name << "]" << std::endl;
 
     auto f = factories_.find(name);
 
     if (f != factories_.end())
-        return f->second->make(confCtx);
+        return f->second->make(compConf);
 
     Log::error() << "No ActionFactory for [" << name << "]" << std::endl;
     Log::error() << "ActionFactories are:" << std::endl;
@@ -113,5 +112,4 @@ ActionBuilderBase::~ActionBuilderBase() {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

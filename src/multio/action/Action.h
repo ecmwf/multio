@@ -24,26 +24,24 @@
 
 #include "ActionStatistics.h"
 #include "eckit/memory/NonCopyable.h"
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
-#include "multio/util/ConfigurationContext.h"
 #include "multio/util/FailureHandling.h"
 
-namespace multio {
-
-namespace message {
+namespace multio::message {
 class MetadataSelectors;
 }
 
-namespace action {
+namespace multio::action {
 
-using util::ConfigurationContext;
+using config::ComponentConfiguration;
 using util::FailureAware;
 
 //--------------------------------------------------------------------------------------------------
 
-class Action : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Action> {
+class Action : private eckit::NonCopyable, public FailureAware<config::ComponentTag::Action> {
 public:
-    explicit Action(const ConfigurationContext& confCtx);
+    explicit Action(const ComponentConfiguration& compConf);
     ~Action() override;
 
     void execute(message::Message msg);
@@ -54,7 +52,7 @@ public:
                                                util::DefaultFailureState&) const override;
 
 protected:
-    ConfigurationContext confCtx_;
+    ComponentConfiguration compConf_;
 
     std::string type_;
 
@@ -84,7 +82,7 @@ public:  // methods
 
     void list(std::ostream&);
 
-    std::unique_ptr<Action> build(const std::string&, const ConfigurationContext& confCtx);
+    std::unique_ptr<Action> build(const std::string&, const ComponentConfiguration& compConf);
 
 private:  // members
     std::map<std::string, const ActionBuilderBase*> factories_;
@@ -94,7 +92,7 @@ private:  // members
 
 class ActionBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual std::unique_ptr<Action> make(const ConfigurationContext& confCtx) const = 0;
+    virtual std::unique_ptr<Action> make(const ComponentConfiguration& compConf) const = 0;
 
 protected:  // methods
     ActionBuilderBase(const std::string&);
@@ -106,7 +104,9 @@ protected:  // methods
 
 template <class T>
 class ActionBuilder final : public ActionBuilderBase {
-    std::unique_ptr<Action> make(const ConfigurationContext& confCtx) const override { return std::make_unique<T>(confCtx); }
+    std::unique_ptr<Action> make(const ComponentConfiguration& compConf) const override {
+        return std::make_unique<T>(compConf);
+    }
 
 public:
     ActionBuilder(const std::string& name) : ActionBuilderBase(name) {}
@@ -114,5 +114,4 @@ public:
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

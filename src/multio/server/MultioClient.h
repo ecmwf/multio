@@ -15,7 +15,7 @@
 
 #include "multio/action/Plan.h"
 #include "multio/message/MetadataSelector.h"
-#include "multio/util/ConfigurationContext.h"
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/util/FailureHandling.h"
 
 #include "eckit/log/Statistics.h"
@@ -28,9 +28,9 @@ class LocalConfiguration;
 
 namespace multio {
 
-using util::ClientConfigurationContext;
-using util::ComponentTag;
-using util::ConfigurationContext;
+using config::ClientConfiguration;
+using config::ComponentTag;
+using config::ComponentConfiguration;
 
 namespace message {
 class Message;
@@ -41,9 +41,9 @@ namespace server {
 
 class Transport;
 
-class MultioClient : public util::FailureAware<util::ComponentTag::Client> {
+class MultioClient : public util::FailureAware<config::ComponentTag::Client> {
 public:
-    explicit MultioClient(const ClientConfigurationContext& config);
+    explicit MultioClient(const ClientConfiguration& config);
 
     ~MultioClient();
 

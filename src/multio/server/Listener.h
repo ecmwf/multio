@@ -22,9 +22,9 @@
 
 #include "eckit/container/Queue.h"
 
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
 #include "multio/message/Peer.h"
-#include "multio/util/ConfigurationContext.h"
 #include "multio/util/FailureHandling.h"
 
 namespace eckit {
@@ -41,9 +41,9 @@ namespace server {
 
 class Dispatcher;
 
-class Listener : public util::FailureAware<util::ComponentTag::Receiver> {
+class Listener : public util::FailureAware<config::ComponentTag::Receiver> {
 public:
-    Listener(const util::ConfigurationContext& confCtx, transport::Transport& trans);
+    Listener(const config::ComponentConfiguration& compConf, transport::Transport& trans);
     ~Listener();
 
     void start();

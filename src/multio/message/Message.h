@@ -16,15 +16,15 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
-
 #include "eckit/io/Buffer.h"
-#include "eckit/utils/Optional.h"
 #include "multio/util/PrecisionTag.h"
 
 #include "multio/message/Metadata.h"
 #include "multio/message/Peer.h"
+
+#include <memory>
+#include <optional>
+#include <string>
 
 
 namespace eckit {
@@ -35,8 +35,7 @@ class Message;
 }
 }  // namespace eckit
 
-namespace multio {
-namespace message {
+namespace multio::message {
 
 // TODO: we may want to hash the payload (and the header?)
 
@@ -93,7 +92,7 @@ public:  // types
 
         Metadata metadata_;
         // encode fieldId_ lazily
-        mutable eckit::Optional<std::string> fieldId_;  // Make that a hash?
+        mutable std::optional<std::string> fieldId_;  // Make that a hash?
     };
 
     // class Content {
@@ -176,7 +175,7 @@ private:  // members
 eckit::message::Message to_eckit_message(const Message& msg);
 
 
-// Utility to convert message 
+// Utility to convert message
 template <typename From, typename To>
 message::Message convert_precision(message::Message&& msg) {
     const size_t N = msg.payload().size() / sizeof(From);
@@ -198,5 +197,4 @@ message::Message convert_precision(message::Message&& msg) {
 }
 
 
-}  // namespace message
-}  // namespace multio
+}  // namespace multio::message

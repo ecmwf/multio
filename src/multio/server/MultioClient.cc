@@ -17,11 +17,10 @@
 using multio::message::Message;
 using multio::message::Peer;
 
-namespace multio {
-namespace server {
+namespace multio::server {
 
-MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureAware(confCtx) {
-    ASSERT(confCtx.componentTag() == util::ComponentTag::Client);
+MultioClient::MultioClient(const ClientConfiguration& compConf) : FailureAware(compConf) {
+    ASSERT(compConf.componentTag() == config::ComponentTag::Client);
     totClientTimer_.start();
 
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
@@ -34,14 +33,14 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureA
             << std::setw(6) << std::setfill('0') << mSecs << " -- ";
 
 
-    LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << confCtx.config() << std::endl;
-    for (auto&& cfg : confCtx.subContexts("plans", ComponentTag::Plan)) {
-        eckit::Log::debug<LibMultio>() << cfg.config() << std::endl;
+    LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << compConf.YAML() << std::endl;
+    for (auto&& cfg : compConf.subComponents("plans", ComponentTag::Plan)) {
+        eckit::Log::debug<LibMultio>() << cfg.YAML() << std::endl;
         plans_.emplace_back(std::make_unique<action::Plan>(std::move(cfg)))->matchedFields(activeSelectors_);
     }
 
-    if (confCtx.globalConfig().has("active-matchers")) {
-        for (const auto& m : confCtx.globalConfig().getSubConfigurations("active-matchers")) {
+    if (compConf.multioConfig().YAML().has("active-matchers")) {
+        for (const auto& m : compConf.multioConfig().YAML().getSubConfigurations("active-matchers")) {
             std::map<std::string, std::set<std::string>> matches;
             for (const auto& k : m.keys()) {
                 auto v = m.getStringVector(k);
@@ -105,5 +104,4 @@ bool MultioClient::isFieldMatched(const message::Metadata& metadata) const {
     return activeSelectors_.matches(metadata);
 }
 
-}  // namespace server
-}  // namespace multio
+}  // namespace multio::server

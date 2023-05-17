@@ -12,15 +12,15 @@
 
 #include "multio/LibMultio.h"
 #include "multio/server/MultioServer.h"
-#include "multio/util/ConfigurationPath.h"
-#include "multio/util/ConfigurationContext.h"
+#include "multio/config/ConfigurationPath.h"
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/tools/MultioTool.h"
 
-using multio::util::configuration_file;
-using multio::util::configuration_file_name;
-using multio::util::configuration_path_name;
-using multio::util::ConfigurationContext;
-using multio::util::ServerConfigurationContext;
+using multio::config::configuration_file;
+using multio::config::configuration_file_name;
+using multio::config::configuration_path_name;
+using multio::config::ComponentConfiguration;
+using multio::config::ServerConfiguration;
 
 using namespace multio::server;
 
@@ -51,7 +51,7 @@ private:
     std::string transport_ = "mpi";
     int port_ = 7777;
     bool test_ = false;
-    eckit::Optional<ServerConfigurationContext> confCtx_{};
+    std::optional<ServerConfiguration> compConf_{};
 };
 
 MultioProbe::MultioProbe(int argc, char** argv) : multio::MultioTool(argc, argv) {
@@ -67,8 +67,8 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
     args.get("test", test_);
     args.get("server", serverName_);
 
-    confCtx_ = ServerConfigurationContext(ConfigurationContext(), serverName_);
-    confCtx_->config().set("local_port", port_);
+    compConf_ = ServerConfiguration(ComponentConfiguration(), serverName_);
+    compConf_->YAML().set("local_port", port_);
 }
 
 void MultioProbe::finish(const eckit::option::CmdArgs&) {}
@@ -86,12 +86,12 @@ void MultioProbe::execute(const eckit::option::CmdArgs&) {
 
 void MultioProbe::executeLive() {
     eckit::Log::info() << "*** Server -- executeLive "<< std::endl;
-    MultioServer server{*confCtx_};
+    MultioServer server{*compConf_};
 }
 
 void MultioProbe::executeTest() {
     eckit::Log::info() << "*** Server -- executeTest "<< std::endl;
-    MultioServer server{*confCtx_};
+    MultioServer server{*compConf_};
 
     testData();
 }

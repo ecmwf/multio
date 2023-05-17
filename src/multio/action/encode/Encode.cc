@@ -18,36 +18,35 @@
 
 #include "GridDownloader.h"
 #include "multio/LibMultio.h"
-#include "multio/util/ConfigurationPath.h"
+#include "multio/config/ConfigurationPath.h"
 #include "multio/util/ScopedTimer.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
-using util::configuration_path_name;
+using config::configuration_path_name;
 
 namespace {
 
-ConfigurationContext getEncodingConfiguration(const ConfigurationContext& confCtx) {
-    if (confCtx.config().has("encoding")) {
-        return confCtx.recast(confCtx.config().getSubConfiguration("encoding"));
+ComponentConfiguration getEncodingConfiguration(const ComponentConfiguration& compConf) {
+    if (compConf.YAML().has("encoding")) {
+        return compConf.recast(compConf.YAML().getSubConfiguration("encoding"));
     }
     else {
-        return confCtx;
+        return compConf;
     }
 }
 
-std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
-    auto format = confCtx.config().getString("format");
+std::unique_ptr<GribEncoder> make_encoder(const ComponentConfiguration& compConf) {
+    auto format = compConf.YAML().getString("format");
 
     if (format == "grib") {
-        ASSERT(confCtx.config().has("template"));
-        std::string tmplPath = confCtx.config().getString("template");
+        ASSERT(compConf.YAML().has("template"));
+        std::string tmplPath = compConf.YAML().getString("template");
         // TODO provide utility to distinguish between relative and absolute paths
-        eckit::AutoStdFile fin{confCtx.replaceCurly(tmplPath)};
+        eckit::AutoStdFile fin{compConf.multioConfig().replaceCurly(tmplPath)};
         int err;
         return std::make_unique<GribEncoder>(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err),
-                                             confCtx.config());
+                                             compConf.YAML());
     }
     else if (format == "raw") {
         return nullptr;  // leave message in raw binary format
@@ -71,16 +70,16 @@ EncodingException::EncodingException(const std::string& r, const eckit::CodeLoca
 using message::Message;
 using message::Peer;
 
-Encode::Encode(const ConfigurationContext& confCtx, ConfigurationContext&& encConfCtx) :
-    ChainedAction{confCtx},
-    format_{encConfCtx.config().getString("format")},
-    overwrite_{encConfCtx.config().has("overwrite")
-                   ? eckit::Optional<eckit::LocalConfiguration>{encConfCtx.config().getSubConfiguration("overwrite")}
-                   : eckit::Optional<eckit::LocalConfiguration>{}},
-    encoder_{make_encoder(encConfCtx)},
-    gridDownloader_{std::make_unique<multio::action::GridDownloader>(confCtx)} {}
+Encode::Encode(const ComponentConfiguration& compConf, ComponentConfiguration&& encCompConf) :
+    ChainedAction{compConf},
+    format_{encCompConf.YAML().getString("format")},
+    overwrite_{encCompConf.YAML().has("overwrite")
+                   ? std::optional<eckit::LocalConfiguration>{encCompConf.YAML().getSubConfiguration("overwrite")}
+                   : std::optional<eckit::LocalConfiguration>{}},
+    encoder_{make_encoder(encCompConf)},
+    gridDownloader_{std::make_unique<multio::action::GridDownloader>(compConf)} {}
 
-Encode::Encode(const ConfigurationContext& confCtx) : Encode(confCtx, getEncodingConfiguration(confCtx)) {}
+Encode::Encode(const ComponentConfiguration& compConf) : Encode(compConf, getEncodingConfiguration(compConf)) {}
 
 void Encode::executeImpl(Message msg) {
     if (msg.tag() != Message::Tag::Field) {
@@ -148,5 +147,4 @@ message::Message Encode::encodeField(const message::Message& msg, const std::opt
 
 static ActionBuilder<Encode> EncodeBuilder("encode");
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

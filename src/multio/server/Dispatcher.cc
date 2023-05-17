@@ -15,22 +15,23 @@
 
 using eckit::LocalConfiguration;
 
-namespace multio {
-namespace server {
+namespace multio::server {
 
-Dispatcher::Dispatcher(const util::ConfigurationContext& confCtx, std::shared_ptr<std::atomic<bool>> cont): FailureAware(confCtx), continue_{std::move(cont)} {
+Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, std::shared_ptr<std::atomic<bool>> cont) :
+    FailureAware(compConf), continue_{std::move(cont)} {
     timer_.start();
 
-    eckit::Log::debug<LibMultio>() << confCtx.config() << std::endl;
+    eckit::Log::debug<LibMultio>() << compConf.YAML() << std::endl;
 
-    util::ConfigurationContext::SubConfigurationContexts plans = confCtx.subContexts("plans", util::ComponentTag::Plan);
-    for (auto&& subCtx: plans) {
-        eckit::Log::debug<LibMultio>() << subCtx.config() << std::endl;
-        plans_.emplace_back(std::make_unique<action::Plan>(std::move(subCtx)));
+    config::ComponentConfiguration::SubComponentConfigurations plans = compConf.subComponents("plans", config::ComponentTag::Plan);
+    for (auto&& subComp : plans) {
+        eckit::Log::debug<LibMultio>() << subComp.YAML() << std::endl;
+        plans_.emplace_back(std::make_unique<action::Plan>(std::move(subComp)));
     }
 }
 
-util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, const util::FailureContext& c, util::DefaultFailureState&) const {
+util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, const util::FailureContext& c,
+                                                       util::DefaultFailureState&) const {
     continue_->store(false, std::memory_order_relaxed);
     return util::FailureHandlerResponse::Rethrow;
 };
@@ -71,5 +72,4 @@ void Dispatcher::handle(const message::Message& msg) const {
     }
 }
 
-}  // namespace server
-}  // namespace multio
+}  // namespace multio::server

@@ -15,13 +15,11 @@
 #include "eckit/config/Resource.h"
 
 #include "multio/transport/TransportRegistry.h"
-#include "multio/util/ConfigurationPath.h"
+#include "multio/util/Environment.h"
 #include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
-#include "multio/util/Environment.h" 
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 using message::Message;
 using transport::TransportRegistry;
@@ -39,18 +37,17 @@ std::vector<std::string> getHashKeys(const eckit::Configuration& conf) {
 }
 }  // namespace
 
-Transport::Transport(const ConfigurationContext& confCtx) :
-    Action{confCtx},
-    transport_{TransportRegistry::instance().get(confCtx)},
+Transport::Transport(const ComponentConfiguration& compConf) :
+    Action{compConf},
+    transport_{TransportRegistry::instance().get(compConf)},
     client_{transport_->localPeer()},
     serverPeers_{transport_->serverPeers()},
     serverCount_{serverPeers_.size()},
     serverId_{client_.id() / serverIdDenom(transport_->serverCount(), serverCount_)},
     usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
-    hashKeys_{getHashKeys(confCtx.config())},
+    hashKeys_{getHashKeys(compConf.YAML())},
     counters_(serverPeers_.size()),
-    distType_{distributionType()} {
-}
+    distType_{distributionType()} {}
 
 void Transport::executeImpl(Message msg) {
     // eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
@@ -60,8 +57,7 @@ void Transport::executeImpl(Message msg) {
     if (md.getBool("toAllServers")) {
         for (auto& server : serverPeers_) {
             auto md = msg.metadata();
-            Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)},
-                          msg.payload()};
+            Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)}, msg.payload()};
 
             transport_->send(trMsg);
         }
@@ -69,8 +65,7 @@ void Transport::executeImpl(Message msg) {
     else {
         auto server = chooseServer(msg.metadata());
 
-        Message trMsg{Message::Header{msg.tag(), client_, server, std::move(md)},
-                      std::move(msg.payload())};
+        Message trMsg{Message::Header{msg.tag(), client_, server, std::move(md)}, std::move(msg.payload())};
 
         transport_->bufferedSend(trMsg);
     }
@@ -92,10 +87,10 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
         return metadata.getString(hashKey);
     };
 
-    auto constructHash = [&](){
+    auto constructHash = [&]() {
         std::ostringstream os;
 
-        for(const std::string& s: hashKeys_) {
+        for (const std::string& s : hashKeys_) {
             os << getMetadataValue(s);
         }
         return os.str();
@@ -170,5 +165,4 @@ Transport::DistributionType Transport::distributionType() {
 
 static ActionBuilder<Transport> TransportBuilder("transport");
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

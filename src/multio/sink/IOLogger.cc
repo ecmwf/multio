@@ -14,8 +14,8 @@
 
 #include "eckit/io/Length.h"
 #include "eckit/log/Bytes.h"
-#include "eckit/thread/AutoLock.h"
 #include "eckit/log/Statistics.h"
+#include "eckit/thread/AutoLock.h"
 
 #include "multio/IOLogger.h"
 
@@ -24,7 +24,7 @@
 
 using namespace eckit;
 
-namespace multio {
+namespace multio::sink {
 
 /// @note We do not need to provide locking for access to the IOLogger.
 ///
@@ -35,18 +35,13 @@ namespace multio {
 
 
 IOLogger::IOLogger() :
-    numReads_(0),
-    bytesRead_(0),
-    sumBytesReadSquared_(0),
-    numWrites_(0),
-    bytesWritten_(0),
-    sumBytesWrittenSquared_(0) {}
+    numReads_(0), bytesRead_(0), sumBytesReadSquared_(0), numWrites_(0), bytesWritten_(0), sumBytesWrittenSquared_(0) {}
 
 
 IOLogger::~IOLogger() {}
 
 
-void IOLogger::logRead(const eckit::Length &size) {
+void IOLogger::logRead(const eckit::Length& size) {
 
     numReads_++;
     bytesRead_ += size;
@@ -54,7 +49,7 @@ void IOLogger::logRead(const eckit::Length &size) {
 }
 
 
-void IOLogger::logWrite(const eckit::Length &size) {
+void IOLogger::logWrite(const eckit::Length& size) {
 
     numWrites_++;
     bytesWritten_ += size;
@@ -70,7 +65,8 @@ void IOLogger::report(std::ostream& s) const {
         Statistics::reportBytes(s, "Written", bytesWritten_);
         Statistics::reportBytes(s, "Av. size", size_t(double(bytesWritten_) / double(numWrites_)));
 
-        double stddev_write = std::sqrt((numWrites_ * sumBytesWrittenSquared_ - bytesWritten_ * bytesWritten_)) / numWrites_;
+        double stddev_write
+            = std::sqrt((numWrites_ * sumBytesWrittenSquared_ - bytesWritten_ * bytesWritten_)) / numWrites_;
         Statistics::reportBytes(s, "Std. dev.", size_t(stddev_write));
 
         if (numReads_ != 0)
@@ -91,11 +87,11 @@ void IOLogger::report(std::ostream& s) const {
 }
 
 
-void IOLogger::print(std::ostream &s) const {
+void IOLogger::print(std::ostream& s) const {
     s << "IOLogger()";
 }
 
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace multio
+}  // namespace multio::sink

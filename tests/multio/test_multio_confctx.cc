@@ -13,49 +13,47 @@
 
 #include <unistd.h>
 #include <cstring>
-#include <limits>
 #include <iostream>
+#include <limits>
 
-#include "eckit/testing/Test.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/testing/Test.h"
 
-#include "multio/util/ConfigurationPath.h"
-#include "multio/util/ConfigurationContext.h"
+#include "multio/config/ComponentConfiguration.h"
+#include "multio/config/ConfigurationPath.h"
 
-namespace multio {
+using multio::config::configuration_file;
+using multio::config::ComponentConfiguration;
 
-using util::configuration_file;
-using util::ConfigurationContext;
+namespace multio::test {
 
-namespace test {
 
 CASE("Create default context and tranverse client plans") {
-    ConfigurationContext confCtx{};
-    EXPECT(confCtx.config().has("client"));
+    ComponentConfiguration compConf{};
+    EXPECT(compConf.YAML().has("client"));
 
-    ConfigurationContext clientCtx = confCtx.subContext("client");
-    EXPECT(clientCtx.config().has("plans"));
+    ComponentConfiguration clientConf = compConf.subComponent("client");
+    EXPECT(clientConf.YAML().has("plans"));
 
-    int i =0;
-    for(ConfigurationContext subCtx: clientCtx.subContexts("plans")) {
-       // std::cout << subCtx.config().getString("name") << std::endl;
-       switch (i) {
-        case 0:
-            EXPECT(subCtx.config().getString("name") == "ocean-replay-grid-info-stream");
-            break;
-        case 1:
-            EXPECT(subCtx.config().getString("name") == "ocean-replay-test-stream1");
-            break;
-        case 2:
-            EXPECT(subCtx.config().getString("name") == "ocean-replay-test-stream2");
-            break;
-       }
-       ++i;
+    int i = 0;
+    for (ComponentConfiguration subConf : clientConf.subComponents("plans")) {
+        // std::cout << subConf.YAML().getString("name") << std::endl;
+        switch (i) {
+            case 0:
+                EXPECT(subConf.YAML().getString("name") == "ocean-replay-grid-info-stream");
+                break;
+            case 1:
+                EXPECT(subConf.YAML().getString("name") == "ocean-replay-test-stream1");
+                break;
+            case 2:
+                EXPECT(subConf.YAML().getString("name") == "ocean-replay-test-stream2");
+                break;
+        }
+        ++i;
     }
 }
 
-}  // namespace test
-}  // namespace multio
+}  // namespace multio::test
 
 int main(int argc, char** argv) {
     return eckit::testing::run_tests(argc, argv);

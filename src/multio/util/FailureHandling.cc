@@ -82,8 +82,7 @@ std::string eckit::Translator<OnDispatchError, std::string>::operator()(OnDispat
     }
 }
 
-namespace multio {
-namespace util {
+namespace multio::util {
 
 namespace {
 inline void printExceptionHeader(std::ostream& out, const std::exception& e, int level = 0) {
@@ -171,5 +170,4 @@ std::ostream& operator<<(std::ostream& os, const FailureContext& dt) {
     return os;
 }
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::util

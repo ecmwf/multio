@@ -31,7 +31,7 @@ using message::Message;
 
 class Sink : public Action {
 public:
-    explicit Sink(const ConfigurationContext& confCtx);
+    explicit Sink(const ComponentConfiguration& compConf);
     ~Sink();
 
     void executeImpl(message::Message msg) override;
@@ -47,7 +47,7 @@ private:
 
     bool report_;
 
-    MultIO mio_;
+    sink::MultIO mio_;
 };
 
 }  // namespace action

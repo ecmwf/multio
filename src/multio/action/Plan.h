@@ -22,31 +22,29 @@
 #include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
-#include "multio/util/ConfigurationContext.h"
 #include "multio/util/FailureHandling.h"
 
 
-namespace multio {
-
-namespace message {
+namespace multio::message {
 class MetadataSelectors;
 }
 
-namespace action {
+namespace multio::action {
 
-using util::ConfigurationContext;
+using config::ComponentConfiguration;
 using util::FailureAware;
 
 class Action;
 
-class Plan : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Plan> {
+class Plan : private eckit::NonCopyable, public FailureAware<config::ComponentTag::Plan> {
 private:
     // Delegate constructor with loaded config (from file or list entry)
-    Plan(const ConfigurationContext& confCtx, const util::YAMLFile* file);
-    
+    Plan(const ComponentConfiguration& compConf, const config::YAMLFile* file);
+
 public:
-    Plan(const ConfigurationContext& confCtx);
+    Plan(const ComponentConfiguration& compConf);
     virtual ~Plan();
 
     virtual void process(message::Message msg);
@@ -63,5 +61,4 @@ protected:
     eckit::Timing timing_;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

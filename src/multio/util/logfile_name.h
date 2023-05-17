@@ -6,8 +6,7 @@
 
 #include "eckit/runtime/Main.h"
 
-namespace multio {
-namespace util {
+namespace multio::util {
 
 inline std::string filename_prefix() {
     std::ostringstream os;
@@ -19,5 +18,4 @@ inline std::string logfile_name() {
     return filename_prefix() + ".log";
 }
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::util

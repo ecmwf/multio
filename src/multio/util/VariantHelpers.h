@@ -1,4 +1,3 @@
-
 #pragma once
 
 // Overload pattern for visiting std::variant using std::visit, see

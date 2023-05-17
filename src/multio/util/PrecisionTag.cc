@@ -1,7 +1,6 @@
 #include "multio/util/PrecisionTag.h"
 
-namespace multio {
-namespace util {
+namespace multio::util {
 
 /*
 size_t decodePrecisionSize(const std::string& tagStr) {
@@ -17,5 +16,4 @@ PrecisionTag decodePrecisionTag(const std::string& tagStr) {
     return str2tag.at(tagStr);
 }
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::util

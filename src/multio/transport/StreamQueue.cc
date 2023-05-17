@@ -1,10 +1,8 @@
 
 #include "StreamQueue.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 StreamQueue::StreamQueue() {}
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

@@ -5,12 +5,12 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/runtime/Main.h"
 
+#include "multio/config/ComponentConfiguration.h"
+#include "multio/config/ConfigurationPath.h"
 #include "multio/message/Metadata.h"
 #include "multio/multio_version.h"
 #include "multio/server/MultioClient.h"
 #include "multio/server/MultioServer.h"
-#include "multio/util/ConfigurationContext.h"
-#include "multio/util/ConfigurationPath.h"
 #include "multio/util/FailureHandling.h"
 
 #include <functional>
@@ -19,14 +19,14 @@ using multio::message::Message;
 using multio::message::Metadata;
 using multio::message::Peer;
 
-using multio::util::ClientConfigurationContext;
-using multio::util::configuration_file;
-using multio::util::configuration_file_name;
-using multio::util::configuration_path_name;
-using multio::util::ConfigurationContext;
+using multio::config::ClientConfiguration;
+using multio::config::ComponentConfiguration;
+using multio::config::configuration_file;
+using multio::config::configuration_file_name;
+using multio::config::configuration_path_name;
+using multio::config::MPIInitInfo;
+using multio::config::ServerConfiguration;
 using multio::util::FailureAwareException;
-using multio::util::MPIInitInfo;
-using multio::util::ServerConfigurationContext;
 
 namespace {
 
@@ -107,7 +107,8 @@ int wrapApiFunction(FN f) {
         MultioErrorValues error = getNestedErrorValue(e);
         if (g_failure_handler) {
             g_failure_handler(g_failure_handler_context, error);
-        } else {
+        }
+        else {
             // Print to cerr and cout to make sure the user knows his problem
             std::cerr << oss.str() << std::endl;
             std::cout << oss.str() << std::endl;
@@ -120,7 +121,8 @@ int wrapApiFunction(FN f) {
         g_current_error_str = oss.str();
         if (g_failure_handler) {
             g_failure_handler(g_failure_handler_context, MULTIO_ERROR_ECKIT_EXCEPTION);
-        } else {
+        }
+        else {
             // Print to cerr and cout to make sure the user knows his problem
             std::cerr << oss.str() << std::endl;
             std::cout << oss.str() << std::endl;
@@ -133,7 +135,8 @@ int wrapApiFunction(FN f) {
         g_current_error_str = oss.str();
         if (g_failure_handler) {
             g_failure_handler(g_failure_handler_context, MULTIO_ERROR_GENERAL_EXCEPTION);
-        } else {
+        }
+        else {
             // Print to cerr and cout to make sure the user knows his problem
             std::cerr << oss.str() << std::endl;
             std::cout << oss.str() << std::endl;
@@ -144,7 +147,8 @@ int wrapApiFunction(FN f) {
         g_current_error_str = "Caugth unkown exception on C-C++ API boundary";
         if (g_failure_handler) {
             g_failure_handler(g_failure_handler_context, MULTIO_ERROR_UNKNOWN_EXCEPTION);
-        } else {
+        }
+        else {
             // Print to cerr and cout to make sure the user knows his problem
             std::cerr << g_current_error_str << std::endl;
             std::cout << g_current_error_str << std::endl;
@@ -158,14 +162,14 @@ int wrapApiFunction(FN f) {
 
 extern "C" {
 
-struct multio_configuration_t : public ConfigurationContext {
+struct multio_configuration_t : public ComponentConfiguration {
     multio_configuration_t(const eckit::PathName& fileName = configuration_file_name()) :
-        ConfigurationContext{fileName} {}
+        ComponentConfiguration{fileName} {}
 };
 
 struct multio_handle_t : public multio::server::MultioClient {
     using multio::server::MultioClient::MultioClient;
-    multio_handle_t(const ClientConfigurationContext& confCtx) : MultioClient{confCtx} {}
+    multio_handle_t(const ClientConfiguration& compConf) : MultioClient{compConf} {}
 };
 
 struct multio_metadata_t : public multio::message::Metadata {
@@ -227,7 +231,7 @@ int multio_conf_set_path(multio_configuration_t* cc, const char* configuration_p
     return wrapApiFunction([cc, configuration_path]() {
         ASSERT(cc);
         if (configuration_path != nullptr) {
-            cc->setPathName(eckit::PathName(configuration_path));
+            cc->multioConfig().setPathName(eckit::PathName(configuration_path));
         }
     });
 };
@@ -235,40 +239,40 @@ int multio_conf_set_path(multio_configuration_t* cc, const char* configuration_p
 int multio_conf_mpi_allow_world_default_comm(multio_configuration_t* cc, bool allow) {
     return wrapApiFunction([cc, allow]() {
         ASSERT(cc);
-        if (!cc->getMPIInitInfo()) {
-            cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
+        if (!cc->multioConfig().getMPIInitInfo()) {
+            cc->multioConfig().setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
         }
-        cc->getMPIInitInfo().value().allowWorldAsDefault = allow;
+        cc->multioConfig().getMPIInitInfo().value().allowWorldAsDefault = allow;
     });
 };
 
 int multio_conf_mpi_parent_comm(multio_configuration_t* cc, int parent_comm) {
     return wrapApiFunction([cc, parent_comm]() {
         ASSERT(cc);
-        if (!cc->getMPIInitInfo()) {
-            cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
+        if (!cc->multioConfig().getMPIInitInfo()) {
+            cc->multioConfig().setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
         }
-        cc->getMPIInitInfo().value().parentComm = parent_comm;
+        cc->multioConfig().getMPIInitInfo().value().parentComm = parent_comm;
     });
 };
 
 int multio_conf_mpi_return_client_comm(multio_configuration_t* cc, int* return_client_comm) {
     return wrapApiFunction([cc, return_client_comm]() {
         ASSERT(cc);
-        if (!cc->getMPIInitInfo()) {
-            cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
+        if (!cc->multioConfig().getMPIInitInfo()) {
+            cc->multioConfig().setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
         }
-        cc->getMPIInitInfo().value().returnClientComm = return_client_comm;
+        cc->multioConfig().getMPIInitInfo().value().returnClientComm = return_client_comm;
     });
 };
 
 int multio_conf_mpi_return_server_comm(multio_configuration_t* cc, int* return_server_comm) {
     return wrapApiFunction([cc, return_server_comm]() {
         ASSERT(cc);
-        if (!cc->getMPIInitInfo()) {
-            cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
+        if (!cc->multioConfig().getMPIInitInfo()) {
+            cc->multioConfig().setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
         }
-        cc->getMPIInitInfo().value().returnServerComm = return_server_comm;
+        cc->multioConfig().getMPIInitInfo().value().returnServerComm = return_server_comm;
     });
 };
 
@@ -276,10 +280,10 @@ int multio_conf_mpi_client_id(multio_configuration_t* cc, const char* client_id)
     return wrapApiFunction([cc, client_id]() {
         ASSERT(cc);
         if (client_id != nullptr) {
-            if (!cc->getMPIInitInfo()) {
-                cc->setMPIInitInfo(eckit::Optional<MPIInitInfo>{MPIInitInfo{}});
+            if (!cc->multioConfig().getMPIInitInfo()) {
+                cc->multioConfig().setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
             }
-            cc->getMPIInitInfo().value().clientId = eckit::Optional<std::string>{client_id};
+            cc->multioConfig().getMPIInitInfo().value().clientId = std::optional<std::string>{client_id};
         }
     });
 }
@@ -288,7 +292,7 @@ int multio_conf_mpi_client_id(multio_configuration_t* cc, const char* client_id)
 int multio_new_handle(multio_handle_t** mio, multio_configuration_t* cc) {
     return wrapApiFunction([mio, cc]() {
         ASSERT(cc);
-        (*mio) = new multio_handle_t{ClientConfigurationContext{*cc, "client"}};
+        (*mio) = new multio_handle_t{ClientConfiguration{*cc, "client"}};
     });
 }
 
@@ -303,7 +307,7 @@ int multio_delete_handle(multio_handle_t* mio) {
 int multio_start_server(multio_configuration_t* cc) {
     return wrapApiFunction([cc]() {
         ASSERT(cc);
-        multio::server::MultioServer{ServerConfigurationContext{*cc, "server"}};
+        multio::server::MultioServer{ServerConfiguration{*cc, "server"}};
     });
 }
 

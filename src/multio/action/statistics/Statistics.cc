@@ -20,8 +20,7 @@
 #include "multio/message/Message.h"
 #include "multio/util/ScopedTimer.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 namespace {
 
@@ -43,12 +42,12 @@ long set_frequency(const std::string& output_freq) {
 
 }  // namespace
 
-Statistics::Statistics(const ConfigurationContext& confCtx) :
-    ChainedAction{confCtx},
-    timeUnit_{set_unit(confCtx.config().getString("output-frequency"))},
-    timeSpan_{set_frequency(confCtx.config().getString("output-frequency"))},
-    operations_{confCtx.config().getStringVector("operations")},
-    options_{confCtx.config()} {}
+Statistics::Statistics(const ComponentConfiguration& compConf) :
+    ChainedAction{compConf},
+    timeUnit_{set_unit(compConf.YAML().getString("output-frequency"))},
+    timeSpan_{set_frequency(compConf.YAML().getString("output-frequency"))},
+    operations_{compConf.YAML().getStringVector("operations")},
+    options_{compConf} {}
 
 
 Statistics::~Statistics() {
@@ -183,5 +182,4 @@ void Statistics::print(std::ostream& os) const {
 
 static ActionBuilder<Statistics> StatisticsBuilder("statistics");
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

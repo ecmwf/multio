@@ -26,7 +26,7 @@
 
 namespace multio {
 
-class MaestroSink : public multio::DataSink {
+class MaestroSink : public multio::sink::DataSink {
 public:
     MaestroSink(const util::ConfigurationContext& config);
     ~MaestroSink() override;

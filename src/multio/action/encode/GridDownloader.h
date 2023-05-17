@@ -14,19 +14,16 @@
 
 #pragma once
 
-#include <unordered_map>
-#include <optional>
-
 #include "eckit/memory/NonCopyable.h"
+
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
 
-namespace multio {
+#include <optional>
+#include <unordered_map>
 
-namespace util {
-class ConfigurationContext;
-}  // namespace util
 
-namespace action {
+namespace multio::action {
 
 class GribEncoder;
 
@@ -34,7 +31,7 @@ struct GridCoordinates {
     using LatitudeCoord = multio::message::Message;
     using LongitudeCoord = multio::message::Message;
 
-    GridCoordinates(LatitudeCoord lat, LongitudeCoord lon): Lat(lat), Lon(lon) {}
+    GridCoordinates(LatitudeCoord lat, LongitudeCoord lon) : Lat(lat), Lon(lon) {}
 
     LatitudeCoord Lat;
     LongitudeCoord Lon;
@@ -45,10 +42,12 @@ public:
     using DomainType = std::string;
     using GridUIDType = std::string;
 
-    explicit GridDownloader(const util::ConfigurationContext& confCtx);
+    explicit GridDownloader(const config::ComponentConfiguration& compConf);
 
     std::optional<GridCoordinates> getGridCoords(const DomainType& gridId, int startDate, int startTime);
-    std::optional<GridUIDType> getGridUID(const DomainType& gridId) const { return (gridUIDCache_.count(gridId) != 0) ? gridUIDCache_.at(gridId) : std::optional<GridUIDType>{}; }
+    std::optional<GridUIDType> getGridUID(const DomainType& gridId) const {
+        return (gridUIDCache_.count(gridId) != 0) ? gridUIDCache_.at(gridId) : std::optional<GridUIDType>{};
+    }
 
 private:
     using GridCoordinateCache = std::unordered_map<DomainType, GridCoordinates>;
@@ -57,7 +56,7 @@ private:
     void initTemplateMetadata();
     multio::message::Metadata createMetadataFromCoordsData(size_t gridSize, const std::string& gridSubtype,
                                                            const std::string& gridUID, int paramId);
-    void downloadOrcaGridCoordinates(const util::ConfigurationContext& confCtx);
+    void downloadOrcaGridCoordinates(const config::ComponentConfiguration& compConf);
     multio::message::Message encodeMessage(multio::message::Message&& message, int startDate, int startTime);
 
     const std::unique_ptr<GribEncoder> encoder_;
@@ -66,5 +65,4 @@ private:
     GridUIDCache gridUIDCache_;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

@@ -153,7 +153,7 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
         const std::string input = util::replaceCurly(inp.as<std::string>(), [](std::string_view replace) {
             std::string lookUpKey{replace};
             char* env = ::getenv(lookUpKey.c_str());
-            return env ? eckit::Optional<std::string>{env} : eckit::Optional<std::string>{};
+            return env ? std::optional<std::string>{env} : std::optional<std::string>{};
         });
 
         static const std::regex sh("(T|TCO|TL)([1-9][0-9]*)");
@@ -269,7 +269,7 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
                              << msg.metadata() << std::endl
                              << std::endl;
 
-    const auto& config = Action::confCtx_.config();
+    const auto& config = Action::compConf_.YAML();
 
     const double* data = reinterpret_cast<const double*>(msg.payload().data());
     const size_t size = msg.payload().size() / sizeof(double);

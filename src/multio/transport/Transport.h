@@ -24,17 +24,16 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/memory/NonCopyable.h"
 
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
 #include "multio/transport/TransportStatistics.h"
-#include "multio/util/ConfigurationContext.h"
 
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
+using config::ComponentConfiguration;
 using message::Message;
 using message::Peer;
-using util::ConfigurationContext;
 
 using PeerList = std::vector<std::unique_ptr<message::Peer>>;
 
@@ -42,7 +41,7 @@ using PeerList = std::vector<std::unique_ptr<message::Peer>>;
 
 class Transport {
 public:  // methods
-    Transport(const ConfigurationContext& confCtx);
+    Transport(const ComponentConfiguration& compConf);
     virtual ~Transport();
 
     virtual void openConnections() = 0;
@@ -69,7 +68,7 @@ public:  // methods
     virtual size_t serverCount() const;
 
 protected:
-    const ConfigurationContext confCtx_;
+    const ComponentConfiguration compConf_;
 
     mutable PeerList serverPeers_;
     mutable PeerList clientPeers_;
@@ -106,7 +105,7 @@ public:
 
     void list(std::ostream&) const;
 
-    std::unique_ptr<Transport> build(const std::string&, const ConfigurationContext& confCtx);
+    std::unique_ptr<Transport> build(const std::string&, const ComponentConfiguration& compConf);
 
 private:
     TransportFactory() = default;
@@ -118,7 +117,7 @@ private:
 
 class TransportBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual std::unique_ptr<Transport> make(const ConfigurationContext& confCtx) const = 0;
+    virtual std::unique_ptr<Transport> make(const ComponentConfiguration& compConf) const = 0;
 
 protected:  // methods
     TransportBuilderBase(const std::string&);
@@ -130,7 +129,9 @@ protected:  // methods
 
 template <class T>
 class TransportBuilder final : public TransportBuilderBase {
-    std::unique_ptr<Transport> make(const ConfigurationContext& confCtx) const override { return std::make_unique<T>(confCtx); }
+    std::unique_ptr<Transport> make(const ComponentConfiguration& compConf) const override {
+        return std::make_unique<T>(compConf);
+    }
 
 public:
     TransportBuilder(const std::string& name) : TransportBuilderBase(name) {}
@@ -146,5 +147,4 @@ public:
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

@@ -1,26 +1,25 @@
 #include "MetadataMapping.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 namespace {
-std::string getMappingName(const ConfigurationContext& confCtx) {
-    if (!confCtx.config().has("mapping")) {
+std::string getMappingName(const ComponentConfiguration& compConf) {
+    if (!compConf.YAML().has("mapping")) {
         throw message::MetadataMappingException(
             "An action of type \"metadata-mapping\" needs to have a field \"mapping\" pointing to a YAML file..",
             Here());
     }
-    return confCtx.config().getString("mapping");
+    return compConf.YAML().getString("mapping");
 }
 }  // namespace
 
-MetadataMapping::MetadataMapping(const ConfigurationContext& confCtx) :
-    ChainedAction(confCtx),
-    name_(getMappingName(confCtx)),
-    mappings_(confCtx.metadataMappings().getMappings(name_)),
+MetadataMapping::MetadataMapping(const ComponentConfiguration& compConf) :
+    ChainedAction(compConf),
+    name_(getMappingName(compConf)),
+    mappings_(compConf.multioConfig().metadataMappings().getMappings(name_)),
     options_{} {
-    options_.enforceMatch = confCtx.config().getBool("enforce-match", true);
-    options_.overwriteExisting = confCtx.config().getBool("overwrite-existing", false);
+    options_.enforceMatch = compConf.YAML().getBool("enforce-match", true);
+    options_.overwriteExisting = compConf.YAML().getBool("overwrite-existing", false);
 };
 
 void MetadataMapping::executeImpl(message::Message msg) {
@@ -59,5 +58,4 @@ void MetadataMapping::print(std::ostream& os) const {
 
 
 static ActionBuilder<MetadataMapping> MetadataMappingBuilder("metadata-mapping");
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

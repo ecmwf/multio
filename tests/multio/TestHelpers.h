@@ -20,10 +20,12 @@
 #include "eckit/filesystem/TmpFile.h"
 
 #include "multio/sink/FileSink.h"
-#include "multio/util/ConfigurationContext.h"
+#include "multio/config/ComponentConfiguration.h"
 
 namespace multio {
 namespace test {
+
+using namespace multio::sink;
 
 class TestFile {
     const eckit::PathName name_;
@@ -39,16 +41,16 @@ public:
 inline auto make_configured_file_sink(const eckit::PathName& file_path) -> std::unique_ptr<DataSink> {
     eckit::LocalConfiguration config;
     config.set("path", file_path);
-    util::ConfigurationContext confCtx(config, "", "");
-    return std::unique_ptr<DataSink>(DataSinkFactory::instance().build("file", confCtx));
+    config::ComponentConfiguration compConf(config, "", "");
+    return std::unique_ptr<DataSink>(DataSinkFactory::instance().build("file", compConf));
 }
 
 inline auto make_configured_file_sink(const eckit::PathName& file_path, bool append) -> std::unique_ptr<DataSink> {
     eckit::LocalConfiguration config;
     config.set("path", file_path);
     config.set("append", append);
-    util::ConfigurationContext confCtx(config, "", "");
-    return std::unique_ptr<DataSink>(DataSinkFactory::instance().build("file", confCtx));
+    config::ComponentConfiguration compConf(config, "", "");
+    return std::unique_ptr<DataSink>(DataSinkFactory::instance().build("file", compConf));
 }
 
 inline auto file_content(const eckit::PathName& file_path) -> std::string {

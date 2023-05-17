@@ -17,31 +17,31 @@
 #pragma once
 
 #include "GribEncoder.h"
-#include "eckit/utils/Optional.h"
 #include "multio/action/ChainedAction.h"
 
-namespace multio {
-namespace action {
+#include <optional>
+
+namespace multio::action {
 
 class GridDownloader;
 
 class Encode : public ChainedAction {
 public:
-    explicit Encode(const ConfigurationContext& confCtx);
+    explicit Encode(const ComponentConfiguration& compConf);
 
     void executeImpl(message::Message msg) override;
 
 private:
     // Internal constructor delegate with prepared configuration for specific
     // encoder
-    explicit Encode(const ConfigurationContext& confCtx, ConfigurationContext&& encConfCtx);
+    explicit Encode(const ComponentConfiguration& compConf, ComponentConfiguration&& encCompConf);
 
     void print(std::ostream& os) const override;
 
     message::Message encodeField(const message::Message& msg, const std::optional<std::string>& gridUID) const;
 
     const std::string format_;
-    eckit::Optional<eckit::LocalConfiguration> overwrite_;
+    std::optional<eckit::LocalConfiguration> overwrite_;
 
     const std::unique_ptr<GribEncoder> encoder_ = nullptr;
     const std::unique_ptr<GridDownloader> gridDownloader_ = nullptr;
@@ -57,5 +57,4 @@ public:
 //=====================================================================================================================
 
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

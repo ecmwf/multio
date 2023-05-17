@@ -19,12 +19,12 @@
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
-#include "eckit/utils/Optional.h"
 
 #include "multio/message/Metadata.h"
 
-namespace multio {
-namespace message {
+#include <optional>
+
+namespace multio::message {
 
 //=====================================================================================================================
 
@@ -72,17 +72,17 @@ public:
     MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
                     const eckit::LocalConfiguration& optionalMappings,
                     const std::vector<eckit::LocalConfiguration>& mapDataList, const std::string& matchKey,
-                    const eckit::Optional<std::string>& targetPath = eckit::Optional<std::string>{});
+                    const std::optional<std::string>& targetPath = std::optional<std::string>{});
 
     MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
                     const eckit::LocalConfiguration& optionalMappings,
                     const std::unordered_map<std::string, eckit::LocalConfiguration>& source,
-                    const eckit::Optional<std::string>& targetPath = eckit::Optional<std::string>{});
+                    const std::optional<std::string>& targetPath = std::optional<std::string>{});
 
     MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
                     const eckit::LocalConfiguration& optionalMappings,
                     std::unordered_map<std::string, eckit::LocalConfiguration>&& source,
-                    const eckit::Optional<std::string>& targetPath = eckit::Optional<std::string>{});
+                    const std::optional<std::string>& targetPath = std::optional<std::string>{});
 
 
     void applyInplace(Metadata&, MetadataMappingOptions options = MetadataMappingOptions{}) const;
@@ -99,7 +99,7 @@ private:
     eckit::LocalConfiguration optionalMapping_;  // Description of a optional mapping.
     std::unordered_map<std::string, eckit::LocalConfiguration>
         mapData_;  // Input data on which the mapping is performed
-    eckit::Optional<std::string>
+    std::optional<std::string>
         targetPath_;  // Optional key for a nested dictionary in the metadata at which the mapped data will be written
 };
 
@@ -113,5 +113,4 @@ public:
 
 //=====================================================================================================================
 
-}  // namespace message
-}  // namespace multio
+}  // namespace multio::message

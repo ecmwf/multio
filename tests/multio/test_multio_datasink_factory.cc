@@ -13,28 +13,29 @@
 #include <cstring>
 
 #include "eckit/log/Log.h"
-#include "eckit/utils/Tokenizer.h"
 #include "eckit/testing/Test.h"
+#include "eckit/utils/Tokenizer.h"
 
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/sink/DataSink.h"
 #include "multio/sink/FileSink.h"
-#include "multio/util/ConfigurationContext.h"
 
 using namespace eckit;
 using namespace eckit::testing;
 
-namespace multio {
-namespace test {
+using namespace multio::sink;
+
+namespace multio::test {
 
 //----------------------------------------------------------------------------------------------------------------------
 
 class TestDataSink : public DataSink {
 public:
-    TestDataSink(const util::ConfigurationContext& confCtx) : DataSink(confCtx), confCtx_(&confCtx) {}
+    TestDataSink(const config::ComponentConfiguration& compConf) : DataSink(compConf), compConf_(&compConf) {}
 
     void write(eckit::message::Message) override {}
 
-    util::ConfigurationContext const* confCtx_;
+    config::ComponentConfiguration const* compConf_;
 
 protected:
     void print(std::ostream& os) const override { os << "tmp"; }
@@ -47,8 +48,8 @@ static DataSinkBuilder<TestDataSink> testSinkBuilder("test");
 
 CASE("test_factory_generate") {
     LocalConfiguration config;
-    util::ConfigurationContext confCtx(config, "", "");
-    std::unique_ptr<DataSink> sink(DataSinkFactory::instance().build("test", confCtx));
+    config::ComponentConfiguration compConf(config, "", "");
+    std::unique_ptr<DataSink> sink(DataSinkFactory::instance().build("test", compConf));
 
     // Check that we generate a sink of the correct type (and implicitly that the factory
     // is correctly registered).
@@ -56,7 +57,7 @@ CASE("test_factory_generate") {
     EXPECT(testSink);
 
     // Test that the configuration is passed through the builder/factory.
-    EXPECT(testSink->confCtx_ == &confCtx);
+    EXPECT(testSink->compConf_ == &compConf);
 }
 
 CASE("test_list_factories") {
@@ -77,8 +78,7 @@ CASE("test_list_factories") {
 
 //-----------------------------------------------------------------------------
 
-}  // namespace test
-}  // namespace multio
+}  // namespace multio::test
 
 int main(int argc, char** argv) {
     return run_tests(argc, argv);

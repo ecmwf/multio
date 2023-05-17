@@ -1,15 +1,14 @@
 
 #pragma once
 
-#include <map>
-#include <string>
 #include <iostream>
+#include <map>
 #include <sstream>
+#include <string>
 
 #include "eckit/exception/Exceptions.h"
 
-namespace multio {
-namespace util {
+namespace multio::util {
 
 enum class PrecisionTag : unsigned
 {
@@ -51,11 +50,11 @@ decltype(auto) dispatchPrecisionTag(PrecisionTag t, Func&& f) {
         }
         default:
             std::ostringstream oss;
-            oss << "Error in dispatchPrecisionTag: Unkown tag " << ((unsigned) t) << std::endl;;
+            oss << "Error in dispatchPrecisionTag: Unkown tag " << ((unsigned)t) << std::endl;
+            ;
             throw eckit::SeriousBug(oss.str(), Here());
     }
 }
 
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::util

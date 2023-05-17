@@ -4,9 +4,9 @@
 
 #include "eckit/config/LocalConfiguration.h"
 #include "multio/message/Message.h"
+#include "multio/config/ComponentConfiguration.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 
 class StatisticsOptions {
@@ -25,8 +25,8 @@ private:
     std::string restartPrefix_;
 
 public:
-    StatisticsOptions(const eckit::LocalConfiguration& confCtx);
-    StatisticsOptions(const StatisticsOptions& confCtx, const message::Message& msg);
+    StatisticsOptions(const config::ComponentConfiguration& compConf);
+    StatisticsOptions(const StatisticsOptions& statOpts, const message::Message& msg);
 
 
     bool useDateTime() const;
@@ -41,5 +41,4 @@ public:
     const std::string& restartPrefix() const;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

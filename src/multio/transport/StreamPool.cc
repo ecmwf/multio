@@ -10,22 +10,21 @@
 
 #include "multio/util/ScopedTimer.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
-namespace  {
+namespace {
 std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
     std::vector<MpiBuffer> bufs;
-    LOG_DEBUG_LIB(multio::LibMultio) << "*** Allocating " << poolSize << " buffers of size "
-                                     << maxBufSize / 1024 / 1024 << " each" << std::endl;
+    LOG_DEBUG_LIB(multio::LibMultio) << "*** Allocating " << poolSize << " buffers of size " << maxBufSize / 1024 / 1024
+                                     << " each" << std::endl;
     double totMem = 0.0;
     for (auto ii = 0u; ii < poolSize; ++ii) {
         bufs.emplace_back(maxBufSize);
         totMem += maxBufSize;
     }
-    totMem /= 1024*1024*1024;
-    LOG_DEBUG_LIB(multio::LibMultio)
-        << "*** Allocated a total of " << totMem << "GiB of memory for this peer" << std::endl;
+    totMem /= 1024 * 1024 * 1024;
+    LOG_DEBUG_LIB(multio::LibMultio) << "*** Allocated a total of " << totMem << "GiB of memory for this peer"
+                                     << std::endl;
     return bufs;
 }
 }  // namespace
@@ -33,8 +32,7 @@ std::vector<MpiBuffer> makeBuffers(size_t poolSize, size_t maxBufSize) {
 MpiPeer::MpiPeer(const std::string& comm, size_t rank) : Peer{comm, rank} {}
 MpiPeer::MpiPeer(Peer peer) : Peer{peer} {}
 
-StreamPool::StreamPool(size_t poolSize, size_t maxBufSize, const eckit::mpi::Comm& comm,
-                       TransportStatistics& stats) :
+StreamPool::StreamPool(size_t poolSize, size_t maxBufSize, const eckit::mpi::Comm& comm, TransportStatistics& stats) :
     comm_{comm}, statistics_{stats}, buffers_(makeBuffers(poolSize, maxBufSize)) {}
 
 MpiBuffer& StreamPool::buffer(size_t idx) {
@@ -81,9 +79,8 @@ void StreamPool::sendBuffer(const message::Peer& dest, int msg_tag) {
     ::gettimeofday(&tstamp, 0);
     auto mSecs = tstamp.tv_usec;
 
-    os_ << " *** Dispatching buffer to " << dest << " -- counter: " << std::setw(4)
-        << std::setfill('0') << counter_.at(dest)
-        << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
+    os_ << " *** Dispatching buffer to " << dest << " -- counter: " << std::setw(4) << std::setfill('0')
+        << counter_.at(dest) << ", timestamps: " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
         << ":" << std::setw(6) << std::setfill('0') << mSecs;
 
     util::ScopedTiming(statistics_.isendTimer_, statistics_.isendTiming_);
@@ -93,8 +90,8 @@ void StreamPool::sendBuffer(const message::Peer& dest, int msg_tag) {
 
     ::gettimeofday(&tstamp, 0);
     mSecs = tstamp.tv_usec;
-    os_ << " and " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now()
-        << ":" << std::setw(6) << std::setfill('0') << mSecs << '\n';
+    os_ << " and " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":" << std::setw(6)
+        << std::setfill('0') << mSecs << '\n';
 
     ++statistics_.isendCount_;
     statistics_.isendSize_ += sz;
@@ -105,22 +102,20 @@ MpiBuffer& StreamPool::findAvailableBuffer(std::ostream& os) {
 
     auto it = std::end(buffers_);
     while (it == std::end(buffers_)) {
-        it = std::find_if(std::begin(buffers_), std::end(buffers_),
-                          [](MpiBuffer& buf) { return buf.isFree(); });
+        it = std::find_if(std::begin(buffers_), std::end(buffers_), [](MpiBuffer& buf) { return buf.isFree(); });
     }
 
     it->status = BufferStatus::fillingUp;
 
-    os << " *** Found available buffer with idx = "
-       << static_cast<size_t>(std::distance(std::begin(buffers_), it)) << std::endl;
+    os << " *** Found available buffer with idx = " << static_cast<size_t>(std::distance(std::begin(buffers_), it))
+       << std::endl;
 
     return *it;
 }
 
 void StreamPool::waitAll() {
     util::ScopedTiming(statistics_.waitTimer_, statistics_.waitTiming_);
-    while (not std::all_of(std::begin(buffers_), std::end(buffers_),
-                           [](MpiBuffer& buf) { return buf.isFree(); })) {}
+    while (not std::all_of(std::begin(buffers_), std::end(buffers_), [](MpiBuffer& buf) { return buf.isFree(); })) {}
 }
 
 MpiOutputStream& StreamPool::createNewStream(const message::Peer& dest) {
@@ -141,5 +136,4 @@ void StreamPool::print(std::ostream& os) const {
     os << ")";
 }
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

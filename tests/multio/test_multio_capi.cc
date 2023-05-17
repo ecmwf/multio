@@ -29,8 +29,8 @@
 #include "TestDataContent.h"
 #include "TestHelpers.h"
 
-using multio::util::configuration_file_name;
-using multio::util::configuration_path_name;
+using multio::config::configuration_file_name;
+using multio::config::configuration_path_name;
 
 namespace std {
 template <>
@@ -66,8 +66,7 @@ void test_check(int rc, const char* doc) {
 }
 
 
-namespace multio {
-namespace test {
+namespace multio::test {
 
 // TODO: Can we keep this?
 // Copied from https://en.cppreference.com/w/cpp/types/numeric_limits/epsilon
@@ -406,8 +405,7 @@ CASE("Test write field") {
 //  multio_write_mask, multio_write_field
 //  * Testing these with MPI in units is not possible here, maybe use another transport layer
 //  * test other transport layers....
-}  // namespace test
-}  // namespace multio
+}  // namespace multio::test
 
 int main(int argc, char** argv) {
     return eckit::testing::run_tests(argc, argv);

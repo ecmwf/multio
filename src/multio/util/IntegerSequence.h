@@ -20,8 +20,7 @@
 
 #include <type_traits>
 
-namespace multio {
-namespace util {
+namespace multio::util {
 
 template <typename T, T... Args>
 struct integer_sequence {
@@ -33,5 +32,4 @@ struct integer_sequence {
 };
 
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::util

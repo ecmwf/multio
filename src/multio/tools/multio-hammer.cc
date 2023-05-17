@@ -27,8 +27,8 @@
 #include "multio/transport/MpiTransport.h"
 #include "multio/transport/TcpTransport.h"
 #include "multio/transport/ThreadTransport.h"
-#include "multio/util/ConfigurationContext.h"
-#include "multio/util/ConfigurationPath.h"
+#include "multio/config/ComponentConfiguration.h"
+#include "multio/config/ConfigurationPath.h"
 #include "multio/util/ScopedTimer.h"
 #include "multio/util/print_buffer.h"
 
@@ -44,9 +44,9 @@ using multio::transport::TcpPeer;
 using multio::transport::ThreadPeer;
 using multio::transport::Transport;
 using multio::transport::TransportFactory;
-using multio::util::ComponentTag;
-using multio::util::configuration_path_name;
-using multio::util::ConfigurationContext;
+using multio::config::ComponentTag;
+using multio::config::configuration_path_name;
+using multio::config::ComponentConfiguration;
 
 using namespace multio::server;
 
@@ -196,7 +196,7 @@ std::vector<double> file_content(const eckit::PathName& file_path) {
     return vec;
 }
 
-ConfigurationContext test_configuration(const std::string& type) {
+ComponentConfiguration test_configuration(const std::string& type) {
     eckit::Log::debug<multio::LibMultio>() << "Transport type: " << type << std::endl;
 
     static std::map<std::string, std::string> configs = {{"mpi", "mpi-test-configuration"},
@@ -205,7 +205,7 @@ ConfigurationContext test_configuration(const std::string& type) {
                                                          {"none", "no-transport-test-configuration"}};
 
     auto fileName = configuration_path_name("") + "test-configurations.yaml";
-    return ConfigurationContext(fileName).subContext(configs.at(type));
+    return ComponentConfiguration(fileName).subComponent(configs.at(type));
 }
 
 }  // namespace
@@ -221,8 +221,8 @@ private:
 
     class TestPolicy {
     public:
-        TestPolicy(ConfigurationContext& configurationContext, size_t clientCount) :
-            configurationContext_(configurationContext), clientCount_(clientCount) {}
+        TestPolicy(ComponentConfiguration& compConf, size_t clientCount) :
+            configurationContext_(compConf), clientCount_(clientCount) {}
         virtual ~TestPolicy() = default;
 
         virtual PeerList computeServerPeers() = 0;
@@ -234,15 +234,15 @@ private:
         virtual void checkData(MultioHammer& hammer) const { hammer.testData(); }
 
     protected:
-        ConfigurationContext& configurationContext_;
+        ComponentConfiguration& configurationContext_;
         size_t const clientCount_;
     };
 
     class MPITestPolicy final : public TestPolicy {
     public:
-        MPITestPolicy(ConfigurationContext& configurationContext, size_t clientCount) :
-            TestPolicy(configurationContext, clientCount),
-            commName_(configurationContext_.config().getString("group")),
+        MPITestPolicy(ComponentConfiguration& compConf, size_t clientCount) :
+            TestPolicy(compConf, clientCount),
+            commName_(configurationContext_.YAML().getString("group")),
             comm_(eckit::mpi::comm(commName_.c_str())) {}
 
         PeerList computeServerPeers() override {
@@ -281,12 +281,12 @@ private:
 
     class TCPTestPolicy final : public TestPolicy {
     public:
-        TCPTestPolicy(ConfigurationContext& configurationContext, size_t clientCount, int localPort) :
-            TestPolicy(configurationContext, clientCount), port_(localPort), rank_(-1) {}
+        TCPTestPolicy(ComponentConfiguration& compConf, size_t clientCount, int localPort) :
+            TestPolicy(compConf, clientCount), port_(localPort), rank_(-1) {}
 
          PeerList computeServerPeers() override {
             PeerList serverPeers;
-            for (auto cfg : configurationContext_.config().getSubConfigurations("servers")) {
+            for (auto cfg : configurationContext_.YAML().getSubConfigurations("servers")) {
                 auto const host = cfg.getString("host");
                 auto const localhost = (host == "localhost");
                 for (auto port : cfg.getUnsignedVector("ports")) {
@@ -301,7 +301,7 @@ private:
         int computeRank() override {
             if (rank_ < 0) {
                 auto currentClientNumber = 0;
-                for (auto cfg : configurationContext_.config().getSubConfigurations("clients")) {
+                for (auto cfg : configurationContext_.YAML().getSubConfigurations("clients")) {
                     for (auto port : cfg.getUnsignedVector("ports")) {
                         // A client can only originate from localhost so if the port matches,
                         // we use the current client number as the rank.
@@ -315,7 +315,7 @@ private:
         }
 
         std::shared_ptr<Transport> createTransport() const override {
-            configurationContext_.config().set("local_port", port_);
+            configurationContext_.YAML().set("local_port", port_);
             return std::shared_ptr<Transport>(
                 TransportFactory::instance().build("tcp", configurationContext_.recast(ComponentTag::Transport)));
         };
@@ -337,8 +337,8 @@ private:
 
     class ThreadTestPolicy final : public TestPolicy {
     public:
-        ThreadTestPolicy(ConfigurationContext& configurationContext, size_t clientCount) :
-            TestPolicy(configurationContext, clientCount) {}
+        ThreadTestPolicy(ComponentConfiguration& compConf, size_t clientCount) :
+            TestPolicy(compConf, clientCount) {}
 
         PeerList computeServerPeers() override {
             // No peers for this communcation policy
@@ -359,8 +359,8 @@ private:
 
     class PlanOnlyTestPolicy final : public TestPolicy {
     public:
-        PlanOnlyTestPolicy(ConfigurationContext& configurationContext, size_t clientCount) :
-            TestPolicy(configurationContext, clientCount) {}
+        PlanOnlyTestPolicy(ComponentConfiguration& compConf, size_t clientCount) :
+            TestPolicy(compConf, clientCount) {}
 
         PeerList computeServerPeers() override {
             // No peers for this communcation policy
@@ -423,7 +423,7 @@ private:
     std::shared_ptr<Transport> transport_;
     std::unique_ptr<TestPolicy> testPolicy_;
 
-    ConfigurationContext confCtx_{eckit::LocalConfiguration(), "", ""};
+    ComponentConfiguration compConf{eckit::LocalConfiguration(), "", ""};
 
     class Connection {
         std::shared_ptr<Transport> transport_;
@@ -475,23 +475,23 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
     args.get("member", ensMember_);
     args.get("sleep", sleep_);
 
-    confCtx_
+    compConf
         = (configPath_.empty())
             ? test_configuration(transportType_)
-            : ConfigurationContext(eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{configPath_}}},
+            : ComponentConfiguration(eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{configPath_}}},
                                    configPath_, configPath_);
 
-    confCtx_.config().set("clientCount", clientCount_);
+    compConf.YAML().set("clientCount", clientCount_);
 
     using PolicyBuilder = std::function<std::unique_ptr<TestPolicy>()>;
     std::map<std::string, PolicyBuilder> const policyFactory = {
-        {"mpi", [this]() { return std::make_unique<MPITestPolicy>(confCtx_, clientCount_); }},
-        {"tcp", [this]() { return std::make_unique<TCPTestPolicy>(confCtx_, clientCount_, port_); }},
-        {"thread", [this]() { return std::make_unique<ThreadTestPolicy>(confCtx_, clientCount_); }},
-        {"none", [this]() { return std::make_unique<PlanOnlyTestPolicy>(confCtx_, clientCount_); }},
+        {"mpi", [this]() { return std::make_unique<MPITestPolicy>(compConf, clientCount_); }},
+        {"tcp", [this]() { return std::make_unique<TCPTestPolicy>(compConf, clientCount_, port_); }},
+        {"thread", [this]() { return std::make_unique<ThreadTestPolicy>(compConf, clientCount_); }},
+        {"none", [this]() { return std::make_unique<PlanOnlyTestPolicy>(compConf, clientCount_); }},
     };
 
-    transportType_ = confCtx_.config().getString("transport");
+    transportType_ = compConf.YAML().getString("transport");
 
     testPolicy_ = policyFactory.at(transportType_)();
 
@@ -505,7 +505,7 @@ void MultioHammer::finish(const eckit::option::CmdArgs&) {}
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioHammer::startListening(std::shared_ptr<Transport> transport) {
-    Listener listener(confCtx_.recast(ComponentTag::Receiver), *transport);
+    Listener listener(compConf.recast(ComponentTag::Receiver), *transport);
     listener.start();
 }
 
@@ -588,7 +588,7 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
 void MultioHammer::execute(const eckit::option::CmdArgs& args) {
     field_size() = 29;
 
-    eckit::Log::info() << " *** multio-hammer config: " << confCtx_.config() << std::endl;
+    eckit::Log::info() << " *** multio-hammer config: " << compConf.YAML() << std::endl;
 
     testPolicy_->execute(*this, args);
     testPolicy_->checkData(*this);
@@ -657,9 +657,9 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
     ASSERT(handle);
 
     std::vector<std::unique_ptr<Plan>> plans;
-    for (auto&& subCtx : confCtx_.subContexts("plans", ComponentTag::Plan)) {
-        eckit::Log::debug<multio::LibMultio>() << subCtx.config() << std::endl;
-        plans.emplace_back(std::make_unique<Plan>(std::move(subCtx)));
+    for (auto&& subComp : compConf.subComponents("plans", ComponentTag::Plan)) {
+        eckit::Log::debug<multio::LibMultio>() << subComp.YAML() << std::endl;
+        plans.emplace_back(std::make_unique<Plan>(std::move(subComp)));
     }
 
     std::string expver = "xxxx";
@@ -679,7 +679,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
         CODES_CHECK(codes_set_long(handle, "step", step), nullptr);
 
-        const auto& paramList = confCtx_.config().getSubConfiguration("parameters");
+        const auto& paramList = compConf.YAML().getSubConfiguration("parameters");
 
         for (const auto& levtype : {"ml", "pl", "sfc"}) {
             size = std::strlen(levtype);

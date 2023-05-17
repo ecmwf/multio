@@ -7,8 +7,7 @@
 #include "multio/transport/MpiStream.h"
 #include "multio/transport/TransportStatistics.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 class MpiPeer : public message::Peer {
 public:
@@ -50,5 +49,4 @@ private:
     std::ostringstream os_;
 };
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

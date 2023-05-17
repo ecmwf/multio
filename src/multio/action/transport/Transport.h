@@ -21,12 +21,11 @@ namespace eckit {
 class Configuration;
 }
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 class Transport : public Action {
 public:
-    explicit Transport(const ConfigurationContext& config);
+    explicit Transport(const ComponentConfiguration& config);
 
     void executeImpl(message::Message msg) override;
 
@@ -63,5 +62,4 @@ private:
     enum DistributionType distributionType();
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

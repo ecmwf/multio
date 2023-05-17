@@ -1,22 +1,21 @@
-#include "ConfigurationContext.h" // Include header now
 #include "MetadataMappings.h"
+#include "MultioConfiguration.h"  
+
 #include "eckit/exception/Exceptions.h"
 
-namespace multio {
-namespace util {
+namespace multio::config {
 
-MetadataMappings::MetadataMappings(const GlobalConfCtx& globalConfCtx) :
-    globalConfCtx_(globalConfCtx),
-    mappings_{} {}
+MetadataMappings::MetadataMappings(const MultioConfiguration& multioConfig) : multioConfig_(multioConfig), mappings_{} {}
 
 
 const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const std::string& mapping) const {
-    const auto& yamlFile = globalConfCtx_.getYAMLFile(mapping);
+    const auto& yamlFile = multioConfig_.getYAMLFile(mapping);
 
     auto search = mappings_.find(yamlFile.path);
     if (search != mappings_.end()) {
         return search->second;
-    } else {
+    }
+    else {
         if (!yamlFile.content.has("data")) {
             std::ostringstream oss;
             oss << "MetadataMapping " << yamlFile.path << " does not have a top-level key \"data\"" << std::endl;
@@ -36,22 +35,26 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
         v.reserve(mappingsVector.size());
 
         int mcind = 1;
-        for (const auto& mc: mappingsVector) {
+        for (const auto& mc : mappingsVector) {
             if (!mc.has("match")) {
                 std::ostringstream oss;
-                oss << "Mapping #" << mcind << " of parameter mapping \"" << mapping << "\" does not list a \"match\" block" << std::endl;
+                oss << "Mapping #" << mcind << " of parameter mapping \"" << mapping
+                    << "\" does not list a \"match\" block" << std::endl;
                 throw message::MetadataMappingException(oss.str(), Here());
             }
             if (!mc.has("map") && !mc.has("optional-map")) {
                 std::ostringstream oss;
-                oss << "Mapping #" << mcind << " of parameter mapping \"" << mapping << "\" does not list a \"map\" or \"optional-map\" block" << std::endl;
+                oss << "Mapping #" << mcind << " of parameter mapping \"" << mapping
+                    << "\" does not list a \"map\" or \"optional-map\" block" << std::endl;
                 throw message::MetadataMappingException(oss.str(), Here());
             }
             auto matchBlock = mc.getSubConfiguration("match");
             auto matchKeys = matchBlock.keys();
             if (matchKeys.size() != 1) {
                 std::ostringstream oss;
-                oss << "Match block of mapping #" << mcind << " of parameter mapping \"" << mapping << "\" should list exactly one key mapping. Found " << matchKeys.size() << " mappings." << std::endl;
+                oss << "Match block of mapping #" << mcind << " of parameter mapping \"" << mapping
+                    << "\" should list exactly one key mapping. Found " << matchKeys.size() << " mappings."
+                    << std::endl;
                 throw message::MetadataMappingException(oss.str(), Here());
             }
             std::string sourceKey = matchKeys[0];
@@ -60,9 +63,11 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
             auto mappings = mc.getSubConfiguration("map");
             auto optionalMappings = mc.getSubConfiguration("optional-map");
 
-            auto targetPath = mc.has("target-path") ? eckit::Optional<std::string>{mc.getString("target-path")} : eckit::Optional<std::string>{};
+            auto targetPath = mc.has("target-path") ? std::optional<std::string>{mc.getString("target-path")}
+                                                    : std::optional<std::string>{};
 
-            v.emplace(v.end(), std::move(sourceKey), std::move(mappings), std::move(optionalMappings), sourceList, std::move(targetKey), std::move(targetPath));
+            v.emplace(v.end(), std::move(sourceKey), std::move(mappings), std::move(optionalMappings), sourceList,
+                      std::move(targetKey), std::move(targetPath));
             ++mcind;
         }
         mappings_.emplace(mapping, std::move(v));
@@ -71,5 +76,4 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
 }
 
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::config

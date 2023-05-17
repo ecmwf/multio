@@ -21,15 +21,15 @@
 #include "eckit/log/Timer.h"
 #include "eckit/thread/AutoLock.h"
 
-#include "multio/sink/IOStats.h"
 #include "multio/LibMultio.h"
+#include "multio/sink/IOStats.h"
 
 static const int FORMAT_WIDTH = 42;
 
 
 using namespace eckit;
 
-namespace multio {
+namespace multio::sink {
 
 /// @note We do not need to provide locking for access to the IOStats.
 ///
@@ -60,7 +60,7 @@ IOStats::IOStats(const std::string& prefix) :
 IOStats::~IOStats() {}
 
 
-void IOStats::logRead(const Length &size, Timer& timer) {
+void IOStats::logRead(const Length& size, Timer& timer) {
 
     numReads_++;
     bytesRead_ += size;
@@ -70,15 +70,13 @@ void IOStats::logRead(const Length &size, Timer& timer) {
     double elapsed = timer.elapsed();
     sumReadTimesSquared_ += elapsed * elapsed;
 
-    LOG_DEBUG_LIB(LibMultio) << "Read count: " << numReads_
-                            << ", size: " << Bytes(size)
-                            << ", total: " << Bytes(bytesRead_)
-                            << ", time: " << elapsed << "s"
-                            << ", total: " << readTiming_.elapsed_ << "s" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Read count: " << numReads_ << ", size: " << Bytes(size)
+                             << ", total: " << Bytes(bytesRead_) << ", time: " << elapsed << "s"
+                             << ", total: " << readTiming_.elapsed_ << "s" << std::endl;
 }
 
 
-void IOStats::logWrite(const Length &size, Timer& timer) {
+void IOStats::logWrite(const Length& size, Timer& timer) {
 
     numWrites_++;
     bytesWritten_ += size;
@@ -88,11 +86,9 @@ void IOStats::logWrite(const Length &size, Timer& timer) {
     double elapsed = timer.elapsed();
     sumWriteTimesSquared_ += elapsed * elapsed;
 
-    LOG_DEBUG_LIB(LibMultio) << "Write count: " << numWrites_
-                            << ", size: " << Bytes(size)
-                            << ", total: " << Bytes(bytesWritten_)
-                            << ", time: " << elapsed << "s"
-                            << ", total: " << writeTiming_.elapsed_ << "s" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Write count: " << numWrites_ << ", size: " << Bytes(size)
+                             << ", total: " << Bytes(bytesWritten_) << ", time: " << elapsed << "s"
+                             << ", total: " << writeTiming_.elapsed_ << "s" << std::endl;
 }
 
 
@@ -104,9 +100,8 @@ void IOStats::logFlush(Timer& timer) {
     double elapsed = timer.elapsed();
     sumFlushTimesSquared_ += elapsed * elapsed;
 
-    LOG_DEBUG_LIB(LibMultio) << "Flush count: " << numFlush_
-                            << ", time: " << elapsed << "s"
-                            << ", total: " << flushTiming_.elapsed_ << "s" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Flush count: " << numFlush_ << ", time: " << elapsed << "s"
+                             << ", total: " << flushTiming_.elapsed_ << "s" << std::endl;
 }
 
 
@@ -133,21 +128,16 @@ void IOStats::report(std::ostream& s) const {
 }
 
 
-void IOStats::print(std::ostream &s) const {
+void IOStats::print(std::ostream& s) const {
     s << "IOStats()";
 }
 
-void IOStats::reportCount(std::ostream& s, const std::string &label, size_t num) const {
+void IOStats::reportCount(std::ostream& s, const std::string& label, size_t num) const {
 
-    s << prefix_
-      << label
-      << std::setw(FORMAT_WIDTH - label.length())
-      << " : "
-      << BigNum(num)
-      << std::endl;
+    s << prefix_ << label << std::setw(FORMAT_WIDTH - label.length()) << " : " << BigNum(num) << std::endl;
 }
 
-void IOStats::reportBytes(std::ostream& s, const std::string &label, size_t num, size_t sum, size_t sumSquares) const {
+void IOStats::reportBytes(std::ostream& s, const std::string& label, size_t num, size_t sum, size_t sumSquares) const {
 
     std::string lbl = label + " (tot, avg, std dev)";
 
@@ -158,20 +148,12 @@ void IOStats::reportBytes(std::ostream& s, const std::string &label, size_t num,
         stdDeviation = std::sqrt(std::max((num * sumSquares) - (sum * sum), size_t(0))) / num;
     }
 
-    s << prefix_
-      << lbl
-      << std::setw(FORMAT_WIDTH - lbl.length())
-      << " : "
-      << BigNum(sum) << " (" << Bytes(sum) << ")"
+    s << prefix_ << lbl << std::setw(FORMAT_WIDTH - lbl.length()) << " : " << BigNum(sum) << " (" << Bytes(sum) << ")"
       << ", " << BigNum(size_t(average)) << " (" << Bytes(average) << ")"
-      << ", " << BigNum(size_t(stdDeviation)) << " (" << Bytes(stdDeviation) << ")"
-      << std::endl;
+      << ", " << BigNum(size_t(stdDeviation)) << " (" << Bytes(stdDeviation) << ")" << std::endl;
 }
 
-void IOStats::reportTimes(std::ostream& s,
-                          const std::string &label,
-                          size_t num,
-                          const Timing& sum,
+void IOStats::reportTimes(std::ostream& s, const std::string& label, size_t num, const Timing& sum,
                           double sumSquares) const {
 
     double elapsed = sum.elapsed_;
@@ -184,17 +166,12 @@ void IOStats::reportTimes(std::ostream& s,
         stdDeviation = std::sqrt(std::max((num * sumSquares) - (elapsed * elapsed), 0.0)) / num;
     }
 
-    s << prefix_
-      << lbl
-      << std::setw(FORMAT_WIDTH - lbl.length())
-      << " : "
-      << elapsed << "s"
+    s << prefix_ << lbl << std::setw(FORMAT_WIDTH - lbl.length()) << " : " << elapsed << "s"
       << ", " << average << "s"
-      << ", " << stdDeviation << "s"
-      << std::endl;
+      << ", " << stdDeviation << "s" << std::endl;
 }
 
-void IOStats::reportRate(std::ostream &s, const std::string& label, size_t bytes, const Timing &time) const {
+void IOStats::reportRate(std::ostream& s, const std::string& label, size_t bytes, const Timing& time) const {
 
     double elapsed = time.elapsed_;
     double rate = 0;
@@ -203,15 +180,11 @@ void IOStats::reportRate(std::ostream &s, const std::string& label, size_t bytes
         rate = bytes / elapsed;
     }
 
-    s << prefix_
-      << label
-      << std::setw(FORMAT_WIDTH - label.length())
-      << " : "
-      << Bytes(rate) << " per second"
+    s << prefix_ << label << std::setw(FORMAT_WIDTH - label.length()) << " : " << Bytes(rate) << " per second"
       << std::endl;
 }
 
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace multio
+}  // namespace multio::sink

@@ -4,8 +4,25 @@
 extern "C" {
 #endif
 
+/** Types */
+
+///@{
+struct multio_configuration_t;
+typedef struct multio_configuration_t multio_configuration_t;
+
+struct multio_metadata_t;
+typedef struct multio_metadata_t multio_metadata_t;
+
+struct multio_handle_t;
+typedef struct multio_handle_t multio_handle_t;
+
+struct multio_failure_info_t;
+typedef struct multio_failure_info_t multio_failure_info_t;
+
+///@}
+
 /** \defgroup Error Handling */
-/** @{ */
+/** @{*/
 
 /** Return codes */
 enum MultioErrorValues
@@ -27,35 +44,29 @@ enum MultioErrorValues
  * \param err Error code (#MultioErrorValues)
  * \returns Error message
  */
-const char* multio_error_string(int err);
+const char* multio_error_string_global(int err);
+      
+/** Returns a human-readable error message for the last error given an error code
+ * \param err Error code (#MultioErrorValues)
+ * \param info Pointer to additional error information provided through failure handler. Behaves like multio_error_string_global if null is provided.
+ * \returns Error message
+ */
+const char* multio_error_string(int err, multio_failure_info_t* info);
 
 /** Error handler callback function signature
- * \param  Error handler
+ * \param Error handler (user defined context to pass through)
  * \param error_code Error code (#MultioErrorValues)
  */
-typedef void (*multio_failure_handler_t)(void*, int error_code);
+typedef void (*multio_failure_handler_t)(void*, int error_code, multio_failure_info_t* info);
 
 /** Sets an error handler which will be called on error with the supplied  and an error code
  * \param handler Error handler function
  * \param  Error handler
  */
-int multio_set_failure_handler(multio_failure_handler_t handler, void*);
+int multio_set_failure_handler(multio_configuration_t* conf, multio_failure_handler_t handler, void*);
 
 /** @} */
 
-/** Types */
-
-///@{
-struct multio_configuration_t;
-typedef struct multio_configuration_t multio_configuration_t;
-
-struct multio_metadata_t;
-typedef struct multio_metadata_t multio_metadata_t;
-
-struct multio_handle_t;
-typedef struct multio_handle_t multio_handle_t;
-
-///@}
 
 /** \defgroup Initialisation */
 /** @{ */
@@ -274,7 +285,7 @@ int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const
  * \param md Return a handle to the multio metadata object
  * \returns Return code (#MultioErrorValues)
  */
-int multio_new_metadata(multio_metadata_t** md);
+int multio_new_metadata(multio_metadata_t** md, multio_handle_t* mio);
 
 
 /** Deletes a multio metadata object

@@ -55,14 +55,14 @@ public:
  * \todo Using this simple handler will throuw exceptions before any error codes can be checked. Can
  * we write separate tests which test for specific expected error codes?
  */
-void rethrowMaybe(int err) {
+void rethrowMaybe(int err, multio_failure_info_t* i) {
     if (err != MULTIO_SUCCESS) {
-        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string(err)}, Here());
+        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string(err, i)}, Here());
     }
 }
 
-void multio_throw_failure_handler(void*, int err) {
-    rethrowMaybe(err);
+void multio_throw_failure_handler(void*, int err, multio_failure_info_t* i) {
+    rethrowMaybe(err, i);
 }
 
 class MultioReplayNemoCApi final : public multio::MultioTool {
@@ -203,7 +203,7 @@ void MultioReplayNemoCApi::setDomains(bool onlyLoadDefinitions) {
 
     multio_metadata_t* md = nullptr;
     if (!onlyLoadDefinitions)
-        multio_new_metadata(&md);
+        multio_new_metadata(&md, multio_handle);
 
     for (auto const& grid : grid_type) {
         auto buffer = readGrid(grid.second, rank_);
@@ -242,7 +242,7 @@ void MultioReplayNemoCApi::writeMasks() {
         std::vector<float> masks(definition->second[8] * definition->second[10], 1.0);
 
         multio_metadata_t* md = nullptr;
-        multio_new_metadata(&md);
+        multio_new_metadata(&md, multio_handle);
 
         std::string name = gridPrefix + std::string(" mask");
         multio_metadata_set_string(md, "name", name.c_str());
@@ -268,7 +268,7 @@ void MultioReplayNemoCApi::writeFields() {
         bool is_active = false;
         {
             multio_metadata_t* md = nullptr;
-            multio_new_metadata(&md);
+            multio_new_metadata(&md, multio_handle);
             multio_metadata_set_string(md, "category", "ocean-2d");
             multio_field_accepted(multio_handle, md, &is_active);
             multio_delete_metadata(md);
@@ -279,7 +279,7 @@ void MultioReplayNemoCApi::writeFields() {
 
         {
             multio_metadata_t* md = nullptr;
-            multio_new_metadata(&md);
+            multio_new_metadata(&md, multio_handle);
             multio_metadata_set_string(md, "name", param.c_str());
             multio_field_accepted(multio_handle, md, &is_active);
             multio_delete_metadata(md);
@@ -294,7 +294,7 @@ void MultioReplayNemoCApi::writeFields() {
         auto fname = param.c_str();
 
         multio_metadata_t* md = nullptr;
-        multio_new_metadata(&md);
+        multio_new_metadata(&md, multio_handle);
 
         // Set reused fields once at the beginning
         multio_metadata_set_string(md, "category", "ocean-2d");
@@ -384,8 +384,6 @@ void MultioReplayNemoCApi::initClient() {
         eckit::mpi::comm(mpiGroup_.c_str()).split(777, clientGroup.c_str());
     }
 
-    multio_set_failure_handler(multio_throw_failure_handler, nullptr);
-
 
     multio_configuration_t* multio_cc = nullptr;
 
@@ -397,6 +395,8 @@ void MultioReplayNemoCApi::initClient() {
         eckit::Log::info() << " *** multio_new_handle_from_filename " << configFile_ << std::endl;
         multio_new_configuration_from_filename(&multio_cc, configFile_.c_str());
     }
+
+    multio_set_failure_handler(multio_cc, multio_throw_failure_handler, nullptr);
 
     int retComm = 0;
     if (passDownMPIComm_) {

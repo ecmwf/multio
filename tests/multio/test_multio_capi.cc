@@ -398,7 +398,7 @@ CASE("Test write field") {
 
     auto path = util::getEnv("CMAKE_BINARY_HOME");
     auto file_name = eckit::PathName{std::string{*path}} / "testWriteOutput.grib";
-    EXPECT(std::filesystem::exists(file_name.localPath()));
+    EXPECT(file_name.exists());
 }
 
 // TODO:

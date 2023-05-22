@@ -51,7 +51,6 @@ ecbuild_add_executable( TARGET    multio-replay-nemo-fapi
 
 # TODO: add atlas condition/dependency
 ecbuild_add_executable( TARGET    multio-generate-grib-template
-                        CONDITION HAVE_MIR
                         SOURCES   multio-generate-grib-template.cc MultioTool.cc
                         LIBS      multio atlas eccodes eckit )
 

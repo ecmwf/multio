@@ -14,8 +14,7 @@
 
 /// @date Oct 2019
 
-#ifndef multio_server_Metadata_H
-#define multio_server_Metadata_H
+#pragma once
 
 #include "eckit/config/LocalConfiguration.h"
 
@@ -33,5 +32,3 @@ Metadata to_metadata(const std::string& fieldId);
 
 }  // namespace message
 }  // namespace multio
-
-#endif

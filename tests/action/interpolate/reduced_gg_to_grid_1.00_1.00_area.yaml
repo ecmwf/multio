@@ -1,0 +1,23 @@
+plans:
+  - name: reduced_gg_to_grid_1.00_1.00_area
+    actions:
+      - type: select
+        match:
+          - param: 133
+      - type: interpolate
+        input: O1280
+        grid: [1.0, 1.0]
+        area: [80.0, 0.0, -80.0, 360.0]
+        interpolation: linear
+        options:
+          # dont-compress-plan: true
+          caching: true
+      - type: encode
+        format: grib
+        template: MARS_reduced_gg_to_grid_1.00_1.00_area.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: MultIO_reduced_gg_to_grid_1.00_1.00_area.grib

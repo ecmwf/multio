@@ -12,18 +12,17 @@
 /// @author Simon Smart
 /// @date Dec 2015
 
-#ifndef multio_DataSink_H
-#define multio_DataSink_H
+#pragma once
 
 #include <iosfwd>
+#include <map>
 #include <mutex>
 #include <string>
 #include <vector>
-#include <map>
 
+#include "multio/util/ConfigurationContext.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/message/Message.h"
-#include <multio/util/ConfigurationContext.h>
 
 namespace multio {
 
@@ -99,7 +98,7 @@ public:  // methods
 
     void list(std::ostream&);
 
-    DataSink* build(const std::string&, const util::ConfigurationContext& confCtx);
+    std::unique_ptr<DataSink> build(const std::string&, const util::ConfigurationContext& confCtx);
 
 private:  // members
     std::map<std::string, const DataSinkBuilderBase*> factories_;
@@ -109,7 +108,7 @@ private:  // members
 
 class DataSinkBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual DataSink* make(const util::ConfigurationContext& confCtx) const = 0;
+    virtual std::unique_ptr<DataSink> make(const util::ConfigurationContext& confCtx) const = 0;
 
 protected:  // methods
     DataSinkBuilderBase(const std::string&);
@@ -121,7 +120,7 @@ protected:  // methods
 
 template <class T>
 class DataSinkBuilder final : public DataSinkBuilderBase {
-    DataSink* make(const util::ConfigurationContext& confCtx) const override { return new T(confCtx); }
+    std::unique_ptr<DataSink> make(const util::ConfigurationContext& confCtx) const override { return std::make_unique<T>(confCtx); }
 
 public:
     DataSinkBuilder(const std::string& name) : DataSinkBuilderBase(name) {}
@@ -130,5 +129,3 @@ public:
 //--------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-
-#endif

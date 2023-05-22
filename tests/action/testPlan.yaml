@@ -1,0 +1,6 @@
+plans:
+    - name: test-print
+      actions:
+        - type: print
+        - type: sink
+          sinks: []

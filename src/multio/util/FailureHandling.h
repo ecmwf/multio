@@ -12,8 +12,7 @@
 
 /// @date Sep 2022
 
-#ifndef multio_util_FailureHandling_H
-#define multio_util_FailureHandling_H
+#pragma once
 
 
 #include "eckit/config/LocalConfiguration.h"
@@ -23,7 +22,6 @@
 
 #include "multio/util/ConfigurationContext.h"
 #include "multio/util/IntegerSequence.h"
-#include "multio/util/Translate.h"
 
 #include <algorithm>
 #include <string>
@@ -164,7 +162,7 @@ namespace util {
 
 template <typename T>
 std::pair<std::string, T> makeLowerCaseStringPair(T&& v) {
-    return {eckit::StringTools::lower(translate<std::string>(v)), std::forward<T>(v)};
+    return {eckit::StringTools::lower(eckit::translate<std::string>(v)), std::forward<T>(v)};
 }
 
 template <typename T, T... TS>
@@ -315,13 +313,28 @@ enum class FailureHandlerResponse : unsigned
 
 class FailureAwareException : public eckit::Exception {
 public:
-    FailureAwareException(const std::string& what) : eckit::Exception(what) {}
+    FailureAwareException(const std::string& what, const eckit::CodeLocation& l = eckit::CodeLocation()) : eckit::Exception(what, l) {}
+    
+    friend std::ostream& operator<<(std::ostream& os, const FailureAwareException& dt);
 };
+
+std::ostream& operator<<(std::ostream& os, const FailureAwareException& dt);
 
 struct FailureContext {
     std::exception_ptr eptr;
     std::string context;
+    
+    friend std::ostream& operator<<(std::ostream& os, const FailureContext& dt);
 };
+
+std::ostream& operator<<(std::ostream& os, const FailureContext& dt);
+
+void printException(std::ostream& out, const std::exception& e);
+void printException(std::ostream& out, const eckit::Exception& e);
+void printException(std::ostream& out, const FailureAwareException& e);
+
+void printFailureContext(std::ostream& out, const FailureContext& c);
+
 
 template <ComponentTag tag>
 class FailureAware {
@@ -368,10 +381,10 @@ public:
                     }
                     catch (...) {
                         std::ostringstream oss;
-                        oss << "FailureAware configuration for component " << translate<std::string>(tag)
+                        oss << "FailureAware configuration for component " << eckit::translate<std::string>(tag)
                             << " described by key \"" << ComponentFailureTraits<tag>::configKey()
                             << "\" is supposed to map to a string or an configuration object with key \"type\"";
-                        std::throw_with_nested(eckit::Exception(oss.str()));
+                        std::throw_with_nested(FailureAwareException(oss.str(), Here()));
                     }
                 }
             })();
@@ -395,85 +408,7 @@ public:
 
     virtual ~FailureAware() = default;
 
-private:
-    // TODO accept output stream as parameter
-    int printNestedException(std::ostream& out, const std::exception& e) const {
-        int level=0;
-        try {
-            std::rethrow_if_nested(e);
-        }
-        catch (const FailureAwareException& nestedException) {
-            level = printNestedException(out, nestedException);
-        }
-        catch (const eckit::Exception& nestedException) {
-            level = printNestedException(out, nestedException);
-        }
-        catch (const std::exception& nestedException) {
-            level = printNestedException(out, nestedException);
-        }
-        catch (...) {
-            return level + 1;
-        }
-        printExceptionHeader(out, e, level);
-        return level + 1;
-    }
-
-    inline void printExceptionHeader(std::ostream& out, const std::exception& e, int level = 0) const {
-        out << std::endl << "  * " << (level + 1) << ": " << e.what() << std::endl;
-        ;
-    }
-
 protected:
-    void printException(std::ostream& out, const std::exception& e) const {
-        out << std::endl;
-        out << "Nested std::Exception: " << std::endl;
-        printNestedException(out, e);
-        out << std::endl;
-    }
-    void printException(std::ostream& out, const eckit::Exception& e) const {
-        out << std::endl;
-        out << "Nested eckit::Exception: " << std::endl;
-        printNestedException(out, e);
-        out << std::endl;
-        e.exceptionStack(out, true);
-        out << std::endl;
-        out << std::endl;
-    }
-    void printException(std::ostream& out, const FailureAwareException& e) const {
-        out << std::endl;
-        out << "Nested FailureAwareException: " << std::endl;
-        printNestedException(out, e);
-        out << std::endl;
-        e.exceptionStack(out, true);
-        out << std::endl;
-        out << std::endl;
-    }
-
-    void print(std::ostream& out, const FailureContext& c) const {
-        if (c.eptr) {
-            try {
-                try {
-                    std::rethrow_exception(c.eptr);
-                }
-                catch (...) {
-                    std::throw_with_nested(FailureAwareException(c.context));
-                }
-            }
-            catch (const FailureAwareException& e) {
-                printException(out, e);
-            }
-        }
-        else {
-            try {
-                throw FailureAwareException(c.context);
-            }
-            catch (const FailureAwareException& e) {
-                printException(out, e);
-            }
-        }
-    }
-
-
     template <typename T, typename P>
     void withFailureHandling(T&& callable, P&& contextString) const {
         bool doRetry;
@@ -485,8 +420,8 @@ protected:
             }
             catch (...) {
                 std::ostringstream oss;
-                oss << "FailureAware<" << translate<std::string>(tag) << "> with behaviour \""
-                    << translate<std::string>(parsedOnErrTag_) << "\" on " << translate<std::string>(peerTag_)
+                oss << "FailureAware<" << eckit::translate<std::string>(tag) << "> with behaviour \""
+                    << eckit::translate<std::string>(parsedOnErrTag_) << "\" on " << eckit::translate<std::string>(peerTag_)
                     << " for context: [" << std::endl
                     << contextString() << std::endl
                     << "]";
@@ -499,7 +434,7 @@ protected:
                             std::ostringstream oss2;
                             oss2 << "Retrying after catching nested exceptions: " << std::endl
                                  << oss.str() << std::endl;
-                            std::throw_with_nested(FailureAwareException(oss2.str()));
+                            std::throw_with_nested(FailureAwareException(oss2.str(), Here()));
                         }
                         catch (const FailureAwareException& e) {
                             // This is supposed to be called
@@ -509,13 +444,13 @@ protected:
                         break;
                     }
                     case FailureHandlerResponse::Rethrow: {
-                        std::throw_with_nested(FailureAwareException(oss.str()));
+                        std::throw_with_nested(FailureAwareException(oss.str(), Here()));
                     }
                     default:
                         try {
                             std::ostringstream oss2;
                             oss2 << "Ignoring nested exceptions: " << std::endl << oss.str() << std::endl;
-                            std::throw_with_nested(FailureAwareException(oss2.str()));
+                            std::throw_with_nested(FailureAwareException(oss2.str(), Here()));
                         }
                         catch (const FailureAwareException& e) {
                             // This is supposed to be called
@@ -536,5 +471,3 @@ protected:
 
 }  // namespace util
 }  // namespace multio
-
-#endif

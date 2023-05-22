@@ -13,11 +13,10 @@
  *   @date Nov 2019
  */
 
-#ifndef multio_ifsio_internals_h
-#define multio_ifsio_internals_h
+#pragma once
 
-#include <exception>
 #include <stdio.h>
+#include <exception>
 
 #include "multio/multio_version.h"
 
@@ -25,18 +24,25 @@ bool traceme();
 
 #define MULTIO_TRACE
 
-#ifdef  MULTIO_TRACE
-#define MULTIO_TRACE_FUNC()       if(traceme()) { fprintf(stdout,"MULTIO %s : %s()\n",multio_version(),__func__); }
-#define MULTIO_TRACE_FUNC1(p1)    if(traceme()) { fprintf(stdout,"MULTIO %s : %s(%s)\n",multio_version(),__func__,p1); }
-#define MULTIO_TRACE_FUNC2(p1,p2) if(traceme()) { fprintf(stdout,"MULTIO %s : %s(%s,%s)\n",multio_version(),__func__,p1,p2); }
+#ifdef MULTIO_TRACE
+#define MULTIO_TRACE_FUNC()                                                \
+    if (traceme()) {                                                       \
+        fprintf(stdout, "MULTIO %s : %s()\n", multio_version(), __func__); \
+    }
+#define MULTIO_TRACE_FUNC1(p1)                                                   \
+    if (traceme()) {                                                             \
+        fprintf(stdout, "MULTIO %s : %s(%s)\n", multio_version(), __func__, p1); \
+    }
+#define MULTIO_TRACE_FUNC2(p1, p2)                                                      \
+    if (traceme()) {                                                                    \
+        fprintf(stdout, "MULTIO %s : %s(%s,%s)\n", multio_version(), __func__, p1, p2); \
+    }
 #else
 #define MULTIO_TRACE_FUNC()
 #define MULTIO_TRACE_FUNC1(p1)
-#define MULTIO_TRACE_FUNC2(p1,p2)
+#define MULTIO_TRACE_FUNC2(p1, p2)
 #endif
 
 //----------------------------------------------------------------------------------------------------------------------
 
 int ifsio_handle_error(std::exception& e);
-
-#endif

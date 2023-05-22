@@ -1,0 +1,12 @@
+plans:
+  - name: reduced_gg_encode_decode
+    actions:
+      - type: encode
+        format: grib
+        template: MARS_reduced_gg.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false
+            path: MultIO_reduced_gg_encode_decode.grib

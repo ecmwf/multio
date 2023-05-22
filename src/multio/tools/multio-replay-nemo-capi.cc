@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iomanip>
+#include <cstring>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/FileHandle.h"
@@ -8,7 +9,7 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "multio/api/multio_c.h"
+#include "multio/api/multio_c_cpp_utils.h"
 #include "multio/tools/MultioTool.h"
 #include "multio/util/ConfigurationPath.h"
 
@@ -32,12 +33,11 @@ struct GribData {
 };
 
 std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& config) {
-    const auto& cfgList = config.getSubConfigurations("nemo-fields");
+    const auto& cfgList = config.getSubConfigurations("data");
     std::map<std::string, GribData> nemo_map;
     for (auto const& cfg : cfgList) {
-        nemo_map[cfg.getString("nemo-id")] = {cfg.getLong("param-id"),
-                                              cfg.getString("grid-type"),
-                                              cfg.getString("level-type")};
+        nemo_map[cfg.getString("nemo-id")]
+            = {cfg.getLong("param-id"), cfg.getString("grid-type"), cfg.getString("level-type")};
     }
     return nemo_map;
 }
@@ -45,7 +45,7 @@ std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& config
 class NemoToGrib {
 public:
     NemoToGrib() :
-        parameters_{fetch_nemo_params(eckit::YAMLConfiguration{configuration_path_name() + "nemo-to-grib.yaml"})} {}
+        parameters_{fetch_nemo_params(eckit::YAMLConfiguration{configuration_path_name() + "metadata-mapping/nemo-to-grib.yaml"})} {}
 
     const GribData& get(const NemoKey& key) const { return parameters_.at(key); }
 
@@ -61,7 +61,7 @@ public:
  */
 void rethrowMaybe(int err) {
     if (err != MULTIO_SUCCESS) {
-        throw eckit::Exception{"MULTIO C Exception:" + std::string{multio_error_string(err)}};
+        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string(err)}, Here());
     }
 }
 
@@ -110,20 +110,28 @@ private:
 
     size_t clientCount_ = 1;
     size_t serverCount_ = 0;
+    bool singlePrecision_;
 
     multio_handle_t* multio_handle = nullptr;
 };
 
 //----------------------------------------------------------------------------------------------------------------
 
-MultioReplayNemoCApi::MultioReplayNemoCApi(int argc, char** argv) : multio::MultioTool(argc, argv) {
-    options_.push_back(
-        new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
+MultioReplayNemoCApi::MultioReplayNemoCApi(int argc, char** argv) :
+    multio::MultioTool(argc, argv), singlePrecision_(false) {
+    options_.push_back(new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("path", "Path to NEMO data"));
     options_.push_back(new eckit::option::SimpleOption<long>("nbclients", "Number of clients"));
     options_.push_back(new eckit::option::SimpleOption<long>("field", "Name of field to replay"));
-    options_.push_back(
-        new eckit::option::SimpleOption<long>("step", "Time counter for the field to replay"));
+    options_.push_back(new eckit::option::SimpleOption<long>("step", "Time counter for the field to replay"));
+
+    // enable single precision testing
+    for (int i = 1; i < argc; ++i) {
+        if (::strcmp(argv[i], "--singlePrecision") == 0) {
+            singlePrecision_ = true;
+        }
+    }
+    return;
 }
 
 void MultioReplayNemoCApi::init(const eckit::option::CmdArgs& args) {
@@ -161,8 +169,8 @@ void MultioReplayNemoCApi::runClient() {
 void MultioReplayNemoCApi::setMetadata() {}
 
 void MultioReplayNemoCApi::setDomains() {
-    const std::map<std::string, std::string> grid_type = {
-        {"T grid", "grid_T"}, {"U grid", "grid_U"}, {"V grid", "grid_V"}, {"W grid", "grid_W"}};
+    const std::map<std::string, std::string> grid_type
+        = {{"T grid", "grid_T"}, {"U grid", "grid_U"}, {"V grid", "grid_V"}, {"W grid", "grid_W"}};
 
     multio_metadata_t* md = nullptr;
     multio_new_metadata(&md);
@@ -170,12 +178,12 @@ void MultioReplayNemoCApi::setDomains() {
     for (auto const& grid : grid_type) {
         auto buffer = readGrid(grid.second, rank_);
         auto sz = static_cast<int>(buffer.size());
-        multio_metadata_set_string_value(md, "name", grid.first.c_str());
+        multio_metadata_set_string(md, "name", grid.first.c_str());
 
-        multio_metadata_set_string_value(md, "category", "ocean-domain-map");
-        multio_metadata_set_string_value(md, "representation", "structured");
-        multio_metadata_set_int_value(md, "globalSize", globalSize_);
-        multio_metadata_set_bool_value(md, "toAllServers", true);
+        multio_metadata_set_string(md, "category", "ocean-domain-map");
+        multio_metadata_set_string(md, "representation", "structured");
+        multio_metadata_set_int(md, "globalSize", globalSize_);
+        multio_metadata_set_bool(md, "toAllServers", true);
 
         multio_write_domain(multio_handle, md, buffer.data(), sz);
     }
@@ -189,7 +197,7 @@ void MultioReplayNemoCApi::writeFields() {
         {
             multio_metadata_t* md = nullptr;
             multio_new_metadata(&md);
-            multio_metadata_set_string_value(md, "category", "ocean-2d");
+            multio_metadata_set_string(md, "category", "ocean-2d");
             multio_field_accepted(multio_handle, md, &is_active);
             multio_delete_metadata(md);
             if (is_active) {
@@ -200,7 +208,7 @@ void MultioReplayNemoCApi::writeFields() {
         {
             multio_metadata_t* md = nullptr;
             multio_new_metadata(&md);
-            multio_metadata_set_string_value(md, "name", param.c_str());
+            multio_metadata_set_string(md, "name", param.c_str());
             multio_field_accepted(multio_handle, md, &is_active);
             multio_delete_metadata(md);
             if (!is_active) {
@@ -212,29 +220,37 @@ void MultioReplayNemoCApi::writeFields() {
 
         auto sz = static_cast<int>(buffer.size()) / sizeof(double);
         auto fname = param.c_str();
-        
+
         multio_metadata_t* md = nullptr;
         multio_new_metadata(&md);
 
         // Set reused fields once at the beginning
-        multio_metadata_set_string_value(md, "category", "ocean-2d");
-        multio_metadata_set_int_value(md, "globalSize", globalSize_);
-        multio_metadata_set_int_value(md, "level", level_);
-        multio_metadata_set_int_value(md, "step", step_);
+        multio_metadata_set_string(md, "category", "ocean-2d");
+        multio_metadata_set_int(md, "globalSize", globalSize_);
+        multio_metadata_set_int(md, "level", level_);
+        multio_metadata_set_int(md, "step", step_);
 
-        // TODO: May not need to be a field's metadata
-        multio_metadata_set_double_value(md, "missingValue", 0.0);
-        multio_metadata_set_bool_value(md, "bitmapPresent", false);
-        multio_metadata_set_int_value(md, "bitsPerValue", 16);
+        multio_metadata_set_double(md, "missingValue", 0.0);
+        multio_metadata_set_bool(md, "bitmapPresent", false);
+        multio_metadata_set_int(md, "bitsPerValue", 16);
 
-        multio_metadata_set_bool_value(md, "toAllServers", false);
+        multio_metadata_set_bool(md, "toAllServers", false);
 
         // Overwrite these fields in the existing metadata object
-        multio_metadata_set_string_value(md, "name", fname);
-        multio_metadata_set_string_value(md, "nemoParam", fname);
+        multio_metadata_set_string(md, "name", fname);
+        multio_metadata_set_string(md, "nemoParam", fname);
 
-        multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz);
-        
+        if (singlePrecision_) {
+            const double* tmp_d = reinterpret_cast<const double*>(buffer.data());
+            std::vector<float> tmp_f(sz, 0.0);
+            for (int i = 0; i < sz; ++i) {
+                tmp_f[i] = float(tmp_d[i]);
+            }
+            multio_write_field(multio_handle, md, tmp_f.data(), sz);
+        }
+        else {
+            multio_write_field(multio_handle, md, reinterpret_cast<const double*>(buffer.data()), sz);
+        }
         multio_delete_metadata(md);
     }
 }
@@ -265,8 +281,8 @@ std::vector<int> MultioReplayNemoCApi::readGrid(const std::string& grid_type, si
 
 eckit::Buffer MultioReplayNemoCApi::readField(const std::string& param, size_t client_id) const {
     std::ostringstream oss;
-    oss << pathToNemoData_ << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_"
-        << std::setfill('0') << std::setw(2) << client_id;
+    oss << pathToNemoData_ << param << "_" << std::setfill('0') << std::setw(2) << step_ << "_" << std::setfill('0')
+        << std::setw(2) << client_id;
 
     auto field = eckit::PathName{oss.str()};
 
@@ -295,34 +311,34 @@ void MultioReplayNemoCApi::initClient() {
     eckit::mpi::comm("multio").split(777, "multio-clients");
 #endif
 
-    
+
     multio_set_failure_handler(multio_throw_failure_handler, nullptr);
-    
+
 
 #if defined(INIT_BY_FILEPATH)
-    multio_configurationcontext_t* multio_cc = nullptr;
+    multio_configuration_t* multio_cc = nullptr;
     auto configPath = configuration_file_name();
-    multio_new_configurationcontext_from_filename(&multio_cc, configPath.asString().c_str());
+    multio_new_configuration_from_filename(&multio_cc, configPath.asString().c_str());
     multio_new_handle(&multio_handle, multio_cc);
-    multio_delete_configurationcontext(multio_cc);
+    multio_delete_configuration(multio_cc);
 #endif
 #if defined(INIT_BY_MPI)
-    multio_configurationcontext_t* multio_cc = nullptr;
+    multio_configuration_t* multio_cc = nullptr;
     int retComm = 0;
-    multio_new_configurationcontext(&multio_cc);
+    multio_new_configuration(&multio_cc);
     multio_conf_mpi_client_id(multio_cc, "oce");
     multio_conf_mpi_parent_comm(multio_cc, eckit::mpi::comm("multio").communicator());
     multio_conf_mpi_return_client_comm(multio_cc, &retComm);
     multio_new_handle(&multio_handle, multio_cc);
     eckit::Log::info() << " *** multio_new_handle mpi returned comm: " << retComm << std::endl;
     ASSERT(retComm != 0);
-    multio_delete_configurationcontext(multio_cc);
+    multio_delete_configuration(multio_cc);
 #endif
 #if defined(INIT_BY_ENV)
-    multio_configurationcontext_t* multio_cc = nullptr;
-    multio_new_configurationcontext(&multio_cc);
+    multio_configuration_t* multio_cc = nullptr;
+    multio_new_configuration(&multio_cc);
     multio_new_handle(&multio_handle, multio_cc);
-    multio_delete_configurationcontext(multio_cc);
+    multio_delete_configuration(multio_cc);
 #endif
     //! Not required in new transport based api?
     // multio_init_client("oce", eckit::mpi::comm().communicator());
@@ -337,8 +353,7 @@ void MultioReplayNemoCApi::initClient() {
 #if defined(SPECIFIC_MPI_GROUP)
     eckit::Log::info() << " *** SPCEFICI_MPI_GROUP: " << XSTRM(SPECIFIC_MPI_GROUP) << std::endl;
     const eckit::mpi::Comm& group = eckit::mpi::comm(XSTRM(SPECIFIC_MPI_GROUP));
-    const eckit::mpi::Comm& clients =
-        eckit::mpi::comm((std::string(XSTRM(SPECIFIC_MPI_GROUP)) + "-clients").c_str());
+    const eckit::mpi::Comm& clients = eckit::mpi::comm((std::string(XSTRM(SPECIFIC_MPI_GROUP)) + "-clients").c_str());
 #else
     eckit::Log::info() << " *** DEFAULT MPI GROUP: multio " << std::endl;
     const eckit::mpi::Comm& group = eckit::mpi::comm("multio");
@@ -349,8 +364,8 @@ void MultioReplayNemoCApi::initClient() {
     clientCount_ = clients.size();
     serverCount_ = group.size() - clientCount_;
 
-    eckit::Log::info() << " *** initClient - clientcount:  " << clientCount_  
-                       << ", serverCount: " << serverCount_ << std::endl;
+    eckit::Log::info() << " *** initClient - clientcount:  " << clientCount_ << ", serverCount: " << serverCount_
+                       << std::endl;
 }
 
 void MultioReplayNemoCApi::testData() {
@@ -365,8 +380,7 @@ void MultioReplayNemoCApi::testData() {
 
         std::string actual_file_path{oss.str()};
         std::ifstream infile_actual{actual_file_path};
-        std::string actual{std::istreambuf_iterator<char>(infile_actual),
-                           std::istreambuf_iterator<char>()};
+        std::string actual{std::istreambuf_iterator<char>(infile_actual), std::istreambuf_iterator<char>()};
 
         oss.str("");
         oss.clear();
@@ -374,11 +388,10 @@ void MultioReplayNemoCApi::testData() {
         auto path = eckit::PathName{oss.str()};
 
         std::ifstream infile_expected{path.fullName()};
-        std::string expected{std::istreambuf_iterator<char>(infile_expected),
-                             std::istreambuf_iterator<char>()};
+        std::string expected{std::istreambuf_iterator<char>(infile_expected), std::istreambuf_iterator<char>()};
 
-        eckit::Log::info() << " *** testData - ActualFilePath: " << actual_file_path
-                           << ", expected path: " << path << std::endl;
+        eckit::Log::info() << " *** testData - ActualFilePath: " << actual_file_path << ", expected path: " << path
+                           << std::endl;
 
         infile_actual.close();
         infile_expected.close();

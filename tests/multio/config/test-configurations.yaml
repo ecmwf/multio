@@ -1,0 +1,85 @@
+### test-configs
+---
+mpi-test-configuration:
+  transport: mpi
+  group: world
+  plans:
+    - name: atmosphere
+      actions:
+        - type: select
+          match:
+            - category: [model-level, pressure-level, surface-level]
+
+        - type: aggregate
+
+        - type: encode
+          format: raw
+
+        - type: single-field-sink
+
+    - name: ocean
+      actions:
+        - type: select
+          match:
+            - category: [ocean-model-level]
+
+        - type: aggregate
+
+        - type: single-field-sink
+
+thread-test-configuration:
+  transport: thread
+  plans:
+
+    - name: atmosphere
+      actions:
+        - type: select
+          match:
+            - category: [model-level, pressure-level, surface-level]
+
+        - type: aggregate
+
+        - type: encode
+          format: raw
+
+        - type: single-field-sink
+
+tcp-test-configuration:
+  transport: tcp
+  clients:
+    - host: localhost
+      ports: [4441, 4442, 4443, 4444, 4445]
+
+  servers:
+    - host: localhost
+      ports: [7771, 7772, 7773]
+
+  plans:
+    - name: atmosphere
+      actions:
+        - type: select
+          match:
+            - category: [model-level, pressure-level, surface-level]
+
+        - type: aggregate
+
+        - type: encode
+          format: raw
+
+        - type: single-field-sink
+
+no-transport-test-configuration:
+  transport: none
+  parameters:
+    ml: [130, 133, 135, 138, 155, 203, 246, 247, 248, 75, 76]
+    pl: [60, 129, 130, 133, 135, 138, 155, 157, 203]
+    sfc: [228001, 228011, 228012, 129, 130, 131, 132, 134, 136, 137, 139, 151, 159, 164, 170, 172, 183, 186, 187, 188, 198, 3017, 3063, 3066]
+  plans:
+    - name: atmosphere
+      actions:
+        - type: sink
+          sinks:
+            - type: fdb5
+              config: {}
+#            - type : file
+#              path : hammer.grib

@@ -1,31 +1,27 @@
 
-#ifndef multio_util_ConfigurationPath_H
-#define multio_util_ConfigurationPath_H
+#pragma once
 
-#include "eckit/config/Resource.h"
+#include <cstring>
+
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/filesystem/PathName.h"
-#include "eckit/utils/Optional.h"
+
+#include "multio/util/Environment.h"
 
 namespace multio {
 namespace util {
 
-inline eckit::PathName configuration_path_name() {
-    // TODO We should use resource, but this changes the current default behaviour
-    // static eckit::PathName basepath(eckit::Resource<eckit::PathName>("$MULTIO_SERVER_CONFIG_PATH", "~multio/etc"));
-    // return basepath;
-    
-    eckit::PathName base = (::getenv("MULTIO_SERVER_CONFIG_PATH"))
-                             ? eckit::PathName{::getenv("MULTIO_SERVER_CONFIG_PATH")}
-                             : eckit::PathName{""};
-
+inline eckit::PathName configuration_path_name(const eckit::PathName& pathOfFile = "") {
+    auto path = getEnv("MULTIO_SERVER_CONFIG_PATH");
+    eckit::PathName base = path ? eckit::PathName{std::string{*path}} : pathOfFile.dirName();
     return base + "/";
 }
 
 inline eckit::PathName configuration_file_name() {
-    const auto configFile = "MULTIO_SERVER_CONFIG_FILE";
-    return (::getenv(configFile)) ? eckit::PathName{::getenv(configFile)}
-                                  : eckit::PathName{configuration_path_name() + "multio-server.yaml"};
+    auto file = getEnv("MULTIO_SERVER_CONFIG_FILE");
+    return file ? eckit::PathName{std::string{*file}}
+                : eckit::PathName{configuration_path_name() + "multio-server.yaml"};
 }
 
 inline const eckit::LocalConfiguration& configuration_file() {
@@ -36,5 +32,3 @@ inline const eckit::LocalConfiguration& configuration_file() {
 
 }  // namespace util
 }  // namespace multio
-
-#endif

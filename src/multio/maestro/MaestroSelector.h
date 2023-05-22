@@ -1,8 +1,7 @@
 /// @author Domokos Sarmany
 /// @date   Dec 2020
 
-#ifndef multio_MaestroSelector_H
-#define multio_MaestroSelector_H
+#pragma once
 
 #include "MaestroSubscription.h"
 extern "C" {
@@ -23,5 +22,3 @@ private:
 };
 
 }  // namespace multio
-
-#endif  // multio_MaestroSelector_H

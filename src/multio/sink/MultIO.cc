@@ -23,6 +23,8 @@
 #include "eckit/value/Value.h"
 #include "eckit/utils/Translator.h"
 
+
+#include <multio/util/Substitution.h>
 #include <multio/LibMultio.h>
 
 using namespace eckit;
@@ -59,10 +61,14 @@ MultIO::MultIO(const ConfigurationContext& confCtx) :
     trigger_(confCtx_) {
 
     for(auto&& subCtx: confCtx.subContexts("sinks")) {
-        DataSink* sink = DataSinkFactory::instance().build(subCtx.config().getString("type"), std::move(subCtx));
-        ASSERT(sink);
-        sink->setId(sinks_.size());
-        sinks_.emplace_back(sink);
+        auto sinkId = sinks_.size();
+        auto enabled = util::parseEnabled( subCtx.config(), true );
+        if ( !enabled ){
+          throw eckit::UserError( "bool expected in sink enabling", Here()); 
+        }
+        if ( *enabled ){
+            sinks_.emplace_back(DataSinkFactory::instance().build(subCtx.config().getString("type"), std::move(subCtx)))->setId(sinkId);
+        }
     }
 }
 

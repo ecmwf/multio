@@ -12,8 +12,7 @@
 /// @date Dec 2015
 
 
-#ifndef multio_MultIO_H
-#define multio_MultIO_H
+#pragma once
 
 #include <iosfwd>
 #include <mutex>
@@ -22,13 +21,13 @@
 
 #include "eckit/io/Length.h"
 #include "eckit/log/Timer.h"
-#include "eckit/types/Types.h"
 #include "eckit/message/Message.h"
+#include "eckit/types/Types.h"
 
 #include "multio/sink/DataSink.h"
 #include "multio/sink/IOStats.h"
 #include "multio/sink/Trigger.h"
-#include <multio/util/ConfigurationContext.h>
+#include "multio/util/ConfigurationContext.h"
 
 namespace multio {
 
@@ -53,14 +52,12 @@ public:
     void report(std::ostream&);
 
 protected:  // methods
-
     void print(std::ostream&) const override;
 
 protected:  // members
-
     IOStats stats_;
 
-    std::vector<std::shared_ptr<DataSink>> sinks_;
+    std::vector<std::unique_ptr<DataSink>> sinks_;
 
     Trigger trigger_;
 
@@ -78,5 +75,3 @@ private:  // methods
 //----------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio
-
-#endif

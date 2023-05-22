@@ -38,14 +38,17 @@ using transport::Transport;
 Listener::Listener(const util::ConfigurationContext& confCtx, Transport& trans):
         FailureAware(confCtx),
     continue_{std::make_shared<std::atomic<bool>>(true)},
-    dispatcher_{std::make_shared<Dispatcher>(confCtx.recast(util::ComponentTag::Dispatcher), continue_)},
+    dispatcher_{std::make_unique<Dispatcher>(confCtx.recast(util::ComponentTag::Dispatcher), continue_)},
     transport_{trans},
     clientCount_{transport_.clientPeers().size()},
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE",1024*1024)) {
 }
 
+Listener::~Listener() = default;
+
 util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, const util::FailureContext& c, util::DefaultFailureState&) const {
-    msgQueue_.close(); // TODO: msgQueue_ pop is blocking in dispatch.... redesign to have better awareness on blocking positions to safely stop and restart
+    msgQueue_.close();  // TODO: msgQueue_ pop is blocking in dispatch.... redesign to have better awareness on blocking
+                        // positions to safely stop and restart
     continue_->store(false, std::memory_order_release);
     return util::FailureHandlerResponse::Rethrow;
 };
@@ -53,7 +56,7 @@ util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, con
 void Listener::start() {
 
     eckit::ResourceUsage usage{"multio listener"};
-    
+
     // Store thread errors
     std::exception_ptr lstnExcPtr;
     std::exception_ptr dpatchExcPtr;
@@ -69,25 +72,25 @@ void Listener::start() {
             switch (msg.tag()) {
                 case Message::Tag::Open:
                     connections_.insert(msg.source());
+                    ++openedCount_;
                     LOG_DEBUG_LIB(LibMultio)
                         << "*** OPENING connection to " << msg.source()
-                        << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
-                        << ", connections = " << connections_.size() << std::endl;
+                        << ":    client count = " << clientCount_ << ", opened count = " << openedCount_
+                        << ", active connections = " << connections_.size() << std::endl;
                     break;
 
                 case Message::Tag::Close:
                     connections_.erase(connections_.find(msg.source()));
-                    ++closedCount_;
                     LOG_DEBUG_LIB(LibMultio)
                         << "*** CLOSING connection to " << msg.source()
-                        << ":    client count = " << clientCount_ << ", closed count = " << closedCount_
-                        << ", connections = " << connections_.size() << std::endl;
+                        << ":    client count = " << clientCount_ << ", opened count = " << openedCount_
+                        << ", active connections = " << connections_.size() << std::endl;
                     break;
 
                 case Message::Tag::Domain:
                 case Message::Tag::Mask:
-                case Message::Tag::StepNotification:
-                case Message::Tag::StepComplete:
+                case Message::Tag::Notification:
+                case Message::Tag::Flush:
                 case Message::Tag::Field:
                     checkConnection(msg.source());
                     LOG_DEBUG_LIB(LibMultio) << "*** Message received: " << msg << std::endl;
@@ -107,7 +110,7 @@ void Listener::start() {
     msgQueue_.close();
 
     LOG_DEBUG_LIB(LibMultio) << "*** CLOSED message queue " << std::endl;
-    
+
     // Propagate possible thread errors
     if (lstnExcPtr) {
         std::rethrow_exception(lstnExcPtr);
@@ -118,7 +121,7 @@ void Listener::start() {
 }
 
 void Listener::listen() {
-    withFailureHandling([&](){
+    withFailureHandling([this](){
         do {
             transport_.listen();
         } while (not msgQueue_.closed() && continue_->load(std::memory_order_consume));
@@ -126,7 +129,7 @@ void Listener::listen() {
 }
 
 bool Listener::moreConnections() const {
-    return !connections_.empty() || closedCount_ < clientCount_;
+    return !connections_.empty() || openedCount_ != clientCount_;
 }
 
 void Listener::checkConnection(const message::Peer& conn) const {

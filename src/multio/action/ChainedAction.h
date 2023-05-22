@@ -37,7 +37,7 @@ protected:
     /// To be used from derived types
     void executeNext(message::Message msg) const;
 
-    void matchedFields(message::MetadataMatchers& matchers) const override;
+    void matchedFields(message::MetadataSelectors& selectors) const override;
 };
 
 //--------------------------------------------------------------------------------------------------

@@ -22,8 +22,7 @@ using eckit::Log;
 //----------------------------------------------------------------------------------------------------------------------
 
 Action::Action(const ConfigurationContext& confCtx) :
-    FailureAware(confCtx), confCtx_(confCtx), type_{confCtx.config().getString("type")} {
-}
+    FailureAware(confCtx), confCtx_(confCtx), type_{confCtx.config().getString("type")} {}
 
 Action::~Action() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
@@ -31,7 +30,7 @@ Action::~Action() {
     statistics_.report(logFile, type_);
 }
 
-void Action::execute(message::Message msg) const {
+void Action::execute(message::Message msg) {
     withFailureHandling([&]() { executeImpl(std::move(msg)); },
                         [&, msg]() {
                             std::ostringstream oss;
@@ -48,7 +47,7 @@ util::FailureHandlerResponse Action::handleFailure(util::OnActionError t, const 
     return util::FailureHandlerResponse::Rethrow;
 };
 
-void Action::matchedFields(message::MetadataMatchers& matchers) const {}
+void Action::matchedFields(message::MetadataSelectors& selectors) const {}
 
 std::ostream& operator<<(std::ostream& os, const Action& a) {
     a.print(os);
@@ -84,7 +83,7 @@ void ActionFactory::list(std::ostream& out) {
     }
 }
 
-Action* ActionFactory::build(const std::string& name, const ConfigurationContext& confCtx) {
+std::unique_ptr<Action> ActionFactory::build(const std::string& name, const ConfigurationContext& confCtx) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
     ASSERT(confCtx.componentTag() == util::ComponentTag::Action);
 

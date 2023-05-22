@@ -13,8 +13,7 @@
 /// @author Simon Smart
 /// @date   March 2017
 
-#ifndef eckit_system_LibMultio_H
-#define eckit_system_LibMultio_H
+#pragma once
 
 #include "eckit/system/Library.h"
 
@@ -24,23 +23,18 @@ namespace multio {
 
 class LibMultio : public eckit::system::Library {
 public:
-
     LibMultio();
 
     static const LibMultio& instance();
 
 protected:
-
     const void* addr() const;
 
     virtual std::string version() const;
 
     virtual std::string gitsha1(unsigned int count) const;
-
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 
-} // namespace multio
-
-#endif // eckit_system_LibMultio_H
+}  // namespace multio

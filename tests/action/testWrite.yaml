@@ -1,0 +1,11 @@
+plans:
+    - name: test-write
+      actions:
+        - type: print
+          stream: cout
+        - type: sink
+          sinks:
+            - type: file
+              append: false
+              per-server: true # Will give you one file per server
+              path: testWriteOutput.bin

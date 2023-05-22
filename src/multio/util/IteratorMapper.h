@@ -26,13 +26,13 @@
  *
  */
 
-#ifndef multio_util_IteratorMapper_H
-#define multio_util_IteratorMapper_H
 
+#include "eckit/utils/Optional.h"
+
+#include <forward_list>
 #include <iostream>
 #include <iterator>
 
-#include "eckit/utils/Optional.h"
 
 namespace multio {
 namespace util {
@@ -44,18 +44,15 @@ template <typename ForwardItContainer, class Mapper, bool is_const>
 using IteratorMapperValueType =
     typename std::conditional<is_const,
                               typename std::decay<decltype(std::declval<Mapper>()(
-                                  *(std::declval<ForwardItContainer>().cbegin())))>::type const,
+                                  *(std::cbegin(std::declval<const ForwardItContainer>()))))>::type,
                               typename std::decay<decltype(std::declval<Mapper>()(
-                                  *(std::declval<ForwardItContainer>().begin())))>::type>::type;
+                                  *(std::begin(std::declval<ForwardItContainer>()))))>::type>::type;
 
-// TODO std::iterator is deprecated in c++17
 template <typename ForwardItContainer, class Mapper, bool is_const = false>
-class IteratorMapper
-    : std::iterator<std::forward_iterator_tag,
-                    IteratorMapperValueType<ForwardItContainer, Mapper, is_const>> {
+class IteratorMapper {
 public:
     using This = IteratorMapper<ForwardItContainer, Mapper, is_const>;
-    using IteratorType = decltype(std::declval<ForwardItContainer>().cbegin());
+    using IteratorType = decltype(std::cbegin(std::declval<const ForwardItContainer>()));
 
     using iterator_category = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
@@ -68,10 +65,7 @@ public:
         container_{other.container_}, mapper_{other.mapper_}, it_{other.it_}, val_{other.val_} {}
 
     IteratorMapper(This&& other) :
-        container_{other.container_},
-        mapper_{other.mapper_},
-        it_{std::move(other.it_)},
-        val_{std::move(other.val_)} {}
+        container_{other.container_}, mapper_{other.mapper_}, it_{std::move(other.it_)}, val_{std::move(other.val_)} {}
 
     reference operator=(const This& other) {
         if (it_ != other.it_) {
@@ -101,7 +95,7 @@ public:
     This& operator++() {
         ++it_;
 
-        if (it_ != container_.cend()) {
+        if (it_ != std::cend(container_)) {
             val_ = mapper_(*it_);
         }
         return *this;
@@ -119,34 +113,27 @@ public:
 
 private:
     template <typename ItType>
-    IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, ItType&& it,
-                   const value_type& val) :
+    IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, ItType&& it, const value_type& val) :
         container_(container), mapper_(mapper), it_(std::forward<IteratorType>(it)), val_{val} {}
 
     template <typename ItType>
-    IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, ItType&& it,
-                   value_type&& val) :
-        container_(container),
-        mapper_(mapper),
-        it_(std::forward<ItType>(it)),
-        val_{std::move(val)} {}
+    IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, ItType&& it, value_type&& val) :
+        container_(container), mapper_(mapper), it_(std::forward<ItType>(it)), val_{std::move(val)} {}
 
     template <typename ItType>
-    IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, bool hasValue,
-                   ItType&& it) :
+    IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, bool hasValue, ItType&& it) :
         container_(container),
         mapper_(mapper),
         it_(std::forward<ItType>(it)),
-        val_{hasValue ? eckit::Optional<value_type>{value_type(mapper(*it_))}
-                      : eckit::Optional<value_type>{}} {}
+        val_{hasValue ? eckit::Optional<value_type>{value_type(mapper(*it_))} : eckit::Optional<value_type>{}} {}
 
 
     template <typename ItType>
     IteratorMapper(ForwardItContainer const& container, Mapper const& mapper, ItType&& it) :
-        IteratorMapper(container, mapper, it != container.cend(), std::forward<ItType>(it)) {}
+        IteratorMapper(container, mapper, it != std::cend(container), std::forward<ItType>(it)) {}
 
     IteratorMapper(ForwardItContainer const& container, Mapper const& mapper) :
-        IteratorMapper(container, mapper, container.cbegin()) {}
+        IteratorMapper(container, mapper, std::cbegin(container)) {}
 
 
     ForwardItContainer const& container_;
@@ -170,11 +157,11 @@ public:
         container_(std::forward<Cont_>(container)), mapper_(std::forward<Mapper_>(mapper)) {}
 
 
-    iterator begin() const { return iterator(container_, mapper_); }
-    iterator end() const { return iterator(container_, mapper_, false, container_.end()); }
+    iterator begin() { return iterator(container_, mapper_); }
+    iterator end() { return iterator(container_, mapper_, false, std::end(container_)); }
 
-    iterator cbegin() const { return const_iterator(container_, mapper_); }
-    iterator cend() const { return const_iterator(container_, mapper_, false, container_.end()); }
+    const_iterator cbegin() const { return const_iterator(container_, mapper_); }
+    const_iterator cend() const { return const_iterator(container_, mapper_, false, std::cend(container_)); }
 
 private:
     ForwardItContainer container_;
@@ -183,5 +170,3 @@ private:
 
 }  // namespace util
 }  // namespace multio
-
-#endif

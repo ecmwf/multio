@@ -66,8 +66,8 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
     args.get("port", port_);
     args.get("test", test_);
     args.get("server", serverName_);
-    
-    confCtx_ = ServerConfigurationContext(ConfigurationContext(configuration_file(), configuration_path_name(), configuration_file_name()), serverName_);
+
+    confCtx_ = ServerConfigurationContext(ConfigurationContext(), serverName_);
     confCtx_->config().set("local_port", port_);
 }
 

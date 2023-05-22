@@ -49,7 +49,7 @@ void codes_set_latlon_dimensions(codes_handle* handle, const std::vector<int>& g
 }
 
 ConfigurationContext test_configuration() {
-    return ConfigurationContext(configuration_path_name(), configuration_path_name() + "test-ocean-config.yaml");
+    return ConfigurationContext(configuration_path_name("") + "test-ocean-config.yaml");
 }
 
 }  // namespace
@@ -106,7 +106,7 @@ MultioEncodeOcean::MultioEncodeOcean(int argc, char** argv) : multio::MultioTool
 }
 
 void MultioEncodeOcean::init(const eckit::option::CmdArgs& args) {
-    eckit::AutoStdFile fin{configuration_path_name() + args(0)};
+    eckit::AutoStdFile fin{configuration_path_name("") + args(0)};
 
     int err;
     handle_.reset(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err));
@@ -197,7 +197,7 @@ void MultioEncodeOcean::executePlan() {
     auto cfg = test_configuration();
     std::vector<std::unique_ptr<Plan>> plans;
     for (auto&& cfg : cfg.subContexts("plans")) {
-        plans.emplace_back(new Plan{std::move(cfg)});
+        plans.emplace_back(std::make_unique<Plan>(std::move(cfg)));
     }
 
     Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}},

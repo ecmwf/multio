@@ -1,6 +1,5 @@
 
-#ifndef multio_util_ScopedThread_H
-#define multio_util_ScopedThread_H
+#pragma once
 
 #include <thread>
 
@@ -26,7 +25,5 @@ private:  // members
     std::thread thread_;
 };
 
-}  // namespace server
+}  // namespace util
 }  // namespace multio
-
-#endif

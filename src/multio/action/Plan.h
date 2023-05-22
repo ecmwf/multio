@@ -14,10 +14,10 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_Plan_H
-#define multio_server_Plan_H
+#pragma once
 
 #include <memory>
+#include <optional>
 
 #include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
@@ -29,7 +29,9 @@
 
 namespace multio {
 
-namespace message { class MetadataMatchers; }
+namespace message {
+class MetadataSelectors;
+}
 
 namespace action {
 
@@ -39,24 +41,27 @@ using util::FailureAware;
 class Action;
 
 class Plan : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Plan> {
+private:
+    // Delegate constructor with loaded config (from file or list entry)
+    Plan(const ConfigurationContext& confCtx, const util::YAMLFile* file);
+    
 public:
     Plan(const ConfigurationContext& confCtx);
     virtual ~Plan();
 
     virtual void process(message::Message msg);
 
-    void matchedFields(message::MetadataMatchers& matchers) const;
+    void matchedFields(message::MetadataSelectors& selectors) const;
 
-    util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&, util::DefaultFailureState&) const override;
+    util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&,
+                                               util::DefaultFailureState&) const override;
 
 protected:
+    bool enabled_;
     std::string name_;
-
     std::unique_ptr<Action> root_;
     eckit::Timing timing_;
 };
 
 }  // namespace action
 }  // namespace multio
-
-#endif

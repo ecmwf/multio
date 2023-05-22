@@ -17,8 +17,6 @@
 #include <mutex>
 
 #include "eckit/exception/Exceptions.h"
-#include "eckit/log/JSON.h"
-#include "eckit/value/Value.h"
 
 #include "multio/LibMultio.h"
 
@@ -56,7 +54,7 @@ void DataSinkFactory::list(std::ostream& out) {
     }
 }
 
-DataSink* DataSinkFactory::build(const std::string& name, const util::ConfigurationContext& confCtx) {
+std::unique_ptr<DataSink> DataSinkFactory::build(const std::string& name, const util::ConfigurationContext& confCtx) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     LOG_DEBUG_LIB(LibMultio) << "Looking for DataSinkFactory [" << name << "]" << std::endl;

@@ -90,7 +90,7 @@ eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer dest) {
         return *qitr->second;
     }
 
-    queues_.emplace(dest, std::unique_ptr<eckit::Queue<Message>>{new eckit::Queue<Message>(messageQueueSize_)});
+    queues_.emplace(dest, std::make_unique<eckit::Queue<Message>>(messageQueueSize_));
 
     eckit::Log::debug<LibMultio>()
         << "ADD QUEUE for " << dest << " --- " << queues_.at(dest).get() << std::endl;

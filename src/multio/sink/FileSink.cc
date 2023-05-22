@@ -18,7 +18,6 @@
 #include "multio/sink/FileSink.h"
 #include "multio/util/logfile_name.h"
 
-#include "eckit/exception/Exceptions.h"
 #include "eckit/io/DataHandle.h"
 
 using namespace eckit;
@@ -27,20 +26,24 @@ using namespace eckit;
 
 namespace multio {
 
-namespace  {
-std::string create_path(const eckit::LocalConfiguration& cfg) {
+namespace {
+std::string create_path(const util::ConfigurationContext& confCtx) {
+    const auto& cfg = confCtx.config();
     auto path = cfg.getString("path");
-    eckit::Log::info() << "path = " << path << std::endl;
+    auto expanded_path = confCtx.replaceCurly(path);
+    eckit::Log::info() << "path = " << expanded_path << std::endl;
     if (cfg.getBool("per-server", false)) {
-        return util::filename_prefix() + "-" + path;
+        eckit::PathName tmp = expanded_path;
+        auto dirName = tmp.baseName().asString() == expanded_path ? "" : tmp.dirName().asString() + "/";
+        return dirName + util::filename_prefix() + "-" + tmp.baseName().asString();
     }
-    return path;
+    return expanded_path;
 }
-}
+}  // namespace
 
 
 FileSink::FileSink(const util::ConfigurationContext& confCtx) :
-    DataSink(confCtx), path_{create_path(confCtx.config())}, handle_(path_.fileHandle(false)) {
+    DataSink(confCtx), path_{create_path(confCtx)}, handle_(path_.fileHandle(false)) {
     if (confCtx.config().getBool("append", false)) {
         handle_->openForAppend(0);
     }

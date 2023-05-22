@@ -14,20 +14,19 @@
 
 /// @date Jan 2019
 
-#ifndef multio_transport_Transport_H
-#define multio_transport_Transport_H
+#pragma once
 
 #include <iosfwd>
-#include <string>
 #include <map>
 #include <mutex>
+#include <string>
 
+#include "eckit/exception/Exceptions.h"
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/message/Message.h"
 #include "multio/transport/TransportStatistics.h"
 #include "multio/util/ConfigurationContext.h"
-
 
 
 namespace multio {
@@ -43,7 +42,6 @@ using PeerList = std::vector<std::unique_ptr<message::Peer>>;
 
 class Transport {
 public:  // methods
-
     Transport(const ConfigurationContext& confCtx);
     virtual ~Transport();
 
@@ -66,7 +64,7 @@ public:  // methods
 
     const PeerList& clientPeers() const;
     const PeerList& serverPeers() const;
-    
+
     virtual size_t clientCount() const;
     virtual size_t serverCount() const;
 
@@ -80,7 +78,7 @@ protected:
 
     std::mutex mutex_;
 
-private: // methods
+private:  // methods
     bool peersMissing() const;
 
     virtual void createPeers() const = 0;
@@ -108,7 +106,7 @@ public:
 
     void list(std::ostream&) const;
 
-    Transport* build(const std::string&, const ConfigurationContext& confCtx);
+    std::unique_ptr<Transport> build(const std::string&, const ConfigurationContext& confCtx);
 
 private:
     TransportFactory() = default;
@@ -120,7 +118,7 @@ private:
 
 class TransportBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual Transport* make(const ConfigurationContext& confCtx) const = 0;
+    virtual std::unique_ptr<Transport> make(const ConfigurationContext& confCtx) const = 0;
 
 protected:  // methods
     TransportBuilderBase(const std::string&);
@@ -132,7 +130,7 @@ protected:  // methods
 
 template <class T>
 class TransportBuilder final : public TransportBuilderBase {
-    Transport* make(const ConfigurationContext& confCtx) const override { return new T(confCtx); }
+    std::unique_ptr<Transport> make(const ConfigurationContext& confCtx) const override { return std::make_unique<T>(confCtx); }
 
 public:
     TransportBuilder(const std::string& name) : TransportBuilderBase(name) {}
@@ -140,7 +138,13 @@ public:
 
 //----------------------------------------------------------------------------------------------------------------------
 
+
+class TransportException : public eckit::Exception {
+public:
+    TransportException(const std::string& reason, const eckit::CodeLocation& l = eckit::CodeLocation());
+};
+
+//----------------------------------------------------------------------------------------------------------------------
+
 }  // namespace transport
 }  // namespace multio
-
-#endif

@@ -1,9 +1,8 @@
-#ifndef multio_logfile_name_H
-#define multio_logfile_name_H
+#pragma once
 
+#include <unistd.h>
 #include <sstream>
 #include <string>
-#include <unistd.h>
 
 #include "eckit/runtime/Main.h"
 
@@ -22,5 +21,3 @@ inline std::string logfile_name() {
 
 }  // namespace util
 }  // namespace multio
-
-#endif // multio_logfile_name_H

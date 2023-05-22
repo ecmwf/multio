@@ -1,14 +1,10 @@
-
-#ifndef multio_server_Mask_H
-#define multio_server_Mask_H
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
 #include <map>
 #include <mutex>
 #include <vector>
-
-#include <eckit/io/Buffer.h>
 
 namespace eckit {
 class LocalConfiguration;
@@ -19,7 +15,7 @@ namespace multio {
 namespace message {
 class Message;
 class Metadata;
-}
+}  // namespace message
 
 namespace domain {
 
@@ -42,7 +38,6 @@ public:
     const std::vector<bool>& get(const std::string& name) const;
 
 private:
-
     void addPartialMask(message::Message msg);
 
     bool allPartsArrived(const message::Message& msg) const;
@@ -56,5 +51,3 @@ private:
 
 }  // namespace domain
 }  // namespace multio
-
-#endif

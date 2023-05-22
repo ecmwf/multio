@@ -2,14 +2,15 @@
 
 /// @date Jan 2022
 
-#ifndef multio_server_transport_TransportRegistry_H
-#define multio_server_transport_TransportRegistry_H
+#pragma once
 
-#include "multio/transport/Transport.h" // This means circular dependency at the minute
+#include "multio/transport/Transport.h"  // This means circular dependency at the minute
 #include "multio/util/ConfigurationContext.h"
 
 
-namespace eckit { class Configuration; }
+namespace eckit {
+class Configuration;
+}
 
 namespace multio {
 namespace transport {
@@ -37,7 +38,5 @@ private:
     std::mutex mutex_;
 };
 
-}  // namespace action
+}  // namespace transport
 }  // namespace multio
-
-#endif

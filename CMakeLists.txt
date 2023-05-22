@@ -14,17 +14,21 @@ find_package( ecbuild 3.6 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CUR
 
 project( multio LANGUAGES CXX )
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### dependencies
 
 ecbuild_find_package( NAME eccodes VERSION  2.18   REQUIRED )
-ecbuild_find_package( NAME eckit   VERSION  1.16   REQUIRED )
+ecbuild_find_package( NAME eckit   VERSION  1.22   REQUIRED )
 ecbuild_find_package( NAME metkit  VERSION  1.7    REQUIRED )
 
 if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
+endif()
+
+if( NOT eckit_HAVE_MPI )
+  ecbuild_critical( "eckit must be built with MPI support" )
 endif()
 
 ### fdb5 plugin
@@ -34,6 +38,12 @@ ecbuild_add_option( FEATURE FDB5
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "NAME fdb5 VERSION 5.10.1" )
 
+### interpolate action
+
+ecbuild_add_option( FEATURE MIR
+                    DEFAULT ON
+                    DESCRIPTION "Interpolate data using MIR"
+                    REQUIRED_PACKAGES "NAME mir VERSION 1.16.0" )
 
 ecbuild_add_option( FEATURE FORTRAN
                     DEFAULT ON
@@ -45,15 +55,8 @@ ecbuild_add_option( FEATURE LEGACY_IFSIO
                     DEFAULT OFF
                     DESCRIPTION "Legacy (FDB4) IFS I/O interface" )
 
-### multio-server
 
-ecbuild_add_option( FEATURE MULTIO_SERVER
-                    DEFAULT OFF
-                    CONDITION eckit_HAVE_MPI
-                    DESCRIPTION "Build with I/O-server support" )
-
-
-if( HAVE_MULTIO_SERVER AND HAVE_FORTRAN )
+if( HAVE_FORTRAN )
   ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
   ecbuild_find_package( NAME fckit   VERSION 0.10.0   REQUIRED )
   find_package( MPI COMPONENTS Fortran) # Add explict mpi for errocodes -- isn't there a better way?
@@ -76,6 +79,7 @@ ecbuild_add_option( FEATURE SANDBOX
 
 ### export package info
 
+set( MULTIO_CONFIG_DIR     share/multio/config )
 set( MULTIO_INCLUDE_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src )
 set( MULTIO_LIBRARIES      multio )
 

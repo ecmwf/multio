@@ -4,8 +4,8 @@
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
- * granted to it by virtue of its status as an intergovernmental organisation nor
- * does it submit to any jurisdiction.
+ * granted to it by virtue of its status as an intergovernmental organisation
+ * nor does it submit to any jurisdiction.
  */
 
 /// @author Domokos Sarmany
@@ -14,27 +14,24 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_Action_H
-#define multio_server_Action_H
+#pragma once
 
-#include <memory>
-#include <map>
-#include <set>
 #include <iterator>
+#include <map>
+#include <memory>
 #include <mutex>
+#include <set>
 
+#include "ActionStatistics.h"
 #include "eckit/memory/NonCopyable.h"
-
-#include "multio/action/ActionStatistics.h"
 #include "multio/message/Message.h"
 #include "multio/util/ConfigurationContext.h"
 #include "multio/util/FailureHandling.h"
 
-
 namespace multio {
 
 namespace message {
-class MetadataMatchers;
+class MetadataSelectors;
 }
 
 namespace action {
@@ -49,12 +46,11 @@ public:
     explicit Action(const ConfigurationContext& confCtx);
     ~Action() override;
 
-    void execute(message::Message msg) const;
+    void execute(message::Message msg);
 
-    virtual void matchedFields(message::MetadataMatchers& matchers) const;
+    virtual void matchedFields(message::MetadataSelectors& selectors) const;
 
-    util::FailureHandlerResponse handleFailure(util::OnActionError,
-                                               const util::FailureContext&,
+    util::FailureHandlerResponse handleFailure(util::OnActionError, const util::FailureContext&,
                                                util::DefaultFailureState&) const override;
 
 protected:
@@ -65,11 +61,9 @@ protected:
     mutable ActionStatistics statistics_;
 
 private:
+    virtual void executeImpl(message::Message msg) = 0;
 
-
-    virtual void executeImpl(message::Message msg) const = 0;
-
-    virtual void print(std::ostream &os) const = 0;
+    virtual void print(std::ostream& os) const = 0;
 
     friend std::ostream& operator<<(std::ostream& os, const Action& a);
 };
@@ -90,7 +84,7 @@ public:  // methods
 
     void list(std::ostream&);
 
-    Action* build(const std::string&, const ConfigurationContext& confCtx);
+    std::unique_ptr<Action> build(const std::string&, const ConfigurationContext& confCtx);
 
 private:  // members
     std::map<std::string, const ActionBuilderBase*> factories_;
@@ -100,7 +94,7 @@ private:  // members
 
 class ActionBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual Action* make(const ConfigurationContext& confCtx) const = 0;
+    virtual std::unique_ptr<Action> make(const ConfigurationContext& confCtx) const = 0;
 
 protected:  // methods
     ActionBuilderBase(const std::string&);
@@ -112,7 +106,7 @@ protected:  // methods
 
 template <class T>
 class ActionBuilder final : public ActionBuilderBase {
-    Action* make(const ConfigurationContext& confCtx) const override { return new T(confCtx); }
+    std::unique_ptr<Action> make(const ConfigurationContext& confCtx) const override { return std::make_unique<T>(confCtx); }
 
 public:
     ActionBuilder(const std::string& name) : ActionBuilderBase(name) {}
@@ -120,8 +114,5 @@ public:
 
 //--------------------------------------------------------------------------------------------------
 
-
-}  // namespace server
+}  // namespace action
 }  // namespace multio
-
-#endif

@@ -1,6 +1,5 @@
 
-#ifndef multio_transport_StreamQueue_H
-#define multio_transport_StreamQueue_H
+#pragma once
 
 #include <queue>
 
@@ -13,7 +12,8 @@ class StreamQueue {
 public:
     StreamQueue();
 
-    // TODO: Decoupling front & pop is bad when multiple consumers (i.e. multiple threads) race for the next value. Currently tthe Queue is used in a SPSC (single-produces, single-consumer) fashion. # Philipp Geier
+    // TODO: Decoupling front & pop is bad when multiple consumers (i.e. multiple threads) race for the next value.
+    // Currently tthe Queue is used in a SPSC (single-produces, single-consumer) fashion. # Philipp Geier
     MpiInputStream* front() {
         std::lock_guard<std::mutex> lock{mutex_};
         if (queue_.empty()) {
@@ -43,5 +43,3 @@ private:
 
 }  // namespace transport
 }  // namespace multio
-
-#endif // multio_transport_StreamQueue_H

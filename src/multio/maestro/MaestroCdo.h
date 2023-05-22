@@ -1,5 +1,4 @@
-#ifndef multio_MaestroCdo_H
-#define multio_MaestroCdo_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -28,11 +27,11 @@ public:
     void demand();
     void retract();
     void dispose();
-    template<typename T>
-    void set_attribute(const std::string& key, const T& value, bool copy=true) {
+    template <typename T>
+    void set_attribute(const std::string& key, const T& value, bool copy = true) {
         ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, key.c_str(), (void**)&value, copy));
     }
-    template<typename T>
+    template <typename T>
     T get_attribute(const std::string& key) {
         enum mstro_cdo_attr_value_type ttype;
         const T* val = NULL;
@@ -41,6 +40,7 @@ public:
     }
     uint64_t size() { return size_; }
     const void* data() { return data_; }
+
 private:
     void declare();
     void set_size_and_data(uint64_t size, const void* data);
@@ -59,5 +59,3 @@ private:
 };
 
 }  // namespace multio
-
-#endif  // multio_MaestroCdo_H

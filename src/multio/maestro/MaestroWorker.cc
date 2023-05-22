@@ -41,8 +41,12 @@ MaestroWorker::MaestroWorker(const eckit::option::CmdArgs& args, eckit::Queue<pg
     args.get("dryrun", dryrun_);
 
     std::string backend;
-    if (args.get("backend", backend)) {
-        eckit::linalg::LinearAlgebra::backend(backend);
+    if (args.get("dense-backend", backend)) {
+        eckit::linalg::LinearAlgebraDense::backend(backend);
+    }
+    backend = std::string{};
+    if (args.get("sparse-backend", backend)) {
+        eckit::linalg::LinearAlgebraSparse::backend(backend);
     }
 }
 
@@ -117,7 +121,7 @@ void MaestroWorker::process() {
                 mir::output::MIROutput &output = o.output(handler, statistics_);
 
                 try {
-                    std::unique_ptr<mir::api::MIRJob> mj(new mir::api::MIRJob());
+                    std::unique_ptr<mir::api::MIRJob> mj = std::make_unique<mir::api::MIRJob>();
                     if (!handler.prepare(*mj, requirement_, *input, output, statistics_)) {
                         log_file_ << "Handler did not prepare" << std::endl;
                         continue;

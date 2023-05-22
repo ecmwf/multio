@@ -1,0 +1,22 @@
+plans:
+  - name: regular_ll_to_grid_3.00_6.00
+    actions:
+      - type: select
+        match:
+          - param: 133
+      - type: interpolate
+        input: 1/1
+        grid: [3., 6.]
+        interpolation: linear
+        options:
+          # dont-compress-plan: true
+          caching: true
+      - type: encode
+        format: grib
+        template: MARS_regular_ll_to_grid_3.00_6.00.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: MultIO_regular_ll_to_grid_3.00_6.00.grib

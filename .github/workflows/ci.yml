@@ -168,7 +168,8 @@ jobs:
       id: build-test
       uses: ecmwf-actions/build-package@v2
       with:
-        self_coverage: true
+        # lcov fails for gcc-12, re-enable self_coverage later
+        self_coverage: false
         force_build: true
         cache_suffix: "${{ matrix.build_type }}-${{ env.CACHE_SUFFIX }}"
         recreate_cache: ${{ matrix.caching == false }}
@@ -184,5 +185,5 @@ jobs:
         dependency_cmake_options: |
           ecmwf/eckit: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF  -DENABLE_ECKIT_SQL=OFF"
           ecmwf/fckit: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF"
-        cmake_options: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_MULTIO_SERVER=ON -DENABLE_LEGACY_IFSIO=ON ${{ matrix.cmake_options }}"
+        cmake_options: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_LEGACY_IFSIO=ON ${{ matrix.cmake_options }}"
         ctest_options: "${{ matrix.ctest_options }}"

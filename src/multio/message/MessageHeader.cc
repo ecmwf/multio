@@ -18,17 +18,20 @@ namespace message {
 
 Message::Header::Header(Tag tag, Peer src, Peer dst, std::string&& fieldId) :
     tag_{tag},
-        source_{std::move(src)},
-        destination_{std::move(dst)},
-        metadata_{message::to_metadata(fieldId)},
-        fieldId_{std::move(fieldId)} {}
-
-Message::Header::Header(Tag tag, Peer src, Peer dst, Metadata&& md) :
-    tag_{tag},
     source_{std::move(src)},
     destination_{std::move(dst)},
-    metadata_{std::move(md)},
-    fieldId_{} {}
+    metadata_{message::to_metadata(fieldId)},
+    fieldId_{std::move(fieldId)} {
+
+    // TODO: Maybe it is useful to check here if in the metadata we have the fields:
+    //
+    // name, category, globalSize, domain, precision?
+    //
+    // They are all required
+}
+
+Message::Header::Header(Tag tag, Peer src, Peer dst, Metadata&& md) :
+    tag_{tag}, source_{std::move(src)}, destination_{std::move(dst)}, metadata_{std::move(md)}, fieldId_{} {}
 
 Message::Tag Message::Header::tag() const {
     return tag_;
@@ -51,7 +54,7 @@ const Metadata& Message::Header::metadata() const& {
 // }
 
 std::string Message::Header::name() const {
-    return metadata_.getString("name");
+    return metadata_.getString("name","unknown");
 }
 
 std::string Message::Header::category() const {
@@ -64,6 +67,10 @@ long Message::Header::globalSize() const {
 
 std::string Message::Header::domain() const {
     return metadata_.getString("domain");
+}
+
+util::PrecisionTag Message::Header::precision() const {
+    return util::decodePrecisionTag(metadata_.getString("precision"));
 }
 
 const std::string& Message::Header::fieldId() const {

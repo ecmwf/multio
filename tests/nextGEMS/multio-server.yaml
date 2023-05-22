@@ -1,0 +1,41 @@
+plans:
+
+  - file: '{MULTIO_RAPS_PLANS_PATH}/0_0_0_debug.yaml'
+  
+  
+  
+  - file: '{MULTIO_RAPS_PLANS_PATH}/1_1_1_SFCVariables_1Hourly_OriginalGrid_grib1.yaml'
+
+  - file: '{MULTIO_RAPS_PLANS_PATH}/1_1_2_SFCVariables_1Hourly_OriginalGrid_grib2.yaml'
+
+  - file: '{MULTIO_RAPS_PLANS_PATH}/1_1_3_SpecialVariables_grib1.yaml'
+
+  - file: '{MULTIO_RAPS_PLANS_PATH}/1_2_2_3DVariables_6Hourly_OriginalGrid_grib1.yaml'
+
+  - file: '{MULTIO_RAPS_PLANS_PATH}/1_3_1_3DVariables_1Hourly_OriginalGrid_grib1.yaml'
+
+
+
+  - file: '{MULTIO_RAPS_PLANS_PATH}/2_1_1_SFCVariables_1Hourly_1_00x1_00_grib1.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/2_1_2_SFCVariables_6Hourly_1_00x1_00_grib1.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/2_1_3_SFCVariables_1Hourly_1_00x1_00_grib2.yaml'
+
+  - file: '{MULTIO_RAPS_PLANS_PATH}/2_2_1_SFCVariables_1Hourly_0_25x0_25_grib1.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/2_2_2_3DVariables_6Hourly_0_25x0_25_grib1.yaml'
+
+
+
+  - file: '{MULTIO_RAPS_PLANS_PATH}/3_1_1_SFCVariables_m1MonthlyAverage_AccumulatedFields_OriginalGrids_grib1.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/3_1_2_SFCVariables_m1MonthlyAverage_InstantaneousFields_OriginalGrids_grib1.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/3_1_2_SFCVariables_m1MonthlyAverage_InstantaneousFields_OriginalGrids_grib2.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/3_1_3_3DVariables_m1MonthlyAverage_InstantaneousFields_OriginalGrid_grib1.yaml'
+
+  - file: '{MULTIO_RAPS_PLANS_PATH}/3_2_1_SFCVariables_m1MonthlyAverage_AccumulatedFields_1_00x1_00_grib1.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/3_2_2_SFCVariables_m1MonthlyAverage_InstantaneousFields_1_00x1_00_grib1.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/3_2_2_SFCVariables_m1MonthlyAverage_InstantaneousFields_1_00x1_00_grib2.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/3_2_3_3DVariables_m1MonthlyAverage_InstantaneousFields_1_00x1_00_grib1.yaml'
+
+  - file: '{MULTIO_RAPS_PLANS_PATH}/3_3_1_SFCVariables_m1MonthlyAverage_AccumulatedFields_0_25x0_25_grib1.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/3_3_2_SFCVariables_m1MonthlyAverage_InstantaneousFields_0_25x0_25_grib1.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/3_3_2_SFCVariables_m1MonthlyAverage_InstantaneousFields_0_25x0_25_grib2.yaml'
+  - file: '{MULTIO_RAPS_PLANS_PATH}/3_3_3_3DVariables_m1MonthlyAverage_InstantaneousFields_0_25x0_25_grib1.yaml'

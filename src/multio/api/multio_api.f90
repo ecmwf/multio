@@ -12,17 +12,20 @@ module multio_api
 
     private
 
+    integer, parameter :: sp = selected_real_kind(6, 37)
     integer, parameter :: dp = selected_real_kind(15, 307)
     integer, parameter :: double_size = 8 !c_sizeof(1.0_dp) !intel compiler...
+    integer, parameter :: float_size = 4 !c_sizeof(1.0_dp) !intel compiler...
     integer, parameter :: int64 = selected_int_kind(15)
 
 
-    type multio_configurationcontext
+    type multio_configuration
         type(c_ptr) :: impl = c_null_ptr
     contains
-        procedure :: new => multio_new_configurationcontext
-        procedure :: new_from_filename => multio_new_configurationcontext_from_filename
-        procedure :: delete => multio_delete_configurationcontext
+        procedure :: new_default => multio_new_configuration
+        procedure :: new_from_filename => multio_new_configuration_from_filename
+        generic   :: new => new_default, new_from_filename
+        procedure :: delete => multio_delete_configuration
         procedure :: set_path => multio_conf_set_path
         procedure :: mpi_allow_world_default_comm => multio_conf_mpi_allow_world_default_comm
         procedure :: mpi_client_id => multio_conf_mpi_client_id
@@ -30,7 +33,7 @@ module multio_api
         procedure :: mpi_return_client_comm => multio_conf_mpi_return_client_comm
         procedure :: mpi_return_server_comm => multio_conf_mpi_return_server_comm
     end type
-    
+
     type multio_handle
         type(c_ptr) :: impl = c_null_ptr
     contains
@@ -38,11 +41,22 @@ module multio_api
         procedure :: delete => multio_delete_handle
         procedure :: open_connections => multio_open_connections
         procedure :: close_connections => multio_close_connections
-        procedure :: write_step_complete => multio_write_step_complete
+        procedure :: flush => multio_flush
+        procedure :: notify => multio_notify
         procedure :: write_domain => multio_write_domain
-        procedure :: write_mask => multio_write_mask
-        procedure :: write_field => multio_write_field
+        procedure :: write_mask_float_1d => multio_write_mask_float_1d
+        procedure :: write_mask_double_1d => multio_write_mask_double_1d
+        procedure :: write_mask_float_2d => multio_write_mask_float_2d
+        procedure :: write_mask_double_2d => multio_write_mask_double_2d
+        generic   :: write_mask => write_mask_float_1d, write_mask_float_2d, write_mask_double_1d, write_mask_double_2d
+        procedure :: write_field_float_1d => multio_write_field_float_1d
+        procedure :: write_field_double_1d => multio_write_field_double_1d
+        procedure :: write_field_float_2d => multio_write_field_float_2d
+        procedure :: write_field_double_2d => multio_write_field_double_2d
+        generic   :: write_field => write_field_float_1d, write_field_float_2d, write_field_double_1d, write_field_double_2d
         procedure :: field_accepted => multio_field_accepted
+        ! procedure :: field_is_active => multio_field_is_active
+        ! procedure :: category_is_fully_active => multio_category_is_fully_active
     end type
 
     type multio_metadata
@@ -50,18 +64,20 @@ module multio_api
     contains
         procedure :: new => multio_new_metadata
         procedure :: delete => multio_delete_metadata
-        procedure :: set_int_value => multio_metadata_set_int_value
-        procedure :: set_long_value => multio_metadata_set_long_value
-        procedure :: set_longlong_value => multio_metadata_set_longlong_value
-        procedure :: set_string_value => multio_metadata_set_string_value
-        procedure :: set_bool_value => multio_metadata_set_bool_value
-        procedure :: set_float_value => multio_metadata_set_float_value
-        procedure :: set_double_value => multio_metadata_set_double_value
+        procedure :: set_int => multio_metadata_set_int
+        procedure :: set_long => multio_metadata_set_long
+        procedure :: set_longlong => multio_metadata_set_longlong
+        procedure :: set_string => multio_metadata_set_string
+        procedure :: set_bool => multio_metadata_set_bool
+        procedure :: set_float => multio_metadata_set_float
+        procedure :: set_double => multio_metadata_set_double
+        ! Not possible to overload integers with the same dimensions
+        generic   :: set => set_int, set_string, set_bool, set_float, set_double
     end type
 
     ! Type declarations
 
-    public :: multio_configurationcontext
+    public :: multio_configuration
     public :: multio_handle
     public :: multio_metadata
 
@@ -133,7 +149,7 @@ module multio_api
             type(c_ptr), intent(in), value :: cc
             integer(c_int) :: err
         end function
-        
+
         function c_multio_set_failure_handler(handler, context) result(err) &
                 bind(c, name='multio_set_failure_handler')
             use, intrinsic :: iso_c_binding
@@ -150,33 +166,33 @@ module multio_api
             integer(c_int), intent(in), value :: err
             type(c_ptr) :: error_string
         end function
-        
-        ! Configuration context api
-        function c_multio_new_configurationcontext(cc) result(err) &
-                bind(c, name='multio_new_configurationcontext')
+
+        ! Configuration api
+        function c_multio_new_configuration(cc) result(err) &
+                bind(c, name='multio_new_configuration')
                 use, intrinsic :: iso_c_binding
                 implicit none
                 type(c_ptr), intent(out) :: cc
                 integer(c_int) :: err
         end function
-        
-        function c_multio_new_configurationcontext_from_filename(cc, file_name) result(err) &
-                bind(c, name='multio_new_configurationcontext_from_filename')
+
+        function c_multio_new_configuration_from_filename(cc, file_name) result(err) &
+                bind(c, name='multio_new_configuration_from_filename')
                 use, intrinsic :: iso_c_binding
                 implicit none
                 type(c_ptr), intent(in), value :: file_name
                 type(c_ptr), intent(out) :: cc
                 integer(c_int) :: err
         end function
-        
-        function c_multio_delete_configurationcontext(cc) result(err) &
-                bind(c, name='multio_delete_configurationcontext')
+
+        function c_multio_delete_configuration(cc) result(err) &
+                bind(c, name='multio_delete_configuration')
                 use, intrinsic :: iso_c_binding
                 implicit none
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_conf_set_path(cc, path) result(err) &
                 bind(c, name='multio_conf_set_path')
                 use, intrinsic :: iso_c_binding
@@ -185,7 +201,7 @@ module multio_api
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_conf_mpi_allow_world_default_comm(cc, allow) result(err) &
                 bind(c, name='multio_conf_mpi_allow_world_default_comm')
                 use, intrinsic :: iso_c_binding
@@ -194,16 +210,16 @@ module multio_api
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_conf_mpi_client_id(cc, client_id) result(err) &
                 bind(c, name='multio_conf_mpi_client_id')
                 use, intrinsic :: iso_c_binding
                 implicit none
-                type(c_ptr), intent(in), value :: client_id 
+                type(c_ptr), intent(in), value :: client_id
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_conf_mpi_parent_comm(cc, parent_comm) result(err) &
                 bind(c, name='multio_conf_mpi_parent_comm')
                 use, intrinsic :: iso_c_binding
@@ -212,7 +228,7 @@ module multio_api
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_conf_mpi_return_client_comm(cc, return_comm) result(err) &
                 bind(c, name='multio_conf_mpi_return_client_comm')
                 use, intrinsic :: iso_c_binding
@@ -221,7 +237,7 @@ module multio_api
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
         function c_multio_conf_mpi_return_server_comm(cc, return_comm) result(err) &
                 bind(c, name='multio_conf_mpi_return_server_comm')
                 use, intrinsic :: iso_c_binding
@@ -230,7 +246,7 @@ module multio_api
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
         end function
-        
+
 
         ! Handle object api
 
@@ -267,8 +283,17 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_write_step_complete(handle, metadata) result(err) &
-                bind(c, name='multio_write_step_complete')
+        function c_multio_flush(handle, metadata) result(err) &
+                bind(c, name='multio_flush')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: handle
+            type(c_ptr), intent(in), value :: metadata
+            integer(c_int) :: err
+        end function
+        
+        function c_multio_notify(handle, metadata) result(err) &
+                bind(c, name='multio_notify')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: handle
@@ -287,28 +312,52 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_write_mask(handle, metadata, data, size) result(err) &
-                bind(c, name='multio_write_mask')
+        function c_multio_write_mask_float(handle, metadata, data, size) result(err) &
+                bind(c, name='multio_write_mask_float')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: handle
             type(c_ptr), intent(in), value :: metadata
-            real(c_double), dimension(*), intent(in) :: data
+            ! real(c_float), dimension(*), intent(in) :: data
+            type(c_ptr), intent(in), value :: data
             integer(c_int), intent(in), value :: size
             integer(c_int) :: err
         end function
 
-        function c_multio_write_field(handle, metadata, data, size) result(err) &
-                bind(c, name='multio_write_field')
+        function c_multio_write_mask_double(handle, metadata, data, size) result(err) &
+                bind(c, name='multio_write_mask_double')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: handle
             type(c_ptr), intent(in), value :: metadata
-            real(c_double), dimension(*), intent(in) :: data
+            ! real(c_double), dimension(*), intent(in) :: data
+            type(c_ptr), intent(in), value :: data
             integer(c_int), intent(in), value :: size
             integer(c_int) :: err
         end function
-        
+
+        function c_multio_write_field_float(handle, metadata, data, size) result(err) &
+                bind(c, name='multio_write_field_float')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: handle
+            type(c_ptr), intent(in), value :: metadata
+            type(c_ptr), intent(in), value :: data
+            integer(c_int), intent(in), value :: size
+            integer(c_int) :: err
+        end function
+
+        function c_multio_write_field_double(handle, metadata, data, size) result(err) &
+                bind(c, name='multio_write_field_double')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: handle
+            type(c_ptr), intent(in), value :: metadata
+            type(c_ptr), intent(in), value :: data
+            integer(c_int), intent(in), value :: size
+            integer(c_int) :: err
+        end function
+
         function c_multio_field_accepted(handle, metadata, set_value) result(err) &
                 bind(c, name='multio_field_accepted')
             use, intrinsic :: iso_c_binding
@@ -337,8 +386,8 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_metadata_set_int_value(metadata, key, value) result(err) &
-                bind(c, name='multio_metadata_set_int_value')
+        function c_multio_metadata_set_int(metadata, key, value) result(err) &
+                bind(c, name='multio_metadata_set_int')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: metadata
@@ -347,8 +396,8 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_metadata_set_long_value(metadata, key, value) result(err) &
-                bind(c, name='multio_metadata_set_long_value')
+        function c_multio_metadata_set_long(metadata, key, value) result(err) &
+                bind(c, name='multio_metadata_set_long')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: metadata
@@ -357,8 +406,8 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_metadata_set_longlong_value(metadata, key, value) result(err) &
-                bind(c, name='multio_metadata_set_longlong_value')
+        function c_multio_metadata_set_longlong(metadata, key, value) result(err) &
+                bind(c, name='multio_metadata_set_longlong')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: metadata
@@ -367,8 +416,8 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_metadata_set_bool_value(metadata, key, value) result(err) &
-                bind(c, name='multio_metadata_set_bool_value')
+        function c_multio_metadata_set_bool(metadata, key, value) result(err) &
+                bind(c, name='multio_metadata_set_bool')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: metadata
@@ -377,8 +426,8 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_metadata_set_float_value(metadata, key, value) result(err) &
-                bind(c, name='multio_metadata_set_float_value')
+        function c_multio_metadata_set_float(metadata, key, value) result(err) &
+                bind(c, name='multio_metadata_set_float')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: metadata
@@ -387,8 +436,8 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_metadata_set_double_value(metadata, key, value) result(err) &
-                bind(c, name='multio_metadata_set_double_value')
+        function c_multio_metadata_set_double(metadata, key, value) result(err) &
+                bind(c, name='multio_metadata_set_double')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: metadata
@@ -397,8 +446,8 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_metadata_set_string_value(metadata, key, value) result(err) &
-                bind(c, name='multio_metadata_set_string_value')
+        function c_multio_metadata_set_string(metadata, key, value) result(err) &
+                bind(c, name='multio_metadata_set_string')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(in), value :: metadata
@@ -469,88 +518,88 @@ contains
         character(:), allocatable, target :: error_string
         error_string = fortranise_cstr(c_multio_error_string(err))
     end function
-    
+
     function multio_start_server(cc) result(err)
-        class(multio_configurationcontext), intent(in) :: cc
+        class(multio_configuration), intent(in) :: cc
         integer :: err
         err = c_multio_start_server(cc%impl)
     end function
-    
+
     ! Methods for configuration context objects
-    
-    function multio_new_configurationcontext(cc) result(err) 
-            class(multio_configurationcontext), intent(out) :: cc
+
+    function multio_new_configuration(cc) result(err)
+            class(multio_configuration), intent(out) :: cc
             integer :: err
-            err = c_multio_new_configurationcontext(cc%impl)
+            err = c_multio_new_configuration(cc%impl)
     end function
-    
-    function multio_new_configurationcontext_from_filename(cc, file_name) result(err) 
-            class(multio_configurationcontext), intent(inout) :: cc
+
+    function multio_new_configuration_from_filename(cc, file_name) result(err)
+            class(multio_configuration), intent(inout) :: cc
             integer :: err
             character(*), intent(in) :: file_name
             character(:), allocatable, target :: nullified_path
             nullified_path = trim(file_name) // c_null_char
-            err = c_multio_new_configurationcontext_from_filename(cc%impl, c_loc(nullified_path))
+            err = c_multio_new_configuration_from_filename(cc%impl, c_loc(nullified_path))
     end function
-    
-    function multio_delete_configurationcontext(cc) result(err) 
-            class(multio_configurationcontext), intent(inout) :: cc
+
+    function multio_delete_configuration(cc) result(err)
+            class(multio_configuration), intent(inout) :: cc
             integer :: err
-            err = c_multio_delete_configurationcontext(cc%impl)
+            err = c_multio_delete_configuration(cc%impl)
             cc%impl = c_null_ptr
     end function
-    
-    function multio_conf_set_path(cc, path) result(err) 
-            class(multio_configurationcontext), intent(inout) :: cc
+
+    function multio_conf_set_path(cc, path) result(err)
+            class(multio_configuration), intent(inout) :: cc
             integer :: err
             character(*), intent(in) :: path
             character(:), allocatable, target :: nullified_path
             nullified_path = trim(path) // c_null_char
             err = c_multio_conf_set_path(cc%impl, c_loc(nullified_path))
     end function
-    
-    function multio_conf_mpi_allow_world_default_comm(cc, allow) result(err) 
-            class(multio_configurationcontext), intent(inout) :: cc
+
+    function multio_conf_mpi_allow_world_default_comm(cc, allow) result(err)
+            class(multio_configuration), intent(inout) :: cc
             logical(c_bool), intent(in), value :: allow
             integer :: err
             err = c_multio_conf_mpi_allow_world_default_comm(cc%impl, allow)
     end function
-    
-    function multio_conf_mpi_client_id(cc, client_id) result(err) 
-            class(multio_configurationcontext), intent(inout) :: cc
+
+    function multio_conf_mpi_client_id(cc, client_id) result(err)
+            class(multio_configuration), intent(inout) :: cc
             integer :: err
             character(*), intent(in) :: client_id
             character(:), allocatable, target :: nullified_client_id
             nullified_client_id = trim(client_id) // c_null_char
             err = c_multio_conf_mpi_client_id(cc%impl, c_loc(nullified_client_id))
     end function
-    
-    function multio_conf_mpi_parent_comm(cc, parent_comm) result(err) 
-            class(multio_configurationcontext), intent(inout) :: cc
+
+    function multio_conf_mpi_parent_comm(cc, parent_comm) result(err)
+            class(multio_configuration), intent(inout) :: cc
             integer(c_int), intent(in), value :: parent_comm
             integer :: err
             err = c_multio_conf_mpi_parent_comm(cc%impl, parent_comm)
     end function
-    
-    function multio_conf_mpi_return_client_comm(cc, return_comm) result(err) 
-            class(multio_configurationcontext), intent(inout) :: cc
+
+    function multio_conf_mpi_return_client_comm(cc, return_comm) result(err)
+            class(multio_configuration), intent(inout) :: cc
             integer(c_int), intent(out) :: return_comm ! can be c_null_ptr
             integer :: err
             err = c_multio_conf_mpi_return_client_comm(cc%impl, return_comm)
     end function
-    
-    function multio_conf_mpi_return_server_comm(cc, return_comm) result(err) 
-            class(multio_configurationcontext), intent(inout) :: cc
+
+    function multio_conf_mpi_return_server_comm(cc, return_comm) result(err)
+            class(multio_configuration), intent(inout) :: cc
             integer(c_int), intent(out) :: return_comm ! can be c_null_ptr
             integer :: err
             err = c_multio_conf_mpi_return_server_comm(cc%impl, return_comm)
     end function
-    
+
     ! Methods for handle objects
 
     function multio_new_handle(handle, cc) result(err)
         class(multio_handle), intent(inout) :: handle
-        class(multio_configurationcontext), intent(in) :: cc
+        class(multio_configuration), intent(in) :: cc
         integer :: err
         err = c_multio_new_handle(handle%impl, cc%impl)
     end function
@@ -574,42 +623,100 @@ contains
         err = c_multio_close_connections(handle%impl)
     end function
 
-    function multio_write_step_complete(handle, metadata) result(err)
+    function multio_flush(handle, metadata) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
         integer :: err
-        err = c_multio_write_step_complete(handle%impl, metadata%impl)
-    end function
-
-    function multio_write_domain(handle, metadata, data, size) result(err)
-        class(multio_handle), intent(inout) :: handle
-        class(multio_metadata), intent(in) :: metadata
-        integer :: err
-        integer, dimension(*), intent(in) :: data
-        integer, intent(in), value :: size
-        err = c_multio_write_domain(handle%impl, metadata%impl, data, size)
-    end function
-
-    function multio_write_mask(handle, metadata, data, size) result(err)
-        class(multio_handle), intent(inout) :: handle
-        class(multio_metadata), intent(in) :: metadata
-        integer :: err
-
-        real(dp), dimension(*), intent(in) :: data
-        integer, intent(in), value :: size
-        err = c_multio_write_mask(handle%impl, metadata%impl, data, size)
-    end function
-
-    function multio_write_field(handle, metadata, data, size) result(err)
-        class(multio_handle), intent(inout) :: handle
-        class(multio_metadata), intent(in) :: metadata
-        integer :: err
-
-        real(dp), dimension(*), intent(in) :: data
-        integer, intent(in), value :: size
-        err = c_multio_write_field(handle%impl, metadata%impl, data, size)
+        err = c_multio_flush(handle%impl, metadata%impl)
     end function
     
+    function multio_notify(handle, metadata) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+        err = c_multio_notify(handle%impl, metadata%impl)
+    end function
+
+    function multio_write_domain(handle, metadata, data) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+        integer, dimension(:), intent(in) :: data
+        err = c_multio_write_domain(handle%impl, metadata%impl, data, size(data))
+    end function
+
+    function multio_write_mask_float_1d(handle, metadata, data) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(sp), dimension(:), target, intent(in) :: data
+        err = c_multio_write_mask_float(handle%impl, metadata%impl, c_loc(data), size(data))
+    end function
+    
+    function multio_write_mask_float_2d(handle, metadata, data) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(sp), dimension(:,:), target, intent(in) :: data
+        err = c_multio_write_mask_float(handle%impl, metadata%impl, c_loc(data), size(data))
+    end function
+
+    function multio_write_mask_double_1d(handle, metadata, data) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(dp), dimension(:), target, intent(in) :: data
+        err = c_multio_write_mask_double(handle%impl, metadata%impl, c_loc(data), size(data))
+    end function
+    
+    function multio_write_mask_double_2d(handle, metadata, data) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(dp), dimension(:,:), target, intent(in) :: data
+        err = c_multio_write_mask_double(handle%impl, metadata%impl, c_loc(data), size(data))
+    end function
+
+    function multio_write_field_float_1d(handle, metadata, data) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(sp), dimension(:), target, intent(in) :: data
+        err = c_multio_write_field_float(handle%impl, metadata%impl, c_loc(data), size(data))
+    end function
+    
+    function multio_write_field_float_2d(handle, metadata, data) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(sp), dimension(:,:), target, intent(in) :: data
+        err = c_multio_write_field_float(handle%impl, metadata%impl, c_loc(data), size(data))
+    end function
+
+    function multio_write_field_double_1d(handle, metadata, data) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(dp), dimension(:), target, intent(in) :: data
+        err = c_multio_write_field_double(handle%impl, metadata%impl, c_loc(data), size(data))
+    end function
+    
+    function multio_write_field_double_2d(handle, metadata, data) result(err)
+        class(multio_handle), intent(inout) :: handle
+        class(multio_metadata), intent(in) :: metadata
+        integer :: err
+
+        real(dp), dimension(:,:), target, intent(in) :: data
+        err = c_multio_write_field_double(handle%impl, metadata%impl, c_loc(data), size(data))
+    end function
+
     function multio_field_accepted(handle, metadata, set_value) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
@@ -618,7 +725,7 @@ contains
         character(:), allocatable, target :: nullified_field
         err = c_multio_field_accepted(handle%impl, metadata%impl, set_value)
     end function
-    
+
     ! Methods for metadata objects
     function multio_new_metadata(metadata) result(err)
         class(multio_metadata), intent(inout) :: metadata
@@ -633,7 +740,7 @@ contains
         metadata%impl = c_null_ptr
     end function
 
-    function multio_metadata_set_int_value(metadata, key, value) result(err)
+    function multio_metadata_set_int(metadata, key, value) result(err)
         class(multio_metadata), intent(in) :: metadata
         character(*), intent(in) :: key
         integer(c_int), intent(in), value :: value
@@ -642,10 +749,10 @@ contains
         character(:), allocatable, target :: nullified_key
         nullified_key = trim(key) // c_null_char
 
-        err = c_multio_metadata_set_int_value(metadata%impl, c_loc(nullified_key), value)
+        err = c_multio_metadata_set_int(metadata%impl, c_loc(nullified_key), value)
     end function
 
-    function multio_metadata_set_long_value(metadata, key, value) result(err)
+    function multio_metadata_set_long(metadata, key, value) result(err)
         class(multio_metadata), intent(in) :: metadata
         character(*), intent(in) :: key
         integer(c_long), intent(in), value :: value
@@ -654,10 +761,10 @@ contains
         character(:), allocatable, target :: nullified_key
         nullified_key = trim(key) // c_null_char
 
-        err = c_multio_metadata_set_long_value(metadata%impl, c_loc(nullified_key), value)
+        err = c_multio_metadata_set_long(metadata%impl, c_loc(nullified_key), value)
     end function
 
-    function multio_metadata_set_longlong_value(metadata, key, value) result(err)
+    function multio_metadata_set_longlong(metadata, key, value) result(err)
         class(multio_metadata), intent(in) :: metadata
         character(*), intent(in) :: key
         integer(c_long_long), intent(in), value :: value
@@ -666,10 +773,10 @@ contains
         character(:), allocatable, target :: nullified_key
         nullified_key = trim(key) // c_null_char
 
-        err = c_multio_metadata_set_longlong_value(metadata%impl, c_loc(nullified_key), value)
+        err = c_multio_metadata_set_longlong(metadata%impl, c_loc(nullified_key), value)
     end function
 
-    function multio_metadata_set_float_value(metadata, key, value) result(err)
+    function multio_metadata_set_float(metadata, key, value) result(err)
         class(multio_metadata), intent(in) :: metadata
         character(*), intent(in) :: key
         real(c_float), intent(in), value :: value
@@ -678,10 +785,10 @@ contains
         character(:), allocatable, target :: nullified_key
         nullified_key = trim(key) // c_null_char
 
-        err = c_multio_metadata_set_float_value(metadata%impl, c_loc(nullified_key), value)
+        err = c_multio_metadata_set_float(metadata%impl, c_loc(nullified_key), value)
     end function
 
-    function multio_metadata_set_double_value(metadata, key, value) result(err)
+    function multio_metadata_set_double(metadata, key, value) result(err)
         class(multio_metadata), intent(in) :: metadata
         character(*), intent(in) :: key
         real(dp), intent(in), value :: value
@@ -690,10 +797,10 @@ contains
         character(:), allocatable, target :: nullified_key
         nullified_key = trim(key) // c_null_char
 
-        err = c_multio_metadata_set_double_value(metadata%impl, c_loc(nullified_key), value)
+        err = c_multio_metadata_set_double(metadata%impl, c_loc(nullified_key), value)
     end function
 
-    function multio_metadata_set_bool_value(metadata, key, value) result(err)
+    function multio_metadata_set_bool(metadata, key, value) result(err)
         class(multio_metadata), intent(in) :: metadata
         character(*), intent(in) :: key
         logical(c_bool), intent(in), value :: value
@@ -702,10 +809,10 @@ contains
         character(:), allocatable, target :: nullified_key
         nullified_key = trim(key) // c_null_char
 
-        err = c_multio_metadata_set_bool_value(metadata%impl, c_loc(nullified_key), value)
+        err = c_multio_metadata_set_bool(metadata%impl, c_loc(nullified_key), value)
     end function
 
-    function multio_metadata_set_string_value(metadata, key, value) result(err)
+    function multio_metadata_set_string(metadata, key, value) result(err)
         class(multio_metadata), intent(in) :: metadata
         character(*), intent(in) :: key
         character(*), intent(in) :: value
@@ -716,7 +823,7 @@ contains
         nullified_key = trim(key) // c_null_char
         nullified_value = trim(value) // c_null_char
 
-        err = c_multio_metadata_set_string_value(metadata%impl, c_loc(nullified_key), c_loc(nullified_value))
+        err = c_multio_metadata_set_string(metadata%impl, c_loc(nullified_key), c_loc(nullified_value))
     end function
 
 end module multio_api

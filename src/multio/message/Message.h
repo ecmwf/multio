@@ -14,17 +14,18 @@
 
 /// @date Jan 2019
 
-#ifndef multio_server_Message_H
-#define multio_server_Message_H
+#pragma once
 
 #include <memory>
 #include <string>
 
 #include "eckit/io/Buffer.h"
 #include "eckit/utils/Optional.h"
+#include "multio/util/PrecisionTag.h"
 
 #include "multio/message/Metadata.h"
 #include "multio/message/Peer.h"
+
 
 namespace eckit {
 class Stream;
@@ -50,8 +51,8 @@ public:  // types
         Domain,
         Mask,
         Field,
-        StepComplete,
-        StepNotification,
+        Flush,
+        Notification,
         ENDTAG
     };
 
@@ -69,9 +70,11 @@ public:  // types
 
         std::string category() const;
 
-        long globalSize() const ;
+        long globalSize() const;
 
         std::string domain() const;
+
+        util::PrecisionTag precision() const;
 
         const std::string& fieldId() const;
 
@@ -79,7 +82,7 @@ public:  // types
 
         // Metadata&& metadata() &&;
         const Metadata& metadata() const&;
-        
+
         Header modifyMetadata(Metadata&& md) const;
 
     private:
@@ -90,7 +93,7 @@ public:  // types
 
         Metadata metadata_;
         // encode fieldId_ lazily
-        mutable eckit::Optional<std::string> fieldId_; // Make that a hash?
+        mutable eckit::Optional<std::string> fieldId_;  // Make that a hash?
     };
 
     // class Content {
@@ -122,7 +125,6 @@ public:  // methods
     // Message(std::shared_ptr<Header> header, std::shared_ptr<eckit::Buffer> payload);
 
 public:
-
     const Header& header() const;
 
     int version() const;
@@ -135,16 +137,18 @@ public:
 
     std::string category() const;
 
-    long globalSize() const ;
+    util::PrecisionTag precision() const;
+
+    long globalSize() const;
 
     std::string domain() const;
 
     const std::string& fieldId() const;
-    
+
     // Metadata&& metadata() &&;
-    
+
     const Metadata& metadata() const&;
-    
+
     Message modifyMetadata(Metadata&& md) const;
 
     eckit::Buffer& payload();
@@ -167,12 +171,32 @@ private:  // members
 
     std::shared_ptr<Header> header_;
     std::shared_ptr<eckit::Buffer> payload_;
-
 };
 
 eckit::message::Message to_eckit_message(const Message& msg);
 
+
+// Utility to convert message 
+template <typename From, typename To>
+message::Message convert_precision(message::Message&& msg) {
+    const size_t N = msg.payload().size() / sizeof(From);
+    eckit::Buffer buffer(N * sizeof(To));
+
+    auto md = msg.metadata();
+    md.set("globalSize", buffer.size());
+    md.set("precision", std::is_same<To, double>::value  ? "double"
+                        : std::is_same<To, float>::value ? "single"
+                                                         : NOTIMP);
+
+    const auto* a = reinterpret_cast<const From*>(msg.payload().data());
+    auto* b = reinterpret_cast<To*>(buffer.data());
+    for (size_t i = 0; i < N; ++i) {
+        *(b++) = static_cast<To>(*(a++));
+    }
+
+    return {message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(md)}, std::move(buffer)};
+}
+
+
 }  // namespace message
 }  // namespace multio
-
-#endif

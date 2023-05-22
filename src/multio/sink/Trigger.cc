@@ -24,6 +24,8 @@
 #include "eckit/types/Types.h"
 
 #include "multio/LibMultio.h"
+#include "multio/util/Environment.h"
+
 
 using namespace eckit;
 using namespace eckit::net;
@@ -178,7 +180,7 @@ public:  // methods
     virtual void trigger(const StringDict& keys) const = 0;
     virtual void trigger(eckit::message::Message msg) const = 0;
 
-    static EventTrigger* build(const ConfigurationContext& config);
+    static std::unique_ptr<EventTrigger> build(const ConfigurationContext& config);
 
 protected:  // member
     int port_;
@@ -293,15 +295,15 @@ private:
 
 //----------------------------------------------------------------------------------------------------------------------
 
-EventTrigger* EventTrigger::build(const ConfigurationContext& confCtx) {
+std::unique_ptr<EventTrigger> EventTrigger::build(const ConfigurationContext& confCtx) {
     std::string type = confCtx.config().getString("type");
 
     if (type == "MetadataChange") {
-        return new MetadataChangeTrigger(confCtx);
+        return std::make_unique<MetadataChangeTrigger>(confCtx);
     }
 
     if (type == "NotifyMetadata") {
-        return new NotifyMetadataTrigger(confCtx);
+        return std::make_unique<NotifyMetadataTrigger>(confCtx);
     }
 
     throw eckit::BadValue(std::string("Unknown event type ") + type, Here());
@@ -312,40 +314,35 @@ EventTrigger* EventTrigger::build(const ConfigurationContext& confCtx) {
 
 Trigger::Trigger(const ConfigurationContext& confCtx) {
     if (confCtx.config().has("triggers")) {
-        for (auto&& subCtx: confCtx.subContexts("triggers")) {
-            triggers_.push_back(EventTrigger::build(std::move(subCtx)));
+        for (auto&& subCtx : confCtx.subContexts("triggers")) {
+            triggers_.emplace_back(EventTrigger::build(std::move(subCtx)));
         }
     }
 
     /// @note this doesn't quite work for reentrant MultIO objects (MultIO as a DataSink itself)
-    const char* conf = ::getenv("MULTIO_CONFIG_TRIGGERS");
+    auto conf = util::getEnv("MULTIO_CONFIG_TRIGGERS");
     if (conf) {
-        std::string confString(conf);
-        ConfigurationContext confCtx2(eckit::LocalConfiguration(eckit::YAMLConfiguration(confString)), confCtx.pathName(), confString);
+        std::string confString(*conf);
+        ConfigurationContext confCtx2{eckit::LocalConfiguration{eckit::YAMLConfiguration{std::string{confString}}},
+                                      confCtx.pathName(), confString};
 
-        for (auto&& subCtx: confCtx2.subContexts("triggers")) {
-            triggers_.push_back(EventTrigger::build(std::move(subCtx)));
+        for (auto&& subCtx : confCtx2.subContexts("triggers")) {
+            triggers_.emplace_back(EventTrigger::build(std::move(subCtx)));
         }
     }
 }
 
-Trigger::~Trigger() {
-    for (std::vector<EventTrigger*>::iterator it = triggers_.begin(); it != triggers_.end(); ++it) {
-        delete *it;
-    }
-}
+Trigger::~Trigger() = default;
 
 void Trigger::events(const StringDict& keys) const {
-    for (std::vector<EventTrigger*>::const_iterator it = triggers_.begin(); it != triggers_.end();
-         ++it) {
-        (*it)->trigger(keys);
+    for (auto const& it : triggers_) {
+        it->trigger(keys);
     }
 }
 
 void Trigger::events(eckit::message::Message msg) const {
-    for (std::vector<EventTrigger*>::const_iterator it = triggers_.begin(); it != triggers_.end();
-         ++it) {
-        (*it)->trigger(msg);
+    for (auto const& it : triggers_) {
+        it->trigger(msg);
     }
 }
 

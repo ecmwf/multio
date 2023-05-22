@@ -1,0 +1,22 @@
+plans:
+  - name: test_average_1m_grib2
+    actions:
+
+      - type: statistics
+        output-frequency: 1m
+        operations: [ average ]
+        options:
+          step-frequency: 1
+          time-step: 3600
+          use-current-time: true
+
+      - type: encode
+        format: grib
+        template: reduced_gg_pl_80_avg_grib2.tmpl
+
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: Result_restart_1_average_1m_grib2.grib

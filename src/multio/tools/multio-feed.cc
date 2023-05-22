@@ -4,8 +4,8 @@
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
- * granted to it by virtue of its status as an intergovernmental organisation nor
- * does it submit to any jurisdiction.
+ * granted to it by virtue of its status as an intergovernmental organisation
+ * nor does it submit to any jurisdiction.
  */
 
 /// @author Domokos Sarmany
@@ -30,10 +30,7 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 #include "eckit/value/Value.h"
-
-
 #include "metkit/codes/CodesSplitter.h"
-
 #include "multio/ifsio/ifsio.h"
 #include "multio/tools/MultioTool.h"
 
@@ -52,14 +49,6 @@ public:
 };
 
 class MetadataSetter : public eckit::LocalConfiguration {
-    // void print(std::ostream& os) const {
-    //     os << *root_ << std::endl;
-    // }
-    // friend std::ostream& operator<<(std::ostream& os, const MetadataSetter& md) {
-    //     md.print(os);
-    //     return os;
-    // }
-
 public:
     using eckit::LocalConfiguration::getDouble;
     using eckit::LocalConfiguration::getLong;
@@ -102,15 +91,22 @@ private:
     eckit::PathName fdbRootPath_;
 
     bool testSubtoc_ = false;
-    bool decodeData_ = false;
+    bool decodeDoubleData_ = false;
+    bool decodeSingleData_ = false;
     std::string configPath_ = "";
 };
 
 MultioFeed::MultioFeed(int argc, char** argv) :
     multio::MultioTool{argc, argv}, fdbRootPath_{"~multio/multio/tests/fdb/root"} {
     options_.push_back(new eckit::option::SimpleOption<bool>("test-subtoc", "Test if subtoc has been created"));
-    options_.push_back(new eckit::option::SimpleOption<bool>(
-        "decode", "Decode messages and pass raw data with metadata through the pipeline"));
+    options_.push_back(
+        new eckit::option::SimpleOption<bool>("decode",
+                                              "Decode messages and pass raw data with metadata through the pipeline "
+                                              "(with data in double precision)"));
+    options_.push_back(
+        new eckit::option::SimpleOption<bool>("decodeSingle",
+                                              "Decode messages and pass raw data with metadata through the pipeline "
+                                              "(with data in single precision)"));
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("plans", "Path to YAML/JSON file containing plans and actions."));
 }
@@ -121,7 +117,13 @@ void MultioFeed::init(const eckit::option::CmdArgs& args) {
         std::system(std::string{"rm -rf " + fdbRootPath_.asString() + "/*"}.c_str());
         fdbRootPath_.mkdir();
     }
-    args.get("decode", decodeData_);
+    args.get("decode", decodeDoubleData_);
+    args.get("decodeSingle", decodeSingleData_);
+
+    if (decodeDoubleData_ && decodeSingleData_) {
+        throw eckit::UserError{"Both double and single precision requested", Here()};
+    }
+
     args.get("plans", configPath_);
 
     if (!configPath_.empty()) {
@@ -138,34 +140,107 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
     eckit::message::Message msg;
 
     while ((msg = reader.next())) {
-        if (decodeData_) {
-            MetadataSetter encodingMetadata;
-            eckit::message::TypedSetter<MetadataSetter> gatherer{encodingMetadata};
+        if (decodeDoubleData_ || decodeSingleData_) {
+            MetadataSetter metadata;
+            eckit::message::TypedSetter<MetadataSetter> gatherer{metadata};
             eckit::message::GetMetadataOptions mdOpts{};
             mdOpts.valueRepresentation = ValueRepresentation::Native;
-            mdOpts.nameSpace = "";
+            mdOpts.nameSpace = "mars";
             msg.getMetadata(gatherer, mdOpts);
 
-            eckit::LocalConfiguration metadata;
-            if (encodingMetadata.has("name")) {
-                metadata.set("name", encodingMetadata.getString("name"));
+            MetadataSetter metadataDetailed;
+            eckit::message::TypedSetter<MetadataSetter> gathererDetailed{metadataDetailed};
+            mdOpts.valueRepresentation = ValueRepresentation::Native;
+            mdOpts.nameSpace = "";
+            msg.getMetadata(gathererDetailed, mdOpts);
+
+            if (metadataDetailed.has("gridType"))
+                metadata.set("gridType", metadataDetailed.getString("gridType"));
+
+            // Maybe use gridType?
+            if (metadataDetailed.getBool("sphericalHarmonics", false)) {
+                metadata.set("sphericalHarmonics", true);
+
+                if (metadataDetailed.has("complexPacking"))
+                    metadata.set("complexPacking", metadataDetailed.getLong("complexPacking"));
+                if (metadataDetailed.has("generatingProcessIdentifier"))
+                    metadata.set("generatingProcessIdentifier",
+                                 metadataDetailed.getLong("generatingProcessIdentifier"));
+                if (metadataDetailed.has("J"))
+                    metadata.set("pentagonalResolutionParameterJ", metadataDetailed.getLong("J"));
+                if (metadataDetailed.has("K"))
+                    metadata.set("pentagonalResolutionParameterK", metadataDetailed.getLong("K"));
+                if (metadataDetailed.has("M"))
+                    metadata.set("pentagonalResolutionParameterM", metadataDetailed.getLong("M"));
+                if (metadataDetailed.has("JS"))
+                    metadata.set("subSetJ", metadataDetailed.getLong("JS"));
+                if (metadataDetailed.has("KS"))
+                    metadata.set("subSetK", metadataDetailed.getLong("KS"));
+                if (metadataDetailed.has("MS"))
+                    metadata.set("subSetM", metadataDetailed.getLong("MS"));
+
+                // Seems not to be settable in codes
+                metadata.set("unpackedSubsetPrecision", 1);
             }
-            if (encodingMetadata.has("param")) {
-                metadata.set("param", encodingMetadata.getLong("param"));
+
+            // Name is not required but convenient to print...
+            if (metadataDetailed.has("name")) {
+                metadata.set("name", metadataDetailed.getString("name"));
             }
-            if (encodingMetadata.has("step")) {
-                metadata.set("step", encodingMetadata.getLong("step"));
+            if (metadataDetailed.has("shortName")) {
+                metadata.set("shortName", metadataDetailed.getString("shortName"));
             }
-            metadata.set("encodingKeys", encodingMetadata);
+            if (metadataDetailed.has("paramId")) {
+                metadata.set("paramId", metadataDetailed.getLong("paramId"));
+            }
+            if (metadataDetailed.has("param")) {
+                metadata.set("param", metadataDetailed.getLong("param"));
+                if (!metadata.has("paramId")) {
+                    metadata.set("paramId", metadataDetailed.getLong("param"));
+                }
+            }
+            if (metadataDetailed.has("GRIBEditionNumber")) {
+                metadata.set("gribEdition", metadataDetailed.getString("GRIBEditionNumber"));
+            }
+            if (!metadata.has("level") && metadataDetailed.has("level")) {
+                metadata.set("level", metadataDetailed.getString("level"));
+            }
+
+            // Inject metadata needed for statistics
+            if (!metadata.has("timeStep")) {
+                metadata.set("timeStep", 3600);
+            }
+            if (!metadata.has("step-frequency")) {
+                metadata.set("step-frequency", 1);
+            }
 
             eckit::Buffer data = msg.decode();
+
             metadata.set("globalSize", data.size() / sizeof(double));
 
-            size_t words = eckit::round(data.size(), sizeof(fortint)) / sizeof(fortint);
-            fortint iwords = static_cast<fortint>(words);
+            if (decodeDoubleData_) {
+                metadata.set("precision", "double");
+                size_t words = eckit::round(data.size(), sizeof(fortint)) / sizeof(fortint);
+                fortint iwords = static_cast<fortint>(words);
 
-            if (imultio_write_raw_(&metadata, reinterpret_cast<const void*>(data.data()), &iwords)) {
-                ASSERT(false);
+                if (imultio_write_raw_(&metadata, reinterpret_cast<const void*>(data.data()), &iwords)) {
+                    ASSERT(false);
+                }
+            }
+            else {
+                metadata.set("precision", "single");
+                size_t words
+                    = eckit::round(data.size() / sizeof(double) * sizeof(float), sizeof(fortint)) / sizeof(fortint);
+                fortint iwords = static_cast<fortint>(words);
+
+                std::vector<float> tmp(data.size() / sizeof(double), 0.0);
+                const double* srcData = reinterpret_cast<const double*>(data.data());
+                for (int i = 0; i < tmp.size(); ++i) {
+                    tmp[i] = float(srcData[i]);
+                }
+                if (imultio_write_raw_(&metadata, reinterpret_cast<const void*>(tmp.data()), &iwords)) {
+                    ASSERT(false);
+                }
             }
         }
         else {
@@ -211,7 +286,6 @@ bool MultioFeed::subtocExists() const {
 }  // namespace multio
 
 //---------------------------------------------------------------------------------------------------------------
-
 
 int main(int argc, char** argv) {
     multio::test::MultioFeed tool(argc, argv);

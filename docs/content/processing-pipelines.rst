@@ -22,7 +22,7 @@ configuration file typically consists of two main parts:
 
 * A list of action plans on the model (``client``) side of multio, where they act on partial fields
   and the domain/grid properties of partial fields.
-* A list of action plans on the server (e.g. ``nemo-ioserver``) side, where they act on either
+* A list of action plans on the server (e.g. ``server``) side, where they act on either
   partial fields or the aggregated fields depending on the action's position in the pipeline.
 
 Every interface call that passes a message (data + metadata) to **multio** via the
@@ -31,7 +31,7 @@ pipeline. Each action will examine its own configuration as well as checking cer
 message's metadata to decide how to handle the message.
 
 Here is a small example of a configuration with three pipelines (``plans``) on the model
-(``client``) side and one on the server (``nemo-ioserver``) side.
+(``client``) side and one on the server (``server``) side.
 
 .. code-block:: yaml
 
@@ -45,7 +45,7 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
               - category : [ocean-domain-map, ocean-mask]
 
            - type : transport
-             target : nemo-ioserver
+             target : server
 
        - name : ocean-replay-test-stream1
          actions :
@@ -54,7 +54,7 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
               - name: [ sst, ssv ]
 
            - type : transport
-             target : nemo-ioserver
+             target : server
 
        - name : ocean-replay-test-stream2
          actions :
@@ -63,11 +63,11 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
               - field: [ ssu, ssw ]
 
            - type : transport
-             target : nemo-ioserver
+             target : server
 
-   nemo-ioserver:
+   server:
      transport : mpi
-     group : nemo
+     group : multio
      count : 2
      plans :
 
@@ -77,10 +77,13 @@ Here is a small example of a configuration with three pipelines (``plans``) on t
              match :
               - category : [ocean-2d]
 
-           - type : aggregation
+           - type : aggregate
 
            - type : single-field-sink
 
+
+Note that this example uses `mpi` as transport. Refer to :ref:`MPI Communicators` to learn how
+MultIO is setting up MPI communicators.
 
 Actions
 -------
@@ -145,7 +148,7 @@ and it designates the last action of that pipeline.
 * It is responsible for forwarding messages to the I/O-server, so a ``target`` needs to be specified.
 * It will ensure that the partial fields of the same global field will be sent to the same server
   process for aggregation.
-* Transport layer MPI is support and there is also limited support for sockets.
+* Transport layer MPI is supported and there is also limited support for sockets.
 
 
 Aggregation
@@ -167,11 +170,11 @@ Mask
 ~~~~
 
 This action will mask parts of the aggregated field, so it is designed to come after aggregation, if
-included in the pipelie. It will allow parts of the domain to be ignored and thus reduce the size of
+included in the pipeline. It will allow parts of the domain to be ignored and thus reduce the size of
 the stored message. It is particularly useful for ocean forecast data.
 
-Similar to the ``aggregation`` action, it assumes that the mask was communicated at the beginning of
-the run, by colling the API function
+Similar to the ``aggregate`` action, it assumes that the mask was communicated at the beginning of
+the run, by calling the API function
 
 .. code-block:: c
 

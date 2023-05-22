@@ -24,55 +24,30 @@ list( APPEND multio_library_srcs
 list( APPEND multio_util_srcs
     util/ConfigurationContext.cc
     util/ConfigurationContext.h
+    util/Environment.cc
+    util/Environment.h
     util/FailureHandling.cc
     util/FailureHandling.h
-    util/ParameterMappings.cc
-    util/ParameterMappings.h
+    util/MetadataMappings.cc
+    util/MetadataMappings.h
+    util/PrecisionTag.cc
+    util/PrecisionTag.h
     util/Metadata.cc
     util/Metadata.h
+    util/Substitution.cc
+    util/Substitution.h
 )
 
+
 list( APPEND multio_action_srcs
-    action/Aggregation.cc
-    action/Aggregation.h
-    action/Encode.cc
-    action/Encode.h
-    action/GribEncoder.cc
-    action/GribEncoder.h
-    action/GridInfo.cc
-    action/GridInfo.h
-    action/Mask.cc
-    action/Mask.h
-    action/Operation.cc
-    action/Operation.h
-    action/ParameterMapping.cc
-    action/ParameterMapping.h
-    action/Print.cc
-    action/Print.h
-    action/Select.cc
-    action/Select.h
-    action/Sink.cc
-    action/Sink.h
-    action/SingleFieldSink.cc
-    action/SingleFieldSink.h
-    action/Statistics.cc
-    action/Statistics.h
-    action/Null.cc
-    action/Null.h
-    action/ChainedAction.cc
-    action/ChainedAction.h
-    action/Action.cc
-    action/Action.h
-    action/Period.cc
-    action/Period.h
-    action/Plan.cc
-    action/Plan.h
     action/ActionStatistics.cc
     action/ActionStatistics.h
-    action/TemporalStatistics.cc
-    action/TemporalStatistics.h
-    action/Transport.cc
-    action/Transport.h
+    action/Action.cc
+    action/Action.h
+    action/ChainedAction.cc
+    action/ChainedAction.h
+    action/Plan.cc
+    action/Plan.h
 )
 
 list( APPEND multio_ifsio_srcs
@@ -107,10 +82,23 @@ list( APPEND multio_message_srcs
     message/Metadata.h
     message/MetadataMatcher.cc
     message/MetadataMatcher.h
+    message/MetadataSelector.cc
+    message/MetadataSelector.h
     message/Peer.cc
     message/Peer.h
-    message/ParameterMapping.cc
-    message/ParameterMapping.h
+    message/MetadataMapping.cc
+    message/MetadataMapping.h
+)
+
+list( APPEND multio_server_srcs
+    server/Dispatcher.cc
+    server/Dispatcher.h
+    server/Listener.cc
+    server/Listener.h
+    server/MultioClient.cc
+    server/MultioClient.h
+    server/MultioServer.cc
+    server/MultioServer.h
 )
 
 list( APPEND multio_sink_srcs
@@ -156,6 +144,7 @@ list( APPEND multio_srcs
     ${multio_ifsio_srcs}
     ${multio_domain_srcs}
     ${multio_message_srcs}
+    ${multio_server_srcs}
     ${multio_sink_srcs}
     ${multio_transport_srcs}
 )
@@ -189,7 +178,7 @@ ecbuild_add_library(
         metkit eckit eckit_mpi)
 
 add_subdirectory(fdb5)
+add_subdirectory(action)
 add_subdirectory(maestro)
-add_subdirectory(server)
 add_subdirectory(api)
 add_subdirectory(tools)

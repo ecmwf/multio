@@ -14,11 +14,11 @@
 
 #pragma once
 
-#include "eckit/memory/NonCopyable.h"
-
-#include "multio/message/Message.h"
-
 #include <unordered_map>
+#include <optional>
+
+#include "eckit/memory/NonCopyable.h"
+#include "multio/message/Message.h"
 
 namespace multio {
 

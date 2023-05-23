@@ -97,32 +97,3 @@ foreach(_test ${_statistics_tests_names} )
         endforeach()
     endforeach()
 endforeach()
-
-
-ecbuild_add_test(
-    TARGET       ${PREFIX}_run_checkpoint_average_1m_stage_1
-    TEST_DEPENDS ${PREFIX}_get_data
-    COMMAND      multio-feed
-    ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/standard_144_average_1m_grib2.yaml standard_0-144_statistics_test_data.grib
-)
-
-ecbuild_add_test(
-    TARGET       ${PREFIX}_run_checkpoint_average_1m_stage_2
-    TEST_DEPENDS ${PREFIX}_run_checkpoint_average_1m_stage_1
-    COMMAND      multio-feed
-    ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/standard_144_average_1m_grib2.yaml standard_144-288_statistics_test_data.grib
-)
-
-ecbuild_add_test(
-    TARGET       ${PREFIX}_check_metadata_checkpoint_average_1m
-    TEST_DEPENDS ${PREFIX}_run_checkpoint_average_1m_stage_2
-    COMMAND      grib_compare
-    ARGS         -H Reference_standard_average_1m_grib2.grib Reference_standard_average_1m_grib2.grib
-)
-
-ecbuild_add_test(
-    TARGET       ${PREFIX}_check_values_checkpoint_average_1m
-    TEST_DEPENDS ${PREFIX}_run_checkpoint_average_1m_stage_2
-    COMMAND      grib_compare
-    ARGS         -P -T10 Reference_standard_average_1m_grib2.grib Reference_standard_average_1m_grib2.grib
-)

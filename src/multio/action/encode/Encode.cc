@@ -46,7 +46,8 @@ std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
         // TODO provide utility to distinguish between relative and absolute paths
         eckit::AutoStdFile fin{confCtx.replaceCurly(tmplPath)};
         int err;
-        return std::make_unique<GribEncoder>(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), confCtx.config());
+        return std::make_unique<GribEncoder>(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err),
+                                             confCtx.config());
     }
     else if (format == "raw") {
         return nullptr;  // leave message in raw binary format
@@ -64,7 +65,8 @@ std::string encodingExceptionReason(const std::string& r) {
 }  // namespace
 
 
-EncodingException::EncodingException(const std::string& r, const eckit::CodeLocation& l): eckit::Exception(encodingExceptionReason(r), l) {}
+EncodingException::EncodingException(const std::string& r, const eckit::CodeLocation& l) :
+    eckit::Exception(encodingExceptionReason(r), l) {}
 
 using message::Message;
 using message::Peer;
@@ -109,8 +111,10 @@ void Encode::executeImpl(Message msg) {
 }
 
 void Encode::print(std::ostream& os) const {
-    os << "Encode(format=" << format_ << ", " << "encoder="; 
-    if(encoder_) encoder_->print(os) ;
+    os << "Encode(format=" << format_ << ", "
+       << "encoder=";
+    if (encoder_)
+        encoder_->print(os);
     os << ")";
 }
 

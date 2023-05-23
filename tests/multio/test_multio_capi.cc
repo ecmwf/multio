@@ -96,7 +96,7 @@ CASE("Try Create handle with wrong configuration path") {
     multio_configuration_t* cc = nullptr;
     int err;
     err = multio_new_configuration_from_filename(&cc, "I_AM_NOT_HERE/multio/config/multio-server.yaml");
-    std::unique_ptr<multio_configuration_t> configuration_context_deleter(cc);
+    std::unique_ptr<multio_configuration_t> configuration_deleter(cc);
     std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
@@ -109,7 +109,7 @@ CASE("Create handle with default configuration without MPI splitting") {
     multio_handle_t* mdp = nullptr;
     int err;
     err = multio_new_configuration(&cc);
-    std::unique_ptr<multio_configuration_t> configuration_context_deleter(cc);
+    std::unique_ptr<multio_configuration_t> configuration_deleter(cc);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_conf_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
@@ -126,7 +126,7 @@ CASE("Create handle with default configuration through nullptr configuration pat
     multio_handle_t* mdp = nullptr;
     int err;
     err = multio_new_configuration_from_filename(&cc, nullptr);
-    std::unique_ptr<multio_configuration_t> configuration_context_deleter(cc);
+    std::unique_ptr<multio_configuration_t> configuration_deleter(cc);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_conf_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
@@ -149,7 +149,7 @@ CASE("Create handle with configuration path without MPI splitting") {
     oss << env_config_path << "/multio-server.yaml";
     std::string path = oss.str();
     err = multio_new_configuration_from_filename(&cc, path.c_str());
-    std::unique_ptr<multio_configuration_t> configuration_context_deleter(cc);
+    std::unique_ptr<multio_configuration_t> configuration_deleter(cc);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_conf_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
@@ -180,7 +180,7 @@ CASE("Start server with default configuration") {
     multio_configuration_t* cc = nullptr;
     int err;
     err = multio_new_configuration(&cc);
-    std::unique_ptr<multio_configuration_t> configuration_context_deleter(cc);
+    std::unique_ptr<multio_configuration_t> configuration_deleter(cc);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_conf_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
@@ -196,7 +196,7 @@ CASE("Test loading configuration") {
     multio_configuration_t* multio_cc = nullptr;
 
     test_check(multio_new_configuration(&multio_cc), "Config Created from Environment Path");
-    std::unique_ptr<multio_configuration_t> configuration_context_deleter(multio_cc);
+    std::unique_ptr<multio_configuration_t> configuration_deleter(multio_cc);
 
     auto configFile = configuration_file_name();
     const char* conf_path = configFile.localPath();
@@ -340,7 +340,7 @@ CASE("Test write field") {
 
     test_check(multio_new_configuration_from_filename(&multio_cc, configPath.localPath()),
                "Configuration Context Created From Filename");
-    std::unique_ptr<multio_configuration_t> configuration_context_deleter(multio_cc);
+    std::unique_ptr<multio_configuration_t> configuration_deleter(multio_cc);
 
     multio_handle_t* multio_handle = nullptr;
     test_check(multio_new_handle(&multio_handle, multio_cc), "Create New handle");

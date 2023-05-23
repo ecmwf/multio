@@ -314,14 +314,15 @@ Trigger::Trigger(const ComponentConfiguration& compConf) {
     }
 
     /// @note this doesn't quite work for reentrant MultIO objects (MultIO as a DataSink itself)
-    auto conf = util::getEnv("MULTIO_CONFIG_TRIGGERS");
-    if (conf) {
-        std::string confString(*conf);
-        ComponentConfiguration newCompConf{eckit::LocalConfiguration{eckit::YAMLConfiguration{std::string{confString}}},
-                                           compConf.multioConfig().pathName(), confString};
+    auto confStrMaybe = util::getEnv("MULTIO_CONFIG_TRIGGERS");
+    if (confStrMaybe) {
+        std::string confString(*confStrMaybe);
+        eckit::LocalConfiguration conf{eckit::YAMLConfiguration{std::string{confString}}};
 
-        for (auto&& subComp : newCompConf.subComponents("triggers")) {
-            triggers_.emplace_back(EventTrigger::build(std::move(subComp)));
+        for (auto&& subComp : conf.getSubConfigurations("triggers")) {
+            triggers_.emplace_back(EventTrigger::build(
+                // TODO Discuss user facing and refactoer ComponentTags... othewise add other ComponentTags and apply hierarchy
+                ComponentConfiguration(std::move(subComp), compConf.multioConfig(), config::ComponentTag::Unrelated)));
         }
     }
 }

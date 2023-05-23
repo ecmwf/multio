@@ -21,33 +21,8 @@ ComponentConfiguration SubComponentIteratorMapper::operator()(const eckit::Local
 //=============================================================================
 
 ComponentConfiguration::ComponentConfiguration(const eckit::LocalConfiguration& componentYAMLConfig,
-                                               std::shared_ptr<MultioConfiguration> multioConf, ComponentTag tag) :
-    componentConf_(componentYAMLConfig), multioConf_(std::move(multioConf)), componentTag_(tag){};
-
-
-ComponentConfiguration::ComponentConfiguration(const eckit::LocalConfiguration& componentYAMLConfig,
-                                               const eckit::LocalConfiguration& globalYAMLConfig,
-                                               const eckit::PathName& pathName, const eckit::PathName& fileName,
-                                               LocalPeerTag localPeerTag, ComponentTag tag) :
-    ComponentConfiguration::ComponentConfiguration(
-        componentYAMLConfig, std::make_shared<MultioConfiguration>(globalYAMLConfig, pathName, fileName, localPeerTag),
-        tag) {}
-
-ComponentConfiguration::ComponentConfiguration(const eckit::LocalConfiguration& config, const eckit::PathName& pathName,
-                                               const eckit::PathName& fileName, LocalPeerTag localPeerTag,
-                                               ComponentTag tag) :
-    ComponentConfiguration::ComponentConfiguration(config, config, pathName, fileName, localPeerTag, tag) {}
-
-ComponentConfiguration::ComponentConfiguration(const eckit::PathName& pathName, const eckit::PathName& fileName,
-                                               LocalPeerTag localPeerTag, ComponentTag tag) :
-    ComponentConfiguration::ComponentConfiguration(eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}},
-                                                   pathName, fileName, localPeerTag, tag) {}
-
-ComponentConfiguration::ComponentConfiguration(const eckit::PathName& fileName, LocalPeerTag localPeerTag,
-                                               ComponentTag tag) :
-    ComponentConfiguration::ComponentConfiguration(eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}},
-                                                   configuration_path_name(fileName), fileName, localPeerTag, tag) {}
-
+                                               const MultioConfiguration& multioConf, ComponentTag tag) :
+    componentConf_(componentYAMLConfig), multioConf_(multioConf), componentTag_(tag){};
 
 //=============================================================================
 
@@ -58,11 +33,8 @@ const eckit::LocalConfiguration& ComponentConfiguration::YAML() const {
     return componentConf_;
 };
 
-MultioConfiguration& ComponentConfiguration::multioConfig() {
-    return *multioConf_.get();
-};
 const MultioConfiguration& ComponentConfiguration::multioConfig() const {
-    return *multioConf_.get();
+    return multioConf_.get();
 };
 
 
@@ -97,9 +69,8 @@ ComponentConfiguration ComponentConfiguration::recast(ComponentTag tag) const {
 ComponentTag ComponentConfiguration::componentTag() const {
     return componentTag_;
 };
-ComponentConfiguration& ComponentConfiguration::setComponentTag(ComponentTag tag) {
+void ComponentConfiguration::setComponentTag(ComponentTag tag) {
     componentTag_ = tag;
-    return *this;
 };
 
 
@@ -111,16 +82,6 @@ bool ComponentConfiguration::isServer() const {
 bool ComponentConfiguration::isClient() const {
     return multioConfig().isClient();
 };
-
-ComponentConfiguration& ComponentConfiguration::tagServer() {
-    multioConfig().setLocalPeerTag(LocalPeerTag::Server);
-    return setComponentTag(ComponentTag::Server);
-};
-ComponentConfiguration& ComponentConfiguration::tagClient() {
-    multioConfig().setLocalPeerTag(LocalPeerTag::Client);
-    return setComponentTag(ComponentTag::Client);
-};
-
 
 //=============================================================================
 

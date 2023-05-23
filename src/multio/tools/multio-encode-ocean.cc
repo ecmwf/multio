@@ -18,6 +18,8 @@
 
 using multio::action::Plan;
 using multio::config::ComponentConfiguration;
+using multio::config::MultioConfiguration;
+using multio::config::ComponentTag;
 using multio::config::configuration_path_name;
 using multio::message::Message;
 using multio::message::Peer;
@@ -48,8 +50,8 @@ void codes_set_latlon_dimensions(codes_handle* handle, const std::vector<int>& g
     }
 }
 
-ComponentConfiguration test_configuration() {
-    return ComponentConfiguration(configuration_path_name("") + "test-ocean-config.yaml");
+MultioConfiguration test_configuration() {
+    return MultioConfiguration(configuration_path_name("") + "test-ocean-config.yaml");
 }
 
 }  // namespace
@@ -191,10 +193,10 @@ void MultioEncodeOcean::executePlan() {
     size_t sz = 0;
     CODES_CHECK(codes_get_message(handle(), reinterpret_cast<const void**>(&buf), &sz), nullptr);
 
-    auto cfg = test_configuration();
+    auto multioConfig = test_configuration();
     std::vector<std::unique_ptr<Plan>> plans;
-    for (auto&& cfg : cfg.subComponents("plans")) {
-        plans.emplace_back(std::make_unique<Plan>(std::move(cfg)));
+    for (auto&& cfg : multioConfig.YAML().getSubConfigurations("plans")) {
+        plans.emplace_back(std::make_unique<Plan>(ComponentConfiguration(std::move(cfg), multioConfig, ComponentTag::Plan)));
     }
 
     Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, eckit::Buffer{buf, sz}};

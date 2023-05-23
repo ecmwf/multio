@@ -89,35 +89,30 @@ struct MPIInitInfo {
 
 class MultioConfiguration {
 public:
-    MultioConfiguration(const eckit::PathName& fileName, LocalPeerTag clientOrServer = LocalPeerTag::Client);
+    MultioConfiguration(const eckit::PathName& fileName = configuration_file_name(),
+                        LocalPeerTag clientOrServer = LocalPeerTag::Client);
     MultioConfiguration(const eckit::PathName& pathName, const eckit::PathName& fileName,
-                  LocalPeerTag clientOrServer = LocalPeerTag::Client);
+                        LocalPeerTag clientOrServer = LocalPeerTag::Client);
     MultioConfiguration(const eckit::LocalConfiguration& globalYAMLConfig, const eckit::PathName& pathName,
-                  const eckit::PathName& fileName, LocalPeerTag clientOrServer = LocalPeerTag::Client);
+                        const eckit::PathName& fileName, LocalPeerTag clientOrServer = LocalPeerTag::Client);
 
 
+    eckit::LocalConfiguration& YAML();
     const eckit::LocalConfiguration& YAML() const;
     const eckit::PathName& pathName() const;
     const eckit::PathName& fileName() const;
 
-    MultioConfiguration& setPathName(const eckit::PathName&);
+    void setPathName(const eckit::PathName&);
 
     LocalPeerTag localPeerTag() const;
     bool isServer() const;
     bool isClient() const;
-    
-    MultioConfiguration& setLocalPeerTag(LocalPeerTag clientOrServer);
-    MultioConfiguration& tagServer();
-    MultioConfiguration& tagClient();
 
-
-
-
+    void setLocalPeerTag(LocalPeerTag clientOrServer);
 
     const std::optional<MPIInitInfo>& getMPIInitInfo() const;
     std::optional<MPIInitInfo>& getMPIInitInfo();
-    MultioConfiguration& setMPIInitInfo(const std::optional<MPIInitInfo>& val);
-
+    void setMPIInitInfo(const std::optional<MPIInitInfo>& val);
 
     const YAMLFile& getYAMLFile(const char*) const;
     const YAMLFile& getYAMLFile(const std::string&) const;
@@ -130,8 +125,7 @@ public:
     std::string replaceCurly(const std::string&) const;
 
 
-    friend config::MetadataMappings;
-    const MetadataMappings& metadataMappings() const;
+    const std::vector<message::MetadataMapping>& getMetadataMappings(const std::string& mapping) const;
 
 private:
     eckit::LocalConfiguration globalYAML_;
@@ -142,7 +136,23 @@ private:
     std::optional<MPIInitInfo> mpiInitInfo_{MPIInitInfo{}};
 
     mutable std::unordered_map<std::string, YAMLFile> referencedConfigFiles_;
-    mutable std::optional<MetadataMappings> metadataMappings_;
+    MetadataMappings metadataMappings_;
 };
+
+//=============================================================================
+
+
+class MultioConfigurationHolder {
+protected:
+    MultioConfiguration multioConf_;
+
+public:
+    MultioConfigurationHolder(MultioConfiguration&& multioConf);
+    MultioConfigurationHolder(MultioConfiguration&& multioConf, LocalPeerTag);
+
+    MultioConfiguration& multioConfig() noexcept;
+};
+
+//=============================================================================
 
 }  // namespace multio::config

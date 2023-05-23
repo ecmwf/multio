@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iomanip>
 
-#include "eckit/config/YAMLConfiguration.h"
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/types/DateTime.h"
@@ -15,16 +15,32 @@
 
 namespace multio::server {
 
+using config::ComponentConfiguration;
 using transport::TransportFactory;
 
-MultioServer::MultioServer(const ServerConfiguration& compConf) :
-    FailureAware(compConf),
-    transport_{TransportFactory::instance().build(compConf.YAML().getString("transport"),
-                                                  compConf.recast(config::ComponentTag::Transport))},
-    listener_{compConf.recast(config::ComponentTag::Receiver), *transport_} {
-    ASSERT(compConf.componentTag() == config::ComponentTag::Server);
-    LOG_DEBUG_LIB(multio::LibMultio) << "Server config: " << compConf.YAML() << std::endl;
-    eckit::Log::info() << "*** Server -- constructor " << compConf.YAML() << std::endl;
+
+namespace {
+
+eckit::LocalConfiguration getServerConf(const MultioConfiguration& multioConf) {
+    if (multioConf.YAML().has("server")) {
+        return multioConf.YAML().getSubConfiguration("server");
+    }
+
+    std::ostringstream oss;
+    oss << "Configuration 'server' not found in configuration file " << multioConf.fileName();
+    throw eckit::UserError(oss.str());
+}
+
+}  // namespace
+
+MultioServer::MultioServer(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf) :
+    MultioConfigurationHolder(std::move(multioConf), config::LocalPeerTag::Server),
+    FailureAware(config::ComponentConfiguration(conf, multioConfig(), config::ComponentTag::Server)),
+    transport_{TransportFactory::instance().build(
+        conf.getString("transport"), ComponentConfiguration(conf, multioConfig(), config::ComponentTag::Transport))},
+    listener_{ComponentConfiguration(conf, multioConfig(), config::ComponentTag::Receiver), *transport_} {
+    LOG_DEBUG_LIB(multio::LibMultio) << "Server config: " << conf << std::endl;
+    eckit::Log::info() << "*** Server -- constructor " << conf << std::endl;
 
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
 
@@ -40,6 +56,9 @@ MultioServer::MultioServer(const ServerConfiguration& compConf) :
     withFailureHandling([&]() { listener_.start(); });
     eckit::Log::info() << "Listening loop has stopped" << std::endl;
 }
+
+MultioServer::MultioServer(MultioConfiguration&& multioConf) :
+    MultioServer(getServerConf(multioConf), std::move(multioConf)) {}
 
 util::FailureHandlerResponse MultioServer::handleFailure(util::OnServerError t, const util::FailureContext& c,
                                                          util::DefaultFailureState&) const {

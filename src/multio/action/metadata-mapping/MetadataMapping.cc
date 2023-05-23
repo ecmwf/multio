@@ -16,7 +16,7 @@ std::string getMappingName(const ComponentConfiguration& compConf) {
 MetadataMapping::MetadataMapping(const ComponentConfiguration& compConf) :
     ChainedAction(compConf),
     name_(getMappingName(compConf)),
-    mappings_(compConf.multioConfig().metadataMappings().getMappings(name_)),
+    mappings_(compConf.multioConfig().getMetadataMappings(name_)),
     options_{} {
     options_.enforceMatch = compConf.YAML().getBool("enforce-match", true);
     options_.overwriteExisting = compConf.YAML().getBool("overwrite-existing", false);

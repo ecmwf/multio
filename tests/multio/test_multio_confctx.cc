@@ -22,14 +22,17 @@
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/config/ConfigurationPath.h"
 
-using multio::config::configuration_file;
 using multio::config::ComponentConfiguration;
+using multio::config::MultioConfiguration;
+using multio::config::configuration_file;
 
 namespace multio::test {
 
 
 CASE("Create default context and tranverse client plans") {
-    ComponentConfiguration compConf{};
+    MultioConfiguration multioConf{};
+    ComponentConfiguration compConf{multioConf.YAML(), multioConf};
+
     EXPECT(compConf.YAML().has("client"));
 
     ComponentConfiguration clientConf = compConf.subComponent("client");

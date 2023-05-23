@@ -28,9 +28,9 @@ class LocalConfiguration;
 
 namespace multio {
 
-using config::ClientConfiguration;
 using config::ComponentTag;
-using config::ComponentConfiguration;
+using config::MultioConfiguration;
+using config::MultioConfigurationHolder;
 
 namespace message {
 class Message;
@@ -41,9 +41,9 @@ namespace server {
 
 class Transport;
 
-class MultioClient : public util::FailureAware<config::ComponentTag::Client> {
+class MultioClient : public MultioConfigurationHolder, public util::FailureAware<config::ComponentTag::Client> {
 public:
-    explicit MultioClient(const ClientConfiguration& config);
+    MultioClient(MultioConfiguration&& multioConf);
 
     ~MultioClient();
 
@@ -60,6 +60,8 @@ public:
                                                util::DefaultFailureState&) const override;
 
 private:
+    MultioClient(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf);
+    
     std::vector<std::unique_ptr<action::Plan>> plans_;
     message::MetadataSelectors activeSelectors_;
 

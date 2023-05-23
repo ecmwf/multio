@@ -19,13 +19,12 @@ using multio::message::Message;
 using multio::message::Metadata;
 using multio::message::Peer;
 
-using multio::config::ClientConfiguration;
 using multio::config::ComponentConfiguration;
 using multio::config::configuration_file;
 using multio::config::configuration_file_name;
 using multio::config::configuration_path_name;
 using multio::config::MPIInitInfo;
-using multio::config::ServerConfiguration;
+using multio::config::MultioConfiguration;
 using multio::util::FailureAwareException;
 
 namespace {
@@ -162,14 +161,14 @@ int wrapApiFunction(FN f) {
 
 extern "C" {
 
-struct multio_configuration_t : public ComponentConfiguration {
+struct multio_configuration_t : public MultioConfiguration {
     multio_configuration_t(const eckit::PathName& fileName = configuration_file_name()) :
-        ComponentConfiguration{fileName} {}
+        MultioConfiguration{fileName} {}
 };
 
 struct multio_handle_t : public multio::server::MultioClient {
     using multio::server::MultioClient::MultioClient;
-    multio_handle_t(const ClientConfiguration& compConf) : MultioClient{compConf} {}
+    multio_handle_t(MultioConfiguration&& multioConf) : MultioClient{std::move(multioConf)} {}
 };
 
 struct multio_metadata_t : public multio::message::Metadata {
@@ -231,7 +230,7 @@ int multio_conf_set_path(multio_configuration_t* cc, const char* configuration_p
     return wrapApiFunction([cc, configuration_path]() {
         ASSERT(cc);
         if (configuration_path != nullptr) {
-            cc->multioConfig().setPathName(eckit::PathName(configuration_path));
+            cc->setPathName(eckit::PathName(configuration_path));
         }
     });
 };
@@ -239,40 +238,40 @@ int multio_conf_set_path(multio_configuration_t* cc, const char* configuration_p
 int multio_conf_mpi_allow_world_default_comm(multio_configuration_t* cc, bool allow) {
     return wrapApiFunction([cc, allow]() {
         ASSERT(cc);
-        if (!cc->multioConfig().getMPIInitInfo()) {
-            cc->multioConfig().setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
+        if (!cc->getMPIInitInfo()) {
+            cc->setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
         }
-        cc->multioConfig().getMPIInitInfo().value().allowWorldAsDefault = allow;
+        cc->getMPIInitInfo().value().allowWorldAsDefault = allow;
     });
 };
 
 int multio_conf_mpi_parent_comm(multio_configuration_t* cc, int parent_comm) {
     return wrapApiFunction([cc, parent_comm]() {
         ASSERT(cc);
-        if (!cc->multioConfig().getMPIInitInfo()) {
-            cc->multioConfig().setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
+        if (!cc->getMPIInitInfo()) {
+            cc->setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
         }
-        cc->multioConfig().getMPIInitInfo().value().parentComm = parent_comm;
+        cc->getMPIInitInfo().value().parentComm = parent_comm;
     });
 };
 
 int multio_conf_mpi_return_client_comm(multio_configuration_t* cc, int* return_client_comm) {
     return wrapApiFunction([cc, return_client_comm]() {
         ASSERT(cc);
-        if (!cc->multioConfig().getMPIInitInfo()) {
-            cc->multioConfig().setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
+        if (!cc->getMPIInitInfo()) {
+            cc->setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
         }
-        cc->multioConfig().getMPIInitInfo().value().returnClientComm = return_client_comm;
+        cc->getMPIInitInfo().value().returnClientComm = return_client_comm;
     });
 };
 
 int multio_conf_mpi_return_server_comm(multio_configuration_t* cc, int* return_server_comm) {
     return wrapApiFunction([cc, return_server_comm]() {
         ASSERT(cc);
-        if (!cc->multioConfig().getMPIInitInfo()) {
-            cc->multioConfig().setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
+        if (!cc->getMPIInitInfo()) {
+            cc->setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
         }
-        cc->multioConfig().getMPIInitInfo().value().returnServerComm = return_server_comm;
+        cc->getMPIInitInfo().value().returnServerComm = return_server_comm;
     });
 };
 
@@ -280,10 +279,10 @@ int multio_conf_mpi_client_id(multio_configuration_t* cc, const char* client_id)
     return wrapApiFunction([cc, client_id]() {
         ASSERT(cc);
         if (client_id != nullptr) {
-            if (!cc->multioConfig().getMPIInitInfo()) {
-                cc->multioConfig().setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
+            if (!cc->getMPIInitInfo()) {
+                cc->setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
             }
-            cc->multioConfig().getMPIInitInfo().value().clientId = std::optional<std::string>{client_id};
+            cc->getMPIInitInfo().value().clientId = std::optional<std::string>{client_id};
         }
     });
 }
@@ -292,7 +291,7 @@ int multio_conf_mpi_client_id(multio_configuration_t* cc, const char* client_id)
 int multio_new_handle(multio_handle_t** mio, multio_configuration_t* cc) {
     return wrapApiFunction([mio, cc]() {
         ASSERT(cc);
-        (*mio) = new multio_handle_t{ClientConfiguration{*cc, "client"}};
+        (*mio) = new multio_handle_t{std::move(*cc)};
     });
 }
 
@@ -307,7 +306,7 @@ int multio_delete_handle(multio_handle_t* mio) {
 int multio_start_server(multio_configuration_t* cc) {
     return wrapApiFunction([cc]() {
         ASSERT(cc);
-        multio::server::MultioServer{ServerConfiguration{*cc, "server"}};
+        multio::server::MultioServer{std::move(*cc)};
     });
 }
 

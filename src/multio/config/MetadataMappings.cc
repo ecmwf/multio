@@ -1,15 +1,13 @@
 #include "MetadataMappings.h"
-#include "MultioConfiguration.h"  
+#include "MultioConfiguration.h"
 
 #include "eckit/exception/Exceptions.h"
 
 namespace multio::config {
 
-MetadataMappings::MetadataMappings(const MultioConfiguration& multioConfig) : multioConfig_(multioConfig), mappings_{} {}
-
-
-const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const std::string& mapping) const {
-    const auto& yamlFile = multioConfig_.getYAMLFile(mapping);
+const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const MultioConfiguration& multioConf,
+                                                                           const std::string& mapping) const {
+    const auto& yamlFile = multioConf.getYAMLFile(mapping);
 
     auto search = mappings_.find(yamlFile.path);
     if (search != mappings_.end()) {

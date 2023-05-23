@@ -19,8 +19,30 @@ using multio::message::Peer;
 
 namespace multio::server {
 
-MultioClient::MultioClient(const ClientConfiguration& compConf) : FailureAware(compConf) {
-    ASSERT(compConf.componentTag() == config::ComponentTag::Client);
+using config::ComponentConfiguration;
+
+namespace {
+
+eckit::LocalConfiguration getClientConf(const MultioConfiguration& multioConf) {
+    if (multioConf.YAML().has("client")) {
+        return multioConf.YAML().getSubConfiguration("client");
+    }
+
+    // Make client work when using only action pipelines
+    if (multioConf.YAML().has("plans")) {
+        return multioConf.YAML();
+    }
+
+    std::ostringstream oss;
+    oss << "Configuration 'client' not found in configuration file " << multioConf.fileName();
+    throw eckit::UserError(oss.str());
+}
+
+}  // namespace
+
+MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf) :
+    MultioConfigurationHolder(std::move(multioConf), config::LocalPeerTag::Client),
+    FailureAware(ComponentConfiguration(conf, multioConfig(), ComponentTag::Client)) {
     totClientTimer_.start();
 
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
@@ -33,14 +55,17 @@ MultioClient::MultioClient(const ClientConfiguration& compConf) : FailureAware(c
             << std::setw(6) << std::setfill('0') << mSecs << " -- ";
 
 
-    LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << compConf.YAML() << std::endl;
-    for (auto&& cfg : compConf.subComponents("plans", ComponentTag::Plan)) {
-        eckit::Log::debug<LibMultio>() << cfg.YAML() << std::endl;
-        plans_.emplace_back(std::make_unique<action::Plan>(std::move(cfg)))->matchedFields(activeSelectors_);
+    LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << conf << std::endl;
+    for (auto&& cfg : conf.getSubConfigurations("plans")) {
+        eckit::Log::debug<LibMultio>() << cfg << std::endl;
+        plans_
+            .emplace_back(std::make_unique<action::Plan>(
+                ComponentConfiguration(std::move(cfg), multioConfig(), ComponentTag::Plan)))
+            ->matchedFields(activeSelectors_);
     }
 
-    if (compConf.multioConfig().YAML().has("active-matchers")) {
-        for (const auto& m : compConf.multioConfig().YAML().getSubConfigurations("active-matchers")) {
+    if (multioConfig().YAML().has("active-matchers")) {
+        for (const auto& m : multioConfig().YAML().getSubConfigurations("active-matchers")) {
             std::map<std::string, std::set<std::string>> matches;
             for (const auto& k : m.keys()) {
                 auto v = m.getStringVector(k);
@@ -49,6 +74,9 @@ MultioClient::MultioClient(const ClientConfiguration& compConf) : FailureAware(c
         }
     }
 }
+
+MultioClient::MultioClient(MultioConfiguration&& multioConf) :
+    MultioClient(getClientConf(multioConf), std::move(multioConf)) {}
 
 util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t, const util::FailureContext& c,
                                                          util::DefaultFailureState&) const {

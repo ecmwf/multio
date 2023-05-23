@@ -29,12 +29,9 @@ struct YAMLFile;      // Forward declaration
 
 class MetadataMappings {
 public:
-    MetadataMappings(const MultioConfiguration& multioConfig);
-
-    const std::vector<message::MetadataMapping>& getMappings(const std::string& mapping) const;
+    const std::vector<message::MetadataMapping>& getMappings(const MultioConfiguration& multioConf, const std::string& mapping) const;
 
 private:
-    const MultioConfiguration& multioConfig_;
     // const YAMLFile& configFile_;
     mutable std::unordered_map<std::string, std::vector<message::MetadataMapping>> mappings_;
 };

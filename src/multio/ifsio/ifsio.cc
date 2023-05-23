@@ -14,6 +14,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <tuple>
 
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LibEcKit.h"
@@ -45,7 +46,7 @@ using namespace multio::message;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class MIO : public util::FailureAware<ComponentTag::Client> {
+class MIO : public config::MultioConfigurationHolder, public util::FailureAware<ComponentTag::Client> {
 public:
     static MIO& instance() {
         static MIO mio;
@@ -87,9 +88,9 @@ public:
     };
 
 private:
-    ComponentConfiguration configureFromSinks(const ComponentConfiguration& compConf) {
+    std::tuple<eckit::LocalConfiguration, MultioConfiguration> configureFromSinks(MultioConfiguration multioConf) {
         std::vector<eckit::LocalConfiguration> actions;
-        actions.push_back(compConf.YAML());
+        actions.push_back(multioConf.YAML());
         actions[0].set("type", "sink");
 
         std::vector<eckit::LocalConfiguration> plans;
@@ -99,19 +100,27 @@ private:
         eckit::LocalConfiguration cfg;
         cfg.set("plans", plans);
 
-        return compConf.recast(cfg);
+        return std::make_tuple(cfg, multioConf);
     }
 
-    MIO(const ComponentConfiguration& compConf) : FailureAware(compConf), log_(false), dirty_(false) {
-        for (auto&& cfg : compConf.subComponents("plans", ComponentTag::Plan)) {
-            plans_.emplace_back(std::make_unique<action::Plan>(std::move(cfg)));
+    MIO(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf) :
+        MultioConfigurationHolder(std::move(multioConf)),
+        FailureAware(ComponentConfiguration(conf, multioConfig(), config::ComponentTag::Client)),
+        log_(false),
+        dirty_(false) {
+        for (auto&& cfg : conf.getSubConfigurations("plans")) {
+            plans_.emplace_back(std::make_unique<action::Plan>(
+                ComponentConfiguration(std::move(cfg), multioConfig(), config::ComponentTag::Plan)));
         }
-        bpv_ = std::make_unique<EncodeBitsPerValue>(compConf.YAML());
+        bpv_ = std::make_unique<EncodeBitsPerValue>(conf);
     }
 
-    MIO() : MIO(configureFromEnv().setComponentTag(ComponentTag::Client)) {}
+    MIO(std::tuple<eckit::LocalConfiguration, MultioConfiguration>&& t) :
+        MIO(std::get<0>(t), std::move(std::get<1>(t))) {}
 
-    ComponentConfiguration configureFromEnv() {
+    MIO() : MIO(configureFromEnv()) {}
+
+    std::tuple<eckit::LocalConfiguration, MultioConfiguration> configureFromEnv() {
         static const char* argv[2] = {"ifsio", nullptr};
 
         eckit::Main::initialise(1, const_cast<char**>(argv));
@@ -119,26 +128,28 @@ private:
         if (::getenv("MULTIO_PLANS")) {
             std::string cfg(::getenv("MULTIO_PLANS"));
             std::cout << "MultIO initialising with plans " << cfg << std::endl;
-            return ComponentConfiguration(eckit::LocalConfiguration(eckit::YAMLConfiguration(cfg)), cfg, cfg);
+            eckit::LocalConfiguration conf{eckit::YAMLConfiguration(cfg)};
+            return std::make_tuple(conf, MultioConfiguration(conf, cfg, cfg, config::LocalPeerTag::Client));
         }
 
         if (::getenv("MULTIO_PLANS_FILE")) {
             PathName path(::getenv("MULTIO_PLANS_FILE"));
             std::cout << "MultIO initialising with plans file " << path << std::endl;
-            return ComponentConfiguration(path);
+            MultioConfiguration multioConf(path, config::LocalPeerTag::Client);
+            return std::make_tuple(multioConf.YAML(), std::move(multioConf));
         }
 
         if (::getenv("MULTIO_CONFIG")) {
             std::string cfg(::getenv("MULTIO_CONFIG"));
             std::cout << "MultIO initialising with config " << cfg << std::endl;
-            return configureFromSinks(
-                ComponentConfiguration(eckit::LocalConfiguration(eckit::YAMLConfiguration(cfg)), cfg, cfg));
+            return configureFromSinks(MultioConfiguration(eckit::LocalConfiguration(eckit::YAMLConfiguration(cfg)), cfg,
+                                                          cfg, config::LocalPeerTag::Client));
         }
 
         if (::getenv("MULTIO_CONFIG_FILE")) {
             PathName path(::getenv("MULTIO_CONFIG_FILE"));
             std::cout << "MultIO initialising with config file " << path << std::endl;
-            return configureFromSinks(ComponentConfiguration(path));
+            return configureFromSinks(MultioConfiguration(path, config::LocalPeerTag::Client));
         }
 
         eckit::Tokenizer parse(":");
@@ -163,8 +174,8 @@ private:
         std::cout << "MultIO initialising with $MULTIO_SINKS " << oss.str() << std::endl;
 
         std::istringstream iss(oss.str());
-        return configureFromSinks(
-            ComponentConfiguration(eckit::LocalConfiguration(eckit::YAMLConfiguration(iss)), "", ""));
+        return configureFromSinks(MultioConfiguration(eckit::LocalConfiguration(eckit::YAMLConfiguration(iss)), "", "",
+                                                      config::LocalPeerTag::Client));
     }
 
     ~MIO() {

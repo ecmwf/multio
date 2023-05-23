@@ -193,19 +193,74 @@ void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "bitsPerValue"), LookUpLong(md, "bitsPerValue"));
 }
 
+namespace {
+eckit::Optional<long> marsDate(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
+    if (not mKeys.type) {
+        return eckit::Optional<long>{};
+    }
+
+    // List of forecast-type data
+    if ((*mKeys.type == "fc") || (*mKeys.type == "pf")) {
+        return firstOf(LookUpLong(md, "startDate"));
+    }
+
+    // List time-processed analysis data
+    if (*mKeys.type == "tpa") {
+        return firstOf(LookUpLong(md, "previousDate"));
+    }
+
+    // Analysis data
+    return firstOf(LookUpLong(md, "currentDate"));
+}
+
+eckit::Optional<long> marsTime(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
+    if (not mKeys.type) {
+        return eckit::Optional<long>{};
+    }
+
+    // List of forecast-type data
+    if ((*mKeys.type == "fc") || (*mKeys.type == "pf")) {
+        return firstOf(LookUpLong(md, "startTime"));
+    }
+
+    // List time-processed analysis data
+    if (*mKeys.type == "tpa") {
+        return firstOf(LookUpLong(md, "previousTime"));
+    }
+
+    // Analysis data
+    return firstOf(LookUpLong(md, "currentTime"));
+}
+
+std::string marsStepRange(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
+
+    auto stepInHours = firstOf(LookUpLong(md, "stepInHours"));
+    auto timeSpanInHours = firstOf(LookUpLong(md, "timeSpanInHours"));
+    if (not(stepInHours && timeSpanInHours)) {
+        throw eckit::SeriousBug("Not enough information to encode step range");
+    }
+
+    // List of forecast-type data
+    if ((*mKeys.type == "fc") || (*mKeys.type == "pf")) {
+        auto prevStep = std::max(*stepInHours - *timeSpanInHours, 0L);
+        return std::to_string(prevStep) + "-" + std::to_string(*stepInHours);
+    }
+
+    // Time-processed analysis
+    return std::to_string(0) + "-" + std::to_string(*timeSpanInHours);
+}
+
+}  // namespace
+
 void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
                                  const QueriedMarsKeys& queriedMarsFields) {
-    auto date = (queriedMarsFields.type && (*queriedMarsFields.type == "fc"))
-                  ? firstOf(LookUpLong(md, "startDate"), LookUpLong(md, "currentDate"))
-                  : firstOf(LookUpLong(md, "currentDate"), LookUpLong(md, "startDate"));
+    auto date = marsDate(md, queriedMarsFields);
     if (date) {
         withFirstOf(valueSetter(g, "year"), eckit::Optional<long>{*date / 10000});
         withFirstOf(valueSetter(g, "month"), eckit::Optional<long>{(*date % 10000) / 100});
         withFirstOf(valueSetter(g, "day"), eckit::Optional<long>{*date % 100});
     }
-    auto time = (queriedMarsFields.type && (*queriedMarsFields.type == "fc"))
-                  ? firstOf(LookUpLong(md, "startTime"), LookUpLong(md, "currentTime"))
-                  : firstOf(LookUpLong(md, "currentTime"), LookUpLong(md, "startTime"));
+    auto time = marsTime(md, queriedMarsFields);
     if (time) {
         withFirstOf(valueSetter(g, "hour"), eckit::Optional<long>{*time / 10000});
         withFirstOf(valueSetter(g, "minute"), eckit::Optional<long>{(*time % 10000) / 100});
@@ -229,14 +284,14 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
 
     auto operation = lookUpString(md, "operation");
     if (operation) {
-        // Statistics field
         if (*queriedMarsFields.type == "fc" && *operation == "instant") {
             // stepInHours has been set by statistics action
             withFirstOf(valueSetter(g, "step"), LookUpLong(md, "stepInHours"));
         }
         else {
-            // stepRangeInHours has been set by statistics action
-            withFirstOf(valueSetter(g, "stepRange"), LookUpString(md, "stepRangeInHours"));
+            // Setting directly as it is computed value not read from the metadata
+            g.setValue("stepRange", marsStepRange(md, queriedMarsFields));
+            //withFirstOf(valueSetter(g, "stepRange"), LookUpString(md, "stepRangeInHours"));
         }
 
         eckit::Optional<long> curDate;

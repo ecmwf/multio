@@ -9,6 +9,8 @@ ecbuild_add_library(
       GribEncoder.h
       GridDownloader.cc
       GridDownloader.h
+      MioGribHandle.cc
+      MioGribHandle.h
 
     PRIVATE_INCLUDES
       ${ECKIT_INCLUDE_DIRS}

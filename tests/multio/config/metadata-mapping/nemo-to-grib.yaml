@@ -640,7 +640,7 @@ data:
   - nemo-id : icesalt
     param-id : 212227 # Still experimental
     grid-type : "T grid"
-    level-type : "topSeaIceLevel"
+    level-type : "iceLayerOnWater"
 
   - nemo-id : icesalt_cat
     param-id : 212230 # Still experimental

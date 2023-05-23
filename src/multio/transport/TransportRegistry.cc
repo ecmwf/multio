@@ -10,7 +10,7 @@ TransportRegistry& TransportRegistry::instance() {
 
 std::shared_ptr<transport::Transport> TransportRegistry::get(const ComponentConfiguration& compConf) {
 
-    auto serverName = compConf.YAML().getString("target");
+    auto serverName = compConf.parsedConfig().getString("target");
     add(serverName, compConf);
 
     return transports_.at(serverName);
@@ -50,22 +50,22 @@ void TransportRegistry::add(const std::string& serverName, const ComponentConfig
         return;
     }
 
-    if (!compConf.multioConfig().YAML().has(serverName)) {
+    if (!compConf.multioConfig().parsedConfig().has(serverName)) {
         std::ostringstream oss;
-        oss << "No config for server \"" << serverName << "\" found in configuration " << compConf.multioConfig().fileName()
+        oss << "No config for server \"" << serverName << "\" found in configuration " << compConf.multioConfig().configFile()
             << std::endl;
         throw TransportException(oss.str(), Here());
     }
-    auto serverConfigCtx = compConf.recast(compConf.multioConfig().YAML().getSubConfiguration(serverName),
+    auto serverConfigCtx = compConf.recast(compConf.multioConfig().parsedConfig().getSubConfiguration(serverName),
                                            config::ComponentTag::Transport);
-    if (!serverConfigCtx.YAML().has("transport")) {
+    if (!serverConfigCtx.parsedConfig().has("transport")) {
         std::ostringstream oss;
         oss << "No key \"transport\" in server config for server \"" << serverName
-            << "\" found (Configuration filename:  " << compConf.multioConfig().fileName() << ")" << std::endl;
+            << "\" found (Configuration filename:  " << compConf.multioConfig().configFile() << ")" << std::endl;
         throw TransportException(oss.str(), Here());
     }
     transports_.insert({serverName, std::shared_ptr<transport::Transport>{transport::TransportFactory::instance().build(
-                                        serverConfigCtx.YAML().getString("transport"), serverConfigCtx)}});
+                                        serverConfigCtx.parsedConfig().getString("transport"), serverConfigCtx)}});
 }
 
 

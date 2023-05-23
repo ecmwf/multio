@@ -66,7 +66,7 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
     args.get("port", port_);
     args.get("test", test_);
 
-    multioConf_.YAML().set("local_port", port_);
+    multioConf_.parsedConfig().set("local_port", port_);
 }
 
 void MultioProbe::finish(const eckit::option::CmdArgs&) {}

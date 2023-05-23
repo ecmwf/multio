@@ -59,7 +59,7 @@ const size_t defaultBufferSize = 64 * 1024 * 1024;
 const size_t defaultPoolSize = 128;
 
 MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
-    const std::string& groupName = compConf.YAML().getString("group", "multio");
+    const std::string& groupName = compConf.parsedConfig().getString("group", "multio");
     mpi::CommSetupOptions groupOptions;
     groupOptions.defaultType = std::optional<mpi::CommSetupType>(mpi::CommSetupType::Passed);
 
@@ -81,7 +81,7 @@ MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
             options.alias = mpiInitInfo ? mpiInitInfo->clientId : std::optional<std::string>{};
 
             std::string subGroupName
-                = compConf.YAML().has("client-group") ? compConf.YAML().getString("client-group") : ([&]() {
+                = compConf.parsedConfig().has("client-group") ? compConf.parsedConfig().getString("client-group") : ([&]() {
                       std::ostringstream oss;
                       oss << groupName << "-"
                           << "clients";
@@ -113,7 +113,7 @@ MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
             const auto& mpiInitInfo = compConf.multioConfig().getMPIInitInfo();
 
             std::string subGroupName
-                = compConf.YAML().has("server-group") ? compConf.YAML().getString("server-group") : ([&]() {
+                = compConf.parsedConfig().has("server-group") ? compConf.parsedConfig().getString("server-group") : ([&]() {
                       std::ostringstream oss;
                       oss << groupName << "-"
                           << "servers";

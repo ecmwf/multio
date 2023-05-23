@@ -21,7 +21,7 @@ using eckit::Log;
 //----------------------------------------------------------------------------------------------------------------------
 
 Action::Action(const ComponentConfiguration& compConf) :
-    FailureAware(compConf), compConf_(compConf), type_{compConf.YAML().getString("type")} {}
+    FailureAware(compConf), compConf_(compConf), type_{compConf.parsedConfig().getString("type")} {}
 
 Action::~Action() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};

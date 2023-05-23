@@ -36,10 +36,10 @@ bool setContains(const std::set<Precision>& _set, const Precision& key) {
 
 Mask::Mask(const ComponentConfiguration& compConf) :
     ChainedAction(compConf),
-    applyBitmap_{compConf.YAML().getBool("apply-bitmap", true)},
-    missingValue_{compConf.YAML().getDouble("missing-value", std::numeric_limits<double>::max())},
-    offsetFields_{fetch_offset_fields(compConf.YAML())},
-    offsetValue_{compConf.YAML().getDouble("offset-value", 273.15)} {}
+    applyBitmap_{compConf.parsedConfig().getBool("apply-bitmap", true)},
+    missingValue_{compConf.parsedConfig().getDouble("missing-value", std::numeric_limits<double>::max())},
+    offsetFields_{fetch_offset_fields(compConf.parsedConfig())},
+    offsetValue_{compConf.parsedConfig().getDouble("offset-value", 273.15)} {}
 
 void Mask::executeImpl(message::Message msg) {
     executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {

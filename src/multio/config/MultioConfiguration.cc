@@ -46,33 +46,33 @@ namespace multio::config {
 
 // MultioConfiguration
 MultioConfiguration::MultioConfiguration(const eckit::LocalConfiguration& globalYAMLConfig,
-                                         const eckit::PathName& pathName, const eckit::PathName& fileName,
+                                         const eckit::PathName& configDir, const eckit::PathName& configFile,
                                          LocalPeerTag localPeerTag) :
-    globalYAML_(globalYAMLConfig), pathName_(pathName), fileName_(fileName), localPeerTag_(localPeerTag) {}
+    parsedConfig_(globalYAMLConfig), configDir_(configDir), configFile_(configFile), localPeerTag_(localPeerTag) {}
 
-MultioConfiguration::MultioConfiguration(const eckit::PathName& pathName, const eckit::PathName& fileName,
+MultioConfiguration::MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,
                                          LocalPeerTag localPeerTag) :
-    MultioConfiguration::MultioConfiguration(eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}}, pathName,
-                                             fileName, localPeerTag) {}
+    MultioConfiguration::MultioConfiguration(eckit::LocalConfiguration{eckit::YAMLConfiguration{configFile}}, configDir,
+                                             configFile, localPeerTag) {}
 
-MultioConfiguration::MultioConfiguration(const eckit::PathName& fileName, LocalPeerTag localPeerTag) :
-    MultioConfiguration::MultioConfiguration(eckit::LocalConfiguration{eckit::YAMLConfiguration{fileName}},
-                                             configuration_path_name(fileName), fileName, localPeerTag) {}
+MultioConfiguration::MultioConfiguration(const eckit::PathName& configFile, LocalPeerTag localPeerTag) :
+    MultioConfiguration::MultioConfiguration(eckit::LocalConfiguration{eckit::YAMLConfiguration{configFile}},
+                                             configuration_path_name(configFile), configFile, localPeerTag) {}
 
-eckit::LocalConfiguration& MultioConfiguration::YAML() {
-    return globalYAML_;
+eckit::LocalConfiguration& MultioConfiguration::parsedConfig() {
+    return parsedConfig_;
 };
-const eckit::LocalConfiguration& MultioConfiguration::YAML() const {
-    return globalYAML_;
+const eckit::LocalConfiguration& MultioConfiguration::parsedConfig() const {
+    return parsedConfig_;
 };
-const eckit::PathName& MultioConfiguration::pathName() const {
-    return pathName_;
+const eckit::PathName& MultioConfiguration::configDir() const {
+    return configDir_;
 };
-void MultioConfiguration::setPathName(const eckit::PathName& pathName) {
-    pathName_ = pathName;
+void MultioConfiguration::setConfigDir(const eckit::PathName& configDir) {
+    configDir_ = configDir;
 };
-const eckit::PathName& MultioConfiguration::fileName() const {
-    return fileName_;
+const eckit::PathName& MultioConfiguration::configFile() const {
+    return configFile_;
 };
 
 LocalPeerTag MultioConfiguration::localPeerTag() const {
@@ -138,7 +138,7 @@ const YAMLFile& MultioConfiguration::getYAMLFile(const eckit::PathName& fname) c
 std::string MultioConfiguration::replaceCurly(const std::string& s) const {
     return util::replaceCurly(s, [this](std::string_view replace) {
         if (replace == "~") {
-            return std::optional<std::string>{this->pathName_.asString()};
+            return std::optional<std::string>{this->configDir_.asString()};
         }
         std::string lookUpKey{replace};
         auto env = util::getEnv(lookUpKey);

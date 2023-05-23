@@ -24,7 +24,7 @@ using config::ComponentConfiguration;
 
 namespace {
 fdb5::Config fdb5_configuration(const ComponentConfiguration& compConf) {
-    auto fdb_configuration = compConf.YAML().getSubConfiguration("config");
+    auto fdb_configuration = compConf.parsedConfig().getSubConfiguration("config");
 
     eckit::LocalConfiguration userConfig;
     if (fdb_configuration.has("userConfig")) {
@@ -43,7 +43,7 @@ fdb5::Config fdb5_configuration(const ComponentConfiguration& compConf) {
 }  // namespace
 
 FDB5Sink::FDB5Sink(const ComponentConfiguration& compConf) : DataSink(compConf), fdb_{fdb5_configuration(compConf)} {
-    LOG_DEBUG_LIB(LibMultio) << "Config = " << compConf.YAML() << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Config = " << compConf.parsedConfig() << std::endl;
 }
 
 void FDB5Sink::write(eckit::message::Message msg) {

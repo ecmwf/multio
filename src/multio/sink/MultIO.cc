@@ -59,13 +59,13 @@ MultIO::MultIO(const ComponentConfiguration& compConf) :
 
     for (auto&& subComp : compConf.subComponents("sinks")) {
         auto sinkId = sinks_.size();
-        auto enabled = util::parseEnabled(subComp.YAML(), true);
+        auto enabled = util::parseEnabled(subComp.parsedConfig(), true);
         if (!enabled) {
             throw eckit::UserError("bool expected in sink enabling", Here());
         }
         if (*enabled) {
             sinks_
-                .emplace_back(DataSinkFactory::instance().build(subComp.YAML().getString("type"), std::move(subComp)))
+                .emplace_back(DataSinkFactory::instance().build(subComp.parsedConfig().getString("type"), std::move(subComp)))
                 ->setId(sinkId);
         }
     }

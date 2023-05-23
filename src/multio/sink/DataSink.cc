@@ -85,7 +85,7 @@ DataSinkBuilderBase::~DataSinkBuilderBase() {
 //----------------------------------------------------------------------------------------------------------------------
 
 DataSink::DataSink(const config::ComponentConfiguration& compConf) :
-    failOnError_(compConf.YAML().getBool("failOnError", true)), compConf_(compConf), id_(-1) {}
+    failOnError_(compConf.parsedConfig().getBool("failOnError", true)), compConf_(compConf), id_(-1) {}
 
 DataSink::~DataSink() {}
 

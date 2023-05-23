@@ -19,8 +19,8 @@
 namespace multio::action {
 
 Print::Print(const ComponentConfiguration& compConf) : ChainedAction(compConf) {
-    stream_ = compConf.YAML().getString("stream", "info");
-    onlyFields_ = compConf.YAML().getBool("only-fields", false);
+    stream_ = compConf.parsedConfig().getString("stream", "info");
+    onlyFields_ = compConf.parsedConfig().getBool("only-fields", false);
 
     if (stream_ == "info") {
         os_ = &eckit::Log::info();
@@ -35,7 +35,7 @@ Print::Print(const ComponentConfiguration& compConf) : ChainedAction(compConf) {
         os_ = &eckit::Log::debug();
     }
 
-    prefix_ = compConf.YAML().getString("prefix", "");
+    prefix_ = compConf.parsedConfig().getString("prefix", "");
 }
 
 void Print::executeImpl(message::Message msg) {

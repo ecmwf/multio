@@ -71,7 +71,7 @@ PeerList ThreadTransport::createServerPeers() const {
 void ThreadTransport::createPeers() const {
     // Hack to work around the very different logic of creating ThreadPeers.
     // See multio-hammer.cc: MultioHammer::executeThread
-    clientPeers_ = PeerList(compConf_.YAML().getUnsigned("clientCount"));
+    clientPeers_ = PeerList(compConf_.parsedConfig().getUnsigned("clientCount"));
 }
 
 void ThreadTransport::print(std::ostream& os) const {

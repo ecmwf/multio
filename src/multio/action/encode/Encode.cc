@@ -28,8 +28,8 @@ using config::configuration_path_name;
 namespace {
 
 ComponentConfiguration getEncodingConfiguration(const ComponentConfiguration& compConf) {
-    if (compConf.YAML().has("encoding")) {
-        return compConf.recast(compConf.YAML().getSubConfiguration("encoding"));
+    if (compConf.parsedConfig().has("encoding")) {
+        return compConf.recast(compConf.parsedConfig().getSubConfiguration("encoding"));
     }
     else {
         return compConf;
@@ -37,16 +37,16 @@ ComponentConfiguration getEncodingConfiguration(const ComponentConfiguration& co
 }
 
 std::unique_ptr<GribEncoder> make_encoder(const ComponentConfiguration& compConf) {
-    auto format = compConf.YAML().getString("format");
+    auto format = compConf.parsedConfig().getString("format");
 
     if (format == "grib") {
-        ASSERT(compConf.YAML().has("template"));
-        std::string tmplPath = compConf.YAML().getString("template");
+        ASSERT(compConf.parsedConfig().has("template"));
+        std::string tmplPath = compConf.parsedConfig().getString("template");
         // TODO provide utility to distinguish between relative and absolute paths
         eckit::AutoStdFile fin{compConf.multioConfig().replaceCurly(tmplPath)};
         int err;
         return std::make_unique<GribEncoder>(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err),
-                                             compConf.YAML());
+                                             compConf.parsedConfig());
     }
     else if (format == "raw") {
         return nullptr;  // leave message in raw binary format
@@ -72,9 +72,9 @@ using message::Peer;
 
 Encode::Encode(const ComponentConfiguration& compConf, ComponentConfiguration&& encCompConf) :
     ChainedAction{compConf},
-    format_{encCompConf.YAML().getString("format")},
-    overwrite_{encCompConf.YAML().has("overwrite")
-                   ? std::optional<eckit::LocalConfiguration>{encCompConf.YAML().getSubConfiguration("overwrite")}
+    format_{encCompConf.parsedConfig().getString("format")},
+    overwrite_{encCompConf.parsedConfig().has("overwrite")
+                   ? std::optional<eckit::LocalConfiguration>{encCompConf.parsedConfig().getSubConfiguration("overwrite")}
                    : std::optional<eckit::LocalConfiguration>{}},
     encoder_{make_encoder(encCompConf)},
     gridDownloader_{std::make_unique<multio::action::GridDownloader>(compConf)} {}

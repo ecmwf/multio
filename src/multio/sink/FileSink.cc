@@ -28,7 +28,7 @@ namespace multio::sink {
 
 namespace {
 std::string create_path(const config::ComponentConfiguration& compConf) {
-    const auto& cfg = compConf.YAML();
+    const auto& cfg = compConf.parsedConfig();
     auto path = cfg.getString("path");
     auto expanded_path = compConf.multioConfig().replaceCurly(path);
     eckit::Log::info() << "path = " << expanded_path << std::endl;
@@ -44,7 +44,7 @@ std::string create_path(const config::ComponentConfiguration& compConf) {
 
 FileSink::FileSink(const config::ComponentConfiguration& compConf) :
     DataSink(compConf), path_{create_path(compConf)}, handle_(path_.fileHandle(false)) {
-    if (compConf.YAML().getBool("append", false)) {
+    if (compConf.parsedConfig().getBool("append", false)) {
         handle_->openForAppend(0);
     }
     else {

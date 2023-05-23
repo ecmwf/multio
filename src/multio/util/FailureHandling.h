@@ -348,11 +348,11 @@ private:
 public:
     FailureAware(const config::ComponentConfiguration& compConf) : peerTag_{compConf.multioConfig().localPeerTag()} {
         ASSERT(compConf.componentTag() == tag);
-        if (compConf.YAML().has(ComponentFailureTraits<tag>::configKey())) {
+        if (compConf.parsedConfig().has(ComponentFailureTraits<tag>::configKey())) {
             auto unparsedOnErrTagMaybe = ([&]() {
                 try {
                     return std::optional<std::string>{
-                        compConf.YAML().getString(ComponentFailureTraits<tag>::configKey())};
+                        compConf.parsedConfig().getString(ComponentFailureTraits<tag>::configKey())};
                 }
                 catch (...) {
                     return std::optional<std::string>{};
@@ -365,7 +365,7 @@ public:
                 }
                 else {
                     return std::optional<eckit::LocalConfiguration>{
-                        compConf.YAML().getSubConfiguration(ComponentFailureTraits<tag>::configKey())};
+                        compConf.parsedConfig().getSubConfiguration(ComponentFailureTraits<tag>::configKey())};
                 }
             }());
 

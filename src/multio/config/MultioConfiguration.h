@@ -89,20 +89,20 @@ struct MPIInitInfo {
 
 class MultioConfiguration {
 public:
-    MultioConfiguration(const eckit::PathName& fileName = configuration_file_name(),
+    MultioConfiguration(const eckit::PathName& configFile = configuration_file_name(),
                         LocalPeerTag clientOrServer = LocalPeerTag::Client);
-    MultioConfiguration(const eckit::PathName& pathName, const eckit::PathName& fileName,
+    MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,
                         LocalPeerTag clientOrServer = LocalPeerTag::Client);
-    MultioConfiguration(const eckit::LocalConfiguration& globalYAMLConfig, const eckit::PathName& pathName,
-                        const eckit::PathName& fileName, LocalPeerTag clientOrServer = LocalPeerTag::Client);
+    MultioConfiguration(const eckit::LocalConfiguration& globalYAMLConfig, const eckit::PathName& configDir,
+                        const eckit::PathName& configFile, LocalPeerTag clientOrServer = LocalPeerTag::Client);
 
 
-    eckit::LocalConfiguration& YAML();
-    const eckit::LocalConfiguration& YAML() const;
-    const eckit::PathName& pathName() const;
-    const eckit::PathName& fileName() const;
+    eckit::LocalConfiguration& parsedConfig();
+    const eckit::LocalConfiguration& parsedConfig() const;
+    const eckit::PathName& configDir() const;
+    const eckit::PathName& configFile() const;
 
-    void setPathName(const eckit::PathName&);
+    void setConfigDir(const eckit::PathName&);
 
     LocalPeerTag localPeerTag() const;
     bool isServer() const;
@@ -128,9 +128,9 @@ public:
     const std::vector<message::MetadataMapping>& getMetadataMappings(const std::string& mapping) const;
 
 private:
-    eckit::LocalConfiguration globalYAML_;
-    eckit::PathName pathName_;
-    eckit::PathName fileName_;
+    eckit::LocalConfiguration parsedConfig_;
+    eckit::PathName configDir_;
+    eckit::PathName configFile_;
     LocalPeerTag localPeerTag_;
 
     std::optional<MPIInitInfo> mpiInitInfo_{MPIInitInfo{}};

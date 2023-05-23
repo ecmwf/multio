@@ -20,11 +20,11 @@ StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compC
     restartPath_{"."},
     restartPrefix_{"StatisticsRestartFile"} {
 
-    if (!compConf.YAML().has("options")) {
+    if (!compConf.parsedConfig().has("options")) {
         return;
     }
 
-    const auto& opt = compConf.YAML().getSubConfiguration("options");
+    const auto& opt = compConf.parsedConfig().getSubConfiguration("options");
 
     // Overwrite defaults
     useDateTime_ = opt.getBool("use-current-time", false);

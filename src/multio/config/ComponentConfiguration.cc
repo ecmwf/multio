@@ -26,10 +26,10 @@ ComponentConfiguration::ComponentConfiguration(const eckit::LocalConfiguration& 
 
 //=============================================================================
 
-eckit::LocalConfiguration& ComponentConfiguration::YAML() {
+eckit::LocalConfiguration& ComponentConfiguration::parsedConfig() {
     return componentConf_;
 };
-const eckit::LocalConfiguration& ComponentConfiguration::YAML() const {
+const eckit::LocalConfiguration& ComponentConfiguration::parsedConfig() const {
     return componentConf_;
 };
 

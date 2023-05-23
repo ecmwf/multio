@@ -22,12 +22,12 @@ using transport::TransportFactory;
 namespace {
 
 eckit::LocalConfiguration getServerConf(const MultioConfiguration& multioConf) {
-    if (multioConf.YAML().has("server")) {
-        return multioConf.YAML().getSubConfiguration("server");
+    if (multioConf.parsedConfig().has("server")) {
+        return multioConf.parsedConfig().getSubConfiguration("server");
     }
 
     std::ostringstream oss;
-    oss << "Configuration 'server' not found in configuration file " << multioConf.fileName();
+    oss << "Configuration 'server' not found in configuration file " << multioConf.configFile();
     throw eckit::UserError(oss.str());
 }
 

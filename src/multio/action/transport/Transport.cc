@@ -45,7 +45,7 @@ Transport::Transport(const ComponentConfiguration& compConf) :
     serverCount_{serverPeers_.size()},
     serverId_{client_.id() / serverIdDenom(transport_->serverCount(), serverCount_)},
     usedServerCount_{eckit::Resource<size_t>("multioMpiPoolSize;$MULTIO_USED_SERVERS", 1)},
-    hashKeys_{getHashKeys(compConf.YAML())},
+    hashKeys_{getHashKeys(compConf.parsedConfig())},
     counters_(serverPeers_.size()),
     distType_{distributionType()} {}
 

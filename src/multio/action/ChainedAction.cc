@@ -8,10 +8,10 @@ namespace multio::action {
 
 ChainedAction::ChainedAction(const ComponentConfiguration& compConf) : Action(compConf) {
 
-    ASSERT(compConf.YAML().has("next"));
+    ASSERT(compConf.parsedConfig().has("next"));
 
     const ComponentConfiguration nextConf = compConf.subComponent("next", config::ComponentTag::Action);
-    next_ = ActionFactory::instance().build(nextConf.YAML().getString("type"), nextConf);
+    next_ = ActionFactory::instance().build(nextConf.parsedConfig().getString("type"), nextConf);
 }
 
 void ChainedAction::executeNext(message::Message msg) const {

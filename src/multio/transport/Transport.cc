@@ -40,7 +40,7 @@ TransportException::TransportException(const std::string& r, const eckit::CodeLo
 //--------------------------------------------------------------------------------------------------
 
 Transport::Transport(const ComponentConfiguration& compConf) : compConf_{compConf} {
-    LOG_DEBUG_LIB(LibMultio) << "Transport config: " << compConf.YAML() << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Transport config: " << compConf.parsedConfig() << std::endl;
 }
 
 Transport::~Transport() = default;

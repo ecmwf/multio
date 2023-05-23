@@ -195,7 +195,7 @@ void MultioEncodeOcean::executePlan() {
 
     auto multioConfig = test_configuration();
     std::vector<std::unique_ptr<Plan>> plans;
-    for (auto&& cfg : multioConfig.YAML().getSubConfigurations("plans")) {
+    for (auto&& cfg : multioConfig.parsedConfig().getSubConfigurations("plans")) {
         plans.emplace_back(std::make_unique<Plan>(ComponentConfiguration(std::move(cfg), multioConfig, ComponentTag::Plan)));
     }
 

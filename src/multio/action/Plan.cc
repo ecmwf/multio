@@ -54,8 +54,8 @@ LocalConfiguration rootConfig(const LocalConfiguration& config, const std::strin
 
 const config::YAMLFile* getPlanConfiguration(const ComponentConfiguration& compConf) {
     ASSERT(compConf.componentTag() == config::ComponentTag::Plan);
-    if (compConf.YAML().has("file")) {
-        return &compConf.multioConfig().getYAMLFile(compConf.multioConfig().replaceCurly(compConf.YAML().getString("file")));
+    if (compConf.parsedConfig().has("file")) {
+        return &compConf.multioConfig().getYAMLFile(compConf.multioConfig().replaceCurly(compConf.parsedConfig().getString("file")));
     }
     return NULL;
 }
@@ -66,16 +66,16 @@ Plan::Plan(const ComponentConfiguration& compConf, const config::YAMLFile* file)
     FailureAware(file ? compConf.recast(file->content, compConf.componentTag()) : compConf) {
     name_ = (file && file->content.has("name"))
               ? file->content.getString("name")
-              : (compConf.YAML().has("name") ? compConf.YAML().getString("name")
+              : (compConf.parsedConfig().has("name") ? compConf.parsedConfig().getString("name")
                                              : (file ? file->path.asString() : "anonymous"));
-    auto tmp = util::parseEnabled((file) ? file->content : compConf.YAML(), true);
+    auto tmp = util::parseEnabled((file) ? file->content : compConf.parsedConfig(), true);
     if (tmp) {
         enabled_ = *tmp;
     }
     else {
         throw eckit::UserError("Bool expected", Here());
     };
-    auto root = rootConfig(file ? file->content : compConf.YAML(), name_);
+    auto root = rootConfig(file ? file->content : compConf.parsedConfig(), name_);
     root_
         = ActionFactory::instance().build(root.getString("type"), compConf.recast(root, config::ComponentTag::Action));
 }

@@ -22,7 +22,7 @@
 namespace multio::action {
 
 Sink::Sink(const ComponentConfiguration& compConf) :
-    Action(compConf), report_{compConf.YAML().getBool("report", true)}, mio_{compConf} {}
+    Action(compConf), report_{compConf.parsedConfig().getBool("report", true)}, mio_{compConf} {}
 
 Sink::~Sink() {
     if (report_) {

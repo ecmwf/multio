@@ -22,7 +22,7 @@
 namespace multio::action {
 
 SingleFieldSink::SingleFieldSink(const ComponentConfiguration& compConf) :
-    Action{compConf}, rootPath_{compConf.YAML().getString("root_path", "")} {}
+    Action{compConf}, rootPath_{compConf.parsedConfig().getString("root_path", "")} {}
 
 void SingleFieldSink::executeImpl(Message msg) {
     switch (msg.tag()) {

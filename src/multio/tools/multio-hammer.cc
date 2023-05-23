@@ -484,13 +484,13 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
     MultioConfiguration multioConf;
     if (configPath_.empty()) {
         multioConf = MultioConfiguration{configuration_path_name("") + "test-configurations.yaml"};
-        conf_ = multioConf.YAML().getSubConfiguration(test_configuration_key(transportType_));
+        conf_ = multioConf.parsedConfig().getSubConfiguration(test_configuration_key(transportType_));
     }
     else {
         multioConf
             = MultioConfiguration(eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{configPath_}}},
                                   configPath_, configPath_);
-        conf_ = multioConf.YAML();
+        conf_ = multioConf.parsedConfig();
     }
 
     conf_.set("clientCount", clientCount_);

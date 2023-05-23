@@ -230,7 +230,7 @@ int multio_conf_set_path(multio_configuration_t* cc, const char* configuration_p
     return wrapApiFunction([cc, configuration_path]() {
         ASSERT(cc);
         if (configuration_path != nullptr) {
-            cc->setPathName(eckit::PathName(configuration_path));
+            cc->setConfigDir(eckit::PathName(configuration_path));
         }
     });
 };

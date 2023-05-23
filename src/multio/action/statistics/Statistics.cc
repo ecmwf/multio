@@ -44,9 +44,9 @@ long set_frequency(const std::string& output_freq) {
 
 Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
-    timeUnit_{set_unit(compConf.YAML().getString("output-frequency"))},
-    timeSpan_{set_frequency(compConf.YAML().getString("output-frequency"))},
-    operations_{compConf.YAML().getStringVector("operations")},
+    timeUnit_{set_unit(compConf.parsedConfig().getString("output-frequency"))},
+    timeSpan_{set_frequency(compConf.parsedConfig().getString("output-frequency"))},
+    operations_{compConf.parsedConfig().getStringVector("operations")},
     options_{compConf} {}
 
 

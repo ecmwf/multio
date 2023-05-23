@@ -120,21 +120,21 @@ private:  // methods
 class EventTrigger {
 public:  // methods
     EventTrigger(const ComponentConfiguration& compConf) {
-        if (compConf.YAML().has("file"))
-            file_ = compConf.YAML().getString("file");
+        if (compConf.parsedConfig().has("file"))
+            file_ = compConf.parsedConfig().getString("file");
 
-        if (compConf.YAML().has("host"))
-            host_ = compConf.YAML().getString("host");
+        if (compConf.parsedConfig().has("host"))
+            host_ = compConf.parsedConfig().getString("host");
 
-        failOnRetry_ = compConf.YAML().getInt("failOnRetry", false);
+        failOnRetry_ = compConf.parsedConfig().getInt("failOnRetry", false);
 
-        port_ = compConf.YAML().getInt("port", 10000);
-        retries_ = compConf.YAML().getInt("retries", 5);
-        timeout_ = compConf.YAML().getInt("timeout", 60);
+        port_ = compConf.parsedConfig().getInt("port", 10000);
+        retries_ = compConf.parsedConfig().getInt("retries", 5);
+        timeout_ = compConf.parsedConfig().getInt("timeout", 60);
 
         info_["app"] = "multio";
-        if (compConf.YAML().has("info")) {
-            LocalConfiguration info = compConf.YAML().getSubConfiguration("info");
+        if (compConf.parsedConfig().has("info")) {
+            LocalConfiguration info = compConf.parsedConfig().getSubConfiguration("info");
             std::vector<std::string> keys = info.keys();
             for (std::vector<std::string>::const_iterator it = keys.begin(); it != keys.end(); ++it) {
                 info_[*it] = info.getString(*it);
@@ -200,8 +200,8 @@ class MetadataChangeTrigger : public EventTrigger {
 public:  // methods
     explicit MetadataChangeTrigger(const ComponentConfiguration& compConf) :
         EventTrigger(compConf),
-        key_(compConf.YAML().getString("key")),
-        values_(compConf.YAML().getStringVector("values")),
+        key_(compConf.parsedConfig().getString("key")),
+        values_(compConf.parsedConfig().getStringVector("values")),
         lastSeen_(values_.end()),
         issued_(values_.end()) {}
 
@@ -267,7 +267,7 @@ private:  // members
 class NotifyMetadataTrigger : public EventTrigger {
 public:  // methods
     NotifyMetadataTrigger(const ComponentConfiguration& compConf) :
-        EventTrigger(compConf), key_(compConf.YAML().getString("key")) {}
+        EventTrigger(compConf), key_(compConf.parsedConfig().getString("key")) {}
 
 
     ~NotifyMetadataTrigger() {}
@@ -290,7 +290,7 @@ private:
 //----------------------------------------------------------------------------------------------------------------------
 
 std::unique_ptr<EventTrigger> EventTrigger::build(const ComponentConfiguration& compConf) {
-    std::string type = compConf.YAML().getString("type");
+    std::string type = compConf.parsedConfig().getString("type");
 
     if (type == "MetadataChange") {
         return std::make_unique<MetadataChangeTrigger>(compConf);
@@ -307,7 +307,7 @@ std::unique_ptr<EventTrigger> EventTrigger::build(const ComponentConfiguration& 
 //----------------------------------------------------------------------------------------------------------------------
 
 Trigger::Trigger(const ComponentConfiguration& compConf) {
-    if (compConf.YAML().has("triggers")) {
+    if (compConf.parsedConfig().has("triggers")) {
         for (auto&& subComp : compConf.subComponents("triggers")) {
             triggers_.emplace_back(EventTrigger::build(std::move(subComp)));
         }

@@ -81,8 +81,8 @@ struct Connection {
 };
 
 TcpTransport::TcpTransport(const ComponentConfiguration& compConf) :
-    Transport(compConf), local_{"localhost", compConf.YAML().getUnsigned("local_port")} {
-    auto serverConfigs = compConf.YAML().getSubConfigurations("servers");
+    Transport(compConf), local_{"localhost", compConf.parsedConfig().getUnsigned("local_port")} {
+    auto serverConfigs = compConf.parsedConfig().getSubConfigurations("servers");
     eckit::Log::debug() << " *** TcpTransport::constructor" << std::endl;
 
     for (auto cfg : serverConfigs) {
@@ -194,7 +194,7 @@ Peer TcpTransport::localPeer() const {
 PeerList TcpTransport::createServerPeers() const {
     PeerList serverPeers;
 
-    for (auto cfg : compConf_.YAML().getSubConfigurations("servers")) {
+    for (auto cfg : compConf_.parsedConfig().getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             serverPeers.emplace_back(std::make_unique<TcpPeer>(host, port));
@@ -205,7 +205,7 @@ PeerList TcpTransport::createServerPeers() const {
 
 void TcpTransport::createPeers() const {
     // Client peers
-    for (auto cfg : compConf_.YAML().getSubConfigurations("clients")) {
+    for (auto cfg : compConf_.parsedConfig().getSubConfigurations("clients")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             clientPeers_.emplace_back(std::make_unique<TcpPeer>(host, port));
@@ -213,7 +213,7 @@ void TcpTransport::createPeers() const {
     }
 
     // Server peers
-    for (auto cfg : compConf_.YAML().getSubConfigurations("servers")) {
+    for (auto cfg : compConf_.parsedConfig().getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             serverPeers_.emplace_back(std::make_unique<TcpPeer>(host, port));

@@ -269,7 +269,7 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
                              << msg.metadata() << std::endl
                              << std::endl;
 
-    const auto& config = Action::compConf_.YAML();
+    const auto& config = Action::compConf_.parsedConfig();
 
     const double* data = reinterpret_cast<const double*>(msg.payload().data());
     const size_t size = msg.payload().size() / sizeof(double);

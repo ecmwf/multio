@@ -24,17 +24,17 @@ using config::ComponentConfiguration;
 namespace {
 
 eckit::LocalConfiguration getClientConf(const MultioConfiguration& multioConf) {
-    if (multioConf.YAML().has("client")) {
-        return multioConf.YAML().getSubConfiguration("client");
+    if (multioConf.parsedConfig().has("client")) {
+        return multioConf.parsedConfig().getSubConfiguration("client");
     }
 
     // Make client work when using only action pipelines
-    if (multioConf.YAML().has("plans")) {
-        return multioConf.YAML();
+    if (multioConf.parsedConfig().has("plans")) {
+        return multioConf.parsedConfig();
     }
 
     std::ostringstream oss;
-    oss << "Configuration 'client' not found in configuration file " << multioConf.fileName();
+    oss << "Configuration 'client' not found in configuration file " << multioConf.configFile();
     throw eckit::UserError(oss.str());
 }
 
@@ -64,8 +64,8 @@ MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfigur
             ->matchedFields(activeSelectors_);
     }
 
-    if (multioConfig().YAML().has("active-matchers")) {
-        for (const auto& m : multioConfig().YAML().getSubConfigurations("active-matchers")) {
+    if (multioConfig().parsedConfig().has("active-matchers")) {
+        for (const auto& m : multioConfig().parsedConfig().getSubConfigurations("active-matchers")) {
             std::map<std::string, std::set<std::string>> matches;
             for (const auto& k : m.keys()) {
                 auto v = m.getStringVector(k);

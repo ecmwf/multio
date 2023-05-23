@@ -36,10 +36,10 @@ namespace multio {
 using util::ConfigurationContext;
 
 MaestroSink::MaestroSink(const ConfigurationContext& compConf) : multio::sink::DataSink(compConf) {
-    LOG_DEBUG_LIB(LibMultio) << "Config = " << compConf.YAML() << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Config = " << compConf.parsedConfig() << std::endl;
 
     LOG_DEBUG_LIB(LibMultio) << *this << std::endl;
-    readyCdoEnabled_ = compConf.YAML().getBool("ready-cdo", true);
+    readyCdoEnabled_ = compConf.parsedConfig().getBool("ready-cdo", true);
 
     eckit::Timing timing;
     {

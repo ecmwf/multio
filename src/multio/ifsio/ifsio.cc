@@ -90,7 +90,7 @@ public:
 private:
     std::tuple<eckit::LocalConfiguration, MultioConfiguration> configureFromSinks(MultioConfiguration multioConf) {
         std::vector<eckit::LocalConfiguration> actions;
-        actions.push_back(multioConf.YAML());
+        actions.push_back(multioConf.parsedConfig());
         actions[0].set("type", "sink");
 
         std::vector<eckit::LocalConfiguration> plans;
@@ -136,7 +136,7 @@ private:
             PathName path(::getenv("MULTIO_PLANS_FILE"));
             std::cout << "MultIO initialising with plans file " << path << std::endl;
             MultioConfiguration multioConf(path, config::LocalPeerTag::Client);
-            return std::make_tuple(multioConf.YAML(), std::move(multioConf));
+            return std::make_tuple(multioConf.parsedConfig(), std::move(multioConf));
         }
 
         if (::getenv("MULTIO_CONFIG")) {

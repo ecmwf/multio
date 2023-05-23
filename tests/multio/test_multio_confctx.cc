@@ -31,25 +31,25 @@ namespace multio::test {
 
 CASE("Create default context and tranverse client plans") {
     MultioConfiguration multioConf{};
-    ComponentConfiguration compConf{multioConf.YAML(), multioConf};
+    ComponentConfiguration compConf{multioConf.parsedConfig(), multioConf};
 
-    EXPECT(compConf.YAML().has("client"));
+    EXPECT(compConf.parsedConfig().has("client"));
 
     ComponentConfiguration clientConf = compConf.subComponent("client");
-    EXPECT(clientConf.YAML().has("plans"));
+    EXPECT(clientConf.parsedConfig().has("plans"));
 
     int i = 0;
     for (ComponentConfiguration subConf : clientConf.subComponents("plans")) {
-        // std::cout << subConf.YAML().getString("name") << std::endl;
+        // std::cout << subConf.parsedConfig().getString("name") << std::endl;
         switch (i) {
             case 0:
-                EXPECT(subConf.YAML().getString("name") == "ocean-replay-grid-info-stream");
+                EXPECT(subConf.parsedConfig().getString("name") == "ocean-replay-grid-info-stream");
                 break;
             case 1:
-                EXPECT(subConf.YAML().getString("name") == "ocean-replay-test-stream1");
+                EXPECT(subConf.parsedConfig().getString("name") == "ocean-replay-test-stream1");
                 break;
             case 2:
-                EXPECT(subConf.YAML().getString("name") == "ocean-replay-test-stream2");
+                EXPECT(subConf.parsedConfig().getString("name") == "ocean-replay-test-stream2");
                 break;
         }
         ++i;

@@ -4,12 +4,12 @@ namespace multio::action {
 
 namespace {
 std::string getMappingName(const ComponentConfiguration& compConf) {
-    if (!compConf.YAML().has("mapping")) {
+    if (!compConf.parsedConfig().has("mapping")) {
         throw message::MetadataMappingException(
             "An action of type \"metadata-mapping\" needs to have a field \"mapping\" pointing to a YAML file..",
             Here());
     }
-    return compConf.YAML().getString("mapping");
+    return compConf.parsedConfig().getString("mapping");
 }
 }  // namespace
 
@@ -18,8 +18,8 @@ MetadataMapping::MetadataMapping(const ComponentConfiguration& compConf) :
     name_(getMappingName(compConf)),
     mappings_(compConf.multioConfig().getMetadataMappings(name_)),
     options_{} {
-    options_.enforceMatch = compConf.YAML().getBool("enforce-match", true);
-    options_.overwriteExisting = compConf.YAML().getBool("overwrite-existing", false);
+    options_.enforceMatch = compConf.parsedConfig().getBool("enforce-match", true);
+    options_.overwriteExisting = compConf.parsedConfig().getBool("overwrite-existing", false);
 };
 
 void MetadataMapping::executeImpl(message::Message msg) {

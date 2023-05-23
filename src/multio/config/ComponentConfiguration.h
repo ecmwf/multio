@@ -34,8 +34,8 @@ public:
     ComponentConfiguration(const eckit::LocalConfiguration& componentYAMLConfig,
                            const MultioConfiguration& multioConfig, ComponentTag tag = ComponentTag::Unrelated);
 
-    eckit::LocalConfiguration& YAML();
-    const eckit::LocalConfiguration& YAML() const;
+    eckit::LocalConfiguration& parsedConfig();
+    const eckit::LocalConfiguration& parsedConfig() const;
 
     const MultioConfiguration& multioConfig() const;
 

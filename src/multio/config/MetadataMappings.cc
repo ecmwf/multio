@@ -7,28 +7,28 @@ namespace multio::config {
 
 const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const MultioConfiguration& multioConf,
                                                                            const std::string& mapping) const {
-    const auto& yamlFile = multioConf.getYAMLFile(mapping);
+    const auto& configFile = multioConf.getConfigFile(mapping);
 
-    auto search = mappings_.find(yamlFile.path);
+    auto search = mappings_.find(configFile.source);
     if (search != mappings_.end()) {
         return search->second;
     }
     else {
-        if (!yamlFile.content.has("data")) {
+        if (!configFile.content.has("data")) {
             std::ostringstream oss;
-            oss << "MetadataMapping " << yamlFile.path << " does not have a top-level key \"data\"" << std::endl;
+            oss << "MetadataMapping " << configFile.source << " does not have a top-level key \"data\"" << std::endl;
             throw message::MetadataMappingException(oss.str(), Here());
         }
 
-        std::vector<eckit::LocalConfiguration> sourceList = yamlFile.content.getSubConfigurations("data");
+        std::vector<eckit::LocalConfiguration> sourceList = configFile.content.getSubConfigurations("data");
 
         // Evaluate mappings block
-        if (!yamlFile.content.has("mappings")) {
+        if (!configFile.content.has("mappings")) {
             std::ostringstream oss;
-            oss << "Metadata mapping " << yamlFile.path << " does not list a \"mappings\" block" << std::endl;
+            oss << "Metadata mapping " << configFile.source << " does not list a \"mappings\" block" << std::endl;
             throw message::MetadataMappingException(oss.str(), Here());
         }
-        auto mappingsVector = yamlFile.content.getSubConfigurations("mappings");
+        auto mappingsVector = configFile.content.getSubConfigurations("mappings");
         std::vector<message::MetadataMapping> v;
         v.reserve(mappingsVector.size());
 

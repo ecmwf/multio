@@ -25,7 +25,7 @@
 namespace multio::config {
 
 class MultioConfiguration;  // Forward declaration
-struct YAMLFile;      // Forward declaration
+struct ConfigFile;      // Forward declaration
 
 class MetadataMappings {
 public:

@@ -45,10 +45,10 @@ std::string eckit::Translator<LocalPeerTag, std::string>::operator()(LocalPeerTa
 namespace multio::config {
 
 // MultioConfiguration
-MultioConfiguration::MultioConfiguration(const eckit::LocalConfiguration& globalYAMLConfig,
+MultioConfiguration::MultioConfiguration(const eckit::LocalConfiguration& globalConfig,
                                          const eckit::PathName& configDir, const eckit::PathName& configFile,
                                          LocalPeerTag localPeerTag) :
-    parsedConfig_(globalYAMLConfig), configDir_(configDir), configFile_(configFile), localPeerTag_(localPeerTag) {}
+    parsedConfig_(globalConfig), configDir_(configDir), configFile_(configFile), localPeerTag_(localPeerTag) {}
 
 MultioConfiguration::MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,
                                          LocalPeerTag localPeerTag) :
@@ -100,20 +100,21 @@ void MultioConfiguration::setMPIInitInfo(const std::optional<MPIInitInfo>& val) 
     mpiInitInfo_ = val;
 };
 
-const YAMLFile& MultioConfiguration::getYAMLFile(const char* fname) const {
-    return getYAMLFile(std::string(fname));
+const ConfigFile& MultioConfiguration::getConfigFile(const char* fname) const {
+    return getConfigFile(std::string(fname));
 }
-const YAMLFile& MultioConfiguration::getYAMLFile(const std::string& fname) const {
-    return getYAMLFile(eckit::PathName{replaceCurly(fname)});
+const ConfigFile& MultioConfiguration::getConfigFile(const std::string& fname) const {
+    return getConfigFile(eckit::PathName{replaceCurly(fname)});
 }
-const YAMLFile& MultioConfiguration::getRelativeYAMLFile(const eckit::PathName& referedFrom, const char* fname) const {
-    return getRelativeYAMLFile(referedFrom, std::string(fname));
+const ConfigFile& MultioConfiguration::getRelativeConfigFile(const eckit::PathName& referedFrom,
+                                                             const char* fname) const {
+    return getRelativeConfigFile(referedFrom, std::string(fname));
 }
-const YAMLFile& MultioConfiguration::getRelativeYAMLFile(const eckit::PathName& referedFrom,
-                                                         const std::string& fname) const {
-    return getYAMLFile(referedFrom / fname);
+const ConfigFile& MultioConfiguration::getRelativeConfigFile(const eckit::PathName& referedFrom,
+                                                             const std::string& fname) const {
+    return getConfigFile(referedFrom / fname);
 }
-const YAMLFile& MultioConfiguration::getYAMLFile(const eckit::PathName& fname) const {
+const ConfigFile& MultioConfiguration::getConfigFile(const eckit::PathName& fname) const {
     eckit::PathName path = fname.fullName();
     std::string key = path.asString();
     auto config = referencedConfigFiles_.find(key);
@@ -123,7 +124,7 @@ const YAMLFile& MultioConfiguration::getYAMLFile(const eckit::PathName& fname) c
 
     referencedConfigFiles_.emplace(
         std::piecewise_construct, std::forward_as_tuple(key),
-        std::forward_as_tuple(YAMLFile{eckit::LocalConfiguration{eckit::YAMLConfiguration{fname}}, path}));
+        std::forward_as_tuple(ConfigFile{eckit::LocalConfiguration{eckit::YAMLConfiguration{fname}}, path}));
     return referencedConfigFiles_[key];
 }
 
@@ -151,7 +152,8 @@ std::string MultioConfiguration::replaceCurly(const std::string& s) const {
     });
 }
 
-const std::vector<message::MetadataMapping>& MultioConfiguration::getMetadataMappings(const std::string& mappings) const {
+const std::vector<message::MetadataMapping>& MultioConfiguration::getMetadataMappings(
+    const std::string& mappings) const {
     return metadataMappings_.getMappings(*this, mappings);
 };
 

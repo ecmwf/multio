@@ -52,22 +52,22 @@ LocalConfiguration rootConfig(const LocalConfiguration& config, const std::strin
     return createActionList(actions);
 }
 
-const config::YAMLFile* getPlanConfiguration(const ComponentConfiguration& compConf) {
+const config::ConfigFile* getPlanConfiguration(const ComponentConfiguration& compConf) {
     ASSERT(compConf.componentTag() == config::ComponentTag::Plan);
     if (compConf.parsedConfig().has("file")) {
-        return &compConf.multioConfig().getYAMLFile(compConf.multioConfig().replaceCurly(compConf.parsedConfig().getString("file")));
+        return &compConf.multioConfig().getConfigFile(compConf.multioConfig().replaceCurly(compConf.parsedConfig().getString("file")));
     }
     return NULL;
 }
 
 }  // namespace
 
-Plan::Plan(const ComponentConfiguration& compConf, const config::YAMLFile* file) :
+Plan::Plan(const ComponentConfiguration& compConf, const config::ConfigFile* file) :
     FailureAware(file ? compConf.recast(file->content, compConf.componentTag()) : compConf) {
     name_ = (file && file->content.has("name"))
               ? file->content.getString("name")
               : (compConf.parsedConfig().has("name") ? compConf.parsedConfig().getString("name")
-                                             : (file ? file->path.asString() : "anonymous"));
+                                             : (file ? file->source.asString() : "anonymous"));
     auto tmp = util::parseEnabled((file) ? file->content : compConf.parsedConfig(), true);
     if (tmp) {
         enabled_ = *tmp;

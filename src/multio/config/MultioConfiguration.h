@@ -71,9 +71,9 @@ struct Translator<multio::config::LocalPeerTag, std::string> {
 
 namespace multio::config {
 
-struct YAMLFile {
+struct ConfigFile {
     eckit::LocalConfiguration content;
-    eckit::PathName path;
+    eckit::PathName source;
 };
 
 struct MPIInitInfo {
@@ -93,7 +93,7 @@ public:
                         LocalPeerTag clientOrServer = LocalPeerTag::Client);
     MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,
                         LocalPeerTag clientOrServer = LocalPeerTag::Client);
-    MultioConfiguration(const eckit::LocalConfiguration& globalYAMLConfig, const eckit::PathName& configDir,
+    MultioConfiguration(const eckit::LocalConfiguration& globalConfigConfig, const eckit::PathName& configDir,
                         const eckit::PathName& configFile, LocalPeerTag clientOrServer = LocalPeerTag::Client);
 
 
@@ -114,13 +114,13 @@ public:
     std::optional<MPIInitInfo>& getMPIInitInfo();
     void setMPIInitInfo(const std::optional<MPIInitInfo>& val);
 
-    const YAMLFile& getYAMLFile(const char*) const;
-    const YAMLFile& getYAMLFile(const std::string&) const;
+    const ConfigFile& getConfigFile(const char*) const;
+    const ConfigFile& getConfigFile(const std::string&) const;
 
-    const YAMLFile& getYAMLFile(const eckit::PathName&) const;
+    const ConfigFile& getConfigFile(const eckit::PathName&) const;
 
-    const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const char*) const;
-    const YAMLFile& getRelativeYAMLFile(const eckit::PathName&, const std::string&) const;
+    const ConfigFile& getRelativeConfigFile(const eckit::PathName&, const char*) const;
+    const ConfigFile& getRelativeConfigFile(const eckit::PathName&, const std::string&) const;
 
     std::string replaceCurly(const std::string&) const;
 
@@ -135,7 +135,7 @@ private:
 
     std::optional<MPIInitInfo> mpiInitInfo_{MPIInitInfo{}};
 
-    mutable std::unordered_map<std::string, YAMLFile> referencedConfigFiles_;
+    mutable std::unordered_map<std::string, ConfigFile> referencedConfigFiles_;
     MetadataMappings metadataMappings_;
 };
 

@@ -21,11 +21,9 @@
 #include "metkit/codes/GribHandle.h"
 
 #include "multio/message/Message.h"
-// #include "multio/ifsio/EncodeBitsPerValue.h"
 
 namespace multio {
 namespace action {
-
 
 class GribEncoder {
 public:

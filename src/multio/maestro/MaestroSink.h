@@ -21,14 +21,18 @@
 #include "multio/maestro/MaestroCdo.h"
 #include "multio/maestro/MaestroStatistics.h"
 #include "multio/sink/DataSink.h"
+#include "multio/config/ComponentConfiguration.h"
+
 
 //--------------------------------------------------------------------------------------------------
 
 namespace multio {
 
+using config::ComponentConfiguration;
+
 class MaestroSink : public multio::sink::DataSink {
 public:
-    MaestroSink(const util::ConfigurationContext& config);
+    MaestroSink(const ComponentConfiguration& config);
     ~MaestroSink() override;
 
 private:

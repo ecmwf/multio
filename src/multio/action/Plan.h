@@ -41,7 +41,7 @@ class Action;
 class Plan : private eckit::NonCopyable, public FailureAware<config::ComponentTag::Plan> {
 private:
     // Delegate constructor with loaded config (from file or list entry)
-    Plan(const ComponentConfiguration& compConf, const config::ConfigFile* file);
+    Plan(std::tuple<ComponentConfiguration, std::string>&& confAndName);
 
 public:
     Plan(const ComponentConfiguration& compConf);

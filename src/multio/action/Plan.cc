@@ -52,35 +52,37 @@ LocalConfiguration rootConfig(const LocalConfiguration& config, const std::strin
     return createActionList(actions);
 }
 
-const config::ConfigFile* getPlanConfiguration(const ComponentConfiguration& compConf) {
+std::tuple<ComponentConfiguration, std::string> getPlanConfiguration(const ComponentConfiguration& compConf) {
     ASSERT(compConf.componentTag() == config::ComponentTag::Plan);
     if (compConf.parsedConfig().has("file")) {
-        return &compConf.multioConfig().getConfigFile(compConf.multioConfig().replaceCurly(compConf.parsedConfig().getString("file")));
+        const auto& file = compConf.multioConfig().getConfigFile(
+            compConf.multioConfig().replaceCurly(compConf.parsedConfig().getString("file")));
+        ComponentConfiguration newConf = compConf.recast(file.content, compConf.componentTag());
+        return std::make_tuple(newConf,
+                               file.content.has("name") ? file.content.getString("name") : file.source.asString());
     }
-    return NULL;
+    return std::make_tuple(compConf, compConf.parsedConfig().has("name") ? compConf.parsedConfig().getString("name")
+                                                                         : std::string("anonymous"));
 }
 
 }  // namespace
 
-Plan::Plan(const ComponentConfiguration& compConf, const config::ConfigFile* file) :
-    FailureAware(file ? compConf.recast(file->content, compConf.componentTag()) : compConf) {
-    name_ = (file && file->content.has("name"))
-              ? file->content.getString("name")
-              : (compConf.parsedConfig().has("name") ? compConf.parsedConfig().getString("name")
-                                             : (file ? file->source.asString() : "anonymous"));
-    auto tmp = util::parseEnabled((file) ? file->content : compConf.parsedConfig(), true);
+Plan::Plan(std::tuple<ComponentConfiguration, std::string>&& confAndName) :
+    FailureAware(std::get<0>(confAndName)), name_{std::get<1>(std::move(confAndName))} {
+    ComponentConfiguration compConf = std::get<0>(std::move(confAndName));
+    auto tmp = util::parseEnabled(compConf.parsedConfig(), true);
     if (tmp) {
         enabled_ = *tmp;
     }
     else {
         throw eckit::UserError("Bool expected", Here());
     };
-    auto root = rootConfig(file ? file->content : compConf.parsedConfig(), name_);
-    root_
-        = ActionFactory::instance().build(root.getString("type"), compConf.recast(root, config::ComponentTag::Action));
+    auto root = rootConfig(compConf.parsedConfig(), name_);
+    root_ = ActionFactory::instance().build(
+        root.getString("type"), ComponentConfiguration(root, compConf.multioConfig(), config::ComponentTag::Action));
 }
 
-Plan::Plan(const ComponentConfiguration& compConf) : Plan(compConf, getPlanConfiguration(compConf)) {}
+Plan::Plan(const ComponentConfiguration& compConf) : Plan(getPlanConfiguration(compConf)) {}
 
 Plan::~Plan() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};

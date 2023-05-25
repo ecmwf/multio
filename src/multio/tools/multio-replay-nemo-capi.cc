@@ -400,7 +400,6 @@ void MultioReplayNemoCApi::initClient() {
 
     int retComm = 0;
     if (passDownMPIComm_) {
-        multio_conf_mpi_client_id(multio_cc, "oce");
         multio_conf_mpi_parent_comm(multio_cc, eckit::mpi::comm(mpiGroup_.c_str()).communicator());
         multio_conf_mpi_return_client_comm(multio_cc, &retComm);
     }
@@ -412,7 +411,6 @@ void MultioReplayNemoCApi::initClient() {
     if (passDownMPIComm_) {
         eckit::Log::info() << " *** multio_new_handle mpi returned comm: " << retComm << std::endl;
         ASSERT(retComm != 0);
-        ASSERT(eckit::mpi::comm("oce").communicator() == retComm);
         ASSERT(eckit::mpi::comm("multio-clients").communicator() == retComm);
     }
 

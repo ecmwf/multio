@@ -310,19 +310,6 @@ int multio_conf_mpi_return_server_comm(multio_configuration_t* cc, int* return_s
     }, cc ? cc->getCFailureInteroperator() : std::weak_ptr<CFailureInteroperator>{});
 };
 
-int multio_conf_mpi_client_id(multio_configuration_t* cc, const char* client_id) {
-    return wrapApiFunction([cc, client_id]() {
-        ASSERT(cc);
-        if (client_id != nullptr) {
-            if (!cc->getMPIInitInfo()) {
-                cc->setMPIInitInfo(std::optional<MPIInitInfo>{MPIInitInfo{}});
-            }
-            cc->getMPIInitInfo().value().clientId = std::optional<std::string>{client_id};
-        }
-    }, cc ? cc->getCFailureInteroperator() : std::weak_ptr<CFailureInteroperator>{});
-}
-
-
 int multio_new_handle(multio_handle_t** mio, multio_configuration_t* cc) {
     // Failurehandler and its string location is preserved through shared_ptr...
     return wrapApiFunction([mio, cc]() {

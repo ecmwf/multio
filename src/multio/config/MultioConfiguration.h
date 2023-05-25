@@ -81,7 +81,6 @@ struct ConfigFile {
 
 struct MPIInitInfo {
     std::optional<int> parentComm{};
-    std::optional<std::string> clientId{};
     std::optional<int> defaultClientSplitColor{777};  // Hardcoded defaults may be overwritten
     std::optional<int> defaultServerSplitColor{888};  // Hardcoded defaults may be overwritten
     mutable int* returnClientComm{nullptr};           // Hardcoded defaults may be overwritten

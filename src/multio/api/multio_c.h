@@ -160,14 +160,6 @@ int multio_conf_mpi_return_client_comm(multio_configuration_t* cc, int* return_c
  */
 int multio_conf_mpi_return_server_comm(multio_configuration_t* cc, int* return_server_comm);
 
-/** Set MPI specific initalization parameters
- *
- * \param client_id  String containing the client id (provided for backwards compatibility).
- * \param cc Handle to the multio configuration  object
- * \returns Return code (#MultioErrorValues)
- */
-int multio_conf_mpi_client_id(multio_configuration_t* cc, const char* client_id);
-
 /** Creates a multio (client) instance
  * \param cc Handle to configuration
  * \param mio Return a handle to the multio (client) instance

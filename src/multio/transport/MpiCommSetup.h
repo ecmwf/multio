@@ -36,7 +36,6 @@ enum class CommSetupType : unsigned
 struct CommSetupOptions {
     std::optional<CommSetupType> defaultType{CommSetupType::Passed};
     std::optional<std::string> parentCommName{};
-    std::optional<std::string> alias{};
 };
 
 

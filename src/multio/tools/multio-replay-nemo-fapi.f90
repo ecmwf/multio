@@ -143,11 +143,8 @@ subroutine init(mio, rank, server_count, client_count)
 
     write(0,*) "add mpi comm nemo"
     call fckit_mpi_addComm("nemo", comm%communicator())
-    ! newcomm = comm%split(color_client, "oce") ! Client splitting done by multio
 
     newcomm_id = 0
-    write(0,*) "set client id..."
-    cerr = cc%mpi_client_id("oce")
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi client id to configuration"
     write(0,*) "set parent comm..."
     mio_parent_comm = comm%communicator()

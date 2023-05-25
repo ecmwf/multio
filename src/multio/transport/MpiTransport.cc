@@ -78,18 +78,14 @@ MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
             options.parentCommName = std::optional<std::string>(groupName);
 
             const auto& mpiInitInfo = compConf.multioConfig().getMPIInitInfo();
-            options.alias = mpiInitInfo ? mpiInitInfo->clientId : std::optional<std::string>{};
 
-            std::string subGroupName = compConf.parsedConfig().has("client-group")
-                                         ? compConf.parsedConfig().getString("client-group")
-                                         : ([&]() {
-                                               std::ostringstream oss;
-                                               oss << groupName << "-"
-                                                   << "clients";
-                                               return oss.str();
-                                           })();
-            // eckit::Log::info() << " *** MpiTransport::setupMPI_ client " << subGroupName << "
-            // alias: " << (options.alias? options.alias().c_str() : "none") << std::endl;
+            std::string subGroupName
+                = compConf.parsedConfig().has("client-group") ? compConf.parsedConfig().getString("client-group") : ([&]() {
+                      std::ostringstream oss;
+                      oss << groupName << "-"
+                          << "clients";
+                      return oss.str();
+                  })();
 
             // Setup client group
             auto& clientComm

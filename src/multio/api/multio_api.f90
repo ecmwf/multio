@@ -30,7 +30,6 @@ module multio_api
         procedure :: set_failure_handler => multio_set_failure_handler
         procedure :: set_path => multio_conf_set_path
         procedure :: mpi_allow_world_default_comm => multio_conf_mpi_allow_world_default_comm
-        procedure :: mpi_client_id => multio_conf_mpi_client_id
         procedure :: mpi_parent_comm => multio_conf_mpi_parent_comm
         procedure :: mpi_return_client_comm => multio_conf_mpi_return_client_comm
         procedure :: mpi_return_server_comm => multio_conf_mpi_return_server_comm
@@ -722,15 +721,6 @@ contains
             logical(c_bool), intent(in), value :: allow
             integer :: err
             err = c_multio_conf_mpi_allow_world_default_comm(cc%impl, allow)
-    end function
-
-    function multio_conf_mpi_client_id(cc, client_id) result(err)
-            class(multio_configuration), intent(inout) :: cc
-            integer :: err
-            character(*), intent(in) :: client_id
-            character(:), allocatable, target :: nullified_client_id
-            nullified_client_id = trim(client_id) // c_null_char
-            err = c_multio_conf_mpi_client_id(cc%impl, c_loc(nullified_client_id))
     end function
 
     function multio_conf_mpi_parent_comm(cc, parent_comm) result(err)

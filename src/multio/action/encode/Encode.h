@@ -34,7 +34,7 @@ public:
 private:
     // Internal constructor delegate with prepared configuration for specific
     // encoder
-    explicit Encode(const ComponentConfiguration& compConf, ComponentConfiguration&& encCompConf);
+    explicit Encode(const ComponentConfiguration& compConf, const eckit::LocalConfiguration& encoderConf);
 
     void print(std::ostream& os) const override;
 

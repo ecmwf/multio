@@ -76,7 +76,7 @@ public:
                         LocalPeerTag clientOrServer = LocalPeerTag::Client);
     MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,
                         LocalPeerTag clientOrServer = LocalPeerTag::Client);
-    MultioConfiguration(const eckit::LocalConfiguration& globalConfigConfig, const eckit::PathName& configDir,
+    MultioConfiguration(const eckit::LocalConfiguration& globalConfig, const eckit::PathName& configDir,
                         const eckit::PathName& configFile, LocalPeerTag clientOrServer = LocalPeerTag::Client);
 
 
@@ -88,8 +88,6 @@ public:
     void setConfigDir(const eckit::PathName&);
 
     LocalPeerTag localPeerTag() const;
-    bool isServer() const;
-    bool isClient() const;
 
     void setLocalPeerTag(LocalPeerTag clientOrServer);
 
@@ -97,16 +95,11 @@ public:
     std::optional<MPIInitInfo>& getMPIInitInfo();
     void setMPIInitInfo(const std::optional<MPIInitInfo>& val);
 
-    const ConfigFile& getConfigFile(const char*) const;
     const ConfigFile& getConfigFile(const std::string&) const;
 
     const ConfigFile& getConfigFile(const eckit::PathName&) const;
 
-    const ConfigFile& getRelativeConfigFile(const eckit::PathName&, const char*) const;
-    const ConfigFile& getRelativeConfigFile(const eckit::PathName&, const std::string&) const;
-
     std::string replaceCurly(const std::string&) const;
-
 
     const std::vector<message::MetadataMapping>& getMetadataMappings(const std::string& mapping) const;
 

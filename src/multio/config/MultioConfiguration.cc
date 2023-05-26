@@ -55,12 +55,6 @@ const eckit::PathName& MultioConfiguration::configFile() const {
 LocalPeerTag MultioConfiguration::localPeerTag() const {
     return localPeerTag_;
 };
-bool MultioConfiguration::isServer() const {
-    return localPeerTag() == LocalPeerTag::Server;
-};
-bool MultioConfiguration::isClient() const {
-    return localPeerTag() == LocalPeerTag::Client;
-};
 
 void MultioConfiguration::setLocalPeerTag(LocalPeerTag clientOrServer) {
     localPeerTag_ = clientOrServer;
@@ -77,19 +71,8 @@ void MultioConfiguration::setMPIInitInfo(const std::optional<MPIInitInfo>& val) 
     mpiInitInfo_ = val;
 };
 
-const ConfigFile& MultioConfiguration::getConfigFile(const char* fname) const {
-    return getConfigFile(std::string(fname));
-}
 const ConfigFile& MultioConfiguration::getConfigFile(const std::string& fname) const {
     return getConfigFile(eckit::PathName{replaceCurly(fname)});
-}
-const ConfigFile& MultioConfiguration::getRelativeConfigFile(const eckit::PathName& referedFrom,
-                                                             const char* fname) const {
-    return getRelativeConfigFile(referedFrom, std::string(fname));
-}
-const ConfigFile& MultioConfiguration::getRelativeConfigFile(const eckit::PathName& referedFrom,
-                                                             const std::string& fname) const {
-    return getConfigFile(referedFrom / fname);
 }
 const ConfigFile& MultioConfiguration::getConfigFile(const eckit::PathName& fname) const {
     eckit::PathName path = fname.fullName();

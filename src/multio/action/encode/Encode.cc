@@ -27,26 +27,26 @@ using config::configuration_path_name;
 
 namespace {
 
-ComponentConfiguration getEncodingConfiguration(const ComponentConfiguration& compConf) {
+eckit::LocalConfiguration getEncodingConfiguration(const ComponentConfiguration& compConf) {
     if (compConf.parsedConfig().has("encoding")) {
-        return ComponentConfiguration(compConf.parsedConfig().getSubConfiguration("encoding"), compConf.multioConfig());
+        return compConf.parsedConfig().getSubConfiguration("encoding");
     }
     else {
-        return compConf;
+        return compConf.parsedConfig();
     }
 }
 
-std::unique_ptr<GribEncoder> make_encoder(const ComponentConfiguration& compConf) {
-    auto format = compConf.parsedConfig().getString("format");
+std::unique_ptr<GribEncoder> makeEncoder(const eckit::LocalConfiguration& conf,
+                                         const config::MultioConfiguration& multioConfig) {
+    auto format = conf.getString("format");
 
     if (format == "grib") {
-        ASSERT(compConf.parsedConfig().has("template"));
-        std::string tmplPath = compConf.parsedConfig().getString("template");
+        ASSERT(conf.has("template"));
+        std::string tmplPath = conf.getString("template");
         // TODO provide utility to distinguish between relative and absolute paths
-        eckit::AutoStdFile fin{compConf.multioConfig().replaceCurly(tmplPath)};
+        eckit::AutoStdFile fin{multioConfig.replaceCurly(tmplPath)};
         int err;
-        return std::make_unique<GribEncoder>(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err),
-                                             compConf.parsedConfig());
+        return std::make_unique<GribEncoder>(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), conf);
     }
     else if (format == "raw") {
         return nullptr;  // leave message in raw binary format
@@ -70,13 +70,13 @@ EncodingException::EncodingException(const std::string& r, const eckit::CodeLoca
 using message::Message;
 using message::Peer;
 
-Encode::Encode(const ComponentConfiguration& compConf, ComponentConfiguration&& encCompConf) :
+Encode::Encode(const ComponentConfiguration& compConf, const eckit::LocalConfiguration& encConf) :
     ChainedAction{compConf},
-    format_{encCompConf.parsedConfig().getString("format")},
-    overwrite_{encCompConf.parsedConfig().has("overwrite")
-                   ? std::optional<eckit::LocalConfiguration>{encCompConf.parsedConfig().getSubConfiguration("overwrite")}
+    format_{encConf.getString("format")},
+    overwrite_{encConf.has("overwrite")
+                   ? std::optional<eckit::LocalConfiguration>{encConf.getSubConfiguration("overwrite")}
                    : std::optional<eckit::LocalConfiguration>{}},
-    encoder_{make_encoder(encCompConf)},
+    encoder_{makeEncoder(encConf, compConf.multioConfig())},
     gridDownloader_{std::make_unique<multio::action::GridDownloader>(compConf)} {}
 
 Encode::Encode(const ComponentConfiguration& compConf) : Encode(compConf, getEncodingConfiguration(compConf)) {}
@@ -98,7 +98,8 @@ void Encode::executeImpl(Message msg) {
         LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain() << std::endl;
 
         const auto& md = msg.metadata();
-        auto gridCoords = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
+        auto gridCoords
+            = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
         if (gridCoords) {
             executeNext(gridCoords.value().Lat);
             executeNext(gridCoords.value().Lon);

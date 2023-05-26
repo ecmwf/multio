@@ -81,9 +81,9 @@ contains
                 return
             end if
             
-            if (TRIM(multio_error_string_global(err)) /= "Caught eckit exception on C-C++ API boundary: &
+            if (TRIM(multio_error_string(err)) /= "Caught eckit exception on C-C++ API boundary: &
             &Cannot open invalid-path  (No such file or directory)") then
-                write(error_unit, *) 'unexpected error message: ', multio_error_string_global(err)
+                write(error_unit, *) 'unexpected error message: ', multio_error_string(err)
                 success = .false.
                 return
             endif
@@ -140,7 +140,7 @@ contains
         
         ! Set test error handler and its context
         if (cc%set_failure_handler(test_error_handler, context) /= MULTIO_SUCCESS) then
-            write(error_unit, *) 'setting failure handler failed: ',multio_error_string_global(err)
+            write(error_unit, *) 'setting failure handler failed: ',multio_error_string(err)
             success = .false.
             return
         end if
@@ -171,14 +171,14 @@ contains
         
         ! err = cc%new()
         ! if (err /= MULTIO_SUCCESS) then
-        !     write(error_unit, *) 'multio_configuration%new failed unexpectedly: ',multio_error_string_global(err)
+        !     write(error_unit, *) 'multio_configuration%new failed unexpectedly: ',multio_error_string(err)
         !     success = .false.
         !     return
         ! end if
         
         err = cc%mpi_allow_world_default_comm( .FALSE._1 )
         if (err /= MULTIO_SUCCESS) then
-            write(error_unit, *) 'multio_configuration%allowWorldAsDefault failed unexpectedly: ',multio_error_string_global(err)
+            write(error_unit, *) 'multio_configuration%allowWorldAsDefault failed unexpectedly: ',multio_error_string(err)
             success = .false.
             return
         end if
@@ -223,7 +223,7 @@ contains
             return
         end if
         if (cc2%set_failure_handler(test_error_handler2, context2) /= MULTIO_SUCCESS) then
-            write(error_unit, *) 'setting failure handler failed (2): ',multio_error_string_global(err)
+            write(error_unit, *) 'setting failure handler failed (2): ',multio_error_string(err)
             success = .false.
             return
         end if
@@ -234,7 +234,7 @@ contains
             return
         end if
         if (cc3%set_failure_handler(test_error_handler3, context3) /= MULTIO_SUCCESS) then
-            write(error_unit, *) 'setting failure handler failed (3): ',multio_error_string_global(err)
+            write(error_unit, *) 'setting failure handler failed (3): ',multio_error_string(err)
             success = .false.
             return
         end if
@@ -253,7 +253,7 @@ contains
             return
         end if
         if (cc2%set_failure_handler(test_error_handler2, context2) /= MULTIO_SUCCESS) then
-            write(error_unit, *) 'setting failure handler failed (2,2): ',multio_error_string_global(err)
+            write(error_unit, *) 'setting failure handler failed (2,2): ',multio_error_string(err)
             success = .false.
             return
         end if
@@ -357,10 +357,9 @@ contains
     end function
 
     subroutine test_error_handler(context, error, info)
-        use, intrinsic :: iso_c_binding
         integer(8), intent(inout) :: context
         integer, intent(in) :: error
-        type(c_ptr), intent(in), value :: info
+        class(multio_failure_info), intent(in) :: info
 
         test_error_handler_calls = test_error_handler_calls + 1
         test_error_handler_last_context = context
@@ -368,10 +367,9 @@ contains
     end subroutine
     
     subroutine test_error_handler2(context, error, info)
-        use, intrinsic :: iso_c_binding
         integer(8), intent(inout) :: context
         integer, intent(in) :: error
-        type(c_ptr), intent(in), value :: info
+        class(multio_failure_info), intent(in) :: info
 
         test_error_handler_calls2 = test_error_handler_calls2 + 1
         test_error_handler_last_context2 = context
@@ -379,10 +377,9 @@ contains
     end subroutine
     
     subroutine test_error_handler3(context, error, info)
-        use, intrinsic :: iso_c_binding
         integer(8), intent(inout) :: context
         integer, intent(in) :: error
-        type(c_ptr), intent(in), value :: info
+        class(multio_failure_info), intent(in) :: info
 
         test_error_handler_calls3 = test_error_handler_calls3 + 1
         test_error_handler_last_context3 = context
@@ -403,7 +400,6 @@ program fapi_general
     if (multio_initialise() /= MULTIO_SUCCESS) then
         write(error_unit, *) 'Failed to initialise MULTIO api'
         success = .false.
-        return
     end if
 
     success = success .and. test_multio_version()

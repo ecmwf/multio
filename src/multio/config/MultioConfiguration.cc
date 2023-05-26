@@ -25,11 +25,7 @@ namespace multio::config {
 MultioConfiguration::MultioConfiguration(const eckit::LocalConfiguration& globalConfig,
                                          const eckit::PathName& configDir, const eckit::PathName& configFile,
                                          LocalPeerTag localPeerTag) :
-    parsedConfig_{globalConfig},
-    configDir_{configDir},
-    configFile_{configFile},
-    localPeerTag_{localPeerTag},
-    cFailureInteroperator_{std::make_shared<CFailureInteroperator>()} {}
+    parsedConfig_{globalConfig}, configDir_{configDir}, configFile_{configFile}, localPeerTag_{localPeerTag} {}
 
 MultioConfiguration::MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,
                                          LocalPeerTag localPeerTag) :
@@ -124,11 +120,6 @@ const std::vector<message::MetadataMapping>& MultioConfiguration::getMetadataMap
     const std::string& mappings) const {
     return metadataMappings_.getMappings(*this, mappings);
 };
-
-
-std::weak_ptr<CFailureInteroperator> MultioConfiguration::getCFailureInteroperator() const {
-    return cFailureInteroperator_;
-}
 
 
 //=============================================================================

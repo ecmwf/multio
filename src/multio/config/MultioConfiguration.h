@@ -58,20 +58,6 @@ namespace multio::config {
 
 //=============================================================================
 
-struct CFailureInteroperator;
-typedef void (*FailureHandlerPtr)(void*, int err_code, CFailureInteroperator*);
-
-struct CFailureInteroperator {
-    FailureHandlerPtr handler{nullptr};
-    void* context{nullptr};
-    // Put the error string in a shared ptr to preserve the location when moving Ownership of the configuration to the
-    // handle
-    std::string lastErrorString{};
-};
-
-//=============================================================================
-
-
 struct ConfigFile {
     eckit::LocalConfiguration content;
     eckit::PathName source;
@@ -122,41 +108,13 @@ public:
 
     const std::vector<message::MetadataMapping>& getMetadataMappings(const std::string& mapping) const;
 
-    
-    
+
     MultioConfiguration(const MultioConfiguration& other) = delete;
     MultioConfiguration& operator=(const MultioConfiguration& other) = delete;
-    
-    // Custum move assigment & construction to avoid
-    // stealing of shared_ptr if use_count = 1 - otherwise this would
-    // make weak_ptr to lose track. This can happen when moving ownership to MultioServer/Client.
-    MultioConfiguration(MultioConfiguration&& other) noexcept: 
-        parsedConfig_(std::move(other.parsedConfig_)), 
-        configDir_(std::move(other.configDir_)), 
-        configFile_(std::move(other.configFile_)), 
-        localPeerTag_(std::move(other.localPeerTag_)), 
-        mpiInitInfo_(std::move(other.mpiInitInfo_)), 
-        referencedConfigFiles_(std::move(other.referencedConfigFiles_)), 
-        metadataMappings_(std::move(other.metadataMappings_)), 
-        cFailureInteroperator_(other.cFailureInteroperator_) 
-        {
-    }
-    
-    MultioConfiguration& operator=(MultioConfiguration&& other) noexcept {
-        parsedConfig_ = std::move(other.parsedConfig_); 
-        configDir_ = std::move(other.configDir_); 
-        configFile_ = std::move(other.configFile_); 
-        localPeerTag_ = std::move(other.localPeerTag_); 
-        mpiInitInfo_ = std::move(other.mpiInitInfo_); 
-        referencedConfigFiles_ = std::move(other.referencedConfigFiles_); 
-        metadataMappings_ = std::move(other.metadataMappings_); 
-        cFailureInteroperator_ = other.cFailureInteroperator_; 
-        return *this;
-    }
-    
-    // We are using a weak_ptr to pass around the failure handler in the API.
-    std::weak_ptr<CFailureInteroperator> getCFailureInteroperator() const;
-    
+
+    MultioConfiguration(MultioConfiguration&& other) noexcept = default;
+    MultioConfiguration& operator=(MultioConfiguration&& other) noexcept = default;
+
 
 private:
     MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,
@@ -173,15 +131,6 @@ private:
 
     mutable std::unordered_map<std::string, ConfigFile> referencedConfigFiles_;
     MetadataMappings metadataMappings_;
-
-    // Use a shared_ptr to provide a location for the failure handler that can outlive errors happening 
-    // when creating a handle and moving ownership of the MultioConfiguration.
-    // In this case the initial configuration and the new handle keep track of the object until the
-    // client/server is fully created and the user has released the multio_configuration object through the API.
-    //
-    // With a unique_ptr & direct ownership movement, errors while creating the handle (e.g. configuration or MPI errors)
-    // could not be handled because the destructor would get called before the handler is used.
-    std::shared_ptr<CFailureInteroperator> cFailureInteroperator_;
 };
 
 //=============================================================================

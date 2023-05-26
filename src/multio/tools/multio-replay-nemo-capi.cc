@@ -57,7 +57,7 @@ public:
  */
 void rethrowMaybe(int err, multio_failure_info_t* i) {
     if (err != MULTIO_SUCCESS) {
-        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string(err, i)}, Here());
+        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string_info(err, i)}, Here());
     }
 }
 
@@ -265,7 +265,7 @@ void MultioReplayNemoCApi::writeMasks() {
 void MultioReplayNemoCApi::writeFields() {
 
     for (const auto& param : parameters_) {
-        bool is_active = false;
+        bool is_active = 0;
         {
             multio_metadata_t* md = nullptr;
             multio_new_metadata(&md, multio_handle);
@@ -396,7 +396,7 @@ void MultioReplayNemoCApi::initClient() {
         multio_new_configuration_from_filename(&multio_cc, configFile_.c_str());
     }
 
-    multio_set_failure_handler(multio_cc, multio_throw_failure_handler, nullptr);
+    multio_config_set_failure_handler(multio_cc, multio_throw_failure_handler, nullptr);
 
     int retComm = 0;
     if (passDownMPIComm_) {

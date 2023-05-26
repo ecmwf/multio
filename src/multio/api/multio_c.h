@@ -1,4 +1,7 @@
-#pragma once
+#ifndef multio_c_h
+#define multio_c_h
+
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,26 +47,29 @@ enum MultioErrorValues
  * \param err Error code (#MultioErrorValues)
  * \returns Error message
  */
-const char* multio_error_string_global(int err);
-      
+const char* multio_error_string(int err);
+
 /** Returns a human-readable error message for the last error given an error code
  * \param err Error code (#MultioErrorValues)
- * \param info Pointer to additional error information provided through failure handler. Behaves like multio_error_string_global if null is provided.
- * \returns Error message
+ * \param info Pointer to additional, handle/instance specific error information provided through failure handler.
+ * Behaves like multio_error_string if null is provided. \returns Error message
  */
-const char* multio_error_string(int err, multio_failure_info_t* info);
+const char* multio_error_string_info(int err, multio_failure_info_t* info);
 
 /** Error handler callback function signature
- * \param Error handler (user defined context to pass through)
+ * \param usercontext Uer defined context to pass through
  * \param error_code Error code (#MultioErrorValues)
+ * \param info Object with information about the error. Used with multio_error_string_info.
  */
-typedef void (*multio_failure_handler_t)(void*, int error_code, multio_failure_info_t* info);
+typedef void (*multio_failure_handler_t)(void* usercontext, int error_code, multio_failure_info_t* info);
 
-/** Sets an error handler which will be called on error with the supplied  and an error code
- * \param handler Error handler function
- * \param  Error handler
+/** Sets an error handler which will be called on error with the supplied usercontext and an error code
+ * \param config Configuration object on which to set up the failure handler.
+ * \param handler C-Function pointer to the failure handling function
+ * \param  usercontext Any data the user wish to pass to the failure handler. Can be null.
  */
-int multio_set_failure_handler(multio_configuration_t* conf, multio_failure_handler_t handler, void*);
+int multio_config_set_failure_handler(multio_configuration_t* config, multio_failure_handler_t handler,
+                                      void* usercontext);
 
 /** @} */
 
@@ -81,7 +87,7 @@ int multio_initialise();
 /** @} */
 
 /** \defgroup Version Accessors */
-/** @{ */
+/** @{*/
 
 /** Retrieves the release version of the library in human-readable format, e.g. ``1.3.0``
  * \param version Return variable for release version. Returned pointer valid throughout program
@@ -90,16 +96,18 @@ int multio_initialise();
  */
 int multio_version(const char** version);
 
+
 /** Retrieves version control checksum of the latest change, e.g. ``a88011c007a0db48a5d16e296934a197eac2050a``
  * \param sha1 Return variable for version control checksum. Returned pointer valid throughout program lifetime.
  * \returns Return code (#MultioErrorValues)
  */
 int multio_vcs_version(const char** sha1);
 
+
 /** @} */
 
 /** \defgroup Data-routing */
-/** @{ */
+/** @{*/
 
 /** Creates a multio configuration  object with default configuration file name (environment variable:
  * MULTIO_SERVER_CONFIG_FILE) \param cc Return a handle to the multio configuration  object \returns Return code
@@ -107,12 +115,14 @@ int multio_vcs_version(const char** sha1);
  */
 int multio_new_configuration(multio_configuration_t** cc);
 
+
 /** Creates a multio configuration  object with custom configuration file name
  * \param configuration_file_name Absolute path to the YAML configuration file
  * \param cc Return a handle to the multio configuration  object
  * \returns Return code (#MultioErrorValues)
  */
 int multio_new_configuration_from_filename(multio_configuration_t** cc, const char* configuration_file_name);
+
 
 /** Deletes a multio configuration  object
  * \param cc Handle to the multio configuration  object
@@ -146,12 +156,14 @@ int multio_conf_mpi_allow_world_default_comm(multio_configuration_t* cc, bool al
  */
 int multio_conf_mpi_parent_comm(multio_configuration_t* cc, int parent_comm);
 
+
 /** Set MPI specific initalization parameters
  *
  * \param return_client_comm Pointer to an integer specifying the client communicator that the multio may set on
  * initialization \param cc Handle to the multio configuration  object \returns Return code (#MultioErrorValues)
  */
 int multio_conf_mpi_return_client_comm(multio_configuration_t* cc, int* return_client_comm);
+
 
 /** Set MPI specific initalization parameters
  *
@@ -160,8 +172,16 @@ int multio_conf_mpi_return_client_comm(multio_configuration_t* cc, int* return_c
  */
 int multio_conf_mpi_return_server_comm(multio_configuration_t* cc, int* return_server_comm);
 
+
+/** Creates a multio (client) instance without an configuration. Behaves like passing a default configuration directly
+ * to the handle without making further customizations (configuration file read through environment variable). \param
+ * mio Return a handle to the multio (client) instance \returns Return code (#MultioErrorValues)
+ */
+int multio_new_handle_default(multio_handle_t** mio);
+
+
 /** Creates a multio (client) instance
- * \param cc Handle to configuration
+ * \param cc Handle to configuration (if null, a default handle will be created)
  * \param mio Return a handle to the multio (client) instance
  * \returns Return code (#MultioErrorValues)
  */
@@ -175,6 +195,14 @@ int multio_new_handle(multio_handle_t** mio, multio_configuration_t* cc);
 int multio_delete_handle(multio_handle_t* mio);
 
 
+/** Sets an error handler which will be called on error with the supplied usercontext and an error code
+ * If the failure handler has been already set on the multio_configuration_t it is reused.
+ * \param mio MultIO client handle on which to set up the failure handler.
+ * \param handler C-Function pointer to the failure handling function
+ * \param  usercontext Any data the user wish to pass to the failure handler. Can be null.
+ */
+int multio_handle_set_failure_handler(multio_handle_t* mio, multio_failure_handler_t handler, void* usercontext);
+
 /** Initialises and starts server
  *
  * \note This will be running until it receives a 'close' message from all of clients
@@ -182,6 +210,7 @@ int multio_delete_handle(multio_handle_t* mio);
  * \returns Return code (#MultioErrorValues)
  */
 int multio_start_server(multio_configuration_t* cc);
+
 
 /** Opens connections to the server
  * \note This will open connections to all processes associated with the server
@@ -361,4 +390,6 @@ int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, boo
 
 #ifdef __cplusplus
 } /* extern "C" */
+#endif
+
 #endif

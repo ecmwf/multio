@@ -97,7 +97,7 @@ CASE("Try Create handle with wrong configuration path") {
     int err;
     err = multio_new_configuration_from_filename(&cc, "I_AM_NOT_HERE/multio/config/multio-server.yaml");
     std::unique_ptr<multio_configuration_t> configuration_deleter(cc);
-    std::string errStr(multio_error_string_global(err));
+    std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind("Cannot open I_AM_NOT_HERE/multio/config/multio-server.yaml  (No such file or directory)")
@@ -115,7 +115,7 @@ CASE("Create handle with default configuration without MPI splitting") {
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_new_handle(&mdp, cc);
     std::unique_ptr<multio_handle_t> handle_deleter(mdp);
-    std::string errStr(multio_error_string_global(err));
+    std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
@@ -126,16 +126,9 @@ CASE("Create handle with default configuration through nullptr configuration pat
     multio_handle_t* mdp = nullptr;
     int err;
     err = multio_new_configuration_from_filename(&cc, nullptr);
-    std::unique_ptr<multio_configuration_t> configuration_deleter(cc);
-    EXPECT(err == MULTIO_SUCCESS);
-    err = multio_conf_mpi_allow_world_default_comm(cc, false);
-    EXPECT(err == MULTIO_SUCCESS);
-    err = multio_new_handle(&mdp, cc);
-    std::unique_ptr<multio_handle_t> handle_deleter(mdp);
-    std::string errStr(multio_error_string_global(err));
-    // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
-    EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
+    std::string errStr(multio_error_string(err));
+    EXPECT(errStr.rfind("Assertion failed: conf_file_name in operator()") != std::string::npos);
 }
 
 
@@ -155,7 +148,7 @@ CASE("Create handle with configuration path without MPI splitting") {
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_new_handle(&mdp, cc);
     std::unique_ptr<multio_handle_t> handle_deleter(mdp);
-    std::string errStr(multio_error_string_global(err));
+    std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
@@ -169,7 +162,7 @@ CASE("Create handle with configuration path without MPI splitting") {
 //     err = multio_conf_mpi_allow_world_default_comm(cc, false);
 //     EXPECT(err == MULTIO_SUCCESS);
 //     err = multio_start_server(cc, "I_AM_NOT_HERE");
-//     std::string errStr(multio_error_string_global(err));
+//     std::string errStr(multio_error_string(err));
 //     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
 //     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
 //     EXPECT(errStr.rfind("Configuration 'I_AM_NOT_HERE' not found") != std::string::npos);
@@ -185,7 +178,7 @@ CASE("Start server with default configuration") {
     err = multio_conf_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_start_server(cc);
-    std::string errStr(multio_error_string_global(err));
+    std::string errStr(multio_error_string(err));
     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);

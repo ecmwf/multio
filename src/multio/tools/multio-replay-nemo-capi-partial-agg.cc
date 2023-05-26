@@ -62,7 +62,7 @@ public:
  */
 void rethrowMaybe(int err, multio_failure_info_t* i) {
     if (err != MULTIO_SUCCESS) {
-        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string(err, i)}, Here());
+        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string_info(err, i)}, Here());
     }
 }
 
@@ -381,7 +381,7 @@ void MultioReplayNemoCApi::initClient() {
 
     multio_configuration_t* multio_cc = nullptr;
     multio_new_configuration(&multio_cc);
-    multio_set_failure_handler(multio_cc, multio_throw_failure_handler, nullptr);
+    multio_config_set_failure_handler(multio_cc, multio_throw_failure_handler, nullptr);
     multio_new_handle(&multio_handle, multio_cc);
     multio_delete_configuration(multio_cc);
 

@@ -79,13 +79,14 @@ MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
 
             const auto& mpiInitInfo = compConf.multioConfig().getMPIInitInfo();
 
-            std::string subGroupName
-                = compConf.parsedConfig().has("client-group") ? compConf.parsedConfig().getString("client-group") : ([&]() {
-                      std::ostringstream oss;
-                      oss << groupName << "-"
-                          << "clients";
-                      return oss.str();
-                  })();
+            std::string subGroupName = compConf.parsedConfig().has("client-group")
+                                         ? compConf.parsedConfig().getString("client-group")
+                                         : ([&]() {
+                                               std::ostringstream oss;
+                                               oss << groupName << "-"
+                                                   << "clients";
+                                               return oss.str();
+                                           })();
 
             // Setup client group
             auto& clientComm

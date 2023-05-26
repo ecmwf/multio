@@ -96,7 +96,11 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     // TODO we should be able to determine the type in the metadata and preserve
     // it Domain usually is always readonly withFirstOf(valueSetter(g, "domain"),
     // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
-    if (md.has("gridType") && eckit::StringTools::lower(md.getString("gridType")) != "healpix") {
+    const auto wam_levtype = lookUpLong(md, "levtype_wam");
+    if (wam_levtype) {
+        g.setValue("levtype", wam_levtype);
+    }
+    else if (md.has("gridType") && eckit::StringTools::lower(md.getString("gridType")) != "healpix") {
         withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
     }
     else if (md.has("gridType") && eckit::StringTools::lower(md.getString("gridType")) == "healpix"

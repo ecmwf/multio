@@ -199,20 +199,6 @@ void MultioGenerateGribTemplate::execute(const eckit::option::CmdArgs& args) {
     err = codes_get_string(sampleHandle, "gridType", buffer, &bufferLen);
     handleCodesError("eccodes error while reading the grid type: ", err, Here());
 
-    using UpdateFunctionType = std::function<void(codes_handle*, const eckit::option::CmdArgs&)>;
-    const std::unordered_map<std::string, UpdateFunctionType> updateFunctionMap
-        = {{"reduced_gg", &setReducedGGFields}, {"sh", &setSHFields}, {"healpix", &setHealpixFields}};
-
-    const std::string sampleGridType(buffer);
-    if (updateFunctionMap.count(sampleGridType) != 0) {
-        auto updateFunction = updateFunctionMap.at(sampleGridType);
-        updateFunction(sampleHandle, args);
-    }
-    else {
-        std::ostringstream oss;
-        oss << "Grid type " << sampleGridType << " is currently not supported!";
-        throw eckit::Exception(oss.str(), Here());
-    }
 
     bool clearValues = false;
     args.get("clearValuesOnly", clearValues);
@@ -229,7 +215,8 @@ void MultioGenerateGribTemplate::execute(const eckit::option::CmdArgs& args) {
 
         using UpdateFunctionType = std::function<void(codes_handle*, const eckit::option::CmdArgs&)>;
         const std::unordered_map<std::string, UpdateFunctionType> updateFunctionMap
-            = {{"reduced_gg", &setReducedGGFields}, {"sh", &setSHFields}, {"reduced_ll", &setReducedLLFields}};
+            = {{"reduced_gg", &setReducedGGFields}, {"sh", &setSHFields}, {"reduced_ll", &setReducedLLFields},
+               {"healpix", &setHealpixFields}};
 
         const std::string sampleGridType(buffer);
         if (updateFunctionMap.count(sampleGridType) != 0) {

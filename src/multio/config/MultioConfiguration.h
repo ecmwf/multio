@@ -31,19 +31,6 @@
 
 namespace multio::config {
 
-enum class ComponentTag : unsigned
-{
-    Unrelated = 0,
-    Client = 1,
-    Server = 2,
-    Plan,
-    Action,
-    Transport,
-    Receiver,
-    Dispatcher,
-};
-
-
 enum class LocalPeerTag : unsigned
 {
     Client = 1,
@@ -54,16 +41,12 @@ enum class LocalPeerTag : unsigned
 
 
 namespace eckit {
-template <>
-struct Translator<multio::config::ComponentTag, std::string> {
-    std::string operator()(multio::config::ComponentTag);
-};
-
 
 template <>
 struct Translator<multio::config::LocalPeerTag, std::string> {
     std::string operator()(multio::config::LocalPeerTag);
 };
+
 }  // namespace eckit
 
 

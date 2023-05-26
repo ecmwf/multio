@@ -84,7 +84,6 @@ void ActionFactory::list(std::ostream& out) {
 
 std::unique_ptr<Action> ActionFactory::build(const std::string& name, const ComponentConfiguration& compConf) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
-    ASSERT(compConf.componentTag() == config::ComponentTag::Action);
 
     LOG_DEBUG_LIB(LibMultio) << "Looking for ActionFactory [" << name << "]" << std::endl;
 

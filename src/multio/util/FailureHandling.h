@@ -26,6 +26,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 
 /** Experimental - we don't know how to best deal with errors and how we can define descriptive and generic handlers.
@@ -68,12 +69,6 @@ enum class OnActionError : unsigned
 {
     Propagate = PROPAGATE_ERROR,
     Recover = RECOVER_ERROR,
-};
-
-enum class OnTransportError : unsigned
-{
-    Propagate = PROPAGATE_ERROR,
-    Recover = RECOVER_ERROR,  // Some transport might be able to reconnect or request information?
 };
 
 enum class OnReceiveError : unsigned
@@ -138,11 +133,6 @@ struct Translator<multio::util::OnActionError, std::string> {
 };
 
 template <>
-struct Translator<multio::util::OnTransportError, std::string> {
-    std::string operator()(multio::util::OnTransportError);
-};
-
-template <>
 struct Translator<multio::util::OnReceiveError, std::string> {
     std::string operator()(multio::util::OnReceiveError);
 };
@@ -163,7 +153,7 @@ std::pair<std::string, T> makeLowerCaseStringPair(T&& v) {
 }
 
 template <typename T, T... TS>
-std::unordered_map<std::string, T> buildEnumLookUpMap_(integer_sequence<T, TS...>) {
+std::unordered_map<std::string, T> buildEnumLookUpMap_(util::integer_sequence<T, TS...>) {
     return std::unordered_map<std::string, T>{makeLowerCaseStringPair(std::forward<T>(TS))...};
 }
 
@@ -177,128 +167,10 @@ std::optional<T> parseWithEnumMap_(const std::unordered_map<std::string, T>& map
 }
 
 template <typename T, typename TagSeq>
-std::optional<T> parseErrorTag_(const std::string& str) {
+std::optional<T> parseErrorTag(const std::string& str) {
     static const std::unordered_map<std::string, T> map{buildEnumLookUpMap_(TagSeq())};
     return parseWithEnumMap_(map, str);
 }
-
-
-template <config::ComponentTag tag>
-struct ComponentFailureTraits {};
-
-template <>
-struct ComponentFailureTraits<config::ComponentTag::Client> {
-    using OnErrorType = OnClientError;
-    using FailureOptions = DefaultFailureOptions;
-    using FailureState = DefaultFailureState;
-    using TagSequence = integer_sequence<OnErrorType, OnClientError::Propagate, OnClientError::Recover,
-                                         OnClientError::AbortAllTransports>;
-    static inline std::optional<OnErrorType> parse(const std::string& str) {
-        return parseErrorTag_<OnErrorType, TagSequence>(str);
-    }
-    static inline OnErrorType defaultOnErrorTag() { return OnClientError::Propagate; };
-    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
-        return parseDefaultFailureOptions(conf);
-    };
-    static inline std::string configKey() { return std::string("on-error"); };
-};
-
-template <>
-struct ComponentFailureTraits<config::ComponentTag::Server> {
-    using OnErrorType = OnServerError;
-    using FailureOptions = DefaultFailureOptions;
-    using FailureState = DefaultFailureState;
-    using TagSequence = integer_sequence<OnErrorType, OnServerError::Propagate, OnServerError::Recover,
-                                         OnServerError::AbortTransport>;
-    static inline std::optional<OnErrorType> parse(const std::string& str) {
-        return parseErrorTag_<OnErrorType, TagSequence>(str);
-    }
-    static inline OnErrorType defaultOnErrorTag() { return OnServerError::Propagate; };
-    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
-        return parseDefaultFailureOptions(conf);
-    };
-    static inline std::string configKey() { return std::string("on-error"); };
-};
-
-template <>
-struct ComponentFailureTraits<config::ComponentTag::Plan> {
-    using OnErrorType = OnPlanError;
-    using FailureOptions = DefaultFailureOptions;
-    using FailureState = DefaultFailureState;
-    using TagSequence = integer_sequence<OnErrorType, OnPlanError::Propagate, OnPlanError::Recover>;
-    static inline std::optional<OnErrorType> parse(const std::string& str) {
-        return parseErrorTag_<OnErrorType, TagSequence>(str);
-    }
-    static inline OnErrorType defaultOnErrorTag() { return OnPlanError::Propagate; };
-    static inline std::string configKey() { return std::string("on-error"); };
-    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
-        return parseDefaultFailureOptions(conf);
-    };
-};
-
-template <>
-struct ComponentFailureTraits<config::ComponentTag::Action> {
-    using OnErrorType = OnActionError;
-    using FailureOptions = DefaultFailureOptions;
-    using FailureState = DefaultFailureState;
-    using TagSequence = integer_sequence<OnErrorType, OnActionError::Propagate, OnActionError::Recover>;
-    static inline std::optional<OnErrorType> parse(const std::string& str) {
-        return parseErrorTag_<OnErrorType, TagSequence>(str);
-    }
-    static inline OnErrorType defaultOnErrorTag() { return OnActionError::Propagate; };
-    static inline std::string configKey() { return std::string("on-error"); };
-    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
-        return parseDefaultFailureOptions(conf);
-    };
-};
-
-template <>
-struct ComponentFailureTraits<config::ComponentTag::Transport> {
-    using OnErrorType = OnTransportError;
-    using FailureOptions = DefaultFailureOptions;
-    using FailureState = DefaultFailureState;
-    using TagSequence = integer_sequence<OnErrorType, OnTransportError::Propagate, OnTransportError::Recover>;
-    static inline std::optional<OnErrorType> parse(const std::string& str) {
-        return parseErrorTag_<OnErrorType, TagSequence>(str);
-    }
-    static inline OnErrorType defaultOnErrorTag() { return OnTransportError::Propagate; };
-    static inline std::string configKey() { return std::string("on-error"); };
-    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
-        return parseDefaultFailureOptions(conf);
-    };
-};
-
-template <>
-struct ComponentFailureTraits<config::ComponentTag::Dispatcher> {
-    using OnErrorType = OnDispatchError;
-    using FailureOptions = DefaultFailureOptions;
-    using FailureState = DefaultFailureState;
-    using TagSequence = integer_sequence<OnErrorType, OnDispatchError::Propagate>;
-    static inline std::optional<OnErrorType> parse(const std::string& str) {
-        return parseErrorTag_<OnErrorType, TagSequence>(str);
-    }
-    static inline OnErrorType defaultOnErrorTag() { return OnDispatchError::Propagate; };
-    static inline std::string configKey() { return std::string("on-dispatch-error"); };
-    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
-        return parseDefaultFailureOptions(conf);
-    };
-};
-
-template <>
-struct ComponentFailureTraits<config::ComponentTag::Receiver> {
-    using OnErrorType = OnReceiveError;
-    using FailureOptions = DefaultFailureOptions;
-    using FailureState = DefaultFailureState;
-    using TagSequence = integer_sequence<OnErrorType, OnReceiveError::Propagate>;
-    static inline std::optional<OnErrorType> parse(const std::string& str) {
-        return parseErrorTag_<OnErrorType, TagSequence>(str);
-    }
-    static inline OnErrorType defaultOnErrorTag() { return OnReceiveError::Propagate; };
-    static inline std::string configKey() { return std::string("on-receive-error"); };
-    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
-        return parseDefaultFailureOptions(conf);
-    };
-};
 
 
 enum class FailureHandlerResponse : unsigned
@@ -334,12 +206,12 @@ void printException(std::ostream& out, const FailureAwareException& e);
 void printFailureContext(std::ostream& out, const FailureContext& c);
 
 
-template <config::ComponentTag tag>
+template <typename ComponentFailureTraits>
 class FailureAware {
 private:
-    using OnErrorType = typename ComponentFailureTraits<tag>::OnErrorType;
-    using FailureOptions = typename ComponentFailureTraits<tag>::FailureOptions;
-    using FailureState = typename ComponentFailureTraits<tag>::FailureState;
+    using OnErrorType = typename ComponentFailureTraits::OnErrorType;
+    using FailureOptions = typename ComponentFailureTraits::FailureOptions;
+    using FailureState = typename ComponentFailureTraits::FailureState;
 
     config::LocalPeerTag peerTag_;
     OnErrorType parsedOnErrTag_{};
@@ -347,12 +219,11 @@ private:
 
 public:
     FailureAware(const config::ComponentConfiguration& compConf) : peerTag_{compConf.multioConfig().localPeerTag()} {
-        ASSERT(compConf.componentTag() == tag);
-        if (compConf.parsedConfig().has(ComponentFailureTraits<tag>::configKey())) {
+        if (compConf.parsedConfig().has(ComponentFailureTraits::configKey())) {
             auto unparsedOnErrTagMaybe = ([&]() {
                 try {
                     return std::optional<std::string>{
-                        compConf.parsedConfig().getString(ComponentFailureTraits<tag>::configKey())};
+                        compConf.parsedConfig().getString(ComponentFailureTraits::configKey())};
                 }
                 catch (...) {
                     return std::optional<std::string>{};
@@ -365,7 +236,7 @@ public:
                 }
                 else {
                     return std::optional<eckit::LocalConfiguration>{
-                        compConf.parsedConfig().getSubConfiguration(ComponentFailureTraits<tag>::configKey())};
+                        compConf.parsedConfig().getSubConfiguration(ComponentFailureTraits::configKey())};
                 }
             }());
 
@@ -379,18 +250,18 @@ public:
                     }
                     catch (...) {
                         std::ostringstream oss;
-                        oss << "FailureAware configuration for component " << eckit::translate<std::string>(tag)
-                            << " described by key \"" << ComponentFailureTraits<tag>::configKey()
+                        oss << "FailureAware configuration for component " << ComponentFailureTraits::componentName()
+                            << " described by key \"" << ComponentFailureTraits::configKey()
                             << "\" is supposed to map to a string or an configuration object with key \"type\"";
                         std::throw_with_nested(FailureAwareException(oss.str(), Here()));
                     }
                 }
             })();
-            auto errorTagMaybe = ComponentFailureTraits<tag>::parse(unparsedOnErrTag);
-            parsedOnErrTag_ = errorTagMaybe ? *errorTagMaybe : ComponentFailureTraits<tag>::defaultOnErrorTag();
+            auto errorTagMaybe = ComponentFailureTraits::parse(unparsedOnErrTag);
+            parsedOnErrTag_ = errorTagMaybe ? *errorTagMaybe : ComponentFailureTraits::defaultOnErrorTag();
 
             if (subConfigMaybe) {
-                options_ = ComponentFailureTraits<tag>::parseFailureOptions(*subConfigMaybe);
+                options_ = ComponentFailureTraits::parseFailureOptions(*subConfigMaybe);
             }
             else {
                 options_ = FailureOptions{};
@@ -418,7 +289,7 @@ protected:
             }
             catch (...) {
                 std::ostringstream oss;
-                oss << "FailureAware<" << eckit::translate<std::string>(tag) << "> with behaviour \""
+                oss << "FailureAware<" << ComponentFailureTraits::componentName() << "> with behaviour \""
                     << eckit::translate<std::string>(parsedOnErrTag_) << "\" on "
                     << eckit::translate<std::string>(peerTag_) << " for context: [" << std::endl
                     << contextString() << std::endl

@@ -111,7 +111,6 @@ void TransportFactory::list(std::ostream& out) const {
 
 std::unique_ptr<Transport> TransportFactory::build(const std::string& name, const ComponentConfiguration& compConf) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
-    ASSERT(compConf.componentTag() == config::ComponentTag::Transport);
 
     Log::debug<LibMultio>() << "Looking for TransportFactory [" << name << "]" << std::endl;
 

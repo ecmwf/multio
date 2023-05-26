@@ -37,9 +37,27 @@ namespace multio::action {
 using config::ComponentConfiguration;
 using util::FailureAware;
 
+struct ActionFailureTraits {
+    using OnErrorType = util::OnActionError;
+    using FailureOptions = util::DefaultFailureOptions;
+    using FailureState = util::DefaultFailureState;
+    using TagSequence
+        = util::integer_sequence<OnErrorType, OnErrorType::Propagate, OnErrorType::Recover>;
+    static inline std::optional<OnErrorType> parse(const std::string& str) {
+        return util::parseErrorTag<OnErrorType, TagSequence>(str);
+    }
+    static inline OnErrorType defaultOnErrorTag() { return OnErrorType::Propagate; };
+    static inline std::string configKey() { return std::string("on-error"); };
+    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
+        return util::parseDefaultFailureOptions(conf);
+    };
+    static inline std::string componentName() { return std::string("Action"); };
+};
+
+
 //--------------------------------------------------------------------------------------------------
 
-class Action : private eckit::NonCopyable, public FailureAware<config::ComponentTag::Action> {
+class Action : private eckit::NonCopyable, public FailureAware<ActionFailureTraits> {
 public:
     explicit Action(const ComponentConfiguration& compConf);
     ~Action() override;

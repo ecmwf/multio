@@ -8,21 +8,20 @@ using namespace multio::util;
 
 namespace multio::config {
 
-SubComponentIteratorMapper::SubComponentIteratorMapper(const ComponentConfiguration& compConf, ComponentTag tag) :
-    compConf_(compConf), tag_(tag) {}
-SubComponentIteratorMapper::SubComponentIteratorMapper(ComponentConfiguration&& compConf, ComponentTag tag) :
-    compConf_(std::move(compConf)), tag_(tag) {}
+SubComponentIteratorMapper::SubComponentIteratorMapper(const ComponentConfiguration& compConf) : compConf_(compConf) {}
+SubComponentIteratorMapper::SubComponentIteratorMapper(ComponentConfiguration&& compConf) :
+    compConf_(std::move(compConf)) {}
 
 ComponentConfiguration SubComponentIteratorMapper::operator()(const eckit::LocalConfiguration& config) const {
-    return compConf_.recast(config, tag_);
+    return ComponentConfiguration(config, compConf_.multioConfig());
 }
 
 
 //=============================================================================
 
 ComponentConfiguration::ComponentConfiguration(const eckit::LocalConfiguration& componentYAMLConfig,
-                                               const MultioConfiguration& multioConf, ComponentTag tag) :
-    componentConf_(componentYAMLConfig), multioConf_(multioConf), componentTag_(tag){};
+                                               const MultioConfiguration& multioConf) :
+    componentConf_(componentYAMLConfig), multioConf_(multioConf){};
 
 //=============================================================================
 
@@ -40,48 +39,16 @@ const MultioConfiguration& ComponentConfiguration::multioConfig() const {
 
 //=============================================================================
 
-ComponentConfiguration ComponentConfiguration::subComponent(const std::string& subConfiguratinKey,
-                                                            ComponentTag tag) const {
-    return recast(componentConf_.getSubConfiguration(subConfiguratinKey), tag);
+ComponentConfiguration ComponentConfiguration::subComponent(const std::string& subConfiguratinKey) const {
+    return ComponentConfiguration(componentConf_.getSubConfiguration(subConfiguratinKey), multioConfig());
 };
 
 ComponentConfiguration::SubComponentConfigurations ComponentConfiguration::subComponents(
-    const std::string& subConfiguratinKey, ComponentTag tag) const {
+    const std::string& subConfiguratinKey) const {
     return SubComponentConfigurations(componentConf_.getSubConfigurations(subConfiguratinKey),
-                                      SubComponentIteratorMapper(*this, tag));
+                                      SubComponentIteratorMapper(*this));
 };
 
-
-//=============================================================================
-
-ComponentConfiguration ComponentConfiguration::recast(const eckit::LocalConfiguration& componentYAMLConfig,
-                                                      ComponentTag tag) const {
-    return ComponentConfiguration(componentYAMLConfig, multioConf_, tag);
-};
-
-ComponentConfiguration ComponentConfiguration::recast(ComponentTag tag) const {
-    return ComponentConfiguration(componentConf_, multioConf_, tag);
-};
-
-
-//=============================================================================
-
-ComponentTag ComponentConfiguration::componentTag() const {
-    return componentTag_;
-};
-void ComponentConfiguration::setComponentTag(ComponentTag tag) {
-    componentTag_ = tag;
-};
-
-
-//=============================================================================
-
-bool ComponentConfiguration::isServer() const {
-    return multioConfig().isServer();
-};
-bool ComponentConfiguration::isClient() const {
-    return multioConfig().isClient();
-};
 
 //=============================================================================
 

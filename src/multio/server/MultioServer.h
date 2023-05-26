@@ -23,7 +23,6 @@ class LocalConfiguration;
 namespace multio {
 
 using util::FailureAware;
-using config::ComponentTag;
 using config::MultioConfiguration;
 using config::MultioConfigurationHolder;
 
@@ -33,7 +32,26 @@ class Transport;
 
 namespace server {
 
-class MultioServer : public MultioConfigurationHolder, public FailureAware<ComponentTag::Server> {
+struct ServerFailureTraits {
+    using OnErrorType = util::OnServerError;
+    using FailureOptions = util::DefaultFailureOptions;
+    using FailureState = util::DefaultFailureState;
+    using TagSequence = util::integer_sequence<OnErrorType, OnErrorType::Propagate, OnErrorType::Recover,
+                                         OnErrorType::AbortTransport>;
+    static inline std::optional<OnErrorType> parse(const std::string& str) {
+        return util::parseErrorTag<OnErrorType, TagSequence>(str);
+    }
+    static inline OnErrorType defaultOnErrorTag() { return OnErrorType::Propagate; };
+    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
+        return util::parseDefaultFailureOptions(conf);
+    };
+    static inline std::string configKey() { return std::string("on-error"); };
+    static inline std::string componentName() { return std::string("Server"); };
+};
+
+
+
+class MultioServer : public MultioConfigurationHolder, public FailureAware<ServerFailureTraits> {
 public:
     MultioServer(MultioConfiguration&& multioConf);
 

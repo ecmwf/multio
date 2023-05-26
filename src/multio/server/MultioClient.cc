@@ -42,7 +42,7 @@ eckit::LocalConfiguration getClientConf(const MultioConfiguration& multioConf) {
 
 MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf) :
     MultioConfigurationHolder(std::move(multioConf), config::LocalPeerTag::Client),
-    FailureAware(ComponentConfiguration(conf, multioConfig(), ComponentTag::Client)) {
+    FailureAware(ComponentConfiguration(conf, multioConfig())) {
     totClientTimer_.start();
 
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
@@ -60,7 +60,7 @@ MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfigur
         eckit::Log::debug<LibMultio>() << cfg << std::endl;
         plans_
             .emplace_back(std::make_unique<action::Plan>(
-                ComponentConfiguration(std::move(cfg), multioConfig(), ComponentTag::Plan)))
+                ComponentConfiguration(std::move(cfg), multioConfig())))
             ->matchedFields(activeSelectors_);
     }
 

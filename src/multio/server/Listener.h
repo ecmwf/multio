@@ -41,7 +41,26 @@ namespace server {
 
 class Dispatcher;
 
-class Listener : public util::FailureAware<config::ComponentTag::Receiver> {
+struct ReceiverFailureTraits {
+    using OnErrorType = util::OnReceiveError;
+    using FailureOptions = util::DefaultFailureOptions;
+    using FailureState = util::DefaultFailureState;
+    using TagSequence = util::integer_sequence<OnErrorType, OnErrorType::Propagate>;
+    static inline std::optional<OnErrorType> parse(const std::string& str) {
+        return util::parseErrorTag<OnErrorType, TagSequence>(str);
+    }
+    static inline OnErrorType defaultOnErrorTag() { return OnErrorType::Propagate; };
+    static inline std::string configKey() { return std::string("on-receive-error"); };
+    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
+        return util::parseDefaultFailureOptions(conf);
+    };
+    static inline std::string componentName() { return std::string("Receiver"); };
+};
+
+
+
+
+class Listener : public util::FailureAware<ReceiverFailureTraits> {
 public:
     Listener(const config::ComponentConfiguration& compConf, transport::Transport& trans);
     ~Listener();

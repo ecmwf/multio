@@ -14,6 +14,7 @@
 
 /**
  * Integer_sequence and utils - simiar to C++14...
+ * std::integer_sequence forbids using enums inside
  */
 
 #pragma once

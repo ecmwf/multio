@@ -29,7 +29,7 @@ namespace {
 
 ComponentConfiguration getEncodingConfiguration(const ComponentConfiguration& compConf) {
     if (compConf.parsedConfig().has("encoding")) {
-        return compConf.recast(compConf.parsedConfig().getSubConfiguration("encoding"));
+        return ComponentConfiguration(compConf.parsedConfig().getSubConfiguration("encoding"), compConf.multioConfig());
     }
     else {
         return compConf;

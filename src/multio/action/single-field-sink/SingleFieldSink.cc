@@ -50,8 +50,7 @@ void SingleFieldSink::write(Message msg) {
 
     LOG_DEBUG_LIB(LibMultio) << "Writing output path: " << oss.str() << std::endl;
     config.set("path", oss.str());
-    ComponentConfiguration subComp = compConf_.recast(config);
-    dataSinks_.push_back(sink::DataSinkFactory::instance().build("file", subComp));
+    dataSinks_.push_back(sink::DataSinkFactory::instance().build("file", ComponentConfiguration(config, compConf_.multioConfig())));
 
     eckit::message::Message blob = to_eckit_message(msg);
 

@@ -10,7 +10,7 @@ ChainedAction::ChainedAction(const ComponentConfiguration& compConf) : Action(co
 
     ASSERT(compConf.parsedConfig().has("next"));
 
-    const ComponentConfiguration nextConf = compConf.subComponent("next", config::ComponentTag::Action);
+    const ComponentConfiguration nextConf = compConf.subComponent("next");
     next_ = ActionFactory::instance().build(nextConf.parsedConfig().getString("type"), nextConf);
 }
 

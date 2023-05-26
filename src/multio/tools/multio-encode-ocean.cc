@@ -19,7 +19,6 @@
 using multio::action::Plan;
 using multio::config::ComponentConfiguration;
 using multio::config::MultioConfiguration;
-using multio::config::ComponentTag;
 using multio::config::configuration_path_name;
 using multio::message::Message;
 using multio::message::Peer;
@@ -196,7 +195,7 @@ void MultioEncodeOcean::executePlan() {
     auto multioConfig = test_configuration();
     std::vector<std::unique_ptr<Plan>> plans;
     for (auto&& cfg : multioConfig.parsedConfig().getSubConfigurations("plans")) {
-        plans.emplace_back(std::make_unique<Plan>(ComponentConfiguration(std::move(cfg), multioConfig, ComponentTag::Plan)));
+        plans.emplace_back(std::make_unique<Plan>(ComponentConfiguration(std::move(cfg), multioConfig)));
     }
 
     Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, eckit::Buffer{buf, sz}};

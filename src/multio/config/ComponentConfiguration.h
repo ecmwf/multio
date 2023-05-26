@@ -32,38 +32,23 @@ class SubComponentIteratorMapper;
 class ComponentConfiguration {
 public:
     ComponentConfiguration(const eckit::LocalConfiguration& componentYAMLConfig,
-                           const MultioConfiguration& multioConfig, ComponentTag tag = ComponentTag::Unrelated);
+                           const MultioConfiguration& multioConfig);
 
     eckit::LocalConfiguration& parsedConfig();
     const eckit::LocalConfiguration& parsedConfig() const;
 
     const MultioConfiguration& multioConfig() const;
 
-
-    ComponentTag componentTag() const;
-    void setComponentTag(ComponentTag);
-
-    bool isServer() const;
-    bool isClient() const;
-
-
     using SubComponentConfigurations
         = util::MappedContainer<std::vector<eckit::LocalConfiguration>, SubComponentIteratorMapper>;
 
-    ComponentConfiguration subComponent(const std::string& subConfiguratinKey,
-                                        ComponentTag tag = ComponentTag::Unrelated) const;
-    SubComponentConfigurations subComponents(const std::string& subConfiguratinKey,
-                                             ComponentTag tag = ComponentTag::Unrelated) const;
-
-    ComponentConfiguration recast(const eckit::LocalConfiguration& componentYAMLConfig,
-                                  ComponentTag tag = ComponentTag::Unrelated) const;
-    ComponentConfiguration recast(ComponentTag tag = ComponentTag::Unrelated) const;
+    ComponentConfiguration subComponent(const std::string& subConfiguratinKey) const;
+    SubComponentConfigurations subComponents(const std::string& subConfiguratinKey) const;
 
 private:
     eckit::LocalConfiguration componentConf_;
     // Put in reference wrapper to enable default copy/move construction & assignment
     std::reference_wrapper<const MultioConfiguration> multioConf_;
-    ComponentTag componentTag_;
 
     friend class SubComponentIteratorMapper;
 };
@@ -71,14 +56,13 @@ private:
 
 class SubComponentIteratorMapper {
 public:
-    SubComponentIteratorMapper(const ComponentConfiguration& compConf, ComponentTag tag = ComponentTag::Unrelated);
-    SubComponentIteratorMapper(ComponentConfiguration&& compConf, ComponentTag tag = ComponentTag::Unrelated);
+    SubComponentIteratorMapper(const ComponentConfiguration& compConf);
+    SubComponentIteratorMapper(ComponentConfiguration&& compConf);
 
     ComponentConfiguration operator()(const eckit::LocalConfiguration& componentYAMLConfig) const;
 
 private:
     ComponentConfiguration compConf_;
-    ComponentTag tag_;
 };
 
 }  // namespace multio::config

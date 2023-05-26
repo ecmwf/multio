@@ -46,7 +46,25 @@ using namespace multio::message;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class MIO : public config::MultioConfigurationHolder, public util::FailureAware<ComponentTag::Client> {
+struct IFSIOFailureTraits {
+    using OnErrorType = util::OnClientError;
+    using FailureOptions = util::DefaultFailureOptions;
+    using FailureState = util::DefaultFailureState;
+    using TagSequence
+        = util::integer_sequence<OnErrorType, OnErrorType::Propagate, OnErrorType::Recover, OnErrorType::AbortAllTransports>;
+    static inline std::optional<OnErrorType> parse(const std::string& str) {
+        return util::parseErrorTag<OnErrorType, TagSequence>(str);
+    }
+    static inline OnErrorType defaultOnErrorTag() { return OnErrorType::Propagate; };
+    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
+        return util::parseDefaultFailureOptions(conf);
+    };
+    static inline std::string configKey() { return std::string("on-error"); };
+    static inline std::string componentName() { return std::string("IFSIO"); };
+};
+
+
+class MIO : public config::MultioConfigurationHolder, public util::FailureAware<IFSIOFailureTraits> {
 public:
     static MIO& instance() {
         static MIO mio;
@@ -105,12 +123,12 @@ private:
 
     MIO(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf) :
         MultioConfigurationHolder(std::move(multioConf)),
-        FailureAware(ComponentConfiguration(conf, multioConfig(), config::ComponentTag::Client)),
+        FailureAware(ComponentConfiguration(conf, multioConfig())),
         log_(false),
         dirty_(false) {
         for (auto&& cfg : conf.getSubConfigurations("plans")) {
             plans_.emplace_back(std::make_unique<action::Plan>(
-                ComponentConfiguration(std::move(cfg), multioConfig(), config::ComponentTag::Plan)));
+                ComponentConfiguration(std::move(cfg), multioConfig())));
         }
         bpv_ = std::make_unique<EncodeBitsPerValue>(conf);
     }

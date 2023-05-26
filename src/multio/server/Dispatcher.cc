@@ -23,7 +23,7 @@ Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, std::shar
 
     eckit::Log::debug<LibMultio>() << compConf.parsedConfig() << std::endl;
 
-    config::ComponentConfiguration::SubComponentConfigurations plans = compConf.subComponents("plans", config::ComponentTag::Plan);
+    config::ComponentConfiguration::SubComponentConfigurations plans = compConf.subComponents("plans");
     for (auto&& subComp : plans) {
         eckit::Log::debug<LibMultio>() << subComp.parsedConfig() << std::endl;
         plans_.emplace_back(std::make_unique<action::Plan>(std::move(subComp)));

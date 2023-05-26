@@ -53,12 +53,10 @@ LocalConfiguration rootConfig(const LocalConfiguration& config, const std::strin
 }
 
 std::tuple<ComponentConfiguration, std::string> getPlanConfiguration(const ComponentConfiguration& compConf) {
-    ASSERT(compConf.componentTag() == config::ComponentTag::Plan);
     if (compConf.parsedConfig().has("file")) {
         const auto& file = compConf.multioConfig().getConfigFile(
             compConf.multioConfig().replaceCurly(compConf.parsedConfig().getString("file")));
-        ComponentConfiguration newConf = compConf.recast(file.content, compConf.componentTag());
-        return std::make_tuple(newConf,
+        return std::make_tuple(ComponentConfiguration(file.content, compConf.multioConfig()),
                                file.content.has("name") ? file.content.getString("name") : file.source.asString());
     }
     return std::make_tuple(compConf, compConf.parsedConfig().has("name") ? compConf.parsedConfig().getString("name")
@@ -79,7 +77,7 @@ Plan::Plan(std::tuple<ComponentConfiguration, std::string>&& confAndName) :
     };
     auto root = rootConfig(compConf.parsedConfig(), name_);
     root_ = ActionFactory::instance().build(
-        root.getString("type"), ComponentConfiguration(root, compConf.multioConfig(), config::ComponentTag::Action));
+        root.getString("type"), ComponentConfiguration(root, compConf.multioConfig()));
 }
 
 Plan::Plan(const ComponentConfiguration& compConf) : Plan(getPlanConfiguration(compConf)) {}

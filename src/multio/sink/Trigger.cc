@@ -321,8 +321,7 @@ Trigger::Trigger(const ComponentConfiguration& compConf) {
 
         for (auto&& subComp : conf.getSubConfigurations("triggers")) {
             triggers_.emplace_back(EventTrigger::build(
-                // TODO Discuss user facing and refactoer ComponentTags... othewise add other ComponentTags and apply hierarchy
-                ComponentConfiguration(std::move(subComp), compConf.multioConfig(), config::ComponentTag::Unrelated)));
+                ComponentConfiguration(std::move(subComp), compConf.multioConfig())));
         }
     }
 }

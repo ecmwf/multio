@@ -8,29 +8,6 @@
 
 using namespace multio::config;
 
-std::string eckit::Translator<ComponentTag, std::string>::operator()(ComponentTag tag) {
-    switch (tag) {
-        case ComponentTag::Unrelated:
-            return "Unrelated";
-        case ComponentTag::Client:
-            return "Client";
-        case ComponentTag::Server:
-            return "Server";
-        case ComponentTag::Plan:
-            return "Plan";
-        case ComponentTag::Action:
-            return "Action";
-        case ComponentTag::Transport:
-            return "Transport";
-        case ComponentTag::Receiver:
-            return "Receiver";
-        case ComponentTag::Dispatcher:
-            return "Dispatcher";
-        default:
-            return "Unknown component tag";
-    }
-}
-
 std::string eckit::Translator<LocalPeerTag, std::string>::operator()(LocalPeerTag tag) {
     switch (tag) {
         case LocalPeerTag::Client:

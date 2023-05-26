@@ -182,7 +182,7 @@ eckit::mpi::Comm& getCommPreparedCtx(const ComponentConfiguration& compConf, con
 
 eckit::mpi::Comm& getComm(const ComponentConfiguration& compConf, const std::string& name,
                           const std::optional<CommSetupOptions>& options) {
-    return getCommPreparedCtx(compConf.recast(compConf.multioConfig().parsedConfig().getSubConfiguration("mpi-communicators")),
+    return getCommPreparedCtx(ComponentConfiguration(compConf.multioConfig().parsedConfig().getSubConfiguration("mpi-communicators"), compConf.multioConfig()),
                               name, options);
 }
 

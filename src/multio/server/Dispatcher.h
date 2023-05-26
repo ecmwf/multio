@@ -24,8 +24,8 @@
 #include "eckit/memory/NonCopyable.h"
 #include "multio/util/FailureHandling.h"
 
-#include "multio/message/Message.h"
 #include "multio/config/ComponentConfiguration.h"
+#include "multio/message/Message.h"
 
 namespace eckit {
 class Configuration;
@@ -55,7 +55,6 @@ struct DispatcherFailureTraits {
     };
     static inline std::string componentName() { return std::string("Dispatcher"); };
 };
-
 
 
 class Dispatcher : public util::FailureAware<DispatcherFailureTraits>, private eckit::NonCopyable {

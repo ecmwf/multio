@@ -74,8 +74,9 @@ class MultioConfiguration {
 public:
     MultioConfiguration(const eckit::PathName& configFile = configuration_file_name(),
                         LocalPeerTag clientOrServer = LocalPeerTag::Client);
-                        
-    MultioConfiguration(const eckit::LocalConfiguration& globalConfig, LocalPeerTag clientOrServer = LocalPeerTag::Client);
+
+    MultioConfiguration(const eckit::LocalConfiguration& globalConfig,
+                        LocalPeerTag clientOrServer = LocalPeerTag::Client);
 
     eckit::LocalConfiguration& parsedConfig();
     const eckit::LocalConfiguration& parsedConfig() const;

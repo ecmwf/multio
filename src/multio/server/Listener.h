@@ -58,8 +58,6 @@ struct ReceiverFailureTraits {
 };
 
 
-
-
 class Listener : public util::FailureAware<ReceiverFailureTraits> {
 public:
     Listener(const config::ComponentConfiguration& compConf, transport::Transport& trans);

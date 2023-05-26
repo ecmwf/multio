@@ -78,7 +78,9 @@ public:  // methods
 private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << std::endl << "Usage: " << tool << " inputFile [options]" << std::endl;
-        eckit::Log::info() << std::endl << "\tinputFile:\t" << "GRIB or BUFR file" << std::endl;
+        eckit::Log::info() << std::endl
+                           << "\tinputFile:\t"
+                           << "GRIB or BUFR file" << std::endl;
     }
 
     void init(const eckit::option::CmdArgs& args) override;

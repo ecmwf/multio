@@ -10,8 +10,8 @@
 #include "eckit/option/SimpleOption.h"
 
 #include "multio/api/multio_c_cpp_utils.h"
-#include "multio/tools/MultioTool.h"
 #include "multio/config/ConfigurationPath.h"
+#include "multio/tools/MultioTool.h"
 
 
 using multio::config::configuration_path_name;

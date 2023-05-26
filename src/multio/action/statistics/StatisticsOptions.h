@@ -3,8 +3,8 @@
 #include <string>
 
 #include "eckit/config/LocalConfiguration.h"
-#include "multio/message/Message.h"
 #include "multio/config/ComponentConfiguration.h"
+#include "multio/message/Message.h"
 
 namespace multio::action {
 

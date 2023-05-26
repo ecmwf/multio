@@ -52,8 +52,8 @@ void TransportRegistry::add(const std::string& serverName, const ComponentConfig
 
     if (!compConf.multioConfig().parsedConfig().has(serverName)) {
         std::ostringstream oss;
-        oss << "No config for server \"" << serverName << "\" found in configuration " << compConf.multioConfig().configFile()
-            << std::endl;
+        oss << "No config for server \"" << serverName << "\" found in configuration "
+            << compConf.multioConfig().configFile() << std::endl;
         throw TransportException(oss.str(), Here());
     }
     auto serverConf = compConf.multioConfig().parsedConfig().getSubConfiguration(serverName);
@@ -64,7 +64,8 @@ void TransportRegistry::add(const std::string& serverName, const ComponentConfig
         throw TransportException(oss.str(), Here());
     }
     transports_.insert({serverName, std::shared_ptr<transport::Transport>{transport::TransportFactory::instance().build(
-                                        serverConf.getString("transport"), ComponentConfiguration(serverConf, compConf.multioConfig()))}});
+                                        serverConf.getString("transport"),
+                                        ComponentConfiguration(serverConf, compConf.multioConfig()))}});
 }
 
 

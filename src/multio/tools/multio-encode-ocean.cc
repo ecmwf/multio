@@ -18,8 +18,8 @@
 
 using multio::action::Plan;
 using multio::config::ComponentConfiguration;
-using multio::config::MultioConfiguration;
 using multio::config::configuration_path_name;
+using multio::config::MultioConfiguration;
 using multio::message::Message;
 using multio::message::Peer;
 

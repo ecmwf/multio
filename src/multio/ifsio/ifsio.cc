@@ -191,7 +191,7 @@ private:
         std::cout << "MultIO initialising with $MULTIO_SINKS " << oss.str() << std::endl;
 
         std::istringstream iss(oss.str());
-        return configureFromSinks(MultioConfiguration(eckit::LocalConfiguration(eckit::YAMLConfiguration(iss)), 
+        return configureFromSinks(MultioConfiguration(eckit::LocalConfiguration(eckit::YAMLConfiguration(iss)),
                                                       config::LocalPeerTag::Client));
     }
 

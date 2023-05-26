@@ -15,9 +15,9 @@
 #include "eckit/testing/Test.h"
 #include "eckit/utils/Translator.h"
 
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/sink/FileSink.h"
 #include "multio/sink/MultIO.h"
-#include "multio/config/ComponentConfiguration.h"
 
 #include "TestDataContent.h"
 #include "TestHelpers.h"
@@ -35,28 +35,34 @@ std::string create_test_configuration(const eckit::PathName& file1, const eckit:
             "triggers" : [
               { "type" : "MetadataChange",
                 "host" : "localhost",
-                "port" : )json" << port << R"json(,
+                "port" : )json"
+       << port << R"json(,
                 "retries" : 0,
                 "timeout" : 1,
                 "key" : "step",
                 "values" : [0, 3, 6, 9, 12, 24],
-                "info" : { "job" : )json" << jobId << R"json(,
+                "info" : { "job" : )json"
+       << jobId << R"json(,
                            "job_name" : "epsnemo"
                 }
               },
               { "type" : "MetadataChange",
-                "file" : ")json" << file1.baseName() << R"json(",
+                "file" : ")json"
+       << file1.baseName() << R"json(",
                 "key" : "step",
                 "values" : [0, 3, 6, 9, 12, 24],
-                "info" : { "job" : )json" << jobId << R"json(,
+                "info" : { "job" : )json"
+       << jobId << R"json(,
                            "job_name" : "epsnemo"
                 }
               },
               { "type" : "MetadataChange",
-                "file" : ")json" << file2.baseName() << R"json(",
+                "file" : ")json"
+       << file2.baseName() << R"json(",
                 "key" : "step",
                 "values" : [1, 4, 5, 6, 10],
-                "info" : { "job" : )json" << jobId << R"json(,
+                "info" : { "job" : )json"
+       << jobId << R"json(,
                            "job_name" : "epsnemo"
                 }
               }
@@ -69,18 +75,14 @@ std::string create_test_configuration(const eckit::PathName& file1, const eckit:
 
 std::string expected_file_content(const std::vector<int> steps_to_issue, const int jobId) {
     std::ostringstream oss;
-    for (std::vector<int>::const_iterator it = steps_to_issue.begin(); it != steps_to_issue.end();
-         ++it) {
+    for (std::vector<int>::const_iterator it = steps_to_issue.begin(); it != steps_to_issue.end(); ++it) {
         oss << R"json({"type":"MetadataChange","info":{"app":"multio","job":")json" << jobId
-            << R"json(","job_name":"epsnemo"},"metadata":{"step":")json" << *it
-            << R"json("}})json"
-            << std::endl;
+            << R"json(","job_name":"epsnemo"},"metadata":{"step":")json" << *it << R"json("}})json" << std::endl;
     }
     return oss.str();
 }
 
-bool trigger_executed_correctly(const eckit::PathName& file, const std::vector<int>& steps_to_issue,
-                                const int jobId) {
+bool trigger_executed_correctly(const eckit::PathName& file, const std::vector<int>& steps_to_issue, const int jobId) {
     EXPECT(file.exists());
 
     std::string expected = expected_file_content(steps_to_issue, jobId);
@@ -105,14 +107,14 @@ CASE("test_multio_with_event_trigger") {
     int port = 10000;
     int jobId = 234;
 
-    std::string tconf =
-        create_test_configuration(file1.name(), file2.name(), file3.name(), jobId, port);
+    std::string tconf = create_test_configuration(file1.name(), file2.name(), file3.name(), jobId, port);
     ::setenv("MULTIO_CONFIG_TRIGGERS", tconf.c_str(), 1);
 
     std::string sinks(R"json({
                   "sinks" : [ {
                       "type" : "file",
-                      "path" : ")json" + file3.name() + R"json("
+                      "path" : ")json"
+                      + file3.name() + R"json("
                     } ]
                 }
                 )json");
@@ -140,8 +142,7 @@ CASE("test_multio_with_event_trigger") {
                 eckit::Log::info() << "JSON content: " << os.str() << std::endl;
 
                 message::Metadata md{eckit::YAMLConfiguration{os.str()}};
-                eckit::message::Message msg{
-                    new TestDataContent{os.str().c_str(), os.str().length(), md}};
+                eckit::message::Message msg{new TestDataContent{os.str().c_str(), os.str().length(), md}};
 
                 mio->write(msg);
             }

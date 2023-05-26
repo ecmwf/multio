@@ -26,4 +26,4 @@ void Null::print(std::ostream& os) const {
 
 static ActionBuilder<Null> NullBuilder("null");
 
-}  // namespace actions
+}  // namespace multio::action

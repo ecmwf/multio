@@ -25,15 +25,16 @@
 namespace multio::config {
 
 class MultioConfiguration;  // Forward declaration
-struct ConfigFile;      // Forward declaration
+struct ConfigFile;          // Forward declaration
 
 class MetadataMappings {
 public:
-    const std::vector<message::MetadataMapping>& getMappings(const MultioConfiguration& multioConf, const std::string& mapping) const;
+    const std::vector<message::MetadataMapping>& getMappings(const MultioConfiguration& multioConf,
+                                                             const std::string& mapping) const;
 
 private:
     // const YAMLFile& configFile_;
     mutable std::unordered_map<std::string, std::vector<message::MetadataMapping>> mappings_;
 };
 
-}  // namespace multio
+}  // namespace multio::config

@@ -42,8 +42,8 @@ struct ClientFailureTraits {
     using OnErrorType = util::OnClientError;
     using FailureOptions = util::DefaultFailureOptions;
     using FailureState = util::DefaultFailureState;
-    using TagSequence
-        = util::integer_sequence<OnErrorType, OnErrorType::Propagate, OnErrorType::Recover, OnErrorType::AbortAllTransports>;
+    using TagSequence = util::integer_sequence<OnErrorType, OnErrorType::Propagate, OnErrorType::Recover,
+                                               OnErrorType::AbortAllTransports>;
     static inline std::optional<OnErrorType> parse(const std::string& str) {
         return util::parseErrorTag<OnErrorType, TagSequence>(str);
     }

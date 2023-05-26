@@ -5,23 +5,21 @@ namespace multio {
 
 MaestroSubscription::MaestroSubscription(mstro_cdo_selector selector, mstro_pool_event_kind events,
                                          mstro_subscription_opts flags) {
-    ASSERT(MSTRO_OK ==  mstro_subscribe(selector, events, flags, &subscription_));
+    ASSERT(MSTRO_OK == mstro_subscribe(selector, events, flags, &subscription_));
 }
 
 MaestroSubscription::~MaestroSubscription() {
     ASSERT(MSTRO_OK == mstro_subscription_dispose(subscription_));
 }
 
-MaestroSubscription::MaestroSubscription(MaestroSubscription&& rhs) noexcept :
-    subscription_{rhs.subscription_} {
+MaestroSubscription::MaestroSubscription(MaestroSubscription&& rhs) noexcept : subscription_{rhs.subscription_} {
     rhs.subscription_ = nullptr;
 }
 
 MaestroEvent MaestroSubscription::poll() {
     mstro_pool_event event;
     ASSERT(MSTRO_OK == mstro_subscription_poll(subscription_, &event));
-    if (event != nullptr) {
-    }
+    if (event != nullptr) {}
     return MaestroEvent{event};
 }
 

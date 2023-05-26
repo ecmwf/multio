@@ -320,8 +320,8 @@ Trigger::Trigger(const ComponentConfiguration& compConf) {
         eckit::LocalConfiguration conf{eckit::YAMLConfiguration{std::string{confString}}};
 
         for (auto&& subComp : conf.getSubConfigurations("triggers")) {
-            triggers_.emplace_back(EventTrigger::build(
-                ComponentConfiguration(std::move(subComp), compConf.multioConfig())));
+            triggers_.emplace_back(
+                EventTrigger::build(ComponentConfiguration(std::move(subComp), compConf.multioConfig())));
         }
     }
 }
@@ -345,4 +345,3 @@ void Trigger::print(std::ostream& os) const {
 }
 
 }  // namespace multio::sink
-

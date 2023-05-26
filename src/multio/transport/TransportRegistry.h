@@ -14,8 +14,8 @@ class Configuration;
 
 namespace multio::transport {
 
-using message::Message;
 using config::ComponentConfiguration;
+using message::Message;
 
 
 class TransportRegistry : public eckit::NonCopyable {

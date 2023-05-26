@@ -104,4 +104,3 @@ void Aggregate::print(std::ostream& os) const {
 static ActionBuilder<Aggregate> AggregateBuilder("aggregate");
 
 }  // namespace multio::action
-

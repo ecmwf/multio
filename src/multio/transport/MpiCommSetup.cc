@@ -60,8 +60,8 @@ eckit::mpi::Comm& getCommPreparedCtx(const ComponentConfiguration& compConf, con
     }
     const auto& subConfig = compConf.parsedConfig().getSubConfiguration(name);
     std::optional<std::string> typeString = subConfig.has("type")
-                                                ? std::optional<std::string>{subConfig.getString("type")}
-                                                : std::optional<std::string>{};
+                                              ? std::optional<std::string>{subConfig.getString("type")}
+                                              : std::optional<std::string>{};
     auto commSetupType = typeString
                            ? parseType(*typeString)
                            : ((options && options->defaultType) ? *options->defaultType : CommSetupType::Unknown);
@@ -182,8 +182,10 @@ eckit::mpi::Comm& getCommPreparedCtx(const ComponentConfiguration& compConf, con
 
 eckit::mpi::Comm& getComm(const ComponentConfiguration& compConf, const std::string& name,
                           const std::optional<CommSetupOptions>& options) {
-    return getCommPreparedCtx(ComponentConfiguration(compConf.multioConfig().parsedConfig().getSubConfiguration("mpi-communicators"), compConf.multioConfig()),
-                              name, options);
+    return getCommPreparedCtx(
+        ComponentConfiguration(compConf.multioConfig().parsedConfig().getSubConfiguration("mpi-communicators"),
+                               compConf.multioConfig()),
+        name, options);
 }
 
 }  // namespace multio::transport::mpi

@@ -12,8 +12,8 @@
 
 /// @date Nov 2019
 
-#include <iostream>
 #include <string.h>
+#include <iostream>
 
 #include "eccodes.h"
 
@@ -46,7 +46,6 @@ private:
     void finish(const eckit::option::CmdArgs&) override;
 
     void execute(const eckit::option::CmdArgs& args) override;
-
 };
 
 MultioLegacy::MultioLegacy(int argc, char** argv) : multio::MultioTool(argc, argv) {}
@@ -69,7 +68,7 @@ void MultioLegacy::execute(const eckit::option::CmdArgs& args) {
     size_t words = eckit::round(sz, sizeof(fortint)) / sizeof(fortint);
     size_t fieldcount = 1;
 
-    codes_keys_iterator *iter = codes_keys_iterator_new(handle, 0, "mars");
+    codes_keys_iterator* iter = codes_keys_iterator_new(handle, 0, "mars");
 
     fortint fdb_comm = 0;
     fortint fdb_addr;
@@ -82,8 +81,8 @@ void MultioLegacy::execute(const eckit::option::CmdArgs& args) {
 
     isetfieldcountfdb_(&fdb_addr, &fdb_fieldcount, &fdb_fieldcount);
 
-    while(codes_keys_iterator_next(iter)) {
-        const char *keyname = codes_keys_iterator_get_name(iter);
+    while (codes_keys_iterator_next(iter)) {
+        const char* keyname = codes_keys_iterator_get_name(iter);
         char keyval[1024];
         size_t keylen = sizeof(keyval);
         CODES_CHECK(codes_get_string(handle, keyname, keyval, &keylen), NULL);

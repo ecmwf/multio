@@ -36,15 +36,13 @@ private:
 
 MaestroInstigator::MaestroInstigator(int argc, char** argv) : multio::MultioTool(argc, argv) {
     options_.push_back(new eckit::option::SimpleOption<size_t>(
-        "number-of-joins",
-        "Wait for number-of-joins join events before sending an all-ready message"));
+        "number-of-joins", "Wait for number-of-joins join events before sending an all-ready message"));
 }
 
 void MaestroInstigator::init(const eckit::option::CmdArgs& args) {
     args.get("number-of-joins", numberOfJoins_);
 
-    ASSERT(MSTRO_OK ==
-           mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0));
+    ASSERT(MSTRO_OK == mstro_init(::getenv("MSTRO_WORKFLOW_NAME"), ::getenv("MSTRO_COMPONENT_NAME"), 0));
 }
 
 void MaestroInstigator::finish(const eckit::option::CmdArgs&) {
@@ -56,30 +54,28 @@ void MaestroInstigator::finish(const eckit::option::CmdArgs&) {
     }
 }
 
-void MaestroInstigator::execute(const eckit::option::CmdArgs &) {
-    uint16_t joinCount=0;
-    uint16_t leaveCount=0;
+void MaestroInstigator::execute(const eckit::option::CmdArgs&) {
+    uint16_t joinCount = 0;
+    uint16_t leaveCount = 0;
     bool done = false;
     bool allReadySent = false;
     MaestroSelector selector{nullptr};
-    auto subscription = selector.subscribe(MSTRO_POOL_EVENT_APP_JOIN | MSTRO_POOL_EVENT_APP_LEAVE,
-                                           MSTRO_SUBSCRIPTION_OPTS_DEFAULT);
+    auto subscription
+        = selector.subscribe(MSTRO_POOL_EVENT_APP_JOIN | MSTRO_POOL_EVENT_APP_LEAVE, MSTRO_SUBSCRIPTION_OPTS_DEFAULT);
 
     while (not done) {
         auto event = subscription.poll();
         if (event) {
             auto tmp = event.raw_event();
             while (tmp) {
-                switch(tmp->kind) {
+                switch (tmp->kind) {
                     case MSTRO_POOL_EVENT_APP_JOIN:
-                        std::cout << mstro_clock() << ",JOIN," << tmp->serial << ", { "
-                                  << tmp->join.appid << ",\"" << tmp->join.component_name << "\" }"
-                                  << std::endl;
+                        std::cout << mstro_clock() << ",JOIN," << tmp->serial << ", { " << tmp->join.appid << ",\""
+                                  << tmp->join.component_name << "\" }" << std::endl;
                         ++joinCount;
                         break;
                     case MSTRO_POOL_EVENT_APP_LEAVE:
-                        std::cout << mstro_clock() << ",LEAVE," << tmp->serial
-                                  << ", { " << tmp->leave.appid << " }"
+                        std::cout << mstro_clock() << ",LEAVE," << tmp->serial << ", { " << tmp->leave.appid << " }"
                                   << std::endl;
                         ++leaveCount;
                         break;
@@ -93,7 +89,7 @@ void MaestroInstigator::execute(const eckit::option::CmdArgs &) {
         }
 
 
-        if(not allReadySent) {
+        if (not allReadySent) {
             allReadySent = isWorkflowReady(joinCount);
         }
 

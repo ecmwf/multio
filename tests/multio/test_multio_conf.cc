@@ -23,8 +23,8 @@
 #include "multio/config/ConfigurationPath.h"
 
 using multio::config::ComponentConfiguration;
-using multio::config::MultioConfiguration;
 using multio::config::configuration_file;
+using multio::config::MultioConfiguration;
 
 namespace multio::test {
 

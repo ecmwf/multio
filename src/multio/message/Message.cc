@@ -31,15 +31,10 @@ int Message::protocolVersion() {
 }
 
 std::string Message::tag2str(Tag t) {
-    static std::map<Tag, std::string> m = {{Tag::Empty, "Empty"},
-                                           {Tag::Open, "Open"},
-                                           {Tag::Close, "Close"},
-                                           {Tag::Grib, "Grib"},
-                                           {Tag::Domain, "Domain"},
-                                           {Tag::Mask, "Mask"},
-                                           {Tag::Field, "Field"},
-                                           {Tag::Flush, "Flush"},
-                                           {Tag::Notification, "Notification"}};
+    static std::map<Tag, std::string> m
+        = {{Tag::Empty, "Empty"}, {Tag::Open, "Open"},     {Tag::Close, "Close"},
+           {Tag::Grib, "Grib"},   {Tag::Domain, "Domain"}, {Tag::Mask, "Mask"},
+           {Tag::Field, "Field"}, {Tag::Flush, "Flush"},   {Tag::Notification, "Notification"}};
 
     ASSERT(t < Tag::ENDTAG);
 

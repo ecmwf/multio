@@ -8,8 +8,8 @@
  * does it submit to any jurisdiction.
  */
 
-#include <iostream>
 #include <stdlib.h>
+#include <iostream>
 
 #include "eckit/config/LibEcKit.h"
 
@@ -17,7 +17,7 @@
 
 bool traceme() {
     static char* trace = ::getenv("MULTIO_TRACE");
-    if(trace == nullptr) {
+    if (trace == nullptr) {
         return false;
     }
     return true;
@@ -29,7 +29,7 @@ int ifsio_handle_error(std::exception& e) {
     std::cerr << "MultIO wrapper: " << e.what() << std::endl << std::flush;
 
     static char* abort_on_error = ::getenv("MULTIO_ABORT_ON_ERROR");
-    if(abort_on_error) {
+    if (abort_on_error) {
         std::cout << "MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
         std::cerr << "MultIO wrapper: MULTIO_ABORT_ON_ERROR is SET -- aborting ... " << std::endl << std::flush;
 

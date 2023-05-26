@@ -17,11 +17,11 @@
 
 #include "eckit/log/Statistics.h"
 
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/maestro/CdoNamer.h"
 #include "multio/maestro/MaestroCdo.h"
 #include "multio/maestro/MaestroStatistics.h"
 #include "multio/sink/DataSink.h"
-#include "multio/config/ComponentConfiguration.h"
 
 
 //--------------------------------------------------------------------------------------------------

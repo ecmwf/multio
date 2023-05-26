@@ -10,8 +10,8 @@
 
 #include "Peer.h"
 
-#include <string>
 #include <iostream>
+#include <string>
 
 namespace multio::message {
 
@@ -47,4 +47,4 @@ void Peer::print(std::ostream& out) const {
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace multio
+}  // namespace multio::message

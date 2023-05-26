@@ -5,8 +5,7 @@
 
 namespace multio {
 
-MaestroEvent::MaestroEvent(mstro_pool_event event) : event_{event} {
-}
+MaestroEvent::MaestroEvent(mstro_pool_event event) : event_{event} {}
 
 MaestroEvent::MaestroEvent(MaestroEvent&& rhs) : event_{rhs.event_} {
     rhs.event_ = nullptr;

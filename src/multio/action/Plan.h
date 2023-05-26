@@ -55,7 +55,6 @@ struct PlanFailureTraits {
 };
 
 
-
 class Plan : private eckit::NonCopyable, public FailureAware<PlanFailureTraits> {
 private:
     // Delegate constructor with loaded config (from file or list entry)

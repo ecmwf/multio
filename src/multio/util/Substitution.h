@@ -74,4 +74,4 @@ std::string replaceCurly(std::string_view s, Func&& lookup) {
 std::optional<bool> parseBool(const eckit::LocalConfiguration& cfg, const std::string& key, bool defaultValue);
 std::optional<bool> parseEnabled(const eckit::LocalConfiguration& cfg, bool defaultValue);
 
-}  // namespace multio
+}  // namespace multio::util

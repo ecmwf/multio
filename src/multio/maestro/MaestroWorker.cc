@@ -1,6 +1,6 @@
 
-#include <fstream>
 #include "MaestroWorker.h"
+#include <fstream>
 
 #include "eckit/io/FileHandle.h"
 #include "eckit/linalg/LinearAlgebra.h"
@@ -64,13 +64,15 @@ void MaestroWorker::process() {
                 start_ = eckit::Timing(statistics_.timer());
                 log_file_ << "(timing) [start_] = " << start_ << std::endl;
             }
-            util::ScopedTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_, maestroStatistics_.workerProcessPopWorkTiming_);
+            util::ScopedTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_,
+                                               maestroStatistics_.workerProcessPopWorkTiming_);
             log_file_ << requirement_ << std::endl;
             eckit::Buffer b;
             source_.retrieve(requirement_.retrieve(), b);
             log_file_ << requirement_ << "COMPLETED" << std::endl;
         }
-    } else {
+    }
+    else {
         std::string lastInputTag;
         mir::api::MIRComplexJob job;
         pgen::Fields fields;
@@ -81,27 +83,27 @@ void MaestroWorker::process() {
                 start_ = eckit::Timing(statistics_.timer());
                 log_file_ << "(timing) [start_] = " << start_ << std::endl;
             }
-            util::ScopedTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_, maestroStatistics_.workerProcessPopWorkTiming_);
-            const pgen::Handler &handler = pgen::Handler::lookup(args_, requirement_.handlers());
+            util::ScopedTiming pop_work_timing(maestroStatistics_.workerProcessPopWorkTimer_,
+                                               maestroStatistics_.workerProcessPopWorkTiming_);
+            const pgen::Handler& handler = pgen::Handler::lookup(args_, requirement_.handlers());
             const std::string inputTag = handler.inputTag(requirement_);
             log_file_ << "INPUT TAG [" << inputTag << "]" << std::endl;
             if (job.empty() || (lastInputTag != inputTag)) {
-                util::ScopedTiming input_timing(maestroStatistics_.workerProcessInputTimer_, maestroStatistics_.workerProcessInputTiming_);
+                util::ScopedTiming input_timing(maestroStatistics_.workerProcessInputTimer_,
+                                                maestroStatistics_.workerProcessInputTiming_);
                 log_file_ << "SET INPUT TAG [" << inputTag << "]" << std::endl;
                 lastInputTag = inputTag;
                 job.clear();
                 fields.clear();
                 try {
                     log_file_ << "Handle input from " << source_ << std::endl;
-                    input.reset(handler.input(requirement_,
-                                              fields,
-                                              source_,
-                                              statistics_));
+                    input.reset(handler.input(requirement_, fields, source_, statistics_));
                     if (!input) {
                         log_file_ << "No input" << std::endl;
                         continue;
                     }
-                } catch (pgen::DataNotFound &e) {
+                }
+                catch (pgen::DataNotFound& e) {
                     log_file_ << "==== Error retrieving data" << std::endl;
                     log_file_ << "==== Exception  : " << e.what() << std::endl;
                     log_file_ << "==== Requirement: " << requirement_ << std::endl;
@@ -111,14 +113,15 @@ void MaestroWorker::process() {
             }
 
             {
-                util::ScopedTiming prepare_timing(maestroStatistics_.workerProcessJobPrepareTimer_, maestroStatistics_.workerProcessJobPrepareTiming_);
+                util::ScopedTiming prepare_timing(maestroStatistics_.workerProcessJobPrepareTimer_,
+                                                  maestroStatistics_.workerProcessJobPrepareTiming_);
                 std::stringstream ss;
                 ss << std::this_thread::get_id();
                 std::string thread_id = ss.str();
 
                 std::string path = handler.path(*namer_, requirement_, directory_, thread_id);
                 pgen::Output o{new eckit::FileHandle{path}, true /* append */};
-                mir::output::MIROutput &output = o.output(handler, statistics_);
+                mir::output::MIROutput& output = o.output(handler, statistics_);
 
                 try {
                     std::unique_ptr<mir::api::MIRJob> mj = std::make_unique<mir::api::MIRJob>();
@@ -131,13 +134,11 @@ void MaestroWorker::process() {
                     mj->set("matrix-loader", matrix_loader_);
                     mj->set("point-search-trees", point_search_);
 
-                    log_file_ << "Job before add ===> " << *mj <<  std::endl;
-                    job.add(mj.release(),
-                            *input,
-                            output,
-                            nullptr);
-                    log_file_ << "Job after add ===> " <<  std::endl;
-                } catch (std::exception &e) {
+                    log_file_ << "Job before add ===> " << *mj << std::endl;
+                    job.add(mj.release(), *input, output, nullptr);
+                    log_file_ << "Job after add ===> " << std::endl;
+                }
+                catch (std::exception& e) {
                     log_file_ << "==== Error building job" << std::endl;
                     log_file_ << "==== Exception  : " << e.what() << std::endl;
                     log_file_ << "==== Requirement: " << requirement_ << std::endl;

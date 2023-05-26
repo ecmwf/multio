@@ -36,8 +36,8 @@ eckit::LocalConfiguration getServerConf(const MultioConfiguration& multioConf) {
 MultioServer::MultioServer(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf) :
     MultioConfigurationHolder(std::move(multioConf), config::LocalPeerTag::Server),
     FailureAware(config::ComponentConfiguration(conf, multioConfig())),
-    transport_{TransportFactory::instance().build(
-        conf.getString("transport"), ComponentConfiguration(conf, multioConfig()))},
+    transport_{
+        TransportFactory::instance().build(conf.getString("transport"), ComponentConfiguration(conf, multioConfig()))},
     listener_{ComponentConfiguration(conf, multioConfig()), *transport_} {
     LOG_DEBUG_LIB(multio::LibMultio) << "Server config: " << conf << std::endl;
     eckit::Log::info() << "*** Server -- constructor " << conf << std::endl;

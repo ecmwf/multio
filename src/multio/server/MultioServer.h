@@ -12,8 +12,8 @@
 
 #include <memory>
 
-#include "multio/server/Listener.h"
 #include "multio/config/ComponentConfiguration.h"
+#include "multio/server/Listener.h"
 #include "multio/util/FailureHandling.h"
 
 namespace eckit {
@@ -22,9 +22,9 @@ class LocalConfiguration;
 
 namespace multio {
 
-using util::FailureAware;
 using config::MultioConfiguration;
 using config::MultioConfigurationHolder;
+using util::FailureAware;
 
 namespace transport {
 class Transport;
@@ -37,7 +37,7 @@ struct ServerFailureTraits {
     using FailureOptions = util::DefaultFailureOptions;
     using FailureState = util::DefaultFailureState;
     using TagSequence = util::integer_sequence<OnErrorType, OnErrorType::Propagate, OnErrorType::Recover,
-                                         OnErrorType::AbortTransport>;
+                                               OnErrorType::AbortTransport>;
     static inline std::optional<OnErrorType> parse(const std::string& str) {
         return util::parseErrorTag<OnErrorType, TagSequence>(str);
     }
@@ -48,7 +48,6 @@ struct ServerFailureTraits {
     static inline std::string configKey() { return std::string("on-error"); };
     static inline std::string componentName() { return std::string("Server"); };
 };
-
 
 
 class MultioServer : public MultioConfigurationHolder, public FailureAware<ServerFailureTraits> {
@@ -62,7 +61,7 @@ public:
 
 private:
     MultioServer(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf);
-    
+
     std::unique_ptr<transport::Transport> transport_;
     Listener listener_;
 };

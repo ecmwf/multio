@@ -65,7 +65,8 @@ MultIO::MultIO(const ComponentConfiguration& compConf) :
         }
         if (*enabled) {
             sinks_
-                .emplace_back(DataSinkFactory::instance().build(subComp.parsedConfig().getString("type"), std::move(subComp)))
+                .emplace_back(
+                    DataSinkFactory::instance().build(subComp.parsedConfig().getString("type"), std::move(subComp)))
                 ->setId(sinkId);
         }
     }

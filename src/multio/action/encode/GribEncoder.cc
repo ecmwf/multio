@@ -290,7 +290,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
         else {
             // Setting directly as it is computed value not read from the metadata
             g.setValue("stepRange", marsStepRange(md, queriedMarsFields));
-            //withFirstOf(valueSetter(g, "stepRange"), LookUpString(md, "stepRangeInHours"));
+            // withFirstOf(valueSetter(g, "stepRange"), LookUpString(md, "stepRangeInHours"));
         }
 
         std::optional<long> curDate;
@@ -304,8 +304,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
             withFirstOf(valueSetter(g, "dayOfEndOfOverallTimeInterval"), std::optional<long>{*curDate % 100});
 
             withFirstOf(valueSetter(g, "lengthOfTimeRange"), LookUpLong(md, "timeSpanInHours"));
-            withFirstOf(valueSetter(g, "indicatorOfUnitForTimeIncrement"),
-                        std::optional<long>{13l});  // always seconds
+            withFirstOf(valueSetter(g, "indicatorOfUnitForTimeIncrement"), std::optional<long>{13l});  // always seconds
             withFirstOf(valueSetter(g, "timeIncrement"), LookUpLong(md, "timeStep"));
         }
     }

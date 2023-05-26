@@ -86,17 +86,15 @@ TemporalStatistics::TemporalStatistics(const std::vector<std::string>& operation
     current_{period},
     options_{options},
     opNames_{operations},
-    statistics_{reset_statistics(operations, msg, partialPath, options, options.restart())}
-     {}
+    statistics_{reset_statistics(operations, msg, partialPath, options, options.restart())} {}
 
 
-void TemporalStatistics::dump( ) const {
+void TemporalStatistics::dump() const {
     current_.dump(partialPath_);
     for (auto const& stat : statistics_) {
         std::visit(
-            Overloaded{
-                [this](const std::unique_ptr<Operation<double>>& arg) { return arg->dump(this->partialPath_); },
-                [this](const std::unique_ptr<Operation<float>>& arg) { return arg->dump(this->partialPath_); }},
+            Overloaded{[this](const std::unique_ptr<Operation<double>>& arg) { return arg->dump(this->partialPath_); },
+                       [this](const std::unique_ptr<Operation<float>>& arg) { return arg->dump(this->partialPath_); }},
             stat);
     }
     return;

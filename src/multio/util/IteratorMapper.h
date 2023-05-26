@@ -27,7 +27,6 @@
  */
 
 
-
 #include <forward_list>
 #include <iostream>
 #include <iterator>

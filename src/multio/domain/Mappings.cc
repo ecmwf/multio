@@ -25,9 +25,8 @@ void Mappings::add(message::Message msg) {
     auto& domainMap = mappings_[msg.name()];
 
     if (domainMap.contains(msg.source())) {
-      eckit::Log::warning()
-          << "Partial domain had already been received: " << msg.fieldId() << std::endl;
-      return;
+        eckit::Log::warning() << "Partial domain had already been received: " << msg.fieldId() << std::endl;
+        return;
     }
     eckit::Log::debug<LibMultio>() << "*** Add domainMap for " << msg.name();
 
@@ -42,8 +41,7 @@ void Mappings::add(message::Message msg) {
     eckit::Log::debug<LibMultio>() << "]" << std::endl;
 
     if (msg.metadata().getString("representation") == "unstructured") {
-        domainMap.emplace(msg.source(),
-                          std::make_unique<Unstructured>(std::move(local_map), msg.globalSize()));
+        domainMap.emplace(msg.source(), std::make_unique<Unstructured>(std::move(local_map), msg.globalSize()));
         return;
     }
 
@@ -52,8 +50,7 @@ void Mappings::add(message::Message msg) {
         return;
     }
 
-    throw eckit::AssertionFailed("Unsupported domain representation " +
-                                 msg.metadata().getString("representation"));
+    throw eckit::AssertionFailed("Unsupported domain representation " + msg.metadata().getString("representation"));
 }
 
 void Mappings::list(std::ostream& out) const {

@@ -19,8 +19,8 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/filesystem/TmpFile.h"
 
-#include "multio/sink/FileSink.h"
 #include "multio/config/ComponentConfiguration.h"
+#include "multio/sink/FileSink.h"
 
 namespace multio {
 namespace test {

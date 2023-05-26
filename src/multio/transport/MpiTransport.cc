@@ -80,13 +80,14 @@ MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
             const auto& mpiInitInfo = compConf.multioConfig().getMPIInitInfo();
             options.alias = mpiInitInfo ? mpiInitInfo->clientId : std::optional<std::string>{};
 
-            std::string subGroupName
-                = compConf.parsedConfig().has("client-group") ? compConf.parsedConfig().getString("client-group") : ([&]() {
-                      std::ostringstream oss;
-                      oss << groupName << "-"
-                          << "clients";
-                      return oss.str();
-                  })();
+            std::string subGroupName = compConf.parsedConfig().has("client-group")
+                                         ? compConf.parsedConfig().getString("client-group")
+                                         : ([&]() {
+                                               std::ostringstream oss;
+                                               oss << groupName << "-"
+                                                   << "clients";
+                                               return oss.str();
+                                           })();
             // eckit::Log::info() << " *** MpiTransport::setupMPI_ client " << subGroupName << "
             // alias: " << (options.alias? options.alias().c_str() : "none") << std::endl;
 
@@ -112,13 +113,14 @@ MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
 
             const auto& mpiInitInfo = compConf.multioConfig().getMPIInitInfo();
 
-            std::string subGroupName
-                = compConf.parsedConfig().has("server-group") ? compConf.parsedConfig().getString("server-group") : ([&]() {
-                      std::ostringstream oss;
-                      oss << groupName << "-"
-                          << "servers";
-                      return oss.str();
-                  })();
+            std::string subGroupName = compConf.parsedConfig().has("server-group")
+                                         ? compConf.parsedConfig().getString("server-group")
+                                         : ([&]() {
+                                               std::ostringstream oss;
+                                               oss << groupName << "-"
+                                                   << "servers";
+                                               return oss.str();
+                                           })();
             // eckit::Log::info() << " *** MpiTransport::setupMPI_ server " << subGroupName <<
             // std::endl;
 

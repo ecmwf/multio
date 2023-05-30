@@ -74,11 +74,8 @@ class MultioConfiguration {
 public:
     MultioConfiguration(const eckit::PathName& configFile = configuration_file_name(),
                         LocalPeerTag clientOrServer = LocalPeerTag::Client);
-    MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,
-                        LocalPeerTag clientOrServer = LocalPeerTag::Client);
-    MultioConfiguration(const eckit::LocalConfiguration& globalConfig, const eckit::PathName& configDir,
-                        const eckit::PathName& configFile, LocalPeerTag clientOrServer = LocalPeerTag::Client);
-
+                        
+    MultioConfiguration(const eckit::LocalConfiguration& globalConfig, LocalPeerTag clientOrServer = LocalPeerTag::Client);
 
     eckit::LocalConfiguration& parsedConfig();
     const eckit::LocalConfiguration& parsedConfig() const;
@@ -104,6 +101,11 @@ public:
     const std::vector<message::MetadataMapping>& getMetadataMappings(const std::string& mapping) const;
 
 private:
+    MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,
+                        LocalPeerTag clientOrServer = LocalPeerTag::Client);
+    MultioConfiguration(const eckit::LocalConfiguration& globalConfig, const eckit::PathName& configDir,
+                        const eckit::PathName& configFile, LocalPeerTag clientOrServer = LocalPeerTag::Client);
+
     eckit::LocalConfiguration parsedConfig_;
     eckit::PathName configDir_;
     eckit::PathName configFile_;

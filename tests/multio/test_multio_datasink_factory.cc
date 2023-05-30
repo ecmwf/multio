@@ -48,7 +48,7 @@ static DataSinkBuilder<TestDataSink> testSinkBuilder("test");
 
 CASE("test_factory_generate") {
     LocalConfiguration config;
-    config::MultioConfiguration multioConf(config, "", "");
+    config::MultioConfiguration multioConf(config);
     config::ComponentConfiguration compConf(config, multioConf);
     std::unique_ptr<DataSink> sink(DataSinkFactory::instance().build("test", compConf));
 

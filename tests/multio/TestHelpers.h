@@ -41,7 +41,7 @@ public:
 inline auto make_configured_file_sink(const eckit::PathName& file_path) -> std::unique_ptr<DataSink> {
     eckit::LocalConfiguration config;
     config.set("path", file_path);
-    config::MultioConfiguration multioConf(config, "", "");
+    config::MultioConfiguration multioConf(config);
     config::ComponentConfiguration compConf(config, multioConf);
     return std::unique_ptr<DataSink>(DataSinkFactory::instance().build("file", compConf));
 }
@@ -50,7 +50,7 @@ inline auto make_configured_file_sink(const eckit::PathName& file_path, bool app
     eckit::LocalConfiguration config;
     config.set("path", file_path);
     config.set("append", append);
-    config::MultioConfiguration multioConf(config, "", "");
+    config::MultioConfiguration multioConf(config);
     config::ComponentConfiguration compConf(config, multioConf);
     return std::unique_ptr<DataSink>(DataSinkFactory::instance().build("file", compConf));
 }

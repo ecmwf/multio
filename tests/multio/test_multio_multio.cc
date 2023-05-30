@@ -118,7 +118,7 @@ CASE("test_multio_with_event_trigger") {
                 )json");
 
     eckit::LocalConfiguration config{eckit::YAMLConfiguration(sinks)};
-    config::MultioConfiguration multioConf(config, "" , "");
+    config::MultioConfiguration multioConf(config);
     ComponentConfiguration compConf(config, multioConf);
     {
         auto mio = std::make_unique<MultIO>(compConf);

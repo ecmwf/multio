@@ -25,7 +25,7 @@ namespace multio::config {
 MultioConfiguration::MultioConfiguration(const eckit::LocalConfiguration& globalConfig,
                                          const eckit::PathName& configDir, const eckit::PathName& configFile,
                                          LocalPeerTag localPeerTag) :
-    parsedConfig_(globalConfig), configDir_(configDir), configFile_(configFile), localPeerTag_(localPeerTag) {}
+    parsedConfig_{globalConfig}, configDir_{configDir}, configFile_{configFile}, localPeerTag_{localPeerTag} {}
 
 MultioConfiguration::MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,
                                          LocalPeerTag localPeerTag) :
@@ -35,6 +35,10 @@ MultioConfiguration::MultioConfiguration(const eckit::PathName& configDir, const
 MultioConfiguration::MultioConfiguration(const eckit::PathName& configFile, LocalPeerTag localPeerTag) :
     MultioConfiguration::MultioConfiguration(eckit::LocalConfiguration{eckit::YAMLConfiguration{configFile}},
                                              configuration_path_name(configFile), configFile, localPeerTag) {}
+
+MultioConfiguration::MultioConfiguration(const eckit::LocalConfiguration& globalConfig, LocalPeerTag localPeerTag) :
+    parsedConfig_{globalConfig}, configDir_{}, configFile_{}, localPeerTag_{localPeerTag} {}
+
 
 eckit::LocalConfiguration& MultioConfiguration::parsedConfig() {
     return parsedConfig_;

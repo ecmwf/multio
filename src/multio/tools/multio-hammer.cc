@@ -266,8 +266,8 @@ private:
             else {
                 multioConfig().setLocalPeerTag(multio::config::LocalPeerTag::Server);
             }
-            return std::shared_ptr<Transport>(TransportFactory::instance().build(
-                "mpi", ComponentConfiguration(conf_, multioConfig())));
+            return std::shared_ptr<Transport>(
+                TransportFactory::instance().build("mpi", ComponentConfiguration(conf_, multioConfig())));
         };
 
         void checkData(MultioHammer& hammer) const override {
@@ -322,8 +322,8 @@ private:
 
         std::shared_ptr<Transport> createTransport() override {
             conf_.set("local_port", port_);
-            return std::shared_ptr<Transport>(TransportFactory::instance().build(
-                "tcp", ComponentConfiguration(conf_, multioConfig())));
+            return std::shared_ptr<Transport>(
+                TransportFactory::instance().build("tcp", ComponentConfiguration(conf_, multioConfig())));
         };
 
         void checkData(MultioHammer& hammer) const override {
@@ -354,8 +354,8 @@ private:
         int computeRank() override { return 0; }
 
         std::shared_ptr<Transport> createTransport() override {
-            return std::shared_ptr<Transport>(TransportFactory::instance().build(
-                "thread", ComponentConfiguration(conf_, multioConfig())));
+            return std::shared_ptr<Transport>(
+                TransportFactory::instance().build("thread", ComponentConfiguration(conf_, multioConfig())));
         };
 
         void execute(MultioHammer& hammer, const eckit::option::CmdArgs&) const override { hammer.executeThread(); }
@@ -486,9 +486,7 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
         conf_ = multioConf.parsedConfig().getSubConfiguration(test_configuration_key(transportType_));
     }
     else {
-        multioConf
-            = MultioConfiguration(eckit::LocalConfiguration{eckit::YAMLConfiguration{eckit::PathName{configPath_}}},
-                                  configPath_, configPath_);
+        multioConf = MultioConfiguration(configPath_);
         conf_ = multioConf.parsedConfig();
     }
 
@@ -496,11 +494,20 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
 
     using PolicyBuilder = std::function<std::unique_ptr<TestPolicy>()>;
     std::map<std::string, PolicyBuilder> const policyFactory = {
-        {"mpi", [this, &multioConf]() { return std::make_unique<MPITestPolicy>(conf_, std::move(multioConf), clientCount_); }},
+        {"mpi",
+         [this, &multioConf]() { return std::make_unique<MPITestPolicy>(conf_, std::move(multioConf), clientCount_); }},
         {"tcp",
-         [this, &multioConf]() { return std::make_unique<TCPTestPolicy>(conf_, std::move(multioConf), clientCount_, port_); }},
-        {"thread", [this, &multioConf]() { return std::make_unique<ThreadTestPolicy>(conf_, std::move(multioConf), clientCount_); }},
-        {"none", [this, &multioConf]() { return std::make_unique<PlanOnlyTestPolicy>(conf_, std::move(multioConf), clientCount_); }},
+         [this, &multioConf]() {
+             return std::make_unique<TCPTestPolicy>(conf_, std::move(multioConf), clientCount_, port_);
+         }},
+        {"thread",
+         [this, &multioConf]() {
+             return std::make_unique<ThreadTestPolicy>(conf_, std::move(multioConf), clientCount_);
+         }},
+        {"none",
+         [this, &multioConf]() {
+             return std::make_unique<PlanOnlyTestPolicy>(conf_, std::move(multioConf), clientCount_);
+         }},
     };
 
     transportType_ = conf_.getString("transport");
@@ -517,7 +524,7 @@ void MultioHammer::finish(const eckit::option::CmdArgs&) {}
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioHammer::startListening(std::shared_ptr<Transport> transport) {
-    Listener listener(ComponentConfiguration(conf_, testPolicy_->multioConfig() ), *transport);
+    Listener listener(ComponentConfiguration(conf_, testPolicy_->multioConfig()), *transport);
     listener.start();
 }
 
@@ -671,7 +678,8 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
     std::vector<std::unique_ptr<Plan>> plans;
     for (auto&& subComp : conf_.getSubConfigurations("plans")) {
         eckit::Log::debug<multio::LibMultio>() << subComp << std::endl;
-        plans.emplace_back(std::make_unique<Plan>(ComponentConfiguration(std::move(subComp), testPolicy_->multioConfig())));
+        plans.emplace_back(
+            std::make_unique<Plan>(ComponentConfiguration(std::move(subComp), testPolicy_->multioConfig())));
     }
 
     std::string expver = "xxxx";

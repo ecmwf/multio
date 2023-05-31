@@ -16,12 +16,11 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
-Print::Print(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {
-    stream_ = confCtx.config().getString("stream", "info");
-    onlyFields_ = confCtx.config().getBool("only-fields", false);
+Print::Print(const ComponentConfiguration& compConf) : ChainedAction(compConf) {
+    stream_ = compConf.parsedConfig().getString("stream", "info");
+    onlyFields_ = compConf.parsedConfig().getBool("only-fields", false);
 
     if (stream_ == "info") {
         os_ = &eckit::Log::info();
@@ -36,7 +35,7 @@ Print::Print(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {
         os_ = &eckit::Log::debug();
     }
 
-    prefix_ = confCtx.config().getString("prefix", "");
+    prefix_ = compConf.parsedConfig().getString("prefix", "");
 }
 
 void Print::executeImpl(message::Message msg) {
@@ -58,5 +57,4 @@ void Print::print(std::ostream& os) const {
 
 static ActionBuilder<Print> PrintBuilder("print");
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

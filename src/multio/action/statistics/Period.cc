@@ -6,8 +6,7 @@
 
 #include "multio/LibMultio.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 DateTimePeriod::DateTimePeriod(const std::string& partialPath) :
     startPoint_{eckit::Date{0}, eckit::Time{0}}, endPoint_{eckit::Date{0}, eckit::Time{0}} {
     long sd;
@@ -32,7 +31,7 @@ DateTimePeriod::DateTimePeriod(const std::string& partialPath) :
     wf.read((char*)&of, sizeof(long));
     wf.read((char*)&cs, sizeof(long));
     wf.close();
-    long checksum=0;
+    long checksum = 0;
     checksum ^= sd;
     checksum ^= st;
     checksum ^= ed;
@@ -43,7 +42,7 @@ DateTimePeriod::DateTimePeriod(const std::string& partialPath) :
         err << "Error occurred at writing time :: " << fname;
         throw eckit::SeriousBug(err.str(), Here());
     }
-    if (cs != checksum ) {
+    if (cs != checksum) {
         std::ostringstream err;
         err << "Error checksum not correct :: " << cs << ", " << checksum;
         throw eckit::SeriousBug(err.str(), Here());
@@ -102,14 +101,14 @@ void DateTimePeriod::dump(const std::string& partialPath) const {
     std::string fname = os.str();
     std::ofstream wf(fname, std::ios::binary);
     if (!wf) {
-            throw eckit::SeriousBug("Cannot open file!", Here());
+        throw eckit::SeriousBug("Cannot open file!", Here());
     }
     long dim;
     long sd = startPoint_.date().yyyymmdd();
     long st = startPoint_.time().hhmmss();
     long ed = endPoint_.date().yyyymmdd();
     long et = endPoint_.time().hhmmss();
-    long checksum=0;
+    long checksum = 0;
     checksum ^= sd;
     checksum ^= st;
     checksum ^= ed;
@@ -121,7 +120,7 @@ void DateTimePeriod::dump(const std::string& partialPath) const {
     wf.write((char*)&checksum, sizeof(long));
     wf.close();
     if (!wf.good()) {
-            throw eckit::SeriousBug("Error occurred at writing time!", Here());
+        throw eckit::SeriousBug("Error occurred at writing time!", Here());
     }
     return;
 }
@@ -135,5 +134,4 @@ std::ostream& operator<<(std::ostream& os, const DateTimePeriod& a) {
     return os;
 }
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

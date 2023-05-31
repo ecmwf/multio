@@ -23,30 +23,28 @@
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 
-#include "multio/util/ScopedThread.h"
-#include "multio/util/ConfigurationContext.h"
 #include "multio/server/Dispatcher.h"
 #include "multio/transport/Transport.h"
+#include "multio/util/ScopedThread.h"
 
-namespace multio {
-namespace server {
+namespace multio::server {
 
 using message::Message;
-using util::ScopedThread;
 using transport::Transport;
+using util::ScopedThread;
 
-Listener::Listener(const util::ConfigurationContext& confCtx, Transport& trans):
-        FailureAware(confCtx),
+Listener::Listener(const config::ComponentConfiguration& compConf, Transport& trans) :
+    FailureAware(compConf),
     continue_{std::make_shared<std::atomic<bool>>(true)},
-    dispatcher_{std::make_unique<Dispatcher>(confCtx.recast(util::ComponentTag::Dispatcher), continue_)},
+    dispatcher_{std::make_unique<Dispatcher>(compConf, continue_)},
     transport_{trans},
     clientCount_{transport_.clientPeers().size()},
-    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE",1024*1024)) {
-}
+    msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024 * 1024)) {}
 
 Listener::~Listener() = default;
 
-util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, const util::FailureContext& c, util::DefaultFailureState&) const {
+util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, const util::FailureContext& c,
+                                                     util::DefaultFailureState&) const {
     msgQueue_.close();  // TODO: msgQueue_ pop is blocking in dispatch.... redesign to have better awareness on blocking
                         // positions to safely stop and restart
     continue_->store(false, std::memory_order_release);
@@ -61,9 +59,23 @@ void Listener::start() {
     std::exception_ptr lstnExcPtr;
     std::exception_ptr dpatchExcPtr;
 
-    ScopedThread lstnThread{std::thread{[&](){ try{ this->listen(); } catch (...) { lstnExcPtr = std::current_exception(); } }}};
+    ScopedThread lstnThread{std::thread{[&]() {
+        try {
+            this->listen();
+        }
+        catch (...) {
+            lstnExcPtr = std::current_exception();
+        }
+    }}};
 
-    ScopedThread dpatchThread{std::thread{[&](){ try { dispatcher_->dispatch(msgQueue_); } catch (...) { dpatchExcPtr = std::current_exception(); } }}};
+    ScopedThread dpatchThread{std::thread{[&]() {
+        try {
+            dispatcher_->dispatch(msgQueue_);
+        }
+        catch (...) {
+            dpatchExcPtr = std::current_exception();
+        }
+    }}};
 
     withFailureHandling([&]() {
         do {
@@ -74,17 +86,17 @@ void Listener::start() {
                     connections_.insert(msg.source());
                     ++openedCount_;
                     LOG_DEBUG_LIB(LibMultio)
-                        << "*** OPENING connection to " << msg.source()
-                        << ":    client count = " << clientCount_ << ", opened count = " << openedCount_
-                        << ", active connections = " << connections_.size() << std::endl;
+                        << "*** OPENING connection to " << msg.source() << ":    client count = " << clientCount_
+                        << ", opened count = " << openedCount_ << ", active connections = " << connections_.size()
+                        << std::endl;
                     break;
 
                 case Message::Tag::Close:
                     connections_.erase(connections_.find(msg.source()));
                     LOG_DEBUG_LIB(LibMultio)
-                        << "*** CLOSING connection to " << msg.source()
-                        << ":    client count = " << clientCount_ << ", opened count = " << openedCount_
-                        << ", active connections = " << connections_.size() << std::endl;
+                        << "*** CLOSING connection to " << msg.source() << ":    client count = " << clientCount_
+                        << ", opened count = " << openedCount_ << ", active connections = " << connections_.size()
+                        << std::endl;
                     break;
 
                 case Message::Tag::Domain:
@@ -121,7 +133,7 @@ void Listener::start() {
 }
 
 void Listener::listen() {
-    withFailureHandling([this](){
+    withFailureHandling([this]() {
         do {
             transport_.listen();
         } while (not msgQueue_.closed() && continue_->load(std::memory_order_consume));
@@ -140,5 +152,4 @@ void Listener::checkConnection(const message::Peer& conn) const {
     }
 }
 
-}  // namespace server
-}  // namespace multio
+}  // namespace multio::server

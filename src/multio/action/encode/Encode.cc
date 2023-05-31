@@ -18,36 +18,35 @@
 
 #include "GridDownloader.h"
 #include "multio/LibMultio.h"
-#include "multio/util/ConfigurationPath.h"
+#include "multio/config/ConfigurationPath.h"
 #include "multio/util/ScopedTimer.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
-using util::configuration_path_name;
+using config::configuration_path_name;
 
 namespace {
 
-ConfigurationContext getEncodingConfiguration(const ConfigurationContext& confCtx) {
-    if (confCtx.config().has("encoding")) {
-        return confCtx.recast(confCtx.config().getSubConfiguration("encoding"));
+eckit::LocalConfiguration getEncodingConfiguration(const ComponentConfiguration& compConf) {
+    if (compConf.parsedConfig().has("encoding")) {
+        return compConf.parsedConfig().getSubConfiguration("encoding");
     }
     else {
-        return confCtx;
+        return compConf.parsedConfig();
     }
 }
 
-std::unique_ptr<GribEncoder> make_encoder(const ConfigurationContext& confCtx) {
-    auto format = confCtx.config().getString("format");
+std::unique_ptr<GribEncoder> makeEncoder(const eckit::LocalConfiguration& conf,
+                                         const config::MultioConfiguration& multioConfig) {
+    auto format = conf.getString("format");
 
     if (format == "grib") {
-        ASSERT(confCtx.config().has("template"));
-        std::string tmplPath = confCtx.config().getString("template");
+        ASSERT(conf.has("template"));
+        std::string tmplPath = conf.getString("template");
         // TODO provide utility to distinguish between relative and absolute paths
-        eckit::AutoStdFile fin{confCtx.replaceCurly(tmplPath)};
+        eckit::AutoStdFile fin{multioConfig.replaceCurly(tmplPath)};
         int err;
-        return std::make_unique<GribEncoder>(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err),
-                                             confCtx.config());
+        return std::make_unique<GribEncoder>(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), conf);
     }
     else if (format == "raw") {
         return nullptr;  // leave message in raw binary format
@@ -71,16 +70,16 @@ EncodingException::EncodingException(const std::string& r, const eckit::CodeLoca
 using message::Message;
 using message::Peer;
 
-Encode::Encode(const ConfigurationContext& confCtx, ConfigurationContext&& encConfCtx) :
-    ChainedAction{confCtx},
-    format_{encConfCtx.config().getString("format")},
-    overwrite_{encConfCtx.config().has("overwrite")
-                   ? eckit::Optional<eckit::LocalConfiguration>{encConfCtx.config().getSubConfiguration("overwrite")}
-                   : eckit::Optional<eckit::LocalConfiguration>{}},
-    encoder_{make_encoder(encConfCtx)},
-    gridDownloader_{std::make_unique<multio::action::GridDownloader>(confCtx)} {}
+Encode::Encode(const ComponentConfiguration& compConf, const eckit::LocalConfiguration& encConf) :
+    ChainedAction{compConf},
+    format_{encConf.getString("format")},
+    overwrite_{encConf.has("overwrite")
+                   ? std::optional<eckit::LocalConfiguration>{encConf.getSubConfiguration("overwrite")}
+                   : std::optional<eckit::LocalConfiguration>{}},
+    encoder_{makeEncoder(encConf, compConf.multioConfig())},
+    gridDownloader_{std::make_unique<multio::action::GridDownloader>(compConf)} {}
 
-Encode::Encode(const ConfigurationContext& confCtx) : Encode(confCtx, getEncodingConfiguration(confCtx)) {}
+Encode::Encode(const ComponentConfiguration& compConf) : Encode(compConf, getEncodingConfiguration(compConf)) {}
 
 void Encode::executeImpl(Message msg) {
     if (msg.tag() != Message::Tag::Field) {
@@ -99,7 +98,8 @@ void Encode::executeImpl(Message msg) {
         LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain() << std::endl;
 
         const auto& md = msg.metadata();
-        auto gridCoords = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
+        auto gridCoords
+            = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
         if (gridCoords) {
             executeNext(gridCoords.value().Lat);
             executeNext(gridCoords.value().Lon);
@@ -148,5 +148,4 @@ message::Message Encode::encodeField(const message::Message& msg, const std::opt
 
 static ActionBuilder<Encode> EncodeBuilder("encode");
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

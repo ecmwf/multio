@@ -5,8 +5,7 @@
 
 #include "multio/transport/MpiStream.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 class StreamQueue {
 public:
@@ -41,5 +40,4 @@ private:
     std::mutex mutex_;
 };
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

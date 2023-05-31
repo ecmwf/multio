@@ -6,10 +6,7 @@
 #include "eckit/thread/Mutex.h"
 
 
-namespace multio {
-namespace transport {
-namespace mpi {
-
+namespace multio::transport::mpi {
 namespace {
 
 CommSetupType parseType(const std::string& typeString) {
@@ -36,38 +33,38 @@ void addAlias(const std::string& name, const std::string& altName) {
     eckit::mpi::addComm(altName.c_str(), eckit::mpi::comm(name.c_str()).communicator());
 }
 
-eckit::mpi::Comm& getCommPreparedCtx(const ConfigurationContext& confCtx, const std::string& name,
-                                     const eckit::Optional<CommSetupOptions>& options
-                                     = eckit::Optional<CommSetupOptions>{}) {
+eckit::mpi::Comm& getCommPreparedCtx(const ComponentConfiguration& compConf, const std::string& name,
+                                     const std::optional<CommSetupOptions>& options
+                                     = std::optional<CommSetupOptions>{}) {
 
-    auto log = [&confCtx, &name](const std::string& msg) {
-        eckit::Log::info() << " *** [" << eckit::translate<std::string>(confCtx.localPeerTag()) << "] mpi::getComm \""
-                           << name << "\" - " << msg << std::endl;
+    auto log = [&compConf, &name](const std::string& msg) {
+        eckit::Log::info() << " *** [" << eckit::translate<std::string>(compConf.multioConfig().localPeerTag())
+                           << "] mpi::getComm \"" << name << "\" - " << msg << std::endl;
     };
 
     eckit::mpi::Comm* existingComm = aliasedComm(name);
     if (existingComm != nullptr) {
-        if (options && options().alias && !eckit::mpi::hasComm(options().alias().c_str())) {
-            log("alias: " + options().alias());
-            addAlias(name, options().alias());
+        if (options && options->alias && !eckit::mpi::hasComm(options->alias->c_str())) {
+            log("alias: " + *options->alias);
+            addAlias(name, *options->alias);
         }
         return *existingComm;
     }
-    else if (options && options().alias && eckit::mpi::hasComm(options().alias().c_str())) {
-        existingComm = aliasedComm(options().alias());
+    else if (options && options->alias && eckit::mpi::hasComm(options->alias->c_str())) {
+        existingComm = aliasedComm(*options->alias);
         if (existingComm != nullptr) {
-            log("alias already exists - reverse map: " + options().alias());
-            addAlias(options().alias(), name);
+            log("alias already exists - reverse map: " + *options->alias);
+            addAlias(*options->alias, name);
             return *existingComm;
         }
     }
-    const auto& subConfig = confCtx.config().getSubConfiguration(name);
-    eckit::Optional<std::string> typeString = subConfig.has("type")
-                                                ? eckit::Optional<std::string>{subConfig.getString("type")}
-                                                : eckit::Optional<std::string>{};
+    const auto& subConfig = compConf.parsedConfig().getSubConfiguration(name);
+    std::optional<std::string> typeString = subConfig.has("type")
+                                                ? std::optional<std::string>{subConfig.getString("type")}
+                                                : std::optional<std::string>{};
     auto commSetupType = typeString
-                           ? parseType(typeString())
-                           : ((options && options().defaultType) ? options().defaultType() : CommSetupType::Unknown);
+                           ? parseType(*typeString)
+                           : ((options && options->defaultType) ? *options->defaultType : CommSetupType::Unknown);
 
 
     auto withLog = [&log](eckit::mpi::Comm& comm, const std::string& msg) -> eckit::mpi::Comm& {
@@ -78,49 +75,49 @@ eckit::mpi::Comm& getCommPreparedCtx(const ConfigurationContext& confCtx, const 
         return comm;
     };
 
-    const auto& mpiInitInfo = confCtx.getMPIInitInfo();
+    const auto& mpiInitInfo = compConf.multioConfig().getMPIInitInfo();
     switch (commSetupType) {
 
         case CommSetupType::Passed: {
-            eckit::mpi::Comm& comm = (mpiInitInfo && mpiInitInfo().parentComm)
-                                       ? withLog((eckit::mpi::addComm(name.c_str(), mpiInitInfo().parentComm()),
+            eckit::mpi::Comm& comm = (mpiInitInfo && mpiInitInfo->parentComm)
+                                       ? withLog((eckit::mpi::addComm(name.c_str(), *mpiInitInfo->parentComm),
                                                   eckit::mpi::comm(name.c_str())),
-                                                 "passed parent comm " + std::to_string(mpiInitInfo().parentComm()))
-                                       : [&subConfig, &mpiInitInfo, &withLog, &confCtx, &name]() -> eckit::mpi::Comm& {
+                                                 "passed parent comm " + std::to_string(*mpiInitInfo->parentComm))
+                                       : [&subConfig, &mpiInitInfo, &withLog, &compConf, &name]() -> eckit::mpi::Comm& {
                 bool hasDefault = subConfig.has("default");
-                if (!hasDefault && !mpiInitInfo().allowWorldAsDefault) {
+                if (!hasDefault && !mpiInitInfo->allowWorldAsDefault) {
                     std::ostringstream oss;
                     oss << "No communicator \"" << name << "\" and no default given.";
                     throw transport::TransportException(oss.str(), Here());
                 }
                 auto defaultCommName = hasDefault ? subConfig.getString("default") : "world";
 
-                auto& comm = withLog(getCommPreparedCtx(confCtx, defaultCommName), "defaults to " + defaultCommName);
+                auto& comm = withLog(getCommPreparedCtx(compConf, defaultCommName), "defaults to " + defaultCommName);
 
                 addAlias(defaultCommName, name);
                 return comm;
             }();
 
-            if (options && options().alias && !eckit::mpi::hasComm(options().alias().c_str())) {
-                log("alias: " + options().alias());
-                addAlias(name, options().alias());
+            if (options && options->alias && !eckit::mpi::hasComm(options->alias->c_str())) {
+                log("alias: " + *options->alias);
+                addAlias(name, *options->alias);
             }
 
             return comm;
         }
 
         case CommSetupType::Split: {
-            const auto getSplitColor_ = [&subConfig, &mpiInitInfo, &confCtx]() {
+            const auto getSplitColor_ = [&subConfig, &mpiInitInfo, &compConf]() {
                 if (subConfig.has("color")) {
-                    return eckit::Optional<int>(subConfig.getInt("color"));
+                    return std::optional<int>(subConfig.getInt("color"));
                 }
-                switch (confCtx.localPeerTag()) {
-                    case util::LocalPeerTag::Client:
-                        return mpiInitInfo().defaultClientSplitColor;
-                    case util::LocalPeerTag::Server:
-                        return mpiInitInfo().defaultServerSplitColor;
+                switch (compConf.multioConfig().localPeerTag()) {
+                    case config::LocalPeerTag::Client:
+                        return mpiInitInfo->defaultClientSplitColor;
+                    case config::LocalPeerTag::Server:
+                        return mpiInitInfo->defaultServerSplitColor;
                     default:
-                        return eckit::Optional<int>{};
+                        return std::optional<int>{};
                 }
             };
 
@@ -134,11 +131,11 @@ eckit::mpi::Comm& getCommPreparedCtx(const ConfigurationContext& confCtx, const 
                 throw transport::TransportException(oss.str(), Here());
             }
 
-            eckit::Optional<std::string> parentName
-                = subConfig.has("parent") ? eckit::Optional<std::string>(subConfig.getString("parent"))
-                                          : (options ? options().parentCommName : eckit::Optional<std::string>());
+            std::optional<std::string> parentName
+                = subConfig.has("parent") ? std::optional<std::string>(subConfig.getString("parent"))
+                                          : (options ? options->parentCommName : std::optional<std::string>());
 
-            if (!parentName && !mpiInitInfo().allowWorldAsDefault) {
+            if (!parentName && !mpiInitInfo->allowWorldAsDefault) {
                 std::ostringstream oss;
                 oss << "No parent communicator name to split \"" << name
                     << "\" from given. Set 'allowWorldAsDefault' to allow using the default world communicator as "
@@ -146,22 +143,22 @@ eckit::mpi::Comm& getCommPreparedCtx(const ConfigurationContext& confCtx, const 
                 throw transport::TransportException(oss.str(), Here());
             }
 
-            eckit::mpi::Comm& parentComm = getCommPreparedCtx(confCtx, parentName ? parentName() : "world");
+            eckit::mpi::Comm& parentComm = getCommPreparedCtx(compConf, parentName ? *parentName : "world");
             std::ostringstream splitLogMsg;
-            splitLogMsg << " from " << (parentName ? parentName() : std::string("eckit::mpi default"))
+            splitLogMsg << " from " << (parentName ? *parentName : std::string("eckit::mpi default"))
                         << " (Comm: " << parentComm.communicator() << ", size: " << parentComm.size()
-                        << ", rank: " << parentComm.rank() << ") by color " << splitColor();
+                        << ", rank: " << parentComm.rank() << ") by color " << *splitColor;
             log("try splitting" + splitLogMsg.str());
 
 
-            eckit::mpi::Comm& comm = parentComm.split(splitColor(), name);
+            eckit::mpi::Comm& comm = parentComm.split(*splitColor, name);
 
             withLog(comm, "successful split " + splitLogMsg.str());
 
-            const auto& mpiInitInfo = confCtx.getMPIInitInfo();
-            if (options && options().alias && !eckit::mpi::hasComm(options().alias().c_str())) {
-                log("alias: " + options().alias());
-                addAlias(name, options().alias());
+            const auto& mpiInitInfo = compConf.multioConfig().getMPIInitInfo();
+            if (options && options->alias && !eckit::mpi::hasComm(options->alias->c_str())) {
+                log("alias: " + *options->alias);
+                addAlias(name, *options->alias);
             }
             // printComms();
             return comm;
@@ -170,7 +167,7 @@ eckit::mpi::Comm& getCommPreparedCtx(const ConfigurationContext& confCtx, const 
         default: {
             std::ostringstream oss;
             if (typeString) {
-                oss << "Unknown type \"" << typeString() << "\"";
+                oss << "Unknown type \"" << *typeString << "\"";
             }
             else {
                 oss << "No default comm setup type has been passed and no key \"type\" given";
@@ -183,12 +180,10 @@ eckit::mpi::Comm& getCommPreparedCtx(const ConfigurationContext& confCtx, const 
 
 }  // namespace
 
-eckit::mpi::Comm& getComm(const ConfigurationContext& confCtx, const std::string& name,
-                          const eckit::Optional<CommSetupOptions>& options) {
-    return getCommPreparedCtx(confCtx.recast(confCtx.globalConfig().getSubConfiguration("mpi-communicators")), name,
-                              options);
+eckit::mpi::Comm& getComm(const ComponentConfiguration& compConf, const std::string& name,
+                          const std::optional<CommSetupOptions>& options) {
+    return getCommPreparedCtx(ComponentConfiguration(compConf.multioConfig().parsedConfig().getSubConfiguration("mpi-communicators"), compConf.multioConfig()),
+                              name, options);
 }
 
-}  // namespace mpi
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport::mpi

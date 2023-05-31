@@ -22,31 +22,47 @@
 #include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
-#include "multio/util/ConfigurationContext.h"
 #include "multio/util/FailureHandling.h"
 
 
-namespace multio {
-
-namespace message {
+namespace multio::message {
 class MetadataSelectors;
 }
 
-namespace action {
+namespace multio::action {
 
-using util::ConfigurationContext;
+using config::ComponentConfiguration;
 using util::FailureAware;
 
 class Action;
 
-class Plan : private eckit::NonCopyable, public FailureAware<util::ComponentTag::Plan> {
+struct PlanFailureTraits {
+    using OnErrorType = util::OnPlanError;
+    using FailureOptions = util::DefaultFailureOptions;
+    using FailureState = util::DefaultFailureState;
+    using TagSequence = util::integer_sequence<OnErrorType, OnErrorType::Propagate, OnErrorType::Recover>;
+    static inline std::optional<OnErrorType> parse(const std::string& str) {
+        return util::parseErrorTag<OnErrorType, TagSequence>(str);
+    }
+    static inline OnErrorType defaultOnErrorTag() { return OnErrorType::Propagate; };
+    static inline std::string configKey() { return std::string("on-error"); };
+    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
+        return util::parseDefaultFailureOptions(conf);
+    };
+    static inline std::string componentName() { return std::string("Plan"); };
+};
+
+
+
+class Plan : private eckit::NonCopyable, public FailureAware<PlanFailureTraits> {
 private:
     // Delegate constructor with loaded config (from file or list entry)
-    Plan(const ConfigurationContext& confCtx, const util::YAMLFile* file);
-    
+    Plan(std::tuple<ComponentConfiguration, std::string>&& confAndName);
+
 public:
-    Plan(const ConfigurationContext& confCtx);
+    Plan(const ComponentConfiguration& compConf);
     virtual ~Plan();
 
     virtual void process(message::Message msg);
@@ -63,5 +79,4 @@ protected:
     eckit::Timing timing_;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

@@ -9,8 +9,7 @@
 #include "multio/action/statistics/StatisticsOptions.h"
 #include "multio/message/Message.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 
 class TemporalStatistics {
@@ -58,9 +57,6 @@ private:
         a.print(os);
         return os;
     }
-
-
-
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -95,5 +91,4 @@ public:
 
 //-------------------------------------------------------------------------------------------------
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

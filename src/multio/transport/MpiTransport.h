@@ -29,18 +29,17 @@
 #include "multio/transport/StreamQueue.h"
 #include "multio/transport/Transport.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 using MpiPeerSetup = std::tuple<MpiPeer, eckit::mpi::Group, eckit::mpi::Group, eckit::mpi::Group>;
 
 class MpiTransport final : public Transport {
 public:
-    MpiTransport(const ConfigurationContext& confCtx);
+    MpiTransport(const ComponentConfiguration& compConf);
     ~MpiTransport();
 
 private:
-    MpiTransport(const ConfigurationContext& confCtx, MpiPeerSetup&& peerSetup);
+    MpiTransport(const ComponentConfiguration& compConf, MpiPeerSetup&& peerSetup);
 
     void openConnections() override;
     void closeConnections() override;
@@ -81,5 +80,4 @@ private:
     std::queue<Message> msgPack_;
 };
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

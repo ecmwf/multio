@@ -27,19 +27,16 @@ extern "C" {
 
 #include "multio/LibMultio.h"
 
-#include "multio/util/ConfigurationContext.h"
 #include "multio/util/ScopedTimer.h"
 
 
 namespace multio {
 
-using util::ConfigurationContext;
-
-MaestroSink::MaestroSink(const ConfigurationContext& confCtx) : DataSink(confCtx) {
-    LOG_DEBUG_LIB(LibMultio) << "Config = " << confCtx.config() << std::endl;
+MaestroSink::MaestroSink(const ComponentConfiguration& compConf) : multio::sink::DataSink(compConf) {
+    LOG_DEBUG_LIB(LibMultio) << "Config = " << compConf.parsedConfig() << std::endl;
 
     LOG_DEBUG_LIB(LibMultio) << *this << std::endl;
-    readyCdoEnabled_ = confCtx.config().getBool("ready-cdo", true);
+    readyCdoEnabled_ = compConf.parsedConfig().getBool("ready-cdo", true);
 
     eckit::Timing timing;
     {
@@ -165,6 +162,6 @@ void MaestroSink::print(std::ostream& os) const {
     os << "MaestroSink(libmaestro version " << mstro_version() << ")";
 }
 
-static DataSinkBuilder<MaestroSink> MaestroSinkBuilder("maestro");
+static sink::DataSinkBuilder<MaestroSink> MaestroSinkBuilder("maestro");
 
 }  // namespace multio

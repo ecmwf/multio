@@ -25,7 +25,7 @@
 #include "multio/util/FailureHandling.h"
 
 #include "multio/message/Message.h"
-#include "multio/util/ConfigurationContext.h"
+#include "multio/config/ComponentConfiguration.h"
 
 namespace eckit {
 class Configuration;
@@ -40,9 +40,27 @@ class Plan;
 
 namespace server {
 
-class Dispatcher : public util::FailureAware<util::ComponentTag::Dispatcher>, private eckit::NonCopyable {
+struct DispatcherFailureTraits {
+    using OnErrorType = util::OnDispatchError;
+    using FailureOptions = util::DefaultFailureOptions;
+    using FailureState = util::DefaultFailureState;
+    using TagSequence = util::integer_sequence<OnErrorType, OnErrorType::Propagate>;
+    static inline std::optional<OnErrorType> parse(const std::string& str) {
+        return util::parseErrorTag<OnErrorType, TagSequence>(str);
+    }
+    static inline OnErrorType defaultOnErrorTag() { return OnErrorType::Propagate; };
+    static inline std::string configKey() { return std::string("on-dispatch-error"); };
+    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
+        return util::parseDefaultFailureOptions(conf);
+    };
+    static inline std::string componentName() { return std::string("Dispatcher"); };
+};
+
+
+
+class Dispatcher : public util::FailureAware<DispatcherFailureTraits>, private eckit::NonCopyable {
 public:
-    Dispatcher(const util::ConfigurationContext& confCtx, std::shared_ptr<std::atomic<bool>> cont);
+    Dispatcher(const config::ComponentConfiguration& compConf, std::shared_ptr<std::atomic<bool>> cont);
     ~Dispatcher();
 
     void dispatch(eckit::Queue<message::Message>& queue);

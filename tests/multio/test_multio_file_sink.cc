@@ -8,20 +8,21 @@
  * does it submit to any jurisdiction.
  */
 
-#include <cstring>
 #include <unistd.h>
+#include <cstring>
 
-#include "eckit/testing/Test.h"
 #include "eckit/filesystem/TmpFile.h"
 #include "eckit/message/Message.h"
+#include "eckit/testing/Test.h"
 
 #include "multio/sink/FileSink.h"
 
 #include "TestDataContent.h"
 #include "TestHelpers.h"
 
-namespace multio {
-namespace test {
+namespace multio::test {
+
+using multio::sink::DataSinkFactory;
 
 CASE("FileSink exists in factory") {
     // DataSinkFactory::list appends the results to a ostream&, so we need to extract them.
@@ -41,8 +42,7 @@ CASE("FileSink is created successfully") {
 CASE("FileSink writes correctly") {
     const eckit::PathName& file_path = eckit::TmpFile();
     auto sink = make_configured_file_sink(file_path);
-    const char quote[] =
-        "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
+    const char quote[] = "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
     eckit::message::Message msg{new TestDataContent{quote, sizeof(quote) - 1}};
     sink->write(msg);
@@ -52,8 +52,7 @@ CASE("FileSink writes correctly") {
 
 CASE("FileSink creates new file by default") {
     const eckit::PathName& file_path = eckit::TmpFile();
-    const char quote[] =
-        "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
+    const char quote[] = "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
     {
         auto sink = make_configured_file_sink(file_path);
@@ -73,8 +72,7 @@ CASE("FileSink creates new file by default") {
 
 CASE("FileSink creates new file by explicit request") {
     const eckit::PathName& file_path = eckit::TmpFile();
-    const char quote[] =
-        "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
+    const char quote[] = "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
     {
         auto sink = make_configured_file_sink(file_path);
@@ -93,8 +91,7 @@ CASE("FileSink creates new file by explicit request") {
 
 CASE("FileSink appends to existing file") {
     const eckit::PathName& file_path = eckit::TmpFile();
-    const char quote[] =
-        "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
+    const char quote[] = "All was quiet in the deep dark wood. The mouse found a nut and the nut was good.";
 
     {
         auto sink = make_configured_file_sink(file_path);
@@ -111,8 +108,7 @@ CASE("FileSink appends to existing file") {
     EXPECT(file_content(file_path) == std::string{quote} + std::string{quote});
 }
 
-}  // namespace test
-}  // namespace multio
+}  // namespace multio::test
 
 int main(int argc, char** argv) {
     return eckit::testing::run_tests(argc, argv);

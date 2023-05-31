@@ -20,7 +20,7 @@
 #include "eckit/types/Types.h"
 
 #include "eckit/message/Message.h"
-#include "multio/util/ConfigurationContext.h"
+#include "multio/config/ComponentConfiguration.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -28,9 +28,9 @@ namespace eckit {
 class Configuration;
 }
 
-namespace multio {
+namespace multio::sink {
 
-using util::ConfigurationContext;
+using config::ComponentConfiguration;
 
 
 class EventTrigger;
@@ -38,7 +38,7 @@ class EventTrigger;
 class Trigger : public eckit::NonCopyable {
 
 public:  // methods
-    Trigger(const ConfigurationContext& confCtx);
+    Trigger(const ComponentConfiguration& compConf);
 
     ~Trigger();
 
@@ -60,4 +60,4 @@ private:  // members
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace multio
+}  // namespace multio::sink

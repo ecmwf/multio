@@ -29,8 +29,7 @@
 
 #define DIGEST_LENGTH MD5_DIGEST_LENGTH
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 using message::Message;
 using message::Peer;
@@ -70,12 +69,12 @@ struct ValueSetter {
     }
 };
 
-eckit::Optional<ValueSetter> valueSetter(GribEncoder& g, const std::string& key) {
+std::optional<ValueSetter> valueSetter(GribEncoder& g, const std::string& key) {
     if (g.hasKey(key.c_str())) {
-        return eckit::Optional<ValueSetter>(ValueSetter{g, key});
+        return std::optional<ValueSetter>(ValueSetter{g, key});
     }
     else {
-        return eckit::Optional<ValueSetter>();
+        return std::optional<ValueSetter>();
     }
 }
 
@@ -85,8 +84,8 @@ GribEncoder::GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& 
     template_{handle}, encoder_{nullptr}, config_{config} /*, encodeBitsPerValue_(config)*/ {}
 
 struct QueriedMarsKeys {
-    eckit::Optional<std::string> type{};
-    eckit::Optional<long> paramId{};
+    std::optional<std::string> type{};
+    std::optional<long> paramId{};
 };
 
 QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
@@ -194,9 +193,9 @@ void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
 }
 
 namespace {
-eckit::Optional<long> marsDate(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
+std::optional<long> marsDate(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
     if (not mKeys.type) {
-        return eckit::Optional<long>{};
+        return std::optional<long>{};
     }
 
     // List of forecast-type data
@@ -213,9 +212,9 @@ eckit::Optional<long> marsDate(const message::Metadata& md, const QueriedMarsKey
     return firstOf(LookUpLong(md, "currentDate"));
 }
 
-eckit::Optional<long> marsTime(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
+std::optional<long> marsTime(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
     if (not mKeys.type) {
-        return eckit::Optional<long>{};
+        return std::optional<long>{};
     }
 
     // List of forecast-type data
@@ -256,28 +255,28 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
                                  const QueriedMarsKeys& queriedMarsFields) {
     auto date = marsDate(md, queriedMarsFields);
     if (date) {
-        withFirstOf(valueSetter(g, "year"), eckit::Optional<long>{*date / 10000});
-        withFirstOf(valueSetter(g, "month"), eckit::Optional<long>{(*date % 10000) / 100});
-        withFirstOf(valueSetter(g, "day"), eckit::Optional<long>{*date % 100});
+        withFirstOf(valueSetter(g, "year"), std::optional<long>{*date / 10000});
+        withFirstOf(valueSetter(g, "month"), std::optional<long>{(*date % 10000) / 100});
+        withFirstOf(valueSetter(g, "day"), std::optional<long>{*date % 100});
     }
     auto time = marsTime(md, queriedMarsFields);
     if (time) {
-        withFirstOf(valueSetter(g, "hour"), eckit::Optional<long>{*time / 10000});
-        withFirstOf(valueSetter(g, "minute"), eckit::Optional<long>{(*time % 10000) / 100});
-        withFirstOf(valueSetter(g, "second"), eckit::Optional<long>{*time % 100});
+        withFirstOf(valueSetter(g, "hour"), std::optional<long>{*time / 10000});
+        withFirstOf(valueSetter(g, "minute"), std::optional<long>{(*time % 10000) / 100});
+        withFirstOf(valueSetter(g, "second"), std::optional<long>{*time % 100});
     }
 
     auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
     if (dateOfAnalysis) {
-        withFirstOf(valueSetter(g, "yearOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis / 10000});
-        withFirstOf(valueSetter(g, "monthOfAnalysis"), eckit::Optional<long>{(*dateOfAnalysis % 10000) / 100});
-        withFirstOf(valueSetter(g, "dayOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis % 100});
+        withFirstOf(valueSetter(g, "yearOfAnalysis"), std::optional<long>{*dateOfAnalysis / 10000});
+        withFirstOf(valueSetter(g, "monthOfAnalysis"), std::optional<long>{(*dateOfAnalysis % 10000) / 100});
+        withFirstOf(valueSetter(g, "dayOfAnalysis"), std::optional<long>{*dateOfAnalysis % 100});
     }
 
     auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis"));
     if (timeOfAnalysis) {
-        withFirstOf(valueSetter(g, "hourOfAnalysis"), eckit::Optional<long>{*timeOfAnalysis / 10000});
-        withFirstOf(valueSetter(g, "minuteOfAnalysis"), eckit::Optional<long>{(*timeOfAnalysis % 10000) / 100});
+        withFirstOf(valueSetter(g, "hourOfAnalysis"), std::optional<long>{*timeOfAnalysis / 10000});
+        withFirstOf(valueSetter(g, "minuteOfAnalysis"), std::optional<long>{(*timeOfAnalysis % 10000) / 100});
     }
 
     withFirstOf(valueSetter(g, "number"), LookUpLong(md, "number"));
@@ -294,19 +293,19 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
             //withFirstOf(valueSetter(g, "stepRange"), LookUpString(md, "stepRangeInHours"));
         }
 
-        eckit::Optional<long> curDate;
+        std::optional<long> curDate;
         if (*operation != "instant" && (curDate = firstOf(LookUpLong(md, "currentDate")))) {
             withFirstOf(valueSetter(g, "typeOfStatisticalProcessing"),
-                        eckit::Optional<long>{type_of_statistical_processing.at(*operation)});
+                        std::optional<long>{type_of_statistical_processing.at(*operation)});
 
-            withFirstOf(valueSetter(g, "yearOfEndOfOverallTimeInterval"), eckit::Optional<long>{*curDate / 10000});
+            withFirstOf(valueSetter(g, "yearOfEndOfOverallTimeInterval"), std::optional<long>{*curDate / 10000});
             withFirstOf(valueSetter(g, "monthOfEndOfOverallTimeInterval"),
-                        eckit::Optional<long>{(*curDate % 10000) / 100});
-            withFirstOf(valueSetter(g, "dayOfEndOfOverallTimeInterval"), eckit::Optional<long>{*curDate % 100});
+                        std::optional<long>{(*curDate % 10000) / 100});
+            withFirstOf(valueSetter(g, "dayOfEndOfOverallTimeInterval"), std::optional<long>{*curDate % 100});
 
             withFirstOf(valueSetter(g, "lengthOfTimeRange"), LookUpLong(md, "timeSpanInHours"));
             withFirstOf(valueSetter(g, "indicatorOfUnitForTimeIncrement"),
-                        eckit::Optional<long>{13l});  // always seconds
+                        std::optional<long>{13l});  // always seconds
             withFirstOf(valueSetter(g, "timeIncrement"), LookUpLong(md, "timeStep"));
         }
     }
@@ -341,7 +340,8 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     if (metadata.getLong("param") / 1000 == 212) {
         // HACK! Support experimental averages.
         setValue("paramId", metadata.getLong("param") + 4000);
-    } else {
+    }
+    else {
         setValue("paramId", metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
     }
     setValue("typeOfLevel", metadata.getString("typeOfLevel"));
@@ -480,5 +480,4 @@ void GribEncoder::print(std::ostream& os) const {
     os << "GribEncoder(config=" << config_ << ")";
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

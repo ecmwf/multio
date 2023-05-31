@@ -22,13 +22,13 @@
 
 #include "multio/sink/DataSink.h"
 
-namespace multio {
+namespace multio::sink {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class FDB5Sink : public multio::DataSink {
+class FDB5Sink : public DataSink {
 public:
-    explicit FDB5Sink(const util::ConfigurationContext& confCtx);
+    explicit FDB5Sink(const config::ComponentConfiguration& compConf);
 
 private:
     void write(eckit::message::Message msg) override;
@@ -45,6 +45,6 @@ private:
     fdb5::FDB fdb_;
 };
 
-}  // namespace multio
+}  // namespace multio::sink
 
 //----------------------------------------------------------------------------------------------------------------------

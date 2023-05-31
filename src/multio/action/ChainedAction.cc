@@ -2,18 +2,16 @@
 
 #include "multio/LibMultio.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-ChainedAction::ChainedAction(const ConfigurationContext& confCtx) :
-    Action(confCtx) {
+ChainedAction::ChainedAction(const ComponentConfiguration& compConf) : Action(compConf) {
 
-    ASSERT(confCtx.config().has("next"));
+    ASSERT(compConf.parsedConfig().has("next"));
 
-    const ConfigurationContext nextCtx = confCtx.subContext("next", util::ComponentTag::Action);
-    next_ = ActionFactory::instance().build(nextCtx.config().getString("type"), nextCtx);
+    const ComponentConfiguration nextConf = compConf.subComponent("next");
+    next_ = ActionFactory::instance().build(nextConf.parsedConfig().getString("type"), nextConf);
 }
 
 void ChainedAction::executeNext(message::Message msg) const {
@@ -30,5 +28,4 @@ void ChainedAction::matchedFields(message::MetadataSelectors& selectors) const {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-} // namespace action
-} // namespace multio
+}  // namespace multio::action

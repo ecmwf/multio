@@ -22,22 +22,18 @@
 #include <unordered_map>
 
 
-namespace multio {
-namespace util {
+namespace multio::config {
 
-class GlobalConfCtx;  // Forward declaration
-struct YAMLFile;      // Forward declaration
+class MultioConfiguration;  // Forward declaration
+struct ConfigFile;      // Forward declaration
 
 class MetadataMappings {
 public:
-    MetadataMappings(const GlobalConfCtx& globalConfCtx);
-
-    const std::vector<message::MetadataMapping>& getMappings(const std::string& mapping) const;
+    const std::vector<message::MetadataMapping>& getMappings(const MultioConfiguration& multioConf, const std::string& mapping) const;
 
 private:
-    const GlobalConfCtx& globalConfCtx_;
     // const YAMLFile& configFile_;
     mutable std::unordered_map<std::string, std::vector<message::MetadataMapping>> mappings_;
 };
-}  // namespace util
+
 }  // namespace multio

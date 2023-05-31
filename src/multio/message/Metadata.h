@@ -19,8 +19,7 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 
-namespace multio {
-namespace message {
+namespace multio::message {
 
 //=============================================================================
 
@@ -49,5 +48,4 @@ public:
 
 //=============================================================================
 
-}  // namespace message
-}  // namespace multio
+}  // namespace multio::message

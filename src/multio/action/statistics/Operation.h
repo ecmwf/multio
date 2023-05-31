@@ -15,8 +15,7 @@
 #include "multio/action/statistics/StatisticsOptions.h"
 #include "multio/util/VariantHelpers.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 //==== Base class =================================
 
@@ -68,9 +67,7 @@ public:
         return;
     };
 
-    void dump(const std::string& partialPath) const override {
-
-    }
+    void dump(const std::string& partialPath) const override {}
 
     eckit::Buffer compute() override { return eckit::Buffer{values_.data(), values_.size() * sizeof(T)}; }
 
@@ -113,8 +110,8 @@ public:
         long dim;
         wf.read((char*)&count_, sizeof(long));
         wf.read((char*)&dim, sizeof(long));
-        long checksum=0;
-        long cs=0;
+        long checksum = 0;
+        long cs = 0;
         checksum ^= count_;
         checksum ^= dim;
         if (dim != sz / sizeof(T)) {
@@ -137,7 +134,7 @@ public:
             err << "Error occurred at writing time :: " << fname;
             throw eckit::SeriousBug(err.str(), Here());
         }
-        if (cs != checksum ) {
+        if (cs != checksum) {
             std::ostringstream err;
             err << "Error checksum not correct :: " << cs << ", " << checksum;
             throw eckit::SeriousBug(err.str(), Here());
@@ -145,7 +142,7 @@ public:
         return;
     };
 
-    void dump(const std::string& partialPath) const override  {
+    void dump(const std::string& partialPath) const override {
         std::ostringstream os;
         os << partialPath << "-average-data.bin";
         std::string fname = os.str();
@@ -154,7 +151,7 @@ public:
             throw eckit::SeriousBug("Cannot open file!", Here());
         }
         long sz = values_.size();
-        long checksum=0;
+        long checksum = 0;
         wf.write((char*)&count_, sizeof(long));
         wf.write((char*)&sz, sizeof(long));
         checksum ^= count_;
@@ -241,8 +238,8 @@ public:
         long dim;
         wf.read((char*)&count_, sizeof(long));
         wf.read((char*)&dim, sizeof(long));
-        long checksum=0;
-        long cs=0;
+        long checksum = 0;
+        long cs = 0;
         checksum ^= count_;
         checksum ^= dim;
         if (dim != sz / sizeof(T)) {
@@ -265,7 +262,7 @@ public:
             err << "Error occurred at writing time :: " << fname;
             throw eckit::SeriousBug(err.str(), Here());
         }
-        if (cs != checksum ) {
+        if (cs != checksum) {
             std::ostringstream err;
             err << "Error checksum not correct :: " << cs << ", " << checksum;
             throw eckit::SeriousBug(err.str(), Here());
@@ -273,7 +270,7 @@ public:
         return;
     };
 
-    void dump(const std::string& partialPath) const override  {
+    void dump(const std::string& partialPath) const override {
         std::ostringstream os;
         os << partialPath << "-flux-average-data.bin";
         std::string fname = os.str();
@@ -282,7 +279,7 @@ public:
             throw eckit::SeriousBug("Cannot open file!", Here());
         }
         long sz = values_.size();
-        long checksum=0;
+        long checksum = 0;
         wf.write((char*)&count_, sizeof(long));
         wf.write((char*)&sz, sizeof(long));
         checksum ^= count_;
@@ -341,9 +338,7 @@ public:
         return;
     };
 
-    void dump(const std::string& partialPath) const override  {
-
-    }
+    void dump(const std::string& partialPath) const override {}
 
 
     eckit::Buffer compute() override { return eckit::Buffer{values_.data(), values_.size() * sizeof(T)}; }
@@ -379,9 +374,7 @@ public:
         return;
     };
 
-    void dump(const std::string& partialPath) const override  {
-
-    }
+    void dump(const std::string& partialPath) const override {}
 
 
     eckit::Buffer compute() override { return eckit::Buffer{values_.data(), values_.size() * sizeof(T)}; }
@@ -423,8 +416,8 @@ public:
         }
         long dim;
         wf.read((char*)&dim, sizeof(long));
-        long checksum=0;
-        long cs=0;
+        long checksum = 0;
+        long cs = 0;
         checksum ^= dim;
         if (dim != sz / sizeof(T)) {
             std::ostringstream err;
@@ -445,7 +438,7 @@ public:
             err << "Error occurred at writing time :: " << fname;
             throw eckit::SeriousBug(err.str(), Here());
         }
-        if (cs != checksum ) {
+        if (cs != checksum) {
             std::ostringstream err;
             err << "Error checksum not correct :: " << cs << ", " << checksum;
             throw eckit::SeriousBug(err.str(), Here());
@@ -453,7 +446,7 @@ public:
         return;
     };
 
-    void dump(const std::string& partialPath) const override  {
+    void dump(const std::string& partialPath) const override {
         std::ostringstream os;
         os << partialPath << "-accumulate-data.bin";
         std::string fname = os.str();
@@ -462,7 +455,7 @@ public:
             throw eckit::SeriousBug("Cannot open file!", Here());
         }
         long sz = values_.size();
-        long checksum=0;
+        long checksum = 0;
         wf.write((char*)&sz, sizeof(long));
         checksum ^= sz;
         for (int i = 0; i < sz; ++i) {
@@ -529,5 +522,4 @@ std::unique_ptr<Operation<T>> make_operation(const std::string& opname, long sz,
                    : std::make_unique<Accumulate<T>>(opname, sz, options);
 }
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

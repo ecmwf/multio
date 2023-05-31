@@ -2,9 +2,7 @@
 
 #include "eckit/types/DateTime.h"
 
-namespace multio {
-namespace action {
-
+namespace multio::action {
 class DateTimePeriod {
 public:
     DateTimePeriod(const std::string& name);
@@ -31,5 +29,4 @@ private:
     friend std::ostream& operator<<(std::ostream& os, const DateTimePeriod& a);
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

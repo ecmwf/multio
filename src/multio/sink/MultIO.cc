@@ -20,16 +20,16 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/runtime/Main.h"
-#include "eckit/value/Value.h"
 #include "eckit/utils/Translator.h"
+#include "eckit/value/Value.h"
 
 
-#include <multio/util/Substitution.h>
 #include <multio/LibMultio.h>
+#include <multio/util/Substitution.h>
 
 using namespace eckit;
 
-namespace multio {
+namespace multio::sink {
 
 namespace {
 
@@ -38,9 +38,7 @@ class StatsTimer {
     std::function<void(eckit::Timer&)> fun_;
 
 public:
-    explicit StatsTimer(eckit::Timer& t, std::function<void(eckit::Timer&)> fn) :
-        timer_(t),
-        fun_(fn) {
+    explicit StatsTimer(eckit::Timer& t, std::function<void(eckit::Timer&)> fn) : timer_(t), fun_(fn) {
         timer_.start();
     }
     ~StatsTimer() {
@@ -54,20 +52,21 @@ public:
 
 using namespace std::placeholders;
 
-MultIO::MultIO(const ConfigurationContext& confCtx) :
-    DataSink(confCtx),
-    stats_(std::string("Multio ") + Main::hostname() + ":" +
-           Translator<int, std::string>()(::getpid())),
-    trigger_(confCtx_) {
+MultIO::MultIO(const ComponentConfiguration& compConf) :
+    DataSink(compConf),
+    stats_(std::string("Multio ") + Main::hostname() + ":" + Translator<int, std::string>()(::getpid())),
+    trigger_(compConf_) {
 
-    for(auto&& subCtx: confCtx.subContexts("sinks")) {
+    for (auto&& subComp : compConf.subComponents("sinks")) {
         auto sinkId = sinks_.size();
-        auto enabled = util::parseEnabled( subCtx.config(), true );
-        if ( !enabled ){
-          throw eckit::UserError( "bool expected in sink enabling", Here()); 
+        auto enabled = util::parseEnabled(subComp.parsedConfig(), true);
+        if (!enabled) {
+            throw eckit::UserError("bool expected in sink enabling", Here());
         }
-        if ( *enabled ){
-            sinks_.emplace_back(DataSinkFactory::instance().build(subCtx.config().getString("type"), std::move(subCtx)))->setId(sinkId);
+        if (*enabled) {
+            sinks_
+                .emplace_back(DataSinkFactory::instance().build(subComp.parsedConfig().getString("type"), std::move(subComp)))
+                ->setId(sinkId);
         }
     }
 }
@@ -130,4 +129,4 @@ void MultIO::print(std::ostream& os) const {
 
 static DataSinkBuilder<MultIO> DataSinkSinkBuilder("multio");
 
-}  // namespace multio
+}  // namespace multio::sink

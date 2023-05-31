@@ -10,8 +10,7 @@
 #include "eckit/mpi/Comm.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 enum class BufferStatus : uint8_t
 {
@@ -61,5 +60,4 @@ private:
     size_t size_;
 };
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

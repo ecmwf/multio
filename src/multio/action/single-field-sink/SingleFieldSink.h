@@ -22,7 +22,9 @@
 
 namespace multio {
 
+namespace sink {
 class DataSink;
+}  // namespace sink
 
 namespace action {
 
@@ -30,7 +32,7 @@ using message::Message;
 
 class SingleFieldSink : public Action {
 public:
-    explicit SingleFieldSink(const ConfigurationContext& confCtx);
+    explicit SingleFieldSink(const ComponentConfiguration& compConf);
 
     void executeImpl(message::Message msg) override;
 
@@ -43,7 +45,7 @@ private:
 
     std::string rootPath_;
 
-    std::vector<std::unique_ptr<DataSink>> dataSinks_;
+    std::vector<std::unique_ptr<sink::DataSink>> dataSinks_;
 };
 
 }  // namespace action

@@ -20,7 +20,7 @@
 
 #include "multio/LibMultio.h"
 
-namespace multio {
+namespace multio::sink {
 
 using eckit::Configuration;
 using eckit::Log;
@@ -54,7 +54,8 @@ void DataSinkFactory::list(std::ostream& out) {
     }
 }
 
-std::unique_ptr<DataSink> DataSinkFactory::build(const std::string& name, const util::ConfigurationContext& confCtx) {
+std::unique_ptr<DataSink> DataSinkFactory::build(const std::string& name,
+                                                 const config::ComponentConfiguration& compConf) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     LOG_DEBUG_LIB(LibMultio) << "Looking for DataSinkFactory [" << name << "]" << std::endl;
@@ -62,7 +63,7 @@ std::unique_ptr<DataSink> DataSinkFactory::build(const std::string& name, const 
     auto f = factories_.find(name);
 
     if (f != factories_.end())
-        return f->second->make(confCtx);
+        return f->second->make(compConf);
 
     Log::error() << "No DataSinkFactory for [" << name << "]" << std::endl;
     Log::error() << "DataSinkFactories are:" << std::endl;
@@ -83,13 +84,10 @@ DataSinkBuilderBase::~DataSinkBuilderBase() {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-DataSink::DataSink(const util::ConfigurationContext& confCtx) :
-    failOnError_(confCtx.config().getBool("failOnError", true)),
-    confCtx_(confCtx),
-    id_(-1) {}
+DataSink::DataSink(const config::ComponentConfiguration& compConf) :
+    failOnError_(compConf.parsedConfig().getBool("failOnError", true)), compConf_(compConf), id_(-1) {}
 
-DataSink::~DataSink() {
-}
+DataSink::~DataSink() {}
 
 bool DataSink::ready() const {
     return true;  // default for synchronous sinks
@@ -127,4 +125,4 @@ void DataSink::isetvalfdb(int, const std::string&, const std::string&) {}
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace multio
+}  // namespace multio::sink

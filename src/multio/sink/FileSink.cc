@@ -24,13 +24,13 @@ using namespace eckit;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-namespace multio {
+namespace multio::sink {
 
 namespace {
-std::string create_path(const util::ConfigurationContext& confCtx) {
-    const auto& cfg = confCtx.config();
+std::string create_path(const config::ComponentConfiguration& compConf) {
+    const auto& cfg = compConf.parsedConfig();
     auto path = cfg.getString("path");
-    auto expanded_path = confCtx.replaceCurly(path);
+    auto expanded_path = compConf.multioConfig().replaceCurly(path);
     eckit::Log::info() << "path = " << expanded_path << std::endl;
     if (cfg.getBool("per-server", false)) {
         eckit::PathName tmp = expanded_path;
@@ -42,9 +42,9 @@ std::string create_path(const util::ConfigurationContext& confCtx) {
 }  // namespace
 
 
-FileSink::FileSink(const util::ConfigurationContext& confCtx) :
-    DataSink(confCtx), path_{create_path(confCtx)}, handle_(path_.fileHandle(false)) {
-    if (confCtx.config().getBool("append", false)) {
+FileSink::FileSink(const config::ComponentConfiguration& compConf) :
+    DataSink(compConf), path_{create_path(compConf)}, handle_(path_.fileHandle(false)) {
+    if (compConf.parsedConfig().getBool("append", false)) {
         handle_->openForAppend(0);
     }
     else {

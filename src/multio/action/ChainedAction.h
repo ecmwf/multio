@@ -16,10 +16,9 @@
 #include "multio/action/Action.h"
 
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
-using util::ConfigurationContext;
+using config::ComponentConfiguration;
 using util::FailureAware;
 
 //--------------------------------------------------------------------------------------------------
@@ -29,11 +28,9 @@ class ChainedAction : public Action {
     std::unique_ptr<Action> next_;
 
 public:
-
-    explicit ChainedAction(const ConfigurationContext& confCtx);
+    explicit ChainedAction(const ComponentConfiguration& compConf);
 
 protected:
-
     /// To be used from derived types
     void executeNext(message::Message msg) const;
 
@@ -43,5 +40,4 @@ protected:
 //--------------------------------------------------------------------------------------------------
 
 
-}  // namespace server
-}  // namespace multio
+}  // namespace multio::action

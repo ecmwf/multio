@@ -20,14 +20,11 @@
 using multio::message::Message;
 using multio::message::MetadataSelectors;
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 //--------------------------------------------------------------------------------------------------
 
-Select::Select(const ConfigurationContext& confCtx) :
-    ChainedAction{confCtx},
-    selectors_{confCtx.config()} {}
+Select::Select(const ComponentConfiguration& compConf) : ChainedAction{compConf}, selectors_{compConf.parsedConfig()} {}
 
 void Select::executeImpl(Message msg) {
     if (matches(msg)) {
@@ -54,5 +51,4 @@ static ActionBuilder<Select> SelectBuilder("select");
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

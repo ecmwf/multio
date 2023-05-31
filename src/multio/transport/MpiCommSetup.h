@@ -16,16 +16,14 @@
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/mpi/Comm.h"
-#include "eckit/utils/Optional.h"
 
-#include "multio/util/ConfigurationContext.h"
+#include "multio/config/ComponentConfiguration.h"
 
-namespace multio {
+#include <optional>
 
-using util::ConfigurationContext;
+namespace multio::transport::mpi {
 
-namespace transport {
-namespace mpi {
+using config::ComponentConfiguration;
 
 // TODO: we may want to hash the payload (and the header?)
 enum class CommSetupType : unsigned
@@ -36,20 +34,15 @@ enum class CommSetupType : unsigned
 };
 
 struct CommSetupOptions {
-    eckit::Optional<CommSetupType> defaultType{CommSetupType::Passed};
-    eckit::Optional<std::string> parentCommName{};
-    eckit::Optional<std::string> alias{};
+    std::optional<CommSetupType> defaultType{CommSetupType::Passed};
+    std::optional<std::string> parentCommName{};
+    std::optional<std::string> alias{};
 };
 
 
-eckit::mpi::Comm& getComm(const ConfigurationContext& confCtx, const std::string& name,
-                          const eckit::Optional<CommSetupOptions>& options = eckit::Optional<CommSetupOptions>{});
-// eckit::mpi::Comm& getOrAddComm(
-//     const ConfigurationContext& confCtx, const std::string& name, int comm,
-//     const eckit::Optional<CommSetupOptions>& options = eckit::Optional<CommSetupOptions>{});
+eckit::mpi::Comm& getComm(const ComponentConfiguration& compConf, const std::string& name,
+                          const std::optional<CommSetupOptions>& options = std::optional<CommSetupOptions>{});
 
 inline CommSetupType parseType(const std::string& typeString);
 
-}  // namespace mpi
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport::mpi

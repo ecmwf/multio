@@ -20,17 +20,17 @@
 #include <string>
 #include <vector>
 
-#include "multio/util/ConfigurationContext.h"
 #include "eckit/memory/NonCopyable.h"
 #include "eckit/message/Message.h"
+#include "multio/config/ComponentConfiguration.h"
 
-namespace multio {
+namespace multio::sink {
 
 //----------------------------------------------------------------------------------------------------------------------
 
 class DataSink {
 public:  // methods
-    DataSink(const util::ConfigurationContext& confCtx);
+    DataSink(const config::ComponentConfiguration& compConf);
 
     virtual ~DataSink();
 
@@ -77,7 +77,7 @@ private:  // methods
 protected:  // members
     bool failOnError_;
 
-    const util::ConfigurationContext confCtx_;
+    const config::ComponentConfiguration compConf_;
     int id_;
 };
 
@@ -98,7 +98,7 @@ public:  // methods
 
     void list(std::ostream&);
 
-    std::unique_ptr<DataSink> build(const std::string&, const util::ConfigurationContext& confCtx);
+    std::unique_ptr<DataSink> build(const std::string&, const config::ComponentConfiguration& compConf);
 
 private:  // members
     std::map<std::string, const DataSinkBuilderBase*> factories_;
@@ -108,7 +108,7 @@ private:  // members
 
 class DataSinkBuilderBase : private eckit::NonCopyable {
 public:  // methods
-    virtual std::unique_ptr<DataSink> make(const util::ConfigurationContext& confCtx) const = 0;
+    virtual std::unique_ptr<DataSink> make(const config::ComponentConfiguration& compConf) const = 0;
 
 protected:  // methods
     DataSinkBuilderBase(const std::string&);
@@ -120,7 +120,9 @@ protected:  // methods
 
 template <class T>
 class DataSinkBuilder final : public DataSinkBuilderBase {
-    std::unique_ptr<DataSink> make(const util::ConfigurationContext& confCtx) const override { return std::make_unique<T>(confCtx); }
+    std::unique_ptr<DataSink> make(const config::ComponentConfiguration& compConf) const override {
+        return std::make_unique<T>(compConf);
+    }
 
 public:
     DataSinkBuilder(const std::string& name) : DataSinkBuilderBase(name) {}
@@ -128,4 +130,4 @@ public:
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace multio
+}  // namespace multio::sink

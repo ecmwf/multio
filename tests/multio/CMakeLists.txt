@@ -51,8 +51,8 @@ ecbuild_add_test( TARGET    test_multio_encode_bitspervalue
 
 # Test config
 
-ecbuild_add_test( TARGET    test_multio_confctx
-                  SOURCES   test_multio_confctx.cc
+ecbuild_add_test( TARGET    test_multio_conf
+                  SOURCES   test_multio_conf.cc
                   LIBS      multio
                   ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
 )

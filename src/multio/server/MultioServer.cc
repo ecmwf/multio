@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iomanip>
 
-#include "eckit/config/YAMLConfiguration.h"
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/filesystem/PathName.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/types/DateTime.h"
@@ -13,19 +13,34 @@
 #include "multio/transport/Transport.h"
 #include "multio/util/logfile_name.h"
 
-namespace multio {
-namespace server {
+namespace multio::server {
 
+using config::ComponentConfiguration;
 using transport::TransportFactory;
 
-MultioServer::MultioServer(const ServerConfigurationContext& confCtx) :
-    FailureAware(confCtx),
-    transport_{
-        TransportFactory::instance().build(confCtx.config().getString("transport"), confCtx.recast(util::ComponentTag::Transport))},
-    listener_{confCtx.recast(util::ComponentTag::Receiver), *transport_} {
-    ASSERT(confCtx.componentTag() == util::ComponentTag::Server);
-    LOG_DEBUG_LIB(multio::LibMultio) << "Server config: " << confCtx.config() << std::endl;
-    eckit::Log::info() << "*** Server -- constructor " << confCtx.config() << std::endl;
+
+namespace {
+
+eckit::LocalConfiguration getServerConf(const MultioConfiguration& multioConf) {
+    if (multioConf.parsedConfig().has("server")) {
+        return multioConf.parsedConfig().getSubConfiguration("server");
+    }
+
+    std::ostringstream oss;
+    oss << "Configuration 'server' not found in configuration file " << multioConf.configFile();
+    throw eckit::UserError(oss.str());
+}
+
+}  // namespace
+
+MultioServer::MultioServer(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf) :
+    MultioConfigurationHolder(std::move(multioConf), config::LocalPeerTag::Server),
+    FailureAware(config::ComponentConfiguration(conf, multioConfig())),
+    transport_{TransportFactory::instance().build(
+        conf.getString("transport"), ComponentConfiguration(conf, multioConfig()))},
+    listener_{ComponentConfiguration(conf, multioConfig()), *transport_} {
+    LOG_DEBUG_LIB(multio::LibMultio) << "Server config: " << conf << std::endl;
+    eckit::Log::info() << "*** Server -- constructor " << conf << std::endl;
 
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
 
@@ -33,22 +48,23 @@ MultioServer::MultioServer(const ServerConfigurationContext& confCtx) :
     ::gettimeofday(&tstamp, 0);
     auto mSecs = tstamp.tv_usec;
 
-    logFile << "MultioServer starts at "
-            << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
+    logFile << "MultioServer starts at " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
             << std::setw(6) << std::setfill('0') << mSecs << " -- ";
 
 
     eckit::Log::info() << "Server start listening..." << std::endl;
-    withFailureHandling([&]() {
-        listener_.start();
-    });
+    withFailureHandling([&]() { listener_.start(); });
     eckit::Log::info() << "Listening loop has stopped" << std::endl;
 }
 
-util::FailureHandlerResponse MultioServer::handleFailure(util::OnServerError t, const util::FailureContext& c, util::DefaultFailureState&) const {
+MultioServer::MultioServer(MultioConfiguration&& multioConf) :
+    MultioServer(getServerConf(multioConf), std::move(multioConf)) {}
+
+util::FailureHandlerResponse MultioServer::handleFailure(util::OnServerError t, const util::FailureContext& c,
+                                                         util::DefaultFailureState&) const {
     // Last cascading instace - print nested contexts
     eckit::Log::error() << c;
-    
+
     if (t == util::OnServerError::AbortTransport) {
         transport_->abort();
     }
@@ -62,10 +78,8 @@ MultioServer::~MultioServer() {
     ::gettimeofday(&tstamp, 0);
     auto mSecs = tstamp.tv_usec;
 
-    logFile << "MultioServer stops at "
-            << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
+    logFile << "MultioServer stops at " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
             << std::setw(6) << std::setfill('0') << mSecs << std::endl;
 }
 
-}  // namespace server
-}  // namespace multio
+}  // namespace multio::server

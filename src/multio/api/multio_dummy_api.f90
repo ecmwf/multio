@@ -19,12 +19,12 @@ module multio_dummy_api
     integer, parameter :: int64 = selected_int_kind(15)
 
 
-    type multio_configurationcontext
+    type multio_configuration
         type(c_ptr) :: impl = c_null_ptr
     contains
-        procedure :: new => multio_new_configurationcontext
-        procedure :: new_from_filename => multio_new_configurationcontext_from_filename
-        procedure :: delete => multio_delete_configurationcontext
+        procedure :: new => multio_new_configuration
+        procedure :: new_from_filename => multio_new_configuration_from_filename
+        procedure :: delete => multio_delete_configuration
         procedure :: set_path => multio_conf_set_path
         procedure :: mpi_allow_world_default_comm => multio_conf_mpi_allow_world_default_comm
         procedure :: mpi_client_id => multio_conf_mpi_client_id
@@ -75,7 +75,7 @@ module multio_dummy_api
 
     ! Type declarations
 
-    public :: multio_configurationcontext
+    public :: multio_configuration
     public :: multio_handle
     public :: multio_metadata
 
@@ -155,69 +155,69 @@ contains
     end function
 
     function multio_start_server(cc) result(err)
-        class(multio_configurationcontext), intent(in) :: cc
+        class(multio_configuration), intent(in) :: cc
         integer :: err
         err = 0
     end function
 
     ! Methods for configuration context objects
 
-    function multio_new_configurationcontext(cc) result(err)
-            class(multio_configurationcontext), intent(out) :: cc
+    function multio_new_configuration(cc) result(err)
+            class(multio_configuration), intent(out) :: cc
             integer :: err
             err = 0
     end function
 
-    function multio_new_configurationcontext_from_filename(cc, file_name) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+    function multio_new_configuration_from_filename(cc, file_name) result(err)
+            class(multio_configuration), intent(inout) :: cc
             character(*), intent(in) :: file_name
             integer :: err
             err = 0
     end function
 
-    function multio_delete_configurationcontext(cc) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+    function multio_delete_configuration(cc) result(err)
+            class(multio_configuration), intent(inout) :: cc
             integer :: err
             err = 0
     end function
 
     function multio_conf_set_path(cc, path) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+            class(multio_configuration), intent(inout) :: cc
             integer :: err
             character(*), intent(in) :: path
             err = 0
     end function
 
     function multio_conf_mpi_allow_world_default_comm(cc, allow) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+            class(multio_configuration), intent(inout) :: cc
             logical(c_bool), intent(in), value :: allow
             integer :: err
             err = 0
     end function
 
     function multio_conf_mpi_client_id(cc, client_id) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+            class(multio_configuration), intent(inout) :: cc
             character(*), intent(in) :: client_id
             integer :: err
             err = 0
     end function
 
     function multio_conf_mpi_parent_comm(cc, parent_comm) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+            class(multio_configuration), intent(inout) :: cc
             integer(c_int), intent(in), value :: parent_comm
             integer :: err
             err = 0
     end function
 
     function multio_conf_mpi_return_client_comm(cc, return_comm) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+            class(multio_configuration), intent(inout) :: cc
             integer(c_int), intent(out) :: return_comm ! can be c_null_ptr
             integer :: err
             err = 0
     end function
 
     function multio_conf_mpi_return_server_comm(cc, return_comm) result(err)
-            class(multio_configurationcontext), intent(inout) :: cc
+            class(multio_configuration), intent(inout) :: cc
             integer(c_int), intent(out) :: return_comm ! can be c_null_ptr
             integer :: err
             err = 0
@@ -227,7 +227,7 @@ contains
 
     function multio_new_handle(handle, cc) result(err)
         class(multio_handle), intent(inout) :: handle
-        class(multio_configurationcontext), intent(in) :: cc
+        class(multio_configuration), intent(in) :: cc
         integer :: err
         err = 0
     end function

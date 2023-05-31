@@ -13,9 +13,9 @@
 
 #pragma once
 
-#include <string>
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "eckit/types/Types.h"
@@ -24,8 +24,7 @@ namespace eckit {
 class LocalConfiguration;
 }
 
-namespace multio {
-namespace message {
+namespace multio::message {
 
 class Message;
 class Metadata;
@@ -34,14 +33,12 @@ class Metadata;
 
 class MetadataMatcher {
 
-public: // methods
-
+public:  // methods
     explicit MetadataMatcher(const eckit::LocalConfiguration& cfg);
 
     bool matches(const Metadata& md) const;
 
-private: // methods
-
+private:  // methods
     friend std::ostream& operator<<(std::ostream& os, const MetadataMatcher& m) {
         m.print(os);
         return os;
@@ -49,8 +46,7 @@ private: // methods
 
     void print(std::ostream& os) const;
 
-private: // members
-
+private:  // members
     std::map<std::string, std::set<std::string>> matcher_;
 };
 
@@ -58,8 +54,7 @@ private: // members
 
 class MetadataMatchers {
 
-public: // methods
-
+public:  // methods
     MetadataMatchers() = default;
     explicit MetadataMatchers(const std::vector<eckit::LocalConfiguration>& cfg);
 
@@ -68,8 +63,7 @@ public: // methods
 
     void extend(const MetadataMatchers& other);
 
-private: // methods
-
+private:  // methods
     friend std::ostream& operator<<(std::ostream& os, const MetadataMatchers& m) {
         m.print(os);
         return os;
@@ -77,19 +71,17 @@ private: // methods
 
     void print(std::ostream& os) const;
 
-private: // members
-
+private:  // members
     std::vector<MetadataMatcher> matchers_;
 };
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace message
-}  // namespace multio
+}  // namespace multio::message
 
 namespace eckit {
-template<>
+template <>
 struct VectorPrintSelector<multio::message::MetadataMatcher> {
     typedef VectorPrintSimple selector;
 };
-}
+}  // namespace eckit

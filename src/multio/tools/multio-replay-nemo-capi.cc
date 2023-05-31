@@ -11,10 +11,10 @@
 
 #include "multio/api/multio_c_cpp_utils.h"
 #include "multio/tools/MultioTool.h"
-#include "multio/util/ConfigurationPath.h"
+#include "multio/config/ConfigurationPath.h"
 
 
-using multio::util::configuration_path_name;
+using multio::config::configuration_path_name;
 
 namespace {
 // TODO: Remove this helper class and update test configs to use the parameter-mapping action

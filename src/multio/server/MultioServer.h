@@ -13,17 +13,18 @@
 #include <memory>
 
 #include "multio/server/Listener.h"
-#include "multio/util/ConfigurationContext.h"
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/util/FailureHandling.h"
 
 namespace eckit {
-class Configuration;
+class LocalConfiguration;
 }  // namespace eckit
 
 namespace multio {
 
 using util::FailureAware;
-using util::ServerConfigurationContext;
+using config::MultioConfiguration;
+using config::MultioConfigurationHolder;
 
 namespace transport {
 class Transport;
@@ -31,9 +32,28 @@ class Transport;
 
 namespace server {
 
-class MultioServer : FailureAware<util::ComponentTag::Server> {
+struct ServerFailureTraits {
+    using OnErrorType = util::OnServerError;
+    using FailureOptions = util::DefaultFailureOptions;
+    using FailureState = util::DefaultFailureState;
+    using TagSequence = util::integer_sequence<OnErrorType, OnErrorType::Propagate, OnErrorType::Recover,
+                                         OnErrorType::AbortTransport>;
+    static inline std::optional<OnErrorType> parse(const std::string& str) {
+        return util::parseErrorTag<OnErrorType, TagSequence>(str);
+    }
+    static inline OnErrorType defaultOnErrorTag() { return OnErrorType::Propagate; };
+    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
+        return util::parseDefaultFailureOptions(conf);
+    };
+    static inline std::string configKey() { return std::string("on-error"); };
+    static inline std::string componentName() { return std::string("Server"); };
+};
+
+
+
+class MultioServer : public MultioConfigurationHolder, public FailureAware<ServerFailureTraits> {
 public:
-    MultioServer(const ServerConfigurationContext& confCtx);
+    MultioServer(MultioConfiguration&& multioConf);
 
     util::FailureHandlerResponse handleFailure(util::OnServerError, const util::FailureContext&,
                                                util::DefaultFailureState&) const override;
@@ -41,6 +61,8 @@ public:
     ~MultioServer();
 
 private:
+    MultioServer(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf);
+    
     std::unique_ptr<transport::Transport> transport_;
     Listener listener_;
 };

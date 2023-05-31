@@ -18,12 +18,11 @@
 
 #include "multio/action/Action.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 class Null : public Action {
 public:
-    explicit Null(const ConfigurationContext& confCtx);
+    explicit Null(const ComponentConfiguration& compConf);
 
     void executeImpl(message::Message msg) override;
 
@@ -31,5 +30,4 @@ private:
     void print(std::ostream& os) const override;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

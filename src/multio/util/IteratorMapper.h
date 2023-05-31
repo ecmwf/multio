@@ -27,15 +27,14 @@
  */
 
 
-#include "eckit/utils/Optional.h"
 
 #include <forward_list>
 #include <iostream>
 #include <iterator>
+#include <optional>
 
 
-namespace multio {
-namespace util {
+namespace multio::util {
 
 template <typename ForwardItContainer, class Mapper>
 class MappedContainer;
@@ -125,7 +124,7 @@ private:
         container_(container),
         mapper_(mapper),
         it_(std::forward<ItType>(it)),
-        val_{hasValue ? eckit::Optional<value_type>{value_type(mapper(*it_))} : eckit::Optional<value_type>{}} {}
+        val_{hasValue ? std::optional<value_type>{value_type(mapper(*it_))} : std::optional<value_type>{}} {}
 
 
     template <typename ItType>
@@ -139,7 +138,7 @@ private:
     ForwardItContainer const& container_;
     Mapper const& mapper_;
     IteratorType it_;
-    eckit::Optional<value_type> val_;
+    std::optional<value_type> val_;
 
     friend class MappedContainer<ForwardItContainer, Mapper>;
 };
@@ -168,5 +167,4 @@ private:
     Mapper mapper_;
 };
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::util

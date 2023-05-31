@@ -14,8 +14,8 @@
 #include <vector>
 
 #include "multio/action/Plan.h"
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/message/MetadataSelector.h"
-#include "multio/util/ConfigurationContext.h"
 #include "multio/util/FailureHandling.h"
 
 #include "eckit/log/Statistics.h"
@@ -28,9 +28,8 @@ class LocalConfiguration;
 
 namespace multio {
 
-using util::ClientConfigurationContext;
-using util::ComponentTag;
-using util::ConfigurationContext;
+using config::MultioConfiguration;
+using config::MultioConfigurationHolder;
 
 namespace message {
 class Message;
@@ -39,11 +38,27 @@ class Metadata;
 
 namespace server {
 
-class Transport;
+struct ClientFailureTraits {
+    using OnErrorType = util::OnClientError;
+    using FailureOptions = util::DefaultFailureOptions;
+    using FailureState = util::DefaultFailureState;
+    using TagSequence
+        = util::integer_sequence<OnErrorType, OnErrorType::Propagate, OnErrorType::Recover, OnErrorType::AbortAllTransports>;
+    static inline std::optional<OnErrorType> parse(const std::string& str) {
+        return util::parseErrorTag<OnErrorType, TagSequence>(str);
+    }
+    static inline OnErrorType defaultOnErrorTag() { return OnErrorType::Propagate; };
+    static inline FailureOptions parseFailureOptions(const eckit::Configuration& conf) {
+        return util::parseDefaultFailureOptions(conf);
+    };
+    static inline std::string configKey() { return std::string("on-error"); };
+    static inline std::string componentName() { return std::string("Client"); };
+};
 
-class MultioClient : public util::FailureAware<util::ComponentTag::Client> {
+
+class MultioClient : public MultioConfigurationHolder, public util::FailureAware<ClientFailureTraits> {
 public:
-    explicit MultioClient(const ClientConfigurationContext& config);
+    MultioClient(MultioConfiguration&& multioConf);
 
     ~MultioClient();
 
@@ -60,6 +75,8 @@ public:
                                                util::DefaultFailureState&) const override;
 
 private:
+    MultioClient(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf);
+
     std::vector<std::unique_ptr<action::Plan>> plans_;
     message::MetadataSelectors activeSelectors_;
 

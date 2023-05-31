@@ -2,14 +2,13 @@
 #include "multio/message/MetadataMatcher.h"
 
 #include "eckit/config/LocalConfiguration.h"
-#include "eckit/value/Value.h" // Remove once config visitor is implemented
+#include "eckit/value/Value.h"  // Remove once config visitor is implemented
 
 #include "multio/message/Message.h"
 
 using eckit::LocalConfiguration;
 
-namespace multio {
-namespace message {
+namespace multio::message {
 
 //--------------------------------------------------------------------------------------------------
 
@@ -72,5 +71,4 @@ void MetadataMatchers::print(std::ostream& os) const {
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace message
-}  // namespace multio
+}  // namespace multio::message

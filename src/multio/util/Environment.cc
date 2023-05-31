@@ -3,8 +3,7 @@
 
 #include <cstring>
 
-namespace multio {
-namespace util {
+namespace multio::util {
 
 std::optional<std::string_view> getEnv(const char* var) {
     char* varVal = std::getenv(var);
@@ -21,5 +20,4 @@ std::optional<std::string_view> getEnv(std::string_view var) {
     return getEnv(tmpVar.c_str());
 }
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::util

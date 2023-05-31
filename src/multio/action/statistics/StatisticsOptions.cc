@@ -5,11 +5,10 @@
 
 #include "multio/util/Substitution.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 
-StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& confCtx) :
+StatisticsOptions::StatisticsOptions(const config::ComponentConfiguration& compConf) :
     useDateTime_{false},
     stepFreq_{1},
     timeStep_{3600},
@@ -21,30 +20,18 @@ StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& confCtx) :
     restartPath_{"."},
     restartPrefix_{"StatisticsRestartFile"} {
 
-    if (!confCtx.has("options")) {
+    if (!compConf.parsedConfig().has("options")) {
         return;
     }
 
-    const auto& opt = confCtx.getSubConfiguration("options");
-
-    // TODO:: remove boilerplate code (same code in ConfigurationContext.cc)
-    auto env = [](std::string_view replace) {
-        std::string lookUpKey{replace};
-        char* env = ::getenv(lookUpKey.c_str());
-        if (env) {
-            return eckit::Optional<std::string>{env};
-        }
-        else {
-            return eckit::Optional<std::string>{};
-        }
-    };
+    const auto& opt = compConf.parsedConfig().getSubConfiguration("options");
 
     // Overwrite defaults
     useDateTime_ = opt.getBool("use-current-time", false);
     stepFreq_ = opt.getLong("step-frequency", 1L);
     timeStep_ = opt.getLong("time-step", 3600L);
     solverSendInitStep_ = opt.getBool("initial-condition-present", false);
-    eckit::Optional<bool> r = util::parseBool(opt, "restart", false);
+    std::optional<bool> r = util::parseBool(opt, "restart", false);
     if (r) {
         restart_ = *r;
     }
@@ -54,13 +41,13 @@ StatisticsOptions::StatisticsOptions(const eckit::LocalConfiguration& confCtx) :
     // TODO: Add functionality to automatically create restart path if it not exists
     // (same improvement can be done in sink). Feature already present in eckit::PathName
     if (opt.has("restart-path")) {
-        restartPath_ = util::replaceCurly(opt.getString("restart-path", "."), env);
+        restartPath_ = compConf.multioConfig().replaceCurly(opt.getString("restart-path", "."));
         eckit::PathName path{restartPath_};
         if (!path.exists() || !path.isDir()) {
             throw eckit::UserError{"restart path not exist", Here()};
         }
     }
-    restartPrefix_ = util::replaceCurly(opt.getString("restart-prefix", "StatisticsDump"), env);
+    restartPrefix_ = compConf.multioConfig().replaceCurly(opt.getString("restart-prefix", "StatisticsDump"));
 
     return;
 };
@@ -148,5 +135,4 @@ bool StatisticsOptions::solver_send_initial_condition() const {
     return solverSendInitStep_;
 }
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

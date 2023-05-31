@@ -30,7 +30,7 @@
 using namespace eckit;
 using namespace eckit::net;
 
-namespace multio {
+namespace multio::sink {
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -119,25 +119,24 @@ private:  // methods
 
 class EventTrigger {
 public:  // methods
-    EventTrigger(const ConfigurationContext& confCtx) {
-        if (confCtx.config().has("file"))
-            file_ = confCtx.config().getString("file");
+    EventTrigger(const ComponentConfiguration& compConf) {
+        if (compConf.parsedConfig().has("file"))
+            file_ = compConf.parsedConfig().getString("file");
 
-        if (confCtx.config().has("host"))
-            host_ = confCtx.config().getString("host");
+        if (compConf.parsedConfig().has("host"))
+            host_ = compConf.parsedConfig().getString("host");
 
-        failOnRetry_ = confCtx.config().getInt("failOnRetry", false);
+        failOnRetry_ = compConf.parsedConfig().getInt("failOnRetry", false);
 
-        port_ = confCtx.config().getInt("port", 10000);
-        retries_ = confCtx.config().getInt("retries", 5);
-        timeout_ = confCtx.config().getInt("timeout", 60);
+        port_ = compConf.parsedConfig().getInt("port", 10000);
+        retries_ = compConf.parsedConfig().getInt("retries", 5);
+        timeout_ = compConf.parsedConfig().getInt("timeout", 60);
 
         info_["app"] = "multio";
-        if (confCtx.config().has("info")) {
-            LocalConfiguration info = confCtx.config().getSubConfiguration("info");
+        if (compConf.parsedConfig().has("info")) {
+            LocalConfiguration info = compConf.parsedConfig().getSubConfiguration("info");
             std::vector<std::string> keys = info.keys();
-            for (std::vector<std::string>::const_iterator it = keys.begin(); it != keys.end();
-                 ++it) {
+            for (std::vector<std::string>::const_iterator it = keys.begin(); it != keys.end(); ++it) {
                 info_[*it] = info.getString(*it);
             }
         }
@@ -159,9 +158,8 @@ public:  // methods
             }
             catch (eckit::TooManyRetries& e) {
                 if (failOnRetry_) {
-                    Log::error() << "Failed to send Event " << event
-                                 << " by TCP connection to host " << host_ << ":" << port_
-                                 << "-- Exception: " << e.what() << std::endl;
+                    Log::error() << "Failed to send Event " << event << " by TCP connection to host " << host_ << ":"
+                                 << port_ << "-- Exception: " << e.what() << std::endl;
                     throw;
                 }
             }
@@ -180,7 +178,7 @@ public:  // methods
     virtual void trigger(const StringDict& keys) const = 0;
     virtual void trigger(eckit::message::Message msg) const = 0;
 
-    static std::unique_ptr<EventTrigger> build(const ConfigurationContext& config);
+    static std::unique_ptr<EventTrigger> build(const ComponentConfiguration& config);
 
 protected:  // member
     int port_;
@@ -200,13 +198,12 @@ protected:  // member
 
 class MetadataChangeTrigger : public EventTrigger {
 public:  // methods
-    explicit MetadataChangeTrigger(const ConfigurationContext& confCtx) :
-        EventTrigger(confCtx),
-        key_(confCtx.config().getString("key")),
-        values_(confCtx.config().getStringVector("values")),
+    explicit MetadataChangeTrigger(const ComponentConfiguration& compConf) :
+        EventTrigger(compConf),
+        key_(compConf.parsedConfig().getString("key")),
+        values_(compConf.parsedConfig().getStringVector("values")),
         lastSeen_(values_.end()),
-        issued_(values_.end()) {
-    }
+        issued_(values_.end()) {}
 
     ~MetadataChangeTrigger() override { updateEventsIssued(); }
 
@@ -215,8 +212,7 @@ public:  // methods
     virtual void trigger(eckit::message::Message msg) const override {
         std::string current = msg.getString(key_);
 
-        std::vector<std::string>::const_iterator now =
-            std::find(values_.begin(), values_.end(), current);
+        std::vector<std::string>::const_iterator now = std::find(values_.begin(), values_.end(), current);
 
         if (lastSeen_ == values_.end() && inValues(now)) { /* initial */
             lastSeen_ = now;
@@ -234,9 +230,7 @@ public:  // methods
 
 
 private:  // methods
-    bool inValues(const std::vector<std::string>::const_iterator& it) const {
-        return it != values_.end();
-    }
+    bool inValues(const std::vector<std::string>::const_iterator& it) const { return it != values_.end(); }
 
     /// Updates the events already issued
     void updateEventsIssued() const {
@@ -272,8 +266,8 @@ private:  // members
 
 class NotifyMetadataTrigger : public EventTrigger {
 public:  // methods
-    NotifyMetadataTrigger(const ConfigurationContext& confCtx) :
-        EventTrigger(confCtx), key_(confCtx.config().getString("key")) {}
+    NotifyMetadataTrigger(const ComponentConfiguration& compConf) :
+        EventTrigger(compConf), key_(compConf.parsedConfig().getString("key")) {}
 
 
     ~NotifyMetadataTrigger() {}
@@ -295,15 +289,15 @@ private:
 
 //----------------------------------------------------------------------------------------------------------------------
 
-std::unique_ptr<EventTrigger> EventTrigger::build(const ConfigurationContext& confCtx) {
-    std::string type = confCtx.config().getString("type");
+std::unique_ptr<EventTrigger> EventTrigger::build(const ComponentConfiguration& compConf) {
+    std::string type = compConf.parsedConfig().getString("type");
 
     if (type == "MetadataChange") {
-        return std::make_unique<MetadataChangeTrigger>(confCtx);
+        return std::make_unique<MetadataChangeTrigger>(compConf);
     }
 
     if (type == "NotifyMetadata") {
-        return std::make_unique<NotifyMetadataTrigger>(confCtx);
+        return std::make_unique<NotifyMetadataTrigger>(compConf);
     }
 
     throw eckit::BadValue(std::string("Unknown event type ") + type, Here());
@@ -312,22 +306,22 @@ std::unique_ptr<EventTrigger> EventTrigger::build(const ConfigurationContext& co
 
 //----------------------------------------------------------------------------------------------------------------------
 
-Trigger::Trigger(const ConfigurationContext& confCtx) {
-    if (confCtx.config().has("triggers")) {
-        for (auto&& subCtx : confCtx.subContexts("triggers")) {
-            triggers_.emplace_back(EventTrigger::build(std::move(subCtx)));
+Trigger::Trigger(const ComponentConfiguration& compConf) {
+    if (compConf.parsedConfig().has("triggers")) {
+        for (auto&& subComp : compConf.subComponents("triggers")) {
+            triggers_.emplace_back(EventTrigger::build(std::move(subComp)));
         }
     }
 
     /// @note this doesn't quite work for reentrant MultIO objects (MultIO as a DataSink itself)
-    auto conf = util::getEnv("MULTIO_CONFIG_TRIGGERS");
-    if (conf) {
-        std::string confString(*conf);
-        ConfigurationContext confCtx2{eckit::LocalConfiguration{eckit::YAMLConfiguration{std::string{confString}}},
-                                      confCtx.pathName(), confString};
+    auto confStrMaybe = util::getEnv("MULTIO_CONFIG_TRIGGERS");
+    if (confStrMaybe) {
+        std::string confString(*confStrMaybe);
+        eckit::LocalConfiguration conf{eckit::YAMLConfiguration{std::string{confString}}};
 
-        for (auto&& subCtx : confCtx2.subContexts("triggers")) {
-            triggers_.emplace_back(EventTrigger::build(std::move(subCtx)));
+        for (auto&& subComp : conf.getSubConfigurations("triggers")) {
+            triggers_.emplace_back(EventTrigger::build(
+                ComponentConfiguration(std::move(subComp), compConf.multioConfig())));
         }
     }
 }
@@ -350,5 +344,5 @@ void Trigger::print(std::ostream& os) const {
     os << "Trigger()";
 }
 
-}  // namespace multio
+}  // namespace multio::sink
 

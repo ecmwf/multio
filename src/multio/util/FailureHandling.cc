@@ -53,17 +53,6 @@ std::string eckit::Translator<OnActionError, std::string>::operator()(OnActionEr
     }
 }
 
-std::string eckit::Translator<OnTransportError, std::string>::operator()(OnTransportError tag) {
-    switch (tag) {
-        case OnTransportError::Propagate:
-            return std::string("propagate");
-        case OnTransportError::Recover:
-            return std::string("recover");
-        default:
-            throw eckit::SeriousBug("Unknown OnTransportError tag", Here());
-    }
-}
-
 std::string eckit::Translator<OnReceiveError, std::string>::operator()(OnReceiveError tag) {
     switch (tag) {
         case OnReceiveError::Propagate:
@@ -82,8 +71,7 @@ std::string eckit::Translator<OnDispatchError, std::string>::operator()(OnDispat
     }
 }
 
-namespace multio {
-namespace util {
+namespace multio::util {
 
 namespace {
 inline void printExceptionHeader(std::ostream& out, const std::exception& e, int level = 0) {
@@ -171,5 +159,4 @@ std::ostream& operator<<(std::ostream& os, const FailureContext& dt) {
     return os;
 }
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::util

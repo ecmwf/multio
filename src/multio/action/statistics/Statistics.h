@@ -25,14 +25,13 @@ namespace eckit {
 class Configuration;
 }
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 class TemporalStatistics;
 
 class Statistics : public ChainedAction {
 public:
-    explicit Statistics(const ConfigurationContext& confCtx);
+    explicit Statistics(const ComponentConfiguration& compConf);
     ~Statistics();
     void executeImpl(message::Message msg) override;
     message::Metadata outputMetadata(const message::Metadata& inputMetadata, const StatisticsOptions& opt,
@@ -51,5 +50,4 @@ private:
     std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

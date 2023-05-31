@@ -3,8 +3,7 @@
 
 #include "multio/domain/Mappings.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 message::Message& AggregationCatalogue::getMessage(const std::string& key) {
     return messageMap_.at(key);
@@ -70,5 +69,4 @@ std::ostream& operator<<(std::ostream& os, const AggregationCatalogue& aggCat) {
     return os;
 }
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

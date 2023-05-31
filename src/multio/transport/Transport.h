@@ -49,7 +49,7 @@ public:  // methods
 
     virtual Message receive() = 0;
 
-    virtual void abort() = 0;
+    virtual void abort(std::exception_ptr) = 0;
 
     virtual void send(const Message& message) = 0;
 

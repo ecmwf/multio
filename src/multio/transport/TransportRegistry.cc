@@ -32,14 +32,14 @@ void TransportRegistry::closeConnections() {
     }
 }
 
-void TransportRegistry::abort(const std::string& serverName) {
+void TransportRegistry::abort(const std::string& serverName, std::exception_ptr ptr) {
     std::lock_guard<std::mutex> lock{mutex_};
-    transports_.at(serverName)->abort();
+    transports_.at(serverName)->abort(ptr);
 }
 
-void TransportRegistry::abortAll() {
+void TransportRegistry::abortAll(std::exception_ptr ptr) {
     for (const auto& tr : transports_) {
-        abort(tr.first);
+            abort(tr.first, ptr);
     }
 }
 

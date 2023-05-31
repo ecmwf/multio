@@ -41,7 +41,7 @@ public:
 
     Message receive() override;
 
-    void abort() override;
+    void abort(std::exception_ptr) override;
 
 private:
     void openConnections() override;

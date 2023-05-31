@@ -226,6 +226,7 @@ MpiTransport::MpiTransport(const ComponentConfiguration& compConf, MpiPeerSetup&
     parentGroup_{std::move(std::get<1>(peerSetup))},
     clientGroup_{std::move(std::get<2>(peerSetup))},
     serverGroup_{std::move(std::get<3>(peerSetup))},
+    streamQueue_{1024},
     pool_{getMpiPoolSize(compConf), getMpiBufferSize(compConf), comm(), statistics_} {}
 
 MpiTransport::MpiTransport(const ComponentConfiguration& compConf) : MpiTransport(compConf, setupMPI_(compConf)) {}
@@ -272,7 +273,8 @@ Message MpiTransport::receive() {
         }
 
         ReceivedBuffer streamArgs;
-        if (streamQueue_.pop(streamArgs) && streamArgs.buffer) {
+        streamQueue_.pop(streamArgs);
+        if (streamArgs.buffer) {
             eckit::ResizableMemoryStream strm{streamArgs.buffer->content};
             while (strm.position() < streamArgs.size) {
                 util::ScopedTiming decodeTiming{statistics_.decodeTimer_, statistics_.decodeTiming_};
@@ -285,7 +287,8 @@ Message MpiTransport::receive() {
     } while (true);
 }
 
-void MpiTransport::abort() {
+void MpiTransport::abort(std::exception_ptr ptr) {
+    streamQueue_.interrupt(ptr);
     comm().abort();
 }
 

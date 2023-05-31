@@ -17,8 +17,7 @@ using eckit::LocalConfiguration;
 
 namespace multio::server {
 
-Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, std::shared_ptr<std::atomic<bool>> cont) :
-    FailureAware(compConf), continue_{std::move(cont)} {
+Dispatcher::Dispatcher(const util::ConfigurationContext& confCtx, eckit::Queue<message::Message>& queue): FailureAware(confCtx), queue_{queue} {
     timer_.start();
 
     eckit::Log::debug<LibMultio>() << compConf.parsedConfig() << std::endl;
@@ -30,9 +29,8 @@ Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, std::shar
     }
 }
 
-util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, const util::FailureContext& c,
-                                                       util::DefaultFailureState&) const {
-    continue_->store(false, std::memory_order_relaxed);
+util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, const util::FailureContext& c, util::DefaultFailureState&) const {
+    queue_.interrupt(c.eptr);
     return util::FailureHandlerResponse::Rethrow;
 };
 
@@ -42,15 +40,15 @@ Dispatcher::~Dispatcher() {
             << "s -- of which time spent with dispatching " << timing_ << "s" << std::endl;
 }
 
-void Dispatcher::dispatch(eckit::Queue<message::Message>& queue) {
+void Dispatcher::dispatch() {
     util::ScopedTimer timer{timing_};
     withFailureHandling([&]() {
         message::Message msg;
-        auto sz = queue.pop(msg);
-        while (sz >= 0 && continue_->load(std::memory_order_consume)) {
+        auto sz = queue_.pop(msg);
+        while (sz >= 0) {
             handle(msg);
             LOG_DEBUG_LIB(multio::LibMultio) << "Size of the dispatch queue: " << sz << std::endl;
-            sz = queue.pop(msg);
+            sz = queue_.pop(msg);
         }
     });
 }

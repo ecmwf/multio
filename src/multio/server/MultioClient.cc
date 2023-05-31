@@ -82,7 +82,7 @@ util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t, 
     eckit::Log::error() << c;
 
     if (t == util::OnClientError::AbortAllTransports) {
-        transport::TransportRegistry::instance().abortAll();
+        transport::TransportRegistry::instance().abortAll(c.eptr);
     }
     return util::FailureHandlerResponse::Rethrow;
 };

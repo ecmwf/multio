@@ -25,6 +25,7 @@
 
 #include "multio/server/Dispatcher.h"
 #include "multio/transport/Transport.h"
+#include "multio/transport/TransportRegistry.h"
 #include "multio/util/ScopedThread.h"
 
 namespace multio::server {
@@ -33,10 +34,9 @@ using message::Message;
 using transport::Transport;
 using util::ScopedThread;
 
-Listener::Listener(const config::ComponentConfiguration& compConf, Transport& trans) :
-    FailureAware(compConf),
-    continue_{std::make_shared<std::atomic<bool>>(true)},
-    dispatcher_{std::make_unique<Dispatcher>(compConf, continue_)},
+Listener::Listener(const util::ConfigurationContext& confCtx, Transport& trans) :
+    FailureAware(confCtx),
+    dispatcher_{std::make_unique<Dispatcher>(confCtx.recast(util::ComponentTag::Dispatcher), msgQueue_)},
     transport_{trans},
     clientCount_{transport_.clientPeers().size()},
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024 * 1024)) {}
@@ -45,9 +45,9 @@ Listener::~Listener() = default;
 
 util::FailureHandlerResponse Listener::handleFailure(util::OnReceiveError t, const util::FailureContext& c,
                                                      util::DefaultFailureState&) const {
-    msgQueue_.close();  // TODO: msgQueue_ pop is blocking in dispatch.... redesign to have better awareness on blocking
-                        // positions to safely stop and restart
-    continue_->store(false, std::memory_order_release);
+    msgQueue_.interrupt(c.eptr);
+    transport::TransportRegistry::instance().abortAll(c.eptr);
+
     return util::FailureHandlerResponse::Rethrow;
 };
 
@@ -56,26 +56,9 @@ void Listener::start() {
     eckit::ResourceUsage usage{"multio listener"};
 
     // Store thread errors
-    std::exception_ptr lstnExcPtr;
-    std::exception_ptr dpatchExcPtr;
+    ScopedThread lstnThread{std::thread{[&]() { this->listen(); }}};
 
-    ScopedThread lstnThread{std::thread{[&]() {
-        try {
-            this->listen();
-        }
-        catch (...) {
-            lstnExcPtr = std::current_exception();
-        }
-    }}};
-
-    ScopedThread dpatchThread{std::thread{[&]() {
-        try {
-            dispatcher_->dispatch(msgQueue_);
-        }
-        catch (...) {
-            dpatchExcPtr = std::current_exception();
-        }
-    }}};
+    ScopedThread dpatchThread{std::thread{[&]() { dispatcher_->dispatch(); }}};
 
     withFailureHandling([&]() {
         do {
@@ -114,7 +97,7 @@ void Listener::start() {
                     oss << "Unhandled message: " << msg << std::endl;
                     throw eckit::SeriousBug(oss.str());
             }
-        } while (moreConnections() && continue_->load(std::memory_order_consume));
+        } while (moreConnections() && msgQueue_.checkInterrupt());
     });
 
     LOG_DEBUG_LIB(LibMultio) << "*** STOPPED listening loop " << std::endl;
@@ -122,21 +105,13 @@ void Listener::start() {
     msgQueue_.close();
 
     LOG_DEBUG_LIB(LibMultio) << "*** CLOSED message queue " << std::endl;
-
-    // Propagate possible thread errors
-    if (lstnExcPtr) {
-        std::rethrow_exception(lstnExcPtr);
-    }
-    if (dpatchExcPtr) {
-        std::rethrow_exception(dpatchExcPtr);
-    }
 }
 
 void Listener::listen() {
     withFailureHandling([this]() {
         do {
             transport_.listen();
-        } while (not msgQueue_.closed() && continue_->load(std::memory_order_consume));
+        } while (msgQueue_.checkInterrupt() && !msgQueue_.closed());
     });
 }
 

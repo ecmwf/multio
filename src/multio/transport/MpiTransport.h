@@ -25,12 +25,18 @@
 #include "eckit/mpi/Comm.h"
 #include "eckit/mpi/Group.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
+#include "eckit/container/Queue.h"
+
 
 #include "multio/transport/StreamPool.h"
-#include "multio/transport/StreamQueue.h"
 #include "multio/transport/Transport.h"
 
 namespace multio::transport {
+
+struct ReceivedBuffer {
+    MpiBuffer* buffer;
+    size_t size;
+};
 
 using MpiPeerSetup = std::tuple<MpiPeer, eckit::mpi::Group, eckit::mpi::Group, eckit::mpi::Group>;
 
@@ -47,7 +53,7 @@ private:
 
     Message receive() override;
 
-    void abort() override;
+    void abort(std::exception_ptr) override;
 
     void send(const Message& msg) override;
 
@@ -77,7 +83,7 @@ private:
 
     StreamPool pool_;
 
-    StreamQueue streamQueue_;
+    eckit::Queue<ReceivedBuffer> streamQueue_;
     std::queue<Message> msgPack_;
 };
 

@@ -66,7 +66,7 @@ util::FailureHandlerResponse MultioServer::handleFailure(util::OnServerError t, 
     eckit::Log::error() << c;
 
     if (t == util::OnServerError::AbortTransport) {
-        transport_->abort();
+        transport_->abort(c.eptr);
     }
     return util::FailureHandlerResponse::Rethrow;
 };

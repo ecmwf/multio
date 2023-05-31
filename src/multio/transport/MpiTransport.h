@@ -19,13 +19,12 @@
 #include <queue>
 #include <tuple>
 
-#include "eckit/io/Buffer.h"
 #include "eckit/container/Queue.h"
+#include "eckit/io/Buffer.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/mpi/Group.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
-#include "eckit/container/Queue.h"
 
 
 #include "multio/transport/StreamPool.h"

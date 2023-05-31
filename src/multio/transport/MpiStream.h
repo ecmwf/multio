@@ -24,12 +24,12 @@ enum class BufferStatus : uint8_t
 class MpiBuffer {
 public:
     explicit MpiBuffer(size_t maxBufSize);
-    
+
     MpiBuffer(MpiBuffer&&);
-    
- 
+
+
     MpiBuffer& operator=(MpiBuffer&& other);
-    
+
     bool isFree();
 
     std::atomic<BufferStatus> status{BufferStatus::available};

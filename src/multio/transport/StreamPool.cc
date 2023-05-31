@@ -41,7 +41,7 @@ MpiBuffer& StreamPool::buffer(size_t idx) {
 
 MpiOutputStream& StreamPool::getStream(const message::Message& msg) {
     // TODO
-    // Why do we need to store the stream? When we start to share the pool with receiving and sending thread, 
+    // Why do we need to store the stream? When we start to share the pool with receiving and sending thread,
     // one of these stored streams might already be used
     auto dest = msg.destination();
 
@@ -104,53 +104,55 @@ MpiBuffer& StreamPool::acquireAvailableBuffer(BufferStatus newStatus, std::ostre
     util::ScopedTiming(statistics_.waitTimer_, statistics_.waitTiming_);
 
     auto it = std::end(buffers_);
-    
+
     // TODO optimize this by keeping queues of available buffers?
-    // Once we start using the pool for receiving and sending, we need this mechanism - 
+    // Once we start using the pool for receiving and sending, we need this mechanism -
     // or we just split up the pool
     while (it == std::end(buffers_)) {
-        it = std::find_if(std::begin(buffers_), std::end(buffers_),
-              [](MpiBuffer& buf) { 
-                    // To a "quick" relaxed load to see if the buffer is not already used
-                    BufferStatus status = buf.status.load(std::memory_order_relaxed);
-                    switch(status) {
-                        // Buffer might be available
-                        case BufferStatus::available: {
-                            BufferStatus expectedAvailableStatus = BufferStatus::available;
-                            // Compare exchange to see if the status is still the same and acquire the buffer
-                            return buf.status.compare_exchange_weak(expectedAvailableStatus, BufferStatus::fillingUp,
-                                        std::memory_order_acq_rel);
+        it = std::find_if(std::begin(buffers_), std::end(buffers_), [](MpiBuffer& buf) {
+            // To a "quick" relaxed load to see if the buffer is not already used
+            BufferStatus status = buf.status.load(std::memory_order_relaxed);
+            switch (status) {
+                // Buffer might be available
+                case BufferStatus::available: {
+                    BufferStatus expectedAvailableStatus = BufferStatus::available;
+                    // Compare exchange to see if the status is still the same and acquire the buffer
+                    return buf.status.compare_exchange_weak(expectedAvailableStatus, BufferStatus::fillingUp,
+                                                            std::memory_order_acq_rel);
+                }
+                // Buffer is transmitting but might have finished
+                case BufferStatus::transmitting: {
+                    if (!buf.request.test()) {
+                        // Not finished yet
+                        return false;
+                    }
+                    BufferStatus expectedTransmittingStatus = BufferStatus::transmitting;
+                    // Request finished, try to acquire
+                    if (buf.status.compare_exchange_weak(expectedTransmittingStatus, BufferStatus::fillingUp,
+                                                         std::memory_order_acq_rel)) {
+                        // Buffer is acquired, test if the request is still finished - i.e. no other send is performed
+                        // meanwhile
+                        if (buf.request.test()) {
+                            return true;
                         }
-                        // Buffer is transmitting but might have finished
-                        case BufferStatus::transmitting: {
-                            if(!buf.request.test()) {
-                                // Not finished yet
-                                return false;
-                            }
-                            BufferStatus expectedTransmittingStatus = BufferStatus::transmitting;
-                            // Request finished, try to acquire
-                            if(buf.status.compare_exchange_weak(expectedTransmittingStatus, BufferStatus::fillingUp,
-                                        std::memory_order_acq_rel)) {
-                                // Buffer is acquired, test if the request is still finished - i.e. no other send is performed meanwhile
-                                if(buf.request.test()) {
-                                    return true;
-                                } else {
-                                    // Something went wrong buffer seems to be transmitting ... some other thread might has acquired 
-                                    // before we exchanged
-                                    // Change back to transmitting and continue --- might be free in the next round 
-                                    buf.status.store(BufferStatus::transmitting, std::memory_order_relaxed);
-                                    return false;
-                                }
-                            } else {
-                                // Buffer is already used
-                                return false;
-                            }
-                        }
-                        default:
-                            // Buffer is already used
+                        else {
+                            // Something went wrong buffer seems to be transmitting ... some other thread might has
+                            // acquired before we exchanged Change back to transmitting and continue --- might be free
+                            // in the next round
+                            buf.status.store(BufferStatus::transmitting, std::memory_order_relaxed);
                             return false;
-                    };
-              });
+                        }
+                    }
+                    else {
+                        // Buffer is already used
+                        return false;
+                    }
+                }
+                default:
+                    // Buffer is already used
+                    return false;
+            };
+        });
     }
 
 
@@ -178,8 +180,9 @@ MpiOutputStream& StreamPool::createNewStream(const message::Peer& dest) {
 
 void StreamPool::print(std::ostream& os) const {
     os << "StreamPool(size=" << buffers_.size() << ",status=";
-    std::for_each(std::begin(buffers_), std::end(buffers_),
-                  [&os](const MpiBuffer& buf) { os << static_cast<unsigned>(buf.status.load(std::memory_order_relaxed)); });
+    std::for_each(std::begin(buffers_), std::end(buffers_), [&os](const MpiBuffer& buf) {
+        os << static_cast<unsigned>(buf.status.load(std::memory_order_relaxed));
+    });
     os << ")";
 }
 

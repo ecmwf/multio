@@ -17,7 +17,8 @@ using eckit::LocalConfiguration;
 
 namespace multio::server {
 
-Dispatcher::Dispatcher(const util::ConfigurationContext& confCtx, eckit::Queue<message::Message>& queue): FailureAware(confCtx), queue_{queue} {
+Dispatcher::Dispatcher(const util::ConfigurationContext& confCtx, eckit::Queue<message::Message>& queue) :
+    FailureAware(confCtx), queue_{queue} {
     timer_.start();
 
     eckit::Log::debug<LibMultio>() << compConf.parsedConfig() << std::endl;
@@ -29,7 +30,8 @@ Dispatcher::Dispatcher(const util::ConfigurationContext& confCtx, eckit::Queue<m
     }
 }
 
-util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, const util::FailureContext& c, util::DefaultFailureState&) const {
+util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, const util::FailureContext& c,
+                                                       util::DefaultFailureState&) const {
     queue_.interrupt(c.eptr);
     return util::FailureHandlerResponse::Rethrow;
 };

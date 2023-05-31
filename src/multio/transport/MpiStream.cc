@@ -10,8 +10,7 @@ MpiBuffer::MpiBuffer(size_t maxBufSize) : content{maxBufSize} {}
 bool MpiBuffer::isFree() {
     // Soft check
     BufferStatus s = status.load(std::memory_order_relaxed);
-    return s == BufferStatus::available ||
-           (s == BufferStatus::transmitting && request.test());
+    return s == BufferStatus::available || (s == BufferStatus::transmitting && request.test());
 }
 
 MpiBuffer& MpiBuffer::operator=(MpiBuffer&& other) {
@@ -28,8 +27,7 @@ MpiBuffer::MpiBuffer(MpiBuffer&& other) {
 }
 
 
-MpiOutputStream::MpiOutputStream(MpiBuffer& buf) :
-    eckit::ResizableMemoryStream{buf.content}, buf_{buf} {}
+MpiOutputStream::MpiOutputStream(MpiBuffer& buf) : eckit::ResizableMemoryStream{buf.content}, buf_{buf} {}
 
 bool MpiOutputStream::canFitMessage(size_t sz) {
     return (position() + sz + 4096 < buf_.content.size());

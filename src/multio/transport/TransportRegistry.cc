@@ -39,7 +39,7 @@ void TransportRegistry::abort(const std::string& serverName, std::exception_ptr 
 
 void TransportRegistry::abortAll(std::exception_ptr ptr) {
     for (const auto& tr : transports_) {
-            abort(tr.first, ptr);
+        abort(tr.first, ptr);
     }
 }
 

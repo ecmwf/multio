@@ -59,7 +59,7 @@ struct DispatcherFailureTraits {
 
 class Dispatcher : public util::FailureAware<DispatcherFailureTraits>, private eckit::NonCopyable {
 public:
-    Dispatcher(const util::ConfigurationContext& confCtx, eckit::Queue<message::Message>& queue);
+    Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue);
     ~Dispatcher();
 
     void dispatch();

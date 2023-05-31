@@ -34,9 +34,9 @@ using message::Message;
 using transport::Transport;
 using util::ScopedThread;
 
-Listener::Listener(const util::ConfigurationContext& confCtx, Transport& trans) :
-    FailureAware(confCtx),
-    dispatcher_{std::make_unique<Dispatcher>(confCtx.recast(util::ComponentTag::Dispatcher), msgQueue_)},
+Listener::Listener(const config::ComponentConfiguration& compConf, Transport& trans) :
+    FailureAware(compConf),
+    dispatcher_{std::make_unique<Dispatcher>(compConf, msgQueue_)},
     transport_{trans},
     clientCount_{transport_.clientPeers().size()},
     msgQueue_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024 * 1024)) {}

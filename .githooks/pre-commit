@@ -10,7 +10,7 @@ do
     then
         filename=$(basename -- "$file")
         extension="${filename##*.}"
-        if [ "$extenstion" == "h" ] || [ "$extension" == "cc" ]
+        if [ "$extension" == "h" ] || [ "$extension" == "cc" ]
         then
             format_result=$(git clang-format -q --style=file $file)
             errors="$errors$format_result"

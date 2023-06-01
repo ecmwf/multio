@@ -59,10 +59,10 @@ struct DispatcherFailureTraits {
 
 class Dispatcher : public util::FailureAware<DispatcherFailureTraits>, private eckit::NonCopyable {
 public:
-    Dispatcher(const config::ComponentConfiguration& compConf, std::shared_ptr<std::atomic<bool>> cont);
+    Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue);
     ~Dispatcher();
 
-    void dispatch(eckit::Queue<message::Message>& queue);
+    void dispatch();
 
     util::FailureHandlerResponse handleFailure(util::OnDispatchError, const util::FailureContext&,
                                                util::DefaultFailureState&) const override;
@@ -70,7 +70,7 @@ public:
 private:
     void handle(const message::Message& msg) const;
 
-    std::shared_ptr<std::atomic<bool>> continue_;
+    eckit::Queue<message::Message>& queue_;
     std::vector<std::unique_ptr<action::Plan>> plans_;
 
     eckit::Timing timing_;

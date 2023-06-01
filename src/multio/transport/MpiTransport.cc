@@ -226,6 +226,7 @@ MpiTransport::MpiTransport(const ComponentConfiguration& compConf, MpiPeerSetup&
     parentGroup_{std::move(std::get<1>(peerSetup))},
     clientGroup_{std::move(std::get<2>(peerSetup))},
     serverGroup_{std::move(std::get<3>(peerSetup))},
+    streamQueue_{1024},
     pool_{getMpiPoolSize(compConf), getMpiBufferSize(compConf), comm(), statistics_} {}
 
 MpiTransport::MpiTransport(const ComponentConfiguration& compConf) : MpiTransport(compConf, setupMPI_(compConf)) {}
@@ -271,20 +272,23 @@ Message MpiTransport::receive() {
             return msg;
         }
 
-        //! TODO For switch to MPMC queue: combine front() and pop()
-        if (auto strm = streamQueue_.front()) {
-            while (strm->position() < strm->size()) {
+        ReceivedBuffer streamArgs;
+        streamQueue_.pop(streamArgs);
+        if (streamArgs.buffer) {
+            eckit::ResizableMemoryStream strm{streamArgs.buffer->content};
+            while (strm.position() < streamArgs.size) {
                 util::ScopedTiming decodeTiming{statistics_.decodeTimer_, statistics_.decodeTiming_};
-                auto msg = decodeMessage(*strm);
+                auto msg = decodeMessage(strm);
                 msgPack_.push(msg);
             }
-            streamQueue_.pop();
+            streamArgs.buffer->status.store(BufferStatus::available, std::memory_order_release);
         }
 
     } while (true);
 }
 
-void MpiTransport::abort() {
+void MpiTransport::abort(std::exception_ptr ptr) {
+    streamQueue_.interrupt(ptr);
     comm().abort();
 }
 
@@ -357,10 +361,10 @@ void MpiTransport::listen() {
     }
     // TODO status contains information on required message size - use that to retrieve a sufficient
     // large buffer?
-    auto& buf = pool_.findAvailableBuffer();
+    auto& buf = pool_.acquireAvailableBuffer(BufferStatus::fillingUp);
     auto sz = blockingReceive(status, buf);
     util::ScopedTiming timing{statistics_.pushToQueueTimer_, statistics_.pushToQueueTiming_};
-    streamQueue_.emplace(buf, sz);
+    streamQueue_.push(ReceivedBuffer{&buf, sz});
 }
 
 PeerList MpiTransport::createServerPeers() const {

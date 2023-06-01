@@ -56,7 +56,7 @@ private:
 
     Message receive() override;
 
-    void abort() override;
+    void abort(std::exception_ptr) override;
 
     void send(const Message& message) override;
 

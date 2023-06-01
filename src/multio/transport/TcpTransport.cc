@@ -161,7 +161,7 @@ Message TcpTransport::receive() {
     throw eckit::SeriousBug("No message received");
 }
 
-void TcpTransport::abort() {
+void TcpTransport::abort(std::exception_ptr) {
     eckit::LibEcKit::instance().abort();
 }
 

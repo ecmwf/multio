@@ -48,7 +48,7 @@ Message ThreadTransport::receive() {
     return msg;
 }
 
-void ThreadTransport::abort() {
+void ThreadTransport::abort(std::exception_ptr) {
     eckit::LibEcKit::instance().abort();
 }
 

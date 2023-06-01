@@ -74,7 +74,6 @@ private:
     bool moreConnections() const;
     void checkConnection(const message::Peer& conn) const;
 
-    std::shared_ptr<std::atomic<bool>> continue_;
     std::unique_ptr<Dispatcher> dispatcher_;
 
     transport::Transport& transport_;

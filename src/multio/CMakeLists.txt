@@ -139,8 +139,6 @@ list( APPEND multio_transport_srcs
     transport/TransportStatistics.h
     transport/StreamPool.cc
     transport/StreamPool.h
-    transport/StreamQueue.cc
-    transport/StreamQueue.h
 )
 
 list( APPEND multio_srcs

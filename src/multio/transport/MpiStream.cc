@@ -8,8 +8,24 @@ namespace multio::transport {
 MpiBuffer::MpiBuffer(size_t maxBufSize) : content{maxBufSize} {}
 
 bool MpiBuffer::isFree() {
-    return status == BufferStatus::available || (status == BufferStatus::transmitting && request.test());
+    // Soft check
+    BufferStatus s = status.load(std::memory_order_relaxed);
+    return s == BufferStatus::available || (s == BufferStatus::transmitting && request.test());
 }
+
+MpiBuffer& MpiBuffer::operator=(MpiBuffer&& other) {
+    this->status.exchange(other.status);
+    this->request = std::move(other.request);
+    this->content = std::move(other.content);
+    return *this;
+}
+
+MpiBuffer::MpiBuffer(MpiBuffer&& other) {
+    this->status.exchange(other.status);
+    this->request = std::move(other.request);
+    this->content = std::move(other.content);
+}
+
 
 MpiOutputStream::MpiOutputStream(MpiBuffer& buf) : eckit::ResizableMemoryStream{buf.content}, buf_{buf} {}
 
@@ -44,25 +60,6 @@ std::string MpiOutputStream::name() const {
                                                             {BufferStatus::transmitting, "transmitting"}};
 
     return "MpiOutputStream(" + st2str.at(buf_.status) + ")";
-}
-
-MpiInputStream::MpiInputStream(MpiBuffer& buf, size_t sz) :
-    eckit::ResizableMemoryStream{buf.content}, buf_{buf}, size_{sz} {}
-
-MpiBuffer& MpiInputStream::buffer() const {
-    return buf_;
-}
-
-size_t MpiInputStream::size() const {
-    return size_;
-}
-
-std::string MpiInputStream::name() const {
-    static const std::map<BufferStatus, std::string> st2str{{BufferStatus::available, "available"},
-                                                            {BufferStatus::fillingUp, "fillingUp"},
-                                                            {BufferStatus::transmitting, "transmitting"}};
-
-    return "MpiInputStream(" + st2str.at(buf_.status) + ")";
 }
 
 }  // namespace multio::transport

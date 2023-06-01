@@ -62,23 +62,4 @@ std::string MpiOutputStream::name() const {
     return "MpiOutputStream(" + st2str.at(buf_.status) + ")";
 }
 
-MpiInputStream::MpiInputStream(MpiBuffer& buf, size_t sz) :
-    eckit::ResizableMemoryStream{buf.content}, buf_{buf}, size_{sz} {}
-
-MpiBuffer& MpiInputStream::buffer() const {
-    return buf_;
-}
-
-size_t MpiInputStream::size() const {
-    return size_;
-}
-
-std::string MpiInputStream::name() const {
-    static const std::map<BufferStatus, std::string> st2str{{BufferStatus::available, "available"},
-                                                            {BufferStatus::fillingUp, "fillingUp"},
-                                                            {BufferStatus::transmitting, "transmitting"}};
-
-    return "MpiInputStream(" + st2str.at(buf_.status) + ")";
-}
-
 }  // namespace multio::transport

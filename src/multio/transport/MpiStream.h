@@ -52,21 +52,4 @@ private:
     MpiBuffer& buf_;
 };
 
-
-// TODO Remove now
-class MpiInputStream : public eckit::ResizableMemoryStream {
-public:
-    MpiInputStream(MpiBuffer& buf, size_t sz);
-
-    MpiBuffer& buffer() const;
-
-    size_t size() const;
-
-private:
-    std::string name() const override;
-
-    MpiBuffer& buf_;
-    size_t size_;
-};
-
 }  // namespace multio::transport

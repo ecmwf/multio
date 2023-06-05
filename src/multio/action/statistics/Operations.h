@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <cmath>
@@ -7,31 +8,26 @@
 #include <string>
 #include <vector>
 
-#include "StatisticsConfiguration.h"
-#include "StatisticsIO.h"
+#include "eckit/exception/Exceptions.h"
+
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 
-#include "eckit/exception/Exceptions.h"
-#include "eckit/filesystem/PathName.h"
-#include "eckit/io/Buffer.h"
-#include "eckit/log/Log.h"
-#include "eckit/types/DateTime.h"
+#include "multio/action/statistics/MovingWindow.h"
+#include "multio/action/statistics/StatisticsConfiguration.h"
+#include "multio/action/statistics/StatisticsIO.h"
 
-#include "MovingWindow.h"
+#include "multio/action/statistics/operations/OperationBase.h"
+#include "multio/action/statistics/operations/OperationWithData.h"
 
-#include "operations/OperationBase.h"
-#include "operations/OperationWithData.h"
-
-#include "operations/Accumulate.h"
-#include "operations/Average.h"
-#include "operations/FluxAverage.h"
-#include "operations/Instant.h"
-#include "operations/Maximum.h"
-#include "operations/Minimum.h"
+#include "multio/action/statistics/operations/Accumulate.h"
+#include "multio/action/statistics/operations/Average.h"
+#include "multio/action/statistics/operations/FluxAverage.h"
+#include "multio/action/statistics/operations/Instant.h"
+#include "multio/action/statistics/operations/Maximum.h"
+#include "multio/action/statistics/operations/Minimum.h"
 
 namespace multio::action {
-
 
 template <typename Precision>
 std::unique_ptr<OperationBase> make_operation(const std::string& opname, long sz,

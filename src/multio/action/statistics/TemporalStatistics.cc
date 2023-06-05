@@ -1,26 +1,14 @@
 #include "TemporalStatistics.h"
 
-#include <algorithm>
-#include <cstring>
-#include <fstream>
 #include <iostream>
 
-#include "TimeUtils.h"
-#include "eckit/exception/Exceptions.h"
+#include "eckit/types/DateTime.h"
+
 #include "multio/LibMultio.h"
-#include "multio/util/PrecisionTag.h"
+
+#include "TimeUtils.h"
 
 namespace multio::action {
-
-std::unique_ptr<TemporalStatistics> TemporalStatistics::build(const std::shared_ptr<PeriodUpdater>& periodUpdater,
-                                                              const std::vector<std::string>& operations,
-                                                              const message::Message& msg,
-                                                              std::shared_ptr<StatisticsIO>& IOmanager,
-                                                              const StatisticsConfiguration& cfg) {
-
-
-    return std::make_unique<TemporalStatistics>(periodUpdater, operations, msg, IOmanager, cfg);
-}
 
 
 TemporalStatistics::TemporalStatistics(const std::shared_ptr<PeriodUpdater>& periodUpdater,
@@ -32,8 +20,7 @@ TemporalStatistics::TemporalStatistics(const std::shared_ptr<PeriodUpdater>& per
 
 
 void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const {
-    LOG_DEBUG_LIB(LibMultio) << cfg.logPrefix() << " *** Dump restart file" << std::endl;
-    IOmanager->setSuffix(periodUpdater_->name());
+    LOG_DEBUG_LIB(LibMultio) << cfg.logPrefix() << " *** Dump restart files" << std::endl;
     window_.dump(IOmanager, cfg);
     for (auto& stat : statistics_) {
         stat->dump(IOmanager, cfg);
@@ -42,7 +29,7 @@ void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const St
 }
 
 void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfiguration& cfg) {
-    LOG_DEBUG_LIB(multio::LibMultio) << cfg.logPrefix() << " *** Update ";
+    LOG_DEBUG_LIB(multio::LibMultio) << cfg.logPrefix() << " *** Update Data" << std::endl;
     window_.updateData(currentDateTime(msg, cfg));
     for (auto& stat : statistics_) {
         stat->updateData(msg.payload().data(), msg.size());
@@ -51,10 +38,8 @@ void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfi
 }
 
 void TemporalStatistics::updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** Reset window " << std::endl;
-    eckit::DateTime startPoint = periodUpdater_->updatePeriodStart(msg, cfg);
-    eckit::DateTime endPoint = periodUpdater_->updatePeriodEnd(msg, cfg);
-    window_.updateWindow(startPoint, endPoint);
+    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** Update Window " << std::endl;
+    window_.updateWindow(periodUpdater_->updatePeriodStart(msg, cfg), periodUpdater_->updatePeriodEnd(msg, cfg));
     for (auto& stat : statistics_) {
         stat->updateWindow(msg.payload().data(), msg.size());
     }
@@ -62,7 +47,7 @@ void TemporalStatistics::updateWindow(const message::Message& msg, const Statist
 }
 
 bool TemporalStatistics::isEndOfWindow(message::Message& msg, const StatisticsConfiguration& cfg) {
-    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** Check end of window " << std::endl;
+    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** Check end of Window " << std::endl;
     return !window_.isWithin(nextDateTime(msg, cfg));
 }
 

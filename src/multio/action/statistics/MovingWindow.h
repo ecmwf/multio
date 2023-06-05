@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cinttypes>
+#include <vector>
 
 #include "eckit/types/DateTime.h"
 
@@ -96,8 +97,8 @@ private:
     long timeStepInSeconds_;
     long count_;
 
-    void serialize(std::array<std::uint64_t, 15>& currState) const;
-    void deserialize(const std::array<std::uint64_t, 15>& currState);
+    void serialize(std::vector<std::uint64_t>& currState) const;
+    void deserialize(const std::vector<std::uint64_t>& currState);
 
     void print(std::ostream& os) const;
     friend std::ostream& operator<<(std::ostream& os, const MovingWindow& a);

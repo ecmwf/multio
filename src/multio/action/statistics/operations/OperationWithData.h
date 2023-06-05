@@ -41,9 +41,9 @@ public:
 
     void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const override {
         if (needRestart_) {
-            std::vector<double> data(values_.size());
-            serialize(data);
-            IOmanager->writeOperation(name_, data);
+            std::vector<std::uint64_t> restartState(restartSize());
+            serialize(restartState);
+            IOmanager->write(name_, restartState);
             IOmanager->flush();
         }
         return;
@@ -51,21 +51,34 @@ public:
 
     void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) override {
         if (needRestart_) {
-            std::vector<double> data(values_.size());
-            IOmanager->readOperation(name_, data);
-            deserialize(data);
+            std::vector<std::uint64_t> restartState(restartSize());
+            IOmanager->read(name_, restartState);
+            deserialize(restartState);
         }
         return;
     };
 
 protected:
-    void serialize(std::vector<double>& data) const {
-        std::transform(values_.cbegin(), values_.cend(), data.begin(), [](double v) { return static_cast<double>(v); });
+    void serialize(std::vector<std::uint64_t>& restartState) const {
+        std::transform(values_.cbegin(), values_.cend(), restartState.begin(), [](const T& v) {
+            T lv = v;
+            double dv = static_cast<double>(lv);
+            return *reinterpret_cast<uint64_t*>(&dv);
+        });
+        restartState.back() = computeChecksum(restartState);
         return;
     };
 
-    void deserialize(const std::vector<double>& data) {
-        std::transform(data.cbegin(), data.cend(), values_.begin(), [](T v) { return static_cast<T>(v); });
+    void deserialize(const std::vector<std::uint64_t>& restartState) {
+        if (restartState.back() != computeChecksum(restartState)) {
+            throw eckit::SeriousBug("Checksum mismatch!", Here());
+        }
+        auto last = restartState.cend();
+        std::transform(restartState.cbegin(), --last, values_.begin(), [](const std::uint64_t& v) {
+            std::uint64_t lv = v;
+            double dv = *reinterpret_cast<double*>(&lv);
+            return static_cast<T>(dv);
+        });
         return;
     };
 
@@ -84,7 +97,11 @@ protected:
         return;
     };
 
+
     std::vector<T> values_;
     bool needRestart_;
+
+private:
+    size_t restartSize() const { return values_.size() + 1; }
 };
 }  // namespace multio::action

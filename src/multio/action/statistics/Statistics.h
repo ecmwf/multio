@@ -37,14 +37,14 @@ public:
                                      const std::string& key) const;
 
 private:
-    void DumpRestart() const;
+    void DumpRestart();
     std::string generateKey(const message::Message& msg) const;
     void print(std::ostream& os) const override;
-    const std::string timeUnit_;
-    const long timeSpan_;
-    std::shared_ptr<PeriodUpdater> periodUpdater_;
-    const std::vector<std::string> operations_;
     const StatisticsConfiguration cfg_;
+    const std::vector<std::string> operations_;
+    std::shared_ptr<PeriodUpdater> periodUpdater_;
+    std::shared_ptr<StatisticsIO> IOmanager_;
+
 
     std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 };

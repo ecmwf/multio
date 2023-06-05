@@ -10,8 +10,20 @@
 namespace multio::action {
 
 
-StatisticsIO::StatisticsIO(const std::string& path, const std::string& prefix, long step) :
-    path_{path}, prefix_{prefix}, key_{""}, step_{step}, name_{""} {};
+uint64_t computeChecksum(const std::vector<std::uint64_t>& state) {
+    uint64_t checksum = 1979339339;  // Just a big prime number
+    auto last = state.cend();
+    // TODO: maybe some better strategy can be used?
+    std::for_each(state.cbegin(), --last, [&checksum](const int64_t& v) {
+        checksum <<= 1;
+        checksum *= 31;
+        checksum ^= v;
+    });
+    return checksum;
+}
+
+StatisticsIO::StatisticsIO(const std::string& path, const std::string& prefix) :
+    path_{path}, prefix_{prefix}, key_{""}, step_{0}, name_{""} {};
 
 void StatisticsIO::setKey(const std::string& key) {
     key_ = key;
@@ -25,6 +37,14 @@ void StatisticsIO::setStep(long step) {
 
 void StatisticsIO::setSuffix(const std::string& suffix) {
     suffix_ = suffix;
+    return;
+};
+
+void StatisticsIO::reset() {
+    step_ = 0;
+    key_ = "";
+    suffix_ = "";
+    name_ = "";
     return;
 };
 
@@ -58,7 +78,7 @@ void StatisticsIOFactory::list(std::ostream& out) {
 }
 
 std::shared_ptr<StatisticsIO> StatisticsIOFactory::build(const std::string& name, const std::string& path,
-                                                         const std::string& prefix, long step) {
+                                                         const std::string& prefix) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
 
     LOG_DEBUG_LIB(LibMultio) << "Looking for StatisticsIOFactory [" << name << "]" << std::endl;
@@ -66,7 +86,7 @@ std::shared_ptr<StatisticsIO> StatisticsIOFactory::build(const std::string& name
     auto f = factories_.find(name);
 
     if (f != factories_.end())
-        return f->second->make(path, prefix, step);
+        return f->second->make(path, prefix);
 
     LOG_DEBUG_LIB(LibMultio) << "No StatisticsIOFactory for [" << name << "]" << std::endl;
     LOG_DEBUG_LIB(LibMultio) << "StatisticsIOFactories are:" << std::endl;

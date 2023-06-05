@@ -1,6 +1,7 @@
 #include "PeriodUpdater.h"
 
 #include <iomanip>
+#include <regex>
 
 #include "TimeUtils.h"
 
@@ -32,6 +33,10 @@ MovingWindow PeriodUpdater::initPeriod(const message::Message& msg, std::shared_
     }
 };
 
+long PeriodUpdater::timeSpan() const {
+    return span_;
+}
+
 eckit::DateTime PeriodUpdater::computeWinCreationTime(const eckit::DateTime& currentTime) {
     return currentTime;
 };
@@ -50,6 +55,12 @@ const std::string HourPeriodUpdater::name() const {
     std::ostringstream os;
     os << std::setw(4) << std::setfill('0') << span_ << "-"
        << "hour";
+    return os.str();
+};
+
+const std::string HourPeriodUpdater::timeUnit() const {
+    std::ostringstream os;
+    os << "hour";
     return os.str();
 };
 
@@ -75,6 +86,12 @@ const std::string DayPeriodUpdater::name() const {
     return os.str();
 };
 
+const std::string DayPeriodUpdater::timeUnit() const {
+    std::ostringstream os;
+    os << "day";
+    return os.str();
+};
+
 eckit::DateTime DayPeriodUpdater::computeWinStartTime(const eckit::DateTime& currentTime) {
     return eckit::DateTime{currentTime.date(), eckit::Time{0}};
 };
@@ -97,6 +114,12 @@ const std::string MonthPeriodUpdater::name() const {
     return os.str();
 };
 
+const std::string MonthPeriodUpdater::timeUnit() const {
+    std::ostringstream os;
+    os << "month";
+    return os.str();
+};
+
 eckit::DateTime MonthPeriodUpdater::computeWinStartTime(const eckit::DateTime& currentTime) {
     auto year = currentTime.date().year();
     auto month = currentTime.date().month();
@@ -113,18 +136,26 @@ eckit::DateTime MonthPeriodUpdater::updateWinEndTime(const eckit::DateTime& star
 
 // -------------------------------------------------------------------------------------------------------------------
 
-
-std::shared_ptr<PeriodUpdater> make_period_updater(const std::string& periodKind, long span) {
-    if (periodKind == "hour") {
-        return std::make_unique<HourPeriodUpdater>(span);
+std::shared_ptr<PeriodUpdater> make_period_updater(std::string const& output_freq) {
+    static const std::regex period_grammar("([1-9][0-9]*)([a-z]+)");
+    std::smatch match;
+    if (std::regex_match(output_freq, match, period_grammar)) {
+        const std::string periodKind = match[2].str();
+        long span = std::stol(match[1].str());
+        if (periodKind == "hour" || periodKind == "h") {
+            return std::make_unique<HourPeriodUpdater>(span);
+        }
+        if (periodKind == "day" || periodKind == "d") {
+            return std::make_unique<DayPeriodUpdater>(span);
+        }
+        if (periodKind == "month" || periodKind == "m") {
+            return std::make_unique<MonthPeriodUpdater>(span);
+        }
+        throw eckit::SeriousBug("Unknown period kind : " + periodKind, Here());
     }
-    if (periodKind == "day") {
-        return std::make_unique<DayPeriodUpdater>(span);
+    else {
+        throw eckit::SeriousBug("Wrong grammar in period definition : " + output_freq, Here());
     }
-    if (periodKind == "month") {
-        return std::make_unique<MonthPeriodUpdater>(span);
-    }
-    throw eckit::SeriousBug("Unknown period kind : " + periodKind, Here());
 };
 
 }  // namespace multio::action

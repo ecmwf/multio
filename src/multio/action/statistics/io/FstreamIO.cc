@@ -9,10 +9,9 @@
 
 namespace multio::action {
 
-FstreamIO::FstreamIO(const std::string& path, const std::string& prefix, long step) :
-    StatisticsIO{path, prefix, step} {};
+FstreamIO::FstreamIO(const std::string& path, const std::string& prefix) : StatisticsIO{path, prefix} {};
 
-void FstreamIO::writePeriod(const std::string& name, const std::array<std::uint64_t, 15>& data) {
+void FstreamIO::write(const std::string& name, const std::vector<std::uint64_t>& data) {
     LOG_DEBUG_LIB(LibMultio) << " - The name of the window write file is :: " << generateFileName(name, 0) << std::endl;
     const std::string fname = generateFileName(name, 0);
     std::FILE* fp = std::fopen(fname.c_str(), "w");
@@ -23,38 +22,14 @@ void FstreamIO::writePeriod(const std::string& name, const std::array<std::uint6
     return;
 };
 
-void FstreamIO::readPeriod(const std::string& name, std::array<std::uint64_t, 15>& data) {
+void FstreamIO::read(const std::string& name, std::vector<std::uint64_t>& data) {
     LOG_DEBUG_LIB(LibMultio) << " - The name of the operation read file is :: " << generateFileName(name, 0)
                              << std::endl;
     const std::string fname = generateFileName(name, 0);
     checkFileExist(fname);
     checkFileSize(fname, data.size() * sizeof(std::uint64_t));
     std::FILE* fp = std::fopen(fname.c_str(), "r");
-    std::fread(data.data(), sizeof(double), data.size(), fp);
-    std::fclose(fp);
-    return;
-};
-
-void FstreamIO::writeOperation(const std::string& name, const std::vector<double>& data) {
-    LOG_DEBUG_LIB(LibMultio) << " - The name of the operation write file is :: " << generateFileName(name, 0)
-                             << std::endl;
-    const std::string fname = generateFileName(name, 0);
-    std::FILE* fp = std::fopen(fname.c_str(), "w");
-    std::fwrite(data.data(), sizeof(double), data.size(), fp);
-    std::fflush(fp);
-    std::fclose(fp);
-    removeOldFile(name, 2);
-    return;
-};
-
-void FstreamIO::readOperation(const std::string& name, std::vector<double>& data) {
-    LOG_DEBUG_LIB(LibMultio) << " - The name of the operation read file is :: " << generateFileName(name, 0)
-                             << std::endl;
-    const std::string fname = generateFileName(name, 0);
-    checkFileExist(fname);
-    checkFileSize(fname, data.size() * sizeof(double));
-    std::FILE* fp = std::fopen(fname.c_str(), "r");
-    std::fread(data.data(), sizeof(double), data.size(), fp);
+    std::fread(data.data(), sizeof(uint64_t), data.size(), fp);
     std::fclose(fp);
     return;
 };

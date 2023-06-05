@@ -13,18 +13,6 @@ namespace multio::action {
 
 namespace {
 
-uint64_t compueChecksum(const std::array<std::uint64_t, 15>& state) {
-    uint64_t checksum = 1979339339;  // Just a big prime number
-    auto last = state.cend();
-    // TODO: maybe some better strategy can be used?
-    std::for_each(state.cbegin(), --last, [&checksum](const int64_t& v) {
-        checksum <<= 1;
-        checksum *= 31;
-        checksum ^= v;
-    });
-    return checksum;
-}
-
 long lastDayOfTheMonth(long y, long m) {
     // month must be base 0
     long i = m - 1;
@@ -100,16 +88,16 @@ long MovingWindow::count() const {
 }
 
 void MovingWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) {
-    std::array<std::uint64_t, 15> restartState;
-    IOmanager->readPeriod("window", restartState);
+    std::vector<std::uint64_t> restartState(15, 0);
+    IOmanager->read("window", restartState);
     deserialize(restartState);
     return;
 }
 
 void MovingWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const {
-    std::array<std::uint64_t, 15> restartState;
+    std::vector<std::uint64_t> restartState(15, 0);
     serialize(restartState);
-    IOmanager->writePeriod("window", restartState);
+    IOmanager->write("window", restartState);
     IOmanager->flush();
     return;
 }
@@ -117,7 +105,7 @@ void MovingWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const Statisti
 void MovingWindow::updateData(const eckit::DateTime& currentPoint) {
     gtLowerBound(currentPoint, true);
     leUpperBound(currentPoint, true);
-    prevPoint_ = currentPoint;
+    prevPoint_ = currPoint_;
     currPoint_ = currentPoint;
     count_++;
     std::cout << "Update window :: " << count_ << std::endl;
@@ -144,12 +132,12 @@ bool MovingWindow::isWithin(const eckit::DateTime& dt) const {
 }
 
 bool MovingWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) const {
-    if (throw_error && creationPoint_ > dt) {
+    if (throw_error && creationPoint_ >= dt) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
-    return dt >= creationPoint_;
+    return dt > creationPoint_;
 };
 
 bool MovingWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) const {
@@ -351,7 +339,7 @@ const std::string MovingWindow::stepRangeInHours(const eckit::DateTime& refPoint
     return os.str();
 }
 
-void MovingWindow::serialize(std::array<std::uint64_t, 15>& currState) const {
+void MovingWindow::serialize(std::vector<std::uint64_t>& currState) const {
 
 
     currState[0] = static_cast<std::uint64_t>(epochPoint_.date().yyyymmdd());
@@ -375,14 +363,14 @@ void MovingWindow::serialize(std::array<std::uint64_t, 15>& currState) const {
     currState[12] = static_cast<std::uint64_t>(timeStepInSeconds_);
     currState[13] = static_cast<std::uint64_t>(count_);
 
-    currState[14] = compueChecksum(currState);
+    currState[14] = computeChecksum(currState);
 
     return;
 }
 
-void MovingWindow::deserialize(const std::array<std::uint64_t, 15>& currState) {
+void MovingWindow::deserialize(const std::vector<std::uint64_t>& currState) {
 
-    if (currState[14] != compueChecksum(currState)) {
+    if (currState[14] != computeChecksum(currState)) {
         throw eckit::SeriousBug("Checksum mismatch!", Here());
     }
     epochPoint_ = yyyymmdd_hhmmss2DateTime(currState[0], currState[1]);

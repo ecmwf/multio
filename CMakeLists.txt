@@ -23,6 +23,7 @@ ecbuild_find_package( NAME eccodes     VERSION  2.18   REQUIRED )
 ecbuild_find_package( NAME eckit       VERSION  1.22   REQUIRED )
 ecbuild_find_package( NAME metkit      VERSION  1.7    REQUIRED )
 ecbuild_find_package( NAME atlas       VERSION  0.33   REQUIRED )
+ecbuild_find_package( NAME atlas_io    VERSION  0.33   REQUIRED )
 
 if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )

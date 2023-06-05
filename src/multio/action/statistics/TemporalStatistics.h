@@ -1,94 +1,55 @@
 #pragma once
 
-#include <map>
-#include <memory>
 #include <string>
+#include "eckit/types/DateTime.h"
 
-#include "multio/action/statistics/Operation.h"
-#include "multio/action/statistics/Period.h"
-#include "multio/action/statistics/StatisticsOptions.h"
+#include "MovingWindow.h"
+#include "Operations.h"
+#include "PeriodUpdater.h"
+#include "StatisticsConfiguration.h"
+#include "StatisticsIO.h"
 #include "multio/message/Message.h"
 
-namespace multio::action {
 
+namespace multio ::action {
 
 class TemporalStatistics {
 public:
-    static std::unique_ptr<TemporalStatistics> build(const std::string& unit, long span,
+    using op = std::vector<std::unique_ptr<OperationBase>>;
+
+    op::iterator begin() { return statistics_.begin(); };
+    op::iterator end() { return statistics_.end(); };
+
+    static std::unique_ptr<TemporalStatistics> build(const std::shared_ptr<PeriodUpdater>& periodUpdater,
                                                      const std::vector<std::string>& operations,
-                                                     const message::Message& msg, const std::string& partialPath,
-                                                     const StatisticsOptions& options);
+                                                     const message::Message& msg,
+                                                     std::shared_ptr<StatisticsIO>& IOmanager,
+                                                     const StatisticsConfiguration& cfg);
 
-    // Restart constructor
-    TemporalStatistics(const std::vector<std::string>& operations, const DateTimePeriod& period,
-                       const message::Message& msg, const std::string& partialPath, const StatisticsOptions& options,
-                       long span);
+    TemporalStatistics(const std::shared_ptr<PeriodUpdater>& periodUpdater, const std::vector<std::string>& operations,
+                       const message::Message& msg, std::shared_ptr<StatisticsIO>& IOmanager,
+                       const StatisticsConfiguration& cfg);
 
-    virtual ~TemporalStatistics() = default;
+    bool isEndOfWindow(message::Message& msg, const StatisticsConfiguration& cfg);
 
-    bool process(message::Message& msg);
-    std::map<std::string, eckit::Buffer> compute(const message::Message& msg);
-    std::string stepRange(long step);
-    const DateTimePeriod& current() const;
-    void reset(const message::Message& msg);
-    long startStep() const { return prevStep_; };
-    virtual void print(std::ostream& os) const = 0;
-    void dump() const;
+    void updateData(message::Message& msg, const StatisticsConfiguration& cfg);
+    void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg);
 
-protected:
-    long span_;
-    std::string name_;
-    std::string partialPath_;
-    long prevStep_;
-    DateTimePeriod current_;
-    const StatisticsOptions& options_;
-    std::vector<std::string> opNames_;
-    std::vector<OperationVar> statistics_;
+    void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const;
 
-    void updateStatistics(const message::Message& msg);
+    const MovingWindow& win() const;
+
+    void print(std::ostream& os) const;
 
 private:
-    virtual bool process_next(message::Message& msg);
-
-    virtual void resetPeriod(const message::Message& msg);
-
+    const std::shared_ptr<PeriodUpdater>& periodUpdater_;
+    MovingWindow window_;
+    std::vector<std::unique_ptr<OperationBase>> statistics_;
 
     friend std::ostream& operator<<(std::ostream& os, const TemporalStatistics& a) {
         a.print(os);
         return os;
     }
 };
-
-//-------------------------------------------------------------------------------------------------
-
-class HourlyStatistics : public TemporalStatistics {
-public:
-    HourlyStatistics(const std::vector<std::string> operations, long span, message::Message msg,
-                     const std::string& partialPath, const StatisticsOptions& options);
-    void resetPeriod(const message::Message& msg) override;
-    void print(std::ostream& os) const override;
-};
-
-//-------------------------------------------------------------------------------------------------
-
-class DailyStatistics : public TemporalStatistics {
-public:
-    DailyStatistics(const std::vector<std::string> operations, long span, message::Message msg,
-                    const std::string& partialPath, const StatisticsOptions& options);
-    void resetPeriod(const message::Message& msg) override;
-    void print(std::ostream& os) const override;
-};
-
-//-------------------------------------------------------------------------------------------------
-
-class MonthlyStatistics : public TemporalStatistics {
-public:
-    MonthlyStatistics(const std::vector<std::string> operations, long span, message::Message msg,
-                      const std::string& partialPath, const StatisticsOptions& options);
-    void resetPeriod(const message::Message& msg) override;
-    void print(std::ostream& os) const override;
-};
-
-//-------------------------------------------------------------------------------------------------
 
 }  // namespace multio::action

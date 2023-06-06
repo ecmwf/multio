@@ -15,7 +15,7 @@ uint64_t computeChecksum(const std::vector<std::uint64_t>& state);
 
 class StatisticsIO {
 public:
-    StatisticsIO(const std::string& path, const std::string& prefix);
+    StatisticsIO(const std::string& path, const std::string& prefix, const std::string& ext);
     virtual ~StatisticsIO() = default;
 
     void setKey(const std::string& key);
@@ -28,6 +28,10 @@ public:
     virtual void flush() = 0;
 
 protected:
+    const std::string generatePathName() const;
+    const std::string generateFileName(const std::string& name, long step_offset) const;
+    void removeOldFile(const std::string& name, long step_offset) const;
+
     const std::string path_;
     const std::string prefix_;
     long step_;
@@ -35,6 +39,7 @@ protected:
     std::string key_;
     std::string suffix_;
     std::string name_;
+    const std::string ext_;
 };
 
 class StatisticsIOBuilderBase;

@@ -1,45 +1,42 @@
-#include "FstreamIO.h"
+#include "AtlasIO.h"
 
 #include <cstdio>
+#include <iomanip>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
 #include "multio/LibMultio.h"
 
+
 namespace multio::action {
 
-FstreamIO::FstreamIO(const std::string& path, const std::string& prefix) : StatisticsIO{path, prefix, "fstreamIO"} {};
+AtlasIO::AtlasIO(const std::string& path, const std::string& prefix) : StatisticsIO{path, prefix, "atlasIO"} {};
 
-void FstreamIO::write(const std::string& name, const std::vector<std::uint64_t>& data) {
+void AtlasIO::write(const std::string& name, const std::vector<std::uint64_t>& data) {
     LOG_DEBUG_LIB(LibMultio) << " - The name of the window write file is :: " << generateFileName(name, 0) << std::endl;
     removeOldFile(name, 0);
     const std::string fname = generateFileName(name, 0);
-    std::FILE* fp = std::fopen(fname.c_str(), "w");
-    std::fwrite(data.data(), sizeof(std::uint64_t), data.size(), fp);
-    std::fflush(fp);
-    std::fclose(fp);
+    atlas::io::RecordWriter record;
+    record.set(name, atlas::io::ref(data), no_compression);
+    record.write(fname);
     removeOldFile(name, 2);
     return;
 };
 
-void FstreamIO::read(const std::string& name, std::vector<std::uint64_t>& data) {
+void AtlasIO::read(const std::string& name, std::vector<std::uint64_t>& data) {
     LOG_DEBUG_LIB(LibMultio) << " - The name of the operation read file is :: " << generateFileName(name, 0)
                              << std::endl;
     const std::string fname = generateFileName(name, 0);
-    checkFileExist(fname);
-    checkFileSize(fname, data.size() * sizeof(std::uint64_t));
-    std::FILE* fp = std::fopen(fname.c_str(), "r");
-    std::fread(data.data(), sizeof(uint64_t), data.size(), fp);
-    std::fclose(fp);
+    atlas::io::RecordReader record(fname);
+    record.read(name, data).wait();
     return;
 };
 
-void FstreamIO::flush() {
+void AtlasIO::flush() {
     return;
 };
 
-
-void FstreamIO::checkFileExist(const std::string& name) const {
+void AtlasIO::checkFileExist(const std::string& name) const {
     eckit::PathName file{name};
     if (!file.exists()) {
         std::ostringstream os;
@@ -49,7 +46,7 @@ void FstreamIO::checkFileExist(const std::string& name) const {
     return;
 };
 
-void FstreamIO::checkFileSize(const std::string& name, size_t expectedSize) const {
+void AtlasIO::checkFileSize(const std::string& name, size_t expectedSize) const {
     eckit::PathName file{name};
     if (file.size() != expectedSize) {
         std::ostringstream os;
@@ -59,6 +56,6 @@ void FstreamIO::checkFileSize(const std::string& name, size_t expectedSize) cons
     return;
 };
 
-StatisticsIOBuilder<FstreamIO> FstreamBuilder("fstream_io");
+StatisticsIOBuilder<AtlasIO> AtalsIOBuilder("atlas_io");
 
 }  // namespace multio::action

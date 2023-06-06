@@ -1,5 +1,6 @@
 #include "StatisticsIO.h"
 
+#include <iomanip>
 #include <mutex>
 
 #include "eckit/exception/Exceptions.h"
@@ -22,8 +23,9 @@ uint64_t computeChecksum(const std::vector<std::uint64_t>& state) {
     return checksum;
 }
 
-StatisticsIO::StatisticsIO(const std::string& path, const std::string& prefix) :
-    path_{path}, prefix_{prefix}, step_{0}, key_{""}, name_{""} {};
+StatisticsIO::StatisticsIO(const std::string& path, const std::string& prefix, const std::string& ext) :
+    path_{path}, prefix_{prefix}, step_{0}, key_{""}, name_{""}, ext_{ext} {};
+
 
 void StatisticsIO::setKey(const std::string& key) {
     key_ = key;
@@ -46,6 +48,28 @@ void StatisticsIO::reset() {
     suffix_ = "";
     name_ = "";
     return;
+};
+
+const std::string StatisticsIO::generatePathName() const {
+    std::ostringstream os;
+    os << path_ << "/" << prefix_ << "/" << key_ << "/" << suffix_;
+    eckit::PathName{os.str()}.mkdir();
+    return os.str();
+};
+
+const std::string StatisticsIO::generateFileName(const std::string& name, long step_offset) const {
+    std::ostringstream os;
+    os << generatePathName() << "/" << name << "-" << std::setw(10) << std::setfill('0') << step_ - step_offset << "."
+       << ext_;
+    return os.str();
+};
+
+void StatisticsIO::removeOldFile(const std::string& name, long step_offset) const {
+    eckit::PathName file{generateFileName(name, step_offset)};
+
+    if (file.exists()) {
+        file.unlink();
+    }
 };
 
 //----------------------------------------------------------------------------------------------------------------------

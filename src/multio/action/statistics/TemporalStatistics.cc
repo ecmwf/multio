@@ -25,6 +25,7 @@ void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager, const St
     for (auto& stat : statistics_) {
         stat->dump(IOmanager, cfg);
     }
+    IOmanager->flush();
     return;
 }
 

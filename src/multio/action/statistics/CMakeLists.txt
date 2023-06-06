@@ -26,7 +26,23 @@ TemporalStatistics.h
 Statistics.cc
 Statistics.h )
 
+list( APPEND _statistics_libs
+multio
+)
 
+if(HAVE_ATLAS_IO)
+
+ecbuild_find_package( NAME atlas_io    VERSION  0.33   REQUIRED )
+
+list( APPEND _statistics_sources
+io/AtlasIO.cc
+io/AtlasIO.h
+)
+
+list( APPEND _statistics_libs
+atlas_io
+)
+endif()
 
 ecbuild_add_library(
 
@@ -38,10 +54,9 @@ ecbuild_add_library(
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}
-        ${ATLAS_IO_INCLUDE_DIRS}
 
     CONDITION
 
     PUBLIC_LIBS
-        multio atlas_io
+    ${_statistics_libs}
 )

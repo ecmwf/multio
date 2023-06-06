@@ -1,4 +1,6 @@
+
 namespace multio::action {
+
 template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>
 class Maximum final : public OperationWithData<T> {
 public:
@@ -40,6 +42,7 @@ private:
                        [](T v1, T v2) { return static_cast<T>(v1 > v2 ? v1 : v2); });
         return;
     };
+
     void updateWithMissing(const T* val) {
         double m = cfg_.missingValue();
         std::transform(values_.begin(), values_.end(), val, values_.begin(), [m](T v1, T v2) {
@@ -47,6 +50,8 @@ private:
         });
         return;
     };
+
     void print(std::ostream& os) const override { os << logHeader_; };
 };
+
 }  // namespace multio::action

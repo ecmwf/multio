@@ -1,4 +1,6 @@
+
 namespace multio::action {
+
 template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>
 class OperationWithData : public OperationBase {
 public:
@@ -97,11 +99,10 @@ protected:
         return;
     };
 
+private:
+    size_t restartSize() const { return values_.size() + 1; }
 
     std::vector<T> values_;
     bool needRestart_;
-
-private:
-    size_t restartSize() const { return values_.size() + 1; }
 };
 }  // namespace multio::action

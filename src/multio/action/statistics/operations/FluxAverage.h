@@ -1,4 +1,6 @@
+
 namespace multio::action {
+
 template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>
 class FluxAverage final : public OperationWithData<T> {
 public:
@@ -41,12 +43,15 @@ private:
         std::transform(values_.begin(), values_.end(), buf, [c, m](T v) { return static_cast<T>(m == v ? m : v * c); });
         return;
     }
+
     void computeWithoutMissing(T* buf) {
         const double c
             = static_cast<double>(1.0) / static_cast<double>(win_.count() * cfg_.stepFreq() * cfg_.timeStep());
         std::transform(values_.begin(), values_.end(), buf, [c](T v) { return static_cast<T>(v * c); });
         return;
     }
+
     void print(std::ostream& os) const override { os << logHeader_; }
 };
+
 }  // namespace multio::action

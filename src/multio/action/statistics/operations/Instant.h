@@ -1,4 +1,6 @@
+
 namespace multio::action {
+
 template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>
 class Instant final : public OperationWithData<T> {
 public:

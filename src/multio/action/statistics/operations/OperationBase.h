@@ -1,4 +1,12 @@
+
+#include <string>
+
+#include "multio/action/statistics/MovingWindow.h"
+#include "multio/action/statistics/StatisticsConfiguration.h"
+#include "multio/action/statistics/StatisticsIO.h"
+
 namespace multio::action {
+
 class OperationBase {
 public:
     OperationBase(const std::string& name, const std::string& operation, const MovingWindow& win,
@@ -35,4 +43,5 @@ protected:
         return os;
     }
 };
+
 }  // namespace multio::action

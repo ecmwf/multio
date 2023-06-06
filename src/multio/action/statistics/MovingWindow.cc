@@ -5,9 +5,8 @@
 #include <cinttypes>
 #include <iostream>
 
-#include "StatisticsIO.h"
-#include "TimeUtils.h"
 #include "multio/LibMultio.h"
+#include "multio/action/statistics/StatisticsIO.h"
 
 namespace multio::action {
 
@@ -61,10 +60,10 @@ eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
 MovingWindow::MovingWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) :
     epochPoint_{eckit::Date{0}, eckit::Time{0}},
     startPoint_{eckit::Date{0}, eckit::Time{0}},
-    endPoint_{eckit::Date{0}, eckit::Time{0}},
     creationPoint_{eckit::Date{0}, eckit::Time{0}},
     currPoint_{eckit::Date{0}, eckit::Time{0}},
     prevPoint_{eckit::Date{0}, eckit::Time{0}},
+    endPoint_{eckit::Date{0}, eckit::Time{0}},
     timeStepInSeconds_{0},
     count_{0} {
     load(IOmanager, cfg);
@@ -76,10 +75,10 @@ MovingWindow::MovingWindow(const eckit::DateTime& epochPoint, const eckit::DateT
                            long timeStepInSeconds) :
     epochPoint_{epochPoint},
     startPoint_{startPoint},
-    endPoint_{endPoint},
     creationPoint_{creationPoint},
     currPoint_{creationPoint},
     prevPoint_{creationPoint},
+    endPoint_{endPoint},
     timeStepInSeconds_{timeStepInSeconds},
     count_{0} {}
 

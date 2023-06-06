@@ -1,3 +1,4 @@
+
 #include "Operations.h"
 
 namespace multio::action {
@@ -7,6 +8,7 @@ std::vector<std::unique_ptr<OperationBase>> make_operations(const std::vector<st
                                                             std::shared_ptr<StatisticsIO>& IOmanager,
                                                             const MovingWindow& win,
                                                             const StatisticsConfiguration& cfg) {
+
     return multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
         std::vector<std::unique_ptr<OperationBase>> stats;

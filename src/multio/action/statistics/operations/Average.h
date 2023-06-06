@@ -1,4 +1,6 @@
+
 namespace multio::action {
+
 template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>
 class Average final : public OperationWithData<T> {
 public:
@@ -49,4 +51,5 @@ private:
     double sc(double v) const { return double(win_.count() - 1) * v; };
     void print(std::ostream& os) const override { os << logHeader_; }
 };
+
 }  // namespace multio::action

@@ -90,10 +90,11 @@ public:
 private:
     eckit::DateTime epochPoint_;
     eckit::DateTime startPoint_;
-    eckit::DateTime endPoint_;
     eckit::DateTime creationPoint_;
-    eckit::DateTime prevPoint_;
     eckit::DateTime currPoint_;
+    eckit::DateTime prevPoint_;
+    eckit::DateTime endPoint_;
+
     long timeStepInSeconds_;
     long count_;
 

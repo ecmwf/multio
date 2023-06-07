@@ -128,22 +128,22 @@ void fill_out_metadata(const message::Metadata& in_md, message::Metadata& out_md
     return;
 };
 
-eckit::Value getInputGrid( const eckit::LocalConfiguration& cfg, message::Metadata& md ){
-  if ( md.has( "atlas-grid-kind" ) ){ // metadata has always precedence
-    // TODO: name is bad on purpose (no software support this at the moment)
-    return eckit::Value{md.getSubConfiguration("atlas-grid-kind").get()};
-  } 
+eckit::Value getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadata& md) {
+    if (md.has("atlas-grid-kind")) {  // metadata has always precedence
+        // TODO: name is bad on purpose (no software support this at the moment)
+        return eckit::Value{md.getSubConfiguration("atlas-grid-kind").get()};
+    }
 
-  if ( cfg.has( "input" ) ){ // configuration file is second option
-    return  eckit::Value{cfg.getSubConfiguration("input").get()};
-  } 
+    if (cfg.has("input")) {  // configuration file is second option
+        return eckit::Value{cfg.getSubConfiguration("input").get()};
+    }
 
-  throw eckit::SeriousBug( "action-interpolate :: Unable to identify input grid", Here() );
-
+    throw eckit::SeriousBug("action-interpolate :: Unable to identify input grid", Here());
 }
 
 
-void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& param, const eckit::Value&& inp) {
+void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& param,
+                const eckit::Value&& inp) {
 
     auto regular_ll = [&param](double west_east_increment, double south_north_increment) {
         regularLatLongMetadata(param, std::vector<double>{west_east_increment, south_north_increment}, full_area);
@@ -189,7 +189,7 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
         }
     }
 
-    if ( inp.isList() ) {
+    if (inp.isList()) {
         if (inp.size() == 2) {
             regular_ll(inp[0], inp[1]);
             return;
@@ -279,16 +279,16 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     md.set("precision", "double");
 
     mir::param::SimpleParametrisation inputPar;
-    fill_input(config, inputPar, getInputGrid( config, md ) );
+    fill_input(config, inputPar, getInputGrid(config, md));
+    if (msg.metadata().has("missingValue") && msg.metadata().getBool("bitmapPresent")) {
+        inputPar.set("missing_value", msg.metadata().getDouble("missingValue"));
+    }
 
     mir::input::RawInput input(data, size, inputPar);
 
     mir::api::MIRJob job;
     fill_job(config, job, md);
 
-    if (msg.metadata().has("missingValue")) {
-        job.set("missing_value", msg.metadata().getDouble("missingValue"));
-    }
 
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: input :: " << std::endl << inputPar << std::endl << std::endl;
 

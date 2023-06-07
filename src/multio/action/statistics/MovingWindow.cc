@@ -40,10 +40,10 @@ void hhmmss2hms(uint64_t hhmmss, long& h, long& m, long& s) {
     if (s < 0 || s > 59) {
         throw eckit::SeriousBug("invalid seconds range", Here());
     }
-    if (s < 0 || m > 59) {
+    if (m < 0 || m > 59) {
         throw eckit::SeriousBug("invalid minutes range", Here());
     }
-    if (s < 0 || s > 23) {
+    if (h < 0 || h > 23) {
         throw eckit::SeriousBug("invalid hour range", Here());
     }
     return;

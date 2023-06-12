@@ -8,7 +8,6 @@
 #include <string>
 
 #include "eckit/filesystem/PathName.h"
-#include "eckit/types/DateTime.h"
 
 namespace multio::action {
 
@@ -17,6 +16,8 @@ uint64_t computeChecksum(const std::vector<std::uint64_t>& state);
 class StatisticsIO {
 public:
     StatisticsIO(const std::string& path, const std::string& prefix);
+    virtual ~StatisticsIO() = default;
+
     void setKey(const std::string& key);
     void setStep(long step);
     void setSuffix(const std::string& suffix);

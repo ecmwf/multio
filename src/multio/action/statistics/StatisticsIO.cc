@@ -23,7 +23,7 @@ uint64_t computeChecksum(const std::vector<std::uint64_t>& state) {
 }
 
 StatisticsIO::StatisticsIO(const std::string& path, const std::string& prefix) :
-    path_{path}, prefix_{prefix}, key_{""}, step_{0}, name_{""} {};
+    path_{path}, prefix_{prefix}, step_{0}, key_{""}, name_{""} {};
 
 void StatisticsIO::setKey(const std::string& key) {
     key_ = key;

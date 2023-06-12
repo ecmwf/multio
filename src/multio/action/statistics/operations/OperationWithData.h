@@ -11,15 +11,15 @@ public:
     OperationWithData(const std::string& name, const std::string& operation, long sz, bool needRestart,
                       const MovingWindow& win, const StatisticsConfiguration& cfg) :
         OperationBase{name, operation, win, cfg},
-        needRestart_{needRestart},
-        values_{std::vector<T>(sz /= sizeof(T), 0.0)} {}
+        values_{std::vector<T>(sz /= sizeof(T), 0.0)},
+        needRestart_{needRestart} {}
 
     OperationWithData(const std::string& name, const std::string& operation, long sz, bool needRestart,
                       const MovingWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
                       const StatisticsConfiguration& cfg) :
         OperationBase{name, operation, win, cfg},
-        needRestart_{needRestart},
-        values_{std::vector<T>(sz /= sizeof(T), 0.0)} {
+        values_{std::vector<T>(sz /= sizeof(T), 0.0)},
+        needRestart_{needRestart} {
         load(IOmanager, cfg);
         return;
     }
@@ -99,10 +99,11 @@ protected:
         return;
     };
 
-private:
     size_t restartSize() const { return values_.size() + 1; }
-
     std::vector<T> values_;
+
+private:
     bool needRestart_;
 };
+
 }  // namespace multio::action

@@ -112,8 +112,8 @@ public:
     MultioConfiguration(const MultioConfiguration& other) = delete;
     MultioConfiguration& operator=(const MultioConfiguration& other) = delete;
 
-    MultioConfiguration(MultioConfiguration&& other) noexcept = default;
-    MultioConfiguration& operator=(MultioConfiguration&& other) noexcept = default;
+    MultioConfiguration(MultioConfiguration&& other) = default;
+    MultioConfiguration& operator=(MultioConfiguration&& other) = default;
 
 
 private:

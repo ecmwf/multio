@@ -22,3 +22,6 @@ class Handler:
     def close_connections(self):
 
         lib.multio_close_connections(self.__handle)
+
+    def get_pointer(self):
+        return self.__handle

@@ -44,7 +44,7 @@ class Config:
         lib.multio_conf_mpi_return_client_comm(self.__config, multio_rsc)
 
     def start_server(self):
-        
+        # TODO: Currently does not work
         lib.multio_start_server(self.__config)
 
     def get_pointer(self):

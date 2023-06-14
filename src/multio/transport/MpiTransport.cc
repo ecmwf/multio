@@ -223,8 +223,8 @@ MpiTransport::MpiTransport(const ComponentConfiguration& compConf, MpiPeerSetup&
     parentGroup_{std::move(std::get<1>(peerSetup))},
     clientGroup_{std::move(std::get<2>(peerSetup))},
     serverGroup_{std::move(std::get<3>(peerSetup))},
-    streamQueue_{1024},
-    pool_{getMpiPoolSize(compConf), getMpiBufferSize(compConf), comm(), statistics_} {}
+    pool_{getMpiPoolSize(compConf), getMpiBufferSize(compConf), comm(), statistics_},
+    streamQueue_{1024} {}
 
 MpiTransport::MpiTransport(const ComponentConfiguration& compConf) : MpiTransport(compConf, setupMPI_(compConf)) {}
 

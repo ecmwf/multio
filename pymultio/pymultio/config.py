@@ -3,6 +3,7 @@ import os
 from .lib import ffi, lib
 
 class Config:
+    """This is the main container class for Multio Configs"""
 
     def __init__(self, config_path=''):
         self.__config_path = config_path
@@ -41,5 +42,12 @@ class Config:
 
         multio_rsc = ffi.new("int[]", return_server_comm)
         lib.multio_conf_mpi_return_client_comm(self.__config, multio_rsc)
+
+    def start_server(self):
+        
+        lib.multio_start_server(self.__config)
+
+    def get_pointer(self):
+        return self.__config
 
 

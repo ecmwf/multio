@@ -126,16 +126,9 @@ CASE("Create handle with default configuration through nullptr configuration pat
     multio_handle_t* mdp = nullptr;
     int err;
     err = multio_new_configuration_from_filename(&cc, nullptr);
-    std::unique_ptr<multio_configuration_t> configuration_deleter(cc);
-    EXPECT(err == MULTIO_SUCCESS);
-    err = multio_conf_mpi_allow_world_default_comm(cc, false);
-    EXPECT(err == MULTIO_SUCCESS);
-    err = multio_new_handle(&mdp, cc);
-    std::unique_ptr<multio_handle_t> handle_deleter(mdp);
-    std::string errStr(multio_error_string(err));
-    // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
-    EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
+    std::string errStr(multio_error_string(err));
+    EXPECT(errStr.rfind("Assertion failed: conf_file_name in operator()") != std::string::npos);
 }
 
 
@@ -220,7 +213,7 @@ CASE("Test loading configuration") {
 CASE("Metadata is created and delected sucessfully") {
     multio_metadata_t* mdp = nullptr;
     int err;
-    err = multio_new_metadata(&mdp);
+    err = multio_new_metadata(&mdp, nullptr);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_delete_metadata(mdp);
     EXPECT(err == MULTIO_SUCCESS);
@@ -230,7 +223,7 @@ CASE("Metadata can set values") {
     using multio::message::Metadata;
     multio_metadata_t* mdp = nullptr;
     int err;
-    err = multio_new_metadata(&mdp);
+    err = multio_new_metadata(&mdp, nullptr);
     std::unique_ptr<multio_metadata_t> multio_deleter(mdp);
     EXPECT(err == MULTIO_SUCCESS);
 
@@ -363,7 +356,7 @@ CASE("Test write field") {
 
         {
             multio_metadata_t* md = nullptr;
-            test_check(multio_new_metadata(&md), "Create New Metadata Object");
+            test_check(multio_new_metadata(&md, nullptr), "Create New Metadata Object");
             std::unique_ptr<multio_metadata_t> multio_deleter(md);
 
             test_check(multio_metadata_set_string(md, "category", file), "Set category");
@@ -387,7 +380,7 @@ CASE("Test write field") {
 
     {
         multio_metadata_t* md = nullptr;
-        test_check(multio_new_metadata(&md), "Create New Metadata Object");
+        test_check(multio_new_metadata(&md, nullptr), "Create New Metadata Object");
         std::unique_ptr<multio_metadata_t> multio_deleter(md);
 
         test_check(multio_metadata_set_int(md, "step", 123), "Set step");

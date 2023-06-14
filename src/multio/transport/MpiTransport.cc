@@ -78,7 +78,6 @@ MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
             options.parentCommName = std::optional<std::string>(groupName);
 
             const auto& mpiInitInfo = compConf.multioConfig().getMPIInitInfo();
-            options.alias = mpiInitInfo ? mpiInitInfo->clientId : std::optional<std::string>{};
 
             std::string subGroupName = compConf.parsedConfig().has("client-group")
                                          ? compConf.parsedConfig().getString("client-group")
@@ -88,8 +87,6 @@ MpiPeerSetup setupMPI_(const ComponentConfiguration& compConf) {
                                                    << "clients";
                                                return oss.str();
                                            })();
-            // eckit::Log::info() << " *** MpiTransport::setupMPI_ client " << subGroupName << "
-            // alias: " << (options.alias? options.alias().c_str() : "none") << std::endl;
 
             // Setup client group
             auto& clientComm
@@ -226,8 +223,8 @@ MpiTransport::MpiTransport(const ComponentConfiguration& compConf, MpiPeerSetup&
     parentGroup_{std::move(std::get<1>(peerSetup))},
     clientGroup_{std::move(std::get<2>(peerSetup))},
     serverGroup_{std::move(std::get<3>(peerSetup))},
-    streamQueue_{1024},
-    pool_{getMpiPoolSize(compConf), getMpiBufferSize(compConf), comm(), statistics_} {}
+    pool_{getMpiPoolSize(compConf), getMpiBufferSize(compConf), comm(), statistics_},
+    streamQueue_{1024} {}
 
 MpiTransport::MpiTransport(const ComponentConfiguration& compConf) : MpiTransport(compConf, setupMPI_(compConf)) {}
 

@@ -58,6 +58,7 @@ struct ClientFailureTraits {
 
 class MultioClient : public MultioConfigurationHolder, public util::FailureAware<ClientFailureTraits> {
 public:
+    MultioClient();
     MultioClient(MultioConfiguration&& multioConf);
 
     ~MultioClient();

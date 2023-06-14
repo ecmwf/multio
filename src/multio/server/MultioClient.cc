@@ -76,6 +76,8 @@ MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfigur
 MultioClient::MultioClient(MultioConfiguration&& multioConf) :
     MultioClient(getClientConf(multioConf), std::move(multioConf)) {}
 
+MultioClient::MultioClient() : MultioClient(MultioConfiguration{}) {}
+
 util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t, const util::FailureContext& c,
                                                          util::DefaultFailureState&) const {
     // Last cascading instance, print nested contexts

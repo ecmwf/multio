@@ -21,14 +21,15 @@ module multio_api
 
     type multio_configuration
         type(c_ptr) :: impl = c_null_ptr
+        integer(c_int), pointer :: failure_id => null()
     contains
         procedure :: new_default => multio_new_configuration
         procedure :: new_from_filename => multio_new_configuration_from_filename
         generic   :: new => new_default, new_from_filename
         procedure :: delete => multio_delete_configuration
+        procedure :: set_failure_handler => multio_config_set_failure_handler
         procedure :: set_path => multio_conf_set_path
         procedure :: mpi_allow_world_default_comm => multio_conf_mpi_allow_world_default_comm
-        procedure :: mpi_client_id => multio_conf_mpi_client_id
         procedure :: mpi_parent_comm => multio_conf_mpi_parent_comm
         procedure :: mpi_return_client_comm => multio_conf_mpi_return_client_comm
         procedure :: mpi_return_server_comm => multio_conf_mpi_return_server_comm
@@ -36,9 +37,13 @@ module multio_api
 
     type multio_handle
         type(c_ptr) :: impl = c_null_ptr
+        integer(c_int), pointer :: failure_id => null()
     contains
-        procedure :: new => multio_new_handle
+        procedure :: new_handle => multio_new_handle
+        procedure :: new_handle_default => multio_new_handle_default
+        generic :: new => new_handle, new_handle_default
         procedure :: delete => multio_delete_handle
+        procedure :: set_failure_handler => multio_handle_set_failure_handler
         procedure :: open_connections => multio_open_connections
         procedure :: close_connections => multio_close_connections
         procedure :: flush => multio_flush
@@ -74,34 +79,64 @@ module multio_api
         ! Not possible to overload integers with the same dimensions
         generic   :: set => set_int, set_string, set_bool, set_float, set_double
     end type
+    
+    type multio_failure_info
+        type(c_ptr) :: impl = c_null_ptr
+    end type
 
     ! Type declarations
 
     public :: multio_configuration
     public :: multio_handle
     public :: multio_metadata
+    public :: multio_failure_info
 
     ! Configuration management functions
 
     public :: multio_initialise
     public :: multio_version, multio_vcs_version
-    public :: multio_set_failure_handler
     public :: multio_start_server
     public :: multio_error_string
 
     ! Error handling definitions
-
+    
     abstract interface
-        subroutine failure_handler_t(context, error)
+        subroutine failure_handler_t(context, error, info)
+            import multio_failure_info
             implicit none
             integer, parameter :: int64 = selected_int_kind(15)
             integer(int64), intent(inout) :: context
             integer, intent(in) :: error
+            class(multio_failure_info), intent(in) :: info
         end subroutine
     end interface
+    
+    type multio_fort_failure_info_node
+        integer(c_int) :: id = 0
+        
+        integer(int64) :: context = 0
+        
+        procedure(failure_handler_t), nopass, pointer :: handler_fn => null()
 
-    integer(int64), save :: failure_handler_context
-    procedure(failure_handler_t), pointer, save :: failure_handler_fn
+        
+        TYPE(multio_fort_failure_info_node), pointer :: next => null()
+    end type
+    
+    type multio_fort_failure_info_list
+        integer(c_int) :: lastId = 0
+        integer :: count = 0
+        type(multio_fort_failure_info_node), pointer :: head => null()
+        type(multio_fort_failure_info_node), pointer :: tail => null()
+    contains
+        procedure :: callHandler => multio_fort_failure_call
+        procedure :: add => multio_fort_failure_add
+        procedure :: remove => multio_fort_failure_remove
+    end type
+
+
+    type(multio_fort_failure_info_list), save :: failure_info_list
+    ! integer(int64), save :: failure_handler_context
+    ! procedure(failure_handler_t), pointer, save :: failure_handler_fn
 
     ! For utility
 
@@ -150,15 +185,15 @@ module multio_api
             integer(c_int) :: err
         end function
 
-        function c_multio_set_failure_handler(handler, context) result(err) &
-                bind(c, name='multio_set_failure_handler')
+        function c_multio_error_string_info(err, info) result(error_string) &
+                bind(c, name='multio_error_string_info')
             use, intrinsic :: iso_c_binding
             implicit none
-            type(c_funptr), intent(in), value :: handler
-            type(c_ptr), intent(in), value :: context
-            integer(c_int) :: err
+            integer(c_int), intent(in), value :: err
+            type(c_ptr), intent(in), value :: info
+            type(c_ptr) :: error_string
         end function
-
+        
         function c_multio_error_string(err) result(error_string) &
                 bind(c, name='multio_error_string')
             use, intrinsic :: iso_c_binding
@@ -191,6 +226,26 @@ module multio_api
                 implicit none
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
+        end function
+        
+        function c_multio_config_set_failure_handler(cc, handler, context) result(err) &
+                bind(c, name='multio_config_set_failure_handler')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: cc
+            type(c_funptr), intent(in), value :: handler
+            type(c_ptr), intent(in), value :: context
+            integer(c_int) :: err
+        end function
+
+        function c_multio_handle_set_failure_handler(mio, handler, context) result(err) &
+                bind(c, name='multio_handle_set_failure_handler')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: mio
+            type(c_funptr), intent(in), value :: handler
+            type(c_ptr), intent(in), value :: context
+            integer(c_int) :: err
         end function
 
         function c_multio_conf_set_path(cc, path) result(err) &
@@ -256,6 +311,14 @@ module multio_api
             implicit none
             type(c_ptr), intent(out) :: handle
             type(c_ptr), intent(in), value :: cc
+            integer(c_int) :: err
+        end function
+        
+        function c_multio_new_handle_default(handle) result(err) &
+                bind(c, name='multio_new_handle')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(out) :: handle
             integer(c_int) :: err
         end function
 
@@ -370,11 +433,12 @@ module multio_api
 
         ! Metadata object api
 
-        function c_multio_new_metadata(metadata) result(err) &
+        function c_multio_new_metadata(metadata, handle) result(err) &
                 bind(c, name='multio_new_metadata')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(out) :: metadata
+            type(c_ptr), intent(in), value :: handle
             integer(c_int) :: err
         end function
 
@@ -472,30 +536,21 @@ contains
         fstr = transfer(tmp(1:length), fstr)
     end function
 
-    subroutine failure_handler_wrapper(unused_context, error) &
+    subroutine failure_handler_wrapper(context_id, error, info) &
                 bind(c)
-        type(c_ptr), value :: unused_context
-        integer(c_long), intent(in), value :: error
-        call failure_handler_fn(failure_handler_context, int(error))
+        type(c_ptr), value :: context_id
+        integer(c_int), intent(in), value :: error
+        type(c_ptr), intent(in), value :: info
+        
+        type(multio_failure_info) :: finfo
+        
+        integer(c_int), pointer :: id
+        call c_f_pointer( context_id, id )
+        
+        finfo%impl = info
+        
+        call failure_info_list%callHandler(id, int(error), finfo) 
     end subroutine
-
-    function multio_set_failure_handler(handler, context) result(err)
-        integer(int64) :: context
-        integer :: err
-
-        interface
-            subroutine handler (ctx, err)
-                implicit none
-                integer, parameter :: int64 = selected_int_kind(15)
-                integer(int64), intent(inout) :: ctx
-                integer, intent(in) :: err
-            end subroutine
-        end interface
-
-        failure_handler_fn => handler
-        failure_handler_context = context
-        err = c_multio_set_failure_handler(c_funloc(failure_handler_wrapper), c_null_ptr)
-    end function
 
     function multio_version(version_str) result(err)
         character(:), allocatable, intent(out) :: version_str
@@ -513,10 +568,15 @@ contains
         if (err == MULTIO_SUCCESS) git_sha1 = fortranise_cstr(tmp_str)
     end function
 
-    function multio_error_string(err) result(error_string)
+    function multio_error_string(err, info) result(error_string)
         integer, intent(in) :: err
+        class(multio_failure_info), optional, intent(in) :: info
         character(:), allocatable, target :: error_string
-        error_string = fortranise_cstr(c_multio_error_string(err))
+        if(present(info)) then
+            error_string = fortranise_cstr(c_multio_error_string_info(err, info%impl))
+        else
+            error_string = fortranise_cstr(c_multio_error_string(err))
+        end if
     end function
 
     function multio_start_server(cc) result(err)
@@ -543,10 +603,169 @@ contains
     end function
 
     function multio_delete_configuration(cc) result(err)
-            class(multio_configuration), intent(inout) :: cc
-            integer :: err
-            err = c_multio_delete_configuration(cc%impl)
-            cc%impl = c_null_ptr
+        class(multio_configuration), intent(inout) :: cc
+        integer :: err
+        err = c_multio_delete_configuration(cc%impl)
+        cc%impl = c_null_ptr
+        
+        if(ASSOCIATED(cc%failure_id)) then
+           call failure_info_list%remove(cc%failure_id)
+           cc%failure_id => null()
+        end if
+    end function
+    
+    subroutine multio_fort_failure_call(ffi, id, err, info) 
+       class(multio_fort_failure_info_list), intent(inout) :: ffi
+       integer(c_int), intent(in) :: id
+       integer :: err
+       class(multio_failure_info), intent(in) :: info
+       
+       type(multio_fort_failure_info_node), pointer :: node
+       
+       node => ffi%head
+      
+       do while(ASSOCIATED(node))
+         if (node%id == id) then
+           call node%handler_fn(node%context, err, info)
+           node => null()
+         else
+           node => node%next
+         end if
+       end do
+    end subroutine
+   
+    
+    function multio_fort_failure_add(ffi, handler_fn, context) result(new_id_loc)
+        class(multio_fort_failure_info_list), intent(inout) :: ffi
+        procedure(failure_handler_t), pointer :: handler_fn
+        integer(int64) :: context
+        
+        type(c_ptr) :: new_id_loc
+        class(multio_fort_failure_info_node), pointer :: new_node
+        
+        ffi%lastId = ffi%lastId + 1
+        ffi%count = ffi%count + 1
+        
+        allocate(new_node);
+        new_node%id = ffi%lastId
+        new_node%handler_fn => handler_fn 
+        new_node%context = context
+        
+        new_id_loc = c_loc(new_node%id)
+        
+        if(.not. ASSOCIATED(ffi%head)) then
+            ffi%head => new_node
+        end if
+        
+        if(ASSOCIATED(ffi%tail)) then
+            ffi%tail%next => new_node
+        endif
+        ffi%tail => new_node
+    end function
+    
+    subroutine multio_fort_failure_remove(ffi, id) 
+       class(multio_fort_failure_info_list), intent(inout) :: ffi
+       integer(c_int), intent(in) :: id
+       
+       type(multio_fort_failure_info_node), pointer :: node
+       type(multio_fort_failure_info_node), pointer :: node_prev
+       
+       node_prev => null()
+       node => ffi%head
+       
+       do while (ASSOCIATED(node))
+         if (node%id == id) then
+           if(ASSOCIATED(node_prev)) then
+             node_prev%next => node%next
+           end if
+           
+           if(ASSOCIATED(ffi%head, node)) then
+             ffi%head => node%next 
+           endif
+           
+           if(ASSOCIATED(ffi%tail, node)) then
+             ffi%tail => node_prev
+           endif
+           
+           ffi%count = ffi%count - 1
+           
+           deallocate(node)
+           node => null()
+         else
+           node_prev => node
+           node => node%next
+         end if
+       end do
+    end subroutine
+    
+    function multio_config_set_failure_handler(cc, handler, context) result(err)
+        class(multio_configuration), intent(inout) :: cc
+        integer(int64) :: context
+        integer :: err
+
+        interface
+            subroutine handler (ctx, err, info)
+                import multio_failure_info
+                implicit none
+                integer, parameter :: int64 = selected_int_kind(15)
+                integer(int64), intent(inout) :: ctx
+                integer, intent(in) :: err
+                class(multio_failure_info), intent(in) :: info
+            end subroutine
+        end interface
+        
+        type(c_ptr) :: new_id_loc
+        integer(c_int), pointer :: old_id => null()
+        procedure(failure_handler_t), pointer :: handler_fn
+        
+        handler_fn => handler
+        
+        if(ASSOCIATED(cc%failure_id)) then
+            old_id => cc%failure_id
+        end if
+        
+        new_id_loc = failure_info_list%add(handler_fn, context)
+        call c_f_pointer(new_id_loc, cc%failure_id)
+        err = c_multio_config_set_failure_handler(cc%impl, c_funloc(failure_handler_wrapper), new_id_loc)
+        
+        if(ASSOCIATED(old_id)) then
+            call failure_info_list%remove(old_id)
+        end if
+    end function
+    
+    function multio_handle_set_failure_handler(mio, handler, context) result(err)
+        class(multio_handle), intent(inout) :: mio
+        integer(int64) :: context
+        integer :: err
+
+        interface
+            subroutine handler (ctx, err, info)
+                import multio_failure_info
+                implicit none
+                integer, parameter :: int64 = selected_int_kind(15)
+                integer(int64), intent(inout) :: ctx
+                integer, intent(in) :: err
+                class(multio_failure_info), intent(in) :: info
+            end subroutine
+        end interface
+        
+        type(c_ptr) :: new_id_loc
+        integer(c_int), pointer :: old_id => null()
+        procedure(failure_handler_t), pointer :: handler_fn
+        
+        handler_fn => handler
+        
+        if(ASSOCIATED(mio%failure_id)) then
+            old_id => mio%failure_id
+        end if
+        
+        new_id_loc = failure_info_list%add(handler_fn, context)
+        call c_f_pointer(new_id_loc, mio%failure_id)
+        err = c_multio_handle_set_failure_handler(mio%impl, c_funloc(failure_handler_wrapper), new_id_loc)
+        
+        if(ASSOCIATED(old_id)) then
+            call failure_info_list%remove(old_id)
+        end if
     end function
 
     function multio_conf_set_path(cc, path) result(err)
@@ -562,16 +781,8 @@ contains
             class(multio_configuration), intent(inout) :: cc
             logical(c_bool), intent(in), value :: allow
             integer :: err
+            
             err = c_multio_conf_mpi_allow_world_default_comm(cc%impl, allow)
-    end function
-
-    function multio_conf_mpi_client_id(cc, client_id) result(err)
-            class(multio_configuration), intent(inout) :: cc
-            integer :: err
-            character(*), intent(in) :: client_id
-            character(:), allocatable, target :: nullified_client_id
-            nullified_client_id = trim(client_id) // c_null_char
-            err = c_multio_conf_mpi_client_id(cc%impl, c_loc(nullified_client_id))
     end function
 
     function multio_conf_mpi_parent_comm(cc, parent_comm) result(err)
@@ -599,9 +810,17 @@ contains
 
     function multio_new_handle(handle, cc) result(err)
         class(multio_handle), intent(inout) :: handle
-        class(multio_configuration), intent(in) :: cc
+        class(multio_configuration), intent(inout) :: cc
         integer :: err
+        handle%failure_id => cc%failure_id
+        cc%failure_id => null()
         err = c_multio_new_handle(handle%impl, cc%impl)
+    end function
+    
+    function multio_new_handle_default(handle) result(err)
+        class(multio_handle), intent(inout) :: handle
+        integer :: err
+        err = c_multio_new_handle_default(handle%impl)
     end function
 
     function multio_delete_handle(handle) result(err)
@@ -609,6 +828,11 @@ contains
         integer :: err
         err = c_multio_delete_handle(handle%impl)
         handle%impl = c_null_ptr
+
+        if(ASSOCIATED(handle%failure_id)) then
+           call failure_info_list%remove(handle%failure_id)
+           handle%failure_id => null()
+        end if
     end function
 
     function multio_open_connections(handle) result(err)
@@ -723,14 +947,16 @@ contains
         logical(c_bool), intent(out) :: set_value
         integer :: err
         character(:), allocatable, target :: nullified_field
+        
         err = c_multio_field_accepted(handle%impl, metadata%impl, set_value)
     end function
 
     ! Methods for metadata objects
-    function multio_new_metadata(metadata) result(err)
+    function multio_new_metadata(metadata, handle) result(err)
         class(multio_metadata), intent(inout) :: metadata
+        class(multio_handle), intent(in) :: handle
         integer :: err
-        err = c_multio_new_metadata(metadata%impl)
+        err = c_multio_new_metadata(metadata%impl, handle%impl)
     end function
 
     function multio_delete_metadata(metadata) result(err)

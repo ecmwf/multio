@@ -44,20 +44,9 @@ eckit::mpi::Comm& getCommPreparedCtx(const ComponentConfiguration& compConf, con
 
     eckit::mpi::Comm* existingComm = aliasedComm(name);
     if (existingComm != nullptr) {
-        if (options && options->alias && !eckit::mpi::hasComm(options->alias->c_str())) {
-            log("alias: " + *options->alias);
-            addAlias(name, *options->alias);
-        }
         return *existingComm;
     }
-    else if (options && options->alias && eckit::mpi::hasComm(options->alias->c_str())) {
-        existingComm = aliasedComm(*options->alias);
-        if (existingComm != nullptr) {
-            log("alias already exists - reverse map: " + *options->alias);
-            addAlias(*options->alias, name);
-            return *existingComm;
-        }
-    }
+
     const auto& subConfig = compConf.parsedConfig().getSubConfiguration(name);
     std::optional<std::string> typeString = subConfig.has("type")
                                               ? std::optional<std::string>{subConfig.getString("type")}
@@ -97,11 +86,6 @@ eckit::mpi::Comm& getCommPreparedCtx(const ComponentConfiguration& compConf, con
                 addAlias(defaultCommName, name);
                 return comm;
             }();
-
-            if (options && options->alias && !eckit::mpi::hasComm(options->alias->c_str())) {
-                log("alias: " + *options->alias);
-                addAlias(name, *options->alias);
-            }
 
             return comm;
         }
@@ -156,10 +140,7 @@ eckit::mpi::Comm& getCommPreparedCtx(const ComponentConfiguration& compConf, con
             withLog(comm, "successful split " + splitLogMsg.str());
 
             const auto& mpiInitInfo = compConf.multioConfig().getMPIInitInfo();
-            if (options && options->alias && !eckit::mpi::hasComm(options->alias->c_str())) {
-                log("alias: " + *options->alias);
-                addAlias(name, *options->alias);
-            }
+
             // printComms();
             return comm;
         }

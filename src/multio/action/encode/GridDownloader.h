@@ -22,7 +22,6 @@
 #include <optional>
 #include <unordered_map>
 
-
 namespace multio::action {
 
 class GribEncoder;

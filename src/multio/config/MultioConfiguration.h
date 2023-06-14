@@ -23,6 +23,7 @@
 
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <tuple>
 #include <unordered_map>
@@ -52,22 +53,28 @@ struct Translator<multio::config::LocalPeerTag, std::string> {
 
 //=============================================================================
 
+
 namespace multio::config {
+
+//=============================================================================
 
 struct ConfigFile {
     eckit::LocalConfiguration content;
     eckit::PathName source;
 };
 
+//=============================================================================
+
 struct MPIInitInfo {
     std::optional<int> parentComm{};
-    std::optional<std::string> clientId{};
     std::optional<int> defaultClientSplitColor{777};  // Hardcoded defaults may be overwritten
     std::optional<int> defaultServerSplitColor{888};  // Hardcoded defaults may be overwritten
     mutable int* returnClientComm{nullptr};           // Hardcoded defaults may be overwritten
     mutable int* returnServerComm{nullptr};           // Hardcoded defaults may be overwritten
     bool allowWorldAsDefault{true};
 };
+
+//=============================================================================
 
 
 class MultioConfiguration {
@@ -100,6 +107,14 @@ public:
     std::string replaceCurly(const std::string&) const;
 
     const std::vector<message::MetadataMapping>& getMetadataMappings(const std::string& mapping) const;
+
+
+    MultioConfiguration(const MultioConfiguration& other) = delete;
+    MultioConfiguration& operator=(const MultioConfiguration& other) = delete;
+
+    MultioConfiguration(MultioConfiguration&& other) noexcept = default;
+    MultioConfiguration& operator=(MultioConfiguration&& other) noexcept = default;
+
 
 private:
     MultioConfiguration(const eckit::PathName& configDir, const eckit::PathName& configFile,

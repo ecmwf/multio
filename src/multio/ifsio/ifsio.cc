@@ -106,7 +106,7 @@ public:
     };
 
 private:
-    std::tuple<eckit::LocalConfiguration, MultioConfiguration> configureFromSinks(MultioConfiguration multioConf) {
+    std::tuple<eckit::LocalConfiguration, MultioConfiguration> configureFromSinks(MultioConfiguration&& multioConf) {
         std::vector<eckit::LocalConfiguration> actions;
         actions.push_back(multioConf.parsedConfig());
         actions[0].set("type", "sink");
@@ -118,7 +118,7 @@ private:
         eckit::LocalConfiguration cfg;
         cfg.set("plans", plans);
 
-        return std::make_tuple(cfg, multioConf);
+        return std::make_tuple(cfg, std::move(multioConf));
     }
 
     MIO(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf) :

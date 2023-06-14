@@ -116,7 +116,7 @@ subroutine init(mio, rank, server_count, client_count)
     write(0,*) "Init..."
     cerr = cc%new()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error creating default configuration"
-    
+
     cerr = cc%set_failure_handler(multio_custom_error_handler, mio_parent_comm)
     if (cerr /= MULTIO_SUCCESS) then
          write(error_unit, *) 'setting multio failure handler failed: ',multio_error_string(cerr)

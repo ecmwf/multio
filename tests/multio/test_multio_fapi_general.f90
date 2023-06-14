@@ -8,11 +8,11 @@ module test_multio_fapi_general
     integer :: test_error_handler_calls = 0
     integer(8) :: test_error_handler_last_context
     integer :: test_error_handler_last_error
-    
+
     integer :: test_error_handler_calls2 = 0
     integer(8) :: test_error_handler_last_context2
     integer :: test_error_handler_last_error2
-    
+
     integer :: test_error_handler_calls3 = 0
     integer(8) :: test_error_handler_last_context3
     integer :: test_error_handler_last_error3
@@ -72,7 +72,7 @@ contains
         type(multio_configuration) :: cc
         integer :: j, err
         success = .true.
-        
+
         do j = 1, 2
             err = cc%new('invalid-path')
             if (err == MULTIO_SUCCESS) then
@@ -80,21 +80,21 @@ contains
                 success = .false.
                 return
             end if
-            
+
             if (TRIM(multio_error_string(err)) /= "Caught eckit exception on C-C++ API boundary: &
             &Cannot open invalid-path  (No such file or directory)") then
                 write(error_unit, *) 'unexpected error message: ', multio_error_string(err)
                 success = .false.
                 return
             endif
-            
+
             ! err = cc%delete()
             ! if (err /= MULTIO_SUCCESS) then
             !     write(error_unit, *) 'Could not delete configuration'
             !     success = .false.
             !     return
             ! end if
-            
+
             ! if (.not. c_associated(cc%impl)) then
             !     write(error_unit, *) 'configuration ptr has not been reset'
             !     success = .false.
@@ -109,8 +109,8 @@ contains
 
         logical :: success
         integer(8) :: original_context = 123456
-        integer(8) :: context 
-        integer(8) :: context2 
+        integer(8) :: context
+        integer(8) :: context2
         integer(8) :: context3
         integer :: err
         type(multio_configuration) :: cc
@@ -137,7 +137,7 @@ contains
             success = .false.
             return
         end if
-        
+
         ! Set test error handler and its context
         if (cc%set_failure_handler(test_error_handler, context) /= MULTIO_SUCCESS) then
             write(error_unit, *) 'setting failure handler failed: ',multio_error_string(err)
@@ -168,14 +168,14 @@ contains
 
         ! ! Change context value
         ! context = 654321
-        
+
         ! err = cc%new()
         ! if (err /= MULTIO_SUCCESS) then
         !     write(error_unit, *) 'multio_configuration%new failed unexpectedly: ',multio_error_string(err)
         !     success = .false.
         !     return
         ! end if
-        
+
         err = cc%mpi_allow_world_default_comm( .FALSE._1 )
         if (err /= MULTIO_SUCCESS) then
             write(error_unit, *) 'multio_configuration%allowWorldAsDefault failed unexpectedly: ',multio_error_string(err)
@@ -238,7 +238,7 @@ contains
             success = .false.
             return
         end if
-        
+
         ! Now remove second handler and readd
         err = cc2%delete()
         if (err /= MULTIO_SUCCESS) then
@@ -257,7 +257,7 @@ contains
             success = .false.
             return
         end if
-        
+
         ! Trigger error on 2
         err = cc2%mpi_allow_world_default_comm( .FALSE._1 )
         err = mio2%new(cc2)
@@ -266,7 +266,7 @@ contains
             success = .false.
             return
         end if
-        
+
 
         ! Check number of error handler calls
         if (test_error_handler_calls2 /= 1) then
@@ -288,8 +288,8 @@ contains
             success = .false.
             return
         end if
-        
-        
+
+
         ! Trigger error on 3
         err = cc3%mpi_allow_world_default_comm( .FALSE._1 )
         err = mio3%new(cc3)
@@ -319,8 +319,8 @@ contains
             success = .false.
             return
         end if
-        
-        
+
+
 
         ! Back to first handle
         ! Change context value another time
@@ -365,7 +365,7 @@ contains
         test_error_handler_last_context = context
         test_error_handler_last_error = error
     end subroutine
-    
+
     subroutine test_error_handler2(context, error, info)
         integer(8), intent(inout) :: context
         integer, intent(in) :: error
@@ -375,7 +375,7 @@ contains
         test_error_handler_last_context2 = context
         test_error_handler_last_error2 = error
     end subroutine
-    
+
     subroutine test_error_handler3(context, error, info)
         integer(8), intent(inout) :: context
         integer, intent(in) :: error
@@ -385,7 +385,7 @@ contains
         test_error_handler_last_context3 = context
         test_error_handler_last_error3 = error
     end subroutine
-    
+
 end module
 
 

@@ -97,9 +97,9 @@ The default behaviour is as follows.
 
     server:
       transport: mpi
-      group: multio 
-      client-group: multio-clients 
-      server-group: multio-servers 
+      group: multio
+      client-group: multio-clients
+      server-group: multio-servers
 
 
 To make this work, MULTIO will look up the `group` key in the server section or take the default

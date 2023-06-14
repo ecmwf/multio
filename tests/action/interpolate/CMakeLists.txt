@@ -87,4 +87,3 @@ foreach(_test
             ARGS         -P -T10 ${_reference} ${_result})
     endif()
 endforeach()
-

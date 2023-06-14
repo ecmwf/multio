@@ -37,4 +37,3 @@ actions:
       - type: fdb5
         enable: '{MULTIO_RAPS_ENABLE_FDB5_2_2_1}'
         config: {}
-

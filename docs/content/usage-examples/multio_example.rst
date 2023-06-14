@@ -13,4 +13,3 @@ This example code using the following config file:
 .. literalinclude:: testPlan.yaml
     :language: yaml
     :class: copybutton
-

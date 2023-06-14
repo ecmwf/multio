@@ -15,17 +15,16 @@
 #include "MaskCompression.h"
 
 
-
 namespace multio {
 namespace domain {
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 MaskCompressionException::MaskCompressionException(const std::string& what, const eckit::CodeLocation& l) :
     eckit::Exception(std::string("MaskCompressionException: ") + what, l) {}
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 MaskPayloadHeader decodeMaskPayloadHeader(const unsigned char* b, std::size_t size) {
     if (size < MASK_PAYLOAD_HEADER_SIZE) {
@@ -52,6 +51,7 @@ MaskPayloadHeader decodeMaskPayloadHeader(const unsigned char* b, std::size_t si
 MaskPayloadHeader decodeMaskPayloadHeader(const eckit::Buffer& b) {
     return decodeMaskPayloadHeader(static_cast<const unsigned char*>(b.data()), b.size() * sizeof(unsigned char));
 }
+
 MaskPayloadHeader decodeMaskPayloadHeader(const std::array<unsigned char, MASK_PAYLOAD_HEADER_SIZE>& b) {
     return decodeMaskPayloadHeader(b.data(), b.size());
 }
@@ -83,14 +83,14 @@ std::array<unsigned char, MASK_PAYLOAD_HEADER_SIZE> encodeMaskPayloadHeader(Mask
 }
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 std::size_t computeBufferSizeMaskBitMask(std::size_t size) {
     return MASK_PAYLOAD_HEADER_SIZE + (size >> 3) + ((size & ((1 << 3) - 1)) == 0 ? 0 : 1);
 }
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 
 // Iterator for decoding...
@@ -136,6 +136,7 @@ MaskPayloadIterator::MaskPayloadIterator(MaskPayloadIterator&& other) noexcept :
 MaskPayloadIterator::reference MaskPayloadIterator::operator*() const {
     return val_;
 }
+
 MaskPayloadIterator::reference MaskPayloadIterator::operator*() {
     return val_;
 }
@@ -143,6 +144,7 @@ MaskPayloadIterator::reference MaskPayloadIterator::operator*() {
 MaskPayloadIterator::pointer MaskPayloadIterator::operator->() const {
     return &val_;
 }
+
 MaskPayloadIterator::pointer MaskPayloadIterator::operator->() {
     return &val_;
 }
@@ -160,6 +162,7 @@ MaskPayloadIterator& MaskPayloadIterator::operator++() {
                 }
             }
         } break;
+
         case MaskPayloadFormat::BitMask:
         default: {
             if ((index_ + 1) < header_.numBits) {
@@ -221,6 +224,7 @@ void MaskPayloadIterator::updateValue_() noexcept {
             // Eventually increase number by one as the encoding step decremnets by 1
             runLengthNum_ += 1;
         } break;
+
         case MaskPayloadFormat::BitMask:
         default: {
             val_ = static_cast<bool>(
@@ -229,7 +233,7 @@ void MaskPayloadIterator::updateValue_() noexcept {
     }
 }
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 }  // namespace domain
 }  // namespace multio

@@ -16,12 +16,12 @@
 
 #include "multio/util/BinaryUtils.h"
 
-#include "eckit/io/Buffer.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/io/Buffer.h"
 
 #include <array>
 #include <cstdint>
-#include <cstring> // memcpy
+#include <cstring>  // memcpy
 
 namespace eckit {
 class Buffer;
@@ -31,7 +31,7 @@ class Buffer;
 namespace multio {
 namespace domain {
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 class MaskCompressionException : public eckit::Exception {
 public:
@@ -39,7 +39,7 @@ public:
 };
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 
 enum class MaskPayloadFormat : unsigned char
@@ -75,7 +75,7 @@ MaskPayloadHeader decodeMaskPayloadHeader(const std::array<unsigned char, MASK_P
 std::array<unsigned char, MASK_PAYLOAD_HEADER_SIZE> encodeMaskPayloadHeader(MaskPayloadHeader h);
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 std::size_t computeBufferSizeMaskBitMask(std::size_t size);
 
@@ -129,7 +129,7 @@ MaskRunLengthProperties computeMaskRunLengthProperties(const T* maskVals, std::s
 }
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 template <typename T>
 eckit::Buffer encodeMaskBitMask(const T* maskVals, const std::size_t size) {
@@ -160,7 +160,7 @@ eckit::Buffer encodeMaskBitMask(const T* maskVals, const std::size_t size) {
 }
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 template <typename T>
 eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size, const MaskRunLengthProperties props) {
@@ -233,7 +233,7 @@ eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size) {
 }
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 template <typename T>
 eckit::Buffer encodeMask(const T* maskVals, const std::size_t size, const MaskRunLengthProperties props) {
@@ -250,9 +250,7 @@ eckit::Buffer encodeMask(const T* maskVals, const std::size_t size) {
 }
 
 
-
-
-//==============================================================================
+//------------------------------------------------------------------------------
 
 // Iterator for decoding...
 class MaskPayloadIterator {
@@ -301,7 +299,7 @@ private:
 };
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 class EncodedMaskPayload {
 public:
@@ -323,7 +321,7 @@ private:
 };
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 
 }  // namespace domain
 }  // namespace multio

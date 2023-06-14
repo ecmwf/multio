@@ -15,17 +15,23 @@
 #include <limits>
 
 #include "multio/api/multio_c.h"
-#include "multio/api/multio_c_cpp_utils.h"
+#include "multio/config/ConfigurationPath.h"
 #include "multio/tools/MultioTool.h"
-#include "multio/util/ConfigurationPath.h"
 
 #include "eckit/io/FileHandle.h"
 #include "eckit/log/Log.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-using multio::util::configuration_file_name;
-using multio::util::configuration_path_name;
+using multio::config::configuration_file_name;
+using multio::config::configuration_path_name;
+
+
+void multio_throw_failure_handler(void*, int err, multio_failure_info_t* i) {
+    if (err != MULTIO_SUCCESS) {
+        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string(err, i)}, Here());
+    }
+}
 
 class MultioReplayExampleCApi final : public multio::MultioTool {
 public:
@@ -84,7 +90,15 @@ void MultioReplayExampleCApi::execute(const eckit::option::CmdArgs&) {
 
 void MultioReplayExampleCApi::initClient() {
     multio_configuration_t* multio_cc = nullptr;
-    multio_new_configuration_from_filename(&multio_cc, configuration_file_name().localPath());
+    int err = multio_new_configuration_from_filename(&multio_cc, configuration_file_name().localPath());
+    if (err != MULTIO_SUCCESS) {
+        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string_global(err)}, Here());
+    }
+    err = multio_set_failure_handler(multio_cc, multio_throw_failure_handler, nullptr);
+    if (err != MULTIO_SUCCESS) {
+        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string_global(err)}, Here());
+    }
+    // Failure handler now deals with future failures
     multio_new_handle(&multio_handle, multio_cc);
     multio_delete_configuration(multio_cc);
 }
@@ -110,7 +124,7 @@ void MultioReplayExampleCApi::writeFields(const eckit::Buffer& data) {
 
     multio_metadata_t* md = nullptr;
 
-    multio_new_metadata(&md);
+    multio_new_metadata(&md, multio_handle);
 
     const char* key = "test_int";
     int value = 1;
@@ -129,7 +143,7 @@ void MultioReplayExampleCApi::writeFields(const eckit::Buffer& data) {
     const char* s_value = "test_val";
     multio_metadata_set_string(md, key, s_value);
 
-    multio_write_field(multio_handle, md, reinterpret_cast<const double*>(data.data()), data.size());
+    multio_write_field_double(multio_handle, md, reinterpret_cast<const double*>(data.data()), data.size());
 
     multio_delete_metadata(md);
 }

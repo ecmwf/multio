@@ -163,8 +163,7 @@ MaskPayloadIterator& MaskPayloadIterator::operator++() {
             }
         } break;
 
-        case MaskPayloadFormat::BitMask:
-        default: {
+        case MaskPayloadFormat::BitMask: {
             if ((index_ + 1) < header_.numBits) {
                 ++index_;
                 updateValue_();
@@ -225,8 +224,7 @@ void MaskPayloadIterator::updateValue_() noexcept {
             runLengthNum_ += 1;
         } break;
 
-        case MaskPayloadFormat::BitMask:
-        default: {
+        case MaskPayloadFormat::BitMask: {
             val_ = static_cast<bool>(
                 (payload_[(index_ >> 3) + MASK_PAYLOAD_HEADER_SIZE] >> (index_ & ((1 << 3) - 1)) & 0x01));
         }

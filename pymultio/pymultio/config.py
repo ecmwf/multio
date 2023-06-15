@@ -5,18 +5,31 @@ from .lib import ffi, lib
 class Config:
     """This is the main container class for Multio Configs"""
 
-    def __init__(self, config_path=''):
+    def __init__(self, config_path=None, allow_world=None, parent_comm=None, client_comm=None, server_comm=None):
         self.__config_path = config_path
 
-        config = ffi.new("multio_configuration_t**")
-        configuration_file_name = ffi.new("char[]", self.__config_path.encode('ascii'))
-        if os.environ.get('MULTIO_SERVER_CONFIG_FILE'):
-            lib.multio_new_configuration(config)
+        config = ffi.new("multio_configuration_t**") 
+        if self.__config_path != None:
+            configuration_file_name = ffi.new("char[]", self.__config_path.encode('ascii'))
+            error = lib.multio_new_configuration_from_filename(config, configuration_file_name)    
+            print(error)   
         else:
-            lib.multio_new_configuration_from_filename(config, configuration_file_name)
+            lib.multio_new_configuration(config)
 
         # Set free function
         self.__config = ffi.gc(config[0], lib.multio_delete_configuration)
+
+        if allow_world != None:
+            self.conf_mpi_allow_world_default_comm(allow_world)
+
+        if parent_comm != None:
+            self.conf_mpi_parent_comm(parent_comm)
+
+        if client_comm != None:
+            self.conf_mpi_return_client_comm(client_comm)
+
+        if server_comm != None:
+            self.conf_mpi_return_server_comm(server_comm)
 
     def set_conf_path(self, conf_path):
 

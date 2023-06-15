@@ -5,7 +5,7 @@ from .lib import ffi, lib
 class Metadata:
     """This is the main container class for Multio Metadata"""
 
-    def __init__(self, handle):
+    def __init__(self, handle, md=None):
 
         self.__handle_pointer = handle.get_pointer()
 
@@ -13,6 +13,25 @@ class Metadata:
         lib.multio_new_metadata(metadata, self.__handle_pointer)
 
         self.__metadata = ffi.gc(metadata[0], lib.multio_delete_metadata)
+
+        if md != None:
+            # Could use switch case if using python 3.10 or above
+            # Need to figure out how to use long, longlong, and double
+            for key, value in md.items():
+                if type(value) == int:
+                    self.metadata_set_int(key, value)
+                #elif type(value) == long: 
+                #    self.metdata_set_long(key, value)
+                elif type(value) == str:
+                    self.metadata_set_string(key, value)
+                elif type(value) == bool:
+                    self.metadata_set_bool(key, value)
+                elif type(value) == float:
+                    self.metadata_set_float(key, value)
+                #elif type(value) == double:
+                #    self.metadata_set_double(key, value)
+                else:
+                    raise TypeError(f"{type(value).__name__} is not allowed for metadata")  
 
     def metadata_set_int(self, key, value):
         

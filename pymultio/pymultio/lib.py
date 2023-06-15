@@ -120,8 +120,8 @@ class PatchedLib:
             if retval not in (
                 self.__lib.MULTIO_SUCCESS,
             ):
-                error_str = "Error in function {}: {}".format(name, self.__lib.multio_error_string(retval))
-                raise ODCException(error_str)
+                error_str = "Error in function {}: {}".format(name, ffi.string(self.__lib.multio_error_string_global(retval)))
+                raise MultioException(error_str)
             return retval
 
         return wrapped_fn

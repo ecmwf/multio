@@ -29,7 +29,7 @@ class Handler:
 
     def notify(self, metadata):
 
-        lib.multio_notify(self.__handle, metadata.get_pointer())\
+        lib.multio_notify(self.__handle, metadata.get_pointer())
 
     def write_domain(self, metadata, data, size):
 

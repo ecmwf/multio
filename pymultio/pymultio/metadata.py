@@ -61,4 +61,7 @@ class Metadata:
         key = ffi.new("char[]", key.encode('ascii'))
         value = ffi.cast("double", value)
 
-        lib.multio_metadata_set_double(self.__metadata, key, value)
+        lib.multio_metadata_set_double(self.__metadata, key, value) 
+
+    def get_pointer(self):
+        return self.__metadata

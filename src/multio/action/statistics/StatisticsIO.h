@@ -28,8 +28,8 @@ public:
     virtual void flush() = 0;
 
 protected:
-    const std::string generatePathName() const;
-    const std::string generateFileName(const std::string& name, long step_offset) const;
+    std::string generatePathName() const;
+    std::string generateFileName(const std::string& name, long step_offset) const;
     void removeOldFile(const std::string& name, long step_offset) const;
 
     const std::string path_;

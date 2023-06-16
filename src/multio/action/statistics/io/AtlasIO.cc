@@ -33,6 +33,8 @@ void AtlasIO::read(const std::string& name, std::vector<std::uint64_t>& data) {
 };
 
 void AtlasIO::flush() {
+    // TODO: Decide what to do when flush is called. Flush partial statistics when the Tag::Flush is received is
+    // probably okay
     return;
 };
 

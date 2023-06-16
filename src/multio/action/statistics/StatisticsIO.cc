@@ -50,14 +50,14 @@ void StatisticsIO::reset() {
     return;
 };
 
-const std::string StatisticsIO::generatePathName() const {
+std::string StatisticsIO::generatePathName() const {
     std::ostringstream os;
     os << path_ << "/" << prefix_ << "/" << key_ << "/" << suffix_;
     eckit::PathName{os.str()}.mkdir();
     return os.str();
 };
 
-const std::string StatisticsIO::generateFileName(const std::string& name, long step_offset) const {
+std::string StatisticsIO::generateFileName(const std::string& name, long step_offset) const {
     std::ostringstream os;
     os << generatePathName() << "/" << name << "-" << std::setw(10) << std::setfill('0') << step_ - step_offset << "."
        << ext_;

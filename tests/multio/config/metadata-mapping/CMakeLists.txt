@@ -4,4 +4,3 @@ install(
     FILES       ${config_yaml_files}/metadataMappings
     DESTINATION ${MULTIO_CONFIG_DIR}
     PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)
-

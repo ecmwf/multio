@@ -19,6 +19,7 @@
 #include "multio/domain/MaskCompression.h"
 
 #include <iomanip>
+#include <random>
 
 namespace multio {
 
@@ -155,6 +156,40 @@ CASE("Test compute expected buffer sizes") {
         prop4.numBitsPerInt
         == 19);  // largest value to fit in is 1 << 19.. (20bits). But because 0 is not used, encoding derements by one
     EXPECT(prop4.bufSize == (27 + 5));
+
+
+    // Fill vector with 1
+    std::size_t v5s = 1 << 25;
+    std::vector<float> v5(v5s);
+    auto v5g = []() { return true; };
+    std::generate(v5.begin(), v5.end(), v5g);
+
+    MaskRunLengthProperties prop5 = computeMaskRunLengthProperties(v5.data(), v5.size());
+    std::cout << "startValue " << prop5.startValue << std::endl;
+    std::cout << "numValues " << prop5.numValues << std::endl;
+    std::cout << "numBitsPerInt " << prop5.numBitsPerInt << std::endl;
+    std::cout << "bufSize " << prop5.bufSize << std::endl;
+    EXPECT(prop5.startValue == true);
+    EXPECT(prop5.numValues == 1);
+    EXPECT(prop5.numBitsPerInt == 25);
+    EXPECT(prop5.bufSize == (4 + 5));
+
+
+    // Fill vector with 0
+    std::size_t v6s = 1 << 25;
+    std::vector<float> v6(v6s);
+    auto v6g = []() { return false; };
+    std::generate(v6.begin(), v6.end(), v6g);
+
+    MaskRunLengthProperties prop6 = computeMaskRunLengthProperties(v6.data(), v6.size());
+    std::cout << "startValue " << prop6.startValue << std::endl;
+    std::cout << "numValues " << prop6.numValues << std::endl;
+    std::cout << "numBitsPerInt " << prop6.numBitsPerInt << std::endl;
+    std::cout << "bufSize " << prop6.bufSize << std::endl;
+    EXPECT(prop6.startValue == false);
+    EXPECT(prop6.numValues == 1);
+    EXPECT(prop6.numBitsPerInt == 25);
+    EXPECT(prop6.bufSize == (4 + 5));
 }
 
 CASE("Test encode/decode bitmask") {
@@ -323,6 +358,141 @@ CASE("Test encode/decode run length") {
         EXPECT(v == static_cast<bool>(v4[i4]));
         ++i4;
     }
+
+    // Fill vector with 1
+    std::size_t v5s = 1 << 25;
+    std::vector<float> v5(v5s);
+    auto v5g = []() { return true; };
+    std::generate(v5.begin(), v5.end(), v5g);
+
+    eckit::Buffer b5 = encodeMaskRunLength(v5.data(), v5.size());
+
+    // for(unsigned int i=0; i < b5.size(); ++i) {
+    //     std::cout << "b5[" << i << "]: " << std::hex << std::setiosflags (std::ios::showbase) << ((int) b5[i]) <<
+    //     std::resetiosflags(std::ios::hex) << std::endl;
+    // }
+
+    EncodedMaskPayload em5(b5);
+    std::size_t i5 = 0;
+    for (bool v : em5) {
+        // std::cout << i5 << ": " << v << std::endl;
+        EXPECT(v == static_cast<bool>(v5[i5]));
+        ++i5;
+    }
+
+
+    // Fill vector with 0
+    std::size_t v6s = 1 << 25;
+    std::vector<float> v6(v6s);
+    auto v6g = []() { return false; };
+    std::generate(v6.begin(), v6.end(), v6g);
+
+
+    eckit::Buffer b6 = encodeMaskRunLength(v6.data(), v6.size());
+
+    // for(unsigned int i=0; i < b6.size(); ++i) {
+    //     std::cout << "b6[" << i << "]: " << std::hex << std::setiosflags (std::ios::showbase) << ((int) b6[i]) <<
+    //     std::resetiosflags(std::ios::hex) << std::endl;
+    // }
+
+    EncodedMaskPayload em6(b6);
+    std::size_t i6 = 0;
+    for (bool v : em6) {
+        // std::cout << i6 << ": " << v << std::endl;
+        EXPECT(v == static_cast<bool>(v6[i6]));
+        ++i6;
+    }
+}
+
+// CASE("Test encode/decode run length with a lot of combinations (bruteforce)") {
+//     constexpr unsigned int iMax = 1 << 16;
+//     constexpr unsigned int jMax = 1 << 16;
+//     for (unsigned int i = 1; i < iMax; ++i) {
+//         for (unsigned int j = i; j < jMax; ++j) {
+//             for (unsigned int startVal = 0; startVal < 2; ++startVal) {
+//                 // Fill vector with i ones and j zeros.
+//                 std::vector<float> v(1 << 16);
+//                 bool vVal = !startVal;
+//                 std::size_t vInd = i;
+
+//                 std::cout << "Test encode/decode run length combination with i: " << i << " j: " << j
+//                           << " and startVal " << vVal << std::endl;
+
+//                 auto vg = [&vInd, &vVal, j, i]() {
+//                     if (vInd == 0) {
+//                         vInd = vVal ? j : i;
+//                         vVal = !vVal;
+//                     }
+//                     --vInd;
+//                     return vVal;
+//                 };
+//                 std::generate(v.begin(), v.end(), vg);
+
+//                 eckit::Buffer b = encodeMaskRunLength(v.data(), v.size());
+
+//                 // for (unsigned int ib = 0; ib < b.size(); ++ib) {
+//                 //     std::cout << "b[" << ib << "]: " << std::hex << std::setiosflags(std::ios::showbase) <<
+//                 //     ((int)b[ib])
+//                 //               << std::resetiosflags(std::ios::hex) << std::endl;
+//                 // }
+
+//                 EncodedMaskPayload em(b);
+//                 std::size_t ib = 0;
+//                 for (bool vEncDec : em) {
+//                     // std::cout << i << ": " << v << " - " << static_cast<bool>(v[i]) << std::endl;
+//                     EXPECT(vEncDec == static_cast<bool>(v[ib]));
+//                     ++ib;
+//                 }
+//             }
+//         }
+//     };
+// }
+
+CASE("Test encode/decode run length with a lot of combinations (random)") {
+    constexpr unsigned int runs = 1 << 8;
+    constexpr unsigned int randMaxCons = 1 << 20;
+
+    std::random_device rd;   // a seed source for the random number engine
+    std::mt19937 gen(rd());  // mersenne_twister_engine seeded with rd()
+    std::uniform_int_distribution<> startDistrib(0, 1);
+
+
+    for (unsigned int r = 1; r < runs; ++r) {
+        // Fill vector with i ones and j zeros.
+        std::vector<float> v(1 << 22);
+        std::uniform_int_distribution<> distrib(1, randMaxCons / runs * (r + 1));
+
+        bool vVal = startDistrib(gen);
+        std::size_t vInd = distrib(gen);
+
+        std::cout << "Test encode/decode run length combination run: " << r << " and startVal " << vVal << std::endl;
+
+        auto vg = [&vInd, &vVal, &distrib, &gen]() {
+            if (vInd == 0) {
+                vInd = distrib(gen);
+                vVal = !vVal;
+            }
+            --vInd;
+            return vVal;
+        };
+        std::generate(v.begin(), v.end(), vg);
+
+        eckit::Buffer b = encodeMaskRunLength(v.data(), v.size());
+
+        // for (unsigned int ib = 0; ib < b.size(); ++ib) {
+        //     std::cout << "b[" << ib << "]: " << std::hex << std::setiosflags(std::ios::showbase) <<
+        //     ((int)b[ib])
+        //               << std::resetiosflags(std::ios::hex) << std::endl;
+        // }
+
+        EncodedMaskPayload em(b);
+        std::size_t ib = 0;
+        for (bool vEncDec : em) {
+            // std::cout << i << ": " << v << " - " << static_cast<bool>(v[i]) << std::endl;
+            EXPECT(vEncDec == static_cast<bool>(v[ib]));
+            ++ib;
+        }
+    };
 }
 
 }  // namespace test

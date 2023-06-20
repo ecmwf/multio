@@ -201,7 +201,11 @@ eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size, con
             // Step to next byte
             if (remainingBits == 0) {
                 ++bufOffset;
-                b[bufOffset] = 0;
+                if(bufOffset < props.bufSize) {
+                    b[bufOffset] = 0;
+                } else {
+                   ASSERT(numBitsToWrite == 0); 
+                }
                 remainingBits = 8;
             }
         } while (numBitsToWrite > 0);

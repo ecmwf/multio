@@ -6,40 +6,76 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "eckit/filesystem/PathName.h"
 
 namespace multio::action {
 
-uint64_t computeChecksum(const std::vector<std::uint64_t>& state);
+class IOBuffer {
+private:
+    std::vector<uint64_t>& buffer_;
+    size_t size_;
+    bool good_;
 
+    uint64_t checksum() const;
+
+public:
+    typename std::vector<uint64_t>::iterator begin() { return buffer_.begin(); };
+    typename std::vector<uint64_t>::iterator end() { return buffer_.begin() + size_; };
+    typename std::vector<uint64_t>::const_iterator cbegin() const{ return buffer_.cbegin(); };
+    typename std::vector<uint64_t>::const_iterator cend() const { return buffer_.cbegin() + size_; };
+
+    IOBuffer(std::vector<uint64_t>& buffer);
+    IOBuffer(std::vector<uint64_t>& buffer, size_t size);
+    size_t size() const;
+    uint64_t* data();
+    const uint64_t* data() const;
+    void setStatus(bool stat);
+    bool good() const;
+    uint64_t& operator[](const size_t idx);
+    const uint64_t& operator[](const size_t idx) const;
+    void zero();
+    void computeChecksum();
+    void checkChecksum() const;
+};
+
+// -------------------------------------------------------------------------------------------------------------------
 class StatisticsIO {
 public:
     StatisticsIO(const std::string& path, const std::string& prefix, const std::string& ext);
     virtual ~StatisticsIO() = default;
 
     void setKey(const std::string& key);
-    void setStep(long step);
+    void setCurrStep(long step);
+    void setPrevStep(long step);
     void setSuffix(const std::string& suffix);
     void reset();
+    IOBuffer getBuffer(std::size_t size);
 
-    virtual void write(const std::string& name, const std::vector<std::uint64_t>& data) = 0;
-    virtual void read(const std::string& name, std::vector<std::uint64_t>& data) = 0;
+    virtual void write(const std::string& name, size_t writeSize) = 0;
+    virtual void read(const std::string& name, size_t readSize) = 0;
     virtual void flush() = 0;
+
 
 protected:
     std::string generatePathName() const;
-    std::string generateFileName(const std::string& name, long step_offset) const;
-    void removeOldFile(const std::string& name, long step_offset) const;
+    std::string generateCurrFileName(const std::string& name) const;
+    std::string generatePrevFileName(const std::string& name) const;
+    void removeCurrFile(const std::string& name) const;
+    void removePrevFile(const std::string& name) const;
 
     const std::string path_;
     const std::string prefix_;
-    long step_;
+    long prevStep_;
+    long currStep_;
 
     std::string key_;
     std::string suffix_;
     std::string name_;
     const std::string ext_;
+
+    std::vector<std::uint64_t> buffer_;
 };
 
 class StatisticsIOBuilderBase;

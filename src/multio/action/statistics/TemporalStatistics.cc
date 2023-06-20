@@ -52,7 +52,11 @@ bool TemporalStatistics::isEndOfWindow(message::Message& msg, const StatisticsCo
     return !window_.isWithin(nextDateTime(msg, cfg));
 }
 
-const MovingWindow& TemporalStatistics::win() const {
+const MovingWindow& TemporalStatistics::cwin() const {
+    return window_;
+}
+
+MovingWindow& TemporalStatistics::win() {
     return window_;
 }
 

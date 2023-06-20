@@ -81,11 +81,16 @@ public:
     eckit::DateTime prevPoint() const;
     eckit::DateTime endPoint() const;
 
-    const std::string stepRange() const;
-    const std::string stepRangeInHours() const;
+    std::string stepRange() const;
+    std::string stepRangeInHours() const;
 
-    const std::string stepRange(const eckit::DateTime& refPoint) const;
-    const std::string stepRangeInHours(const eckit::DateTime& refPoint) const;
+    std::string stepRange(const eckit::DateTime& refPoint) const;
+    std::string stepRangeInHours(const eckit::DateTime& refPoint) const;
+
+    void updateFlush();
+    long lastFlushInSteps() const;
+
+    size_t restartSize() const;
 
 private:
     eckit::DateTime epochPoint_;
@@ -94,12 +99,13 @@ private:
     eckit::DateTime currPoint_;
     eckit::DateTime prevPoint_;
     eckit::DateTime endPoint_;
+    eckit::DateTime lastFlush_;
 
     long timeStepInSeconds_;
     long count_;
 
-    void serialize(std::vector<std::uint64_t>& currState) const;
-    void deserialize(const std::vector<std::uint64_t>& currState);
+    void serialize(IOBuffer& currState) const;
+    void deserialize(const IOBuffer& currState);
 
     void print(std::ostream& os) const;
     friend std::ostream& operator<<(std::ostream& os, const MovingWindow& a);

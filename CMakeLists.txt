@@ -42,7 +42,7 @@ ecbuild_add_option( FEATURE FDB5
 ### atlas-io plugin
 
 ecbuild_add_option( FEATURE ATLAS_IO
-                    DEFAULT OFF
+                    DEFAULT ON
                     DESCRIPTION "Use atlasIO for the restart"
                     REQUIRED_PACKAGES "NAME atlas_io VERSION 0.33" )
 

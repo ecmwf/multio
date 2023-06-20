@@ -31,7 +31,8 @@ public:
 
     void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const;
 
-    const MovingWindow& win() const;
+    const MovingWindow& cwin() const;
+    MovingWindow& win();
 
     void print(std::ostream& os) const;
 

@@ -36,10 +36,12 @@ void Statistics::DumpRestart() {
         IOmanager_->setSuffix(periodUpdater_->name());
         for (auto it = fieldStats_.begin(); it != fieldStats_.end(); it++) {
             LOG_DEBUG_LIB(LibMultio) << "Restart for field with key :: " << it->first << ", "
-                                     << it->second->win().currPointInSteps() << std::endl;
-            IOmanager_->setStep(it->second->win().currPointInSteps());
+                                     << it->second->cwin().currPointInSteps() << std::endl;
+            IOmanager_->setCurrStep(it->second->cwin().currPointInSteps());
+            IOmanager_->setPrevStep(it->second->cwin().lastFlushInSteps());
             IOmanager_->setKey(it->first);
             it->second->dump(IOmanager_, cfg_);
+            it->second->win().updateFlush();
         }
     }
 }
@@ -59,7 +61,7 @@ std::string Statistics::generateKey(const message::Message& msg) const {
 
 message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetadata, const StatisticsConfiguration& cfg,
                                              const std::string& key) const {
-    auto& win = fieldStats_.at(key)->win();
+    auto& win = fieldStats_.at(key)->cwin();
     if (win.endPointInSeconds() % 3600 != 0L) {
         std::ostringstream os;
         os << "Step in seconds needs to be a multiple of 3600 :: " << fieldStats_.at(key)->win().endPointInSeconds()
@@ -98,7 +100,7 @@ void Statistics::executeImpl(message::Message msg) {
     std::string key = generateKey(msg);
     StatisticsConfiguration cfg{cfg_, msg};
     IOmanager_->reset();
-    IOmanager_->setStep(cfg.restartStep());
+    IOmanager_->setCurrStep(cfg.restartStep());
     IOmanager_->setKey(key);
 
 

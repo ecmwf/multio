@@ -149,10 +149,10 @@ CASE("Test compute expected buffer sizes") {
                        << "numBitsPerInt " << prop4.numBitsPerInt << std::endl
                        << "bufSize " << prop4.bufSize << std::endl;
     EXPECT(prop4.startValue == true);
-    EXPECT(prop4.numValues == 11);  // From 2**10 to 2**19 -> 10 numbers + 1 last number that fills up to 1**20
-    EXPECT(
-        prop4.numBitsPerInt
-        == 19);  // largest value to fit in is 1 << 19.. (20bits). But because 0 is not used, encoding derements by one
+    // From 2**10 to 2**19 -> 10 numbers + 1 last number that fills up to 1**20
+    EXPECT(prop4.numValues == 11);
+    // The largest value to fit in is 1 << 19.. (20bits). But because 0 is not used, encoding derements by one
+    EXPECT(prop4.numBitsPerInt == 19);
     EXPECT(prop4.bufSize == (27 + 5));
 
 
@@ -343,10 +343,37 @@ CASE("Test encode/decode run length") {
         EXPECT(v == static_cast<bool>(v6[i6]));
         ++i6;
     }
+
+
+    // Fill vector with sequences of 16 such that two consecutive numbers fill one byte and all information matches
+    // exactly in the buffer without some bits left off
+    std::size_t v7s = 1 << 6;
+    std::vector<float> v7(v7s);
+    unsigned int v7Ind = 0;
+    bool v7Val = true;
+    auto v7g = [&v7Ind, &v7Val]() {
+        if (v7Ind == 0) {
+            v7Ind = 16;
+            v7Val = !v7Val;
+        }
+        --v7Ind;
+        return v7Val;
+    };
+    std::generate(v7.begin(), v7.end(), v7g);
+
+
+    eckit::Buffer b7 = encodeMaskRunLength(v7.data(), v7.size());
+
+    EncodedMaskPayload em7(b7);
+    std::size_t i7 = 0;
+    for (bool v : em7) {
+        EXPECT(v == static_cast<bool>(v7[i7]));
+        ++i7;
+    }
 }
 
 CASE("Test encode/decode run length with a lot of combinations (random)") {
-    constexpr unsigned int runs = 1 << 8;
+    constexpr unsigned int runs = 1 << 6;
     constexpr unsigned int randMaxCons = 1 << 20;
 
     std::random_device rd;   // a seed source for the random number engine

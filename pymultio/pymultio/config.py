@@ -8,11 +8,11 @@ class Config:
     def __init__(self, config_path=None, allow_world=None, parent_comm=None, client_comm=None, server_comm=None):
         self.__config_path = config_path
 
-        config = ffi.new("multio_configuration_t**") 
+        config = ffi.new("multio_configuration_t**")
         if self.__config_path != None:
             configuration_file_name = ffi.new("char[]", self.__config_path.encode('ascii'))
-            error = lib.multio_new_configuration_from_filename(config, configuration_file_name)    
-            print(error)   
+            error = lib.multio_new_configuration_from_filename(config, configuration_file_name)
+            print(error)
         else:
             lib.multio_new_configuration(config)
 
@@ -62,5 +62,3 @@ class Config:
 
     def get_pointer(self):
         return self.__config
-
-

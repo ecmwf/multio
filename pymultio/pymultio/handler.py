@@ -54,7 +54,7 @@ class Handler:
         data = ffi.new(f'float[{size}]', data)
         size = ffi.cast("int", size)
         lib.multio_write_field_float(self.__handle, metadata.get_pointer(), data, size)
-    
+
     def write_field_double(self, metadata, data, size):
 
         data = ffi.new(f'double[{size}]', data)

@@ -20,7 +20,7 @@ class Metadata:
             for key, value in md.items():
                 if type(value) == int:
                     self.metadata_set_int(key, value)
-                #elif type(value) == long: 
+                #elif type(value) == long:
                 #    self.metdata_set_long(key, value)
                 elif type(value) == str:
                     self.metadata_set_string(key, value)
@@ -31,56 +31,56 @@ class Metadata:
                 #elif type(value) == double:
                 #    self.metadata_set_double(key, value)
                 else:
-                    raise TypeError(f"{type(value).__name__} is not allowed for metadata")  
+                    raise TypeError(f"{type(value).__name__} is not allowed for metadata")
 
     def metadata_set_int(self, key, value):
-        
+
         key = ffi.new("char[]", key.encode('ascii'))
         value = ffi.cast("int", value)
 
         lib.multio_metadata_set_int(self.__metadata, key, value)
 
     def metadata_set_long(self, key, value):
-        
+
         key = ffi.new("char[]", key.encode('ascii'))
         value = ffi.cast("long", value)
 
         lib.multio_metadata_set_long(self.__metadata, key, value)
 
     def metadata_set_longlong(self, key, value):
-        
+
         key = ffi.new("char[]", key.encode('ascii'))
         value = ffi.cast("long long", value)
 
         lib.multio_metadata_set_longlong(self.__metadata, key, value)
 
     def metadata_set_string(self, key, value):
-        
+
         key = ffi.new("char[]", key.encode('ascii'))
         value = ffi.new("char[]", value.encode('ascii'))
 
         lib.multio_metadata_set_string(self.__metadata, key, value)
 
     def metadata_set_bool(self, key, value):
-        
+
         key = ffi.new("char[]", key.encode('ascii'))
         value = ffi.cast("_Bool", value)
 
         lib.multio_metadata_set_bool(self.__metadata, key, value)
 
     def metadata_set_float(self, key, value):
-        
+
         key = ffi.new("char[]", key.encode('ascii'))
         value = ffi.cast("float", value)
 
         lib.multio_metadata_set_float(self.__metadata, key, value)
 
     def metadata_set_double(self, key, value):
-        
+
         key = ffi.new("char[]", key.encode('ascii'))
         value = ffi.cast("double", value)
 
-        lib.multio_metadata_set_double(self.__metadata, key, value) 
+        lib.multio_metadata_set_double(self.__metadata, key, value)
 
     def get_pointer(self):
         return self.__metadata

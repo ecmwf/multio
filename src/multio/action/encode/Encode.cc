@@ -186,6 +186,8 @@ void Encode::executeImpl(Message msg) {
         return;
     }
 
+    auto gridUID = std::optional<GridDownloader::GridUIDType>{};
+
     if (isOcean(msg.metadata())) {
         //! TODO shoud not be checked here anymore, encoder_ should have been initialized according to format_
         ASSERT(format_ == "grib");
@@ -204,9 +206,10 @@ void Encode::executeImpl(Message msg) {
                 executeNext(gridCoords.value().Lon);
             }
         }
+
+        gridUID = gridDownloader_->getGridUID(msg.domain());
     }
 
-    auto gridUID = gridDownloader_->getGridUID(msg.domain());
     executeNext(encodeField(std::move(msg), gridUID));
 }
 

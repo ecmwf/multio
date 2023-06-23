@@ -36,7 +36,7 @@ public:
         checkSize(sz);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
-        std::copy(val, val + sz, values_.begin());
+        std::copy(val, val + (sz / sizeof(T)), values_.begin());
         return;
     }
 

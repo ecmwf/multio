@@ -1,11 +1,15 @@
+
 #include "AtlasIO.h"
 
 #include <cstdio>
 #include <cstring>
 #include <iomanip>
 
+#include "atlas_io/atlas-io.h"
+
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
+
 #include "multio/LibMultio.h"
 
 
@@ -17,8 +21,8 @@ template <typename T>
 class SubVector {
 private:
     T* data_;
-    bool good_;
     size_t size_;
+    bool good_;
 
 public:
     size_t size() const { return size_; }

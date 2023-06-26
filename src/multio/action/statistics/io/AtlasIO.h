@@ -1,9 +1,9 @@
+
 #pragma once
 
 #include <cinttypes>
 #include <vector>
 
-#include "atlas_io/atlas-io.h"
 #include "eckit/config/LocalConfiguration.h"
 
 #include "multio/action/statistics/StatisticsIO.h"

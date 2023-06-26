@@ -4,6 +4,7 @@
 #include <mutex>
 
 #include "eckit/exception/Exceptions.h"
+#include "eckit/filesystem/PathName.h"
 #include "eckit/log/Log.h"
 
 #include "multio/LibMultio.h"
@@ -96,7 +97,7 @@ void IOBuffer::checkChecksum() const {
 // -------------------------------------------------------------------------------------------------------------------
 
 StatisticsIO::StatisticsIO(const std::string& path, const std::string& prefix, const std::string& ext) :
-    path_{path}, prefix_{prefix}, currStep_{0}, prevStep_{0}, key_{""}, name_{""}, ext_{ext}, buffer_{8192, 0} {};
+    path_{path}, prefix_{prefix}, prevStep_{0}, currStep_{0}, key_{""}, name_{""}, ext_{ext}, buffer_{8192, 0} {};
 
 
 void StatisticsIO::setKey(const std::string& key) {

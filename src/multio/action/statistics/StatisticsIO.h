@@ -1,14 +1,16 @@
+
 #pragma once
 
 #include <algorithm>
 #include <cinttypes>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "eckit/filesystem/PathName.h"
+#include "eckit/memory/NonCopyable.h"
 
 namespace multio::action {
 

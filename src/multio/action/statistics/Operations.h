@@ -13,10 +13,6 @@
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 
-#include "multio/action/statistics/MovingWindow.h"
-#include "multio/action/statistics/StatisticsConfiguration.h"
-#include "multio/action/statistics/StatisticsIO.h"
-
 #include "multio/action/statistics/operations/OperationBase.h"
 #include "multio/action/statistics/operations/OperationWithData.h"
 

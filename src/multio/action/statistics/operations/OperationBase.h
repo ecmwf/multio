@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include <string>
 
 #include "multio/action/statistics/MovingWindow.h"

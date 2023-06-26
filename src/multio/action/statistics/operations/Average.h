@@ -1,4 +1,9 @@
 
+#pragma once
+
+#include "multio/LibMultio.h"
+#include "multio/action/statistics/operations/OperationWithData.h"
+
 namespace multio::action {
 
 template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>

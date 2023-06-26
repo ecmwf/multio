@@ -39,6 +39,13 @@ ecbuild_add_option( FEATURE FDB5
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "NAME fdb5 VERSION 5.10.1" )
 
+### atlas-io plugin
+
+ecbuild_add_option( FEATURE ATLAS_IO
+                    DEFAULT ON
+                    DESCRIPTION "Use atlasIO for the restart"
+                    REQUIRED_PACKAGES "NAME atlas_io VERSION 0.33" )
+
 ### interpolate action
 
 ecbuild_add_option( FEATURE MIR

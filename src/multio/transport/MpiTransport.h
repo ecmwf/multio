@@ -83,6 +83,7 @@ private:
     StreamPool pool_;
 
     eckit::Queue<ReceivedBuffer> streamQueue_;
+
     std::queue<Message> msgPack_;
 };
 

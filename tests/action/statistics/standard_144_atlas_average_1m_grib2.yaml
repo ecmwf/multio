@@ -9,6 +9,7 @@ plans:
           initial-condition-present: true
           restart-prefix: "NamesAreNotGuaranteedToBeUniqueAcrossPlans"
           restart: true
+          restart-lib: "atlas_io"
           step-frequency: 1
           time-step: 3600
           use-current-time: true
@@ -22,4 +23,4 @@ plans:
           - type: file
             append: false
             per-server: false # Will give you one file per server
-            path: Result_standard_144-288_average_1m_grib2.grib
+            path: Result_standard_atlas_144-288_average_1m_grib2.grib

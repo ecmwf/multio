@@ -97,3 +97,65 @@ foreach(_test ${_statistics_tests_names} )
         endforeach()
     endforeach()
 endforeach()
+
+ecbuild_add_test(
+    TARGET       ${PREFIX}_run_checkpoint_fstream_average_1m_stage_1
+    TEST_DEPENDS ${PREFIX}_get_data
+    COMMAND      multio-feed
+    ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/standard_144_fstream_average_1m_grib2.yaml standard_0-144_statistics_test_data.grib
+)
+
+ecbuild_add_test(
+    TARGET       ${PREFIX}_run_checkpoint_fstream_average_1m_stage_2
+    TEST_DEPENDS ${PREFIX}_run_checkpoint_average_1m_stage_1
+    COMMAND      multio-feed
+    ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/standard_144_fstream_average_1m_grib2.yaml standard_144-288_statistics_test_data.grib
+)
+
+ecbuild_add_test(
+    TARGET       ${PREFIX}_check_metadata_fstream_checkpoint_average_1m
+    TEST_DEPENDS ${PREFIX}_run_checkpoint_average_1m_stage_2
+    COMMAND      grib_compare
+    ARGS         -H Reference_standard_average_1m_grib2.grib  Result_standard_fstream_144-288_average_1m_grib2.grib
+)
+
+ecbuild_add_test(
+    TARGET       ${PREFIX}_check_values_fstream_checkpoint_average_1m
+    TEST_DEPENDS ${PREFIX}_run_checkpoint_average_1m_stage_2
+    COMMAND      grib_compare
+    ARGS         -P -T10 Reference_standard_average_1m_grib2.grib  Result_standard_fstream_144-288_average_1m_grib2.grib
+)
+
+# Unit test with ATLAS_IO on
+
+ecbuild_add_test(
+    TARGET       ${PREFIX}_run_checkpoint_atlas_average_1m_stage_1
+    CONDITION HAVE_ATLAS_IO
+    TEST_DEPENDS ${PREFIX}_get_data
+    COMMAND      multio-feed
+    ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/standard_144_atlas_average_1m_grib2.yaml standard_0-144_statistics_test_data.grib
+)
+
+ecbuild_add_test(
+    TARGET       ${PREFIX}_run_checkpoint_atlas_average_1m_stage_2
+    CONDITION HAVE_ATLAS_IO
+    TEST_DEPENDS ${PREFIX}_run_checkpoint_average_1m_stage_1
+    COMMAND      multio-feed
+    ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/standard_144_atlas_average_1m_grib2.yaml standard_144-288_statistics_test_data.grib
+)
+
+ecbuild_add_test(
+    TARGET       ${PREFIX}_check_metadata_atlas_checkpoint_average_1m
+    CONDITION HAVE_ATLAS_IO
+    TEST_DEPENDS ${PREFIX}_run_checkpoint_average_1m_stage_2
+    COMMAND      grib_compare
+    ARGS         -H Reference_standard_average_1m_grib2.grib Result_standard_atlas_144-288_average_1m_grib2.grib
+)
+
+ecbuild_add_test(
+    TARGET       ${PREFIX}_check_values_atlas_checkpoint_average_1m
+    CONDITION HAVE_ATLAS_IO
+    TEST_DEPENDS ${PREFIX}_run_checkpoint_average_1m_stage_2
+    COMMAND      grib_compare
+    ARGS         -P -T10 Reference_standard_average_1m_grib2.grib Result_standard_atlas_144-288_average_1m_grib2.grib
+)

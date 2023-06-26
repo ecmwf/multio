@@ -80,9 +80,9 @@ private:
     eckit::mpi::Group clientGroup_;
     eckit::mpi::Group serverGroup_;
 
-    eckit::Queue<ReceivedBuffer> streamQueue_;
-
     StreamPool pool_;
+
+    eckit::Queue<ReceivedBuffer> streamQueue_;
 
     std::queue<Message> msgPack_;
 };

@@ -1,5 +1,5 @@
 
-#include "MovingWindow.h"
+#include "OperationWindow.h"
 
 #include <algorithm>
 #include <cinttypes>
@@ -57,7 +57,7 @@ eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
 }  // namespace
 
 
-MovingWindow::MovingWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) :
+OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) :
     epochPoint_{eckit::Date{0}, eckit::Time{0}},
     startPoint_{eckit::Date{0}, eckit::Time{0}},
     creationPoint_{eckit::Date{0}, eckit::Time{0}},
@@ -71,9 +71,9 @@ MovingWindow::MovingWindow(std::shared_ptr<StatisticsIO>& IOmanager, const Stati
     return;
 }
 
-MovingWindow::MovingWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
-                           const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
-                           long timeStepInSeconds) :
+OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
+                                 const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
+                                 long timeStepInSeconds) :
     epochPoint_{epochPoint},
     startPoint_{startPoint},
     creationPoint_{creationPoint},
@@ -84,11 +84,11 @@ MovingWindow::MovingWindow(const eckit::DateTime& epochPoint, const eckit::DateT
     timeStepInSeconds_{timeStepInSeconds},
     count_{0} {}
 
-long MovingWindow::count() const {
+long OperationWindow::count() const {
     return count_;
 }
 
-void MovingWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) {
+void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) {
     IOBuffer restartState{IOmanager->getBuffer(restartSize())};
     IOmanager->read("window", restartSize());
     deserialize(restartState);
@@ -96,7 +96,7 @@ void MovingWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const Statisti
     return;
 }
 
-void MovingWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const {
+void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const {
     IOBuffer restartState{IOmanager->getBuffer(restartSize())};
     restartState.zero();
     serialize(restartState);
@@ -105,7 +105,7 @@ void MovingWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const Statisti
     return;
 }
 
-void MovingWindow::updateData(const eckit::DateTime& currentPoint) {
+void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
     gtLowerBound(currentPoint, true);
     leUpperBound(currentPoint, true);
     prevPoint_ = currPoint_;
@@ -115,7 +115,7 @@ void MovingWindow::updateData(const eckit::DateTime& currentPoint) {
     return;
 }
 
-void MovingWindow::updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint) {
+void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint) {
     // TODO: probably we want to add some checks here to avoid overlapping windows?
     startPoint_ = startPoint;
     creationPoint_ = startPoint;
@@ -127,14 +127,14 @@ void MovingWindow::updateWindow(const eckit::DateTime& startPoint, const eckit::
 }
 
 
-bool MovingWindow::isWithin(const eckit::DateTime& dt) const {
+bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
     bool ret = gtLowerBound(dt, true) && leUpperBound(dt, false);
     LOG_DEBUG_LIB(LibMultio) << " ------ Is " << dt << " within " << *this << "? -- " << (ret ? "yes" : "no")
                              << std::endl;
     return ret;
 }
 
-bool MovingWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) const {
+bool OperationWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) const {
     if (throw_error && creationPoint_ >= dt) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
@@ -143,7 +143,7 @@ bool MovingWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) con
     return dt > creationPoint_;
 };
 
-bool MovingWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) const {
+bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) const {
     // TODO: test without 1 second added. Now it should work
     if (throw_error && dt > endPoint() + eckit::Second{1.0}) {
         std::ostringstream os;
@@ -153,205 +153,205 @@ bool MovingWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) con
     return dt <= endPoint() + eckit::Second{1.0};
 };
 
-long MovingWindow::timeSpanInHours() const {
+long OperationWindow::timeSpanInHours() const {
     return long(endPoint_ - creationPoint_) / 3600;
 }
 
-long MovingWindow::timeSpanInSeconds() const {
+long OperationWindow::timeSpanInSeconds() const {
     return long(endPoint_ - creationPoint_);
 }
 
-long MovingWindow::timeSpanInSteps() const {
+long OperationWindow::timeSpanInSteps() const {
     return timeSpanInSeconds() / timeStepInSeconds_;
 }
 
-long MovingWindow::lastPointsDiffInSeconds() const {
+long OperationWindow::lastPointsDiffInSeconds() const {
     return long(currPoint_ - prevPoint_);
 }
 
 
-long MovingWindow::startPointInSeconds() const {
+long OperationWindow::startPointInSeconds() const {
     return startPoint_ - epochPoint_;
 }
 
-long MovingWindow::creationPointInSeconds() const {
+long OperationWindow::creationPointInSeconds() const {
     return creationPoint_ - epochPoint_;
 }
 
-long MovingWindow::endPointInSeconds() const {
+long OperationWindow::endPointInSeconds() const {
     return endPoint_ - epochPoint_;
 }
 
-long MovingWindow::currPointInSeconds() const {
+long OperationWindow::currPointInSeconds() const {
     return currPoint_ - epochPoint_;
 }
 
-long MovingWindow::prevPointInSeconds() const {
+long OperationWindow::prevPointInSeconds() const {
     return prevPoint_ - epochPoint_;
 }
 
 
-long MovingWindow::startPointInHours() const {
+long OperationWindow::startPointInHours() const {
     return startPointInSeconds() / 3600;
 }
 
-long MovingWindow::creationPointInHours() const {
+long OperationWindow::creationPointInHours() const {
     return creationPointInSeconds() / 3600;
 }
 
-long MovingWindow::endPointInHours() const {
+long OperationWindow::endPointInHours() const {
     return endPointInSeconds() / 3600;
 }
 
-long MovingWindow::currPointInHours() const {
+long OperationWindow::currPointInHours() const {
     return currPointInSeconds() / 3600;
 }
 
-long MovingWindow::prevPointInHours() const {
+long OperationWindow::prevPointInHours() const {
     return prevPointInSeconds() / 3600;
 }
 
 
-long MovingWindow::startPointInSteps() const {
+long OperationWindow::startPointInSteps() const {
     return startPointInSeconds() / timeStepInSeconds_;
 }
 
-long MovingWindow::creationPointInSteps() const {
+long OperationWindow::creationPointInSteps() const {
     return creationPointInSeconds() / timeStepInSeconds_;
 }
 
-long MovingWindow::endPointInSteps() const {
+long OperationWindow::endPointInSteps() const {
     return endPointInSeconds() / timeStepInSeconds_;
 }
 
-long MovingWindow::currPointInSteps() const {
+long OperationWindow::currPointInSteps() const {
     return currPointInSeconds() / timeStepInSeconds_;
 }
 
-long MovingWindow::prevPointInSteps() const {
+long OperationWindow::prevPointInSteps() const {
     return prevPointInSeconds() / timeStepInSeconds_;
 }
 
-long MovingWindow::startPointInSeconds(const eckit::DateTime& refPoint) const {
+long OperationWindow::startPointInSeconds(const eckit::DateTime& refPoint) const {
     return startPoint_ - refPoint;
 }
 
-long MovingWindow::creationPointInSeconds(const eckit::DateTime& refPoint) const {
+long OperationWindow::creationPointInSeconds(const eckit::DateTime& refPoint) const {
     return creationPoint_ - refPoint;
 }
 
-long MovingWindow::endPointInSeconds(const eckit::DateTime& refPoint) const {
+long OperationWindow::endPointInSeconds(const eckit::DateTime& refPoint) const {
     return endPoint_ - refPoint;
 }
 
-long MovingWindow::currPointInSeconds(const eckit::DateTime& refPoint) const {
+long OperationWindow::currPointInSeconds(const eckit::DateTime& refPoint) const {
     return currPoint_ - refPoint;
 }
 
-long MovingWindow::prevPointInSeconds(const eckit::DateTime& refPoint) const {
+long OperationWindow::prevPointInSeconds(const eckit::DateTime& refPoint) const {
     return prevPoint_ - refPoint;
 }
 
 
-long MovingWindow::startPointInHours(const eckit::DateTime& refPoint) const {
+long OperationWindow::startPointInHours(const eckit::DateTime& refPoint) const {
     return startPointInSeconds(refPoint) / 3600;
 }
 
-long MovingWindow::creationPointInHours(const eckit::DateTime& refPoint) const {
+long OperationWindow::creationPointInHours(const eckit::DateTime& refPoint) const {
     return creationPointInSeconds(refPoint) / 3600;
 }
 
-long MovingWindow::endPointInHours(const eckit::DateTime& refPoint) const {
+long OperationWindow::endPointInHours(const eckit::DateTime& refPoint) const {
     return endPointInSeconds(refPoint) / 3600;
 }
 
-long MovingWindow::currPointInHours(const eckit::DateTime& refPoint) const {
+long OperationWindow::currPointInHours(const eckit::DateTime& refPoint) const {
     return currPointInSeconds(refPoint) / 3600;
 }
 
-long MovingWindow::prevPointInHours(const eckit::DateTime& refPoint) const {
+long OperationWindow::prevPointInHours(const eckit::DateTime& refPoint) const {
     return prevPointInSeconds(refPoint) / 3600;
 }
 
 
-long MovingWindow::startPointInSteps(const eckit::DateTime& refPoint) const {
+long OperationWindow::startPointInSteps(const eckit::DateTime& refPoint) const {
     return startPointInSeconds(refPoint) / timeStepInSeconds_;
 }
 
-long MovingWindow::creationPointInSteps(const eckit::DateTime& refPoint) const {
+long OperationWindow::creationPointInSteps(const eckit::DateTime& refPoint) const {
     return creationPointInSeconds(refPoint) / timeStepInSeconds_;
 }
 
-long MovingWindow::endPointInSteps(const eckit::DateTime& refPoint) const {
+long OperationWindow::endPointInSteps(const eckit::DateTime& refPoint) const {
     return endPointInSeconds(refPoint) / timeStepInSeconds_;
 }
 
-long MovingWindow::currPointInSteps(const eckit::DateTime& refPoint) const {
+long OperationWindow::currPointInSteps(const eckit::DateTime& refPoint) const {
     return currPointInSeconds(refPoint) / timeStepInSeconds_;
 }
 
-long MovingWindow::prevPointInSteps(const eckit::DateTime& refPoint) const {
+long OperationWindow::prevPointInSteps(const eckit::DateTime& refPoint) const {
     return prevPointInSeconds(refPoint) / timeStepInSeconds_;
 }
 
-eckit::DateTime MovingWindow::epochPoint() const {
+eckit::DateTime OperationWindow::epochPoint() const {
     return epochPoint_;
 }
 
-eckit::DateTime MovingWindow::startPoint() const {
+eckit::DateTime OperationWindow::startPoint() const {
     return startPoint_;
 }
 
-eckit::DateTime MovingWindow::creationPoint() const {
+eckit::DateTime OperationWindow::creationPoint() const {
     return creationPoint_;
 }
 
-eckit::DateTime MovingWindow::endPoint() const {
+eckit::DateTime OperationWindow::endPoint() const {
     return endPoint_;
 }
 
-eckit::DateTime MovingWindow::currPoint() const {
+eckit::DateTime OperationWindow::currPoint() const {
     return currPoint_;
 }
 
-eckit::DateTime MovingWindow::prevPoint() const {
+eckit::DateTime OperationWindow::prevPoint() const {
     return prevPoint_;
 }
 
-std::string MovingWindow::stepRange() const {
+std::string OperationWindow::stepRange() const {
     std::ostringstream os;
     os << std::to_string(creationPointInSteps()) << "-" << std::to_string(endPointInSteps());
     return os.str();
 };
 
-std::string MovingWindow::stepRangeInHours() const {
+std::string OperationWindow::stepRangeInHours() const {
     std::ostringstream os;
     os << std::to_string(creationPointInHours()) << "-" << std::to_string(endPointInHours());
     return os.str();
 }
 
-std::string MovingWindow::stepRange(const eckit::DateTime& refPoint) const {
+std::string OperationWindow::stepRange(const eckit::DateTime& refPoint) const {
     std::ostringstream os;
     os << std::to_string(creationPointInSteps(refPoint)) << "-" << std::to_string(endPointInSteps(refPoint));
     return os.str();
 };
 
-std::string MovingWindow::stepRangeInHours(const eckit::DateTime& refPoint) const {
+std::string OperationWindow::stepRangeInHours(const eckit::DateTime& refPoint) const {
     std::ostringstream os;
     os << std::to_string(creationPointInHours(refPoint)) << "-" << std::to_string(endPointInHours(refPoint));
     return os.str();
 }
 
-void MovingWindow::updateFlush() {
+void OperationWindow::updateFlush() {
     lastFlush_ = currPoint_;
     return;
 }
 
-long MovingWindow::lastFlushInSteps() const {
+long OperationWindow::lastFlushInSteps() const {
     return (lastFlush_ - epochPoint_) / timeStepInSeconds_;
 }
 
-void MovingWindow::serialize(IOBuffer& currState) const {
+void OperationWindow::serialize(IOBuffer& currState) const {
 
 
     currState[0] = static_cast<std::uint64_t>(epochPoint_.date().yyyymmdd());
@@ -383,7 +383,7 @@ void MovingWindow::serialize(IOBuffer& currState) const {
     return;
 }
 
-void MovingWindow::deserialize(const IOBuffer& currState) {
+void OperationWindow::deserialize(const IOBuffer& currState) {
 
     currState.checkChecksum();
     epochPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[0]), static_cast<long>(currState[1]));
@@ -399,15 +399,15 @@ void MovingWindow::deserialize(const IOBuffer& currState) {
     return;
 }
 
-size_t MovingWindow::restartSize() const {
+size_t OperationWindow::restartSize() const {
     return static_cast<size_t>(17);
 }
 
-void MovingWindow::print(std::ostream& os) const {
+void OperationWindow::print(std::ostream& os) const {
     os << "MovingWindow(" << startPoint_ << " to " << endPoint() << ")";
 }
 
-std::ostream& operator<<(std::ostream& os, const MovingWindow& a) {
+std::ostream& operator<<(std::ostream& os, const OperationWindow& a) {
     a.print(os);
     return os;
 }

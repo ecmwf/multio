@@ -4,7 +4,7 @@
 
 #include "multio/message/Message.h"
 
-#include "MovingWindow.h"
+#include "OperationWindow.h"
 #include "Operations.h"
 #include "PeriodUpdater.h"
 #include "StatisticsConfiguration.h"
@@ -31,14 +31,14 @@ public:
 
     void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const;
 
-    const MovingWindow& cwin() const;
-    MovingWindow& win();
+    const OperationWindow& cwin() const;
+    OperationWindow& win();
 
     void print(std::ostream& os) const;
 
 private:
     const std::shared_ptr<PeriodUpdater>& periodUpdater_;
-    MovingWindow window_;
+    OperationWindow window_;
     std::vector<std::unique_ptr<Operation>> statistics_;
 
     friend std::ostream& operator<<(std::ostream& os, const TemporalStatistics& a) {

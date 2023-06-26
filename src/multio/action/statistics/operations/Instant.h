@@ -18,10 +18,10 @@ public:
     using OperationWithData<T>::checkTimeInterval;
 
 
-    Instant(const std::string& name, long sz, const MovingWindow& win, const StatisticsConfiguration& cfg) :
+    Instant(const std::string& name, long sz, const OperationWindow& win, const StatisticsConfiguration& cfg) :
         OperationWithData<T>{name, "instant", sz, true, win, cfg} {}
 
-    Instant(const std::string& name, long sz, const MovingWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
+    Instant(const std::string& name, long sz, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
             const StatisticsConfiguration& cfg) :
         OperationWithData<T>{name, "instant", sz, true, win, IOmanager, cfg} {};
 

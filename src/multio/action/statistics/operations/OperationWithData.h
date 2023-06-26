@@ -13,13 +13,13 @@ public:
     using Operation::name_;
 
     OperationWithData(const std::string& name, const std::string& operation, long sz, bool needRestart,
-                      const MovingWindow& win, const StatisticsConfiguration& cfg) :
+                      const OperationWindow& win, const StatisticsConfiguration& cfg) :
         Operation{name, operation, win, cfg},
         values_{std::vector<T>(sz /= sizeof(T), 0.0)},
         needRestart_{needRestart} {}
 
     OperationWithData(const std::string& name, const std::string& operation, long sz, bool needRestart,
-                      const MovingWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
+                      const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
                       const StatisticsConfiguration& cfg) :
         Operation{name, operation, win, cfg}, values_{std::vector<T>(sz /= sizeof(T), 0.0)}, needRestart_{needRestart} {
         load(IOmanager, cfg);

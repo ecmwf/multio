@@ -18,10 +18,10 @@ public:
     using OperationWithData<T>::checkTimeInterval;
 
 
-    Maximum(const std::string& name, long sz, const MovingWindow& win, const StatisticsConfiguration& cfg) :
+    Maximum(const std::string& name, long sz, const OperationWindow& win, const StatisticsConfiguration& cfg) :
         OperationWithData<T>{name, "maximum", sz, true, win, cfg} {}
 
-    Maximum(const std::string& name, long sz, const MovingWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
+    Maximum(const std::string& name, long sz, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
             const StatisticsConfiguration& cfg) :
         OperationWithData<T>{name, "maximum", sz, true, win, IOmanager, cfg} {};
 

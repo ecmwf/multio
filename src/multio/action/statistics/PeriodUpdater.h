@@ -5,7 +5,7 @@
 #include "eckit/types/DateTime.h"
 #include "multio/message/Message.h"
 
-#include "MovingWindow.h"
+#include "OperationWindow.h"
 
 namespace multio::action {
 
@@ -17,8 +17,8 @@ public:
     long timeSpan() const;
     eckit::DateTime updatePeriodStart(const message::Message& msg, const StatisticsConfiguration& cfg);
     eckit::DateTime updatePeriodEnd(const message::Message& msg, const StatisticsConfiguration& cfg);
-    MovingWindow initPeriod(const message::Message& msg, std::shared_ptr<StatisticsIO>& IOmanager,
-                            const StatisticsConfiguration& cfg);
+    OperationWindow initPeriod(const message::Message& msg, std::shared_ptr<StatisticsIO>& IOmanager,
+                               const StatisticsConfiguration& cfg);
 
 private:
     eckit::DateTime computeWinCreationTime(const eckit::DateTime& currentTime);

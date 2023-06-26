@@ -11,12 +11,12 @@
 
 namespace multio::action {
 
-class MovingWindow {
+class OperationWindow {
 public:
-    MovingWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg);
+    OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg);
 
-    MovingWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
-                 const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, long timeStepInSeconds);
+    OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
+                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, long timeStepInSeconds);
 
     long count() const;
 
@@ -108,7 +108,7 @@ private:
     void deserialize(const IOBuffer& currState);
 
     void print(std::ostream& os) const;
-    friend std::ostream& operator<<(std::ostream& os, const MovingWindow& a);
+    friend std::ostream& operator<<(std::ostream& os, const OperationWindow& a);
 };
 
 }  // namespace multio::action

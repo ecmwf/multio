@@ -17,10 +17,10 @@ public:
     using OperationWithData<T>::checkSize;
     using OperationWithData<T>::checkTimeInterval;
 
-    Average(const std::string& name, long sz, const MovingWindow& win, const StatisticsConfiguration& cfg) :
+    Average(const std::string& name, long sz, const OperationWindow& win, const StatisticsConfiguration& cfg) :
         OperationWithData<T>{name, "average", sz, true, win, cfg} {}
 
-    Average(const std::string& name, long sz, const MovingWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
+    Average(const std::string& name, long sz, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
             const StatisticsConfiguration& cfg) :
         OperationWithData<T>{name, "average", sz, true, win, IOmanager, cfg} {};
 

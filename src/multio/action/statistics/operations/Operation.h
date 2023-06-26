@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "multio/action/statistics/MovingWindow.h"
+#include "multio/action/statistics/OperationWindow.h"
 #include "multio/action/statistics/StatisticsConfiguration.h"
 #include "multio/action/statistics/StatisticsIO.h"
 
@@ -11,7 +11,7 @@ namespace multio::action {
 
 class Operation {
 public:
-    Operation(const std::string& name, const std::string& operation, const MovingWindow& win,
+    Operation(const std::string& name, const std::string& operation, const OperationWindow& win,
               const StatisticsConfiguration& cfg) :
         name_{name}, operation_{operation}, logHeader_{"operation(" + name_ + ")"}, cfg_{cfg}, win_{win} {};
 
@@ -38,7 +38,7 @@ protected:
     const std::string operation_;
     const std::string logHeader_;
     const StatisticsConfiguration& cfg_;
-    const MovingWindow& win_;
+    const OperationWindow& win_;
 
     friend std::ostream& operator<<(std::ostream& os, const Operation& a) {
         a.print(os);

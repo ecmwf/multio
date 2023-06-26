@@ -10,8 +10,8 @@ list( APPEND _statistics_sources
     TimeUtils.h
     PeriodUpdater.cc
     PeriodUpdater.h
-    MovingWindow.cc
-    MovingWindow.h
+    OperationWindow.cc
+    OperationWindow.h
     Operations.cc
     Operations.h
     operations/Operation.h

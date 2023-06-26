@@ -27,7 +27,7 @@ namespace multio::action {
 
 template <typename Precision>
 std::unique_ptr<Operation> make_operation(const std::string& opname, long sz, std::shared_ptr<StatisticsIO>& IOmanager,
-                                          const MovingWindow& win, const StatisticsConfiguration& cfg) {
+                                          const OperationWindow& win, const StatisticsConfiguration& cfg) {
 
     if (opname == "instant") {
         return cfg.readRestart() ? std::make_unique<Instant<Precision>>(opname, sz, win, IOmanager, cfg)
@@ -61,6 +61,6 @@ std::unique_ptr<Operation> make_operation(const std::string& opname, long sz, st
 
 std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::string>& opNames, message::Message msg,
                                                         std::shared_ptr<StatisticsIO>& IOmanager,
-                                                        const MovingWindow& win, const StatisticsConfiguration& cfg);
+                                                        const OperationWindow& win, const StatisticsConfiguration& cfg);
 
 }  // namespace multio::action

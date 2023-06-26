@@ -13,7 +13,7 @@
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 
-#include "multio/action/statistics/operations/OperationBase.h"
+#include "multio/action/statistics/operations/Operation.h"
 #include "multio/action/statistics/operations/OperationWithData.h"
 
 #include "multio/action/statistics/operations/Accumulate.h"
@@ -26,9 +26,8 @@
 namespace multio::action {
 
 template <typename Precision>
-std::unique_ptr<OperationBase> make_operation(const std::string& opname, long sz,
-                                              std::shared_ptr<StatisticsIO>& IOmanager, const MovingWindow& win,
-                                              const StatisticsConfiguration& cfg) {
+std::unique_ptr<Operation> make_operation(const std::string& opname, long sz, std::shared_ptr<StatisticsIO>& IOmanager,
+                                          const MovingWindow& win, const StatisticsConfiguration& cfg) {
 
     if (opname == "instant") {
         return cfg.readRestart() ? std::make_unique<Instant<Precision>>(opname, sz, win, IOmanager, cfg)
@@ -60,10 +59,8 @@ std::unique_ptr<OperationBase> make_operation(const std::string& opname, long sz
     throw eckit::UserError(os.str(), Here());
 }
 
-std::vector<std::unique_ptr<OperationBase>> make_operations(const std::vector<std::string>& opNames,
-                                                            message::Message msg,
-                                                            std::shared_ptr<StatisticsIO>& IOmanager,
-                                                            const MovingWindow& win,
-                                                            const StatisticsConfiguration& cfg);
+std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::string>& opNames, message::Message msg,
+                                                        std::shared_ptr<StatisticsIO>& IOmanager,
+                                                        const MovingWindow& win, const StatisticsConfiguration& cfg);
 
 }  // namespace multio::action

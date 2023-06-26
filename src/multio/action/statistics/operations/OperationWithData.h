@@ -1,29 +1,27 @@
 
 #pragma once
 
-#include "multio/action/statistics/operations/OperationBase.h"
+#include "multio/action/statistics/operations/Operation.h"
 
 namespace multio::action {
 
 template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>
-class OperationWithData : public OperationBase {
+class OperationWithData : public Operation {
 public:
-    using OperationBase::cfg_;
-    using OperationBase::logHeader_;
-    using OperationBase::name_;
+    using Operation::cfg_;
+    using Operation::logHeader_;
+    using Operation::name_;
 
     OperationWithData(const std::string& name, const std::string& operation, long sz, bool needRestart,
                       const MovingWindow& win, const StatisticsConfiguration& cfg) :
-        OperationBase{name, operation, win, cfg},
+        Operation{name, operation, win, cfg},
         values_{std::vector<T>(sz /= sizeof(T), 0.0)},
         needRestart_{needRestart} {}
 
     OperationWithData(const std::string& name, const std::string& operation, long sz, bool needRestart,
                       const MovingWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
                       const StatisticsConfiguration& cfg) :
-        OperationBase{name, operation, win, cfg},
-        values_{std::vector<T>(sz /= sizeof(T), 0.0)},
-        needRestart_{needRestart} {
+        Operation{name, operation, win, cfg}, values_{std::vector<T>(sz /= sizeof(T), 0.0)}, needRestart_{needRestart} {
         load(IOmanager, cfg);
         return;
     }

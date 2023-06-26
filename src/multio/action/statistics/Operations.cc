@@ -3,15 +3,13 @@
 
 namespace multio::action {
 
-std::vector<std::unique_ptr<OperationBase>> make_operations(const std::vector<std::string>& opNames,
-                                                            message::Message msg,
-                                                            std::shared_ptr<StatisticsIO>& IOmanager,
-                                                            const MovingWindow& win,
-                                                            const StatisticsConfiguration& cfg) {
+std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::string>& opNames, message::Message msg,
+                                                        std::shared_ptr<StatisticsIO>& IOmanager,
+                                                        const MovingWindow& win, const StatisticsConfiguration& cfg) {
 
     return multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
-        std::vector<std::unique_ptr<OperationBase>> stats;
+        std::vector<std::unique_ptr<Operation>> stats;
         for (const auto& op : opNames) {
             stats.push_back(make_operation<Precision>(op, msg.size(), IOmanager, win, cfg));
             if (cfg.solver_send_initial_condition()) {

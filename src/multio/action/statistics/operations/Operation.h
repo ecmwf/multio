@@ -9,13 +9,13 @@
 
 namespace multio::action {
 
-class OperationBase {
+class Operation {
 public:
-    OperationBase(const std::string& name, const std::string& operation, const MovingWindow& win,
-                  const StatisticsConfiguration& cfg) :
+    Operation(const std::string& name, const std::string& operation, const MovingWindow& win,
+              const StatisticsConfiguration& cfg) :
         name_{name}, operation_{operation}, logHeader_{"operation(" + name_ + ")"}, cfg_{cfg}, win_{win} {};
 
-    virtual ~OperationBase() = default;
+    virtual ~Operation() = default;
 
     const std::string& name() const { return name_; };
     const std::string& operation() const { return operation_; };
@@ -40,7 +40,7 @@ protected:
     const StatisticsConfiguration& cfg_;
     const MovingWindow& win_;
 
-    friend std::ostream& operator<<(std::ostream& os, const OperationBase& a) {
+    friend std::ostream& operator<<(std::ostream& os, const Operation& a) {
         a.print(os);
         return os;
     }

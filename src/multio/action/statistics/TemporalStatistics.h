@@ -15,7 +15,7 @@ namespace multio::action {
 
 class TemporalStatistics {
 public:
-    using op = std::vector<std::unique_ptr<OperationBase>>;
+    using op = std::vector<std::unique_ptr<Operation>>;
 
     op::iterator begin() { return statistics_.begin(); };
     op::iterator end() { return statistics_.end(); };
@@ -39,7 +39,7 @@ public:
 private:
     const std::shared_ptr<PeriodUpdater>& periodUpdater_;
     MovingWindow window_;
-    std::vector<std::unique_ptr<OperationBase>> statistics_;
+    std::vector<std::unique_ptr<Operation>> statistics_;
 
     friend std::ostream& operator<<(std::ostream& os, const TemporalStatistics& a) {
         a.print(os);

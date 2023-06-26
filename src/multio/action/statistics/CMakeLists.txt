@@ -14,7 +14,7 @@ list( APPEND _statistics_sources
     MovingWindow.h
     Operations.cc
     Operations.h
-    operations/OperationBase.h
+    operations/Operation.h
     operations/OperationWithData.h
     operations/Accumulate.h
     operations/Average.h

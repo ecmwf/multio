@@ -32,12 +32,12 @@ MaskPayloadHeader decodeMaskPayloadHeader(const unsigned char* b, std::size_t si
             std::string("Buffer needs to contain at least 5 bytes for compression header information"));
     };
     MaskPayloadHeader h;
-    // 2 leftmost bits of the first byte are reserved for the format
+    // The leftmost two bits of the first byte are reserved for the format
     h.format = static_cast<MaskPayloadFormat>(b[0] >> 7);
     h.numBits = (static_cast<std::size_t>(b[1]) << 24) | (static_cast<std::size_t>(b[2]) << 16)
               | (static_cast<std::size_t>(b[3]) << 8) | static_cast<std::size_t>(b[4]);
     if (h.format == MaskPayloadFormat::RunLength) {
-        // 6 Last bits of the first byte are used to store the number of byts per int (up to 64...)
+        // The last six bits of the first byte are used to store the number of byts per int (up to 64...)
         h.runLengthNumBitsPerInt = ((b[0] & ((1UL << 6) - 1)) + 1);
         h.runLengthStartValue = static_cast<bool>((b[0] >> 6) & 0x01);
     }
@@ -107,7 +107,7 @@ MaskPayloadIterator::MaskPayloadIterator(eckit::Buffer const& payload, MaskPaylo
         index_ = header_.numBits - 1;
     }
     else {
-        updateValue_();
+        updateValue();
     }
 }
 
@@ -156,7 +156,7 @@ MaskPayloadIterator& MaskPayloadIterator::operator++() {
                 ++index_;
                 ++runLengthNumCounter_;
                 if (runLengthNumCounter_ >= runLengthNum_) {
-                    updateValue_();
+                    updateValue();
                     runLengthNumCounter_ = 0;
                     val_ = !val_;
                 }
@@ -166,7 +166,7 @@ MaskPayloadIterator& MaskPayloadIterator::operator++() {
         case MaskPayloadFormat::BitMask: {
             if ((index_ + 1) < header_.numBits) {
                 ++index_;
-                updateValue_();
+                updateValue();
             }
         }
     }
@@ -188,7 +188,7 @@ bool MaskPayloadIterator::operator!=(const MaskPayloadIterator& other) const noe
 }
 
 
-void MaskPayloadIterator::updateValue_() noexcept {
+void MaskPayloadIterator::updateValue() noexcept {
     switch (header_.format) {
         case MaskPayloadFormat::RunLength: {
             const std::size_t NUM_BITS = header_.runLengthNumBitsPerInt;

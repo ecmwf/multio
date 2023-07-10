@@ -57,11 +57,11 @@ enum class MaskPayloadFormat : unsigned char
 struct MaskPayloadHeader {
     MaskPayloadFormat format;
     std::size_t numBits;
-    std::size_t runLengthNumBitsPerInt
-        = 0;  // For runLength representation Payload is described by sequence of numbers that nominate the
-              // numbers of consecutive 1 and 0 in alternating order. Depending on the mask, these
-              // numbers can be small or may be very large. In case of small numbers we avoid reserving
-              // 4 or 8 bytes for one number and instead allow less bits...
+    // For runLength representation Payload is described by sequence of numbers that nominate the
+    // numbers of consecutive 1 and 0 in alternating order. Depending on the mask, these
+    // numbers can be small or may be very large. In case of small numbers we avoid reserving
+    // 4 or 8 bytes for one number and instead allow fewer bits...
+    std::size_t runLengthNumBitsPerInt = 0;
     bool runLengthStartValue = 0;
 };
 
@@ -204,7 +204,7 @@ eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size, con
                 if(bufOffset < props.bufSize) {
                     b[bufOffset] = 0;
                 } else {
-                   ASSERT(numBitsToWrite == 0); 
+                    ASSERT(numBitsToWrite == 0);
                 }
                 remainingBits = 8;
             }
@@ -299,7 +299,7 @@ private:
                                     // is evaluated. Val_ then toggles
     bool val_;
 
-    void updateValue_() noexcept;
+    void updateValue() noexcept;
 };
 
 

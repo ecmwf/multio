@@ -89,6 +89,7 @@ jobs:
             compiler_cxx: ~
             compiler_fc: gfortran-11
             caching: true
+            cmake_options: -DMPI_SLOTS=4
 
           - name: macos appclang-14
             # Xcode compiler requires empty environment variables, so we pass null (~) here
@@ -98,6 +99,7 @@ jobs:
             compiler_cxx: ~
             compiler_fc: gfortran-12
             caching: true
+            cmake_options: -DMPI_SLOTS=4
 
     runs-on: ${{ matrix.os }}
     steps:

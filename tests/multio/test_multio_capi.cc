@@ -15,7 +15,6 @@
 #include <cstring>
 #include <limits>
 
-#include "eckit/filesystem/TmpFile.h"
 #include "eckit/io/FileHandle.h"
 #include "eckit/testing/Test.h"
 
@@ -24,10 +23,8 @@
 #include "multio/message/Metadata.h"
 #include "multio/multio_version.h"
 
+#include "multio/config/ConfigurationPath.h"
 #include "multio/util/Environment.h"
-
-#include "TestDataContent.h"
-#include "TestHelpers.h"
 
 using multio::config::configuration_file_name;
 using multio::config::configuration_path_name;
@@ -98,7 +95,7 @@ CASE("Try Create handle with wrong configuration path") {
     err = multio_new_configuration_from_filename(&cc, "I_AM_NOT_HERE/multio/config/multio-server.yaml");
     std::unique_ptr<multio_configuration_t> configuration_deleter(cc);
     std::string errStr(multio_error_string(err));
-    // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
+
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind("Cannot open I_AM_NOT_HERE/multio/config/multio-server.yaml  (No such file or directory)")
            != std::string::npos);
@@ -116,7 +113,7 @@ CASE("Create handle with default configuration without MPI splitting") {
     err = multio_new_handle(&mdp, cc);
     std::unique_ptr<multio_handle_t> handle_deleter(mdp);
     std::string errStr(multio_error_string(err));
-    // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
+
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
 }
@@ -149,25 +146,10 @@ CASE("Create handle with configuration path without MPI splitting") {
     err = multio_new_handle(&mdp, cc);
     std::unique_ptr<multio_handle_t> handle_deleter(mdp);
     std::string errStr(multio_error_string(err));
-    // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
+
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
 }
-
-// CASE("Start server with default configuration & unknown server name") {
-//     multio_configuration_t* cc = nullptr;
-//     int err;
-//     err = multio_new_configuration(&cc);
-//     EXPECT(err == MULTIO_SUCCESS);
-//     err = multio_conf_mpi_allow_world_default_comm(cc, false);
-//     EXPECT(err == MULTIO_SUCCESS);
-//     err = multio_start_server(cc, "I_AM_NOT_HERE");
-//     std::string errStr(multio_error_string(err));
-//     // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
-//     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
-//     EXPECT(errStr.rfind("Configuration 'I_AM_NOT_HERE' not found") != std::string::npos);
-//     multio_delete_configuration(cc);
-// }
 
 CASE("Start server with default configuration") {
     multio_configuration_t* cc = nullptr;
@@ -179,7 +161,7 @@ CASE("Start server with default configuration") {
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_start_server(cc);
     std::string errStr(multio_error_string(err));
-    // std::cout << "new handle err" << err << " Message: " << errStr << std::endl;
+
     EXPECT(err == MULTIO_ERROR_ECKIT_EXCEPTION);
     EXPECT(errStr.rfind(expectedMPIError) != std::string::npos);
 }
@@ -329,7 +311,7 @@ CASE("Test write field") {
     multio_configuration_t* multio_cc = nullptr;
 
     auto configPath = configuration_path_name() / "testPlan.yaml";
-    std::cout << configPath.localPath() << std::endl;
+    eckit::Log::info() << configPath.localPath() << std::endl;
 
     test_check(multio_new_configuration_from_filename(&multio_cc, configPath.localPath()),
                "Configuration Context Created From Filename");
@@ -398,6 +380,7 @@ CASE("Test write field") {
 //  multio_write_mask, multio_write_field
 //  * Testing these with MPI in units is not possible here, maybe use another transport layer
 //  * test other transport layers....
+
 }  // namespace multio::test
 
 int main(int argc, char** argv) {

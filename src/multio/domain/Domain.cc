@@ -5,6 +5,7 @@
 
 #include "eckit/exception/Exceptions.h"
 
+#include "multio/domain/MaskCompression.h"
 #include "multio/message/Message.h"
 
 namespace multio {
@@ -148,12 +149,20 @@ void Structured::toBitmask(const message::Message& local, std::vector<bool>& bma
     // auto data_dim = definition_[6]; -- Unused here
 
     ASSERT(static_cast<std::set<int32_t>::size_type>(ni_global * nj_global) == bmask.size());
-    auto lit = static_cast<const uint8_t*>(local.payload().data());
+    EncodedMaskPayload encodedMaskPayload(local.payload());
+    std::size_t expectedBitmaskSize = data_nj * data_ni;
+    if (encodedMaskPayload.size() != (data_nj * data_ni)) {
+        std::ostringstream oss;
+        oss << "Structured::toBitmask: The bitmask has a size of " << encodedMaskPayload.size()
+            << " but is expected to have a size of " << expectedBitmaskSize << std::endl;
+        throw eckit::SeriousBug{oss.str(), Here()};
+    }
+    auto lit = encodedMaskPayload.begin();
     for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
         for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
             if (inRange(i, 0, ni) && inRange(j, 0, nj)) {
                 auto bidx = (jbegin + j) * ni_global + (ibegin + i);
-                bmask[bidx] = (*lit == 0.0) ? false : true;
+                bmask[bidx] = *lit;
             }
         }
     }

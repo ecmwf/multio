@@ -1,4 +1,4 @@
-import pymultio
+import multiopython
 
 conf_dict = {
       "allow_world" : True,
@@ -7,17 +7,19 @@ conf_dict = {
       "server_comm" : [4,5]
 }
 
-conf = pymultio.Config(**conf_dict)
+conf = multiopython.Config(**conf_dict)
 
 #conf = pymultio.Config(allow_world=True, parent_comm=1, client_comm=[2,3], server_comm=[4,5])
 
-handle = pymultio.Handler(conf)
+handle = multiopython.Handler(conf)
 
 metadata = {'category' : 'path',
       'new' : 1,
-      'new_float' : 1.0}
+      'new_float' : 1.0,
+      'trigger' : 'step',
+      'step': 1}
 
-md = pymultio.Metadata(handle, metadata)
+md = multiopython.Metadata(handle, metadata)
 md.metadata_set_string('category', 'path')
 md.metadata_set_int('globalSize', 4)
 md.metadata_set_int('level', 1)
@@ -35,5 +37,13 @@ handle.notify(md)
 handle.flush(md)
 handle.field_accepted(md, False)
 
-multio_object = pymultio.Multio(conf_dict)
+multio_object = multiopython.Multio(conf_dict)
 multio_object.create_metadata(md=metadata)
+
+multio_object.open_connections()
+multio_object.write_field([1.0, 2.0, 3.0, 4.0])
+multio_object.flush()
+multio_object.notify()
+multio_object.field_accepted(False)
+
+multio_object.close_connections()

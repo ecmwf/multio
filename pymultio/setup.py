@@ -21,8 +21,8 @@ def parse_version_from(path):
 
 
 setuptools.setup(
-    name="pymultio",
-    version=parse_version_from("pymultio/__init__.py"),
+    name="multiopython",
+    version=parse_version_from("multiopython/__init__.py"),
     description="A Python interface to multio.",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
@@ -30,7 +30,7 @@ setuptools.setup(
     author_email="software.support@ecmwf.int",
     license="Apache License Version 2.0",
     url="https://github.com/ecmwf/multio",
-    packages=["pymultio"],
+    packages=["multiopython"],
     package_data={"": ["*.h"]},
     include_package_data=True,
     install_requires=[
@@ -44,7 +44,7 @@ setuptools.setup(
     ],
     test_suite="tests",
     zip_safe=True,
-    keywords="multio pymultio",
+    keywords="multio multiopython",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

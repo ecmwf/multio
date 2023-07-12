@@ -4,4 +4,4 @@ If multio is installed you must set MULTIO_DIR and LD_LIBRARY_PATH to where the 
 
 Then run """pip install -e ."""
 
-Now you should be able to import pymultio and use its functionality.
+Now you should be able to import multiopython and use its functionality.

@@ -1,4 +1,4 @@
 include CHANGELOG.md
 include LICENSE
 include README.md
-include pymultio/processed_multio.h
+include multiopython/processed_multio.h

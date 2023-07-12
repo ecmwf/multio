@@ -9,7 +9,7 @@ conf_dict = {
 
 conf = multiopython.Config(**conf_dict)
 
-#conf = pymultio.Config(allow_world=True, parent_comm=1, client_comm=[2,3], server_comm=[4,5])
+#conf = multiopython.Config(allow_world=True, parent_comm=1, client_comm=[2,3], server_comm=[4,5])
 
 handle = multiopython.Handler(conf)
 

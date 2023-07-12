@@ -8,7 +8,10 @@ from .metadata import Metadata
 class Multio:
     """This is the main interface class for Multio that users will interact with"""
 
-    def __init__(self, config):
+    def __init__(self, config=None):
+
+        if config == None:
+            raise AttributeError("Config dictionary is required.")
         
         self.__conf = Config(**config)
 

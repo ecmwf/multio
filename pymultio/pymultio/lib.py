@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+import findlibs
 
 import cffi
 from pkg_resources import parse_version
@@ -47,15 +48,17 @@ class PatchedLib:
         libnames = [
             "multio",
         ]
-        for env_var in ("MULTIO_DIR", "multio_DIR"):
-            if os.environ.get(env_var):
-                libnames.insert(0, os.path.join(os.environ[env_var], "lib/libmultio"))
-                libnames.insert(0, os.path.join(os.environ[env_var], "lib/libmultio-api"))
-                libnames.insert(0, os.path.join(os.environ[env_var], "lib/libmultio-server"))
-                libnames.insert(0, os.path.join(os.environ[env_var], "lib/libmultio.dylib"))
-                libnames.insert(0, os.path.join(os.environ[env_var], "lib/libmultio-api.dylib"))
-                libnames.insert(0, os.path.join(os.environ[env_var], "lib/libmultio-server.dylib"))
-
+        #for env_var in ("MULTIO_DIR", "multio_DIR"):
+        #    if os.environ.get(env_var):
+                #libnames.insert(0, os.path.join(os.environ[env_var], "lib/libmultio"))
+                #libnames.insert(0, os.path.join(os.environ[env_var], "lib/libmultio-api"))
+                #libnames.insert(0, os.path.join(os.environ[env_var], "lib/libmultio-server"))
+        #        libnames.insert(0, os.path.join(os.environ[env_var], "lib/libmultio.dylib"))
+        #        libnames.insert(0, os.path.join(os.environ[env_var], "lib/libmultio-api.dylib"))
+        #        libnames.insert(0, os.path.join(os.environ[env_var], "lib/libmultio-server.dylib"))
+        libnames.insert(0, findlibs.find("multio"))
+        libnames.insert(0, findlibs.find("multio-api"))
+        libnames.insert(0, findlibs.find("multio-server"))
 
         for libname in libnames:
             try:

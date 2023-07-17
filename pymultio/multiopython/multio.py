@@ -19,6 +19,15 @@ class Multio:
 
         self.__metadata = None
 
+    def __version__(self):
+        tmp_str = ffi.new("char**")
+        lib.multio_version(tmp_str)
+        versionstr = ffi.string(tmp_str[0]).decode("utf-8")
+        return versionstr
+
+    def set_conf_path(self, conf_path):
+        self.__conf.set_conf_path(conf_path)
+
     def create_metadata(self, md=None):
 
         self.__metadata = Metadata(self.__handle, md=md)

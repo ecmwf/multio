@@ -54,13 +54,22 @@ class Multio:
             raise AttributeError(f"No metadata object instantiated")
 
     def write_domain(self, data):
-        self.__handle.write_domain(self.__metadata, data, len(data))
-
+        if self.__metadata != None:
+            self.__handle.write_domain(self.__metadata, data, len(data))
+        else:
+            raise AttributeError(f"No metadata object instantiated")
+        
     def write_mask(self, data):
-        self.__handle.write_mask_float(self.__metadata, data, len(data))
+         if self.__metadata != None:
+            self.__handle.write_mask_float(self.__metadata, data, len(data))
+        else:
+            raise AttributeError(f"No metadata object instantiated")  
 
     def write_field(self, data):
-        self.__handle.write_field_float(self.__metadata, data, len(data))
+        if self.__metadata != None:
+            self.__handle.write_field_float(self.__metadata, data, len(data))
+        else:
+            raise AttributeError(f"No metadata object instantiated")  
 
     def field_accepted(self, accepted):
         self.__handle.field_accepted(self.__metadata, accepted)

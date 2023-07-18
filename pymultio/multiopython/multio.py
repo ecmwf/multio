@@ -28,6 +28,9 @@ class Multio:
     def set_conf_path(self, conf_path):
         self.__conf.set_conf_path(conf_path)
 
+    def start_server(self):
+        self.__conf.start_server()
+
     def create_metadata(self, md=None):
 
         self.__metadata = Metadata(self.__handle, md=md)

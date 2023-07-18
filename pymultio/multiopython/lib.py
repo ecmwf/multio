@@ -62,8 +62,6 @@ class PatchedLib:
         else:
             raise CFFIModuleLoadFailed() from last_exception
 
-        # Todo: Version check against __version__
-
         # All of the executable members of the CFFI-loaded library are functions in the multio
         # C API. These should be wrapped with the correct error handling. Otherwise forward
         # these on directly.
@@ -79,7 +77,6 @@ class PatchedLib:
         # Initialise the library, and sett it up for python-appropriate behaviour
 
         self.multio_initialise()
-        #self.odc_integer_behaviour(self.ODC_INTEGERS_AS_LONGS)
 
         # Check the library version
 
@@ -90,15 +87,10 @@ class PatchedLib:
         if parse_version(versionstr) < parse_version(__multio_version__):
             raise RuntimeError("Version of libmultio found is too old. {} < {}".format(versionstr, __multio_version__))
 
-    def type_name(self, dtype: "DataType"):  # noqa: F821
+    def type_name(self, dtype: "DataType"):
         name = self.__type_names.get(dtype, None)
         if name is not None:
             return name
-
-        #name_tmp = ffi.new("char**")
-        #self.odc_column_type_name(dtype, name_tmp)
-        #name = ffi.string(name_tmp[0]).decode("utf-8")
-        #self.__type_names[dtype] = name
         return name
 
     def __read_header(self):

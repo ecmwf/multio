@@ -81,3 +81,11 @@ def test_write_field():
 
     multio_object.close_connections()
 
+def test_write_no_metadata():
+    multio_object = multiopython.Multio(default_dict)
+
+    multio_object.open_connections()
+    with pytest.raises(AttributeError):
+        multio_object.write_field([1.0, 2.0, 3.0, 4.0])
+
+

@@ -13,10 +13,11 @@ enum MultioErrorValues
     MULTIO_ERROR_GENERAL_EXCEPTION = 2,
     MULTIO_ERROR_UNKNOWN_EXCEPTION = 3
 };
-const char* multio_error_string_global(int err);
-const char* multio_error_string(int err, multio_failure_info_t* info);
+const char* multio_error_string(int err);
+const char* multio_error_string_info(int err, multio_failure_info_t* info);
 typedef void (*multio_failure_handler_t)(void*, int error_code, multio_failure_info_t* info);
-int multio_set_failure_handler(multio_configuration_t* config, multio_failure_handler_t handler, void* usercontext);
+int multio_config_set_failure_handler(multio_configuration_t* config, multio_failure_handler_t handler,
+                                      void* usercontext);
 int multio_initialise();
 int multio_version(const char** version);
 int multio_vcs_version(const char** sha1);

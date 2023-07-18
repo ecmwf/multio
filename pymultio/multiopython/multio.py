@@ -4,7 +4,17 @@ from .lib import ffi, lib
 from .config import Config
 from .handler import Handler
 from .metadata import Metadata
-
+"""
+def error_handling(func):
+    def Inner_Function(*args, **kwargs):
+        retval = func(*args, **kwargs)
+        if retval not in (
+            lib.MULTIO_SUCCESS,
+        ):
+            error_str = "Error in function {}: {}".format(func.__name__, ffi.string(lib.multio_error_string(retval)))
+            raise MultioException(error_str)
+    return Inner_Function
+"""
 class Multio:
     """This is the main interface class for Multio that users will interact with"""
 
@@ -60,7 +70,7 @@ class Multio:
             raise AttributeError(f"No metadata object instantiated")
         
     def write_mask(self, data):
-         if self.__metadata != None:
+        if self.__metadata != None:
             self.__handle.write_mask_float(self.__metadata, data, len(data))
         else:
             raise AttributeError(f"No metadata object instantiated")  

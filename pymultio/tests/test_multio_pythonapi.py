@@ -18,7 +18,7 @@ def test_initialisation_no_config():
         multiopython.Multio()
 
 def test_multio_version():
-    assert(multiopython.Multio(default_dict).__version__() == '1.9.0')
+    assert(multiopython.Multio(default_dict).__version__() == '2.0.0')
 
 def test_multio_wrong_config_path():
     default_dict['config_path'] = "I_AM_NOT_HERE/multio/config/multio-server.yaml"
@@ -87,5 +87,3 @@ def test_write_no_metadata():
     multio_object.open_connections()
     with pytest.raises(AttributeError):
         multio_object.write_field([1.0, 2.0, 3.0, 4.0])
-
-

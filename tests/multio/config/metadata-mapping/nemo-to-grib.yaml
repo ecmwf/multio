@@ -358,19 +358,19 @@ data:
   - nemo-id : taum
     param-id : 262901
     grid-type : "T grid"
-    level-type : "heightAboveSea"
+    level-type : "oceanSurface"
 
   # Wind speed module
   - nemo-id : wspd
     param-id : 262902
     grid-type : "T grid"
-    level-type : "heightAboveSea"
+    level-type : "oceanSurface"
 
   # Natural drag coefficient
   - nemo-id : cdn10
     param-id : 262903
     grid-type : "T grid"
-    level-type : "heightAboveSea"
+    level-type : "oceanSurface"
 
   # Heat-flux correction
   - nemo-id : qrp

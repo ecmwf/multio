@@ -28,6 +28,8 @@ public:
     Tracer(uint32_t numChunks, uint32_t chunkSize, const std::string& outputPath);
     ~Tracer();
 
+    void startWriterThread();
+
     void recordEvent(uint64_t event);
 
 private:

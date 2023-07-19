@@ -23,6 +23,8 @@ namespace multio::test {
 CASE("Test single thread tracing.") {
     multio::util::Tracer tracer(8, 32768, "./trace_info.bin");
 
+    tracer.startWriterThread();
+
     const auto startTime = std::chrono::high_resolution_clock::now();
 
     for (auto i = 0; i < 1000000; ++i) {
@@ -36,6 +38,8 @@ CASE("Test single thread tracing.") {
 
 CASE("Test multiple thread tracing.") {
     multio::util::Tracer tracer(8, 32768, "./trace_info2.bin");
+
+    tracer.startWriterThread();
 
     std::atomic_bool start = false;
 

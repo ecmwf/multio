@@ -243,6 +243,7 @@ int multio_initialise() {
         if (!initialised) {
             const char* argv[2] = {"multio-api", 0};
             eckit::Main::initialise(1, const_cast<char**>(argv));
+            tracer.startWriterThread();
             initialised = true;
         }
     });

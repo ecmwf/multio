@@ -24,7 +24,7 @@ Tracer::Tracer(uint32_t numChunks, uint32_t chunkSize, const std::string& output
     writeQueue_(numChunks),
     outputFile_(outputPath),
     running_(true),
-    traceWriterThread_([this]() { writerThread_(); }) {
+    traceWriterThread_() {
     for (auto i = 0; i < numChunks; ++i) {
         traceChunks_[i] = new uint64_t[chunkSize_];
         if (i > 0) {
@@ -46,6 +46,10 @@ Tracer::~Tracer() {
     running_ = false;
 
     traceWriterThread_.join();
+}
+
+void Tracer::startWriterThread() {
+    traceWriterThread_ = std::thread([this]() { writerThread_(); });
 }
 
 void Tracer::recordEvent(uint64_t event) {

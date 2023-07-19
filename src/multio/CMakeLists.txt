@@ -35,6 +35,9 @@ list( APPEND multio_util_srcs
     util/Substitution.cc
     util/Substitution.h
     util/BinaryUtils.h
+    util/RingBuffer.h
+    util/Tracer.h
+    util/Tracer.cc
 )
 
 list( APPEND multio_config_srcs

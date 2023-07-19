@@ -63,6 +63,19 @@ ecbuild_add_test( TARGET    test_multio_mask_compression
                   SOURCES   test_multio_mask_compression.cc
                   LIBS      ${_link_libraries} )
 
+
+# Test ring buffer
+
+ecbuild_add_test( TARGET    test_multio_ringbuffer
+                  SOURCES   test_multio_ringbuffer.cc
+                  LIBS      ${_link_libraries} )
+
+# Test tracing
+
+ecbuild_add_test( TARGET    test_multio_tracing
+                  SOURCES   test_multio_tracing.cc
+                  LIBS      ${_link_libraries} )
+
 # Test api
 
 list( APPEND _api_test_environment

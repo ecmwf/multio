@@ -38,6 +38,7 @@ list( APPEND multio_util_srcs
     util/RingBuffer.h
     util/Tracer.h
     util/Tracer.cc
+    util/TraceEventIds.h
 )
 
 list( APPEND multio_config_srcs

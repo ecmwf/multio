@@ -1,13 +1,13 @@
 #include "Tracer.h"
 
 #include <chrono>
-
-#include <iostream>
+#include <sstream>
 
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "eckit/mpi/Comm.h"
 namespace {
 const uint32_t CHUNK_MASK = 0xFF000000;
 const uint32_t CHUNK_SHIFT = 24;
@@ -101,7 +101,12 @@ void Tracer::recordEvent(uint64_t event) {
 }
 
 void Tracer::writerThread_() {
-    const auto traceFileHandle = open(outputFile_.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IWUSR | S_IRUSR);
+    const auto myRank = eckit::mpi::comm().rank();
+
+    std::ostringstream oss;
+    oss << outputFile_ << "_" << myRank;
+
+    const auto traceFileHandle = open(oss.str().c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IWUSR | S_IRUSR);
 
     while (running_.load(std::memory_order_acquire)) {
         const auto finishedChunkId = writeQueue_.pop();

@@ -14,13 +14,13 @@
 
 #pragma once
 
+#include <optional>
+#include <unordered_map>
+
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
-
-#include <optional>
-#include <unordered_map>
 
 namespace multio::action {
 

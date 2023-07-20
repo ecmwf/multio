@@ -77,7 +77,8 @@ def test_write_field():
     multio_object.write_field([1.0, 2.0, 3.0, 4.0])
     multio_object.flush()
     multio_object.notify()
-    multio_object.field_accepted(False)
+    accept = multio_object.field_accepted()
+    assert(accept == True)
 
     multio_object.close_connections()
 
@@ -87,3 +88,20 @@ def test_write_no_metadata():
     multio_object.open_connections()
     with pytest.raises(AttributeError):
         multio_object.write_field([1.0, 2.0, 3.0, 4.0])
+
+def test_field_accepted():
+    metadata = {'category' : 'path',
+      'new' : 1,
+      'new_float' : 1.0,
+      'trigger' : 'step',
+      'step': 1
+    }
+    multio_object = multiopython.Multio(default_dict)
+    multio_object.create_metadata(md=metadata)
+
+    multio_object.open_connections()
+    multio_object.write_field([1.0, 2.0, 3.0, 4.0])
+    multio_object.flush()
+    multio_object.notify()
+    accept = multio_object.field_accepted()
+    assert(accept == True)

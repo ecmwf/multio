@@ -61,10 +61,11 @@ class Handler:
         size = ffi.cast("int", size)
         lib.multio_write_field_double(self.__handle, metadata.get_pointer(), data, size)
 
-    def field_accepted(self, metadata, accepted):
-
+    def field_accepted(self, metadata):
+        accepted = False
         accept = ffi.new("bool*", accepted)
         lib.multio_field_accepted(self.__handle, metadata.get_pointer(), accept)
+        return bool(accept)
 
 
     def get_pointer(self):

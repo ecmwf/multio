@@ -14,24 +14,28 @@ class Metadata:
 
         self.__metadata = ffi.gc(metadata[0], lib.multio_delete_metadata)
 
-        if md != None:
-            # Could use switch case if using python 3.10 or above
-            # Need to figure out how to use long, longlong, and double
+        if md is not None:
             for key, value in md.items():
-                if type(value) == int:
-                    self.metadata_set_int(key, value)
-                #elif type(value) == long:
-                #    self.metdata_set_long(key, value)
-                elif type(value) == str:
-                    self.metadata_set_string(key, value)
-                elif type(value) == bool:
-                    self.metadata_set_bool(key, value)
-                elif type(value) == float:
-                    self.metadata_set_float(key, value)
-                #elif type(value) == double:
-                #    self.metadata_set_double(key, value)
-                else:
-                    raise TypeError(f"{type(value).__name__} is not allowed for metadata")
+                self.metadata_set(key, value)
+
+    def metadata_set(self, key, value):
+        #Is there a nicer way to do this, an equivilent of generics in python?
+        # Could use switch case if using python 3.10 or above
+        # Need to figure out how to use long, longlong, and double
+        if isinstance(value, int):
+            self.metadata_set_int(key, value)
+        #elif type(value) == long:
+        #    self.metdata_set_long(key, value)
+        elif isinstance(value, str):
+            self.metadata_set_string(key, value)
+        elif isinstance(value, bool):
+            self.metadata_set_bool(key, value)
+        elif isinstance(value, float):
+            self.metadata_set_float(key, value)
+        #elif type(value) == double:
+        #    self.metadata_set_double(key, value)
+        else:
+            raise TypeError(f"{type(value).__name__} is not allowed for metadata")
 
     def metadata_set_int(self, key, value):
 

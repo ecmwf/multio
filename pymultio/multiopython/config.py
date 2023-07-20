@@ -10,7 +10,7 @@ class Config:
 
         config = ffi.new("multio_configuration_t**")
         if self.__config_path != None:
-            configuration_file_name = ffi.new("char[]", self.__config_path.encode('ascii'))
+            configuration_file_name = ffi.new("char[]", os.fsencode(self.__config_path))
             error = lib.multio_new_configuration_from_filename(config, configuration_file_name)
             print(error)
         else:
@@ -19,21 +19,21 @@ class Config:
         # Set free function
         self.__config = ffi.gc(config[0], lib.multio_delete_configuration)
 
-        if allow_world != None:
+        if allow_world is not None:
             self.conf_mpi_allow_world_default_comm(allow_world)
 
-        if parent_comm != None:
+        if parent_comm is not None:
             self.conf_mpi_parent_comm(parent_comm)
 
-        if client_comm != None:
+        if client_comm is not None:
             self.conf_mpi_return_client_comm(client_comm)
 
-        if server_comm != None:
+        if server_comm is not None:
             self.conf_mpi_return_server_comm(server_comm)
 
     def set_conf_path(self, conf_path):
 
-        configuration_file_name = ffi.new("char[]", conf_path.encode('ascii'))
+        configuration_file_name = ffi.new("char[]", os.fsencode(conf_path))
         lib.multio_conf_set_path(self.__config, configuration_file_name)
 
     def conf_mpi_allow_world_default_comm(self, allow=0):

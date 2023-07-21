@@ -27,7 +27,7 @@ CASE("Test single thread tracing.") {
 
     const auto startTime = std::chrono::high_resolution_clock::now();
 
-    for (auto i = 0; i < 1000000; ++i) {
+    for (auto i = 1; i <= 1000000; ++i) {
         tracer.recordEvent(i);
     }
 
@@ -49,7 +49,7 @@ CASE("Test multiple thread tracing.") {
             while (!start.load(std::memory_order_acquire))
                 ;
 
-            for (auto j = 0; j < 1000000; ++j) {
+            for (auto j = 1; j < 1000001; ++j) {
                 tracer.recordEvent(i * 10 + j);
             }
         }));

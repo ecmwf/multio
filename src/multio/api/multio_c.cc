@@ -89,6 +89,9 @@ struct multio_metadata_t : public multio::message::Metadata {
 
 namespace {
 
+static multio::util::Tracer tracer(8, 32768, "./multio_api_events.bin");
+static std::atomic_uint32_t traceEventCounter = 1;
+
 // Template magic to provide a consistent error-handling approach
 
 int innerWrapFn(std::function<void()> f) {

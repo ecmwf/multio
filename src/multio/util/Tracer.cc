@@ -4,7 +4,6 @@
 #include <sstream>
 
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <unistd.h>
 
 #include "eckit/mpi/Comm.h"
@@ -27,6 +26,7 @@ Tracer::Tracer(uint32_t numChunks, uint32_t chunkSize, const std::string& output
     traceWriterThread_() {
     for (auto i = 0; i < numChunks; ++i) {
         traceChunks_[i] = new uint64_t[chunkSize_];
+        std::memset(traceChunks_[i], 0, chunkSize_ * sizeof(uint64_t));
         if (i > 0) {
             availableQueue_.push(i);
         }
@@ -41,7 +41,7 @@ Tracer::~Tracer() {
 
     // Removing this will cause the last chunk to be ocassionally lost.
     // (race condition between write queue and running flag)
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     running_ = false;
 
@@ -66,7 +66,7 @@ void Tracer::recordEvent(uint64_t event) {
 
         // check if we still have place in the current chunk to log a new event
         const auto nextSize = index + 2;
-        const auto switchToNextChunk = nextSize >= chunkSize_;
+        const auto switchToNextChunk = nextSize > chunkSize_;
         const auto indexNext = switchToNextChunk ? 0 : nextSize;
 
         auto chunkNext = chunk;
@@ -117,11 +117,13 @@ void Tracer::writerThread_() {
         if (finishedChunkId) {
             const auto id = finishedChunkId.value();
 
-            const auto numBytesToWrite = 2 * chunkSize_ * sizeof(uint64_t);
+            const auto numBytesToWrite = chunkSize_ * sizeof(uint64_t);
             const auto bytes = reinterpret_cast<const void*>(traceChunks_[id]);
 
             write(traceFileHandle, bytes, numBytesToWrite);
-            // fsync(traceFileHandle);
+            fsync(traceFileHandle);
+
+            std::memset(traceChunks_[id], 0, chunkSize_ * sizeof(uint64_t));
 
             availableQueue_.push(id);
         }

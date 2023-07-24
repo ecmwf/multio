@@ -279,7 +279,7 @@ CASE("Metadata can set values") {
            == (std::numeric_limits<double>::max() - std::numeric_limits<double>::epsilon()));
 
 
-    Metadata md_dec = multio::message::metadataFromYAML(md_pCpp->toString());
+        Metadata md_dec = multio::message::metadataFromYAML(md_pCpp->toString());
 
     EXPECT(md_pCpp->get<std::string>("stringValue").compare(md_dec.get<std::string>("stringValue")) == 0);
     EXPECT(md_pCpp->get<std::string>("stringEmptyValue").compare(md_dec.get<std::string>("stringEmptyValue")) == 0);

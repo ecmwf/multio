@@ -6,6 +6,8 @@
 
 #include <sstream>
 
+#include <sstream>
+
 using eckit::LocalConfiguration;
 
 namespace multio::message {

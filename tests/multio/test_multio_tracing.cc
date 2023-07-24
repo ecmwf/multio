@@ -27,7 +27,8 @@ CASE("Test single thread tracing.") {
 
     const auto startTime = std::chrono::high_resolution_clock::now();
 
-    for (auto i = 1; i <= 1000000; ++i) {
+    for (uint32_t i = 1; i <= 1000000; ++i) {
+        tracer.recordEvent((0x1ULL << 48) | i);
         tracer.recordEvent(i);
     }
 

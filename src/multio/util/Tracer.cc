@@ -66,8 +66,8 @@ void Tracer::recordEvent(uint64_t event) {
 
         // check if we still have place in the current chunk to log a new event
         const auto nextSize = index + 2;
-        const auto switchToNextChunk = nextSize >= chunkSize_;
-        const auto indexNext = switchToNextChunk ? 0 : nextSize;
+        const auto switchToNextChunk = nextSize > chunkSize_;
+        const auto indexNext = switchToNextChunk ? 2 : nextSize;
 
         auto chunkNext = chunk;
         if (switchToNextChunk) {
@@ -91,6 +91,7 @@ void Tracer::recordEvent(uint64_t event) {
                 // we changed the chunk, push the completed chunk to the write queue
                 writeQueue_.push(chunk);
                 chunk = chunkNext;
+                index = 0;
             }
             else {
                 // some other thread updated the chunk counters, most likely also changing the chunk,

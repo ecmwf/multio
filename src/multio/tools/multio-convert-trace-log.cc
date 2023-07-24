@@ -67,7 +67,7 @@ void MultioConvertTraceLog::execute(const eckit::option::CmdArgs& args) {
     for (auto i = 0; (i < traceData.size() / 2) && !finished; ++i) {
         const auto event = traceData[2 * i];
         if (event == 0) {
-            break;
+            continue;
         }
 
         TraceData item;

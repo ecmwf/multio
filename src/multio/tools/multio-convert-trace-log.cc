@@ -105,15 +105,20 @@ void MultioConvertTraceLog::execute(const eckit::option::CmdArgs& args) {
     write(csvFileHandle, reinterpret_cast<const void*>(header.c_str()), header.size());
 
     for (const auto& startEvent : starts) {
-        const auto& correspondingEnd = ends.at(startEvent.first);
+        try {
+            const auto& correspondingEnd = ends.at(startEvent.first);
 
-        std::ostringstream oss;
-        oss << startEvent.first << "," << startEvent.second.traceEventId << "," << startEvent.second.timestamp << ","
-            << correspondingEnd.timestamp << "\r\n";
+            std::ostringstream oss;
+            oss << startEvent.first << "," << startEvent.second.traceEventId << "," << startEvent.second.timestamp
+                << "," << correspondingEnd.timestamp << "\r\n";
 
-        const auto line = oss.str();
+            const auto line = oss.str();
 
-        write(csvFileHandle, reinterpret_cast<const void*>(line.c_str()), line.size());
+            write(csvFileHandle, reinterpret_cast<const void*>(line.c_str()), line.size());
+        }
+        catch (const std::out_of_range& ex) {
+            std::cerr << "Event with id: " << startEvent.first << " does not have an end timestamp." << std::endl;
+        }
     }
 
     close(csvFileHandle);

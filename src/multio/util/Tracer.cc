@@ -66,7 +66,7 @@ void Tracer::recordEvent(uint64_t event) {
 
         // check if we still have place in the current chunk to log a new event
         const auto nextSize = index + 2;
-        const auto switchToNextChunk = nextSize > chunkSize_;
+        const auto switchToNextChunk = nextSize >= chunkSize_;
         const auto indexNext = switchToNextChunk ? 0 : nextSize;
 
         auto chunkNext = chunk;

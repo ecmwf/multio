@@ -198,12 +198,10 @@ using IfTypeNotOf = std::enable_if_t<!TypeListContains<std::decay_t<T>, TList>::
 
 //-----------------------------------------------------------------------------
 
-
 template <typename T>
 struct IsUniquePtr {
     static constexpr bool value = false;
 };
-
 template <typename T, typename Deleter>
 struct IsUniquePtr<std::unique_ptr<T, Deleter>> {
     static constexpr bool value = true;

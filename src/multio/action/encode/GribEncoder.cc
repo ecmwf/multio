@@ -359,6 +359,10 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     if (productionStatusOfProcessedData) {
         g.setValue(glossary().productionStatusOfProcessedData, *productionStatusOfProcessedData);
     }
+    withFirstOf(valueSetter(g, "class"), lookUp<std::string>(md, "class"), lookUp<std::string>(md, "marsClass"));
+    withFirstOf(valueSetter(g, "stream"), lookUp<std::string>(md, "stream"), lookUp<std::string>(md, "marsStream"));
+    withFirstOf(valueSetter(g, "expver"), lookUp<std::string>(md, "expver"),
+                lookUp<std::string>(md, "experimentVersionNumber"));
 
     ret.paramId = firstOf(
         lookUp<std::int64_t>(md, glossary().paramId),

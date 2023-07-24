@@ -216,7 +216,6 @@ template <typename T>
 struct IsUniquePtr {
     static constexpr bool value = false;
 };
-
 template <typename T, typename Deleter>
 struct IsUniquePtr<std::unique_ptr<T, Deleter>> {
     static constexpr bool value = true;

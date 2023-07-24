@@ -36,17 +36,18 @@ void Mappings::add(message::Message msg) {
 
     std::memcpy(local_map.data(), msg.payload().data(), msg.size());
 
-    if (msg.metadata().getString("representation") == "unstructured") {
+    if (msg.metadata().get<std::string>("representation") == "unstructured") {
         domainMap.emplace(msg.source(), std::make_unique<Unstructured>(std::move(local_map), msg.globalSize()));
         return;
     }
 
-    if (msg.metadata().getString("representation") == "structured") {
+    if (msg.metadata().get<std::string>("representation") == "structured") {
         domainMap.emplace(msg.source(), std::make_unique<Structured>(std::move(local_map)));
         return;
     }
 
-    throw eckit::AssertionFailed("Unsupported domain representation " + msg.metadata().getString("representation"));
+    throw eckit::AssertionFailed("Unsupported domain representation "
+                                 + msg.metadata().get<std::string>("representation"));
 }
 
 void Mappings::list(std::ostream& out) const {

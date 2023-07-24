@@ -44,27 +44,21 @@ using message::Message;
 using message::Peer;
 
 using util::firstOf;
-using util::LookUpBool;
-using util::lookUpBool;
-using util::LookUpDouble;
-using util::lookUpDouble;
-using util::LookUpLong;
-using util::lookUpLong;
-using util::LookUpString;
-using util::lookUpString;
+using util::lookUp;
+using util::lookUpTranslate;
 using util::withFirstOf;
 
 namespace {
-const std::map<const std::string, const long> ops_to_code{{"instant", 0000}, {"average", 1000}, {"accumulate", 2000},
-                                                          {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
+const std::map<const std::string, const std::int64_t> ops_to_code{
+    {"instant", 0000}, {"average", 1000}, {"accumulate", 2000}, {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
 
-const std::map<const std::string, const long> type_of_statistical_processing{
+const std::map<const std::string, const std::int64_t> type_of_statistical_processing{
     {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
 
 const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
 
-const std::map<const std::string, const long> type_of_generating_process{
+const std::map<const std::string, const std::int64_t> type_of_generating_process{
     {"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}, {"tpa", 12}};
 
 
@@ -91,8 +85,7 @@ std::int64_t timeUnitCodes(util::TimeUnit u) {
 }
 
 
-std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& timeRef,
-                                                            const eckit::Configuration& in) {
+std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& timeRef, const message::Metadata& in) {
     static std::unordered_map<std::string, std::tuple<std::string, std::string>> REF_TO_DATETIME_KEYS{
         {"start", {"startDate", "startTime"}},
         {"previous", {"previousDate", "previousTime"}},
@@ -101,15 +94,22 @@ std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& t
 
     auto search = REF_TO_DATETIME_KEYS.find(timeRef);
 
-    return std::make_tuple(in.getLong(std::get<0>(search->second)), in.getLong(std::get<1>(search->second)));
+    return std::make_tuple(in.get<std::int64_t>(std::get<0>(search->second)),
+                           in.get<std::int64_t>(std::get<1>(search->second)));
 }
 
 
-void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
+void tryMapStepToTimeAndCheckTime(message::Metadata& in) {
+    const auto searchStartDate = in.find("startDate");
+    const auto searchStartTime = in.find("startTime");
+    const auto searchDataDate = in.find("dataDate");
+    const auto searchDataTime = in.find("dataTime");
+    const auto searchDate = in.find("date");
+    const auto searchTime = in.find("time");
 
-    bool hasStartDateTime = (in.has("startDate") && in.has("startTime"));
-    bool hasDataDateTime = (in.has("dataDate") && in.has("dataTime"));
-    bool hasDateTime = (in.has("date") && in.has("time"));
+    bool hasStartDateTime = (searchStartDate != in.end() && searchStartTime != in.end());
+    bool hasDataDateTime = (searchDataDate != in.end() && searchDataTime != in.end());
+    bool hasDateTime = (searchDate != in.end() && searchTime != in.end());
 
     // std::cout << "tryMapStepToTimeAndCheckTime..." << std::endl;
     if (hasStartDateTime || hasDateTime || hasDataDateTime) {
@@ -117,19 +117,19 @@ void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
         util::TimeInts startTime;
 
         if (hasStartDateTime) {
-            startDate = util::toDateInts(in.getLong("startDate"));
-            startTime = util::toTimeInts(in.getLong("startTime"));
+            startDate = util::toDateInts(searchStartDate->second.get<std::int64_t>());
+            startTime = util::toTimeInts(searchStartTime->second.get<std::int64_t>());
         }
         else if (hasDataDateTime) {
-            startDate = util::toDateInts(in.getLong("dataDate"));
-            startTime = util::toTimeInts(in.getLong("dataTime"));
+            startDate = util::toDateInts(searchDataDate->second.get<std::int64_t>());
+            startTime = util::toTimeInts(searchDataTime->second.get<std::int64_t>());
         }
         else if (hasDateTime) {
-            startDate = util::toDateInts(in.getLong("date"));
-            startTime = util::toTimeInts(in.getLong("time") * 100);
+            startDate = util::toDateInts(searchDate->second.get<std::int64_t>());
+            startTime = util::toTimeInts(searchTime->second.get<std::int64_t>() * 100);
 
-            in.set("startDate", in.getLong("date"));
-            in.set("startTime", in.getLong("time") * 100);
+            in.set("startDate", searchDate->second.get<std::int64_t>());
+            in.set("startTime", searchTime->second.get<std::int64_t>() * 100);
         }
 
         // std::cout << "startDate: " << startDate.year << " " << startDate.month << " " << startDate.day << std::endl;
@@ -139,24 +139,38 @@ void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
         eckit::DateTime startDateTime(eckit::Date(startDate.year, startDate.month, startDate.day),
                                       eckit::Time(startTime.hour, startTime.minute, startTime.second));
 
-        if (in.has("step") && (!in.has("currentDate") || !in.has("currentTime"))) {
-            std::int64_t step = in.getLong("step");
+        {
+            const auto searchStep = in.find("step");
+            const auto searchCurrentDate = in.find("currentDate");
+            const auto searchCurrentTime = in.find("currentTime");
+            if (searchStep != in.end() && (searchCurrentDate == in.end() || searchCurrentTime == in.end())) {
+                const std::int64_t& step = searchStep->second.get<std::int64_t>();
 
-            // IFS default step unit is hours
-            auto currentDateTime = startDateTime + (step * 3600);
+                // IFS default step unit is hours
+                auto currentDateTime = startDateTime + (step * 3600);
 
-            in.set("currentDate", currentDateTime.date().yyyymmdd());
-            in.set("currentTime", currentDateTime.time().hhmmss());
+                in.set<std::int64_t>("currentDate", currentDateTime.date().yyyymmdd());
+                in.set<std::int64_t>("currentTime", currentDateTime.time().hhmmss());
+            }
         }
-        if ((in.has("stepRange") || (in.has("startStep") && in.has("endStep")))
-            && (!in.has("currentDate") || !in.has("currentTime") || !in.has("previousDate")
-                || !in.has("previousTime"))) {
+
+
+        const auto searchStepRange = in.find("stepRange");
+        const auto searchStartStep = in.find("startStep");
+        const auto searchEndStep = in.find("endStep");
+        const auto searchCurrentDate = in.find("currentDate");
+        const auto searchCurrentTime = in.find("currentTime");
+        const auto searchPreviousDate = in.find("previousDate");
+        const auto searchPreviousTime = in.find("previousTime");
+        if ((searchStepRange != in.end() || (searchStartStep != in.end() && searchEndStep != in.end()))
+            && (searchCurrentDate == in.end() || searchCurrentTime == in.end() || searchPreviousDate == in.end()
+                || searchPreviousTime == in.end())) {
 
             std::int64_t stepStart;
             std::int64_t stepEnd;
 
-            if (in.has("stepRange")) {
-                std::string stepRange = in.getString("stepRange");
+            if (searchStepRange != in.end()) {
+                const std::string& stepRange = searchStepRange->second.get<std::string>();
                 auto split = stepRange.find("-");
 
                 if (split == std::string::npos) {
@@ -169,28 +183,29 @@ void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
                 stepEnd = eckit::translate<std::int64_t>(stepRange.substr(split + 1));
             }
             else {
-                stepStart = in.getLong("startStep");
-                stepEnd = in.getLong("endStep");
+                stepStart = searchStartStep->second.get<std::int64_t>();
+                stepEnd = searchEndStep->second.get<std::int64_t>();
             }
 
             // IFS default step unit is hours
             auto previousDateTime = startDateTime + (stepStart * 3600);
 
-            in.set("previousDate", previousDateTime.date().yyyymmdd());
-            in.set("previousTime", previousDateTime.time().hhmmss());
+            in.set<std::int64_t>("previousDate", previousDateTime.date().yyyymmdd());
+            in.set<std::int64_t>("previousTime", previousDateTime.time().hhmmss());
 
             // IFS default step unit is hours
             auto currentDateTime = startDateTime + (stepEnd * 3600);
 
-            in.set("currentDate", currentDateTime.date().yyyymmdd());
-            in.set("currentTime", currentDateTime.time().hhmmss());
+            in.set<std::int64_t>("currentDate", currentDateTime.date().yyyymmdd());
+            in.set<std::int64_t>("currentTime", currentDateTime.time().hhmmss());
         }
     }
 
 
     // Compute back from currentDate/Time + endStep/startStep
-
-    if (!in.has("currentDate") || !in.has("currentTime")) {
+    const auto searchCurrentDate = in.find("currentDate");
+    const auto searchCurrentTime = in.find("currentTime");
+    if (searchCurrentDate == in.end() || searchCurrentTime == in.end()) {
         throw eckit::UserError(
             "tryMapStepToTime: Grib encoding requires at least date time fields {\"currentTime\" and \"currentDate\"}, "
             "or {\"startTime\" and \"startDate\" and {\"step\" or {\"stepRange\", or \"startStep\" and \"endStep\"}}}",
@@ -225,47 +240,43 @@ GribEncoder::GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& 
 
 struct QueriedMarsKeys {
     std::optional<std::string> type{};
-    std::optional<long> paramId{};
+    std::optional<std::int64_t> paramId{};
 };
 
-QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
+template <typename Dict>
+QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     QueriedMarsKeys ret;
 
     // TODO we should be able to determine the type in the metadata and preserve
     // it Domain usually is always readonly withFirstOf(valueSetter(g, "domain"),
     // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
-    std::string gridType;
-    const auto hasGridType = md.get("gridType", gridType);
+    const auto gridType = lookUp<std::string>(md, "gridType")();
+    const auto levtype = lookUp<std::string>(md, "levtype")();
+    const auto gribEdition = lookUp<std::string>(md, "gribEdition")().value_or("2");
 
-    const auto gribEdition = md.getString("gribEdition", "2");
-
-    std::string typeOfLevel;
-    const auto hasTypeOfLevel = md.get("typeOfLevel", typeOfLevel);
-    if (!hasTypeOfLevel) {
-        const auto wam_levtype = lookUpLong(md, "levtype_wam");
+    const auto typeOfLevel = lookUp<std::string>(md, "typeOfLevel")();
+    if (!typeOfLevel) {
+        const auto wam_levtype = lookUp<std::int64_t>(md, "levtype_wam")();
         if (wam_levtype) {
             if (gribEdition == "1") {
-                g.setValue("indicatorOfTypeOfLevel", wam_levtype);
+                g.setValue("indicatorOfTypeOfLevel", *wam_levtype);
             }
-            else {
-                g.setValue("typeOfLevel", md.getString("levtype"));
+            else if (levtype) {
+                g.setValue("typeOfLevel", *levtype);
             }
         }
-        else if (hasGridType && eckit::StringTools::lower(gridType) != "healpix") {
-            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
-                        LookUpString(md, "indicatorOfTypeOfLevel"));
+        else if (gridType && eckit::StringTools::lower(*gridType) != "healpix") {
+            withFirstOf(valueSetter(g, "levtype"), levtype, lookUp<std::string>(md, "indicatorOfTypeOfLevel"));
         }
-        else if (hasGridType && eckit::StringTools::lower(gridType) == "healpix" && md.getString("levtype") != "o2d"
-                 && md.getString("levtype") != "o3d") {
-            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
-                        LookUpString(md, "indicatorOfTypeOfLevel"));
+        else if (gridType && levtype && eckit::StringTools::lower(*gridType) == "healpix" && *levtype != "o2d"
+                 && *levtype != "o3d") {
+            withFirstOf(valueSetter(g, "levtype"), levtype, lookUp<std::string>(md, "indicatorOfTypeOfLevel"));
         }
-        else if (!hasGridType) {
-            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
-                        LookUpString(md, "indicatorOfTypeOfLevel"));
+        else if (!gridType) {
+            withFirstOf(valueSetter(g, "levtype"), levtype, lookUp<std::string>(md, "indicatorOfTypeOfLevel"));
         }
 
-        if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
+        if (levtype && (*levtype == "sfc")) {
             g.setValue("level", 0l);
 
             if (gribEdition == "2") {
@@ -276,110 +287,132 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
             }
         }
         else {
-            withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
+            withFirstOf(valueSetter(g, "level"), lookUp<std::int64_t>(md, "level"),
+                        lookUp<std::int64_t>(md, "levelist"));
         }
     }
     else {
-        g.setValue("typeOfLevel", typeOfLevel);
+        g.setValue("typeOfLevel", *typeOfLevel);
     }
 
-    // param might be a string, separated by . for GRIB1.
-    std::optional<std::string> paramId{firstOf(LookUpString(md, "paramId"), LookUpString(md, "param"))};
-
-    // String to long convertion should get it right
-    if (paramId) {
-        g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
+    ret.paramId
+        = firstOf(lookUp<std::int64_t>(md, "paramId"),
+                  lookUpTranslate<std::int64_t>(md, "param"));  // param might be a string, separated by . for GRIB1.
+                                                                // String to std::int64_t convertion should get it right
+    if (ret.paramId) {
+        g.setValue("paramId", *ret.paramId);
     }
+    withFirstOf(valueSetter(g, "class"), lookUp<std::string>(md, "class"), lookUp<std::string>(md, "marsClass"));
+    withFirstOf(valueSetter(g, "stream"), lookUp<std::string>(md, "stream"), lookUp<std::string>(md, "marsStream"));
+    withFirstOf(valueSetter(g, "expver"), lookUp<std::string>(md, "expver"),
+                lookUp<std::string>(md, "experimentVersionNumber"));
 
     if (gribEdition == "2") {
-        withFirstOf(valueSetter(g, "subCentre"), LookUpString(md, "subCentre"));
+        withFirstOf(valueSetter(g, "subCentre"), lookUp<std::string>(md, "subCentre"));
         withFirstOf(valueSetter(g, "productionStatusOfProcessedData"),
-                    LookUpLong(md, "productionStatusOfProcessedData"));
+                    lookUp<std::int64_t>(md, "productionStatusOfProcessedData"));
 
-        if (md.has("dataset")) {
-            withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
-            withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
-            withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
+        const auto dataset = lookUp<std::string>(md, "dataset")();
+        if (dataset) {
+            withFirstOf(valueSetter(g, "tablesVersion"), lookUp<std::int64_t>(md, "tablesVersion"));
+            withFirstOf(valueSetter(g, "setLocalDefinition"), lookUp<std::int64_t>(md, "setLocalDefinition"));
+            withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), lookUp<std::int64_t>(md, "grib2LocalSectionNumber"));
 
-            const auto dataset = md.getString("dataset");
-            g.setValue("dataset", dataset);
-
-            if (dataset == "climate-dt") {
-                withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
-                withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
-                withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
-                withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
-                withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+            if (*dataset == "climate-dt") {
+                withFirstOf(valueSetter(g, "activity"), lookUp<std::string>(md, "activity"));
+                withFirstOf(valueSetter(g, "experiment"), lookUp<std::string>(md, "experiment"));
+                withFirstOf(valueSetter(g, "generation"), lookUp<std::string>(md, "generation"));
+                withFirstOf(valueSetter(g, "model"), lookUp<std::string>(md, "model"));
+                withFirstOf(valueSetter(g, "realization"), lookUp<std::string>(md, "realization"));
             }
         }
     }
 
-    withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
-    withFirstOf(valueSetter(g, "stream"), LookUpString(md, "stream"), LookUpString(md, "marsStream"));
+    withFirstOf(valueSetter(g, "class"), lookUp<std::string>(md, "class"), lookUp<std::string>(md, "marsClass"));
+    withFirstOf(valueSetter(g, "stream"), lookUp<std::string>(md, "stream"), lookUp<std::string>(md, "marsStream"));
 
-    withFirstOf(valueSetter(g, "generatingProcessIdentifier"), LookUpString(md, "generatingProcessIdentifier"));
+    withFirstOf(valueSetter(g, "generatingProcessIdentifier"), lookUp<std::string>(md, "generatingProcessIdentifier"));
 
-    withFirstOf(valueSetter(g, "setPackingType"), LookUpString(md, "setPackingType"));
+    withFirstOf(valueSetter(g, "expver"), lookUp<std::string>(md, "expver"),
+                lookUp<std::string>(md, "experimentVersionNumber"));
+    withFirstOf(valueSetter(g, "number"), lookUp<std::int64_t>(md, "ensemble-member"));
+    withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), lookUp<std::int64_t>(md, "ensemble-size"));
 
-    withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
-    withFirstOf(valueSetter(g, "number"), LookUpLong(md, "ensemble-member"));
-    withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), LookUpLong(md, "ensemble-size"));
-    withFirstOf(valueSetter(g, "methodNumber"), LookUpLong(md, "method-number"));
-    withFirstOf(valueSetter(g, "systemNumber"), LookUpLong(md, "system-number"));
+    withFirstOf(valueSetter(g, "number"), lookUp<std::int64_t>(md, "ensemble-member"));
+    withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), lookUp<std::int64_t>(md, "ensemble-size"));
+    withFirstOf(valueSetter(g, "methodNumber"), lookUp<std::int64_t>(md, "method-number"));
+    withFirstOf(valueSetter(g, "systemNumber"), lookUp<std::int64_t>(md, "system-number"));
 
-    ret.type = firstOf(LookUpString(md, "type"), LookUpString(md, "marsType"));
+    ret.type = firstOf(lookUp<std::string>(md, "type"), lookUp<std::string>(md, "marsType"));
     if (ret.type) {
         g.setValue("type", *ret.type);
     }
 
     // Additional parameters passed through for spherical harmonics
-    if (hasGridType) {
+    if (gridType) {
         auto hasRegularLLInterpData = [&]() {
             return md.has("Ni") && md.has("Nj") && md.has("north") && md.has("south") && md.has("west")
                 && md.has("east") && md.has("west_east_increment") && md.has("south_north_increment");
         };
-        if (gridType == "sh") {
-            withFirstOf(valueSetter(g, "complexPacking"), LookUpLong(md, "complexPacking"));
+        if (*gridType == "sh") {
+            withFirstOf(valueSetter(g, "complexPacking"), lookUp<std::int64_t>(md, "complexPacking"));
             withFirstOf(valueSetter(g, "pentagonalResolutionParameterJ"),
-                        LookUpLong(md, "pentagonalResolutionParameterJ"), LookUpLong(md, "J"));
+                        lookUp<std::int64_t>(md, "pentagonalResolutionParameterJ"), lookUp<std::int64_t>(md, "J"));
             withFirstOf(valueSetter(g, "pentagonalResolutionParameterK"),
-                        LookUpLong(md, "pentagonalResolutionParameterK"), LookUpLong(md, "K"));
+                        lookUp<std::int64_t>(md, "pentagonalResolutionParameterK"), lookUp<std::int64_t>(md, "K"));
             withFirstOf(valueSetter(g, "pentagonalResolutionParameterM"),
-                        LookUpLong(md, "pentagonalResolutionParameterM"), LookUpLong(md, "M"));
-
-            withFirstOf(valueSetter(g, "subSetJ"), LookUpLong(md, "subSetJ"), LookUpLong(md, "JS"));
-            withFirstOf(valueSetter(g, "subSetK"), LookUpLong(md, "subSetK"), LookUpLong(md, "KS"));
-            withFirstOf(valueSetter(g, "subSetM"), LookUpLong(md, "subSetM"), LookUpLong(md, "MS"));
+                        lookUp<std::int64_t>(md, "pentagonalResolutionParameterM"), lookUp<std::int64_t>(md, "M"));
+                        
+            withFirstOf(valueSetter(g, "subSetJ"), lookUp<std::int64_t>(md, "subSetJ"), lookUp<std::int64_t>(md, "JS"));
+            withFirstOf(valueSetter(g, "subSetK"), lookUp<std::int64_t>(md, "subSetK"), lookUp<std::int64_t>(md, "KS"));
+            withFirstOf(valueSetter(g, "subSetM"), lookUp<std::int64_t>(md, "subSetM"), lookUp<std::int64_t>(md, "MS"));
         }
-        else if (gridType == "regular_ll" && hasRegularLLInterpData()) {
-            long scale = 0;
+        else if (*gridType == "regular_ll" && hasRegularLLInterpData()) {
+            std::int64_t scale = 0;
             if (gribEdition == "1") {
                 scale = 1000;
             }
             else if (gribEdition == "2") {
                 scale = 1000000;
             }
-            g.setValue("Ni", md.getLong("Ni"));
-            g.setValue("Nj", md.getLong("Nj"));
-            double east = md.getDouble("east") - md.getDouble("west_east_increment");
-            g.setValue("latitudeOfFirstGridPoint", scale * md.getDouble("north"));
-            g.setValue("longitudeOfFirstGridPoint", scale * md.getDouble("west"));
-            g.setValue("latitudeOfLastGridPoint", scale * md.getDouble("south"));
-            g.setValue("longitudeOfLastGridPoint", scale * east);
-            g.setValue("iDirectionIncrement", scale * md.getDouble("west_east_increment"));
-            g.setValue("jDirectionIncrement", scale * md.getDouble("south_north_increment"));
+            withFirstOf(valueSetter(g, "Ni"), lookUp<std::int64_t>(md, "Ni"));
+            withFirstOf(valueSetter(g, "Nj"), lookUp<std::int64_t>(md, "Nj"));
+            auto north = lookUp<double>(md, "north")();
+            auto west = lookUp<double>(md, "west")();
+            auto south = lookUp<double>(md, "south")();
+            auto east = lookUp<double>(md, "east")();
+            auto westEastInc = lookUp<double>(md, "west_east_increment")();
+            auto southNorthInc = lookUp<double>(md, "south_north_increment")();
+            if (north) {
+                g.setValue("latitudeOfFirstGridPoint", scale * *north);
+            }
+            if (west) {
+                g.setValue("longitudeOfFirstGridPoint", scale * *west);
+            }
+            if (south) {
+                g.setValue("latitudeOfLastGridPoint", scale * *south);
+            }
+            if (east && westEastInc) {
+                g.setValue("longitudeOfLastGridPoint", scale * (*east - *westEastInc));
+            }
+
+            if (westEastInc) {
+                g.setValue("iDirectionIncrement", scale * *westEastInc);
+            }
+            if (southNorthInc) {
+                g.setValue("jDirectionIncrement", scale * *southNorthInc);
+            }
         }
-        else if (eckit::StringTools::lower(gridType) == "healpix") {
-            long Nside = md.getLong("Nside");
-            g.setValue("Nside", Nside);
+        else if (eckit::StringTools::lower(*gridType) == "healpix") {
+            withFirstOf(valueSetter(g, "Nside"), lookUp<std::int64_t>(md, "Nside"));
             double logp = 45.0;
             // Note: Pedro told to use always this to avoid problems with milli and micro degrees
             g.setValue("longitudeOfFirstGridPointInDegrees", logp);
-            g.setValue("orderingConvention", md.getString("orderingConvention"));
+            withFirstOf(valueSetter(g, "orderingConvention"), lookUp<std::string>(md, "orderingConvention"));
         }
     }
     // TODO Remove Part of parameter mapping now
-    // withFirstOf(valueSetter(g, "generatingProcessIdentifier"), LookUpLong(md,
+    // withFirstOf(valueSetter(g, "generatingProcessIdentifier"), lookUp<std::int64_t>(md,
     // "generatingProcessIdentifier"));
 
     return ret;
@@ -408,46 +441,60 @@ void visitKeyValues(const eckit::Configuration& c, KVFunc&& func) {
     }
 }
 
+
 void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
     if (md.has("encoder-overwrites")) {
         // TODO Refactor with visitor
-        auto overwrites = md.getSubConfiguration("encoder-overwrites");
-        visitKeyValues(overwrites, [&](const std::string& k, const auto& v) {
-            if (g.hasKey(k.c_str())) {
-                g.setValue(k, v);
+        auto overwrites = md.get<message::Metadata>("encoder-overwrites");
+        for (const auto& kv : overwrites) {
+            // TODO handle type... however eccodes should support string as well. For
+            // some representations the string and integer representation in eccodes
+            // differ significantly and my produce wrong results
+            if (g.hasKey(kv.first.c_str())) {
+                kv.second.visit(Overloaded{
+                    [](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNestedTypes> {},
+                    [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), message::MetadataVectorTypes> {
+                        g.setValues(kv.first, vec);
+                    },
+                    [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataScalarTypes> {
+                        g.setValue(kv.first, v);
+                    }});
             }
-        });
+        }
     }
 }
 
-void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
+
+void setEncodingSpecificFields(GribEncoder& g, const message::Metadata& md) {
     // TODO globalSize is expected to be set in md directly. nmuberOf* should be
     // readonly anyway... test removal..
 
-    withFirstOf(valueSetter(g, "missingValue"), LookUpDouble(md, "missingValue"));
-    withFirstOf(valueSetter(g, "bitmapPresent"), LookUpBool(md, "bitmapPresent"));
-    withFirstOf(valueSetter(g, "bitsPerValue"), LookUpLong(md, "bitsPerValue"));
+    withFirstOf(valueSetter(g, "missingValue"), lookUp<double>(md, "missingValue"));
+    withFirstOf(valueSetter(g, "bitmapPresent"), lookUp<bool>(md, "bitmapPresent"));
+    withFirstOf(valueSetter(g, "bitsPerValue"), lookUp<std::int64_t>(md, "bitsPerValue"));
 }
 
-void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration& in,
+void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
                                  const QueriedMarsKeys& queriedMarsFields) {
-    eckit::LocalConfiguration md = in;  // Copy to allow modification
+    message::Metadata md = in;  // Copy to allow modification
 
-    std::string gribEdition = md.getString("gribEdition", "2");
+    auto gribEdition = lookUp<std::string>(md, "gribEdition")().value_or("2");
+    // std::string forecastTimeKey = gribEdition == "2" ? "forecastTime" : "startStep";
 
-    auto operation = lookUpString(md, "operation");
-    auto startStep = lookUpLong(md, "startStep");
-    auto endStep = lookUpLong(md, "endStep");
+
+    auto operation = lookUp<std::string>(md, "operation")();
+    auto startStep = lookUp<std::int64_t>(md, "startStep")();
+    auto endStep = lookUp<std::int64_t>(md, "endStep")();
     bool isTimeRange = (operation && (*operation != "instant"))
                     || (queriedMarsFields.type && *queriedMarsFields.type == "tpa")
                     || (endStep && startStep && (endStep != startStep));
 
 
-    auto significanceOfReferenceTime = lookUpLong(md, "significanceOfReferenceTime");
+    auto significanceOfReferenceTime = lookUp<std::int64_t>(md, "significanceOfReferenceTime")();
     if (!significanceOfReferenceTime) {
         if (md.has("encoder-overwrites")) {
-            auto overwrites = md.getSubConfiguration("encoder-overwrites");
-            significanceOfReferenceTime = lookUpLong(overwrites, "significanceOfReferenceTime");
+            const auto& overwrites = md.get<message::Metadata>("encoder-overwrites");
+            significanceOfReferenceTime = lookUp<std::int64_t>(overwrites, "significanceOfReferenceTime")();
         }
     }
     if ((gribEdition == "2") && significanceOfReferenceTime) {
@@ -457,7 +504,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     tryMapStepToTimeAndCheckTime(md);
 
     std::string timeRef = std::invoke([&]() -> std::string {
-        if (auto optTimeRef = lookUpString(md, "timeReference"); optTimeRef) {
+        if (auto optTimeRef = lookUp<std::string>(md, "timeReference")(); optTimeRef) {
             return *optTimeRef;
         }
 
@@ -502,7 +549,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     g.setValue("second", refDateTime.time.second);
 
     auto currentDateTime = util::wrapDateTime(
-        {util::toDateInts(md.getLong("currentDate")), util::toTimeInts(md.getLong("currentTime"))});
+        {util::toDateInts(md.get<std::int64_t>("currentDate")), util::toTimeInts(md.get<std::int64_t>("currentTime"))});
 
     if (!isTimeRange) {
         if (timeRef == std::string("start")) {
@@ -518,8 +565,8 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         }
     }
     else if (gribEdition == "2") {
-        auto previousDateTime = util::wrapDateTime(
-            {util::toDateInts(md.getLong("previousDate")), util::toTimeInts(md.getLong("previousTime"))});
+        auto previousDateTime = util::wrapDateTime({util::toDateInts(md.get<std::int64_t>("previousDate")),
+                                                    util::toTimeInts(md.get<std::int64_t>("previousTime"))});
 
         // Now just deal with GRIB2
         g.setValue("yearOfEndOfOverallTimeInterval", currentDateTime.date.year);
@@ -604,10 +651,10 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         //                         (*significanceOfReferenceTime == 2)) ? 255 : 1)));
         g.setValue("typeOfTimeIncrement", (timeRef == "start" ? 2 : ((gribEdition == "2") ? 255 : 1)));
 
-        if (const auto timeIncrement = lookUpLong(md, "timeIncrement"); timeIncrement) {
+        if (const auto timeIncrement = md.getOpt<std::int64_t>("timeIncrement"); timeIncrement) {
             if (*timeIncrement != 0) {
                 withFirstOf(valueSetter(g, "indicatorOfUnitForTimeIncrement"),
-                            LookUpLong(md, "indicatorOfUnitForTimeIncrement"));
+                            lookUp<std::int64_t>(md, "indicatorOfUnitForTimeIncrement"));
                 g.setValue("timeIncrement", *timeIncrement);
             }
             else {
@@ -615,7 +662,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
                 g.setValue("timeIncrement", 0);
             }
         }
-        else if (const auto sampleIntervalInSeconds = lookUpLong(md, "sampleIntervalInSeconds");
+        else if (const auto sampleIntervalInSeconds = md.getOpt<std::int64_t>("sampleIntervalInSeconds");
                  sampleIntervalInSeconds) {
             g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
             g.setValue("timeIncrement", *sampleIntervalInSeconds);
@@ -623,13 +670,13 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         else {
             g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
             withFirstOf(valueSetter(g, "timeIncrement"),
-                        LookUpLong(md, "timeStep"));  // Nemo is currently sending timeStep
+                        lookUp<std::int64_t>(md, "timeStep")());  // Nemo is currently sending timeStep
         }
     }
 
 
-    auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
-    auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis")).value_or(0);
+    auto dateOfAnalysis = firstOf(lookUp<std::int64_t>(md, "date-of-analysis"));
+    auto timeOfAnalysis = firstOf(lookUp<std::int64_t>(md, "time-of-analysis")).value_or(0);
     if (dateOfAnalysis) {
         auto analysisDateTime
             = util::wrapDateTime({util::toDateInts(*dateOfAnalysis), util::toTimeInts(timeOfAnalysis)});
@@ -674,17 +721,18 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     setEncodingSpecificFields(*this, metadata);
 
     // Setting parameter ID
-    if (metadata.getLong("param") / 1000 == 212) {
+    std::int64_t paramInt = metadata.getTranslate<std::int64_t>("param");
+    if (paramInt / 1000 == 212) {
         // HACK! Support experimental averages.
-        setValue("paramId", metadata.getLong("param") + 4000);
+        setValue("paramId", paramInt + 4000);
     }
     else {
-        setValue("paramId", metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
+        setValue("paramId", paramInt + ops_to_code.at(metadata.get<std::string>("operation")));
     }
-    const auto& typeOfLevel = metadata.getString("typeOfLevel");
+    const auto& typeOfLevel = metadata.get<std::string>("typeOfLevel");
     setValue("typeOfLevel", typeOfLevel);
     if (typeOfLevel == "oceanModelLayer") {
-        auto level = metadata.getLong("level");
+        auto level = metadata.get<std::int64_t>("level");
         ASSERT(level > 0);
         setValue("scaledValueOfFirstFixedSurface", level - 1);
         setValue("scaledValueOfSecondFixedSurface", level);
@@ -692,43 +740,40 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
         setValue("scaleFactorOfSecondFixedSurface", 0l);
     }
     if (typeOfLevel == "oceanModel") {
-        auto level = metadata.getLong("level");
+        auto level = metadata.get<std::int64_t>("level");
         ASSERT(level > 0);
         setValue("scaledValueOfFirstFixedSurface", level);
         setValue("scaleFactorOfFirstFixedSurface", 0l);
     }
 
     std::string gridType;
-    const auto hasGridType = metadata.get("gridType", gridType);
-    if (hasGridType && gridType == "unstructured_grid") {
-        std::string unstructuredGridType;
-        const auto hasUnstructuredGridType = metadata.get("unstructuredGridType", unstructuredGridType);
-        if (!hasUnstructuredGridType) {
-            unstructuredGridType = config_.getString("unstructured-grid-type");
+    const auto searchGridType = metadata.find("gridType");
+    if (searchGridType != metadata.end() && searchGridType->second.get<std::string>() == "unstructured_grid") {
+        if (auto searchGridType = metadata.find("unstructuredGridType"); searchGridType != metadata.end()) {
+            setValue("unstructuredGridType", searchGridType->second.template get<std::string>());
+        }
+        else {
+            setValue("unstructuredGridType", config_.getString("unstructured-grid-type"));
         }
 
-        // Set ocean grid information
-        setValue("unstructuredGridType", unstructuredGridType);
-
-        if (metadata.has("unstructuredGridSubtype")) {
-            setValue("unstructuredGridSubtype", metadata.getString("unstructuredGridSubtype"));
+        if (auto searchGridSubtype = metadata.find("unstructuredGridSubtype"); searchGridSubtype != metadata.end()) {
+            setValue("unstructuredGridSubtype", searchGridSubtype->second.template get<std::string>());
         }
 
-        if (metadata.has("uuidOfHGrid")) {
-            const auto& gridUID = metadata.getString("uuidOfHGrid");
-            setValue("uuidOfHGrid", gridUID);
+        if (auto searchGridUUID = metadata.find("uuidOfHGrid"); searchGridUUID != metadata.end()) {
+            setValue("uuidOfHGrid", searchGridUUID->second.template get<std::string>());
         }
         else {
             eckit::Log::warning() << "Ocean grid UUID not available during encoding!" << std::endl;
         }
     }
     else if (eckit::StringTools::lower(gridType) == "healpix") {
-        long Nside = metadata.getLong("Nside");
+        long Nside = metadata.get<std::int64_t>("Nside");
         setValue("Nside", Nside);
         double logp = 45.0;
         // Note: Pedro told to use always this to avoid problems with milli and micro degrees
         setValue("longitudeOfFirstGridPointInDegrees", logp);
-        setValue("orderingConvention", metadata.getString("orderingConvention"));
+        setValue("orderingConvention", metadata.get<std::string>("orderingConvention"));
     }
 }
 
@@ -743,29 +788,30 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata, const
     // Set run-specific md
     setMarsKeys(*this, runConfig);
 
-    setValue("date", md.getLong("startDate"));
+    setValue("date", md.get<std::int64_t>("startDate"));
 
     // setDomainDimensions
-    // auto gls = lookUpLong(md, "globalSize");
-    // setValue("numberOfDataPoints", md.getLong("globalSize")); // Readonly
-    // setValue("numberOfValues", md.getLong("globalSize"));
+    // auto gls = lookUp<std::int64_t>(md, "globalSize");
+    // setValue("numberOfDataPoints", md.get<std::int64_t>("globalSize"));
+    // setValue("numberOfValues", md.get<std::int64_t>("globalSize"));
 
     // Setting parameter ID
-    setValue("paramId", md.getLong("param"));
+    setValue("paramId", md.getTranslate<std::int64_t>("param"));
 
-    setValue("typeOfLevel", md.getString("typeOfLevel"));
+    setValue("typeOfLevel", md.get<std::string>("typeOfLevel"));
 
     // Set ocean grid information
     setValue("unstructuredGridType", config_.getString("unstructured-grid-type"));
 
-    setValue("unstructuredGridSubtype", md.getString("unstructuredGridSubtype"));
+    const auto& gridSubtype = md.get<std::string>("gridSubtype");
+    setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
 
-    const auto& gridUID = md.getString("uuidOfHGrid");
+    const auto& gridUID = md.get<std::string>("uuidOfHGrid");
     setValue("uuidOfHGrid", gridUID);
 
     // Set encoding for missing value support
     setValue("bitmapPresent", false);
-    setValue("bitsPerValue", md.getLong("bitsPerValue"));
+    setValue("bitsPerValue", md.get<std::int64_t>("bitsPerValue"));
 }
 
 

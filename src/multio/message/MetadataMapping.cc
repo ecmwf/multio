@@ -68,7 +68,7 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
         }
         return;
     }
-    std::string lookUpKey = m.getString(metadataKey_);
+    std::string lookUpKey = m.get<std::string>(metadataKey_);
     auto from = mapData_.find(lookUpKey);
     if (from == mapData_.end()) {
         if (options.enforceMatch) {
@@ -81,9 +81,8 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
     }
 
     // TODO handle internals without LocalConfiguration
-    std::optional<eckit::LocalConfiguration> targetConfMaybe{};
-    eckit::LocalConfiguration& ms
-        = targetPath_ ? (targetConfMaybe = m.getSubConfiguration(*targetPath_), *targetConfMaybe) : m;
+    std::optional<Metadata> targetConfMaybe{};
+    Metadata& ms = targetPath_ ? (targetConfMaybe = m.get<Metadata>(*targetPath_), *targetConfMaybe) : m;
 
     // Please don't blame about this [&] capture. It is really just convenient to use the lambda here and won't cause
     // any harm. Adding all variables and members to the list is just cumbersome

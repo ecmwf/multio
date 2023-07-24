@@ -69,7 +69,7 @@ public:  // types
 
         std::string category() const;
 
-        long globalSize() const;
+        std::int64_t globalSize() const;
 
         std::string domain() const;
 
@@ -139,7 +139,7 @@ public:
 
     util::PrecisionTag precision() const;
 
-    long globalSize() const;
+    std::int64_t globalSize() const;
 
     std::string domain() const;
 
@@ -184,7 +184,7 @@ message::Message convert_precision(message::Message&& msg) {
     eckit::Buffer buffer(N * sizeof(To));
 
     auto md = msg.metadata();
-    md.set("globalSize", buffer.size());
+    md.set<std::int64_t>("globalSize", buffer.size());
     md.set("precision", std::is_same<To, double>::value  ? "double"
                         : std::is_same<To, float>::value ? "single"
                                                          : NOTIMP);

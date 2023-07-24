@@ -43,14 +43,31 @@ MioGribHandle* MioGribHandle::duplicate() const {
     return new MioGribHandle(h);
 }
 
-void MioGribHandle::setValue(const std::string& key, long value) {
+namespace {
+void setLongValue(codes_handle* hdl, const std::string& key, long value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting long value " << value << " for key " << key << std::endl;
-    codesCheckRelaxed(codes_set_long(raw(), key.c_str(), value), key, value);
+    codesCheckRelaxed(codes_set_long(hdl, key.c_str(), value), key, value);
+};
+}  // namespace
+void MioGribHandle::setValue(const std::string& key, std::int64_t value) {
+    setLongValue(this->raw(), key, value);
+};
+void MioGribHandle::setValue(const std::string& key, std::int32_t value) {
+    setLongValue(this->raw(), key, value);
+};
+void MioGribHandle::setValue(const std::string& key, std::int16_t value) {
+    setLongValue(this->raw(), key, value);
+};
+void MioGribHandle::setValue(const std::string& key, std::int8_t value) {
+    setLongValue(this->raw(), key, value);
 };
 
 void MioGribHandle::setValue(const std::string& key, double value) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting double value " << value << " for key " << key << std::endl;
     codesCheckRelaxed(codes_set_double(raw(), key.c_str(), value), key, value);
+};
+void MioGribHandle::setValue(const std::string& key, float value) {
+    setValue(key, static_cast<double>(value));
 };
 
 void MioGribHandle::setValue(const std::string& key, const std::string& value) {
@@ -79,6 +96,85 @@ void MioGribHandle::setValue(const std::string& key, bool value) {
 void MioGribHandle::setMissing(const std::string& key) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting missing for key " << key << std::endl;
     codesCheckRelaxed(codes_set_missing(raw(), key.c_str()), key, "missing");
+}
+
+void MioGribHandle::setValues(const std::string& key, const std::vector<std::string>& values) {
+    std::vector<const char*> v;
+    v.reserve(values.size());
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting values (";
+    for (const std::string& s : values) {
+        v.push_back(s.c_str());
+        LOG_DEBUG_LIB(LibMultio) << s << ", ";
+    }
+    LOG_DEBUG_LIB(LibMultio) << ") for key " << key << std::endl;
+    codesCheckRelaxed(codes_set_string_array(raw(), key.c_str(), v.data(), v.size()), key, "<string array ...>");
+}
+
+void MioGribHandle::setValues(const std::string& key, const std::vector<bool>& values) {
+    std::vector<long> v;
+    v.reserve(values.size());
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting values (";
+    for (bool b : values) {
+        v.push_back(b);
+        LOG_DEBUG_LIB(LibMultio) << b << ", ";
+    }
+    LOG_DEBUG_LIB(LibMultio) << ") for key " << key << std::endl;
+    codesCheckRelaxed(codes_set_long_array(raw(), key.c_str(), v.data(), v.size()), key, "<bool/long array ...>");
+}
+
+void MioGribHandle::setValues(const std::string& key, const std::vector<double>& values) {
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting values (";
+    for (const auto& d : values) {
+        LOG_DEBUG_LIB(LibMultio) << d << ", ";
+    }
+    LOG_DEBUG_LIB(LibMultio) << ") for key " << key << std::endl;
+    codesCheckRelaxed(codes_set_double_array(raw(), key.c_str(), values.data(), values.size()), key,
+                      "<double array ...>");
+}
+void MioGribHandle::setValues(const std::string& key, const std::vector<float>& values) {
+    std::vector<double> vec;
+    vec.reserve(values.size());
+    for (float f : values) {
+        vec.push_back(f);
+    }
+    setValues(key, vec);
+}
+
+namespace {
+template <typename T, std::enable_if_t<std::is_same_v<T, long>, bool> = true>
+void setLongValues(codes_handle* hdl, const std::string& key, const std::vector<T>& values) {
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting values (";
+    for (const T& l : values) {
+        LOG_DEBUG_LIB(LibMultio) << l << ", ";
+    }
+    LOG_DEBUG_LIB(LibMultio) << ") for key " << key << std::endl;
+    codesCheckRelaxed(codes_set_long_array(hdl, key.c_str(), values.data(), values.size()), key, "<long array ...>");
+}
+
+template <typename T, std::enable_if_t<!std::is_same_v<T, long>, bool> = true>
+void setLongValues(codes_handle* hdl, const std::string& key, const std::vector<T>& values) {
+    std::vector<long> vec;
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting values (";
+    for (const T& l : values) {
+        vec.push_back(l);
+        LOG_DEBUG_LIB(LibMultio) << l << ", ";
+    }
+    LOG_DEBUG_LIB(LibMultio) << ") for key " << key << std::endl;
+    codesCheckRelaxed(codes_set_long_array(hdl, key.c_str(), vec.data(), vec.size()), key, "<long array ...>");
+}
+}  // namespace
+
+void MioGribHandle::setValues(const std::string& key, const std::vector<std::int64_t>& values) {
+    setLongValues(this->raw(), key, values);
+}
+void MioGribHandle::setValues(const std::string& key, const std::vector<std::int32_t>& values) {
+    setLongValues(this->raw(), key, values);
+}
+void MioGribHandle::setValues(const std::string& key, const std::vector<std::int16_t>& values) {
+    setLongValues(this->raw(), key, values);
+}
+void MioGribHandle::setValues(const std::string& key, const std::vector<std::int8_t>& values) {
+    setLongValues(this->raw(), key, values);
 }
 
 

@@ -201,7 +201,7 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
                 metadata.set("paramId", metadataDetailed.getLong("paramId"));
             }
             if (metadataDetailed.has("param")) {
-                metadata.set("param", metadataDetailed.getLong("param"));
+                metadata.set("param", metadataDetailed.getString("param"));
                 if (!metadata.has("paramId")) {
                     metadata.set("paramId", metadataDetailed.getLong("param"));
                 }
@@ -210,7 +210,7 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
                 metadata.set("gribEdition", metadataDetailed.getString("GRIBEditionNumber"));
             }
             if (!metadata.has("level") && metadataDetailed.has("level")) {
-                metadata.set("level", metadataDetailed.getString("level"));
+                metadata.set("level", metadataDetailed.getLong("level"));
             }
 
             // Inject metadata needed for statistics

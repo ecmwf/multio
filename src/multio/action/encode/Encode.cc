@@ -198,11 +198,9 @@ void Encode::executeImpl(Message msg) {
 
         const auto& md = msg.metadata();
 
-        std::string gridType;
-        const auto hasGridType = md.get("gridType", gridType);
-        if (hasGridType && (gridType == "unstructured_grid")) {
-            auto gridCoords
-                = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
+        if (auto searchGridType = md.find("gridType"); searchGridType != md.end() && (searchGridType->second.get<std::string>() != "HEALPix")) {
+            auto gridCoords = gridDownloader_->getGridCoords(msg.domain(), md.get<std::int64_t>("startDate"),
+                                                             md.get<std::int64_t>("startTime"));
             if (gridCoords) {
                 executeNext(gridCoords.value().Lat);
                 executeNext(gridCoords.value().Lon);
@@ -225,7 +223,7 @@ void Encode::print(std::ostream& os) const {
 
 namespace {
 message::Metadata applyOverwrites(const eckit::LocalConfiguration& overwrites, message::Metadata md) {
-    auto nested = md.getSubConfiguration("encoder-overwrites");
+    auto nested = md.get<message::Metadata>("encoder-overwrites");
     for (const auto& k : overwrites.keys()) {
         // TODO handle type...
         nested.set(k, overwrites.getString(k));

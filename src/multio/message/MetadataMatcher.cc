@@ -6,6 +6,8 @@
 
 #include "multio/message/Message.h"
 
+#include <sstream>
+
 using eckit::LocalConfiguration;
 
 namespace multio::message {
@@ -18,11 +20,30 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
         eckit::LocalConfiguration cfgK;
         cfg.get(k, cfgK);
         if (cfgK.get().isList()) {
-            auto v = cfg.getStringVector(k);
-            matcher_.emplace(k, std::set<std::string>(v.begin(), v.end()));
+            auto v = cfg.getSubConfigurations(k);
+            std::set<MetadataValue> s;
+            unsigned int i = 0;
+            for (auto& vi : v) {
+                auto optMetadataValue = toMetadataValue(vi.get());
+                if (!optMetadataValue) {
+                    std::ostringstream oss;
+                    oss << "Matcher for key \"" << k << "\"[" << i
+                        << "] can not be  represented by an internal metadata value.";
+                    throw MetadataException(oss.str());
+                }
+                s.emplace(std::move(*optMetadataValue));
+                ++i;
+            }
+            matcher_.emplace(k, std::move(s));
         }
         else {
-            matcher_.emplace(k, std::set<std::string>{cfg.getString(k)});
+            auto optMetadataValue = toMetadataValue(cfgK.get());
+            if (!optMetadataValue) {
+                std::ostringstream oss;
+                oss << "Matcher for key \"" << k << "\" can not be  represented by an internal metadata value.";
+                throw MetadataException(oss.str());
+            }
+            matcher_.emplace(k, std::set<MetadataValue>{std::move(*optMetadataValue)});
         }
     }
 }
@@ -31,7 +52,7 @@ bool MetadataMatcher::matches(const Metadata& md) const {
     for (const auto& kv : matcher_) {
         if (!md.has(kv.first))
             return false;
-        if (kv.second.find(md.getString(kv.first)) == kv.second.end())
+        if (kv.second.find(md.get(kv.first)) == kv.second.end())
             return false;
     }
     return true;

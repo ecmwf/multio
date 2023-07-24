@@ -274,8 +274,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
         }
         else if (gridType && levtype && eckit::StringTools::lower(*gridType) == "healpix" && *levtype != "o2d"
                  && *levtype != "o3d") {
-            withFirstOf(valueSetter(g, "levtype"), levtype,
-                        lookUp<std::string>(md, "indicatorOfTypeOfLevel"));
+            withFirstOf(valueSetter(g, "levtype"), levtype, lookUp<std::string>(md, "indicatorOfTypeOfLevel"));
         }
         else if (!gridType) {
             withFirstOf(valueSetter(g, "levtype"), levtype,
@@ -333,11 +332,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             withFirstOf(valueSetter(g, "realization"), lookUp<std::string>(md, "realization"));
         }
     }
-
-    withFirstOf(valueSetter(g, "class"), lookUp<std::string>(md, glossary().classKey),
-                lookUp<std::string>(md, glossary().marsClass));
-    withFirstOf(valueSetter(g, "stream"), lookUp<std::string>(md, glossary().stream),
-                lookUp<std::string>(md, glossary().marsStream));
+    
 
     withFirstOf(valueSetter(g, "generatingProcessIdentifier"),
                 lookUp<std::int64_t>(md, glossary().generatingProcessIdentifier));
@@ -354,7 +349,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     }
 
     // Additional parameters passed through for spherical harmonics
-    if (auto gridType = lookUp<std::string>(md, glossary().gridType)(); gridType) {
+    if (gridType) {
         if (*gridType == "sh") {
             withFirstOf(valueSetter(g, "complexPacking"), lookUp<std::int64_t>(md, glossary().complexPacking));
             withFirstOf(valueSetter(g, "pentagonalResolutionParameterJ"),
@@ -452,17 +447,18 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
             // some representations the string and integer representation in eccodes
             // differ significantly and my produce wrong results
             if (g.hasKey(kv.first.c_str())) {
-                kv.second.visit(eckit::Overloaded{
+                kv.second.visit(eckit::Overloaded {
                     [](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::AllNested> {},
-                    [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), MetadataTypes::Lists> {
-                        g.setValue(kv.first, vec);
-                    },
-                    [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::NonNullScalars> {
-                        g.setValue(kv.first, v);
-                    },
-                    [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::Nulls> {
-                        g.setValue(kv.first, 0);
-                    }});
+                        [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), MetadataTypes::Lists> {
+                            g.setValue(kv.first, vec);
+                        },
+                        [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::NonNullScalars> {
+                            g.setValue(kv.first, v);
+                        },
+                        [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::Nulls> {
+                            g.setValue(kv.first, 0);
+                        }
+                });
             }
         }
     }
@@ -715,15 +711,6 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     visitKeyValues(config_.getSubConfiguration("run"),
                    [&](const std::string& k, const auto& v) { metadata.set(k, v); });
                    
-    if (auto searchDataSet = metadata.find("dataset"); searchDataSet != metadata.end()) {
-        withFirstOf(valueSetter(*this, "tablesVersion"), lookUp<std::int64_t>(metadata, glossary().tablesVersion));
-        withFirstOf(valueSetter(*this, "setLocalDefinition"),
-                    lookUp<std::int64_t>(metadata, glossary().setLocalDefinition));
-        withFirstOf(valueSetter(*this, "grib2LocalSectionNumber"),
-                    lookUp<std::int64_t>(metadata, glossary().grib2LocalSectionNumber));
-        withFirstOf(valueSetter(*this, glossary().productionStatusOfProcessedData),
-                    lookUp<std::int64_t>(metadata, "productionStatusOfProcessedData"));
-    }
 
     auto queriedMarsFields = setMarsKeys(*this, metadata);
     if (queriedMarsFields.type) {

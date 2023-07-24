@@ -39,15 +39,15 @@ void TestDataContent::print(std::ostream& os) const {
 }
 
 std::string TestDataContent::getString(const std::string& key) const {
-    return metadata_.getString(key);
+    return metadata_.get<std::string>(key);
 }
 
 long TestDataContent::getLong(const std::string& key) const {
-    return metadata_.getLong(key);
+    return metadata_.get<std::int64_t>(key);
 }
 
 double TestDataContent::getDouble(const std::string& key) const {
-    return metadata_.getDouble(key);
+    return metadata_.get<double>(key);
 }
 
 }  // namespace test

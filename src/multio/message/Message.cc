@@ -91,7 +91,7 @@ std::string Message::category() const {
     return header().category();
 }
 
-long Message::globalSize() const {
+std::int64_t Message::globalSize() const {
     return header().globalSize();
 }
 

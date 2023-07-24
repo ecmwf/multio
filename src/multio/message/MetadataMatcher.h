@@ -20,6 +20,8 @@
 
 #include "eckit/types/Types.h"
 
+#include "Metadata.h"
+
 namespace eckit {
 class LocalConfiguration;
 }
@@ -27,7 +29,6 @@ class LocalConfiguration;
 namespace multio::message {
 
 class Message;
-class Metadata;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -47,7 +48,7 @@ private:  // methods
     void print(std::ostream& os) const;
 
 private:  // members
-    std::map<std::string, std::set<std::string>> matcher_;
+    std::map<std::string, std::set<MetadataValue>> matcher_;
 };
 
 //--------------------------------------------------------------------------------------------------

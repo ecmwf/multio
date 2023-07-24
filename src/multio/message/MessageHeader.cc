@@ -19,7 +19,7 @@ Message::Header::Header(Tag tag, Peer src, Peer dst, std::string&& fieldId) :
     tag_{tag},
     source_{std::move(src)},
     destination_{std::move(dst)},
-    metadata_{message::to_metadata(fieldId)},
+    metadata_{message::toMetadata(fieldId)},
     fieldId_{std::move(fieldId)} {
 
     // TODO: Maybe it is useful to check here if in the metadata we have the fields:
@@ -56,40 +56,40 @@ std::string Message::Header::name() const {
     if (!metadata_.has("name")) {
         throw MetadataMissingKeyException("name", Here());
     }
-    return metadata_.getString("name");
+    return metadata_.get<std::string>("name");
 }
 
 std::string Message::Header::category() const {
     if (!metadata_.has("category")) {
         throw MetadataMissingKeyException("category", Here());
     }
-    return metadata_.getString("category");
+    return metadata_.get<std::string>("category");
 }
 
-long Message::Header::globalSize() const {
+std::int64_t Message::Header::globalSize() const {
     if (!metadata_.has("globalSize")) {
         throw MetadataMissingKeyException("globalSize", Here());
     }
-    return metadata_.getLong("globalSize");
+    return metadata_.get<std::int64_t>("globalSize");
 }
 
 std::string Message::Header::domain() const {
     if (!metadata_.has("domain")) {
         throw MetadataMissingKeyException("domain", Here());
     }
-    return metadata_.getString("domain");
+    return metadata_.get<std::string>("domain");
 }
 
 util::PrecisionTag Message::Header::precision() const {
     if (!metadata_.has("precision")) {
         throw MetadataMissingKeyException("precision", Here());
     }
-    return util::decodePrecisionTag(metadata_.getString("precision"));
+    return util::decodePrecisionTag(metadata_.get<std::string>("precision"));
 }
 
 const std::string& Message::Header::fieldId() const {
     if (!fieldId_) {
-        fieldId_ = message::to_string(metadata_);
+        fieldId_ = message::toString(metadata_);
     }
     return *fieldId_;
 }

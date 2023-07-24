@@ -3,7 +3,7 @@ plans:
     actions:
       - type: select
         match:
-          - param: 133
+          - param: "133"
       - type: interpolate
         input: 1/1
         grid: [3., 6.]

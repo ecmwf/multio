@@ -73,13 +73,14 @@ void Sink::trigger(const Message& msg) {
     if (!msg.metadata().has("trigger")) {
         throw message::MetadataMissingKeyException("trigger", Here());
     }
-    const std::string triggerKey = msg.metadata().getString("trigger");
+    const std::string triggerKey = msg.metadata().get<std::string>("trigger");
 
-    if (!msg.metadata().has(triggerKey)) {
+    auto searchTriggerKey = msg.metadata().find(triggerKey);
+    if (searchTriggerKey == msg.metadata().end()) {
         throw message::MetadataMissingKeyException(triggerKey, Here());
     }
-    // TODO - handle type correctly once metadata is refactored
-    metadata[triggerKey] = msg.metadata().getString(triggerKey);
+
+    metadata[triggerKey] = searchTriggerKey->second.getTranslate<std::string>();
 
     eckit::Log::debug<LibMultio>() << "Trigger " << triggerKey << " with value " << metadata[triggerKey]
                                    << " is being called..." << std::endl;

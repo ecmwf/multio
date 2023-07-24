@@ -49,10 +49,11 @@ void Statistics::DumpRestart() {
 
 std::string Statistics::generateKey(const message::Message& msg) const {
     std::ostringstream os;
-    os << msg.metadata().getString("param", "") << "-" << msg.metadata().getString("paramId", "") << "-"
-       << msg.metadata().getLong("level", 0) << "-" << msg.metadata().getLong("levelist", 0) << "-"
-       << msg.metadata().getString("levtype", "unknown") << "-" << msg.metadata().getString("gridType", "unknown")
-       << "-" << msg.metadata().getString("precision", "unknown") << "-"
+    os << msg.metadata().get<std::string>("param", "") << "-" << msg.metadata().get<std::int64_t>("paramId", 0) << "-"
+       << msg.metadata().get<std::int64_t>("level", 0) << "-" << msg.metadata().get<std::int64_t>("levelist", 0) << "-"
+       << msg.metadata().get<std::string>("levtype", "unknown") << "-"
+       << msg.metadata().get<std::string>("gridType", "unknown") << "-"
+       << msg.metadata().get<std::string>("precision", "unknown") << "-"
        << std::to_string(std::hash<std::string>{}(msg.source()));
     LOG_DEBUG_LIB(LibMultio) << "Generating key for the field :: " << os.str() << std::endl;
     return os.str();

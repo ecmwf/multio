@@ -44,8 +44,9 @@ void SingleFieldSink::write(Message msg) {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     std::ostringstream oss;
-    oss << rootPath_ << msg.metadata().getUnsigned("level") << "::" << msg.metadata().getString("param")
-        << "::" << msg.metadata().getUnsigned("step");
+    oss << rootPath_ << msg.metadata().get<std::int64_t>("level")
+        << "::" << msg.metadata().getTranslate<std::string>("param")
+        << "::" << msg.metadata().get<std::int64_t>("step");
     eckit::LocalConfiguration config;
 
     LOG_DEBUG_LIB(LibMultio) << "Writing output path: " << oss.str() << std::endl;

@@ -112,7 +112,10 @@ void regularLatLongMetadata(DestType& param, std::vector<double> grid, std::vect
     param.set("Ni", Ni);
     param.set("Nj", Nj);
 
-    param.set("north", north).set("west", west).set("south", south).set("east", east);
+    param.set("north", north);
+    param.set("west", west);
+    param.set("south", south);
+    param.set("east", east);
 
     return;
 };
@@ -120,20 +123,33 @@ void regularLatLongMetadata(DestType& param, std::vector<double> grid, std::vect
 }  // namespace
 
 void fill_out_metadata(const message::Metadata& in_md, message::Metadata& out_md) {
-    for (auto& key : in_md.keys()) {
-        if (std::find(metadata_black_list.cbegin(), metadata_black_list.cend(), key) == metadata_black_list.cend()) {
-            forwardMetadata<message::Metadata>(in_md, out_md, key, in_md.getSubConfiguration(key).get());
+    for (const auto& kv : in_md) {
+        if (std::find(metadata_black_list.cbegin(), metadata_black_list.cend(), kv.first)
+            == metadata_black_list.cend()) {
+            out_md.set(kv.first, kv.second);
         }
     }
     return;
 };
 
 eckit::Value getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadata& md) {
-    if (md.has("atlas-grid-kind")) {  // metadata has always precedence
+    auto searchAtlasGridKind = md.find("atlas-grid-kind");
+    if (searchAtlasGridKind != md.end()) {  // metadata has always precedence
         // TODO: name is bad on purpose (no software support this at the moment)
-        return eckit::Value{md.getSubConfiguration("atlas-grid-kind").get()};
+        return searchAtlasGridKind->second.visit(Overloaded{
+            [](auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNestedTypes, eckit::Value> { return {}; },
+            [](auto& vec) -> util::IfTypeOf<decltype(vec), message::MetadataVectorTypes, eckit::Value> {
+                std::vector<eckit::Value> valList;
+                valList.reserve(vec.size());
+                for (const auto& v : vec) {
+                    valList.emplace_back(v);
+                }
+                return eckit::Value{std::move(valList)};
+            },
+            [](auto& v) -> util::IfTypeOf<decltype(v), message::MetadataScalarTypes, eckit::Value> {
+                return eckit::Value{v};
+            }});
     }
-
     if (cfg.has("input")) {  // configuration file is second option
         return eckit::Value{cfg.getSubConfiguration("input").get()};
     }
@@ -337,15 +353,16 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
 
     mir::param::SimpleParametrisation inputPar;
     fill_input(config, inputPar, msg.domain(), getInputGrid(config, md));
-    if (msg.metadata().has("missingValue") && msg.metadata().getBool("bitmapPresent")) {
-        inputPar.set("missing_value", msg.metadata().getDouble("missingValue"));
+    auto searchMissingValue = msg.metadata().find("missingValue");
+    auto searchBitmapPresent = msg.metadata().find("bitmapPresent");
+    if (searchMissingValue != msg.metadata().end() && searchBitmapPresent != msg.metadata().end()) {
+        inputPar.set("missing_value", searchMissingValue->second.get<double>());
     }
 
     mir::input::RawInput input(data, size, inputPar);
 
     mir::api::MIRJob job;
     fill_job(config, job, md);
-
 
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: input :: " << std::endl << inputPar << std::endl << std::endl;
 
@@ -361,7 +378,7 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     eckit::mpi::setCommDefault("self");
     job.execute(input, output);
     eckit::mpi::setCommDefault(originalComm.name().c_str());
-    md.set("globalSize", outData.size());
+    md.set<long>("globalSize", outData.size());
 
     // Forward the metadata from mir to multIO (at the moment only missingValue)
     if (outMetadata.has("missing_value")) {

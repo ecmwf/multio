@@ -16,6 +16,8 @@
 
 #include <memory>
 
+#include "eckit/config/LocalConfiguration.h"
+
 #include "MioGribHandle.h"
 #include "eccodes.h"
 #include "metkit/codes/GribHandle.h"
@@ -39,7 +41,7 @@ public:
     template <typename T>
     void setValue(const std::string& key, T v) {
         if constexpr (std::is_signed_v<T> && std::is_integral_v<T>) {
-            encoder_->setValue(key, static_cast<long>(v));
+            encoder_->setValue(key, static_cast<std::int64_t>(v));
         }
         else {
             encoder_->setValue(key, v);
@@ -48,6 +50,10 @@ public:
 
     void setMissing(const std::string& key);
 
+    template <typename T>
+    void setValues(const std::string& key, const std::vector<T>& v) {
+        encoder_->setValues(key, v);
+    };
     template <typename T>
     void setDataValues(const T* data, size_t count) {
         encoder_->setDataValues(data, count);
@@ -97,7 +103,7 @@ private:
 inline bool isOcean(const message::Metadata& metadata) {
     // Check if metadata has a key "nemoParam" or a category starting with "ocean"
     return metadata.has("nemoParam")
-        || (metadata.has("category") && (metadata.getString("category").rfind("ocean") == 0));
+        || (metadata.has("category") && (metadata.get<std::string>("category").rfind("ocean") == 0));
 };
 
 

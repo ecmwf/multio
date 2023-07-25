@@ -239,17 +239,18 @@ void StatisticsConfiguration::readStep(const message::Message& msg) {
 
 void StatisticsConfiguration::readRestartStep(const message::Message& msg) {
     // TODO: for restart statistics with nemo some special handling is needed
-    restartStep_ = msg.metadata().get<std::int64_t>("restart-step", solverSendInitStep_ ? step_ : step_ - 1);
+    restartStep_
+        = msg.metadata().getOpt<std::int64_t>("restart-step").value_or(solverSendInitStep_ ? step_ : step_ - 1);
     return;
 };
 
 void StatisticsConfiguration::readTimeStep(const message::Message& msg) {
-    timeStep_ = msg.metadata().get<std::int64_t>("timeStep", timeStep_);
+    timeStep_ = msg.metadata().getOpt<std::int64_t>("timeStep").value_or(timeStep_);
     return;
 };
 
 void StatisticsConfiguration::readStepFrequency(const message::Message& msg) {
-    stepFreq_ = msg.metadata().get<std::int64_t>("step-frequency", stepFreq_);
+    stepFreq_ = msg.metadata().getOpt<std::int64_t>("step-frequency").value_or(stepFreq_);
     return;
 };
 

@@ -342,50 +342,6 @@ public:
         return std::nullopt;
     }
 
-
-    // TODO Remove infavour of getOpt(..).value_or()
-    template <typename T, typename TD,
-              std::enable_if_t<std::is_convertible_v<std::decay_t<TD>, std::decay_t<T>>, bool> = true>
-    T get(const std::string& k, TD&& d) && {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return std::move(search->second.get<T>());
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        return std::forward<TD>(d);
-    }
-
-    template <typename T, typename TD,
-              std::enable_if_t<std::is_convertible_v<std::decay_t<TD>, std::decay_t<T>>, bool> = true>
-    T get(const std::string& k, TD&& d) & {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return search->second.get<T>();
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        return std::forward<TD>(d);
-    }
-
-    template <typename T, typename TD,
-              std::enable_if_t<std::is_convertible_v<std::decay_t<TD>, std::decay_t<T>>, bool> = true>
-    T get(const std::string& k, TD&& d) const& {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return search->second.get<T>();
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        return std::forward<TD>(d);
-    }
-
     MetadataValue& operator[](const std::string&);
     MetadataValue& operator[](std::string&&);
 

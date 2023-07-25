@@ -49,11 +49,13 @@ void Statistics::DumpRestart() {
 
 std::string Statistics::generateKey(const message::Message& msg) const {
     std::ostringstream os;
-    os << msg.metadata().get<std::string>("param", "") << "-" << msg.metadata().get<std::int64_t>("paramId", 0) << "-"
-       << msg.metadata().get<std::int64_t>("level", 0) << "-" << msg.metadata().get<std::int64_t>("levelist", 0) << "-"
-       << msg.metadata().get<std::string>("levtype", "unknown") << "-"
-       << msg.metadata().get<std::string>("gridType", "unknown") << "-"
-       << msg.metadata().get<std::string>("precision", "unknown") << "-"
+    os << msg.metadata().getOpt<std::string>("param").value_or("") << "-"
+       << msg.metadata().getOpt<std::int64_t>("paramId").value_or(0) << "-"
+       << msg.metadata().getOpt<std::int64_t>("level").value_or(0) << "-"
+       << msg.metadata().getOpt<std::int64_t>("levelist").value_or(0) << "-"
+       << msg.metadata().getOpt<std::string>("levtype").value_or("unknown") << "-"
+       << msg.metadata().getOpt<std::string>("gridType").value_or("unknown") << "-"
+       << msg.metadata().getOpt<std::string>("precision").value_or("unknown") << "-"
        << std::to_string(std::hash<std::string>{}(msg.source()));
     LOG_DEBUG_LIB(LibMultio) << "Generating key for the field :: " << os.str() << std::endl;
     return os.str();

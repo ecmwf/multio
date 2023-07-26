@@ -14,6 +14,7 @@ namespace {
 struct TraceData {
     uint64_t timestamp;
     uint32_t traceEventId;
+    uint16_t extraInfo;
 };
 }  // namespace
 
@@ -75,6 +76,8 @@ void MultioConvertTraceLog::execute(const eckit::option::CmdArgs& args) {
         item.timestamp = traceData[2 * i + 1];
         const auto uniqueEventId = event & 0xFFFFFFFFULL;
         item.traceEventId = (event & (0xFFULL << 56)) >> 56;
+        const auto extraInfo = (event & (0xFFFFULL << 32)) >> 32;
+        item.extraInfo = extraInfo;
         const auto started = (event & (0xFFULL << 48)) > 0;
 
         if (started) {
@@ -101,7 +104,7 @@ void MultioConvertTraceLog::execute(const eckit::option::CmdArgs& args) {
 
     const auto csvFileHandle = open(output.c_str(), O_CREAT | O_TRUNC | O_WRONLY, S_IWUSR | S_IRUSR);
 
-    const std::string header("unique_id,event_id,start_time,end_time\r\n");
+    const std::string header("unique_id,event_id,extraInfo,start_time,end_time\r\n");
     write(csvFileHandle, reinterpret_cast<const void*>(header.c_str()), header.size());
 
     for (const auto& startEvent : starts) {
@@ -109,8 +112,8 @@ void MultioConvertTraceLog::execute(const eckit::option::CmdArgs& args) {
             const auto& correspondingEnd = ends.at(startEvent.first);
 
             std::ostringstream oss;
-            oss << startEvent.first << "," << startEvent.second.traceEventId << "," << startEvent.second.timestamp
-                << "," << correspondingEnd.timestamp << "\r\n";
+            oss << startEvent.first << "," << startEvent.second.traceEventId << "," << startEvent.second.extraInfo
+                << "," << startEvent.second.timestamp << "," << correspondingEnd.timestamp << "\r\n";
 
             const auto line = oss.str();
 

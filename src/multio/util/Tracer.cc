@@ -45,7 +45,9 @@ Tracer::~Tracer() {
 
     running_ = false;
 
-    traceWriterThread_.join();
+    if (traceWriterThread_.joinable()) {
+        traceWriterThread_.join();
+    }
 }
 
 void Tracer::startWriterThread() {

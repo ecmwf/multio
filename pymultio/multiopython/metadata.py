@@ -87,7 +87,7 @@ class Metadata:
         lib.multio_metadata_set_double(self.__metadata, key, value)
 
     def delete_metadata(self):
-        lib.multio_delete_metadata(self.__metadata)
+        ffi.release(self.__metadata)
 
     def get_pointer(self):
         return self.__metadata

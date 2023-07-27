@@ -97,10 +97,10 @@ def test_field_accepted():
     }
     multio_object = multiopython.Multio(default_dict)
     multio_object.create_metadata(md=metadata)
-    #multio_object.delete_metadata()
 
     multio_object.open_connections()
     multio_object.write_field([1.0, 2.0, 3.0, 4.0])
     multio_object.flush()
     multio_object.notify()
+    multio_object.delete_metadata()
     assert multio_object.field_accepted() == False #Unsure if this should be true or false on return need to look at definition in c api

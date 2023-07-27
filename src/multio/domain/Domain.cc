@@ -15,7 +15,7 @@ Domain::Domain(std::vector<int32_t>&& def) : definition_(std::move(def)) {}
 
 //------------------------------------------------------------------------------------------------------------
 
-Unstructured::Unstructured(std::vector<int32_t>&& def, long globalSize_val) :
+Unstructured::Unstructured(std::vector<int32_t>&& def, std::int64_t globalSize_val) :
     Domain{std::move(def)}, globalSize_{globalSize_val} {}
 
 void Unstructured::toLocal(const std::vector<double>& global, std::vector<double>& local) const {
@@ -34,21 +34,21 @@ void Unstructured::toBitmask(const message::Message&, std::vector<bool>&) const 
     NOTIMP;
 }
 
-long Unstructured::localSize() const {
+std::int64_t Unstructured::localSize() const {
     return definition_.size();
 }
 
-long Unstructured::globalSize() const {
+std::int64_t Unstructured::globalSize() const {
     return globalSize_;
 }
 
-long Unstructured::partialSize() const {
+std::int64_t Unstructured::partialSize() const {
     return globalSize_;
 }
 
 void Unstructured::collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const {
     const auto dataSize = (local.precision() == util::PrecisionTag::Float) ? sizeof(float) : sizeof(double);
-    const auto payloadSize = static_cast<long>(local.payload().size() / dataSize);
+    const auto payloadSize = static_cast<std::int64_t>(local.payload().size() / dataSize);
     if (payloadSize != localSize()) {
         throw eckit::SeriousBug{"Mismatch between sizes of index map and local field", Here()};
     }
@@ -219,7 +219,7 @@ void Structured::collectIndicesImpl(const message::Message& local, std::set<int3
 
     ASSERT(glIndices.size() < static_cast<std::set<int32_t>::size_type>(ni_global * nj_global));
 
-    auto payloadSize = static_cast<long>(local.payload().size() / sizeof(Precision));
+    auto payloadSize = static_cast<std::int64_t>(local.payload().size() / sizeof(Precision));
     if (payloadSize != data_ni * data_nj) {  // Payload contains halo information
         throw eckit::SeriousBug{"Mismatch between sizes of index map and local field", Here()};
     }
@@ -236,7 +236,7 @@ void Structured::collectIndicesImpl(const message::Message& local, std::set<int3
     }
 }
 
-long Structured::localSize() const {
+std::int64_t Structured::localSize() const {
     // Local domain's dimensions
     auto ni = definition_[3];
     auto nj = definition_[5];
@@ -244,7 +244,7 @@ long Structured::localSize() const {
     return ni * nj;
 };
 
-long Structured::globalSize() const {
+std::int64_t Structured::globalSize() const {
     // Global domain's dimenstions
     auto ni_global = definition_[0];
     auto nj_global = definition_[1];
@@ -252,7 +252,7 @@ long Structured::globalSize() const {
     return ni_global * nj_global;
 };
 
-long Structured::partialSize() const {
+std::int64_t Structured::partialSize() const {
     return definition_[11];
 }
 
@@ -272,13 +272,13 @@ void Spectral::toBitmask(const message::Message&, std::vector<bool>&) const {
     NOTIMP;
 }
 
-long Spectral::localSize() const {
+std::int64_t Spectral::localSize() const {
     NOTIMP;
 };
-long Spectral::globalSize() const {
+std::int64_t Spectral::globalSize() const {
     NOTIMP;
 };
-long Spectral::partialSize() const {
+std::int64_t Spectral::partialSize() const {
     NOTIMP;
 };
 

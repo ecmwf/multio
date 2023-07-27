@@ -103,7 +103,7 @@ void regularLatLongMetadata(DestType& param, std::vector<double> grid, std::vect
 
     auto N = [](double delta, double range) {
         const auto f = eckit::Fraction(range) / eckit::Fraction(delta);
-        return static_cast<long>(f.integralPart());
+        return static_cast<std::int64_t>(f.integralPart());
     };
 
     const double west_east_increment = grid[0];
@@ -116,8 +116,8 @@ void regularLatLongMetadata(DestType& param, std::vector<double> grid, std::vect
     param.set("gridded", true);
     param.set("gridType", "regular_ll");
 
-    long Ni = N(west_east_increment, std::fabs(east - west));
-    long Nj = N(south_north_increment, std::fabs(south - north)) + 1L /* "endpoint" */;
+    std::int64_t Ni = N(west_east_increment, std::fabs(east - west));
+    std::int64_t Nj = N(south_north_increment, std::fabs(south - north)) + 1L /* "endpoint" */;
     param.set("west_east_increment", west_east_increment);
     param.set("south_north_increment", south_north_increment);
     param.set("Ni", Ni);
@@ -394,7 +394,7 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     eckit::mpi::setCommDefault("self");
     job.execute(input, output);
     eckit::mpi::setCommDefault(originalComm.name().c_str());
-    md.set<long>("globalSize", outData.size());
+    md.set<std::int64_t>("globalSize", outData.size());
 
     // Forward the metadata from mir to multIO (at the moment only missingValue)
     if (outMetadata.has("missing_value")) {

@@ -106,7 +106,7 @@ multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gr
                                                                        const std::string& gridUID, int paramId) {
     multio::message::Metadata md(templateMetadata_);
 
-    md.set<long>("globalSize", gridSize);
+    md.set<std::int64_t>("globalSize", gridSize);
     md.set("unstructuredGridSubtype", unstructuredGridSubtype);
     md.set("uuidOfHGrid", gridUID);
 

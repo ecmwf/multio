@@ -134,8 +134,8 @@ CASE("test_multio_with_event_trigger") {
                 [step, level, stream](eckit::JSON& json) {
                     json.startObject();
                     json << "stream" << stream;
-                    json << "step" << eckit::Translator<long, std::string>{}(step);
-                    json << "level" << eckit::Translator<long, std::string>{}(level);
+                    json << "step" << eckit::Translator<std::int64_t, std::string>{}(step);
+                    json << "level" << eckit::Translator<std::int64_t, std::string>{}(level);
                     json.endObject();
                 }(json);
 

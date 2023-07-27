@@ -108,7 +108,7 @@ std::string InterpolateFesom<T>::generateKey(const message::Message& msg) const 
     INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFesom :: enter generateKey" << std::endl;
     // TODO: Probably missing the kind of fesom grid in the name
     //       neeed to see the metadata to understand how to extract it
-    size_t level = static_cast<size_t>(msg.metadata().get<std::int64_t>("level", msg.metadata().get<double>("levelist", 0)));
+    size_t level = static_cast<size_t>(msg.metadata().getOpt<std::int64_t>("level").value_or(msg.metadata().getOpt<double>("levelist").value_or(0)));
     if ((msg.metadata().get<std::string>("category") == "ocean-3d")
         && (msg.metadata().get<std::string>("fesomLevelType") == "level")) {
         if (level == 0) {

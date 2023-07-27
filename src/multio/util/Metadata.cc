@@ -8,7 +8,7 @@
 namespace multio::util {
 
 std::optional<std::int64_t> lookUpInt64(const eckit::Configuration& c, const std::string& key) {
-    return c.has(key) ? std::optional<long>{c.getLong(key)} : std::optional<long>{};
+    return c.has(key) ? std::optional<std::int64_t>{c.getInt64(key)} : std::optional<std::int64_t>{};
 }
 
 std::optional<std::string> lookUpString(const eckit::Configuration& c, const std::string& key) {

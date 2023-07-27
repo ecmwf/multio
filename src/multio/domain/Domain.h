@@ -22,9 +22,9 @@ public:
     virtual void toGlobal(const message::Message& local, message::Message& global) const = 0;
     virtual void toBitmask(const message::Message& local, std::vector<bool>& bmask) const = 0;
 
-    virtual long localSize() const = 0;
-    virtual long globalSize() const = 0;
-    virtual long partialSize() const = 0;
+    virtual std::int64_t localSize() const = 0;
+    virtual std::int64_t globalSize() const = 0;
+    virtual std::int64_t partialSize() const = 0;
 
     virtual void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const = 0;
 
@@ -34,23 +34,23 @@ protected:
 
 class Unstructured final : public Domain {
 public:
-    Unstructured(std::vector<int32_t>&& def, long global_size);
+    Unstructured(std::vector<int32_t>&& def, std::int64_t global_size);
 
 private:
     void toLocal(const std::vector<double>& global, std::vector<double>& local) const override;
     void toGlobal(const message::Message& local, message::Message& global) const override;
     void toBitmask(const message::Message& local, std::vector<bool>& bmask) const override;
 
-    long localSize() const override;
-    long globalSize() const override;
-    long partialSize() const override;
+    std::int64_t localSize() const override;
+    std::int64_t globalSize() const override;
+    std::int64_t partialSize() const override;
 
     void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 
     template <typename Precision>
     void toGlobalImpl(const message::Message& local, message::Message& global) const;
 
-    long globalSize_;
+    std::int64_t globalSize_;
 };
 
 class Structured final : public Domain {
@@ -62,9 +62,9 @@ private:
     void toGlobal(const message::Message& local, message::Message& global) const override;
     void toBitmask(const message::Message& local, std::vector<bool>& bmask) const override;
 
-    long localSize() const override;
-    long globalSize() const override;
-    long partialSize() const override;
+    std::int64_t localSize() const override;
+    std::int64_t globalSize() const override;
+    std::int64_t partialSize() const override;
 
     void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 
@@ -84,9 +84,9 @@ private:
     void toGlobal(const message::Message& local, message::Message& global) const override;
     void toBitmask(const message::Message& local, std::vector<bool>& bmask) const override;
 
-    long localSize() const override;
-    long globalSize() const override;
-    long partialSize() const override;
+    std::int64_t localSize() const override;
+    std::int64_t globalSize() const override;
+    std::int64_t partialSize() const override;
 
     void collectIndices(const message::Message& local, std::set<int32_t>& glIndices) const override;
 };

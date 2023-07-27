@@ -167,12 +167,6 @@ LookUpTranslate<T, Container> lookUpTranslate(const Container& c, const std::str
 };
 
 
-// using LookUpLong = LookUp<long>;
-// using LookUpString = LookUp<std::string>;
-// using LookUpDouble = LookUp<double>;
-// using LookUpFloat = LookUp<float>;
-// using LookUpBool = LookUp<bool>;
-
 // Perform lookups
 std::optional<std::int64_t> lookUpInt64(const eckit::Configuration& c, const std::string& key);
 std::optional<std::string> lookUpString(const eckit::Configuration& c, const std::string& key);

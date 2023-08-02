@@ -157,6 +157,7 @@ void Statistics::executeImpl(message::Message msg) {
         // Emit finished statistics
         for (auto&& stat : fieldStats_.at(key)->compute(msg)) {
             md.set("operation", stat.first);
+            md.set("operation-frequency", confCtx_.config().getString("output-frequency") );
             message::Message newMsg{message::Message::Header{message::Message::Tag::Field, msg.source(),
                                                              msg.destination(), message::Metadata{md}},
                                     std::move(stat.second)};

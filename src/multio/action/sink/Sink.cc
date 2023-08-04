@@ -11,6 +11,7 @@
 #include "Sink.h"
 
 #include <fstream>
+#include <sstream>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/message/Message.h"

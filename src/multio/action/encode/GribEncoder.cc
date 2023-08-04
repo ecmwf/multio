@@ -456,8 +456,11 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
                     [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), message::MetadataVectorTypes> {
                         g.setValues(kv.first, vec);
                     },
-                    [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataScalarTypes> {
+                    [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNonNullScalarTypes> {
                         g.setValue(kv.first, v);
+                    },
+                    [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNullTypes> {
+                        g.setValue(kv.first, 0);
                     }});
             }
         }

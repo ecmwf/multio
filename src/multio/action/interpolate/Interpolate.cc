@@ -157,8 +157,11 @@ eckit::Value getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadat
                 }
                 return eckit::Value{std::move(valList)};
             },
-            [](auto& v) -> util::IfTypeOf<decltype(v), message::MetadataScalarTypes, eckit::Value> {
+            [](auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNonNullScalarTypes, eckit::Value> {
                 return eckit::Value{v};
+            },
+            [](auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNullTypes, eckit::Value> {
+                return eckit::Value{};
             }});
     }
     if (cfg.has("input")) {  // configuration file is second option

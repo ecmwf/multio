@@ -11,6 +11,7 @@
 #include "Transport.h"
 
 #include <algorithm>
+#include <sstream>
 
 #include "eckit/config/Resource.h"
 

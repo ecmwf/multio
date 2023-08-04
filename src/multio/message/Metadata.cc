@@ -104,6 +104,10 @@ void toJSON(const T& v, eckit::JSON& json) {
     json << v;
 }
 
+void toJSON(const Null&, eckit::JSON& json) {
+    json.null();
+};
+
 void toJSON(const Metadata& metadata, eckit::JSON& json);
 
 void toJSON(const MetadataValue& mv, eckit::JSON& json) {
@@ -165,7 +169,8 @@ enum class ValueType : unsigned int
 template <ValueType V>
 struct ValueTag {};
 
-// TODO refactor by refactoring eckit::YAMLParser
+// JSON/YAMLParser now refactored - that helps for (de)serializing directly without eckit::Value.
+// However configurations still use eckit::Value. Therefore these helpers are still required.
 template <typename F>
 decltype(auto) visitValueType(const eckit::Value& v, F&& f) noexcept {
     if (v.isList()) {
@@ -264,12 +269,13 @@ Metadata toMetadata(const eckit::Value& value) {
 
 Metadata toMetadata(const std::string& fieldId) {
     std::istringstream in(fieldId);
-    eckit::YAMLParser parser(in);
-    auto optMetadata = toMetadataMaybe(parser.parse());
-    if (!optMetadata) {
+    eckit::GenericYAMLParser<MetadataValueBuilder> parser(in);
+    auto metadataValue = parser.parse();
+
+    if (metadataValue.index() != util::GetVariantIndex<Metadata, MetadataValue>::value) {
         throw MetadataException(std::string("JSON string must start with a map: ") + fieldId, Here());
     }
-    return std::move(*optMetadata);
+    return std::move(metadataValue).get<Metadata>();
 }
 
 MetadataException::MetadataException(const std::string& reason, const eckit::CodeLocation& l) :

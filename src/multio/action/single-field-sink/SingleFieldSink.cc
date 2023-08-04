@@ -11,6 +11,7 @@
 #include "SingleFieldSink.h"
 
 #include <iostream>
+#include <sstream>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/message/Message.h"

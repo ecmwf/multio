@@ -172,6 +172,10 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
             g.setValue("iDirectionIncrement", scale * md.getDouble("west_east_increment"));
             g.setValue("jDirectionIncrement", scale * md.getDouble("south_north_increment"));
         }
+        else if (md.getString("gridType") == "healpix") {
+            g.setValue("Nside", md.getLong("Nside"));
+            // g.setValue("ordering", md.getLong("orderingConvention"));
+        }
     }
     // TODO Remove Part of parameter mapping now
     // withFirstOf(valueSetter(g, "generatingProcessIdentifier"), LookUpLong(md,

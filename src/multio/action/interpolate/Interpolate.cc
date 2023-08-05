@@ -234,32 +234,62 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
         }
     }
 
+    // Handle Output metadata of the interpolated fields
     if (cfg.has("grid")) {
+        std::string gridKind("none");
         std::vector<double> grid(2, 0.0);
+
         if (cfg.getSubConfiguration("grid").get().isString()) {
 #define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
             static const std::regex ll(fp "/" fp);
+            static const std::regex H("([h|H])([1-9][0-9]*)");
 #undef fp
-            std::smatch match;
+            std::smatch matchll;
+            std::smatch matchH;
             const auto input = cfg.getString("grid");
-            if (std::regex_match(input, match, ll)) {
-                grid[0] = std::stod(match[1].str());
-                grid[1] = std::stod(match[4].str());
+            LOG_DEBUG_LIB(LibMultio) << " Grid is a string ::" << input << std::endl;
+            if (std::regex_match(input, matchll, ll)) {
+                gridKind = "regular_ll";
+                grid[0] = std::stod(matchll[1].str());
+                grid[1] = std::stod(matchll[4].str());
             }
+            if (std::regex_match(input, matchH, H)) {
+                gridKind = "HEALPix";
+                grid[0] = std::stod(matchH[2].str());
+            }
+
         }
-        else if (cfg.getSubConfiguration("grid").get().isList()
-                 && cfg.getSubConfiguration("grid").get().head().isDouble()) {
+        else if (cfg.getSubConfiguration("grid").get().isList() && cfg.getSubConfiguration("grid").get().head().isDouble()){
+            gridKind = "regular_ll";
             grid = cfg.getDoubleVector("grid");
+            LOG_DEBUG_LIB(LibMultio) << " Grid is a list (" << gridKind << ")" << grid << std::endl;
         }
-        if (cfg.has("area")) {
-            const auto& area = cfg.getDoubleVector("area");
-            regularLatLongMetadata<message::Metadata>(md, grid, area);
+        //
+        LOG_DEBUG_LIB(LibMultio) << " Grid Kind is ::" << gridKind << std::endl;
+        // Set the mir keywords
+        if ( gridKind == "regular_ll" ) {
+            LOG_DEBUG_LIB(LibMultio) << " + Set metadata for regular_ll grid" << std::endl;
+            if (cfg.has("area")) {
+                const auto& area = cfg.getDoubleVector("area");
+                regularLatLongMetadata<message::Metadata>(md, grid, area);
+            }
+            else {
+                regularLatLongMetadata<message::Metadata>(md, grid, full_area);
+            }
+            // md.set("gridType", "regular_ll");
         }
-        else {
-            regularLatLongMetadata<message::Metadata>(md, grid, full_area);
+        else if ( gridKind == "HEALPix" ){
+            md.set("gridded", true);
+            md.set("gridType", "healpix");
+            md.set("Nside", grid[0]);
+            // md.set("orderingConvention", 0 ); // "ring");
+            md.set("style", "ecmwf");
         }
-        // Allow the encoder to work on regridded grids
-        md.set("gridType", "regular_ll");
+        else
+        {
+            std::cout << "Grid not implemented" << std::endl;
+
+        }
     }
 }
 

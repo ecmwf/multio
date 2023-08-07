@@ -635,7 +635,7 @@ data:
   # Experimental parameters
   #=================================
 
- - nemo-id : iceconc_cat
+  - nemo-id : iceconc_cat
     param-id : 212213 # Still experimental
     grid-type : "T grid"
     level-type : "topSeaIceLevel"

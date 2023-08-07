@@ -293,19 +293,6 @@ public:
     }
 
     template <typename T>
-    std::optional<T> getOpt(const std::string& k) & {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return search->second.get<T>();
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        return std::nullopt;
-    }
-
-    template <typename T>
     std::optional<T> getOpt(const std::string& k) const& {
         if (auto search = values_.find(k); search != values_.end()) {
             try {
@@ -333,7 +320,7 @@ public:
 
 
     template <typename T>
-    T getTranslate(const std::string& k) const {
+    T getTranslate(const std::string& k) const& {
         if (auto search = values_.find(k); search != values_.end()) {
             try {
                 return search->second.getTranslate<T>();
@@ -346,7 +333,20 @@ public:
     }
 
     template <typename T>
-    std::optional<T> getTranslateOpt(const std::string& k) const {
+    std::optional<T> getTranslateOpt(const std::string& k) && {
+        if (auto search = values_.find(k); search != values_.end()) {
+            try {
+                return std::move(search->second).getTranslate<T>();
+            }
+            catch (const MetadataException& err) {
+                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
+            }
+        }
+        return std::nullopt;
+    }
+
+    template <typename T>
+    std::optional<T> getTranslateOpt(const std::string& k) const& {
         if (auto search = values_.find(k); search != values_.end()) {
             try {
                 return search->second.getTranslate<T>();

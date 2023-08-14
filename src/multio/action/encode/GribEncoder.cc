@@ -106,9 +106,24 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     if (ret.paramId) {
         g.setValue("paramId", *ret.paramId);
     }
+
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
     withFirstOf(valueSetter(g, "stream"), LookUpString(md, "stream"), LookUpString(md, "marsStream"));
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
+    withFirstOf(valueSetter(g, "number"), LookUpLong(md, "number"));
+
+    auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
+    if (dateOfAnalysis) {
+        withFirstOf(valueSetter(g, "yearOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis / 10000});
+        withFirstOf(valueSetter(g, "monthOfAnalysis"), eckit::Optional<long>{(*dateOfAnalysis % 10000) / 100});
+        withFirstOf(valueSetter(g, "dayOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis % 100});
+    }
+
+    auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis"));
+    if (timeOfAnalysis) {
+        withFirstOf(valueSetter(g, "hourOfAnalysis"), eckit::Optional<long>{*timeOfAnalysis / 10000});
+        withFirstOf(valueSetter(g, "minuteOfAnalysis"), eckit::Optional<long>{(*timeOfAnalysis % 10000) / 100});
+    }
 
     ret.type = firstOf(LookUpString(md, "type"), LookUpString(md, "marsType"));
     if (ret.type) {
@@ -254,33 +269,20 @@ std::string marsStepRange(const message::Metadata& md, const QueriedMarsKeys& mK
 
 void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
                                  const QueriedMarsKeys& queriedMarsFields) {
+
     auto date = marsDate(md, queriedMarsFields);
     if (date) {
         withFirstOf(valueSetter(g, "year"), eckit::Optional<long>{*date / 10000});
         withFirstOf(valueSetter(g, "month"), eckit::Optional<long>{(*date % 10000) / 100});
         withFirstOf(valueSetter(g, "day"), eckit::Optional<long>{*date % 100});
     }
+
     auto time = marsTime(md, queriedMarsFields);
     if (time) {
         withFirstOf(valueSetter(g, "hour"), eckit::Optional<long>{*time / 10000});
         withFirstOf(valueSetter(g, "minute"), eckit::Optional<long>{(*time % 10000) / 100});
         withFirstOf(valueSetter(g, "second"), eckit::Optional<long>{*time % 100});
     }
-
-    auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
-    if (dateOfAnalysis) {
-        withFirstOf(valueSetter(g, "yearOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis / 10000});
-        withFirstOf(valueSetter(g, "monthOfAnalysis"), eckit::Optional<long>{(*dateOfAnalysis % 10000) / 100});
-        withFirstOf(valueSetter(g, "dayOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis % 100});
-    }
-
-    auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis"));
-    if (timeOfAnalysis) {
-        withFirstOf(valueSetter(g, "hourOfAnalysis"), eckit::Optional<long>{*timeOfAnalysis / 10000});
-        withFirstOf(valueSetter(g, "minuteOfAnalysis"), eckit::Optional<long>{(*timeOfAnalysis % 10000) / 100});
-    }
-
-    withFirstOf(valueSetter(g, "number"), LookUpLong(md, "number"));
 
     auto operation = lookUpString(md, "operation");
     if (operation) {

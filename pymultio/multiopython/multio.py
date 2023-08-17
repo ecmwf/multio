@@ -22,7 +22,7 @@ class Multio:
 
         if config == None:
             raise AttributeError("Config dictionary is required.")
-        
+
         self.__conf = Config(**config)
 
         self.__handle = Handler(self.__conf)
@@ -50,7 +50,7 @@ class Multio:
 
     def open_connections(self):
         self.__handle.open_connections()
-    
+
     def close_connections(self):
         self.__handle.close_connections()
 
@@ -71,19 +71,18 @@ class Multio:
             self.__handle.write_domain(self.__metadata, data, len(data))
         else:
             raise AttributeError(f"No metadata object instantiated")
-        
+
     def write_mask(self, data):
         if self.__metadata is not None:
             self.__handle.write_mask_float(self.__metadata, data, len(data))
         else:
-            raise AttributeError(f"No metadata object instantiated")  
+            raise AttributeError(f"No metadata object instantiated")
 
     def write_field(self, data):
         if self.__metadata is not None:
             self.__handle.write_field_float(self.__metadata, data, len(data))
         else:
-            raise AttributeError(f"No metadata object instantiated")  
+            raise AttributeError(f"No metadata object instantiated")
 
     def field_accepted(self):
         return self.__handle.field_accepted(self.__metadata)
-    

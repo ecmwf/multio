@@ -21,6 +21,8 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 #include "eckit/utils/MD5.h"
+#include "eckit/utils/Translator.h"
+
 #include "multio/LibMultio.h"
 #include "multio/util/Metadata.h"
 
@@ -100,11 +102,13 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "time"), LookUpLong(md, "time"), LookUpLong(md, "dataTime"));
     withFirstOf(valueSetter(g, "step"), LookUpLong(md, "step"), LookUpLong(md, "startStep"));
 
-    ret.paramId = firstOf(LookUpLong(md, "paramId"),
-                          LookUpLong(md, "param"));  // param might be a string, separated by . for GRIB1.
-                                                     // String to long convertion should get it right
-    if (ret.paramId) {
-        g.setValue("paramId", *ret.paramId);
+    eckit::Optional<std::string> paramId{firstOf(
+        LookUpString(md, "paramId"), LookUpString(md, "param"))};  // param might be a string, separated by . for GRIB1.
+                                                                   // String to long convertion should get it right
+
+
+    if (paramId) {
+        g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
     }
 
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));

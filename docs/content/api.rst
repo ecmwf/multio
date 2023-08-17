@@ -116,5 +116,14 @@ The interface in C++ mainly exists as an underlying base for implementing :ref:`
 <c-interface>` which wraps it. It is only suitable to be used within an environment in which
 `eckit`_ is being used. If this is not the case it is recommended to use the C API.
 
+Python Interface
+----------------
+
+The python interface gives a users a pyhtonic way to interact with multio. The interface
+implements the underlying C API through a Multio object. This object then takes a python dictionary
+as a config which is used to create a handle. The user can then create metadata uing python
+dictionaries and then use functionality associated with multio thorugh the Multio object such
+as writing data. An example notebook can be found :doc:`multio:content/usage-examples/multiopython.ipynb`
+which shows a basic example of the python interface.
 
 .. _`eckit`: https://github.com/ecmwf/eckit

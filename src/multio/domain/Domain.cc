@@ -136,8 +136,8 @@ void Structured::toBitmask(const message::Message& local, std::vector<bool>& bma
             << " but is expected to have a size of " << expectedBitmaskSize << std::endl;
         throw eckit::SeriousBug{oss.str(), Here()};
     }
-    auto lit = encodedMaskPayload.begin();
 
+    auto lit = encodedMaskPayload.begin();
     for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
         for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
             if (inRange(i, 0, ni) && inRange(j, 0, nj)) {
@@ -239,6 +239,7 @@ long Structured::localSize() const {
 
     return ni * nj;
 };
+
 long Structured::globalSize() const {
     // Global domain's dimenstions
     auto ni_global = definition_[0];
@@ -246,6 +247,7 @@ long Structured::globalSize() const {
 
     return ni_global * nj_global;
 };
+
 long Structured::partialSize() const {
     return definition_[11];
 }

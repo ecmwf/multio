@@ -80,16 +80,16 @@ data:
     grid-type : "T grid"
     level-type : "snowLayerOverIceOnWater"
 
-  # Sea ice eastward velocity -- update long name
+  # Sea ice eastward velocity
   - nemo-id : iicevelur
     param-id : 262003
-    grid-type : "U grid"
+    grid-type : "T grid"
     level-type : "iceLayerOnWater"
 
-  # Sea ice westward velocity -- updated long name
+  # Sea ice westward velocity
   - nemo-id : iicevelvr
     param-id : 262004
-    grid-type : "V grid"
+    grid-type : "T grid"
     level-type : "iceLayerOnWater"
 
   # Sea-ice or snow albedo
@@ -316,9 +316,9 @@ data:
     grid-type : "W grid"
     level-type : "oceanModelLayer"
 
-  #====================================
-  # Parameters added in eccodes 2.30.0
-  #====================================
+  #================================================
+  # Parameters added in eccodes 2.30.0 and 2.31.1
+  #================================================
 
   #=================================
   # Physical parameters -- T grid
@@ -364,13 +364,13 @@ data:
   - nemo-id : wspd
     param-id : 262902
     grid-type : "T grid"
-    level-type : "oceanSurface"
+    level-type : "heightAboveSea"
 
   # Natural drag coefficient
   - nemo-id : cdn10
     param-id : 262903
     grid-type : "T grid"
-    level-type : "oceanSurface"
+    level-type : "heightAboveSea"
 
   # Heat-flux correction
   - nemo-id : qrp
@@ -472,17 +472,17 @@ data:
     grid-type : "T grid"
     level-type : "snowLayerOverIceOnWater"
 
-  # X-component of sea-ice volocity
+  # X-component of sea-ice velocity
   - nemo-id : uice
-    param-id : 212218 # Still experimental to replace 262003
+    param-id : 262021
     grid-type : "U grid"
-    level-type : "oceanSurface"
+    level-type : "iceLayerOnWater"
 
   # Y-component of sea-ice velocity
   - nemo-id : vice
-    param-id : 212219 # Still experimental to replace 262004
+    param-id : 262022
     grid-type : "V grid"
-    level-type : "oceanSurface"
+    level-type : "iceLayerOnWater"
 
   # X-component of atmospheric stress on sea ice
   - nemo-id : utau_ai
@@ -574,6 +574,15 @@ data:
     grid-type : "T grid"
     level-type : "entireMeltPond"
 
+  - nemo-id : icesalt
+    param-id : 262023
+    grid-type : "T grid"
+    level-type : "iceLayerOnWater"
+
+  #=================================
+  # Assimilation increments
+  #=================================
+
   # Temperature tendency from assimilation increment
   - nemo-id : bckint
     param-id : 262510
@@ -622,6 +631,10 @@ data:
     grid-type : "T grid"
     level-type : "oceanModelLayer"
 
+  #=================================
+  # Experimental parameters
+  #=================================
+
   - nemo-id : iceconc_cat
     param-id : 212213 # Still experimental
     grid-type : "T grid"
@@ -636,11 +649,6 @@ data:
     param-id : 212217 # Still experimental
     grid-type : "T grid"
     level-type : "topSeaIceLevel"
-
-  - nemo-id : icesalt
-    param-id : 212227 # Still experimental
-    grid-type : "T grid"
-    level-type : "iceLayerOnWater"
 
   - nemo-id : icesalt_cat
     param-id : 212230 # Still experimental

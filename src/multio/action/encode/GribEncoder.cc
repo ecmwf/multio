@@ -21,6 +21,8 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 #include "eckit/utils/MD5.h"
+#include "eckit/utils/Translator.h"
+
 #include "multio/LibMultio.h"
 #include "multio/util/Metadata.h"
 
@@ -99,15 +101,32 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "time"), LookUpLong(md, "time"), LookUpLong(md, "dataTime"));
     withFirstOf(valueSetter(g, "step"), LookUpLong(md, "step"), LookUpLong(md, "startStep"));
 
-    ret.paramId = firstOf(LookUpLong(md, "paramId"),
-                          LookUpLong(md, "param"));  // param might be a string, separated by . for GRIB1.
-                                                     // String to long convertion should get it right
-    if (ret.paramId) {
-        g.setValue("paramId", *ret.paramId);
+    std::optional<std::string> paramId{firstOf(
+        LookUpString(md, "paramId"), LookUpString(md, "param"))};  // param might be a string, separated by . for GRIB1.
+                                                                   // String to long convertion should get it right
+
+
+    if (paramId) {
+        g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
     }
+
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
     withFirstOf(valueSetter(g, "stream"), LookUpString(md, "stream"), LookUpString(md, "marsStream"));
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
+    withFirstOf(valueSetter(g, "number"), LookUpLong(md, "number"));
+
+    auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
+    if (dateOfAnalysis) {
+        withFirstOf(valueSetter(g, "yearOfAnalysis"), std::optional<long>{*dateOfAnalysis / 10000});
+        withFirstOf(valueSetter(g, "monthOfAnalysis"), std::optional<long>{(*dateOfAnalysis % 10000) / 100});
+        withFirstOf(valueSetter(g, "dayOfAnalysis"), std::optional<long>{*dateOfAnalysis % 100});
+    }
+
+    auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis"));
+    if (timeOfAnalysis) {
+        withFirstOf(valueSetter(g, "hourOfAnalysis"), std::optional<long>{*timeOfAnalysis / 10000});
+        withFirstOf(valueSetter(g, "minuteOfAnalysis"), std::optional<long>{(*timeOfAnalysis % 10000) / 100});
+    }
 
     ret.type = firstOf(LookUpString(md, "type"), LookUpString(md, "marsType"));
     if (ret.type) {
@@ -253,33 +272,20 @@ std::string marsStepRange(const message::Metadata& md, const QueriedMarsKeys& mK
 
 void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
                                  const QueriedMarsKeys& queriedMarsFields) {
+
     auto date = marsDate(md, queriedMarsFields);
     if (date) {
         withFirstOf(valueSetter(g, "year"), std::optional<long>{*date / 10000});
         withFirstOf(valueSetter(g, "month"), std::optional<long>{(*date % 10000) / 100});
         withFirstOf(valueSetter(g, "day"), std::optional<long>{*date % 100});
     }
+
     auto time = marsTime(md, queriedMarsFields);
     if (time) {
         withFirstOf(valueSetter(g, "hour"), std::optional<long>{*time / 10000});
         withFirstOf(valueSetter(g, "minute"), std::optional<long>{(*time % 10000) / 100});
         withFirstOf(valueSetter(g, "second"), std::optional<long>{*time % 100});
     }
-
-    auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
-    if (dateOfAnalysis) {
-        withFirstOf(valueSetter(g, "yearOfAnalysis"), std::optional<long>{*dateOfAnalysis / 10000});
-        withFirstOf(valueSetter(g, "monthOfAnalysis"), std::optional<long>{(*dateOfAnalysis % 10000) / 100});
-        withFirstOf(valueSetter(g, "dayOfAnalysis"), std::optional<long>{*dateOfAnalysis % 100});
-    }
-
-    auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis"));
-    if (timeOfAnalysis) {
-        withFirstOf(valueSetter(g, "hourOfAnalysis"), std::optional<long>{*timeOfAnalysis / 10000});
-        withFirstOf(valueSetter(g, "minuteOfAnalysis"), std::optional<long>{(*timeOfAnalysis % 10000) / 100});
-    }
-
-    withFirstOf(valueSetter(g, "number"), LookUpLong(md, "number"));
 
     auto operation = lookUpString(md, "operation");
     if (operation) {

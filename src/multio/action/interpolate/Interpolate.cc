@@ -280,15 +280,15 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
 
     mir::param::SimpleParametrisation inputPar;
     fill_input(config, inputPar, getInputGrid(config, md));
+    if (msg.metadata().has("missingValue") && msg.metadata().getBool("bitmapPresent")) {
+        inputPar.set("missing_value", msg.metadata().getDouble("missingValue"));
+    }
 
     mir::input::RawInput input(data, size, inputPar);
 
     mir::api::MIRJob job;
     fill_job(config, job, md);
 
-    if (msg.metadata().has("missingValue")) {
-        job.set("missing_value", msg.metadata().getDouble("missingValue"));
-    }
 
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: input :: " << std::endl << inputPar << std::endl << std::endl;
 

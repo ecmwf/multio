@@ -63,6 +63,11 @@ ecbuild_add_option( FEATURE LEGACY_IFSIO
                     DEFAULT OFF
                     DESCRIPTION "Legacy (FDB4) IFS I/O interface" )
 
+### Enable creation of Dummy api
+
+ecbuild_add_option( FEATURE MULTIO_DUMMY_API
+                    DEFAULT OFF
+                    DESCRIPTION "Enable creation of multio Dummy API" )
 
 if( HAVE_FORTRAN )
   ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)

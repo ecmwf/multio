@@ -1,7 +1,3 @@
-
-# Cannot use CONDITION for (ecbuild_)configure_file
-configure_file( multio_config.f90.in multio_config.f90 )
-
 list( APPEND multio_fapi_srcs
     multio_fapi_constants.F90
     multio_fapi_error_handling.F90
@@ -49,7 +45,6 @@ ecbuild_add_library(
 
     SOURCES
         ${multio_fapi_srcs}
-        ${CMAKE_CURRENT_BINARY_DIR}/multio_config.f90
 
     PUBLIC_INCLUDES
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module>

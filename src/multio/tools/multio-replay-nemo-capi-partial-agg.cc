@@ -9,7 +9,7 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "multio/api/multio_c_cpp_utils.h"
+#include "multio/api/c/multio_c_cpp_utils.h"
 #include "multio/config/ConfigurationPath.h"
 #include "multio/tools/MultioTool.h"
 

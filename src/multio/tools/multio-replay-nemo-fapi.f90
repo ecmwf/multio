@@ -110,7 +110,7 @@ subroutine init(mio, rank, server_count, client_count)
 
     type(multio_configuration) :: cc
     ! for tests
-    logical(c_bool) :: is_active
+    logical :: is_active
 
 
     write(0,*) "Init..."
@@ -368,7 +368,7 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
     cerr = md%set_int("step", step)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 23
 
-    cerr = md%set_double("missingValue", 0.0_8)
+    cerr = md%set_real("missingValue", 0.0_8)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 31
     cerr = md%set_bool("bitmapPresent", .FALSE._1)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 32

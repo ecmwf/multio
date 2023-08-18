@@ -1,5 +1,5 @@
-
 #include "multio_c.h"
+
 #include "multio_c_cpp_utils.h"
 
 #include "eckit/exception/Exceptions.h"
@@ -45,6 +45,7 @@ struct multio_failure_context_t {
 static multio_failure_info_t g_failure_info;
 
 const char* multio_error_string_info(int err, multio_failure_info_t* info) {
+#if !defined(MULTIO_DUMMY_API)
     switch (err) {
         case MULTIO_SUCCESS:
             return "Success";
@@ -55,10 +56,17 @@ const char* multio_error_string_info(int err, multio_failure_info_t* info) {
         default:
             return "<unknown>";
     };
+#else
+    return "DUMMY API ENABLED";
+#endif
 }
 
 const char* multio_error_string(int err) {
+#if !defined(MULTIO_DUMMY_API)
     return multio_error_string_info(err, &g_failure_info);
+#else
+    return "DUMMY API ENABLED";
+#endif
 }
 
 struct multio_configuration_t : public MultioConfiguration {
@@ -77,11 +85,14 @@ struct multio_handle_t : public multio::server::MultioClient {
     std::unique_ptr<multio_failure_context_t> failureContext;
 };
 
+struct multio_data_t : public eckit::Buffer {
+    multio_handle_t* mio;
+};
+
 struct multio_metadata_t : public multio::message::Metadata {
     using multio::message::Metadata::Metadata;
     multio_handle_t* mio;
 };
-
 
 }  // extern "C"
 
@@ -226,12 +237,17 @@ int wrapApiFunction(FN&& f, multio_metadata_t* md) {
     return wrapApiFunction(std::forward<FN>(f), (md && md->mio) ? md->mio->failureContext.get() : nullptr);
 }
 
+template <typename FN>
+int wrapApiFunction(FN&& f, multio_data_t* d) {
+    return wrapApiFunction(std::forward<FN>(f), (d && d->mio) ? d->mio->failureContext.get() : nullptr);
+}
 
 }  // namespace
 
 extern "C" {
 
 int multio_initialise() {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction([] {
         static bool initialised = false;
 
@@ -245,17 +261,31 @@ int multio_initialise() {
             initialised = true;
         }
     });
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_version(const char** version) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction([version]() { (*version) = multio_version_str(); });
+#else
+    *version = "MULTIO DUMMY API";
+    return 0;
+#endif
 }
 
 int multio_vcs_version(const char** sha1) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction([sha1]() { (*sha1) = multio_git_sha1(); });
+#else
+    *sha1 = "MULTIO DUMMY API";
+    return 0;
+#endif
 }
 
 int multio_config_set_failure_handler(multio_configuration_t* cc, multio_failure_handler_t handler, void* usercontext) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [handler, usercontext, cc] {
             if (!cc->failureContext) {
@@ -267,9 +297,13 @@ int multio_config_set_failure_handler(multio_configuration_t* cc, multio_failure
             eckit::Log::info() << "MultIO setting failure handler callable" << std::endl;
         },
         cc);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_handle_set_failure_handler(multio_handle_t* mio, multio_failure_handler_t handler, void* usercontext) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [handler, usercontext, mio] {
             if (!mio->failureContext) {
@@ -281,28 +315,44 @@ int multio_handle_set_failure_handler(multio_handle_t* mio, multio_failure_handl
             eckit::Log::info() << "MultIO setting failure handler callable" << std::endl;
         },
         mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_new_configuration(multio_configuration_t** cc) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction([cc]() { (*cc) = new multio_configuration_t{}; });
+#else
+    return MULTIO_SUCCESS;
+#endif
 };
 
 int multio_new_configuration_from_filename(multio_configuration_t** cc, const char* conf_file_name) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction([cc, conf_file_name]() {
         ASSERT(conf_file_name);
         (*cc) = new multio_configuration_t{eckit::PathName{conf_file_name}};
     });
+#else
+    return MULTIO_SUCCESS;
+#endif
 };
 
 int multio_delete_configuration(multio_configuration_t* cc) {
+#if !defined(MULTIO_DUMMY_API)
     // delete without failurehandler. Configuration is assumed to have be invalid after movement
     return wrapApiFunction([cc]() {
         ASSERT(cc);
         delete cc;
     });
+#else
+    return MULTIO_SUCCESS;
+#endif
 };
 
 int multio_conf_set_path(multio_configuration_t* cc, const char* configuration_path) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [cc, configuration_path]() {
             ASSERT(cc);
@@ -311,9 +361,13 @@ int multio_conf_set_path(multio_configuration_t* cc, const char* configuration_p
             }
         },
         cc);
+#else
+    return MULTIO_SUCCESS;
+#endif
 };
 
-int multio_conf_mpi_allow_world_default_comm(multio_configuration_t* cc, bool allow) {
+int multio_mpi_allow_world_default_comm(multio_configuration_t* cc, bool allow) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [cc, allow]() {
             ASSERT(cc);
@@ -323,9 +377,13 @@ int multio_conf_mpi_allow_world_default_comm(multio_configuration_t* cc, bool al
             cc->getMPIInitInfo().value().allowWorldAsDefault = allow;
         },
         cc);
+#else
+    return MULTIO_SUCCESS;
+#endif
 };
 
-int multio_conf_mpi_parent_comm(multio_configuration_t* cc, int parent_comm) {
+int multio_mpi_parent_comm(multio_configuration_t* cc, int parent_comm) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [cc, parent_comm]() {
             ASSERT(cc);
@@ -335,9 +393,13 @@ int multio_conf_mpi_parent_comm(multio_configuration_t* cc, int parent_comm) {
             cc->getMPIInitInfo().value().parentComm = parent_comm;
         },
         cc);
+#else
+    return MULTIO_SUCCESS;
+#endif
 };
 
-int multio_conf_mpi_return_client_comm(multio_configuration_t* cc, int* return_client_comm) {
+int multio_mpi_return_client_comm(multio_configuration_t* cc, int* return_client_comm) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [cc, return_client_comm]() {
             ASSERT(cc);
@@ -347,9 +409,13 @@ int multio_conf_mpi_return_client_comm(multio_configuration_t* cc, int* return_c
             cc->getMPIInitInfo().value().returnClientComm = return_client_comm;
         },
         cc);
+#else
+    return MULTIO_SUCCESS;
+#endif
 };
 
-int multio_conf_mpi_return_server_comm(multio_configuration_t* cc, int* return_server_comm) {
+int multio_mpi_return_server_comm(multio_configuration_t* cc, int* return_server_comm) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [cc, return_server_comm]() {
             ASSERT(cc);
@@ -359,9 +425,13 @@ int multio_conf_mpi_return_server_comm(multio_configuration_t* cc, int* return_s
             cc->getMPIInitInfo().value().returnServerComm = return_server_comm;
         },
         cc);
+#else
+    return MULTIO_SUCCESS;
+#endif
 };
 
 int multio_new_handle(multio_handle_t** mio, multio_configuration_t* cc) {
+#if !defined(MULTIO_DUMMY_API)
     // Failurehandler and its string location is preserved through shared_ptr...
     return wrapApiFunction(
         [mio, cc]() {
@@ -372,22 +442,34 @@ int multio_new_handle(multio_handle_t** mio, multio_configuration_t* cc) {
             (**mio).failureContext = std::move(cc->failureContext);
         },
         cc);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_new_handle_default(multio_handle_t** mio) {
+#if !defined(MULTIO_DUMMY_API)
     // Failurehandler and its string location is preserved through shared_ptr...
     return wrapApiFunction([mio]() { (*mio) = new multio_handle_t{}; });
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_delete_handle(multio_handle_t* mio) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction([mio]() {
         ASSERT(mio);
         // std::cout << "multio_delete_handle" << std::endl;
         delete mio;
     });
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_start_server(multio_configuration_t* cc) {
+#if !defined(MULTIO_DUMMY_API)
     // Failurehandler and its string location is preserved through shared_ptr...
     return wrapApiFunction(
         [cc]() {
@@ -395,9 +477,13 @@ int multio_start_server(multio_configuration_t* cc) {
             multio::server::MultioServer{std::move(*cc)};
         },
         cc);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_open_connections(multio_handle_t* mio) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio]() {
             ASSERT(mio);
@@ -405,9 +491,13 @@ int multio_open_connections(multio_handle_t* mio) {
             mio->openConnections();
         },
         mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_close_connections(multio_handle_t* mio) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio]() {
             ASSERT(mio);
@@ -415,9 +505,13 @@ int multio_close_connections(multio_handle_t* mio) {
             mio->closeConnections();
         },
         mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_flush(multio_handle_t* mio, multio_metadata_t* md) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md]() {
             ASSERT(mio);
@@ -426,10 +520,14 @@ int multio_flush(multio_handle_t* mio, multio_metadata_t* md) {
             mio->dispatch(*md, eckit::Buffer{0}, Message::Tag::Flush);
         },
         mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 
 int multio_notify(multio_handle_t* mio, multio_metadata_t* md) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md]() {
             ASSERT(mio);
@@ -438,10 +536,14 @@ int multio_notify(multio_handle_t* mio, multio_metadata_t* md) {
             mio->dispatch(*md, eckit::Buffer{0}, Message::Tag::Notification);
         },
         mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 
 int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, data, size]() {
             ASSERT(mio);
@@ -451,33 +553,47 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
             mio->dispatch(*md, std::move(domain_def), Message::Tag::Domain);
         },
         mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_write_mask_float(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, data, size]() {
             ASSERT(mio);
             ASSERT(md);
 
             eckit::Buffer mask_vals = multio::domain::encodeMask(data, size);
-           mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
-        },
-        mio);
-}
 
-int multio_write_mask_double(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
-    return wrapApiFunction(
-        [mio, md, data, size]() {
-            ASSERT(mio);
-            ASSERT(md);
-
-            eckit::Buffer mask_vals = multio::domain::encodeMask(data, size);
             mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
         },
         mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+int multio_write_mask_double(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, md, data, size]() {
+            ASSERT(mio);
+            ASSERT(md);
+
+            eckit::Buffer mask_vals = multio::domain::encodeMask(data, size);
+
+            mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, data, size]() {
             ASSERT(mio);
@@ -490,9 +606,13 @@ int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const 
             mio->dispatch(*md, std::move(field_vals), Message::Tag::Field);
         },
         mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, data, size]() {
             ASSERT(mio);
@@ -505,24 +625,63 @@ int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const
             mio->dispatch(*md, std::move(field_vals), Message::Tag::Field);
         },
         mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+int multio_write_field_buffer(multio_handle_t* mio, multio_metadata_t* md, multio_data_t* d, int byte_size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, md, d, byte_size]() {
+            ASSERT(mio);
+            ASSERT(md);
+            ASSERT(d);
+            if (byte_size == 4) {
+                md->set("precision", "single");
+            }
+            else if (byte_size == 8) {
+                md->set("precision", "double");
+            }
+            else {
+                ASSERT(false);
+            }
+
+            eckit::Buffer* tmp = reinterpret_cast<eckit::Buffer*>(d);
+
+            mio->dispatch(*md, std::move(*tmp), Message::Tag::Field);
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_new_metadata(multio_metadata_t** md, multio_handle_t* mio) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction([md]() { (*md) = new multio_metadata_t{}; }, mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 
 int multio_delete_metadata(multio_metadata_t* md) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md]() {
             ASSERT(md);
             delete md;
         },
         md);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 
 int multio_metadata_set_int(multio_metadata_t* md, const char* key, int value) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
             ASSERT(md);
@@ -531,9 +690,13 @@ int multio_metadata_set_int(multio_metadata_t* md, const char* key, int value) {
             md->set(key, value);
         },
         md);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_metadata_set_long(multio_metadata_t* md, const char* key, long value) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
             ASSERT(md);
@@ -542,9 +705,13 @@ int multio_metadata_set_long(multio_metadata_t* md, const char* key, long value)
             md->set(key, value);
         },
         md);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_metadata_set_longlong(multio_metadata_t* md, const char* key, long long value) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
             ASSERT(md);
@@ -553,9 +720,13 @@ int multio_metadata_set_longlong(multio_metadata_t* md, const char* key, long lo
             md->set(key, value);
         },
         md);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_metadata_set_string(multio_metadata_t* md, const char* key, const char* value) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
             ASSERT(md);
@@ -565,9 +736,13 @@ int multio_metadata_set_string(multio_metadata_t* md, const char* key, const cha
             md->set(key, value);
         },
         md);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_metadata_set_bool(multio_metadata_t* md, const char* key, bool value) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
             ASSERT(md);
@@ -576,9 +751,13 @@ int multio_metadata_set_bool(multio_metadata_t* md, const char* key, bool value)
             md->set(key, value);
         },
         md);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_metadata_set_float(multio_metadata_t* md, const char* key, float value) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
             ASSERT(md);
@@ -587,9 +766,13 @@ int multio_metadata_set_float(multio_metadata_t* md, const char* key, float valu
             md->set(key, value);
         },
         md);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 int multio_metadata_set_double(multio_metadata_t* md, const char* key, double value) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
             ASSERT(md);
@@ -600,9 +783,135 @@ int multio_metadata_set_double(multio_metadata_t* md, const char* key, double va
             md->set(key, static_cast<double>(value));
         },
         md);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
+
+int multio_data_new(multio_data_t** d, multio_handle_t* mio) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [d]() {
+            (*d) = new multio_data_t();
+            return 0;
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+};
+
+int multio_data_delete(multio_data_t* d) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [d]() {
+            ASSERT(d);
+            delete d;
+            return 0;
+        },
+        d);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+int multio_data_zero(multio_data_t* d) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [d]() {
+            d->zero();
+            return 0;
+        },
+        d);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+int multio_data_resize(multio_data_t* d, int new_size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [d, new_size]() {
+            d->resize(new_size);
+            return 0;
+        },
+        d);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+int multio_data_size(multio_data_t* d, int* size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [d, size]() {
+            *size = d->size();
+            return 0;
+        },
+        d);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+int multio_data_set_float_scalar(multio_data_t* d, float* value, int pos) {
+#if !defined(MULTIO_DUMMY_API)
+    return multio_data_set_float_chunk(d,value,pos,1);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+int multio_data_set_double_scalar(multio_data_t* d, double* value, int pos) {
+#if !defined(MULTIO_DUMMY_API)
+    return multio_data_set_double_chunk(d,value,pos,1);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+int multio_data_set_float_chunk(multio_data_t* d, float* value, int pos, int size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [d, value, pos, size]() {
+            ASSERT(value);
+            ASSERT(pos >= 0);
+            ASSERT(pos * sizeof(float) < d->size());
+            float* val = static_cast<float*>(d->data());
+            for (int i = pos; i < pos + size; ++i) {
+                val[i] = value[i - pos];
+            }
+            return 0;
+        },
+        d);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+int multio_data_set_double_chunk(multio_data_t* d, double* value, int pos, int size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [d, value, pos, size]() {
+            ASSERT(value);
+            ASSERT(pos >= 0);
+            ASSERT(pos * sizeof(double) < d->size());
+            double* val = static_cast<double*>(d->data());
+            for (int i = pos; i < pos + size; ++i) {
+                val[i] = value[i - pos];
+            }
+            return 0;
+        },
+        d);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
 int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, bool* accepted) {
+#if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, accepted]() {
             ASSERT(mio);
@@ -612,6 +921,9 @@ int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, boo
             *accepted = mio->isFieldMatched(*md);
         },
         mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
 }
 
 

@@ -26,6 +26,8 @@ ecbuild_get_test_multidata(
         "MARS_sh_to_grid_0.50_0.50_area.grib"
         "MARS_sh_to_grid_1.00_1.00.grib"
         "MARS_sh_to_grid_1.00_1.00_area.grib"
+        "Reference_sh_to_HEALPix_32.grib"
+        "Reference_sh_to_HEALPix_1024.grib"
         "eORCA12_T.grib"
         "eORCA12_U.grib"
         "eORCA12_V.grib"
@@ -55,21 +57,31 @@ foreach(_test
     sh_to_grid_0.50_0.50
     sh_to_grid_0.50_0.50_area
     sh_to_grid_1.00_1.00
-    sh_to_grid_1.00_1.00_area)
+    sh_to_grid_1.00_1.00_area
+    sh_to_HEALPix_32
+    sh_to_HEALPix_1024
+    eORCA12_T_to_HEALPix_32
+    eORCA12_U_to_HEALPix_32
+    eORCA12_V_to_HEALPix_32
+    eORCA12_W_to_HEALPix_32
+    eORCA12_T_to_HEALPix_1024
+    eORCA12_U_to_HEALPix_1024
+    eORCA12_V_to_HEALPix_1024
+    eORCA12_W_to_HEALPix_1024)
     set(_result MultIO_${_test}.grib)
 
     if(_test MATCHES "^reduced_gg.*")
         set(_feed "MARS_reduced_gg.grib")
     elseif(_test MATCHES "^regular_ll.*")
         set(_feed "MARS_regular_ll.grib")
-    elseif(_test MATCHES "^eORCA_T.*")
-        set(_feed "eORCA_T.grib")
-    elseif(_test MATCHES "^eORCA_U.*")
-        set(_feed "eORCA_U.grib")
-    elseif(_test MATCHES "^eORCA_V.*")
-        set(_feed "eORCA_V.grib")
-    elseif(_test MATCHES "^eORCA_W.*")
-        set(_feed "eORCA_W.grib")
+    elseif(_test MATCHES "^eORCA12_T.*")
+        set(_feed "eORCA12_T.grib")
+    elseif(_test MATCHES "^eORCA12_U.*")
+        set(_feed "eORCA12_U.grib")
+    elseif(_test MATCHES "^eORCA12_V.*")
+        set(_feed "eORCA12_V.grib")
+    elseif(_test MATCHES "^eORCA12_W.*")
+        set(_feed "eORCA12_W.grib")
     else()
         set(_feed "MARS_sh.grib")
     endif()
@@ -85,6 +97,7 @@ foreach(_test
     ecbuild_add_test(
         TARGET       ${PREFIX}_${_test}_run
         TEST_DEPENDS ${PREFIX}_get_data
+        ENVIRONMENT  ATLAS_ORCA_CACHING
         COMMAND      multio-feed
         ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/${_test}.yaml ${_feed})
 

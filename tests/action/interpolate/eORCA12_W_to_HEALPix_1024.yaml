@@ -1,5 +1,5 @@
 plans:
-  - name: eORCA12_W_to_HEALPIX_32
+  - name: eORCA12_W_to_HEALPIX_1024
     actions:
       - type: select
         match:
@@ -8,7 +8,7 @@ plans:
         stream: cout
       - type: interpolate
         input: eORCA12_W
-        grid: H32
+        grid: H1024
         options:
           # dont-compress-plan: true
           caching: true
@@ -16,7 +16,7 @@ plans:
         stream: cout
       - type: encode
         format: grib
-        template: Reference_regular_ll_to_HEALPix_32.grib
+        template: Reference_regular_ll_to_HEALPix_1024.grib
       - type: sink
         sinks: []
 #        - type: file

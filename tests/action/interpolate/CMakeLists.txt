@@ -12,16 +12,24 @@ ecbuild_get_test_multidata(
         "MARS_reduced_gg_to_grid_0.50_0.50_area.grib"
         "MARS_reduced_gg_to_grid_1.00_1.00.grib"
         "MARS_reduced_gg_to_grid_1.00_1.00_area.grib"
+        "Reference_reduced_gg_to_HEALPix_32.grib"
+        "Reference_reduced_gg_to_HEALPix_1024.grib"
         "MARS_regular_ll.grib"
         "MARS_regular_ll_to_grid_3.00_6.00.grib"
         "MARS_regular_ll_to_grid_6.00_9.00.grib"
+        "Reference_regular_ll_to_HEALPix_32.grib"
+        "Reference_regular_ll_to_HEALPix_1024.grib"
         "MARS_sh.grib"
         "MARS_sh_to_grid_0.25_0.25.grib"
         "MARS_sh_to_grid_0.25_0.25_area.grib"
         "MARS_sh_to_grid_0.50_0.50.grib"
         "MARS_sh_to_grid_0.50_0.50_area.grib"
         "MARS_sh_to_grid_1.00_1.00.grib"
-        "MARS_sh_to_grid_1.00_1.00_area.grib")
+        "MARS_sh_to_grid_1.00_1.00_area.grib"
+        "eORCA12_T.grib"
+        "eORCA12_U.grib"
+        "eORCA12_V.grib"
+        "eORCA12_W.grib")
 
 foreach(_test
     reduced_gg_copy
@@ -32,10 +40,14 @@ foreach(_test
     reduced_gg_to_grid_0.50_0.50_area
     reduced_gg_to_grid_1.00_1.00
     reduced_gg_to_grid_1.00_1.00_area
+    reduced_gg_to_HEALPix_32
+    reduced_gg_to_HEALPix_1024
     regular_ll_copy
     regular_ll_encode_decode
     regular_ll_to_grid_3.00_6.00
     regular_ll_to_grid_6.00_9.00
+    regular_ll_to_HEALPix_32
+    regular_ll_to_HEALPix_1024
     sh_copy
     sh_encode_decode
     sh_to_grid_0.25_0.25
@@ -50,12 +62,22 @@ foreach(_test
         set(_feed "MARS_reduced_gg.grib")
     elseif(_test MATCHES "^regular_ll.*")
         set(_feed "MARS_regular_ll.grib")
+    elseif(_test MATCHES "^eORCA_T.*")
+        set(_feed "eORCA_T.grib")
+    elseif(_test MATCHES "^eORCA_U.*")
+        set(_feed "eORCA_U.grib")
+    elseif(_test MATCHES "^eORCA_V.*")
+        set(_feed "eORCA_V.grib")
+    elseif(_test MATCHES "^eORCA_W.*")
+        set(_feed "eORCA_W.grib")
     else()
         set(_feed "MARS_sh.grib")
     endif()
 
     if(_test MATCHES ".*_encode_decode" OR _test MATCHES ".*_copy")
         set(_reference ${_feed})
+    elseif( _test MATCHES ".*HEALPix.*" )
+        set(_reference Reference_${_test}.grib)
     else()
         set(_reference MARS_${_test}.grib)
     endif()

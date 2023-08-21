@@ -1,0 +1,23 @@
+plans:
+  - name: reduced_gg_to_grid_0.50_0.50
+    actions:
+      - type: select
+        match:
+          - param: 133
+      - type: interpolate
+        input: eORCA12_T
+        grid: H32
+        options:
+          # dont-compress-plan: true
+          caching: true
+      - print:
+        stream: cout
+#      - type: encode
+#        format: grib
+#        template: MARS_reduced_gg_to_grid_0.50_0.50.grib
+      - type: sink
+        sinks: []
+#          - type: file
+#            append: false
+#            per-server: false # Will give you one file per server
+#            path: MultIO_reduced_gg_to_grid_0.50_0.50.grib

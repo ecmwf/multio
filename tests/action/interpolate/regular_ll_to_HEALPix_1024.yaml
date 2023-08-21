@@ -1,21 +1,22 @@
 plans:
-  - name: reduced_gg_to_HEALPix_32
+  - name: regular_ll_to_HEALPix_1024
     actions:
       - type: select
         match:
           - param: 133
       - type: interpolate
-        input: O1280
-        grid: H32
+        input: 1/1
+        grid: H1024
         options:
           # dont-compress-plan: true
           caching: true
       - type: encode
         format: grib
-        template: Reference_reduced_gg_to_HEALPix_32.grib
+        template: Reference_regular_ll_to_HEALPix_1024.grib
       - type: sink
         sinks:
         - type: file
           append: false
           per-server: false # Will give you one file per server
-          path: MultIO_reduced_gg_to_HEALPix_32.grib
+          path: MultIO_regular_ll_to_HEALPix_1024.grib
+

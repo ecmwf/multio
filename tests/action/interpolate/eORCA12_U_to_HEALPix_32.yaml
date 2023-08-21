@@ -1,5 +1,5 @@
 plans:
-  - name: reduced_gg_to_HEALPix_32
+  - name: reduced_gg_to_grid_0.50_0.50
     actions:
       - type: select
         match:
@@ -12,10 +12,10 @@ plans:
           caching: true
       - type: encode
         format: grib
-        template: Reference_reduced_gg_to_HEALPix_32.grib
+        template: healpixTemplate.grib
       - type: sink
-        sinks:
-        - type: file
-          append: false
-          per-server: false # Will give you one file per server
-          path: MultIO_reduced_gg_to_HEALPix_32.grib
+        sinks: []
+      - type: file
+        append: false
+        per-server: false # Will give you one file per server
+        path: HEALPix_from_eORCA12_T.grib

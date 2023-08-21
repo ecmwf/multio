@@ -158,6 +158,7 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
 
         static const std::regex sh("(T|TCO|TL)([1-9][0-9]*)");
         static const std::regex gg("([FNO])([1-9][0-9]*)");
+        static const std::regex eORCA("^e?ORCA[0-9]+_[FTUVW]$");
 
 #define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
         static const std::regex ll(fp "/" fp);
@@ -185,6 +186,16 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
 
         if (std::regex_match(input, match, ll)) {
             regular_ll(std::stod(match[1].str()), std::stod(match[4].str()));
+            return;
+        }
+
+        if ( std::regex_match(input, match, eORCA) ){
+            std::string sane_name( input );
+            std::transform( sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper );
+            sane_name.front() = 'e';
+            param.set("gridded", true);
+            param.set("uid", sane_name );
+            param.set("gridType","orca");
             return;
         }
     }
@@ -279,11 +290,16 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             // md.set("gridType", "regular_ll");
         }
         else if ( gridKind == "HEALPix" ){
+            // destination.set("gridded", true);
+            // destination.set("gridType", "HEALPix");
+            // destination.set("Nside", grid[0]);
+            // destination.set("orderingConvention", "ring");
+            //
             md.set("gridded", true);
-            md.set("gridType", "healpix");
+            md.set("gridType", "HEALPix");
             md.set("Nside", grid[0]);
-            // md.set("orderingConvention", 0 ); // "ring");
-            md.set("style", "ecmwf");
+            md.set("orderingConvention", "ring");
+            // destination.set("style", "ecmwf");
         }
         else
         {
@@ -336,6 +352,8 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     eckit::mpi::setCommDefault(originalComm.name().c_str());
     md.set("globalSize", outData.size());
 
+
+    std::cout << " + DATA :: " << outData << std::endl;
 
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outData.size() * sizeof(double));
 

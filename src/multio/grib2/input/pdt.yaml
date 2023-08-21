@@ -1,0 +1,3788 @@
+# There are 3 top level key
+#      * groups
+#      * categories
+#      * pdt
+#
+#  Pdt is a dictinoary that is mapping productDefinitionTemplateNumber to a name, set of groups of keys and a set of keys.
+#  All the keys can be generated from the set of groups directly.
+#  Hence the keys can be removed but are currently kept and checked against the keys generated from the groups.
+
+#
+# Todo: add generalized tiles
+
+groups:
+    parameter:
+        - parameterCategory
+        - parameterNumber
+
+    forecastTime:
+        - hoursAfterDataCutoff
+        - minutesAfterDataCutoff
+        - indicatorOfUnitOfTimeRange
+        - forecastTime
+
+    probabilityForecast:
+        - forecastProbabilityNumber
+        - totalNumberOfForecastProbabilities
+        - probabilityType
+        - scaleFactorOfLowerLimit
+        - scaledValueOfLowerLimit
+        - scaleFactorOfUpperLimit
+        - scaledValueOfUpperLimit
+
+    percentileForecast:
+        - percentileValue
+
+    spatialStatisticalProcessing:
+        - statisticalProcess
+        - spatialProcessing
+        - numberOfPointsUsed
+
+    horizontal:
+        - typeOfFirstFixedSurface
+        - scaleFactorOfFirstFixedSurface
+        - scaledValueOfFirstFixedSurface
+        - typeOfSecondFixedSurface
+        - scaleFactorOfSecondFixedSurface
+        - scaledValueOfSecondFixedSurface
+
+    generatingProcessType:
+        - typeOfGeneratingProcess
+
+    generatingProcess:
+        - extend: generatingProcessType
+        - backgroundProcess
+        - generatingProcessIdentifier
+
+    radar:
+        - numberOfRadarSitesUsed
+        - indicatorOfUnitOfTimeRange
+        - siteLatitude
+        - siteLongitude
+        - siteElevation
+        - siteId
+        - siteId
+        - operatingMode
+        - reflectivityCalibrationConstant
+        - qualityControlIndicator
+        - clutterFilterIndicator
+        - constantAntennaElevationAngle
+        - accumulationInterval
+        - referenceReflectivityForEchoTop
+        - rangeBinSpacing
+        - radialAngularSpacing
+
+    observationGeneratingProcess:
+        - observationGeneratingProcessIdentifier
+
+    satellite:
+        - numberOfContributingSpectralBands
+        - repeatFor: numberOfContributingSpectralBands
+          values:
+            - satelliteSeries
+            - satelliteNumber
+            - instrumentType
+            - scaleFactorOfCentralWaveNumber
+            - scaledValueOfCentralWaveNumber
+
+    qualityValue:
+        - qualityValueAssociatedWithParameter
+
+    satelliteQualityValue:
+        - extend: qualityValue
+        - extend: satellite
+
+
+    statistical:
+        - typeOfStatisticalProcessing
+
+
+    pointInTime:
+
+    timeRange:
+        - indicatorOfUnitForTimeRange
+        - lengthOfTimeRange
+
+    singleTimeRangeAndIncrement:
+        - numberOfMissingInStatisticalProcess
+        - extend: statistical
+        - typeOfTimeIncrement
+        - extend: timeRange
+        - indicatorOfUnitForTimeIncrement
+        - timeIncrement
+
+    statisticalTimeRange:
+        - yearOfEndOfOverallTimeInterval
+        - monthOfEndOfOverallTimeInterval
+        - dayOfEndOfOverallTimeInterval
+        - hourOfEndOfOverallTimeInterval
+        - minuteOfEndOfOverallTimeInterval
+        - secondOfEndOfOverallTimeInterval
+        - numberOfTimeRange
+        - repeatFor: numberOfTimeRange
+          values:
+            - extend: singleTimeRangeAndIncrement
+
+    chemical:
+        - constituentType
+
+    srcsink:
+        - sourceSinkChemicalPhysicalProcess
+
+    chemical_srcsink:
+        - extend: chemical
+        - extend: srcsink
+
+    distribution:
+        - numberOfModeOfDistribution
+        - modeNumber
+        - typeOfDistributionFunction
+        - numberOfDistributionFunctionParameters
+        - repeatFor: numberOfDistributionFunctionParameters
+          values:
+            - scaleFactorOfDistributionFunctionParameter
+            - scaledValueOfDistributionFunctionParameter
+
+    chemical_distribution:
+        - extend: chemical
+        - extend: distribution
+
+
+    aerosol:
+        - aerosolType
+        - append: nested
+        - typeOfSizeInterval
+        - scaleFactorOfFirstSize
+        - scaledValueOfFirstSize
+        - scaleFactorOfSecondSize
+        - scaledValueOfSecondSize
+
+    aerosol_srcsink:
+        - extend: aerosol
+          nested:
+            - extend: srcsink
+
+    opticalProperties:
+        - typeOfWavelengthInterval
+        - scaleFactorOfFirstWavelength
+        - scaledValueOfFirstWavelength
+        - scaleFactorOfSecondWavelength
+        - scaledValueOfSecondWavelength
+
+    optical:
+        - extend: opticalProperties
+
+    aerosol_optical:
+        - extend: aerosol
+        - extend: opticalProperties
+
+    aerosol_srcsink_optical:
+        - extend: aerosol
+          nested:
+            - extend: srcsink
+        - extend: opticalProperties
+
+
+    ensemble:
+        - numberOfForecastsInEnsemble
+
+    perturbed:
+        - perturbationNumber
+
+    individualEnsembleForecast:
+        - typeOfEnsembleForecast
+        - extend: perturbed
+        - extend: ensemble
+
+    derivedEnsembleForecast:
+        - derivedForecast
+        - extend: ensemble
+
+    categorialForecast:
+        - numberOfCategories
+        - repeatFor: numberOfCategories
+          values:
+            - codeFigure
+            - categoryType
+            - scaleFactorOfLowerLimit
+            - scaledValueOfLowerLimit
+            - scaleFactorOfUpperLimit
+            - scaledValueOfUpperLimit
+
+    partitioned:
+        - partitionTable
+        - numberOfPartitions
+        - repeatFor: numberOfPartitions
+          values:
+            - partitionItems
+        - repeatFor: numberOfPartitions
+          values:
+            - partitionNumber
+
+    cluster:
+        - clusterIdentifier
+        - NH
+        - NL
+        - totalNumberOfClusters
+        - clusteringMethod
+
+    clusterStat:
+        - numberOfForecastsInTheCluster
+        - scaleFactorOfStandardDeviation
+        - scaledValueOfStandardDeviation
+        - scaleFactorOfDistanceFromEnsembleMean
+        - scaledValueOfDistanceFromEnsembleMean
+        - ensembleForecastNumbers
+
+    clusterStatRectangular:
+        - extend: cluster
+        - northernLatitudeOfClusterDomain
+        - southernLatitudeOfClusterDomain
+        - easternLongitudeOfClusterDomain
+        - westernLongitudeOfClusterDomain
+        - groups:
+            - clusterStat
+
+    clusterStatCircular:
+        - extend: cluster
+        - latitudeOfCentralPointInClusterDomain
+        - longitudeOfCentralPointInClusterDomain
+        - radiusOfClusterDomain
+        - extend: clusterStat
+
+    reforecast:
+        - YearOfModelVersion
+        - MonthOfModelVersion
+        - DayOfModelVersion
+        - HourOfModelVersion
+        - MinuteOfModelVersion
+        - SecondOfModelVersion
+
+    postProcess:
+        - inputProcessIdentifier
+        - inputOriginatingCentre
+        - typeOfPostProcessing
+
+    spatioTemporalTile:
+        - tileClassification
+        - totalNumberOfTileAttributePairs
+        - numberOfUsedSpatialTiles
+        - tileIndex
+        - numberOfUsedTileAttributes
+        - attributeOfTile
+
+    quantileForecast:
+        - totalNumberOfQuantiles
+        - quantileValue
+
+    localTime:
+        - localTimeMethod
+        - numberOfForecastsUsedinLocalTime
+        - repeatFor: numberOfForecastsUsedinLocalTime
+          values:
+            - yearOfForecastUsedInLocalTime
+            - monthOfForecastUsedInLocalTime
+            - dayOfForecastUsedInLocalTime
+            - hourOfForecastUsedInLocalTime
+            - minuteOfForecastUsedInLocalTime
+            - secondOfForecastUsedInLocalTime
+            - indicatorOfUnitForForecastTime
+            - forecastTime
+            - numberOfTimeIncrementsOfForecastsUsedInLocalTime
+            - indicatorOfUnitForTimeIncrement
+            - timeIncrement
+
+    localTime_statistical:
+        - extend: statistical
+        - extend: timeRange
+        - numberOfStatisticallyProcessedFieldsForLocalTime
+        - extend: localTime
+
+    ccittIA5:
+        - extend: parameter
+
+    crossSect:
+        - extend: parameter
+        - extend: generatingProcess
+        - extend: forecastTime
+
+    crossSectTimeRange:
+        - extend: crossSect
+        - extend: singleTimeRangeAndIncrement
+
+    statisticalOverLatLong:
+
+    crossSectLatLong:
+        - extend: statisticalOverLatLong
+        - extend: crossSect
+        - horizontalDimensionProcessed
+        - treatmentOfMissingData
+        - extend: statistical
+        - startOfRange
+        - endOfRange
+        - numberOfDataValues
+
+
+    hovmoeller:
+        - extend: parameter
+        - extend: generatingProcess
+        - extend: forecastTime
+        - extend: horizontal
+
+    wave:
+
+    waveSpectra:
+        - extend: wave
+
+    waveSpectraCommon:
+        - extend: waveSpectra
+        - waveDirectionNumber
+        - numberOfWaveDirections
+        - waveFrequencyNumber
+        - numberOfWaveFrequencies
+
+    waveSpectraList:
+        - extend: waveSpectra
+        - scaleFactorOfWaveDirections
+        - repeatFor: numberOfWaveDirections
+          values:
+            - scaledValueOfWaveDirections
+        - scaleFactorOfWaveFrequencies
+        - repeatFor: numberOfWaveFrequencies
+          values:
+            - scaledValueOfWaveFrequencies
+
+    waveSpectraFormula:
+        - extend: waveSpectra
+        - typeOfWaveDirectionSequence
+        - numberOfWaveDirectionSequenceParameters
+        - repeatFor: numberOfWaveDirectionSequenceParameters
+          values:
+            - scaleFactorOfWaveDirectionSequenceParameter
+            - scaledValueOfWaveDirectionSequenceParameter
+        - typeOfWaveFrequencySequence
+        - numberOfWaveFrequencySequenceParameters
+        - repeatFor: numberOfWaveFrequencySequenceParameters
+          values:
+            - scaleFactorOfWaveFrequencySequenceParameter
+            - scaledValueOfWaveFrequencySequenceParameter
+
+
+    wavePeriodRange:
+        - extend: wave
+        - typeOfWavePeriodInterval
+        - scaleFactorOfLowerWavePeriodLimit
+        - scaledValueOfLowerWavePeriodLimit
+        - scaleFactorOfUpperWavePeriodLimit
+        - scaledValueOfUpperWavePeriodLimit
+
+    referencePeriod:
+        - typeOfReferenceDataset
+        - typeOfRelationToReferenceDataset
+        - numberOfAdditionalParameterForReferencePeriod
+        - repeatFor: numberOfAdditionalParameterForReferencePeriod
+          values:
+            - scaleFactorOfAdditionalParameterForReferencePeriod
+            - scaledValueOfAdditionalParameterForReferencePeriod
+        - yearOfStartOfReferencePeriod
+        - monthOfStartOfReferencePeriod
+        - dayOfStartOfReferencePeriod
+        - hourOfStartOfReferencePeriod
+        - minuteOfStartOfReferencePeriod
+        - secondOfStartOfReferencePeriod
+        - sampleSizeOfReferencePeriod
+        - numberOfReferencePeriodTimeRanges
+        - repeatFor: numberOfReferencePeriodTimeRanges
+          values:
+            - typeOfStatisticalProcessingForTimeRangeForReferencePeriod
+            - indicatorOfUnitForTimeRangeForReferencePeriod
+            - lengthOfTimeRangeForReferencePeriod
+
+# Keys interfering with other sections:
+# - discipline...
+# Ocean keys set grib stuff (250003 - 250012)
+# - gridDefinitionTemplateNumber
+# - numberOfGridInReference
+
+categories:
+    timeExtent:
+        - name: null
+          categories:
+            timeFormat:
+                - null
+        - pointInTime:
+            timeFormat:
+                - null
+                - localTime
+        - timeRange:
+            timeFormat:
+                - null
+                - localTime
+
+    forecastType:
+        - null
+        - name: individualEnsemble
+          groups: [individualEnsembleForecast]
+          categories:
+            forecastSubType:
+                - null
+                - reforecast
+        - name: derivedEnsemble
+          groups: [derivedEnsembleForecast]
+          categories:
+            forecastSubType:
+                - null
+                - clusterStatCircular
+                - clusterStatRectangular
+        - probability: [probabilityForecast]
+        - percentile: [percentileForecast]
+        - quantile: [quantileForecast]
+        - categorial: [categorialForecast]
+
+
+    # Null value filters all PDT that list none of the other options
+    productCategory:
+        - null
+        - postProcess
+        - partitioned
+        - spatialStatisticalProcessing
+        - radar
+        - spatioTemporalTile
+        - hovmoeller
+        - ccittIA5
+        - referencePeriod
+        - optical
+        - wave:
+            productSubCategory:
+                - spectraList: [waveSpectraList]
+                - spectraFormula: [waveSpectraFormula]
+                - periodRange: [wavePeriodRange]
+        - satellite:
+            productSubCategory:
+                # null will select 'Satellite Product" if timeExtent is none
+                - null
+                - qualityValue
+        - aerosol:
+            productSubCategory:
+                - null
+                - optical: [aerosol_optical]
+                - srcsink: [aerosol_srcsink]
+                - opticalSrcsink: [aerosol_srcsink_optical]
+        - chemical:
+            productSubCategory:
+                - null
+                - srcsink
+                - distribution
+        - crossSect:
+            productSubCategory:
+                - null
+                - statisticalOverLatLong
+
+
+
+
+
+
+pdt:
+    0:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, pointInTime ]
+        name: "analysis or forecast at a horizontal level or in a horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+    1:
+        groups: [parameter, generatingProcess, forecastTime,  horizontal, individualEnsembleForecast, pointInTime]
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time             "
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+    2:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, derivedEnsembleForecast, pointInTime]
+        name: "Derived forecast based on all ensemble members at a horizontal level or in a horizontal layer at a point in time "
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - derivedForecast
+            - numberOfForecastsInEnsemble
+    3:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, derivedEnsembleForecast, clusterStatRectangular, pointInTime]
+        name: "Derived forecasts based on a cluster of ensemble members over a rectangular area at a horizontal level or in a horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - derivedForecast
+            - numberOfForecastsInEnsemble
+            - clusterIdentifier
+            - NH
+            - NL
+            - totalNumberOfClusters
+            - clusteringMethod
+            - northernLatitudeOfClusterDomain
+            - southernLatitudeOfClusterDomain
+            - easternLongitudeOfClusterDomain
+            - westernLongitudeOfClusterDomain
+            - numberOfForecastsInTheCluster
+            - scaleFactorOfStandardDeviation
+            - scaledValueOfStandardDeviation
+            - scaleFactorOfDistanceFromEnsembleMean
+            - scaledValueOfDistanceFromEnsembleMean
+            - ensembleForecastNumbers
+    4:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, derivedEnsembleForecast, clusterStatCircular, pointInTime]
+        name: "Derived forecasts based on a cluster of ensemble members over a circular area at a horizontal level or in a horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - derivedForecast
+            - numberOfForecastsInEnsemble
+            - clusterIdentifier
+            - NH
+            - NL
+            - totalNumberOfClusters
+            - clusteringMethod
+            - latitudeOfCentralPointInClusterDomain
+            - longitudeOfCentralPointInClusterDomain
+            - radiusOfClusterDomain
+            - numberOfForecastsInTheCluster
+            - scaleFactorOfStandardDeviation
+            - scaledValueOfStandardDeviation
+            - scaleFactorOfDistanceFromEnsembleMean
+            - scaledValueOfDistanceFromEnsembleMean
+            - ensembleForecastNumbers
+    5:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, probabilityForecast, pointInTime]
+        name: "Probability forecasts at a horizontal level or in a horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - forecastProbabilityNumber
+            - totalNumberOfForecastProbabilities
+            - probabilityType
+            - scaleFactorOfLowerLimit
+            - scaledValueOfLowerLimit
+            - scaleFactorOfUpperLimit
+            - scaledValueOfUpperLimit
+    6:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, percentileForecast, pointInTime]
+        name: "Percentile forecasts at a horizontal level or in a horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - percentileValue
+    # 7:
+    #     groups: [parameter, generatingProcess, forecastTime, horizontal, pointInTime]
+    #     name: "Analysis or forecast error at a horizontal level or in a horizontal layer at a point in time"
+    #     deprecated: "use 0"
+    #     keys:
+    #         - parameterCategory
+    #         - parameterNumber
+    #         - typeOfGeneratingProcess
+    #         - backgroundProcess
+    #         - generatingProcessIdentifier
+    #         - hoursAfterDataCutoff
+    #         - minutesAfterDataCutoff
+    #         - indicatorOfUnitOfTimeRange
+    #         - forecastTime
+    #         - typeOfFirstFixedSurface
+    #         - scaleFactorOfFirstFixedSurface
+    #         - scaledValueOfFirstFixedSurface
+    #         - typeOfSecondFixedSurface
+    #         - scaleFactorOfSecondFixedSurface
+    #         - scaledValueOfSecondFixedSurface
+
+    8:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, statisticalTimeRange ]
+        name: "Average, accumulation, and/or extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non- continuous time statisticalTimeRange"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+    9:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, probabilityForecast, statisticalTimeRange]
+        name: "Probability forecasts at a horizontal level or in a horizontal layer in a continuous or non-continuous time statisticalTimeRange"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - forecastProbabilityNumber
+            - totalNumberOfForecastProbabilities
+            - probabilityType
+            - scaleFactorOfLowerLimit
+            - scaledValueOfLowerLimit
+            - scaleFactorOfUpperLimit
+            - scaledValueOfUpperLimit
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+    10:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, percentileForecast, statisticalTimeRange]
+        name: "Percentile forecasts at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval Preliminary Note: This template was not validated at the time of publication and should be used with caution. Please report any use to WMO Secretariat (World Weather Watch - Basic Systems Department) to assist for validation. "
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - percentileValue
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    11:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, individualEnsembleForecast, statisticalTimeRange]
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval "
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+    12:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, derivedEnsembleForecast,  statisticalTimeRange]
+        name: "Derived forecasts based on all ensemble members at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval "
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - derivedForecast
+            - numberOfForecastsInEnsemble
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+    13:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, derivedEnsembleForecast, clusterStatRectangular, statisticalTimeRange]
+        name: "Derived forecasts based on a cluster of ensemble members over a rectangular area at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - derivedForecast
+            - numberOfForecastsInEnsemble
+            - clusterIdentifier
+            - NH
+            - NL
+            - totalNumberOfClusters
+            - clusteringMethod
+            - northernLatitudeOfClusterDomain
+            - southernLatitudeOfClusterDomain
+            - easternLongitudeOfClusterDomain
+            - westernLongitudeOfClusterDomain
+            - numberOfForecastsInTheCluster
+            - scaleFactorOfStandardDeviation
+            - scaledValueOfStandardDeviation
+            - scaleFactorOfDistanceFromEnsembleMean
+            - scaledValueOfDistanceFromEnsembleMean
+            - ensembleForecastNumbers
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+    14:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, derivedEnsembleForecast, clusterStatCircular, statisticalTimeRange]
+        name: "Derived forecasts based on a cluster of ensemble members over a circular area at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval "
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - derivedForecast
+            - numberOfForecastsInEnsemble
+            - clusterIdentifier
+            - NH
+            - NL
+            - totalNumberOfClusters
+            - clusteringMethod
+            - latitudeOfCentralPointInClusterDomain
+            - longitudeOfCentralPointInClusterDomain
+            - radiusOfClusterDomain
+            - numberOfForecastsInTheCluster
+            - scaleFactorOfStandardDeviation
+            - scaledValueOfStandardDeviation
+            - scaleFactorOfDistanceFromEnsembleMean
+            - scaledValueOfDistanceFromEnsembleMean
+            - ensembleForecastNumbers
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    15:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, spatialStatisticalProcessing, pointInTime ]
+        name: "Average, accumulation, extreme values, or other statistically-processed values over a spatial area at a horizontal level or in a horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - statisticalProcess
+            - spatialProcessing
+            - numberOfPointsUsed
+
+    20:
+        groups: [parameter, generatingProcessType, radar]
+        name: "Radar product  "
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - numberOfRadarSitesUsed
+            - indicatorOfUnitOfTimeRange
+            - siteLatitude
+            - siteLongitude
+            - siteElevation
+            - siteId
+            - siteId
+            - operatingMode
+            - reflectivityCalibrationConstant
+            - qualityControlIndicator
+            - clutterFilterIndicator
+            - constantAntennaElevationAngle
+            - accumulationInterval
+            - referenceReflectivityForEchoTop
+            - rangeBinSpacing
+            - radialAngularSpacing
+    # 30:
+    #     name: "Satellite Product. NOTE: This template is deprecated. Template 4.31 should be used instead."
+    #     deprecated: "use 31"
+    #     keys:
+    #         - parameterCategory
+    #         - parameterNumber
+    #         - typeOfGeneratingProcess
+    #         - observationGeneratingProcessIdentifier
+    #         - numberOfContributingSpectralBands
+    #         - repeatFor: numberOfContributingSpectralBands
+    #           values:
+    #             - satelliteSeries
+    #             - satelliteNumber
+    #             - instrumentType
+    #             - scaleFactorOfCentralWaveNumber
+    #             - scaledValueOfCentralWaveNumber
+    31:
+        groups:
+             - parameter
+             - generatingProcessType
+             - observationGeneratingProcess
+             - satellite
+        name: "Satellite Product"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - observationGeneratingProcessIdentifier
+            - numberOfContributingSpectralBands
+            - repeatFor: numberOfContributingSpectralBands
+              values:
+                - satelliteSeries
+                - satelliteNumber
+                - instrumentType
+                - scaleFactorOfCentralWaveNumber
+                - scaledValueOfCentralWaveNumber
+    32:
+        groups:
+             - parameter
+             - generatingProcess
+             - forecastTime
+             - satellite
+             - pointInTime
+        name: "Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for synthetic satellite data"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - numberOfContributingSpectralBands
+            - repeatFor: numberOfContributingSpectralBands
+              values:
+                - satelliteSeries
+                - satelliteNumber
+                - instrumentType
+                - scaleFactorOfCentralWaveNumber
+                - scaledValueOfCentralWaveNumber
+    33:
+        groups:
+            - parameter
+            - generatingProcess
+            - forecastTime
+            - satellite
+            - individualEnsembleForecast
+            - pointInTime
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for simulated (synthetic) satellite data"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - numberOfContributingSpectralBands
+            - repeatFor: numberOfContributingSpectralBands
+              values:
+                - satelliteSeries
+                - satelliteNumber
+                - instrumentType
+                - scaleFactorOfCentralWaveNumber
+                - scaledValueOfCentralWaveNumber
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+
+    34:
+        groups:
+            - parameter
+            - generatingProcess
+            - forecastTime
+            - satellite
+            - individualEnsembleForecast
+            - statisticalTimeRange
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer, in a continuous or non-continuous interval for simulated (synthetic) satellite data"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - numberOfContributingSpectralBands
+            - repeatFor: numberOfContributingSpectralBands
+              values:
+                - satelliteSeries
+                - satelliteNumber
+                - instrumentType
+                - scaleFactorOfCentralWaveNumber
+                - scaledValueOfCentralWaveNumber
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    35:
+        groups:
+            - parameter
+            - generatingProcessType
+            - observationGeneratingProcess
+            - satelliteQualityValue
+        name: "satellite product with or without associated quality values"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - observationGeneratingProcessIdentifier
+            - qualityValueAssociatedWithParameter
+            - numberOfContributingSpectralBands
+            - repeatFor: numberOfContributingSpectralBands
+              values:
+                - satelliteSeries
+                - satelliteNumber
+                - instrumentType
+                - scaleFactorOfCentralWaveNumber
+                - scaledValueOfCentralWaveNumber
+
+    40:
+        groups: [parameter, chemical, generatingProcess, forecastTime, horizontal, pointInTime ]
+        name: "Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - constituentType
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+    41:
+        groups: [parameter, chemical, generatingProcess, forecastTime, horizontal, individualEnsembleForecast, pointInTime]
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - constituentType
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+    42:
+        groups: [parameter, chemical, generatingProcess, forecastTime, horizontal, statisticalTimeRange ]
+        name: "Average, accumulation, and/or extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or noncontinuous time interval for atmospheric chemical constituents        "
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - constituentType
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+    43:
+        groups: [parameter, chemical, generatingProcess, forecastTime, horizontal, individualEnsembleForecast, statisticalTimeRange]
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval for atmospheric chemical constituents"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - constituentType
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+    # 44:
+    #     groups: [aerosol, instant, pointInTime ]
+    #     name: "Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for aerosol"
+    #     deprecated: use 48
+    #     keys:
+    #         - parameterCategory
+    #         - parameterNumber
+    #         - aerosolType
+    #         - typeOfSizeInterval
+    #         - scaleFactorOfFirstSize
+    #         - scaledValueOfFirstSize
+    #         - scaleFactorOfSecondSize
+    #         - scaledValueOfSecondSize
+    #         - typeOfGeneratingProcess
+    #         - backgroundProcess
+    #         - generatingProcessIdentifier
+    #         - hoursAfterDataCutoff
+    #         - minutesAfterDataCutoff
+    #         - indicatorOfUnitOfTimeRange
+    #         - forecastTime
+    #         - typeOfFirstFixedSurface
+    #         - scaleFactorOfFirstFixedSurface
+    #         - scaledValueOfFirstFixedSurface
+    #         - typeOfSecondFixedSurface
+    #         - scaleFactorOfSecondFixedSurface
+    #         - scaledValueOfSecondFixedSurface
+
+    45:
+        groups: [parameter, aerosol, generatingProcess, forecastTime, horizontal, individualEnsembleForecast, pointInTime]
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for aerosol"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - aerosolType
+            - typeOfSizeInterval
+            - scaleFactorOfFirstSize
+            - scaledValueOfFirstSize
+            - scaleFactorOfSecondSize
+            - scaledValueOfSecondSize
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+
+    46:
+        groups: [parameter, aerosol, generatingProcess, forecastTime, horizontal, statisticalTimeRange ]
+        name: "Average, accumulation, and/or extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or noncontinuous time interval for aerosol"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - aerosolType
+            - typeOfSizeInterval
+            - scaleFactorOfFirstSize
+            - scaledValueOfFirstSize
+            - scaleFactorOfSecondSize
+            - scaledValueOfSecondSize
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    # 47:
+    #     groups: [aerosol, statisticalTimeRange, individualEnsembleForecast]
+    #     name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval for aerosol"
+    #     deprecated: use 85
+    #     keys:
+    #         - parameterCategory
+    #         - parameterNumber
+    #         - typeOfGeneratingProcess
+    #         - aerosolType
+    #         - typeOfSizeInterval
+    #         - scaleFactorOfFirstSize
+    #         - scaledValueOfFirstSize
+    #         - scaleFactorOfSecondSize
+    #         - scaledValueOfSecondSize
+    #         - backgroundProcess
+    #         - generatingProcessIdentifier
+    #         - hoursAfterDataCutoff
+    #         - minutesAfterDataCutoff
+    #         - indicatorOfUnitOfTimeRange
+    #         - forecastTime
+    #         - typeOfFirstFixedSurface
+    #         - scaleFactorOfFirstFixedSurface
+    #         - scaledValueOfFirstFixedSurface
+    #         - typeOfSecondFixedSurface
+    #         - scaleFactorOfSecondFixedSurface
+    #         - scaledValueOfSecondFixedSurface
+    #         - typeOfEnsembleForecast
+    #         - perturbationNumber
+    #         - numberOfForecastsInEnsemble
+    #         - yearOfEndOfOverallTimeInterval
+    #         - monthOfEndOfOverallTimeInterval
+    #         - dayOfEndOfOverallTimeInterval
+    #         - hourOfEndOfOverallTimeInterval
+    #         - minuteOfEndOfOverallTimeInterval
+    #         - secondOfEndOfOverallTimeInterval
+            # - numberOfTimeRange
+            # - repeatFor: numberOfTimeRange
+            #   values:
+            #     - numberOfMissingInStatisticalProcess
+            #     - typeOfStatisticalProcessing
+            #     - typeOfTimeIncrement
+            #     - indicatorOfUnitForTimeRange
+            #     - lengthOfTimeRange
+            #     - indicatorOfUnitForTimeIncrement
+            #     - timeIncrement
+
+    48:
+        groups: [parameter, aerosol_optical, generatingProcess, forecastTime, horizontal, pointInTime ]
+        name: "Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for optical properties of aerosol"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - aerosolType
+            - typeOfSizeInterval
+            - scaleFactorOfFirstSize
+            - scaledValueOfFirstSize
+            - scaleFactorOfSecondSize
+            - scaledValueOfSecondSize
+            - typeOfWavelengthInterval
+            - scaleFactorOfFirstWavelength
+            - scaledValueOfFirstWavelength
+            - scaleFactorOfSecondWavelength
+            - scaledValueOfSecondWavelength
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+    49:
+        groups: [parameter, aerosol_optical, generatingProcess, forecastTime, horizontal, individualEnsembleForecast, pointInTime]
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for optical properties of aerosol"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - aerosolType
+            - typeOfSizeInterval
+            - scaleFactorOfFirstSize
+            - scaledValueOfFirstSize
+            - scaleFactorOfSecondSize
+            - scaledValueOfSecondSize
+            - typeOfWavelengthInterval
+            - scaleFactorOfFirstWavelength
+            - scaledValueOfFirstWavelength
+            - scaleFactorOfSecondWavelength
+            - scaledValueOfSecondWavelength
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+
+    51:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, categorialForecast, pointInTime]
+        name: "Categorical forecasts at a horizontal level or in a horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - numberOfCategories
+            - repeatFor: numberOfCategories
+              values:
+                - codeFigure
+                - categoryType
+                - scaleFactorOfLowerLimit
+                - scaledValueOfLowerLimit
+                - scaleFactorOfUpperLimit
+                - scaledValueOfUpperLimit
+
+    53:
+        groups:
+            - parameter
+            - partitioned
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - pointInTime
+        name: "Partitioned parameters at a horizontal level or horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - partitionTable
+            - numberOfPartitions
+            - repeatFor: numberOfPartitions
+              values:
+                - partitionItems
+                - partitionNumber
+                - groups:
+                    - generatingProcess
+                    - forecastTime
+                    - horizontal
+
+    54:
+        groups:
+            - parameter
+            - partitioned
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - individualEnsembleForecast
+            - pointInTime
+        name: "individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for partitioned parameters"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - partitionTable
+            - numberOfPartitions
+            - repeatFor: numberOfPartitions
+              values:
+                - partitionItems
+                - partitionNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+
+    55:
+        groups:
+            - parameter
+            - spatioTemporalTile
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - pointInTime
+        name: "spatio–temporal changing tiles at a horizontal level or horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - tileClassification
+            - totalNumberOfTileAttributePairs
+            - numberOfUsedSpatialTiles
+            - tileIndex
+            - numberOfUsedTileAttributes
+            - attributeOfTile
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+
+    # 56:
+    #     groups:
+    #         - parameter
+    #         - spatioTemporalTile
+    #         - generatingProcess
+    #         - forecastTime
+    #         - horizontal
+    #         - perturbed
+    #         - ensemble
+    #         - pointInTime
+    #     deprecated: true
+    #     name: "individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for spatio–temporal changing tile parameters"
+    #     keys:
+    #         - parameterCategory
+    #         - parameterNumber
+    #         - tileClassification
+    #         - totalNumberOfTileAttributePairs
+    #         - numberOfUsedSpatialTiles
+    #         - tileIndex
+    #         - numberOfUsedTileAttributes
+    #         - attributeOfTile
+    #         - typeOfGeneratingProcess
+    #         - backgroundProcess
+    #         - generatingProcessIdentifier
+    #         - hoursAfterDataCutoff
+    #         - minutesAfterDataCutoff
+    #         - indicatorOfUnitOfTimeRange
+    #         - forecastTime
+    #         - typeOfFirstFixedSurface
+    #         - scaleFactorOfFirstFixedSurface
+    #         - scaledValueOfFirstFixedSurface
+    #         - typeOfSecondFixedSurface
+    #         - scaleFactorOfSecondFixedSurface
+    #         - scaledValueOfSecondFixedSurface
+    #         - perturbationNumber
+    #         - numberOfForecastsInEnsemble
+
+
+    57:
+        groups:
+            - parameter
+            - chemical_distribution
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - pointInTime
+        name: "analysis or forecast at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents based on a distribution function"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - constituentType
+            - numberOfModeOfDistribution
+            - modeNumber
+            - typeOfDistributionFunction
+            - numberOfDistributionFunctionParameters
+            - repeatFor: numberOfDistributionFunctionParameters
+              values:
+                - scaleFactorOfDistributionFunctionParameter
+                - scaledValueOfDistributionFunctionParameter
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+
+    58:
+        groups:
+            - parameter
+            - chemical_distribution
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - individualEnsembleForecast
+            - pointInTime
+        name: "individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents based on a distribution function"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - constituentType
+            - numberOfModeOfDistribution
+            - modeNumber
+            - typeOfDistributionFunction
+            - numberOfDistributionFunctionParameters
+            - repeatFor: numberOfDistributionFunctionParameters
+              values:
+                - scaleFactorOfDistributionFunctionParameter
+                - scaledValueOfDistributionFunctionParameter
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+
+    59:
+        groups:
+            - parameter
+            - spatioTemporalTile
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - individualEnsembleForecast
+            - pointInTime
+        name: "individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for spatio–temporal changing tile parameters"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - tileClassification
+            - totalNumberOfTileAttributePairs
+            - numberOfUsedSpatialTiles
+            - tileIndex
+            - numberOfUsedTileAttributes
+            - attributeOfTile
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+
+    60:
+        groups:
+            - parameter
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - individualEnsembleForecast
+            - reforecast
+            - pointInTime
+        name: "individual ensemble reforecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - YearOfModelVersion
+            - MonthOfModelVersion
+            - DayOfModelVersion
+            - HourOfModelVersion
+            - MinuteOfModelVersion
+            - SecondOfModelVersion
+
+    61:
+        groups:
+            - parameter
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - individualEnsembleForecast
+            - reforecast
+            - statisticalTimeRange
+        name: "individual ensemble reforecast, control and perturbed, at a horizontal level or in a horizontal layer, in a continuous or non– continuous time interval"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - YearOfModelVersion
+            - MonthOfModelVersion
+            - DayOfModelVersion
+            - HourOfModelVersion
+            - MinuteOfModelVersion
+            - SecondOfModelVersion
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    62:
+        groups:
+            - parameter
+            - spatioTemporalTile
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - statisticalTimeRange
+        name: "average, accumulation and/or extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non–continuous time interval for spatio–temporal changing tiles at a horizontal level or horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - tileClassification
+            - totalNumberOfTileAttributePairs
+            - numberOfUsedSpatialTiles
+            - tileIndex
+            - numberOfUsedTileAttributes
+            - attributeOfTile
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    63:
+        groups:
+            - parameter
+            - spatioTemporalTile
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - individualEnsembleForecast
+            - statisticalTimeRange
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non–continuous time interval for spatio–temporal changing tiles"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - tileClassification
+            - totalNumberOfTileAttributePairs
+            - numberOfUsedSpatialTiles
+            - tileIndex
+            - numberOfUsedTileAttributes
+            - attributeOfTile
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    67:
+        groups:
+            - parameter
+            - chemical_distribution
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - statisticalTimeRange
+        name: "average, accumulation and/or extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non–continuous time interval for atmospheric chemical constituents based on a distribution function"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - constituentType
+            - numberOfModeOfDistribution
+            - modeNumber
+            - typeOfDistributionFunction
+            - numberOfDistributionFunctionParameters
+            - repeatFor: numberOfDistributionFunctionParameters
+              values:
+                - scaleFactorOfDistributionFunctionParameter
+                - scaledValueOfDistributionFunctionParameter
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    68:
+        groups:
+            - parameter
+            - chemical_distribution
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - individualEnsembleForecast
+            - statisticalTimeRange
+        name: "individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non– continuous time interval for atmospheric chemical constituents based on a distribution function"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - constituentType
+            - numberOfModeOfDistribution
+            - modeNumber
+            - typeOfDistributionFunction
+            - numberOfDistributionFunctionParameters
+            - repeatFor: numberOfDistributionFunctionParameters
+              values:
+                - scaleFactorOfDistributionFunctionParameter
+                - scaledValueOfDistributionFunctionParameter
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+
+
+    70:
+        groups: [ parameter, postProcess, generatingProcess, forecastTime, horizontal, pointInTime ]
+        name: "post–processing analysis or forecast at a horizontal level or in a horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - inputProcessIdentifier
+            - inputOriginatingCentre
+            - typeOfPostProcessing
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+
+    71:
+        groups: [ parameter, postProcess, generatingProcess, forecastTime, horizontal, individualEnsembleForecast, pointInTime ]
+        name: "post–processing individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - inputProcessIdentifier
+            - inputOriginatingCentre
+            - typeOfPostProcessing
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+
+    72:
+        groups: [ parameter, postProcess, generatingProcess, forecastTime, horizontal, statisticalTimeRange ]
+        name: "post–processing average, accumulation, extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non–continuous time interval"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - inputProcessIdentifier
+            - inputOriginatingCentre
+            - typeOfPostProcessing
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    73:
+        groups: [ parameter, postProcess, generatingProcess, forecastTime, horizontal, individualEnsembleForecast, statisticalTimeRange]
+        name: "post–processing individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer, in a continuous or non–continuous time interval"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - inputProcessIdentifier
+            - inputOriginatingCentre
+            - typeOfPostProcessing
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    76:
+        groups: [ parameter, chemical_srcsink, generatingProcess, forecastTime, horizontal, pointInTime ]
+        name: "analysis or forecast at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents with source or sink"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - constituentType
+            - sourceSinkChemicalPhysicalProcess
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+
+    77:
+        groups: [ parameter, chemical_srcsink, generatingProcess, forecastTime, horizontal, individualEnsembleForecast, pointInTime ]
+        name: "individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents with source or sink"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - constituentType
+            - sourceSinkChemicalPhysicalProcess
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+
+    78:
+        groups: [ parameter, chemical_srcsink, generatingProcess, forecastTime, horizontal, statisticalTimeRange ]
+        name: "average, accumulation, and/or extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non–continuous time interval for atmospheric chemical constituents with source or sink"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - constituentType
+            - sourceSinkChemicalPhysicalProcess
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    79:
+        groups: [ parameter, chemical_srcsink, generatingProcess, forecastTime, horizontal, individualEnsembleForecast, statisticalTimeRange ]
+        name: "individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non– continuous time interval for atmospheric chemical constituents with source or sink"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - constituentType
+            - sourceSinkChemicalPhysicalProcess
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    80:
+        groups:
+            - parameter
+            - aerosol_srcsink_optical
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - pointInTime
+        name: "analysis or forecast at a horizontal level or in a horizontal layer at a point in time for optical properties of aerosol with source or sink"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - aerosolType
+            - sourceSinkChemicalPhysicalProcess
+            - typeOfSizeInterval
+            - scaleFactorOfFirstSize
+            - scaledValueOfFirstSize
+            - scaleFactorOfSecondSize
+            - scaledValueOfSecondSize
+            - typeOfWavelengthInterval
+            - scaleFactorOfFirstWavelength
+            - scaledValueOfFirstWavelength
+            - scaleFactorOfSecondWavelength
+            - scaledValueOfSecondWavelength
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+
+    81:
+        groups:
+            - parameter
+            - aerosol_srcsink_optical
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - individualEnsembleForecast
+            - pointInTime
+        name: "individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for optical properties of aerosol with source or sink"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - aerosolType
+            - sourceSinkChemicalPhysicalProcess
+            - typeOfSizeInterval
+            - scaleFactorOfFirstSize
+            - scaledValueOfFirstSize
+            - scaleFactorOfSecondSize
+            - scaledValueOfSecondSize
+            - typeOfWavelengthInterval
+            - scaleFactorOfFirstWavelength
+            - scaledValueOfFirstWavelength
+            - scaleFactorOfSecondWavelength
+            - scaledValueOfSecondWavelength
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+
+    82:
+        groups: [ parameter, aerosol_srcsink, generatingProcess, forecastTime, horizontal, statisticalTimeRange ]
+        name: "average, accumulation, and/or extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non–continuous time interval for aerosol with source or sink"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - aerosolType
+            - sourceSinkChemicalPhysicalProcess
+            - typeOfSizeInterval
+            - scaleFactorOfFirstSize
+            - scaledValueOfFirstSize
+            - scaleFactorOfSecondSize
+            - scaledValueOfSecondSize
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+
+    # 83:
+    #     groups: [aerosol_srcsink, statisticalTimeRange, individualEnsembleForecast]
+    #     deprecated: use 84
+    #     name: "individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non–continuous time interval for aerosol with source or sink"
+    #     keys:
+    #         - parameterCategory
+    #         - parameterNumber
+    #         - aerosolType
+    #         - sourceSinkChemicalPhysicalProcess
+    #         - typeOfSizeInterval
+    #         - scaleFactorOfFirstSize
+    #         - scaledValueOfFirstSize
+    #         - scaleFactorOfSecondSize
+    #         - scaledValueOfSecondSize
+    #         - typeOfGeneratingProcess
+    #         - backgroundProcess
+    #         - generatingProcessIdentifier
+    #         - hoursAfterDataCutoff
+    #         - minutesAfterDataCutoff
+    #         - indicatorOfUnitOfTimeRange
+    #         - forecastTime
+    #         - typeOfFirstFixedSurface
+    #         - scaleFactorOfFirstFixedSurface
+    #         - scaledValueOfFirstFixedSurface
+    #         - typeOfSecondFixedSurface
+    #         - scaleFactorOfSecondFixedSurface
+    #         - scaledValueOfSecondFixedSurface
+    #         - typeOfEnsembleForecast
+    #         - perturbationNumber
+    #         - numberOfForecastsInEnsemble
+    #         - yearOfEndOfOverallTimeInterval
+    #         - monthOfEndOfOverallTimeInterval
+    #         - dayOfEndOfOverallTimeInterval
+    #         - hourOfEndOfOverallTimeInterval
+    #         - minuteOfEndOfOverallTimeInterval
+    #         - secondOfEndOfOverallTimeInterval
+            # - numberOfTimeRange
+            # - repeatFor: numberOfTimeRange
+            #   values:
+            #     - numberOfMissingInStatisticalProcess
+            #     - typeOfStatisticalProcessing
+            #     - typeOfTimeIncrement
+            #     - indicatorOfUnitForTimeRange
+            #     - lengthOfTimeRange
+            #     - indicatorOfUnitForTimeIncrement
+            #     - timeIncrement
+
+
+    84:
+        groups: [ parameter, aerosol_srcsink, generatingProcess, forecastTime, horizontal, individualEnsembleForecast, statisticalTimeRange ]
+        comment: like 83 without typeOfGeneratingProcess
+        name: "individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non–continuous time interval for aerosol with source or sink"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - aerosolType
+            - sourceSinkChemicalPhysicalProcess
+            - typeOfSizeInterval
+            - scaleFactorOfFirstSize
+            - scaledValueOfFirstSize
+            - scaleFactorOfSecondSize
+            - scaledValueOfSecondSize
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+
+    85:
+        groups: [ parameter, aerosol, generatingProcess, forecastTime, horizontal, individualEnsembleForecast, statisticalTimeRange ]
+        comment: similar to 47 - just typeOfGeneratingProcess moved
+        name: "individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non–continuous time interval for aerosol"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - aerosolType
+            - typeOfSizeInterval
+            - scaleFactorOfFirstSize
+            - scaledValueOfFirstSize
+            - scaleFactorOfSecondSize
+            - scaledValueOfSecondSize
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    86:
+        groups:
+            - parameter
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - quantileForecast
+            - pointInTime
+        name: "quantileForecast forecasts at a horizontal level or in a horizontal layer at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - totalNumberOfQuantiles
+            - quantileValue
+
+    87:
+        groups:
+            - parameter
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - quantileForecast
+            - statisticalTimeRange
+        name: "quantileForecast forecasts at a horizontal level or in a horizontal layer in a continuous or non–continuous time interval"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - totalNumberOfQuantiles
+            - quantileValue
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+
+    88:
+        groups:
+            - parameter
+            - generatingProcess
+            - horizontal
+            - localTime
+            - pointInTime
+        name: "analysis or forecast at a horizontal level or in a horizontal layer at a local time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - localTimeMethod
+            - numberOfForecastsUsedinLocalTime
+            - repeatFor: numberOfForecastsUsedinLocalTime
+              values:
+                - yearOfForecastUsedInLocalTime
+                - monthOfForecastUsedInLocalTime
+                - dayOfForecastUsedInLocalTime
+                - hourOfForecastUsedInLocalTime
+                - minuteOfForecastUsedInLocalTime
+                - secondOfForecastUsedInLocalTime
+                - indicatorOfUnitForForecastTime
+                - forecastTime
+                - numberOfTimeIncrementsOfForecastsUsedInLocalTime
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+
+    91:
+        groups: [parameter, generatingProcess, forecastTime, horizontal, categorialForecast, statisticalTimeRange]
+        name: "Categorical forecasts at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval - validation"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - numberOfCategories
+            - repeatFor: numberOfCategories
+              values:
+                - codeFigure
+                - categoryType
+                - scaleFactorOfLowerLimit
+                - scaledValueOfLowerLimit
+                - scaleFactorOfUpperLimit
+                - scaledValueOfUpperLimit
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    92:
+        groups:
+            - parameter
+            - generatingProcess
+            - horizontal
+            - individualEnsembleForecast
+            - localTime
+            - pointInTime
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a specified local time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - localTimeMethod
+            - numberOfForecastsUsedinLocalTime
+            - repeatFor: numberOfForecastsUsedinLocalTime
+              values:
+                - yearOfForecastUsedInLocalTime
+                - monthOfForecastUsedInLocalTime
+                - dayOfForecastUsedInLocalTime
+                - hourOfForecastUsedInLocalTime
+                - minuteOfForecastUsedInLocalTime
+                - secondOfForecastUsedInLocalTime
+                - indicatorOfUnitForForecastTime
+                - forecastTime
+                - numberOfTimeIncrementsOfForecastsUsedInLocalTime
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+
+    93:
+        groups:
+            - parameter
+            - postProcess
+            - generatingProcess
+            - horizontal
+            - localTime
+            - pointInTime
+        name: "Post–processing analysis or forecast at a horizontal level or in a horizontal layer at a specified local time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - inputProcessIdentifier
+            - inputOriginatingCentre
+            - typeOfPostProcessing
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - localTimeMethod
+            - numberOfForecastsUsedinLocalTime
+            - repeatFor: numberOfForecastsUsedinLocalTime
+              values:
+                - yearOfForecastUsedInLocalTime
+                - monthOfForecastUsedInLocalTime
+                - dayOfForecastUsedInLocalTime
+                - hourOfForecastUsedInLocalTime
+                - minuteOfForecastUsedInLocalTime
+                - secondOfForecastUsedInLocalTime
+                - indicatorOfUnitForForecastTime
+                - forecastTime
+                - numberOfTimeIncrementsOfForecastsUsedInLocalTime
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+
+    94:
+        groups:
+            - parameter
+            - postProcess
+            - generatingProcess
+            - horizontal
+            - individualEnsembleForecast
+            - localTime
+            - pointInTime
+        name: "Post–processing individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a specified local time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - inputProcessIdentifier
+            - inputOriginatingCentre
+            - typeOfPostProcessing
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - localTimeMethod
+            - numberOfForecastsUsedinLocalTime
+            - repeatFor: numberOfForecastsUsedinLocalTime
+              values:
+                - yearOfForecastUsedInLocalTime
+                - monthOfForecastUsedInLocalTime
+                - dayOfForecastUsedInLocalTime
+                - hourOfForecastUsedInLocalTime
+                - minuteOfForecastUsedInLocalTime
+                - secondOfForecastUsedInLocalTime
+                - indicatorOfUnitForForecastTime
+                - forecastTime
+                - numberOfTimeIncrementsOfForecastsUsedInLocalTime
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    95:
+        groups:
+            - parameter
+            - generatingProcess
+            - horizontal
+            - localTime_statistical
+        name: "Average, accumulation, extreme values or other statistically processed value at a horizontal level or in a horizontal layer at a local time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfStatisticalProcessing
+            - indicatorOfUnitForTimeRange
+            - lengthOfTimeRange
+            - numberOfStatisticallyProcessedFieldsForLocalTime
+            - localTimeMethod
+            - numberOfForecastsUsedinLocalTime
+            - repeatFor: numberOfForecastsUsedinLocalTime
+              values:
+                - yearOfForecastUsedInLocalTime
+                - monthOfForecastUsedInLocalTime
+                - dayOfForecastUsedInLocalTime
+                - hourOfForecastUsedInLocalTime
+                - minuteOfForecastUsedInLocalTime
+                - secondOfForecastUsedInLocalTime
+                - indicatorOfUnitForForecastTime
+                - forecastTime
+                - numberOfTimeIncrementsOfForecastsUsedInLocalTime
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    96:
+        groups:
+            - parameter
+            - generatingProcess
+            - horizontal
+            - individualEnsembleForecast
+            - localTime_statistical
+        name: "Average, accumulation, extreme values or other statistically processed values of an individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a local time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - typeOfStatisticalProcessing
+            - indicatorOfUnitForTimeRange
+            - lengthOfTimeRange
+            - numberOfStatisticallyProcessedFieldsForLocalTime
+            - localTimeMethod
+            - numberOfForecastsUsedinLocalTime
+            - repeatFor: numberOfForecastsUsedinLocalTime
+              values:
+                - yearOfForecastUsedInLocalTime
+                - monthOfForecastUsedInLocalTime
+                - dayOfForecastUsedInLocalTime
+                - hourOfForecastUsedInLocalTime
+                - minuteOfForecastUsedInLocalTime
+                - secondOfForecastUsedInLocalTime
+                - indicatorOfUnitForForecastTime
+                - forecastTime
+                - numberOfTimeIncrementsOfForecastsUsedInLocalTime
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+
+    97:
+        groups:
+            - parameter
+            - postProcess
+            - generatingProcess
+            - horizontal
+            - localTime_statistical
+        name: "Average, accumulation, extreme values or other statistically processed values of post–processing analysis or forecast at a horizontal level or in a horizontal layer at a local time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - inputProcessIdentifier
+            - inputOriginatingCentre
+            - typeOfPostProcessing
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfStatisticalProcessing
+            - indicatorOfUnitForTimeRange
+            - lengthOfTimeRange
+            - numberOfStatisticallyProcessedFieldsForLocalTime
+            - localTimeMethod
+            - numberOfForecastsUsedinLocalTime
+            - repeatFor: numberOfForecastsUsedinLocalTime
+              values:
+                - yearOfForecastUsedInLocalTime
+                - monthOfForecastUsedInLocalTime
+                - dayOfForecastUsedInLocalTime
+                - hourOfForecastUsedInLocalTime
+                - minuteOfForecastUsedInLocalTime
+                - secondOfForecastUsedInLocalTime
+                - indicatorOfUnitForForecastTime
+                - forecastTime
+                - numberOfTimeIncrementsOfForecastsUsedInLocalTime
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+
+    98:
+        groups:
+            - parameter
+            - postProcess
+            - generatingProcess
+            - horizontal
+            - individualEnsembleForecast
+            - localTime_statistical
+        name: "Average, accumulation, extreme values or other statistically processed values of a post–processing individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a local time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - inputProcessIdentifier
+            - inputOriginatingCentre
+            - typeOfPostProcessing
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - typeOfStatisticalProcessing
+            - indicatorOfUnitForTimeRange
+            - lengthOfTimeRange
+            - numberOfStatisticallyProcessedFieldsForLocalTime
+            - localTimeMethod
+            - numberOfForecastsUsedinLocalTime
+            - repeatFor: numberOfForecastsUsedinLocalTime
+              values:
+                - yearOfForecastUsedInLocalTime
+                - monthOfForecastUsedInLocalTime
+                - dayOfForecastUsedInLocalTime
+                - hourOfForecastUsedInLocalTime
+                - minuteOfForecastUsedInLocalTime
+                - secondOfForecastUsedInLocalTime
+                - indicatorOfUnitForForecastTime
+                - forecastTime
+                - numberOfTimeIncrementsOfForecastsUsedInLocalTime
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement
+
+    99:
+        groups:
+            - parameter
+            - waveSpectraCommon
+            - generatingProcess
+            - forecastTime
+            - waveSpectraList
+            - pointInTime
+        name: "Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for wave 2D spectra with explicit list of frequencies and directions"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - waveDirectionNumber
+            - numberOfWaveDirections
+            - waveFrequencyNumber
+            - numberOfWaveFrequencies
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - scaleFactorOfWaveDirections
+            - repeatFor: numberOfWaveDirections
+              values:
+                - scaledValueOfWaveDirections
+            - scaleFactorOfWaveFrequencies
+            - repeatFor: numberOfWaveFrequencies
+              values:
+                - scaledValueOfWaveFrequencies
+
+    100:
+        groups:
+            - parameter
+            - waveSpectraCommon
+            - generatingProcess
+            - forecastTime
+            - individualEnsembleForecast
+            - waveSpectraList
+            - pointInTime
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for wave 2D spectra with explicit list of frequencies and directions"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - waveDirectionNumber
+            - numberOfWaveDirections
+            - waveFrequencyNumber
+            - numberOfWaveFrequencies
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - scaleFactorOfWaveDirections
+            - repeatFor: numberOfWaveDirections
+              values:
+                - scaledValueOfWaveDirections
+            - scaleFactorOfWaveFrequencies
+            - repeatFor: numberOfWaveFrequencies
+              values:
+                - scaledValueOfWaveFrequencies
+
+    101:
+        groups:
+            - parameter
+            - waveSpectraCommon
+            - generatingProcess
+            - forecastTime
+            - waveSpectraFormula
+            - pointInTime
+        name: "Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for wave 2D spectra with frequencies and directions defined by formulae"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - waveDirectionNumber
+            - numberOfWaveDirections
+            - waveFrequencyNumber
+            - numberOfWaveFrequencies
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfWaveDirectionSequence
+            - numberOfWaveDirectionSequenceParameters
+            - repeatFor: numberOfWaveDirectionSequenceParameters
+              values:
+                - scaleFactorOfWaveDirectionSequenceParameter
+                - scaledValueOfWaveDirectionSequenceParameter
+            - typeOfWaveFrequencySequence
+            - numberOfWaveFrequencySequenceParameters
+            - repeatFor: numberOfWaveFrequencySequenceParameters
+              values:
+                - scaleFactorOfWaveFrequencySequenceParameter
+                - scaledValueOfWaveFrequencySequenceParameter
+
+    102:
+        groups:
+            - parameter
+            - waveSpectraCommon
+            - generatingProcess
+            - forecastTime
+            - individualEnsembleForecast
+            - waveSpectraFormula
+            - pointInTime
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for wave 2D spectra with frequencies and directions defined by formulae"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - waveDirectionNumber
+            - numberOfWaveDirections
+            - waveFrequencyNumber
+            - numberOfWaveFrequencies
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - typeOfWaveDirectionSequence
+            - numberOfWaveDirectionSequenceParameters
+            - repeatFor: numberOfWaveDirectionSequenceParameters
+              values:
+                - scaleFactorOfWaveDirectionSequenceParameter
+                - scaledValueOfWaveDirectionSequenceParameter
+            - typeOfWaveFrequencySequence
+            - numberOfWaveFrequencySequenceParameters
+            - repeatFor: numberOfWaveFrequencySequenceParameters
+              values:
+                - scaleFactorOfWaveFrequencySequenceParameter
+                - scaledValueOfWaveFrequencySequenceParameter
+    103:
+        groups:
+            - parameter
+            - wavePeriodRange
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - pointInTime
+        name: "Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for waves selected by period range"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfWavePeriodInterval
+            - scaleFactorOfLowerWavePeriodLimit
+            - scaledValueOfLowerWavePeriodLimit
+            - scaleFactorOfUpperWavePeriodLimit
+            - scaledValueOfUpperWavePeriodLimit
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+
+    104:
+        groups:
+            - parameter
+            - wavePeriodRange
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - individualEnsembleForecast
+            - pointInTime
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for waves selected by period range"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfWavePeriodInterval
+            - scaleFactorOfLowerWavePeriodLimit
+            - scaledValueOfLowerWavePeriodLimit
+            - scaleFactorOfUpperWavePeriodLimit
+            - scaledValueOfUpperWavePeriodLimit
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+
+
+    105:
+        groups:
+            - parameter
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - statisticalTimeRange
+            - referencePeriod
+        name: "Anomalies, significance and other derived products from an analysis or forecast in relation to a reference period at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - extend: singleTimeRangeAndIncrement
+            - typeOfReferenceDataset
+            - typeOfRelationToReferenceDataset
+            - numberOfAdditionalParameterForReferencePeriod
+            - repeatFor: numberOfAdditionalParameterForReferencePeriod
+              values:
+                - scaleFactorOfAdditionalParameterForReferencePeriod
+                - scaledValueOfAdditionalParameterForReferencePeriod
+            - yearOfStartOfReferencePeriod
+            - monthOfStartOfReferencePeriod
+            - dayOfStartOfReferencePeriod
+            - hourOfStartOfReferencePeriod
+            - minuteOfStartOfReferencePeriod
+            - secondOfStartOfReferencePeriod
+            - sampleSizeOfReferencePeriod
+            - numberOfReferencePeriodTimeRanges
+            - repeatFor: numberOfReferencePeriodTimeRanges
+              values:
+                - typeOfStatisticalProcessingForTimeRangeForReferencePeriod
+                - indicatorOfUnitForTimeRangeForReferencePeriod
+                - lengthOfTimeRangeForReferencePeriod
+
+    106:
+        groups:
+            - parameter
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - statisticalTimeRange
+            - individualEnsembleForecast
+            - referencePeriod
+        name: "Anomalies, significance and other derived products from an individual ensemble forecast, control and perturbed in relation to a reference period at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - extend: singleTimeRangeAndIncrement
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - typeOfReferenceDataset
+            - typeOfRelationToReferenceDataset
+            - numberOfAdditionalParameterForReferencePeriod
+            - repeatFor: numberOfAdditionalParameterForReferencePeriod
+              values:
+                - scaleFactorOfAdditionalParameterForReferencePeriod
+                - scaledValueOfAdditionalParameterForReferencePeriod
+            - yearOfStartOfReferencePeriod
+            - monthOfStartOfReferencePeriod
+            - dayOfStartOfReferencePeriod
+            - hourOfStartOfReferencePeriod
+            - minuteOfStartOfReferencePeriod
+            - secondOfStartOfReferencePeriod
+            - sampleSizeOfReferencePeriod
+            - numberOfReferencePeriodTimeRanges
+            - repeatFor: numberOfReferencePeriodTimeRanges
+              values:
+                - typeOfStatisticalProcessingForTimeRangeForReferencePeriod
+                - indicatorOfUnitForTimeRangeForReferencePeriod
+                - lengthOfTimeRangeForReferencePeriod
+
+    107:
+        groups:
+            - parameter
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - statisticalTimeRange
+            - derivedEnsembleForecast
+            - referencePeriod
+        name: "Anomalies, significance and other derived products from derived forecasts based on all ensemble members in relation to a reference period at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - extend: singleTimeRangeAndIncrement
+            - derivedForecast
+            - numberOfForecastsInEnsemble
+            - typeOfReferenceDataset
+            - typeOfRelationToReferenceDataset
+            - numberOfAdditionalParameterForReferencePeriod
+            - repeatFor: numberOfAdditionalParameterForReferencePeriod
+              values:
+                - scaleFactorOfAdditionalParameterForReferencePeriod
+                - scaledValueOfAdditionalParameterForReferencePeriod
+            - yearOfStartOfReferencePeriod
+            - monthOfStartOfReferencePeriod
+            - dayOfStartOfReferencePeriod
+            - hourOfStartOfReferencePeriod
+            - minuteOfStartOfReferencePeriod
+            - secondOfStartOfReferencePeriod
+            - sampleSizeOfReferencePeriod
+            - numberOfReferencePeriodTimeRanges
+            - repeatFor: numberOfReferencePeriodTimeRanges
+              values:
+                - typeOfStatisticalProcessingForTimeRangeForReferencePeriod
+                - indicatorOfUnitForTimeRangeForReferencePeriod
+                - lengthOfTimeRangeForReferencePeriod
+
+    108:
+        groups:
+            - parameter
+            - optical
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - pointInTime
+        name: "Analysis or forecast at a horizontal level or in a horizontal layer at a point in time for generic optical products"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfWavelengthInterval
+            - scaleFactorOfFirstWavelength
+            - scaledValueOfFirstWavelength
+            - scaleFactorOfSecondWavelength
+            - scaledValueOfSecondWavelength
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+
+
+    109:
+        groups:
+            - parameter
+            - optical
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - individualEnsembleForecast
+            - pointInTime
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for generic optical products"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfWavelengthInterval
+            - scaleFactorOfFirstWavelength
+            - scaledValueOfFirstWavelength
+            - scaleFactorOfSecondWavelength
+            - scaledValueOfSecondWavelength
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+
+
+    110:
+        groups:
+            - parameter
+            - optical
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - statisticalTimeRange
+        name: "Average, accumulation, extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval for generic optical products"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfWavelengthInterval
+            - scaleFactorOfFirstWavelength
+            - scaledValueOfFirstWavelength
+            - scaleFactorOfSecondWavelength
+            - scaledValueOfSecondWavelength
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - extend: singleTimeRangeAndIncrement
+
+
+    111:
+        groups:
+            - parameter
+            - optical
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - individualEnsembleForecast
+            - statisticalTimeRange
+        name: "Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer, in a continuous or non-continuous interval for generic optical products"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfWavelengthInterval
+            - scaleFactorOfFirstWavelength
+            - scaledValueOfFirstWavelength
+            - scaleFactorOfSecondWavelength
+            - scaledValueOfSecondWavelength
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - typeOfEnsembleForecast
+            - perturbationNumber
+            - numberOfForecastsInEnsemble
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - extend: singleTimeRangeAndIncrement
+
+
+    112:
+        groups:
+            - parameter
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - statisticalTimeRange
+            - probabilityForecast
+            - referencePeriod
+        name: "Anomalies, significance and other derived products as probabilityForecast forecasts in relation to a reference period at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - extend: singleTimeRangeAndIncrement
+            - forecastProbabilityNumber
+            - totalNumberOfForecastProbabilities
+            - probabilityType
+            - scaleFactorOfLowerLimit
+            - scaledValueOfLowerLimit
+            - scaleFactorOfUpperLimit
+            - scaledValueOfUpperLimit
+            - typeOfReferenceDataset
+            - typeOfRelationToReferenceDataset
+            - numberOfAdditionalParameterForReferencePeriod
+            - repeatFor: numberOfAdditionalParameterForReferencePeriod
+              values:
+                - scaleFactorOfAdditionalParameterForReferencePeriod
+                - scaledValueOfAdditionalParameterForReferencePeriod
+            - yearOfStartOfReferencePeriod
+            - monthOfStartOfReferencePeriod
+            - dayOfStartOfReferencePeriod
+            - hourOfStartOfReferencePeriod
+            - minuteOfStartOfReferencePeriod
+            - secondOfStartOfReferencePeriod
+            - sampleSizeOfReferencePeriod
+            - numberOfReferencePeriodTimeRanges
+            - repeatFor: numberOfReferencePeriodTimeRanges
+              values:
+                - typeOfStatisticalProcessingForTimeRangeForReferencePeriod
+                - indicatorOfUnitForTimeRangeForReferencePeriod
+                - lengthOfTimeRangeForReferencePeriod
+
+
+    254:
+        groups:
+            - ccittIA5
+        name: "CCITT IA5 character string"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - numberOfCharacters
+
+    1000:
+        groups:
+            - crossSect
+            - pointInTime
+        name: "cross–section of analysis and forecast at a point in time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+
+    1001:
+        groups:
+            - crossSectTimeRange
+        name: "cross–section of averaged or otherwise statistically processed analysis or forecast over a range of time"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - numberOfMissingInStatisticalProcess
+            - typeOfStatisticalProcessing
+            - typeOfTimeIncrement
+            - indicatorOfUnitForTimeRange
+            - lengthOfTimeRange
+            - indicatorOfUnitForTimeIncrement
+            - timeIncrement
+
+    1002:
+        groups:
+            - crossSectLatLong
+            - pointInTime
+        name: "cross–section of analysis and forecast, averaged or otherwise statistically processed over latitude or longitude"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - horizontalDimensionProcessed
+            - treatmentOfMissingData
+            - typeOfStatisticalProcessing
+            - startOfRange
+            - endOfRange
+            - numberOfDataValues
+
+    1100:
+        groups:
+            - hovmoeller
+            - pointInTime
+        name: "Hovmöller–type grid with no averaging or other statistical processing"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+
+    1101:
+        groups:
+            - hovmoeller
+            - statisticalTimeRange
+        name: "Hovmöller–type grid with averaging or other statistical processing"
+        keys:
+            - parameterCategory
+            - parameterNumber
+            - typeOfGeneratingProcess
+            - backgroundProcess
+            - generatingProcessIdentifier
+            - hoursAfterDataCutoff
+            - minutesAfterDataCutoff
+            - indicatorOfUnitOfTimeRange
+            - forecastTime
+            - typeOfFirstFixedSurface
+            - scaleFactorOfFirstFixedSurface
+            - scaledValueOfFirstFixedSurface
+            - typeOfSecondFixedSurface
+            - scaleFactorOfSecondFixedSurface
+            - scaledValueOfSecondFixedSurface
+            - yearOfEndOfOverallTimeInterval
+            - monthOfEndOfOverallTimeInterval
+            - dayOfEndOfOverallTimeInterval
+            - hourOfEndOfOverallTimeInterval
+            - minuteOfEndOfOverallTimeInterval
+            - secondOfEndOfOverallTimeInterval
+            - numberOfTimeRange
+            - repeatFor: numberOfTimeRange
+              values:
+                - numberOfMissingInStatisticalProcess
+                - typeOfStatisticalProcessing
+                - typeOfTimeIncrement
+                - indicatorOfUnitForTimeRange
+                - lengthOfTimeRange
+                - indicatorOfUnitForTimeIncrement
+                - timeIncrement

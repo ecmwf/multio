@@ -50,6 +50,7 @@ foreach(_test
         set(_feed "MARS_reduced_gg.grib")
     elseif(_test MATCHES "^regular_ll.*")
         set(_feed "MARS_regular_ll.grib")
+    else()
         set(_feed "MARS_sh.grib")
     endif()
 

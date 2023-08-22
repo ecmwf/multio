@@ -84,6 +84,12 @@ ecbuild_add_option( FEATURE SANDBOX
                     DEFAULT OFF
                     DESCRIPTION "Sanbox for exploring io server design" )
 
+### sandbox
+
+ecbuild_add_option( FEATURE HEALPIX_EXAMPLES
+                    DEFAULT OFF
+                    DESCRIPTION "Enable creation of HEALPix examples" )
+
 
 ### export package info
 

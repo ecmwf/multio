@@ -1,5 +1,5 @@
 plans:
-  - name: regular_ll_to_HEALPix_1024
+  - name: regular_ll_to_HEALPix_1024_conservative
     actions:
       - type: select
         match:
@@ -7,9 +7,10 @@ plans:
       - type: interpolate
         input: 1/1
         grid: H1024
+        interpolation: grid-box-average
         options:
           # dont-compress-plan: true
-          caching: false
+          caching: true
       - type: encode
         format: grib
         template: Reference_regular_ll_to_HEALPix_1024.grib
@@ -18,5 +19,5 @@ plans:
         - type: file
           append: false
           per-server: false # Will give you one file per server
-          path: MultIO_regular_ll_to_HEALPix_1024.grib
+          path: MultIO_regular_ll_to_HEALPix_1024_conservative.grib
 

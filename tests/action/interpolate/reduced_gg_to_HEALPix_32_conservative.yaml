@@ -10,7 +10,7 @@ plans:
         interpolation: grid-box-average
         options:
           # dont-compress-plan: true
-          caching: true
+          caching: false
       - type: encode
         format: grib
         template: Reference_reduced_gg_to_HEALPix_32.grib

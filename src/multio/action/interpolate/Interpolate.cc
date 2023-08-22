@@ -352,14 +352,21 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     eckit::mpi::setCommDefault(originalComm.name().c_str());
     md.set("globalSize", outData.size());
 
+    // Forward the metadata from mir to multIO (at the moment only missingValue)
+    if ( outMetadata.has("missing_value")){
+        double v;
+        outMetadata.get("missing_value",v);
+        md.set("missingValue", v );
+        md.set("bitmapPresent", 1 );
 
-    std::cout << " + DATA :: " << outData << std::endl;
+    }
 
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outData.size() * sizeof(double));
 
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: Metadata of the output message :: " << std::endl
                              << md << std::endl
                              << std::endl;
+
 
     return {message::Message::Header{message::Message::Tag::Field, msg.source(), msg.destination(), std::move(md)},
             std::move(buffer)};

@@ -31,7 +31,15 @@ ecbuild_get_test_multidata(
         "eORCA12_T.grib"
         "eORCA12_U.grib"
         "eORCA12_V.grib"
-        "eORCA12_W.grib")
+        "eORCA12_W.grib"
+        "Reference_eORCA12_T_to_HEALPix_32.grib"
+        "Reference_eORCA12_T_to_HEALPix_1024.grib"
+        "Reference_eORCA12_U_to_HEALPix_32.grib"
+        "Reference_eORCA12_U_to_HEALPix_1024.grib"
+        "Reference_eORCA12_V_to_HEALPix_32.grib"
+        "Reference_eORCA12_V_to_HEALPix_1024.grib"
+        "Reference_eORCA12_W_to_HEALPix_32.grib"
+        "Reference_eORCA12_W_to_HEALPix_1024.grib")
 
 foreach(_test
     reduced_gg_copy

@@ -143,7 +143,7 @@ eckit::Value getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadat
 
 
 void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& param,
-                const eckit::Value&& inp) {
+                std::string domain, const eckit::Value&& inp) {
 
     auto regular_ll = [&param](double west_east_increment, double south_north_increment) {
         regularLatLongMetadata(param, std::vector<double>{west_east_increment, south_north_increment}, full_area);
@@ -159,6 +159,7 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
         static const std::regex sh("(T|TCO|TL)([1-9][0-9]*)");
         static const std::regex gg("([FNO])([1-9][0-9]*)");
         static const std::regex eORCA("^e?ORCA[0-9]+_[FTUVW]$");
+        static const std::regex eORCA_fromMetadata("^e?ORCA[0-9]+$");
 
 #define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
         static const std::regex ll(fp "/" fp);
@@ -192,7 +193,25 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
         if ( std::regex_match(input, match, eORCA) ){
             std::string sane_name( input );
             std::transform( sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper );
-            sane_name.front() = 'e';
+            if ( sane_name.front() == 'E'){
+                sane_name.front() = 'e';
+            }
+            param.set("gridded", true);
+            param.set("uid", sane_name );
+            param.set("gridType","orca");
+            return;
+        }
+
+        if ( std::regex_match(input, match, eORCA_fromMetadata) ){
+            std::string kind = domain.substr(0,1);
+            if ( kind != "T" && kind != "F" && kind != "U" && kind != "V" && kind != "W"){
+                 throw eckit::SeriousBug("action-interpolate :: unrecognized orca grid", Here());
+            }
+            std::string sane_name( input + "_" + kind );
+            std::transform( sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper );
+            if ( sane_name.front() == 'E'){
+                sane_name.front() = 'e';
+            }
             param.set("gridded", true);
             param.set("uid", sane_name );
             param.set("gridType","orca");
@@ -325,7 +344,7 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     md.set("precision", "double");
 
     mir::param::SimpleParametrisation inputPar;
-    fill_input(config, inputPar, getInputGrid(config, md));
+    fill_input(config, inputPar, msg.domain(), getInputGrid(config, md));
     if (msg.metadata().has("missingValue") && msg.metadata().getBool("bitmapPresent")) {
         inputPar.set("missing_value", msg.metadata().getDouble("missingValue"));
     }

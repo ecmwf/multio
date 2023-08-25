@@ -95,7 +95,7 @@ endforeach()
 if ( HAVE_HEALPIX_EXAMPLES )
 
 ecbuild_get_test_multidata(
-    TARGET   ${PREFIX}_get_HEALPIX_data
+    TARGET   ${PREFIX}_get_HEALPix_data
     DIRNAME  multio/tests/actions/interpolate
     DIRLOCAL ${CMAKE_CURRENT_BINARY_DIR}
     NAMES

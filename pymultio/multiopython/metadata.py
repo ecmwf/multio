@@ -16,9 +16,9 @@ class Metadata:
 
         if md is not None:
             for key, value in md.items():
-                self.metadata_set(key, value)
+                self.__setitem__(key, value)
 
-    def metadata_set(self, key, value):
+    def __setitem__(self, key, value):
         #Is there a nicer way to do this, an equivilent of generics in python?
         # Could use switch case if using python 3.10 or above
         # Need to figure out how to use long, longlong, and double

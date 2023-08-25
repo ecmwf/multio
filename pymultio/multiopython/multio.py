@@ -1,21 +1,22 @@
 import os
 
 from .lib import ffi, lib
-#from .handler import Handler
 from .metadata import Metadata
-"""
-def error_handling(func):
-    def Inner_Function(*args, **kwargs):
-        retval = func(*args, **kwargs)
-        if retval not in (
-            lib.MULTIO_SUCCESS,
-        ):
-            error_str = "Error in function {}: {}".format(func.__name__, ffi.string(lib.multio_error_string(retval)))
-            raise MultioException(error_str)
-    return Inner_Function
-"""
+
 class Multio:
-    """This is the main interface class for Multio that users will interact with"""
+    """
+    This is the main interface class for Multio that users will interact with. It takes in
+    a config file abd creates a multio handle, through this class a user can write data
+    and interact with the multio c api.
+
+    Parameters:
+        config_path(str|file): A file-like object to where a plan is found. If not provided MULTIO_SERVER_CONFIG_FILE is checked
+        allow_world(bool): Overwrite global MPI options for default splitting.
+        parent_comm(array): Set MPI specific initalization parameters for parent comm.
+        client_comm(array): Set MPI specific initalization parameters for client comm.
+        server_comm(array): Set MPI specific initalization parameters for server comm.
+
+    """
 
     def __init__(self, config_path=None, allow_world=None, parent_comm=None, client_comm=None, server_comm=None):
 
@@ -41,8 +42,14 @@ class Multio:
         versionstr = ffi.string(tmp_str[0]).decode("utf-8")
         return versionstr
 
-    def set_config_path(self, conf_path):
-        self.__conf.set_config_path(conf_path)
+    def set_conf_path(self, conf_path):
+        """
+        Change the path to the plan file.
+
+        Parameters:
+            source(str|file): A file-like object to a multio plan file.
+        """
+        self.__conf.set_conf_path(conf_path)
 
     def start_server(self):
         self.__conf.start_server()
@@ -59,18 +66,30 @@ class Multio:
         lib.multio_close_connections(self.__handle)
 
     def flush(self):
+        """
+        Indicates all servers that a given step is complete
+        """
         if self.__metadata is not None:
             lib.multio_flush(self.__handle, self.__metadata.get_pointer())
         else:
             raise AttributeError(f"No metadata object instantiated")
 
     def notify(self):
+        """
+        Notifies all servers (e.g. step notification)
+        and potentially performs triggers on sinks.
+        """
         if self.__metadata is not None:
             lib.multio_notify(self.__handle, self.__metadata.get_pointer())
         else:
             raise AttributeError(f"No metadata object instantiated")
 
     def write_domain(self, data):
+        """
+        Writes domain information (e.g. local-to-global index mapping) to the server
+        Parameters:
+            data(array): Data of a single type usable by multio in the form an array 
+        """
         if self.__metadata is not None:
             data = ffi.new(f'int[{len(data)}]', data)
             size = ffi.cast("int", len(data))
@@ -79,6 +98,11 @@ class Multio:
             raise AttributeError(f"No metadata object instantiated")
 
     def write_mask(self, data):
+        """
+        Writes masking information (e.g. land-sea mask) to the server
+        Parameters:
+            data(array): Data of a single type usable by multio in the form an array 
+        """
         if self.__metadata is not None:
             data = ffi.new(f'float[{len(data)}]', data)
             size = ffi.cast("int", len(data))
@@ -87,6 +111,11 @@ class Multio:
             raise AttributeError(f"No metadata object instantiated")
 
     def write_field(self, data):
+        """
+        Writes (partial) fields
+        Parameters:
+            data(array): Data of a single type usable by multio in the form an array 
+        """
         if self.__metadata is not None:
             data = ffi.new(f'float[{len(data)}]', data)
             size = ffi.cast("int", len(data))
@@ -95,6 +124,12 @@ class Multio:
             raise AttributeError(f"No metadata object instantiated")
 
     def field_accepted(self):
+        """
+        Determines if the pipelines are configured to accept the specified data
+
+        Returns:
+            boolean with True if accepted, otherwise False
+        """
         accepted = False
         accept = ffi.new("bool*", accepted)
         lib.multio_field_accepted(self.__handle, self.__metadata.get_pointer(), accept)

@@ -115,20 +115,6 @@ class PatchedLib:
         return wrapped_fn
 
 
-def memoize_constant(fn):
-    """Memoize constant values to avoid repeatedly crossing the API layer unecessarily"""
-    attr_name = "__memoized_{}".format(fn.__name__)
-
-    def wrapped_fn(self):
-        value = getattr(self, attr_name, None)
-        if value is None:
-            value = fn(self)
-            setattr(self, attr_name, value)
-        return value
-
-    return wrapped_fn
-
-
 # Bootstrap the library
 
 try:

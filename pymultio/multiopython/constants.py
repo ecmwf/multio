@@ -4,7 +4,7 @@ from .lib import lib
 
 
 @unique
-class DataType(IntEnum):
+class ResultType(IntEnum):
     SUCCESS = lib.MULTIO_SUCCESS
     ERROR_ECKIT_EXCEPTION = lib.MULTIO_ERROR_ECKIT_EXCEPTION
     ERROR_GENERAL_EXCEPTION = lib.MULTIO_ERROR_GENERAL_EXCEPTION

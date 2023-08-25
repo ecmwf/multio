@@ -45,9 +45,6 @@ class Multio:
 
         self.__metadata = Metadata(self.__handle, md=md)
 
-    def delete_metadata(self):
-        self.__metadata.delete_metadata()
-
     def open_connections(self):
         self.__handle.open_connections()
 

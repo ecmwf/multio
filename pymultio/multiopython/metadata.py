@@ -7,7 +7,7 @@ class Metadata:
 
     def __init__(self, handle, md=None):
 
-        self.__handle_pointer = handle.get_pointer()
+        self.__handle_pointer = handle
 
         metadata = ffi.new("multio_metadata_t **")
         lib.multio_new_metadata(metadata, self.__handle_pointer)

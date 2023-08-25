@@ -101,3 +101,18 @@ def test_field_accepted():
     multio_object.flush()
     multio_object.notify()
     assert multio_object.field_accepted() == False #Unsure if this should be true or false on return need to look at definition in c api
+
+def test_enter_exit_connections():
+    metadata = {'category' : 'path',
+      'new' : 1,
+      'new_float' : 1.0,
+      'trigger' : 'step',
+      'step': 1
+    }
+    with multiopython.Multio(allow_world=True, parent_comm=1, client_comm=[2,3], server_comm=[4,5]) as multio_object:
+        assert(multio_object.__version__() == '2.0.0')
+        multio_object.create_metadata(md=metadata)
+
+        multio_object.write_field([1.0, 2.0, 3.0, 4.0])
+        multio_object.flush()
+        multio_object.notify()

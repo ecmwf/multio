@@ -1,8 +1,7 @@
 import os
 
 from .lib import ffi, lib
-#from .config import Config
-from .handler import Handler
+#from .handler import Handler
 from .metadata import Metadata
 """
 def error_handling(func):
@@ -22,9 +21,19 @@ class Multio:
 
         self.__conf = _Config(config_path=config_path, allow_world=allow_world, parent_comm=parent_comm, client_comm=client_comm, server_comm=server_comm)
 
-        self.__handle = Handler(self.__conf)
+        handle = ffi.new("multio_handle_t**")
+        lib.multio_new_handle(handle, self.__conf.get_pointer())
+
+        self.__handle = ffi.gc(handle[0], lib.multio_delete_handle)
 
         self.__metadata = None
+
+    def __enter__(self):
+        self.open_connections()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close_connections()
 
     def __version__(self):
         tmp_str = ffi.new("char**")
@@ -39,47 +48,58 @@ class Multio:
         self.__conf.start_server()
 
     def create_metadata(self, md=None):
-
         self.__metadata = Metadata(self.__handle, md=md)
 
+    # This function may be removed as now __enter__ opens connections, but may want to keep this functionality for users?
     def open_connections(self):
-        self.__handle.open_connections()
+        lib.multio_open_connections(self.__handle)
 
+    # This function may be removed as now __exit__ closes connections, but may want to keep this functionality for users?
     def close_connections(self):
-        self.__handle.close_connections()
+        lib.multio_close_connections(self.__handle)
 
     def flush(self):
         if self.__metadata is not None:
-            self.__handle.flush(self.__metadata)
+            lib.multio_flush(self.__handle, self.__metadata.get_pointer())
         else:
             raise AttributeError(f"No metadata object instantiated")
 
     def notify(self):
         if self.__metadata is not None:
-            self.__handle.notify(self.__metadata)
+            lib.multio_notify(self.__handle, self.__metadata.get_pointer())
         else:
             raise AttributeError(f"No metadata object instantiated")
 
     def write_domain(self, data):
         if self.__metadata is not None:
-            self.__handle.write_domain(self.__metadata, data, len(data))
+            data = ffi.new(f'int[{len(data)}]', data)
+            size = ffi.cast("int", len(data))
+            lib.multio_write_domain(self.__handle, self.__metadata.get_pointer(), data, len(data))
         else:
             raise AttributeError(f"No metadata object instantiated")
 
     def write_mask(self, data):
         if self.__metadata is not None:
-            self.__handle.write_mask_float(self.__metadata, data, len(data))
+            data = ffi.new(f'float[{len(data)}]', data)
+            size = ffi.cast("int", len(data))
+            lib.multio_write_mask_float(self.__handle, self.__metadata.get_pointer(), data, len(data))
         else:
             raise AttributeError(f"No metadata object instantiated")
 
     def write_field(self, data):
         if self.__metadata is not None:
-            self.__handle.write_field_float(self.__metadata, data, len(data))
+            data = ffi.new(f'float[{len(data)}]', data)
+            size = ffi.cast("int", len(data))
+            lib.multio_write_field_float(self.__handle, self.__metadata.get_pointer(), data, len(data))
         else:
             raise AttributeError(f"No metadata object instantiated")
 
     def field_accepted(self):
-        return self.__handle.field_accepted(self.__metadata)
+        accepted = False
+        accept = ffi.new("bool*", accepted)
+        lib.multio_field_accepted(self.__handle, self.__metadata.get_pointer(), accept)
+        return bool(accept[0])
+
 
 
 class _Config:
@@ -100,44 +120,44 @@ class _Config:
         self.__config = ffi.gc(config[0], lib.multio_delete_configuration)
 
         if allow_world is not None:
-            self.conf_mpi_allow_world_default_comm(allow_world)
+            self.mpi_allow_world_default_comm(allow_world)
 
         if parent_comm is not None:
-            self.conf_mpi_parent_comm(parent_comm)
+            self.mpi_parent_comm(parent_comm)
 
         if client_comm is not None:
-            self.conf_mpi_return_client_comm(client_comm)
+            self.mpi_return_client_comm(client_comm)
 
         if server_comm is not None:
-            self.conf_mpi_return_server_comm(server_comm)
+            self.mpi_return_server_comm(server_comm)
 
     def set_conf_path(self, conf_path):
 
         configuration_file_name = ffi.new("char[]", os.fsencode(conf_path))
         lib.multio_conf_set_path(self.__config, configuration_file_name)
 
-    def conf_mpi_allow_world_default_comm(self, allow=0):
+    def mpi_allow_world_default_comm(self, allow=0):
 
         multio_allow = ffi.cast("_Bool", allow)
         lib.multio_conf_mpi_allow_world_default_comm(self.__config, multio_allow)
 
-    def conf_mpi_parent_comm(self, parent_comm=0):
+    def mpi_parent_comm(self, parent_comm=0):
 
         multio_par_comm = ffi.cast("int", parent_comm)
         lib.multio_conf_mpi_parent_comm(self.__config, multio_par_comm)
 
-    def conf_mpi_return_client_comm(self, return_client_comm):
+    def mpi_return_client_comm(self, return_client_comm):
 
         multio_rcc = ffi.new("int[]", return_client_comm)
         lib.multio_conf_mpi_return_client_comm(self.__config, multio_rcc)
 
-    def conf_mpi_return_server_comm(self, return_server_comm):
+    def mpi_return_server_comm(self, return_server_comm):
 
         multio_rsc = ffi.new("int[]", return_server_comm)
         lib.multio_conf_mpi_return_client_comm(self.__config, multio_rsc)
 
     def start_server(self):
-        # TODO: Currently does not work
+        # TODO: Need to test
         lib.multio_start_server(self.__config)
 
     def get_pointer(self):

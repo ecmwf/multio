@@ -1,7 +1,7 @@
 import os
 
 from .lib import ffi, lib
-from .config import Config
+#from .config import Config
 
 class Handler:
     """This is the container class for the Multio Handles"""

@@ -362,14 +362,18 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
         setValue("scaledValueOfSecondFixedSurface", level);
     }
 
-    // Set ocean grid information
-    setValue("unstructuredGridType", config_.getString("grid-type"));
+    std::string gridType;
+    const auto hasGridType = metadata.get("gridType", gridType);
+    if (hasGridType && (gridType != "HEALPix")) {
+        // Set ocean grid information
+        setValue("unstructuredGridType", config_.getString("grid-type"));
 
-    const auto& gridSubtype = metadata.getString("gridSubtype");
-    setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
+        const auto& gridSubtype = metadata.getString("gridSubtype");
+        setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
 
-    const auto& gridUID = metadata.getString("uuidOfHGrid");
-    setValue("uuidOfHGrid", gridUID);
+        const auto& gridUID = metadata.getString("uuidOfHGrid");
+        setValue("uuidOfHGrid", gridUID);
+    }
 }
 
 void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {

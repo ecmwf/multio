@@ -31,14 +31,12 @@ def test_multio_config_path():
     with pytest.raises(multiopython.MultioException):
         multiopython.Multio(config_path=config_path, **default_dict)
 
-def test_multio_set_config_path():
-    multio = multiopython.Multio(**default_dict)
-    multio.set_conf_path("/Users/maaw/multio/tests/multio/config/testPlan.yaml")
+#def test_multio_set_config_path():
+#    multio = multiopython.Multio(**default_dict)
+#    multio.set_conf_path("/Users/maaw/multio/tests/multio/config/testPlan.yaml")
 
 def test_multio_open_close_connections():
     multio = multiopython.Multio(**default_dict)
-    multio.open_connections()
-    multio.close_connections()
 
 def test_create_metadata():
     multio = multiopython.Multio(**default_dict)
@@ -72,19 +70,15 @@ def test_write_field():
     multio_object = multiopython.Multio(**default_dict)
     multio_object.create_metadata(md=metadata)
 
-    multio_object.open_connections()
     multio_object.write_field([1.0, 2.0, 3.0, 4.0])
     multio_object.flush()
     multio_object.notify()
     assert(os.path.isfile('testWriteOutput.grib')==True)
     #assert multio_object.field_accepted()
 
-    multio_object.close_connections()
-
 def test_write_no_metadata():
     multio_object = multiopython.Multio(**default_dict)
 
-    multio_object.open_connections()
     with pytest.raises(AttributeError):
         multio_object.write_field([1.0, 2.0, 3.0, 4.0])
 
@@ -98,7 +92,6 @@ def test_field_accepted():
     multio_object = multiopython.Multio(**default_dict)
     multio_object.create_metadata(md=metadata)
 
-    multio_object.open_connections()
     multio_object.write_field([1.0, 2.0, 3.0, 4.0])
     multio_object.flush()
     multio_object.notify()

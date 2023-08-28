@@ -31,22 +31,18 @@ def test_multio_config_path():
     with pytest.raises(multiopython.MultioException):
         multiopython.Multio(config_path=config_path, **default_dict)
 
-#def test_multio_set_config_path():
-#    multio = multiopython.Multio(**default_dict)
-#    multio.set_conf_path("/Users/maaw/multio/tests/multio/config/testPlan.yaml")
-
 def test_multio_open_close_connections():
     multio = multiopython.Multio(**default_dict)
 
-def test_create_metadata():
-    multio = multiopython.Multio(**default_dict)
-    metadata = {'category' : 'path',
-      'new' : 1,
-      'new_float' : 1.0,
-      'trigger' : 'step',
-      'step': 1
-    }
-    multio.create_metadata(metadata)
+#def test_create_metadata():
+#    multio = multiopython.Multio(**default_dict)
+#    metadata = {'category' : 'path',
+#      'new' : 1,
+#      'new_float' : 1.0,
+#      'trigger' : 'step',
+#      'step': 1
+#    }
+#    multio.create_metadata(metadata)
 
 def test_create_wrong_metadata():
     multio = multiopython.Multio(**default_dict)
@@ -58,7 +54,7 @@ def test_create_wrong_metadata():
       'pair' : (1,2)
     }
     with pytest.raises(TypeError):
-        multio.create_metadata(metadata)
+        multio.write_field([1.0, 2.0, 3.0, 4.0], metadata)
 
 def test_write_field():
     metadata = {'category' : 'path',
@@ -68,11 +64,10 @@ def test_write_field():
       'step': 1
     }
     multio_object = multiopython.Multio(**default_dict)
-    multio_object.create_metadata(md=metadata)
 
-    multio_object.write_field([1.0, 2.0, 3.0, 4.0])
-    multio_object.flush()
-    multio_object.notify()
+    multio_object.write_field(metadata, [1.0, 2.0, 3.0, 4.0])
+    multio_object.flush(metadata)
+    multio_object.notify(metadata)
     assert(os.path.isfile('testWriteOutput.grib')==True)
     #assert multio_object.field_accepted()
 
@@ -80,7 +75,7 @@ def test_write_no_metadata():
     multio_object = multiopython.Multio(**default_dict)
 
     with pytest.raises(AttributeError):
-        multio_object.write_field([1.0, 2.0, 3.0, 4.0])
+        multio_object.write_field(None, [1.0, 2.0, 3.0, 4.0])
 
 def test_field_accepted():
     metadata = {'category' : 'path',
@@ -90,12 +85,11 @@ def test_field_accepted():
       'step': 1
     }
     multio_object = multiopython.Multio(**default_dict)
-    multio_object.create_metadata(md=metadata)
 
-    multio_object.write_field([1.0, 2.0, 3.0, 4.0])
-    multio_object.flush()
-    multio_object.notify()
-    assert multio_object.field_accepted() == False #Unsure if this should be true or false on return need to look at definition in c api
+    multio_object.write_field(metadata, [1.0, 2.0, 3.0, 4.0])
+    multio_object.flush(metadata)
+    multio_object.notify(metadata)
+    assert multio_object.field_accepted(metadata) == False #Unsure if this should be true or false on return need to look at definition in c api
 
 def test_enter_exit_connections():
     metadata = {'category' : 'path',
@@ -105,8 +99,7 @@ def test_enter_exit_connections():
       'step': 1
     }
     with multiopython.Multio(**default_dict) as multio_object:
-        multio_object.create_metadata(md=metadata)
 
-        multio_object.write_field([1.0, 2.0, 3.0, 4.0])
-        multio_object.flush()
-        multio_object.notify()
+        multio_object.write_field(metadata, [1.0, 2.0, 3.0, 4.0])
+        multio_object.flush(metadata)
+        multio_object.notify(metadata)

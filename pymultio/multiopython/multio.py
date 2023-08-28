@@ -76,8 +76,6 @@ class Multio:
 
         self.__handle = ffi.gc(handle[0], lib.multio_delete_handle)
 
-        self.__metadata = None
-
     def __enter__(self):
         lib.multio_open_connections(self.__handle)
         return self
@@ -94,75 +92,78 @@ class Multio:
     def start_server(self):
         lib.multio_start_server(self.__conf)
 
-    def create_metadata(self, md=None):
-        self.__metadata = Metadata(self.__handle, md=md)
+    def _create_metadata(self, md=None):
+        return Metadata(self.__handle, md=md)
 
-    def flush(self):
+    def flush(self, md):
         """
         Indicates all servers that a given step is complete
         """
-        if self.__metadata is not None:
-            lib.multio_flush(self.__handle, self.__metadata.get_pointer())
+        if md is not None:
+            lib.multio_flush(self.__handle, self._create_metadata(md).get_pointer())
         else:
             raise AttributeError(f"No metadata object instantiated")
 
-    def notify(self):
+    def notify(self, md):
         """
         Notifies all servers (e.g. step notification)
         and potentially performs triggers on sinks.
         """
-        if self.__metadata is not None:
-            lib.multio_notify(self.__handle, self.__metadata.get_pointer())
+        if md is not None:
+            lib.multio_notify(self.__handle, self._create_metadata(md).get_pointer())
         else:
             raise AttributeError(f"No metadata object instantiated")
 
-    def write_domain(self, data):
+    def write_domain(self, md, data):
         """
         Writes domain information (e.g. local-to-global index mapping) to the server
         Parameters:
             data(array): Data of a single type usable by multio in the form an array 
         """
-        if self.__metadata is not None:
+        if md is not None:
             data = ffi.new(f'int[{len(data)}]', data)
             size = ffi.cast("int", len(data))
-            lib.multio_write_domain(self.__handle, self.__metadata.get_pointer(), data, len(data))
+            lib.multio_write_domain(self.__handle, self._create_metadata(md).get_pointer(), data, len(data))
         else:
             raise AttributeError(f"No metadata object instantiated")
 
-    def write_mask(self, data):
+    def write_mask(self, md, data):
         """
         Writes masking information (e.g. land-sea mask) to the server
         Parameters:
             data(array): Data of a single type usable by multio in the form an array 
         """
-        if self.__metadata is not None:
+        if md is not None:
             data = ffi.new(f'float[{len(data)}]', data)
             size = ffi.cast("int", len(data))
-            lib.multio_write_mask_float(self.__handle, self.__metadata.get_pointer(), data, len(data))
+            lib.multio_write_mask_float(self.__handle, self._create_metadata(md).get_pointer(), data, len(data))
         else:
             raise AttributeError(f"No metadata object instantiated")
 
-    def write_field(self, data):
+    def write_field(self, md, data):
         """
         Writes (partial) fields
         Parameters:
             data(array): Data of a single type usable by multio in the form an array 
         """
-        if self.__metadata is not None:
+        if md is not None:
             data = ffi.new(f'float[{len(data)}]', data)
             size = ffi.cast("int", len(data))
-            lib.multio_write_field_float(self.__handle, self.__metadata.get_pointer(), data, len(data))
+            lib.multio_write_field_float(self.__handle, self._create_metadata(md).get_pointer(), data, len(data))
         else:
             raise AttributeError(f"No metadata object instantiated")
 
-    def field_accepted(self):
+    def field_accepted(self, md):
         """
         Determines if the pipelines are configured to accept the specified data
 
         Returns:
             boolean with True if accepted, otherwise False
         """
-        accepted = False
-        accept = ffi.new("bool*", accepted)
-        lib.multio_field_accepted(self.__handle, self.__metadata.get_pointer(), accept)
-        return bool(accept[0])
+        if md is not None:
+            accepted = False
+            accept = ffi.new("bool*", accepted)
+            lib.multio_field_accepted(self.__handle, self._create_metadata(md).get_pointer(), accept)
+            return bool(accept[0])
+        else:
+            raise AttributeError(f"No metadata object instantiated")

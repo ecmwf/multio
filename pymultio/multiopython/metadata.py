@@ -84,6 +84,5 @@ class Metadata:
 
         lib.multio_metadata_set_double(self.__metadata, key, value)
 
-
     def get_pointer(self):
         return self.__metadata

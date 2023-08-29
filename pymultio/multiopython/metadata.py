@@ -8,7 +8,7 @@ class Metadata:
     def __init__(self, parent_multio, md=None):
 
         metadata = ffi.new("multio_metadata_t **")
-        lib.multio_new_metadata(metadata, parent_multio)
+        lib.multio_new_metadata(metadata, parent_multio.handle)
 
         self.__metadata = ffi.gc(metadata[0], lib.multio_delete_metadata)
 

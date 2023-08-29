@@ -1,4 +1,5 @@
 from .lib import MultioException
+from .metadata import Metadata
 from .multio import Multio
 
 

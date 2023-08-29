@@ -34,15 +34,24 @@ def test_multio_config_path():
 def test_multio_open_close_connections():
     multio = multiopython.Multio(**default_dict)
 
-#def test_create_metadata():
-#    multio = multiopython.Multio(**default_dict)
-#    metadata = {'category' : 'path',
-#      'new' : 1,
-#      'new_float' : 1.0,
-#      'trigger' : 'step',
-#      'step': 1
-#    }
-#    multio.create_metadata(metadata)
+def test_create_metadata():
+    multio = multiopython.Multio(**default_dict)
+    metadata = {'category' : 'path',
+      'new' : 1,
+      'new_float' : 1.0,
+      'trigger' : 'step',
+      'step': 1
+    }
+    metadata = multio.create_metadata(metadata)
+
+def test_metadata_set_item_syntax():
+    multio = multiopython.Multio(**default_dict)
+    metadata = multio.create_metadata(None)
+    metadata['category'] = 'path'
+    metadata['new'] = 1
+    metadata['new_float'] = 1.0
+    metadata['trigger'] = 'step'
+    metadata['step'] = 1
 
 def test_create_wrong_metadata():
     multio = multiopython.Multio(**default_dict)
@@ -63,13 +72,26 @@ def test_write_field():
       'trigger' : 'step',
       'step': 1
     }
-    multio_object = multiopython.Multio(**default_dict)
+    with multiopython.Multio(**default_dict) as multio_object:
+        multio_object.write_field(metadata, [1.0, 2.0, 3.0, 4.0])
+        multio_object.flush(metadata)
+        multio_object.notify(metadata)
+        assert(os.path.isfile('testWriteOutput.grib')==True)
 
-    multio_object.write_field(metadata, [1.0, 2.0, 3.0, 4.0])
-    multio_object.flush(metadata)
-    multio_object.notify(metadata)
-    assert(os.path.isfile('testWriteOutput.grib')==True)
-    #assert multio_object.field_accepted()
+def test_write_field_use_metadata_object():
+
+    with multiopython.Multio(**default_dict) as multio_object:
+        metadata = multio_object.create_metadata(None)
+        metadata['category'] = 'path'
+        metadata['new'] = 1
+        metadata['new_float'] = 1.0
+        metadata['trigger'] = 'step'
+        metadata['step'] = 1
+
+        multio_object.write_field(metadata, [1.0, 2.0, 3.0, 4.0])
+        multio_object.flush(metadata)
+        multio_object.notify(metadata)
+        assert(os.path.isfile('testWriteOutput.grib')==True)
 
 def test_write_no_metadata():
     multio_object = multiopython.Multio(**default_dict)

@@ -17,21 +17,14 @@ class Metadata:
                 self.__setitem__(key, value)
 
     def __setitem__(self, key, value):
-        #Is there a nicer way to do this, an equivilent of generics in python?
-        # Could use switch case if using python 3.10 or above
-        # Need to figure out how to use long, longlong, and double
         if isinstance(value, int):
             self._set_int(key, value)
-        #elif type(value) == long:
-        #    self.metdata_set_long(key, value)
         elif isinstance(value, str):
             self._set_string(key, value)
         elif isinstance(value, bool):
             self._set_bool(key, value)
         elif isinstance(value, float):
             self._set_float(key, value)
-        #elif type(value) == double:
-        #    self.metadata_set_double(key, value)
         else:
             raise TypeError(f"{type(value).__name__} is not allowed for metadata")
 

@@ -95,6 +95,8 @@ class Multio:
     def flush(self, md):
         """
         Indicates all servers that a given step is complete
+        Parameters:
+            md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
         """
         if isinstance(md, dict):
             md = Metadata(self, md=md)
@@ -106,6 +108,8 @@ class Multio:
         """
         Notifies all servers (e.g. step notification)
         and potentially performs triggers on sinks.
+        Parameters:
+            md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
         """
         if isinstance(md, dict):
             md = Metadata(self, md=md)
@@ -117,6 +121,7 @@ class Multio:
         """
         Writes domain information (e.g. local-to-global index mapping) to the server
         Parameters:
+            md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
             data(array): Data of a single type usable by multio in the form an array 
         """
         if isinstance(md, dict):
@@ -131,6 +136,7 @@ class Multio:
         """
         Writes masking information (e.g. land-sea mask) to the server
         Parameters:
+            md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
             data(array): Data of a single type usable by multio in the form an array 
         """
         if isinstance(md, dict):
@@ -145,6 +151,7 @@ class Multio:
         """
         Writes (partial) fields
         Parameters:
+            md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
             data(array): Data of a single type usable by multio in the form an array 
         """
         if isinstance(md, dict):
@@ -158,7 +165,8 @@ class Multio:
     def field_accepted(self, md):
         """
         Determines if the pipelines are configured to accept the specified data
-
+        Parameters:
+            md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
         Returns:
             boolean with True if accepted, otherwise False
         """

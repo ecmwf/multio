@@ -315,7 +315,7 @@ module multio_api
         end function
 
         function c_multio_new_handle_default(handle) result(err) &
-                bind(c, name='multio_new_handle')
+                bind(c, name='multio_new_handle_default')
             use, intrinsic :: iso_c_binding
             implicit none
             type(c_ptr), intent(out) :: handle

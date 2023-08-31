@@ -306,19 +306,13 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             else {
                 regularLatLongMetadata<message::Metadata>(md, grid, full_area);
             }
-            // md.set("gridType", "regular_ll");
         }
         else if ( gridKind == "HEALPix" ){
-            // destination.set("gridded", true);
-            // destination.set("gridType", "HEALPix");
-            // destination.set("Nside", grid[0]);
-            // destination.set("orderingConvention", "ring");
             //
             md.set("gridded", true);
             md.set("gridType", "HEALPix");
             md.set("Nside", grid[0]);
             md.set("orderingConvention", "ring");
-            // destination.set("style", "ecmwf");
         }
         else
         {
@@ -363,8 +357,8 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     mir::param::SimpleParametrisation outMetadata;
     mir::output::ResizableOutput output(outData, outMetadata);
 
-    // TODO: Probably this operation needs to be when to plans are called, in this way
-    //       it is walid for all the IO actions as it should be
+    // TODO: Probably this operation needs to be done when plans are called, in this way
+    //       it is valid for all the IO actions as it should be
     auto& originalComm = eckit::mpi::comm();
     eckit::mpi::setCommDefault("self");
     job.execute(input, output);

@@ -95,7 +95,19 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     // TODO we should be able to determine the type in the metadata and preserve
     // it Domain usually is always readonly withFirstOf(valueSetter(g, "domain"),
     // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
-    withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
+    if ( md.has("gridType")                         && 
+         md.getString("gridType") != "HEALPix"){
+        withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
+    }
+    else if ( md.has("gridType")                    && 
+              md.getString("gridType") == "HEALPix" &&
+              md.getString("levtype") != "o2d"      && 
+              md.getString("levtype") != "o3d" ){
+        withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
+    }
+    else if ( !md.has("gridType")){
+        withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
+    }
     withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
     withFirstOf(valueSetter(g, "date"), LookUpLong(md, "date"), LookUpLong(md, "dataDate"));
     withFirstOf(valueSetter(g, "time"), LookUpLong(md, "time"), LookUpLong(md, "dataTime"));
@@ -173,7 +185,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
             g.setValue("jDirectionIncrement", scale * md.getDouble("south_north_increment"));
         }
         else if (md.getString("gridType") == "HEALPix") {
-            g.setValue("Nside", md.getLong("Nside"));
+            long Nside = md.getLong("Nside");
+            g.setValue("Nside", Nside);
             double logp = 45.0;
             // Note: Pedro told to use always this to avoid problems with milli and micro degrees
             g.setValue("longitudeOfFirstGridPointInDegrees", logp);

@@ -3,6 +3,7 @@ import os
 from .lib import ffi, lib
 from .metadata import Metadata
 
+
 class _Config:
     """This is the main container class for Multio Configs"""
 
@@ -33,24 +34,21 @@ class _Config:
             self.mpi_return_server_comm(server_comm)
 
     def mpi_allow_world_default_comm(self, allow=0):
-
         multio_allow = ffi.cast("_Bool", allow)
         lib.multio_conf_mpi_allow_world_default_comm(self.config_pointer, multio_allow)
 
     def mpi_parent_comm(self, parent_comm=0):
-
         multio_par_comm = ffi.cast("int", parent_comm)
         lib.multio_conf_mpi_parent_comm(self.config_pointer, multio_par_comm)
 
     def mpi_return_client_comm(self, return_client_comm):
-
         multio_rcc = ffi.new("int[]", return_client_comm)
         lib.multio_conf_mpi_return_client_comm(self.config_pointer, multio_rcc)
 
     def mpi_return_server_comm(self, return_server_comm):
-
         multio_rsc = ffi.new("int[]", return_server_comm)
         lib.multio_conf_mpi_return_client_comm(self.config_pointer, multio_rsc)
+
 
 class Multio:
     """
@@ -68,20 +66,25 @@ class Multio:
     """
 
     def __init__(self, config_path=None, allow_world=None, parent_comm=None, client_comm=None, server_comm=None):
-
-        self.__conf = _Config(config_path=config_path, allow_world=allow_world, parent_comm=parent_comm, client_comm=client_comm, server_comm=server_comm)
+        self.__conf = _Config(
+            config_path=config_path,
+            allow_world=allow_world,
+            parent_comm=parent_comm,
+            client_comm=client_comm,
+            server_comm=server_comm,
+        )
 
         handle = ffi.new("multio_handle_t**")
         lib.multio_new_handle(handle, self.__conf.config_pointer)
 
-        self.handle = ffi.gc(handle[0], lib.multio_delete_handle)
+        self._handle = ffi.gc(handle[0], lib.multio_delete_handle)
 
     def __enter__(self):
-        lib.multio_open_connections(self.handle)
+        lib.multio_open_connections(self._handle)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        lib.multio_close_connections(self.handle)
+        lib.multio_close_connections(self._handle)
 
     def __version__(self):
         tmp_str = ffi.new("char**")
@@ -100,9 +103,7 @@ class Multio:
         """
         if isinstance(md, dict):
             md = Metadata(self, md=md)
-        lib.multio_flush(self.handle, md.get_pointer())
-        #else:
-        #    raise AttributeError(f"No metadata object instantiated")
+        lib.multio_flush(self._handle, md._handle)
 
     def notify(self, md):
         """
@@ -113,54 +114,46 @@ class Multio:
         """
         if isinstance(md, dict):
             md = Metadata(self, md=md)
-        lib.multio_notify(self.handle, md.get_pointer())
-        #else:
-        #    raise AttributeError(f"No metadata object instantiated")
+        lib.multio_notify(self._handle, md._handle)
 
     def write_domain(self, md, data):
         """
         Writes domain information (e.g. local-to-global index mapping) to the server
         Parameters:
             md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
-            data(array): Data of a single type usable by multio in the form an array 
+            data(array): Data of a single type usable by multio in the form an array
         """
         if isinstance(md, dict):
             md = Metadata(self, md=md)
-        data = ffi.new(f'int[{len(data)}]', data)
+        data = ffi.new(f"int[{len(data)}]", data)
         size = ffi.cast("int", len(data))
-        lib.multio_write_domain(self.handle, md.get_pointer(), data, len(data))
-        #else:
-        #    raise AttributeError(f"No metadata object instantiated")
+        lib.multio_write_domain(self._handle, md._handle, data, len(data))
 
     def write_mask(self, md, data):
         """
         Writes masking information (e.g. land-sea mask) to the server
         Parameters:
             md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
-            data(array): Data of a single type usable by multio in the form an array 
+            data(array): Data of a single type usable by multio in the form an array
         """
         if isinstance(md, dict):
             md = Metadata(self, md=md)
-        data = ffi.new(f'float[{len(data)}]', data)
+        data = ffi.new(f"float[{len(data)}]", data)
         size = ffi.cast("int", len(data))
-        lib.multio_write_mask_float(self.handle, md.get_pointer(), data, len(data))
-        #else:
-        #    raise AttributeError(f"No metadata object instantiated")
+        lib.multio_write_mask_float(self._handle, md._handle, data, len(data))
 
     def write_field(self, md, data):
         """
         Writes (partial) fields
         Parameters:
             md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
-            data(array): Data of a single type usable by multio in the form an array 
+            data(array): Data of a single type usable by multio in the form an array
         """
         if isinstance(md, dict):
             md = Metadata(self, md=md)
-        data = ffi.new(f'float[{len(data)}]', data)
+        data = ffi.new(f"float[{len(data)}]", data)
         size = ffi.cast("int", len(data))
-        lib.multio_write_field_float(self.handle, md.get_pointer(), data, len(data))
-        #else:
-        #    raise AttributeError(f"No metadata object instantiated")
+        lib.multio_write_field_float(self._handle, md._handle, data, len(data))
 
     def field_accepted(self, md):
         """
@@ -174,7 +167,5 @@ class Multio:
             md = Metadata(self, md=md)
         accepted = False
         accept = ffi.new("bool*", accepted)
-        lib.multio_field_accepted(self.handle, md.get_pointer(), accept)
+        lib.multio_field_accepted(self._handle, md._handle, accept)
         return bool(accept[0])
-        #else:
-        #    raise AttributeError(f"No metadata object instantiated")

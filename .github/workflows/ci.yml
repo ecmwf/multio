@@ -198,3 +198,23 @@ jobs:
           ecmwf/atlas: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF -DATLAS_BITS_LOCAL=32 ${{ matrix.cmake_options }}"
         cmake_options: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_LEGACY_IFSIO=ON ${{ matrix.cmake_options }}"
         ctest_options: "${{ matrix.ctest_options }}"
+
+    - name: ci
+      id: build-test-python
+      uses: ecmwf-actions/reusable-workflows/.github/workflows/ci-python.yml@v1
+      with:
+        codecov_upload: true
+        build_package_inputs: |
+          self_build: false
+          dependencies: |
+          ecmwf/ecbuild
+          ecmwf/eckit
+          ecmwf/fckit
+          MathisRosenhauer/libaec@master
+          ecmwf/eccodes
+          ecmwf/metkit
+          ecmwf/fdb
+          ecmwf/atlas
+          ecmwf/atlas-orca
+          ecmwf/multio
+        dependency_branch: develop

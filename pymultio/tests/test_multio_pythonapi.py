@@ -1,5 +1,6 @@
 import os
 import pytest
+import numpy as np
 
 import multiopython
 
@@ -59,7 +60,7 @@ def test_create_wrong_metadata_dict():
     multio = multiopython.Multio(**default_dict)
     metadata = {"category": "path", "new": 1, "new_float": 1.0, "trigger": "step", "step": 1, "pair": (1, 2)}
     with pytest.raises(TypeError):
-        multio.write_field([1.0, 2.0, 3.0, 4.0], metadata)
+        multio.write_field(np.array([1.0, 2.0, 3.0, 4.0]), metadata)
 
 
 def test_write_field():
@@ -67,7 +68,7 @@ def test_write_field():
         os.remove("testWriteOutput.grib")
     metadata = {"category": "path", "new": 1, "new_float": 1.0, "trigger": "step", "step": 1}
     with multiopython.Multio(**default_dict) as multio_object:
-        multio_object.write_field(metadata, [1.0, 2.0, 3.0, 4.0])
+        multio_object.write_field(metadata, np.array([1.0, 2.0, 3.0, 4.0]))
         multio_object.flush(metadata)
         multio_object.notify(metadata)
         assert os.path.isfile("testWriteOutput.grib") == True
@@ -84,7 +85,7 @@ def test_write_field_use_metadata_object():
         metadata["trigger"] = "step"
         metadata["step"] = 1
 
-        multio_object.write_field(metadata, [1.0, 2.0, 3.0, 4.0])
+        multio_object.write_field(metadata, np.array([1.0, 2.0, 3.0, 4.0]))
         multio_object.flush(metadata)
         multio_object.notify(metadata)
         assert os.path.isfile("testWriteOutput.grib")
@@ -94,7 +95,7 @@ def test_write_no_metadata():
     multio_object = multiopython.Multio(**default_dict)
 
     with pytest.raises(AttributeError):
-        multio_object.write_field(None, [1.0, 2.0, 3.0, 4.0])
+        multio_object.write_field(None, np.array([1.0, 2.0, 3.0, 4.0]))
 
 
 def test_field_accepted():
@@ -102,7 +103,7 @@ def test_field_accepted():
         os.remove("testWriteOutput.grib")
     metadata = {"category": "path", "new": 1, "new_float": 1.0, "trigger": "step", "step": 1}
     with multiopython.Multio(**default_dict) as multio_object:
-        multio_object.write_field(metadata, [1.0, 2.0, 3.0, 4.0])
+        multio_object.write_field(metadata, np.array([1.0, 2.0, 3.0, 4.0]))
         multio_object.flush(metadata)
         multio_object.notify(metadata)
         assert (
@@ -115,6 +116,6 @@ def test_enter_exit_connections():
         os.remove("testWriteOutput.grib")
     metadata = {"category": "path", "new": 1, "new_float": 1.0, "trigger": "step", "step": 1}
     with multiopython.Multio(**default_dict) as multio_object:
-        multio_object.write_field(metadata, [1.0, 2.0, 3.0, 4.0])
+        multio_object.write_field(metadata, np.array([1.0, 2.0, 3.0, 4.0]))
         multio_object.flush(metadata)
         multio_object.notify(metadata)

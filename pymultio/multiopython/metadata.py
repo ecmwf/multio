@@ -34,18 +34,6 @@ class Metadata:
 
         lib.multio_metadata_set_int(self._handle, key, value)
 
-    def _set_long(self, key, value):
-        key = ffi.new("char[]", key.encode("ascii"))
-        value = ffi.cast("long", value)
-
-        lib.multio_metadata_set_long(self._handle, key, value)
-
-    def _set_longlong(self, key, value):
-        key = ffi.new("char[]", key.encode("ascii"))
-        value = ffi.cast("long long", value)
-
-        lib.multio_metadata_set_longlong(self._handle, key, value)
-
     def _set_string(self, key, value):
         key = ffi.new("char[]", key.encode("ascii"))
         value = ffi.new("char[]", value.encode("ascii"))

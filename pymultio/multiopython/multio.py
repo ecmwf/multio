@@ -125,9 +125,9 @@ class Multio:
         """
         if isinstance(md, dict):
             md = Metadata(self, md=md)
-        data = ffi.new(f"int[{len(data)}]", data)
         size = ffi.cast("int", len(data))
-        lib.multio_write_domain(self._handle, md._handle, data, len(data))
+        data = ffi.from_buffer("float *", data)
+        lib.multio_write_domain(self._handle, md._handle, data, size)
 
     def write_mask(self, md, data):
         """
@@ -138,22 +138,22 @@ class Multio:
         """
         if isinstance(md, dict):
             md = Metadata(self, md=md)
-        data = ffi.new(f"float[{len(data)}]", data)
         size = ffi.cast("int", len(data))
-        lib.multio_write_mask_float(self._handle, md._handle, data, len(data))
+        data = ffi.from_buffer("float *", data)
+        lib.multio_write_mask_float(self._handle, md._handle, data, size)
 
     def write_field(self, md, data):
         """
-        Writes (partial) fields
+        Writes fields
         Parameters:
             md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
             data(array): Data of a single type usable by multio in the form an array
         """
         if isinstance(md, dict):
             md = Metadata(self, md=md)
-        data = ffi.new(f"float[{len(data)}]", data)
         size = ffi.cast("int", len(data))
-        lib.multio_write_field_float(self._handle, md._handle, data, len(data))
+        data = ffi.from_buffer("float *", data)
+        lib.multio_write_field_float(self._handle, md._handle, data, size)
 
     def field_accepted(self, md):
         """

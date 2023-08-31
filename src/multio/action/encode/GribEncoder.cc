@@ -172,9 +172,12 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
             g.setValue("iDirectionIncrement", scale * md.getDouble("west_east_increment"));
             g.setValue("jDirectionIncrement", scale * md.getDouble("south_north_increment"));
         }
-        else if (md.getString("gridType") == "healpix") {
+        else if (md.getString("gridType") == "HEALPix") {
             g.setValue("Nside", md.getLong("Nside"));
-            // g.setValue("ordering", md.getLong("orderingConvention"));
+            double logp = 45.0;
+            // Note: Pedro told to use always this to avoid problems with milli and micro degrees
+            g.setValue("longitudeOfFirstGridPointInDegrees", logp);
+            g.setValue("orderingConvention", md.getString("orderingConvention"));
         }
     }
     // TODO Remove Part of parameter mapping now

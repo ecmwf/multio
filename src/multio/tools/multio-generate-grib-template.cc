@@ -131,6 +131,10 @@ void setHealpixFields(codes_handle* handle, const eckit::option::CmdArgs& args) 
     std::vector<double> values(size, 0.0);
     err = codes_set_double_array(handle, "values", values.data(), values.size());
     handleCodesError("eccodes error while setting the values array: ", err, Here());
+
+    double firstPoint = 45.0;
+    err = codes_set_double(handle, "longitudeOfFirstGridPointInDegrees", firstPoint);
+    handleCodesError("eccodes error while setting the longitudeOfFirstGridPointInDegrees value: ", err, Here());
 }
 }  // namespace
 

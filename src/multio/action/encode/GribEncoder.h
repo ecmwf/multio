@@ -25,6 +25,8 @@
 #include "multio/message/Message.h"
 #include "multio/util/MioGribHandle.h"
 
+#include "multio/util/MioGribHandle.h"
+
 
 namespace multio::action {
 
@@ -108,7 +110,7 @@ inline bool isOcean(const message::Metadata& metadata) {
 
     // Check if metadata has a key "nemoParam" or a category starting with "ocean"
     std::optional<std::string> category;
-    return (metadata.find(glossary().nemoParam) != metadata.end())
+        return (metadata.find(glossary().nemoParam) != metadata.end())
         || ((category = metadata.getOpt<std::string>(glossary().category)) && (category->rfind("ocean") == 0));
 };
 

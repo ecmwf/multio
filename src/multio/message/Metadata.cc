@@ -168,6 +168,7 @@ Metadata toMetadata(const eckit::Value& v) {
 
 //-----------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------
 
 Metadata toMetadata(const eckit::Configuration& v) {
     Metadata m;

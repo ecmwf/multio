@@ -299,6 +299,13 @@ void StatisticsConfiguration::createLoggingPrefix(const StatisticsConfiguration&
     if (auto levtype = md.getOpt<std::string>(glossary().levtype); levtype) {
         os << ", level-type=" << std::left << std::setw(5) << *levtype;
     }
+    os << ", pid=" << std::left << std::setw(10) << ::getpid();
+
+    {
+        char hostname[255];
+        gethostname(hostname, 255);
+        os << ", hostname=" << std::string{hostname} << ") ";
+    }
     logPrefix_ = os.str();
     return;
 };

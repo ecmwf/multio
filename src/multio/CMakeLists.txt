@@ -35,6 +35,8 @@ list( APPEND multio_util_srcs
     util/Substitution.cc
     util/Substitution.h
     util/BinaryUtils.h
+    util/MioGribHandle.h
+    util/MioGribHandle.cc
 )
 
 list( APPEND multio_config_srcs

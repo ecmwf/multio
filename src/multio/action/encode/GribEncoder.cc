@@ -242,6 +242,7 @@ struct QueriedMarsKeys {
     std::optional<std::int64_t> paramId{};
 };
 
+
 template <typename Dict>
 QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     QueriedMarsKeys ret;
@@ -341,11 +342,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     }
 
     // Additional parameters passed through for spherical harmonics
-    if (gridType) {
-        auto hasRegularLLInterpData = [&]() {
-            return md.has("Ni") && md.has("Nj") && md.has("north") && md.has("south") && md.has("west")
-                && md.has("east") && md.has("west_east_increment") && md.has("south_north_increment");
-        };
+    if (auto gridType = lookUp<std::string>(md, "gridType")(); gridType) {
         if (*gridType == "sh") {
             withFirstOf(valueSetter(g, "complexPacking"), lookUp<std::int64_t>(md, "complexPacking"));
             withFirstOf(valueSetter(g, "pentagonalResolutionParameterJ"),
@@ -360,6 +357,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             withFirstOf(valueSetter(g, "subSetK"), lookUp<std::int64_t>(md, "subSetK"), lookUp<std::int64_t>(md, "KS"));
             withFirstOf(valueSetter(g, "subSetM"), lookUp<std::int64_t>(md, "subSetM"), lookUp<std::int64_t>(md, "MS"));
         }
+<<<<<<< HEAD
         else if (*gridType == "regular_ll" && hasRegularLLInterpData()) {
             std::int64_t scale = 0;
             if (gribEdition == "1") {
@@ -377,22 +375,37 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             auto westEastInc = lookUp<double>(md, "west_east_increment")();
             auto southNorthInc = lookUp<double>(md, "south_north_increment")();
             if (north) {
+=======
+        else if (*gridType == "regular_ll") {
+            std::optional<std::int64_t> ni;
+            std::optional<std::int64_t> nj;
+            std::optional<double> north;
+            std::optional<double> south;
+            std::optional<double> west;
+            std::optional<double> east;
+            std::optional<double> westEastInc;
+            std::optional<double> southNorthInc;
+            if ((ni = lookUp<std::int64_t>(md, "Ni")()) && (nj = lookUp<std::int64_t>(md, "Nj")())
+                && (north = lookUp<double>(md, "north")()) && (south = lookUp<double>(md, "south")())
+                && (west = lookUp<double>(md, "west")()) && (east = lookUp<double>(md, "east")())
+                && (westEastInc = lookUp<double>(md, "west_east_increment")())
+                && (southNorthInc = lookUp<double>(md, "south_north_increment")())) {
+                std::int64_t scale = 0;
+                auto gribEdition = lookUp<std::string>(md, "gribEdition")();
+                if (gribEdition == "1") {
+                    scale = 1000;
+                }
+                else if (gribEdition == "2") {
+                    scale = 1000000;
+                }
+                g.setValue("Ni", *ni);
+                g.setValue("Nj", *nj);
+>>>>>>> 80a1ef89 (Add merge method to Metadata; Remove has; Move MioGribHandle)
                 g.setValue("latitudeOfFirstGridPoint", scale * *north);
-            }
-            if (west) {
                 g.setValue("longitudeOfFirstGridPoint", scale * *west);
-            }
-            if (south) {
                 g.setValue("latitudeOfLastGridPoint", scale * *south);
-            }
-            if (east && westEastInc) {
                 g.setValue("longitudeOfLastGridPoint", scale * (*east - *westEastInc));
-            }
-
-            if (westEastInc) {
                 g.setValue("iDirectionIncrement", scale * *westEastInc);
-            }
-            if (southNorthInc) {
                 g.setValue("jDirectionIncrement", scale * *southNorthInc);
             }
         }
@@ -412,10 +425,9 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
 }
 
 void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
-    if (md.has("encoder-overwrites")) {
+    if (auto searchOverwrites = md.find("encoder-overwrites"); searchOverwrites != md.end()) {
         // TODO Refactor with visitor
-        auto overwrites = md.get<message::Metadata>("encoder-overwrites");
-        for (const auto& kv : overwrites) {
+        for (const auto& kv : searchOverwrites->second.get<message::Metadata>()) {
             // TODO handle type... however eccodes should support string as well. For
             // some representations the string and integer representation in eccodes
             // differ significantly and my produce wrong results
@@ -423,7 +435,7 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
                 kv.second.visit(Overloaded{
                     [](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNestedTypes> {},
                     [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), message::MetadataVectorTypes> {
-                        g.setValues(kv.first, vec);
+                        g.setValue(kv.first, vec);
                     },
                     [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNonNullScalarTypes> {
                         g.setValue(kv.first, v);
@@ -810,7 +822,7 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit
 
 
 void GribEncoder::initEncoder() {
-    encoder_.reset(template_.duplicate());
+    encoder_ = template_.duplicate();
     return;
 };
 
@@ -879,12 +891,7 @@ message::Message GribEncoder::setFieldValues(const double* values, size_t count)
 }
 
 message::Message GribEncoder::setFieldValues(const float* values, size_t count) {
-    std::vector<double> dvalues(count, 0.0);
-    for (int i = 0; i < count; ++i) {
-        dvalues[i] = double(values[i]);
-    }
-
-    encoder_->setDataValues(dvalues.data(), count);
+    encoder_->setDataValues(values, count);
 
     eckit::Buffer buf{this->encoder_->length()};
     encoder_->write(buf);

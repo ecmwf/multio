@@ -60,7 +60,8 @@ MetadataMapping::MetadataMapping(const std::string& metadataKey, const eckit::Lo
 
 
 void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) const {
-    if (!m.has(metadataKey_)) {
+    auto lookUpKey = m.getOpt<std::string>(metadataKey_);
+    if (!lookUpKey) {
         if (options.enforceMatch) {
             std::ostringstream oss;
             oss << "Metadata has no source key \"" << metadataKey_ << "\"";
@@ -68,13 +69,12 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
         }
         return;
     }
-    std::string lookUpKey = m.get<std::string>(metadataKey_);
-    auto from = mapData_.find(lookUpKey);
+    auto from = mapData_.find(*lookUpKey);
     if (from == mapData_.end()) {
         if (options.enforceMatch) {
             std::ostringstream oss;
             oss << "Metadata mapping failure: Source key \"" << metadataKey_ << "\" in metadata is resolving to \""
-                << lookUpKey << "\" for which no mapping has be provided in the mapping file." << std::endl;
+                << *lookUpKey << "\" for which no mapping has be provided in the mapping file." << std::endl;
             throw MetadataMappingException(oss.str(), Here());
         }
         return;
@@ -88,7 +88,8 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
     // any harm. Adding all variables and members to the list is just cumbersome
     const auto applyMapping = [&](const eckit::LocalConfiguration& mapping, bool isOptional) {
         for (const auto& key : mapping.keys()) {
-            if (!options.overwriteExisting && m.has(key)) {
+            auto searchKey = m.find(key);
+            if (!options.overwriteExisting && (searchKey != m.end())) {
                 continue;
             }
             std::string lookUpMapKey = mapping.getString(key);
@@ -99,7 +100,7 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
                 if (!isOptional) {
                     std::ostringstream oss;
                     oss << "Metadata mapping failure: Source key \"" << metadataKey_
-                        << "\" in metadata is resolving to \"" << lookUpKey
+                        << "\" in metadata is resolving to \"" << *lookUpKey
                         << "\" which mapping is not providing a mapping for key \"" << lookUpMapKey << "\"."
                         << std::endl;
                     throw MetadataMappingException(oss.str(), Here());

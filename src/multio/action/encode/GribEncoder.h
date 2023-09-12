@@ -18,14 +18,17 @@
 
 #include "eckit/config/LocalConfiguration.h"
 
-#include "MioGribHandle.h"
 #include "eccodes.h"
 #include "metkit/codes/GribHandle.h"
 
 #include "multio/message/Message.h"
 
+#include "multio/util/MioGribHandle.h"
+
 
 namespace multio::action {
+
+using multio::util::MioGribHandle;
 
 class GribEncoder {
 public:
@@ -51,8 +54,8 @@ public:
     void setMissing(const std::string& key);
 
     template <typename T>
-    void setValues(const std::string& key, const std::vector<T>& v) {
-        encoder_->setValues(key, v);
+    void setValue(const std::string& key, const std::vector<T>& v) {
+        encoder_->setValue(key, v);
     };
     template <typename T>
     void setDataValues(const T* data, size_t count) {
@@ -102,8 +105,9 @@ private:
 
 inline bool isOcean(const message::Metadata& metadata) {
     // Check if metadata has a key "nemoParam" or a category starting with "ocean"
-    return metadata.has("nemoParam")
-        || (metadata.has("category") && (metadata.get<std::string>("category").rfind("ocean") == 0));
+    std::optional<std::string> category;
+    return (metadata.find("nemoParam") != metadata.end())
+        || ((category = metadata.getOpt<std::string>("category")) && (category->rfind("ocean") == 0));
 };
 
 

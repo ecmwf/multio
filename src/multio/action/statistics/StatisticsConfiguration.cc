@@ -203,11 +203,12 @@ void StatisticsConfiguration::parseLogPrefix(const config::ComponentConfiguratio
 };
 
 void StatisticsConfiguration::readStartTime(const message::Message& msg) {
-    if (useDateTime() && msg.metadata().has("time")) {
-        startTime_ = msg.metadata().get<std::int64_t>("time");
+    std::optional<std::int64_t> timeVal;
+    if (useDateTime() && (timeVal = msg.metadata().get<std::int64_t>("time"))) {
+        startTime_ = *timeVal;
     }
-    else if (!useDateTime() && msg.metadata().has("startTime")) {
-        startTime_ = msg.metadata().get<std::int64_t>("startTime");
+    else if (!useDateTime() && (timeVal = msg.metadata().get<std::int64_t>("startTime"))) {
+        startTime_ = *timeVal;
     }
     else {
         throw eckit::SeriousBug{"Unable to find start time", Here()};
@@ -216,11 +217,12 @@ void StatisticsConfiguration::readStartTime(const message::Message& msg) {
 };
 
 void StatisticsConfiguration::readStartDate(const message::Message& msg) {
-    if (useDateTime() && msg.metadata().has("date")) {
-        startDate_ = msg.metadata().get<std::int64_t>("date");
+    std::optional<std::int64_t> dateVal;
+    if (useDateTime() && (dateVal = msg.metadata().get<std::int64_t>("date"))) {
+        startDate_ = *dateVal;
     }
-    else if (!useDateTime() && msg.metadata().has("startDate")) {
-        startDate_ = msg.metadata().get<std::int64_t>("startDate");
+    else if (!useDateTime() && (dateVal = msg.metadata().get<std::int64_t>("startDate"))) {
+        startDate_ = *dateVal;
     }
     else {
         throw eckit::SeriousBug{"Unable to find start date", Here()};
@@ -230,11 +232,11 @@ void StatisticsConfiguration::readStartDate(const message::Message& msg) {
 
 
 void StatisticsConfiguration::readStep(const message::Message& msg) {
-    if (!msg.metadata().has("step")) {
-        throw eckit::SeriousBug{"Step metadata not present", Here()};
+    if (auto step = msg.metadata().getOpt<std::int64_t>("step"); step) {
+        step_ = *step;
+        return;
     }
-    step_ = msg.metadata().get<std::int64_t>("step");
-    return;
+    throw eckit::SeriousBug{"Step metadata not present", Here()};
 };
 
 void StatisticsConfiguration::readRestartStep(const message::Message& msg) {
@@ -256,15 +258,18 @@ void StatisticsConfiguration::readStepFrequency(const message::Message& msg) {
 
 
 void StatisticsConfiguration::readMissingValue(const message::Message& msg) {
-    if (msg.metadata().has("missingValue") && msg.metadata().has("bitmapPresent")
-        && msg.metadata().get<bool>("bitmapPresent")) {
+    const auto& md = msg.metadata();
+    auto missingVal = md.getOpt<double>("missingValue");
+    std::optional<bool> bitMapPresent;
+    if (missingVal && (bitMapPresent = md.get<bool>("bitmapPresent") && *bitMapPresent)) {
         haveMissingValue_ = true;
-        missingValue_ = msg.metadata().get<double>("missingValue");
+        missingValue_ = *missingVal;
     }
     return;
 };
 void StatisticsConfiguration::createLoggingPrefix(const StatisticsConfiguration& cfg, const message::Message& msg) {
     std::ostringstream os;
+    const auto& md = msg.metadata();
     if (cfg.logPrefix() != "Plan") {
         os << "(prefix=" << cfg.logPrefix();
     }
@@ -272,23 +277,23 @@ void StatisticsConfiguration::createLoggingPrefix(const StatisticsConfiguration&
         os << "(prefix=" << cfg.restartPrefix();
     }
     os << ", step=" << std::left << std::setw(6) << step_;
-    if (msg.metadata().has("param")) {
-        os << ", param=" << std::left << std::setw(10) << msg.metadata().get<std::string>("param");
+    if (auto param = md.getOpt<std::string>("param"); param) {
+        os << ", param=" << std::left << std::setw(10) << *param;
     }
-    else if (msg.metadata().has("paramId")) {
-        os << ", param=" << std::left << std::setw(10) << msg.metadata().get<std::string>("paramId");
+    if (auto paramId = md.getOpt<std::int64_t>("paramId"); paramId) {
+        os << ", param=" << std::left << std::setw(10) << *paramId;
     }
     else {
         throw eckit::SeriousBug{"param/paramId metadata not present", Here()};
     }
-    if (msg.metadata().has("level")) {
-        os << ", level=" << std::left << std::setw(4) << msg.metadata().get<std::int64_t>("level");
+    if (auto level = md.getOpt<std::int64_t>("level"); level) {
+        os << ", level=" << std::left << std::setw(4) << *level;
     }
-    else if (msg.metadata().has("levelist")) {
-        os << ", level=" << std::left << std::setw(4) << msg.metadata().get<std::int64_t>("levelist");
+    else if (auto levelist = md.getOpt<std::int64_t>("levelist"); levelist) {
+        os << ", level=" << std::left << std::setw(4) << *levelist;
     }
-    if (msg.metadata().has("levtype")) {
-        os << ", level-type=" << std::left << std::setw(5) << msg.metadata().get<std::string>("levtype");
+    if (auto levtype = md.getOpt<std::string>("levtype"); levtype) {
+        os << ", level-type=" << std::left << std::setw(5) << *levtype;
     }
     logPrefix_ = os.str();
     return;

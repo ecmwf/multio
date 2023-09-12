@@ -20,8 +20,12 @@ MetadataValue& MetadataValue::operator=(const MetadataValue& other) {
     return *this;
 }
 
+
+Metadata::Metadata(const MapType& values) : values_{values} {};
+Metadata::Metadata(MapType&& values) : values_{std::move(values)} {};
+
 Metadata::Metadata() {
-    values_.reserve(10);
+    values_.reserve(256);
 }
 Metadata::Metadata(std::initializer_list<std::pair<const std::string, MetadataValue>> li) : values_{std::move(li)} {}
 
@@ -72,10 +76,6 @@ Metadata&& MetadataValue::get<Metadata>() && {
 }
 
 
-bool Metadata::has(const std::string& k) const {
-    return values_.find(k) != values_.end();
-}
-
 bool Metadata::empty() const noexcept {
     return values_.empty();
 }
@@ -86,6 +86,27 @@ std::size_t Metadata::size() const noexcept {
 
 void Metadata::clear() noexcept {
     values_.clear();
+}
+
+void Metadata::merge(Metadata& other) {
+    values_.merge(other.values_);
+}
+void Metadata::merge(Metadata&& other) {
+    values_.merge(std::move(other.values_));
+}
+
+
+Metadata Metadata::update(const Metadata& other) {
+    auto tmp = std::move(values_);
+    values_ = other.values_;
+    values_.merge(tmp);
+    return tmp;
+}
+Metadata Metadata::update(Metadata&& other) {
+    auto tmp = std::move(values_);
+    values_ = std::move(other.values_);
+    values_.merge(tmp);
+    return tmp;
 }
 
 
@@ -300,5 +321,6 @@ MetadataWrongTypeException::MetadataWrongTypeException(std::size_t requestedInde
 MetadataWrongTypeException::MetadataWrongTypeException(const eckit::CodeLocation& l) :
     MetadataException(std::string("differet key type contained"), l){};
 
+//-----------------------------------------------------------------------------
 
 }  // namespace multio::message

@@ -7,17 +7,11 @@
 
 #include "multio/LibMultio.h"
 #include "multio/action/statistics/StatisticsIO.h"
+#include "multio/util/DateTime.h"
 
 namespace multio::action {
 
 namespace {
-
-long lastDayOfTheMonth(long y, long m) {
-    // month must be base 0
-    long i = m - 1;
-    return 31 - std::max(0L, i % 6 - i / 6) % 2
-         - std::max(0L, 2 - i * (i % 2)) % 2 * (y % 4 == 0 ? y % 100 == 0 ? y % 400 == 0 ? 1 : 2 : 1 : 2);
-}
 
 void yyyymmdd2ymd(uint64_t yyyymmdd, long& y, long& m, long& d) {
     d = static_cast<long>(yyyymmdd % 100);
@@ -26,7 +20,7 @@ void yyyymmdd2ymd(uint64_t yyyymmdd, long& y, long& m, long& d) {
     if (m < 1 || m > 12) {
         throw eckit::SeriousBug("invalid month range", Here());
     }
-    if (d < 1 || d > lastDayOfTheMonth(y, m)) {
+    if (d < 1 || d > util::lastDayOfTheMonth(y, m)) {
         throw eckit::SeriousBug("invalid day range", Here());
     }
     return;

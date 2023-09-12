@@ -71,19 +71,18 @@ void Sink::trigger(const Message& msg) {
 
     eckit::StringDict metadata;
 
-    if (!msg.metadata().has("trigger")) {
+    auto triggerKey = msg.metadata().getOpt<std::string>("trigger");
+    if (!triggerKey) {
         throw message::MetadataMissingKeyException("trigger", Here());
     }
-    const std::string triggerKey = msg.metadata().get<std::string>("trigger");
-
-    auto searchTriggerKey = msg.metadata().find(triggerKey);
+    auto searchTriggerKey = msg.metadata().find(*triggerKey);
     if (searchTriggerKey == msg.metadata().end()) {
-        throw message::MetadataMissingKeyException(triggerKey, Here());
+        throw message::MetadataMissingKeyException(*triggerKey, Here());
     }
 
-    metadata[triggerKey] = searchTriggerKey->second.getTranslate<std::string>();
+    metadata[*triggerKey] = searchTriggerKey->second.getTranslate<std::string>();
 
-    eckit::Log::debug<LibMultio>() << "Trigger " << triggerKey << " with value " << metadata[triggerKey]
+    eckit::Log::debug<LibMultio>() << "Trigger " << *triggerKey << " with value " << metadata[*triggerKey]
                                    << " is being called..." << std::endl;
 
     mio_.trigger(metadata);

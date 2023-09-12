@@ -50,9 +50,10 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
 
 bool MetadataMatcher::matches(const Metadata& md) const {
     for (const auto& kv : matcher_) {
-        if (!md.has(kv.first))
+        auto searchKey = md.find(kv.first);
+        if (searchKey == md.end())
             return false;
-        if (kv.second.find(md.get(kv.first)) == kv.second.end())
+        if (kv.second.find(searchKey->second) == kv.second.end())
             return false;
     }
     return true;

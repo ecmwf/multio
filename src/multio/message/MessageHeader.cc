@@ -53,38 +53,39 @@ const Metadata& Message::Header::metadata() const& {
 // }
 
 std::string Message::Header::name() const {
-    if (!metadata_.has("name")) {
-        throw MetadataMissingKeyException("name", Here());
+    if (auto optVal = metadata_.getOpt<std::string>("name"); optVal) {
+        return *optVal;
     }
-    return metadata_.get<std::string>("name");
+    throw MetadataMissingKeyException("name", Here());
 }
 
 std::string Message::Header::category() const {
-    if (!metadata_.has("category")) {
-        throw MetadataMissingKeyException("category", Here());
+    if (auto optVal = metadata_.getOpt<std::string>("category"); optVal) {
+        return *optVal;
     }
-    return metadata_.get<std::string>("category");
+    throw MetadataMissingKeyException("category", Here());
 }
 
 std::int64_t Message::Header::globalSize() const {
-    if (!metadata_.has("globalSize")) {
-        throw MetadataMissingKeyException("globalSize", Here());
+    if (auto optVal = metadata_.getOpt<std::int64_t>("globalSize"); optVal) {
+        return *optVal;
     }
-    return metadata_.get<std::int64_t>("globalSize");
+    throw MetadataMissingKeyException("globalSize", Here());
 }
 
 std::string Message::Header::domain() const {
-    if (!metadata_.has("domain")) {
-        throw MetadataMissingKeyException("domain", Here());
+    if (auto optVal = metadata_.getOpt<std::string>("domain"); optVal) {
+        return *optVal;
     }
-    return metadata_.get<std::string>("domain");
+    throw MetadataMissingKeyException("domain", Here());
 }
 
 util::PrecisionTag Message::Header::precision() const {
-    if (!metadata_.has("precision")) {
-        throw MetadataMissingKeyException("precision", Here());
-    }
     return util::decodePrecisionTag(metadata_.get<std::string>("precision"));
+    if (auto optVal = metadata_.getOpt<std::string>("precision"); optVal) {
+        return util::decodePrecisionTag(*optVal);
+    }
+    throw MetadataMissingKeyException("precision", Here());
 }
 
 const std::string& Message::Header::fieldId() const {

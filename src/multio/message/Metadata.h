@@ -211,7 +211,13 @@ struct util::GetVariantIndex<multio::message::Metadata, multio::message::Metadat
 namespace multio::message {
 
 class Metadata {
-    std::unordered_map<std::string, MetadataValue> values_;
+private:
+    using MapType = std::unordered_map<std::string, MetadataValue>;
+    MapType values_;
+
+protected:
+    Metadata(const MapType& values);
+    Metadata(MapType&& values);
 
 public:
     Metadata();
@@ -372,17 +378,17 @@ public:
         values_.insert_or_assign(k, std::forward<V>(v));
     }
 
+    // Adds a value if not already contained
     template <typename V>
     bool trySet(std::string&& k, V&& v) {
         return values_.try_emplace(std::move(k), std::forward<V>(v)).second;
     }
 
+    // Adds a value if not already contained
     template <typename V>
     bool trySet(const std::string& k, V&& v) {
         return values_.try_emplace(k, std::forward<V>(v)).second;
     }
-
-    bool has(const std::string& k) const;
 
     auto find(const std::string& k) { return values_.find(k); };
     auto find(const std::string& k) const { return values_.find(k); };
@@ -405,10 +411,26 @@ public:
 
     void clear() noexcept;
 
+    /**
+     * Extracts all values from other metadata whose keysare not contained yet in this metadata.
+     * Explicitly always modifies both metadata.
+     */
+    void merge(Metadata& other);
+    void merge(Metadata&& other);
+
+    /**
+     * Adds all Metadata contained in other and returns a Metadata object with key/values that have been overwritten.
+     */
+    Metadata update(const Metadata& other);
+    Metadata update(Metadata&& other);
+
     friend struct MetadataValueBuilder;
 };
 
 std::ostream& operator<<(std::ostream&, const Metadata&);
+
+//-----------------------------------------------------------------------------
+
 
 //-----------------------------------------------------------------------------
 

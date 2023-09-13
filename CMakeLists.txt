@@ -19,9 +19,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### dependencies
 
-ecbuild_find_package( NAME eccodes VERSION  2.18   REQUIRED )
-ecbuild_find_package( NAME eckit   VERSION  1.22   REQUIRED )
-ecbuild_find_package( NAME metkit  VERSION  1.7    REQUIRED )
+ecbuild_find_package( NAME eccodes     VERSION  2.18   REQUIRED )
+ecbuild_find_package( NAME eckit       VERSION  1.22   REQUIRED )
+ecbuild_find_package( NAME metkit      VERSION  1.7    REQUIRED )
+ecbuild_find_package( NAME atlas       VERSION  0.33   REQUIRED )
 
 if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
@@ -59,7 +60,7 @@ ecbuild_add_option( FEATURE LEGACY_IFSIO
 if( HAVE_FORTRAN )
   ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
   ecbuild_find_package( NAME fckit   VERSION 0.10.0   REQUIRED )
-  find_package( MPI COMPONENTS Fortran) # Add explict mpi for errocodes -- isn't there a better way?
+  find_package( MPI COMPONENTS Fortran) # Add explicit mpi for errorcodes -- isn't there a better way?
 endif()
 
 

@@ -56,6 +56,7 @@ jobs:
             compiler_cxx: g++-12
             compiler_fc: gfortran-12
             caching: true
+            cmake_options: -DENABLE_OMP_CXX=OFF
 
           - name: linux clang-12
             os: ubuntu-20.04
@@ -118,6 +119,12 @@ jobs:
         echo "FC=${{ matrix.compiler_fc }}"     >> $GITHUB_ENV
 
         if [[ "${{ matrix.os }}" =~ ^macos ]]; then
+          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+          export HOMEBREW_NO_AUTO_UPDATE=1
+          export HOMEBREW_NO_INSTALL_CLEANUP=1
+          echo "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1" >> $GITHUB_ENV
+          echo "HOMEBREW_NO_AUTO_UPDATE=1"                >> $GITHUB_ENV
+          echo "HOMEBREW_NO_INSTALL_CLEANUP=1"            >> $GITHUB_ENV
           brew install ninja
           brew install libomp
         else
@@ -183,9 +190,12 @@ jobs:
           ecmwf/eccodes
           ecmwf/metkit
           ecmwf/fdb
+          ecmwf/atlas
+          ecmwf/atlas-orca
         dependency_branch: develop
         dependency_cmake_options: |
           ecmwf/eckit: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF  -DENABLE_ECKIT_SQL=OFF"
           ecmwf/fckit: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF"
+          ecmwf/atlas: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF -DATLAS_BITS_LOCAL=32 ${{ matrix.cmake_options }}"
         cmake_options: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_LEGACY_IFSIO=ON ${{ matrix.cmake_options }}"
         ctest_options: "${{ matrix.ctest_options }}"

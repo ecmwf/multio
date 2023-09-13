@@ -38,7 +38,7 @@ bool setContains(const std::set<Precision>& _set, const Precision& key) {
 Mask::Mask(const ConfigurationContext& confCtx) :
     ChainedAction(confCtx),
     applyBitmap_{confCtx.config().getBool("apply-bitmap", true)},
-    missingValue_{confCtx.config().getDouble("missing-value", std::numeric_limits<double>::max())},
+    missingValue_{confCtx.config().getDouble("missing-value", std::numeric_limits<float>::max())},
     offsetFields_{fetch_offset_fields(confCtx.config())},
     offsetValue_{confCtx.config().getDouble("offset-value", 273.15)} {}
 
@@ -78,13 +78,18 @@ void Mask::applyMask(message::Message msg) const {
     auto const& bkey = domain::Mask::key(msg.metadata());
     auto const& bitmask = domain::Mask::instance().get(bkey);
 
-    ASSERT(bitmask.size() == msg.size() / sizeof(Precision));
+    if (bitmask.size() * sizeof(Precision) != msg.size()) {
+        std::ostringstream oss;
+        oss << "Mask::applyMask: Mask for key \"" << bkey << "\" has a size of " << bitmask.size()
+            << " but the message contains " << (msg.size() / sizeof(Precision)) << " values. " << std::endl;
+        throw eckit::SeriousBug(oss.str(), Here());
+    }
 
     auto git = static_cast<Precision*>(msg.payload().data());
 
     for (const auto bval : bitmask) {
         if (not bval) {
-            *git = missingValue_;
+            *git = static_cast<Precision>(missingValue_);
         }
         ++git;
     }
@@ -101,7 +106,7 @@ void Mask::applyOffset(message::Message msg) const {
 
     for (const auto bval : bitmask) {
         if (bval) {
-            *git += offsetValue_;
+            *git += static_cast<Precision>(offsetValue_);
         }
         ++git;
     }

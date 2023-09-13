@@ -2,10 +2,11 @@
 
 #include <iomanip>
 
-#include "GridInfo.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/utils/MD5.h"
 #include "multio/LibMultio.h"
 
+#define DIGEST_LENGTH MD5_DIGEST_LENGTH
 
 namespace multio {
 namespace action {

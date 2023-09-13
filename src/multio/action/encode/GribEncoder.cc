@@ -18,15 +18,18 @@
 #include <iomanip>
 #include <iostream>
 
-#include "GridInfo.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
+#include "eckit/utils/MD5.h"
 #include "eckit/utils/Translator.h"
+
 #include "multio/LibMultio.h"
 #include "multio/util/Metadata.h"
 
 
 #include "multio/util/PrecisionTag.h"
+
+#define DIGEST_LENGTH MD5_DIGEST_LENGTH
 
 namespace multio {
 namespace action {
@@ -46,12 +49,6 @@ using util::lookUpString;
 using util::withFirstOf;
 
 namespace {
-// TODO: perhaps move this to Mappings as that is already a singleton
-std::map<std::string, std::unique_ptr<GridInfo>>& grids() {
-    static std::map<std::string, std::unique_ptr<GridInfo>> grids_;
-    return grids_;
-}
-
 const std::map<const std::string, const long> ops_to_code{{"instant", 0000}, {"average", 1000}, {"accumulate", 2000},
                                                           {"maximum", 3000}, {"minimum", 4000}, {"stddev", 5000}};
 
@@ -87,33 +84,7 @@ eckit::Optional<ValueSetter> valueSetter(GribEncoder& g, const std::string& key)
 }  // namespace
 
 GribEncoder::GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config) :
-    template_{handle}, encoder_{nullptr}, config_{config} /*, encodeBitsPerValue_(config)*/ {
-    for (auto const& subtype : {"T grid", "U grid", "V grid", "W grid", "F grid"}) {
-        grids().insert(std::make_pair(subtype, std::make_unique<GridInfo>()));
-    }
-}
-
-bool GribEncoder::gridInfoReady(const std::string& subtype) const {
-    return grids().at(subtype)->hashExists();
-}
-
-bool GribEncoder::setGridInfo(message::Message msg) {
-    ASSERT(not gridInfoReady(msg.domain()));  // Panic check during development
-
-    ASSERT(coordSet_.find(msg.metadata().getString("nemoParam")) != end(coordSet_));
-
-    grids().at(msg.domain())->setSubtype(msg.domain());
-
-    if (msg.metadata().getString("nemoParam").substr(0, 3) == "lat") {
-        grids().at(msg.domain())->setLatitudes(msg);
-    }
-
-    if (msg.metadata().getString("nemoParam").substr(0, 3) == "lon") {
-        grids().at(msg.domain())->setLongitudes(msg);
-    }
-
-    return grids().at(msg.domain())->computeHashIfCan();
-}
+    template_{handle}, encoder_{nullptr}, config_{config} /*, encodeBitsPerValue_(config)*/ {}
 
 struct QueriedMarsKeys {
     eckit::Optional<std::string> type{};
@@ -139,9 +110,25 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     if (paramId) {
         g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
     }
+
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
     withFirstOf(valueSetter(g, "stream"), LookUpString(md, "stream"), LookUpString(md, "marsStream"));
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
+    withFirstOf(valueSetter(g, "number"), LookUpLong(md, "ensemble-member"));
+    withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), LookUpLong(md, "ensemble-size"));
+
+    auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
+    if (dateOfAnalysis) {
+        withFirstOf(valueSetter(g, "yearOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis / 10000});
+        withFirstOf(valueSetter(g, "monthOfAnalysis"), eckit::Optional<long>{(*dateOfAnalysis % 10000) / 100});
+        withFirstOf(valueSetter(g, "dayOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis % 100});
+    }
+
+    auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis"));
+    if (timeOfAnalysis) {
+        withFirstOf(valueSetter(g, "hourOfAnalysis"), eckit::Optional<long>{*timeOfAnalysis / 10000});
+        withFirstOf(valueSetter(g, "minuteOfAnalysis"), eckit::Optional<long>{(*timeOfAnalysis % 10000) / 100});
+    }
 
     ret.type = firstOf(LookUpString(md, "type"), LookUpString(md, "marsType"));
     if (ret.type) {
@@ -226,50 +213,92 @@ void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "bitsPerValue"), LookUpLong(md, "bitsPerValue"));
 }
 
+namespace {
+eckit::Optional<long> marsDate(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
+    if (not mKeys.type) {
+        return eckit::Optional<long>{};
+    }
+
+    // List of forecast-type data
+    if ((*mKeys.type == "fc") || (*mKeys.type == "pf")) {
+        return firstOf(LookUpLong(md, "startDate"));
+    }
+
+    // List time-processed analysis data
+    if (*mKeys.type == "tpa") {
+        return firstOf(LookUpLong(md, "previousDate"));
+    }
+
+    // Analysis data
+    return firstOf(LookUpLong(md, "currentDate"));
+}
+
+eckit::Optional<long> marsTime(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
+    if (not mKeys.type) {
+        return eckit::Optional<long>{};
+    }
+
+    // List of forecast-type data
+    if ((*mKeys.type == "fc") || (*mKeys.type == "pf")) {
+        return firstOf(LookUpLong(md, "startTime"));
+    }
+
+    // List time-processed analysis data
+    if (*mKeys.type == "tpa") {
+        return firstOf(LookUpLong(md, "previousTime"));
+    }
+
+    // Analysis data
+    return firstOf(LookUpLong(md, "currentTime"));
+}
+
+std::string marsStepRange(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
+
+    auto stepInHours = firstOf(LookUpLong(md, "stepInHours"));
+    auto timeSpanInHours = firstOf(LookUpLong(md, "timeSpanInHours"));
+    if (not(stepInHours && timeSpanInHours)) {
+        throw eckit::SeriousBug("Not enough information to encode step range");
+    }
+
+    // List of forecast-type data
+    if ((*mKeys.type == "fc") || (*mKeys.type == "pf")) {
+        auto prevStep = std::max(*stepInHours - *timeSpanInHours, 0L);
+        return std::to_string(prevStep) + "-" + std::to_string(*stepInHours);
+    }
+
+    // Time-processed analysis
+    return std::to_string(0) + "-" + std::to_string(*timeSpanInHours);
+}
+
+}  // namespace
+
 void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
                                  const QueriedMarsKeys& queriedMarsFields) {
-    auto date = (queriedMarsFields.type && (*queriedMarsFields.type == "fc"))
-                  ? firstOf(LookUpLong(md, "startDate"), LookUpLong(md, "currentDate"))
-                  : firstOf(LookUpLong(md, "currentDate"), LookUpLong(md, "startDate"));
+
+    auto date = marsDate(md, queriedMarsFields);
     if (date) {
         withFirstOf(valueSetter(g, "year"), eckit::Optional<long>{*date / 10000});
         withFirstOf(valueSetter(g, "month"), eckit::Optional<long>{(*date % 10000) / 100});
         withFirstOf(valueSetter(g, "day"), eckit::Optional<long>{*date % 100});
     }
-    auto time = (queriedMarsFields.type && (*queriedMarsFields.type == "fc"))
-                  ? firstOf(LookUpLong(md, "startTime"), LookUpLong(md, "currentTime"))
-                  : firstOf(LookUpLong(md, "currentTime"), LookUpLong(md, "startTime"));
+
+    auto time = marsTime(md, queriedMarsFields);
     if (time) {
         withFirstOf(valueSetter(g, "hour"), eckit::Optional<long>{*time / 10000});
         withFirstOf(valueSetter(g, "minute"), eckit::Optional<long>{(*time % 10000) / 100});
         withFirstOf(valueSetter(g, "second"), eckit::Optional<long>{*time % 100});
     }
 
-    auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
-    if (dateOfAnalysis) {
-        withFirstOf(valueSetter(g, "yearOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis / 10000});
-        withFirstOf(valueSetter(g, "monthOfAnalysis"), eckit::Optional<long>{(*dateOfAnalysis % 10000) / 100});
-        withFirstOf(valueSetter(g, "dayOfAnalysis"), eckit::Optional<long>{*dateOfAnalysis % 100});
-    }
-
-    auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis"));
-    if (timeOfAnalysis) {
-        withFirstOf(valueSetter(g, "hourOfAnalysis"), eckit::Optional<long>{*timeOfAnalysis / 10000});
-        withFirstOf(valueSetter(g, "minuteOfAnalysis"), eckit::Optional<long>{(*timeOfAnalysis % 10000) / 100});
-    }
-
-    withFirstOf(valueSetter(g, "number"), LookUpLong(md, "number"));
-
     auto operation = lookUpString(md, "operation");
     if (operation) {
-        // Statistics field
         if (*queriedMarsFields.type == "fc" && *operation == "instant") {
             // stepInHours has been set by statistics action
             withFirstOf(valueSetter(g, "step"), LookUpLong(md, "stepInHours"));
         }
         else {
-            // stepRangeInHours has been set by statistics action
-            withFirstOf(valueSetter(g, "stepRange"), LookUpString(md, "stepRangeInHours"));
+            // Setting directly as it is computed value not read from the metadata
+            g.setValue("stepRange", marsStepRange(md, queriedMarsFields));
+            //withFirstOf(valueSetter(g, "stepRange"), LookUpString(md, "stepRangeInHours"));
         }
 
         eckit::Optional<long> curDate;
@@ -316,7 +345,12 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     setEncodingSpecificFields(*this, metadata);
 
     // Setting parameter ID
-    setValue("paramId", metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
+    if (metadata.getLong("param") / 1000 == 212) {
+        // HACK! Support experimental averages.
+        setValue("paramId", metadata.getLong("param") + 4000);
+    } else {
+        setValue("paramId", metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
+    }
     setValue("typeOfLevel", metadata.getString("typeOfLevel"));
     if (metadata.getString("category") == "ocean-3d") {
         auto level = metadata.getLong("level");
@@ -331,7 +365,8 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     const auto& gridSubtype = metadata.getString("gridSubtype");
     setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
 
-    setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
+    const auto& gridUID = metadata.getString("uuidOfHGrid");
+    setValue("uuidOfHGrid", gridUID);
 }
 
 void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {
@@ -359,7 +394,8 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit
     const auto& gridSubtype = md.getString("gridSubtype");
     setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
 
-    setValue("uuidOfHGrid", grids().at(gridSubtype)->hashValue());
+    const auto& gridUID = md.getString("uuidOfHGrid");
+    setValue("uuidOfHGrid", gridUID);
 
     // Set encoding for missing value support
     setValue("bitmapPresent", false);
@@ -376,21 +412,8 @@ bool GribEncoder::hasKey(const char* key) {
     return encoder_->hasKey(key);
 };
 
-message::Message GribEncoder::encodeOceanLatitudes(const std::string& subtype) {
+message::Message GribEncoder::encodeOceanCoordinates(message::Message&& msg) {
     initEncoder();
-    auto msg = grids().at(subtype)->latitudes();
-
-    setOceanCoordMetadata(msg.metadata());
-
-    return dispatchPrecisionTag(msg.precision(), [&](auto pt) {
-        using Precision = typename decltype(pt)::type;
-        return setFieldValues<Precision>(std::move(msg));
-    });
-}
-
-message::Message GribEncoder::encodeOceanLongitudes(const std::string& subtype) {
-    initEncoder();
-    auto msg = grids().at(subtype)->longitudes();
 
     setOceanCoordMetadata(msg.metadata());
 

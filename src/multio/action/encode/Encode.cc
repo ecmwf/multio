@@ -14,7 +14,9 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
+#include "eckit/log/Log.h"
 
+#include "GridDownloader.h"
 #include "multio/LibMultio.h"
 #include "multio/util/ConfigurationPath.h"
 #include "multio/util/ScopedTimer.h"
@@ -60,7 +62,6 @@ std::string encodingExceptionReason(const std::string& r) {
     s.append(r);
     return s;
 }
-
 }  // namespace
 
 
@@ -76,7 +77,8 @@ Encode::Encode(const ConfigurationContext& confCtx, ConfigurationContext&& encCo
     overwrite_{encConfCtx.config().has("overwrite")
                    ? eckit::Optional<eckit::LocalConfiguration>{encConfCtx.config().getSubConfiguration("overwrite")}
                    : eckit::Optional<eckit::LocalConfiguration>{}},
-    encoder_{make_encoder(encConfCtx)} {}
+    encoder_{make_encoder(encConfCtx)},
+    gridDownloader_{std::make_unique<multio::action::GridDownloader>(confCtx)} {}
 
 Encode::Encode(const ConfigurationContext& confCtx) : Encode(confCtx, getEncodingConfiguration(confCtx)) {}
 
@@ -96,20 +98,16 @@ void Encode::executeImpl(Message msg) {
 
         LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain() << std::endl;
 
-        if (encoder_->gridInfoReady(msg.domain())) {
-            executeNext(encodeField(std::move(msg)));
-        }
-        else {
-            LOG_DEBUG_LIB(LibMultio) << "*** Grid metadata: " << msg.metadata() << std::endl;
-            if (encoder_->setGridInfo(msg)) {
-                executeNext(encodeOceanLatitudes(msg.domain()));
-                executeNext(encodeOceanLongitudes(msg.domain()));
-            }
+        const auto& md = msg.metadata();
+        auto gridCoords = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
+        if (gridCoords) {
+            executeNext(gridCoords.value().Lat);
+            executeNext(gridCoords.value().Lon);
         }
     }
-    else {
-        executeNext(encodeField(std::move(msg)));
-    }
+
+    auto gridUID = gridDownloader_->getGridUID(msg.domain());
+    executeNext(encodeField(std::move(msg), gridUID));
 }
 
 void Encode::print(std::ostream& os) const {
@@ -132,39 +130,18 @@ message::Metadata applyOverwrites(const eckit::LocalConfiguration& overwrites, m
 }
 }  // namespace
 
-message::Message Encode::encodeField(const message::Message& msg) const {
+message::Message Encode::encodeField(const message::Message& msg, const std::optional<std::string>& gridUID) const {
     try {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-        return encoder_->encodeField(
-            this->overwrite_ ? msg.modifyMetadata(applyOverwrites(*this->overwrite_, msg.metadata())) : msg);
+        auto md = this->overwrite_ ? applyOverwrites(*this->overwrite_, msg.metadata()) : msg.metadata();
+        if (gridUID) {
+            md.set("uuidOfHGrid", gridUID.value());
+        }
+        return encoder_->encodeField(msg.modifyMetadata(std::move(md)));
     }
     catch (...) {
         std::ostringstream oss;
         oss << "Encode::encodeField with Message: " << msg;
-        std::throw_with_nested(EncodingException(oss.str(), Here()));
-    }
-}
-
-message::Message Encode::encodeOceanLatitudes(const std::string& subtype) const {
-    try {
-        util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-        return encoder_->encodeOceanLatitudes(subtype);
-    }
-    catch (...) {
-        std::ostringstream oss;
-        oss << "Encode::encodeOceanLatitudes with subtype: " << subtype;
-        std::throw_with_nested(EncodingException(oss.str(), Here()));
-    }
-}
-
-message::Message Encode::encodeOceanLongitudes(const std::string& subtype) const {
-    try {
-        util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-        return encoder_->encodeOceanLongitudes(subtype);
-    }
-    catch (...) {
-        std::ostringstream oss;
-        oss << "Encode::encodeOceanLongitudes with subtype: " << subtype;
         std::throw_with_nested(EncodingException(oss.str(), Here()));
     }
 }

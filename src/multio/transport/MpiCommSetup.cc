@@ -1,6 +1,6 @@
 
 #include "MpiCommSetup.h"
-#include "Transport.h" // Import TransportException
+#include "Transport.h"  // Import TransportException
 
 #include "eckit/thread/AutoLock.h"
 #include "eckit/thread/Mutex.h"
@@ -150,7 +150,7 @@ eckit::mpi::Comm& getCommPreparedCtx(const ConfigurationContext& confCtx, const 
             std::ostringstream splitLogMsg;
             splitLogMsg << " from " << (parentName ? parentName() : std::string("eckit::mpi default"))
                         << " (Comm: " << parentComm.communicator() << ", size: " << parentComm.size()
-                        << ", rank: " << parentComm.size() << ") by color " << splitColor();
+                        << ", rank: " << parentComm.rank() << ") by color " << splitColor();
             log("try splitting" + splitLogMsg.str());
 
 

@@ -95,7 +95,6 @@ client:
                 [
                   ocean-domain-map,
                   ocean-mask,
-                  ocean-grid-coordinate,
                   ocean-2d,
                   ocean-3d,
                 ]
@@ -106,35 +105,6 @@ client:
 server:
   transport: mpi
   plans:
-    - name: ocean-grids
-      actions:
-        - type: select
-          match:
-            - category: [ocean-grid-coordinate]
-
-        - type: aggregate
-
-        - type: encode
-          format: grib
-          template: '{~}/unstr_latlon.tmpl'
-          grid-type: eORCA1
-          run:
-            expver: dsan
-            class: rd
-            stream: olda
-            type: an
-            dateOfAnalysis: 20170916
-
-        - type: sink
-          sinks:
-            # - type : fdb5
-            #   config : {}
-
-            - type: file
-              append: true
-              per-server: true # Will give you one file per server
-              path: ocean-output-grid.grib
-
     - name: stream-2 # mainly 3d fields output monthly (standard) or daily (highout)
       actions:
         - type: select
@@ -184,9 +154,10 @@ server:
           offset-value: 273.15
 
         - type: encode
+          grid-type: eORCA1
+          grid-downloader-template: '{~}/unstr_latlon.tmpl'
           format: grib
           template: '{~}/unstr_inst_an.tmpl'
-          grid-type: eORCA1
           run:
             expver: dsan
             class: rd
@@ -252,9 +223,10 @@ server:
           offset-value: 273.15
 
         - type: encode
+          grid-type: eORCA1
+          grid-downloader-template: '{~}/unstr_latlon.tmpl'
           format: grib
           template: '{~}/unstr_inst_an.tmpl'
-          grid-type: eORCA1
           run:
             expver: dsan
             class: rd
@@ -291,9 +263,10 @@ server:
           offset-value: 273.15
 
         - type: encode
+          grid-type: eORCA1
+          grid-downloader-template: '{~}/unstr_latlon.tmpl'
           format: grib
           template: '{~}/unstr_inst_an.tmpl'
-          grid-type: eORCA1
           run:
             expver: dsan
             class: rd

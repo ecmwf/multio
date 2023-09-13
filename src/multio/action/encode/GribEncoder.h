@@ -21,18 +21,13 @@
 #include "metkit/codes/GribHandle.h"
 
 #include "multio/message/Message.h"
-// #include "multio/ifsio/EncodeBitsPerValue.h"
 
 namespace multio {
 namespace action {
 
-
 class GribEncoder {
 public:
     GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config);
-
-    bool gridInfoReady(const std::string& subtype) const;
-    bool setGridInfo(message::Message msg);
 
     template <typename T>
     void setValue(const std::string& key, eckit::Optional<T> v) {
@@ -50,8 +45,7 @@ public:
     };
     bool hasKey(const char* key);
 
-    message::Message encodeOceanLatitudes(const std::string& subtype);
-    message::Message encodeOceanLongitudes(const std::string& subtype);
+    message::Message encodeOceanCoordinates(message::Message&& msg);
 
     message::Message encodeField(const message::Message& msg);
     message::Message encodeField(const message::Message& msg, const double* data, size_t sz);

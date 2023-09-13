@@ -7,11 +7,10 @@ ecbuild_add_library(
       Encode.h
       GribEncoder.cc
       GribEncoder.h
-      GridInfo.cc
-      GridInfo.h
+      GridDownloader.cc
+      GridDownloader.h
       MioGribHandle.cc
       MioGribHandle.h
-
 
     PRIVATE_INCLUDES
       ${ECKIT_INCLUDE_DIRS}
@@ -20,4 +19,5 @@ ecbuild_add_library(
 
     PUBLIC_LIBS
         multio
+        atlas
 )

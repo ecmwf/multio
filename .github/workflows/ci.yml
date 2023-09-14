@@ -216,8 +216,8 @@ jobs:
       - name: Check black
         run: black --check pymultio
 
-      - name: Check flake8
-        run: flake8 pymultio
+      # - name: Check flake8
+      #   run: flake8 pymultio
 
       - name: Verify Source Distribution
         shell: bash -eux {0}

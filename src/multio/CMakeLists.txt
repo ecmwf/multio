@@ -38,6 +38,8 @@ list( APPEND multio_util_srcs
 list( APPEND multio_config_srcs
     config/ComponentConfiguration.cc
     config/ComponentConfiguration.h
+    config/PlanConfigurator.cc
+    config/PlanConfigurator.h
     config/ConfigurationPath.h
     config/MultioConfiguration.cc
     config/MultioConfiguration.h

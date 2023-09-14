@@ -675,13 +675,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
     codes_handle* handle = codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err);
     ASSERT(handle);
 
-    std::vector<std::unique_ptr<Plan>> plans;
-    for (auto&& subComp : conf_.getSubConfigurations("plans")) {
-        eckit::Log::debug<multio::LibMultio>() << subComp << std::endl;
-        plans.emplace_back(
-            std::make_unique<Plan>(ComponentConfiguration(std::move(subComp), testPolicy_->multioConfig())));
-    }
-
+    std::vector<std::unique_ptr<Plan>> plans = multio::action::Plan::make_plans( conf_.getSubConfigurations("plans"), testPolicy_->multioConfig() );
     std::string expver = "xxxx";
     auto size = expver.size();
     CODES_CHECK(codes_set_string(handle, "expver", expver.c_str(), &size), nullptr);

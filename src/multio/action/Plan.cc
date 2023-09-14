@@ -19,9 +19,11 @@
 
 #include "multio/LibMultio.h"
 #include "multio/action/Action.h"
+#include "multio/config/PlanConfigurator.h"
 #include "multio/util/ScopedTimer.h"
 #include "multio/util/Substitution.h"
 #include "multio/util/logfile_name.h"
+// #include "multio/config/PlanBuilder.h"
 
 using eckit::LocalConfiguration;
 
@@ -52,35 +54,35 @@ LocalConfiguration rootConfig(const LocalConfiguration& config, const std::strin
     return createActionList(actions);
 }
 
-std::tuple<ComponentConfiguration, std::string> getPlanConfiguration(const ComponentConfiguration& compConf) {
-    if (compConf.parsedConfig().has("file")) {
-        const auto& file = compConf.multioConfig().getConfigFile(
-            compConf.multioConfig().replaceCurly(compConf.parsedConfig().getString("file")));
-        return std::make_tuple(ComponentConfiguration(file.content, compConf.multioConfig()),
-                               file.content.has("name") ? file.content.getString("name") : file.source.asString());
-    }
-    return std::make_tuple(compConf, compConf.parsedConfig().has("name") ? compConf.parsedConfig().getString("name")
-                                                                         : std::string("anonymous"));
-}
-
 }  // namespace
 
-Plan::Plan(std::tuple<ComponentConfiguration, std::string>&& confAndName) :
-    FailureAware(std::get<0>(confAndName)), name_{std::get<1>(std::move(confAndName))} {
-    ComponentConfiguration compConf = std::get<0>(std::move(confAndName));
-    auto tmp = util::parseEnabled(compConf.parsedConfig(), true);
-    if (tmp) {
-        enabled_ = *tmp;
-    }
-    else {
-        throw eckit::UserError("Bool expected", Here());
-    };
-    auto root = rootConfig(compConf.parsedConfig(), name_);
-    root_ = ActionFactory::instance().build(root.getString("type"),
-                                            ComponentConfiguration(root, compConf.multioConfig()));
-}
+std::vector<std::unique_ptr<action::Plan>> Plan::make_plans(
+    const std::vector<eckit::LocalConfiguration>& componentConfig, const config::MultioConfiguration& multioConf) {
 
-Plan::Plan(const ComponentConfiguration& compConf) : Plan(getPlanConfiguration(compConf)) {}
+    std::vector<std::unique_ptr<action::Plan>> plans;
+
+    // Create the array of plans
+    LOG_DEBUG_LIB(multio::LibMultio) << "make_plans: " << componentConfig << std::endl;
+    for (auto&& cfg : componentConfig) {
+        auto planCfgs = make_plans_configurations(cfg, multioConf);
+        // Works also for empty planCfgs
+        for (auto& pcfg : planCfgs) {
+            LOG_DEBUG_LIB(multio::LibMultio) << pcfg << std::endl;
+            plans.emplace_back(std::make_unique<action::Plan>(ComponentConfiguration(pcfg, multioConf)));
+        }
+    }
+
+    // Exit point
+    return plans;
+};
+
+
+Plan::Plan(const ComponentConfiguration& compConf) :
+    FailureAware(compConf),
+    name_{compConf.parsedConfig().getString("name")},
+    root_{ActionFactory::instance().build(
+        rootConfig(compConf.parsedConfig(), name_).getString("type"),
+        ComponentConfiguration(rootConfig(compConf.parsedConfig(), name_), compConf.multioConfig()))} {}
 
 Plan::~Plan() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
@@ -89,16 +91,14 @@ Plan::~Plan() {
 
 void Plan::process(message::Message msg) {
     util::ScopedTimer timer{timing_};
-    if (enabled_) {
-        withFailureHandling([this, &msg]() { root_->execute(std::move(msg)); },
-                            // For failure handling a copy of the message needs to be captured... Note than the move
-                            // above happens after the lambdas are initiated
-                            [this, msg]() {
-                                std::ostringstream oss;
-                                oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl;
-                                return oss.str();
-                            });
-    }
+    withFailureHandling([this, &msg]() { root_->execute(std::move(msg)); },
+                        // For failure handling a copy of the message needs to be captured... Note than the move
+                        // above happens after the lambdas are initiated
+                        [this, msg]() {
+                            std::ostringstream oss;
+                            oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl;
+                            return oss.str();
+                        });
 }
 
 util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t, const util::FailureContext&,

@@ -34,6 +34,8 @@
 #include "multio/multio_version.h"
 #include "multio/util/FailureHandling.h"
 // #include "multio/action/Sink.h"
+#include "multio/LibMultio.h"
+
 #include "metkit/codes/CodesContent.h"
 #include "multio/sink/MultIO.h"
 
@@ -126,9 +128,7 @@ private:
         FailureAware(ComponentConfiguration(conf, multioConfig())),
         log_(false),
         dirty_(false) {
-        for (auto&& cfg : conf.getSubConfigurations("plans")) {
-            plans_.emplace_back(std::make_unique<action::Plan>(ComponentConfiguration(std::move(cfg), multioConfig())));
-        }
+        plans_ = action::Plan::make_plans( conf.getSubConfigurations("plans"), multioConf );
         bpv_ = std::make_unique<EncodeBitsPerValue>(conf);
     }
 

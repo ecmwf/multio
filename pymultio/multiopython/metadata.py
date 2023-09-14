@@ -2,6 +2,7 @@ import os
 
 from .lib import ffi, lib
 
+
 class Metadata:
     """This is the main container class for Multio Metadata"""
 

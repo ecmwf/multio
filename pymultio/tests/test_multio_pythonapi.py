@@ -2,7 +2,6 @@ import pytest
 
 import multiopython
 
-
 default_dict = {
       "allow_world" : True,
       "parent_comm" : 1,

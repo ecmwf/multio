@@ -1,9 +1,10 @@
 import os
 
-from .lib import ffi, lib
 from .config import Config
 from .handler import Handler
+from .lib import ffi, lib
 from .metadata import Metadata
+
 """
 def error_handling(func):
     def Inner_Function(*args, **kwargs):

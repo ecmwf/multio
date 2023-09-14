@@ -105,9 +105,7 @@ class PatchedLib:
 
         def wrapped_fn(*args, **kwargs):
             retval = fn(*args, **kwargs)
-            if retval not in (
-                self.__lib.MULTIO_SUCCESS,
-            ):
+            if retval not in (self.__lib.MULTIO_SUCCESS,):
                 error_str = "Error in function {}: {}".format(name, ffi.string(self.__lib.multio_error_string(retval)))
                 raise MultioException(error_str)
             return retval

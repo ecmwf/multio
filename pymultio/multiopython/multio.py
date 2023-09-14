@@ -16,11 +16,12 @@ def error_handling(func):
             raise MultioException(error_str)
     return Inner_Function
 """
+
+
 class Multio:
     """This is the main interface class for Multio that users will interact with"""
 
     def __init__(self, config=None):
-
         if config == None:
             raise AttributeError("Config dictionary is required.")
 
@@ -43,7 +44,6 @@ class Multio:
         self.__conf.start_server()
 
     def create_metadata(self, md=None):
-
         self.__metadata = Metadata(self.__handle, md=md)
 
     def delete_metadata(self):

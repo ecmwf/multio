@@ -232,6 +232,5 @@ jobs:
         shell: bash -eux {0}
         run: |
           cd pymultio
-          ls /Users/runner/work/_temp/install/multio/lib
           DYLD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }} python -m pytest --cov=./ --cov-report=xml
           python -m coverage report

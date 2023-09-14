@@ -1,0 +1,11 @@
+plans:
+    - name: test-write
+      actions:
+        - type: print
+          stream: cout
+        - type: sink
+          sinks:
+            - type: file
+              append: false
+              per-server: false
+              path: "{CMAKE_BINARY_HOME}/testWriteOutput.grib"

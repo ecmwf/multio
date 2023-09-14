@@ -33,9 +33,7 @@ setuptools.setup(
     packages=["multiopython"],
     package_data={"": ["*.h"]},
     include_package_data=True,
-    install_requires=[
-        "cffi",
-    ],
+    install_requires=["cffi", "findlibs"],
     extras_require={},
     tests_require=[
         "pytest",

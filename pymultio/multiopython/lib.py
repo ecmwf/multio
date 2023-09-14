@@ -45,13 +45,14 @@ class PatchedLib:
     def __init__(self):
         ffi.cdef(self.__read_header())
 
-        libnames = [
-            "multio",
-        ]
+        libnames = [findlibs.find("multio-api")]
 
-        libnames.insert(0, findlibs.find("multio"))
-        libnames.insert(0, findlibs.find("multio-api"))
-        libnames.insert(0, findlibs.find("multio-server"))
+        #libnames.insert(0, findlibs.find("multio"))
+        #libnames.insert(0, findlibs.find("multio-api"))
+        #libnames.insert(0, findlibs.find("multio-server"))
+
+        if libnames is None: 
+            raise RuntimeError("Multio is not found")
 
         for libname in libnames:
             try:

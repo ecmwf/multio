@@ -95,6 +95,8 @@ list( APPEND multio_message_srcs
     message/Message.h
     message/Metadata.cc
     message/Metadata.h
+    message/MetadataException.cc
+    message/MetadataException.h
     message/MetadataMatcher.cc
     message/MetadataMatcher.h
     message/MetadataSelector.cc

@@ -18,6 +18,7 @@
 #include <variant>
 
 #include "TypeTraits.h"
+#include "eckit/utils/Translator.h"
 #include "eckit/utils/VariantHelpers.h"
 
 //-----------------------------------------------------------------------------
@@ -32,6 +33,38 @@ struct GetVariantIndex<T, std::variant<Ts...>>
     : std::integral_constant<size_t, std::variant<TypeTag<Ts>...>{TypeTag<T>{}}.index()> {};
 
 //-----------------------------------------------------------------------------
+
+template <typename Func, typename ValueToVisit>
+decltype(auto) visitUnwrapUniquePtr(Func&& f, ValueToVisit&& value) noexcept(
+    noexcept(std::visit(util::forwardUnwrappedUniquePtr(std::forward<Func>(f)), std::forward<ValueToVisit>(value)))) {
+    return std::visit(util::forwardUnwrappedUniquePtr(std::forward<Func>(f)), std::forward<ValueToVisit>(value));
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+template <typename T>
+decltype(auto) translateVisitor() noexcept {
+    return eckit::Overloaded{
+        [&](const auto& v)
+            -> std::enable_if_t<!eckit::IsTranslatable<std::decay_t<decltype(v)>, T>::value, std::optional<T>> {
+            return std::nullopt;
+        },
+        [](const auto& v)
+            -> std::enable_if_t<eckit::IsTranslatable<std::decay_t<decltype(v)>, T>::value, std::optional<T>> {
+            return eckit::translate<T>(v);
+        }};
+}
+
+
+template <typename T, typename TypeToVisit>
+decltype(auto) visitTranslate(TypeToVisit&& typeToVisit) noexcept {
+    return std::visit(translateVisitor<T>(), std::forward<TypeToVisit>(typeToVisit));
+}
+
+//-----------------------------------------------------------------------------
+
 
 }  // namespace multio::util
 

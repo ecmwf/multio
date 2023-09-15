@@ -37,7 +37,7 @@ endif()
 ecbuild_add_option( FEATURE FDB5
                     DEFAULT ON
                     DESCRIPTION "Send data to FDB5"
-                    REQUIRED_PACKAGES "NAME fdb5 VERSION 5.11.23" )
+                    REQUIRED_PACKAGES "NAME fdb5 VERSION 5.11.20" )
 
 ### atlas-io plugin
 

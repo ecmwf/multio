@@ -93,7 +93,7 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
         std::ostringstream os;
 
         for (const std::string& s : hashKeys_) {
-            getMetadataValue(s).visit(Overloaded{
+            getMetadataValue(s).visit(eckit::Overloaded{
                 [&s](const auto& v) -> util::IfTypeNotOf<decltype(v), message::MetadataScalarTypes> {
                     throw message::MetadataWrongTypeException(s, Here());
                 },

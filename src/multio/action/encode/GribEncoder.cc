@@ -463,7 +463,7 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
             // some representations the string and integer representation in eccodes
             // differ significantly and my produce wrong results
             if (g.hasKey(kv.first.c_str())) {
-                kv.second.visit(Overloaded{
+                kv.second.visit(eckit::Overloaded{
                     [](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNestedTypes> {},
                     [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), message::MetadataVectorTypes> {
                         g.setValue(kv.first, vec);

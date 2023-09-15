@@ -63,6 +63,14 @@ void SingleFieldSink::write(Message msg) {
     }
 
 
+    auto paramStr = util::visitTranslate<std::string>(msg.metadata().get("param"));
+    if (!paramStr) {
+        std::ostringstream oss;
+        oss << "Sink::trigger: Value for param can not be translated to string: ";
+        oss << msg.metadata().get("param");
+        throw eckit::UserError(oss.str(), Here());
+    }
+
     std::ostringstream oss;
     oss << rootPath_ << msg.metadata().get<std::int64_t>("level") << "::" << paramOrId
         << "::" << msg.metadata().get<std::int64_t>("step");

@@ -202,7 +202,7 @@ jobs:
       - name: Setup python env
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.8.15'
 
       - name: Install python deps
         run: |

@@ -219,7 +219,7 @@ decltype(auto) visitValueType(const eckit::Value& v, F&& f) noexcept {
 std::optional<MetadataValue> toMetadataValue(const eckit::Value& v) {
     return visitValueType(
         v,
-        Overloaded{
+        eckit::Overloaded{
             [&v](ValueTag<ValueType::List>) -> std::optional<MetadataValue> {
                 if (!v.size()) {
                     return std::nullopt;
@@ -233,7 +233,7 @@ std::optional<MetadataValue> toMetadataValue(const eckit::Value& v) {
                     return MetadataValue{std::move(vec)};
                 };
                 return visitValueType(v[0],
-                                      Overloaded{
+                                      eckit::Overloaded{
                                           [&fillVec](ValueTag<ValueType::Int>) -> std::optional<MetadataValue> {
                                               return fillVec(std::vector<std::int64_t>{});
                                           },
@@ -290,13 +290,12 @@ Metadata toMetadata(const eckit::Value& value) {
 
 Metadata toMetadata(const std::string& fieldId) {
     std::istringstream in(fieldId);
-    eckit::GenericYAMLParser<MetadataValueBuilder> parser(in);
-    auto metadataValue = parser.parse();
-
-    if (metadataValue.index() != util::GetVariantIndex<Metadata, MetadataValue>::value) {
+    eckit::YAMLParser parser(in);
+    auto optMetadata = toMetadataMaybe(parser.parse());
+    if (!optMetadata) {
         throw MetadataException(std::string("JSON string must start with a map: ") + fieldId, Here());
     }
-    return std::move(metadataValue).get<Metadata>();
+    return std::move(*optMetadata);
 }
 
 MetadataException::MetadataException(const std::string& reason, const eckit::CodeLocation& l) :

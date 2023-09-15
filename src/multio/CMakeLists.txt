@@ -186,7 +186,7 @@ ecbuild_add_library(
         metkit eckit eckit_mpi)
 
 add_subdirectory(fdb5)
-add_subdirectory(action)
 add_subdirectory(maestro)
+add_subdirectory(action)
 add_subdirectory(api)
 add_subdirectory(tools)

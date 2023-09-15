@@ -35,14 +35,14 @@ implicit none
         generic,   public       :: new => new_default, new_from_filename
 
         procedure, public, pass :: delete                       => multio_delete_configuration
-        procedure, public, pass :: set_failure_handler          => multio_conf_set_failure_handler
+        procedure, public, pass :: set_failure_handler          => multio_config_set_failure_handler
 
-        procedure, public, pass :: move_failure_id              => multio_conf_move_failure_id
-        procedure, public, pass :: set_path                     => multio_conf_set_path
-        procedure, public, pass :: mpi_allow_world_default_comm => multio_conf_mpi_allow_world_default_comm
-        procedure, public, pass :: mpi_parent_comm              => multio_conf_mpi_parent_comm
-        procedure, public, pass :: mpi_return_client_comm       => multio_conf_mpi_return_client_comm
-        procedure, public, pass :: mpi_return_server_comm       => multio_conf_mpi_return_server_comm
+        procedure, public, pass :: move_failure_id              => multio_config_move_failure_id
+        procedure, public, pass :: set_path                     => multio_config_set_path
+        procedure, public, pass :: mpi_allow_world_default_comm => multio_mpi_allow_world_default_comm
+        procedure, public, pass :: mpi_parent_comm              => multio_mpi_parent_comm
+        procedure, public, pass :: mpi_return_client_comm       => multio_mpi_return_client_comm
+        procedure, public, pass :: mpi_return_server_comm       => multio_mpi_return_server_comm
     end type ! multio_configuration
 
     ! Public symbols whitelist
@@ -60,7 +60,7 @@ contains
     !! @return A pointer to the failure ID associated with the context.
     !!         If no failure ID is available, a null pointer is returned.
     !!
-    function multio_conf_move_failure_id( cc ) result(pfid)
+    function multio_config_move_failure_id( cc ) result(pfid)
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding, only: c_int
     implicit none
@@ -77,7 +77,7 @@ contains
 #endif
         ! Exit point
         return
-    end function multio_conf_move_failure_id
+    end function multio_config_move_failure_id
 
 
     !> @brief Extract the C pointer of the configuration object.
@@ -277,7 +277,7 @@ contains
     !!
     !! @return An error code indicating the operation's success.
     !!
-    function multio_conf_set_failure_handler( cc, handler, context) result(err)
+    function multio_config_set_failure_handler( cc, handler, context) result(err)
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_fortran_env, only: int64
         use, intrinsic :: iso_c_binding, only: c_int
@@ -336,7 +336,7 @@ contains
 #endif
         ! Exit point
         return
-    end function multio_conf_set_failure_handler
+    end function multio_config_set_failure_handler
 
 
     !> @brief Set the path for the configuration.
@@ -350,7 +350,7 @@ contains
     !!
     !! @return An error code indicating the operation's success.
     !!
-    function multio_conf_set_path(cc, path) result(err)
+    function multio_config_set_path(cc, path) result(err)
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding, only: c_loc
         use, intrinsic :: iso_c_binding, only: c_int
@@ -370,20 +370,20 @@ contains
         character(:,kind=c_char), allocatable, target :: nullified_path
         ! Private interface to the c API
         interface
-            function c_multio_conf_set_path(cc, path) result(err) &
-                bind(c, name='multio_conf_set_path')
+            function c_multio_config_set_path(cc, path) result(err) &
+                bind(c, name='multio_config_set_path')
                 use, intrinsic :: iso_c_binding, only: c_ptr
                 use, intrinsic :: iso_c_binding, only: c_int
             implicit none
                 type(c_ptr), intent(in), value :: path
                 type(c_ptr), intent(in), value :: cc
                 integer(c_int) :: err
-            end function c_multio_conf_set_path
+            end function c_multio_config_set_path
         end interface
         ! Initialization and allocation
         nullified_path = trim(path) // c_null_char
         ! Call the c API
-        c_err = c_multio_conf_set_path(cc%impl, c_loc(nullified_path))
+        c_err = c_multio_config_set_path(cc%impl, c_loc(nullified_path))
         ! Output cast and cleanup
         if (allocated(nullified_path)) deallocate(nullified_path)
         err = int(c_err,kind(err))
@@ -392,7 +392,7 @@ contains
 #endif
         ! Exit point
         return
-    end function multio_conf_set_path
+    end function multio_config_set_path
 
 
     !> @brief Allow `MPI_COMM_WORLD` as the default communicator.
@@ -406,12 +406,12 @@ contains
     !!
     !! @return An error code indicating the operation's success.
     !!
-    !! @see multio_conf_mpi_return_server_comm
-    !! @see multio_conf_mpi_return_client_comm
-    !! @see multio_conf_mpi_parent_comm
-    !! @see multio_conf_mpi_client_id
+    !! @see multio_mpi_return_server_comm
+    !! @see multio_mpi_return_client_comm
+    !! @see multio_mpi_parent_comm
+    !! @see multio_mpi_client_id
     !!
-    function multio_conf_mpi_allow_world_default_comm(cc, allow) result(err)
+    function multio_mpi_allow_world_default_comm(cc, allow) result(err)
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding, only: c_int
         use, intrinsic :: iso_c_binding, only: c_bool
@@ -429,7 +429,7 @@ contains
         integer(kind=c_int) :: c_err
         ! Private interface to the c API
         interface
-            function c_multio_conf_mpi_allow_world_default_comm(cc, allow) result(err) &
+            function c_multio_mpi_allow_world_default_comm(cc, allow) result(err) &
                 bind(c, name='multio_mpi_allow_world_default_comm')
                 use, intrinsic :: iso_c_binding, only: c_bool
                 use, intrinsic :: iso_c_binding, only: c_ptr
@@ -438,12 +438,12 @@ contains
                 type(c_ptr),     value, intent(in) :: cc
                 logical(c_bool), value, intent(in) :: allow
                 integer(c_int) :: err
-            end function c_multio_conf_mpi_allow_world_default_comm
+            end function c_multio_mpi_allow_world_default_comm
         end interface
         ! Initialization and allocation
         c_allow = logical(allow,c_bool)
         ! Call the c API
-        c_err = c_multio_conf_mpi_allow_world_default_comm(cc%impl, c_allow)
+        c_err = c_multio_mpi_allow_world_default_comm(cc%impl, c_allow)
         ! Output cast and cleanup
         err = int(c_err,kind(err))
 #else
@@ -451,7 +451,7 @@ contains
 #endif
         ! Exit point
         return
-    end function multio_conf_mpi_allow_world_default_comm
+    end function multio_mpi_allow_world_default_comm
 
 
     !> @brief Set the MPI parent communicator.
@@ -465,12 +465,12 @@ contains
     !!
     !! @return An error code indicating the operation's success.
     !!
-    !! @see multio_conf_mpi_return_server_comm
-    !! @see multio_conf_mpi_return_client_comm
-    !! @see multio_conf_mpi_client_id
-    !! @see multio_conf_mpi_allow_world_default_comm
+    !! @see multio_mpi_return_server_comm
+    !! @see multio_mpi_return_client_comm
+    !! @see multio_mpi_client_id
+    !! @see multio_mpi_allow_world_default_comm
     !!
-    function multio_conf_mpi_parent_comm(cc, parent_comm) result(err)
+    function multio_mpi_parent_comm(cc, parent_comm) result(err)
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding, only: c_int
         ! Variable references from the project
@@ -486,7 +486,7 @@ contains
         integer(kind=c_int) :: c_err
         ! Private interface to the c API
         interface
-            function c_multio_conf_mpi_parent_comm(cc, parent_comm) result(err) &
+            function c_multio_mpi_parent_comm(cc, parent_comm) result(err) &
                 bind(c, name='multio_mpi_parent_comm')
                 use, intrinsic :: iso_c_binding, only: c_ptr
                 use, intrinsic :: iso_c_binding, only: c_int
@@ -494,10 +494,10 @@ contains
                 type(c_ptr),    value, intent(in) :: cc
                 integer(c_int), value, intent(in) :: parent_comm
                 integer(c_int) :: err
-            end function c_multio_conf_mpi_parent_comm
+            end function c_multio_mpi_parent_comm
         end interface
         ! Call the c API
-        c_err = c_multio_conf_mpi_parent_comm(cc%impl, parent_comm)
+        c_err = c_multio_mpi_parent_comm(cc%impl, parent_comm)
         ! Output cast and cleanup
         err = int(c_err,kind(err))
 #else
@@ -505,7 +505,7 @@ contains
 #endif
         ! Exit point
         return
-    end function multio_conf_mpi_parent_comm
+    end function multio_mpi_parent_comm
 
 
     !> @brief Set the MPI client communicator.
@@ -519,12 +519,12 @@ contains
     !!
     !! @return An error code indicating the operation's success.
     !!
-    !! @see multio_conf_mpi_return_server_comm
-    !! @see multio_conf_mpi_parent_comm
-    !! @see multio_conf_mpi_client_id
-    !! @see multio_conf_mpi_allow_world_default_comm
+    !! @see multio_mpi_return_server_comm
+    !! @see multio_mpi_parent_comm
+    !! @see multio_mpi_client_id
+    !! @see multio_mpi_allow_world_default_comm
     !!
-    function multio_conf_mpi_return_client_comm(cc, return_comm) result(err)
+    function multio_mpi_return_client_comm(cc, return_comm) result(err)
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding, only: c_int
         ! Variable references from the project
@@ -540,7 +540,7 @@ contains
         integer(kind=c_int) :: c_err
         ! Private interface to the c API
         interface
-            function c_multio_conf_mpi_return_client_comm(cc, return_comm) result(err) &
+            function c_multio_mpi_return_client_comm(cc, return_comm) result(err) &
                 bind(c, name='multio_mpi_return_client_comm')
                 use, intrinsic :: iso_c_binding, only: c_ptr
                 use, intrinsic :: iso_c_binding, only: c_int
@@ -548,10 +548,10 @@ contains
                 type(c_ptr), value, intent(in)  :: cc
                 integer(c_int),     intent(out) :: return_comm ! can be c_null_ptr
                 integer(c_int) :: err
-            end function c_multio_conf_mpi_return_client_comm
+            end function c_multio_mpi_return_client_comm
         end interface
         ! Call the c API
-        c_err = c_multio_conf_mpi_return_client_comm(cc%impl, return_comm)
+        c_err = c_multio_mpi_return_client_comm(cc%impl, return_comm)
         ! Output cast and cleanup
         err = int(c_err,kind(err))
 #else
@@ -560,7 +560,7 @@ contains
 #endif
         ! Exit point
         return
-    end function multio_conf_mpi_return_client_comm
+    end function multio_mpi_return_client_comm
 
 
     !> @brief Set the MPI server communicator.
@@ -574,12 +574,12 @@ contains
     !!
     !! @return An error code indicating the operation's success.
     !!
-    !! @see multio_conf_mpi_return_client_comm
-    !! @see multio_conf_mpi_parent_comm
-    !! @see multio_conf_mpi_client_id
-    !! @see multio_conf_mpi_allow_world_default_comm
+    !! @see multio_mpi_return_client_comm
+    !! @see multio_mpi_parent_comm
+    !! @see multio_mpi_client_id
+    !! @see multio_mpi_allow_world_default_comm
     !!
-    function multio_conf_mpi_return_server_comm(cc, return_comm) result(err)
+    function multio_mpi_return_server_comm(cc, return_comm) result(err)
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding, only: c_int
         ! Variable references from the project
@@ -595,7 +595,7 @@ contains
         integer(kind=c_int) :: c_err
         ! Private interface to the c API
         interface
-            function c_multio_conf_mpi_return_server_comm(cc, return_comm) result(err) &
+            function c_multio_mpi_return_server_comm(cc, return_comm) result(err) &
                 bind(c, name='multio_mpi_return_server_comm')
                 use, intrinsic :: iso_c_binding, only: c_ptr
                 use, intrinsic :: iso_c_binding, only: c_int
@@ -603,10 +603,10 @@ contains
                 type(c_ptr), value, intent(in)  :: cc
                 integer(c_int),     intent(out) :: return_comm ! can be c_null_ptr
                 integer(c_int) :: err
-            end function c_multio_conf_mpi_return_server_comm
+            end function c_multio_mpi_return_server_comm
         end interface
         ! Call the c API
-        c_err = c_multio_conf_mpi_return_server_comm(cc%impl, return_comm)
+        c_err = c_multio_mpi_return_server_comm(cc%impl, return_comm)
         ! Output cast and cleanup
         err = int(c_err,kind(err))
 #else
@@ -615,6 +615,6 @@ contains
 #endif
         ! Exit point
         return
-    end function multio_conf_mpi_return_server_comm
+    end function multio_mpi_return_server_comm
 
 end module multio_api_configuration_mod

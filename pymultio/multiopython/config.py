@@ -31,30 +31,30 @@ class Config:
         if server_comm is not None:
             self.conf_mpi_return_server_comm(server_comm)
 
-    def set_conf_path(self, conf_path):
+    def set_config_path(self, conf_path):
 
         configuration_file_name = ffi.new("char[]", os.fsencode(conf_path))
-        lib.multio_conf_set_path(self.__config, configuration_file_name)
+        lib.multio_config_set_path(self.__config, configuration_file_name)
 
     def conf_mpi_allow_world_default_comm(self, allow=0):
 
         multio_allow = ffi.cast("_Bool", allow)
-        lib.multio_conf_mpi_allow_world_default_comm(self.__config, multio_allow)
+        lib.multio_config_mpi_allow_world_default_comm(self.__config, multio_allow)
 
     def conf_mpi_parent_comm(self, parent_comm=0):
 
         multio_par_comm = ffi.cast("int", parent_comm)
-        lib.multio_conf_mpi_parent_comm(self.__config, multio_par_comm)
+        lib.multio_config_mpi_parent_comm(self.__config, multio_par_comm)
 
     def conf_mpi_return_client_comm(self, return_client_comm):
 
         multio_rcc = ffi.new("int[]", return_client_comm)
-        lib.multio_conf_mpi_return_client_comm(self.__config, multio_rcc)
+        lib.multio_config_mpi_return_client_comm(self.__config, multio_rcc)
 
     def conf_mpi_return_server_comm(self, return_server_comm):
 
         multio_rsc = ffi.new("int[]", return_server_comm)
-        lib.multio_conf_mpi_return_client_comm(self.__config, multio_rsc)
+        lib.multio_config_mpi_return_client_comm(self.__config, multio_rsc)
 
     def start_server(self):
         # TODO: Currently does not work

@@ -34,7 +34,7 @@ def test_multio_config_path():
 
 def test_multio_set_config_path():
     multio = multiopython.Multio(default_dict)
-    multio.set_conf_path("/Users/maaw/multio/tests/multio/config/testPlan.yaml")
+    multio.set_config_path("/Users/maaw/multio/tests/multio/config/testPlan.yaml")
 
 def test_multio_open_close_connections():
     multio = multiopython.Multio(default_dict)

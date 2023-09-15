@@ -35,8 +35,8 @@ class Multio:
         versionstr = ffi.string(tmp_str[0]).decode("utf-8")
         return versionstr
 
-    def set_conf_path(self, conf_path):
-        self.__conf.set_conf_path(conf_path)
+    def set_config_path(self, conf_path):
+        self.__conf.set_config_path(conf_path)
 
     def start_server(self):
         self.__conf.start_server()

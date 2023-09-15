@@ -1,3 +1,31 @@
+# Action plugins
+
+if( CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
+    list( APPEND multio_api_linker_options
+        -Wl,--no-as-needed
+    )
+endif()
+
+list( APPEND multio_action_plugins
+    multio-action-aggregate
+    multio-action-encode
+    multio-action-mask
+    multio-action-metadata-mapping
+    multio-action-null
+    multio-action-print
+    multio-action-select
+    multio-action-single-field-sink
+    multio-action-sink
+    multio-action-statistics
+    multio-action-transport
+)
+
+if( HAVE_MIR )
+    list( APPEND multio_action_plugins
+        multio-action-interpolate
+    )
+endif()
+
 # Source files
 list( APPEND multio_capi_srcs
     multio_capi_types.h
@@ -15,7 +43,6 @@ list( APPEND multio_capi_srcs
 )
 
 
-
 # Create the library
 if ( HAVE_MULTIO_DUMMY_API )
 ecbuild_add_library(
@@ -30,11 +57,12 @@ ecbuild_add_library(
 
     PUBLIC_LIBS
         ${multio_api_linker_options}
-        ${multio_sink_plugins}
         ${multio_action_plugins}
         multio
 )
+
 else()
+
 ecbuild_add_library(
 
     TARGET multio-api
@@ -44,7 +72,6 @@ ecbuild_add_library(
 
     PUBLIC_LIBS
         ${multio_api_linker_options}
-        ${multio_sink_plugins}
         ${multio_action_plugins}
         multio
 )

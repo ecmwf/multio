@@ -351,7 +351,7 @@ int multio_delete_configuration(multio_configuration_t* cc) {
 #endif
 };
 
-int multio_conf_set_path(multio_configuration_t* cc, const char* configuration_path) {
+int multio_config_set_path(multio_configuration_t* cc, const char* configuration_path) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [cc, configuration_path]() {

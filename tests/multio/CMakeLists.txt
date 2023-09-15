@@ -8,60 +8,43 @@ file( MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/multio/tests/fdb/root )
 
 endif(HAVE_FDB5)
 
-include_directories( ${ECKIT_INCLUDE_DIRS} )
-
-if( CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
-    list( APPEND _link_libraries
-        -Wl,--no-as-needed
-    )
-endif()
-
-list( APPEND _link_libraries
-    multio
-    multio-action-sink
-)
-
-if ( HAVE_FDB5 )
-    list( APPEND _link_libraries
-        multio-fdb5
-    )
-endif()
-
-
 # Test sinks
 
 
 ecbuild_add_test( TARGET    test_multio_datasink_factory
                   SOURCES   test_multio_datasink_factory.cc
-                  LIBS      ${_link_libraries} )
+                  LIBS      multio-action-sink
+                  NO_AS_NEEDED )
 
 ecbuild_add_test( TARGET    test_multio_multio
                   SOURCES   test_multio_multio.cc TestDataContent.cc TestDataContent.h
-                  LIBS      ${_link_libraries} )
+                  LIBS      multio-action-sink
+                  NO_AS_NEEDED )
 
 ecbuild_add_test( TARGET    test_multio_file_sink
                   SOURCES   test_multio_file_sink.cc TestDataContent.cc TestDataContent.h
-                  LIBS      ${_link_libraries} )
+                  LIBS      multio-action-sink
+                  NO_AS_NEEDED )
 
 # Test bits-per-value
 
 ecbuild_add_test( TARGET    test_multio_encode_bitspervalue
                   SOURCES   test_multio_encode_bitspervalue.cc
-                  LIBS      ${_link_libraries} )
+                  LIBS      multio-action-sink
+                  NO_AS_NEEDED )
 
 # Test config
 
 ecbuild_add_test( TARGET    test_multio_conf
                   SOURCES   test_multio_conf.cc
                   LIBS      multio
-                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
-)
+                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config" )
 
 # Test Mask compression
 
 ecbuild_add_test( TARGET    test_multio_mask_compression
                   SOURCES   test_multio_mask_compression.cc
-                  LIBS      ${_link_libraries} )
+                  LIBS      multio )
 
 # Test api
 

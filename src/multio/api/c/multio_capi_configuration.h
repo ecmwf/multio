@@ -20,7 +20,6 @@ int multio_new_configuration(multio_configuration_t** cc);
  */
 int multio_new_configuration_from_filename(multio_configuration_t** cc, const char* configuration_file_name);
 
-
 /** Deletes a multio configuration  object
  * \param cc Handle to the multio configuration  object
  * \returns Return code (#MultioErrorValues)
@@ -33,7 +32,19 @@ int multio_delete_configuration(multio_configuration_t* cc);
  * used in subcomponents? \param cc Handle to the multio configuration  object \returns Return code
  * (#MultioErrorValues)
  */
-int multio_conf_set_path(multio_configuration_t* cc, const char* configuration_path);
+int multio_config_set_path(multio_configuration_t* cc, const char* configuration_path);
+
+
+/** Sets an error handler which will be called on error with the supplied usercontext and an error code
+ * \param config Configuration object on which to set up the failure handler.
+ * \param handler C-Function pointer to the failure handling function
+ * \param  usercontext Any data the user wish to pass to the failure handler. Can be null.
+ */
+int multio_config_set_failure_handler(multio_configuration_t* config, multio_failure_handler_t handler,
+                                      void* usercontext);
+
+
+/* ==================================================================================================== */
 
 
 /** Overwrite global MPI options for default splitting.

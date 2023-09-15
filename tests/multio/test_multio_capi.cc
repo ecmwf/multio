@@ -177,7 +177,7 @@ CASE("Test loading configuration") {
     auto configFile = configuration_file_name();
     const char* conf_path = configFile.localPath();
 
-    test_check(multio_conf_set_path(multio_cc, conf_path), "Configuration Path Changed");
+    test_check(multio_config_set_path(multio_cc, conf_path), "Configuration Path Changed");
 
     auto configPath = configuration_path_name() / "testPlan.yaml";
 

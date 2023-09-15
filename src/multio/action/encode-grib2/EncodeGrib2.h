@@ -10,17 +10,16 @@
 
 /// @author Philipp Geier
 
-/// @date Oct 2019
+/// @date August 2023
 
 #pragma once
 
 #include "multio/action/ChainedAction.h"
-#include "multio/action/encode/GridDownloader.h"
-#include "multio/action/encode/MioGribHandle.h"
-
-#include <optional>
+#include "multio/action/encode-grib2/SampleManager.h"
 
 namespace multio::action {
+
+// TODO handle local definition number
 
 class EncodeGrib2 : public ChainedAction {
 public:
@@ -28,34 +27,30 @@ public:
 
     void executeImpl(message::Message msg) override;
 
-private:
+protected:
+    eckit::Buffer encodeSample(MioGribHandle& sample) const;
+
+    message::Message encodeMessageWithData(MioGribHandle& sample, const message::Message& inMsg) const;
+    message::Message encodeMessageWithoutData(MioGribHandle& sample, const message::Message& inMsg) const;
+
+    // Transfering general values (section 1), mars keys and product information
+    void transferRelevantValues(const encodeGrib2::SampleKey& sampleKey, const message::Metadata& from,
+                                MioGribHandle& to) const;
+
+    // Transfering general values (section 1) and mars keys - no product information
+    void transferRelevantValues(const message::Metadata& from, MioGribHandle& to) const;
+
+
     // Internal constructor delegate with prepared configuration for specific
     // encoder
     explicit EncodeGrib2(const ComponentConfiguration& compConf, const eckit::LocalConfiguration& encoderConf);
 
     void print(std::ostream& os) const override;
 
-    message::Message setFieldValues(const message::Message& msg);
-    message::Message setFieldValues(const double* values, size_t count);
-    message::Message setFieldValues(const float* values, size_t count);
-
-
-    message::Message encodeField(const message::Message& msg, const std::optional<std::string>& gridUID) const;
-
-    const MioGribHandle template_;
+    encodeGrib2::SampleManager sampleManager_;
     std::optional<eckit::LocalConfiguration> overwrite_;
-    std::unique_ptr<MioGribHandle> encoder_;
-    const std::unique_ptr<GridDownloader> gridDownloader_ = nullptr;
 };
 
-//=====================================================================================================================
-
-class EncodeGrib2Exception : public eckit::Exception {
-public:
-    EncodeGrib2Exception(const std::string& reason, const eckit::CodeLocation& location = eckit::CodeLocation());
-};
-
-//=====================================================================================================================
-
+//---------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio::action

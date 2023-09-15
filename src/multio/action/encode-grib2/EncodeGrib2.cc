@@ -15,18 +15,19 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
 #include "eckit/log/Log.h"
+#include "eckit/types/Date.h"
+#include "eckit/types/DateTime.h"
+#include "eckit/types/Time.h"
 
-#include "GridDownloader.h"
 #include "multio/LibMultio.h"
+#include "multio/action/encode-grib2/Exception.h"
 #include "multio/config/ConfigurationPath.h"
+#include "multio/util/DateTime.h"
 #include "multio/util/ScopedTimer.h"
 
 namespace multio::action {
 
 using config::configuration_path_name;
-
-using util::lookUp;
-using util::lookUpTranslate;
 
 namespace {
 
@@ -39,50 +40,12 @@ eckit::LocalConfiguration getEncodingConfiguration(const ComponentConfiguration&
     }
 }
 
-std::unique_ptr<MioGribHandle> loadTemplate(const eckit::LocalConfiguration& conf,
-                                            const config::MultioConfiguration& multioConfig) {
-    ASSERT(conf.has("template"));
-    std::string tmplPath = conf.getString("template");
-    // TODO provide utility to distinguish between relative and absolute paths
-    eckit::AutoStdFile fin{multioConfig.replaceCurly(tmplPath)};
-    int err;
-    return std::make_unique<MioGribHandle>(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), conf);
-}
-
-std::string encodeGrib2ExceptionReason(const std::string& r) {
-    std::string s("EncodeGrib2 exception: ");
-    s.append(r);
-    return s;
-}
-
-void setDateTime(MioGribHandle& h, const std::optional<std::int64_t>& date, const std::optional<std::int64_t>& time) {
-    if (date) {
-        h.setValue("year", *date / 10000);
-        h.setValue("month", *date % 10000) / 100);
-        h.setValue("day", *date % 100);
-    }
-    if (time) {
-        h.setValue("hour", *time / 10000);
-        h.setValue("minute", *time % 10000) / 100);
-        h.setValue("second", *time % 100);
-    }
-}
-
-void setStep(MioGribHandle& h, const std::optional<std::int64_t>& startStep,
-             const std::optional<std::int64_t>& endStep) {
-    if (startStep) {
-        h.setValue("startStep", *startStep);
-    }
-    if (endStep) {
-        h.setValue("endStep", *endStep);
-    }
-}
-
-message::Metadata applyOverwrites(MioGribHandle& h, const eckit::LocalConfiguration& configOverwrites,
-                                  message::Metadata md) {
-    auto overwrites = md.getOpt<message::Metadata>("encoder-overwrites").or_else(message::Metadata{});
-    for (auto&& kv : message::toMetadata(configOverwrites.get())) {
-        overwrites.set(std::move(kv->first), std::move(kv->second));
+void applyOverwrites(MioGribHandle& h, const std::optional<eckit::LocalConfiguration>& configOverwrites,
+                     const message::Metadata& md) {
+    // TODO clean up?? avoid copying metadata and pass metadata by ref to a lambda?
+    auto overwrites = md.getOpt<message::Metadata>("encoder-overwrites").value_or(message::Metadata{});
+    for (auto&& kv : message::toMetadata(configOverwrites->get())) {
+        overwrites.set(std::move(kv.first), std::move(kv.second));
     }
     for (const auto& kv : overwrites) {
         // TODO handle type... however eccodes should support string as well. For
@@ -92,7 +55,7 @@ message::Metadata applyOverwrites(MioGribHandle& h, const eckit::LocalConfigurat
             kv.second.visit(Overloaded{
                 [](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNestedTypes> {},
                 [&h, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), message::MetadataVectorTypes> {
-                    h.setValues(kv.first, vec);
+                    h.setValue(kv.first, vec);
                 },
                 [&h, &kv](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNonNullScalarTypes> {
                     h.setValue(kv.first, v);
@@ -102,187 +65,486 @@ message::Metadata applyOverwrites(MioGribHandle& h, const eckit::LocalConfigurat
                 }});
         }
     }
-    return md;
 }
 
 
 }  // namespace
 
 
-EncodeGrib2Exception::EncodeGrib2Exception(const std::string& r, const eckit::CodeLocation& l) :
-    eckit::Exception(encodeGrib2ExceptionReason(r), l) {}
-
 using message::Message;
 using message::Peer;
 
 EncodeGrib2::EncodeGrib2(const ComponentConfiguration& compConf, const eckit::LocalConfiguration& encConf) :
     ChainedAction{compConf},
+    sampleManager_{ComponentConfiguration{encConf, compConf.multioConfig()}},
     overwrite_{encConf.has("overwrite")
                    ? std::optional<eckit::LocalConfiguration>{encConf.getSubConfiguration("overwrite")}
-                   : std::optional<eckit::LocalConfiguration>{}},
-    template_{loadTemplate(encConf, compConf.multioConfig())},
-    encoder_{nullptr} gridDownloader_{std::make_unique<multio::action::GridDownloader>(compConf)} {}
+                   : std::optional<eckit::LocalConfiguration>{}}
+
+{}
 
 EncodeGrib2::EncodeGrib2(const ComponentConfiguration& compConf) :
     EncodeGrib2(compConf, getEncodingConfiguration(compConf)) {}
 
-void EncodeGrib2::executeImpl(Message msg) {
-    if (msg.tag() != Message::Tag::Field) {
-        executeNext(std::move(msg));
-        return;
+namespace {
+using message::Metadata;
+
+// https://codes.ecmwf.int/grib/format/grib2/ctables/4/4/
+std::int64_t timeUnitCodes(util::TimeUnit u) {
+    switch (u) {
+        case util::TimeUnit::Year:
+            return 4;
+        case util::TimeUnit::Month:
+            return 3;
+        case util::TimeUnit::Day:
+            return 2;
+        case util::TimeUnit::Hour:
+            return 1;
+        case util::TimeUnit::Minute:
+            return 0;
+        case util::TimeUnit::Second:
+            return 13;
+        default:
+            std::ostringstream oss;
+            oss << "timeUnitCodes: Unexpcted TimeUnit " << util::timeUnitToChar(u);
+            throw EncodeGrib2Exception(std::string(oss.str()), Here());
     }
-
-    encoder_.reset(template_.duplicate());
-    auto md = this->overwrite_ ? applyOverwrites(*encoder_.get(), *this->overwrite_, msg.metadata()) : msg.metadata();
-
-
-    auto typeMaybe = lookUp<std::string>(md, "type")();
-    auto operationMaybe = lookUp<std::string>(md, "operation")();
-
-    // Special date/time handling to operate with statistics action
-    if (typeMaybe) {
-        auto& type = *typeMaybe;
-        encoder_->setValue("type", type);
-
-        // List of forecast-type data
-        if (type == "fc") {
-            setDateTime(*encoder_.get(), lookUp<std::int64_t>(md, "startDate")(),
-                        lookUp<std::int64_t>(md, "startTime")());
-        }
-        else if (type == "pf") {
-            setDateTime(*encoder_.get(), lookUp<std::int64_t>(md, "startDate")(),
-                        lookUp<std::int64_t>(md, "startTime")());
-        }
-        else
-            // List time-processed analysis data
-            if (type == "tpa") {
-                setDateTime(*encoder_.get(), lookUp<std::int64_t>(md, "previousDate")(),
-                            lookUp<std::int64_t>(md, "previousTime")());
-            }
-            else {
-                // Analysis data
-                setDateTime(*encoder_.get(), lookUp<std::int64_t>(md, "currentDate")(),
-                            lookUp<std::int64_t>(md, "currentTime")());
-            }
-    }
-
-    if (operationMaybe) {
-        auto& operation = *operationMaybe;
-        bool isOpInstant = operation == "instant";
-
-        auto stepInHours = lookUp<std::int64_t>(md, "stepInHours")();
-        auto timeSpanInHours = lookUp<std::int64_t>(md, "timeSpanInHours")();
-
-        if (isOpInstant && typeMaybe && (*typeMaybe == "fc")) {
-            if (!stepInHours) {
-                throw eckit::SeriousBug("Not enough information to encode startStep for point-in-time of forecast");
-            }
-            setStep(*encoder_.get(), stepInHours, std::nullopt);
-        }
-        else {
-            if (!(stepInHours && timeSpanInHours)) {
-                throw eckit::SeriousBug("Not enough information to encode step range");
-            }
-
-            if (typeMaybe && ((*typeMaybe == "fc") || (*typeMaybe == "pf"))) {
-                auto prevStep = std::max(*stepInHours - *timeSpanInHours, (std::int64_t)0L);
-                setStep(*encoder_.get(), std::max(*stepInHours - *timeSpanInHours, (std::int64_t)0L), stepInHours);
-            }
-            else {
-                setStep(*encoder_.get(), 0, *timeSpanInHours);
-            }
-
-            withFirstOf(valueSetter(g, "indicatorOfUnitForTimeIncrement"),
-                        std::optional<std::int64_t>{13l});  // always seconds
-            withFirstOf(valueSetter(g, "timeIncrement"), lookUp<std::int64_t>(md, "timeStep"));
-        }
-    }
-
-    if (auto dateOfAnalysis = lookUp<std::int64_t>(md, "date-of-analysis")()) {
-        encoder_->setValue("yearOfAnalysis", *dateOfAnalysis / 10000);
-        encoder_->setValue("monthOfAnalysis", *dateOfAnalysis % 10000) / 100);
-        encoder_->setValue("dayOfAnalysis", *dateOfAnalysis % 100);
-    }
-
-    if (auto timeOfAnalysis = lookUp<std::int64_t>(md, "time-of-analysis")()) {
-        encoder_->setValue("hourOfAnalysis", *timeOfAnalysis / 10000);
-        encoder_->setValue("minuteOfAnalysis", (*timeOfAnalysis % 10000) / 100);
-    }
-
-    // The least mars keys we want to set explicitly
-    withFirstOf(valueSetter(g, "class"), lookUp<std::string>(md, "class"), lookUp<std::string>(md, "marsClass"));
-    withFirstOf(valueSetter(g, "stream"), lookUp<std::string>(md, "stream"), lookUp<std::string>(md, "marsStream"));
-    withFirstOf(valueSetter(g, "expver"), lookUp<std::string>(md, "expver"),
-                lookUp<std::string>(md, "experimentVersionNumber"));
 }
 
 
-message::Message EncodeGrib2::setFieldValues(const message::Message& msg) {
-    return dispatchPrecisionTag(msg.precision(), [&](auto pt) {
+//-----------------------------------------------------------------------------
+
+struct MetadataToGrib {
+    const Metadata& metadata;
+    MioGribHandle& handle;
+
+    template <typename T>
+    void transfer(const std::string& getKey, const std::string& setKey) {
+        handle.setValue(getKey, metadata.get<T>(setKey));
+    }
+    template <typename T>
+    bool transferOpt(const std::string& getKey, const std::string& setKey) {
+        if (auto opt = metadata.getOpt<T>(getKey); opt) {
+            handle.setValue(setKey, *opt);
+            return true;
+        }
+        return false;
+    }
+
+    template <typename T>
+    void transfer(const std::string& k) {
+        transfer<T>(k, k);
+    }
+    template <typename T>
+    bool transferOpt(const std::string& k) {
+        return transferOpt<T>(k, k);
+    }
+};
+
+
+void transferSection1Keys(MetadataToGrib& metaToGrib) {
+    metaToGrib.transfer<std::int64_t>("year");
+    metaToGrib.transfer<std::int64_t>("month");
+    metaToGrib.transfer<std::int64_t>("day");
+    metaToGrib.transfer<std::int64_t>("hour");
+    metaToGrib.transfer<std::int64_t>("minute");
+    metaToGrib.transfer<std::int64_t>("second");
+}
+
+
+void transferMarsKeys(MetadataToGrib& metaToGrib) {
+    metaToGrib.transferOpt<std::string>("class");
+    metaToGrib.transferOpt<std::string>("stream");
+    metaToGrib.transferOpt<std::string>("expver")
+        || metaToGrib.transferOpt<std::string>("experimentVersionNumber", "expver");
+}
+
+
+//-----------------------------------------------------------------------------
+
+void mapParamIdForOperation(const std::string& op, const Metadata& in, Metadata& out) {
+    static const std::unordered_map<std::string, std::int64_t> OPS_TO_CODE{{"instant", 0000},    {"average", 1000},
+                                                                           {"accumulate", 2000}, {"maximum", 3000},
+                                                                           {"minimum", 4000},    {"stddev", 5000}};
+
+    std::int64_t paramId = in.get<std::int64_t>("paramId");
+    if (paramId >= 212000 && paramId < 213000) {
+        // HACK! Support experimental averages.
+        out.set("paramId", paramId + 4000);
+    }
+    else {
+        out.set("paramId", paramId + OPS_TO_CODE.at(op));
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+
+std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& timeRef, const Metadata& in) {
+    static std::unordered_map<std::string, std::tuple<std::string, std::string>> REF_TO_DATETIME_KEYS{
+        {"start", {"startDate", "startTime"}},
+        {"previous", {"previousDate", "previousTime"}},
+        {"current", {"currentDate", "currentTime"}},
+    };
+
+    auto search = REF_TO_DATETIME_KEYS.find(timeRef);
+    if (search == REF_TO_DATETIME_KEYS.end()) {
+        std::ostringstream oss;
+        oss << "getReferenceDateTime: Time reference \"" << timeRef << "\" can not be mapped";
+        throw EncodeGrib2Exception(oss.str(), Here());
+    }
+
+    return std::make_tuple(in.get<std::int64_t>(std::get<0>(search->second)),
+                           in.get<std::int64_t>(std::get<1>(search->second)));
+}
+
+void mapTime(const std::optional<std::string>& op, const Metadata& in, Metadata& out) {
+    auto timeExtent = in.getOpt<std::string>("timeExtent");
+
+    if (!timeExtent) {
+        return;
+    }
+    auto timeFormat = in.getOpt<std::string>("timeFormat");
+
+    auto type = in.getOpt<std::string>("type");
+
+    // bool isTimeRange = op && op != "instant";
+    bool isTimeRange = timeExtent == "timeRange";
+
+    if ((op && op == "instant") && isTimeRange) {
+        throw EncodeGrib2Exception(
+            "mapTime - Inconsintent metadata. Key \"timeExtent\" has value \"timeRange\" but \"operation\" is "
+            "\"instant\".",
+            Here());
+    }
+
+
+    bool isLocalTime = timeFormat == "localTime";
+    // Will be named to indicatorOfUnitForForecastTime consistently
+    const char* forecasteTimeUnitKey = isLocalTime ? "indicatorOfUnitForForecastTime" : "indicatorOfUnitOfTimeRange";
+
+
+    // TODO to be moved to some metadata util or put on top of message?
+    // Maybe have a separate place for data model that checks these things....
+    std::string timeRef = std::invoke([&]() -> std::string {
+        if (auto optTimeRef = in.getOpt<std::string>("timeReference"); optTimeRef) {
+            return *optTimeRef;
+        }
+
+        // TODO: this will not hold in the future - maybe the new category "processType" can be used to check if it's a
+        // forecaste
+        bool isForecast = type && (type == "fc" || type == "pf");
+        return isForecast ? "start" : (isTimeRange ? "previous" : "current");
+    });
+
+
+    auto refDateTime = getReferenceDateTime(timeRef, in);
+    auto refDate = util::toDateInts(std::get<0>(refDateTime));
+    out.set("year", refDate.year);
+    out.set("month", refDate.month);
+    out.set("day", refDate.day);
+
+    auto refTime = util::toTimeInts(std::get<1>(refDateTime));
+    out.set("hour", refTime.hour);
+    out.set("minute", refTime.minute);
+    out.set("second", refTime.second);
+
+    auto currentDate = util::toDateInts(in.get<std::int64_t>("currentDate"));
+    auto currentTime = util::toTimeInts(in.get<std::int64_t>("currentTime"));
+    if (!isTimeRange) {
+        if (timeRef.compare("current") != 0) {
+            // Compute diff to current time in some appropriate unit
+            util::DateTimeDiff diff = util::dateTimeDiff(currentDate, currentTime, refDate, refTime);
+            out.set(forecasteTimeUnitKey, timeUnitCodes(diff.unit));
+            out.set("forecastTime", diff.diff);
+        }
+        else {
+            out.set(forecasteTimeUnitKey, 0);
+            out.set("forecastTime", 0);
+        }
+    }
+    else {
+        auto previousDate = util::toDateInts(in.get<std::int64_t>("previousDate"));
+        auto previousTime = util::toTimeInts(in.get<std::int64_t>("previousTime"));
+        if (timeRef.compare("previous") != 0) {
+            // Compute diff to current time in some appropriate unit
+            util::DateTimeDiff diff = util::dateTimeDiff(previousDate, previousTime, refDate, refTime);
+            out.set(forecasteTimeUnitKey, timeUnitCodes(diff.unit));
+            out.set("forecastTime", diff.diff);
+        }
+        else {
+            // No forecast time is used
+            out.set(forecasteTimeUnitKey, 0);
+            out.set("forecastTime", 0);
+        }
+
+        out.set("yearOfEndOfOverallTimeInterval", currentDate.year);
+        out.set("monthOfEndOfOverallTimeInterval", currentDate.month);
+        out.set("dayOfEndOfOverallTimeInterval", currentDate.day);
+        out.set("hourOfEndOfOverallTimeInterval", currentTime.hour);
+        out.set("minuteOfEndOfOverallTimeInterval", currentTime.minute);
+        out.set("secondOfEndOfOverallTimeInterval", currentTime.second);
+
+        util::DateTimeDiff lengthTimeRange = util::dateTimeDiff(currentDate, currentTime, previousDate, previousTime);
+
+        out.set("indicatorOfUnitForTimeRange", timeUnitCodes(lengthTimeRange.unit));
+        out.set("lengthOfTimeRange", lengthTimeRange.diff);
+
+        if (op) {
+            static const std::map<const std::string, const std::int64_t> TYPE_OF_STATISTICAL_PROCESSING{
+                {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
+            if (auto searchStat = TYPE_OF_STATISTICAL_PROCESSING.find(*op);
+                searchStat != TYPE_OF_STATISTICAL_PROCESSING.end()) {
+                out.set("typeOfStatisticalProcessing", searchStat->second);
+            }
+            else {
+                std::ostringstream oss;
+                oss << "mapTime - Can not map value \"" << *op
+                    << "\"for key \"operation\" (statistical output) to a valid grib2 type of statistical processing.";
+                throw EncodeGrib2Exception(oss.str(), Here());
+            }
+        }
+
+
+        // # CODE TABLE 4.11, Type of time intervals
+        // 1 1  Successive times processed have same forecast time, start time of forecast is incremented
+        // 2 2  Successive times processed have same start time of forecast, forecast time is incremented
+        // 3 3  Successive times processed have start time of forecast incremented and forecast time decremented so that
+        // valid time remains constant 4 4  Successive times processed have start time of forecast decremented and
+        // forecast time incremented so that valid time remains constant 5 5  Floating subinterval of time between
+        // forecast time and end of overall time interval
+        out.set("typeOfTimeIncrement", timeRef == "start" ? 2 : 1);
+
+        auto sampleIntervalUnitStr = in.get<std::string>("sampleIntervalUnit");
+        auto sampleIntervalUnit = util::timeUnitFromString(sampleIntervalUnitStr);
+        if (!sampleIntervalUnit) {
+            std::ostringstream oss;
+            oss << "mapTime - Value for passed metadatakey \"sampleIntervalUnit\": " << sampleIntervalUnitStr
+                << " can not be parsed to a valid unit (Y,m,d,H,M,S). ";
+            throw EncodeGrib2Exception(oss.str(), Here());
+        }
+        out.set("indicatorOfUnitForTimeIncrement", timeUnitCodes(*sampleIntervalUnit));
+        out.set("timeIncrement", in.get<std::int64_t>("sampleInterval"));
+    }
+
+
+    // Set some additional local ECMWF keys...
+    if (auto analysisDate = in.getOpt<std::int64_t>("date-of-analysis"); analysisDate) {
+        auto date = util::toDateInts(*analysisDate);
+        out.set("yearOfAnalysis", date.year);
+        out.set("monthOfAnalysis", date.month);
+        out.set("dayOfAnalysis", date.day);
+    }
+
+    if (auto analysisTime = in.getOpt<std::int64_t>("time-of-analysis"); analysisTime) {
+        auto time = util::toTimeInts(*analysisTime);
+        out.set("hourOfAnalysis", time.hour);
+        out.set("minuteOfAnalysis", time.minute);
+        out.set("secondOfAnalysis", time.second);
+    }
+}
+
+//-----------------------------------------------------------------------------
+
+
+using CustomMapFunction = std::function<void(const Metadata&, Metadata&)>;
+using CustomMapping = std::unordered_map<std::string, CustomMapFunction>;
+
+
+void mapLevelToFirstFixedSurface(const Metadata& in, Metadata& out) {
+    auto level = in.get<std::int64_t>("level");
+    ASSERT(level > 0);
+    out.set("scaledValueOfFirstFixedSurface", level);
+};
+
+void mapLevelToFixedSurfaces(const Metadata& in, Metadata& out) {
+    auto level = in.get<std::int64_t>("level");
+    ASSERT(level > 0);
+    out.set("scaledValueOfFirstFixedSurface", level - 1);
+    out.set("scaledValueOfSecondFixedSurface", level);
+};
+
+
+const CustomMapping TYPE_OF_LEVEL_MAPPINGS{
+    {          // First only
+     {"snow",  // sol
+      [](const Metadata& in, Metadata& out) { mapLevelToFirstFixedSurface(in, out); }},
+     {"soil",  // sol
+      [](const Metadata& in, Metadata& out) { mapLevelToFirstFixedSurface(in, out); }},
+     {"seaIce",  // sol
+      [](const Metadata& in, Metadata& out) { mapLevelToFirstFixedSurface(in, out); }},
+     {"hybrid",  // ml
+      [](const Metadata& in, Metadata& out) { mapLevelToFirstFixedSurface(in, out); }},
+     {"oceanModel",  // o3d
+      [](const Metadata& in, Metadata& out) { mapLevelToFirstFixedSurface(in, out); }},
+
+     // First and second
+     {"snowLayer",  // sol
+      [](const Metadata& in, Metadata& out) { mapLevelToFixedSurfaces(in, out); }},
+     {"soilLayer",  // sol
+      [](const Metadata& in, Metadata& out) { mapLevelToFixedSurfaces(in, out); }},
+     {"seaIceLayer",  // sol
+      [](const Metadata& in, Metadata& out) { mapLevelToFixedSurfaces(in, out); }},
+     {"hybridLayer",  // ml
+      [](const Metadata& in, Metadata& out) { mapLevelToFixedSurfaces(in, out); }},
+     {"oceanModelLayer",  // o3d
+      [](const Metadata& in, Metadata& out) { mapLevelToFixedSurfaces(in, out); }}}};
+
+
+void mapVertical(const Metadata& in, Metadata& out) {
+    if (auto typeOfLevel = in.getOpt<std::string>("typeOfLevel"); typeOfLevel) {
+        if (auto searchTOL = TYPE_OF_LEVEL_MAPPINGS.find(*typeOfLevel); searchTOL != TYPE_OF_LEVEL_MAPPINGS.end()) {
+            std::invoke(searchTOL->second, in, out);
+        }
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+
+void applyMetadataMappings(const Metadata& in, Metadata& out) {
+    auto op = in.getOpt<std::string>("operation");
+
+    if (op) {
+        mapParamIdForOperation(*op, in, out);
+    }
+    mapVertical(in, out);
+    mapTime(op, in, out);
+}
+
+//-----------------------------------------------------------------------------
+
+
+}  // namespace
+
+
+//-----------------------------------------------------------------------------
+
+eckit::Buffer EncodeGrib2::encodeSample(MioGribHandle& sample) const {
+    eckit::Buffer buf{sample.length()};
+    sample.write(buf);
+    return buf;
+}
+
+
+//-----------------------------------------------------------------------------
+
+message::Message EncodeGrib2::encodeMessageWithData(MioGribHandle& sample, const message::Message& inputMsg) const {
+    return dispatchPrecisionTag(inputMsg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
-        auto beg = reinterpret_cast<const Precision*>(msg.payload().data());
+        sample.setDataValues(reinterpret_cast<const Precision*>(inputMsg.payload().data()), inputMsg.globalSize());
+        return message::Message{
+            Message::Header{Message::Tag::Grib, Peer{inputMsg.source().group()}, Peer{inputMsg.destination()}},
+            encodeSample(sample)};
+    });
+}
 
-        encoder_->setDataValues(beg, msg.globalSize());
+//-----------------------------------------------------------------------------
 
-        eckit::Buffer buf{this->encoder_->length()};
-        encoder_->write(buf);
-
-        return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}},
-                       std::move(buf)};
+message::Message EncodeGrib2::encodeMessageWithoutData(MioGribHandle& sample, const message::Message& inputMsg) const {
+    return dispatchPrecisionTag(inputMsg.precision(), [&](auto pt) {
+        using Precision = typename decltype(pt)::type;
+        return message::Message{
+            Message::Header{Message::Tag::Grib, Peer{inputMsg.source().group()}, Peer{inputMsg.destination()}},
+            encodeSample(sample)};
     });
 }
 
 
-message::Message EncodeGrib2::setFieldValues(const double* values, size_t count) {
-    encoder_->setDataValues(values, count);
+//-----------------------------------------------------------------------------
 
-    eckit::Buffer buf{this->encoder_->length()};
-    encoder_->write(buf);
+void EncodeGrib2::transferRelevantValues(const encodeGrib2::SampleKey& sampleKey, const message::Metadata& from,
+                                         MioGribHandle& to) const {
+    MetadataToGrib m2g{from, to};
+    transferSection1Keys(m2g);
+    sampleManager_.transferProductKeys(sampleKey, from, to);
+    transferMarsKeys(m2g);
+};
 
-    return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
-}
+
+void EncodeGrib2::transferRelevantValues(const message::Metadata& from, MioGribHandle& to) const {
+    MetadataToGrib m2g{from, to};
+    transferSection1Keys(m2g);
+    transferMarsKeys(m2g);
+};
 
 
-message::Message EncodeGrib2::setFieldValues(const float* values, size_t count) {
-    std::vector<double> dvalues(count, 0.0);
-    for (int i = 0; i < count; ++i) {
-        dvalues[i] = double(values[i]);
+//-----------------------------------------------------------------------------
+
+void EncodeGrib2::executeImpl(Message msg) {
+    auto& md = msg.metadata();
+    switch (msg.tag()) {
+        case Message::Tag::Field: {
+            encodeGrib2::SampleKey sampleKey = sampleManager_.sampleKeyFromMetadata(md);
+
+            auto handleFieldRes = sampleManager_.handleField(sampleKey, md);
+            // Use metadata with overwrites as input to allow mapping of these values...
+            applyMetadataMappings(handleFieldRes.metadataWithOverwrites, handleFieldRes.metadataWithOverwrites);
+
+            // Handle additional messages (i.e. coordinates in case of lazy/dynamic init of grid information)
+            if (handleFieldRes.encodeAdditionalHandles) {
+                for (auto& handlePtr : *handleFieldRes.encodeAdditionalHandles) {
+                    transferRelevantValues(sampleKey, handleFieldRes.metadataWithOverwrites, *handlePtr.get());
+
+                    applyOverwrites(*handlePtr.get(), this->overwrite_, md);
+                    executeNext(encodeMessageWithoutData(*handlePtr.get(), msg));
+                }
+            }
+
+            {
+                MioGribHandle& handle = *handleFieldRes.encodeFieldHandle.get();
+
+                transferRelevantValues(sampleKey, handleFieldRes.metadataWithOverwrites, handle);
+
+                applyOverwrites(handle, this->overwrite_, md);
+                executeNext(encodeMessageWithData(handle, msg));
+            }
+        }
+        case Message::Tag::Domain: {
+            if (auto domain = md.getOpt<std::string>(encodeGrib2::DOMAIN_KEY); domain) {
+                auto initDomainRes = sampleManager_.initDomain(*domain, md);
+
+                if (initDomainRes.encodeAdditionalHandles) {
+                    auto sampleKeyMb = sampleManager_.tryGetSampleKeyFromMetadata(md);
+                    for (auto& handlePtr : *initDomainRes.encodeAdditionalHandles) {
+                        applyMetadataMappings(initDomainRes.metadataWithOverwrites,
+                                              initDomainRes.metadataWithOverwrites);
+
+                        if (sampleKeyMb) {
+                            // TODO handle local definition number
+                            handlePtr->setValue(encodeGrib2::PDT_KEY, sampleKeyMb->productDefinitionTemplateNumber);
+                            transferRelevantValues(*sampleKeyMb, initDomainRes.metadataWithOverwrites,
+                                                   *handlePtr.get());
+                        }
+                        else {
+                            transferRelevantValues(initDomainRes.metadataWithOverwrites, *handlePtr.get());
+                        }
+
+                        applyOverwrites(*handlePtr.get(), this->overwrite_, md);
+
+                        executeNext(encodeMessageWithoutData(*handlePtr.get(), msg));
+                    }
+                }
+            }
+            executeNext(std::move(msg));
+            return;
+        }
+        default: {
+            executeNext(std::move(msg));
+            return;
+        }
     }
-
-    encoder_->setDataValues(dvalues.data(), count);
-
-    eckit::Buffer buf{this->encoder_->length()};
-    encoder_->write(buf);
-
-    return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
 }
+
+//-----------------------------------------------------------------------------
 
 
 void EncodeGrib2::print(std::ostream& os) const {
-    os << "EncodeGrib2(encoder=";
-    if (encoder_)
-        encoder_->print(os);
+    // TODO
+    os << "EncodeGrib2(encoder=TBD";
     os << ")";
 }
 
-namespace {}  // namespace
-
-message::Message EncodeGrib2::encodeField(const message::Message& msg,
-                                          const std::optional<std::string>& gridUID) const {
-    try {
-        util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-        auto md = this->overwrite_ ? applyOverwrites(*this->overwrite_, msg.metadata()) : msg.metadata();
-        if (gridUID) {
-            md.set("uuidOfHGrid", gridUID.value());
-        }
-        return encoder_->encodeField(msg.modifyMetadata(std::move(md)));
-    }
-    catch (...) {
-        std::ostringstream oss;
-        oss << "Encode::encodeField with Message: " << msg;
-        std::throw_with_nested(EncodeGrib2Exception(oss.str(), Here()));
-    }
-}
 
 static ActionBuilder<EncodeGrib2> EncodeGrib2Builder("encode-grib2");
 

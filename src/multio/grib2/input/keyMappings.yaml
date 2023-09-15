@@ -10,18 +10,19 @@ keyMappings:
 
     # paramType: may be added recently for ERA6...
 
-    startStep:
-        - forecastTime
+    # Timing information is handled without metakeys for now
+    # startStep:
+    #     - forecastTime
 
-    stepUnit:
-        - indicatorOfUnitOfTimeRange
+    # stepUnit:
+    #     - indicatorOfUnitOfTimeRange
 
-    endStep:
-        - yearOfEndOfOverallTimeInterval
-        - monthOfEndOfOverallTimeInterval
-        - dayOfEndOfOverallTimeInterval
-        - hourOfEndOfOverallTimeInterval
-        - minuteOfEndOfOverallTimeInterval
+    # endStep:
+    #     - yearOfEndOfOverallTimeInterval
+    #     - monthOfEndOfOverallTimeInterval
+    #     - dayOfEndOfOverallTimeInterval
+    #     - hourOfEndOfOverallTimeInterval
+    #     - minuteOfEndOfOverallTimeInterval
         - secondOfEndOfOverallTimeInterval
         # - lengthOfTimeRange # only for typeOfTimeIncrement != 1...
 
@@ -40,13 +41,13 @@ keyMappings:
 
     typeOfLevel:
         - typeOfFirstFixedSurface
-        - scaleFactorOfFirstFixedSurface
-        - scaledValueOfFirstFixedSurface
-        - scaleFactorOfSecondFixedSurface
-        - scaledValueOfSecondFixedSurface
+        # - scaleFactorOfFirstFixedSurface
+        # - scaledValueOfFirstFixedSurface        # scaledValue may be set to a custom value for some typeOfLevel
+        # - scaleFactorOfSecondFixedSurface
+        # - scaledValueOfSecondFixedSurface
         - typeOfSecondFixedSurface
-        - pressureUnits
-        - genVertHeightCoords
+        # - pressureUnits
+        # - genVertHeightCoords
 
 
 
@@ -338,78 +339,6 @@ keyTypes:
 
 
 
-
-
-
-
-keyHooks:
-    inputs:
-        type:
-            key: type
-            type: StringType
-        operation:
-            key: operation
-            type: StringType
-        date:
-            inputs:
-                - type
-            inline:
-            type: IntType
-        dateOfAnalysis:
-            key: date-of-analysis
-            type: IntType
-        timeOfAnalysis:
-            key: time-of-analysis
-            type: IntType
-
-    hooks:
-        - inputs:
-            - dateOfAnalysis
-          actions:
-              - set: yearOfAnalysis
-                inline: "dateOfAnalysis / 10000"
-              - set: monthOfAnalysis
-                inline: "(dateOfAnalysis % 10000) / 100"
-              - set: dayOfAnalysis
-                inline: "dateOfAnalysis % 100"
-
-        - inputs:
-            - timeOfAnalysis
-          actions:
-              - set: hourOfAnalysis
-                inline: "timeOfAnalysis / 10000"
-              - set: minuteOfAnalysis
-                inline: "(timeOfAnalysis % 10000) / 100"
-              - set: secondOfAnalysis
-                inline: "timeOfAnalysis % 100"
-
-        - inputs:
-            - type
-          actions:
-              - set: type
-                inline: "type"
-              - set: typeOfGeneratingProcess
-                actions:
-                    - match: type
-                      cases:
-                        an: 0
-                        in: 1
-                        fc: 2
-                        pf: 4
-                        tpa: 12
-
-        - inputs:
-            - operation
-          actions:
-              - set: typeOfStatisticalProcessing
-                actions:
-                    - match: "operation"
-                      cases
-                        average: 0
-                        accumulate: 1
-                        maximum: 2
-                        minimum: 3
-                        stddev: 6
 
 
 

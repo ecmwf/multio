@@ -35,7 +35,7 @@ def generateCPPEnumParserForCategory(categories, categoryName, setOfValues):
     errString = "Value for {catName} does not match on of the following [{vals}]".format(catName=categoryName, vals=", ".join(["{}".format(v) for v in setOfValues]))
 
 
-    return """Result<{enumName}> parse{enumName}(std::optional<std::string> val) noexcept {{
+    return """Result<{enumName}> parse{enumName}(std::optional<std::string> val) const noexcept {{
     static const std::unordered_map<std::string, {enumName}> map{{{{{values}}}}};
 
     if(!val) {{
@@ -61,7 +61,7 @@ def generateCPPKeyTypeEnum(allKeyTypes):
     for v in allKeyTypes:
         values.append("    {},".format(v))
 
-    return """enum class KeyType: unsigned int
+    return """enum class KeyTypes: unsigned int
 {{
 {values}
 }};\n
@@ -80,29 +80,28 @@ def generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPos
 
     def buildDecisionMapTypeString(cats):
         if len(cats) == 0:
-            return "unsigned int"
+            return "std::int64_t"
         else:
             return "std::unordered_map<{enumName}, {sub}>".format(enumName=camelToPascalCase(cats[0]), sub=buildDecisionMapTypeString(cats[1:]))
 
     keyTypeLookupMapTypesString = """
-using Key = std::string;
 using KeyList = std::vector<Key>;
 struct KeyInfo {
-    std::vector<KeyType> types;
+    std::set<KeyTypes> types;
     std::optional<KeyList> alternativeKeys;
 };
 using KeyInfoMap = std::unordered_map<Key, KeyInfo>;
-using PdtKeyMap = std::unordered_map<unsigned int, KeyList>;
+using PdtKeyMap = std::unordered_map<std::int64_t, KeyList>;
 """
     decisionMapTypeString = "using DecisionMap = {};".format(buildDecisionMapTypeString(categoryHandleOrder))
 
     def buildKeyTypeMapStr():
         def buildTypes(t):
             if isinstance(t, list):
-                return "{{{}}}".format(", ".join(("KeyType::{}".format(ti) for ti in t)))
+                return "{{{}}}".format(", ".join(("KeyTypes::{}".format(ti) for ti in t)))
 
             else:
-                return "{{KeyType::{}}}".format(t)
+                return "{{KeyTypes::{}}}".format(t)
 
 
         def buildAltKeys(k):
@@ -207,24 +206,32 @@ using PdtKeyMap = std::unordered_map<unsigned int, KeyList>;
 // This file is generated from python. Do not touch.
 
 #include <string>
+#include <cstdint>
 #include <sstream>
 #include <optional>
 #include <variant>
 #include <unordered_map>
+#include <vector>
+#include <set>
 #include <functional>
 
 
 namespace multio::grib2 {{
 
 struct Error {{
-    std::string str;
+    std::string msg;
 }};
 
 
 template<typename T>
 using Result = std::variant<T, Error>;
 
+
 {keyTypeEnum}
+
+
+template<typename Key = std::string>
+struct Grib2ProductHandler {{
 
 {keyTypeLookupMapTypes}
 
@@ -235,14 +242,16 @@ using Result = std::variant<T, Error>;
 {decisionMapType}
 
 template<typename LookupValueAsOptString>
-Result<unsigned int> inferProductDefinitionTemplateNumber(LookupValueAsOptString&& lookup) noexcept {{
+Result<std::int64_t> inferProductDefinitionTemplateNumber(LookupValueAsOptString&& lookup) const noexcept {{
+    // TODO may be read from file in future
     static const DecisionMap map{{{decisionMap}}};
 
     {parseMap}
 }}
 
 
-Result<std::reference_wrapper<const KeyList>> keysForPdt(unsigned int pdt) noexcept {{
+Result<std::reference_wrapper<const KeyList>> keysForPdt(std::int64_t pdt) const noexcept {{
+    // TODO may be read from file in future
     static const PdtKeyMap map{{{pdtKeyMap}}};
 
     if (auto search = map.find(pdt); search != map.end()) {{
@@ -254,8 +263,7 @@ Result<std::reference_wrapper<const KeyList>> keysForPdt(unsigned int pdt) noexc
     return Error{{oss.str()}};
 }}
 
-template<typename LookupValueAsOptString>
-Result<std::reference_wrapper<const KeyInfo>> keyInfoForKey(const Key& k) noexcept {{
+Result<std::reference_wrapper<const KeyInfo>> keyInfoForKey(const Key& k) const noexcept {{
     static const KeyInfoMap map{{{keyInfoMap}}};
 
     if (auto search = map.find(k); search != map.end()) {{
@@ -266,6 +274,8 @@ Result<std::reference_wrapper<const KeyInfo>> keyInfoForKey(const Key& k) noexce
     oss << "Unknown key " << k;
     return Error{{oss.str()}};
 }}
+
+}};
 
 }}
 """.format(
@@ -295,7 +305,7 @@ def generateCPPTestInclude(categorySelectorsWithMappedPdt):
 namespace multio::grib2::test {{
 
 struct PdtWithSelector{{
-    unsigned int productDefinitionTemplateNumber;
+    std::int64_t productDefinitionTemplateNumber;
     std::unordered_map<std::string, std::string> selector;
 }};
 
@@ -316,7 +326,6 @@ with open('cpp/MultioGrib2.h', "w") as outFile:
 with open('cpp/MultioGrib2Test.h', "w") as outFile:
     cppString = generateCPPTestInclude(categorySelectorsWithMappedPdt)
     outFile.write(cppString)
-
 
 
 

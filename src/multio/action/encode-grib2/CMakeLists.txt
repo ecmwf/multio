@@ -1,16 +1,16 @@
 ecbuild_add_library(
 
-	TARGET multio-action-encode
+	TARGET multio-action-encode-grib2
 
     SOURCES
-      Encode.cc
-      Encode.h
-      GribEncoder.cc
-      GribEncoder.h
-      GridDownloader.cc
-      GridDownloader.h
-      MioGribHandle.cc
-      MioGribHandle.h
+      EncodeGrib2.cc
+      EncodeGrib2.h
+      GridInfo.cc
+      GridInfo.h
+      Exception.cc
+      Exception.h
+      SampleManager.cc
+      SampleManager.h
 
     PRIVATE_INCLUDES
       ${ECKIT_INCLUDE_DIRS}

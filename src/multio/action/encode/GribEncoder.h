@@ -89,6 +89,7 @@ private:
 
     void setOceanCoordMetadata(message::Metadata& md);
 
+    template <typename T>
     message::Message setFieldValues(message::Message&& msg);
 
     const eckit::LocalConfiguration config_;

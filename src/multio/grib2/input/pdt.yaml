@@ -18,7 +18,7 @@ groups:
     forecastTime:
         - hoursAfterDataCutoff
         - minutesAfterDataCutoff
-        - indicatorOfUnitOfTimeRange
+        - indicatorOfUnitOfTimeRange # Will be named to indicatorOfUnitForForecastTime consistently
         - forecastTime
 
     probabilityForecast:
@@ -56,7 +56,7 @@ groups:
 
     radar:
         - numberOfRadarSitesUsed
-        - indicatorOfUnitOfTimeRange
+        - indicatorOfUnitOfTimeRange # Will be named to indicatorOfUnitForForecastTime consistently
         - siteLatitude
         - siteLongitude
         - siteElevation
@@ -101,7 +101,7 @@ groups:
 
     timeRange:
         - indicatorOfUnitForTimeRange
-        - lengthOfTimeRange
+        - lengthOfTimeRange # Will be named to indicatorOfUnitForForecastTime consistently
 
     singleTimeRangeAndIncrement:
         - numberOfMissingInStatisticalProcess
@@ -419,18 +419,18 @@ categories:
                 - null
                 - localTime
 
-    forecastType:
+    processType:
         - null
         - name: individualEnsemble
           groups: [individualEnsembleForecast]
           categories:
-            forecastSubType:
+            processSubType:
                 - null
                 - reforecast
         - name: derivedEnsemble
           groups: [derivedEnsembleForecast]
           categories:
-            forecastSubType:
+            processSubType:
                 - null
                 - clusterStatCircular
                 - clusterStatRectangular

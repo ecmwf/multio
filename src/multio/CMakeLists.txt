@@ -35,6 +35,11 @@ list( APPEND multio_util_srcs
     util/Substitution.cc
     util/Substitution.h
     util/BinaryUtils.h
+    util/DateTime.h
+    util/DateTime.cc
+    util/Result.h
+    util/Hash.h
+    util/Hash.cc
     util/MioGribHandle.h
     util/MioGribHandle.cc
     util/Timing.h

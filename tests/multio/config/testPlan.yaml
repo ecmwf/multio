@@ -8,4 +8,4 @@ plans:
             - type: file
               append: false
               per-server: false
-              path: "./testWriteOutput.grib"
+              path: "{CMAKE_BINARY_HOME}/testWriteOutput.grib"

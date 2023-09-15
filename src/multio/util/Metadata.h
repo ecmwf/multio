@@ -25,6 +25,7 @@
 #include "eckit/config/LocalConfiguration.h"
 
 #include "multio/util/TypeTraits.h"
+#include "multio/util/VariantHelpers.h"
 
 #include <optional>
 #include <string>
@@ -157,7 +158,7 @@ private:
 public:
     LookUpTranslate(const Container& c, const std::string& key) : c_(c), key_(key){};
 
-    std::optional<T> operator()() const { return c_.template getTranslateOpt<T>(key_); }
+    std::optional<T> operator()() const { return util::visitTranslate<T>(c_.get(key_)); }
 };
 
 

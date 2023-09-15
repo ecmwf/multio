@@ -736,13 +736,19 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     setEncodingSpecificFields(*this, metadata);
 
     // Setting parameter ID
-    std::int64_t paramInt = metadata.getTranslate<std::int64_t>("param");
-    if (paramInt / 1000 == 212) {
+    auto paramInt = util::visitTranslate<std::int64_t>(metadata.get("param"));
+    if (!paramInt) {
+        std::ostringstream oss;
+        oss << "GribEncoder::setOceanMetadata: Value for param can not be translated to int: ";
+        oss << metadata.get("param");
+        throw eckit::UserError(oss.str(), Here());
+    }
+    if (*paramInt / 1000 == 212) {
         // HACK! Support experimental averages.
-        setValue("paramId", paramInt + 4000);
+        setValue("paramId", *paramInt + 4000);
     }
     else {
-        setValue("paramId", paramInt + ops_to_code.at(metadata.get<std::string>("operation")));
+        setValue("paramId", *paramInt + ops_to_code.at(metadata.get<std::string>("operation")));
     }
     const auto& typeOfLevel = metadata.get<std::string>("typeOfLevel");
     setValue("typeOfLevel", typeOfLevel);
@@ -811,7 +817,14 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata, const
     // setValue("numberOfValues", md.get<std::int64_t>("globalSize"));
 
     // Setting parameter ID
-    setValue("paramId", md.getTranslate<std::int64_t>("param"));
+    auto paramInt = util::visitTranslate<std::int64_t>(md.get("param"));
+    if (!paramInt) {
+        std::ostringstream oss;
+        oss << "GribEncoder::setOceanCoordMetadata: Value for param can not be translated to int: ";
+        oss << md.get("param");
+        throw eckit::UserError(oss.str(), Here());
+    }
+    setValue("paramId", *paramInt);
 
     setValue("typeOfLevel", md.get<std::string>("typeOfLevel"));
 

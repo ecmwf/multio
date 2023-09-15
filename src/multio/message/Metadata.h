@@ -21,6 +21,7 @@
 #include "eckit/utils/Translator.h"
 #include "eckit/value/Value.h"
 
+#include "multio/message/MetadataException.h"
 #include "multio/util/VariantHelpers.h"
 
 #include <cstdint>
@@ -33,34 +34,6 @@
 namespace multio::message {
 
 //-----------------------------------------------------------------------------
-
-class MetadataException : public eckit::Exception {
-public:
-    MetadataException(const std::string& reason, const eckit::CodeLocation& l = eckit::CodeLocation());
-};
-
-class MetadataKeyException : public MetadataException {
-public:
-    MetadataKeyException(const std::string& key, const std::string& more,
-                         const eckit::CodeLocation& l = eckit::CodeLocation());
-};
-
-class MetadataMissingKeyException : public MetadataKeyException {
-public:
-    MetadataMissingKeyException(const std::string& missingKey, const eckit::CodeLocation& l = eckit::CodeLocation());
-};
-
-class MetadataWrongTypeException : public MetadataException {
-public:
-    MetadataWrongTypeException(const std::string& key, const eckit::CodeLocation& l = eckit::CodeLocation());
-    MetadataWrongTypeException(std::size_t requestedIndex, std::size_t containedIndex,
-                               const eckit::CodeLocation& l = eckit::CodeLocation());
-    MetadataWrongTypeException(const eckit::CodeLocation& l = eckit::CodeLocation());
-};
-
-
-//-----------------------------------------------------------------------------
-
 
 // Forward declaration
 class Metadata;
@@ -95,7 +68,20 @@ using MetadataTypes = util::MergeTypeList_t<MetadataScalarTypes, MetadataVectorT
 
 using MetadataValueVariant = util::ApplyTypeList_t<std::variant, MetadataTypes>;
 
+
 class MetadataValue : public MetadataValueVariant {
+    struct details {
+        template <typename T, typename This>
+        static decltype(auto) getter(This&& val) {
+            static_assert(util::TypeListContains<std::decay_t<T>, MetadataTypes>::value);
+            if (val.index() == util::GetVariantIndex<std::decay_t<T>, MetadataValueVariant>::value) {
+                return std::get<T>(std::forward<This>(val));
+            }
+            throw MetadataWrongTypeException(util::GetVariantIndex<std::decay_t<T>, MetadataValueVariant>::value,
+                                             val.index(), Here());
+        }
+    };
+
 public:
     using This = MetadataValue;
     using Base = MetadataValueVariant;
@@ -109,51 +95,35 @@ public:
     This& operator=(This&&) noexcept = default;
 
     template <typename F>
-    decltype(auto) visit(F&& f) const& noexcept(noexcept(std::visit(util::forwardUnwrappedUniquePtr(std::forward<F>(f)),
-                                                                    *this))) {
-        return std::visit(util::forwardUnwrappedUniquePtr(std::forward<F>(f)), *this);
+    decltype(auto) visit(F&& f) const& noexcept(noexcept(util::visitUnwrapUniquePtr(std::forward<F>(f), *this))) {
+        return util::visitUnwrapUniquePtr(std::forward<F>(f), *this);
     }
 
     template <typename F>
-    decltype(auto) visit(F&& f) & noexcept(noexcept(std::visit(util::forwardUnwrappedUniquePtr(std::forward<F>(f)),
-                                                               *this))) {
-        return std::visit(util::forwardUnwrappedUniquePtr(std::forward<F>(f)), *this);
+    decltype(auto) visit(F&& f) & noexcept(noexcept(util::visitUnwrapUniquePtr(std::forward<F>(f), *this))) {
+        return util::visitUnwrapUniquePtr(std::forward<F>(f), *this);
     }
 
     template <typename F>
-    decltype(auto) visit(F&& f) && noexcept(noexcept(std::visit(util::forwardUnwrappedUniquePtr(std::forward<F>(f)),
-                                                                std::move(*this)))) {
-        return std::visit(util::forwardUnwrappedUniquePtr(std::forward<F>(f)), std::move(*this));
+    decltype(auto) visit(F&& f) && noexcept(noexcept(util::visitUnwrapUniquePtr(std::forward<F>(f),
+                                                                                std::move(*this)))) {
+        return util::visitUnwrapUniquePtr(std::forward<F>(f), std::move(*this));
     }
+
 
     template <typename T>
     const T& get() const& {
-        static_assert(util::TypeListContains<std::decay_t<T>, MetadataTypes>::value);
-        if (this->index() == util::GetVariantIndex<std::decay_t<T>, MetadataValueVariant>::value) {
-            return std::get<T>(*this);
-        }
-        throw MetadataWrongTypeException(util::GetVariantIndex<std::decay_t<T>, MetadataValueVariant>::value,
-                                         this->index(), Here());
+        return details::getter<T>(*this);
     }
 
     template <typename T>
     T& get() & {
-        static_assert(util::TypeListContains<std::decay_t<T>, MetadataTypes>::value);
-        if (this->index() == util::GetVariantIndex<std::decay_t<T>, MetadataValueVariant>::value) {
-            return std::get<T>(*this);
-        }
-        throw MetadataWrongTypeException(util::GetVariantIndex<std::decay_t<T>, MetadataValueVariant>::value,
-                                         this->index(), Here());
+        return details::getter<T>(*this);
     }
 
     template <typename T>
     T&& get() && {
-        static_assert(util::TypeListContains<std::decay_t<T>, MetadataTypes>::value);
-        if (this->index() == util::GetVariantIndex<std::decay_t<T>, MetadataValueVariant>::value) {
-            return std::get<T>(std::move(*this));
-        }
-        throw MetadataWrongTypeException(util::GetVariantIndex<std::decay_t<T>, MetadataValueVariant>::value,
-                                         this->index(), Here());
+        return details::getter<T>(std::move(*this));
     }
 
     template <typename T>
@@ -211,6 +181,44 @@ namespace multio::message {
 
 class Metadata {
 private:
+    struct details {
+        template <typename T, typename This>
+        static decltype(auto) getter(This&& val, const std::string& k) {
+            if (auto search = val.values_.find(k); search != val.values_.end()) {
+                try {
+                    if constexpr (std::is_rvalue_reference<This>::value) {
+                        return std::move(search->second.template get<T>());
+                    }
+                    else {
+                        return search->second.template get<T>();
+                    }
+                }
+                catch (const MetadataException& err) {
+                    std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
+                }
+            }
+            throw MetadataMissingKeyException(k, Here());
+        }
+
+        template <typename T, typename This>
+        static std::optional<T> optGetter(This&& val, const std::string& k) {
+            if (auto search = val.values_.find(k); search != val.values_.end()) {
+                try {
+                    if constexpr (std::is_rvalue_reference<This>::value) {
+                        return std::move(search->second.template get<T>());
+                    }
+                    else {
+                        return search->second.template get<T>();
+                    }
+                }
+                catch (const MetadataException& err) {
+                    std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
+                }
+            }
+            return std::nullopt;
+        }
+    };
+
     using MapType = std::unordered_map<std::string, MetadataValue>;
     MapType values_;
 
@@ -247,120 +255,27 @@ public:
 
     template <typename T>
     T&& get(const std::string& k) && {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return std::move(search->second.get<T>());
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        throw MetadataMissingKeyException(k, Here());
+        return details::getter<T>(std::move(*this), k);
     }
 
     template <typename T>
     T& get(const std::string& k) & {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return search->second.get<T>();
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        throw MetadataMissingKeyException(k, Here());
+        return details::getter<T>(*this, k);
     }
 
     template <typename T>
     const T& get(const std::string& k) const& {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return search->second.get<T>();
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        throw MetadataMissingKeyException(k, Here());
+        return details::getter<T>(*this, k);
     }
 
     template <typename T>
     std::optional<T> getOpt(const std::string& k) && {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return std::move(search->second.get<T>());
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        return std::nullopt;
+        return details::optGetter<T>(std::move(*this), k);
     }
 
     template <typename T>
     std::optional<T> getOpt(const std::string& k) const& {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return search->second.get<T>();
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        return std::nullopt;
-    }
-
-    template <typename T>
-    T&& getTranslate(const std::string& k) && {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return std::move(search->second.getTranslate<T>());
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        throw MetadataMissingKeyException(k, Here());
-    }
-
-
-    template <typename T>
-    T getTranslate(const std::string& k) const& {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return search->second.getTranslate<T>();
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        throw MetadataMissingKeyException(k, Here());
-    }
-
-    template <typename T>
-    std::optional<T> getTranslateOpt(const std::string& k) && {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return std::move(search->second).getTranslate<T>();
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        return std::nullopt;
-    }
-
-    template <typename T>
-    std::optional<T> getTranslateOpt(const std::string& k) const& {
-        if (auto search = values_.find(k); search != values_.end()) {
-            try {
-                return search->second.getTranslate<T>();
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        return std::nullopt;
+        return details::optGetter<T>(*this, k);
     }
 
     MetadataValue& operator[](const std::string&);
@@ -379,14 +294,14 @@ public:
 
     // Adds a value if not already contained
     template <typename V>
-    bool trySet(std::string&& k, V&& v) {
-        return values_.try_emplace(std::move(k), std::forward<V>(v)).second;
+    auto trySet(std::string&& k, V&& v) {
+        return values_.try_emplace(std::move(k), std::forward<V>(v));
     }
 
     // Adds a value if not already contained
     template <typename V>
-    bool trySet(const std::string& k, V&& v) {
-        return values_.try_emplace(k, std::forward<V>(v)).second;
+    auto trySet(const std::string& k, V&& v) {
+        return values_.try_emplace(k, std::forward<V>(v));
     }
 
     auto find(const std::string& k) { return values_.find(k); };
@@ -419,6 +334,7 @@ public:
 
     /**
      * Adds all Metadata contained in other and returns a Metadata object with key/values that have been overwritten.
+     * Existing iterators to this container are invalidated after an update.
      */
     Metadata update(const Metadata& other);
     Metadata update(Metadata&& other);

@@ -80,7 +80,14 @@ void Sink::trigger(const Message& msg) {
         throw message::MetadataMissingKeyException(*triggerKey, Here());
     }
 
-    metadata[*triggerKey] = searchTriggerKey->second.getTranslate<std::string>();
+    auto triggerKeyVal = util::visitTranslate<std::string>(searchTriggerKey->second);
+    if (!triggerKeyVal) {
+        std::ostringstream oss;
+        oss << "Sink::trigger: Value for triggerKey \"" << *triggerKey << "\" can not be translated to string: ";
+        oss << searchTriggerKey->second;
+        throw eckit::UserError(oss.str(), Here());
+    }
+    metadata[*triggerKey] = *triggerKeyVal;
 
     eckit::Log::debug<LibMultio>() << "Trigger " << *triggerKey << " with value " << metadata[*triggerKey]
                                    << " is being called..." << std::endl;

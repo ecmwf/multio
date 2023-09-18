@@ -232,6 +232,6 @@ jobs:
         shell: bash -eux {0}
         run: |
           cd pymultio
+          export LD_LIBRARY_PATH=/home/runner/work/_temp/deps/openmpi/lib64:/home/runner/work/_temp/deps/openmpi/lib:$LD_LIBRARY_PATH
           DYLD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }} python -m pytest --cov=./ --cov-report=xml
-          export DYLD_LIBRARY_PATH=/home/runner/work/_temp/deps/openmpi:$DYLD_LIBRARY_PATH
           python -m coverage report

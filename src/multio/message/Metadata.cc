@@ -48,15 +48,46 @@ Metadata::operator std::unique_ptr<Metadata>() && {
 
 
 MetadataValue&& Metadata::get(const std::string& k) && {
-    return std::move(values_.at(k));
+    if (auto searchKey = values_.find(k); searchKey != values_.end()) {
+        return std::move(searchKey->second);
+    }
+    throw MetadataMissingKeyException(k, Here());
 }
 
 MetadataValue& Metadata::get(const std::string& k) & {
-    return values_.at(k);
+    if (auto searchKey = values_.find(k); searchKey != values_.end()) {
+        return searchKey->second;
+    }
+    throw MetadataMissingKeyException(k, Here());
 }
 
 const MetadataValue& Metadata::get(const std::string& k) const& {
-    return values_.at(k);
+    if (auto searchKey = values_.find(k); searchKey != values_.end()) {
+        return searchKey->second;
+    }
+    throw MetadataMissingKeyException(k, Here());
+}
+
+
+std::optional<MetadataValue> Metadata::getOpt(const std::string& k) && noexcept {
+    if (auto search = values_.find(k); search != values_.end()) {
+        return std::optional<MetadataValue>{std::move(search->second)};
+    }
+    return std::optional<MetadataValue>{};
+}
+
+std::optional<MetadataValue> Metadata::getOpt(const std::string& k) & noexcept {
+    if (auto search = values_.find(k); search != values_.end()) {
+        return std::move(search->second);
+    }
+    return std::optional<MetadataValue>{};
+}
+
+std::optional<MetadataValue> Metadata::getOpt(const std::string& k) const& noexcept {
+    if (auto search = values_.find(k); search != values_.end()) {
+        return std::move(search->second);
+    }
+    return std::optional<MetadataValue>{};
 }
 
 // Specialized get for Metadata

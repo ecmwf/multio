@@ -233,6 +233,7 @@ jobs:
         run: |
           cd pymultio
           ldd /home/runner/work/_temp/install/multio/lib/libmultio-api.so
+          ldd /opt/intel/oneapi/mpi/2021.10.0/lib/libmpifort.so
           export DYLD_FALLBACK_LIBRARY_PATH=/home/runner/work/_temp/install/multio/lib/
           LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }} python -m pytest --cov=./ --cov-report=xml
           python -m pytest --cov=./ --cov-report=xml

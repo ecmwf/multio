@@ -1,14 +1,14 @@
+
 ecbuild_add_library(
 
-	TARGET multio-action-select
+    TARGET multio-action-select
 
     SOURCES
-    	Select.cc
-    	Select.h
-
+        Select.cc
+        Select.h
 
     PRIVATE_INCLUDES
-      ${ECKIT_INCLUDE_DIRS}
+        ${ECKIT_INCLUDE_DIRS}
 
     CONDITION
 

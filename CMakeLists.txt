@@ -70,9 +70,9 @@ ecbuild_add_option( FEATURE MULTIO_DUMMY_API
                     DESCRIPTION "Enable creation of multio Dummy API" )
 
 if( HAVE_FORTRAN )
-  ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
-  ecbuild_find_package( NAME fckit   VERSION 0.10.0   REQUIRED )
-  find_package( MPI COMPONENTS Fortran) # Add explicit mpi for errorcodes -- isn't there a better way?
+    ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
+    ecbuild_find_package( NAME fckit   VERSION 0.10.0   REQUIRED )
+    find_package( MPI COMPONENTS Fortran) # Add explicit mpi for errorcodes -- isn't there a better way?
 endif()
 
 

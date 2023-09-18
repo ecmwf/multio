@@ -232,6 +232,7 @@ jobs:
         shell: bash -eux {0}
         run: |
           cd pymultio
-          export LD_TRACE_LOADED_OBJECTS=all
+          ldd /home/runner/work/_temp/install/multio/lib/libmultio-api.so
           export DYLD_FALLBACK_LIBRARY_PATH=/home/runner/work/_temp/install/multio/lib/
           LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }} python -m pytest --cov=./ --cov-report=xml
+          python -m pytest --cov=./ --cov-report=xml

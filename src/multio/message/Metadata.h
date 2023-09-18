@@ -253,6 +253,10 @@ public:
     MetadataValue& get(const std::string& k) &;
     const MetadataValue& get(const std::string& k) const&;
 
+    std::optional<MetadataValue> getOpt(const std::string& k) && noexcept;
+    std::optional<MetadataValue> getOpt(const std::string& k) & noexcept;
+    std::optional<MetadataValue> getOpt(const std::string& k) const& noexcept;
+
     template <typename T>
     T&& get(const std::string& k) && {
         return details::getter<T>(std::move(*this), k);

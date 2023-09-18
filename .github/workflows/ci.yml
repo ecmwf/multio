@@ -202,7 +202,7 @@ jobs:
       - name: Setup python env
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8.15'
+          python-version: '3.11'
 
       - name: Install python deps
         run: |
@@ -232,6 +232,6 @@ jobs:
         shell: bash -eux {0}
         run: |
           cd pymultio
-          LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
+          export LD_LIBRARY_PATH=/home/runner/work/_temp/deps/openmpi:$LD_LIBRARY_PATH
           DYLD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }} python -m pytest --cov=./ --cov-report=xml
           python -m coverage report

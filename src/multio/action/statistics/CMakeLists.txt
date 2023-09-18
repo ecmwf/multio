@@ -56,12 +56,11 @@ ecbuild_add_library(
     SOURCES
         ${_statistics_sources}
 
-
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}
 
     CONDITION
 
     PUBLIC_LIBS
-    ${_statistics_libs}
+        ${_statistics_libs}
 )

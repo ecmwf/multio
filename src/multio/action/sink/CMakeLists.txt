@@ -1,7 +1,7 @@
 # DataSink plugins
 
 if( CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
-    list( APPEND multio_sink_linker_options
+    list( APPEND multio_sink_plugins
         -Wl,--no-as-needed
     )
 endif()
@@ -17,7 +17,6 @@ if( HAVE_MAESTRO )
         multio-maestro
     )
 endif()
-
 
 ecbuild_add_library(
 
@@ -35,7 +34,6 @@ ecbuild_add_library(
     CONDITION
 
     PUBLIC_LIBS
-        ${multio_sink_linker_options}
         ${multio_sink_plugins}
         multio
 )

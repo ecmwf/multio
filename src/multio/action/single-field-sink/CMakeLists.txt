@@ -8,7 +8,6 @@ ecbuild_add_library(
         SingleFieldSink.cc
         SingleFieldSink.h
 
-
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}
 

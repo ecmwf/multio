@@ -13,25 +13,25 @@ endif(HAVE_FDB5)
 
 ecbuild_add_test( TARGET    test_multio_datasink_factory
                   SOURCES   test_multio_datasink_factory.cc
-                  LIBS      multio-action-sink
-                  NO_AS_NEEDED )
+                  NO_AS_NEEDED
+                  LIBS      multio-action-sink )
 
 ecbuild_add_test( TARGET    test_multio_multio
                   SOURCES   test_multio_multio.cc TestDataContent.cc TestDataContent.h
-                  LIBS      multio-action-sink
-                  NO_AS_NEEDED )
+                  NO_AS_NEEDED
+                  LIBS      multio-action-sink )
 
 ecbuild_add_test( TARGET    test_multio_file_sink
                   SOURCES   test_multio_file_sink.cc TestDataContent.cc TestDataContent.h
-                  LIBS      multio-action-sink
-                  NO_AS_NEEDED )
+                  NO_AS_NEEDED
+                  LIBS      multio-action-sink )
 
 # Test bits-per-value
 
 ecbuild_add_test( TARGET    test_multio_encode_bitspervalue
                   SOURCES   test_multio_encode_bitspervalue.cc
-                  LIBS      multio-action-sink
-                  NO_AS_NEEDED )
+                  NO_AS_NEEDED
+                  LIBS      multio-action-sink )
 
 # Test config
 

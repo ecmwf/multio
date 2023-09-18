@@ -6,10 +6,10 @@ configure_file( multio_config.h.in  multio_config.h  )
 configure_file( multio_version.h.in  multio_version.h )
 
 install(FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/multio_config.h
-            ${CMAKE_CURRENT_BINARY_DIR}/multio_version.h
-        DESTINATION
-            ${INSTALL_INCLUDE_DIR}/multio )
+        ${CMAKE_CURRENT_BINARY_DIR}/multio_config.h
+        ${CMAKE_CURRENT_BINARY_DIR}/multio_version.h
+    DESTINATION
+        ${INSTALL_INCLUDE_DIR}/multio )
 
 configure_file( multio_version.cc.in  multio_version.cc )
 

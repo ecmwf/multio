@@ -229,8 +229,12 @@ jobs:
       - name: intel ls
         if: contains( matrix.compiler, 'intel' )
         run: |
-          #ls /opt/intel/oneapi/mpi/2021.10.0/
-          ls /opt/intel/oneapi/
+          ls /opt/intel/oneapi/mpi/2021.10.0/
+          echo "-----------------"
+          ls /opt/intel/oneapi/mpi/
+          echo "----------------"
+          ls /opt/intel/oneapi/mpi/2021.10.0/lib
+          echo "----------------"
 
       - name: Run pytest
         env:

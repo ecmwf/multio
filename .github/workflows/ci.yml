@@ -241,7 +241,7 @@ jobs:
           echo "----------------"
           ls /opt/intel/oneapi/mpi/2021.10.0/include
           echo "----------------"
-          ls ls /opt/intel/oneapi/mpi/2021.10.0/libfabric
+          ls /opt/intel/oneapi/mpi/2021.10.0/libfabric
 
       - name: Run pytest
         env:

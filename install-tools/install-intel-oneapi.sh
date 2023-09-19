@@ -9,6 +9,4 @@ sudo apt-get update
 sudo apt-get install \
     intel-oneapi-compiler-fortran \
     intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic \
-    intel-oneapi-mpi \
-    intel-oneapi-mpi-devel \
     intel-oneapi-mkl

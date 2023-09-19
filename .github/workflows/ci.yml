@@ -232,6 +232,6 @@ jobs:
         shell: bash -eux {0}
         run: |
           cd pymultio
-          source /opt/intel/oneapi/setvars.sh
+          source /opt/intel/oneapi/mpi/2021.10.0./setvars.sh
           DYLD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}:/opt/intel/oneapi/mpi/2021.10.0/lib/ python -m pytest --cov=./ --cov-report=xml
           python -m pytest --cov=./ --cov-report=xml

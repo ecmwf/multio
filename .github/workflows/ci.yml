@@ -235,6 +235,13 @@ jobs:
           echo "----------------"
           ls /opt/intel/oneapi/mpi/2021.10.0/lib
           echo "----------------"
+          ls /opt/intel/oneapi/mpi/2021.10.0/lib/pkgconfig
+          echo "----------------"
+          ls /opt/intel/oneapi/mpi/2021.10.0/etc
+          echo "----------------"
+          ls /opt/intel/oneapi/mpi/2021.10.0/include
+          echo "----------------"
+          ls ls /opt/intel/oneapi/mpi/2021.10.0/libfabric
 
       - name: Run pytest
         env:

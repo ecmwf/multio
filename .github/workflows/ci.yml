@@ -229,7 +229,7 @@ jobs:
       - name: intel ls
         if: contains( matrix.compiler, 'intel' )
         run: |
-          ls /opt/intel/oneapi/mpi/2021.10.0./
+          ls /opt/intel/oneapi/mpi/2021.10.0/
           ls /opt/intel/oneapi/
 
       - name: Run pytest
@@ -238,5 +238,5 @@ jobs:
         shell: bash -eux {0}
         run: |
           cd pymultio         
-          DYLD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}  python -m pytest --cov=./ --cov-report=xml
-          python -m pytest coverage report
+          DYLD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}:/opt/intel/oneapi/mpi/2021.10.0/lib/  python -m pytest --cov=./ --cov-report=xml
+          python -m coverage report

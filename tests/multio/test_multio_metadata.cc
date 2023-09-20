@@ -96,8 +96,8 @@ CASE("Test getting scala values") {
     EXPECT(createScalarMetadata().get<bool>("bool") == true);         // Test rvalue get access
     EXPECT(createScalarMetadata().get("bool").get<bool>() == true);   // Test rvalue get access
     EXPECT_THROWS_AS(m.get<std::int64_t>("bool"), MetadataException);  // TODO test nested MetadataWrongTypeException
-    EXPECT_THROWS_AS(m.get("bool").get<std::int64_t>(),
-                     MetadataException);  // TODO test nested MetadataWrongTypeException
+    EXPECT_THROWS_AS(m.get("bool").get<std::int64_t>(), MetadataException);  // TODO test nested MetadataWrongTypeException
+
 
     EXPECT(m.get<std::int64_t>("int64") == 64);
     EXPECT(m.get("int64").get<std::int64_t>() == 64);

@@ -36,8 +36,6 @@ using Glossary = details::Glossary<MetadataTraits>;
 using Null = details::Null;
 
 
-std::string toString(const Metadata& metadata);
-
 Metadata toMetadata(const eckit::Value& value);
 
 Metadata toMetadata(const std::string& fieldId);

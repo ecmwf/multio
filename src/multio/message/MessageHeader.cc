@@ -90,7 +90,7 @@ util::PrecisionTag Message::Header::precision() const {
 
 const std::string& Message::Header::fieldId() const {
     if (!fieldId_) {
-        fieldId_ = message::toString(metadata_);
+        fieldId_ = metadata_.toString();
     }
     return *fieldId_;
 }

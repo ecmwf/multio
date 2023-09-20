@@ -569,7 +569,7 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
                 metadata.set("param", param);
                 metadata.set("step", step);
 
-                std::string field_id = multio::message::toString(metadata);
+                std::string field_id = metadata.toString();
 
                 std::vector<double> field;
                 auto& global_field = global_test_field(field_id, field_size(), transportType_, client_list_id);
@@ -629,7 +629,7 @@ void MultioHammer::testData() {
                 metadata.set("level", level);
                 metadata.set("param", param);
                 metadata.set("step", step);
-                std::string field_id = multio::message::toString(metadata);
+                std::string field_id = metadata.toString();
 
                 auto expect = global_test_field(field_id);
                 auto actual = file_content(file_name);

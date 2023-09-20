@@ -16,6 +16,9 @@
 
 #include "multio/util/TypeTraits.h"
 
+#include "eckit/log/JSON.h"
+
+
 #include <cstdint>
 #include <iostream>
 #include <memory>
@@ -47,9 +50,13 @@ struct DefaultMetadataTraits {
     }
 };
 
+//-----------------------------------------------------------------------------
+
 // Forward declaration
 template <typename MetadataTraits = DefaultMetadataTraits>
 class Metadata;
+
+//-----------------------------------------------------------------------------
 
 struct Null {
     constexpr operator bool() { return false; }
@@ -60,6 +67,10 @@ constexpr bool operator<(Null, Null) {
 }
 
 std::ostream& operator<<(std::ostream& os, const Null&);
+eckit::JSON& operator<<(eckit::JSON& json, const Null&);
+
+
+//-----------------------------------------------------------------------------
 
 
 // MetadataTypes may be specialized for different types to support different set of types

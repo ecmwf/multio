@@ -23,6 +23,7 @@
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 
+
 namespace {
 const std::unordered_map<std::string, int> latParamIds{
     {"T", 250003}, {"U", 250005}, {"V", 250007}, {"W", 250009}, {"F", 250011}};
@@ -94,11 +95,11 @@ std::optional<GridCoordinates> GridDownloader::getGridCoords(const GridDownloade
 
 void GridDownloader::initTemplateMetadata() {
     templateMetadata_.set("step", 0);
-    templateMetadata_.set("typeOfLevel", "oceanSurface");
-    templateMetadata_.set("level", 0);
+    templateMetadata_.set(message::Glossary::instance().typeOfLevel, "oceanSurface");
+    templateMetadata_.set(message::Glossary::instance().level, 0);
     templateMetadata_.set("category", "ocean-grid-coordinate");
-    templateMetadata_.set("bitsPerValue", 16);
-    templateMetadata_.set("precision", "double");
+    templateMetadata_.set(message::Glossary::instance().bitsPerValue, 16);
+    templateMetadata_.set(message::Glossary::instance().precision, "double");
 }
 
 multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gridSize,
@@ -106,9 +107,9 @@ multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gr
                                                                        const std::string& gridUID, int paramId) {
     multio::message::Metadata md(templateMetadata_);
 
-    md.set<std::int64_t>("globalSize", gridSize);
-    md.set("unstructuredGridSubtype", unstructuredGridSubtype);
-    md.set("uuidOfHGrid", gridUID);
+    md.set<std::int64_t>(message::Glossary::instance().globalSize, gridSize);
+    md.set(message::Glossary::instance().unstructuredGridSubtype, unstructuredGridSubtype);
+    md.set(message::Glossary::instance().uuidOfHGrid, gridUID);
 
     md.set("param", paramId);
 
@@ -172,8 +173,8 @@ void GridDownloader::downloadOrcaGridCoordinates(const config::ComponentConfigur
 multio::message::Message GridDownloader::encodeMessage(multio::message::Message&& message, int startDate,
                                                        int startTime) {
     multio::message::Metadata md{message.metadata()};
-    md.set("startDate", startDate);
-    md.set("startTime", startTime);
+    md.set(message::Glossary::instance().startDate, startDate);
+    md.set(message::Glossary::instance().startTime, startTime);
 
     auto updateMessage = message.modifyMetadata(std::move(md));
 

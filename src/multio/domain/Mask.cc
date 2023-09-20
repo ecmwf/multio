@@ -16,7 +16,6 @@
 #include "eckit/log/Log.h"
 
 #include "multio/domain/Mappings.h"
-#include "multio/message/Message.h"
 
 namespace multio {
 namespace domain {

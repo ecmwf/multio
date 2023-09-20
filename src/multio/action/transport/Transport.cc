@@ -23,6 +23,7 @@
 namespace multio::action {
 
 using message::Message;
+using message::MetadataTypes;
 using transport::TransportRegistry;
 
 namespace {
@@ -94,10 +95,10 @@ message::Peer Transport::chooseServer(const message::Metadata& metadata) {
 
         for (const std::string& s : hashKeys_) {
             getMetadataValue(s).visit(eckit::Overloaded{
-                [&s](const auto& v) -> util::IfTypeNotOf<decltype(v), message::MetadataScalarTypes> {
+                [&s](const auto& v) -> util::IfTypeNotOf<decltype(v), MetadataTypes::Scalars> {
                     throw message::MetadataWrongTypeException(s, Here());
                 },
-                [&os](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataScalarTypes> { os << v; },
+                [&os](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::Scalars> { os << v; },
             });
         }
         return os.str();

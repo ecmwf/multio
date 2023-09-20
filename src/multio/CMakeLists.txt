@@ -93,8 +93,14 @@ list( APPEND multio_message_srcs
     message/Message.cc
     message/MessageHeader.cc
     message/Message.h
-    message/Metadata.cc
     message/Metadata.h
+    message/Metadata.cc
+    message/details/Metadata.h
+    message/details/Metadata.cc
+    message/details/MetadataTypes.h
+    message/details/MetadataTypes.cc
+    message/details/MetadataFromValue.h
+    message/details/Glossary.h
     message/MetadataException.cc
     message/MetadataException.h
     message/MetadataMatcher.cc

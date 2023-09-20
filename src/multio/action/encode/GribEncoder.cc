@@ -39,7 +39,9 @@
 
 namespace multio::action {
 
+using message::Glossary;
 using message::Message;
+using message::MetadataTypes;
 using message::Peer;
 
 using util::firstOf;
@@ -296,15 +298,17 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     }
 
     ret.paramId
-        = firstOf(lookUp<std::int64_t>(md, "paramId"),
+        = firstOf(lookUp<std::int64_t>(md, Glossary::instance().paramId),
                   lookUpTranslate<std::int64_t>(md, "param"));  // param might be a string, separated by . for GRIB1.
                                                                 // String to std::int64_t convertion should get it right
     if (ret.paramId) {
-        g.setValue("paramId", *ret.paramId);
+        g.setValue(Glossary::instance().paramId, *ret.paramId);
     }
-    withFirstOf(valueSetter(g, "class"), lookUp<std::string>(md, "class"), lookUp<std::string>(md, "marsClass"));
-    withFirstOf(valueSetter(g, "stream"), lookUp<std::string>(md, "stream"), lookUp<std::string>(md, "marsStream"));
-    withFirstOf(valueSetter(g, "expver"), lookUp<std::string>(md, "expver"),
+    withFirstOf(valueSetter(g, Glossary::instance().classKey), lookUp<std::string>(md, Glossary::instance().classKey),
+                lookUp<std::string>(md, "marsClass"));
+    withFirstOf(valueSetter(g, Glossary::instance().stream), lookUp<std::string>(md, Glossary::instance().stream),
+                lookUp<std::string>(md, "marsStream"));
+    withFirstOf(valueSetter(g, Glossary::instance().expver), lookUp<std::string>(md, Glossary::instance().expver),
                 lookUp<std::string>(md, "experimentVersionNumber"));
 
     if ((gribEdition == "2") && md.has("dataset")) {
@@ -336,13 +340,13 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     withFirstOf(valueSetter(g, "number"), lookUp<std::int64_t>(md, "ensemble-member"));
     withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), lookUp<std::int64_t>(md, "ensemble-size"));
 
-    ret.type = firstOf(lookUp<std::string>(md, "type"), lookUp<std::string>(md, "marsType"));
+    ret.type = firstOf(lookUp<std::string>(md, Glossary::instance().type), lookUp<std::string>(md, "marsType"));
     if (ret.type) {
-        g.setValue("type", *ret.type);
+        g.setValue(Glossary::instance().type, *ret.type);
     }
 
     // Additional parameters passed through for spherical harmonics
-    if (auto gridType = lookUp<std::string>(md, "gridType")(); gridType) {
+    if (auto gridType = lookUp<std::string>(md, Glossary::instance().gridType)(); gridType) {
         if (*gridType == "sh") {
             withFirstOf(valueSetter(g, "complexPacking"), lookUp<std::int64_t>(md, "complexPacking"));
             withFirstOf(valueSetter(g, "pentagonalResolutionParameterJ"),
@@ -433,14 +437,14 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
             // differ significantly and my produce wrong results
             if (g.hasKey(kv.first.c_str())) {
                 kv.second.visit(eckit::Overloaded{
-                    [](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNestedTypes> {},
-                    [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), message::MetadataVectorTypes> {
+                    [](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::AllNested> {},
+                    [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), MetadataTypes::Lists> {
                         g.setValue(kv.first, vec);
                     },
-                    [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNonNullScalarTypes> {
+                    [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::NonNullScalars> {
                         g.setValue(kv.first, v);
                     },
-                    [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNullTypes> {
+                    [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::Nulls> {
                         g.setValue(kv.first, 0);
                     }});
             }
@@ -456,13 +460,16 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
 void setEncodingSpecificFields(GribEncoder& g, const message::Metadata& md) {
     // TODO globalSize is expected to be set in md directly. nmuberOf* should be
     // readonly anyway... test removal..
-    // auto gls = lookUp<std::int64_t>(md, "globalSize");
+    // auto gls = lookUp<std::int64_t>(md, Glossary::instance().globalSize);
     // withFirstOf(valueSetter(g, "numberOfDataPoints"), gls);
     // withFirstOf(valueSetter(g, "numberOfValues"), gls);
 
-    withFirstOf(valueSetter(g, "missingValue"), lookUp<double>(md, "missingValue"));
-    withFirstOf(valueSetter(g, "bitmapPresent"), lookUp<bool>(md, "bitmapPresent"));
-    withFirstOf(valueSetter(g, "bitsPerValue"), lookUp<std::int64_t>(md, "bitsPerValue"));
+    withFirstOf(valueSetter(g, Glossary::instance().missingValue),
+                lookUp<double>(md, Glossary::instance().missingValue));
+    withFirstOf(valueSetter(g, Glossary::instance().bitmapPresent),
+                lookUp<bool>(md, Glossary::instance().bitmapPresent));
+    withFirstOf(valueSetter(g, Glossary::instance().bitsPerValue),
+                lookUp<std::int64_t>(md, Glossary::instance().bitsPerValue));
 }
 
 void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
@@ -730,7 +737,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     auto queriedMarsFields = setMarsKeys(*this, runConfig);
     if (queriedMarsFields.type) {
-        setValue("typeOfGeneratingProcess", type_of_generating_process.at(*queriedMarsFields.type));
+        setValue(Glossary::instance().typeOfGeneratingProcess, type_of_generating_process.at(*queriedMarsFields.type));
     }
 
     applyOverwrites(*this, metadata);
@@ -747,14 +754,14 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     }
     if (*paramInt / 1000 == 212) {
         // HACK! Support experimental averages.
-        setValue("paramId", *paramInt + 4000);
+        setValue(Glossary::instance().paramId, *paramInt + 4000);
     }
     else {
-        setValue("paramId", *paramInt + ops_to_code.at(metadata.get<std::string>("operation")));
+        setValue(Glossary::instance().paramId, *paramInt + ops_to_code.at(metadata.get<std::string>("operation")));
     }
-    setValue("typeOfLevel", metadata.get<std::string>("typeOfLevel"));
+    setValue(Glossary::instance().typeOfLevel, metadata.get<std::string>(Glossary::instance().typeOfLevel));
     if (metadata.get<std::string>("category") == "ocean-3d") {
-        auto level = metadata.get<std::int64_t>("level");
+        auto level = metadata.get<std::int64_t>(Glossary::instance().level);
         ASSERT(level > 0);
         setValue("scaledValueOfFirstFixedSurface", level - 1);
         setValue("scaledValueOfSecondFixedSurface", level);
@@ -800,12 +807,12 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit
     // Set run-specific md
     setMarsKeys(*this, runConfig);
 
-    setValue("date", md.get<std::int64_t>("startDate"));
+    setValue(Glossary::instance().date, md.get<std::int64_t>(Glossary::instance().startDate));
 
     // setDomainDimensions
-    // auto gls = lookUp<std::int64_t>(md, "globalSize");
-    // setValue("numberOfDataPoints", md.get<std::int64_t>("globalSize"));
-    // setValue("numberOfValues", md.get<std::int64_t>("globalSize"));
+    // auto gls = lookUp<std::int64_t>(md, Glossary::instance().globalSize);
+    // setValue("numberOfDataPoints", md.get<std::int64_t>(Glossary::instance().globalSize));
+    // setValue("numberOfValues", md.get<std::int64_t>(Glossary::instance().globalSize));
 
     // Setting parameter ID
     auto paramInt = util::visitTranslate<std::int64_t>(md.get("param"));
@@ -815,22 +822,22 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit
         oss << md.get("param");
         throw eckit::UserError(oss.str(), Here());
     }
-    setValue("paramId", *paramInt);
+    setValue(Glossary::instance().paramId, *paramInt);
 
-    setValue("typeOfLevel", md.get<std::string>("typeOfLevel"));
+    setValue(Glossary::instance().typeOfLevel, md.get<std::string>(Glossary::instance().typeOfLevel));
 
     // Set ocean grid information
-    setValue("unstructuredGridType", config_.getString("unstructured-grid-type"));
+    setValue(Glossary::instance().unstructuredGridType, config_.getString("unstructured-grid-type"));
 
     const auto& gridSubtype = md.get<std::string>("gridSubtype");
-    setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
+    setValue(Glossary::instance().unstructuredGridSubtype, gridSubtype.substr(0, 1));
 
-    const auto& gridUID = md.get<std::string>("uuidOfHGrid");
-    setValue("uuidOfHGrid", gridUID);
+    const auto& gridUID = md.get<std::string>(Glossary::instance().uuidOfHGrid);
+    setValue(Glossary::instance().uuidOfHGrid, gridUID);
 
     // Set encoding for missing value support
-    setValue("bitmapPresent", false);
-    setValue("bitsPerValue", md.get<std::int64_t>("bitsPerValue"));
+    setValue(Glossary::instance().bitmapPresent, false);
+    setValue(Glossary::instance().bitsPerValue, md.get<std::int64_t>(Glossary::instance().bitsPerValue));
 }
 
 

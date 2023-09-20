@@ -1,6 +1,11 @@
 
 #pragma once
 
+#include "multio/message/Message.h"
+#include "multio/message/Metadata.h"
+
+#include <cstddef>
+#include <cstdint>
 #include <map>
 #include <mutex>
 #include <string>
@@ -10,14 +15,7 @@ namespace eckit {
 class LocalConfiguration;
 }
 
-namespace multio {
-
-namespace message {
-class Message;
-class Metadata;
-}  // namespace message
-
-namespace domain {
+namespace multio::domain {
 
 class Mask {
 public:
@@ -49,5 +47,4 @@ private:
     mutable std::mutex mutex_;
 };
 
-}  // namespace domain
-}  // namespace multio
+}  // namespace multio::domain

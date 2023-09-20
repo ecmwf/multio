@@ -6,10 +6,10 @@ configure_file( multio_config.h.in  multio_config.h  )
 configure_file( multio_version.h.in  multio_version.h )
 
 install(FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/multio_config.h
-            ${CMAKE_CURRENT_BINARY_DIR}/multio_version.h
-        DESTINATION
-            ${INSTALL_INCLUDE_DIR}/multio )
+        ${CMAKE_CURRENT_BINARY_DIR}/multio_config.h
+        ${CMAKE_CURRENT_BINARY_DIR}/multio_version.h
+    DESTINATION
+        ${INSTALL_INCLUDE_DIR}/multio )
 
 configure_file( multio_version.cc.in  multio_version.cc )
 
@@ -186,7 +186,13 @@ ecbuild_add_library(
         metkit eckit eckit_mpi)
 
 add_subdirectory(fdb5)
-add_subdirectory(action)
 add_subdirectory(maestro)
+add_subdirectory(action)
 add_subdirectory(api)
 add_subdirectory(tools)
+
+if( HAVE_FORTRAN AND ECBUILD_INSTALL_FORTRAN_MODULES )
+    install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}
+             DESTINATION module/multio
+             COMPONENT modules )
+endif()

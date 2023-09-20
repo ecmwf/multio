@@ -9,7 +9,7 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "multio/api/multio_c_cpp_utils.h"
+#include "multio/api/c/multio_c_cpp_utils.h"
 #include "multio/config/ConfigurationPath.h"
 #include "multio/tools/MultioTool.h"
 
@@ -400,8 +400,8 @@ void MultioReplayNemoCApi::initClient() {
 
     int retComm = 0;
     if (passDownMPIComm_) {
-        multio_conf_mpi_parent_comm(multio_cc, eckit::mpi::comm(mpiGroup_.c_str()).communicator());
-        multio_conf_mpi_return_client_comm(multio_cc, &retComm);
+        multio_mpi_parent_comm(multio_cc, eckit::mpi::comm(mpiGroup_.c_str()).communicator());
+        multio_mpi_return_client_comm(multio_cc, &retComm);
     }
 
 

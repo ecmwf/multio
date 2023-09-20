@@ -1,3 +1,4 @@
+
 add_subdirectory(encode)
 
 if( HAVE_MIR )

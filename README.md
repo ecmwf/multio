@@ -51,7 +51,7 @@ Now proceed with installation as follows.
 2. Run Cmake/ecbuild
    ```bash
    ecbuild --prefix=$installdir -- -DCMAKE_PREFIX_PATH=<path/to/dependencies/install> $srcdir
-   ```
+```
    The package is in active development and the I/O-server functionality is not enabled by default, so
    it needs to be turned on explicitly. In addition, if built with FDB support, some compilers will
    require linking to be forced.

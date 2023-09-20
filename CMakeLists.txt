@@ -10,7 +10,7 @@
 
 cmake_minimum_required( VERSION 3.12 FATAL_ERROR )
 
-find_package( ecbuild 3.6 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild)
+find_package( ecbuild 3.8 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../ecbuild)
 
 project( multio LANGUAGES CXX )
 
@@ -19,10 +19,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ### dependencies
 
-ecbuild_find_package( NAME eccodes     VERSION  2.18   REQUIRED )
-ecbuild_find_package( NAME eckit       VERSION  1.22   REQUIRED )
-ecbuild_find_package( NAME metkit      VERSION  1.7    REQUIRED )
-ecbuild_find_package( NAME atlas       VERSION  0.33   REQUIRED )
+ecbuild_find_package( NAME eccodes     VERSION  2.31.2   REQUIRED )
+ecbuild_find_package( NAME eckit       VERSION  1.24     REQUIRED )
+ecbuild_find_package( NAME metkit      VERSION  1.10     REQUIRED )
+ecbuild_find_package( NAME atlas       VERSION  0.33     REQUIRED )
 
 if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
@@ -37,7 +37,7 @@ endif()
 ecbuild_add_option( FEATURE FDB5
                     DEFAULT ON
                     DESCRIPTION "Send data to FDB5"
-                    REQUIRED_PACKAGES "NAME fdb5 VERSION 5.10.1" )
+                    REQUIRED_PACKAGES "NAME fdb5 VERSION 5.11.20" )
 
 ### atlas-io plugin
 
@@ -51,7 +51,7 @@ ecbuild_add_option( FEATURE ATLAS_IO
 ecbuild_add_option( FEATURE MIR
                     DEFAULT ON
                     DESCRIPTION "Interpolate data using MIR"
-                    REQUIRED_PACKAGES "NAME mir VERSION 1.16.0" )
+                    REQUIRED_PACKAGES "NAME mir VERSION 1.17.0" )
 
 ecbuild_add_option( FEATURE FORTRAN
                     DEFAULT ON
@@ -63,11 +63,16 @@ ecbuild_add_option( FEATURE LEGACY_IFSIO
                     DEFAULT OFF
                     DESCRIPTION "Legacy (FDB4) IFS I/O interface" )
 
+### Enable creation of Dummy api
+
+ecbuild_add_option( FEATURE MULTIO_DUMMY_API
+                    DEFAULT OFF
+                    DESCRIPTION "Enable creation of multio Dummy API" )
 
 if( HAVE_FORTRAN )
-  ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
-  ecbuild_find_package( NAME fckit   VERSION 0.10.0   REQUIRED )
-  find_package( MPI COMPONENTS Fortran) # Add explicit mpi for errorcodes -- isn't there a better way?
+    ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
+    ecbuild_find_package( NAME fckit   VERSION 0.10.0   REQUIRED )
+    find_package( MPI COMPONENTS Fortran) # Add explicit mpi for errorcodes -- isn't there a better way?
 endif()
 
 

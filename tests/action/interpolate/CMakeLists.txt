@@ -1,3 +1,4 @@
+
 set(PREFIX multio_tests_action_interpolate)
 
 ecbuild_get_test_multidata(

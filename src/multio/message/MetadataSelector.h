@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "Metadata.h"
 #include "MetadataMatcher.h"
 
 namespace eckit {
@@ -28,9 +29,6 @@ class LocalConfiguration;
 }
 
 namespace multio::message {
-
-class Message;
-class Metadata;
 
 //--------------------------------------------------------------------------------------------------
 

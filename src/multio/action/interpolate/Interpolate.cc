@@ -38,6 +38,8 @@
 
 namespace multio::action::interpolate {
 
+using message::MetadataTypes;
+
 namespace {
 
 // Quick and dirty fix to avoid encoding problems with spherical harmonics
@@ -148,8 +150,8 @@ eckit::Value getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadat
     if (searchAtlasGridKind != md.end()) {  // metadata has always precedence
         // TODO: name is bad on purpose (no software support this at the moment)
         return searchAtlasGridKind->second.visit(eckit::Overloaded{
-            [](auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNestedTypes, eckit::Value> { return {}; },
-            [](auto& vec) -> util::IfTypeOf<decltype(vec), message::MetadataVectorTypes, eckit::Value> {
+            [](auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::AllNested, eckit::Value> { return {}; },
+            [](auto& vec) -> util::IfTypeOf<decltype(vec), MetadataTypes::Lists, eckit::Value> {
                 std::vector<eckit::Value> valList;
                 valList.reserve(vec.size());
                 for (const auto& v : vec) {
@@ -157,12 +159,10 @@ eckit::Value getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadat
                 }
                 return eckit::Value{std::move(valList)};
             },
-            [](auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNonNullScalarTypes, eckit::Value> {
+            [](auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::NonNullScalars, eckit::Value> {
                 return eckit::Value{v};
             },
-            [](auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNullTypes, eckit::Value> {
-                return eckit::Value{};
-            }});
+            [](auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::Nulls, eckit::Value> { return eckit::Value{}; }});
     }
     if (cfg.has("input")) {  // configuration file is second option
         return eckit::Value{cfg.getSubConfiguration("input").get()};

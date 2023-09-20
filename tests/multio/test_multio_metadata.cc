@@ -22,6 +22,7 @@ using multio::message::Metadata;
 using multio::message::MetadataException;
 using multio::message::MetadataKeyException;
 using multio::message::MetadataMissingKeyException;
+using multio::message::MetadataTypes;
 using multio::message::MetadataValue;
 using multio::message::MetadataWrongTypeException;
 using multio::message::Null;
@@ -55,36 +56,48 @@ CASE("Test getting scala values") {
 
     EXPECT(m.get<std::int64_t>("paramId") == 123L);
     EXPECT(m.get("paramId").get<std::int64_t>() == 123L);
+    EXPECT(createScalarMetadata().get<std::int64_t>("paramId") == 123L);        // Test rvalue get access
+    EXPECT(createScalarMetadata().get("paramId").get<std::int64_t>() == 123L);  // Test rvalue get access
     EXPECT_THROWS_AS(m.get<std::string>("paramId"), MetadataException);  // TODO test nested MetadataWrongTypeException
     EXPECT_THROWS_AS(m.get("paramId").get<std::string>(),
                      MetadataException);  // TODO test nested MetadataWrongTypeException
 
     EXPECT(m.get<bool>("bool") == true);
     EXPECT(m.get("bool").get<bool>() == true);
+    EXPECT(createScalarMetadata().get<bool>("bool") == true);         // Test rvalue get access
+    EXPECT(createScalarMetadata().get("bool").get<bool>() == true);   // Test rvalue get access
     EXPECT_THROWS_AS(m.get<std::int8_t>("bool"), MetadataException);  // TODO test nested MetadataWrongTypeException
     EXPECT_THROWS_AS(m.get("bool").get<std::int8_t>(),
                      MetadataException);  // TODO test nested MetadataWrongTypeException
 
     EXPECT(m.get<std::int8_t>("byte") == 8);
     EXPECT(m.get("byte").get<std::int8_t>() == 8);
-    EXPECT_THROWS_AS(m.get<std::int16_t>("byte"), MetadataException);  // TODO test nested MetadataWrongTypeException
+    EXPECT(createScalarMetadata().get<std::int8_t>("byte") == 8);        // Test rvalue get access
+    EXPECT(createScalarMetadata().get("byte").get<std::int8_t>() == 8);  // Test rvalue get access
+    EXPECT_THROWS_AS(m.get<std::int16_t>("byte"), MetadataException);    // TODO test nested MetadataWrongTypeException
     EXPECT_THROWS_AS(m.get("byte").get<std::int16_t>(),
                      MetadataException);  // TODO test nested MetadataWrongTypeException
 
     EXPECT(m.get<std::int16_t>("int16") == 16);
     EXPECT(m.get("int16").get<std::int16_t>() == 16);
+    EXPECT(createScalarMetadata().get<std::int16_t>("int16") == 16);        // Test rvalue get access
+    EXPECT(createScalarMetadata().get("int16").get<std::int16_t>() == 16);  // Test rvalue get access
     EXPECT_THROWS_AS(m.get<std::int32_t>("int16"), MetadataException);  // TODO test nested MetadataWrongTypeException
     EXPECT_THROWS_AS(m.get("int16").get<std::int32_t>(),
                      MetadataException);  // TODO test nested MetadataWrongTypeException
 
     EXPECT(m.get<std::int32_t>("int32") == 32);
     EXPECT(m.get("int32").get<std::int32_t>() == 32);
+    EXPECT(createScalarMetadata().get<std::int32_t>("int32") == 32);        // Test rvalue get access
+    EXPECT(createScalarMetadata().get("int32").get<std::int32_t>() == 32);  // Test rvalue get access
     EXPECT_THROWS_AS(m.get<std::int64_t>("int32"), MetadataException);  // TODO test nested MetadataWrongTypeException
     EXPECT_THROWS_AS(m.get("int32").get<std::int64_t>(),
                      MetadataException);  // TODO test nested MetadataWrongTypeException
 
     EXPECT(m.get<std::int64_t>("int64") == 64);
     EXPECT(m.get("int64").get<std::int64_t>() == 64);
+    EXPECT(createScalarMetadata().get<std::int64_t>("int64") == 64);        // Test rvalue get access
+    EXPECT(createScalarMetadata().get("int64").get<std::int64_t>() == 64);  // Test rvalue get access
     EXPECT_THROWS_AS(m.get<Null>("int64"), MetadataException);        // TODO test nested MetadataWrongTypeException
     EXPECT_THROWS_AS(m.get("int64").get<Null>(), MetadataException);  // TODO test nested MetadataWrongTypeException
 
@@ -201,6 +214,7 @@ CASE("Test setting, getting and merging nested metadata") {
         EXPECT(encOv.get<std::string>("gridType") == "unstructured_grid");
     }
 
+    Metadata m2{m};  // copy m for later
 
     // Finally the encoder action can iterator all values and set it somewhere else
     if (auto searchEncOv = m.find("encoderOverwrites"); searchEncOv != m.end()) {
@@ -212,11 +226,11 @@ CASE("Test setting, getting and merging nested metadata") {
         int countEveryThingElse = 0;
         for (auto&& keyVal : std::move(encOv)) {
             keyVal.second.visit(eckit::Overloaded{
-                [&](auto&& val) -> util::IfTypeOf<decltype(val), message::MetadataStringTypes> { ++countStringVals; },
-                [&](auto&& val) -> util::IfTypeOf<decltype(val), message::MetadataIntegerTypes> { ++countIntegerVals; },
+                [&](auto&& val) -> util::IfTypeOf<decltype(val), MetadataTypes::Strings> { ++countStringVals; },
+                [&](auto&& val) -> util::IfTypeOf<decltype(val), MetadataTypes::Integers> { ++countIntegerVals; },
                 [&](auto&& val)
-                    -> util::IfTypeNotOf<decltype(val), util::MergeTypeList_t<message::MetadataStringTypes,
-                                                                              message::MetadataIntegerTypes>> {
+                    -> util::IfTypeNotOf<decltype(val),
+                                         util::MergeTypeList_t<MetadataTypes::Strings, MetadataTypes::Integers>> {
                     ++countEveryThingElse;
                 },
             });
@@ -225,6 +239,12 @@ CASE("Test setting, getting and merging nested metadata") {
         EXPECT(countIntegerVals == 2);
         EXPECT(countEveryThingElse == 0);
     };
+
+
+    // Test equality values for nested rvalue access
+    EXPECT(std::move(m2).get<Metadata>("encoderOverwrites").get<std::int64_t>("encodeBitsPerValue") == 123L);
+    EXPECT(std::move(m2).get<Metadata>("encoderOverwrites").get<std::string>("typeOfLevel") == "oceanModelLayer");
+    EXPECT(std::move(m2).get<Metadata>("encoderOverwrites").get<std::string>("gridType") == "unstructured_grid");
 }
 
 

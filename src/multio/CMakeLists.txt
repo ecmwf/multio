@@ -190,3 +190,9 @@ add_subdirectory(maestro)
 add_subdirectory(action)
 add_subdirectory(api)
 add_subdirectory(tools)
+
+if( HAVE_FORTRAN AND ECBUILD_INSTALL_FORTRAN_MODULES )
+    install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}
+             DESTINATION module/multio
+             COMPONENT modules )
+endif()

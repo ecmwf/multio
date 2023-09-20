@@ -360,13 +360,25 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     }
 
     // Set ocean grid information
-    setValue("unstructuredGridType", config_.getString("grid-type"));
+    if ( config_.has("grid-type") ){
+       if ( config_.getString("grid-type") != "undefined" ) {
+               setValue("unstructuredGridType", config_.getString("grid-type"));
+       }
+    }
 
-    const auto& gridSubtype = metadata.getString("gridSubtype");
-    setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
+     const auto& gridSubtype = metadata.getString("gridSubtype");
+     if ( gridSubtype != "undefined" ){
+            setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
+     }
 
-    const auto& gridUID = metadata.getString("uuidOfHGrid");
-    setValue("uuidOfHGrid", gridUID);
+//    setValue("unstructuredGridType", config_.getString("grid-type"));
+//    const auto& gridSubtype = metadata.getString("gridSubtype");
+//    setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
+
+    if ( metadata.has("uuidOfHGrid") ){
+       const auto& gridUID = metadata.getString("uuidOfHGrid");
+       setValue("uuidOfHGrid", gridUID);
+    }
 }
 
 void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {

@@ -49,13 +49,21 @@ Metadata createScalarMetadata() {
 
 CASE("Test getting scala values") {
     Metadata m = createScalarMetadata();
+    const Metadata mc = createScalarMetadata();
+
     EXPECT_NO_THROW(m.get("null").get<Null>());
     EXPECT_NO_THROW(m.get<Null>("null"));
     EXPECT_NO_THROW(m.getOpt("null").value().get<Null>());
     EXPECT_NO_THROW(m.getOpt<Null>("null").value());
+    EXPECT_NO_THROW(mc.get("null").get<Null>());
+    EXPECT_NO_THROW(mc.get<Null>("null"));
+    EXPECT_NO_THROW(mc.getOpt("null").value().get<Null>());
+    EXPECT_NO_THROW(mc.getOpt<Null>("null").value());
 
     EXPECT(m.get<std::int64_t>("paramId") == 123L);
     EXPECT(m.get("paramId").get<std::int64_t>() == 123L);
+    EXPECT(mc.get<std::int64_t>("paramId") == 123L);
+    EXPECT(mc.get("paramId").get<std::int64_t>() == 123L);
     EXPECT(createScalarMetadata().get<std::int64_t>("paramId") == 123L);        // Test rvalue get access
     EXPECT(createScalarMetadata().get("paramId").get<std::int64_t>() == 123L);  // Test rvalue get access
     EXPECT_THROWS_AS(m.get<std::string>("paramId"), MetadataException);  // TODO test nested MetadataWrongTypeException
@@ -64,6 +72,8 @@ CASE("Test getting scala values") {
 
     EXPECT(m.get<bool>("bool") == true);
     EXPECT(m.get("bool").get<bool>() == true);
+    EXPECT(mc.get<bool>("bool") == true);
+    EXPECT(mc.get("bool").get<bool>() == true);
     EXPECT(createScalarMetadata().get<bool>("bool") == true);         // Test rvalue get access
     EXPECT(createScalarMetadata().get("bool").get<bool>() == true);   // Test rvalue get access
     EXPECT_THROWS_AS(m.get<std::int8_t>("bool"), MetadataException);  // TODO test nested MetadataWrongTypeException
@@ -72,6 +82,8 @@ CASE("Test getting scala values") {
 
     EXPECT(m.get<std::int8_t>("byte") == 8);
     EXPECT(m.get("byte").get<std::int8_t>() == 8);
+    EXPECT(mc.get<std::int8_t>("byte") == 8);
+    EXPECT(mc.get("byte").get<std::int8_t>() == 8);
     EXPECT(createScalarMetadata().get<std::int8_t>("byte") == 8);        // Test rvalue get access
     EXPECT(createScalarMetadata().get("byte").get<std::int8_t>() == 8);  // Test rvalue get access
     EXPECT_THROWS_AS(m.get<std::int16_t>("byte"), MetadataException);    // TODO test nested MetadataWrongTypeException
@@ -80,6 +92,8 @@ CASE("Test getting scala values") {
 
     EXPECT(m.get<std::int16_t>("int16") == 16);
     EXPECT(m.get("int16").get<std::int16_t>() == 16);
+    EXPECT(mc.get<std::int16_t>("int16") == 16);
+    EXPECT(mc.get("int16").get<std::int16_t>() == 16);
     EXPECT(createScalarMetadata().get<std::int16_t>("int16") == 16);        // Test rvalue get access
     EXPECT(createScalarMetadata().get("int16").get<std::int16_t>() == 16);  // Test rvalue get access
     EXPECT_THROWS_AS(m.get<std::int32_t>("int16"), MetadataException);  // TODO test nested MetadataWrongTypeException
@@ -88,6 +102,8 @@ CASE("Test getting scala values") {
 
     EXPECT(m.get<std::int32_t>("int32") == 32);
     EXPECT(m.get("int32").get<std::int32_t>() == 32);
+    EXPECT(mc.get<std::int32_t>("int32") == 32);
+    EXPECT(mc.get("int32").get<std::int32_t>() == 32);
     EXPECT(createScalarMetadata().get<std::int32_t>("int32") == 32);        // Test rvalue get access
     EXPECT(createScalarMetadata().get("int32").get<std::int32_t>() == 32);  // Test rvalue get access
     EXPECT_THROWS_AS(m.get<std::int64_t>("int32"), MetadataException);  // TODO test nested MetadataWrongTypeException
@@ -96,13 +112,17 @@ CASE("Test getting scala values") {
 
     EXPECT(m.get<std::int64_t>("int64") == 64);
     EXPECT(m.get("int64").get<std::int64_t>() == 64);
+    EXPECT(mc.get<std::int64_t>("int64") == 64);
+    EXPECT(mc.get("int64").get<std::int64_t>() == 64);
     EXPECT(createScalarMetadata().get<std::int64_t>("int64") == 64);        // Test rvalue get access
     EXPECT(createScalarMetadata().get("int64").get<std::int64_t>() == 64);  // Test rvalue get access
     EXPECT_THROWS_AS(m.get<Null>("int64"), MetadataException);        // TODO test nested MetadataWrongTypeException
     EXPECT_THROWS_AS(m.get("int64").get<Null>(), MetadataException);  // TODO test nested MetadataWrongTypeException
 
-    EXPECT_THROWS_AS(m.get<Null>("imagine"), MetadataException);  // TODO test nested MetadataMissingKeyException
-    EXPECT_THROWS_AS(m.get("imagine"), MetadataException);        // TODO test nested MetadataMissingKeyException
+    EXPECT_THROWS_AS(m.get<Null>("imagine"), MetadataException);   // TODO test nested MetadataMissingKeyException
+    EXPECT_THROWS_AS(m.get("imagine"), MetadataException);         // TODO test nested MetadataMissingKeyException
+    EXPECT_THROWS_AS(mc.get<Null>("imagine"), MetadataException);  // TODO test nested MetadataMissingKeyException
+    EXPECT_THROWS_AS(mc.get("imagine"), MetadataException);        // TODO test nested MetadataMissingKeyException
 };
 
 
@@ -173,6 +193,12 @@ CASE("Test setting, getting and merging nested metadata") {
                                    {"typeOfLevel", "oceanModel"},
                                    {"localDefinitionNumber", 14},
                                });
+
+    // Or set via assignment
+    m["encoderOverwrites"] = Metadata{
+        {"typeOfLevel", "oceanModel"},
+        {"localDefinitionNumber", 14},
+    };
 
     // Another action (e.g. metadata-mapping) wants to add encoderOverwrites if not already given
     {  // Block for testing purpose

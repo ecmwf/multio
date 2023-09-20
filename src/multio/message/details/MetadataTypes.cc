@@ -21,4 +21,10 @@ std::ostream& operator<<(std::ostream& os, const Null&) {
     return os;
 }
 
+eckit::JSON& operator<<(eckit::JSON& json, const Null&) {
+    json.null();
+    return json;
+}
+
+
 }  // namespace multio::message::details

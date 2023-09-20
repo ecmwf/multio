@@ -43,26 +43,12 @@ public:
     using MetadataValueVariant<Traits_>::MetadataValueVariant;
     using Base::operator=;
 
-
-private:
-    struct details {
-        template <typename T, typename This_>
-        static decltype(auto) getter(This_&& val) {
-            static_assert(util::TypeListContains<std::decay_t<T>, typename Types::AllWrapped>::value);
-            if (val.index() == util::GetVariantIndex<std::decay_t<T>, Base>::value) {
-                return std::get<T>(std::forward<This_>(val));
-            }
-            throw MetadataWrongTypeException(util::GetVariantIndex<std::decay_t<T>, Base>::value, val.index(), Here());
-        }
-    };
-
-public:
-    MetadataValue(const This& other) : Base{other.visit([](auto&& v) { return Base{std::forward<decltype(v)>(v)}; })} {}
-
+    MetadataValue(const This& other) :
+        Base{other.visit([](auto&& v) { return Base{wrapNestedMaybe(std::forward<decltype(v)>(v))}; })} {}
     MetadataValue(This&&) noexcept = default;
 
     This& operator=(const This& other) {
-        Base::operator=(other.visit([](auto&& v) { return Base{std::forward<decltype(v)>(v)}; }));
+        Base::operator=(other.visit([](auto&& v) { return Base{wrapNestedMaybe(std::forward<decltype(v)>(v))}; }));
         return *this;
     }
 
@@ -85,58 +71,109 @@ public:
     }
 
 
-    // Getter with TypeTag to allow specialization via overloading
-    template <typename T,
-              std::enable_if_t<util::TypeListContains<std::decay_t<T>, typename Types::AllWrapped>::value, bool> = true>
+    template <typename T>
     const T& get() const& {
-        return details::template getter<T>(*this);
+        return getter<T>(*this);
     }
 
-    template <typename T,
-              std::enable_if_t<util::TypeListContains<std::decay_t<T>, typename Types::AllWrapped>::value, bool> = true>
+    template <typename T>
     T& get() & {
-        return details::template getter<T>(*this);
+        return getter<T>(*this);
     }
 
+    template <typename T>
+    T&& get() && {
+        return getter<T>(std::move(*this));
+    }
+
+
+    std::string toString() const {
+        std::stringstream ss;
+        eckit::JSON json(ss);
+        json << *this;
+        return ss.str();
+    }
+
+    void json(eckit::JSON& j) const { j << *this; }
+
+
+    //-----------------------------------------------------------------------------
+
+    // Implementation details
+
+
+    // Special constructor to transparently create nested types that are supposed to be wrapped with unique_ptr
     template <typename T,
+              std::enable_if_t<
+                  util::TypeListContains<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>::value, bool>
+              = true>
+    MetadataValue(T&& val) : MetadataValue(std::make_unique<std::decay_t<T>>(std::forward<T>(val))){};
+
+    // Constructor that deals with all other cases exlusive to the unique_ptr handling
+    template <
+        typename T,
+        std::enable_if_t<(!util::TypeListContains<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>::value
+                          && !std::is_same<std::decay_t<T>, This>::value && !std::is_same<std::decay_t<T>, Base>::value
+                          && std::is_constructible<Base, T>::value),
+                         bool>
+        = true>
+    MetadataValue(T&& val) : Base(std::forward<T>(val)){};
+
+private:
+    // Implementation details
+
+    template <typename T,
+              std::enable_if_t<
+                  !util::TypeListContains<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>::value, bool>
+              = true>
+    static T&& wrapNestedMaybe(T&& v) noexcept {
+        return std::forward<T>(v);
+    }
+    template <typename T,
+              std::enable_if_t<
+                  util::TypeListContains<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>::value, bool>
+              = true>
+    static std::unique_ptr<std::decay_t<T>> wrapNestedMaybe(T&& v) {
+        return std::make_unique<std::decay_t<T>>(std::forward<T>(v));
+    }
+
+
+    template <typename T, typename This_>
+    static decltype(auto) resolvedUniquePtrGetter(This_&& val) {
+        static_assert(util::TypeListContains<std::decay_t<T>, typename Types::AllWrapped>::value);
+        if (val.index() == util::GetVariantIndex<std::decay_t<T>, Base>::value) {
+            return std::get<T>(std::forward<This_>(val));
+        }
+        throw MetadataWrongTypeException(util::GetVariantIndex<std::decay_t<T>, Base>::value, val.index(), Here());
+    }
+
+    template <typename T, typename This_,
               std::enable_if_t<util::TypeListContains<std::decay_t<T>, typename Types::AllWrapped>::value, bool> = true>
-    T&& get() && {
-        return details::template getter<T>(std::move(*this));
+    static decltype(auto) uniquePtrGetter(This_&& val) {
+        return resolvedUniquePtrGetter<T>(std::forward<This_>(val));
     }
 
-    // Specialized get for unique_ptr & nested types
-    template <typename T,
+    template <typename T, typename This_,
               std::enable_if_t<
                   util::TypeListContains<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>::value, bool>
               = true>
-    const T& get() const& {
-        return *get<std::unique_ptr<T>>().get();
+    static decltype(auto) uniquePtrGetter(This_&& val) {
+        if constexpr (std::is_rvalue_reference<This>::value) {
+            return std::move(*(resolvedUniquePtrGetter<std::unique_ptr<T>>(std::forward<This_>(val))).get());
+        }
+        else {
+            return *(resolvedUniquePtrGetter<std::unique_ptr<T>>(std::forward<This_>(val))).get();
+        }
     }
 
-    template <typename T,
-              std::enable_if_t<
-                  util::TypeListContains<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>::value, bool>
-              = true>
-    T& get() & {
-        return *get<std::unique_ptr<T>>().get();
+    template <typename T, typename This_>
+    static decltype(auto) getter(This_&& val) {
+        return uniquePtrGetter<T>(std::forward<This_>(val));
     }
 
-    template <typename T,
-              std::enable_if_t<
-                  util::TypeListContains<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>::value, bool>
-              = true>
-    T&& get() && {
-        return std::move(*(get<std::unique_ptr<T>>()).get());
-    }
+    //-----------------------------------------------------------------------------
 };
 
-
-template <typename Traits>
-std::ostream& operator<<(std::ostream& os, const MetadataValue<Traits>& metadataValue) {
-    eckit::JSON json(os);
-    toJSON(metadataValue, json);
-    return os;
-}
 
 }  // namespace multio::message::details
 
@@ -175,67 +212,6 @@ public:
     using KeyType = typename Traits::KeyType;
     using MapType = typename Traits::template MapType<MetadataValue<Traits>>;
 
-private:
-    struct details {
-        template <typename T, typename This_>
-        static decltype(auto) refGetter(This_&& val, const KeyType& k) {
-            if (auto search = val.values_.find(k); search != val.values_.end()) {
-                try {
-                    return std::ref(search->second.template get<T>());
-                }
-                catch (const MetadataException& err) {
-                    std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-                }
-            }
-            throw MetadataMissingKeyException(k, Here());
-        }
-
-        template <typename This>
-        static decltype(auto) refGetter(This&& val, const KeyType& k) {
-            if (auto search = val.values_.find(k); search != val.values_.end()) {
-                return std::ref(search->second);
-            }
-            throw MetadataMissingKeyException(k, Here());
-        }
-
-        template <typename T, typename This>
-        static std::optional<T> optGetter(This&& val, const KeyType& k) {
-            if (auto search = val.values_.find(k); search != val.values_.end()) {
-                try {
-                    if constexpr (std::is_rvalue_reference<This>::value) {
-                        return std::move(search->second.template get<T>());
-                    }
-                    else {
-                        return search->second.template get<T>();
-                    }
-                }
-                catch (const MetadataException& err) {
-                    std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-                }
-            }
-            return std::nullopt;
-        }
-
-        template <typename This>
-        static std::optional<MetadataValue<Traits>> optGetter(This&& val, const KeyType& k) noexcept {
-            if (auto search = val.values_.find(k); search != val.values_.end()) {
-                if constexpr (std::is_rvalue_reference<This>::value) {
-                    return std::optional<MetadataValue<Traits>>{std::move(search->second)};
-                }
-                else {
-                    return std::optional<MetadataValue<Traits>>{search->second};
-                }
-            }
-            return std::nullopt;
-        }
-    };
-
-    MapType values_;
-
-protected:
-    Metadata(const MapType& values) : values_{values} {};
-    Metadata(MapType&& values) : values_{std::move(values)} {};
-
 public:
     Metadata(const Metadata&) = default;
     Metadata(Metadata&&) noexcept = default;
@@ -244,60 +220,50 @@ public:
     Metadata(std::initializer_list<std::pair<const KeyType, MetadataValue<Traits>>> li) :
         values_{Traits::template initMap<MetadataValue<Traits>>(std::move(li))} {}
 
-    // // To be removed in the future
-    // Metadata(const eckit::Value& v) : Metadata(toMetadata(v)) {}
-    // Metadata(const eckit::Configuration& c) : Metadata(c.get()) {}
+protected:
+    // Used from update()
+    Metadata(MapType&& values) : values_{std::move(values)} {}
 
-
+public:
     This& operator=(const This&) = default;
     This& operator=(This&&) noexcept = default;
 
-    // User-defined conversion to unique_ptr - simply usage with assign through implict conversion
-    operator std::unique_ptr<This>() const& { return std::make_unique<This>(*this); }
+    MetadataValue<Traits>&& get(const KeyType& k) && { return std::move(referenceGetter(*this, k).get()); }
 
-    operator std::unique_ptr<This>() & { return std::make_unique<This>(*this); }
+    MetadataValue<Traits>& get(const KeyType& k) & { return referenceGetter(*this, k).get(); }
 
-    operator std::unique_ptr<This>() && { return std::make_unique<This>(std::move(*this)); }
-
-
-    MetadataValue<Traits>&& get(const KeyType& k) && { return std::move(details::refGetter(*this, k).get()); }
-
-    MetadataValue<Traits>& get(const KeyType& k) & { return details::refGetter(*this, k).get(); }
-
-    const MetadataValue<Traits>& get(const KeyType& k) const& { return details::refGetter(*this, k).get(); }
+    const MetadataValue<Traits>& get(const KeyType& k) const& { return referenceGetter(*this, k).get(); }
 
 
     std::optional<MetadataValue<Traits>> getOpt(const KeyType& k) && noexcept {
-        return details::optGetter(std::move(*this), k);
+        return optionalGetter(std::move(*this), k);
     }
-    std::optional<MetadataValue<Traits>> getOpt(const KeyType& k) & noexcept { return details::optGetter(*this, k); }
-    std::optional<MetadataValue<Traits>> getOpt(const KeyType& k) const& noexcept {
-        return details::optGetter(*this, k);
-    }
+    std::optional<MetadataValue<Traits>> getOpt(const KeyType& k) & noexcept { return optionalGetter(*this, k); }
+    std::optional<MetadataValue<Traits>> getOpt(const KeyType& k) const& noexcept { return optionalGetter(*this, k); }
 
     template <typename T>
     T&& get(const KeyType& k) && {
-        return std::move(details::template refGetter<T>(*this, k).get());
+        return std::move(referenceGetter<T>(*this, k).get());
     }
 
     template <typename T>
     T& get(const KeyType& k) & {
-        return details::template refGetter<T>(*this, k).get();
+        return referenceGetter<T>(*this, k).get();
     }
 
     template <typename T>
     const T& get(const KeyType& k) const& {
-        return details::template refGetter<T>(*this, k).get();
+        return referenceGetter<T>(*this, k).get();
     }
 
     template <typename T>
     std::optional<T> getOpt(const KeyType& k) && noexcept {
-        return details::template optGetter<T>(std::move(*this), k);
+        return optionalGetter<T>(std::move(*this), k);
     }
 
     template <typename T>
     std::optional<T> getOpt(const KeyType& k) const& noexcept {
-        return details::template optGetter<T>(*this, k);
+        return optionalGetter<T>(*this, k);
     }
 
     MetadataValue<Traits>& operator[](const KeyType& key) { return values_[key]; }
@@ -347,7 +313,7 @@ public:
     void clear() noexcept { values_.clear(); }
 
     /**
-     * Extracts all values from other metadata whose keysare not contained yet in this metadata.
+     * Extracts all values from other metadata whose keys are not contained yet in this metadata.
      * Explicitly always modifies both metadata.
      */
     void merge(This& other) { values_.merge(other.values_); }
@@ -371,66 +337,118 @@ public:
         values_.merge(tmp);
         return tmp;
     }
+
+
+    std::string toString() const {
+        std::stringstream ss;
+        eckit::JSON json(ss);
+        json << *this;
+        return ss.str();
+    }
+
+    void json(eckit::JSON& j) const { j << *this; }
+
+private:
+    MapType values_;
+
+    //-----------------------------------------------------------------------------
+    // Implementation details
+
+    template <typename T, typename This_>
+    static decltype(auto) referenceGetter(This_&& val, const KeyType& k) {
+        if (auto search = val.values_.find(k); search != val.values_.end()) {
+            try {
+                return std::ref(search->second.template get<T>());
+            }
+            catch (const MetadataException& err) {
+                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
+            }
+        }
+        throw MetadataMissingKeyException(k, Here());
+    }
+
+    template <typename This>
+    static decltype(auto) referenceGetter(This&& val, const KeyType& k) {
+        if (auto search = val.values_.find(k); search != val.values_.end()) {
+            return std::ref(search->second);
+        }
+        throw MetadataMissingKeyException(k, Here());
+    }
+
+    template <typename T, typename This>
+    static std::optional<T> optionalGetter(This&& val, const KeyType& k) {
+        if (auto search = val.values_.find(k); search != val.values_.end()) {
+            try {
+                if constexpr (std::is_rvalue_reference<This>::value) {
+                    return std::move(search->second.template get<T>());
+                }
+                else {
+                    return search->second.template get<T>();
+                }
+            }
+            catch (const MetadataException& err) {
+                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
+            }
+        }
+        return std::nullopt;
+    }
+
+    template <typename This>
+    static std::optional<MetadataValue<Traits>> optionalGetter(This&& val, const KeyType& k) noexcept {
+        if (auto search = val.values_.find(k); search != val.values_.end()) {
+            if constexpr (std::is_rvalue_reference<This>::value) {
+                return std::optional<MetadataValue<Traits>>{std::move(search->second)};
+            }
+            else {
+                return std::optional<MetadataValue<Traits>>{search->second};
+            }
+        }
+        return std::nullopt;
+    }
+
+    //-----------------------------------------------------------------------------
 };
 
 
 //-----------------------------------------------------------------------------
 
-template <typename T>
-void toJSON(const T& v, eckit::JSON& json) {
-    json << v;
-}
-
-void toJSON(const Null&, eckit::JSON& json);
-;
 
 template <typename Traits>
-void toJSON(const Metadata<Traits>& metadata, eckit::JSON& json);
-
-template <typename Traits>
-void toJSON(const MetadataValue<Traits>& mv, eckit::JSON& json) {
-    mv.visit([&json](const auto& v) { toJSON(v, json); });
-}
-
-template <typename T>
-void toJSON(const std::vector<T>& v, eckit::JSON& json) {
-    json.startList();
-    for (const auto& vi : v) {
-        toJSON(vi, json);
-    }
-    json.endList();
+eckit::JSON& operator<<(eckit::JSON& json, const MetadataValue<Traits>& mv) {
+    mv.visit([&json](const auto& v) { json << v; });
+    return json;
 }
 
 template <typename Traits>
-void toJSON(const Metadata<Traits>& metadata, eckit::JSON& json) {
+eckit::JSON& operator<<(eckit::JSON& json, const Metadata<Traits>& metadata) {
     json.startObject();
     for (const auto& kv : metadata) {
         json << kv.first;
-        toJSON(kv.second, json);
+        json << kv.second;
     }
     json.endObject();
+    return json;
 }
 
 //-----------------------------------------------------------------------------
 
 template <typename Traits>
+std::ostream& operator<<(std::ostream& os, const MetadataValue<Traits>& metadataValue) {
+    eckit::JSON json(os);
+    json << metadataValue;
+    return os;
+}
+
+
+template <typename Traits>
 std::ostream& operator<<(std::ostream& os, const Metadata<Traits>& metadata) {
     eckit::JSON json(os);
-    toJSON(metadata, json);
+    json << metadata;
     return os;
 }
 
 
 //-----------------------------------------------------------------------------
 
-template <typename Traits>
-std::string toString(const Metadata<Traits>& metadata) {
-    std::stringstream ss;
-    eckit::JSON json(ss);
-    toJSON(metadata, json);
-    return ss.str();
-}
-
-//-----------------------------------------------------------------------------
 
 }  // namespace multio::message::details

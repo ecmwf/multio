@@ -18,8 +18,8 @@
 #include <variant>
 
 #include "TypeTraits.h"
+#include "eckit/utils/Overloaded.h"
 #include "eckit/utils/Translator.h"
-#include "eckit/utils/VariantHelpers.h"
 
 //-----------------------------------------------------------------------------
 

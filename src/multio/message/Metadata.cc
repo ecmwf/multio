@@ -12,10 +12,6 @@
 
 namespace multio::message {
 
-std::string toString(const Metadata& metadata) {
-    return details::toString(metadata);
-}
-
 Metadata toMetadata(const eckit::Value& value) {
     return details::toMetadata<MetadataTraits>(value);
 }

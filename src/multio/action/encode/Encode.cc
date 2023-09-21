@@ -190,7 +190,9 @@ void Encode::executeImpl(Message msg) {
 
     auto gridUID = std::optional<GridDownloader::GridUIDType>{};
 
-    if (msg.metadata().has("domain") && !msg.metadata().has("uuidOfHGrid") && isOcean(msg.metadata())) {
+    auto searchDomain = msg.metadata().find("domain");
+    auto searchGridUUID = msg.metadata().find("uuidOfHGrid");
+    if ((searchDomain != msg.metadata().end()) && (searchGridUUID == msg.metadata().end()) && isOcean(msg.metadata())) {
         //! TODO shoud not be checked here anymore, encoder_ should have been initialized according to format_
         ASSERT(format_ == "grib");
 
@@ -198,7 +200,8 @@ void Encode::executeImpl(Message msg) {
 
         const auto& md = msg.metadata();
 
-        if (auto searchGridType = md.find("gridType"); searchGridType != md.end() && (searchGridType->second.get<std::string>() != "HEALPix")) {
+        if (auto searchGridType = md.find("gridType");
+            searchGridType != md.end() && (searchGridType->second.get<std::string>() != "HEALPix")) {
             auto gridCoords = gridDownloader_->getGridCoords(msg.domain(), md.get<std::int64_t>("startDate"),
                                                              md.get<std::int64_t>("startTime"));
             if (gridCoords) {

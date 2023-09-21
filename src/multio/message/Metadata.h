@@ -33,6 +33,8 @@ using MetadataTypes = details::MetadataTypes<MetadataTraits>;
 
 using Glossary = details::Glossary<MetadataTraits>;
 
+const Glossary& glossary();
+
 using Null = details::Null;
 
 

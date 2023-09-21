@@ -118,7 +118,8 @@ std::string InterpolateFesom<T>::generateKey(const message::Message& msg) const 
         }
         level--;
     }
-    if (!msg.metadata().has("unstructuredGridType")) {
+    auto searchUnstructuredGridType = msg.metadata().find("unstructuredGridType");
+    if (searchUnstructuredGridType == msg.metadata().end()) {
         std::ostringstream os;
         os << " - \"unstructuredGridType\" not present in the metadata" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
@@ -128,7 +129,7 @@ std::string InterpolateFesom<T>::generateKey(const message::Message& msg) const 
     //     os << " - \"unstructuredGridSubtype\" not present in the metadata" << std::endl;
     //     throw eckit::SeriousBug(os.str(), Here());
     // }
-    std::string fesomGridName = msg.metadata().get<std::string>("unstructuredGridType");
+    std::string fesomGridName = searchUnstructuredGridType->second.get<std::string>();
     std::string key = fesomCacheName(fesomGridName, msg.domain(), (sizeof(T) == 4 ? "single" : "double"), NSide_,
                                      orderingConvention_, level);
 

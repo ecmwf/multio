@@ -189,25 +189,27 @@ CASE("Test setting, getting and merging nested metadata") {
     Metadata m;
 
     // Example action in pipeline adds encoderOVerwrite to pass down to encoder
-    m.set("encoderOverwrites", Metadata{
-                                   {"typeOfLevel", "oceanModel"},
-                                   {"localDefinitionNumber", 14},
-                               });
+    m.set("encoder-overwrites", Metadata{
+                                    {"typeOfLevel", "oceanModel"},
+                                    {"localDefinitionNumber", 14},
+                                });
+
+    auto [itToNull, hasBeenSet] = m.trySet("encoder-overwrites", Metadata{{"i will never", "be set"}});
 
     // Or set via assignment
-    m["encoderOverwrites"] = Metadata{
+    m["encoder-overwrites"] = Metadata{
         {"typeOfLevel", "oceanModel"},
         {"localDefinitionNumber", 14},
     };
 
-    // Another action (e.g. metadata-mapping) wants to add encoderOverwrites if not already given
+    // Another action (e.g. metadata-mapping) wants to add encoder-overwrites if not already given
     {  // Block for testing purpose
-        auto searchEncOv = m.find("encoderOverwrites");
+        auto searchEncOv = m.find("encoder-overwrites");
         EXPECT(searchEncOv != m.end());
     }
 
     // Possible real code
-    if (auto searchEncOv = m.find("encoderOverwrites"); searchEncOv != m.end()) {
+    if (auto searchEncOv = m.find("encoder-overwrites"); searchEncOv != m.end()) {
         EXPECT_NO_THROW(searchEncOv->second.get<Metadata>());
         auto& encOv = searchEncOv->second.get<Metadata>();
 
@@ -243,34 +245,103 @@ CASE("Test setting, getting and merging nested metadata") {
     Metadata m2{m};  // copy m for later
 
     // Finally the encoder action can iterator all values and set it somewhere else
-    if (auto searchEncOv = m.find("encoderOverwrites"); searchEncOv != m.end()) {
+    if (auto searchEncOv = m.find("encoder-overwrites"); searchEncOv != m.end()) {
         EXPECT_NO_THROW(searchEncOv->second.get<Metadata>());
         auto encOv = std::move(searchEncOv->second.get<Metadata>());
 
-        int countStringVals = 0;
-        int countIntegerVals = 0;
-        int countEveryThingElse = 0;
-        for (auto&& keyVal : std::move(encOv)) {
-            keyVal.second.visit(eckit::Overloaded{
-                [&](auto&& val) -> util::IfTypeOf<decltype(val), MetadataTypes::Strings> { ++countStringVals; },
-                [&](auto&& val) -> util::IfTypeOf<decltype(val), MetadataTypes::Integers> { ++countIntegerVals; },
-                [&](auto&& val)
-                    -> util::IfTypeNotOf<decltype(val),
-                                         util::MergeTypeList_t<MetadataTypes::Strings, MetadataTypes::Integers>> {
-                    ++countEveryThingElse;
-                },
-            });
+        {
+            int countStringVals1 = 0;
+            int countIntegerVals1 = 0;
+            int countEveryThingElse1 = 0;
+            // Iterate and visit with const ref
+            for (const auto& keyVal : encOv) {
+                keyVal.second.visit(eckit::Overloaded{
+                    [&](const auto& val) -> util::IfTypeOf<decltype(val), MetadataTypes::Strings> {
+                        ++countStringVals1;
+                    },
+                    [&](const auto& val) -> util::IfTypeOf<decltype(val), MetadataTypes::Integers> {
+                        ++countIntegerVals1;
+                    },
+                    [&](const auto& val)
+                        -> util::IfTypeNotOf<decltype(val),
+                                             util::MergeTypeList_t<MetadataTypes::Strings, MetadataTypes::Integers>> {
+                        ++countEveryThingElse1;
+                    },
+                });
+            }
+            EXPECT_EQUAL(countStringVals1, 2);
+            EXPECT_EQUAL(countIntegerVals1, 2);
+            EXPECT_EQUAL(countEveryThingElse1, 0);
+
+            EXPECT_EQUAL(encOv.size(), 4);
         }
-        EXPECT(countStringVals == 2);
-        EXPECT(countIntegerVals == 2);
-        EXPECT(countEveryThingElse == 0);
+
+
+        // Alternative to the block given above
+        {
+            int countStringVals2 = 0;
+            int countIntegerVals2 = 0;
+            int countEveryThingElse2 = 0;
+            // Iterate and visit with rvalue
+            for (auto&& keyVal : encOv) {
+                keyVal.second.visit([&](auto&& val) -> void {
+                    if constexpr (util::TypeListContains<std::decay_t<decltype(val)>, MetadataTypes::Strings>::value) {
+                        ++countStringVals2;
+                    }
+                    else if constexpr (util::TypeListContains<std::decay_t<decltype(val)>,
+                                                              MetadataTypes::Integers>::value) {
+                        ++countIntegerVals2;
+                    }
+                    else {
+                        ++countEveryThingElse2;
+                    }
+                });
+            }
+            EXPECT_EQUAL(countStringVals2, 2);
+            EXPECT_EQUAL(countIntegerVals2, 2);
+            EXPECT_EQUAL(countEveryThingElse2, 0);
+
+            // Should be not empty as movement did not happen at all
+            EXPECT_EQUAL(encOv.size(), 4);
+        }
+
+        // Test extraction with visit & movement
+        {
+            std::vector<std::string> stringValues;
+            std::vector<std::int64_t> integerValues;
+
+            for (auto&& keyVal : encOv) {
+                keyVal.second.visit([&](auto&& val) -> void {
+                    if constexpr (util::TypeListContains<std::decay_t<decltype(val)>, MetadataTypes::Strings>::value) {
+                        stringValues.emplace_back(std::move(val));
+                    }
+                    else if constexpr (util::TypeListContains<std::decay_t<decltype(val)>,
+                                                              MetadataTypes::Integers>::value) {
+                        integerValues.emplace_back(std::move(val));
+                    }
+                });
+            }
+
+            EXPECT_EQUAL(stringValues.size(), 2);
+            EXPECT_EQUAL(integerValues.size(), 2);
+
+
+            // Visit again and expect strings to be empty (through movement)
+            for (const auto& keyVal : encOv) {
+                keyVal.second.visit([&](const auto& val) -> void {
+                    if constexpr (util::TypeListContains<std::decay_t<decltype(val)>, MetadataTypes::Strings>::value) {
+                        EXPECT_EQUAL(val, "");
+                    }
+                });
+            }
+        }
     };
 
 
     // Test equality values for nested rvalue access
-    EXPECT(std::move(m2).get<Metadata>("encoderOverwrites").get<std::int64_t>("encodeBitsPerValue") == 123L);
-    EXPECT(std::move(m2).get<Metadata>("encoderOverwrites").get<std::string>("typeOfLevel") == "oceanModelLayer");
-    EXPECT(std::move(m2).get<Metadata>("encoderOverwrites").get<std::string>("gridType") == "unstructured_grid");
+    EXPECT(std::move(m2).get<Metadata>("encoder-overwrites").get<std::int64_t>("encodeBitsPerValue") == 123L);
+    EXPECT(std::move(m2).get<Metadata>("encoder-overwrites").get<std::string>("typeOfLevel") == "oceanModelLayer");
+    EXPECT(std::move(m2).get<Metadata>("encoder-overwrites").get<std::string>("gridType") == "unstructured_grid");
 }
 
 

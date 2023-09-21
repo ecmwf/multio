@@ -51,7 +51,7 @@ ecbuild_add_test( TARGET    test_multio_mask_compression
 
 ecbuild_add_test( TARGET    test_multio_metadata
                   SOURCES   test_multio_metadata.cc
-                  LIBS      ${_link_libraries} )
+                  LIBS      multio )
 
 # Test api
 

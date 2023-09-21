@@ -24,4 +24,8 @@ std::optional<MetadataValue> toMetadataValue(const eckit::Value& v) {
     return details::toMetadataMaybe<MetadataTraits>(v);
 }
 
+const Glossary& glossary() {
+    return Glossary::instance();
+}
+
 }  // namespace multio::message

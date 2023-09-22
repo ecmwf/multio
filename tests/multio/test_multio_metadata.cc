@@ -344,6 +344,39 @@ CASE("Test setting, getting and merging nested metadata") {
     EXPECT(std::move(m2).get<Metadata>("encoder-overwrites").get<std::string>("gridType") == "unstructured_grid");
 }
 
+CASE("Test visit with unwrapped unique ptr") {
+    {
+        MetadataValue v{Metadata{{"key1", "value1"}}};
+
+        static_cast<MetadataValue&>(v).visit(
+            eckit::Overloaded{[](Metadata&) { EXPECT(true); }, [](auto& other) { EXPECT(false); }});
+
+        static_cast<const MetadataValue&>(v).visit(
+            eckit::Overloaded{[](const Metadata&) { EXPECT(true); }, [](const auto& other) { EXPECT(false); }});
+
+        static_cast<MetadataValue&&>(v).visit(
+            eckit::Overloaded{[](Metadata&&) { EXPECT(true); }, [](auto&& other) { EXPECT(false); }});
+    }
+
+    {
+        MetadataValue v{Metadata{{"key1", "value1"}}};
+
+        // This is rather a static complication test than a dynamic test
+        Metadata& ref = static_cast<MetadataValue&>(v).get<Metadata>();
+        const Metadata& cref = static_cast<const MetadataValue&>(v).get<Metadata>();
+        Metadata&& tref = static_cast<MetadataValue&&>(v).get<Metadata>();
+
+        // All references should be valid
+        EXPECT_EQUAL(ref.size(), 1);
+        EXPECT_EQUAL(cref.size(), 1);
+        EXPECT_EQUAL(tref.size(), 1);
+
+        Metadata moved{std::move(tref)};
+        // After movement references should point to an empty metadata
+        EXPECT_EQUAL(ref.size(), 0);
+        EXPECT_EQUAL(cref.size(), 0);
+    }
+}
 
 }  // namespace multio::test
 

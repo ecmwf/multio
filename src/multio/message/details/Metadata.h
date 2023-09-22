@@ -83,7 +83,7 @@ public:
 
     template <typename T>
     T&& get() && {
-        return getter<T>(std::move(*this));
+        return std::move(getter<T>(std::move(*this)));
     }
 
 
@@ -158,7 +158,7 @@ private:
                   util::TypeListContains<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>::value, bool>
               = true>
     static decltype(auto) uniquePtrGetter(This_&& val) {
-        if constexpr (std::is_rvalue_reference<This>::value) {
+        if constexpr (std::is_rvalue_reference<This_>::value) {
             return std::move(*(resolvedUniquePtrGetter<std::unique_ptr<T>>(std::forward<This_>(val))).get());
         }
         else {
@@ -367,19 +367,19 @@ private:
         throw MetadataMissingKeyException(k, Here());
     }
 
-    template <typename This>
-    static decltype(auto) referenceGetter(This&& val, const KeyType& k) {
+    template <typename This_>
+    static decltype(auto) referenceGetter(This_&& val, const KeyType& k) {
         if (auto search = val.values_.find(k); search != val.values_.end()) {
             return std::ref(search->second);
         }
         throw MetadataMissingKeyException(k, Here());
     }
 
-    template <typename T, typename This>
-    static std::optional<T> optionalGetter(This&& val, const KeyType& k) {
+    template <typename T, typename This_>
+    static std::optional<T> optionalGetter(This_&& val, const KeyType& k) {
         if (auto search = val.values_.find(k); search != val.values_.end()) {
             try {
-                if constexpr (std::is_rvalue_reference<This>::value) {
+                if constexpr (std::is_rvalue_reference<This_>::value) {
                     return std::move(search->second.template get<T>());
                 }
                 else {
@@ -393,10 +393,10 @@ private:
         return std::nullopt;
     }
 
-    template <typename This>
-    static std::optional<MetadataValue<Traits>> optionalGetter(This&& val, const KeyType& k) noexcept {
+    template <typename This_>
+    static std::optional<MetadataValue<Traits>> optionalGetter(This_&& val, const KeyType& k) noexcept {
         if (auto search = val.values_.find(k); search != val.values_.end()) {
-            if constexpr (std::is_rvalue_reference<This>::value) {
+            if constexpr (std::is_rvalue_reference<This_>::value) {
                 return std::optional<MetadataValue<Traits>>{std::move(search->second)};
             }
             else {

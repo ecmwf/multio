@@ -37,6 +37,9 @@ struct TypeList {
     }
 };
 
+
+//-------------------------------------
+
 template <template <typename...> class Template, typename TypeList_>
 struct ApplyTypeList;
 
@@ -48,6 +51,8 @@ struct ApplyTypeList<Template, TypeList<T...>> {
 template <template <typename...> class Template, typename TypeList_>
 using ApplyTypeList_t = typename ApplyTypeList<Template, TypeList_>::type;
 
+
+//-------------------------------------
 
 template <template <typename, typename...> class Template, typename TypeList_>
 struct MapTypeList;
@@ -78,15 +83,33 @@ struct MergeTypeList<TypeList<T1...>, TypeList<T2...>, TS...> {
 };
 
 
-template <typename Type, typename TypeList>
-struct TypeListContains : std::false_type {};
+//-------------------------------------
 
-template <typename Type, typename... T>
-struct TypeListContains<Type, TypeList<T...>>
-    : std::integral_constant<bool, (false || ... || std::is_same_v<Type, T>)> {};
+template <template <typename> typename Expr, typename TypeList>
+struct TypeListAny : std::false_type {};
+
+template <template <typename> typename Expr, typename... T>
+struct TypeListAny<Expr, TypeList<T...>> : std::integral_constant<bool, (false || ... || Expr<T>::value)> {};
+
+
+template <template <typename> typename Expr, typename TypeList>
+struct TypeListAll : std::false_type {};
+
+template <template <typename> typename Expr, typename... T>
+struct TypeListAll<Expr, TypeList<T...>> : std::integral_constant<bool, (true && ... && Expr<T>::value)> {};
+
+
+template <typename T>
+struct TypeListContainsExpr {
+    template <typename T2>
+    using Expr = std::is_same<T, T2>;
+};
+
+template <typename Type, typename TypeList>
+using TypeListContains = TypeListAny<TypeListContainsExpr<Type>::template Expr, TypeList>;
+
 
 //-----------------------------------------------------------------------------
-
 
 // Helper for SFINAE
 template <typename T, typename TList, typename Ret = void>
@@ -98,37 +121,46 @@ using IfTypeNotOf = std::enable_if_t<!TypeListContains<std::decay_t<T>, TList>::
 
 //-----------------------------------------------------------------------------
 
+
 template <typename T>
 struct IsUniquePtr {
     static constexpr bool value = false;
 };
+
 template <typename T, typename Deleter>
 struct IsUniquePtr<std::unique_ptr<T, Deleter>> {
     static constexpr bool value = true;
 };
 
+
+template <typename T>
+T& unwrapUniquePtr(std::unique_ptr<T>& arg) noexcept(noexcept(*arg.get())) {
+    return *arg.get();
+}
+template <typename T>
+const T& unwrapUniquePtr(const std::unique_ptr<T>& arg) noexcept(noexcept(*arg.get())) {
+    return *arg.get();
+}
+template <typename T>
+T&& unwrapUniquePtr(std::unique_ptr<T>&& arg) noexcept(noexcept(std::move(*arg.get()))) {
+    return std::move(*arg.get());
+}
+
+template <typename Arg, std::enable_if_t<(!IsUniquePtr<std::decay_t<Arg>>::value), bool> = true>
+Arg&& unwrapUniquePtr(Arg&& arg) noexcept(noexcept(std::forward<Arg>(arg))) {
+    return std::forward<Arg>(arg);
+}
+
+
 template <typename Func>
 struct ForwardUnwrappedUniquePtr {
     Func func_;
 
-    template <typename Arg,
-              std::enable_if_t<(IsUniquePtr<std::decay_t<Arg>>::value && std::is_lvalue_reference<Arg>::value), bool>
-              = true>
-    decltype(auto) operator()(Arg&& arg) && noexcept(noexcept(std::move(func_)(*std::forward<Arg>(arg).get()))) {
-        return std::move(func_)(*std::forward<Arg>(arg).get());
-    }
 
-    template <typename Arg,
-              std::enable_if_t<(IsUniquePtr<std::decay_t<Arg>>::value && std::is_rvalue_reference<Arg>::value), bool>
-              = true>
-    decltype(auto) operator()(Arg&& arg) && noexcept(
-        noexcept(std::move(func_)(std::move(*std::forward<Arg>(arg).get())))) {
-        return std::move(func_)(std::move(*std::forward<Arg>(arg).get()));
-    }
-
-    template <typename Arg, std::enable_if_t<(!IsUniquePtr<std::decay_t<Arg>>::value), bool> = true>
-    decltype(auto) operator()(Arg&& arg) && noexcept(noexcept(std::move(func_)(std::forward<Arg>(arg)))) {
-        return std::move(func_)(std::forward<Arg>(arg));
+    template <typename... Args>
+    decltype(auto) operator()(Args&&... args) && noexcept(
+        noexcept(std::move(func_)(unwrapUniquePtr(std::forward<Args>(args))...))) {
+        return std::move(func_)(unwrapUniquePtr(std::forward<Args>(args))...);
     }
 };
 
@@ -140,6 +172,7 @@ decltype(auto) forwardUnwrappedUniquePtr(Func&& f) noexcept(noexcept(ForwardUnwr
 
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
+
 
 template <typename T>
 struct IsVector {

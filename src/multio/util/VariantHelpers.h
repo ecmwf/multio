@@ -34,33 +34,33 @@ struct GetVariantIndex<T, std::variant<Ts...>>
 
 //-----------------------------------------------------------------------------
 
-template <typename Func, typename ValueToVisit>
-decltype(auto) visitUnwrapUniquePtr(Func&& f, ValueToVisit&& value) noexcept(
-    noexcept(std::visit(util::forwardUnwrappedUniquePtr(std::forward<Func>(f)), std::forward<ValueToVisit>(value)))) {
-    return std::visit(util::forwardUnwrappedUniquePtr(std::forward<Func>(f)), std::forward<ValueToVisit>(value));
+template <typename Func, typename... ValuesToVisit>
+decltype(auto) visitUnwrapUniquePtr(Func&& f, ValuesToVisit&&... values) noexcept(noexcept(
+    std::visit(util::forwardUnwrappedUniquePtr(std::forward<Func>(f)), std::forward<ValuesToVisit>(values)...))) {
+    return std::visit(util::forwardUnwrappedUniquePtr(std::forward<Func>(f)), std::forward<ValuesToVisit>(values)...);
 }
 
 
 //-----------------------------------------------------------------------------
 
 
-template <typename T>
-decltype(auto) translateVisitor() noexcept {
-    return eckit::Overloaded{
-        [&](const auto& v)
-            -> std::enable_if_t<!eckit::IsTranslatable<std::decay_t<decltype(v)>, T>::value, std::optional<T>> {
-            return std::nullopt;
-        },
-        [](const auto& v)
-            -> std::enable_if_t<eckit::IsTranslatable<std::decay_t<decltype(v)>, T>::value, std::optional<T>> {
-            return eckit::translate<T>(v);
-        }};
-}
+template <typename To>
+struct TranslateToMaybe {
+    template <typename From, std::enable_if_t<!eckit::IsTranslatable<std::decay_t<From>, To>::value, bool> = true>
+    std::optional<To> operator()(From&&) const noexcept {
+        return std::nullopt;
+    }
+
+    template <typename From, std::enable_if_t<eckit::IsTranslatable<std::decay_t<From>, To>::value, bool> = true>
+    std::optional<To> operator()(From&& from) const noexcept {
+        return eckit::translate<To>(std::forward<From>(from));
+    }
+};
 
 
 template <typename T, typename TypeToVisit>
 decltype(auto) visitTranslate(TypeToVisit&& typeToVisit) noexcept {
-    return std::visit(translateVisitor<T>(), std::forward<TypeToVisit>(typeToVisit));
+    return std::visit(TranslateToMaybe<T>{}, std::forward<TypeToVisit>(typeToVisit));
 }
 
 //-----------------------------------------------------------------------------

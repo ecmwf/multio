@@ -14,23 +14,157 @@
 
 #pragma once
 
-#include "multio/message/details/MetadataTypes.h"
+// #include "multio/message/MetadataException.h"
+// #include "multio/message/details/MetadataTypes.h"
+#include "multio/message/details/Metadata.h"
+
 
 #include <string>
 
 namespace multio::message::details {
 
 
+template <typename Description, typename ContainerRef_, bool isOptional_>
+struct KeyValueAccess;
+
+
 /**
  * TBD Create a typed decsription of metadata entries through which access on metadata is performed.
  */
-// template <typename KeyType, typename ValidTypes>
-// struct KeyValueDescription {
-//     KeyType key;
+template <typename Traits_, typename ValidTypes_, typename ParsedType,
+          typename ReadFunc = util::TranslateTo<ParsedType>, typename WriteFunc = util::Identity>
+struct KeyValueDescription {
+    using Traits = Traits_;
+    using KeyType = typename Traits::KeyType;
+    using Types = MetadataTypes<Traits>;
+    using ValidTypes = ValidTypes_;
+    using This = KeyValueDescription<Traits_, ValidTypes_>;
 
-//     operator KeyType&() { return key; }
-//     operator const KeyType&() const { return key; }
-// };
+    KeyType key;
+
+    ReadFunc read;
+    WriteFunc write;
+
+    operator KeyType&() { return key; }
+    operator const KeyType&() const { return key; }
+
+
+    template <typename MD>
+    decltype(auto) requiredOn(MD&& md) {
+        return KeyValueAccess<This, MD, false>{*this, std::forward<MD>(md)};
+    }
+
+    template <typename MD>
+    decltype(auto) optionalOn(MD&& md) {
+        return KeyValueAccess<This, MD, true>{*this, std::forward<MD>(md)};
+    }
+};
+
+template <typename Traits, typename ValidTypes, typename ParsedType, typename Key>
+decltype(auto) keyDescription(Key&& key) noexcept {
+    return KeyValueDescription<Traits, ValidTypes, ParsedType>{std::forward<Key>(key)};
+}
+
+template <typename Traits, typename ValidTypes, typename ParsedType, typename Key, typename ReadFunc>
+decltype(auto) keyDescription(Key&& key, ReadFunc&& read) noexcept {
+    return KeyValueDescription<Traits, ValidTypes, ParsedType, ReadFunc>{std::forward<Key>(key),
+                                                                         std::forward<ReadFunc>(read)};
+}
+
+template <typename Traits, typename ValidTypes, typename ParsedType, typename Key, typename ReadFunc,
+          typename WriteFunc>
+decltype(auto) keyDescription(Key&& key, ReadFunc&& read, WriteFunc&& write) noexcept {
+    return KeyValueDescription<Traits, ValidTypes, ParsedType, ReadFunc, WriteFunc>{
+        std::forward<Key>(key), std::forward<ReadFunc>(read), std::forward<WriteFunc>(write)};
+}
+
+
+template <typename Description, typename ContainerRef_, bool isOptional_>
+struct KeyValueAccess {
+    using Traits = typename Description::Traits;
+    using Types = typename Description::Types;
+    using ValidTypes
+        = std::conditional_t<isOptional_,
+                             util::MergeTypeList_t<typename Types::Nulls, typename Description::ValidTypes>,
+                             typename Description::ValidTypes>;
+    using ContainerRef = ContainerRef_;
+
+    const Description& description;
+    ContainerRef containerRef;  // Can be an temporary ref
+
+    static const bool isOptional = isOptional_;
+
+
+    // Internals -- Null ref to allow optionally passing null instead of a value.
+    // The user will never see the MetadataValue itself but just the specific dispatched null type.
+    // Hence
+    MetadataValue<Traits> nullRef{};
+
+    using LookUpRef = util::InheritConstRef_t<ContainerRef, MetadataValue<Traits>>;
+    LookUpRef lookUp() && {
+        if (auto searchKey = containerRef.find(description.key); searchKey != containerRef.end()) {
+            return static_cast<LookUpRef>(searchKey->second);
+        }
+        if (isOptional) {
+            // Return nullRef - static cast assures returning rvalue if expected
+            return static_cast<LookUpRef>(nullRef);
+        }
+        else {
+            throw MetadataMissingKeyException(description.key, Here());
+        }
+    }
+};
+
+
+template <typename RetType, typename KeyType, typename IndexSeq, typename ValidTypesListOfList, typename Func>
+struct VariadicKeyValidator;
+
+template <typename RetType, typename KeyType, std::size_t... I, typename ListOfList, typename Func>
+struct VariadicKeyValidator<RetType, KeyType, std::index_sequence<I...>, ListOfList, Func> {
+    std::array<std::reference_wrapper<const KeyType>, sizeof...(I)> keys;
+    Func func;
+
+
+    template <typename... Args>
+    RetType operator()(Args&&... args) && {
+        if constexpr ((true && ...
+                       && util::TypeListContains<util::GetIthType_t<I, util::TypeList<std::decay_t<Args>...>>,
+                                                 util::GetIthType_t<I, ListOfList>>::value)) {
+            return std::move(func)(std::forward<Args>(args)...);
+        }
+        else {
+            std::ostringstream oss;
+            oss << "Type validation failed for keys : ";
+            (oss << ...
+                 << (util::TypeListContains<util::GetIthType_t<I, util::TypeList<std::decay_t<Args>...>>,
+                                            util::GetIthType_t<I, ListOfList>>::value
+                         ? std::string("")
+                         : (std::string(std::get<I>(keys).get()) + std::string(", "))));
+
+            throw MetadataException(oss.str(), Here());
+        };
+    }
+};
+
+
+template <typename RetType, typename Func, typename... KVAccesses>
+RetType validateAll(Func&& func, KVAccesses&&... vals) {
+    using Traits = util::TypeListHead_t<util::TypeList<typename std::decay_t<KVAccesses>::Traits...>>;
+    using KeyType = typename Traits::KeyType;
+
+    return util::visitUnwrapUniquePtr(
+        VariadicKeyValidator<RetType, KeyType, std::make_index_sequence<sizeof...(KVAccesses)>,
+                             util::TypeList<typename std::decay_t<KVAccesses>::ValidTypes...>, Func>{
+            {std::cref(vals.description.key)...}, std::forward<Func>(func)},
+        std::forward<KVAccesses>(vals).lookUp()...);
+}
+
+template <typename Func, typename... KVAccesses>
+decltype(auto) validateAll(Func&& func, KVAccesses&&... vals) {
+    using Ret = decltype(std::forward<Func>(func)(
+        std::declval<util::InheritConstRef_t<KVAccesses, util::TypeListHead_t<typename KVAccesses::ValidTypes>>>()...));
+    return validateAll<Ret>(std::forward<Func>(func), std::forward<KVAccesses>(vals)...);
+}
 
 
 //-----------------------------------------------------------------------------
@@ -41,8 +175,8 @@ namespace multio::message::details {
  *  - Keep track of metadata keys that are used - with a proper IDE we can jump to all places a key is used
  *  - Just using strings at multiple places is error prone (typos can happen)
  *  - In the future also type information and specialized access operations should be added
- *  - We can do proper benchmark of metadata operations with typical keys. Moreover its easy to benchmark different key
- * (fixed strings, prehashed strings in case of hashmaps) and maptypes
+ *  - We can do proper benchmark of metadata operations with typical keys. Moreover its easy to benchmark different
+ * key (fixed strings, prehashed strings in case of hashmaps) and maptypes
  */
 template <typename Traits = DefaultMetadataTraits>
 struct Glossary {
@@ -86,8 +220,8 @@ struct Glossary {
     const KeyType minute{"minute"};
     const KeyType second{"second"};
 
-    // Eccodes analysis date/time - direct setting (alternative to dateOfAnalysis & timeOfAnalysis) -- ONLY VALID FOR A
-    // SPECIFIC localDefinitionNumber
+    // Eccodes analysis date/time - direct setting (alternative to dateOfAnalysis & timeOfAnalysis) -- ONLY VALID
+    // FOR A SPECIFIC localDefinitionNumber
     const KeyType yearOfAnalysis{"yearOfAnalysis"};
     const KeyType monthOfAnalysis{"monthOfAnalysis"};
     const KeyType dayOfAnalysis{"dayOfAnalysis"};

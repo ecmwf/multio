@@ -84,6 +84,26 @@ decltype(auto) visitUnwrapUniquePtr(Func&& f, ValuesToVisit&&... values) noexcep
 
 //-----------------------------------------------------------------------------
 
+struct Identity {
+    template <typename T>
+    T&& operator()(T&& val) const noexcept {
+        return std::forward<T>(val);
+    };
+};
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+template <typename To>
+struct TranslateTo {
+    template <typename From>
+    decltype(auto) operator()(From&& from) const {
+        return eckit::translate<To>(std::forward<From>(from));
+    };
+};
+
+//-----------------------------------------------------------------------------------------------------------------------------------------
 
 template <typename To>
 struct TranslateToMaybe {
@@ -103,6 +123,7 @@ template <typename T, typename TypeToVisit>
 decltype(auto) visitTranslate(TypeToVisit&& typeToVisit) noexcept {
     return util::visit(TranslateToMaybe<T>{}, std::forward<TypeToVisit>(typeToVisit));
 }
+
 
 //-----------------------------------------------------------------------------
 

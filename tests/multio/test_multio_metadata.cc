@@ -444,6 +444,155 @@ CASE("Test visit with unwrapped unique ptr") {
     }
 }
 
+
+using message::details::KeyValueDescription;
+template <typename ValidTypes>
+using Description = KeyValueDescription<message::MetadataTraits, ValidTypes>;
+
+CASE("Test Key description validation") {
+    using Traits = message::MetadataTraits;
+    using Types = MetadataTypes;
+
+    using message::details::validateAll;
+
+
+    Description<Types::Integers> paramId{"paramId"};
+    Description<Types::Nested> encOv{"encoder-overwrites"};
+
+    // Simple validation
+    {
+        Metadata m{{"paramId", 123}};
+
+        auto intVal = validateAll(
+            [](const auto& intVal) -> std::int64_t {
+                return intVal;  // Simulate conversion/translation
+            },
+            paramId.requiredOn(m));
+
+        EXPECT_EQUAL(intVal, 123);
+    }
+
+    // Simple validation on rvalue
+    {
+        auto intVal = validateAll(
+            [](auto&& intVal) -> std::int64_t {
+                static_assert(std::is_rvalue_reference_v<decltype(intVal)>);
+                return intVal;  // Simulate conversion/translation
+            },
+            paramId.requiredOn(Metadata{{"paramId", 123}}));
+
+        EXPECT_EQUAL(intVal, 123);
+    }
+
+    // Simple valitaion on dangling key
+    {
+        auto intVal = validateAll(
+            [](auto&& intVal) -> std::int64_t {
+                return intVal;  // Simulate conversion/translation
+            },
+            Description<Types::Integers>{"paramId"}.requiredOn(Metadata{{"paramId", 123}}));
+
+        EXPECT_EQUAL(intVal, 123);
+    }
+
+    // Simple fail
+    {
+        Metadata m{{"paramId", "ohoh not an int"}};
+
+        EXPECT_THROWS_AS(validateAll(
+                             [](const auto& intVal) -> std::int64_t {
+                                 return intVal;  // Simulate conversion/translation
+                             },
+                             paramId.requiredOn(m)),
+                         MetadataException);
+    }
+
+    // Simple optional
+    {
+        Metadata m{};
+
+        auto intVal = validateAll(
+            [](const auto& intVal) -> std::int64_t {
+                using T = std::decay_t<decltype(intVal)>;
+                if constexpr (util::TypeListContains<T, Types::Nulls>::value) {
+                    return 123;
+                }
+                else {
+                    return intVal;  // Simulate conversion/translation
+                }
+            },
+            paramId.optionalOn(m));
+
+        EXPECT_EQUAL(intVal, 123);
+    }
+
+
+    // Complex
+    // !!!! Beware of increasing compile-time complexity with visiting too much !!!!
+    // !!!! Uncomment some of the other keys below and you will notice that compile time increases
+    // !!!! exponentially...
+    {
+        // Examppple metadata
+        Metadata md{
+            {"Ni", 4},
+            {"Nj", 5},
+            {"north", 1.1},
+            {"south", 1.2},
+            {"west", 1.3},
+            {"east", 1.4},
+            {"west_east_increment", 1.4},
+            {"south_north_increment", 1.5},
+        };
+
+        Description<Types::Integers> keyNi{"Ni"};
+        // Description<Types::Integers> keyNj{"Nj"};
+        Description<Types::Floats> keyNorth{"north"};
+        // Description<Types::Floats> keySouth{"south"};
+        // Description<Types::Floats> keyWest{"west"};
+        // Description<Types::Floats> keyEast{"east"};
+        // Description<Types::Floats> keyWestEastInc{"west_east_increment"};
+        // Description<Types::Floats> keySouthNorthInc{"south_north_increment"};
+
+        // Imitate a possible encoder ....
+        auto set = [](auto&& key, auto&& val) -> void {
+            using T = std::decay_t<decltype(val)>;
+            static_assert(util::TypeListContains<T, Types::Floats>::value
+                          || util::TypeListContains<T, Types::Integers>::value);
+        };
+
+        validateAll(
+            [&](auto&& ni,  //
+                            // auto&& nj,            //
+                auto&& north  //
+                              // auto&& south,         //
+                              // auto&& west,          //
+                              // auto&& east,          //
+                              // auto&& westEastInc,  //
+                              // auto&& southNorthInc  //
+            ) {
+                std::int64_t scale = 1000000;
+                set("Ni", ni);
+                set("Nj", nj);
+                // set("latitudeOfFirstGridPoint", scale * north);
+                // set("longitudeOfFirstGridPoint", scale * west);
+                // set("latitudeOfLastGridPoint", scale * south);
+                // set("longitudeOfLastGridPoint", scale * (east - westEastInc));
+                // set("iDirectionIncrement", scale * westEastInc);
+                // set("jDirectionIncrement", scale * southNorthInc);
+            },
+            keyNi.requiredOn(md),  //
+            // keyNj.requiredOn(md),            //
+            keyNorth.requiredOn(md)  //
+            // keySouth.requiredOn(md),         //
+            // keyWest.requiredOn(md),          //
+            // keyEast.requiredOn(md),          //
+            // keyWestEastInc.requiredOn(md),  //
+            // keySouthNorthInc.requiredOn(md)  //
+        );
+    }
+}
+
+
 }  // namespace multio::test
 
 int main(int argc, char** argv) {

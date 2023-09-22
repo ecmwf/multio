@@ -186,7 +186,50 @@ using SaneOverloadResolutionResult_t = typename std::result_of_t<SaneOverloadRes
 
 
 
+template <typename TypeList>
+struct TypeListAllTheSame : std::false_type {};
+
+template <typename T1, typename... T>
+struct TypeListAllTheSame<TypeList<T1, T...>>
+    : std::integral_constant<bool, (true && ... && std::is_same<T1, T>::value)> {};
+
+
+//-------------------------------------
+
+template <typename TypeList>
+struct TypeListHead;
+
+template <typename Head, typename... T>
+struct TypeListHead<TypeList<Head, T...>> {
+    using type = Head;
+};
+
+template <typename TypeList>
+using TypeListHead_t = typename TypeListHead<TypeList>::type;
+
+
+//-------------------------------------
+
+template <std::size_t I, typename TL>
+struct GetIthType;
+
+template <std::size_t I, typename TL>
+using GetIthType_t = typename GetIthType<I, TL>::type;
+
+
+template <typename T1, typename... T>
+struct GetIthType<0, TypeList<T1, T...>> {
+    using type = T1;
+};
+
+template <std::size_t I, typename T1, typename... T>
+struct GetIthType<I, TypeList<T1, T...>> {
+    using type = GetIthType_t<I - 1, TypeList<T...>>;
+};
+
+
 //-----------------------------------------------------------------------------
+
 
 // Helper for SFINAE
 template <typename T, typename TList, typename Ret = void>
@@ -244,6 +287,26 @@ decltype(auto) forwardUnwrappedUniquePtr(Func&& f) noexcept(noexcept(ForwardUnwr
     std::forward<Func>(f)})) {
     return ForwardUnwrappedUniquePtr<Func>{std::forward<Func>(f)};
 }
+
+//-----------------------------------------------------------------------------
+
+/**
+ * Takes a type T that is either an rvalue (T&&), non-const lvalue (T&) or const lvalue (const T&)
+ * and exchanges T with another type.
+ *
+ * Everything that is not an reference will be treated as rvalue.
+ */
+template <typename From, typename To>
+struct InheritConstRef {
+    using type = std::conditional_t<
+        (std::is_rvalue_reference_v<From> || !std::is_reference_v<From>), std::add_rvalue_reference_t<std::decay_t<To>>,
+
+        std::add_lvalue_reference_t<std::conditional_t<std::is_const_v<std::remove_reference_t<From>>,
+                                                       std::add_const_t<std::decay_t<To>>, std::decay_t<To>>>>;
+};
+
+template <typename From, typename To>
+using InheritConstRef_t = typename InheritConstRef<From, To>::type;
 
 
 //-----------------------------------------------------------------------------------------------------------------------------------------

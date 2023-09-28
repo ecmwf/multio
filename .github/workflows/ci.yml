@@ -232,5 +232,5 @@ jobs:
         shell: bash -eux {0}
         run: |
           cd pymultio         
-          LD_LIBRARY_PATH=${{ steps.build-test.outputs.lib_path }}:LD_LIBRARY_PATH python -m pytest --cov=./ --cov-report=xml
+          LD_LIBRARY_PATH=${{ steps.build-test.outputs. }}:$LD_LIBRARY_PATH python -m pytest --cov=./ --cov-report=xml
           python -m coverage report

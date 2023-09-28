@@ -233,9 +233,8 @@ jobs:
         run: |
           cd pymultio         
           if [[ "${{ matrix.os }}" =~ ^macos ]]; then
-            LD_LIBRARY_PATH=${{ steps.build-test.outputs.lib_path }}
+            LD_LIBRARY_PATH=${{ steps.build-test.outputs.lib_path }} python -m pytest --cov=./ --cov-report=xml
           else
-            LD_LIBRARY_PATH=${{ steps.build-test.outputs.lib_path }}:$LD_LIBRARY_PATH 
+            LD_LIBRARY_PATH=${{ steps.build-test.outputs.lib_path }}:$LD_LIBRARY_PATH python -m pytest --cov=./ --cov-report=xml
           fi
-          python -m pytest --cov=./ --cov-report=xml
           python -m coverage report

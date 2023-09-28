@@ -227,10 +227,10 @@ jobs:
           python -m pip install dist/*
 
       - name: Run pytest
-        env:
-          LD_LIBRARY_PATH: ${{ steps.build-test.outputs.lib_path }}
+        #env:
+        #  LD_LIBRARY_PATH: ${{ steps.build-test.outputs.lib_path }}
         shell: bash -eux {0}
         run: |
           cd pymultio         
-          #LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}:/opt/intel/oneapi/tbb/2021.10.0/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.10.0//libfabric/lib:/opt/intel/oneapi/mpi/2021.10.0//lib/release:/opt/intel/oneapi/mpi/2021.10.0//lib:/opt/intel/oneapi/mkl/2023.2.0/lib/intel64:/opt/intel/oneapi/debugger/2023.2.0/gdb/intel64/lib:/opt/intel/oneapi/debugger/2023.2.0/libipt/intel64/lib:/opt/intel/oneapi/debugger/2023.2.0/dep/lib:/opt/intel/oneapi/compiler/2023.2.1/linux/lib:/opt/intel/oneapi/compiler/2023.2.1/linux/lib/x64:/opt/intel/oneapi/compiler/2023.2.1/linux/lib/oclfpga/host/linux64/lib:/opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin  python -m pytest --cov=./ --cov-report=xml
+          LD_LIBRARY_PATH=${{ steps.build-test.outputs.lib_path }}:LD_LIBRARY_PATH python -m pytest --cov=./ --cov-report=xml
           python -m coverage report

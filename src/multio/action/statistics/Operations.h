@@ -49,7 +49,7 @@ std::unique_ptr<Operation> make_operation(const std::string& opname, long sz, st
         return cfg.readRestart() ? std::make_unique<Maximum<Precision>>(opname, sz, win, IOmanager, cfg)
                                  : std::make_unique<Maximum<Precision>>(opname, sz, win, cfg);
     }
-    if (opname != "accumulate") {
+    if (opname == "accumulate") {
         return cfg.readRestart() ? std::make_unique<Accumulate<Precision>>(opname, sz, win, IOmanager, cfg)
                                  : std::make_unique<Accumulate<Precision>>(opname, sz, win, cfg);
     }

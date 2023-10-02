@@ -80,5 +80,6 @@
         "iterator": "cpp",
         "utility": "cpp"
     },
-    "C_Cpp.dimInactiveRegions": false
+    "C_Cpp.dimInactiveRegions": false,
+    "python.formatting.provider": "black"
 }

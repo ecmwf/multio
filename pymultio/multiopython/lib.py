@@ -45,13 +45,10 @@ class PatchedLib:
     def __init__(self):
         ffi.cdef(self.__read_header())
 
-        libnames = [
-            "multio",
-        ]
+        libnames = [findlibs.find("multio-api")]
 
-        libnames.insert(0, findlibs.find("multio"))
-        libnames.insert(0, findlibs.find("multio-api"))
-        libnames.insert(0, findlibs.find("multio-server"))
+        if libnames is None:
+            raise RuntimeError("Multio is not found")
 
         for libname in libnames:
             try:
@@ -59,8 +56,6 @@ class PatchedLib:
                 break
             except Exception as e:
                 last_exception = e
-        else:
-            raise CFFIModuleLoadFailed() from last_exception
 
         # All of the executable members of the CFFI-loaded library are functions in the multio
         # C API. These should be wrapped with the correct error handling. Otherwise forward
@@ -74,7 +69,7 @@ class PatchedLib:
                 print(e)
                 print("Error retrieving attribute", f, "from library")
 
-        # Initialise the library, and sett it up for python-appropriate behaviour
+        # Initialise the library, and set it up for python-appropriate behaviour
 
         self.multio_initialise()
 
@@ -105,9 +100,7 @@ class PatchedLib:
 
         def wrapped_fn(*args, **kwargs):
             retval = fn(*args, **kwargs)
-            if retval not in (
-                self.__lib.MULTIO_SUCCESS,
-            ):
+            if retval not in (self.__lib.MULTIO_SUCCESS,):
                 error_str = "Error in function {}: {}".format(name, ffi.string(self.__lib.multio_error_string(retval)))
                 raise MultioException(error_str)
             return retval

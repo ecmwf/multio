@@ -35,19 +35,19 @@ class _Config:
 
     def mpi_allow_world_default_comm(self, allow=0):
         multio_allow = ffi.cast("_Bool", allow)
-        lib.multio_conf_mpi_allow_world_default_comm(self.config_pointer, multio_allow)
+        lib.multio_mpi_allow_world_default_comm(self.config_pointer, multio_allow)
 
     def mpi_parent_comm(self, parent_comm=0):
         multio_par_comm = ffi.cast("int", parent_comm)
-        lib.multio_conf_mpi_parent_comm(self.config_pointer, multio_par_comm)
+        lib.multio_mpi_parent_comm(self.config_pointer, multio_par_comm)
 
     def mpi_return_client_comm(self, return_client_comm):
         multio_rcc = ffi.new("int[]", return_client_comm)
-        lib.multio_conf_mpi_return_client_comm(self.config_pointer, multio_rcc)
+        lib.multio_mpi_return_client_comm(self.config_pointer, multio_rcc)
 
     def mpi_return_server_comm(self, return_server_comm):
         multio_rsc = ffi.new("int[]", return_server_comm)
-        lib.multio_conf_mpi_return_client_comm(self.config_pointer, multio_rsc)
+        lib.multio_mpi_return_client_comm(self.config_pointer, multio_rsc)
 
 
 class Multio:

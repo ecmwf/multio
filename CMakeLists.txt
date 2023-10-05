@@ -92,7 +92,7 @@ ecbuild_add_option( FEATURE SANDBOX
 ### sandbox
 
 ecbuild_add_option( FEATURE HEALPIX_EXAMPLES
-                    DEFAULT OFF
+	DEFAULT ON
                     DESCRIPTION "Enable creation of HEALPix examples" )
 
 

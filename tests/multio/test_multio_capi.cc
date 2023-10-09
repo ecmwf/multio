@@ -19,8 +19,8 @@
 #include "eckit/io/FileHandle.h"
 #include "eckit/testing/Test.h"
 
-#include "multio/api/multio_c.h"
-#include "multio/api/multio_c_cpp_utils.h"
+#include "multio/api/c/multio_c.h"
+#include "multio/api/c/multio_c_cpp_utils.h"
 #include "multio/message/Metadata.h"
 #include "multio/multio_version.h"
 
@@ -109,7 +109,7 @@ CASE("Create handle with default configuration without MPI splitting") {
     err = multio_new_configuration(&cc);
     std::unique_ptr<multio_configuration_t> configuration_deleter(cc);
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_conf_mpi_allow_world_default_comm(cc, false);
+    err = multio_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_new_handle(&mdp, cc);
     std::unique_ptr<multio_handle_t> handle_deleter(mdp);
@@ -142,7 +142,7 @@ CASE("Create handle with configuration path without MPI splitting") {
     err = multio_new_configuration_from_filename(&cc, path.c_str());
     std::unique_ptr<multio_configuration_t> configuration_deleter(cc);
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_conf_mpi_allow_world_default_comm(cc, false);
+    err = multio_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_new_handle(&mdp, cc);
     std::unique_ptr<multio_handle_t> handle_deleter(mdp);
@@ -158,7 +158,7 @@ CASE("Start server with default configuration") {
     err = multio_new_configuration(&cc);
     std::unique_ptr<multio_configuration_t> configuration_deleter(cc);
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_conf_mpi_allow_world_default_comm(cc, false);
+    err = multio_mpi_allow_world_default_comm(cc, false);
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_start_server(cc);
     std::string errStr(multio_error_string(err));
@@ -177,7 +177,7 @@ CASE("Test loading configuration") {
     auto configFile = configuration_file_name();
     const char* conf_path = configFile.localPath();
 
-    test_check(multio_conf_set_path(multio_cc, conf_path), "Configuration Path Changed");
+    test_check(multio_config_set_path(multio_cc, conf_path), "Configuration Path Changed");
 
     auto configPath = configuration_path_name() / "testPlan.yaml";
 

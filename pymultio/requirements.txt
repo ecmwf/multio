@@ -1,3 +1,6 @@
+os
 cffi
-findlibs
 pytest
+pytest-cov
+pytest-flakes
+numpy

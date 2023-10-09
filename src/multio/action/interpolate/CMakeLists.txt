@@ -2,6 +2,8 @@ ecbuild_add_library(
 
     TARGET multio-action-interpolate
 
+    TYPE SHARED # Due to reliance on factory self registration this library cannot be static
+
     SOURCES
         Interpolate.cc
         Interpolate.h

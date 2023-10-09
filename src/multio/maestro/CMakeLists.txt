@@ -2,6 +2,8 @@ ecbuild_add_library(
 
     TARGET multio-maestro
 
+    TYPE SHARED # Due to reliance on factory self registration this library cannot be static
+
     SOURCES
         CdoNamer.h
         MaestroMetadata.h

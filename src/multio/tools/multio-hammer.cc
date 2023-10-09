@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <map>
 #include <random>
 
 #include "eccodes.h"
@@ -98,6 +99,9 @@ std::vector<Chunks> create_chunks(size_t sz) {
     }
     return chunks;
 }
+
+std::map<std::string, std::string> levtype_to_typeOfLevel{
+    {"ml", "hybrid"}, {"pl", "isobaricInhPa"}, {"sfc", "surface"}};
 
 std::vector<long> create_levlist(const std::string& ltype, size_t sz = 91, size_t start = 1) {
 
@@ -703,7 +707,7 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
         for (const auto& levtype : {"ml", "pl", "sfc"}) {
             size = std::strlen(levtype);
-            CODES_CHECK(codes_set_string(handle, "levtype", levtype, &size), nullptr);
+            CODES_CHECK(codes_set_string(handle, "typeOfLevel", levtype_to_typeOfLevel.at(levtype).c_str(), &size), nullptr);
 
             for (auto level : create_levlist(levtype, levelCount_)) {
                 CODES_CHECK(codes_set_long(handle, "level", level), nullptr);

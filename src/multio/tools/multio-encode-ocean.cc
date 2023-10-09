@@ -135,7 +135,6 @@ void MultioEncodeOcean::setCommonMetadata() {
     codes_check_set_string(handle(), "class", "rd");
     codes_check_set_string(handle(), "stream", "oper");
     codes_check_set_string(handle(), "type", "fc");
-    CODES_CHECK(codes_set_long(handle(), "levtype", 168), nullptr);
     CODES_CHECK(codes_set_long(handle(), "step", step_), nullptr);
     CODES_CHECK(codes_set_long(handle(), "level", level_), nullptr);
 }

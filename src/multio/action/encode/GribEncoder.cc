@@ -95,12 +95,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     // TODO we should be able to determine the type in the metadata and preserve
     // it Domain usually is always readonly withFirstOf(valueSetter(g, "domain"),
     // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
-    withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
-    withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
-    withFirstOf(valueSetter(g, "date"), LookUpLong(md, "date"), LookUpLong(md, "dataDate"));
-    withFirstOf(valueSetter(g, "time"), LookUpLong(md, "time"), LookUpLong(md, "dataTime"));
-    withFirstOf(valueSetter(g, "step"), LookUpLong(md, "step"), LookUpLong(md, "startStep"));
-
     std::optional<std::string> paramId{firstOf(
         LookUpString(md, "paramId"), LookUpString(md, "param"))};  // param might be a string, separated by . for GRIB1.
                                                                    // String to long convertion should get it right
@@ -109,6 +103,11 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     if (paramId) {
         g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
     }
+
+    withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
+    withFirstOf(valueSetter(g, "date"), LookUpLong(md, "date"), LookUpLong(md, "dataDate"));
+    withFirstOf(valueSetter(g, "time"), LookUpLong(md, "time"), LookUpLong(md, "dataTime"));
+    withFirstOf(valueSetter(g, "step"), LookUpLong(md, "step"), LookUpLong(md, "startStep"));
 
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
     withFirstOf(valueSetter(g, "stream"), LookUpString(md, "stream"), LookUpString(md, "marsStream"));

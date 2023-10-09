@@ -1,4 +1,3 @@
-os
 cffi
 pytest
 pytest-cov

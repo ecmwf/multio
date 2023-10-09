@@ -1,9 +1,9 @@
 import os
-import pytest
+
 import numpy as np
+import pytest
 
 import multiopython
-
 
 default_dict = {"allow_world": True, "parent_comm": 1, "client_comm": [2, 3], "server_comm": [4, 5]}
 

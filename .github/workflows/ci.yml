@@ -123,10 +123,8 @@ jobs:
             echo "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1" >> $GITHUB_ENV
             echo "HOMEBREW_NO_AUTO_UPDATE=1"                >> $GITHUB_ENV
             echo "HOMEBREW_NO_INSTALL_CLEANUP=1"            >> $GITHUB_ENV
-            rm /usr/loca/bin/2to3
-            brew link --overwrite python@3.11
             brew install ninja
-            brew install libomp
+            #brew install libomp
           else
             sudo apt-get update
             sudo apt-get install ninja-build

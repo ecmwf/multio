@@ -11,3 +11,5 @@ install(
     FILES       ${config_tmpl_files}
     DESTINATION ${MULTIO_CONFIG_DIR}
     PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)
+
+add_subdirectory(metadata-mapping)

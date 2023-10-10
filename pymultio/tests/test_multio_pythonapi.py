@@ -1,9 +1,9 @@
 import os
-import pytest
+
 import numpy as np
+import pytest
 
 import multiopython
-
 
 default_dict = {"allow_world": True, "parent_comm": 1, "client_comm": [2, 3], "server_comm": [4, 5]}
 
@@ -13,7 +13,7 @@ def test_initialisation():
 
 
 def test_multio_version():
-    assert multiopython.Multio(**default_dict).__version__() == "2.0.0"
+    assert multiopython.Multio(**default_dict).__version__() == "2.1.0"
 
 
 def test_multio_wrong_config_path():

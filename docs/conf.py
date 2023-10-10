@@ -6,12 +6,11 @@
 
 # -- Imports -----------------------------------------------------------------
 
-import sys
-import os
 import datetime
+import os
 import re
 import subprocess
-
+import sys
 
 # -- Path manipulation--------------------------------------------------------
 

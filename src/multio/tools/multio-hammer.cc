@@ -707,7 +707,8 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
         for (const auto& levtype : {"ml", "pl", "sfc"}) {
             size = std::strlen(levtype);
-            CODES_CHECK(codes_set_string(handle, "typeOfLevel", levtype_to_typeOfLevel.at(levtype).c_str(), &size), nullptr);
+            CODES_CHECK(codes_set_string(handle, "typeOfLevel", levtype_to_typeOfLevel.at(levtype).c_str(), &size),
+                        nullptr);
 
             for (auto level : create_levlist(levtype, levelCount_)) {
                 CODES_CHECK(codes_set_long(handle, "level", level), nullptr);

@@ -92,9 +92,7 @@ struct QueriedMarsKeys {
 
 QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     QueriedMarsKeys ret;
-    // TODO we should be able to determine the type in the metadata and preserve
-    // it Domain usually is always readonly withFirstOf(valueSetter(g, "domain"),
-    // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
+
     std::optional<std::string> paramId{firstOf(
         LookUpString(md, "paramId"), LookUpString(md, "param"))};  // param might be a string, separated by . for GRIB1.
                                                                    // String to long convertion should get it right

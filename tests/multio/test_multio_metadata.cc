@@ -12,6 +12,7 @@
 /// @author Philipp Geier
 
 #include "eckit/testing/Test.h"
+#include "multio/message/Glossary.h"
 #include "multio/message/Metadata.h"
 #include "multio/util/VariantHelpers.h"
 
@@ -445,15 +446,14 @@ CASE("Test visit with unwrapped unique ptr") {
 }
 
 
-using message::details::KeyValueDescription;
+using message::KeyValueDescription;
 template <typename ValidTypes>
-using Description = KeyValueDescription<message::MetadataTraits, ValidTypes>;
+using Description = KeyValueDescription<ValidTypes>;
 
 CASE("Test Key description validation") {
-    using Traits = message::MetadataTraits;
     using Types = MetadataTypes;
 
-    using message::details::validateAll;
+    using message::validateAll;
 
 
     Description<Types::Integers> paramId{"paramId"};
@@ -572,8 +572,8 @@ CASE("Test Key description validation") {
             ) {
                 std::int64_t scale = 1000000;
                 set("Ni", ni);
-                set("Nj", nj);
-                // set("latitudeOfFirstGridPoint", scale * north);
+                // set("Nj", nj);
+                set("latitudeOfFirstGridPoint", scale * north);
                 // set("longitudeOfFirstGridPoint", scale * west);
                 // set("latitudeOfLastGridPoint", scale * south);
                 // set("longitudeOfLastGridPoint", scale * (east - westEastInc));

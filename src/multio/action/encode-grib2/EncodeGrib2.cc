@@ -21,7 +21,6 @@
 
 #include "multio/LibMultio.h"
 #include "multio/action/encode-grib2/Exception.h"
-#include "multio/config/ConfigurationPath.h"
 #include "multio/util/DateTime.h"
 #include "multio/util/ScopedTimer.h"
 
@@ -52,15 +51,15 @@ void applyOverwrites(MioGribHandle& h, const std::optional<eckit::LocalConfigura
         // some representations the string and integer representation in eccodes
         // differ significantly and my produce wrong results
         if (h.hasKey(kv.first.c_str())) {
-            kv.second.visit(Overloaded{
-                [](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNestedTypes> {},
-                [&h, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), message::MetadataVectorTypes> {
+            kv.second.visit(eckit::Overloaded{
+                [](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataTypes::Nested> {},
+                [&h, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), message::MetadataTypes::Lists> {
                     h.setValue(kv.first, vec);
                 },
-                [&h, &kv](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNonNullScalarTypes> {
+                [&h, &kv](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataTypes::NonNullScalars> {
                     h.setValue(kv.first, v);
                 },
-                [&h, &kv](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNullTypes> {
+                [&h, &kv](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataTypes::Nulls> {
                     h.setValue(kv.first, 0);
                 }});
         }
@@ -139,25 +138,24 @@ struct MetadataToGrib {
     bool transferOpt(const std::string& k) {
         return transferOpt<T>(k, k);
     }
+
+
+    void transferSection1Keys() {
+        this->transfer<std::int64_t>("year");
+        this->transfer<std::int64_t>("month");
+        this->transfer<std::int64_t>("day");
+        this->transfer<std::int64_t>("hour");
+        this->transfer<std::int64_t>("minute");
+        this->transfer<std::int64_t>("second");
+    }
+
+
+    void transferMarsKeys() {
+        this->transferOpt<std::string>("class");
+        this->transferOpt<std::string>("stream");
+        this->transferOpt<std::string>("expver") || this->transferOpt<std::string>("experimentVersionNumber", "expver");
+    }
 };
-
-
-void transferSection1Keys(MetadataToGrib& metaToGrib) {
-    metaToGrib.transfer<std::int64_t>("year");
-    metaToGrib.transfer<std::int64_t>("month");
-    metaToGrib.transfer<std::int64_t>("day");
-    metaToGrib.transfer<std::int64_t>("hour");
-    metaToGrib.transfer<std::int64_t>("minute");
-    metaToGrib.transfer<std::int64_t>("second");
-}
-
-
-void transferMarsKeys(MetadataToGrib& metaToGrib) {
-    metaToGrib.transferOpt<std::string>("class");
-    metaToGrib.transferOpt<std::string>("stream");
-    metaToGrib.transferOpt<std::string>("expver")
-        || metaToGrib.transferOpt<std::string>("experimentVersionNumber", "expver");
-}
 
 
 //-----------------------------------------------------------------------------
@@ -456,16 +454,16 @@ message::Message EncodeGrib2::encodeMessageWithoutData(MioGribHandle& sample, co
 void EncodeGrib2::transferRelevantValues(const encodeGrib2::SampleKey& sampleKey, const message::Metadata& from,
                                          MioGribHandle& to) const {
     MetadataToGrib m2g{from, to};
-    transferSection1Keys(m2g);
+    m2g.transferSection1Keys();
     sampleManager_.transferProductKeys(sampleKey, from, to);
-    transferMarsKeys(m2g);
+    m2g.transferMarsKeys();
 };
 
 
 void EncodeGrib2::transferRelevantValues(const message::Metadata& from, MioGribHandle& to) const {
     MetadataToGrib m2g{from, to};
-    transferSection1Keys(m2g);
-    transferMarsKeys(m2g);
+    m2g.transferSection1Keys();
+    m2g.transferMarsKeys();
 };
 
 
@@ -473,11 +471,27 @@ void EncodeGrib2::transferRelevantValues(const message::Metadata& from, MioGribH
 
 void EncodeGrib2::executeImpl(Message msg) {
     auto& md = msg.metadata();
+
+    /**
+     * Handles messages of tag Field and Domain.
+     *
+     * Domain:
+     *  - Prepare a sample with grid information.
+     *  - Can be reused for messages with tag field working on the same domain
+     *  - may produce messages with grid coordinates to encode in a separate message (in case of unstructured grids)
+     *
+     * Field:
+     *  - Encode a message with proper grid and product information
+     *  - may reuse a pre-initiated sample with domain (grid) information
+     *  - or may prepare a grid information from scratch
+     */
     switch (msg.tag()) {
         case Message::Tag::Field: {
             encodeGrib2::SampleKey sampleKey = sampleManager_.sampleKeyFromMetadata(md);
 
-            auto handleFieldRes = sampleManager_.handleField(sampleKey, md);
+            // Get a prepared sample with proper grid information and product definition template selected
+            auto handleFieldRes = sampleManager_.prepareSample(sampleKey, md);
+
             // Use metadata with overwrites as input to allow mapping of these values...
             applyMetadataMappings(handleFieldRes.metadataWithOverwrites, handleFieldRes.metadataWithOverwrites);
 
@@ -491,6 +505,7 @@ void EncodeGrib2::executeImpl(Message msg) {
                 }
             }
 
+            // Add all relevant product information
             {
                 MioGribHandle& handle = *handleFieldRes.encodeFieldHandle.get();
 
@@ -502,8 +517,10 @@ void EncodeGrib2::executeImpl(Message msg) {
         }
         case Message::Tag::Domain: {
             if (auto domain = md.getOpt<std::string>(encodeGrib2::DOMAIN_KEY); domain) {
+                // Initialize a sample for a domain with given grid information
                 auto initDomainRes = sampleManager_.initDomain(*domain, md);
 
+                // Handle possible messages encoding grid information in separate messages
                 if (initDomainRes.encodeAdditionalHandles) {
                     auto sampleKeyMb = sampleManager_.tryGetSampleKeyFromMetadata(md);
                     for (auto& handlePtr : *initDomainRes.encodeAdditionalHandles) {
@@ -541,6 +558,7 @@ void EncodeGrib2::executeImpl(Message msg) {
 
 void EncodeGrib2::print(std::ostream& os) const {
     // TODO
+    // - maybe print sample manager with all prepared samples?
     os << "EncodeGrib2(encoder=TBD";
     os << ")";
 }

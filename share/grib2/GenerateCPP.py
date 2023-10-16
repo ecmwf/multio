@@ -35,7 +35,7 @@ def generateCPPEnumParserForCategory(categories, categoryName, setOfValues):
     errString = "Value for {catName} does not match on of the following [{vals}]".format(catName=categoryName, vals=", ".join(["{}".format(v) for v in setOfValues]))
 
 
-    return """Result<{enumName}> parse{enumName}(std::optional<std::string> val) const noexcept {{
+    return """{enumName} parse{enumName}(std::optional<std::string> val) const {{
     static const std::unordered_map<std::string, {enumName}> map{{{{{values}}}}};
 
     if(!val) {{
@@ -46,7 +46,7 @@ def generateCPPEnumParserForCategory(categories, categoryName, setOfValues):
     if (it != map.end()) {{
         return it->second;
     }}
-    return Error{{std::string("parse{enumName}(") + *val + std::string("): {errString}")}};
+    throw message::MetadataException{{std::string("parse{enumName}(") + *val + std::string("): {errString}")}};
 }}
 """.format(enumName=enumName, defaultVal=default, values=", ".join(values), errString=errString)
 
@@ -95,6 +95,12 @@ using PdtKeyMap = std::unordered_map<std::int64_t, KeyList>;
 """
     decisionMapTypeString = "using DecisionMap = {};".format(buildDecisionMapTypeString(categoryHandleOrder))
 
+    def checkKey(k):
+        if k not in keyTypes.keys():
+            raise ValueError("Key {} is is not listed in keyTypes list".format(k))
+        return k
+
+
     def buildKeyTypeMapStr():
         def buildTypes(t):
             if isinstance(t, list):
@@ -105,9 +111,10 @@ using PdtKeyMap = std::unordered_map<std::int64_t, KeyList>;
 
 
         def buildAltKeys(k):
+            checkKey(k)
             if k in keyMappings.keys():
                 keyMappings[k].copy();
-                return "{{{{{}}}}}".format(", ".join(("\"{}\"".format(ki) for ki in keyMappings[k])))
+                return "{{{{{}}}}}".format(", ".join(("\"{}\"".format(checkKey(ki)) for ki in keyMappings[k])))
             else:
                 return "{{}}"
         return "{{{}}}".format(", ".join("{{ \"{key}\", {{ {types}, {altKeys} }} }}".format(key=k,types=buildTypes(v), altKeys=buildAltKeys(k)) for (k, v) in keyTypes.items()))
@@ -117,19 +124,21 @@ using PdtKeyMap = std::unordered_map<std::int64_t, KeyList>;
         for (k, v) in keyMappings.items():
             for vi in v:
                 if vi in keyMappingsRevMap.keys():
-                    raise "Key {} is mapped by multiple key mappings: {} and {}".format(vi, k, keyMappingsRevMap[vi])
+                    raise ValueError("Key {} is mapped by multiple key mappings: {} and {}".format(vi, k, keyMappingsRevMap[vi]))
+                checkKey(vi)
                 keyMappingsRevMap[vi] = k
 
         def buildKeyList(pdt, keys):
             ret = []
             for k in keys:
+                checkKey(k)
                 kToAdd = keyMappingsRevMap[k] if k in keyMappingsRevMap.keys() else k
                 if kToAdd not in ret:
                     ret.append(kToAdd)
 
             return "{{{}}}".format(", ".join(("\"{}\"".format(k) for k in ret)));
 
-        return "{{{}}}".format(", ".join(("{{ {key}, {{{keyList}}} }}".format(key=k,keyList=buildKeyList(k,v["keySet"])) for (k, v) in pdt.items())))
+        return "{{{}}}".format(", ".join(("{{ {key}, {keyList} }}".format(key=k,keyList=buildKeyList(k,v["keySet"])) for (k, v) in pdt.items())))
 
 
     def buildDecisionMapString(subCatList, selector, mappedSelectorList):
@@ -182,20 +191,17 @@ using PdtKeyMap = std::unordered_map<std::int64_t, KeyList>;
             ossCats = """        oss << ", ";\n""".join(["""        oss << "{cat}: " << ({cat}Str ? std::string(*{cat}Str) : std::string("None"));\n""".format(cat=cat) for cat in (prevCats + [cat])])
 
             return """
-    auto {cat}Str = lookup("{cat}");
+    auto {cat}Str = metadata.getOpt<std::string>("{cat}");
     auto {cat} = parse{enumName}({cat}Str);
-    if ({cat}.index() == 1) {{
-        return std::get<1>({cat});
-    }}
 
-    auto {cat}It = {mapName}.find(std::get<0>({cat}));
+    auto {cat}It = {mapName}.find({cat});
 
     if ({cat}It == {mapName}.end()) {{
         std::ostringstream oss;
         oss << "No productDefinitionTemplate can be mapped for ";
 {ossCats}
 
-        return Error{{oss.str()}};
+        throw message::MetadataException{{oss.str()}};
     }}
 
 {nextEval}""".format(enumName=camelToPascalCase(cat), cat=cat, mapName=mapName, ossCats=ossCats, nextEval=buildParseMapString(subCatList[1:], prevCats + [cat], mapName="{}It->second".format(cat)))
@@ -203,7 +209,37 @@ using PdtKeyMap = std::unordered_map<std::int64_t, KeyList>;
     return """
 #pragma once
 
-// This file is generated from python. Do not touch.
+
+//
+//                           !!!!!!!!
+//                         !!        !!
+//                       !!            !!
+//                       !!            !!
+//                     !!    !!!!!!!!    !!
+//                   !!    !!!!!!!!!!!!    !!
+//                   !!    !!!!!!!!!!!!    !!
+//                 !!      !!!!!!!!!!!!      !!
+//               !!          !!!!!!!!          !!
+//               !!          !!!!!!!!          !!
+//             !!            !!!!!!!!            !!
+//           !!                !!!!                !!
+//           !!                !!!!                !!
+//         !!                                        !!
+//       !!                    !!!!                    !!
+//       !!                  !!!!!!!!                  !!
+//     !!                  !!!!!!!!!!!!                  !!
+//   !!                    !!!!!!!!!!!!                    !!
+//   !!                      !!!!!!!!                      !!
+//   !!                        !!!!                        !!
+//     !!                                                !!
+//       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!! Do not modify.                                               !!!
+// !!! This file was generated by running `python3 GenerateCPP.py`  !!!
+// !!! in multio/share/grib2                                      . !!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 #include <string>
 #include <cstdint>
@@ -215,17 +251,10 @@ using PdtKeyMap = std::unordered_map<std::int64_t, KeyList>;
 #include <set>
 #include <functional>
 
+#include "multio/message/Metadata.h"
+#include "multio/message/MetadataException.h"
 
 namespace multio::grib2 {{
-
-struct Error {{
-    std::string msg;
-}};
-
-
-template<typename T>
-using Result = std::variant<T, Error>;
-
 
 {keyTypeEnum}
 
@@ -241,8 +270,7 @@ struct Grib2ProductHandler {{
 
 {decisionMapType}
 
-template<typename LookupValueAsOptString>
-Result<std::int64_t> inferProductDefinitionTemplateNumber(LookupValueAsOptString&& lookup) const noexcept {{
+std::int64_t inferProductDefinitionTemplateNumber(const message::Metadata& metadata) const {{
     // TODO may be read from file in future
     static const DecisionMap map{{{decisionMap}}};
 
@@ -250,7 +278,7 @@ Result<std::int64_t> inferProductDefinitionTemplateNumber(LookupValueAsOptString
 }}
 
 
-Result<std::reference_wrapper<const KeyList>> keysForPdt(std::int64_t pdt) const noexcept {{
+std::reference_wrapper<const KeyList> keysForPdt(std::int64_t pdt) const {{
     // TODO may be read from file in future
     static const PdtKeyMap map{{{pdtKeyMap}}};
 
@@ -260,10 +288,10 @@ Result<std::reference_wrapper<const KeyList>> keysForPdt(std::int64_t pdt) const
 
     std::ostringstream oss;
     oss << "Unknown ProductDefinitionTemplate " << pdt;
-    return Error{{oss.str()}};
+    throw message::MetadataException{{oss.str()}};
 }}
 
-Result<std::reference_wrapper<const KeyInfo>> keyInfoForKey(const Key& k) const noexcept {{
+std::reference_wrapper<const KeyInfo> keyInfoForKey(const Key& k) const {{
     static const KeyInfoMap map{{{keyInfoMap}}};
 
     if (auto search = map.find(k); search != map.end()) {{
@@ -272,7 +300,7 @@ Result<std::reference_wrapper<const KeyInfo>> keyInfoForKey(const Key& k) const 
 
     std::ostringstream oss;
     oss << "Unknown key " << k;
-    return Error{{oss.str()}};
+    throw message::MetadataException{{oss.str()}};
 }}
 
 }};
@@ -302,11 +330,13 @@ def generateCPPTestInclude(categorySelectorsWithMappedPdt):
 #include <vector>
 #include <unordered_map>
 
+#include "multio/message/Metadata.h"
+
 namespace multio::grib2::test {{
 
 struct PdtWithSelector{{
     std::int64_t productDefinitionTemplateNumber;
-    std::unordered_map<std::string, std::string> selector;
+    message::Metadata selector;
 }};
 
 const static std::vector<PdtWithSelector> mappedPdtAndSelectors{{
@@ -319,13 +349,12 @@ const static std::vector<PdtWithSelector> mappedPdtAndSelectors{{
 
 
 # Gen C++
-with open('cpp/MultioGrib2.h', "w") as outFile:
+with open('../../src/multio/grib2/GeneratedProductHandler.h', "w") as outFile:
     cppString = generateCPP(categories, categorySelectorsWithMappedPdt, categoriesWithAllPossibleValues, pdt, keyMappings, keyTypes, allKeyTypes)
     outFile.write(cppString)
 
-with open('cpp/MultioGrib2Test.h', "w") as outFile:
+with open('../../src/multio/grib2/GeneratedProductHandlerTest.h', "w") as outFile:
     cppString = generateCPPTestInclude(categorySelectorsWithMappedPdt)
     outFile.write(cppString)
-
 
 

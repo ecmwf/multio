@@ -16,7 +16,7 @@
 
 #include "multio/action/encode-grib2/GridInfo.h"
 #include "multio/config/ComponentConfiguration.h"
-#include "multio/grib2/cpp/MultioGrib2.h"
+#include "multio/grib2/GeneratedProductHandler.h"
 #include "multio/util/Hash.h"
 #include "multio/util/MioGribHandle.h"
 #include "multio/util/Result.h"
@@ -97,7 +97,7 @@ namespace multio::action::encodeGrib2 {
 
 class SampleManager {
 public:
-    util::Result<SampleKey> tryGetSampleKeyFromMetadata(const message::Metadata&) const noexcept;
+    std::optional<SampleKey> tryGetSampleKeyFromMetadata(const message::Metadata&) const;
     SampleKey sampleKeyFromMetadata(const message::Metadata&) const;
 
 
@@ -109,6 +109,9 @@ public:
         std::unique_ptr<MioGribHandle> sample;
     };
 
+    //-------------------------------------------------------------------------
+
+
     struct InitDomainResult {
         // Created gridSample
         std::reference_wrapper<const GridSample> gridSample;
@@ -119,6 +122,7 @@ public:
     };
 
     struct InitDomainResultWithMetadata : InitDomainResult, WithMetadataOverwrites {};
+
 
     /**
      * Domain initialization is allowed to send encoded coordinates
@@ -134,7 +138,11 @@ public:
      */
     InitDomainResultWithMetadata initDomain(const std::string& domainId, const message::Metadata& md);
 
-    struct HandleFieldResult : WithMetadataOverwrites {
+
+    //-------------------------------------------------------------------------
+
+
+    struct PrepareSampleResult : WithMetadataOverwrites {
         // Handle with all product information set - only data values are missing
         HandleToEncode encodeFieldHandle;
 
@@ -163,7 +171,10 @@ public:
      * @param md         Metadata with product and optional grid information
      * @return           Returns at least one handle with prepared product information and possible additional handles.
      */
-    HandleFieldResult handleField(const SampleKey&, const message::Metadata&);
+    PrepareSampleResult prepareSample(const SampleKey&, const message::Metadata&);
+
+    //-------------------------------------------------------------------------
+
 
     /**
      * Retrieves a list of possible product-related keys that can be set on a grib2 product template.
@@ -174,11 +185,13 @@ public:
      *
      * @param sampleKey  Key with evaluated product and possibly domain categorization
      *                   that has been retrieved through `sampleKeyFromMetadata(const message::Metadata&)`.
-     * @param metadata   Metadata with possible overwrites from `handleField` or `initDomain`.
+     * @param metadata   Metadata with possible overwrites from `prepareSample` or `initDomain`.
      * @param gribHandle Handle on which keys to set on.
      **/
     void transferProductKeys(const SampleKey& sampleKey, const message::Metadata& metadata,
                              MioGribHandle& gribHandle) const;
+
+    //-------------------------------------------------------------------------
 
 
     SampleManager(const config::ComponentConfiguration&);

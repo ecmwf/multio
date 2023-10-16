@@ -3,11 +3,13 @@
 #include <unordered_map>
 #include <vector>
 
+#include "multio/message/Metadata.h"
+
 namespace multio::grib2::test {
 
 struct PdtWithSelector {
     std::int64_t productDefinitionTemplateNumber;
-    std::unordered_map<std::string, std::string> selector;
+    message::Metadata selector;
 };
 
 const static std::vector<PdtWithSelector> mappedPdtAndSelectors{

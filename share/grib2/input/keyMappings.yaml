@@ -39,6 +39,17 @@ keyMappings:
         - scaleFactorOfUpperLimit
         - scaledValueOfUpperLimit
 
+    firstSize:
+        - scaleFactorOfFirstSize
+        - scaledValueOfFirstSize
+
+    secondSize:
+        - scaleFactorOfSecondSize
+        - scaledValueOfSecondSize
+
+
+
+
     typeOfLevel:
         - typeOfFirstFixedSurface
         # - scaleFactorOfFirstFixedSurface
@@ -64,7 +75,7 @@ keyTypes:
     # forecast time
     hoursAfterDataCutoff: IntType
     minutesAfterDataCutoff: IntType
-    indicatorOfUnitOfTimeRange: IntType
+    indicatorOfUnitOfTimeRange: IntType # code table lookup
     forecastTime: IntType
     # time range
     indicatorOfUnitOfTimeRange: [StringType, StringArrayType] # can be array for multiple intervals
@@ -80,6 +91,7 @@ keyTypes:
     secondOfEndOfOverallTimeInterval: IntType
     numberOfTimeRange: IntType
     numberOfMissingInStatisticalProcess: [IntType, IntArrayType] # can be array for multiple intervals
+    indicatorOfUnitForTimeRange: [IntType, IntArrayType] # can be array for multiple intervals
     typeOfTimeIncrement: [IntType, IntArrayType] # can be array for multiple intervals
     indicatorOfUnitForTimeIncrement: [IntType, IntArrayType] # can be array for multiple intervals
     timeIncrement: [IntType, IntArrayType] # can be array for multiple intervals
@@ -103,6 +115,10 @@ keyTypes:
     probabilityType: IntType
     forecastProbabilityNumber: IntType
     totalNumberOfForecastProbabilities: IntType
+
+    # probability meta keys
+    lowerLimit: FloatType
+    upperLimit: FloatType
 
     # percentileForecast
     percentileValue: IntType
@@ -172,6 +188,10 @@ keyTypes:
     scaledValueOfFirstSize: IntType
     scaleFactorOfSecondSize: IntType
     scaledValueOfSecondSize: IntType
+
+    # aerosol meta keys
+    firstSize: FloatType
+    secondSize: FloatType
 
 
     # aerosol opticalProperties:
@@ -337,6 +357,8 @@ keyTypes:
     indicatorOfUnitForTimeRangeForReferencePeriod: [IntType, IntArrayType]
     lengthOfTimeRangeForReferencePeriod: [IntType, IntArrayType]
 
+    # ccittIA5
+    numberOfCharacters: IntType
 
 
 

@@ -10,6 +10,93 @@
 #
 # Todo: add generalized tiles
 
+#------------------------------------------------------------------------------
+# Categories mapping to set of groups.
+# In a second step, the python script is assuring that each set of groups can be
+# mapped uniquely to one productDefinitionTemplateNumber
+#------------------------------------------------------------------------------
+
+categories:
+    timeExtent:
+        - name: null
+          categories:
+            timeFormat:
+                - null
+        - pointInTime:
+            timeFormat:
+                - null
+                - localTime
+        - timeRange:
+            timeFormat:
+                - null
+                - localTime
+
+    processType:
+        - null
+        - name: individualEnsemble
+          groups: [individualEnsembleForecast]
+          categories:
+            processSubType:
+                - null
+                - reforecast
+        - name: derivedEnsemble
+          groups: [derivedEnsembleForecast]
+          categories:
+            processSubType:
+                - null
+                - clusterStatCircular
+                - clusterStatRectangular
+        - probability: [probabilityForecast]
+        - percentile: [percentileForecast]
+        - quantile: [quantileForecast]
+        - categorial: [categorialForecast]
+
+
+    # Null value filters all PDT that list none of the other options
+    productCategory:
+        - null
+        - postProcess
+        - partitioned
+        - spatialStatisticalProcessing
+        - radar
+        - spatioTemporalTile
+        - hovmoeller
+        - ccittIA5
+        - referencePeriod
+        - optical
+        - wave:
+            productSubCategory:
+                - spectraList: [waveSpectraList]
+                - spectraFormula: [waveSpectraFormula]
+                - periodRange: [wavePeriodRange]
+        - satellite:
+            productSubCategory:
+                # null will select 'Satellite Product" if timeExtent is none
+                - null
+                - qualityValue
+        - aerosol:
+            productSubCategory:
+                - null
+                - optical: [aerosol_optical]
+                - srcsink: [aerosol_srcsink]
+                - opticalSrcsink: [aerosol_srcsink_optical]
+        - chemical:
+            productSubCategory:
+                - null
+                - srcsink
+                - distribution
+        - crossSect:
+            productSubCategory:
+                - null
+                - statisticalOverLatLong
+
+
+
+
+#------------------------------------------------------------------------------
+# Groups of keys in the order they are occuring in (most of) product templates
+#------------------------------------------------------------------------------
+
 groups:
     parameter:
         - parameterCategory
@@ -404,84 +491,12 @@ groups:
 # - gridDefinitionTemplateNumber
 # - numberOfGridInReference
 
-categories:
-    timeExtent:
-        - name: null
-          categories:
-            timeFormat:
-                - null
-        - pointInTime:
-            timeFormat:
-                - null
-                - localTime
-        - timeRange:
-            timeFormat:
-                - null
-                - localTime
 
-    processType:
-        - null
-        - name: individualEnsemble
-          groups: [individualEnsembleForecast]
-          categories:
-            processSubType:
-                - null
-                - reforecast
-        - name: derivedEnsemble
-          groups: [derivedEnsembleForecast]
-          categories:
-            processSubType:
-                - null
-                - clusterStatCircular
-                - clusterStatRectangular
-        - probability: [probabilityForecast]
-        - percentile: [percentileForecast]
-        - quantile: [quantileForecast]
-        - categorial: [categorialForecast]
-
-
-    # Null value filters all PDT that list none of the other options
-    productCategory:
-        - null
-        - postProcess
-        - partitioned
-        - spatialStatisticalProcessing
-        - radar
-        - spatioTemporalTile
-        - hovmoeller
-        - ccittIA5
-        - referencePeriod
-        - optical
-        - wave:
-            productSubCategory:
-                - spectraList: [waveSpectraList]
-                - spectraFormula: [waveSpectraFormula]
-                - periodRange: [wavePeriodRange]
-        - satellite:
-            productSubCategory:
-                # null will select 'Satellite Product" if timeExtent is none
-                - null
-                - qualityValue
-        - aerosol:
-            productSubCategory:
-                - null
-                - optical: [aerosol_optical]
-                - srcsink: [aerosol_srcsink]
-                - opticalSrcsink: [aerosol_srcsink_optical]
-        - chemical:
-            productSubCategory:
-                - null
-                - srcsink
-                - distribution
-        - crossSect:
-            productSubCategory:
-                - null
-                - statisticalOverLatLong
-
-
-
-
-
+#------------------------------------------------------------------------------
+# All pdt explicitly listed as set of groups and with their keys.
+# The python script is checking that expanding the groups resolves in the same
+# key set
+#------------------------------------------------------------------------------
 
 pdt:
     0:

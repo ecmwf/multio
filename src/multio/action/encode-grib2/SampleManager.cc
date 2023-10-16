@@ -12,7 +12,7 @@
 #include "Exception.h"
 
 #include "eckit/io/StdFile.h"
-#include "eckit/util/Overloaded.h"
+#include "eckit/utils/Overloaded.h"
 
 #include "eccodes.h"
 
@@ -89,25 +89,18 @@ SampleManager::SampleManager(const config::ComponentConfiguration& conf) :
     sampleConfiguration_{sampleConfigurationFromConfiguration(conf.parsedConfig(), conf.multioConfig())} {};
 
 
-util::Result<SampleKey> SampleManager::tryGetSampleKeyFromMetadata(const message::Metadata& md) const noexcept {
-    return visit(eckit::Overloaded{
-                     [&md](std::int64_t pdt) -> util::Result<SampleKey> {
-                         return SampleKey{md.getOpt<std::string>(DOMAIN_KEY), pdt};
-                     },
-                     [](multio::grib2::Error&& err) -> util::Result<SampleKey> { return util::ErrorMessage{err.msg}; },
-                 },
-                 grib2ProductHandler_.inferProductDefinitionTemplateNumber(
-                     [&md](auto&& strKey) { return md.getOpt<std::string>(std::forward<decltype(strKey)>(strKey)); }));
-}
-
 SampleKey SampleManager::sampleKeyFromMetadata(const message::Metadata& md) const {
-    return tryGetSampleKeyFromMetadata(md).valueOrHandleErr([](util::ErrorMessage&& err) -> SampleKey {
-        std::ostringstream oss;
-        oss << "sampleKeyFromMetadata - Error while inferring a product definition template: " << std::move(err.msg)
-            << std::endl;
-        throw EncodeGrib2Exception(oss.str(), Here());
-    });
+    return SampleKey{md.getOpt<std::string>(DOMAIN_KEY), grib2ProductHandler_.inferProductDefinitionTemplateNumber(md)};
 };
+
+std::optional<SampleKey> SampleManager::tryGetSampleKeyFromMetadata(const message::Metadata& md) const {
+    try {
+        return sampleKeyFromMetadata(md);
+    }
+    catch (const message::MetadataException& msg) {
+        return {};
+    }
+}
 
 
 SampleManager::GridSample SampleManager::createGridSample(const PreparedSampleArguments& prepArgs) {
@@ -124,27 +117,28 @@ SampleManager::GridSample SampleManager::createGridSample(const PreparedSampleAr
 
 std::optional<SampleManager::HandlesToEncode> SampleManager::extractLonLat(GridSample& gridSample) {
     return std::visit(
-        eckit::Overloaded{[&gridSample](UnstructuredGridInfo& gridInfo) -> std::optional<SampleManager::HandlesToEncode> {
-                       if (!gridInfo.lonLat) {
-                           return std::optional<SampleManager::HandlesToEncode>{};
-                       }
-                       auto sampleLon = gridSample.sample->duplicate();
-                       sampleLon->setValue("paramId", gridInfo.lonLat->paramIdLon);
-                       sampleLon->setDataValues(gridInfo.lonLat->lon);
+        eckit::Overloaded{
+            [&gridSample](UnstructuredGridInfo& gridInfo) -> std::optional<SampleManager::HandlesToEncode> {
+                if (!gridInfo.lonLat) {
+                    return std::optional<SampleManager::HandlesToEncode>{};
+                }
+                auto sampleLon = gridSample.sample->duplicate();
+                sampleLon->setValue("paramId", gridInfo.lonLat->paramIdLon);
+                sampleLon->setDataValues(gridInfo.lonLat->lon);
 
-                       auto sampleLat = gridSample.sample->duplicate();
-                       sampleLat->setValue("paramId", gridInfo.lonLat->paramIdLat);
-                       sampleLat->setDataValues(gridInfo.lonLat->lat);
+                auto sampleLat = gridSample.sample->duplicate();
+                sampleLat->setValue("paramId", gridInfo.lonLat->paramIdLat);
+                sampleLat->setDataValues(gridInfo.lonLat->lat);
 
-                       // Extraction happens only once - free memory
-                       gridInfo.lonLat = std::nullopt;
+                // Extraction happens only once - free memory
+                gridInfo.lonLat = std::nullopt;
 
-                       SampleManager::HandlesToEncode res;
-                       res.emplace_back(std::move(sampleLon));
-                       res.emplace_back(std::move(sampleLat));
-                       return res;
-                   },
-                   [](auto& gridInfo) { return std::optional<SampleManager::HandlesToEncode>{}; }},
+                SampleManager::HandlesToEncode res;
+                res.emplace_back(std::move(sampleLon));
+                res.emplace_back(std::move(sampleLat));
+                return res;
+            },
+            [](auto& gridInfo) { return std::optional<SampleManager::HandlesToEncode>{}; }},
         gridSample.gridInfo);
 }
 
@@ -161,10 +155,10 @@ PreparedSampleArguments SampleManager::prepareSampleArguments(const std::optiona
 
     message::Metadata metadataWithOverwrites{md};
     if (sampleConfiguration_.additionalMetadata) {
-        metadataWithOverwrites.update(*sampleConfiguration_.additionalMetadata);
+        metadataWithOverwrites.updateOverwrite(*sampleConfiguration_.additionalMetadata);
     }
     if (hasDomainOptions && searchDomainOptions->second.additionalMetadata) {
-        metadataWithOverwrites.update(*(searchDomainOptions->second.additionalMetadata));
+        metadataWithOverwrites.updateOverwrite(*(searchDomainOptions->second.additionalMetadata));
     }
 
 
@@ -201,43 +195,31 @@ SampleManager::InitDomainResultWithMetadata SampleManager::initDomain(const std:
 namespace {
 
 
-template <typename T, typename OnError>
-T getResult(multio::grib2::Result<T>&& result, OnError&& onError) {
-    return std::visit(eckit::Overloaded{[&](T&& resVal) -> T { return resVal; },
-                                 [&](multio::grib2::Error&& error) -> T {
-                                     return std::invoke(std::forward<OnError>(onError), std::move(error));
-                                 }},
-                      std::move(result));
-}
-
 template <typename Key>
 const auto& getPdtKeyList(const multio::grib2::Grib2ProductHandler<Key>& grib2ProductHandler,
                           const SampleKey& sampleKey) {
-    return getResult(grib2ProductHandler.keysForPdt(sampleKey.productDefinitionTemplateNumber),
-                     [&](multio::grib2::Error&& error)
-                         -> std::variant_alternative_t<0, std::decay_t<decltype(grib2ProductHandler.keysForPdt(
-                                                              sampleKey.productDefinitionTemplateNumber))>> {
-                         std::ostringstream oss;
-                         oss << "SampleManager::handleField - Error while retrieving keys for "
-                                "productDefinitionTemplateNumber "
-                             << sampleKey.productDefinitionTemplateNumber << ": " << error.msg;
-                         throw EncodeGrib2Exception(oss.str(), Here());
-                     })
-        .get();
+    try {
+        return grib2ProductHandler.keysForPdt(sampleKey.productDefinitionTemplateNumber).get();
+    }
+    catch (const message::MetadataException&) {
+        std::ostringstream oss;
+        oss << "SampleManager::prepareSample - Error while retrieving keys for "
+               "productDefinitionTemplateNumber "
+            << sampleKey.productDefinitionTemplateNumber;
+        std::throw_with_nested(EncodeGrib2Exception(oss.str(), Here()));
+    }
 }
 
 template <typename Key>
 const auto& getKeyInfo(const multio::grib2::Grib2ProductHandler<Key>& grib2ProductHandler, const Key& key) {
-    return getResult(
-               grib2ProductHandler.keyInfoForKey(key),
-               [&](multio::grib2::Error&& error)
-                   -> std::variant_alternative_t<0, std::decay_t<decltype(grib2ProductHandler.keyInfoForKey(key))>> {
-                   std::ostringstream oss;
-                   oss << "SampleManager::handleField - Error while retrieving key info for key " << key << ": "
-                       << error.msg;
-                   throw EncodeGrib2Exception(oss.str(), Here());
-               })
-        .get();
+    try {
+        return grib2ProductHandler.keyInfoForKey(key).get();
+    }
+    catch (const message::MetadataException&) {
+        std::ostringstream oss;
+        oss << "SampleManager::prepareSample - Error while retrieving key info for key " << key;
+        std::throw_with_nested(EncodeGrib2Exception(oss.str(), Here()));
+    }
 }
 
 
@@ -257,44 +239,46 @@ bool lookupAndSetKey(const Key& key, const std::set<multio::grib2::KeyTypes>& al
     };
 
     searchKey->second.visit(eckit::Overloaded{
-        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataIntegerTypes> {
+        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataTypes::Integers> {
             if (allowedKeyTypes.find(multio::grib2::KeyTypes::IntType) == allowedKeyTypes.end()) {
                 throwNotOfType("IntType", v);
             };
             h.setValue(key, v);
         },
-        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataFloatingTypes> {
+        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataTypes::Floats> {
             if (allowedKeyTypes.find(multio::grib2::KeyTypes::FloatType) == allowedKeyTypes.end()) {
                 throwNotOfType("FloatType", v);
             };
             h.setValue(key, v);
         },
-        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataStringTypes> {
+        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataTypes::Strings> {
             if (allowedKeyTypes.find(multio::grib2::KeyTypes::StringType) == allowedKeyTypes.end()) {
                 throwNotOfType("StringType", v);
             };
             h.setValue(key, v);
         },
-        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataIntegerVectorTypes> {
+        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataTypes::IntegerLists> {
             if (allowedKeyTypes.find(multio::grib2::KeyTypes::IntArrayType) == allowedKeyTypes.end()) {
                 throwNotOfType("IntArrayType", v);
             };
             h.setValue(key, v);
         },
-        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataFloatingVectorTypes> {
+        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataTypes::FloatLists> {
             if (allowedKeyTypes.find(multio::grib2::KeyTypes::FloatArrayType) == allowedKeyTypes.end()) {
                 throwNotOfType("FloatArrayType", v);
             };
             h.setValue(key, v);
         },
-        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataStringVectorTypes> {
+        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataTypes::StringLists> {
             if (allowedKeyTypes.find(multio::grib2::KeyTypes::StringArrayType) == allowedKeyTypes.end()) {
                 throwNotOfType("StringArrayType", v);
             };
             h.setValue(key, v);
         },
-        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNullTypes> { throwNotOfType("<Null>", v); },
-        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataNestedTypes> {
+        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataTypes::Nulls> {
+            throwNotOfType("<Null>", v);
+        },
+        [&](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataTypes::Nested> {
             throwNotOfType("<Nested Metadata>", v);
         }});
 
@@ -308,7 +292,8 @@ void lookupAndSetKeys(const multio::grib2::Grib2ProductHandler<Key>& grib2Produc
         if (!alreadyCheckedKeys.insert(k).second) {
             std::ostringstream oss;
             oss << "SampleManager lookupAndSetKey - Grib2 key \"" << k
-                << "\" has already been checked - Maybe there are cyclic dependencies in the keylists? Please report "
+                << "\" has already been checked - Maybe there are cyclic dependencies in the keylists? Please "
+                   "report "
                    "to an maintainer.";
             throw EncodeGrib2Exception(oss.str(), Here());
         }
@@ -328,7 +313,8 @@ void lookupAndSetKeys(const multio::grib2::Grib2ProductHandler<Key>& grib2Produc
 
 }  // namespace
 
-SampleManager::HandleFieldResult SampleManager::handleField(const SampleKey& sampleKey, const message::Metadata& md) {
+SampleManager::PrepareSampleResult SampleManager::prepareSample(const SampleKey& sampleKey,
+                                                                const message::Metadata& md) {
     if (sampleKey.domain) {
         PreparedSampleArguments prepArgs = prepareSampleArguments(*sampleKey.domain, md);
 
@@ -355,13 +341,13 @@ SampleManager::HandleFieldResult SampleManager::handleField(const SampleKey& sam
 
             // Insert with hint
             auto it = samples_.try_emplace(searchSample, sampleKey, std::move(sample));
-            return HandleFieldResult{{std::move(prepArgs.metadataWithOverwrites)},
-                                     it->second->duplicate(),
-                                     std::move(encodeAdditionalHandles)};
+            return PrepareSampleResult{{std::move(prepArgs.metadataWithOverwrites)},
+                                       it->second->duplicate(),
+                                       std::move(encodeAdditionalHandles)};
         }
         else {
             // Use already prepared sample
-            return HandleFieldResult{
+            return PrepareSampleResult{
                 {std::move(prepArgs.metadataWithOverwrites)}, searchSample->second->duplicate(), {}};
         }
     }
@@ -373,7 +359,7 @@ SampleManager::HandleFieldResult SampleManager::handleField(const SampleKey& sam
 
         auto newSample = gridSample.sample->duplicate();
         newSample->setValue(PDT_KEY, sampleKey.productDefinitionTemplateNumber);
-        return HandleFieldResult{
+        return PrepareSampleResult{
             {std::move(prepArgs.metadataWithOverwrites)}, std::move(newSample), extractLonLat(gridSample)};
     }
 }

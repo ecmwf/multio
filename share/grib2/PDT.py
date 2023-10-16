@@ -539,4 +539,3 @@ for (sel, igroups, egroups, pdtItem) in categorySelectorsWithMappedPdt:
 for (pdtId, pdtVal) in pdt.items():
     if len(pdtVal["categorySelectors"]) > 1:
         raise ValueError("pdt {} hase multiple categorySelectors: {}".format(pId, pdtVal["categorySelectors"]))
-

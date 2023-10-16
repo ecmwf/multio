@@ -34,81 +34,145 @@ public:
     using std::variant<T, ErrType>::operator=;
 
     const T* operator->() const noexcept { return std::get_if<T>(static_cast<const Base*>(this)); }
-
     T* operator->() noexcept { return std::get_if<T>(static_cast<Base*>(this)); }
 
 
     const T& operator*() const& noexcept { return *std::get_if<T>(static_cast<const Base*>(this)); }
-
     T& operator*() & noexcept { return *std::get_if<T>(static_cast<Base*>(this)); }
-
     T&& operator*() && noexcept { return std::move(*std::get_if<T>(static_cast<Base*>(this))); }
 
 
     const T& value() const& { return std::get<T>(static_cast<const Base&>(*this)); }
-
     T& value() & { return std::get<T>(static_cast<Base&>(*this)); }
-
     T&& value() && { return std::move(std::get<T>(static_cast<Base&&>(*this))); }
 
 
     const ErrType& error() const& { return std::get<ErrType>(static_cast<const Base&>(*this)); }
-
     ErrType& error() & { return std::get<ErrType>(static_cast<Base&>(*this)); }
-
     ErrType&& error() && { return std::move(std::get<ErrType>(static_cast<Base&&>(*this))); }
 
 
     operator bool() const {
         return std::visit(
-            Overloaded{[](const T&) -> bool { return true; }, [](const ErrType&) -> bool { return false; }},
+            eckit::Overloaded{[](const T&) -> bool { return true; }, [](const ErrType&) -> bool { return false; }},
             static_cast<const Base&>(*this));
     }
 
-    std::optional<T> asOpt() const& {
-        return std::visit(Overloaded{[](const T& v) -> std::optional<T> { return v; },
-                                     [](const ErrType&) -> std::optional<T> { return std::nullopt; }},
-                          *this);
+
+    std::optional<T> asOpt() const& { return asOptImpl(*this); }
+    std::optional<T> asOpt() & { return asOptImpl(*this); }
+    std::optional<T> asOpt() && { return asOptImpl(std::move(*this)); }
+
+
+    template <typename Func>
+    auto transform(Func&& func) && {
+        return transformImpl(std::move(*this), std::forward<Func>(func));
+    }
+    template <typename Func>
+    auto transform(Func&& func) & {
+        return transformImpl(*this, std::forward<Func>(func));
+    }
+    template <typename Func>
+    auto transform(Func&& func) const& {
+        return transformImpl(*this, std::forward<Func>(func));
     }
 
-    std::optional<T> asOpt() & {
-        return std::visit(Overloaded{[](T& v) -> std::optional<T> { return v; },
-                                     [](ErrType&) -> std::optional<T> { return std::nullopt; }},
-                          *this);
+
+    template <typename Func>
+    auto transformError(Func&& func) && {
+        return transformErrorImpl(std::move(*this), std::forward<Func>(func));
+    }
+    template <typename Func>
+    auto transformError(Func&& func) & {
+        return transformErrorImpl(*this, std::forward<Func>(func));
+    }
+    template <typename Func>
+    auto transformError(Func&& func) const& {
+        return transformErrorImpl(*this, std::forward<Func>(func));
     }
 
-    std::optional<T> asOpt() && {
-        return std::visit(Overloaded{[](T&& v) -> std::optional<T> { return std::move(v); },
-                                     [](ErrType&&) -> std::optional<T> { return std::nullopt; }},
-                          *this);
-    }
 
     template <typename HandleFunc>
-    const T& valueOrHandleErr(HandleFunc&& func) const& noexcept(
-        noexcept(std::invoke(std::forward<HandleFunc>(func), std::declval<const ErrType&>()))) {
-        return std::visit(Overloaded{[](const T& v) -> const T& { return v; },
-                                     [&func](const ErrType& err) -> const T& {
-                                         return std::invoke(std::forward<HandleFunc>(func), err);
-                                     }},
-                          static_cast<const Base&>(*this));
+    const T& valueOrHandleErr(HandleFunc&& func) const& {
+        return valueOrHandleErrImpl<const T&>(*this, std::forward<HandleFunc>(func));
     }
 
     template <typename HandleFunc>
     T& valueOrHandleErr(HandleFunc&& func) & noexcept(noexcept(std::invoke(std::forward<HandleFunc>(func),
                                                                            std::declval<ErrType&>()))) {
-        return std::visit(
-            Overloaded{[](T& v) -> T& { return v; },
-                       [&func](ErrType& err) -> T& { return std::invoke(std::forward<HandleFunc>(func), err); }},
-            static_cast<Base&>(*this));
+        return valueOrHandleErrImpl<T&>(*this, std::forward<HandleFunc>(func));
     }
 
     template <typename HandleFunc>
     T valueOrHandleErr(HandleFunc&& func) && noexcept(noexcept(std::invoke(std::forward<HandleFunc>(func),
                                                                            std::declval<ErrType&&>()))) {
+        return valueOrHandleErrImpl<T>(std::move(*this), std::forward<HandleFunc>(func));
+    }
+
+private:
+    // Implementation details
+    template <typename This_>
+    static std::optional<T> asOptImpl(This_&& t) {
         return std::visit(
-            Overloaded{[](T&& v) -> T { return v; },
-                       [&func](ErrType&& err) -> T { return std::forward<HandleFunc>(func)(std::move(err)); }},
-            static_cast<Base&&>(*this));
+            [](auto&& v) -> std::optional<T> {
+                using VT = decltype(v);
+                if constexpr (std::is_same_v<ErrType, std::decay_t<VT>>) {
+                    return std::nullopt;
+                }
+                else {
+                    return std::optional<T>{std::forward<VT>(v)};
+                }
+            },
+            std::forward<This_>(t));
+    }
+
+    template <typename This_, typename Func>
+    static auto transformImpl(This_&& t, Func&& f) {
+        using Res = Result<std::decay_t<decltype(std::forward<Func>(f)(std::get<T>(std::forward<This_>(t))))>, ErrType>;
+        return std::visit(
+            [&](auto&& v) -> Res {
+                using VT = decltype(v);
+                if constexpr (std::is_same_v<ErrType, std::decay_t<VT>>) {
+                    return Res{std::forward<VT>(v)};
+                }
+                else {
+                    return Res{std::forward<Func>(f)(std::forward<decltype(v)>(v))};
+                }
+            },
+            std::forward<This_>(t));
+    }
+
+    template <typename This_, typename Func>
+    static auto transformErrorImpl(This_&& t, Func&& f) {
+        using Res = Result<T, std::decay_t<decltype(std::forward<Func>(f)(std::get<ErrType>(std::forward<This_>(t))))>>;
+        return std::visit(
+            [&](auto&& v) -> Res {
+                using VT = decltype(v);
+                if constexpr (std::is_same_v<ErrType, std::decay_t<VT>>) {
+                    return Res{std::forward<Func>(f)(std::forward<decltype(v)>(v))};
+                }
+                else {
+                    return Res{std::forward<VT>(v)};
+                }
+            },
+            std::forward<This_>(t));
+    }
+
+    template <typename Res, typename This_, typename HandleFunc>
+    static Res valueOrHandleErrImpl(This_&& t,
+                                    HandleFunc&& func) noexcept(noexcept(std::invoke(std::forward<HandleFunc>(func),
+                                                                                     std::declval<ErrType&&>()))) {
+        return std::visit(
+            [&](auto&& v) -> Res {
+                using VT = decltype(v);
+                if constexpr (std::is_same_v<ErrType, std::decay_t<VT>>) {
+                    return std::forward<HandleFunc>(func)(std::forward<VT>(v));
+                }
+                else {
+                    return std::forward<VT>(v);
+                }
+            },
+            std::forward<This_>(t));
     }
 };
 

@@ -64,6 +64,13 @@ ecbuild_add_test( TARGET    test_multio_select
                   LIBS      multio )
 
 
+
+# Test GRIB2 Product inference
+
+ecbuild_add_test( TARGET    test_multio_grib2_producthandler
+                  SOURCES   test_multio_grib2_producthandler.cc
+                  LIBS      multio )
+
 # Test api
 
 list( APPEND _api_test_environment

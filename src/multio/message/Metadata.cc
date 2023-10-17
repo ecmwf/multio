@@ -21,7 +21,7 @@ Metadata toMetadata(const std::string& fieldId) {
 }
 
 std::optional<MetadataValue> toMetadataValue(const eckit::Value& v) {
-    return details::toMetadataMaybe<MetadataTraits>(v);
+    return details::toMetadataValue<MetadataTraits>(v);
 }
 
 const Glossary& glossary() {

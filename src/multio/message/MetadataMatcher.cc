@@ -28,7 +28,7 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
                 if (!optMetadataValue) {
                     std::ostringstream oss;
                     oss << "Matcher for key \"" << k << "\"[" << i
-                        << "] can not be  represented by an internal metadata value.";
+                        << "] can not be  represented by an internal metadata value: " << vi.get();
                     throw MetadataException(oss.str());
                 }
                 s.emplace(std::move(*optMetadataValue));
@@ -40,7 +40,8 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
             auto optMetadataValue = toMetadataValue(cfgK.get());
             if (!optMetadataValue) {
                 std::ostringstream oss;
-                oss << "Matcher for key \"" << k << "\" can not be  represented by an internal metadata value.";
+                oss << "Matcher for key \"" << k
+                    << "\" can not be represented by an internal metadata value: " << cfgK.get();
                 throw MetadataException(oss.str());
             }
             matcher_.emplace(k, std::set<MetadataValue>{std::move(*optMetadataValue)});

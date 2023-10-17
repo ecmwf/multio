@@ -72,7 +72,7 @@ std::optional<MetadataValue<Traits>> toMetadataValue(const eckit::Value& v) {
     return visitValueType(
         v, eckit::Overloaded{
                [&v](ValueTag<ValueType::List>) -> std::optional<MetadataValue<Traits>> {
-                   if (!v.size()) {
+                   if (v.size() == 0) {
                        return std::nullopt;
                    }
                    auto fillVec = [&v](auto vec) {
@@ -113,7 +113,7 @@ std::optional<MetadataValue<Traits>> toMetadataValue(const eckit::Value& v) {
                [&v](ValueTag<ValueType::String>) -> std::optional<MetadataValue<Traits>> {
                    return MetadataValue<Traits>{(std::string)v};
                },
-               [](auto) -> std::optional<MetadataValue<Traits>> { return std::nullopt; }});
+               [](ValueTag<ValueType::NotUsed>) -> std::optional<MetadataValue<Traits>> { return std::nullopt; }});
 }
 
 

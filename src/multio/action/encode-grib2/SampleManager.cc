@@ -33,8 +33,10 @@ std::unique_ptr<MioGribHandle> loadGribSample(const std::string& path,
     return std::make_unique<MioGribHandle>(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err));
 }
 
-void domainOptionsFromConfiguration(DomainOptions& domainOptions, const eckit::Configuration& conf,
-                                    const config::MultioConfiguration& multioConfig) {
+
+DomainOptions domainOptionsFromConfiguration(const eckit::Configuration& conf,
+                                             const config::MultioConfiguration& multioConfig) {
+    DomainOptions domainOptions;
     gridInfoCreationOptionsFromConfiguration(domainOptions, conf);
 
     if (conf.has(CONF_BASE_SAMPLE)) {
@@ -44,17 +46,13 @@ void domainOptionsFromConfiguration(DomainOptions& domainOptions, const eckit::C
     if (conf.has(CONF_ADD_METADATA)) {
         domainOptions.additionalMetadata = message::toMetadata(conf.getSubConfiguration(CONF_ADD_METADATA).get());
     }
-}
-
-DomainOptions domainOptionsFromConfiguration(const eckit::Configuration& conf,
-                                             const config::MultioConfiguration& multioConfig) {
-    DomainOptions domainOptions;
-    domainOptionsFromConfiguration(domainOptions, conf, multioConfig);
     return domainOptions;
 }
 
-void sampleConfigurationFromConfiguration(SampleConfiguration& sampleConf, const eckit::Configuration& conf,
-                                          const config::MultioConfiguration& multioConfig) {
+
+SampleConfiguration sampleConfigurationFromConfiguration(const eckit::Configuration& conf,
+                                                         const config::MultioConfiguration& multioConfig) {
+    SampleConfiguration sampleConf;
     if (conf.has(CONF_BASE_SAMPLE)) {
         sampleConf.baseSample = loadGribSample(conf.getString(CONF_BASE_SAMPLE), multioConfig);
     }
@@ -76,12 +74,6 @@ void sampleConfigurationFromConfiguration(SampleConfiguration& sampleConf, const
                 k, domainOptionsFromConfiguration(domMap.getSubConfiguration(k), multioConfig));
         }
     }
-}
-
-SampleConfiguration sampleConfigurationFromConfiguration(const eckit::Configuration& conf,
-                                                         const config::MultioConfiguration& multioConfig) {
-    SampleConfiguration sampleConf;
-    sampleConfigurationFromConfiguration(sampleConf, conf, multioConfig);
     return sampleConf;
 }
 

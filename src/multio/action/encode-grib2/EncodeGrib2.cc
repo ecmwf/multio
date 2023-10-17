@@ -160,7 +160,7 @@ struct MetadataToGrib {
 
 //-----------------------------------------------------------------------------
 
-void mapParamIdForOperation(const std::string& op, const Metadata& in, Metadata& out) {
+void multioToEccodesParamId(const std::string& op, const Metadata& in, Metadata& out) {
     static const std::unordered_map<std::string, std::int64_t> OPS_TO_CODE{{"instant", 0000},    {"average", 1000},
                                                                            {"accumulate", 2000}, {"maximum", 3000},
                                                                            {"minimum", 4000},    {"stddev", 5000}};
@@ -196,7 +196,7 @@ std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& t
                            in.get<std::int64_t>(std::get<1>(search->second)));
 }
 
-void mapTime(const std::optional<std::string>& op, const Metadata& in, Metadata& out) {
+void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadata& in, Metadata& out) {
     auto timeExtent = in.getOpt<std::string>("timeExtent");
 
     if (!timeExtent) {
@@ -211,7 +211,8 @@ void mapTime(const std::optional<std::string>& op, const Metadata& in, Metadata&
 
     if ((op && op == "instant") && isTimeRange) {
         throw EncodeGrib2Exception(
-            "mapTime - Inconsintent metadata. Key \"timeExtent\" has value \"timeRange\" but \"operation\" is "
+            "multioToEccodesDatetime - Inconsintent metadata. Key \"timeExtent\" has value \"timeRange\" but "
+            "\"operation\" is "
             "\"instant\".",
             Here());
     }
@@ -297,7 +298,7 @@ void mapTime(const std::optional<std::string>& op, const Metadata& in, Metadata&
             }
             else {
                 std::ostringstream oss;
-                oss << "mapTime - Can not map value \"" << *op
+                oss << "multioToEccodesDatetime - Can not map value \"" << *op
                     << "\"for key \"operation\" (statistical output) to a valid grib2 type of statistical processing.";
                 throw EncodeGrib2Exception(oss.str(), Here());
             }
@@ -317,8 +318,8 @@ void mapTime(const std::optional<std::string>& op, const Metadata& in, Metadata&
         auto sampleIntervalUnit = util::timeUnitFromString(sampleIntervalUnitStr);
         if (!sampleIntervalUnit) {
             std::ostringstream oss;
-            oss << "mapTime - Value for passed metadatakey \"sampleIntervalUnit\": " << sampleIntervalUnitStr
-                << " can not be parsed to a valid unit (Y,m,d,H,M,S). ";
+            oss << "multioToEccodesDatetime - Value for passed metadatakey \"sampleIntervalUnit\": "
+                << sampleIntervalUnitStr << " can not be parsed to a valid unit (Y,m,d,H,M,S). ";
             throw EncodeGrib2Exception(oss.str(), Here());
         }
         out.set("indicatorOfUnitForTimeIncrement", timeUnitCodes(*sampleIntervalUnit));
@@ -389,7 +390,7 @@ const CustomMapping TYPE_OF_LEVEL_MAPPINGS{
       [](const Metadata& in, Metadata& out) { mapLevelToFixedSurfaces(in, out); }}}};
 
 
-void mapVertical(const Metadata& in, Metadata& out) {
+void multioToEccodesVertical(const Metadata& in, Metadata& out) {
     if (auto typeOfLevel = in.getOpt<std::string>("typeOfLevel"); typeOfLevel) {
         if (auto searchTOL = TYPE_OF_LEVEL_MAPPINGS.find(*typeOfLevel); searchTOL != TYPE_OF_LEVEL_MAPPINGS.end()) {
             std::invoke(searchTOL->second, in, out);
@@ -400,14 +401,14 @@ void mapVertical(const Metadata& in, Metadata& out) {
 
 //-----------------------------------------------------------------------------
 
-void applyMetadataMappings(const Metadata& in, Metadata& out) {
+void multioToEccodes(const Metadata& in, Metadata& out) {
     auto op = in.getOpt<std::string>("operation");
 
     if (op) {
-        mapParamIdForOperation(*op, in, out);
+        multioToEccodesParamId(*op, in, out);
     }
-    mapVertical(in, out);
-    mapTime(op, in, out);
+    multioToEccodesVertical(in, out);
+    multioToEccodesDatetime(op, in, out);
 }
 
 //-----------------------------------------------------------------------------
@@ -493,7 +494,7 @@ void EncodeGrib2::executeImpl(Message msg) {
             auto handleFieldRes = sampleManager_.prepareSample(sampleKey, md);
 
             // Use metadata with overwrites as input to allow mapping of these values...
-            applyMetadataMappings(handleFieldRes.metadataWithOverwrites, handleFieldRes.metadataWithOverwrites);
+            multioToEccodes(handleFieldRes.metadataWithOverwrites, handleFieldRes.metadataWithOverwrites);
 
             // Handle additional messages (i.e. coordinates in case of lazy/dynamic init of grid information)
             if (handleFieldRes.encodeAdditionalHandles) {
@@ -524,8 +525,7 @@ void EncodeGrib2::executeImpl(Message msg) {
                 if (initDomainRes.encodeAdditionalHandles) {
                     auto sampleKeyMb = sampleManager_.tryGetSampleKeyFromMetadata(md);
                     for (auto& handlePtr : *initDomainRes.encodeAdditionalHandles) {
-                        applyMetadataMappings(initDomainRes.metadataWithOverwrites,
-                                              initDomainRes.metadataWithOverwrites);
+                        multioToEccodes(initDomainRes.metadataWithOverwrites, initDomainRes.metadataWithOverwrites);
 
                         if (sampleKeyMb) {
                             // TODO handle local definition number

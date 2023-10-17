@@ -37,7 +37,6 @@ list( APPEND multio_util_srcs
     util/BinaryUtils.h
     util/DateTime.h
     util/DateTime.cc
-    util/Result.h
     util/Hash.h
     util/Hash.cc
     util/MioGribHandle.h

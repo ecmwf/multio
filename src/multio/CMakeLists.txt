@@ -95,11 +95,12 @@ list( APPEND multio_message_srcs
     message/Message.h
     message/Metadata.h
     message/Metadata.cc
-    message/details/Metadata.h
-    message/details/MetadataTypes.h
-    message/details/MetadataTypes.cc
-    message/details/MetadataFromValue.h
-    message/details/Glossary.h
+    message/Metadata.h
+    message/Metadata.cc
+    message/MetadataTypes.h
+    message/MetadataTypes.cc
+    message/Glossary.cc
+    message/Glossary.h
     message/MetadataException.cc
     message/MetadataException.h
     message/MetadataMatcher.cc

@@ -39,9 +39,6 @@ Metadata createScalarMetadata() {
         {"paramId", 123L},
         {"null", {}},  // Default initialization should create a null value
         {"bool", true},
-        {"byte", static_cast<std::int8_t>(8)},
-        {"int16", static_cast<std::int16_t>(16)},
-        {"int32", static_cast<std::int32_t>(32)},
         {"int64", static_cast<std::int64_t>(64)},
         {"string", std::string{"string"}},
     };
@@ -76,38 +73,8 @@ CASE("Test getting scala values") {
     EXPECT(mc.get("bool").get<bool>() == true);
     EXPECT(createScalarMetadata().get<bool>("bool") == true);         // Test rvalue get access
     EXPECT(createScalarMetadata().get("bool").get<bool>() == true);   // Test rvalue get access
-    EXPECT_THROWS_AS(m.get<std::int8_t>("bool"), MetadataException);  // TODO test nested MetadataWrongTypeException
-    EXPECT_THROWS_AS(m.get("bool").get<std::int8_t>(),
-                     MetadataException);  // TODO test nested MetadataWrongTypeException
-
-    EXPECT(m.get<std::int8_t>("byte") == 8);
-    EXPECT(m.get("byte").get<std::int8_t>() == 8);
-    EXPECT(mc.get<std::int8_t>("byte") == 8);
-    EXPECT(mc.get("byte").get<std::int8_t>() == 8);
-    EXPECT(createScalarMetadata().get<std::int8_t>("byte") == 8);        // Test rvalue get access
-    EXPECT(createScalarMetadata().get("byte").get<std::int8_t>() == 8);  // Test rvalue get access
-    EXPECT_THROWS_AS(m.get<std::int16_t>("byte"), MetadataException);    // TODO test nested MetadataWrongTypeException
-    EXPECT_THROWS_AS(m.get("byte").get<std::int16_t>(),
-                     MetadataException);  // TODO test nested MetadataWrongTypeException
-
-    EXPECT(m.get<std::int16_t>("int16") == 16);
-    EXPECT(m.get("int16").get<std::int16_t>() == 16);
-    EXPECT(mc.get<std::int16_t>("int16") == 16);
-    EXPECT(mc.get("int16").get<std::int16_t>() == 16);
-    EXPECT(createScalarMetadata().get<std::int16_t>("int16") == 16);        // Test rvalue get access
-    EXPECT(createScalarMetadata().get("int16").get<std::int16_t>() == 16);  // Test rvalue get access
-    EXPECT_THROWS_AS(m.get<std::int32_t>("int16"), MetadataException);  // TODO test nested MetadataWrongTypeException
-    EXPECT_THROWS_AS(m.get("int16").get<std::int32_t>(),
-                     MetadataException);  // TODO test nested MetadataWrongTypeException
-
-    EXPECT(m.get<std::int32_t>("int32") == 32);
-    EXPECT(m.get("int32").get<std::int32_t>() == 32);
-    EXPECT(mc.get<std::int32_t>("int32") == 32);
-    EXPECT(mc.get("int32").get<std::int32_t>() == 32);
-    EXPECT(createScalarMetadata().get<std::int32_t>("int32") == 32);        // Test rvalue get access
-    EXPECT(createScalarMetadata().get("int32").get<std::int32_t>() == 32);  // Test rvalue get access
-    EXPECT_THROWS_AS(m.get<std::int64_t>("int32"), MetadataException);  // TODO test nested MetadataWrongTypeException
-    EXPECT_THROWS_AS(m.get("int32").get<std::int64_t>(),
+    EXPECT_THROWS_AS(m.get<std::int64_t>("bool"), MetadataException);  // TODO test nested MetadataWrongTypeException
+    EXPECT_THROWS_AS(m.get("bool").get<std::int64_t>(),
                      MetadataException);  // TODO test nested MetadataWrongTypeException
 
     EXPECT(m.get<std::int64_t>("int64") == 64);

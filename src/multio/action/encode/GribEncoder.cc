@@ -31,6 +31,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/util/DateTime.h"
+#include "multio/message/Glossary.h"
 #include "multio/util/Metadata.h"
 
 
@@ -321,19 +322,13 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
         withFirstOf(valueSetter(g, "productionStatusOfProcessedData"),
                     lookUp<std::int64_t>(md, "productionStatusOfProcessedData"));
 
-        const auto dataset = lookUp<std::string>(md, "dataset")();
-        if (dataset) {
-            withFirstOf(valueSetter(g, "tablesVersion"), lookUp<std::int64_t>(md, "tablesVersion"));
-            withFirstOf(valueSetter(g, "setLocalDefinition"), lookUp<std::int64_t>(md, "setLocalDefinition"));
-            withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), lookUp<std::int64_t>(md, "grib2LocalSectionNumber"));
-
-            if (*dataset == "climate-dt") {
-                withFirstOf(valueSetter(g, "activity"), lookUp<std::string>(md, "activity"));
-                withFirstOf(valueSetter(g, "experiment"), lookUp<std::string>(md, "experiment"));
-                withFirstOf(valueSetter(g, "generation"), lookUp<std::string>(md, "generation"));
-                withFirstOf(valueSetter(g, "model"), lookUp<std::string>(md, "model"));
-                withFirstOf(valueSetter(g, "realization"), lookUp<std::string>(md, "realization"));
-            }
+        g.setValue("dataset", *dataset);
+        if (*dataset == "climate-dt") {
+            withFirstOf(valueSetter(g, "activity"), lookUp<std::string>(md, "activity"));
+            withFirstOf(valueSetter(g, "experiment"), lookUp<std::string>(md, "experiment"));
+            withFirstOf(valueSetter(g, "generation"), lookUp<std::string>(md, "generation"));
+            withFirstOf(valueSetter(g, "model"), lookUp<std::string>(md, "model"));
+            withFirstOf(valueSetter(g, "realization"), lookUp<std::string>(md, "realization"));
         }
     }
 

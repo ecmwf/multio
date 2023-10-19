@@ -190,9 +190,10 @@ void Encode::executeImpl(Message msg) {
 
     auto gridUID = std::optional<GridDownloader::GridUIDType>{};
 
-    auto searchDomain = msg.metadata().find("domain");
-    auto searchGridUUID = msg.metadata().find("uuidOfHGrid");
-    if ((searchDomain != msg.metadata().end()) && (searchGridUUID == msg.metadata().end()) && isOcean(msg.metadata())) {
+    auto& md = msg.metadata();
+    auto searchDomain = md.find("domain");
+    auto searchUUIDOfHGrid = md.find("uuidOfHGrid");
+    if (searchDomain != md.end() && searchUUIDOfHGrid == md.end() && isOcean(md)) {
         //! TODO shoud not be checked here anymore, encoder_ should have been initialized according to format_
         ASSERT(format_ == "grib");
 

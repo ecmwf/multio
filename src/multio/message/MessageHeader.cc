@@ -19,7 +19,7 @@ Message::Header::Header(Tag tag, Peer src, Peer dst, std::string&& fieldId) :
     tag_{tag},
     source_{std::move(src)},
     destination_{std::move(dst)},
-    metadata_{message::toMetadata(fieldId)},
+    metadata_{message::metadataFromYAML(fieldId)},
     fieldId_{std::move(fieldId)} {
 
     // TODO: Maybe it is useful to check here if in the metadata we have the fields:

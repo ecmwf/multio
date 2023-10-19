@@ -23,6 +23,8 @@
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 
+#include "multio/message/Glossary.h"
+
 
 namespace {
 const std::unordered_map<std::string, int> latParamIds{

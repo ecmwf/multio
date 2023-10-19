@@ -27,33 +27,11 @@
 #include <vector>
 
 
-namespace multio::message::details {
-
-//-----------------------------------------------------------------------------
-
-// Default traits for a Metadata. Traits allow customizing key and map type to
-// easily benchmark different setups
-struct DefaultMetadataTraits {
-    using KeyType = std::string;
-
-    template <typename ValueType>
-    using MapType = std::unordered_map<KeyType, ValueType>;
-
-    template <typename ValueType>
-    static MapType<ValueType> initMap() {
-        return MapType<ValueType>{256};
-    }
-
-    template <typename ValueType>
-    static MapType<ValueType> initMap(std::initializer_list<std::pair<const KeyType, ValueType>> li) {
-        return MapType<ValueType>{std::move(li), 256};
-    }
-};
+namespace multio::message {
 
 //-----------------------------------------------------------------------------
 
 // Forward declaration
-template <typename MetadataTraits = DefaultMetadataTraits>
 class Metadata;
 
 //-----------------------------------------------------------------------------
@@ -74,10 +52,15 @@ eckit::JSON& operator<<(eckit::JSON& json, const Null&);
 
 
 // MetadataTypes may be specialized for different types to support different set of types
-template <typename Traits = DefaultMetadataTraits>
 struct MetadataTypes {
+    using KeyType = std::string;
+
+    template <typename ValueType>
+    using MapType = std::unordered_map<KeyType, ValueType>;
+
+
     using Nulls = util::TypeList<Null>;
-    using Integers = util::TypeList<bool, std::int8_t, std::int16_t, std::int32_t, std::int64_t>;
+    using Integers = util::TypeList<bool, std::int64_t>;
     using Floats = util::TypeList<double, float>;
     using Strings = util::TypeList<std::string>;
     using NonNullScalars = util::MergeTypeList_t<Integers, Floats, Strings>;
@@ -88,7 +71,7 @@ struct MetadataTypes {
     using StringLists = util::MapTypeList_t<std::vector, Strings>;
     using Lists = util::MergeTypeList_t<IntegerLists, FloatLists, StringLists>;
 
-    using Nested = util::TypeList<Metadata<Traits>>;
+    using Nested = util::TypeList<Metadata>;
     using NestedWrapped = util::MapTypeList_t<std::unique_ptr, Nested>;
 
     // Example for general lists:
@@ -108,4 +91,4 @@ struct MetadataTypes {
 
 //-----------------------------------------------------------------------------
 
-}  // namespace multio::message::details
+}  // namespace multio::message

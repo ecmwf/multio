@@ -14,11 +14,11 @@
 
 #pragma once
 
-#include "multio/message/details/MetadataTypes.h"
+#include "multio/message/MetadataTypes.h"
 
 #include <string>
 
-namespace multio::message::details {
+namespace multio::message {
 
 
 /**
@@ -44,9 +44,8 @@ namespace multio::message::details {
  *  - We can do proper benchmark of metadata operations with typical keys. Moreover its easy to benchmark different key
  * (fixed strings, prehashed strings in case of hashmaps) and maptypes
  */
-template <typename Traits = DefaultMetadataTraits>
 struct Glossary {
-    using KeyType = typename Traits::KeyType;
+    using KeyType = typename MetadataTypes::KeyType;
 
     // template <typename ValidTypes>
     // using Description = KeyValueDescription<KeyType, ValidTypes>;
@@ -125,12 +124,14 @@ struct Glossary {
     const KeyType currentTime{"currentTime"};
     const KeyType currentDate{"currentDate"};
 
-    static const Glossary<Traits>& instance() {
-        static Glossary<Traits> glossary;
+    static const Glossary& instance() {
+        static Glossary glossary;
         return glossary;
     }
 };
 
+const Glossary& glossary();
+
 //-----------------------------------------------------------------------------
 
-}  // namespace multio::message::details
+}  // namespace multio::message

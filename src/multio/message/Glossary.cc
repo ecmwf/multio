@@ -8,23 +8,12 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Philipp Geier
+#include "Glossary.h"
 
-/// @date Sept 2023
+namespace multio::message {
 
-#include "MetadataTypes.h"
-
-namespace multio::message::details {
-
-std::ostream& operator<<(std::ostream& os, const Null&) {
-    os << "null";
-    return os;
+const Glossary& glossary() {
+    return Glossary::instance();
 }
 
-eckit::JSON& operator<<(eckit::JSON& json, const Null&) {
-    json.null();
-    return json;
-}
-
-
-}  // namespace multio::message::details
+}  // namespace multio::message

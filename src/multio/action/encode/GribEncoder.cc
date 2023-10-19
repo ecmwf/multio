@@ -30,6 +30,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/util/DateTime.h"
+#include "multio/message/Glossary.h"
 #include "multio/util/Metadata.h"
 
 
@@ -311,19 +312,20 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     withFirstOf(valueSetter(g, glossary().expver), lookUp<std::string>(md, glossary().expver),
                 lookUp<std::string>(md, "experimentVersionNumber"));
 
-    const auto dataset = lookUp<std::string>(md, "dataset")();
-    if ((gribEdition == "2") && *dataset) {
-        withFirstOf(valueSetter(g, "tablesVersion"), lookUp<std::int64_t>(md, "tablesVersion"));
-        withFirstOf(valueSetter(g, "setLocalDefinition"), lookUp<std::int64_t>(md, "setLocalDefinition"));
-        withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), lookUp<std::int64_t>(md, "grib2LocalSectionNumber"));
-        withFirstOf(valueSetter(g, "productionStatusOfProcessedData"),
-                    lookUp<std::int64_t>(md, "productionStatusOfProcessedData"));
-        withFirstOf(valueSetter(g, "dataset"), lookUp<std::string>(md, "dataset"));
-        withFirstOf(valueSetter(g, "activity"), lookUp<std::string>(md, "activity"));
-        withFirstOf(valueSetter(g, "experiment"), lookUp<std::string>(md, "experiment"));
-        withFirstOf(valueSetter(g, "generation"), lookUp<std::string>(md, "generation"));
-        withFirstOf(valueSetter(g, "model"), lookUp<std::string>(md, "model"));
-        withFirstOf(valueSetter(g, "realization"), lookUp<std::string>(md, "realization"));
+    if (gribEdition == "2") {
+        if (auto dataset = lookUp<std::string>(md, "dataset")(); dataset) {
+            withFirstOf(valueSetter(g, "tablesVersion"), lookUp<std::int64_t>(md, "tablesVersion"));
+            withFirstOf(valueSetter(g, "setLocalDefinition"), lookUp<std::int64_t>(md, "setLocalDefinition"));
+            withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), lookUp<std::int64_t>(md, "grib2LocalSectionNumber"));
+            withFirstOf(valueSetter(g, "productionStatusOfProcessedData"),
+                        lookUp<std::int64_t>(md, "productionStatusOfProcessedData"));
+            withFirstOf(valueSetter(g, "dataset"), lookUp<std::string>(md, "dataset"));
+            withFirstOf(valueSetter(g, "activity"), lookUp<std::string>(md, "activity"));
+            withFirstOf(valueSetter(g, "experiment"), lookUp<std::string>(md, "experiment"));
+            withFirstOf(valueSetter(g, "generation"), lookUp<std::string>(md, "generation"));
+            withFirstOf(valueSetter(g, "model"), lookUp<std::string>(md, "model"));
+            withFirstOf(valueSetter(g, "realization"), lookUp<std::string>(md, "realization"));
+        }
     }
 
     withFirstOf(valueSetter(g, "class"), lookUp<std::string>(md, "class"), lookUp<std::string>(md, "marsClass"));

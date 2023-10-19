@@ -8,24 +8,254 @@
  * does it submit to any jurisdiction.
  */
 
-#include "Metadata.h"
+/// @author Philipp Geier
+
+/// @date Sept 2023
+
+#include "multio/message/Metadata.h"
+
+#include "eckit/parser/YAMLParser.h"
+
+#include <sstream>
+
 
 namespace multio::message {
 
-Metadata toMetadata(const eckit::Value& value) {
-    return details::toMetadata<MetadataTraits>(value);
+//-----------------------------------------------------------------------------
+
+
+MetadataValue::MetadataValue(const This& other) :
+    Base{other.visit([](auto&& v) { return Base{wrapNestedMaybe(std::forward<decltype(v)>(v))}; })} {}
+
+
+MetadataValue& MetadataValue::operator=(const This& other) {
+    Base::operator=(other.visit([](auto&& v) { return Base{wrapNestedMaybe(std::forward<decltype(v)>(v))}; }));
+    return *this;
 }
 
-Metadata toMetadata(const std::string& fieldId) {
-    return details::toMetadata<MetadataTraits>(fieldId);
+std::string MetadataValue::toString() const {
+    std::stringstream ss;
+    eckit::JSON json(ss);
+    json << *this;
+    return ss.str();
 }
+
+void MetadataValue::json(eckit::JSON& j) const {
+    j << *this;
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+Metadata::Metadata() : values_{512} {}
+Metadata::Metadata(std::initializer_list<std::pair<const KeyType, MetadataValue>> li) : values_{std::move(li), 512} {}
+
+Metadata::Metadata(MapType&& values) : values_{std::move(values)} {}
+
+
+MetadataValue&& Metadata::get(const KeyType& k) && {
+    return std::move(referenceGetter(*this, k).get());
+}
+
+MetadataValue& Metadata::get(const KeyType& k) & {
+    return referenceGetter(*this, k).get();
+}
+
+const MetadataValue& Metadata::get(const KeyType& k) const& {
+    return referenceGetter(*this, k).get();
+}
+
+
+MetadataValue& Metadata::operator[](const KeyType& key) {
+    return values_[key];
+}
+MetadataValue& Metadata::operator[](KeyType&& key) {
+    return values_[std::move(key)];
+}
+
+
+bool Metadata::empty() const noexcept {
+    return values_.empty();
+}
+
+std::size_t Metadata::size() const noexcept {
+    return values_.size();
+}
+
+void Metadata::clear() noexcept {
+    values_.clear();
+}
+
+/**
+ * Extracts all values from other metadata whose keys are not contained yet in this metadata.
+ * Explicitly always modifies both metadata.
+ */
+void Metadata::merge(This& other) {
+    values_.merge(other.values_);
+}
+void Metadata::merge(This&& other) {
+    values_.merge(std::move(other.values_));
+}
+
+/**
+ * Adds all Metadata contained in other and returns a Metadata object with key/values that have been overwritten.
+ * Existing iterators to this container are invalidated after an update.
+ */
+Metadata Metadata::update(const Metadata& other) {
+    auto tmp = std::move(values_);
+    values_ = other.values_;
+    values_.merge(tmp);
+    return tmp;
+}
+
+
+Metadata Metadata::update(Metadata&& other) {
+    auto tmp = std::move(values_);
+    values_ = std::move(other.values_);
+    values_.merge(tmp);
+    return tmp;
+}
+
+
+std::string Metadata::toString() const {
+    std::stringstream ss;
+    eckit::JSON json(ss);
+    json << *this;
+    return ss.str();
+}
+
+void Metadata::json(eckit::JSON& j) const {
+    j << *this;
+}
+
+//-----------------------------------------------------------------------------
+
+
+eckit::JSON& operator<<(eckit::JSON& json, const MetadataValue& mv) {
+    mv.visit([&json](const auto& v) { json << v; });
+    return json;
+}
+
+eckit::JSON& operator<<(eckit::JSON& json, const Metadata& metadata) {
+    json.startObject();
+    for (const auto& kv : metadata) {
+        json << kv.first;
+        json << kv.second;
+    }
+    json.endObject();
+    return json;
+}
+
+//-----------------------------------------------------------------------------
+
+std::ostream& operator<<(std::ostream& os, const MetadataValue& metadataValue) {
+    eckit::JSON json(os);
+    json << metadataValue;
+    return os;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const Metadata& metadata) {
+    eckit::JSON json(os);
+    json << metadata;
+    return os;
+}
+
+
+//-----------------------------------------------------------------------------
+
+Metadata metadataFromYAML(const std::string& fieldId) {
+    std::istringstream in(fieldId);
+    eckit::YAMLParser parser(in);
+    auto optMetadata = toMetadataMaybe(parser.parse());
+    if (!optMetadata) {
+        throw MetadataException(std::string("JSON string must start with a map: ") + fieldId, Here());
+    }
+    return std::move(*optMetadata);
+}
+
+//-----------------------------------------------------------------------------
 
 std::optional<MetadataValue> toMetadataValue(const eckit::Value& v) {
-    return details::toMetadataValue<MetadataTraits>(v);
+    if (v.isList()) {
+        if (v.size() == 0) {
+            return std::nullopt;
+        }
+        auto fillVec = [&v](auto vec) {
+            auto size = v.size();
+            vec.reserve(size);
+            for (unsigned int i = 0; i < size; ++i) {
+                vec.push_back(v[i]);
+            }
+            return MetadataValue{std::move(vec)};
+        };
+
+
+        if (v[0].isNumber()) {
+            return fillVec(std::vector<std::int64_t>{});
+        }
+        if (v[0].isDouble()) {
+            return fillVec(std::vector<double>{});
+        }
+        if (v[0].isBool()) {
+            return fillVec(std::vector<bool>{});
+        }
+        if (v[0].isString()) {
+            return fillVec(std::vector<std::string>{});
+        }
+        return std::nullopt;
+    }
+    if (v.isMap()) {
+        return toMetadata(v);
+    }
+    if (v.isNumber()) {
+        return MetadataValue{(std::int64_t)v};
+    }
+    if (v.isDouble()) {
+        return MetadataValue{(double)v};
+    }
+    if (v.isBool()) {
+        return MetadataValue{(bool)v};
+    }
+    if (v.isString()) {
+        return MetadataValue{(std::string)v};
+    }
+    return std::nullopt;
 }
 
-const Glossary& glossary() {
-    return Glossary::instance();
+//-----------------------------------------------------------------------------
+
+std::optional<Metadata> toMetadataMaybe(const eckit::Value& v) {
+    if (!v.isMap()) {
+        return std::nullopt;
+    }
+    Metadata m;
+
+    eckit::Value keys = v.keys();
+    for (unsigned int i = 0; i < keys.size(); ++i) {
+        std::string key = keys[i];
+        auto mv = toMetadataValue(v[key]);
+        if (mv) {
+            m.set(key, *mv);
+        }
+    }
+
+    return m;
 }
+
+Metadata toMetadata(const eckit::Value& value) {
+    auto optMetadata = toMetadataMaybe(value);
+    if (!optMetadata) {
+        std::ostringstream oss;
+        oss << "eckit::Value is not a map: " << value;
+        throw MetadataException(oss.str(), Here());
+    }
+    return std::move(*optMetadata);
+}
+
+
+//-----------------------------------------------------------------------------
+
 
 }  // namespace multio::message

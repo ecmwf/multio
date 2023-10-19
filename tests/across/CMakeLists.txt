@@ -1,9 +1,6 @@
+if( HAVE_MIR )
+
 set(PREFIX multio_tests_across_dissemination)
-
-
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/single_request.diss    ${CMAKE_BINARY_DIR}/multio/tests/across/single_request.diss    COPYONLY )
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/multiple_requests.diss ${CMAKE_BINARY_DIR}/multio/tests/across/multiple_requests.diss COPYONLY )
-
 
 list( APPEND _across_test_data
   "regular_ll_pl_grib2.tmpl"
@@ -22,11 +19,28 @@ ecbuild_get_test_multidata(
     NAMES ${_across_test_data}
 )
 
+ecbuild_add_test(
+    TARGET       ${PREFIX}_copy_single_disseminations
+    TEST_DEPENDS ${PREFIX}_get_data
+    COMMAND      ${CMAKE_COMMAND}
+    ARGS         -E copy ${CMAKE_CURRENT_SOURCE_DIR}/single_request.diss ${CMAKE_CURRENT_BINARY_DIR}/single_request.diss
+)
+
+ecbuild_add_test(
+    TARGET       ${PREFIX}_copy_multiple_disseminations
+    TEST_DEPENDS ${PREFIX}_get_data
+    COMMAND      ${CMAKE_COMMAND}
+    ARGS         -E copy ${CMAKE_CURRENT_SOURCE_DIR}/multiple_requests.diss ${CMAKE_CURRENT_BINARY_DIR}/multiple_requests.diss
+)
+
+
+
 set(_feed multio_tests_across_dissemination_data.grib )
+
 
 ecbuild_add_test(
     TARGET       ${PREFIX}_single_request_run
-    TEST_DEPENDS ${PREFIX}_get_data
+    TEST_DEPENDS ${PREFIX}_copy_single_disseminations
     COMMAND      multio-feed
     ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/plan_single_request.yaml ${_feed}
 )
@@ -50,7 +64,7 @@ ecbuild_add_test(
 
 ecbuild_add_test(
     TARGET       ${PREFIX}_multiple_request_run
-    TEST_DEPENDS ${PREFIX}_get_data
+    TEST_DEPENDS ${PREFIX}_copy_multiple_disseminations
     COMMAND      multio-feed
     ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/plan_multiple_requests.yaml ${_feed}
 )
@@ -82,3 +96,6 @@ ecbuild_add_test(
     ARGS         -P -T10 Reference_test-across-dissemination-multiple_0-ZZ1-M1.grib test-across-dissemination-multiple/0001/test-across-dissemination-multiple_0001-ZZ1:M1.grib
     COMMAND      grib_compare
 )
+
+
+endif()

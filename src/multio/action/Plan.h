@@ -69,6 +69,9 @@ public:
 
     static std::vector<std::unique_ptr<action::Plan>> make_plans(
         const std::vector<eckit::LocalConfiguration>& componentConfig, const config::MultioConfiguration& multioConf);
+    static std::vector<std::unique_ptr<action::Plan>> make_plans(
+        const std::vector<eckit::LocalConfiguration>& componentConfig, const config::MultioConfiguration& multioConf,
+        message::MetadataSelectors& selectors);
 
 protected:
     const std::string name_;

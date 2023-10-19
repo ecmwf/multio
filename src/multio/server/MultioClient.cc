@@ -56,7 +56,7 @@ MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfigur
 
 
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << conf << std::endl;
-    plans_ = action::Plan::make_plans( conf.getSubConfigurations("plans"), multioConfig() );
+    plans_ = action::Plan::make_plans( conf.getSubConfigurations("plans"), multioConfig(), activeSelectors_ );
 
     if (multioConfig().parsedConfig().has("active-matchers")) {
         for (const auto& m : multioConfig().parsedConfig().getSubConfigurations("active-matchers")) {

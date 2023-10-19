@@ -17,13 +17,13 @@ ComponentConfiguration SubComponentIteratorMapper::operator()(const eckit::Local
 }
 
 
-//=============================================================================
+//-----------------------------------------------------------------------------
 
 ComponentConfiguration::ComponentConfiguration(const eckit::LocalConfiguration& componentConfig,
                                                const MultioConfiguration& multioConf) :
     componentConf_(componentConfig), multioConf_(multioConf){};
 
-//=============================================================================
+//-----------------------------------------------------------------------------
 
 eckit::LocalConfiguration& ComponentConfiguration::parsedConfig() {
     return componentConf_;
@@ -37,7 +37,7 @@ const MultioConfiguration& ComponentConfiguration::multioConfig() const {
 };
 
 
-//=============================================================================
+//-----------------------------------------------------------------------------
 
 ComponentConfiguration ComponentConfiguration::subComponent(const std::string& subConfiguratinKey) const {
     return ComponentConfiguration(componentConf_.getSubConfiguration(subConfiguratinKey), multioConfig());
@@ -50,6 +50,6 @@ ComponentConfiguration::SubComponentConfigurations ComponentConfiguration::subCo
 };
 
 
-//=============================================================================
+//-----------------------------------------------------------------------------
 
 }  // namespace multio::config

@@ -27,7 +27,7 @@ Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, eckit::Qu
 
     config::ComponentConfiguration::SubComponentConfigurations plans = compConf.subComponents("plans");
 
-    plans_ = action::Plan::make_plans( compConf.parsedConfig().getSubConfigurations("plans"), compConf.multioConfig() );
+    plans_ = action::Plan::makePlans(compConf.parsedConfig().getSubConfigurations("plans"), compConf.multioConfig());
 }
 
 util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, const util::FailureContext& c,

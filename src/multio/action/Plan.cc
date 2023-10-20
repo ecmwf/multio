@@ -57,7 +57,7 @@ LocalConfiguration rootConfig(const LocalConfiguration& config, const std::strin
 }  // namespace
 
 
-std::vector<std::unique_ptr<action::Plan>> Plan::make_plans(
+std::vector<std::unique_ptr<action::Plan>> Plan::makePlans(
     const std::vector<eckit::LocalConfiguration>& componentConfig, const config::MultioConfiguration& multioConf,
     message::MetadataSelectors& selectors) {
 
@@ -66,7 +66,7 @@ std::vector<std::unique_ptr<action::Plan>> Plan::make_plans(
     // Create the array of plans
     LOG_DEBUG_LIB(multio::LibMultio) << "make_plans: " << componentConfig << std::endl;
     for (auto&& cfg : componentConfig) {
-        auto planCfgs = make_plans_configurations(cfg, multioConf);
+        auto planCfgs = configurePlans(cfg, multioConf);
         // Works also for empty planCfgs
         for (auto& pcfg : planCfgs) {
             LOG_DEBUG_LIB(multio::LibMultio) << pcfg << std::endl;
@@ -80,7 +80,7 @@ std::vector<std::unique_ptr<action::Plan>> Plan::make_plans(
 };
 
 
-std::vector<std::unique_ptr<action::Plan>> Plan::make_plans(
+std::vector<std::unique_ptr<action::Plan>> Plan::makePlans(
     const std::vector<eckit::LocalConfiguration>& componentConfig, const config::MultioConfiguration& multioConf) {
 
     std::vector<std::unique_ptr<action::Plan>> plans;
@@ -88,7 +88,7 @@ std::vector<std::unique_ptr<action::Plan>> Plan::make_plans(
     // Create the array of plans
     LOG_DEBUG_LIB(multio::LibMultio) << "make_plans: " << componentConfig << std::endl;
     for (auto&& cfg : componentConfig) {
-        auto planCfgs = make_plans_configurations(cfg, multioConf);
+        auto planCfgs = configurePlans(cfg, multioConf);
         // Works also for empty planCfgs
         for (auto& pcfg : planCfgs) {
             LOG_DEBUG_LIB(multio::LibMultio) << pcfg << std::endl;

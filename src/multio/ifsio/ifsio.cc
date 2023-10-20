@@ -128,7 +128,7 @@ private:
         FailureAware(ComponentConfiguration(conf, multioConfig())),
         log_(false),
         dirty_(false) {
-        plans_ = action::Plan::make_plans( conf.getSubConfigurations("plans"), multioConf );
+        plans_ = action::Plan::makePlans(conf.getSubConfigurations("plans"), multioConf);
         bpv_ = std::make_unique<EncodeBitsPerValue>(conf);
     }
 

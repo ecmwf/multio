@@ -67,9 +67,9 @@ public:
     util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&,
                                                util::DefaultFailureState&) const override;
 
-    static std::vector<std::unique_ptr<action::Plan>> make_plans(
+    static std::vector<std::unique_ptr<action::Plan>> makePlans(
         const std::vector<eckit::LocalConfiguration>& componentConfig, const config::MultioConfiguration& multioConf);
-    static std::vector<std::unique_ptr<action::Plan>> make_plans(
+    static std::vector<std::unique_ptr<action::Plan>> makePlans(
         const std::vector<eckit::LocalConfiguration>& componentConfig, const config::MultioConfiguration& multioConf,
         message::MetadataSelectors& selectors);
 

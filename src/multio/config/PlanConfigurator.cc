@@ -249,7 +249,7 @@ eckit::LocalConfiguration generate_sink_action(const metkit::mars::MarsParsedReq
     std::vector<eckit::LocalConfiguration> sinks;
     eckit::LocalConfiguration file_sink;
     file_sink.set("type", "file");
-    if ( componentConfig.getBool("per-server", true ) ){
+    if (componentConfig.getBool("per-server", true)) {
         file_sink.set("append", false);
         file_sink.set("per-server", true);
     }
@@ -423,7 +423,7 @@ std::vector<eckit::LocalConfiguration> parseDisseminationFiles(const eckit::Loca
 }
 
 
-std::vector<eckit::LocalConfiguration> optimizeDisseminationPlans(
+std::vector<eckit::LocalConfiguration> optimiseDisseminationPlans(
     const std::vector<eckit::LocalConfiguration>& rawPlans) {
     // Maybe, Oneday, Someone, ...
     return rawPlans;
@@ -441,7 +441,7 @@ std::vector<eckit::LocalConfiguration> buildDisseminationPlan(const eckit::Local
         = parseDisseminationFiles(componentConfig, multioConf, disseminationFile);
 
     // Optimize Dissemination graphs
-    std::vector<eckit::LocalConfiguration> optimizedPlans = optimizeDisseminationPlans(rawPlans);
+    std::vector<eckit::LocalConfiguration> optimizedPlans = optimiseDisseminationPlans(rawPlans);
 
     // Generate requirements
     return optimizedPlans;
@@ -450,8 +450,8 @@ std::vector<eckit::LocalConfiguration> buildDisseminationPlan(const eckit::Local
 }  // namespace
 
 
-std::vector<eckit::LocalConfiguration> make_plans_configurations(const eckit::LocalConfiguration& componentConfig,
-                                                                 const MultioConfiguration& multioConf) {
+std::vector<eckit::LocalConfiguration> configurePlans(const eckit::LocalConfiguration& componentConfig,
+                                                      const MultioConfiguration& multioConf) {
 
     // Read nested files
     // @todo: only one nesting level allowed at the moment

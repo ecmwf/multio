@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <vector>
@@ -9,7 +10,6 @@
 
 namespace multio::config {
 
-std::vector<eckit::LocalConfiguration> make_plans_configurations(const eckit::LocalConfiguration& componentConfig,
-                                                                 const MultioConfiguration& multioConf);
-
+std::vector<eckit::LocalConfiguration> configurePlans(const eckit::LocalConfiguration& componentConfig,
+                                                      const MultioConfiguration& multioConf);
 }

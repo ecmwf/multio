@@ -193,7 +193,8 @@ void MultioEncodeOcean::executePlan() {
     CODES_CHECK(codes_get_message(handle(), reinterpret_cast<const void**>(&buf), &sz), nullptr);
 
     auto multioConfig = test_configuration();
-    std::vector<std::unique_ptr<Plan>> plans = multio::action::Plan::make_plans( multioConfig.parsedConfig().getSubConfigurations("plans"), multioConfig );
+    std::vector<std::unique_ptr<Plan>> plans
+        = multio::action::Plan::makePlans(multioConfig.parsedConfig().getSubConfigurations("plans"), multioConfig);
     Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, eckit::Buffer{buf, sz}};
     eckit::Log::debug<multio::LibMultio>() << "Message size: " << msg.size() << std::endl;
 

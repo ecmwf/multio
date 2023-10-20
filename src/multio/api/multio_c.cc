@@ -460,7 +460,7 @@ int multio_write_mask_float(multio_handle_t* mio, multio_metadata_t* md, const f
             ASSERT(md);
 
             eckit::Buffer mask_vals = multio::domain::encodeMask(data, size);
-           mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
+            mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
         },
         mio);
 }

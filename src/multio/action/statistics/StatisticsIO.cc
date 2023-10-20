@@ -56,7 +56,7 @@ bool IOBuffer::good() const {
 };
 
 uint64_t& IOBuffer::operator[](const size_t idx) {
-    if ( idx >= size_) {
+    if (idx >= size_) {
         std::ostringstream os;
         os << "ERROR : idx too large";
         std::cout << os.str() << std::endl;
@@ -66,7 +66,7 @@ uint64_t& IOBuffer::operator[](const size_t idx) {
 };
 
 const uint64_t& IOBuffer::operator[](const size_t idx) const {
-    if ( idx >= size_) {
+    if (idx >= size_) {
         std::ostringstream os;
         os << "ERROR : idx too large";
         std::cout << os.str() << std::endl;

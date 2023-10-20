@@ -123,6 +123,7 @@ void Statistics::executeImpl(message::Message msg) {
             payload.resize((*it)->byte_size());
             payload.zero();
             md.set("operation", (*it)->operation());
+            md.set("operation-frequency", compConf_.parsedConfig().getString("output-frequency"));
             (*it)->compute(payload);
             executeNext(message::Message{message::Message::Header{message::Message::Tag::Field, msg.source(),
                                                                   msg.destination(), message::Metadata{md}},

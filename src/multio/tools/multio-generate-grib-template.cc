@@ -108,6 +108,34 @@ void setSHFields(codes_handle* handle, const eckit::option::CmdArgs& args) {
     err = codes_set_double_array(handle, "values", values.data(), values.size());
     handleCodesError("eccodes error while setting the values array: ", err, Here());
 }
+
+void setHealpixFields(codes_handle* handle, const eckit::option::CmdArgs& args) {
+    auto& originalComm = eckit::mpi::comm();
+    eckit::mpi::setCommDefault("self");
+
+    std::string gridType = "none";
+    args.get("grid", gridType);
+    const atlas::Grid grid(gridType);
+
+    eckit::mpi::setCommDefault(originalComm.name().c_str());
+
+    auto structuredGrid = atlas::StructuredGrid(grid);
+
+    auto healPixGrid = atlas::HealpixGrid(structuredGrid);
+
+    const auto side = healPixGrid.N();
+    int err = codes_set_long(handle, "Nside", side);
+    handleCodesError("eccodes error while setting the Nside value: ", err, Here());
+
+    const auto size = 12 * side * side;
+    std::vector<double> values(size, 0.0);
+    err = codes_set_double_array(handle, "values", values.data(), values.size());
+    handleCodesError("eccodes error while setting the values array: ", err, Here());
+
+    double firstPoint = 45.0;
+    err = codes_set_double(handle, "longitudeOfFirstGridPointInDegrees", firstPoint);
+    handleCodesError("eccodes error while setting the longitudeOfFirstGridPointInDegrees value: ", err, Here());
+}
 }  // namespace
 
 //----------------------------------------------------------------------------------------------------------------
@@ -161,7 +189,7 @@ void MultioGenerateGribTemplate::execute(const eckit::option::CmdArgs& args) {
 
     using UpdateFunctionType = std::function<void(codes_handle*, const eckit::option::CmdArgs&)>;
     const std::unordered_map<std::string, UpdateFunctionType> updateFunctionMap
-        = {{"reduced_gg", &setReducedGGFields}, {"sh", &setSHFields}};
+        = {{"reduced_gg", &setReducedGGFields}, {"sh", &setSHFields}, {"healpix", &setHealpixFields}};
 
     const std::string sampleGridType(buffer);
     if (updateFunctionMap.count(sampleGridType) != 0) {

@@ -1,0 +1,22 @@
+plans:
+  - name: eORCA12_W_to_HEALPIX_1024
+    actions:
+      - type: print
+        stream: cout
+      - type: interpolate
+        input: eORCA12_W
+        grid: H1024
+        options:
+          # dont-compress-plan: true
+          caching: false
+      - type: print
+        stream: cout
+      - type: encode
+        format: grib
+        template: Reference_eORCA12_W_to_HEALPix_1024.grib
+      - type: sink
+        sinks:
+        - type: file
+          append: false
+          per-server: false # Will give you one file per server
+          path: MultIO_eORCA12_W_to_HEALPix_1024.grib

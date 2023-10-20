@@ -98,11 +98,16 @@ void Encode::executeImpl(Message msg) {
         LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain() << std::endl;
 
         const auto& md = msg.metadata();
-        auto gridCoords
-            = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
-        if (gridCoords) {
-            executeNext(gridCoords.value().Lat);
-            executeNext(gridCoords.value().Lon);
+
+        std::string gridType;
+        const auto hasGridType = md.get("gridType", gridType);
+        if (hasGridType && (gridType != "HEALPix")) {
+            auto gridCoords
+                = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
+            if (gridCoords) {
+                executeNext(gridCoords.value().Lat);
+                executeNext(gridCoords.value().Lon);
+            }
         }
     }
 

@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include <limits.h>
+#include <climits>
 #include <limits>
 #include <type_traits>
 

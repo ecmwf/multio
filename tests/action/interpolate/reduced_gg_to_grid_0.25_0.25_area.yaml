@@ -10,8 +10,8 @@ plans:
         area: [80.0, 0.0, -80.0, 360.0]
         interpolation: linear
         options:
-          caching: true
-          dont-compress-plan: true
+          caching: false
+          # dont-compress-plan: true
       - type: encode
         format: grib
         template: MARS_reduced_gg_to_grid_0.25_0.25_area.grib

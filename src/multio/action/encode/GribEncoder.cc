@@ -93,11 +93,10 @@ struct QueriedMarsKeys {
 QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     QueriedMarsKeys ret;
 
-    std::optional<std::string> paramId{firstOf(
-        LookUpString(md, "paramId"), LookUpString(md, "param"))};  // param might be a string, separated by . for GRIB1.
-                                                                   // String to long convertion should get it right
+    // param might be a string, separated by . for GRIB1.
+    std::optional<std::string> paramId{firstOf(LookUpString(md, "paramId"), LookUpString(md, "param"))};
 
-
+    // String to long convertion should get it right
     if (paramId) {
         g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
     }
@@ -168,6 +167,14 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
             g.setValue("longitudeOfLastGridPoint", scale * east);
             g.setValue("iDirectionIncrement", scale * md.getDouble("west_east_increment"));
             g.setValue("jDirectionIncrement", scale * md.getDouble("south_north_increment"));
+        }
+        else if (md.getString("gridType") == "HEALPix") {
+            long Nside = md.getLong("Nside");
+            g.setValue("Nside", Nside);
+            double logp = 45.0;
+            // Note: Pedro told to use always this to avoid problems with milli and micro degrees
+            g.setValue("longitudeOfFirstGridPointInDegrees", logp);
+            g.setValue("orderingConvention", md.getString("orderingConvention"));
         }
     }
     // TODO Remove Part of parameter mapping now
@@ -355,14 +362,18 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
         setValue("scaledValueOfSecondFixedSurface", level);
     }
 
-    // Set ocean grid information
-    setValue("unstructuredGridType", config_.getString("grid-type"));
+    std::string gridType;
+    const auto hasGridType = metadata.get("gridType", gridType);
+    if (gridType != "HEALPix") {
+        // Set ocean grid information
+        setValue("unstructuredGridType", config_.getString("grid-type"));
 
-    const auto& gridSubtype = metadata.getString("gridSubtype");
-    setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
+        const auto& gridSubtype = metadata.getString("gridSubtype");
+        setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
 
-    const auto& gridUID = metadata.getString("uuidOfHGrid");
-    setValue("uuidOfHGrid", gridUID);
+        const auto& gridUID = metadata.getString("uuidOfHGrid");
+        setValue("uuidOfHGrid", gridUID);
+    }
 }
 
 void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {

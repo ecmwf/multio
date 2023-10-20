@@ -111,7 +111,7 @@ void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
     prevPoint_ = currPoint_;
     currPoint_ = currentPoint;
     count_++;
-    std::cout << "Update window :: " << count_ << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "Update window :: " << count_ << std::endl;
     return;
 }
 

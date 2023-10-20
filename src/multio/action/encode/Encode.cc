@@ -98,7 +98,7 @@ void Encode::executeImpl(Message msg) {
         LOG_DEBUG_LIB(LibMultio) << " *** Looking for grid info for subtype: " << msg.domain() << std::endl;
 
         const auto& md = msg.metadata();
-        
+
         std::string gridType;
         const auto hasGridType = md.get("gridType", gridType);
         if (hasGridType && (gridType != "HEALPix")) {

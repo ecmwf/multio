@@ -95,17 +95,14 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     // TODO we should be able to determine the type in the metadata and preserve
     // it Domain usually is always readonly withFirstOf(valueSetter(g, "domain"),
     // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
-    if ( md.has("gridType")                         && 
-         md.getString("gridType") != "HEALPix"){
+    if (md.has("gridType") && md.getString("gridType") != "HEALPix") {
         withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
     }
-    else if ( md.has("gridType")                    && 
-              md.getString("gridType") == "HEALPix" &&
-              md.getString("levtype") != "o2d"      && 
-              md.getString("levtype") != "o3d" ){
+    else if (md.has("gridType") && md.getString("gridType") == "HEALPix" && md.getString("levtype") != "o2d"
+             && md.getString("levtype") != "o3d") {
         withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
     }
-    else if ( !md.has("gridType")){
+    else if (!md.has("gridType")) {
         withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
     }
     withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
@@ -380,7 +377,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     std::string gridType;
     const auto hasGridType = metadata.get("gridType", gridType);
-    if (hasGridType && (gridType != "HEALPix")) {
+    if (gridType != "HEALPix") {
         // Set ocean grid information
         setValue("unstructuredGridType", config_.getString("grid-type"));
 

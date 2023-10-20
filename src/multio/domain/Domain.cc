@@ -216,7 +216,7 @@ void Structured::collectIndicesImpl(const message::Message& local, std::set<int3
     ASSERT(glIndices.size() < static_cast<std::set<int32_t>::size_type>(ni_global * nj_global));
 
     auto payloadSize = static_cast<long>(local.payload().size() / sizeof(Precision));
-    if (payloadSize != data_ni * data_nj) { // Payload contains halo information
+    if (payloadSize != data_ni * data_nj) {  // Payload contains halo information
         throw eckit::SeriousBug{"Mismatch between sizes of index map and local field", Here()};
     }
 

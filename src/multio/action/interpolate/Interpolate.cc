@@ -142,8 +142,8 @@ eckit::Value getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadat
 }
 
 
-void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& param,
-                std::string domain, const eckit::Value&& inp) {
+void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& param, std::string domain,
+                const eckit::Value&& inp) {
 
     auto regular_ll = [&param](double west_east_increment, double south_north_increment) {
         regularLatLongMetadata(param, std::vector<double>{west_east_increment, south_north_increment}, full_area);
@@ -190,31 +190,31 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
             return;
         }
 
-        if ( std::regex_match(input, match, eORCA) ){
-            std::string sane_name( input );
-            std::transform( sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper );
-            if ( sane_name.front() == 'E'){
+        if (std::regex_match(input, match, eORCA)) {
+            std::string sane_name(input);
+            std::transform(sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper);
+            if (sane_name.front() == 'E') {
                 sane_name.front() = 'e';
             }
             param.set("gridded", true);
-            param.set("uid", sane_name );
-            param.set("gridType","orca");
+            param.set("uid", sane_name);
+            param.set("gridType", "orca");
             return;
         }
 
-        if ( std::regex_match(input, match, eORCA_fromMetadata) ){
-            std::string kind = domain.substr(0,1);
-            if ( kind != "T" && kind != "F" && kind != "U" && kind != "V" && kind != "W"){
-                 throw eckit::SeriousBug("action-interpolate :: unrecognized orca grid", Here());
+        if (std::regex_match(input, match, eORCA_fromMetadata)) {
+            std::string kind = domain.substr(0, 1);
+            if (kind != "T" && kind != "F" && kind != "U" && kind != "V" && kind != "W") {
+                throw eckit::SeriousBug("action-interpolate :: unrecognized orca grid", Here());
             }
-            std::string sane_name( input + "_" + kind );
-            std::transform( sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper );
-            if ( sane_name.front() == 'E'){
+            std::string sane_name(input + "_" + kind);
+            std::transform(sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper);
+            if (sane_name.front() == 'E') {
                 sane_name.front() = 'e';
             }
             param.set("gridded", true);
-            param.set("uid", sane_name );
-            param.set("gridType","orca");
+            param.set("uid", sane_name);
+            param.set("gridType", "orca");
             return;
         }
     }
@@ -287,9 +287,9 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                 gridKind = "HEALPix";
                 grid[0] = std::stod(matchH[2].str());
             }
-
         }
-        else if (cfg.getSubConfiguration("grid").get().isList() && cfg.getSubConfiguration("grid").get().head().isDouble()){
+        else if (cfg.getSubConfiguration("grid").get().isList()
+                 && cfg.getSubConfiguration("grid").get().head().isDouble()) {
             gridKind = "regular_ll";
             grid = cfg.getDoubleVector("grid");
             LOG_DEBUG_LIB(LibMultio) << " Grid is a list (" << gridKind << ")" << grid << std::endl;
@@ -297,7 +297,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
         //
         LOG_DEBUG_LIB(LibMultio) << " Grid Kind is ::" << gridKind << std::endl;
         // Set the mir keywords
-        if ( gridKind == "regular_ll" ) {
+        if (gridKind == "regular_ll") {
             LOG_DEBUG_LIB(LibMultio) << " + Set metadata for regular_ll grid" << std::endl;
             if (cfg.has("area")) {
                 const auto& area = cfg.getDoubleVector("area");
@@ -307,17 +307,15 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                 regularLatLongMetadata<message::Metadata>(md, grid, full_area);
             }
         }
-        else if ( gridKind == "HEALPix" ){
+        else if (gridKind == "HEALPix") {
             //
             md.set("gridded", true);
             md.set("gridType", "HEALPix");
             md.set("Nside", grid[0]);
             md.set("orderingConvention", "ring");
         }
-        else
-        {
+        else {
             std::cout << "Grid not implemented" << std::endl;
-
         }
     }
 }
@@ -366,12 +364,11 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     md.set("globalSize", outData.size());
 
     // Forward the metadata from mir to multIO (at the moment only missingValue)
-    if ( outMetadata.has("missing_value")){
+    if (outMetadata.has("missing_value")) {
         double v;
-        outMetadata.get("missing_value",v);
-        md.set("missingValue", v );
-        md.set("bitmapPresent", 1 );
-
+        outMetadata.get("missing_value", v);
+        md.set("missingValue", v);
+        md.set("bitmapPresent", 1);
     }
 
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outData.size() * sizeof(double));

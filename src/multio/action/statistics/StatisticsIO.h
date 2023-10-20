@@ -26,7 +26,7 @@ private:
 public:
     typename std::vector<uint64_t>::iterator begin() { return buffer_.begin(); };
     typename std::vector<uint64_t>::iterator end() { return buffer_.begin() + size_; };
-    typename std::vector<uint64_t>::const_iterator cbegin() const{ return buffer_.cbegin(); };
+    typename std::vector<uint64_t>::const_iterator cbegin() const { return buffer_.cbegin(); };
     typename std::vector<uint64_t>::const_iterator cend() const { return buffer_.cbegin() + size_; };
 
     IOBuffer(std::vector<uint64_t>& buffer);

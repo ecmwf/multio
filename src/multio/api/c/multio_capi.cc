@@ -857,7 +857,7 @@ int multio_data_size(multio_data_t* d, int* size) {
 
 int multio_data_set_float_scalar(multio_data_t* d, float* value, int pos) {
 #if !defined(MULTIO_DUMMY_API)
-    return multio_data_set_float_chunk(d,value,pos,1);
+    return multio_data_set_float_chunk(d, value, pos, 1);
 #else
     return MULTIO_SUCCESS;
 #endif
@@ -865,7 +865,7 @@ int multio_data_set_float_scalar(multio_data_t* d, float* value, int pos) {
 
 int multio_data_set_double_scalar(multio_data_t* d, double* value, int pos) {
 #if !defined(MULTIO_DUMMY_API)
-    return multio_data_set_double_chunk(d,value,pos,1);
+    return multio_data_set_double_chunk(d, value, pos, 1);
 #else
     return MULTIO_SUCCESS;
 #endif

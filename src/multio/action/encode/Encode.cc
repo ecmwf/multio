@@ -128,7 +128,7 @@ std::unique_ptr<GribEncoder> makeEncoder(const eckit::LocalConfiguration& conf,
         if (conf.has("grid-type")) {
             const auto gridType = conf.getString("grid-type");
 
-           eckit::Log::info() << "REQUESTED GRID DEFINITION UPDATE: " << gridType << std::endl;
+            eckit::Log::info() << "REQUESTED GRID DEFINITION UPDATE: " << gridType << std::endl;
 
             const auto updateFunction
                 = std::find_if(updateFunctionMap.cbegin(), updateFunctionMap.cend(), [&gridType](const auto& item) {

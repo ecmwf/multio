@@ -181,7 +181,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
             g.setValue("iDirectionIncrement", scale * md.getDouble("west_east_increment"));
             g.setValue("jDirectionIncrement", scale * md.getDouble("south_north_increment"));
         }
-        else if (md.getString("gridType") == "HEALPix") {
+        else if (md.getString("gridType") == "HEALPix" || md.getString("gridType") == "healpix") {
             long Nside = md.getLong("Nside");
             g.setValue("Nside", Nside);
             double logp = 45.0;

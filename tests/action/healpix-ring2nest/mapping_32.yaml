@@ -1,0 +1,11 @@
+mappings:
+  - match:
+      paramId: paramId
+    map:
+      Nside: n-side
+      orderingConvention: ordering-convention
+data:
+  - paramId: 133
+    n-side: 32 
+    ordering-convention: ring
+

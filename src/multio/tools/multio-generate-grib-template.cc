@@ -2,6 +2,7 @@
 #include "multio/tools/MultioTool.h"
 
 #include "atlas/functionspace.h"
+#include "atlas/parallel/mpi/mpi.h"
 #include "atlas/grid.h"
 #include "atlas/library.h"
 
@@ -11,10 +12,14 @@
 #include "eckit/io/StdFile.h"
 #include "eckit/log/CodeLocation.h"
 #include "eckit/log/Log.h"
-#include "eckit/mpi/Comm.h"
 #include "eckit/option/SimpleOption.h"
 
 namespace {
+
+atlas::Grid readGrid(const std::string& name) {
+    atlas::mpi::Scope mpi_scope("self");
+    return atlas::Grid{name};
+}
 
 void handleCodesError(const std::string& errorPrefix, int error, const eckit::CodeLocation& codeLocation) {
     if (error) {
@@ -43,14 +48,11 @@ void setIndicatorOfTypeOfLevelIfNeeded(codes_handle* handle, const eckit::option
 }
 
 void setReducedGGFields(codes_handle* handle, const eckit::option::CmdArgs& args) {
-    auto& originalComm = eckit::mpi::comm();
-    eckit::mpi::setCommDefault("self");
 
     std::string gridType = "none";
     args.get("grid", gridType);
-    const atlas::Grid grid(gridType);
 
-    eckit::mpi::setCommDefault(originalComm.name().c_str());
+    const atlas::Grid grid = readGrid(gridType);
 
     auto structuredGrid = atlas::StructuredGrid(grid);
 
@@ -123,14 +125,11 @@ void setReducedLLFields(codes_handle* handle, const eckit::option::CmdArgs& args
 }
 
 void setHealpixFields(codes_handle* handle, const eckit::option::CmdArgs& args) {
-    auto& originalComm = eckit::mpi::comm();
-    eckit::mpi::setCommDefault("self");
 
     std::string gridType = "none";
     args.get("grid", gridType);
-    const atlas::Grid grid(gridType);
 
-    eckit::mpi::setCommDefault(originalComm.name().c_str());
+    const atlas::Grid grid = readGrid(gridType);
 
     auto structuredGrid = atlas::StructuredGrid(grid);
 

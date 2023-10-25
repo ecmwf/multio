@@ -19,6 +19,7 @@
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 
+#include "atlas/parallel/mpi/mpi.h"
 #include "atlas/grid.h"
 #include "atlas/library.h"
 
@@ -41,14 +42,15 @@ void handleCodesError(const std::string& errorPrefix, int error, const eckit::Co
     }
 }
 
+atlas::Grid readGrid(const std::string& name) {
+    atlas::mpi::Scope mpi_scope("self");
+    return atlas::Grid{name};
+}
+
 template <class GridType>
 GridType createGrid(const std::string& gridType) {
-    auto& originalComm = eckit::mpi::comm();
-    eckit::mpi::setCommDefault("self");
 
-    const atlas::Grid grid(gridType);
-
-    eckit::mpi::setCommDefault(originalComm.name().c_str());
+    const atlas::Grid grid = readGrid(gridType);
 
     auto structuredGrid = atlas::StructuredGrid(grid);
 

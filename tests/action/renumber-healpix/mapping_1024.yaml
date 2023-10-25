@@ -8,4 +8,3 @@ data:
   - paramId: 133
     n-side: 1024
     ordering-convention: ring
-

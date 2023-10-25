@@ -6,6 +6,5 @@ mappings:
       orderingConvention: ordering-convention
 data:
   - paramId: 133
-    n-side: 32 
+    n-side: 32
     ordering-convention: ring
-

@@ -1,5 +1,5 @@
 add_subdirectory(metadata-mapping)
-add_subdirectory(healpix-ring2nest)
+add_subdirectory(renumber-healpix)
 add_subdirectory(statistics)
 add_subdirectory(aggregate)
 add_subdirectory(transport)

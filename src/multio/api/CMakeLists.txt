@@ -33,7 +33,7 @@ list( APPEND multio_action_plugins
     multio-action-sink
     multio-action-statistics
     multio-action-transport
-    multio-action-healpix-ring2nest
+    multio-action-renumber-healpix
 )
 
 if( HAVE_MIR )

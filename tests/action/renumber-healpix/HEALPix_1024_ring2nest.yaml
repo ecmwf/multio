@@ -7,7 +7,7 @@ plans:
         mapping: '{~}/mapping_1024.yaml'
       - type: print
         stream: cout
-      - type: healpix-ring2nest
+      - type: renumber-healpix
         cache-file-name: ./HEALPix_ring2nest.atlas
       - type: print
         stream: cout

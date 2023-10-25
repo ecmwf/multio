@@ -40,7 +40,7 @@ ecbuild_add_test(
     TEST_DEPENDS ${PREFIX}_get_data
     COMMAND      multio-feed
     ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/HEALPix_1024_ring2nest.yaml Feed_HEALPix_1024_ring.grib)
-    
+
 ecbuild_add_test(
     TARGET       ${PREFIX}_HEALPix_1024_ring2nest_check_metadata
     TEST_DEPENDS ${PREFIX}_HEALPix_1024_ring2nest_run
@@ -52,4 +52,3 @@ ecbuild_add_test(
     TEST_DEPENDS ${PREFIX}_HEALPix_1024_ring2nest_check_metadata
     COMMAND      grib_compare
     ARGS         -P -T10 Reference_HEALPix_1024_nested.grib MultIO_HEALPix_1024_nested.grib)
-    

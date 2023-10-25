@@ -133,6 +133,6 @@ void HEALPixRingToNest::print(std::ostream& os) const {
 }
 
 
-static ActionBuilder<HEALPixRingToNest> HEALPixRingToNestBuilder("healpix-ring2nest");
+static ActionBuilder<HEALPixRingToNest> HEALPixRingToNestBuilder("renumber-healpix");
 
 }  // namespace multio::action

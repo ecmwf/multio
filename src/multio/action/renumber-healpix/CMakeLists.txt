@@ -1,6 +1,6 @@
 ecbuild_add_library(
 
-	TARGET multio-action-healpix-ring2nest
+	TARGET multio-action-renumber-healpix
 
   SOURCES
   	HEALPix_ring2nest.cc

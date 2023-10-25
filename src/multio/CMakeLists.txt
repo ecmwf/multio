@@ -95,8 +95,8 @@ list( APPEND multio_message_srcs
     message/Message.h
     message/Metadata.h
     message/Metadata.cc
-    message/Metadata.h
-    message/Metadata.cc
+    message/MetadataValue.h
+    message/MetadataValue.cc
     message/MetadataTypes.h
     message/MetadataTypes.cc
     message/Glossary.cc

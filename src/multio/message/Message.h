@@ -185,9 +185,7 @@ message::Message convert_precision(message::Message&& msg) {
 
     auto md = msg.metadata();
     md.set<std::int64_t>("globalSize", buffer.size());
-    md.set("precision", std::is_same<To, double>::value  ? "double"
-                        : std::is_same<To, float>::value ? "single"
-                                                         : NOTIMP);
+    md.set("precision", std::is_same_v<To, double> ? "double" : std::is_same_v<To, float> ? "single" : NOTIMP);
 
     const auto* a = reinterpret_cast<const From*>(msg.payload().data());
     auto* b = reinterpret_cast<To*>(buffer.data());

@@ -41,26 +41,26 @@ namespace multio::util {
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
 // Idenitiy function for Optionals
-template <typename T, std::enable_if_t<IsOptional<std::decay_t<T>>::value, bool> = true>
+template <typename T, std::enable_if_t<IsOptional_v<std::decay_t<T>>, bool> = true>
 T&& evalToOptional(T&& opt) noexcept {
     return std::forward<T>(opt);
 }
 
 // Evaluate functions, assume to return optional
-template <typename T, std::enable_if_t<(!(IsOptional<std::decay_t<T>>::value)), bool> = true>
+template <typename T, std::enable_if_t<(!(IsOptional_v<std::decay_t<T>>)), bool> = true>
 auto evalToOptional(T&& call) noexcept(noexcept(std::forward<T>(call)())) {
     return std::forward<T>(call)();
 }
 
 
 // Idenitiy function for Optionals
-template <typename T, std::enable_if_t<IsOptional<std::decay_t<T>>::value, bool> = true>
+template <typename T, std::enable_if_t<IsOptional_v<std::decay_t<T>>, bool> = true>
 T&& makeOptional(T&& opt) noexcept {
     return std::forward<T>(opt);
 }
 
 // Evaluate functions, assume to return optional
-template <typename T, std::enable_if_t<(!(IsOptional<std::decay_t<T>>::value)), bool> = true>
+template <typename T, std::enable_if_t<(!(IsOptional_v<std::decay_t<T>>)), bool> = true>
 auto makeOptional(T&& noOpt) noexcept(noexcept(std::optional<std::decay_t<T>>{std::forward<T>(noOpt)})) {
     return std::optional<std::decay_t<T>>{std::forward<T>(noOpt)};
 }

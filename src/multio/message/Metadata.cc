@@ -21,32 +21,7 @@
 
 namespace multio::message {
 
-//-----------------------------------------------------------------------------
-
-
-MetadataValue::MetadataValue(const This& other) :
-    Base{other.visit([](auto&& v) { return Base{wrapNestedMaybe(std::forward<decltype(v)>(v))}; })} {}
-
-
-MetadataValue& MetadataValue::operator=(const This& other) {
-    Base::operator=(other.visit([](auto&& v) { return Base{wrapNestedMaybe(std::forward<decltype(v)>(v))}; }));
-    return *this;
-}
-
-std::string MetadataValue::toString() const {
-    std::stringstream ss;
-    eckit::JSON json(ss);
-    json << *this;
-    return ss.str();
-}
-
-void MetadataValue::json(eckit::JSON& j) const {
-    j << *this;
-}
-
-
-//-----------------------------------------------------------------------------
-
+//----------------------------------------------------------------------------------------------------------------------
 
 Metadata::Metadata() : values_{512} {}
 Metadata::Metadata(std::initializer_list<std::pair<const KeyType, MetadataValue>> li) : values_{std::move(li), 512} {}
@@ -129,13 +104,8 @@ void Metadata::json(eckit::JSON& j) const {
     j << *this;
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
-
-eckit::JSON& operator<<(eckit::JSON& json, const MetadataValue& mv) {
-    mv.visit([&json](const auto& v) { json << v; });
-    return json;
-}
 
 eckit::JSON& operator<<(eckit::JSON& json, const Metadata& metadata) {
     json.startObject();
@@ -147,14 +117,6 @@ eckit::JSON& operator<<(eckit::JSON& json, const Metadata& metadata) {
     return json;
 }
 
-//-----------------------------------------------------------------------------
-
-std::ostream& operator<<(std::ostream& os, const MetadataValue& metadataValue) {
-    eckit::JSON json(os);
-    json << metadataValue;
-    return os;
-}
-
 
 std::ostream& operator<<(std::ostream& os, const Metadata& metadata) {
     eckit::JSON json(os);
@@ -163,19 +125,15 @@ std::ostream& operator<<(std::ostream& os, const Metadata& metadata) {
 }
 
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
-Metadata metadataFromYAML(const std::string& fieldId) {
-    std::istringstream in(fieldId);
+Metadata metadataFromYAML(const std::string& yamlString) {
+    std::istringstream in(yamlString);
     eckit::YAMLParser parser(in);
-    auto optMetadata = toMetadataMaybe(parser.parse());
-    if (!optMetadata) {
-        throw MetadataException(std::string("JSON string must start with a map: ") + fieldId, Here());
-    }
-    return std::move(*optMetadata);
+    return toMetadata(parser.parse());
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 std::optional<MetadataValue> toMetadataValue(const eckit::Value& v) {
     if (v.isList()) {
@@ -224,11 +182,13 @@ std::optional<MetadataValue> toMetadataValue(const eckit::Value& v) {
     return std::nullopt;
 }
 
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
-std::optional<Metadata> toMetadataMaybe(const eckit::Value& v) {
+Metadata toMetadata(const eckit::Value& v) {
     if (!v.isMap()) {
-        return std::nullopt;
+        std::ostringstream oss;
+        oss << "toMetadata():: eckit::Value is not a map: " << v;
+        throw MetadataException(oss.str(), Here());
     }
     Metadata m;
 
@@ -244,18 +204,8 @@ std::optional<Metadata> toMetadataMaybe(const eckit::Value& v) {
     return m;
 }
 
-Metadata toMetadata(const eckit::Value& value) {
-    auto optMetadata = toMetadataMaybe(value);
-    if (!optMetadata) {
-        std::ostringstream oss;
-        oss << "eckit::Value is not a map: " << value;
-        throw MetadataException(oss.str(), Here());
-    }
-    return std::move(*optMetadata);
-}
 
-
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
 
 }  // namespace multio::message

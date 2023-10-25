@@ -91,12 +91,18 @@ struct TypeListAny : std::false_type {};
 template <template <typename> typename Expr, typename... T>
 struct TypeListAny<Expr, TypeList<T...>> : std::integral_constant<bool, (false || ... || Expr<T>::value)> {};
 
+template <template <typename> typename Expr, typename TypeList>
+inline constexpr bool TypeListAny_v = TypeListAny<Expr, TypeList>::value;
+
 
 template <template <typename> typename Expr, typename TypeList>
 struct TypeListAll : std::false_type {};
 
 template <template <typename> typename Expr, typename... T>
 struct TypeListAll<Expr, TypeList<T...>> : std::integral_constant<bool, (true && ... && Expr<T>::value)> {};
+
+template <template <typename> typename Expr, typename TypeList>
+inline constexpr bool TypeListAll_v = TypeListAll<Expr, TypeList>::value;
 
 
 template <typename T>
@@ -107,6 +113,9 @@ struct TypeListContainsExpr {
 
 template <typename Type, typename TypeList>
 using TypeListContains = TypeListAny<TypeListContainsExpr<Type>::template Expr, TypeList>;
+
+template <typename Type, typename TypeList>
+inline constexpr bool TypeListContains_v = TypeListContains<Type, TypeList>::value;
 
 
 //-----------------------------------------------------------------------------
@@ -183,6 +192,9 @@ struct IsVector<std::vector<T, Alloc>> {
     static constexpr bool value = true;
 };
 
+template <typename T>
+inline constexpr bool IsVector_v = IsVector<T>::value;
+
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
 template <typename T>
@@ -193,6 +205,9 @@ template <typename T>
 struct IsOptional<std::optional<T>> {
     static constexpr bool value = true;
 };
+
+template <typename T>
+inline constexpr bool IsOptional_v = IsOptional<T>::value;
 
 
 template <typename T>

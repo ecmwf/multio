@@ -24,7 +24,7 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
             std::set<MetadataValue> s;
             unsigned int i = 0;
             for (auto& vi : v) {
-                auto optMetadataValue = toMetadataValue(vi.get());
+                auto optMetadataValue = tryToMetadataValue(vi.get());
                 if (!optMetadataValue) {
                     std::ostringstream oss;
                     oss << "Matcher for key \"" << k << "\"[" << i
@@ -37,7 +37,7 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
             matcher_.emplace(k, std::move(s));
         }
         else {
-            auto optMetadataValue = toMetadataValue(cfgK.get());
+            auto optMetadataValue = tryToMetadataValue(cfgK.get());
             if (!optMetadataValue) {
                 std::ostringstream oss;
                 oss << "Matcher for key \"" << k

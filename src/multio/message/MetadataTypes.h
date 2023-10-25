@@ -51,7 +51,13 @@ eckit::JSON& operator<<(eckit::JSON& json, const Null&);
 //-----------------------------------------------------------------------------
 
 
-// MetadataTypes may be specialized for different types to support different set of types
+// MetadataTypes
+//
+// Struct containing all types definition for the Metadata.
+// Theres a special handling for unique_ptr - To support nested types it is necessary to wrap a type into a smart
+// pointer or to create a class with explicit memory handling. To avoid explicit memory handling, types wrapped in a
+// unique pointer will be handled transperently through a `get` and `visit` calls on the metadata object. Thus, the fact
+// that a unique_ptr is used is hidden from the user.
 struct MetadataTypes {
     using KeyType = std::string;
 
@@ -72,21 +78,23 @@ struct MetadataTypes {
     using Lists = util::MergeTypeList_t<IntegerLists, FloatLists, StringLists>;
 
     using Nested = util::TypeList<Metadata>;
-    using NestedWrapped = util::MapTypeList_t<std::unique_ptr, Nested>;
+    using NestedWrapped = util::MapTypeList_t<std::unique_ptr, Nested>;  // Used for memory layout. Hidden from user.
 
     // Example for general lists:
     // using NestedLists = util::MapTypeList_t<std::vector, Nested>;
     // For metadata we don't want it. But It may be easy to move that code and use it as value through specializing only
     // Traits and this Types object
     using NestedLists = util::TypeList<>;
-    using NestedListsWrapped = util::MapTypeList_t<std::unique_ptr, NestedLists>;
+    using NestedListsWrapped
+        = util::MapTypeList_t<std::unique_ptr, NestedLists>;  // Used for memory layout. Hidden from user.
 
     using AllNonLists = util::MergeTypeList_t<Scalars, Nested>;
     using AllLists = util::MergeTypeList_t<Lists, NestedLists>;
     using AllNested = util::MergeTypeList_t<Nested, NestedLists>;
 
     using All = util::MergeTypeList_t<Scalars, Lists, Nested, NestedLists>;
-    using AllWrapped = util::MergeTypeList_t<Scalars, Lists, NestedWrapped, NestedListsWrapped>;
+    using AllWrapped = util::MergeTypeList_t<Scalars, Lists, NestedWrapped,
+                                             NestedListsWrapped>;  // Used for memory layout. Hidden from user.
 };
 
 //-----------------------------------------------------------------------------

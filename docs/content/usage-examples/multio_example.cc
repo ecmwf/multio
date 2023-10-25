@@ -15,7 +15,7 @@
 #include <limits>
 
 #include "multio/api/multio_c.h"
-#include "multio/config/ConfigurationPath.h"
+#include "multio/config/PathConfiguration.h"
 #include "multio/tools/MultioTool.h"
 
 #include "eckit/io/FileHandle.h"

@@ -23,9 +23,9 @@
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/config/ComponentConfiguration.h"
+#include "multio/config/MultioConfiguration.h"
 #include "multio/message/Message.h"
 #include "multio/util/FailureHandling.h"
-
 
 namespace multio::message {
 class MetadataSelectors;
@@ -56,10 +56,6 @@ struct PlanFailureTraits {
 
 
 class Plan : private eckit::NonCopyable, public FailureAware<PlanFailureTraits> {
-private:
-    // Delegate constructor with loaded config (from file or list entry)
-    Plan(std::tuple<ComponentConfiguration, std::string>&& confAndName);
-
 public:
     Plan(const ComponentConfiguration& compConf);
     virtual ~Plan();
@@ -71,11 +67,17 @@ public:
     util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&,
                                                util::DefaultFailureState&) const override;
 
+    static std::vector<std::unique_ptr<action::Plan>> makePlans(
+        const std::vector<eckit::LocalConfiguration>& componentConfig, const config::MultioConfiguration& multioConf);
+    static std::vector<std::unique_ptr<action::Plan>> makePlans(
+        const std::vector<eckit::LocalConfiguration>& componentConfig, const config::MultioConfiguration& multioConf,
+        message::MetadataSelectors& selectors);
+
 protected:
-    bool enabled_;
-    std::string name_;
-    std::unique_ptr<Action> root_;
+    const std::string name_;
+    const std::unique_ptr<Action> root_;
     eckit::Timing timing_;
 };
+
 
 }  // namespace multio::action

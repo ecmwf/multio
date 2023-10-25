@@ -35,7 +35,7 @@ eckit::LocalConfiguration getClientConf(const MultioConfiguration& multioConf) {
 
     std::ostringstream oss;
     oss << "Configuration 'client' not found in configuration file " << multioConf.configFile();
-    throw eckit::UserError(oss.str());
+    throw eckit::UserError(oss.str(), Here());
 }
 
 }  // namespace
@@ -56,11 +56,7 @@ MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfigur
 
 
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << conf << std::endl;
-    for (auto&& cfg : conf.getSubConfigurations("plans")) {
-        eckit::Log::debug<LibMultio>() << cfg << std::endl;
-        plans_.emplace_back(std::make_unique<action::Plan>(ComponentConfiguration(std::move(cfg), multioConfig())))
-            ->matchedFields(activeSelectors_);
-    }
+    plans_ = action::Plan::makePlans(conf.getSubConfigurations("plans"), multioConfig(), activeSelectors_);
 
     if (multioConfig().parsedConfig().has("active-matchers")) {
         for (const auto& m : multioConfig().parsedConfig().getSubConfigurations("active-matchers")) {

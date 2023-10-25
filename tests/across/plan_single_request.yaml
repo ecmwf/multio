@@ -1,0 +1,13 @@
+plans:
+
+  - name: test-across-dissemination-single
+    input: O80
+    templates-path: "."
+    output-path: "."
+    per-server: false
+    templates:
+      - ml:  regular_ll_pl_grib2.tmpl
+      - pl:  regular_ll_ml_grib2.tmpl
+      - sfc: regular_ll_sfc_grib2.tmpl
+    dissemination: "single_request.diss"
+

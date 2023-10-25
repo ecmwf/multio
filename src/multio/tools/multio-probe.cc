@@ -12,7 +12,7 @@
 
 #include "multio/LibMultio.h"
 #include "multio/config/ComponentConfiguration.h"
-#include "multio/config/ConfigurationPath.h"
+#include "multio/config/PathConfiguration.h"
 #include "multio/server/MultioServer.h"
 #include "multio/tools/MultioTool.h"
 

@@ -6,7 +6,7 @@
 
 namespace multio::action {
 
-template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>
+template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
 class Instant final : public OperationWithData<T> {
 public:
     using OperationWithData<T>::name_;

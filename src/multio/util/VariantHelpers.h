@@ -32,6 +32,11 @@ template <typename T, typename... Ts>
 struct GetVariantIndex<T, std::variant<Ts...>>
     : std::integral_constant<size_t, std::variant<TypeTag<Ts>...>{TypeTag<T>{}}.index()> {};
 
+
+template <typename T, typename V>
+inline constexpr size_t GetVariantIndex_v = GetVariantIndex<T, V>::value;
+
+
 //-----------------------------------------------------------------------------
 
 template <typename Func, typename... ValuesToVisit>
@@ -46,12 +51,12 @@ decltype(auto) visitUnwrapUniquePtr(Func&& f, ValuesToVisit&&... values) noexcep
 
 template <typename To>
 struct TranslateToMaybe {
-    template <typename From, std::enable_if_t<!eckit::IsTranslatable<std::decay_t<From>, To>::value, bool> = true>
+    template <typename From, std::enable_if_t<!eckit::IsTranslatable_v<std::decay_t<From>, To>, bool> = true>
     std::optional<To> operator()(From&&) const noexcept {
         return std::nullopt;
     }
 
-    template <typename From, std::enable_if_t<eckit::IsTranslatable<std::decay_t<From>, To>::value, bool> = true>
+    template <typename From, std::enable_if_t<eckit::IsTranslatable_v<std::decay_t<From>, To>, bool> = true>
     std::optional<To> operator()(From&& from) const noexcept {
         return eckit::translate<To>(std::forward<From>(from));
     }

@@ -252,11 +252,10 @@ CASE("Test setting, getting and merging nested metadata") {
             // Iterate and visit with rvalue
             for (auto&& keyVal : encOv) {
                 keyVal.second.visit([&](auto&& val) -> void {
-                    if constexpr (util::TypeListContains<std::decay_t<decltype(val)>, MetadataTypes::Strings>::value) {
+                    if constexpr (util::TypeListContains_v<std::decay_t<decltype(val)>, MetadataTypes::Strings>) {
                         ++countStringVals2;
                     }
-                    else if constexpr (util::TypeListContains<std::decay_t<decltype(val)>,
-                                                              MetadataTypes::Integers>::value) {
+                    else if constexpr (util::TypeListContains_v<std::decay_t<decltype(val)>, MetadataTypes::Integers>) {
                         ++countIntegerVals2;
                     }
                     else {
@@ -279,11 +278,10 @@ CASE("Test setting, getting and merging nested metadata") {
 
             for (auto&& keyVal : encOv) {
                 keyVal.second.visit([&](auto&& val) -> void {
-                    if constexpr (util::TypeListContains<std::decay_t<decltype(val)>, MetadataTypes::Strings>::value) {
+                    if constexpr (util::TypeListContains_v<std::decay_t<decltype(val)>, MetadataTypes::Strings>) {
                         stringValues.emplace_back(std::move(val));
                     }
-                    else if constexpr (util::TypeListContains<std::decay_t<decltype(val)>,
-                                                              MetadataTypes::Integers>::value) {
+                    else if constexpr (util::TypeListContains_v<std::decay_t<decltype(val)>, MetadataTypes::Integers>) {
                         integerValues.emplace_back(std::move(val));
                     }
                 });
@@ -296,7 +294,7 @@ CASE("Test setting, getting and merging nested metadata") {
             // Visit again and expect strings to be empty (through movement)
             for (const auto& keyVal : encOv) {
                 keyVal.second.visit([&](const auto& val) -> void {
-                    if constexpr (util::TypeListContains<std::decay_t<decltype(val)>, MetadataTypes::Strings>::value) {
+                    if constexpr (util::TypeListContains_v<std::decay_t<decltype(val)>, MetadataTypes::Strings>) {
                         EXPECT_EQUAL(val, "");
                     }
                 });

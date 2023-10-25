@@ -5,7 +5,7 @@
 
 namespace multio::action {
 
-template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>
+template <typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
 class OperationWithData : public Operation {
 public:
     using Operation::cfg_;

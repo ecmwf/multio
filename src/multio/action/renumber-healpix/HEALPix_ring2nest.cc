@@ -8,6 +8,11 @@
  * does it submit to any jurisdiction.
  */
 
+/// @author Mirco Valentini
+/// @author Domokos Sármány
+
+/// @date Oct 2023
+
 #include "HEALPix_ring2nest.h"
 
 #include <iomanip>
@@ -29,8 +34,8 @@ namespace multio::action {
 namespace {
 std::string parseCacheFileName(const ComponentConfiguration& compConf) {
 
-    // Check needed options
-    const eckit::LocalConfiguration cfg = compConf.parsedConfig();
+    // Check necessary options
+    const auto cfg = compConf.parsedConfig();
     if (!cfg.has("cache-file-name")) {
         std::ostringstream oss;
         oss << "HEALPix_ring2nest: expected \"cache-file-name\" option" << std::endl;
@@ -38,7 +43,7 @@ std::string parseCacheFileName(const ComponentConfiguration& compConf) {
     }
 
     // Expand file name
-    const std::string cacheFileName = compConf.multioConfig().replaceCurly(cfg.getString("cache-file-name"));
+    const auto cacheFileName = compConf.multioConfig().replaceCurly(cfg.getString("cache-file-name"));
 
     // Check existence of the cache file
     eckit::PathName tmp{cacheFileName};
@@ -48,7 +53,6 @@ std::string parseCacheFileName(const ComponentConfiguration& compConf) {
         throw eckit::UserError(oss.str(), Here());
     }
 
-    // return the file
     return cacheFileName;
 }
 
@@ -104,21 +108,20 @@ HEALPixRingToNest::HEALPixRingToNest(const ComponentConfiguration& compConf) :
 
 void HEALPixRingToNest::executeImpl(message::Message msg) {
 
-    // bypass if it is not a field
+    // Bypass if it is not a field
     if (msg.tag() != message::Message::Tag::Field) {
         executeNext(msg);
         return;
     }
 
-    // Check metadata
     checkMetadata(msg.metadata());
 
     // Lookup cache
-    size_t key = static_cast<size_t>(msg.metadata().getLong("Nside"));
+    auto key = static_cast<size_t>(msg.metadata().getLong("Nside"));
     if (mapping_.find(key) == mapping_.end()) {
         mapping_[key] = makeMapping(static_cast<size_t>(msg.metadata().getLong("Nside")), cacheFileName_);
     }
-    const std::vector<size_t>& map = mapping_.at(key);
+    const auto& map = mapping_.at(key);
 
     // Remap field
     executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) -> message::Message {

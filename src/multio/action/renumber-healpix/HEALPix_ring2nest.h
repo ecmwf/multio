@@ -8,11 +8,10 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Domokos Sarmany
-/// @author Simon Smart
-/// @author Tiago Quintino
+/// @author Mirco Valentini
+/// @author Domokos Sármány
 
-/// @date Jan 2019
+/// @date Oct 2023
 
 #pragma once
 
@@ -44,7 +43,7 @@ private:
         }
 
         std::vector<Precision> out(map.size(), 0.0);
-        const Precision* in = reinterpret_cast<const Precision*>(msg.payload().data());
+        auto in = reinterpret_cast<const Precision*>(msg.payload().data());
         for (size_t i = 0; i < map.size(); ++i) {
             out[map[i]] = in[i];
         }
@@ -55,7 +54,7 @@ private:
         return message::Message{
             message::Message::Header{message::Message::Tag::Field, msg.source(), msg.destination(), std::move(md)},
             std::move(buffer)};
-    };
+    }
 
     void print(std::ostream& os) const override;
 

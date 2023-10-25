@@ -34,12 +34,11 @@ ecbuild_add_test(
 
 
 
-
 ecbuild_add_test(
     TARGET       ${PREFIX}_HEALPix_1024_ring2nest_run
     TEST_DEPENDS ${PREFIX}_get_data
     COMMAND      multio-feed
-    ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/HEALPix_1024_ring2nest.yaml Feed_HEALPix_1024_ring.grib)
+    ARGS         --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/HEALPix_1024_ring2nest.yaml Feed_HEALPix_1024_ring.grib)
 
 ecbuild_add_test(
     TARGET       ${PREFIX}_HEALPix_1024_ring2nest_check_metadata

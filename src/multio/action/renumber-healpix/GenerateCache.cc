@@ -51,13 +51,13 @@ std::vector<size_t> split(const std::string& gstr) {
         if (index != std::string::npos) {
             std::string tmp = str.substr(0, index);
             tmp.erase(remove_if(tmp.begin(), tmp.end(), isspace), tmp.end());
-            result.push_back(std::atoi(tmp.c_str()));
+            result.push_back(stoul(tmp));
             str = str.substr(index + token.size());
         }
         else {
             std::string tmp = str;
             tmp.erase(remove_if(tmp.begin(), tmp.end(), isspace), tmp.end());
-            result.push_back(std::atoi(tmp.c_str()));
+            result.push_back(stoul(tmp));
             str = "";
         }
     }
@@ -75,7 +75,7 @@ private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << std::endl << "Usage: " << tool << " [options]" << std::endl;
         eckit::Log::info() << "EXAMPLE: " << std::endl
-                           << "cache-generator --output=ring2nest.atlas --from=2 --to=16 " << std::endl
+                           << "multio-generate-healpix-cache --output=ring2nest.atlas --from=2 --to=16 " << std::endl
                            << std::endl;
     }
 

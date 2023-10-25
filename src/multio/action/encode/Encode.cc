@@ -18,7 +18,7 @@
 
 #include "GridDownloader.h"
 #include "multio/LibMultio.h"
-#include "multio/config/ConfigurationPath.h"
+#include "multio/config/PathConfiguration.h"
 #include "multio/util/ScopedTimer.h"
 
 namespace multio::action {

@@ -19,11 +19,10 @@
 
 #include "multio/LibMultio.h"
 #include "multio/action/Action.h"
-#include "multio/config/PlanConfigurator.h"
+#include "multio/config/PlanConfiguration.h"
 #include "multio/util/ScopedTimer.h"
 #include "multio/util/Substitution.h"
 #include "multio/util/logfile_name.h"
-// #include "multio/config/PlanBuilder.h"
 
 using eckit::LocalConfiguration;
 

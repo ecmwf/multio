@@ -24,7 +24,7 @@
 #include "multio/message/Metadata.h"
 #include "multio/multio_version.h"
 
-#include "multio/config/ConfigurationPath.h"
+#include "multio/config/PathConfiguration.h"
 #include "multio/util/Environment.h"
 
 using multio::config::configuration_file_name;

@@ -14,8 +14,8 @@
 
 #pragma once
 
-#include "multio/config/ConfigurationPath.h"
 #include "multio/config/MetadataMappings.h"
+#include "multio/config/PathConfiguration.h"
 
 #include "eckit/config/LocalConfiguration.h"
 

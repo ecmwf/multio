@@ -12,7 +12,7 @@
 #include "multio/LibMultio.h"
 #include "multio/action/Plan.h"
 #include "multio/config/ComponentConfiguration.h"
-#include "multio/config/ConfigurationPath.h"
+#include "multio/config/PathConfiguration.h"
 #include "multio/message/Message.h"
 #include "multio/tools/MultioTool.h"
 

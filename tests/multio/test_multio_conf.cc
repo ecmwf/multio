@@ -20,7 +20,7 @@
 #include "eckit/testing/Test.h"
 
 #include "multio/config/ComponentConfiguration.h"
-#include "multio/config/ConfigurationPath.h"
+#include "multio/config/PathConfiguration.h"
 
 using multio::config::ComponentConfiguration;
 using multio::config::configuration_file;

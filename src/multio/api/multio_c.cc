@@ -6,8 +6,8 @@
 #include "eckit/runtime/Main.h"
 
 #include "multio/config/ComponentConfiguration.h"
-#include "multio/config/ConfigurationPath.h"
 #include "multio/config/MultioConfiguration.h"
+#include "multio/config/PathConfiguration.h"
 #include "multio/domain/MaskCompression.h"
 #include "multio/message/Metadata.h"
 #include "multio/multio_version.h"

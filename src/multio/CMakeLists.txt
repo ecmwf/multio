@@ -38,9 +38,9 @@ list( APPEND multio_util_srcs
 list( APPEND multio_config_srcs
     config/ComponentConfiguration.cc
     config/ComponentConfiguration.h
-    config/PlanConfigurator.cc
-    config/PlanConfigurator.h
-    config/ConfigurationPath.h
+    config/PlanConfiguration.cc
+    config/PlanConfiguration.h
+    config/PathConfiguration.h
     config/MultioConfiguration.cc
     config/MultioConfiguration.h
     config/MetadataMappings.cc

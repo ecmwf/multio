@@ -761,7 +761,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     std::string gridType;
     const auto searchGridType = metadata.find(glossary().gridType);
     if (searchGridType != metadata.end() && searchGridType->second.get<std::string>() == "unstructured_grid") {
-        if (auto searchGridType = metadata.find("unstructuredGridType"); searchGridType != metadata.end()) {
+        if (auto searchGridType = metadata.find(glossary().unstructuredGridType); searchGridType != metadata.end()) {
             setValue(glossary().unstructuredGridType, searchGridType->second.template get<std::string>());
         }
         else {

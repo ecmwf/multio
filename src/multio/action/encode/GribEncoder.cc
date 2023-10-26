@@ -21,6 +21,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 #include "eckit/utils/MD5.h"
+#include "eckit/utils/StringTools.h"
 #include "eckit/utils/Translator.h"
 
 #include "multio/LibMultio.h"
@@ -108,6 +109,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
     withFirstOf(valueSetter(g, "stream"), LookUpString(md, "stream"), LookUpString(md, "marsStream"));
+
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
     withFirstOf(valueSetter(g, "number"), LookUpLong(md, "ensemble-member"));
     withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), LookUpLong(md, "ensemble-size"));
@@ -168,7 +170,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
             g.setValue("iDirectionIncrement", scale * md.getDouble("west_east_increment"));
             g.setValue("jDirectionIncrement", scale * md.getDouble("south_north_increment"));
         }
-        else if (md.getString("gridType") == "HEALPix") {
+        else if (eckit::StringTools::lower(md.getString("gridType")) == "healpix") {
             long Nside = md.getLong("Nside");
             g.setValue("Nside", Nside);
             double logp = 45.0;
@@ -364,7 +366,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     std::string gridType;
     const auto hasGridType = metadata.get("gridType", gridType);
-    if (gridType != "HEALPix") {
+    if (eckit::StringTools::lower(gridType) != "healpix") {
         // Set ocean grid information
         setValue("unstructuredGridType", config_.getString("grid-type"));
 

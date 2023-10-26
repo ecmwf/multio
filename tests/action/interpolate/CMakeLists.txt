@@ -1,4 +1,6 @@
 
+if( HAVE_MIR )
+
 set(PREFIX multio_tests_action_interpolate)
 
 ecbuild_get_test_multidata(
@@ -199,3 +201,5 @@ endforeach()
 
 
 endif()
+
+endif( HAVE_MIR )

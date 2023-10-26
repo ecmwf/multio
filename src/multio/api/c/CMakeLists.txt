@@ -1,3 +1,4 @@
+
 # Action plugins
 
 if( CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
@@ -18,6 +19,7 @@ list( APPEND multio_action_plugins
     multio-action-sink
     multio-action-statistics
     multio-action-transport
+    multio-action-renumber-healpix
 )
 
 if( HAVE_MIR )
@@ -74,7 +76,3 @@ ecbuild_add_library(
         multio
 )
 endif()
-
-# if( CMAKE_SYSTEM_NAME MATCHES "Linux" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU" )
-#     target_link_libraries(multio-api INTERFACE "-Wl,--no-as-needed,\"$<TARGET_FILE:multio-api>\" -Wl,--as-needed")
-# endif()

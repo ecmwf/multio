@@ -12,9 +12,16 @@
 
 #include <iostream>
 
+#include <regex>
+
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
 #include "eckit/log/Log.h"
+#include "eckit/mpi/Comm.h"
+
+#include "atlas/parallel/mpi/mpi.h"
+#include "atlas/grid.h"
+#include "atlas/library.h"
 
 #include "GridDownloader.h"
 #include "multio/LibMultio.h"
@@ -26,6 +33,77 @@ namespace multio::action {
 using config::configuration_path_name;
 
 namespace {
+
+void handleCodesError(const std::string& errorPrefix, int error, const eckit::CodeLocation& codeLocation) {
+    if (error) {
+        std::ostringstream oss;
+        oss << errorPrefix << codes_get_error_message(error);
+        throw eckit::Exception(oss.str(), codeLocation);
+    }
+}
+
+atlas::Grid readGrid(const std::string& name) {
+    atlas::mpi::Scope mpi_scope("self");
+    return atlas::Grid{name};
+}
+
+template <class GridType>
+GridType createGrid(const std::string& gridType) {
+
+    const atlas::Grid grid = readGrid(gridType);
+
+    auto structuredGrid = atlas::StructuredGrid(grid);
+
+    return GridType(structuredGrid);
+}
+
+void updateGaussianGrid(codes_handle* handle, const std::string& gridType) {
+    const auto gaussianGrid = createGrid<atlas::GaussianGrid>(gridType);
+
+    int err = codes_set_long(handle, "N", gaussianGrid.N());
+    handleCodesError("eccodes error while setting the N value: ", err, Here());
+
+    auto tmp = gaussianGrid.nx();
+    std::vector<long> pl(tmp.size(), 0);
+    for (int i = 0; i < tmp.size(); ++i) {
+        pl[i] = long(tmp[i]);
+    }
+
+    err = codes_set_long_array(handle, "pl", pl.data(), pl.size());
+    handleCodesError("eccodes error while setting the PL array: ", err, Here());
+
+    std::vector<double> values(gaussianGrid.size(), 0.0);
+
+    auto it = gaussianGrid.lonlat().begin();
+    err = codes_set_double(handle, "latitudeOfFirstGridPointInDegrees", (*it)[1]);
+    handleCodesError("eccodes error while setting the latitudeOfFirstGridPointInDegrees: ", err, Here());
+    err = codes_set_double(handle, "longitudeOfFirstGridPointInDegrees", (*it)[0]);
+    handleCodesError("eccodes error while setting the longitudeOfFirstGridPointInDegrees: ", err, Here());
+    it += gaussianGrid.size() - 1;
+    err = codes_set_double(handle, "latitudeOfLastGridPointInDegrees", (*it)[1]);
+    handleCodesError("eccodes error while setting the latitudeOfLastGridPointInDegrees: ", err, Here());
+
+    err = codes_set_double_array(handle, "values", values.data(), values.size());
+    handleCodesError("eccodes error while setting the values array: ", err, Here());
+
+    const auto equator = gaussianGrid.N();
+    const auto maxLongitude = gaussianGrid.x(gaussianGrid.nx(equator) - 1, equator);
+
+    err = codes_set_double(handle, "longitudeOfLastGridPointInDegrees", maxLongitude);
+    handleCodesError("eccodes error while setting the longitudeOfLastGridPointInDegrees value: ", err, Here());
+}
+
+void updateRegularLatLonGrid(codes_handle* handle, const std::string& gridType) {
+    const auto llGrid = createGrid<atlas::RegularLonLatGrid>(gridType);
+    int err = codes_set_long(handle, "Ni", llGrid.nx());
+    handleCodesError("eccodes error while setting the Ni value: ", err, Here());
+    err = codes_set_long(handle, "Nj", llGrid.ny());
+    handleCodesError("eccodes error while setting the Nj value: ", err, Here());
+}
+
+using UpdateFunctionType = std::function<void(codes_handle*, const std::string&)>;
+static const std::unordered_map<std::string, UpdateFunctionType> updateFunctionMap{
+    {"^\\s*[FON]\\d+\\s*$", &updateGaussianGrid}, {"^\\s*L\\d+x\\d+\\s*$", &updateRegularLatLonGrid}};
 
 eckit::LocalConfiguration getEncodingConfiguration(const ComponentConfiguration& compConf) {
     if (compConf.parsedConfig().has("encoding")) {
@@ -46,7 +124,26 @@ std::unique_ptr<GribEncoder> makeEncoder(const eckit::LocalConfiguration& conf,
         // TODO provide utility to distinguish between relative and absolute paths
         eckit::AutoStdFile fin{multioConfig.replaceCurly(tmplPath)};
         int err;
-        return std::make_unique<GribEncoder>(codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err), conf);
+        auto sample = codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err);
+        handleCodesError("eccodes error while reading the grib template: ", err, Here());
+
+        if (conf.has("grid-type")) {
+            const auto gridType = conf.getString("grid-type");
+
+            eckit::Log::info() << "REQUESTED GRID DEFINITION UPDATE: " << gridType << std::endl;
+
+            const auto updateFunction
+                = std::find_if(updateFunctionMap.cbegin(), updateFunctionMap.cend(), [&gridType](const auto& item) {
+                      std::regex r{item.first};
+                      return std::regex_match(gridType, r);
+                  });
+
+            if (updateFunction != updateFunctionMap.cend()) {
+                updateFunction->second(sample, gridType);
+            }
+        }
+
+        return std::make_unique<GribEncoder>(sample, conf);
     }
     else if (format == "raw") {
         return nullptr;  // leave message in raw binary format
@@ -91,6 +188,8 @@ void Encode::executeImpl(Message msg) {
         return;
     }
 
+    auto gridUID = std::optional<GridDownloader::GridUIDType>{};
+
     if (isOcean(msg.metadata())) {
         //! TODO shoud not be checked here anymore, encoder_ should have been initialized according to format_
         ASSERT(format_ == "grib");
@@ -109,9 +208,10 @@ void Encode::executeImpl(Message msg) {
                 executeNext(gridCoords.value().Lon);
             }
         }
+
+        gridUID = gridDownloader_->getGridUID(msg.domain());
     }
 
-    auto gridUID = gridDownloader_->getGridUID(msg.domain());
     executeNext(encodeField(std::move(msg), gridUID));
 }
 

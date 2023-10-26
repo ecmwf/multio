@@ -2,6 +2,7 @@
 #include "multio/tools/MultioTool.h"
 
 #include "atlas/functionspace.h"
+#include "atlas/parallel/mpi/mpi.h"
 #include "atlas/grid.h"
 #include "atlas/library.h"
 
@@ -11,10 +12,15 @@
 #include "eckit/io/StdFile.h"
 #include "eckit/log/CodeLocation.h"
 #include "eckit/log/Log.h"
-#include "eckit/mpi/Comm.h"
 #include "eckit/option/SimpleOption.h"
 
 namespace {
+
+atlas::Grid readGrid(const std::string& name) {
+    atlas::mpi::Scope mpi_scope("self");
+    return atlas::Grid{name};
+}
+
 void handleCodesError(const std::string& errorPrefix, int error, const eckit::CodeLocation& codeLocation) {
     if (error) {
         std::ostringstream oss;
@@ -23,15 +29,30 @@ void handleCodesError(const std::string& errorPrefix, int error, const eckit::Co
     }
 }
 
+long getGribVersion(codes_handle* handle) {
+    long gribVersion = 0;
+    int err = codes_get_long(handle, "editionNumber", &gribVersion);
+    handleCodesError("eccodes error while reading the GRIB version: ", err, Here());
+    return gribVersion;
+}
+
+void setIndicatorOfTypeOfLevelIfNeeded(codes_handle* handle, const eckit::option::CmdArgs& args) {
+    long gribVersion = getGribVersion(handle);
+    if (gribVersion == 1) {
+        std::string indicatorOfTypeOfLevel = "sfc";
+        args.get("indicatorOfTypeOfLevel", indicatorOfTypeOfLevel);
+        auto size = indicatorOfTypeOfLevel.size();
+        int err = codes_set_string(handle, "indicatorOfTypeOfLevel", indicatorOfTypeOfLevel.c_str(), &size);
+        handleCodesError("eccodes error while setting the indicatorOfTypeOfLevel: ", err, Here());
+    }
+}
+
 void setReducedGGFields(codes_handle* handle, const eckit::option::CmdArgs& args) {
-    auto& originalComm = eckit::mpi::comm();
-    eckit::mpi::setCommDefault("self");
 
     std::string gridType = "none";
     args.get("grid", gridType);
-    const atlas::Grid grid(gridType);
 
-    eckit::mpi::setCommDefault(originalComm.name().c_str());
+    const atlas::Grid grid = readGrid(gridType);
 
     auto structuredGrid = atlas::StructuredGrid(grid);
 
@@ -73,17 +94,7 @@ void setReducedGGFields(codes_handle* handle, const eckit::option::CmdArgs& args
     err = codes_set_double(handle, "longitudeOfLastGridPointInDegrees", maxLongitude);
     handleCodesError("eccodes error while setting the longitudeOfLastGridPointInDegrees value: ", err, Here());
 
-    long gribVersion = 0;
-    err = codes_get_long(handle, "editionNumber", &gribVersion);
-    handleCodesError("eccodes error while reading the GRIB version: ", err, Here());
-
-    if ((gribVersion == 1) && args.has("indicatorOfTypeOfLevel")) {
-        std::string indicatorOfTypeOfLevel = "sfc";
-        args.get("indicatorOfTypeOfLevel", indicatorOfTypeOfLevel);
-        auto size = indicatorOfTypeOfLevel.size();
-        err = codes_set_string(handle, "indicatorOfTypeOfLevel", indicatorOfTypeOfLevel.c_str(), &size);
-        handleCodesError("eccodes error while setting the indicatorOfTypeOfLevel: ", err, Here());
-    }
+    setIndicatorOfTypeOfLevelIfNeeded(handle, args);
 }
 
 void setSHFields(codes_handle* handle, const eckit::option::CmdArgs& args) {
@@ -109,15 +120,16 @@ void setSHFields(codes_handle* handle, const eckit::option::CmdArgs& args) {
     handleCodesError("eccodes error while setting the values array: ", err, Here());
 }
 
+void setReducedLLFields(codes_handle* handle, const eckit::option::CmdArgs& args) {
+    setIndicatorOfTypeOfLevelIfNeeded(handle, args);
+}
+
 void setHealpixFields(codes_handle* handle, const eckit::option::CmdArgs& args) {
-    auto& originalComm = eckit::mpi::comm();
-    eckit::mpi::setCommDefault("self");
 
     std::string gridType = "none";
     args.get("grid", gridType);
-    const atlas::Grid grid(gridType);
 
-    eckit::mpi::setCommDefault(originalComm.name().c_str());
+    const atlas::Grid grid = readGrid(gridType);
 
     auto structuredGrid = atlas::StructuredGrid(grid);
 
@@ -136,6 +148,7 @@ void setHealpixFields(codes_handle* handle, const eckit::option::CmdArgs& args) 
     err = codes_set_double(handle, "longitudeOfFirstGridPointInDegrees", firstPoint);
     handleCodesError("eccodes error while setting the longitudeOfFirstGridPointInDegrees value: ", err, Here());
 }
+
 }  // namespace
 
 //----------------------------------------------------------------------------------------------------------------
@@ -164,6 +177,7 @@ MultioGenerateGribTemplate::MultioGenerateGribTemplate(int argc, char** argv) : 
     options_.push_back(
         new eckit::option::SimpleOption<long>("generatingProcessIdentifier", "Generating process identifier"));
     options_.push_back(new eckit::option::SimpleOption<long>("spectralTruncation", "Spectral truncation number"));
+    options_.push_back(new eckit::option::SimpleOption<bool>("clearValuesOnly", "Only clear the stored values"));
 }
 
 void MultioGenerateGribTemplate::init(const eckit::option::CmdArgs& args) {
@@ -180,8 +194,6 @@ void MultioGenerateGribTemplate::execute(const eckit::option::CmdArgs& args) {
     eckit::AutoStdFile fin{gribSamplePath};
     int err;
     auto sampleHandle = codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err);
-    handleCodesError("eccodes error while reading template file: ", err, Here());
-
     char buffer[255] = {0};
     size_t bufferLen{255};
     err = codes_get_string(sampleHandle, "gridType", buffer, &bufferLen);
@@ -202,11 +214,42 @@ void MultioGenerateGribTemplate::execute(const eckit::option::CmdArgs& args) {
         throw eckit::Exception(oss.str(), Here());
     }
 
-    if (args.has("generatingProcessIdentifier")) {
+    bool clearValues = false;
+    args.get("clearValuesOnly", clearValues);
+    if (!clearValues) {
         long generatingProcessIdentifier = 153;
         args.get("generatingProcessIdentifier", generatingProcessIdentifier);
         err = codes_set_long(sampleHandle, "generatingProcessIdentifier", generatingProcessIdentifier);
         handleCodesError("eccodes error while setting the generatingProcessIdentifier: ", err, Here());
+
+        char buffer[255] = {0};
+        size_t bufferLen{255};
+        err = codes_get_string(sampleHandle, "gridType", buffer, &bufferLen);
+        handleCodesError("eccodes error while reading the grid type: ", err, Here());
+
+        using UpdateFunctionType = std::function<void(codes_handle*, const eckit::option::CmdArgs&)>;
+        const std::unordered_map<std::string, UpdateFunctionType> updateFunctionMap
+            = {{"reduced_gg", &setReducedGGFields}, {"sh", &setSHFields}, {"reduced_ll", &setReducedLLFields}};
+
+        const std::string sampleGridType(buffer);
+        if (updateFunctionMap.count(sampleGridType) != 0) {
+            auto updateFunction = updateFunctionMap.at(sampleGridType);
+            updateFunction(sampleHandle, args);
+        }
+        else {
+            std::ostringstream oss;
+            oss << "Grid type " << sampleGridType << " is currently not supported!";
+            throw eckit::Exception(oss.str(), Here());
+        }
+    }
+    else {
+        size_t numValues = 0;
+        err = codes_get_size(sampleHandle, "values", &numValues);
+        handleCodesError("eccodes error while reading the number of values: ", err, Here());
+
+        std::vector<double> values(numValues, 0.0);
+        err = codes_set_double_array(sampleHandle, "values", values.data(), values.size());
+        handleCodesError("eccodes error while setting the values array: ", err, Here());
     }
 
     std::string outputFilePath = "";

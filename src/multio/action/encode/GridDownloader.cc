@@ -12,6 +12,7 @@
 
 #include "GribEncoder.h"
 
+#include "atlas/parallel/mpi/mpi.h"
 #include "atlas/grid/Grid.h"
 #include "atlas/grid/Iterator.h"
 #include "atlas/library.h"
@@ -51,6 +52,12 @@ std::unique_ptr<multio::action::GribEncoder> createEncoder(const multio::config:
 
     return encoder;
 }
+
+atlas::Grid readGrid(const std::string& name) {
+    atlas::mpi::Scope mpi_scope("self");
+    return atlas::Grid{name};
+}
+
 }  // namespace
 
 namespace multio::action {
@@ -116,12 +123,7 @@ void GridDownloader::downloadOrcaGridCoordinates(const config::ComponentConfigur
 
         eckit::Log::info() << "Multio GridDownloader: starting download for grid: " << completeGridName << std::endl;
 
-        auto& originalComm = eckit::mpi::comm();
-        eckit::mpi::setCommDefault("self");
-
-        const atlas::Grid grid(completeGridName);
-
-        eckit::mpi::setCommDefault(originalComm.name().c_str());
+        const atlas::Grid grid = readGrid(completeGridName);
 
         eckit::Log::info() << "Multio GridDownloader: grid " << completeGridName << " downloaded!" << std::endl;
 

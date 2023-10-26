@@ -8,6 +8,7 @@
 #include "atlas/library.h"
 
 #include "eckit/config/Configuration.h"
+#include "eckit/utils/Translator.h"
 
 
 namespace multio::action::encodeGrib2 {
@@ -63,6 +64,9 @@ GridType atlasNamedGridToGridType(const std::string& atlasNamedGrid) {
         case 'L':
             return GridType::RegularLonLat;
 
+        case 'H':
+            return GridType::HealPix;
+
         default: {
             auto testORCAPos = atlasNamedGrid.find("ORCA");
             if (testORCAPos == 0 || testORCAPos == 1) {
@@ -81,6 +85,7 @@ GridType eccodesGridTypeToGridType(const std::string& eccodesGridType) {
         {"reduced_ll", GridType::ReducedLonLat},
         {"regular_gg", GridType::RegularGaussian},
         {"reduced_gg", GridType::ReducedGaussian},
+        {"healpix", GridType::HealPix},
     }};
 
     if (auto searchGridType = map.find(eccodesGridType); searchGridType != map.end()) {
@@ -363,6 +368,48 @@ ReducedLonLatInfo GridInfoCreatorPolicy<GridType::ReducedLonLat>::fromCodes(cons
     info.gridType = "reduced_ll";
     GridWithNiNjCreationPolicy::fromCodes(info, codesGridType, options, md);
     GridWithPLArrayCreationPolicy::fromCodes(info, codesGridType, options, md);
+    return info;
+}
+
+
+//-----------------------------------------------------------------------------
+
+HealPixGridInfo GridInfoCreatorPolicy<GridType::HealPix>::fromAtlas(const std::string& atlasGridType,
+                                                                    const GridInfoCreationOptions& options,
+                                                                    const message::Metadata& md) {
+    HealPixGridInfo info;
+    // Atlas is only supporting ring curretly
+    info.gridType = "healpix";
+
+    // const atlas::HealPixGrid grid(atlasGridType);
+    info.nside = eckit::translate<std::int64_t>(atlasGridType.substr(1));
+
+    info.longitudeOfFirstGridPointInDegrees = 45.0;
+    info.orderingConvention = "ring";
+
+    return info;
+}
+
+HealPixGridInfo GridInfoCreatorPolicy<GridType::HealPix>::fromCodes(const std::string& codesGridType,
+                                                                    const GridInfoCreationOptions& options,
+                                                                    const message::Metadata& md) {
+    HealPixGridInfo info;
+    info.gridType = "healpix";
+
+    try {
+        info.nside = md.get<std::int64_t>("Nside");
+        info.longitudeOfFirstGridPointInDegrees = 45.0;
+        info.orderingConvention = md.get<std::string>("orderingConvention");
+    }
+    catch (const message::MetadataException& err) {
+        std::ostringstream oss;
+        oss << "HealPixGridInfo creator ::fromCodes: Require keys \"Nside\" (int) and \"orderingConvention\" (string)  "
+               "to "
+               "prepare a codes sample. Otherwise pass down \""
+            << ATLAS_NAMED_GRID_KEY << "\" to retrieve all information from atlas.";
+        std::throw_with_nested(EncodeGrib2Exception(oss.str(), Here()));
+    }
+
     return info;
 }
 

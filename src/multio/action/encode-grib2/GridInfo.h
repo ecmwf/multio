@@ -59,6 +59,7 @@ enum class GridType
     ReducedGaussian,
     ReducedLonLat,
     RegularLonLat,
+    HealPix,
 };
 
 template <GridType t>
@@ -79,6 +80,8 @@ decltype(auto) dispatchGridType(Func&& func, GridType gridType, Args&&... args) 
             return std::forward<Func>(func)(GridTypeTag<GridType::RegularLonLat>{}, std::forward<Args>(args)...);
         case GridType::ReducedLonLat:
             return std::forward<Func>(func)(GridTypeTag<GridType::ReducedLonLat>{}, std::forward<Args>(args)...);
+        case GridType::HealPix:
+            return std::forward<Func>(func)(GridTypeTag<GridType::HealPix>{}, std::forward<Args>(args)...);
     }
 }
 
@@ -353,8 +356,37 @@ struct GridInfoCreatorPolicy<GridType::ReducedLonLat> {
 
 //-----------------------------------------------------------------------------
 
+struct HealPixGridInfo : BaseGridInfo {
+    std::int64_t nside;
+    double longitudeOfFirstGridPointInDegrees;
+    std::string orderingConvention;
+};
+
+template <>
+struct CodesKeySetter<HealPixGridInfo> {
+    template <typename KeySetter>
+    void operator()(const HealPixGridInfo& i, KeySetter&& keySetter) {
+        CodesKeySetter<BaseGridInfo>{}(i, keySetter);
+        keySetter("Nside", i.nside);
+        keySetter("longitudeOfFirstGridPointInDegrees", i.longitudeOfFirstGridPointInDegrees);
+        keySetter("orderingConvention", i.orderingConvention);
+    }
+};
+
+
+template <>
+struct GridInfoCreatorPolicy<GridType::HealPix> {
+    static HealPixGridInfo fromAtlas(const std::string& atlasGridType, const GridInfoCreationOptions& options,
+                                     const message::Metadata& md);
+    static HealPixGridInfo fromCodes(const std::string& codesGridType, const GridInfoCreationOptions& options,
+                                     const message::Metadata& md);
+};
+
+
+//-----------------------------------------------------------------------------
+
 using GridInfo = std::variant<UnstructuredGridInfo, RegularGaussianGridInfo, ReducedGaussianGridInfo, RegularLonLatInfo,
-                              ReducedLonLatInfo>;
+                              ReducedLonLatInfo, HealPixGridInfo>;
 
 
 template <>

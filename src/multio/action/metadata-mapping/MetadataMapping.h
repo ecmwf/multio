@@ -8,11 +8,11 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Domokos Sarmany
+/// @author Philipp Geier
+/// @author Domokos Sármány
 /// @author Simon Smart
-/// @author Tiago Quintino
 
-/// @date Jan 2019
+/// @date Nov 2022
 
 #pragma once
 
@@ -38,7 +38,7 @@ private:
     void print(std::ostream& os) const override;
 
     std::string name_;
-    const std::vector<message::MetadataMapping>& mappings_;
+    const std::vector<message::MetadataMapping> mappings_;
     message::MetadataMappingOptions options_;
 };
 

@@ -400,7 +400,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             withFirstOf(valueSetter(g, "Nside"), lookUp<std::int64_t>(md, "Nside"));
             double logp = 45.0;
             // Note: Pedro told to use always this to avoid problems with milli and micro degrees
-            g.setValue("longitudeOfFirstGridPointInDegrees", logp);
+            g.setValue("longitudeOfFirstGridPointInDegrees", 45.0);
             withFirstOf(valueSetter(g, "orderingConvention"), lookUp<std::string>(md, "orderingConvention"));
         }
     }
@@ -752,11 +752,11 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     std::string gridType;
     const auto searchGridType = metadata.find("gridType");
     if (searchGridType != metadata.end() && searchGridType->second.get<std::string>() == "unstructured_grid") {
-        if (auto searchGridType = metadata.find("unstructuredGridType"); searchGridType != metadata.end()) {
-            setValue("unstructuredGridType", searchGridType->second.template get<std::string>());
-        }
-        else {
-            setValue("unstructuredGridType", config_.getString("unstructured-grid-type"));
+        if (auto searchGridType = metadata.find("unstructuredGridType");
+            searchGridType != metadata.end()) {
+            setValue(glossary().unstructuredGridType, searchGridType->second.template get<std::string>());
+        } else {
+            setValue(glossary().unstructuredGridType, config_.getString("unstructured-grid-type"));
         }
 
         if (auto searchGridSubtype = metadata.find("unstructuredGridSubtype"); searchGridSubtype != metadata.end()) {

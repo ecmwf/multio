@@ -442,7 +442,6 @@ message::Message EncodeGrib2::encodeMessageWithData(MioGribHandle& sample, const
 
 message::Message EncodeGrib2::encodeMessageWithoutData(MioGribHandle& sample, const message::Message& inputMsg) const {
     return dispatchPrecisionTag(inputMsg.precision(), [&](auto pt) {
-        using Precision = typename decltype(pt)::type;
         return message::Message{
             Message::Header{Message::Tag::Grib, Peer{inputMsg.source().group()}, Peer{inputMsg.destination()}},
             encodeSample(sample)};

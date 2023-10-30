@@ -98,7 +98,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
     const auto wam_levtype = lookUpLong(md, "levtype_wam");
     if (wam_levtype) {
-        g.setValue("levtype", wam_levtype);
+        g.setValue("indicatorOfTypeOfLevel", wam_levtype);
     }
     else if (md.has("gridType") && eckit::StringTools::lower(md.getString("gridType")) != "healpix") {
         withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));

@@ -169,6 +169,11 @@ long OperationWindow::lastPointsDiffInSeconds() const {
     return long(currPoint_ - prevPoint_);
 }
 
+util::DateTimeDiff OperationWindow::lastPointsDiff() const {
+    return util::dateTimeDiff(
+        util::toDateInts(currPoint_.date().yyyymmdd()), util::toTimeInts(currPoint_.time().hhmmss()),
+        util::toDateInts(prevPoint_.date().yyyymmdd()), util::toTimeInts(prevPoint_.time().hhmmss()));
+}
 
 long OperationWindow::startPointInSeconds() const {
     return startPoint_ - epochPoint_;

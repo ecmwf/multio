@@ -29,7 +29,10 @@ module multio_api
         procedure :: delete => multio_delete_configuration
         procedure :: set_failure_handler => multio_config_set_failure_handler
         procedure :: set_path => multio_conf_set_path
-        procedure :: mpi_allow_world_default_comm => multio_conf_mpi_allow_world_default_comm
+        procedure, private :: mpi_allow_world_default_comm_cbool   => multio_conf_mpi_allow_world_default_comm_cbool
+        procedure, private :: mpi_allow_world_default_comm_logical => multio_conf_mpi_allow_world_default_comm_logical
+        generic   :: mpi_allow_world_default_comm => mpi_allow_world_default_comm_cbool, &
+                                                   & mpi_allow_world_default_comm_logical
         procedure :: mpi_parent_comm => multio_conf_mpi_parent_comm
         procedure :: mpi_return_client_comm => multio_conf_mpi_return_client_comm
         procedure :: mpi_return_server_comm => multio_conf_mpi_return_server_comm
@@ -777,12 +780,20 @@ contains
             err = c_multio_conf_set_path(cc%impl, c_loc(nullified_path))
     end function
 
-    function multio_conf_mpi_allow_world_default_comm(cc, allow) result(err)
+    function multio_conf_mpi_allow_world_default_comm_cbool(cc, allow) result(err)
             class(multio_configuration), intent(inout) :: cc
             logical(c_bool), intent(in), value :: allow
             integer :: err
 
             err = c_multio_conf_mpi_allow_world_default_comm(cc%impl, allow)
+    end function
+
+   function multio_conf_mpi_allow_world_default_comm_logical(cc, allow) result(err)
+            class(multio_configuration), intent(inout) :: cc
+            logical, intent(in), value :: allow
+            integer :: err
+
+            err = c_multio_conf_mpi_allow_world_default_comm(cc%impl, logical(allow,c_bool))
     end function
 
     function multio_conf_mpi_parent_comm(cc, parent_comm) result(err)

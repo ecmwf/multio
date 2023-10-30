@@ -362,8 +362,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     eckit::LocalConfiguration md = in;  // Copy to allow modification
 
     std::string gribEdition = md.getString("gribEdition", "2");
-
-    std::string forecastTimeKey = gribEdition == "2" ? "forecastTime" : "startStep";
+    // std::string forecastTimeKey = gribEdition == "2" ? "forecastTime" : "startStep";
 
 
     auto operation = lookUpString(md, "operation");
@@ -400,8 +399,12 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
                 // then forecastTime should be set to zero.
                 if (significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
                     isReferingToStart = false;
-                    g.setValue("indicatorOfUnitOfTimeRange", (long)0);
-                    g.setValue(forecastTimeKey, (long)0);
+                    g.setValue("stepUnits", (long)0);
+                    g.setValue("startStep", (long)0);
+                    if (gribEdition == "2") {
+                        g.setValue("indicatorOfUnitOfTimeRange", (long)0);
+                        g.setValue("forecastTime", (long)0);
+                    }
                 }
                 else {
                     isReferingToStart = true;
@@ -434,29 +437,57 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         if (timeRef == std::string("start")) {
             // Compute diff to current time in some appropriate unit
             util::DateTimeDiff diff = util::dateTimeDiff(currentDate, currentTime, refDate, refTime);
-            g.setValue("indicatorOfUnitOfTimeRange", (long)timeUnitCodes(diff.unit));
-            g.setValue(forecastTimeKey, (long)diff.diff);
+            g.setValue("stepUnits", (long)timeUnitCodes(diff.unit));
+            g.setValue("startStep", (long)diff.diff);
+            if (gribEdition == "2") {
+                g.setValue("indicatorOfUnitOfTimeRange", (long)timeUnitCodes(diff.unit));
+                g.setValue("forecastTime", (long)diff.diff);
+            }
         }
         else {
-            g.setValue("indicatorOfUnitOfTimeRange", (long)0);
-            g.setValue(forecastTimeKey, (long)0);
+            g.setValue("stepUnits", (long)0);
+            g.setValue("startStep", (long)0);
+            if (gribEdition == "2") {
+                g.setValue("indicatorOfUnitOfTimeRange", (long)0);
+                g.setValue("forecastTime", (long)0);
+            }
         }
     }
     else {
         auto previousDate = util::toDateInts(md.getLong("previousDate"));
         auto previousTime = util::toTimeInts(md.getLong("previousTime"));
-        if (timeRef == std::string("previous")) {
+        if (timeRef == std::string("start")) {
             // Compute diff to current time in some appropriate unit
             util::DateTimeDiff diff = util::dateTimeDiff(previousDate, previousTime, refDate, refTime);
-            g.setValue("indicatorOfUnitOfTimeRange", (long)timeUnitCodes(diff.unit));
-            g.setValue(forecastTimeKey, (long)diff.diff);
+            g.setValue("stepUnits", (long)timeUnitCodes(diff.unit));
+            g.setValue("startStep", (long)diff.diff);
+            if (gribEdition == "2") {
+                g.setValue("indicatorOfUnitOfTimeRange", (long)timeUnitCodes(diff.unit));
+                g.setValue("forecastTime", (long)diff.diff);
+            }
+
+
+            // Set endStep to please MARS
+            util::DateTimeDiff diffEnd = util::dateTimeDiff(currentDate, currentTime, refDate, refTime);
+            g.setValue("endStep", (long)diffEnd.diff);
         }
         else {
             // No forecast time is used
-            g.setValue("indicatorOfUnitOfTimeRange", (long)0);
-            g.setValue(forecastTimeKey, (long)0);
+            g.setValue("stepInts", (long)0);
+            g.setValue("startStep", (long)0);
+            if (gribEdition == "2") {
+                g.setValue("indicatorOfUnitOfTimeRange", (long)0);
+                g.setValue("forecastTime", (long)0);
+            }
+
+
+            // Set endStep to please MARS
+            util::DateTimeDiff diffEnd = util::dateTimeDiff(currentDate, currentTime, previousDate, previousTime);
+            g.setValue("endStep", (long)diffEnd.diff);
         }
 
+
+        // Now just deal with GRIB2
         g.setValue("yearOfEndOfOverallTimeInterval", (long)currentDate.year);
         g.setValue("monthOfEndOfOverallTimeInterval", (long)currentDate.month);
         g.setValue("dayOfEndOfOverallTimeInterval", (long)currentDate.day);

@@ -70,9 +70,10 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
     }
     auto md = inputMetadata;
 
-    util::DateTimeDiff lastPointsDiff = win.lastPointsDiff();
-    md.set("sampleIntervalUnit", std::string{util::timeUnitToChar(lastPointsDiff.unit)});
-    md.set("sampleInterval", lastPointsDiff.diff);
+    // util::DateTimeDiff lastPointsDiff = win.lastPointsDiff();
+    // md.set("sampleIntervalUnit", std::string{util::timeUnitToChar(lastPointsDiff.unit)});
+    // md.set("sampleInterval", lastPointsDiff.diff);
+    md.set("sampleIntervalInSeconds", win.lastPointsDiffInSeconds());
 
     md.set("startDate", win.epochPoint().date().yyyymmdd());
     md.set("startTime", win.epochPoint().time().hhmmss());

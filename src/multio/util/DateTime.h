@@ -97,6 +97,10 @@ DateTimeDiff dateTimeDiff(const DateInts& lhsDate, const TimeInts& lhsTime, cons
 
 DateTimeDiff dateTimeDiff(const DateTimeInts& lhs, const DateTimeInts& rhs);
 
+
+double dateTimeDiffInSeconds(const DateInts& lhsDate, const TimeInts& lhsTime, const DateInts& rhsDate,
+                             const TimeInts& rhsTime);
+
 //-----------------------------------------------------------------------------
 
 }  // namespace multio::util

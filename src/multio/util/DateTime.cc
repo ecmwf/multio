@@ -103,9 +103,8 @@ std::int64_t lastDayOfTheMonth(std::int64_t y, std::int64_t m) {
 //-----------------------------------------------------------------------------
 
 
-namespace {
-double dateTimeDiffInSecondsDouble(const DateInts& lhsDate, const TimeInts& lhsTime, const DateInts& rhsDate,
-                                   const TimeInts& rhsTime) {
+double dateTimeDiffInSeconds(const DateInts& lhsDate, const TimeInts& lhsTime, const DateInts& rhsDate,
+                             const TimeInts& rhsTime) {
     eckit::DateTime l{eckit::Date{lhsDate.year, lhsDate.month, lhsDate.day},
                       eckit::Time{lhsTime.hour, lhsTime.minute, lhsTime.second}};
     eckit::DateTime r{eckit::Date{rhsDate.year, rhsDate.month, rhsDate.day},
@@ -113,7 +112,6 @@ double dateTimeDiffInSecondsDouble(const DateInts& lhsDate, const TimeInts& lhsT
 
     return l - r;
 }
-}  // namespace
 
 
 DateTimeDiff dateTimeDiff(const DateInts& lhsDate, const TimeInts& lhsTime, const DateInts& rhsDate,
@@ -124,23 +122,20 @@ DateTimeDiff dateTimeDiff(const DateInts& lhsDate, const TimeInts& lhsTime, cons
 
     // Determine unit by checking equality from smaller to higher fractions (second to year)
     if (lhsTime.second != rhsTime.second) {
-        return DateTimeDiff{static_cast<std::int64_t>(dateTimeDiffInSecondsDouble(lhsDate, lhsTime, rhsDate, rhsTime)),
+        return DateTimeDiff{static_cast<std::int64_t>(dateTimeDiffInSeconds(lhsDate, lhsTime, rhsDate, rhsTime)),
                             TimeUnit::Second};
     }
     else if (lhsTime.minute != rhsTime.minute) {
-        return DateTimeDiff{
-            static_cast<std::int64_t>(dateTimeDiffInSecondsDouble(lhsDate, lhsTime, rhsDate, rhsTime) / MIN),
-            TimeUnit::Minute};
+        return DateTimeDiff{static_cast<std::int64_t>(dateTimeDiffInSeconds(lhsDate, lhsTime, rhsDate, rhsTime) / MIN),
+                            TimeUnit::Minute};
     }
     else if (lhsTime.hour != rhsTime.hour) {
-        return DateTimeDiff{
-            static_cast<std::int64_t>(dateTimeDiffInSecondsDouble(lhsDate, lhsTime, rhsDate, rhsTime) / HOUR),
-            TimeUnit::Hour};
+        return DateTimeDiff{static_cast<std::int64_t>(dateTimeDiffInSeconds(lhsDate, lhsTime, rhsDate, rhsTime) / HOUR),
+                            TimeUnit::Hour};
     }
     else if (lhsDate.day != rhsDate.day) {
-        return DateTimeDiff{
-            static_cast<std::int64_t>(dateTimeDiffInSecondsDouble(lhsDate, lhsTime, rhsDate, rhsTime) / DAY),
-            TimeUnit::Day};
+        return DateTimeDiff{static_cast<std::int64_t>(dateTimeDiffInSeconds(lhsDate, lhsTime, rhsDate, rhsTime) / DAY),
+                            TimeUnit::Day};
     }
     else if (lhsDate.month != rhsDate.month) {
         return DateTimeDiff{(lhsDate.year - rhsDate.year) * 12 + (lhsDate.month - rhsDate.month), TimeUnit::Month};
@@ -156,6 +151,7 @@ DateTimeDiff dateTimeDiff(const DateInts& lhsDate, const TimeInts& lhsTime, cons
 DateTimeDiff dateTimeDiff(const DateTimeInts& lhs, const DateTimeInts& rhs) {
     return dateTimeDiff(lhs.date, lhs.time, rhs.date, rhs.time);
 }
+
 
 //-----------------------------------------------------------------------------
 

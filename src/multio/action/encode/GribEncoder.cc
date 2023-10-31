@@ -17,6 +17,8 @@
 #include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <unordered_map>
+#include <functional>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
@@ -257,6 +259,15 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 
     if (paramId) {
         g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
+    }
+
+
+    if (md.has("dataset")) {
+        withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
+        withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
+        withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
+        withFirstOf(valueSetter(g, "productionStatusOfProcessedData"), LookUpLong(md, "productionStatusOfProcessedData"));
+        withFirstOf(valueSetter(g, "dataset"), LookUpString(md, "dataset"));
     }
 
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
@@ -586,6 +597,14 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     applyOverwrites(*this, metadata);
     setDateAndStatisticalFields(*this, metadata, queriedMarsFields);
     setEncodingSpecificFields(*this, metadata);
+
+    if (metadata.has("dataset")) {
+        withFirstOf(valueSetter(*this, "tablesVersion"), LookUpLong(metadata, "tablesVersion"));
+        withFirstOf(valueSetter(*this, "setLocalDefinition"), LookUpLong(metadata, "setLocalDefinition"));
+        withFirstOf(valueSetter(*this, "grib2LocalSectionNumber"), LookUpLong(metadata, "grib2LocalSectionNumber"));
+        withFirstOf(valueSetter(*this, "productionStatusOfProcessedData"), LookUpLong(metadata, "productionStatusOfProcessedData"));
+        withFirstOf(valueSetter(*this, "dataset"), LookUpString(metadata, "dataset"));
+    }
 
     // Setting parameter ID
     if (metadata.getLong("param") / 1000 == 212) {

@@ -39,7 +39,13 @@ implicit none
 
         procedure, public, pass :: move_failure_id              => multio_config_move_failure_id
         procedure, public, pass :: set_path                     => multio_config_set_path
-        procedure, public, pass :: mpi_allow_world_default_comm => multio_mpi_allow_world_default_comm
+
+        ! Add overload for backward compatibility with logical(kind=c_bool) argument
+        procedure, private, pass :: mpi_allow_world_default_comm_logical => multio_mpi_allow_world_default_comm_logical
+        procedure, private, pass :: mpi_allow_world_default_comm_cbool   => multio_mpi_allow_world_default_comm_cbool
+        generic,   public :: mpi_allow_world_default_comm       => mpi_allow_world_default_comm_logical, &
+                                                                &  mpi_allow_world_default_comm_cbool
+
         procedure, public, pass :: mpi_parent_comm              => multio_mpi_parent_comm
         procedure, public, pass :: mpi_return_client_comm       => multio_mpi_return_client_comm
         procedure, public, pass :: mpi_return_server_comm       => multio_mpi_return_server_comm
@@ -411,7 +417,7 @@ contains
     !! @see multio_mpi_parent_comm
     !! @see multio_mpi_client_id
     !!
-    function multio_mpi_allow_world_default_comm(cc, allow) result(err)
+    function multio_mpi_allow_world_default_comm_logical(cc, allow) result(err)
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding, only: c_int
         use, intrinsic :: iso_c_binding, only: c_bool
@@ -451,8 +457,17 @@ contains
 #endif
         ! Exit point
         return
-    end function multio_mpi_allow_world_default_comm
+    end function multio_mpi_allow_world_default_comm_logical
 
+    function multio_mpi_allow_world_default_comm_cbool(cc, allow) result(err)
+    use, intrinsic :: iso_c_binding, only : c_bool
+    implicit none
+        class(multio_configuration), intent(inout) :: cc
+        logical(kind=c_bool),        intent(in)    :: allow
+        ! Function Result
+        integer :: err
+        err = multio_mpi_allow_world_default_comm_logical(cc, logical(allow))
+    end function multio_mpi_allow_world_default_comm_cbool
 
     !> @brief Set the MPI parent communicator.
     !!

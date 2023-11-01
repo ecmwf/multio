@@ -46,25 +46,26 @@ Now proceed with installation as follows.
    srcdir=$(pwd)
    builddir=build
    installdir=$HOME/local
-```
+   ```
 
 2. Run Cmake/ecbuild
    ```bash
    ecbuild --prefix=$installdir -- -DCMAKE_PREFIX_PATH=<path/to/dependencies/install> $srcdir
-```
+   ```
+
    The package is in active development and the I/O-server functionality is not enabled by default, so
    it needs to be turned on explicitly. In addition, if built with FDB support, some compilers will
    require linking to be forced.
    ```bash
    ecbuild --prefix=$installdir -- -DCMAKE_PREFIX_PATH=<path/to/dependencies/install> -DECBUILD_EXE_LINKER_FLAGS=-Wl,--no-as-needed $srcdir
-```
+   ```
 
 3. Compile, test and install
    ```bash
    make -j10
    ctest
    make install
-```
+   ```
 
 Copyright and license
 ------------

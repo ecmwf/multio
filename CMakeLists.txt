@@ -53,6 +53,11 @@ ecbuild_add_option( FEATURE MIR
                     DESCRIPTION "Interpolate data using MIR"
                     REQUIRED_PACKAGES "NAME mir VERSION 1.17.0" )
 
+ecbuild_add_option( FEATURE PGEN
+                    DEFAULT OFF
+                    DESCRIPTION "Use pgen for Maestro product-generation workflow"
+                    REQUIRED_PACKAGES "NAME pgen VERSION 1.13.0" )
+
 ecbuild_add_option( FEATURE FORTRAN
                     DEFAULT ON
                     DESCRIPTION "Build Fortran API and examples" )
@@ -81,7 +86,7 @@ endif()
 ecbuild_add_option( FEATURE MAESTRO
                     DEFAULT OFF
                     DESCRIPTION "Pass data to Maestro middleware"
-                    REQUIRED_PACKAGES "NAME Maestro" "NAME pgen" )
+                    REQUIRED_PACKAGES "NAME Maestro" )
 
 ### sandbox
 

@@ -268,6 +268,16 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
         withFirstOf(valueSetter(g, "productionStatusOfProcessedData"), LookUpLong(md, "productionStatusOfProcessedData"));
         withFirstOf(valueSetter(g, "dataset"), LookUpString(md, "dataset"));
+        withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
+        withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
+        withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
+        withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
+        withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+        withFirstOf(valueSetter(g, "resolution"), LookUpString(md, "resolution"));
+        eckit::LocalConfiguration lmd(md);
+        tryMapStepToTimeAndCheckTime(lmd);
+        g.setValue("dataDate", lmd.getLong("currentDate"));
+        g.setValue("dataTime", lmd.getLong("currentTime"));
     }
 
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
@@ -594,17 +604,10 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     if (queriedMarsFields.type) {
         setValue("typeOfGeneratingProcess", type_of_generating_process.at(*queriedMarsFields.type));
     }
+
     applyOverwrites(*this, metadata);
     setDateAndStatisticalFields(*this, metadata, queriedMarsFields);
     setEncodingSpecificFields(*this, metadata);
-
-    if (metadata.has("dataset")) {
-        withFirstOf(valueSetter(*this, "tablesVersion"), LookUpLong(metadata, "tablesVersion"));
-        withFirstOf(valueSetter(*this, "setLocalDefinition"), LookUpLong(metadata, "setLocalDefinition"));
-        withFirstOf(valueSetter(*this, "grib2LocalSectionNumber"), LookUpLong(metadata, "grib2LocalSectionNumber"));
-        withFirstOf(valueSetter(*this, "productionStatusOfProcessedData"), LookUpLong(metadata, "productionStatusOfProcessedData"));
-        withFirstOf(valueSetter(*this, "dataset"), LookUpString(metadata, "dataset"));
-    }
 
     // Setting parameter ID
     if (metadata.getLong("param") / 1000 == 212) {
@@ -633,6 +636,27 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
         const auto& gridUID = metadata.getString("uuidOfHGrid");
         setValue("uuidOfHGrid", gridUID);
+    }
+
+    if (metadata.has("dataset")) {
+        withFirstOf(valueSetter(*this, "tablesVersion"), LookUpLong(metadata, "tablesVersion"));
+        withFirstOf(valueSetter(*this, "setLocalDefinition"), LookUpLong(metadata, "setLocalDefinition"));
+        withFirstOf(valueSetter(*this, "grib2LocalSectionNumber"), LookUpLong(metadata, "grib2LocalSectionNumber"));
+        withFirstOf(valueSetter(*this, "productionStatusOfProcessedData"), LookUpLong(metadata, "productionStatusOfProcessedData"));
+        withFirstOf(valueSetter(*this, "dataset"), LookUpString(metadata, "dataset"));
+        withFirstOf(valueSetter(*this, "activity"), LookUpString(metadata, "activity"));
+        withFirstOf(valueSetter(*this, "experiment"), LookUpString(metadata, "experiment"));
+        withFirstOf(valueSetter(*this, "generation"), LookUpString(metadata, "generation"));
+        withFirstOf(valueSetter(*this, "model"), LookUpString(metadata, "model"));
+        withFirstOf(valueSetter(*this, "realization"), LookUpString(metadata, "realization"));
+        withFirstOf(valueSetter(*this, "resolution"), LookUpString(metadata, "resolution"));
+        withFirstOf(valueSetter(*this, "class"), LookUpString(metadata, "class"), LookUpString(metadata, "marsClass"));
+        withFirstOf(valueSetter(*this, "stream"), LookUpString(metadata, "stream"), LookUpString(metadata, "marsStream"));
+        withFirstOf(valueSetter(*this, "expver"), LookUpString(metadata, "expver"), LookUpString(metadata, "experimentVersionNumber"));
+        eckit::LocalConfiguration lmd(metadata);
+        tryMapStepToTimeAndCheckTime(lmd);
+        setValue("dataDate", (long)lmd.getLong("currentDate"));
+        setValue("dataTime", (long)lmd.getLong("currentTime") / 100);
     }
 }
 

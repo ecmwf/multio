@@ -494,7 +494,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         }
         else {
             // No forecast time is used
-            g.setValue("stepInts", (long)0);
+            g.setValue("stepUnits", (long)0);
             g.setValue("startStep", (long)0);
             if (gribEdition == "2") {
                 g.setValue("indicatorOfUnitOfTimeRange", (long)0);

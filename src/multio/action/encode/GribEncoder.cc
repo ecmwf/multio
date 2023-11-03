@@ -197,7 +197,6 @@ void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
     }
 }
 
-
 struct ValueSetter {
     GribEncoder& g_;
     std::string key_;
@@ -261,7 +260,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
     }
 
-
     if (md.has("dataset")) {
         withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
         withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
@@ -274,10 +272,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
         withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
         withFirstOf(valueSetter(g, "resolution"), LookUpString(md, "resolution"));
-        eckit::LocalConfiguration lmd(md);
-        tryMapStepToTimeAndCheckTime(lmd);
-        g.setValue("dataDate", lmd.getLong("currentDate"));
-        g.setValue("dataTime", lmd.getLong("currentTime"));
     }
 
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
@@ -439,18 +433,18 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     });
 
     auto refDateTime = getReferenceDateTime(timeRef, md);
-    g.setValue("dataDate", (long)std::get<0>(refDateTime));
-    g.setValue("dataTime", (long)std::get<1>(refDateTime));
+    // g.setValue("dataDate", (long)std::get<0>(refDateTime));
+    // g.setValue("dataTime", (long)std::get<1>(refDateTime));
 
     auto refDate = util::toDateInts(std::get<0>(refDateTime));
-    // g.setValue("year", (long)refDate.year);
-    // g.setValue("month", (long)refDate.month);
-    // g.setValue("day", (long)refDate.day);
+    g.setValue("year", (long)refDate.year);
+    g.setValue("month", (long)refDate.month);
+    g.setValue("day", (long)refDate.day);
 
     auto refTime = util::toTimeInts(std::get<1>(refDateTime));
-    // g.setValue("hour", (long)refTime.hour);
-    // g.setValue("minute", (long)refTime.minute);
-    // g.setValue("second", (long)refTime.second);
+    g.setValue("hour", (long)refTime.hour);
+    g.setValue("minute", (long)refTime.minute);
+    g.setValue("second", (long)refTime.second);
 
     auto currentDate = util::toDateInts(md.getLong("currentDate"));
     auto currentTime = util::toTimeInts(md.getLong("currentTime"));
@@ -653,10 +647,6 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
         withFirstOf(valueSetter(*this, "class"), LookUpString(metadata, "class"), LookUpString(metadata, "marsClass"));
         withFirstOf(valueSetter(*this, "stream"), LookUpString(metadata, "stream"), LookUpString(metadata, "marsStream"));
         withFirstOf(valueSetter(*this, "expver"), LookUpString(metadata, "expver"), LookUpString(metadata, "experimentVersionNumber"));
-        eckit::LocalConfiguration lmd(metadata);
-        tryMapStepToTimeAndCheckTime(lmd);
-        setValue("dataDate", (long)lmd.getLong("currentDate"));
-        setValue("dataTime", (long)lmd.getLong("currentTime") / 100);
     }
 }
 

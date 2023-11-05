@@ -12,39 +12,28 @@
 #include <vector>
 
 
-#include "eckit/config/LocalConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
-#include "eckit/io/FileHandle.h"
-#include "eckit/io/PeekHandle.h"
-#include "eckit/io/StdFile.h"
 #include "eckit/log/Log.h"
-#include "eckit/maths/Functions.h"
-#include "eckit/message/Decoder.h"
-#include "eckit/message/Message.h"
-#include "eckit/message/Reader.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
-#include "eckit/value/Value.h"
-#include "multio/ifsio/ifsio.h"
 #include "multio/tools/MultioTool.h"
 
 #include "FesomInterpolationWeights.h"
-#include "atlas_io/atlas-io.h"
 
 namespace multio::action::interpolateFESOM {
 
 namespace {
 
-void parseInputFileName(const std::string& fname, std::string& fesomName, std::string& domain, size_t& NSide, size_t& level,
-                        orderingConvention_e& orderingConvention) {
+void parseInputFileName(const std::string& fname, std::string& fesomName, std::string& domain, size_t& NSide,
+                        size_t& level, orderingConvention_e& orderingConvention) {
     static const std::regex fnameGrammar("([^_]+)_([^_]+)_NSIDE([1-9][0-9]*)_([0-9][0-9]*)_([a-zA-Z]*).csv");
     std::smatch matchFName;
     if (std::regex_match(fname, matchFName, fnameGrammar)) {
         fesomName = matchFName[1].str();
         domain = matchFName[2].str();
-        NSide  = static_cast<size_t>(std::stoi(matchFName[3].str()));
-        level  = static_cast<size_t>(std::stoi(matchFName[4].str()));
+        NSide = static_cast<size_t>(std::stoi(matchFName[3].str()));
+        level = static_cast<size_t>(std::stoi(matchFName[4].str()));
         orderingConvention = orderingConvention_string2enum(matchFName[5].str());
     }
     else {
@@ -97,8 +86,6 @@ private:
 
     void loadTriplets();
 
-    // bool subtocExists() const;
-
     int numberOfPositionalArguments() const override { return 0; }
     int minimumPositionalArguments() const override { return 0; }
 
@@ -141,16 +128,7 @@ FesomCacheGenerator::FesomCacheGenerator(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "inputFile", "Name of the input file. Default( \"CORE2_ngrid_NSIDE32_0_ring.csv\" )"));
     options_.push_back(new eckit::option::SimpleOption<bool>("dumpTriplets", "Dump all the triplets to screen"));
-    //options_.push_back(new eckit::option::SimpleOption<std::string>(
-    //    "domain", "Name of the domain. Default( \"ngrid\" )"));
-    //options_.push_back(new eckit::option::SimpleOption<std::string>(
-    //    "orderingConvention", "ordering convention used to create the triplets. Default(\"ring\")"));
-    // ------------------------------------------------------------------
-    // options_.push_back(new eckit::option::SimpleOption<size_t>("NSide", "number of HEALPix pixels per tile side"));
-    //options_.push_back(
-    //    new eckit::option::SimpleOption<size_t>("level", "level at which the interpolation needs to be done"));
-    //options_.push_back(new eckit::option::SimpleOption<std::string>("fesomName", "Name of the starting fesom grid"));
-    // Exit point
+
     return;
 }
 
@@ -230,20 +208,19 @@ void FesomCacheGenerator::execute(const eckit::option::CmdArgs& args) {
         weightsf.generateCacheFromTriplets(NSide_, orderingConvention_, level_, nnz, nRows, nCols, nOutRows,
                                            landSeaMask, rowStart, colIdx, valuesf);
 
-        weightsf.dumpCache(outputPath_, fesomName_, domain_, NSide_, orderingConvention_, level_, nnz, nRows, nCols, nOutRows,
-                           landSeaMask, rowStart, colIdx, valuesf);
+        weightsf.dumpCache(outputPath_, fesomName_, domain_, NSide_, orderingConvention_, level_, nnz, nRows, nCols,
+                           nOutRows, landSeaMask, rowStart, colIdx, valuesf);
 
         weightsd.generateCacheFromTriplets(NSide_, orderingConvention_, level_, nnz, nRows, nCols, nOutRows,
                                            landSeaMask, rowStart, colIdx, valuesd);
 
-        weightsd.dumpCache(outputPath_, fesomName_, domain_, NSide_, orderingConvention_, level_, nnz, nRows, nCols, nOutRows,
-                           landSeaMask, rowStart, colIdx, valuesd);
+        weightsd.dumpCache(outputPath_, fesomName_, domain_, NSide_, orderingConvention_, level_, nnz, nRows, nCols,
+                           nOutRows, landSeaMask, rowStart, colIdx, valuesd);
 
         if (dumpTriplets_) {
             weightsf.dumpTriplets();
         }
     }
-
 };
 
 

@@ -2,18 +2,16 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 #include <map>
 #include <vector>
-#include <cmath>
 
-#include "InterpolateFESOM_debug.h"
+#include "InterpolateFesom_debug.h"
 #include "atlas_io/atlas-io.h"
 #include "eckit/exception/Exceptions.h"
-#include "eckit/filesystem/PathName.h"
 #include "multio/LibMultio.h"
 
-#define nside2npix(NSIDE) \
-( NSIDE*NSIDE*12 )
+#define nside2npix(NSIDE) (NSIDE * NSIDE * 12)
 
 namespace multio::action::interpolateFESOM {
 
@@ -28,7 +26,8 @@ orderingConvention_e orderingConvention_string2enum(const std::string& orderingC
 std::string orderingConvention_enum2string(orderingConvention_e orderingConvention);
 
 
-std::string fesomCacheName( const std::string& fesomName, const std::string& domain, const std::string& precision, size_t NSide, orderingConvention_e orderingConvention, double level );
+std::string fesomCacheName(const std::string& fesomName, const std::string& domain, const std::string& precision,
+                           size_t NSide, orderingConvention_e orderingConvention, double level);
 
 class Tri {
 private:
@@ -114,7 +113,6 @@ public:
     bool initialized() const;
 
 
-
     void generateCacheFromTriplets(size_t NSide, orderingConvention_e orderingConvention, size_t level, size_t& nnz,
                                    size_t& nRows, size_t& nCols, size_t& nOutRows,
                                    std::vector<std::int32_t>& landSeaMask, std::vector<std::int32_t>& rowStart,
@@ -139,7 +137,8 @@ public:
 
         std::ostringstream os;
         os << outputPath << "/"
-           << fesomCacheName( fesomName, domain, (sizeof(T) == 4 ? "single" : "double"), NSide, orderingConvention, level )
+           << fesomCacheName(fesomName, domain, (sizeof(T) == 4 ? "single" : "double"), NSide, orderingConvention,
+                             level)
            << ".atlas";
 
         // std::cout << os.str() << std::endl;
@@ -165,7 +164,6 @@ public:
 
         return;
     }
-            
 };
 
 }  // namespace multio::action::interpolateFESOM

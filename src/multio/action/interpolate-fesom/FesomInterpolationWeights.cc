@@ -1,11 +1,10 @@
 #include "FesomInterpolationWeights.h"
 
-#include <map>
-#include <vector>
-#include <string>
 #include <algorithm>
-#include "InterpolateFESOM_debug.h"
-
+#include <map>
+#include <string>
+#include <vector>
+#include "InterpolateFesom_debug.h"
 
 #define M_PI 3.14159265358979323846
 
@@ -40,21 +39,19 @@ void Tri::print() const {
 
 // -------------------------------------------------------------------------------------------------
 
-std::string fesomCacheName( const std::string& fesomName, const std::string& domain, const std::string& precision, size_t NSide, orderingConvention_e orderingConvention, double level ){   
+std::string fesomCacheName(const std::string& fesomName, const std::string& domain, const std::string& precision,
+                           size_t NSide, orderingConvention_e orderingConvention, double level) {
     INTERPOLATE_FESOM_OUT_STREAM << " - enter fesomCacheName" << std::endl;
     std::ostringstream os;
     std::string localDomain{domain};
     localDomain.erase(std::remove_if(localDomain.begin(), localDomain.end(), ::isspace), localDomain.end());
-    std::transform(localDomain.begin(), localDomain.end(), localDomain.begin(), [](unsigned char c){ return std::tolower(c); });
-    INTERPOLATE_FESOM_OUT_STREAM << " - fesomCacheName: domain=" << domain << ", localDomain=" << localDomain << std::endl;
-    os  << "fesom_"
-        << fesomName << "_"
-        << localDomain
-        << "_to_HEALPix_"
-        << std::setw(6) << std::setfill('0') << NSide << "_" 
-        << precision << "_"
-        << orderingConvention_enum2string(orderingConvention) << "_" 
-        << std::setw(8) << std::setfill('0') << static_cast<size_t>(std::fabs(level*1000));    
+    std::transform(localDomain.begin(), localDomain.end(), localDomain.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    INTERPOLATE_FESOM_OUT_STREAM << " - fesomCacheName: domain=" << domain << ", localDomain=" << localDomain
+                                 << std::endl;
+    os << "fesom_" << fesomName << "_" << localDomain << "_to_HEALPix_" << std::setw(6) << std::setfill('0') << NSide
+       << "_" << precision << "_" << orderingConvention_enum2string(orderingConvention) << "_" << std::setw(8)
+       << std::setfill('0') << static_cast<size_t>(std::fabs(level * 1000));
     INTERPOLATE_FESOM_OUT_STREAM << " - exit fesomCacheName" << std::endl;
     return os.str();
 }
@@ -133,8 +130,7 @@ void FesomInterpolationWeights::dumpTriplets() const {
 }
 
 
-FesomInterpolationWeights::FesomInterpolationWeights(const std::vector<Tri>& triplets) :
-    initialized_{false} {
+FesomInterpolationWeights::FesomInterpolationWeights(const std::vector<Tri>& triplets) : initialized_{false} {
 
     INTERPOLATE_FESOM_OUT_STREAM << " - FesomIntermopationWeights: enter FesomInterpolationWeights (from triplets)"
                                  << std::endl;

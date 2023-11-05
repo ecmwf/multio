@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "FesomInterpolationWeights.h"
-#include "InterpolateFESOM_debug.h"
+#include "InterpolateFesom_debug.h"
 #include "atlas_io/atlas-io.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/PathName.h"
@@ -42,13 +42,14 @@ private:
     std::vector<MatrixType> values_;
 
 
-    std::string generateCacheFileName(const std::string& cachePath,
-                                      const std::string& fesomGridName, const std::string& domain, size_t NSide,
-                                      orderingConvention_e orderingConvention, double level) {
+    std::string generateCacheFileName(const std::string& cachePath, const std::string& fesomGridName,
+                                      const std::string& domain, size_t NSide, orderingConvention_e orderingConvention,
+                                      double level) {
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter generate cache file name" << std::endl;
         std::ostringstream os;
         os << cachePath << "/"
-           << fesomCacheName( fesomGridName, domain, (sizeof(MatrixType) == 4 ? "single" : "double"), NSide, orderingConvention, level )
+           << fesomCacheName(fesomGridName, domain, (sizeof(MatrixType) == 4 ? "single" : "double"), NSide,
+                             orderingConvention, level)
            << ".atlas";
         std::string fname{os.str()};
         INTERPOLATE_FESOM_OUT_STREAM << " - Reading file: " << fname << std::endl;
@@ -66,16 +67,16 @@ public:
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter file cache constructor" << std::endl;
         // Generate cache file name
         size_t level = static_cast<size_t>(msg.metadata().getLong("level", msg.metadata().getDouble("levelist", 0)));
-        if ( (msg.metadata().getString("category" )       == "ocean-3d") && 
-             (msg.metadata().getString("fesomLevelType" ) == "level") ) {
+        if ((msg.metadata().getString("category") == "ocean-3d")
+            && (msg.metadata().getString("fesomLevelType") == "level")) {
             if (level == 0) {
                 std::ostringstream os;
                 os << " - Wrong level for the oceal level: " << std::endl;
                 throw eckit::SeriousBug(os.str(), Here());
-            }        
-            level--;    
+            }
+            level--;
         }
-        const std::string domain = msg.metadata().getString("domain" );
+        const std::string domain = msg.metadata().getString("domain");
         std::string file = generateCacheFileName(cachePath, fesomGridName, domain, NSide, orderingConvention, level);
         // TODO: Here with some flag it is possible to add the possibility
         // to generate the cache in some way
@@ -151,6 +152,7 @@ public:
             os << " - Wrong input size: " << inputSize << " " << nCols_ << std::endl;
             throw eckit::SeriousBug(os.str(), Here());
         }
+
         if (outputSize != nOutRows_) {
             std::ostringstream os;
             os << " - Wrong output size: " << outputSize << " " << nOutRows_ << std::endl;
@@ -183,23 +185,26 @@ public:
  * \class MultIO Action for interpolation/regridding from fesom grids to HEALPix
  */
 template <typename T>
-class InterpolateFESOM final : public ChainedAction {
+class InterpolateFesom final : public ChainedAction {
 public:
     using ChainedAction::ChainedAction;
-    explicit InterpolateFESOM(const ComponentConfiguration& compConf);
+    explicit InterpolateFesom(const ComponentConfiguration& compConf);
 
 private:
     void print(std::ostream&) const override;
     void executeImpl(message::Message) override;
     std::string generateKey(const message::Message& msg) const;
+
     // Fesom interpolators with at different levels (different LSM)
     const size_t NSide_;
     const orderingConvention_e orderingConvention_;
     const T missingValue_;
     const std::string outputPrecision_;
     const std::string cachePath_;
+
     // const std::string fesomGridName_;
     // FesomInterpolationWeights cacheGenerator_;
+
     std::map<std::string, std::unique_ptr<Fesom2HEALPix<T>>> Interpolators_;
 };
 

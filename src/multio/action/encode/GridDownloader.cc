@@ -12,10 +12,10 @@
 
 #include "GribEncoder.h"
 
-#include "atlas/parallel/mpi/mpi.h"
 #include "atlas/grid/Grid.h"
 #include "atlas/grid/Iterator.h"
 #include "atlas/library.h"
+#include "atlas/parallel/mpi/mpi.h"
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/filesystem/TmpFile.h"

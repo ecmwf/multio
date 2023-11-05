@@ -10,22 +10,22 @@
  */
 
 
-#include "multio/action/interpolate-fesom/InterpolateFESOM.h"
+#include "multio/action/interpolate-fesom/InterpolateFesom.h"
 
-#include <string>
-#include <vector>
 #include <cmath>
 #include <iomanip>
+#include <string>
+#include <vector>
 
 #include "eckit/exception/Exceptions.h"
 
 
-#include "InterpolateFESOM_debug.h"
+#include "InterpolateFesom_debug.h"
+#include "eckit/filesystem/PathName.h"
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 #include "multio/util/PrecisionTag.h"
 #include "multio/util/Substitution.h"
-#include "eckit/filesystem/PathName.h"
 
 
 namespace multio::action::interpolateFESOM {
@@ -75,7 +75,8 @@ void forwardMetadata(const eckit::LocalConfiguration& cfg, DestType& destination
 
 
 void fill_metadata(const message::Metadata& in_md, message::Metadata& out_md, size_t NSide,
-                   orderingConvention_e orderingConvention, size_t globalSize, util::PrecisionTag outputPrecision, double missingValue) {
+                   orderingConvention_e orderingConvention, size_t globalSize, util::PrecisionTag outputPrecision,
+                   double missingValue) {
     INTERPOLATE_FESOM_OUT_STREAM << " - enter fill_metadata" << std::endl;
     for (auto& key : in_md.keys()) {
         if (std::find(metadata_black_list.cbegin(), metadata_black_list.cend(), key) == metadata_black_list.cend()) {
@@ -87,21 +88,21 @@ void fill_metadata(const message::Metadata& in_md, message::Metadata& out_md, si
     out_md.set("Nside", NSide);
     out_md.set("globalSize", globalSize);
     out_md.set("precision", outputPrecision == util::PrecisionTag::Float ? "single" : "double");
-    out_md.set("bitmapPresent",1);
-    out_md.set("missingValue",missingValue);
+    out_md.set("bitmapPresent", 1);
+    out_md.set("missingValue", missingValue);
     INTERPOLATE_FESOM_OUT_STREAM << " - exit fill_metadata" << std::endl;
     return;
 };
 
-std::string fullFileName( const std::string& fname ){
-    if ( fname != "none" ){
+std::string fullFileName(const std::string& fname) {
+    if (fname != "none") {
         const std::string fullFname = util::replaceCurly(fname, [](std::string_view replace) {
-             std::string lookUpKey{replace};
-             char* env = ::getenv(lookUpKey.c_str());
-             return env ? std::optional<std::string>{env} : std::optional<std::string>{};    
+            std::string lookUpKey{replace};
+            char* env = ::getenv(lookUpKey.c_str());
+            return env ? std::optional<std::string>{env} : std::optional<std::string>{};
         });
         eckit::PathName tmp{fullFname};
-        if ( !tmp.exists() ){
+        if (!tmp.exists()) {
             std::ostringstream os;
             os << "File/path not found: " << fullFname << std::endl;
             throw eckit::SeriousBug(os.str(), Here());
@@ -117,7 +118,7 @@ std::string fullFileName( const std::string& fname ){
 
 
 template <typename T>
-InterpolateFESOM<T>::InterpolateFESOM(const ComponentConfiguration& compConf) :
+InterpolateFesom<T>::InterpolateFesom(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
     NSide_{static_cast<size_t>(compConf.parsedConfig().getLong("nside"))},
     orderingConvention_{
@@ -125,60 +126,60 @@ InterpolateFESOM<T>::InterpolateFESOM(const ComponentConfiguration& compConf) :
     missingValue_{static_cast<T>(compConf.parsedConfig().getDouble("missing-value"))},
     outputPrecision_{compConf.parsedConfig().getString("output-precision", "from-message")},
     cachePath_{fullFileName(compConf.parsedConfig().getString("cache-path", "."))} {
-    INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFESOM :: enter constructor" << std::endl;
-    if ( outputPrecision_ != "single" && outputPrecision_ != "double" && outputPrecision_ != "from-message") {
+    INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFesom :: enter constructor" << std::endl;
+    if (outputPrecision_ != "single" && outputPrecision_ != "double" && outputPrecision_ != "from-message") {
         std::ostringstream os;
         os << " - Wrong value for output precision,"
            << "expected one of: [single|double|from-message]"
-           << ", got: " << outputPrecision_
-           << std::endl;
+           << ", got: " << outputPrecision_ << std::endl;
         throw eckit::UserError(os.str(), Here());
-    } 
-    INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFESOM :: exit constructor" << std::endl;
+    }
+    INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFesom :: exit constructor" << std::endl;
 };
 
 
 template <typename T>
-std::string InterpolateFESOM<T>::generateKey(const message::Message& msg) const {
-    INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFESOM :: enter generateKey" << std::endl;
+std::string InterpolateFesom<T>::generateKey(const message::Message& msg) const {
+    INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFesom :: enter generateKey" << std::endl;
     // TODO: Probably missing the kind of fesom grid in the name
     //       neeed to see the metadata to understand how to extract it
     size_t level = static_cast<size_t>(msg.metadata().getLong("level", msg.metadata().getDouble("levelist", 0)));
-    if ( (msg.metadata().getString("category" )       == "ocean-3d") && 
-         (msg.metadata().getString("fesomLevelType" ) == "level") ) {
+    if ((msg.metadata().getString("category") == "ocean-3d")
+        && (msg.metadata().getString("fesomLevelType") == "level")) {
         if (level == 0) {
             std::ostringstream os;
             os << " - Wrong level for the oceal level" << std::endl;
             throw eckit::SeriousBug(os.str(), Here());
-        }        
-        level--;    
+        }
+        level--;
     }
-    if ( !msg.metadata().has("gridType")){
+    if (!msg.metadata().has("gridType")) {
         std::ostringstream os;
         os << " - \"gridType\" not present in the metadata" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
-    if ( !msg.metadata().has("gridSubType")){
+    if (!msg.metadata().has("gridSubType")) {
         std::ostringstream os;
         os << " - \"gridSubType\" not present in the metadata" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
     std::string fesomGridName = msg.metadata().getString("gridType");
     const std::string domain = msg.metadata().getString("gridSubType");
-    std::string key = fesomCacheName( fesomGridName, domain, (sizeof(T) == 4 ? "single" : "double"), NSide_, orderingConvention_, level );
+    std::string key = fesomCacheName(fesomGridName, domain, (sizeof(T) == 4 ? "single" : "double"), NSide_,
+                                     orderingConvention_, level);
 
     INTERPOLATE_FESOM_OUT_STREAM << " - Generating key for the field :: " << key << std::endl;
-    INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFESOM :: exit generateKey" << std::endl;
+    INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFesom :: exit generateKey" << std::endl;
     return key;
 }
 
 
 template <typename T>
-void InterpolateFESOM<T>::executeImpl(message::Message msg) {
+void InterpolateFesom<T>::executeImpl(message::Message msg) {
     INTERPOLATE_FESOM_OUT_STREAM
         << " ======================================================================================================= "
         << std::endl;
-    INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFESOM :: enter executeImpl" << std::endl;
+    INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFesom :: enter executeImpl" << std::endl;
 
     if (msg.tag() != message::Message::Tag::Field) {
         INTERPOLATE_FESOM_OUT_STREAM << " - exit executeImpl (on flush)" << std::endl;
@@ -192,8 +193,8 @@ void InterpolateFESOM<T>::executeImpl(message::Message msg) {
     std::string key = generateKey(msg);
     if (Interpolators_.find(key) == Interpolators_.end()) {
         // no need to check for grid type since it is already checked in the generateKey function
-        Interpolators_[key]
-            = std::make_unique<Fesom2HEALPix<T>>(msg, cachePath_, msg.metadata().getString("gridType"), NSide_, orderingConvention_);
+        Interpolators_[key] = std::make_unique<Fesom2HEALPix<T>>(msg, cachePath_, msg.metadata().getString("gridType"),
+                                                                 NSide_, orderingConvention_);
     }
 
     executeNext(util::dispatchPrecisionTag(msg.precision(), [&](auto in_pt) -> message::Message {
@@ -213,15 +214,14 @@ void InterpolateFESOM<T>::executeImpl(message::Message msg) {
             eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()),
                                  outData.size() * sizeof(OutputPrecision));
             fill_metadata(msg.metadata(), md, NSide_, orderingConvention_, outData.size(), opt, missingValue_);
-            INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFESOM :: Interpolation results:" << std::endl;
+            INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFesom :: Interpolation results:" << std::endl;
             INTERPOLATE_FESOM_OUT_STREAM << "       * FROM: " << msg.metadata() << " " << std::endl;
             INTERPOLATE_FESOM_OUT_STREAM << "       * TO  :" << md << std::endl;
             INTERPOLATE_FESOM_OUT_STREAM << " - exit executeImpl (on field) " << std::endl;
             INTERPOLATE_FESOM_OUT_STREAM << " ========================================================================="
                                             "============================== "
                                          << std::endl;
-            INTERPOLATE_FESOM_OUT_STREAM << std::endl
-                                         << std::endl;
+            INTERPOLATE_FESOM_OUT_STREAM << std::endl << std::endl;
             return {
                 message::Message::Header{message::Message::Tag::Field, msg.source(), msg.destination(), std::move(md)},
                 std::move(buffer)};
@@ -231,13 +231,13 @@ void InterpolateFESOM<T>::executeImpl(message::Message msg) {
 
 
 template <typename T>
-void InterpolateFESOM<T>::print(std::ostream& os) const {
+void InterpolateFesom<T>::print(std::ostream& os) const {
     os << "interpolate-fesom-" << (sizeof(T) == 4 ? "single" : "double");
 }
 
 
-static ActionBuilder<InterpolateFESOM<float>> InterpolateFesomBuilderSP("interpolate-fesom-single");
-static ActionBuilder<InterpolateFESOM<double>> InterpolateFesomBuilderDP("interpolate-fesom-double");
+static ActionBuilder<InterpolateFesom<float>> InterpolateFesomBuilderSP("interpolate-fesom-single");
+static ActionBuilder<InterpolateFesom<double>> InterpolateFesomBuilderDP("interpolate-fesom-double");
 
 
 }  // namespace multio::action::interpolateFESOM

@@ -15,10 +15,10 @@
 #include "multio/fdb5/FDB5Sink.h"
 #include "multio/LibMultio.h"
 
-#include "fdb5/config/Config.h"
 #include "eckit/config/LocalConfiguration.h"
-#include "multio/util/Substitution.h"
 #include "eckit/value/Value.h"
+#include "fdb5/config/Config.h"
+#include "multio/util/Substitution.h"
 
 
 namespace multio::sink {
@@ -27,26 +27,25 @@ using config::ComponentConfiguration;
 
 namespace {
 
-void replaceCurly( const ComponentConfiguration& compConf, eckit::LocalConfiguration& cfg ){
+void replaceCurly(const ComponentConfiguration& compConf, eckit::LocalConfiguration& cfg) {
     for (auto& key : cfg.keys()) {
         // Replace the value if it is string
-        if ( cfg.getSubConfiguration(key).get().isString() ){
-            cfg.set(key, compConf.multioConfig().replaceCurly(cfg.getString(key)) );
+        if (cfg.getSubConfiguration(key).get().isString()) {
+            cfg.set(key, compConf.multioConfig().replaceCurly(cfg.getString(key)));
         }
         // Recursive replace of curly brackets
-        if ( cfg.getSubConfiguration(key).get().isMap() ){
+        if (cfg.getSubConfiguration(key).get().isMap()) {
             auto tmp = cfg.getSubConfiguration(key);
-            replaceCurly( compConf, tmp );
-            cfg.set(key,tmp);
+            replaceCurly(compConf, tmp);
+            cfg.set(key, tmp);
         }
-
     }
     return;
 }
 
 fdb5::Config fdb5_configuration(const ComponentConfiguration& compConf) {
     auto fdb_configuration = compConf.parsedConfig().getSubConfiguration("config");
-    replaceCurly(compConf,fdb_configuration);
+    replaceCurly(compConf, fdb_configuration);
 
     eckit::LocalConfiguration userConfig;
     if (fdb_configuration.has("userConfig")) {
@@ -61,7 +60,6 @@ fdb5::Config fdb5_configuration(const ComponentConfiguration& compConf) {
     LOG_DEBUG_LIB(LibMultio) << "FDB5 Config = " << fdb_config << std::endl;
 
     return fdb_config;
-
 }
 }  // namespace
 

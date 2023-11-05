@@ -19,9 +19,9 @@
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 
-#include "atlas/parallel/mpi/mpi.h"
 #include "atlas/grid.h"
 #include "atlas/library.h"
+#include "atlas/parallel/mpi/mpi.h"
 
 #include "GridDownloader.h"
 #include "multio/LibMultio.h"

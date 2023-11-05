@@ -1,0 +1,23 @@
+plans:
+  - name: fesom_CORE2_ngrid_to_HEALPix_32_ring_single_double_o2d_onthefly_cache
+    actions:
+      - type: metadata-mapping
+        mapping: "./fesom_CORE2_ngrid_mappings.yaml"
+        overwrite-existing: true
+      - type: print
+        stream: cout
+        prefix: "FESOM CORE2 NGRID O2D TESTS: "
+      - type: interpolate-fesom-single
+        nside: 32
+        missing-value: -99999
+        output-precision: double
+        fesom-geom-file: "./fesom_CORE2_mesh.atlas"
+      - type: encode
+        format: grib
+        template: fesom_to_HEALPix32.tmpl
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: MultIO_fesom_CORE2_ngrid_to_HEALPix_32_ring_single_double_o2d_onthefly_cache.grib

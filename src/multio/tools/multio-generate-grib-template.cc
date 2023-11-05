@@ -2,9 +2,9 @@
 #include "multio/tools/MultioTool.h"
 
 #include "atlas/functionspace.h"
-#include "atlas/parallel/mpi/mpi.h"
 #include "atlas/grid.h"
 #include "atlas/library.h"
+#include "atlas/parallel/mpi/mpi.h"
 
 #include "eccodes.h"
 
@@ -215,7 +215,9 @@ void MultioGenerateGribTemplate::execute(const eckit::option::CmdArgs& args) {
 
         using UpdateFunctionType = std::function<void(codes_handle*, const eckit::option::CmdArgs&)>;
         const std::unordered_map<std::string, UpdateFunctionType> updateFunctionMap
-            = {{"reduced_gg", &setReducedGGFields}, {"sh", &setSHFields}, {"reduced_ll", &setReducedLLFields},
+            = {{"reduced_gg", &setReducedGGFields},
+               {"sh", &setSHFields},
+               {"reduced_ll", &setReducedLLFields},
                {"healpix", &setHealpixFields}};
 
         const std::string sampleGridType(buffer);

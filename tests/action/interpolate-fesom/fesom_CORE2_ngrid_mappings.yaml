@@ -1,0 +1,30 @@
+mappings:
+  - match:
+      paramId: fesom-id
+    map:
+      param: param-id
+      gridType: grid-type
+      gridSubType: grid-sub-type
+      domain: fesom-domain
+      typeOfLevel: level-type
+      fesomLevelType: fesom-level-type
+      category: fesom-category
+data:
+  # Co-ordinates
+  - fesom-id: 263501
+    param-id: 263501
+    grid-type: "CORE2"
+    grid-sub-type : "N grid"
+    fesom-domain: "ngrid"
+    level-type : "oceanModelLayer"
+    fesom-level-type : "layer"
+    fesom-category:  o3d
+
+  - fesom-id: 263101
+    param-id: 263101
+    grid-type: "CORE2"
+    grid-sub-type : "N grid"
+    fesom-domain: "ngrid"
+    level-type : "oceanModelLayer"
+    fesom-level-type : "layer"
+    fesom-category:  o3d

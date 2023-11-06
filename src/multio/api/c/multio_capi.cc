@@ -680,7 +680,7 @@ int multio_delete_metadata(multio_metadata_t* md) {
 }
 
 
-int multio_metadata_set_int(multio_metadata_t* md, const char* key, int value) {
+int multio_metadata_set_int(multio_metadata_t* md, const char* key, long long value) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
@@ -695,35 +695,6 @@ int multio_metadata_set_int(multio_metadata_t* md, const char* key, int value) {
 #endif
 }
 
-int multio_metadata_set_long(multio_metadata_t* md, const char* key, long value) {
-#if !defined(MULTIO_DUMMY_API)
-    return wrapApiFunction(
-        [md, key, value]() {
-            ASSERT(md);
-            ASSERT(key);
-
-            md->set(key, value);
-        },
-        md);
-#else
-    return MULTIO_SUCCESS;
-#endif
-}
-
-int multio_metadata_set_longlong(multio_metadata_t* md, const char* key, long long value) {
-#if !defined(MULTIO_DUMMY_API)
-    return wrapApiFunction(
-        [md, key, value]() {
-            ASSERT(md);
-            ASSERT(key);
-
-            md->set(key, value);
-        },
-        md);
-#else
-    return MULTIO_SUCCESS;
-#endif
-}
 
 int multio_metadata_set_string(multio_metadata_t* md, const char* key, const char* value) {
 #if !defined(MULTIO_DUMMY_API)
@@ -756,20 +727,6 @@ int multio_metadata_set_bool(multio_metadata_t* md, const char* key, bool value)
 #endif
 }
 
-int multio_metadata_set_float(multio_metadata_t* md, const char* key, float value) {
-#if !defined(MULTIO_DUMMY_API)
-    return wrapApiFunction(
-        [md, key, value]() {
-            ASSERT(md);
-            ASSERT(key);
-
-            md->set(key, value);
-        },
-        md);
-#else
-    return MULTIO_SUCCESS;
-#endif
-}
 
 int multio_metadata_set_double(multio_metadata_t* md, const char* key, double value) {
 #if !defined(MULTIO_DUMMY_API)

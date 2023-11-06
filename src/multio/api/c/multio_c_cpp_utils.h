@@ -33,10 +33,10 @@ inline int multio_metadata_set(multio_metadata_t* md, const char* key, int value
     return (multio_metadata_set_int(md, key, value));
 };
 inline int multio_metadata_set(multio_metadata_t* md, const char* key, long value) {
-    return (multio_metadata_set_long(md, key, value));
+    return (multio_metadata_set_int(md, key, value));
 };
 inline int multio_metadata_set(multio_metadata_t* md, const char* key, long long value) {
-    return (multio_metadata_set_longlong(md, key, value));
+    return (multio_metadata_set_int(md, key, value));
 };
 inline int multio_metadata_set(multio_metadata_t* md, const char* key, const char* value) {
     return (multio_metadata_set_string(md, key, value));
@@ -45,7 +45,7 @@ inline int multio_metadata_set(multio_metadata_t* md, const char* key, bool valu
     return (multio_metadata_set_bool(md, key, value));
 };
 inline int multio_metadata_set(multio_metadata_t* md, const char* key, float value) {
-    return (multio_metadata_set_float(md, key, value));
+    return (multio_metadata_set_double(md, key, value));
 };
 inline int multio_metadata_set(multio_metadata_t* md, const char* key, double value) {
     return (multio_metadata_set_double(md, key, value));

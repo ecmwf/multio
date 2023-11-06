@@ -188,7 +188,7 @@ std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& t
     auto search = REF_TO_DATETIME_KEYS.find(timeRef);
     if (search == REF_TO_DATETIME_KEYS.end()) {
         std::ostringstream oss;
-        oss << "getReferenceDateTime: Time reference \"" << timeRef << "\" can not be mapped";
+        oss << "getReferenceDateTime: Time reference \"" << timeRef << "\" cannot be mapped";
         throw EncodeGrib2Exception(oss.str(), Here());
     }
 
@@ -197,6 +197,9 @@ std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& t
 }
 
 void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadata& in, Metadata& out) {
+    // TODO mapping of existing stuff:
+    //  - (type && (type == "tpa")) -> timeExtent: timeRange
+    //  - type && (type == "fc" || type == "pf") -> timeReference: start
     auto timeExtent = in.getOpt<std::string>("timeExtent");
 
     if (!timeExtent) {
@@ -207,7 +210,7 @@ void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadat
     auto type = in.getOpt<std::string>("type");
 
     // bool isTimeRange = op && op != "instant";
-    bool isTimeRange = timeExtent == "timeRange";
+    bool isTimeRange = (timeExtent == "timeRange");
 
     if ((op && op == "instant") && isTimeRange) {
         throw EncodeGrib2Exception(
@@ -251,7 +254,7 @@ void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadat
     auto currentDate = util::toDateInts(in.get<std::int64_t>("currentDate"));
     auto currentTime = util::toTimeInts(in.get<std::int64_t>("currentTime"));
     if (!isTimeRange) {
-        if (timeRef.compare("current") != 0) {
+        if (timeRef.compare("start") != 0) {
             // Compute diff to current time in some appropriate unit
             util::DateTimeDiff diff = util::dateTimeDiff(currentDate, currentTime, refDate, refTime);
             out.set(forecasteTimeUnitKey, timeUnitCodes(diff.unit));
@@ -265,7 +268,7 @@ void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadat
     else {
         auto previousDate = util::toDateInts(in.get<std::int64_t>("previousDate"));
         auto previousTime = util::toTimeInts(in.get<std::int64_t>("previousTime"));
-        if (timeRef.compare("previous") != 0) {
+        if (timeRef.compare("start") != 0) {
             // Compute diff to current time in some appropriate unit
             util::DateTimeDiff diff = util::dateTimeDiff(previousDate, previousTime, refDate, refTime);
             out.set(forecasteTimeUnitKey, timeUnitCodes(diff.unit));
@@ -319,7 +322,7 @@ void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadat
         if (!sampleIntervalUnit) {
             std::ostringstream oss;
             oss << "multioToEccodesDatetime - Value for passed metadatakey \"sampleIntervalUnit\": "
-                << sampleIntervalUnitStr << " can not be parsed to a valid unit (Y,m,d,H,M,S). ";
+                << sampleIntervalUnitStr << " cannot be parsed to a valid unit (Y,m,d,H,M,S). ";
             throw EncodeGrib2Exception(oss.str(), Here());
         }
         out.set("indicatorOfUnitForTimeIncrement", timeUnitCodes(*sampleIntervalUnit));

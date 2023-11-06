@@ -20,6 +20,7 @@ list( APPEND multio_action_plugins
     multio-action-statistics
     multio-action-transport
     multio-action-renumber-healpix
+    multio-action-interpolate-fesom
 )
 
 if( HAVE_MIR )

@@ -362,6 +362,8 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
         ASSERT(level > 0);
         setValue("scaledValueOfFirstFixedSurface", level - 1);
         setValue("scaledValueOfSecondFixedSurface", level);
+        setValue("scaleFactorOfFirstFixedSurface", 0l);
+        setValue("scaleFactorOfSecondFixedSurface", 0l);
     }
 
     std::string gridType;

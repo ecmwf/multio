@@ -27,25 +27,7 @@ int multio_delete_metadata(multio_metadata_t* md);
  * \param value Integer value to be set
  * \returns Return code (#MultioErrorValues)
  */
-int multio_metadata_set_int(multio_metadata_t* md, const char* key, int value);
-
-
-/** Sets a metadata key-value pair for long values
- * \param md Handle to the multio metadata object
- * \param key C-string key to be set
- * \param value Long value to be set
- * \returns Return code (#MultioErrorValues)
- */
-int multio_metadata_set_long(multio_metadata_t* md, const char* key, long value);
-
-
-/** Sets a metadata key-value pair for long long values
- * \param md Handle to the multio metadata object
- * \param key C-string key to be set
- * \param value Long long value to be set
- * \returns Return code (#MultioErrorValues)
- */
-int multio_metadata_set_longlong(multio_metadata_t* md, const char* key, long long value);
+int multio_metadata_set_int(multio_metadata_t* md, const char* key, long long value);
 
 
 /** Sets a metadata key-value pair for string values
@@ -65,15 +47,6 @@ int multio_metadata_set_string(multio_metadata_t* md, const char* key, const cha
  * \returns Return code (#MultioErrorValues)
  */
 int multio_metadata_set_bool(multio_metadata_t* md, const char* key, bool value);
-
-
-/** Sets a metadata key-value pair for float values
- * \param md Handle to the multio metadata object
- * \param key C-string key to be set
- * \param value float value to be set
- * \returns Return code (#MultioErrorValues)
- */
-int multio_metadata_set_float(multio_metadata_t* md, const char* key, float value);
 
 
 /** Sets a metadata key-value pair for double values

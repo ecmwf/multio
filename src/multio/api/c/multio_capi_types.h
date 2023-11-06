@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdbool>
+#include <cstdint>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

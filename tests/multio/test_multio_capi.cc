@@ -231,9 +231,9 @@ CASE("Metadata can set values") {
     // EXPECT(err == MULTIO_SUCCESS);
     // err = multio_metadata_set_long(mdp, "int32MaxValue", std::numeric_limits<std::int32_t>::max());
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_long(mdp, "int64MinValue", std::numeric_limits<std::int64_t>::min());
+    err = multio_metadata_set_int(mdp, "int64MinValue", std::numeric_limits<std::int64_t>::min());
     EXPECT(err == MULTIO_SUCCESS);
-    err = multio_metadata_set_long(mdp, "int64MaxValue", std::numeric_limits<std::int64_t>::max());
+    err = multio_metadata_set_int(mdp, "int64MaxValue", std::numeric_limits<std::int64_t>::max());
     EXPECT(err == MULTIO_SUCCESS);
     // err = multio_metadata_set_float(mdp, "floatLowestValue",
     //                                 std::numeric_limits<float>::lowest() + std::numeric_limits<float>::epsilon());

@@ -282,7 +282,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
         withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
         withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
-        withFirstOf(valueSetter(g, "resolution"), LookUpString(md, "resolution"));
     }
 
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
@@ -602,8 +601,25 @@ void GribEncoder::setFieldMetadata(const message::Message& msg) {
 }
 
 void GribEncoder::setOceanMetadata(const message::Message& msg) {
-    auto runConfig = config_.getSubConfiguration("run");
     const auto& metadata = msg.metadata();
+    
+    if (metadata.has("dataset")) {
+        withFirstOf(valueSetter(*this, "tablesVersion"), LookUpLong(metadata, "tablesVersion"));
+        withFirstOf(valueSetter(*this, "setLocalDefinition"), LookUpLong(metadata, "setLocalDefinition"));
+        withFirstOf(valueSetter(*this, "grib2LocalSectionNumber"), LookUpLong(metadata, "grib2LocalSectionNumber"));
+        withFirstOf(valueSetter(*this, "productionStatusOfProcessedData"), LookUpLong(metadata, "productionStatusOfProcessedData"));
+        withFirstOf(valueSetter(*this, "dataset"), LookUpString(metadata, "dataset"));
+        withFirstOf(valueSetter(*this, "activity"), LookUpString(metadata, "activity"));
+        withFirstOf(valueSetter(*this, "experiment"), LookUpString(metadata, "experiment"));
+        withFirstOf(valueSetter(*this, "generation"), LookUpString(metadata, "generation"));
+        withFirstOf(valueSetter(*this, "model"), LookUpString(metadata, "model"));
+        withFirstOf(valueSetter(*this, "realization"), LookUpString(metadata, "realization"));
+        withFirstOf(valueSetter(*this, "class"), LookUpString(metadata, "class"), LookUpString(metadata, "marsClass"));
+        withFirstOf(valueSetter(*this, "stream"), LookUpString(metadata, "stream"), LookUpString(metadata, "marsStream"));
+        withFirstOf(valueSetter(*this, "expver"), LookUpString(metadata, "expver"), LookUpString(metadata, "experimentVersionNumber"));
+    }
+
+    auto runConfig = config_.getSubConfiguration("run");
 
     auto queriedMarsFields = setMarsKeys(*this, runConfig);
     if (queriedMarsFields.type) {
@@ -641,23 +657,6 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
         const auto& gridUID = metadata.getString("uuidOfHGrid");
         setValue("uuidOfHGrid", gridUID);
-    }
-
-    if (metadata.has("dataset")) {
-        withFirstOf(valueSetter(*this, "tablesVersion"), LookUpLong(metadata, "tablesVersion"));
-        withFirstOf(valueSetter(*this, "setLocalDefinition"), LookUpLong(metadata, "setLocalDefinition"));
-        withFirstOf(valueSetter(*this, "grib2LocalSectionNumber"), LookUpLong(metadata, "grib2LocalSectionNumber"));
-        withFirstOf(valueSetter(*this, "productionStatusOfProcessedData"), LookUpLong(metadata, "productionStatusOfProcessedData"));
-        withFirstOf(valueSetter(*this, "dataset"), LookUpString(metadata, "dataset"));
-        withFirstOf(valueSetter(*this, "activity"), LookUpString(metadata, "activity"));
-        withFirstOf(valueSetter(*this, "experiment"), LookUpString(metadata, "experiment"));
-        withFirstOf(valueSetter(*this, "generation"), LookUpString(metadata, "generation"));
-        withFirstOf(valueSetter(*this, "model"), LookUpString(metadata, "model"));
-        withFirstOf(valueSetter(*this, "realization"), LookUpString(metadata, "realization"));
-        withFirstOf(valueSetter(*this, "resolution"), LookUpString(metadata, "resolution"));
-        withFirstOf(valueSetter(*this, "class"), LookUpString(metadata, "class"), LookUpString(metadata, "marsClass"));
-        withFirstOf(valueSetter(*this, "stream"), LookUpString(metadata, "stream"), LookUpString(metadata, "marsStream"));
-        withFirstOf(valueSetter(*this, "expver"), LookUpString(metadata, "expver"), LookUpString(metadata, "experimentVersionNumber"));
     }
 }
 

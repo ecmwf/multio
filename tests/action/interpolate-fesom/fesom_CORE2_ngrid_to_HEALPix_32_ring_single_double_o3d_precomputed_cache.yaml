@@ -11,7 +11,7 @@ plans:
         nside: 32
         missing-value: -99999
         output-precision: double
-        cache-path: "./cache"
+        cache-path: "."
       - type: encode
         format: grib
         template: fesom_to_HEALPix32.tmpl

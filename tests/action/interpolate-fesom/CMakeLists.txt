@@ -1,6 +1,5 @@
 set(PREFIX multio_tests_action_interpolate-fesom)
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/multio/tests/action/interpolate-fesom/cache)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/fesom_CORE2_ngrid_mappings.yaml ${CMAKE_BINARY_DIR}/multio/tests/action/interpolate-fesom/fesom_CORE2_ngrid_mappings.yaml )
 
 ecbuild_get_test_multidata(
@@ -34,7 +33,7 @@ ecbuild_get_test_multidata(
 ecbuild_get_test_multidata(
     TARGET   ${PREFIX}_get_cache
     DIRNAME  multio/tests/actions/interpolate-fesom/cache
-    DIRLOCAL ${CMAKE_BINARY_DIR}/multio/tests/action/interpolate-fesom/cache
+    DIRLOCAL ${CMAKE_BINARY_DIR}/multio/tests/action/interpolate-fesom
     NAMES
         "fesom_CORE2_ngrid_to_HEALPix_000032_double_ring_00000000.atlas"
         "fesom_CORE2_ngrid_to_HEALPix_000032_double_ring_00001000.atlas"

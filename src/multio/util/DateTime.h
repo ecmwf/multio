@@ -51,11 +51,12 @@ TimeInts toTimeInts(std::int64_t time) noexcept;
 
 
 std::int64_t fromDateInts(const DateInts& ints) noexcept;
-;
 
 
 std::int64_t fromTimeInts(const TimeInts& ints) noexcept;
-;
+
+
+DateTimeInts normalizeDateTime(DateTimeInts);
 
 
 //-----------------------------------------------------------------------------
@@ -72,13 +73,10 @@ enum class TimeUnit : char
 };
 
 std::optional<TimeUnit> timeUnitFromChar(char c) noexcept;
-;
 
 std::optional<TimeUnit> timeUnitFromString(std::string_view sv) noexcept;
-;
 
 char timeUnitToChar(TimeUnit tu) noexcept;
-;
 
 //-----------------------------------------------------------------------------
 

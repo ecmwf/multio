@@ -15,10 +15,10 @@
 #include "GribEncoder.h"
 
 #include <cstring>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <unordered_map>
-#include <functional>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
@@ -126,10 +126,10 @@ void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
         }
         else if (hasDateTime) {
             startDate = util::toDateInts(in.getLong("date"));
-            startTime = util::toTimeInts(in.getLong("time"));
+            startTime = util::toTimeInts(in.getLong("time") * 100);
 
             in.set("startDate", in.getLong("date"));
-            in.set("startTime", in.getLong("time"));
+            in.set("startTime", in.getLong("time") * 100);
         }
 
         // std::cout << "startDate: " << startDate.year << " " << startDate.month << " " << startDate.day << std::endl;
@@ -186,6 +186,9 @@ void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
             in.set("currentTime", (std::int64_t)currentDateTime.time().hhmmss());
         }
     }
+
+
+    // Compute back from currentDate/Time + endStep/startStep
 
     // std::cout << "tryMapStepToTimeAndCheckTime done" << std::endl;
 
@@ -253,7 +256,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         g.setValue("scaledValueOfFirstFixedSurface", "MISSING");
         g.setValue("scaleFactorOfSecondFixedSurface", "MISSING");
         g.setValue("scaleFactorOfSecondFixedSurface", "MISSING");
-    } 
+    }
     else {
         withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
     }
@@ -275,7 +278,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
         withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
         withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
-        withFirstOf(valueSetter(g, "productionStatusOfProcessedData"), LookUpLong(md, "productionStatusOfProcessedData"));
+        withFirstOf(valueSetter(g, "productionStatusOfProcessedData"),
+                    LookUpLong(md, "productionStatusOfProcessedData"));
         withFirstOf(valueSetter(g, "dataset"), LookUpString(md, "dataset"));
         withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
         withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
@@ -442,28 +446,27 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         return isReferingToStart ? "start" : (isTimeRange ? "previous" : "current");
     });
 
-    auto refDateTime = getReferenceDateTime(timeRef, md);
-    // g.setValue("dataDate", (long)std::get<0>(refDateTime));
-    // g.setValue("dataTime", (long)std::get<1>(refDateTime));
+    auto refDateTimeTup = getReferenceDateTime(timeRef, md);
+    auto refDateTime = util::normalizeDateTime(
+        {util::toDateInts(std::get<0>(refDateTimeTup)), util::toTimeInts(std::get<1>(refDateTimeTup))});
+    g.setValue("year", (long)refDateTime.date.year);
+    g.setValue("month", (long)refDateTime.date.month);
+    g.setValue("day", (long)refDateTime.date.day);
 
-    auto refDate = util::toDateInts(std::get<0>(refDateTime));
-    g.setValue("year", (long)refDate.year);
-    g.setValue("month", (long)refDate.month);
-    g.setValue("day", (long)refDate.day);
+    g.setValue("hour", (long)refDateTime.time.hour);
+    g.setValue("minute", (long)refDateTime.time.minute);
+    g.setValue("second", (long)refDateTime.time.second);
 
-    auto refTime = util::toTimeInts(std::get<1>(refDateTime));
-    g.setValue("hour", (long)refTime.hour);
-    g.setValue("minute", (long)refTime.minute);
-    g.setValue("second", (long)refTime.second);
+    auto currentDateTime = util::normalizeDateTime(
+        {util::toDateInts(md.getLong("currentDate")), util::toTimeInts(md.getLong("currentTime"))});
 
-    auto currentDate = util::toDateInts(md.getLong("currentDate"));
-    auto currentTime = util::toTimeInts(md.getLong("currentTime"));
     if (!isTimeRange) {
         if (timeRef == std::string("start")) {
             // Compute diff to current time in some appropriate unit
             g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
-            g.setValue("startStep",
-                       (long)util::dateTimeDiffInSeconds(currentDate, currentTime, refDate, refTime) / 3600);
+            g.setValue("startStep", (long)util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                                      refDateTime.date, refDateTime.time)
+                                        / 3600);
             // util::DateTimeDiff diff = util::dateTimeDiff(currentDate, currentTime, refDate, refTime);
             // g.setValue("stepUnits", (long)timeUnitCodes(diff.unit));
             // g.setValue("startStep", (long)diff.diff);
@@ -474,20 +477,23 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         }
     }
     else {
-        auto previousDate = util::toDateInts(md.getLong("previousDate"));
-        auto previousTime = util::toTimeInts(md.getLong("previousTime"));
+        auto previousDateTime = util::normalizeDateTime(
+            {util::toDateInts(md.getLong("previousDate")), util::toTimeInts(md.getLong("previousTime"))});
         if (timeRef == std::string("start")) {
             // Compute diff to current time in some appropriate unit
             g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
-            g.setValue("startStep",
-                       (long)util::dateTimeDiffInSeconds(previousDate, previousTime, refDate, refTime) / 3600);
+            g.setValue("startStep", (long)util::dateTimeDiffInSeconds(previousDateTime.date, previousDateTime.time,
+                                                                      refDateTime.date, refDateTime.time)
+                                        / 3600);
             // util::DateTimeDiff diff = util::dateTimeDiff(previousDate, previousTime, refDate, refTime);
             // g.setValue("stepUnits", (long)timeUnitCodes(diff.unit));
             // g.setValue("startStep", (long)diff.diff);
 
 
             // Set endStep to please MARS
-            g.setValue("endStep", (long)util::dateTimeDiffInSeconds(currentDate, currentTime, refDate, refTime) / 3600);
+            g.setValue("endStep", (long)util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                                    refDateTime.date, refDateTime.time)
+                                      / 3600);
             // util::DateTimeDiff diffEnd = util::dateTimeDiff(currentDate, currentTime, refDate, refTime);
             // g.setValue("endStep", (long)diffEnd.diff);
         }
@@ -502,24 +508,26 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
 
 
             // Set endStep to please MARS
-            g.setValue("endStep",
-                       (long)util::dateTimeDiffInSeconds(currentDate, currentTime, previousDate, previousTime) / 3600);
+            g.setValue("endStep", (long)util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                                    previousDateTime.date, previousDateTime.time)
+                                      / 3600);
             // util::DateTimeDiff diffEnd = util::dateTimeDiff(currentDate, currentTime, previousDate, previousTime);
             // g.setValue("endStep", (long)diffEnd.diff);
         }
 
 
         // Now just deal with GRIB2
-        g.setValue("yearOfEndOfOverallTimeInterval", (long)currentDate.year);
-        g.setValue("monthOfEndOfOverallTimeInterval", (long)currentDate.month);
-        g.setValue("dayOfEndOfOverallTimeInterval", (long)currentDate.day);
-        g.setValue("hourOfEndOfOverallTimeInterval", (long)currentTime.hour);
-        g.setValue("minuteOfEndOfOverallTimeInterval", (long)currentTime.minute);
-        g.setValue("secondOfEndOfOverallTimeInterval", (long)currentTime.second);
+        g.setValue("yearOfEndOfOverallTimeInterval", (long)currentDateTime.date.year);
+        g.setValue("monthOfEndOfOverallTimeInterval", (long)currentDateTime.date.month);
+        g.setValue("dayOfEndOfOverallTimeInterval", (long)currentDateTime.date.day);
+        g.setValue("hourOfEndOfOverallTimeInterval", (long)currentDateTime.time.hour);
+        g.setValue("minuteOfEndOfOverallTimeInterval", (long)currentDateTime.time.minute);
+        g.setValue("secondOfEndOfOverallTimeInterval", (long)currentDateTime.time.second);
 
         g.setValue("indicatorOfUnitForTimeRange", (long)timeUnitCodes(util::TimeUnit::Hour));
-        g.setValue("lengthOfTimeRange",
-                   (long)util::dateTimeDiffInSeconds(currentDate, currentTime, previousDate, previousTime) / 3600);
+        g.setValue("lengthOfTimeRange", (long)util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                                          previousDateTime.date, previousDateTime.time)
+                                            / 3600);
         // util::DateTimeDiff lengthTimeRange = util::dateTimeDiff(currentDate, currentTime, previousDate,
         // previousTime); g.setValue("indicatorOfUnitForTimeRange", (long)timeUnitCodes(lengthTimeRange.unit));
         // g.setValue("lengthOfTimeRange", (long)lengthTimeRange.diff);
@@ -571,19 +579,17 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
 
 
     auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
+    auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis")).value_or(0);
     if (dateOfAnalysis) {
-        auto date = util::toDateInts(*dateOfAnalysis);
-        g.setValue("yearOfAnalysis", (long)date.year);
-        g.setValue("monthOfAnalysis", (long)date.month);
-        g.setValue("dayOfAnalysis", (long)date.day);
-    }
+        auto analysisDateTime
+            = util::normalizeDateTime({util::toDateInts(*dateOfAnalysis), util::toTimeInts(timeOfAnalysis)});
+        g.setValue("yearOfAnalysis", (long)analysisDateTime.date.year);
+        g.setValue("monthOfAnalysis", (long)analysisDateTime.date.month);
+        g.setValue("dayOfAnalysis", (long)analysisDateTime.date.day);
 
-    auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis"));
-    if (timeOfAnalysis) {
-        auto time = util::toTimeInts(*timeOfAnalysis);
-        g.setValue("hourOfAnalysis", (long)time.hour);
-        g.setValue("minuteOfAnalysis", (long)time.minute);
-        g.setValue("secondOfAnalysis", (long)time.second);
+        g.setValue("hourOfAnalysis", (long)analysisDateTime.time.hour);
+        g.setValue("minuteOfAnalysis", (long)analysisDateTime.time.minute);
+        g.setValue("secondOfAnalysis", (long)analysisDateTime.time.second);
     }
 }
 
@@ -607,7 +613,8 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
         withFirstOf(valueSetter(*this, "tablesVersion"), LookUpLong(metadata, "tablesVersion"));
         withFirstOf(valueSetter(*this, "setLocalDefinition"), LookUpLong(metadata, "setLocalDefinition"));
         withFirstOf(valueSetter(*this, "grib2LocalSectionNumber"), LookUpLong(metadata, "grib2LocalSectionNumber"));
-        withFirstOf(valueSetter(*this, "productionStatusOfProcessedData"), LookUpLong(metadata, "productionStatusOfProcessedData"));
+        withFirstOf(valueSetter(*this, "productionStatusOfProcessedData"),
+                    LookUpLong(metadata, "productionStatusOfProcessedData"));
         withFirstOf(valueSetter(*this, "dataset"), LookUpString(metadata, "dataset"));
         withFirstOf(valueSetter(*this, "activity"), LookUpString(metadata, "activity"));
         withFirstOf(valueSetter(*this, "experiment"), LookUpString(metadata, "experiment"));
@@ -615,8 +622,10 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
         withFirstOf(valueSetter(*this, "model"), LookUpString(metadata, "model"));
         withFirstOf(valueSetter(*this, "realization"), LookUpString(metadata, "realization"));
         withFirstOf(valueSetter(*this, "class"), LookUpString(metadata, "class"), LookUpString(metadata, "marsClass"));
-        withFirstOf(valueSetter(*this, "stream"), LookUpString(metadata, "stream"), LookUpString(metadata, "marsStream"));
-        withFirstOf(valueSetter(*this, "expver"), LookUpString(metadata, "expver"), LookUpString(metadata, "experimentVersionNumber"));
+        withFirstOf(valueSetter(*this, "stream"), LookUpString(metadata, "stream"),
+                    LookUpString(metadata, "marsStream"));
+        withFirstOf(valueSetter(*this, "expver"), LookUpString(metadata, "expver"),
+                    LookUpString(metadata, "experimentVersionNumber"));
     }
 
     auto runConfig = config_.getSubConfiguration("run");

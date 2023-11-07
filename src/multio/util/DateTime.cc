@@ -54,6 +54,17 @@ std::int64_t fromTimeInts(const TimeInts& ints) noexcept {
 };
 
 
+DateTimeInts normalizeDateTime(DateTimeInts in) {
+    if (in.time.hour >= 24 || in.time.minute >= 60 || in.time.second >= 60) {
+        eckit::DateTime normalized
+            = eckit::DateTime{eckit::Date{in.date.year, in.date.month, in.date.day}, eckit::Time{0, 0, 0}}
+            + ((double)(((in.time.hour * 60) + in.time.minute) * 60 + in.time.second));
+
+        return {toDateInts(normalized.date().yyyymmdd()), toTimeInts(normalized.time().hhmmss())};
+    }
+    return in;
+};
+
 //-----------------------------------------------------------------------------
 
 std::optional<TimeUnit> timeUnitFromChar(char c) noexcept {
@@ -106,12 +117,15 @@ std::int64_t lastDayOfTheMonth(std::int64_t y, std::int64_t m) {
 
 double dateTimeDiffInSeconds(const DateInts& lhsDate, const TimeInts& lhsTime, const DateInts& rhsDate,
                              const TimeInts& rhsTime) {
-    eckit::DateTime l{eckit::Date{lhsDate.year, lhsDate.month, lhsDate.day},
-                      eckit::Time{lhsTime.hour, lhsTime.minute, lhsTime.second}};
-    eckit::DateTime r{eckit::Date{rhsDate.year, rhsDate.month, rhsDate.day},
-                      eckit::Time{rhsTime.hour, rhsTime.minute, rhsTime.second}};
+    // eckit::Time is not supposed to hold values larger than 23:59:59. However Fesom sends 24:00:00.
+    // Hence we compute the time diff manually
+    eckit::DateTime l{eckit::Date{lhsDate.year, lhsDate.month, lhsDate.day}, eckit::Time{0, 0, 0}};
 
-    return l - r;
+    double lhsSec = (lhsTime.hour * 60 + lhsTime.minute) * 60 + lhsTime.second;
+    eckit::DateTime r{eckit::Date{rhsDate.year, rhsDate.month, rhsDate.day}, eckit::Time{0, 0, 0}};
+    double rhsSec = (rhsTime.hour * 60 + rhsTime.minute) * 60 + rhsTime.second;
+
+    return (l - r) + (lhsSec - rhsSec);
 }
 
 

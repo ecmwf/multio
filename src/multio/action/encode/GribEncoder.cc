@@ -248,7 +248,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     }
 
     if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
-        g.setValue("level", (long)0);
+        g.setValue("level", 0l);
         g.setValue("scaleFactorOfFirstFixedSurface", "MISSING");
         g.setValue("scaledValueOfFirstFixedSurface", "MISSING");
         g.setValue("scaleFactorOfSecondFixedSurface", "MISSING");
@@ -424,11 +424,11 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
                 // then forecastTime should be set to zero.
                 if (significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
                     isReferingToStart = false;
-                    g.setValue("stepUnits", (long)0);
-                    g.setValue("startStep", (long)0);
+                    g.setValue("stepUnits", 0l);
+                    g.setValue("startStep", 0l);
                     if (gribEdition == "2") {
-                        g.setValue("indicatorOfUnitOfTimeRange", (long)0);
-                        g.setValue("forecastTime", (long)0);
+                        g.setValue("indicatorOfUnitOfTimeRange", 0l);
+                        g.setValue("forecastTime", 0l);
                     }
                 }
                 else {
@@ -469,8 +469,8 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
             // g.setValue("startStep", (long)diff.diff);
         }
         else {
-            g.setValue("stepUnits", (long)0);
-            g.setValue("startStep", (long)0);
+            g.setValue("stepUnits", 0l);
+            g.setValue("startStep", 0l);
         }
     }
     else {
@@ -493,11 +493,11 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         }
         else {
             // No forecast time is used
-            g.setValue("stepUnits", (long)0);
-            g.setValue("startStep", (long)0);
+            g.setValue("stepUnits", 0l);
+            g.setValue("startStep", 0l);
             if (gribEdition == "2") {
-                g.setValue("indicatorOfUnitOfTimeRange", (long)0);
-                g.setValue("forecastTime", (long)0);
+                g.setValue("indicatorOfUnitOfTimeRange", 0l);
+                g.setValue("forecastTime", 0l);
             }
 
 
@@ -602,7 +602,7 @@ void GribEncoder::setFieldMetadata(const message::Message& msg) {
 
 void GribEncoder::setOceanMetadata(const message::Message& msg) {
     const auto& metadata = msg.metadata();
-    
+
     if (metadata.has("dataset")) {
         withFirstOf(valueSetter(*this, "tablesVersion"), LookUpLong(metadata, "tablesVersion"));
         withFirstOf(valueSetter(*this, "setLocalDefinition"), LookUpLong(metadata, "setLocalDefinition"));

@@ -31,7 +31,8 @@ StatisticsConfiguration::StatisticsConfiguration(const config::ComponentConfigur
     restartPath_{"."},
     restartPrefix_{"StatisticsRestartFile"},
     restartLib_{"fstream_io"},
-    logPrefix_{"Plan"} {
+    logPrefix_{"Plan"},
+    accumulatedFieldsResetFreqency_{"month"} {
 
     if (compConf.parsedConfig().has("help")) {
         usage();
@@ -53,6 +54,7 @@ StatisticsConfiguration::StatisticsConfiguration(const config::ComponentConfigur
     parseRestartPrefix(compConf, cfg);
     parseRestartLib(cfg);
     parseLogPrefix(compConf, cfg);
+    parseSolverResetAccumulatedFields(compConf, cfg);
 
     return;
 };
@@ -73,7 +75,8 @@ StatisticsConfiguration::StatisticsConfiguration(const StatisticsConfiguration& 
     restartPath_{cfg.restartPath()},
     restartPrefix_{cfg.restartPrefix()},
     restartLib_{cfg.restartLib()},
-    logPrefix_{""} {
+    logPrefix_{""},
+    accumulatedFieldsResetFreqency_{cfg.solverResetAccumulatedFields()} {
 
     readStartTime(msg);
     readStartDate(msg);
@@ -163,6 +166,22 @@ void StatisticsConfiguration::parseRestartPrefix(const config::ComponentConfigur
 
 void StatisticsConfiguration::parseRestartLib(const eckit::LocalConfiguration& cfg) {
     restartLib_ = cfg.getString("restart-lib", "fstream_io");
+    return;
+};
+
+
+void StatisticsConfiguration::parseSolverResetAccumulatedFields(const config::ComponentConfiguration& compConf,
+                                                                const eckit::LocalConfiguration& cfg) {
+    // Used in the deaccumulate action to not deaccumulate twice
+    accumulatedFieldsResetFreqency_ = cfg.getString("solver-reset-accumulate-fields-every", "month");
+
+    if (accumulatedFieldsResetFreqency_ != "hour" && accumulatedFieldsResetFreqency_ != "day"
+        && accumulatedFieldsResetFreqency_ != "month" && accumulatedFieldsResetFreqency_ != "year"
+        && accumulatedFieldsResetFreqency_ != "never") {
+        std::ostringstream os;
+        os << "Invalid reset period of accumulated fields :: " << accumulatedFieldsResetFreqency_ << std::endl;
+        throw eckit::UserError(os.str(), Here());
+    }
     return;
 };
 
@@ -270,36 +289,31 @@ void StatisticsConfiguration::createLoggingPrefix(const StatisticsConfiguration&
     if (msg.metadata().has("levtype")) {
         os << ", level-type=" << std::left << std::setw(5) << msg.metadata().getString("levtype");
     }
-    os << ", pid=" << std::left << std::setw(10) << ::getpid();
-
-    {
-        char hostname[255];
-        gethostname(hostname, 255);
-        os << ", hostname=" << std::string{hostname} << ") ";
-    }
     logPrefix_ = os.str();
     return;
 };
 
 
 void StatisticsConfiguration::dumpConfiguration() {
-    LOG_DEBUG_LIB(LibMultio) << " + useDateTime_        :: " << useDateTime_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + stepFreq_           :: " << stepFreq_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + timeStep_           :: " << timeStep_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + startDate_          :: " << startDate_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + startTime_          :: " << startTime_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + restart_            :: " << restart_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + readRestart_        :: " << readRestart_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + writeRestart_       :: " << writeRestart_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + step_               :: " << step_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + restartStep_        :: " << restartStep_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + solverSendInitStep_ :: " << solverSendInitStep_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + haveMissingValue_   :: " << haveMissingValue_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + missingValue_       :: " << missingValue_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + restartPath_        :: " << restartPath_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + restartPrefix_      :: " << restartPrefix_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + restartLib_         :: " << restartLib_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + logPrefix_          :: " << logPrefix_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + useDateTime_                :: " << useDateTime_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + stepFreq_                   :: " << stepFreq_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + timeStep_                   :: " << timeStep_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + startDate_                  :: " << startDate_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + startTime_                  :: " << startTime_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + restart_                    :: " << restart_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + readRestart_                :: " << readRestart_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + writeRestart_               :: " << writeRestart_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + step_                       :: " << step_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + restartStep_                :: " << restartStep_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + solverSendInitStep_         :: " << solverSendInitStep_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + haveMissingValue_           :: " << haveMissingValue_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + missingValue_               :: " << missingValue_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + restartPath_                :: " << restartPath_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + restartPrefix_              :: " << restartPrefix_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + restartLib_                 :: " << restartLib_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + logPrefix_                  :: " << logPrefix_ << ";" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " + resetAccumulatedFieldsFreq_ :: " << accumulatedFieldsResetFreqency_ << ";"
+                             << std::endl;
     return;
 }
 
@@ -341,6 +355,10 @@ void StatisticsConfiguration::usage() {
               << "type=string, "
               << "default=\"fstream_io\"     : "
               << "library used to write/read the restart files" << std::endl;
+    std::cout << "solver-reset-accumulate-fields-every : "
+              << "type=string, "
+              << "default=\"month\"     : "
+              << "When the solver reset the accumulated fields; used to avoid double deaccumulation" << std::endl;
     return;
 }
 
@@ -403,9 +421,12 @@ bool StatisticsConfiguration::haveMissingValue() const {
     return haveMissingValue_ != 0;
 };
 
-
 double StatisticsConfiguration::missingValue() const {
     return missingValue_;
+};
+
+const std::string& StatisticsConfiguration::solverResetAccumulatedFields() const {
+    return accumulatedFieldsResetFreqency_;
 };
 
 }  // namespace multio::action

@@ -17,7 +17,14 @@ std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::s
                 stats.back()->init(msg.payload().data(), msg.size());
             }
             else {
-                stats.back()->init();
+                if (stats.back()->needStepZero()) {
+                    std::ostringstream os;
+                    os << "Operation needs step zero and solver does not emit step zero :: " << op << std::endl;
+                    throw eckit::UserError(os.str(), Here());
+                }
+                else {
+                    stats.back()->init();
+                }
             }
         }
         return stats;

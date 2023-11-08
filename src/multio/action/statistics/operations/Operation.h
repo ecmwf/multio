@@ -21,7 +21,9 @@ public:
     const std::string& operation() const { return operation_; };
 
     virtual void updateData(const void* val, long sz) = 0;
+
     virtual void updateWindow(const void* data, long sz) = 0;
+    virtual void updateWindow() = 0;
 
     virtual void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const = 0;
     virtual void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) = 0;
@@ -30,6 +32,7 @@ public:
     virtual void compute(eckit::Buffer& buf) = 0;
     virtual void init(const void* data, long sz) = 0;
     virtual void init() = 0;
+    virtual bool needStepZero() const = 0;
 
 protected:
     virtual void print(std::ostream& os) const = 0;

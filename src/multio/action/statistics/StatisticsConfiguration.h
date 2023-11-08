@@ -32,6 +32,7 @@ private:
     std::string restartPrefix_;
     std::string restartLib_;
     std::string logPrefix_;
+    std::string accumulatedFieldsResetFreqency_;
 
 public:
     StatisticsConfiguration(const config::ComponentConfiguration& compConf);
@@ -51,6 +52,7 @@ public:
     const std::string& restartPrefix() const;
     const std::string& restartLib() const;
     const std::string& logPrefix() const;
+    const std::string& solverResetAccumulatedFields() const;
 
     bool haveMissingValue() const;
     double missingValue() const;
@@ -65,6 +67,8 @@ private:
     void parseRestartPrefix(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
     void parseRestartLib(const eckit::LocalConfiguration& cfg);
     void parseLogPrefix(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
+    void parseSolverResetAccumulatedFields(const config::ComponentConfiguration& compConf,
+                                           const eckit::LocalConfiguration& cfg);
 
 
     void readStartTime(const message::Message& msg);

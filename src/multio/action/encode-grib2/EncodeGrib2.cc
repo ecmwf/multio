@@ -22,7 +22,7 @@
 #include "multio/LibMultio.h"
 #include "multio/action/encode-grib2/Exception.h"
 #include "multio/util/DateTime.h"
-#include "multio/util/ScopedTimer.h"
+#include "multio/util/Timing.h"
 
 namespace multio::action {
 
@@ -50,7 +50,7 @@ void applyOverwrites(MioGribHandle& h, const std::optional<eckit::LocalConfigura
         // TODO handle type... however eccodes should support string as well. For
         // some representations the string and integer representation in eccodes
         // differ significantly and my produce wrong results
-        if (h.hasKey(kv.first.c_str())) {
+        if (h.hasKey(kv.first.value().c_str())) {
             kv.second.visit(eckit::Overloaded{
                 [](const auto& v) -> util::IfTypeOf<decltype(v), message::MetadataTypes::Nested> {},
                 [&h, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), message::MetadataTypes::Lists> {

@@ -53,13 +53,13 @@ std::int64_t fromTimeInts(const TimeInts& ints) noexcept {
     return ints.hour * 10000 + ints.minute * 100 + ints.second;
 };
 
-DateTimeInts wrapDateTime(DateTimeInts in) {
+DateTimeInts normalizeDateTime(DateTimeInts in) {
     if (in.time.hour >= 24 || in.time.minute >= 60 || in.time.second >= 60) {
-        eckit::DateTime wrapped
+        eckit::DateTime normalized
             = eckit::DateTime{eckit::Date{in.date.year, in.date.month, in.date.day}, eckit::Time{0, 0, 0}}
-            + static_cast<double>(((in.time.hour * 60) + in.time.minute) * 60 + in.time.second);
+            + ((double)(((in.time.hour * 60) + in.time.minute) * 60 + in.time.second));
 
-        return {toDateInts(wrapped.date().yyyymmdd()), toTimeInts(wrapped.time().hhmmss())};
+        return {toDateInts(normalized.date().yyyymmdd()), toTimeInts(normalized.time().hhmmss())};
     }
     return in;
 };

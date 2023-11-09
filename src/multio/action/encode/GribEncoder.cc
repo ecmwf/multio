@@ -395,8 +395,11 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
 
 
     auto operation = lookUpString(md, "operation");
-    bool isTimeRange
-        = (operation && (*operation != "instant")) || (queriedMarsFields.type && *queriedMarsFields.type == "tpa");
+    auto startStep = lookUpLong(md, "startStep");
+    auto endStep = lookUpLong(md, "endStep");
+    bool isTimeRange = (operation && (*operation != "instant"))
+                    || (queriedMarsFields.type && *queriedMarsFields.type == "tpa")
+                    || (endStep && startStep && (endStep != startStep));
 
 
     auto significanceOfReferenceTime = lookUpLong(md, "significanceOfReferenceTime");
@@ -428,10 +431,10 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
                 // then forecastTime should be set to zero.
                 if (significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
                     isReferingToStart = false;
-                    g.setValue("stepUnits", 0l);
+                    g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
                     g.setValue("startStep", 0l);
                     if (gribEdition == "2") {
-                        g.setValue("indicatorOfUnitOfTimeRange", 0l);
+                        g.setValue("indicatorOfUnitOfTimeRange", (long)timeUnitCodes(util::TimeUnit::Hour));
                         g.setValue("forecastTime", 0l);
                     }
                 }
@@ -472,7 +475,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
             // g.setValue("startStep", (long)diff.diff);
         }
         else {
-            g.setValue("stepUnits", 0l);
+            g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
             g.setValue("startStep", 0l);
         }
     }
@@ -491,6 +494,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
 
 
             // Set endStep to please MARS
+            g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
             g.setValue("endStep", (long)util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
                                                                     refDateTime.date, refDateTime.time)
                                       / 3600);
@@ -499,15 +503,16 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         }
         else {
             // No forecast time is used
-            g.setValue("stepUnits", 0l);
+            g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
             g.setValue("startStep", 0l);
             if (gribEdition == "2") {
-                g.setValue("indicatorOfUnitOfTimeRange", 0l);
+                g.setValue("indicatorOfUnitOfTimeRange", (long)timeUnitCodes(util::TimeUnit::Hour));
                 g.setValue("forecastTime", 0l);
             }
 
 
             // Set endStep to please MARS
+            g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
             g.setValue("endStep", (long)util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
                                                                     previousDateTime.date, previousDateTime.time)
                                       / 3600);

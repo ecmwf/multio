@@ -560,7 +560,17 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         // valid time remains constant 4 4  Successive times processed have start time of forecast decremented and
         // forecast time incremented so that valid time remains constant 5 5  Floating subinterval of time between
         // forecast time and end of overall time interval
-        g.setValue("typeOfTimeIncrement", (long)(timeRef == "start" ? 2 : 1));
+        // g.setValue("typeOfTimeIncrement", (long)(timeRef == "start" ? 2 : 1));
+        //
+        // #### Work around ####
+        // Eccodes has problems showing stepRange correctly for averaging fields with typeOfTimeIncrement == 1.
+        // It seems that from this combination eccodes is infering a `stepKey` of avgd (daily average).
+        // For daily average the stepRange is shown as 0 instead of 0-24 (desired). Hence with DGov we decided to put
+        // 255 (MISSING) as typeOfTimeIncrement
+        g.setValue("typeOfTimeIncrement",
+                   (long)(timeRef == "start"
+                              ? 2
+                              : ((significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
 
         // auto sampleIntervalUnit = util::TimeUnit::Second;
         // if (md.has("sampleIntervalUnit")) {

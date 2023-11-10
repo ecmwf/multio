@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <cmath>
@@ -15,6 +14,7 @@
 
 #include "multio/action/statistics/operations/Operation.h"
 #include "multio/action/statistics/operations/OperationWithData.h"
+#include "multio/action/statistics/operations/OperationWithDeaccumulatedData.h"
 
 #include "multio/action/statistics/operations/Accumulate.h"
 #include "multio/action/statistics/operations/Average.h"
@@ -22,6 +22,9 @@
 #include "multio/action/statistics/operations/Instant.h"
 #include "multio/action/statistics/operations/Maximum.h"
 #include "multio/action/statistics/operations/Minimum.h"
+
+#include "multio/action/statistics/operations/DeAccumulate.h"
+#include "multio/action/statistics/operations/FixedWindowFluxAverage.h"
 
 namespace multio::action {
 
@@ -52,6 +55,14 @@ std::unique_ptr<Operation> make_operation(const std::string& opname, long sz, st
     if (opname == "accumulate") {
         return cfg.readRestart() ? std::make_unique<Accumulate<Precision>>(opname, sz, win, IOmanager, cfg)
                                  : std::make_unique<Accumulate<Precision>>(opname, sz, win, cfg);
+    }
+    if (opname == "de-accumulate") {
+        return cfg.readRestart() ? std::make_unique<DeAccumulate<Precision>>(opname, sz, win, IOmanager, cfg)
+                                 : std::make_unique<DeAccumulate<Precision>>(opname, sz, win, cfg);
+    }
+    if (opname == "fixed-window-flux-average") {
+        return cfg.readRestart() ? std::make_unique<FixedWindowFluxAverage<Precision>>(opname, sz, win, IOmanager, cfg)
+                                 : std::make_unique<FixedWindowFluxAverage<Precision>>(opname, sz, win, cfg);
     }
 
     std::ostringstream os;

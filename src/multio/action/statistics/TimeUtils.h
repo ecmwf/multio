@@ -13,4 +13,10 @@ eckit::DateTime currentDateTime(const message::Message& msg, const StatisticsCon
 eckit::DateTime nextDateTime(const message::Message& msg, const StatisticsConfiguration& cfg);
 eckit::DateTime winStartDateTime(const message::Message& msg, const StatisticsConfiguration& cfg);
 
+
+bool isBeginningOfYear(const message::Message& msg, const StatisticsConfiguration& cfg);
+bool isBeginningOfMonth(const message::Message& msg, const StatisticsConfiguration& cfg);
+bool isBeginningOfDay(const message::Message& msg, const StatisticsConfiguration& cfg);
+bool isBeginningOfHour(const message::Message& msg, const StatisticsConfiguration& cfg);
+
 }  // namespace multio::action

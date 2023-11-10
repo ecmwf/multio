@@ -16,12 +16,15 @@ list( APPEND _statistics_sources
     Operations.h
     operations/Operation.h
     operations/OperationWithData.h
+    operations/OperationWithDeaccumulatedData.h
     operations/Accumulate.h
     operations/Average.h
     operations/FluxAverage.h
     operations/Instant.h
     operations/Minimum.h
     operations/Maximum.h
+    operations/DeAccumulate.h
+    operations/FixedWindowFluxAverage.h
     TemporalStatistics.cc
     TemporalStatistics.h
     Statistics.cc

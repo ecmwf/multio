@@ -6,38 +6,51 @@
 namespace multio::action {
 
 template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::value>>
-class OperationWithData : public Operation {
+class OperationWithDeaccumulatedData : public Operation {
 public:
     using Operation::cfg_;
     using Operation::logHeader_;
     using Operation::name_;
 
-    OperationWithData(const std::string& name, const std::string& operation, long sz, bool needRestart,
-                      const OperationWindow& win, const StatisticsConfiguration& cfg) :
+    OperationWithDeaccumulatedData(const std::string& name, const std::string& operation, long sz, bool needRestart,
+                                   const OperationWindow& win, const StatisticsConfiguration& cfg) :
         Operation{name, operation, win, cfg},
         values_{std::vector<T>(sz /= sizeof(T), 0.0)},
+        initValues_{std::vector<T>(sz /= sizeof(T), 0.0)},
         needRestart_{needRestart} {}
 
-    OperationWithData(const std::string& name, const std::string& operation, long sz, bool needRestart,
-                      const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
-                      const StatisticsConfiguration& cfg) :
-        Operation{name, operation, win, cfg}, values_{std::vector<T>(sz /= sizeof(T), 0.0)}, needRestart_{needRestart} {
+    OperationWithDeaccumulatedData(const std::string& name, const std::string& operation, long sz, bool needRestart,
+                                   const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
+                                   const StatisticsConfiguration& cfg) :
+        Operation{name, operation, win, cfg},
+        values_{std::vector<T>(sz /= sizeof(T), 0.0)},
+        initValues_{std::vector<T>(sz /= sizeof(T), 0.0)},
+        needRestart_{needRestart} {
         load(IOmanager, cfg);
         return;
     }
 
     void updateWindow(const void* data, long sz) override {
+        checkSize(sz);
+        const T* val = static_cast<const T*>(data);
+        std::transform(initValues_.begin(), initValues_.end(), val, initValues_.begin(),
+                       [](const T& v1, const T& v2) { return static_cast<T>(v2); });
         std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
         return;
     };
 
     void updateWindow() override {
+        std::transform(initValues_.begin(), initValues_.end(), initValues_.begin(),
+                       [](const T& v1) { return static_cast<T>(0); });
         std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
         return;
     };
 
     void init(const void* data, long sz) override {
-        // TODO: Used to save the first field of the window
+        checkSize(sz);
+        const T* val = static_cast<const T*>(data);
+        std::transform(initValues_.begin(), initValues_.end(), val, initValues_.begin(),
+                       [](const T& v1, const T& v2) { return static_cast<T>(v2); });
         return;
     };
 
@@ -46,7 +59,7 @@ public:
         return;
     };
 
-    bool needStepZero() const override { return false; };
+    bool needStepZero() const override { return true; };
 
     size_t byte_size() const override { return values_.size() * sizeof(T); };
 
@@ -73,23 +86,34 @@ public:
 
 protected:
     void serialize(IOBuffer& restartState) const {
-        std::transform(values_.cbegin(), values_.cend(), restartState.begin(), [](const T& v) {
-            T lv = v;
+        size_t sz = values_.size();
+        for (size_t i = 0; i < sz; ++i) {
+            T lv = initValues_[i];
             double dv = static_cast<double>(lv);
-            return *reinterpret_cast<uint64_t*>(&dv);
-        });
+            restartState[i] = *reinterpret_cast<uint64_t*>(&dv);
+        }
+        for (size_t i = 0; i < sz; ++i) {
+            T lv = values_[i];
+            double dv = static_cast<double>(lv);
+            restartState[sz + i] = *reinterpret_cast<uint64_t*>(&dv);
+        }
         restartState.computeChecksum();
         return;
     };
 
     void deserialize(const IOBuffer& restartState) {
         restartState.checkChecksum();
-        auto last = restartState.cend();
-        std::transform(restartState.cbegin(), --last, values_.begin(), [](const std::uint64_t& v) {
-            std::uint64_t lv = v;
+        size_t sz = values_.size();
+        for (size_t i = 0; i < sz; ++i) {
+            std::uint64_t lv = restartState[i];
             double dv = *reinterpret_cast<double*>(&lv);
-            return static_cast<T>(dv);
-        });
+            initValues_[i] = static_cast<T>(dv);
+        }
+        for (size_t i = 0; i < sz; ++i) {
+            std::uint64_t lv = restartState[sz + i];
+            double dv = *reinterpret_cast<double*>(&lv);
+            values_[i] = static_cast<T>(dv);
+        }
         return;
     };
 
@@ -108,8 +132,9 @@ protected:
         return;
     };
 
-    size_t restartSize() const { return values_.size() + 1; }
+    size_t restartSize() const { return 2 * values_.size() + 1; }
     std::vector<T> values_;
+    std::vector<T> initValues_;
 
 private:
     bool needRestart_;

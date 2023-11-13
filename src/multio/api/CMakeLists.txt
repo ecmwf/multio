@@ -75,6 +75,7 @@ ecbuild_add_library(
 
     PUBLIC_INCLUDES
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module>
+        $<INSTALL_INTERFACE:module/${PROJECT_NAME}>
 
     PUBLIC_LIBS
         multio-api
@@ -92,6 +93,7 @@ ecbuild_add_library(
 
     PUBLIC_INCLUDES
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module>
+        $<INSTALL_INTERFACE:module/${PROJECT_NAME}>
 
     PUBLIC_LIBS
 )

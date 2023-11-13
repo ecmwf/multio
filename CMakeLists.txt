@@ -121,4 +121,10 @@ ecbuild_pkgconfig(NAME multio
 
 ecbuild_install_project( NAME ${PROJECT_NAME} )
 
+if( HAVE_FORTRAN AND ECBUILD_INSTALL_FORTRAN_MODULES )
+    install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}
+             DESTINATION module/${PROJECT_NAME}
+             COMPONENT modules )
+endif()
+
 ecbuild_print_summary()

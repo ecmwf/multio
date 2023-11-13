@@ -1,8 +1,8 @@
 #include "MetadataMappings.h"
 #include "MultioConfiguration.h"
 
-#include "eckit/value/Value.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/value/Value.h"
 
 namespace multio::config {
 
@@ -23,11 +23,11 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
 
         std::vector<eckit::LocalConfiguration> sourceList = configFile.content.getSubConfigurations("data");
 
-        for ( auto& s : sourceList ){
+        for (auto& s : sourceList) {
             for (auto& key : s.keys()) {
                 // Replace the value if it is string
-                if ( s.getSubConfiguration(key).get().isString() ){
-                    s.set(key, multioConf.replaceCurly(s.getString(key)) );
+                if (s.getSubConfiguration(key).get().isString()) {
+                    s.set(key, multioConf.replaceCurly(s.getString(key)));
                 }
             }
         }

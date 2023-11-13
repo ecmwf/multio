@@ -438,7 +438,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     });
 
     auto refDateTimeTup = getReferenceDateTime(timeRef, md);
-    auto refDateTime = util::normalizeDateTime(
+    auto refDateTime = util::wrapDateTime(
         {util::toDateInts(std::get<0>(refDateTimeTup)), util::toTimeInts(std::get<1>(refDateTimeTup))});
     g.setValue("year", refDateTime.date.year);
     g.setValue("month", refDateTime.date.month);
@@ -448,7 +448,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     g.setValue("minute", refDateTime.time.minute);
     g.setValue("second", refDateTime.time.second);
 
-    auto currentDateTime = util::normalizeDateTime(
+    auto currentDateTime = util::wrapDateTime(
         {util::toDateInts(md.getLong("currentDate")), util::toTimeInts(md.getLong("currentTime"))});
 
     if (!isTimeRange) {
@@ -465,7 +465,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         }
     }
     else {
-        auto previousDateTime = util::normalizeDateTime(
+        auto previousDateTime = util::wrapDateTime(
             {util::toDateInts(md.getLong("previousDate")), util::toTimeInts(md.getLong("previousTime"))});
         if (timeRef == std::string("start")) {
             // Compute diff to current time in some appropriate unit
@@ -556,7 +556,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis")).value_or(0);
     if (dateOfAnalysis) {
         auto analysisDateTime
-            = util::normalizeDateTime({util::toDateInts(*dateOfAnalysis), util::toTimeInts(timeOfAnalysis)});
+            = util::wrapDateTime({util::toDateInts(*dateOfAnalysis), util::toTimeInts(timeOfAnalysis)});
         g.setValue("yearOfAnalysis", analysisDateTime.date.year);
         g.setValue("monthOfAnalysis", analysisDateTime.date.month);
         g.setValue("dayOfAnalysis", analysisDateTime.date.day);

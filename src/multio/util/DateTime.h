@@ -56,7 +56,7 @@ std::int64_t fromDateInts(const DateInts& ints) noexcept;
 std::int64_t fromTimeInts(const TimeInts& ints) noexcept;
 
 
-DateTimeInts normalizeDateTime(DateTimeInts);
+DateTimeInts wrapDateTime(DateTimeInts);
 
 
 //-----------------------------------------------------------------------------

@@ -4,7 +4,7 @@ mappings:
     map:
       param: param-id
       gridType: grid-type
-      gridSubType: grid-sub-type
+      gridSubtype: grid-sub-type
       domain: fesom-domain
       typeOfLevel: level-type
       fesomLevelType: fesom-level-type

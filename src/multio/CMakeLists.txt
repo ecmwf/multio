@@ -22,6 +22,8 @@ list( APPEND multio_library_srcs
 )
 
 list( APPEND multio_util_srcs
+    util/DateTime.cc
+    util/DateTime.h
     util/Environment.cc
     util/Environment.h
     util/FailureHandling.cc

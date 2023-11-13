@@ -35,10 +35,17 @@ public:
             encoder_->setValue(key, *v);
         }
     };
+
     template <typename T>
     void setValue(const std::string& key, T v) {
-        encoder_->setValue(key, v);
+        if constexpr (std::is_signed_v<T> && std::is_integral_v<T>) {
+            encoder_->setValue(key, static_cast<long>(v));
+        }
+        else {
+            encoder_->setValue(key, v);
+        }
     };
+
     template <typename T>
     void setDataValues(const T* data, size_t count) {
         encoder_->setDataValues(data, count);

@@ -99,14 +99,8 @@ std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& t
     };
 
     auto search = REF_TO_DATETIME_KEYS.find(timeRef);
-    // // if (search == REF_TO_DATETIME_KEYS.end()) {
-    // //     std::ostringstream oss;
-    // //     oss << "getReferenceDateTime: Time reference \"" << timeRef << "\" can not be mapped";
-    //     throw EncodeGrib2Exception(oss.str(), Here());
-    // }
 
-    return std::make_tuple((std::int64_t)in.getLong(std::get<0>(search->second)),
-                           (std::int64_t)in.getLong(std::get<1>(search->second)));
+    return std::make_tuple(in.getLong(std::get<0>(search->second)), in.getLong(std::get<1>(search->second)));
 }
 
 
@@ -145,8 +139,8 @@ void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
             // IFS default step unit is hours
             auto currentDateTime = startDateTime + (step * 3600);
 
-            in.set("currentDate", (std::int64_t)currentDateTime.date().yyyymmdd());
-            in.set("currentTime", (std::int64_t)currentDateTime.time().hhmmss());
+            in.set("currentDate", currentDateTime.date().yyyymmdd());
+            in.set("currentTime", currentDateTime.time().hhmmss());
         }
         if ((in.has("stepRange") || (in.has("startStep") && in.has("endStep")))
             && (!in.has("currentDate") || !in.has("currentTime") || !in.has("previousDate")
@@ -176,21 +170,19 @@ void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
             // IFS default step unit is hours
             auto previousDateTime = startDateTime + (stepStart * 3600);
 
-            in.set("previousDate", (std::int64_t)previousDateTime.date().yyyymmdd());
-            in.set("previousTime", (std::int64_t)previousDateTime.time().hhmmss());
+            in.set("previousDate", previousDateTime.date().yyyymmdd());
+            in.set("previousTime", previousDateTime.time().hhmmss());
 
             // IFS default step unit is hours
             auto currentDateTime = startDateTime + (stepEnd * 3600);
 
-            in.set("currentDate", (std::int64_t)currentDateTime.date().yyyymmdd());
-            in.set("currentTime", (std::int64_t)currentDateTime.time().hhmmss());
+            in.set("currentDate", currentDateTime.date().yyyymmdd());
+            in.set("currentTime", currentDateTime.time().hhmmss());
         }
     }
 
 
     // Compute back from currentDate/Time + endStep/startStep
-
-    // std::cout << "tryMapStepToTimeAndCheckTime done" << std::endl;
 
     if (!in.has("currentDate") || !in.has("currentTime")) {
         throw eckit::UserError(
@@ -260,10 +252,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     else {
         withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
     }
-
-    // withFirstOf(valueSetter(g, "date"), LookUpLong(md, "date"), LookUpLong(md, "dataDate"));
-    // withFirstOf(valueSetter(g, "time"), LookUpLong(md, "time"), LookUpLong(md, "dataTime"));
-    // withFirstOf(valueSetter(g, "step"), LookUpLong(md, "step"), LookUpLong(md, "startStep"));
 
     std::optional<std::string> paramId{firstOf(
         LookUpString(md, "paramId"), LookUpString(md, "param"))};  // param might be a string, separated by . for GRIB1.
@@ -431,10 +419,10 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
                 // then forecastTime should be set to zero.
                 if (significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
                     isReferingToStart = false;
-                    g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
+                    g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
                     g.setValue("startStep", 0l);
                     if (gribEdition == "2") {
-                        g.setValue("indicatorOfUnitOfTimeRange", (long)timeUnitCodes(util::TimeUnit::Hour));
+                        g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
                         g.setValue("forecastTime", 0l);
                     }
                 }
@@ -452,13 +440,13 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     auto refDateTimeTup = getReferenceDateTime(timeRef, md);
     auto refDateTime = util::normalizeDateTime(
         {util::toDateInts(std::get<0>(refDateTimeTup)), util::toTimeInts(std::get<1>(refDateTimeTup))});
-    g.setValue("year", (long)refDateTime.date.year);
-    g.setValue("month", (long)refDateTime.date.month);
-    g.setValue("day", (long)refDateTime.date.day);
+    g.setValue("year", refDateTime.date.year);
+    g.setValue("month", refDateTime.date.month);
+    g.setValue("day", refDateTime.date.day);
 
-    g.setValue("hour", (long)refDateTime.time.hour);
-    g.setValue("minute", (long)refDateTime.time.minute);
-    g.setValue("second", (long)refDateTime.time.second);
+    g.setValue("hour", refDateTime.time.hour);
+    g.setValue("minute", refDateTime.time.minute);
+    g.setValue("second", refDateTime.time.second);
 
     auto currentDateTime = util::normalizeDateTime(
         {util::toDateInts(md.getLong("currentDate")), util::toTimeInts(md.getLong("currentTime"))});
@@ -466,16 +454,13 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     if (!isTimeRange) {
         if (timeRef == std::string("start")) {
             // Compute diff to current time in some appropriate unit
-            g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
-            g.setValue("startStep", (long)util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
-                                                                      refDateTime.date, refDateTime.time)
+            g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("startStep", util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                                refDateTime.date, refDateTime.time)
                                         / 3600);
-            // util::DateTimeDiff diff = util::dateTimeDiff(currentDate, currentTime, refDate, refTime);
-            // g.setValue("stepUnits", (long)timeUnitCodes(diff.unit));
-            // g.setValue("startStep", (long)diff.diff);
         }
         else {
-            g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
             g.setValue("startStep", 0l);
         }
     }
@@ -484,65 +469,54 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
             {util::toDateInts(md.getLong("previousDate")), util::toTimeInts(md.getLong("previousTime"))});
         if (timeRef == std::string("start")) {
             // Compute diff to current time in some appropriate unit
-            g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
-            g.setValue("startStep", (long)util::dateTimeDiffInSeconds(previousDateTime.date, previousDateTime.time,
-                                                                      refDateTime.date, refDateTime.time)
+            g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("startStep", util::dateTimeDiffInSeconds(previousDateTime.date, previousDateTime.time,
+                                                                refDateTime.date, refDateTime.time)
                                         / 3600);
-            // util::DateTimeDiff diff = util::dateTimeDiff(previousDate, previousTime, refDate, refTime);
-            // g.setValue("stepUnits", (long)timeUnitCodes(diff.unit));
-            // g.setValue("startStep", (long)diff.diff);
-
 
             // Set endStep to please MARS
-            g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
-            g.setValue("endStep", (long)util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
-                                                                    refDateTime.date, refDateTime.time)
+            g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("endStep", util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                              refDateTime.date, refDateTime.time)
                                       / 3600);
-            // util::DateTimeDiff diffEnd = util::dateTimeDiff(currentDate, currentTime, refDate, refTime);
-            // g.setValue("endStep", (long)diffEnd.diff);
         }
         else {
             // No forecast time is used
-            g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
             g.setValue("startStep", 0l);
             if (gribEdition == "2") {
-                g.setValue("indicatorOfUnitOfTimeRange", (long)timeUnitCodes(util::TimeUnit::Hour));
+                g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
                 g.setValue("forecastTime", 0l);
             }
 
 
             // Set endStep to please MARS
-            g.setValue("stepUnits", (long)timeUnitCodes(util::TimeUnit::Hour));
-            g.setValue("endStep", (long)util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
-                                                                    previousDateTime.date, previousDateTime.time)
+            g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("endStep", util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                              previousDateTime.date, previousDateTime.time)
                                       / 3600);
-            // util::DateTimeDiff diffEnd = util::dateTimeDiff(currentDate, currentTime, previousDate, previousTime);
-            // g.setValue("endStep", (long)diffEnd.diff);
         }
 
 
         // Now just deal with GRIB2
-        g.setValue("yearOfEndOfOverallTimeInterval", (long)currentDateTime.date.year);
-        g.setValue("monthOfEndOfOverallTimeInterval", (long)currentDateTime.date.month);
-        g.setValue("dayOfEndOfOverallTimeInterval", (long)currentDateTime.date.day);
-        g.setValue("hourOfEndOfOverallTimeInterval", (long)currentDateTime.time.hour);
-        g.setValue("minuteOfEndOfOverallTimeInterval", (long)currentDateTime.time.minute);
-        g.setValue("secondOfEndOfOverallTimeInterval", (long)currentDateTime.time.second);
+        g.setValue("yearOfEndOfOverallTimeInterval", currentDateTime.date.year);
+        g.setValue("monthOfEndOfOverallTimeInterval", currentDateTime.date.month);
+        g.setValue("dayOfEndOfOverallTimeInterval", currentDateTime.date.day);
+        g.setValue("hourOfEndOfOverallTimeInterval", currentDateTime.time.hour);
+        g.setValue("minuteOfEndOfOverallTimeInterval", currentDateTime.time.minute);
+        g.setValue("secondOfEndOfOverallTimeInterval", currentDateTime.time.second);
 
-        g.setValue("indicatorOfUnitForTimeRange", (long)timeUnitCodes(util::TimeUnit::Hour));
-        g.setValue("lengthOfTimeRange", (long)util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
-                                                                          previousDateTime.date, previousDateTime.time)
+        g.setValue("indicatorOfUnitForTimeRange", timeUnitCodes(util::TimeUnit::Hour));
+        g.setValue("lengthOfTimeRange", util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                                    previousDateTime.date, previousDateTime.time)
                                             / 3600);
-        // util::DateTimeDiff lengthTimeRange = util::dateTimeDiff(currentDate, currentTime, previousDate,
-        // previousTime); g.setValue("indicatorOfUnitForTimeRange", (long)timeUnitCodes(lengthTimeRange.unit));
-        // g.setValue("lengthOfTimeRange", (long)lengthTimeRange.diff);
 
         if (operation) {
             static const std::map<const std::string, const std::int64_t> TYPE_OF_STATISTICAL_PROCESSING{
                 {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
             if (auto searchStat = TYPE_OF_STATISTICAL_PROCESSING.find(*operation);
                 searchStat != TYPE_OF_STATISTICAL_PROCESSING.end()) {
-                g.setValue("typeOfStatisticalProcessing", (long)searchStat->second);
+                g.setValue("typeOfStatisticalProcessing", searchStat->second);
             }
             else {
                 std::ostringstream oss;
@@ -560,34 +534,19 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         // valid time remains constant 4 4  Successive times processed have start time of forecast decremented and
         // forecast time incremented so that valid time remains constant 5 5  Floating subinterval of time between
         // forecast time and end of overall time interval
-        // g.setValue("typeOfTimeIncrement", (long)(timeRef == "start" ? 2 : 1));
+        // g.setValue("typeOfTimeIncrement", (timeRef == "start" ? 2 : 1));
         //
         // #### Work around ####
         // Eccodes has problems showing stepRange correctly for averaging fields with typeOfTimeIncrement == 1.
         // It seems that from this combination eccodes is infering a `stepKey` of avgd (daily average).
         // For daily average the stepRange is shown as 0 instead of 0-24 (desired). Hence with DGov we decided to put
         // 255 (MISSING) as typeOfTimeIncrement
-        g.setValue("typeOfTimeIncrement",
-                   (long)(timeRef == "start"
-                              ? 2
-                              : ((significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
+        g.setValue(
+            "typeOfTimeIncrement",
+            (timeRef == "start" ? 2
+                                : ((significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
 
-        // auto sampleIntervalUnit = util::TimeUnit::Second;
-        // if (md.has("sampleIntervalUnit")) {
-        //     auto sampleIntervalUnitStr = md.getString("sampleIntervalUnit");
-        //     auto sampleIntervalUnitMb = util::timeUnitFromString(sampleIntervalUnitStr);
-        //     if (!sampleIntervalUnitMb) {
-        //         std::ostringstream oss;
-        //         oss << "setDateAndStatisticalFields - Value for passed metadatakey \"sampleIntervalUnit\": "
-        //             << sampleIntervalUnitStr << " can not be parsed to a valid unit (Y,m,d,H,M,S). ";
-        //         throw eckit::UserError(oss.str(), Here());
-        //     }
-        //     else {
-        //         sampleIntervalUnit = *sampleIntervalUnitMb;
-        //     }
-        // }
-        // g.setValue("indicatorOfUnitForTimeIncrement", (long)timeUnitCodes(sampleIntervalUnit));
-        g.setValue("indicatorOfUnitForTimeIncrement", (long)timeUnitCodes(util::TimeUnit::Second));
+        g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
         withFirstOf(valueSetter(g, "timeIncrement"), LookUpLong(md, "sampleIntervalInSeconds"),
                     LookUpLong(md, "timeStep"));  // Nemo is currently sending timeStep
     }
@@ -598,13 +557,13 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     if (dateOfAnalysis) {
         auto analysisDateTime
             = util::normalizeDateTime({util::toDateInts(*dateOfAnalysis), util::toTimeInts(timeOfAnalysis)});
-        g.setValue("yearOfAnalysis", (long)analysisDateTime.date.year);
-        g.setValue("monthOfAnalysis", (long)analysisDateTime.date.month);
-        g.setValue("dayOfAnalysis", (long)analysisDateTime.date.day);
+        g.setValue("yearOfAnalysis", analysisDateTime.date.year);
+        g.setValue("monthOfAnalysis", analysisDateTime.date.month);
+        g.setValue("dayOfAnalysis", analysisDateTime.date.day);
 
-        g.setValue("hourOfAnalysis", (long)analysisDateTime.time.hour);
-        g.setValue("minuteOfAnalysis", (long)analysisDateTime.time.minute);
-        g.setValue("secondOfAnalysis", (long)analysisDateTime.time.second);
+        g.setValue("hourOfAnalysis", analysisDateTime.time.hour);
+        g.setValue("minuteOfAnalysis", analysisDateTime.time.minute);
+        g.setValue("secondOfAnalysis", analysisDateTime.time.second);
     }
 }
 

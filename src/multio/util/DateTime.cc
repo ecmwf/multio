@@ -58,7 +58,7 @@ DateTimeInts normalizeDateTime(DateTimeInts in) {
     if (in.time.hour >= 24 || in.time.minute >= 60 || in.time.second >= 60) {
         eckit::DateTime normalized
             = eckit::DateTime{eckit::Date{in.date.year, in.date.month, in.date.day}, eckit::Time{0, 0, 0}}
-            + ((double)(((in.time.hour * 60) + in.time.minute) * 60 + in.time.second));
+            + static_cast<double>(((in.time.hour * 60) + in.time.minute) * 60 + in.time.second);
 
         return {toDateInts(normalized.date().yyyymmdd()), toTimeInts(normalized.time().hhmmss())};
     }

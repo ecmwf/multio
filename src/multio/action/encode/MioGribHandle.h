@@ -23,7 +23,7 @@ public:
     void setValue(const std::string& key, bool value);
 
     // Set values
-    void setDataValues(const float* data, size_t count);
+    void setDataValues(const float* values, size_t count);
 };
 
 

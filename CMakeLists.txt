@@ -22,7 +22,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ecbuild_find_package( NAME eccodes     VERSION  2.31.2   REQUIRED )
 ecbuild_find_package( NAME eckit       VERSION  1.24     REQUIRED )
 ecbuild_find_package( NAME metkit      VERSION  1.10     REQUIRED )
-ecbuild_find_package( NAME atlas       VERSION  0.33     REQUIRED )
+ecbuild_find_package( NAME atlas       VERSION  0.35   REQUIRED )
 
 if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
@@ -125,5 +125,11 @@ ecbuild_pkgconfig(NAME multio
                   LIBRARIES multio )
 
 ecbuild_install_project( NAME ${PROJECT_NAME} )
+
+if( HAVE_FORTRAN AND ECBUILD_INSTALL_FORTRAN_MODULES )
+    install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}
+             DESTINATION module/${PROJECT_NAME}
+             COMPONENT modules )
+endif()
 
 ecbuild_print_summary()

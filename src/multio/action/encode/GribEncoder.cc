@@ -15,16 +15,21 @@
 #include "GribEncoder.h"
 
 #include <cstring>
+#include <functional>
 #include <iomanip>
 #include <iostream>
+#include <unordered_map>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
+#include "eckit/types/DateTime.h"
 #include "eckit/utils/MD5.h"
 #include "eckit/utils/StringTools.h"
 #include "eckit/utils/Translator.h"
 
+
 #include "multio/LibMultio.h"
+#include "multio/util/DateTime.h"
 #include "multio/util/Metadata.h"
 
 
@@ -60,6 +65,132 @@ const std::map<const std::string, const std::string> category_to_levtype{
 
 const std::map<const std::string, const long> type_of_generating_process{
     {"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}, {"tpa", 12}};
+
+
+// // https://codes.ecmwf.int/grib/format/grib2/ctables/4/4/
+std::int64_t timeUnitCodes(util::TimeUnit u) {
+    switch (u) {
+        case util::TimeUnit::Year:
+            return 4;
+        case util::TimeUnit::Month:
+            return 3;
+        case util::TimeUnit::Day:
+            return 2;
+        case util::TimeUnit::Hour:
+            return 1;
+        case util::TimeUnit::Minute:
+            return 0;
+        case util::TimeUnit::Second:
+            return 13;
+        default:
+            std::ostringstream oss;
+            oss << "timeUnitCodes: Unexpcted TimeUnit " << util::timeUnitToChar(u);
+            throw eckit::SeriousBug(std::string(oss.str()), Here());
+    }
+}
+
+
+std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& timeRef,
+                                                            const eckit::Configuration& in) {
+    static std::unordered_map<std::string, std::tuple<std::string, std::string>> REF_TO_DATETIME_KEYS{
+        {"start", {"startDate", "startTime"}},
+        {"previous", {"previousDate", "previousTime"}},
+        {"current", {"currentDate", "currentTime"}},
+    };
+
+    auto search = REF_TO_DATETIME_KEYS.find(timeRef);
+
+    return std::make_tuple(in.getLong(std::get<0>(search->second)), in.getLong(std::get<1>(search->second)));
+}
+
+
+void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
+
+    bool hasStartDateTime = (in.has("startDate") && in.has("startTime"));
+    bool hasDateTime = (in.has("date") && in.has("time"));
+
+    // std::cout << "tryMapStepToTimeAndCheckTime..." << std::endl;
+    if (hasStartDateTime || hasDateTime) {
+        util::DateInts startDate;
+        util::TimeInts startTime;
+
+        if (hasStartDateTime) {
+            startDate = util::toDateInts(in.getLong("startDate"));
+            startTime = util::toTimeInts(in.getLong("startTime"));
+        }
+        else if (hasDateTime) {
+            startDate = util::toDateInts(in.getLong("date"));
+            startTime = util::toTimeInts(in.getLong("time") * 100);
+
+            in.set("startDate", in.getLong("date"));
+            in.set("startTime", in.getLong("time") * 100);
+        }
+
+        // std::cout << "startDate: " << startDate.year << " " << startDate.month << " " << startDate.day << std::endl;
+        // std::cout << "startTime: " << startTime.hour << " " << startTime.minute << " " << startTime.second  <<
+        // std::endl;
+
+        eckit::DateTime startDateTime(eckit::Date(startDate.year, startDate.month, startDate.day),
+                                      eckit::Time(startTime.hour, startTime.minute, startTime.second));
+
+        if (in.has("step") && (!in.has("currentDate") || !in.has("currentTime"))) {
+            std::int64_t step = in.getLong("step");
+
+            // IFS default step unit is hours
+            auto currentDateTime = startDateTime + (step * 3600);
+
+            in.set("currentDate", currentDateTime.date().yyyymmdd());
+            in.set("currentTime", currentDateTime.time().hhmmss());
+        }
+        if ((in.has("stepRange") || (in.has("startStep") && in.has("endStep")))
+            && (!in.has("currentDate") || !in.has("currentTime") || !in.has("previousDate")
+                || !in.has("previousTime"))) {
+
+            std::int64_t stepStart;
+            std::int64_t stepEnd;
+
+            if (in.has("stepRange")) {
+                std::string stepRange = in.getString("stepRange");
+                auto split = stepRange.find("-");
+
+                if (split == std::string::npos) {
+                    std::ostringstream oss;
+                    oss << "tryMapStepToTime: field \"stepRange\" is expected to contain a \"-\": " << stepRange;
+                    throw eckit::SeriousBug(oss.str(), Here());
+                }
+
+                stepStart = eckit::translate<std::int64_t>(stepRange.substr(0, split));
+                stepEnd = eckit::translate<std::int64_t>(stepRange.substr(split + 1));
+            }
+            else {
+                stepStart = in.getLong("startStep");
+                stepEnd = in.getLong("endStep");
+            }
+
+            // IFS default step unit is hours
+            auto previousDateTime = startDateTime + (stepStart * 3600);
+
+            in.set("previousDate", previousDateTime.date().yyyymmdd());
+            in.set("previousTime", previousDateTime.time().hhmmss());
+
+            // IFS default step unit is hours
+            auto currentDateTime = startDateTime + (stepEnd * 3600);
+
+            in.set("currentDate", currentDateTime.date().yyyymmdd());
+            in.set("currentTime", currentDateTime.time().hhmmss());
+        }
+    }
+
+
+    // Compute back from currentDate/Time + endStep/startStep
+
+    if (!in.has("currentDate") || !in.has("currentTime")) {
+        throw eckit::UserError(
+            "tryMapStepToTime: Grib encoding requires at least date time fields {\"currentTime\" and \"currentDate\"}, "
+            "or {\"startTime\" and \"startDate\" and {\"step\" or {\"stepRange\", or \"startStep\" and \"endStep\"}}}",
+            Here());
+    }
+}
 
 struct ValueSetter {
     GribEncoder& g_;
@@ -102,10 +233,38 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
     }
 
-    withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
-    withFirstOf(valueSetter(g, "date"), LookUpLong(md, "date"), LookUpLong(md, "dataDate"));
-    withFirstOf(valueSetter(g, "time"), LookUpLong(md, "time"), LookUpLong(md, "dataTime"));
-    withFirstOf(valueSetter(g, "step"), LookUpLong(md, "step"), LookUpLong(md, "startStep"));
+    if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
+        g.setValue("level", 0l);
+        g.setValue("scaleFactorOfFirstFixedSurface", "MISSING");
+        g.setValue("scaledValueOfFirstFixedSurface", "MISSING");
+        g.setValue("scaleFactorOfSecondFixedSurface", "MISSING");
+        g.setValue("scaleFactorOfSecondFixedSurface", "MISSING");
+    }
+    else {
+        withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
+    }
+
+    std::optional<std::string> paramId{firstOf(
+        LookUpString(md, "paramId"), LookUpString(md, "param"))};  // param might be a string, separated by . for GRIB1.
+                                                                   // String to long convertion should get it right
+
+    if (paramId) {
+        g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
+    }
+
+    if (md.has("dataset")) {
+        withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
+        withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
+        withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
+        withFirstOf(valueSetter(g, "productionStatusOfProcessedData"),
+                    LookUpLong(md, "productionStatusOfProcessedData"));
+        withFirstOf(valueSetter(g, "dataset"), LookUpString(md, "dataset"));
+        withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
+        withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
+        withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
+        withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
+        withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+    }
 
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
     withFirstOf(valueSetter(g, "stream"), LookUpString(md, "stream"), LookUpString(md, "marsStream"));
@@ -113,19 +272,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
     withFirstOf(valueSetter(g, "number"), LookUpLong(md, "ensemble-member"));
     withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), LookUpLong(md, "ensemble-size"));
-
-    auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
-    if (dateOfAnalysis) {
-        withFirstOf(valueSetter(g, "yearOfAnalysis"), std::optional<long>{*dateOfAnalysis / 10000});
-        withFirstOf(valueSetter(g, "monthOfAnalysis"), std::optional<long>{(*dateOfAnalysis % 10000) / 100});
-        withFirstOf(valueSetter(g, "dayOfAnalysis"), std::optional<long>{*dateOfAnalysis % 100});
-    }
-
-    auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis"));
-    if (timeOfAnalysis) {
-        withFirstOf(valueSetter(g, "hourOfAnalysis"), std::optional<long>{*timeOfAnalysis / 10000});
-        withFirstOf(valueSetter(g, "minuteOfAnalysis"), std::optional<long>{(*timeOfAnalysis % 10000) / 100});
-    }
 
     ret.type = firstOf(LookUpString(md, "type"), LookUpString(md, "marsType"));
     if (ret.type) {
@@ -209,117 +355,205 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
 void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
     // TODO globalSize is expected to be set in md directly. nmuberOf* should be
     // readonly anyway... test removal..
-    auto gls = lookUpLong(md, "globalSize");
-    withFirstOf(valueSetter(g, "numberOfDataPoints"), gls);
-    withFirstOf(valueSetter(g, "numberOfValues"), gls);
+    // auto gls = lookUpLong(md, "globalSize");
+    // withFirstOf(valueSetter(g, "numberOfDataPoints"), gls); // Readonly
+    // withFirstOf(valueSetter(g, "numberOfValues"), gls);
 
     withFirstOf(valueSetter(g, "missingValue"), LookUpDouble(md, "missingValue"));
     withFirstOf(valueSetter(g, "bitmapPresent"), LookUpBool(md, "bitmapPresent"));
     withFirstOf(valueSetter(g, "bitsPerValue"), LookUpLong(md, "bitsPerValue"));
 }
 
-namespace {
-std::optional<long> marsDate(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
-    if (not mKeys.type) {
-        return std::optional<long>{};
-    }
-
-    // List of forecast-type data
-    if ((*mKeys.type == "fc") || (*mKeys.type == "pf")) {
-        return firstOf(LookUpLong(md, "startDate"));
-    }
-
-    // List time-processed analysis data
-    if (*mKeys.type == "tpa") {
-        return firstOf(LookUpLong(md, "previousDate"));
-    }
-
-    // Analysis data
-    return firstOf(LookUpLong(md, "currentDate"));
-}
-
-std::optional<long> marsTime(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
-    if (not mKeys.type) {
-        return std::optional<long>{};
-    }
-
-    // List of forecast-type data
-    if ((*mKeys.type == "fc") || (*mKeys.type == "pf")) {
-        return firstOf(LookUpLong(md, "startTime"));
-    }
-
-    // List time-processed analysis data
-    if (*mKeys.type == "tpa") {
-        return firstOf(LookUpLong(md, "previousTime"));
-    }
-
-    // Analysis data
-    return firstOf(LookUpLong(md, "currentTime"));
-}
-
-std::string marsStepRange(const message::Metadata& md, const QueriedMarsKeys& mKeys) {
-
-    auto stepInHours = firstOf(LookUpLong(md, "stepInHours"));
-    auto timeSpanInHours = firstOf(LookUpLong(md, "timeSpanInHours"));
-    if (not(stepInHours && timeSpanInHours)) {
-        throw eckit::SeriousBug("Not enough information to encode step range");
-    }
-
-    // List of forecast-type data
-    if ((*mKeys.type == "fc") || (*mKeys.type == "pf")) {
-        auto prevStep = std::max(*stepInHours - *timeSpanInHours, 0L);
-        return std::to_string(prevStep) + "-" + std::to_string(*stepInHours);
-    }
-
-    // Time-processed analysis
-    return std::to_string(0) + "-" + std::to_string(*timeSpanInHours);
-}
-
-}  // namespace
-
-void setDateAndStatisticalFields(GribEncoder& g, const eckit::Configuration& md,
+void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration& in,
                                  const QueriedMarsKeys& queriedMarsFields) {
+    eckit::LocalConfiguration md = in;  // Copy to allow modification
 
-    auto date = marsDate(md, queriedMarsFields);
-    if (date) {
-        withFirstOf(valueSetter(g, "year"), std::optional<long>{*date / 10000});
-        withFirstOf(valueSetter(g, "month"), std::optional<long>{(*date % 10000) / 100});
-        withFirstOf(valueSetter(g, "day"), std::optional<long>{*date % 100});
-    }
+    std::string gribEdition = md.getString("gribEdition", "2");
+    // std::string forecastTimeKey = gribEdition == "2" ? "forecastTime" : "startStep";
 
-    auto time = marsTime(md, queriedMarsFields);
-    if (time) {
-        withFirstOf(valueSetter(g, "hour"), std::optional<long>{*time / 10000});
-        withFirstOf(valueSetter(g, "minute"), std::optional<long>{(*time % 10000) / 100});
-        withFirstOf(valueSetter(g, "second"), std::optional<long>{*time % 100});
-    }
 
     auto operation = lookUpString(md, "operation");
-    if (operation) {
-        if (*queriedMarsFields.type == "fc" && *operation == "instant") {
-            // stepInHours has been set by statistics action
-            withFirstOf(valueSetter(g, "step"), LookUpLong(md, "stepInHours"));
+    auto startStep = lookUpLong(md, "startStep");
+    auto endStep = lookUpLong(md, "endStep");
+    bool isTimeRange = (operation && (*operation != "instant"))
+                    || (queriedMarsFields.type && *queriedMarsFields.type == "tpa")
+                    || (endStep && startStep && (endStep != startStep));
+
+
+    auto significanceOfReferenceTime = lookUpLong(md, "significanceOfReferenceTime");
+    if (!significanceOfReferenceTime) {
+        if (md.has("encoder-overwrites")) {
+            auto overwrites = md.getSubConfiguration("encoder-overwrites");
+            significanceOfReferenceTime = lookUpLong(overwrites, "significanceOfReferenceTime");
+        }
+    }
+    if (significanceOfReferenceTime) {
+        g.setValue("significanceOfReferenceTime", *significanceOfReferenceTime);
+    }
+
+    tryMapStepToTimeAndCheckTime(md);
+
+    std::string timeRef = std::invoke([&]() -> std::string {
+        if (auto optTimeRef = lookUpString(md, "timeReference"); optTimeRef) {
+            return *optTimeRef;
+        }
+
+
+        // TODO: this will not hold in the future - maybe the new category "processType" can be used to check if it's a
+        // forecast
+        // Handling of significanceOfReferenceTime is hacked in for now....
+        bool isReferingToStart = false;
+        if (queriedMarsFields.type) {
+            if (*queriedMarsFields.type == "fc") {
+                // If significanceOfReferenceTime is validityTime (2)
+                // then forecastTime should be set to zero.
+                if (significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
+                    isReferingToStart = false;
+                    g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+                    g.setValue("startStep", 0l);
+                    if (gribEdition == "2") {
+                        g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
+                        g.setValue("forecastTime", 0l);
+                    }
+                }
+                else {
+                    isReferingToStart = true;
+                }
+            }
+            else if (queriedMarsFields.type == "pf") {
+                isReferingToStart = true;
+            }
+        }
+        return isReferingToStart ? "start" : (isTimeRange ? "previous" : "current");
+    });
+
+    auto refDateTimeTup = getReferenceDateTime(timeRef, md);
+    auto refDateTime = util::wrapDateTime(
+        {util::toDateInts(std::get<0>(refDateTimeTup)), util::toTimeInts(std::get<1>(refDateTimeTup))});
+    g.setValue("year", refDateTime.date.year);
+    g.setValue("month", refDateTime.date.month);
+    g.setValue("day", refDateTime.date.day);
+
+    g.setValue("hour", refDateTime.time.hour);
+    g.setValue("minute", refDateTime.time.minute);
+    g.setValue("second", refDateTime.time.second);
+
+    auto currentDateTime = util::wrapDateTime(
+        {util::toDateInts(md.getLong("currentDate")), util::toTimeInts(md.getLong("currentTime"))});
+
+    if (!isTimeRange) {
+        if (timeRef == std::string("start")) {
+            // Compute diff to current time in some appropriate unit
+            g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("startStep", util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                                refDateTime.date, refDateTime.time)
+                                        / 3600);
         }
         else {
-            // Setting directly as it is computed value not read from the metadata
-            g.setValue("stepRange", marsStepRange(md, queriedMarsFields));
-            // withFirstOf(valueSetter(g, "stepRange"), LookUpString(md, "stepRangeInHours"));
+            g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("startStep", 0l);
+        }
+    }
+    else {
+        auto previousDateTime = util::wrapDateTime(
+            {util::toDateInts(md.getLong("previousDate")), util::toTimeInts(md.getLong("previousTime"))});
+        if (timeRef == std::string("start")) {
+            // Compute diff to current time in some appropriate unit
+            g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("startStep", util::dateTimeDiffInSeconds(previousDateTime.date, previousDateTime.time,
+                                                                refDateTime.date, refDateTime.time)
+                                        / 3600);
+
+            // Set endStep to please MARS
+            g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("endStep", util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                              refDateTime.date, refDateTime.time)
+                                      / 3600);
+        }
+        else {
+            // No forecast time is used
+            g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("startStep", 0l);
+            if (gribEdition == "2") {
+                g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
+                g.setValue("forecastTime", 0l);
+            }
+
+
+            // Set endStep to please MARS
+            g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("endStep", util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                              previousDateTime.date, previousDateTime.time)
+                                      / 3600);
         }
 
-        std::optional<long> curDate;
-        if (*operation != "instant" && (curDate = firstOf(LookUpLong(md, "currentDate")))) {
-            withFirstOf(valueSetter(g, "typeOfStatisticalProcessing"),
-                        std::optional<long>{type_of_statistical_processing.at(*operation)});
 
-            withFirstOf(valueSetter(g, "yearOfEndOfOverallTimeInterval"), std::optional<long>{*curDate / 10000});
-            withFirstOf(valueSetter(g, "monthOfEndOfOverallTimeInterval"),
-                        std::optional<long>{(*curDate % 10000) / 100});
-            withFirstOf(valueSetter(g, "dayOfEndOfOverallTimeInterval"), std::optional<long>{*curDate % 100});
+        // Now just deal with GRIB2
+        g.setValue("yearOfEndOfOverallTimeInterval", currentDateTime.date.year);
+        g.setValue("monthOfEndOfOverallTimeInterval", currentDateTime.date.month);
+        g.setValue("dayOfEndOfOverallTimeInterval", currentDateTime.date.day);
+        g.setValue("hourOfEndOfOverallTimeInterval", currentDateTime.time.hour);
+        g.setValue("minuteOfEndOfOverallTimeInterval", currentDateTime.time.minute);
+        g.setValue("secondOfEndOfOverallTimeInterval", currentDateTime.time.second);
 
-            withFirstOf(valueSetter(g, "lengthOfTimeRange"), LookUpLong(md, "timeSpanInHours"));
-            withFirstOf(valueSetter(g, "indicatorOfUnitForTimeIncrement"), std::optional<long>{13l});  // always seconds
-            withFirstOf(valueSetter(g, "timeIncrement"), LookUpLong(md, "timeStep"));
+        g.setValue("indicatorOfUnitForTimeRange", timeUnitCodes(util::TimeUnit::Hour));
+        g.setValue("lengthOfTimeRange", util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                                    previousDateTime.date, previousDateTime.time)
+                                            / 3600);
+
+        if (operation) {
+            static const std::map<const std::string, const std::int64_t> TYPE_OF_STATISTICAL_PROCESSING{
+                {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
+            if (auto searchStat = TYPE_OF_STATISTICAL_PROCESSING.find(*operation);
+                searchStat != TYPE_OF_STATISTICAL_PROCESSING.end()) {
+                g.setValue("typeOfStatisticalProcessing", searchStat->second);
+            }
+            else {
+                std::ostringstream oss;
+                oss << "setDateAndStatisticalFields - Cannot map value \"" << *operation
+                    << "\"for key \"operation\" (statistical output) to a valid grib2 type of statistical processing.";
+                throw eckit::UserError(oss.str(), Here());
+            }
         }
+
+
+        // # CODE TABLE 4.11, Type of time intervals
+        // 1 1  Successive times processed have same forecast time, start time of forecast is incremented
+        // 2 2  Successive times processed have same start time of forecast, forecast time is incremented
+        // 3 3  Successive times processed have start time of forecast incremented and forecast time decremented so that
+        // valid time remains constant 4 4  Successive times processed have start time of forecast decremented and
+        // forecast time incremented so that valid time remains constant 5 5  Floating subinterval of time between
+        // forecast time and end of overall time interval
+        // g.setValue("typeOfTimeIncrement", (timeRef == "start" ? 2 : 1));
+        //
+        // #### Work around ####
+        // Eccodes has problems showing stepRange correctly for averaging fields with typeOfTimeIncrement == 1.
+        // It seems that from this combination eccodes is infering a `stepKey` of avgd (daily average).
+        // For daily average the stepRange is shown as 0 instead of 0-24 (desired). Hence with DGov we decided to put
+        // 255 (MISSING) as typeOfTimeIncrement
+        g.setValue(
+            "typeOfTimeIncrement",
+            (timeRef == "start" ? 2
+                                : ((significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
+
+        g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
+        withFirstOf(valueSetter(g, "timeIncrement"), LookUpLong(md, "sampleIntervalInSeconds"),
+                    LookUpLong(md, "timeStep"));  // Nemo is currently sending timeStep
+    }
+
+
+    auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));
+    auto timeOfAnalysis = firstOf(LookUpLong(md, "time-of-analysis")).value_or(0);
+    if (dateOfAnalysis) {
+        auto analysisDateTime
+            = util::wrapDateTime({util::toDateInts(*dateOfAnalysis), util::toTimeInts(timeOfAnalysis)});
+        g.setValue("yearOfAnalysis", analysisDateTime.date.year);
+        g.setValue("monthOfAnalysis", analysisDateTime.date.month);
+        g.setValue("dayOfAnalysis", analysisDateTime.date.day);
+
+        g.setValue("hourOfAnalysis", analysisDateTime.time.hour);
+        g.setValue("minuteOfAnalysis", analysisDateTime.time.minute);
+        g.setValue("secondOfAnalysis", analysisDateTime.time.second);
     }
 }
 
@@ -337,13 +571,34 @@ void GribEncoder::setFieldMetadata(const message::Message& msg) {
 }
 
 void GribEncoder::setOceanMetadata(const message::Message& msg) {
-    auto runConfig = config_.getSubConfiguration("run");
     const auto& metadata = msg.metadata();
+
+    if (metadata.has("dataset")) {
+        withFirstOf(valueSetter(*this, "tablesVersion"), LookUpLong(metadata, "tablesVersion"));
+        withFirstOf(valueSetter(*this, "setLocalDefinition"), LookUpLong(metadata, "setLocalDefinition"));
+        withFirstOf(valueSetter(*this, "grib2LocalSectionNumber"), LookUpLong(metadata, "grib2LocalSectionNumber"));
+        withFirstOf(valueSetter(*this, "productionStatusOfProcessedData"),
+                    LookUpLong(metadata, "productionStatusOfProcessedData"));
+        withFirstOf(valueSetter(*this, "dataset"), LookUpString(metadata, "dataset"));
+        withFirstOf(valueSetter(*this, "activity"), LookUpString(metadata, "activity"));
+        withFirstOf(valueSetter(*this, "experiment"), LookUpString(metadata, "experiment"));
+        withFirstOf(valueSetter(*this, "generation"), LookUpString(metadata, "generation"));
+        withFirstOf(valueSetter(*this, "model"), LookUpString(metadata, "model"));
+        withFirstOf(valueSetter(*this, "realization"), LookUpString(metadata, "realization"));
+        withFirstOf(valueSetter(*this, "class"), LookUpString(metadata, "class"), LookUpString(metadata, "marsClass"));
+        withFirstOf(valueSetter(*this, "stream"), LookUpString(metadata, "stream"),
+                    LookUpString(metadata, "marsStream"));
+        withFirstOf(valueSetter(*this, "expver"), LookUpString(metadata, "expver"),
+                    LookUpString(metadata, "experimentVersionNumber"));
+    }
+
+    auto runConfig = config_.getSubConfiguration("run");
 
     auto queriedMarsFields = setMarsKeys(*this, runConfig);
     if (queriedMarsFields.type) {
         setValue("typeOfGeneratingProcess", type_of_generating_process.at(*queriedMarsFields.type));
     }
+
     applyOverwrites(*this, metadata);
     setDateAndStatisticalFields(*this, metadata, queriedMarsFields);
     setEncodingSpecificFields(*this, metadata);
@@ -390,9 +645,9 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit
     setValue("date", md.getLong("startDate"));
 
     // setDomainDimensions
-    auto gls = lookUpLong(md, "globalSize");
-    setValue("numberOfDataPoints", md.getLong("globalSize"));
-    setValue("numberOfValues", md.getLong("globalSize"));
+    // auto gls = lookUpLong(md, "globalSize");
+    // setValue("numberOfDataPoints", md.getLong("globalSize")); // Readonly
+    // setValue("numberOfValues", md.getLong("globalSize"));
 
     // Setting parameter ID
     setValue("paramId", md.getLong("param"));

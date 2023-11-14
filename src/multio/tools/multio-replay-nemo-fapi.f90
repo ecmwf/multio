@@ -388,7 +388,7 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 25
         cerr = md%set_int("param", grib_param_id(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 26
-        cerr = md%set_string("gridSubType", grib_grid_type(i))
+        cerr = md%set_string("gridSubtype", grib_grid_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 27
         cerr = md%set_string("domain", grib_grid_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 29

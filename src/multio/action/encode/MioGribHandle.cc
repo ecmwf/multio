@@ -44,17 +44,17 @@ MioGribHandle* MioGribHandle::duplicate() const {
 }
 
 void MioGribHandle::setValue(const std::string& key, long value) {
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting long value " << value << " for key " << key << std::endl;
     codesCheckRelaxed(codes_set_long(raw(), key.c_str(), value), key, value);
 };
 
 void MioGribHandle::setValue(const std::string& key, double value) {
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting double value " << value << " for key " << key << std::endl;
     codesCheckRelaxed(codes_set_double(raw(), key.c_str(), value), key, value);
 };
 
 void MioGribHandle::setValue(const std::string& key, const std::string& value) {
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << " for key " << key << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting std::string value " << value << " for key " << key << std::endl;
     size_t sz = value.size();
     codesCheckRelaxed(codes_set_string(raw(), key.c_str(), value.c_str(), &sz), key, value);
 };
@@ -64,23 +64,23 @@ void MioGribHandle::setValue(const std::string& key, const unsigned char* value)
     for (int i = 0; i < DIGEST_LENGTH; ++i) {
         oss << ((i == 0) ? "" : "-") << std::hex << std::setfill('0') << std::setw(2) << static_cast<short>(value[i]);
     }
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << oss.str() << " for key " << key << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting unsigned char* value " << oss.str() << " for key " << key << std::endl;
     size_t sz = DIGEST_LENGTH;
     codesCheckRelaxed(codes_set_bytes(raw(), key.c_str(), value, &sz), key, value);
 };
 
 void MioGribHandle::setValue(const std::string& key, bool value) {
     long longValue = value;
-    LOG_DEBUG_LIB(LibMultio) << "*** Setting value " << value << "(" << longValue << ") for key " << key << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting bool value " << value << "(" << longValue << ") for key " << key
+                             << std::endl;
     codesCheckRelaxed(codes_set_long(raw(), key.c_str(), longValue), key, value);
 }
 
 // Set values
-void MioGribHandle::setDataValues(const float* data, size_t count) {
+void MioGribHandle::setDataValues(const float* values, size_t count) {
     std::vector<double> dvalues(count, 0.0);
-    auto values = reinterpret_cast<const float*>(data);
     for (int i = 0; i < count; ++i) {
-        dvalues[i] = double(values[i]);
+        dvalues[i] = static_cast<double>(values[i]);
     }
 
     setDataValues(dvalues.data(), count);

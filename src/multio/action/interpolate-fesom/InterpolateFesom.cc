@@ -158,13 +158,13 @@ std::string InterpolateFesom<T>::generateKey(const message::Message& msg) const 
         os << " - \"gridType\" not present in the metadata" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
-    if (!msg.metadata().has("gridSubType")) {
+    if (!msg.metadata().has("gridSubtype")) {
         std::ostringstream os;
-        os << " - \"gridSubType\" not present in the metadata" << std::endl;
+        os << " - \"gridSubtype\" not present in the metadata" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
     std::string fesomGridName = msg.metadata().getString("gridType");
-    const std::string domain = msg.metadata().getString("gridSubType");
+    const std::string domain = msg.metadata().getString("gridSubtype");
     std::string key = fesomCacheName(fesomGridName, domain, (sizeof(T) == 4 ? "single" : "double"), NSide_,
                                      orderingConvention_, level);
 

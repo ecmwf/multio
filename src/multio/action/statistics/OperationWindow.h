@@ -8,6 +8,7 @@
 #include "StatisticsConfiguration.h"
 #include "StatisticsIO.h"
 #include "multio/message/Message.h"
+#include "multio/util/DateTime.h"
 
 namespace multio::action {
 
@@ -35,6 +36,7 @@ public:
     long timeSpanInSteps() const;
     long lastPointsDiffInSeconds() const;
 
+    util::DateTimeDiff lastPointsDiff() const;
 
     long startPointInSeconds() const;
     long creationPointInSeconds() const;
@@ -72,6 +74,8 @@ public:
     long currPointInSteps(const eckit::DateTime& refPoint) const;
     long prevPointInSteps(const eckit::DateTime& refPoint) const;
     long endPointInSteps(const eckit::DateTime& refPoint) const;
+
+    long timeStepInSeconds() const;
 
 
     eckit::DateTime epochPoint() const;

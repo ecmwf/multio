@@ -244,9 +244,9 @@ message::Message Encode::encodeField(const message::Message& msg, const std::opt
         }
         return encoder_->encodeField(msg.modifyMetadata(std::move(md)));
     }
-    catch (...) {
+    catch (const std::exception& ex) {
         std::ostringstream oss;
-        oss << "Encode::encodeField with Message: " << msg;
+        oss << "Encode::encodeField " << ex.what() << " with Message: " << msg;
         std::throw_with_nested(EncodingException(oss.str(), Here()));
     }
 }

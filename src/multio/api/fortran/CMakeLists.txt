@@ -26,8 +26,8 @@ ecbuild_add_library(
         MULTIO_DUMMY_API
 
     PUBLIC_INCLUDES
-        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module>
         $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
+        $<INSTALL_INTERFACE:module/${PROJECT_NAME}>
 
     PUBLIC_LIBS
         multio-api
@@ -45,8 +45,8 @@ ecbuild_add_library(
         ${multio_fapi_srcs}
 
     PUBLIC_INCLUDES
-        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module>
         $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
+        $<INSTALL_INTERFACE:module/${PROJECT_NAME}>
 
     PUBLIC_LIBS
         multio-api

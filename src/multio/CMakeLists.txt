@@ -195,6 +195,6 @@ add_subdirectory(tools)
 
 if( HAVE_FORTRAN AND ECBUILD_INSTALL_FORTRAN_MODULES )
     install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}
-             DESTINATION module/multio
+             DESTINATION module/${PROJECT_NAME}
              COMPONENT modules )
 endif()

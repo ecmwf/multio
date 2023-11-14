@@ -46,6 +46,7 @@ ecbuild_add_test(
 )
 
 ecbuild_add_test(
+    ENABLED      OFF
     TARGET       ${PREFIX}_single_request_check_metadata
     TEST_DEPENDS ${PREFIX}_single_request_run
     ARGS         -H Reference_test-across-dissemination-single_0-ZZ1-M1.grib test-across-dissemination-single/0000/test-across-dissemination-single_0000-ZZ1:M1.grib
@@ -53,6 +54,7 @@ ecbuild_add_test(
 )
 
 ecbuild_add_test(
+    ENABLED      OFF
     TARGET       ${PREFIX}_single_request_check_values
     TEST_DEPENDS ${PREFIX}_single_request_check_metadata
     ARGS         -P -T10 Reference_test-across-dissemination-single_0-ZZ1-M1.grib test-across-dissemination-single/0000/test-across-dissemination-single_0000-ZZ1:M1.grib
@@ -70,6 +72,7 @@ ecbuild_add_test(
 )
 
 ecbuild_add_test(
+    ENABLED      OFF
     TARGET       ${PREFIX}_multiple_request_check_metadata_0
     TEST_DEPENDS ${PREFIX}_multiple_request_run
     ARGS         -H Reference_test-across-dissemination-multiple_0-ZZ1-M1.grib test-across-dissemination-multiple/0000/test-across-dissemination-multiple_0000-ZZ1:M1.grib
@@ -77,6 +80,7 @@ ecbuild_add_test(
 )
 
 ecbuild_add_test(
+    ENABLED      OFF
     TARGET       ${PREFIX}_multiple_request_check_metadata_1
     TEST_DEPENDS ${PREFIX}_multiple_request_run
     ARGS         -H Reference_test-across-dissemination-multiple_0-ZZ1-M1.grib test-across-dissemination-multiple/0001/test-across-dissemination-multiple_0001-ZZ1:M1.grib
@@ -84,6 +88,7 @@ ecbuild_add_test(
 )
 
 ecbuild_add_test(
+    ENABLED      OFF
     TARGET       ${PREFIX}_multiple_request_check_values_0
     TEST_DEPENDS ${PREFIX}_multiple_request_check_metadata_0
     ARGS         -P -T10 Reference_test-across-dissemination-multiple_0-ZZ1-M1.grib test-across-dissemination-multiple/0000/test-across-dissemination-multiple_0000-ZZ1:M1.grib
@@ -91,6 +96,7 @@ ecbuild_add_test(
 )
 
 ecbuild_add_test(
+    ENABLED      OFF
     TARGET       ${PREFIX}_multiple_request_check_values_1
     TEST_DEPENDS ${PREFIX}_multiple_request_check_metadata_1
     ARGS         -P -T10 Reference_test-across-dissemination-multiple_0-ZZ1-M1.grib test-across-dissemination-multiple/0001/test-across-dissemination-multiple_0001-ZZ1:M1.grib

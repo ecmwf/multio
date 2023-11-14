@@ -225,14 +225,6 @@ struct QueriedMarsKeys {
 QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     QueriedMarsKeys ret;
 
-    // param might be a string, separated by . for GRIB1.
-    std::optional<std::string> paramId{firstOf(LookUpString(md, "paramId"), LookUpString(md, "param"))};
-
-    // String to long convertion should get it right
-    if (paramId) {
-        g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
-    }
-
     if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
         g.setValue("level", 0l);
         g.setValue("scaleFactorOfFirstFixedSurface", "MISSING");
@@ -244,10 +236,10 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
     }
 
-    std::optional<std::string> paramId{firstOf(
-        LookUpString(md, "paramId"), LookUpString(md, "param"))};  // param might be a string, separated by . for GRIB1.
-                                                                   // String to long convertion should get it right
+    // param might be a string, separated by . for GRIB1.
+    std::optional<std::string> paramId{firstOf(LookUpString(md, "paramId"), LookUpString(md, "param"))};
 
+    // String to long convertion should get it right
     if (paramId) {
         g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
     }

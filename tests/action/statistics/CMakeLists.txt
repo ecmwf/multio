@@ -75,7 +75,7 @@ foreach(_test ${_statistics_tests_names} )
             ecbuild_add_test(
                 ENABLED      OFF
                 TARGET       ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
-                TEST_DEPENDS ${PREFIX}_run_${_kind}_${_start}_${_test}
+                TEST_DEPENDS ${PREFIX}_run_${_kind}_${_start}_${_test} 
                 ARGS         -H ${_reference} ${_result}
                 COMMAND      grib_compare
             )

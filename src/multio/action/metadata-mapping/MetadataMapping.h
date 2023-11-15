@@ -38,7 +38,7 @@ private:
     void print(std::ostream& os) const override;
 
     std::string name_;
-    const std::vector<message::MetadataMapping> mappings_;
+    const std::vector<message::MetadataMapping>& mappings_;
     message::MetadataMappingOptions options_;
 };
 

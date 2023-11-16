@@ -75,7 +75,7 @@ foreach(_test ${_statistics_tests_names} )
             ecbuild_add_test(
                 ENABLED      OFF
                 TARGET       ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
-                TEST_DEPENDS ${PREFIX}_run_${_kind}_${_test}
+                TEST_DEPENDS ${PREFIX}_run_${_kind}_${_start}_${_test} 
                 ARGS         -H ${_reference} ${_result}
                 COMMAND      grib_compare
             )
@@ -84,7 +84,7 @@ foreach(_test ${_statistics_tests_names} )
                 ecbuild_add_test(
                     ENABLED      OFF
                     TARGET       ${PREFIX}_check_values_${_kind}_${_start}_${_test}
-                    TEST_DEPENDS ${PREFIX}_check_metadata_${_kind}_${_test}
+                    TEST_DEPENDS ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
                     COMMAND      mir-compare
                     ARGS         ${_reference} ${_result} --ignore-above-latitude=89.9 --ignore-below-latitude=-89.9
                 )
@@ -92,7 +92,7 @@ foreach(_test ${_statistics_tests_names} )
                 ecbuild_add_test(
                     ENABLED      OFF
                     TARGET       ${PREFIX}_check_values_${_kind}_${_start}_${_test}
-                    TEST_DEPENDS ${PREFIX}_check_metadata_${_kind}_${_test}
+                    TEST_DEPENDS ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
                     COMMAND      grib_compare
                     ARGS         -P -T10 ${_reference} ${_result}
                 )

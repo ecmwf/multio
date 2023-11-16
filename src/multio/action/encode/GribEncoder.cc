@@ -227,10 +227,11 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 
     if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
         g.setValue("level", 0l);
-        g.setValue("scaleFactorOfFirstFixedSurface", "MISSING");
-        g.setValue("scaledValueOfFirstFixedSurface", "MISSING");
-        g.setValue("scaleFactorOfSecondFixedSurface", "MISSING");
-        g.setValue("scaleFactorOfSecondFixedSurface", "MISSING");
+        const std::string missing = "MISSING";
+        g.setValue("scaleFactorOfFirstFixedSurface", missing);
+        g.setValue("scaledValueOfFirstFixedSurface", missing);
+        g.setValue("scaleFactorOfSecondFixedSurface", missing);
+        g.setValue("scaledValueOfSecondFixedSurface", missing);
     }
     else {
         withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));

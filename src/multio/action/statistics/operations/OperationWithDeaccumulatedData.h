@@ -15,16 +15,16 @@ public:
     OperationWithDeaccumulatedData(const std::string& name, const std::string& operation, long sz, bool needRestart,
                                    const OperationWindow& win, const StatisticsConfiguration& cfg) :
         Operation{name, operation, win, cfg},
-        values_{std::vector<T>(sz /= sizeof(T), 0.0)},
-        initValues_{std::vector<T>(sz /= sizeof(T), 0.0)},
+        values_{std::vector<T>(sz / sizeof(T), 0.0)},
+        initValues_{std::vector<T>(sz / sizeof(T), 0.0)},
         needRestart_{needRestart} {}
 
     OperationWithDeaccumulatedData(const std::string& name, const std::string& operation, long sz, bool needRestart,
                                    const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
                                    const StatisticsConfiguration& cfg) :
         Operation{name, operation, win, cfg},
-        values_{std::vector<T>(sz /= sizeof(T), 0.0)},
-        initValues_{std::vector<T>(sz /= sizeof(T), 0.0)},
+        values_{std::vector<T>(sz / sizeof(T), 0.0)},
+        initValues_{std::vector<T>(sz / sizeof(T), 0.0)},
         needRestart_{needRestart} {
         load(IOmanager, cfg);
         return;

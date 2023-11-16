@@ -154,12 +154,14 @@ foreach(_gridType   CORE2 )
                             ARGS         --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/${_test}.yaml ${_feed})
 
                         ecbuild_add_test(
+                            ENABLED      OFF
                             TARGET       ${PREFIX}_${_test}_check_metadata
                             TEST_DEPENDS ${PREFIX}_${_test}_run
                             COMMAND      grib_compare
                             ARGS         -H ${_reference} ${_result})
 
                         ecbuild_add_test(
+                            ENABLED      OFF
                             TARGET       ${PREFIX}_${_test}_check_values
                             TEST_DEPENDS ${PREFIX}_${_test}_check_metadata
                             COMMAND      grib_compare

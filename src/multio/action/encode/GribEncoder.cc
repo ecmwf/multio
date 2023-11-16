@@ -247,7 +247,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         g.setValue("scaleFactorOfFirstFixedSurface", "MISSING");
         g.setValue("scaledValueOfFirstFixedSurface", "MISSING");
         g.setValue("scaleFactorOfSecondFixedSurface", "MISSING");
-        g.setValue("scaleFactorOfSecondFixedSurface", "MISSING");
+        g.setValue("scaledValueOfSecondFixedSurface", "MISSING");
     }
     else {
         withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));

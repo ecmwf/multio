@@ -80,8 +80,8 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
                        std::move(targetKey), std::move(targetPath));
             ++mcind;
         }
-        mappings_.emplace(mapping, std::move(v));
-        return *(mappings_.at(mapping).get());
+
+        return *mappings_.emplace(mapping, std::move(v)).first->second.get();
     }
 }
 

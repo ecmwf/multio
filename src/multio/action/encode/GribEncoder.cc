@@ -693,6 +693,10 @@ bool GribEncoder::hasKey(const char* key) {
     return encoder_->hasKey(key);
 };
 
+void GribEncoder::setMissing(const std::string& key) {
+    encoder_->setMissing(key);
+}
+
 message::Message GribEncoder::encodeOceanCoordinates(message::Message&& msg) {
     initEncoder();
 

@@ -46,6 +46,8 @@ public:
         }
     };
 
+    void setMissing(const std::string& key);
+
     template <typename T>
     void setDataValues(const T* data, size_t count) {
         encoder_->setDataValues(data, count);

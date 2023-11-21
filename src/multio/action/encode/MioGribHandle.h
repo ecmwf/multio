@@ -22,6 +22,8 @@ public:
 
     void setValue(const std::string& key, bool value);
 
+    void setMissing(const std::string& key);
+
     // Set values
     void setDataValues(const float* values, size_t count);
 };

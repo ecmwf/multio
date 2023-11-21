@@ -227,11 +227,10 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 
     if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
         g.setValue("level", 0l);
-        const std::string missing = "MISSING";
-        g.setValue("scaleFactorOfFirstFixedSurface", missing);
-        g.setValue("scaledValueOfFirstFixedSurface", missing);
-        g.setValue("scaleFactorOfSecondFixedSurface", missing);
-        g.setValue("scaledValueOfSecondFixedSurface", missing);
+        g.setMissing("scaleFactorOfFirstFixedSurface");
+        g.setMissing("scaledValueOfFirstFixedSurface");
+        g.setMissing("scaleFactorOfSecondFixedSurface");
+        g.setMissing("scaledValueOfSecondFixedSurface");
     }
     else {
         withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
@@ -623,8 +622,13 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
         const auto& gridSubtype = metadata.getString("gridSubtype");
         setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
 
-        const auto& gridUID = metadata.getString("uuidOfHGrid");
-        setValue("uuidOfHGrid", gridUID);
+        if (metadata.has("uuidOfHGrid")) {
+            const auto& gridUID = metadata.getString("uuidOfHGrid");
+            setValue("uuidOfHGrid", gridUID);
+        } else {
+            eckit::Log::warning() << "Ocean grid UUID not available during encoding!"
+                << std::endl;
+        }
     }
 }
 
@@ -670,6 +674,10 @@ void GribEncoder::initEncoder() {
 bool GribEncoder::hasKey(const char* key) {
     return encoder_->hasKey(key);
 };
+
+void GribEncoder::setMissing(const std::string& key) {
+    encoder_->setMissing(key);
+}
 
 message::Message GribEncoder::encodeOceanCoordinates(message::Message&& msg) {
     initEncoder();

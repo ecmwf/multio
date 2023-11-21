@@ -76,6 +76,12 @@ void MioGribHandle::setValue(const std::string& key, bool value) {
     codesCheckRelaxed(codes_set_long(raw(), key.c_str(), longValue), key, value);
 }
 
+void MioGribHandle::setMissing(const std::string& key) {
+    LOG_DEBUG_LIB(LibMultio) << "*** Setting missing for key " << key << std::endl;
+    codesCheckRelaxed(codes_set_missing(raw(), key.c_str()), key, "missing");
+}
+
+
 // Set values
 void MioGribHandle::setDataValues(const float* values, size_t count) {
     std::vector<double> dvalues(count, 0.0);

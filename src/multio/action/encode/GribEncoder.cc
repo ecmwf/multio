@@ -282,6 +282,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "subCentre"), LookUpString(md, "subCentre"));
     withFirstOf(valueSetter(g, "generatingProcessIdentifier"), LookUpString(md, "generatingProcessIdentifier"));
 
+    withFirstOf(valueSetter(g, "setPackingType"), LookUpString(md, "setPackingType"));
+
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
     withFirstOf(valueSetter(g, "number"), LookUpLong(md, "ensemble-member"));
     withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), LookUpLong(md, "ensemble-size"));
@@ -607,6 +609,8 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     withFirstOf(valueSetter(*this, "subCentre"), LookUpString(metadata, "subCentre"));
     withFirstOf(valueSetter(*this, "generatingProcessIdentifier"), LookUpString(metadata, "generatingProcessIdentifier"));
+
+    withFirstOf(valueSetter(*this, "setPackingType"), LookUpString(metadata, "setPackingType"));
 
     auto runConfig = config_.getSubConfiguration("run");
 

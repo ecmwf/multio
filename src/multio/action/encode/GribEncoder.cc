@@ -107,16 +107,21 @@ std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& t
 void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
 
     bool hasStartDateTime = (in.has("startDate") && in.has("startTime"));
+    bool hasDataDateTime = (in.has("dataDate") && in.has("dataTime"));
     bool hasDateTime = (in.has("date") && in.has("time"));
 
     // std::cout << "tryMapStepToTimeAndCheckTime..." << std::endl;
-    if (hasStartDateTime || hasDateTime) {
+    if (hasStartDateTime || hasDateTime || hasDataDateTime) {
         util::DateInts startDate;
         util::TimeInts startTime;
 
         if (hasStartDateTime) {
             startDate = util::toDateInts(in.getLong("startDate"));
             startTime = util::toTimeInts(in.getLong("startTime"));
+        }
+        else if (hasDataDateTime) {
+            startDate = util::toDateInts(in.getLong("dataDate"));
+            startTime = util::toTimeInts(in.getLong("dataTime"));
         }
         else if (hasDateTime) {
             startDate = util::toDateInts(in.getLong("date"));
@@ -608,7 +613,8 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     }
 
     withFirstOf(valueSetter(*this, "subCentre"), LookUpString(metadata, "subCentre"));
-    withFirstOf(valueSetter(*this, "generatingProcessIdentifier"), LookUpString(metadata, "generatingProcessIdentifier"));
+    withFirstOf(valueSetter(*this, "generatingProcessIdentifier"),
+                LookUpString(metadata, "generatingProcessIdentifier"));
 
     withFirstOf(valueSetter(*this, "setPackingType"), LookUpString(metadata, "setPackingType"));
 
@@ -643,10 +649,12 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     std::string gridType;
     const auto hasGridType = metadata.get("gridType", gridType);
-    if (hasGridType && (eckit::StringTools::lower(gridType) != "healpix") &&
-        (eckit::StringTools::lower(gridType) != "regular_ll")) {
+    if (!hasGridType) {
+        gridType = config_.getString("grid-type");
+    }
+    if (eckit::StringTools::lower(gridType) != "healpix" && (eckit::StringTools::lower(gridType) != "regular_ll")) {
         // Set ocean grid information
-        setValue("unstructuredGridType", config_.getString("grid-type"));
+        setValue("unstructuredGridType", gridType);
 
         const auto& gridSubtype = metadata.getString("gridSubtype");
         setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
@@ -654,9 +662,9 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
         if (metadata.has("uuidOfHGrid")) {
             const auto& gridUID = metadata.getString("uuidOfHGrid");
             setValue("uuidOfHGrid", gridUID);
-        } else {
-            eckit::Log::warning() << "Ocean grid UUID not available during encoding!"
-                << std::endl;
+        }
+        else {
+            eckit::Log::warning() << "Ocean grid UUID not available during encoding!" << std::endl;
         }
     }
 }

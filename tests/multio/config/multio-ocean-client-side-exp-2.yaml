@@ -223,7 +223,7 @@ server:
         - type: mask
 
         - type: encode
-          grid-type: eORCA025
+          unstructured-grid-type: eORCA025
           grid-downloader-template: '{~}/unstr_latlon.tmpl'
           format: grib
           template: '{~}/unstr_avg_fc.tmpl'

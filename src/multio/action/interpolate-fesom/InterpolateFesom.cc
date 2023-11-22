@@ -33,7 +33,9 @@ namespace multio::action::interpolateFESOM {
 namespace {
 
 // TODO: Add the metadata we want to remove from the FESOM metadata
-const std::vector<std::string> metadata_black_list{"precision", "grid-type", "gridSubtype", "globalSize", "precision"};
+const std::vector<std::string> metadata_black_list{
+    "precision", "unstructuredGridType", "unstructuredGridSubtype", "gridType", "domain", "globalSize",
+    "precision", "uuidOfHGrid"};
 
 
 template <typename DestType>
@@ -83,7 +85,7 @@ void fill_metadata(const message::Metadata& in_md, message::Metadata& out_md, si
             forwardMetadata<message::Metadata>(in_md, out_md, key, in_md.getSubConfiguration(key).get());
         }
     }
-    out_md.set("gridType", "HEALPix");
+    out_md.set("gridType", "healpix");
     out_md.set("orderingConvention", orderingConvention_enum2string(orderingConvention));
     out_md.set("Nside", NSide);
     out_md.set("globalSize", globalSize);
@@ -153,19 +155,18 @@ std::string InterpolateFesom<T>::generateKey(const message::Message& msg) const 
         }
         level--;
     }
-    if (!msg.metadata().has("gridType")) {
+    if (!msg.metadata().has("unstructuredGridType")) {
         std::ostringstream os;
-        os << " - \"gridType\" not present in the metadata" << std::endl;
+        os << " - \"unstructuredGridType\" not present in the metadata" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
-    if (!msg.metadata().has("gridSubtype")) {
-        std::ostringstream os;
-        os << " - \"gridSubtype\" not present in the metadata" << std::endl;
-        throw eckit::SeriousBug(os.str(), Here());
-    }
-    std::string fesomGridName = msg.metadata().getString("gridType");
-    const std::string domain = msg.metadata().getString("gridSubtype");
-    std::string key = fesomCacheName(fesomGridName, domain, (sizeof(T) == 4 ? "single" : "double"), NSide_,
+    // if (!msg.metadata().has("unstructuredGridSubtype")) {
+    //     std::ostringstream os;
+    //     os << " - \"unstructuredGridSubtype\" not present in the metadata" << std::endl;
+    //     throw eckit::SeriousBug(os.str(), Here());
+    // }
+    std::string fesomGridName = msg.metadata().getString("unstructuredGridType");
+    std::string key = fesomCacheName(fesomGridName, msg.domain(), (sizeof(T) == 4 ? "single" : "double"), NSide_,
                                      orderingConvention_, level);
 
     INTERPOLATE_FESOM_OUT_STREAM << " - Generating key for the field :: " << key << std::endl;
@@ -193,8 +194,8 @@ void InterpolateFesom<T>::executeImpl(message::Message msg) {
     std::string key = generateKey(msg);
     if (Interpolators_.find(key) == Interpolators_.end()) {
         // no need to check for grid type since it is already checked in the generateKey function
-        Interpolators_[key] = std::make_unique<Fesom2HEALPix<T>>(msg, cachePath_, msg.metadata().getString("gridType"),
-                                                                 NSide_, orderingConvention_);
+        Interpolators_[key] = std::make_unique<Fesom2HEALPix<T>>(
+            msg, cachePath_, msg.metadata().getString("unstructuredGridType"), NSide_, orderingConvention_);
     }
 
     executeNext(util::dispatchPrecisionTag(msg.precision(), [&](auto in_pt) -> message::Message {

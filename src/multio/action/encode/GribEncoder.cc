@@ -643,7 +643,8 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     std::string gridType;
     const auto hasGridType = metadata.get("gridType", gridType);
-    if (eckit::StringTools::lower(gridType) != "healpix") {
+    if (hasGridType && (eckit::StringTools::lower(gridType) != "healpix") &&
+        (eckit::StringTools::lower(gridType) != "regular_ll")) {
         // Set ocean grid information
         setValue("unstructuredGridType", config_.getString("grid-type"));
 

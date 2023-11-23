@@ -33,8 +33,8 @@ jobs:
         name:
           - linux gnu-10
           - linux gnu-12
+          - linux gnu-7
           - linux clang-12
-          - linux clang-14
           - linux intel
           - linux intel-classic
           - macos
@@ -172,7 +172,7 @@ jobs:
     - name: Install Qhull
       shell: bash -eux {0}
       run: |
-        ${ATLAS_TOOLS}/install-qhull.sh --version 8.1-alpha3 --prefix ${DEPS_DIR}/qhull
+        ${INSTALL_TOOLS}/install-qhull.sh --version 8.1-alpha3 --prefix ${DEPS_DIR}/qhull
         echo "Qhull_ROOT=${DEPS_DIR}/qhull" >> $GITHUB_ENV
 
     - name: Set Build & Test Environment

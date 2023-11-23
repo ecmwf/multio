@@ -200,7 +200,7 @@ void Encode::executeImpl(Message msg) {
 
         std::string gridType;
         const auto hasGridType = md.get("gridType", gridType);
-        if (hasGridType && (gridType != "HEALPix")) {
+        if (hasGridType && (gridType == "unstructured_grid")) {
             auto gridCoords
                 = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
             if (gridCoords) {

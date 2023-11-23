@@ -76,11 +76,12 @@ jobs:
 
           - name : linux intel
             os: ubuntu-20.04
-            compiler: intel-oneapi
-            compiler_cc: icc
-            compiler_cxx: icpc
-            compiler_fc: ifort
+            compiler: intel
+            compiler_cc: icx
+            compiler_cxx: icpx
+            compiler_fc: ifx
             caching: true
+            coverage: false
 
           - name: macos appclang-12
             # Xcode compiler requires empty environment variables, so we pass null (~) here
@@ -149,7 +150,7 @@ jobs:
         ${INSTALL_TOOLS}/install-intel-oneapi.sh
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
-        echo "CACHE_SUFFIX=$(icc -dumpversion)" >> $GITHUB_ENV
+        echo "CACHE_SUFFIX=$CC-$($CC -dumpversion)" >> $GITHUB_ENV
 
     - name: Install MPI
       shell: bash -eux {0}

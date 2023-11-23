@@ -36,8 +36,8 @@ jobs:
           - linux clang-12
           - linux clang-14
           - linux intel
-          - macos appclang-12
-          - macos appclang-14
+          - linux intel-classic
+          - macos
 
         include:
 
@@ -48,6 +48,7 @@ jobs:
             compiler_cxx: g++-10
             compiler_fc: gfortran-10
             caching: true
+            coverage: false
 
           - name: linux gnu-12
             os: ubuntu-22.04
@@ -55,8 +56,18 @@ jobs:
             compiler_cc: gcc-12
             compiler_cxx: g++-12
             compiler_fc: gfortran-12
-            caching: true
             cmake_options: -DENABLE_OMP_CXX=OFF
+            caching: true
+            coverage: false
+
+          - name: linux gnu-7
+            os: ubuntu-20.04
+            compiler: gnu-7
+            compiler_cc: gcc-7
+            compiler_cxx: g++-7
+            compiler_fc: gfortran-7
+            caching: true
+            coverage: false
 
           - name: linux clang-12
             os: ubuntu-20.04
@@ -65,41 +76,35 @@ jobs:
             compiler_cxx: clang++-12
             compiler_fc: gfortran-10
             caching: true
-
-          - name: linux clang-14
-            os: ubuntu-22.04
-            compiler: clang-14
-            compiler_cc: clang-14
-            compiler_cxx: clang++-14
-            compiler_fc: gfortran-12
-            caching: true
+            coverage: false
 
           - name : linux intel
             os: ubuntu-20.04
-            compiler: intel-oneapi
+            compiler: intel
+            compiler_cc: icx
+            compiler_cxx: icpx
+            compiler_fc: ifx
+            caching: true
+            coverage: false
+
+          - name : linux intel-classic
+            os: ubuntu-20.04
+            compiler: intel-classic
             compiler_cc: icc
             compiler_cxx: icpc
             compiler_fc: ifort
             caching: true
+            coverage: false
 
-          - name: macos appclang-12
-            # Xcode compiler requires empty environment variables, so we pass null (~) here
-            os: macos-11
-            compiler: clang-12
-            compiler_cc: ~
-            compiler_cxx: ~
-            compiler_fc: gfortran-11
-            caching: true
-            cmake_options: -DMPI_SLOTS=4
-
-          - name: macos appclang-14
+          - name: macos
             # Xcode compiler requires empty environment variables, so we pass null (~) here
             os: macos-12
             compiler: clang-14
             compiler_cc: ~
             compiler_cxx: ~
-            compiler_fc: gfortran-12
+            compiler_fc: gfortran-11
             caching: true
+            coverage: false
             cmake_options: -DMPI_SLOTS=4
 
     runs-on: ${{ matrix.os }}
@@ -164,6 +169,12 @@ jobs:
         ${INSTALL_TOOLS}/install-fftw.sh --version 3.3.10 --prefix ${DEPS_DIR}/fftw
         echo "FFTW_ROOT=${DEPS_DIR}/fftw" >> $GITHUB_ENV
 
+    - name: Install Qhull
+      shell: bash -eux {0}
+      run: |
+        ${ATLAS_TOOLS}/install-qhull.sh --version 8.1-alpha3 --prefix ${DEPS_DIR}/qhull
+        echo "Qhull_ROOT=${DEPS_DIR}/qhull" >> $GITHUB_ENV
+
     - name: Set Build & Test Environment
       run: |
 
@@ -173,12 +184,24 @@ jobs:
         # Add mpirun to path for testing
         [ -z ${MPI_HOME+x} ] || echo "${MPI_HOME}/bin" >> $GITHUB_PATH
 
+        if [[ "${{matrix.compiler}}" == intel-classic ]]; then
+          echo "CFLAGS=-diag-disable=10441"   >> $GITHUB_ENV
+          echo "CXXFLAGS=-diag-disable=10441" >> $GITHUB_ENV
+          echo "FCFLAGS=-diag-disable=10441"  >> $GITHUB_ENV
+          echo "FFLAGS=-diag-disable=10441"   >> $GITHUB_ENV
+        fi
+
+        if [[ "${{matrix.compiler}}" == intel ]]; then
+          echo "CFLAGS=-Rno-debug-disables-optimization"   >> $GITHUB_ENV
+          echo "CXXFLAGS=-Rno-debug-disables-optimization" >> $GITHUB_ENV
+        fi
+
     - name: Build & Test
       id: build-test
       uses: ecmwf-actions/build-package@v2
       with:
         # lcov fails for gcc-12, re-enable self_coverage later
-        self_coverage: false
+        self_coverage: ${{ matrix.coverage }}
         force_build: true
         cache_suffix: "${{ matrix.build_type }}-${{ env.CACHE_SUFFIX }}"
         recreate_cache: ${{ matrix.caching == false }}

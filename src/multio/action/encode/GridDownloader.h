@@ -53,7 +53,7 @@ private:
     using GridUIDCache = std::unordered_map<DomainType, GridUIDType>;
 
     void initTemplateMetadata();
-    multio::message::Metadata createMetadataFromCoordsData(size_t gridSize, const std::string& gridSubtype,
+    multio::message::Metadata createMetadataFromCoordsData(size_t gridSize, const std::string& unstructuredGridSubtype,
                                                            const std::string& gridUID, int paramId);
     void downloadOrcaGridCoordinates(const config::ComponentConfiguration& compConf);
     multio::message::Message encodeMessage(multio::message::Message&& message, int startDate, int startTime);

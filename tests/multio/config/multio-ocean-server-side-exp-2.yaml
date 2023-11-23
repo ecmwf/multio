@@ -154,7 +154,7 @@ server:
           offset-value: 273.15
 
         - type: encode
-          grid-type: eORCA1
+          unstructured-grid-type: eORCA1
           grid-downloader-template: '{~}/unstr_latlon.tmpl'
           format: grib
           template: '{~}/unstr_avg_fc.tmpl'
@@ -222,7 +222,7 @@ server:
           offset-value: 273.15
 
         - type: encode
-          grid-type: eORCA1
+          unstructured-grid-type: eORCA1
           grid-downloader-template: '{~}/unstr_latlon.tmpl'
           format: grib
           template: '{~}/unstr_avg_fc.tmpl'
@@ -261,7 +261,7 @@ server:
           offset-value: 273.15
 
         - type: encode
-          grid-type: eORCA1
+          unstructured-grid-type: eORCA1
           grid-downloader-template: '{~}/unstr_latlon.tmpl'
           format: grib
           template: '{~}/unstr_avg_fc.tmpl'

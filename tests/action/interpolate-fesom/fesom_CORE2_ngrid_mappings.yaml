@@ -4,7 +4,8 @@ mappings:
     map:
       param: param-id
       gridType: grid-type
-      gridSubtype: grid-sub-type
+      unstructuredGridType: unstructured-grid-type
+      unstructuredGridSubtype: unstructured-grid-sub-type
       domain: fesom-domain
       typeOfLevel: level-type
       fesomLevelType: fesom-level-type
@@ -13,8 +14,9 @@ data:
   # Co-ordinates
   - fesom-id: 263501
     param-id: 263501
-    grid-type: "CORE2"
-    grid-sub-type : "N grid"
+    grid-type: "unstructured_grid"
+    unstructured-grid-type: "CORE2"
+    unstructured-grid-sub-type : "N"
     fesom-domain: "ngrid"
     level-type : "oceanModelLayer"
     fesom-level-type : "layer"
@@ -22,8 +24,9 @@ data:
 
   - fesom-id: 263101
     param-id: 263101
-    grid-type: "CORE2"
-    grid-sub-type : "N grid"
+    grid-type: "unstructured_grid"
+    unstructured-grid-type: "CORE2"
+    unstructured-grid-sub-type : "N"
     fesom-domain: "ngrid"
     level-type : "oceanModelLayer"
     fesom-level-type : "layer"

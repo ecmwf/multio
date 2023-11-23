@@ -205,7 +205,7 @@ server:
         - type: Mask
 
         - type: Encode
-          grid-type: eORCA1
+          unstructured-grid-type: eORCA1
           grid-downloader-template: '{~}/unstr_latlon.tmpl'
           format: grib
           template: '{~}/unstr_inst_an.tmpl'

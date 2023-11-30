@@ -45,12 +45,18 @@ Dispatcher::~Dispatcher() {
 void Dispatcher::dispatch() {
     util::ScopedTimer timer{timing_};
     withFailureHandling([&]() {
-        message::Message msg;
-        auto sz = queue_.pop(msg);
-        while (sz >= 0) {
-            handle(msg);
-            LOG_DEBUG_LIB(multio::LibMultio) << "Size of the dispatch queue: " << sz << std::endl;
-            sz = queue_.pop(msg);
+        try {
+            message::Message msg;
+            auto sz = queue_.pop(msg);
+            while (sz >= 0) {
+                handle(msg);
+                LOG_DEBUG_LIB(multio::LibMultio) << "Size of the dispatch queue: " << sz << std::endl;
+                sz = queue_.pop(msg);
+            }
+        }
+        catch (const multio::util::FailureAwareException& ex) {
+            std::cerr << ex << std::endl;
+            throw;
         }
     });
 }

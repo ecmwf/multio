@@ -30,7 +30,10 @@ void AggregationCatalogue::addNew(const message::Message& msg) {
     ASSERT(not contains(msg.fieldId()));
     multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
-        messageMap_.emplace(msg.fieldId(), message::Message{message::Message::Header{msg.header()},
+        // Create a new message with preallocated  payload where individual arriving parts are immediately copied in. 
+        // The source of the message is the same as the destination - otherwise on serverside the source is depending on the source of the first arriving
+        // although all multiple sources are combined on the servier (which is the destination).
+        messageMap_.emplace(msg.fieldId(), message::Message{message::Message::Header{msg.header().tag(), msg.header().destination(), msg.header().destination(), message::Metadata{msg.header().metadata()}},
                                                             eckit::Buffer{msg.globalSize() * sizeof(Precision)}});
         processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
     });

@@ -11,11 +11,11 @@ PeriodUpdater::PeriodUpdater(long span) : span_{span} {};
 
 
 eckit::DateTime PeriodUpdater::updatePeriodStart(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    return computeWinStartTime(currentDateTime(msg, cfg));
+    return computeWinStartTime(nextDateTime(msg, cfg));
 };
 
 eckit::DateTime PeriodUpdater::updatePeriodEnd(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    return updateWinEndTime(computeWinStartTime(currentDateTime(msg, cfg)));
+    return updateWinEndTime(computeWinStartTime(nextDateTime(msg, cfg)));
 };
 
 OperationWindow PeriodUpdater::initPeriod(const message::Message& msg, std::shared_ptr<StatisticsIO>& IOmanager,

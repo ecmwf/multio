@@ -119,6 +119,7 @@ public:  // methods
     Message();
     Message(Header&& header, const eckit::Buffer& payload = eckit::Buffer{0});
     Message(Header&& header, eckit::Buffer&& payload);
+    Message(Header&& header, std::shared_ptr<eckit::Buffer> payload);
     Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload);
     Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload);
     // Message(std::shared_ptr<Header> header, std::shared_ptr<eckit::Buffer> payload);
@@ -150,8 +151,9 @@ public:
 
     Message modifyMetadata(Metadata&& md) const;
 
-    eckit::Buffer& payload();
     const eckit::Buffer& payload() const;
+    
+    std::shared_ptr<eckit::Buffer> sharedPayload() const;
 
     size_t size() const;
 

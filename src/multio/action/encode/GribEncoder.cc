@@ -558,9 +558,21 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
             (timeRef == "start" ? 2
                                 : ((significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
 
-        g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
-        withFirstOf(valueSetter(g, "timeIncrement"), LookUpLong(md, "sampleIntervalInSeconds"),
-                    LookUpLong(md, "timeStep"));  // Nemo is currently sending timeStep
+
+        if (const auto sampleIntervalInSeconds = lookUpLong(md, "sampleIntervalInSeconds"); sampleIntervalInSeconds) {
+            g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
+            g.setValue("timeIncrement", *sampleIntervalInSeconds);
+        }
+        else if (const auto timeIncrement = lookUpLong(md, "timeIncrement"); timeIncrement) {
+            withFirstOf(valueSetter(g, "indicatorOfUnitForTimeIncrement"),
+                        LookUpLong(md, "indicatorOfUnitForTimeIncrement"));
+            g.setValue("timeIncrement", *timeIncrement);
+        }
+        else {
+            g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
+            withFirstOf(valueSetter(g, "timeIncrement"),
+                        LookUpLong(md, "timeStep"));  // Nemo is currently sending timeStep
+        }
     }
 
 

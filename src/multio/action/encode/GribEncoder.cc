@@ -558,15 +558,14 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
             (timeRef == "start" ? 2
                                 : ((significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
 
-
-        if (const auto sampleIntervalInSeconds = lookUpLong(md, "sampleIntervalInSeconds"); sampleIntervalInSeconds) {
-            g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
-            g.setValue("timeIncrement", *sampleIntervalInSeconds);
-        }
-        else if (const auto timeIncrement = lookUpLong(md, "timeIncrement"); timeIncrement) {
+        if (const auto timeIncrement = lookUpLong(md, "timeIncrement"); timeIncrement) {
             withFirstOf(valueSetter(g, "indicatorOfUnitForTimeIncrement"),
                         LookUpLong(md, "indicatorOfUnitForTimeIncrement"));
             g.setValue("timeIncrement", *timeIncrement);
+        }
+        else if (const auto sampleIntervalInSeconds = lookUpLong(md, "sampleIntervalInSeconds"); sampleIntervalInSeconds) {
+            g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
+            g.setValue("timeIncrement", *sampleIntervalInSeconds);
         }
         else {
             g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));

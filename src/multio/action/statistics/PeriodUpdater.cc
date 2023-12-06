@@ -10,14 +10,6 @@ namespace multio::action {
 PeriodUpdater::PeriodUpdater(long span) : span_{span} {};
 
 
-eckit::DateTime PeriodUpdater::updatePeriodStart(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    return computeWinStartTime(nextDateTime(msg, cfg));
-};
-
-eckit::DateTime PeriodUpdater::updatePeriodEnd(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    return updateWinEndTime(computeWinStartTime(nextDateTime(msg, cfg)));
-};
-
 OperationWindow PeriodUpdater::initPeriod(const message::Message& msg, std::shared_ptr<StatisticsIO>& IOmanager,
                                           const StatisticsConfiguration& cfg) {
     if (cfg.readRestart()) {
@@ -37,8 +29,8 @@ long PeriodUpdater::timeSpan() const {
     return span_;
 }
 
-eckit::DateTime PeriodUpdater::computeWinCreationTime(const eckit::DateTime& currentTime) {
-    return currentTime;
+eckit::DateTime PeriodUpdater::computeWinCreationTime(const eckit::DateTime& nextTime) {
+    return nextTime;
 };
 
 eckit::DateTime PeriodUpdater::computeWinEndTime(const eckit::DateTime& startPoint) {
@@ -64,8 +56,10 @@ const std::string HourPeriodUpdater::timeUnit() const {
     return os.str();
 };
 
-eckit::DateTime HourPeriodUpdater::computeWinStartTime(const eckit::DateTime& currentTime) {
-    return eckit::DateTime{currentTime.date(), eckit::Time{currentTime.time().hours(), 0, 0}};
+eckit::DateTime HourPeriodUpdater::computeWinStartTime(const eckit::DateTime& nextTime) {
+    const auto& d = nextTime.date();
+    const auto& t = nextTime.time();
+    return eckit::DateTime{d, eckit::Time{t.hours(), 0, 0}};
 };
 
 eckit::DateTime HourPeriodUpdater::updateWinEndTime(const eckit::DateTime& startPoint) {
@@ -92,12 +86,14 @@ const std::string DayPeriodUpdater::timeUnit() const {
     return os.str();
 };
 
-eckit::DateTime DayPeriodUpdater::computeWinStartTime(const eckit::DateTime& currentTime) {
-    return eckit::DateTime{currentTime.date(), eckit::Time{0}};
+eckit::DateTime DayPeriodUpdater::computeWinStartTime(const eckit::DateTime& nextTime) {
+    const auto& d = nextTime.date();
+    const auto& t = nextTime.time();
+    return eckit::DateTime{d, eckit::Time{0}};
 };
 
 eckit::DateTime DayPeriodUpdater::updateWinEndTime(const eckit::DateTime& startPoint) {
-    eckit::DateTime tmp = startPoint + static_cast<eckit::Second>(3600 * 24 * span_);
+    eckit::DateTime tmp = startPoint + static_cast<eckit::Second>(86400 * span_);
     return eckit::DateTime{tmp.date(), eckit::Time{0}};
 };
 
@@ -120,9 +116,12 @@ const std::string MonthPeriodUpdater::timeUnit() const {
     return os.str();
 };
 
-eckit::DateTime MonthPeriodUpdater::computeWinStartTime(const eckit::DateTime& currentTime) {
-    auto year = currentTime.date().year();
-    auto month = currentTime.date().month();
+eckit::DateTime MonthPeriodUpdater::computeWinStartTime(const eckit::DateTime& nextTime) {
+    const auto& d = nextTime.date();
+    const auto& t = nextTime.time();
+                                                                                           
+    auto year = d.year();
+    auto month = d.month();
     return eckit::DateTime{eckit::Date{year, month, 1}, eckit::Time{0}};
 };
 

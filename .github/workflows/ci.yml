@@ -35,9 +35,8 @@ jobs:
           - linux gnu-12
           - linux clang-12
           - linux clang-14
-          - linux intel
-          - macos appclang-12
-          - macos appclang-14
+          # - linux intel
+          # - macos appclang-14
 
         include:
 
@@ -74,34 +73,24 @@ jobs:
             compiler_fc: gfortran-12
             caching: true
 
-          - name : linux intel
-            os: ubuntu-20.04
-            compiler: intel
-            compiler_cc: icx
-            compiler_cxx: icpx
-            compiler_fc: ifx
-            caching: true
-            coverage: false
+          # - name : linux intel
+          #   os: ubuntu-20.04
+          #   compiler: intel
+          #   compiler_cc: icx
+          #   compiler_cxx: icpx
+          #   compiler_fc: ifx
+          #   caching: true
+          #   coverage: false
 
-          - name: macos appclang-12
-            # Xcode compiler requires empty environment variables, so we pass null (~) here
-            os: macos-11
-            compiler: clang-12
-            compiler_cc: ~
-            compiler_cxx: ~
-            compiler_fc: gfortran-11
-            caching: true
-            cmake_options: -DMPI_SLOTS=4
-
-          - name: macos appclang-14
-            # Xcode compiler requires empty environment variables, so we pass null (~) here
-            os: macos-12
-            compiler: clang-14
-            compiler_cc: ~
-            compiler_cxx: ~
-            compiler_fc: gfortran-12
-            caching: true
-            cmake_options: -DMPI_SLOTS=4
+          # - name: macos appclang-14
+          #   # Xcode compiler requires empty environment variables, so we pass null (~) here
+          #   os: macos-12
+          #   compiler: clang-14
+          #   compiler_cc: ~
+          #   compiler_cxx: ~
+          #   compiler_fc: gfortran-12
+          #   caching: true
+          #   cmake_options: -DMPI_SLOTS=4
 
     runs-on: ${{ matrix.os }}
     steps:

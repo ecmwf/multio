@@ -232,32 +232,40 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     // TODO we should be able to determine the type in the metadata and preserve
     // it Domain usually is always readonly withFirstOf(valueSetter(g, "domain"),
     // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
-    const auto wam_levtype = lookUpLong(md, "levtype_wam");
     std::string gridType;
     const auto hasGridType = md.get("gridType", gridType);
-    if (wam_levtype) {
-        g.setValue("indicatorOfTypeOfLevel", wam_levtype);
-    }
-    else if (hasGridType && eckit::StringTools::lower(gridType) != "healpix") {
-        withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
-    }
-    else if (hasGridType && eckit::StringTools::lower(gridType) == "healpix" && md.getString("levtype") != "o2d"
-             && md.getString("levtype") != "o3d") {
-        withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
-    }
-    else if (!hasGridType) {
-        withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
-    }
+    
+    std::string typeOfLevel;
+    const auto hasTypeOfLevel = md.get("typeOfLevel", typeOfLevel);
+    if (!hasTypeOfLevel) {
+        const auto wam_levtype = lookUpLong(md, "levtype_wam");
+        if (wam_levtype) {
+            g.setValue("indicatorOfTypeOfLevel", wam_levtype);
+        }
+        else if (hasGridType && eckit::StringTools::lower(gridType) != "healpix") {
+            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
+        }
+        else if (hasGridType && eckit::StringTools::lower(gridType) == "healpix" && md.getString("levtype") != "o2d"
+                && md.getString("levtype") != "o3d") {
+            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
+        }
+        else if (!hasGridType) {
+            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
+        }
 
-    if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
-        g.setValue("level", 0l);
-        g.setMissing("scaleFactorOfFirstFixedSurface");
-        g.setMissing("scaledValueOfFirstFixedSurface");
-        g.setMissing("scaleFactorOfSecondFixedSurface");
-        g.setMissing("scaledValueOfSecondFixedSurface");
+        if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
+            g.setValue("level", 0l);
+            g.setMissing("scaleFactorOfFirstFixedSurface");
+            g.setMissing("scaledValueOfFirstFixedSurface");
+            g.setMissing("scaleFactorOfSecondFixedSurface");
+            g.setMissing("scaledValueOfSecondFixedSurface");
+        }
+        else {
+            withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
+        }
     }
     else {
-        withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
+        g.setValue("typeOfLevel", typeOfLevel);
     }
 
     std::optional<std::string> paramId{firstOf(

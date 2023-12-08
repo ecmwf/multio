@@ -232,32 +232,43 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     // TODO we should be able to determine the type in the metadata and preserve
     // it Domain usually is always readonly withFirstOf(valueSetter(g, "domain"),
     // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
-    const auto wam_levtype = lookUpLong(md, "levtype_wam");
     std::string gridType;
     const auto hasGridType = md.get("gridType", gridType);
-    if (wam_levtype) {
-        g.setValue("indicatorOfTypeOfLevel", wam_levtype);
-    }
-    else if (hasGridType && eckit::StringTools::lower(gridType) != "healpix") {
-        withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
-    }
-    else if (hasGridType && eckit::StringTools::lower(gridType) == "healpix" && md.getString("levtype") != "o2d"
-             && md.getString("levtype") != "o3d") {
-        withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
-    }
-    else if (!hasGridType) {
-        withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
-    }
 
-    if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
-        g.setValue("level", 0l);
-        g.setMissing("scaleFactorOfFirstFixedSurface");
-        g.setMissing("scaledValueOfFirstFixedSurface");
-        g.setMissing("scaleFactorOfSecondFixedSurface");
-        g.setMissing("scaledValueOfSecondFixedSurface");
+    std::string typeOfLevel;
+    const auto hasTypeOfLevel = md.get("typeOfLevel", typeOfLevel);
+    if (!hasTypeOfLevel) {
+        const auto wam_levtype = lookUpLong(md, "levtype_wam");
+        if (wam_levtype) {
+            g.setValue("indicatorOfTypeOfLevel", wam_levtype);
+        }
+        else if (hasGridType && eckit::StringTools::lower(gridType) != "healpix") {
+            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
+                        LookUpString(md, "indicatorOfTypeOfLevel"));
+        }
+        else if (hasGridType && eckit::StringTools::lower(gridType) == "healpix" && md.getString("levtype") != "o2d"
+                 && md.getString("levtype") != "o3d") {
+            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
+                        LookUpString(md, "indicatorOfTypeOfLevel"));
+        }
+        else if (!hasGridType) {
+            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
+                        LookUpString(md, "indicatorOfTypeOfLevel"));
+        }
+
+        if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
+            g.setValue("level", 0l);
+            g.setMissing("scaleFactorOfFirstFixedSurface");
+            g.setMissing("scaledValueOfFirstFixedSurface");
+            g.setMissing("scaleFactorOfSecondFixedSurface");
+            g.setMissing("scaledValueOfSecondFixedSurface");
+        }
+        else {
+            withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
+        }
     }
     else {
-        withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
+        g.setValue("typeOfLevel", typeOfLevel);
     }
 
     std::optional<std::string> paramId{firstOf(
@@ -558,9 +569,27 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
             (timeRef == "start" ? 2
                                 : ((significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
 
-        g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
-        withFirstOf(valueSetter(g, "timeIncrement"), LookUpLong(md, "sampleIntervalInSeconds"),
-                    LookUpLong(md, "timeStep"));  // Nemo is currently sending timeStep
+        if (const auto timeIncrement = lookUpLong(md, "timeIncrement"); timeIncrement) {
+            if (*timeIncrement != 0) {
+                withFirstOf(valueSetter(g, "indicatorOfUnitForTimeIncrement"),
+                            LookUpLong(md, "indicatorOfUnitForTimeIncrement"));
+                g.setValue("timeIncrement", *timeIncrement);
+            }
+            else {
+                g.setValue("indicatorOfUnitForTimeIncrement", 255);
+                g.setValue("timeIncrement", 0);
+            }
+        }
+        else if (const auto sampleIntervalInSeconds = lookUpLong(md, "sampleIntervalInSeconds");
+                 sampleIntervalInSeconds) {
+            g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
+            g.setValue("timeIncrement", *sampleIntervalInSeconds);
+        }
+        else {
+            g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
+            withFirstOf(valueSetter(g, "timeIncrement"),
+                        LookUpLong(md, "timeStep"));  // Nemo is currently sending timeStep
+        }
     }
 
 

@@ -234,7 +234,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
     std::string gridType;
     const auto hasGridType = md.get("gridType", gridType);
-    
+
     std::string typeOfLevel;
     const auto hasTypeOfLevel = md.get("typeOfLevel", typeOfLevel);
     if (!hasTypeOfLevel) {
@@ -243,14 +243,17 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
             g.setValue("indicatorOfTypeOfLevel", wam_levtype);
         }
         else if (hasGridType && eckit::StringTools::lower(gridType) != "healpix") {
-            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
+            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
+                        LookUpString(md, "indicatorOfTypeOfLevel"));
         }
         else if (hasGridType && eckit::StringTools::lower(gridType) == "healpix" && md.getString("levtype") != "o2d"
-                && md.getString("levtype") != "o3d") {
-            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
+                 && md.getString("levtype") != "o3d") {
+            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
+                        LookUpString(md, "indicatorOfTypeOfLevel"));
         }
         else if (!hasGridType) {
-            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"), LookUpString(md, "indicatorOfTypeOfLevel"));
+            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
+                        LookUpString(md, "indicatorOfTypeOfLevel"));
         }
 
         if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
@@ -577,7 +580,8 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
                 g.setValue("timeIncrement", 0);
             }
         }
-        else if (const auto sampleIntervalInSeconds = lookUpLong(md, "sampleIntervalInSeconds"); sampleIntervalInSeconds) {
+        else if (const auto sampleIntervalInSeconds = lookUpLong(md, "sampleIntervalInSeconds");
+                 sampleIntervalInSeconds) {
             g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
             g.setValue("timeIncrement", *sampleIntervalInSeconds);
         }

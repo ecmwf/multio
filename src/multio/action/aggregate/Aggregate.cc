@@ -16,12 +16,11 @@
 #include "multio/domain/Mappings.h"
 #include "multio/util/ScopedTimer.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 using message::Peer;
 
-Aggregate::Aggregate(const ConfigurationContext& confCtx) : ChainedAction(confCtx) {}
+Aggregate::Aggregate(const ComponentConfiguration& compConf) : ChainedAction(compConf) {}
 
 void Aggregate::executeImpl(Message msg) {
 
@@ -89,8 +88,7 @@ Message Aggregate::globalField(const std::string& fid) {
     return aggCatalogue_.extract(fid);
 }
 
-Message Aggregate::globalFlush(const std::string &fid)
-{
+Message Aggregate::globalFlush(const std::string& fid) {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     auto flush = flushes_.extract(fid);
@@ -105,6 +103,4 @@ void Aggregate::print(std::ostream& os) const {
 
 static ActionBuilder<Aggregate> AggregateBuilder("aggregate");
 
-}  // namespace action
-}  // namespace multio
-
+}  // namespace multio::action

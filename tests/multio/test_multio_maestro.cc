@@ -12,22 +12,18 @@
 #include "multio/maestro/MaestroSubscription.h"
 
 #include <chrono>
-#include "unistd.h"
 #include "eckit/testing/Test.h"
+#include "unistd.h"
 
-namespace multio {
-namespace test {
+namespace multio::test {
 
 class TestHarness {
 public:
-    TestHarness() : size_{822329}, data_(size_, 'A') {
-        mstro_init("Testing workflow", "Test Component", 0);
-    }
-    ~TestHarness() {
-        mstro_finalize();
-    }
+    TestHarness() : size_{822329}, data_(size_, 'A') { mstro_init("Testing workflow", "Test Component", 0); }
+    ~TestHarness() { mstro_finalize(); }
     uint64_t size() { return size_; }
     const void* data() { return static_cast<const void*>(data_.c_str()); }
+
 private:
     uint64_t size_;
     std::string data_;
@@ -179,7 +175,8 @@ CASE("Selector and subscription") {
     MaestroSelector selector1{"(has .maestro.ecmwf.step)", nullptr, nullptr};
     MaestroSelector selector2{"(has .maestro.ecmwf.step)"};
 
-    MaestroSubscription subscription = selector2.subscribe(MSTRO_POOL_EVENT_DECLARE|MSTRO_POOL_EVENT_OFFER, MSTRO_SUBSCRIPTION_OPTS_DEFAULT);
+    MaestroSubscription subscription
+        = selector2.subscribe(MSTRO_POOL_EVENT_DECLARE | MSTRO_POOL_EVENT_OFFER, MSTRO_SUBSCRIPTION_OPTS_DEFAULT);
 
     MaestroEvent event1 = subscription.poll();
     EXPECT(!event1);
@@ -194,8 +191,7 @@ CASE("Selector and subscription") {
     ackSub.ack(e);
 }
 
-}  // namespace test
-}  // namespace multio
+}  // namespace multio::test
 
 int main(int argc, char** argv) {
     return eckit::testing::run_tests(argc, argv);

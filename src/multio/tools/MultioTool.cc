@@ -21,16 +21,13 @@ namespace multio {
 MultioTool::MultioTool(int argc, char** argv) : eckit::Tool(argc, argv, "MULTIO_HOME") {}
 
 void MultioTool::run() {
-    std::function<void(const std::string&)> usage = [this](const std::string& name) {
-        this->usage(name);
-    };
+    std::function<void(const std::string&)> usage = [this](const std::string& name) { this->usage(name); };
 
-    eckit::option::CmdArgs args(usage, options_, numberOfPositionalArguments(),
-                                minimumPositionalArguments());
+    eckit::option::CmdArgs args(usage, options_, numberOfPositionalArguments(), minimumPositionalArguments());
 
     init(args);
     execute(args);
     finish(args);
 }
 
-}
+}  // namespace multio

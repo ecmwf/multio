@@ -25,8 +25,7 @@
 #include "multio/transport/Transport.h"
 #include "multio/util/ScopedThread.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 class ThreadPeer : public Peer {
 public:
@@ -38,11 +37,11 @@ private:
 
 class ThreadTransport final : public Transport {
 public:
-    ThreadTransport(const ConfigurationContext& confCtx);
+    ThreadTransport(const ComponentConfiguration& compConf);
 
     Message receive() override;
 
-    void abort() override;
+    void abort(std::exception_ptr) override;
 
 private:
     void openConnections() override;
@@ -69,5 +68,4 @@ private:
     size_t messageQueueSize_;
 };
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

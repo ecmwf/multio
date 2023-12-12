@@ -17,18 +17,22 @@
 
 #include "eckit/log/Statistics.h"
 
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/maestro/CdoNamer.h"
 #include "multio/maestro/MaestroCdo.h"
 #include "multio/maestro/MaestroStatistics.h"
 #include "multio/sink/DataSink.h"
 
+
 //--------------------------------------------------------------------------------------------------
 
 namespace multio {
 
-class MaestroSink : public multio::DataSink {
+using config::ComponentConfiguration;
+
+class MaestroSink : public multio::sink::DataSink {
 public:
-    MaestroSink(const util::ConfigurationContext& config);
+    MaestroSink(const ComponentConfiguration& config);
     ~MaestroSink() override;
 
 private:

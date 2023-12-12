@@ -21,12 +21,11 @@
 #include "multio/action/ChainedAction.h"
 #include "multio/message/MetadataMapping.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 class MetadataMapping : public ChainedAction {
 public:
-    explicit MetadataMapping(const ConfigurationContext& confCtx);
+    explicit MetadataMapping(const ComponentConfiguration& compConf);
 
     void executeImpl(message::Message msg) override;
 
@@ -43,5 +42,4 @@ private:
     message::MetadataMappingOptions options_;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

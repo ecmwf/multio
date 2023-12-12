@@ -22,13 +22,12 @@
 #include "multio/domain/Domain.h"
 #include "multio/domain/Mask.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 
 class Mask : public ChainedAction {
 public:
-    explicit Mask(const ConfigurationContext& confCtx);
+    explicit Mask(const ComponentConfiguration& compConf);
 
     void executeImpl(message::Message msg) override;
 
@@ -50,5 +49,4 @@ private:
     double offsetValue_;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

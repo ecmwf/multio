@@ -17,27 +17,23 @@
 #pragma once
 
 #include <iosfwd>
-#include <vector>
-#include <set>
 #include <iterator>
-
-#include "eckit/utils/Optional.h"
+#include <set>
+#include <vector>
 
 #include "multio/action/ChainedAction.h"
 #include "multio/message/MetadataSelector.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 //----------------------------------------------------------------------------------------------------------------------
 
 class Select : public ChainedAction {
 public:
-    explicit Select(const ConfigurationContext& confCtx);
+    explicit Select(const ComponentConfiguration& compConf);
 
-private: // methods
-
-    void print(std::ostream &os) const override;
+private:  // methods
+    void print(std::ostream& os) const override;
 
     bool matches(const message::Message& msg) const;
 
@@ -46,12 +42,10 @@ private: // methods
     /// @note This describes an algebra, so the function here can be significantly extended to give helpful return
     void matchedFields(message::MetadataSelectors& selectors) const override;
 
-private: // members
-
+private:  // members
     message::MetadataSelectors selectors_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

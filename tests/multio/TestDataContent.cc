@@ -42,13 +42,13 @@ std::string TestDataContent::getString(const std::string& key) const {
     return metadata_.getString(key);
 }
 
-long TestDataContent::getLong(const std::string &key) const {
+long TestDataContent::getLong(const std::string& key) const {
     return metadata_.getLong(key);
 }
 
-double TestDataContent::getDouble(const std::string &key) const {
+double TestDataContent::getDouble(const std::string& key) const {
     return metadata_.getDouble(key);
 }
 
-}  // namespace message
+}  // namespace test
 }  // namespace multio

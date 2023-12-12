@@ -9,18 +9,19 @@
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 
-#include "multio/action/Plan.h"
 #include "multio/LibMultio.h"
+#include "multio/action/Plan.h"
+#include "multio/config/ComponentConfiguration.h"
+#include "multio/config/ConfigurationPath.h"
 #include "multio/message/Message.h"
-#include "multio/util/ConfigurationPath.h"
-#include "multio/util/ConfigurationContext.h"
 #include "multio/tools/MultioTool.h"
 
 using multio::action::Plan;
+using multio::config::ComponentConfiguration;
+using multio::config::configuration_path_name;
+using multio::config::MultioConfiguration;
 using multio::message::Message;
 using multio::message::Peer;
-using multio::util::configuration_path_name;
-using multio::util::ConfigurationContext;
 
 //----------------------------------------------------------------------------------------------------------------
 
@@ -48,8 +49,8 @@ void codes_set_latlon_dimensions(codes_handle* handle, const std::vector<int>& g
     }
 }
 
-ConfigurationContext test_configuration() {
-    return ConfigurationContext(configuration_path_name("") + "test-ocean-config.yaml");
+MultioConfiguration test_configuration() {
+    return MultioConfiguration(configuration_path_name("") + "test-ocean-config.yaml");
 }
 
 }  // namespace
@@ -92,16 +93,14 @@ private:
     int level_ = 1;
     int step_ = 24;
 
-    std::map<NemoKey, GribData> parameters_ = {{"sst", {151129, "T grid"}},
-                                               {"ssu", {151131, "U grid"}},
-                                               {"ssv", {151132, "V grid"}}};
+    std::map<NemoKey, GribData> parameters_
+        = {{"sst", {151129, "T grid"}}, {"ssu", {151131, "U grid"}}, {"ssv", {151132, "V grid"}}};
 };
 
 //----------------------------------------------------------------------------------------------------------------
 
 MultioEncodeOcean::MultioEncodeOcean(int argc, char** argv) : multio::MultioTool(argc, argv) {
-    options_.push_back(
-        new eckit::option::SimpleOption<std::string>("template", "Name of grib template"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>("template", "Name of grib template"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("path", "Path to NEMO data"));
 }
 
@@ -177,8 +176,7 @@ std::vector<int> MultioEncodeOcean::readGrid(const std::string& grid_type, size_
 }
 
 void MultioEncodeOcean::setFieldValues(const NemoKey& key) {
-    auto field_path = eckit::PathName{
-        std::string{pathToNemoData_ + key + "_" + std::to_string(step_) + "_reference"}};
+    auto field_path = eckit::PathName{std::string{pathToNemoData_ + key + "_" + std::to_string(step_) + "_reference"}};
 
     std::ifstream infile{std::string{field_path.fullName()}.c_str()};
 
@@ -194,14 +192,13 @@ void MultioEncodeOcean::executePlan() {
     size_t sz = 0;
     CODES_CHECK(codes_get_message(handle(), reinterpret_cast<const void**>(&buf), &sz), nullptr);
 
-    auto cfg = test_configuration();
+    auto multioConfig = test_configuration();
     std::vector<std::unique_ptr<Plan>> plans;
-    for (auto&& cfg : cfg.subContexts("plans")) {
-        plans.emplace_back(std::make_unique<Plan>(std::move(cfg)));
+    for (auto&& cfg : multioConfig.parsedConfig().getSubConfigurations("plans")) {
+        plans.emplace_back(std::make_unique<Plan>(ComponentConfiguration(std::move(cfg), multioConfig)));
     }
 
-    Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}},
-                eckit::Buffer{buf, sz}};
+    Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, eckit::Buffer{buf, sz}};
     eckit::Log::debug<multio::LibMultio>() << "Message size: " << msg.size() << std::endl;
 
     for (const auto& plan : plans) {
@@ -210,15 +207,13 @@ void MultioEncodeOcean::executePlan() {
 }
 
 void MultioEncodeOcean::printNamespace(const std::string& ns) {
-    std::unique_ptr<codes_keys_iterator, codes_iterator_deleter> iter{
-        codes_keys_iterator_new(handle(), 0, ns.c_str())};
+    std::unique_ptr<codes_keys_iterator, codes_iterator_deleter> iter{codes_keys_iterator_new(handle(), 0, ns.c_str())};
     while (codes_keys_iterator_next(iter.get())) {
         auto keyname = codes_keys_iterator_get_name(iter.get());
         char keyval[1024];
         size_t keylen = sizeof(keyval);
         codes_get_string(handle(), keyname, keyval, &keylen);
-        eckit::Log::debug<multio::LibMultio>()
-            << "=== " << keyname << ":   " << keyval << std::endl;
+        eckit::Log::debug<multio::LibMultio>() << "=== " << keyname << ":   " << keyval << std::endl;
     }
 }
 

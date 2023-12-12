@@ -19,8 +19,7 @@
 
 #include "multio/util/PrecisionTag.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 namespace {
 std::set<std::string> fetch_offset_fields(const eckit::Configuration& cfg) {
@@ -35,12 +34,12 @@ bool setContains(const std::set<Precision>& _set, const Precision& key) {
 
 }  // namespace
 
-Mask::Mask(const ConfigurationContext& confCtx) :
-    ChainedAction(confCtx),
-    applyBitmap_{confCtx.config().getBool("apply-bitmap", true)},
-    missingValue_{confCtx.config().getDouble("missing-value", std::numeric_limits<float>::max())},
-    offsetFields_{fetch_offset_fields(confCtx.config())},
-    offsetValue_{confCtx.config().getDouble("offset-value", 273.15)} {}
+Mask::Mask(const ComponentConfiguration& compConf) :
+    ChainedAction(compConf),
+    applyBitmap_{compConf.parsedConfig().getBool("apply-bitmap", true)},
+    missingValue_{compConf.parsedConfig().getDouble("missing-value", std::numeric_limits<float>::max())},
+    offsetFields_{fetch_offset_fields(compConf.parsedConfig())},
+    offsetValue_{compConf.parsedConfig().getDouble("offset-value", 273.15)} {}
 
 void Mask::executeImpl(message::Message msg) {
     executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
@@ -119,5 +118,4 @@ void Mask::print(std::ostream& os) const {
 
 static ActionBuilder<Mask> MaskBuilder("mask");
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

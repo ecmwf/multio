@@ -19,11 +19,10 @@
 #include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
-Sink::Sink(const ConfigurationContext& confCtx) :
-    Action(confCtx), report_{confCtx.config().getBool("report", true)}, mio_{confCtx} {}
+Sink::Sink(const ComponentConfiguration& compConf) :
+    Action(compConf), report_{compConf.parsedConfig().getBool("report", true)}, mio_{compConf} {}
 
 Sink::~Sink() {
     if (report_) {
@@ -71,9 +70,18 @@ void Sink::trigger(const Message& msg) {
 
     eckit::StringDict metadata;
 
-    metadata[msg.metadata().getString("trigger")] = msg.name();
+    if (!msg.metadata().has("trigger")) {
+        throw message::MetadataMissingKeyException("trigger", Here());
+    }
+    const std::string triggerKey = msg.metadata().getString("trigger");
 
-    eckit::Log::debug<LibMultio>() << "Trigger " << msg.metadata().getString("trigger") << " with value " << msg.name()
+    if (!msg.metadata().has(triggerKey)) {
+        throw message::MetadataMissingKeyException(triggerKey, Here());
+    }
+    // TODO - handle type correctly once metadata is refactored
+    metadata[triggerKey] = msg.metadata().getString(triggerKey);
+
+    eckit::Log::debug<LibMultio>() << "Trigger " << triggerKey << " with value " << metadata[triggerKey]
                                    << " is being called..." << std::endl;
 
     mio_.trigger(metadata);
@@ -85,5 +93,4 @@ void Sink::print(std::ostream& os) const {
 
 static ActionBuilder<Sink> SinkBuilder("sink");
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

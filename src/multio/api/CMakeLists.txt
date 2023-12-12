@@ -33,6 +33,8 @@ list( APPEND multio_action_plugins
     multio-action-sink
     multio-action-statistics
     multio-action-transport
+    multio-action-renumber-healpix
+    multio-action-interpolate-fesom
 )
 
 if( HAVE_MIR )
@@ -73,6 +75,7 @@ ecbuild_add_library(
 
     PUBLIC_INCLUDES
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module>
+        $<INSTALL_INTERFACE:module/${PROJECT_NAME}>
 
     PUBLIC_LIBS
         multio-api
@@ -90,7 +93,7 @@ ecbuild_add_library(
 
     PUBLIC_INCLUDES
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/module>
+        $<INSTALL_INTERFACE:module/${PROJECT_NAME}>
 
     PUBLIC_LIBS
 )
-

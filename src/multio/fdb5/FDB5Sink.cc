@@ -13,19 +13,39 @@
 /// @date   Dec 2015
 
 #include "multio/fdb5/FDB5Sink.h"
-
-#include "fdb5/config/Config.h"
-
 #include "multio/LibMultio.h"
-#include "multio/util/ConfigurationContext.h"
 
-namespace multio {
+#include "eckit/config/LocalConfiguration.h"
+#include "eckit/value/Value.h"
+#include "fdb5/config/Config.h"
+#include "multio/util/Substitution.h"
 
-using util::ConfigurationContext;
+
+namespace multio::sink {
+
+using config::ComponentConfiguration;
 
 namespace {
-fdb5::Config fdb5_configuration(const ConfigurationContext& confCtx) {
-    auto fdb_configuration = confCtx.config().getSubConfiguration("config");
+
+void replaceCurly(const ComponentConfiguration& compConf, eckit::LocalConfiguration& cfg) {
+    for (auto& key : cfg.keys()) {
+        // Replace the value if it is string
+        if (cfg.getSubConfiguration(key).get().isString()) {
+            cfg.set(key, compConf.multioConfig().replaceCurly(cfg.getString(key)));
+        }
+        // Recursive replace of curly brackets
+        if (cfg.getSubConfiguration(key).get().isMap()) {
+            auto tmp = cfg.getSubConfiguration(key);
+            replaceCurly(compConf, tmp);
+            cfg.set(key, tmp);
+        }
+    }
+    return;
+}
+
+fdb5::Config fdb5_configuration(const ComponentConfiguration& compConf) {
+    auto fdb_configuration = compConf.parsedConfig().getSubConfiguration("config");
+    replaceCurly(compConf, fdb_configuration);
 
     eckit::LocalConfiguration userConfig;
     if (fdb_configuration.has("userConfig")) {
@@ -43,9 +63,9 @@ fdb5::Config fdb5_configuration(const ConfigurationContext& confCtx) {
 }
 }  // namespace
 
-FDB5Sink::FDB5Sink(const ConfigurationContext& confCtx) :
-    DataSink(confCtx), fdb_{fdb5_configuration(confCtx)} {
-    LOG_DEBUG_LIB(LibMultio) << "Config = " << confCtx.config() << std::endl;
+
+FDB5Sink::FDB5Sink(const ComponentConfiguration& compConf) : DataSink(compConf), fdb_{fdb5_configuration(compConf)} {
+    LOG_DEBUG_LIB(LibMultio) << "Config = " << compConf.parsedConfig() << std::endl;
 }
 
 void FDB5Sink::write(eckit::message::Message msg) {
@@ -66,4 +86,4 @@ void FDB5Sink::print(std::ostream& os) const {
 
 static DataSinkBuilder<FDB5Sink> FDB5SinkBuilder("fdb5");
 
-}  // namespace multio
+}  // namespace multio::sink

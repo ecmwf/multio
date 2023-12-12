@@ -19,11 +19,10 @@
 #include "multio/sink/DataSink.h"
 #include "multio/util/ScopedTimer.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
-SingleFieldSink::SingleFieldSink(const ConfigurationContext& confCtx) :
-    Action{confCtx}, rootPath_{confCtx.config().getString("root_path", "")} {}
+SingleFieldSink::SingleFieldSink(const ComponentConfiguration& compConf) :
+    Action{compConf}, rootPath_{compConf.parsedConfig().getString("root_path", "")} {}
 
 void SingleFieldSink::executeImpl(Message msg) {
     switch (msg.tag()) {
@@ -45,14 +44,14 @@ void SingleFieldSink::write(Message msg) {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     std::ostringstream oss;
-    oss << rootPath_ << msg.metadata().getUnsigned("level")
-        << "::" << msg.metadata().getString("param") << "::" << msg.metadata().getUnsigned("step");
+    oss << rootPath_ << msg.metadata().getUnsigned("level") << "::" << msg.metadata().getString("param")
+        << "::" << msg.metadata().getUnsigned("step");
     eckit::LocalConfiguration config;
 
     LOG_DEBUG_LIB(LibMultio) << "Writing output path: " << oss.str() << std::endl;
     config.set("path", oss.str());
-    ConfigurationContext subCtx = confCtx_.recast(config);
-    dataSinks_.push_back(DataSinkFactory::instance().build("file", subCtx));
+    dataSinks_.push_back(
+        sink::DataSinkFactory::instance().build("file", ComponentConfiguration(config, compConf_.multioConfig())));
 
     eckit::message::Message blob = to_eckit_message(msg);
 
@@ -84,5 +83,4 @@ void SingleFieldSink::print(std::ostream& os) const {
 
 static ActionBuilder<SingleFieldSink> SinkBuilder("single-field-sink");
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

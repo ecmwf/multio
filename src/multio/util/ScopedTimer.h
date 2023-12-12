@@ -2,8 +2,7 @@
 
 #include "eckit/log/Statistics.h"
 
-namespace multio {
-namespace util {
+namespace multio::util {
 
 class ScopedTimer {
     eckit::Timing& timing_;
@@ -28,5 +27,4 @@ public:
     ~ScopedTiming() { timing_ += eckit::Timing{timer_} - start_; }
 };
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::util

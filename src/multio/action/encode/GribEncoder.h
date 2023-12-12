@@ -22,23 +22,32 @@
 
 #include "multio/message/Message.h"
 
-namespace multio {
-namespace action {
+
+namespace multio::action {
 
 class GribEncoder {
 public:
     GribEncoder(codes_handle* handle, const eckit::LocalConfiguration& config);
 
     template <typename T>
-    void setValue(const std::string& key, eckit::Optional<T> v) {
+    void setValue(const std::string& key, std::optional<T> v) {
         if (v) {
             encoder_->setValue(key, *v);
         }
     };
+
     template <typename T>
     void setValue(const std::string& key, T v) {
-        encoder_->setValue(key, v);
+        if constexpr (std::is_signed_v<T> && std::is_integral_v<T>) {
+            encoder_->setValue(key, static_cast<long>(v));
+        }
+        else {
+            encoder_->setValue(key, v);
+        }
     };
+
+    void setMissing(const std::string& key);
+
     template <typename T>
     void setDataValues(const T* data, size_t count) {
         encoder_->setDataValues(data, count);
@@ -92,5 +101,4 @@ inline bool isOcean(const message::Metadata& metadata) {
 };
 
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

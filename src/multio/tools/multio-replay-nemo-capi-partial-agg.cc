@@ -10,16 +10,16 @@
 #include "eckit/option/SimpleOption.h"
 
 #include "multio/api/multio_c_cpp_utils.h"
+#include "multio/config/ConfigurationPath.h"
 #include "multio/tools/MultioTool.h"
-#include "multio/util/ConfigurationPath.h"
 
 
 #define XSTRM(m) STRM(m)
 #define STRM(m) #m
 
 
-using multio::util::configuration_file_name;
-using multio::util::configuration_path_name;
+using multio::config::configuration_file_name;
+using multio::config::configuration_path_name;
 
 namespace {
 // TODO: Remove this helper class and update test configs to use the parameter-mapping action
@@ -28,6 +28,8 @@ using NemoKey = std::string;
 
 struct GribData {
     long param;
+    std::string unstructuredGridSubtype;
+    std::string domain;
     std::string gridType;
     std::string levelType;
 };
@@ -37,10 +39,12 @@ std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& config
     std::map<std::string, GribData> nemo_map;
     for (auto const& cfg : cfgList) {
         nemo_map[cfg.getString("nemo-id")]
-            = {cfg.getLong("param-id"), cfg.getString("grid-type"), cfg.getString("level-type")};
+            = {cfg.getLong("param-id"), cfg.getString("unstructured-grid-subtype"), cfg.getString("domain"),
+               cfg.getString("grid-type"), cfg.getString("level-type")};
     }
     return nemo_map;
 }
+
 
 class NemoToGrib {
 public:
@@ -60,14 +64,14 @@ public:
  * \todo Using this simple handler will throuw exceptions before any error codes can be checked. Can
  * we write separate tests which test for specific expected error codes?
  */
-void rethrowMaybe(int err) {
+void rethrowMaybe(int err, multio_failure_info_t* i) {
     if (err != MULTIO_SUCCESS) {
-        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string(err)}, Here());
+        throw eckit::Exception("MULTIO C Exception:" + std::string{multio_error_string_info(err, i)}, Here());
     }
 }
 
-void multio_throw_failure_handler(void*, int err) {
-    rethrowMaybe(err);
+void multio_throw_failure_handler(void*, int err, multio_failure_info_t* i) {
+    rethrowMaybe(err, i);
 }
 
 class MultioReplayNemoCApi final : public multio::MultioTool {
@@ -200,7 +204,7 @@ void MultioReplayNemoCApi::setDomains(bool onlyLoadDefinitions) {
 
     multio_metadata_t* md = nullptr;
     if (!onlyLoadDefinitions)
-        multio_new_metadata(&md);
+        multio_new_metadata(&md, multio_handle);
 
     for (auto const& grid : grid_type) {
         auto buffer = readGrid(grid.second, rank_);
@@ -236,9 +240,9 @@ void MultioReplayNemoCApi::writeMasks() {
     const std::string grid_prefix[4] = {"T", "U", "V", "W"};
 
     for (const auto& param : parameters_) {
-        const char gridPrefix = paramMap_.get(param).gridType[0];
+        const char gridPrefix = paramMap_.get(param).unstructuredGridSubtype[0];
 
-        auto definition = domainDefinitions_.find(paramMap_.get(param).gridType);
+        auto definition = domainDefinitions_.find(paramMap_.get(param).domain);
         if (definition == domainDefinitions_.end()) {
             throw eckit::SeriousBug{"No domain definitons for this gridType found", Here()};
         }
@@ -247,7 +251,7 @@ void MultioReplayNemoCApi::writeMasks() {
         std::vector<float> masks(definition->second[8] * definition->second[10], 1.0);
 
         multio_metadata_t* md = nullptr;
-        multio_new_metadata(&md);
+        multio_new_metadata(&md, multio_handle);
 
         std::string name = gridPrefix + std::string(" mask");
         multio_metadata_set_string(md, "name", name.c_str());
@@ -273,7 +277,7 @@ void MultioReplayNemoCApi::writeFields() {
         bool is_active = false;
         {
             multio_metadata_t* md = nullptr;
-            multio_new_metadata(&md);
+            multio_new_metadata(&md, multio_handle);
             multio_metadata_set_string(md, "category", "ocean-2d");
             multio_field_accepted(multio_handle, md, &is_active);
             multio_delete_metadata(md);
@@ -284,7 +288,7 @@ void MultioReplayNemoCApi::writeFields() {
 
         {
             multio_metadata_t* md = nullptr;
-            multio_new_metadata(&md);
+            multio_new_metadata(&md, multio_handle);
             multio_metadata_set_string(md, "name", param.c_str());
             multio_field_accepted(multio_handle, md, &is_active);
             multio_delete_metadata(md);
@@ -299,7 +303,7 @@ void MultioReplayNemoCApi::writeFields() {
         auto fname = param.c_str();
 
         multio_metadata_t* md = nullptr;
-        multio_new_metadata(&md);
+        multio_new_metadata(&md, multio_handle);
 
         // Set reused fields once at the beginning
         multio_metadata_set_string(md, "category", "ocean-2d");
@@ -379,11 +383,9 @@ void MultioReplayNemoCApi::initClient() {
         throw eckit::SeriousBug("Only MPI transport is supported for this tool");
     }
 
-    multio_set_failure_handler(multio_throw_failure_handler, nullptr);
-
-
     multio_configuration_t* multio_cc = nullptr;
     multio_new_configuration(&multio_cc);
+    multio_config_set_failure_handler(multio_cc, multio_throw_failure_handler, nullptr);
     multio_new_handle(&multio_handle, multio_cc);
     multio_delete_configuration(multio_cc);
 
@@ -445,7 +447,7 @@ void MultioReplayNemoCApi::testData() {
         bool isOutputEqual = true;
         std::size_t fidx = 0;
 
-        auto definitionPair = domainDefinitions_.find(paramMap_.get(param).gridType);
+        auto definitionPair = domainDefinitions_.find(paramMap_.get(param).domain);
         if (definitionPair == domainDefinitions_.end()) {
             throw eckit::SeriousBug{"No domain definitons for this gridType found", Here()};
         }

@@ -17,8 +17,7 @@
 
 #include "multio/LibMultio.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 using eckit::Configuration;
 using eckit::Log;
@@ -40,8 +39,8 @@ TransportException::TransportException(const std::string& r, const eckit::CodeLo
 
 //--------------------------------------------------------------------------------------------------
 
-Transport::Transport(const ConfigurationContext& confCtx) : confCtx_{confCtx} {
-    LOG_DEBUG_LIB(LibMultio) << "Transport config: " << confCtx.config() << std::endl;
+Transport::Transport(const ComponentConfiguration& compConf) : compConf_{compConf} {
+    LOG_DEBUG_LIB(LibMultio) << "Transport config: " << compConf.parsedConfig() << std::endl;
 }
 
 Transport::~Transport() = default;
@@ -110,16 +109,15 @@ void TransportFactory::list(std::ostream& out) const {
     }
 }
 
-std::unique_ptr<Transport> TransportFactory::build(const std::string& name, const ConfigurationContext& confCtx) {
+std::unique_ptr<Transport> TransportFactory::build(const std::string& name, const ComponentConfiguration& compConf) {
     std::lock_guard<std::recursive_mutex> lock{mutex_};
-    ASSERT(confCtx.componentTag() == util::ComponentTag::Transport);
 
     Log::debug<LibMultio>() << "Looking for TransportFactory [" << name << "]" << std::endl;
 
     auto f = factories_.find(name);
 
     if (f != factories_.end())
-        return f->second->make(confCtx);
+        return f->second->make(compConf);
 
     Log::error() << "No TransportFactory for [" << name << "]" << std::endl;
     Log::error() << "TransportFactories are:" << std::endl;
@@ -140,5 +138,4 @@ TransportBuilderBase::~TransportBuilderBase() {
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

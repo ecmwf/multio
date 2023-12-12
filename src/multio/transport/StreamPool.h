@@ -7,8 +7,7 @@
 #include "multio/transport/MpiStream.h"
 #include "multio/transport/TransportStatistics.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 class MpiPeer : public message::Peer {
 public:
@@ -26,7 +25,7 @@ public:
 
     void sendBuffer(const message::Peer& dest, int msg_tag);
 
-    MpiBuffer& findAvailableBuffer(std::ostream& os = eckit::Log::debug<LibMultio>());
+    MpiBuffer& acquireAvailableBuffer(BufferStatus newStatus, std::ostream& os = eckit::Log::debug<LibMultio>());
 
     void waitAll();
 
@@ -50,5 +49,4 @@ private:
     std::ostringstream os_;
 };
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

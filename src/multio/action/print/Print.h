@@ -20,12 +20,11 @@
 
 #include "multio/action/ChainedAction.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 class Print : public ChainedAction {
 public:
-    explicit Print(const ConfigurationContext& config);
+    explicit Print(const ComponentConfiguration& compConf);
 
     void executeImpl(message::Message msg) override;
 
@@ -39,5 +38,4 @@ private:
     std::string prefix_;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

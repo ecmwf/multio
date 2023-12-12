@@ -195,7 +195,7 @@ the template, so what GRIB template to use will depend on the types of data bein
        - type : encode
          format : grib
          template : unstr_avg_fc.tmpl
-         grid-type : eORCA025
+         unstructured-grid-type : eORCA025
 
 
 Sink

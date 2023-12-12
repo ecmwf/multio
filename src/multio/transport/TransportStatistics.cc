@@ -1,8 +1,7 @@
 
 #include "TransportStatistics.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 TransportStatistics::TransportStatistics() {}
 
@@ -37,5 +36,4 @@ void TransportStatistics::report(std::ostream& out, const char* indent) const {
     reportTime(out, "    -- Total for return", totReturnTiming_, indent);
 }
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

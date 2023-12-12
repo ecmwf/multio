@@ -9,3 +9,6 @@ doc/latex
 build*
 docs/_build
 **/.ccls-cache
+__pycache__
+*.egg-info
+*.ipynb_checkpoints

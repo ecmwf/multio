@@ -1,0 +1,21 @@
+plans:
+  - name: sh_to_grid_1.00_1.00
+    actions:
+      - type: select
+        match:
+          - param: 129
+      - type: interpolate
+        input: T1279
+        grid: H32
+        options:
+          # dont-compress-plan: true
+          caching: false
+      - type: encode
+        format: grib
+        template: Reference_sh_to_HEALPix_1024.grib
+      - type: sink
+        sinks:
+          - type: file
+            append: false
+            per-server: false # Will give you one file per server
+            path: MultIO_sh_to_HEALPix_1024.grib

@@ -1,0 +1,22 @@
+plans:
+  - name: HEALPIX_1024_ring2nest
+    actions:
+      - type: print
+        stream: cout
+      - type: metadata-mapping
+        mapping: '{~}/mapping_1024.yaml'
+      - type: print
+        stream: cout
+      - type: renumber-healpix
+        cache-file-name: ./HEALPix_ring2nest.atlas
+      - type: print
+        stream: cout
+      - type: encode
+        format: grib
+        template: Feed_HEALPix_1024_ring.grib
+      - type: sink
+        sinks:
+        - type: file
+          append: false
+          per-server: false # Will give you one file per server
+          path: MultIO_HEALPix_1024_nested.grib

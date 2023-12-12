@@ -4,8 +4,7 @@
 
 #include "eckit/log/Statistics.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 class TransportStatistics : public eckit::Statistics {
 public:
@@ -54,5 +53,4 @@ public:
     void report(std::ostream& out, const char* indent = "") const;
 };
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

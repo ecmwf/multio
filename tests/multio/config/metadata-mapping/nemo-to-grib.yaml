@@ -3,59 +3,80 @@ mappings:
       nemoParam: nemo-id
     map:
       param: param-id
-      gridSubtype: grid-type
-      domain: grid-type
+      unstructuredGridSubtype: unstructured-grid-subtype
+      domain: domain
+      gridType: grid-type
       typeOfLevel: level-type
 data:
   # Co-ordinates
   - nemo-id: lat_T
     param-id: 250003
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   - nemo-id: lon_T
     param-id: 250004
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   - nemo-id: lat_U
     param-id: 250005
-    grid-type : "U grid"
+    grid-type: "unstructured_grid"
+    domain : "U grid"
+    unstructured-grid-subtype : "U"
     level-type : "oceanSurface"
 
   - nemo-id: lon_U
     param-id: 250006
-    grid-type : "U grid"
+    grid-type: "unstructured_grid"
+    domain : "U grid"
+    unstructured-grid-subtype : "U"
     level-type : "oceanSurface"
 
   - nemo-id: lat_V
     param-id: 250007
-    grid-type : "V grid"
+    grid-type: "unstructured_grid"
+    domain : "V grid"
+    unstructured-grid-subtype : "V"
     level-type : "oceanSurface"
 
   - nemo-id: lon_V
     param-id: 250008
-    grid-type : "V grid"
+    grid-type: "unstructured_grid"
+    domain : "V grid"
+    unstructured-grid-subtype : "V"
     level-type : "oceanSurface"
 
   - nemo-id: lat_W
     param-id: 250009
-    grid-type : "W grid"
+    grid-type: "unstructured_grid"
+    domain : "W grid"
+    unstructured-grid-subtype : "W"
     level-type : "oceanSurface"
 
   - nemo-id: lon_W
     param-id: 250010
-    grid-type : "W grid"
+    grid-type: "unstructured_grid"
+    domain : "W grid"
+    unstructured-grid-subtype : "W"
     level-type : "oceanSurface"
 
   - nemo-id: lat_F
     param-id: 250011
-    grid-type : "F grid"
+    grid-type: "unstructured_grid"
+    domain : "F grid"
+    unstructured-grid-subtype : "F"
     level-type : "oceanSurface"
 
   - nemo-id: lon_F
     param-id: 250012
-    grid-type : "F grid"
+    grid-type: "unstructured_grid"
+    domain : "F grid"
+    unstructured-grid-subtype : "F"
     level-type : "oceanSurface"
 
   #==============================+===
@@ -65,43 +86,57 @@ data:
   # Sea ice thickness
   - nemo-id : icethic
     param-id : 262000
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceLayerOnWater"
 
   # Sea ice area fraction
   - nemo-id : ice_cover
     param-id : 262001
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceTopOnWater"
 
   # Sea ice snow thickness
   - nemo-id : snwthic
     param-id : 262002
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "snowLayerOverIceOnWater"
 
   # Sea ice eastward velocity
   - nemo-id : iicevelur
     param-id : 262003
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceLayerOnWater"
 
   # Sea ice westward velocity
   - nemo-id : iicevelvr
     param-id : 262004
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceLayerOnWater"
 
   # Sea-ice or snow albedo
   - nemo-id : icealb
     param-id : 262005
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceTopOnWater"
 
   # Sea ice surface temperature
   - nemo-id : icettop
     param-id : 262006
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceTopOnWater"
 
   #===================================
@@ -111,157 +146,209 @@ data:
   # Sea surface salinity
   - nemo-id : sss
     param-id : 262100
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Sea surface temperature
   - nemo-id : sst
     param-id : 262101
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Depth of 14C isotherm
   - nemo-id : 14d
     param-id : 262102
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "isothermal"
 
   # Depth of 17C isotherm
   - nemo-id : 17d
     param-id : 262103
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "isothermal"
 
   # Depth of 20C isotherm
   - nemo-id : 20d
     param-id : 262104
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "isothermal"
 
   # Depth of 26C isotherm
   - nemo-id : 26d
     param-id : 262105
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "isothermal"
 
   # Depth of 28C isotherm
   - nemo-id : 28d
     param-id : 262106
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "isothermal"
 
   # Surface downward heat flux
   - nemo-id : qt
     param-id : 262108
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Northward surface stress
   - nemo-id : vtaun
     param-id : 262109
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Eastward surface stress
   - nemo-id : utaue
     param-id : 262110
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Y component of surface stress
   - nemo-id : vtau
     param-id : 262111
-    grid-type : "V grid"
+    grid-type: "unstructured_grid"
+    domain : "V grid"
+    unstructured-grid-subtype : "V"
     level-type : "oceanSurface"
 
   # X component of surface stress
   - nemo-id : utau
     param-id : 262112
-    grid-type : "U grid"
+    grid-type: "unstructured_grid"
+    domain : "U grid"
+    unstructured-grid-subtype : "U"
     level-type : "oceanSurface"
 
   # Ocean mixed layer depth defind by sigma theta 0.01 kg m-3
   - nemo-id : mldr10_1
     param-id : 262113
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "mixedLayerDepthByDensity"
 
   # Ocean mixed layer depth defind by sigma theta 0.03 kg m-3
   - nemo-id : mldkr03
     param-id : 262114
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "mixedLayerDepthByDensity"
 
   # Ocean mixed layer depth defind by sigma theta 0.125 kg m-3
   - nemo-id : mldkr125
     param-id : 262115
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "mixedLayerDepthByDensity"
 
   # Ocean mixed layer depth  defined by temperature 0.2 C
   - nemo-id : mldt02
     param-id : 262116
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "mixedLayerDepthByTemperature"
 
   # Ocean mixed layer depth  defined by temperature 0.5 C
   - nemo-id : mldt05
     param-id : 262117
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "mixedLayerDepthByTemperature"
 
   # Integral of sea water practical salinity in the upper 300m
   - nemo-id : sal300
     param-id : 262118
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanDepthLayer"
 
   # Integral of sea water practical salinity in the upper 700m
   - nemo-id : sal700
     param-id : 262119
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanDepthLayer"
 
   # Integral of sea water practical salinity in the total water column
   - nemo-id : salbtm
     param-id : 262120
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurfaceToBottom"
 
   # Water column integrated heat content in the upper 300 m
   - nemo-id : hc300
     param-id : 262121
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanDepthLayer"
 
   # Water column integrated heat content in the upper 700m
   - nemo-id : hc700
     param-id : 262122
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanDepthLayer"
 
   # Water column integrated heat content in the total water column
   - nemo-id : hcbtm
     param-id : 262123
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurfaceToBottom"
 
   # Sea surface height
   - nemo-id : ssh
     param-id : 262124
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Steric change in sea surface height -- is stheig or sostheig?
   - nemo-id : hst
     param-id : 262125
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Thermocline depth
   - nemo-id : mlddzt
     param-id : 262128
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   #===================================
@@ -271,49 +358,65 @@ data:
   # Sea water practical salinity
   - nemo-id : soce
     param-id : 262500
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanModelLayer"
 
   # Sea water potential temperature
   - nemo-id : toce
     param-id : 262501
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanModelLayer"
 
   # Sea water sigma theta
   - nemo-id : sigmat
     param-id : 262502
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanModelLayer"
 
   # Y component of sea water velocity
   - nemo-id : voce
     param-id : 262503
-    grid-type : "V grid"
+    grid-type: "unstructured_grid"
+    domain : "V grid"
+    unstructured-grid-subtype : "V"
     level-type : "oceanModelLayer"
 
   # X component of sea water velocity
   - nemo-id : uoce
     param-id : 262504
-    grid-type : "U grid"
+    grid-type: "unstructured_grid"
+    domain : "U grid"
+    unstructured-grid-subtype : "U"
     level-type : "oceanModelLayer"
 
   # Northward sea water velocity
   - nemo-id : vocen
     param-id : 262505
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanModelLayer"
 
   # Eastward sea water velocity
   - nemo-id : uocee
     param-id : 262506
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanModelLayer"
 
   # Upward sea water velocity
   - nemo-id : woce
     param-id : 262507
-    grid-type : "W grid"
+    grid-type: "unstructured_grid"
+    domain : "W grid"
+    unstructured-grid-subtype : "W"
     level-type : "oceanModelLayer"
 
   #================================================
@@ -327,103 +430,137 @@ data:
   # Bottom pressure equivalent height
   - nemo-id : hbp
     param-id : 262129
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurfaceToBottom"
 
   # Net upward water flux
   - nemo-id : empmr
     param-id : 262130
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Water flux into sea water from rivers
   - nemo-id : runoffs
     param-id : 262131
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Virtual salt flux into sea water
   - nemo-id : saltflx
     param-id : 262132
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Net shortwave surface radiation
   - nemo-id : qsr
     param-id : 262900
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Wind stress module
   - nemo-id : taum
     param-id : 262901
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Wind speed module
   - nemo-id : wspd
     param-id : 262902
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "heightAboveSea"
 
   # Natural drag coefficient
   - nemo-id : cdn10
     param-id : 262903
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "heightAboveSea"
 
   # Heat-flux correction
   - nemo-id : qrp
     param-id : 262133
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Virtual salt-fluxh correction
   - nemo-id : erp
     param-id : 262134
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Turbocline depth
   - nemo-id : mldkz5
     param-id : 262136
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "mixedLayerDepthByDiffusivity"
 
   # Total precipitation
   - nemo-id : precip
     param-id : 262904
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Ocean surface current along east direction
   - nemo-id : uocees
     param-id : 262140
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Ocean surface current along north direction
   - nemo-id : vocens
     param-id : 262139
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Water column integrated heat content in the total water column 0-26C
   - nemo-id : hc26c
     param-id : 262141
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "waterSurfaceToIsothermalOceanLayer"
 
   # Sea water potential temperature tendency due to Newtonian relaxation
   - nemo-id : thetaodmp
     param-id : 262508
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanModelLayer"
 
   # Sea water salinity tendency due to Newtonian relaxation
   - nemo-id : sodmp
     param-id : 262509
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanModelLayer"
 
   #=================================
@@ -433,7 +570,9 @@ data:
   # Surface X component of sea water velocity
   - nemo-id : ssu
     param-id : 262137
-    grid-type : "U grid"
+    grid-type: "unstructured_grid"
+    domain : "U grid"
+    unstructured-grid-subtype : "U"
     level-type : "oceanSurface"
 
   #=================================
@@ -443,7 +582,9 @@ data:
   # Surface Y component of sea water velocity
   - nemo-id : ssv
     param-id : 262138
-    grid-type : "V grid"
+    grid-type: "unstructured_grid"
+    domain : "V grid"
+    unstructured-grid-subtype : "V"
     level-type : "oceanSurface"
 
   #=================================
@@ -453,7 +594,9 @@ data:
   # Surface upward sea water velocity
   - nemo-id : ssw
     param-id : 212202 # Still experimental
-    grid-type : "W grid"
+    grid-type: "unstructured_grid"
+    domain : "W grid"
+    unstructured-grid-subtype : "W"
     level-type : "oceanSurface"
 
   #=================================
@@ -463,120 +606,160 @@ data:
   # Sea-ice volume per area
   - nemo-id : icevolu
     param-id : 262008
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceLayerOnWater"
 
   # Snow volume on ice per area
   - nemo-id : snwvolu
     param-id : 262009
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "snowLayerOverIceOnWater"
 
   # X-component of sea-ice velocity
   - nemo-id : uice
     param-id : 262021
-    grid-type : "U grid"
+    grid-type: "unstructured_grid"
+    domain : "U grid"
+    unstructured-grid-subtype : "U"
     level-type : "iceLayerOnWater"
 
   # Y-component of sea-ice velocity
   - nemo-id : vice
     param-id : 262022
-    grid-type : "V grid"
+    grid-type: "unstructured_grid"
+    domain : "V grid"
+    unstructured-grid-subtype : "V"
     level-type : "iceLayerOnWater"
 
   # X-component of atmospheric stress on sea ice
   - nemo-id : utau_ai
     param-id : 262908
-    grid-type : "U grid"
+    grid-type: "unstructured_grid"
+    domain : "U grid"
+    unstructured-grid-subtype : "U"
     level-type : "iceTopOnWater"
 
   # Y-component of atmospheric stress on sea ice
   - nemo-id : vtau_ai
     param-id : 262909
-    grid-type : "V grid"
+    grid-type: "unstructured_grid"
+    domain : "V grid"
+    unstructured-grid-subtype : "V"
     level-type : "iceTopOnWater"
 
   # Wind stress over ice u geographical
   - nemo-id : iocestrur
     param-id : 262906
-    grid-type : "U grid"
+    grid-type: "unstructured_grid"
+    domain : "U grid"
+    unstructured-grid-subtype : "U"
     level-type : "iceTopOnWater"
 
   # Wind stress over ice v geographical
   - nemo-id : iocestrvr
     param-id : 262907
-    grid-type : "V grid"
+    grid-type: "unstructured_grid"
+    domain : "V grid"
+    unstructured-grid-subtype : "V"
     level-type : "iceTopOnWater"
 
   # Snow precipitation
   - nemo-id : snowpre
     param-id : 262905
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
   # Mean ice temperature
   - nemo-id : icetemp
     param-id : 262010
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceLayerOnWater"
 
   # Mean snow-on-ice temperature
   - nemo-id : snwtemp
     param-id: 262011
-    grid-type: "T grid"
+    grid-type: "unstructured_grid"
+    domain: "T grid"
+    unstructured-grid-subtype: "T"
     level-type: "snowLayerOverIceOnWater"
 
   # Mean temperature at the snow-ice interface
   - nemo-id : icetsni
     param-id: 262012
-    grid-type: "T grid"
+    grid-type: "unstructured_grid"
+    domain: "T grid"
+    unstructured-grid-subtype: "T"
     level-type: "iceTopUnderSnowOnWater"
 
   # Mean temperature at the bottom of the ice
   - nemo-id : icetbot
     param-id: 262013
-    grid-type: "T grid"
+    grid-type: "unstructured_grid"
+    domain: "T grid"
+    unstructured-grid-subtype: "T"
     level-type: "iceBottomOnWater"
 
   # Ice total heat content
   - nemo-id : icehc
     param-id : 262014
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceLayerOnWater"
 
   # Snow on ice heat content
   - nemo-id : isnowhc
     param-id : 262015
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "snowLayerOverIceOnWater"
 
   # Ice freeboard
   - nemo-id : icefrb
     param-id : 262016
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceLayerAboveWaterSurface"
 
   # Sea-ice melt pond fraction
   - nemo-id : iceapnd
     param-id : 262017
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "entireMeltPond"
 
   # Sea-ice melt pond depth
   - nemo-id : icehpnd
     param-id : 262018
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "entireMeltPond"
 
   # Sea-ice melt pond volume per unit area
   - nemo-id : icevpnd
     param-id : 262019
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "entireMeltPond"
 
   - nemo-id : icesalt
     param-id : 262023
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceLayerOnWater"
 
   #=================================
@@ -586,49 +769,65 @@ data:
   # Temperature tendency from assimilation increment
   - nemo-id : bckint
     param-id : 262510
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanModelLayer"
 
   # Salinity tendency from assimilation increment
   - nemo-id : bckins
     param-id : 262511
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanModelLayer"
 
   # Sea-surface height tendency from assimilation increment
   - nemo-id : bckineta
     param-id : 262142
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "mixingLayer"
 
   # Sea-ice concentration tendency from assimilation increment
   - nemo-id : bckinseaice
     param-id : 262020
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "iceTopOnWater"
 
   # Zonal velocity tendency from assimilation increment
   - nemo-id : bckinu
     param-id : 262512
-    grid-type : "U grid"
+    grid-type: "unstructured_grid"
+    domain : "U grid"
+    unstructured-grid-subtype : "U"
     level-type : "oceanModelLayer"
 
   # Meridional tendency from assimilation increment
   - nemo-id : bckinv
     param-id : 262513
-    grid-type : "V grid"
+    grid-type: "unstructured_grid"
+    domain : "V grid"
+    unstructured-grid-subtype : "V"
     level-type : "oceanModelLayer"
 
   # Temperature tendency from direct bias correction
   - nemo-id : votbiasd
     param-id : 262514
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanModelLayer"
 
   # Salinity tendency from direct bias correction
   - nemo-id : vosbiasd
     param-id : 262515
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "oceanModelLayer"
 
   #=================================
@@ -637,20 +836,28 @@ data:
 
   - nemo-id : iceconc_cat
     param-id : 212213 # Still experimental
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "topSeaIceLevel"
 
   - nemo-id : icethic_cat
     param-id : 212215 # Still experimental
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "topSeaIceLevel"
 
   - nemo-id : snwthic_cat
     param-id : 212217 # Still experimental
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "topSeaIceLevel"
 
   - nemo-id : icesalt_cat
     param-id : 212230 # Still experimental
-    grid-type : "T grid"
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
     level-type : "topSeaIceLevel"

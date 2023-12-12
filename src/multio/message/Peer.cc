@@ -10,11 +10,10 @@
 
 #include "Peer.h"
 
-#include <string>
 #include <iostream>
+#include <string>
 
-namespace multio {
-namespace message {
+namespace multio::message {
 
 Peer::Peer(const std::string& group, size_t id) : group_{group}, id_{id} {}
 
@@ -48,5 +47,4 @@ void Peer::print(std::ostream& out) const {
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace message
-}  // namespace multio
+}  // namespace multio::message

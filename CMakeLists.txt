@@ -22,7 +22,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ecbuild_find_package( NAME eccodes     VERSION  2.18   REQUIRED )
 ecbuild_find_package( NAME eckit       VERSION  1.22   REQUIRED )
 ecbuild_find_package( NAME metkit      VERSION  1.7    REQUIRED )
-ecbuild_find_package( NAME atlas       VERSION  0.33   REQUIRED )
+ecbuild_find_package( NAME atlas       VERSION  0.35   REQUIRED )
 
 if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
@@ -39,12 +39,24 @@ ecbuild_add_option( FEATURE FDB5
                     DESCRIPTION "Send data to FDB5"
                     REQUIRED_PACKAGES "NAME fdb5 VERSION 5.10.1" )
 
+### atlas-io plugin
+
+ecbuild_add_option( FEATURE ATLAS_IO
+                    DEFAULT ON
+                    DESCRIPTION "Use atlasIO for the restart"
+                    REQUIRED_PACKAGES "NAME atlas_io VERSION 0.33" )
+
 ### interpolate action
 
 ecbuild_add_option( FEATURE MIR
                     DEFAULT ON
                     DESCRIPTION "Interpolate data using MIR"
                     REQUIRED_PACKAGES "NAME mir VERSION 1.16.0" )
+
+ecbuild_add_option( FEATURE PGEN
+                    DEFAULT OFF
+                    DESCRIPTION "Use pgen for Maestro product-generation workflow"
+                    REQUIRED_PACKAGES "NAME pgen VERSION 1.13.0" )
 
 ecbuild_add_option( FEATURE FORTRAN
                     DEFAULT ON
@@ -69,13 +81,19 @@ endif()
 ecbuild_add_option( FEATURE MAESTRO
                     DEFAULT OFF
                     DESCRIPTION "Pass data to Maestro middleware"
-                    REQUIRED_PACKAGES "NAME Maestro" "NAME pgen" )
+                    REQUIRED_PACKAGES "NAME Maestro" )
 
 ### sandbox
 
 ecbuild_add_option( FEATURE SANDBOX
                     DEFAULT OFF
                     DESCRIPTION "Sanbox for exploring io server design" )
+
+### sandbox
+
+ecbuild_add_option( FEATURE HEALPIX_EXAMPLES
+                    DEFAULT OFF
+                    DESCRIPTION "Enable creation of HEALPix examples" )
 
 
 ### export package info
@@ -102,5 +120,11 @@ ecbuild_pkgconfig(NAME multio
                   LIBRARIES multio )
 
 ecbuild_install_project( NAME ${PROJECT_NAME} )
+
+if( HAVE_FORTRAN AND ECBUILD_INSTALL_FORTRAN_MODULES )
+    install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}
+             DESTINATION module/${PROJECT_NAME}
+             COMPONENT modules )
+endif()
 
 ecbuild_print_summary()

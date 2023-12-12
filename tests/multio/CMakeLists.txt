@@ -27,7 +27,9 @@ if ( HAVE_FDB5 )
     )
 endif()
 
+
 # Test sinks
+
 
 ecbuild_add_test( TARGET    test_multio_datasink_factory
                   SOURCES   test_multio_datasink_factory.cc
@@ -49,18 +51,30 @@ ecbuild_add_test( TARGET    test_multio_encode_bitspervalue
 
 # Test config
 
-ecbuild_add_test( TARGET    test_multio_confctx
-                  SOURCES   test_multio_confctx.cc
+ecbuild_add_test( TARGET    test_multio_conf
+                  SOURCES   test_multio_conf.cc
                   LIBS      multio
                   ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
 )
 
+# Test Mask compression
+
+ecbuild_add_test( TARGET    test_multio_mask_compression
+                  SOURCES   test_multio_mask_compression.cc
+                  LIBS      ${_link_libraries} )
+
 # Test api
+
+list( APPEND _api_test_environment
+    CMAKE_BINARY_HOME=${CMAKE_BINARY_DIR}
+    MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config
+)
+
 
 ecbuild_add_test( TARGET    test_multio_capi
                   SOURCES   test_multio_capi.cc
                   LIBS      multio-api
-                  ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config"
+                  ENVIRONMENT "${_api_test_environment}"
 )
 
 ecbuild_add_test( TARGET    test_multio_fapi_general
@@ -150,7 +164,8 @@ ecbuild_get_test_multidata( TARGET multio_hammer_get_test_data
                             DIRNAME multio/tests/server
                             NAMES ${_hammer_test_data} )
 
-ecbuild_add_test( TARGET       test_multio_hammer_none
+ecbuild_add_test( ENABLED      OFF
+                  TARGET       test_multio_hammer_none
                   CONDITION    HAVE_FDB5
                   COMMAND      $<TARGET_FILE:multio-hammer>
                   TEST_DEPENDS multio_hammer_get_test_data

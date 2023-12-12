@@ -7,8 +7,7 @@
 #include <iterator>
 #include <vector>
 
-namespace multio {
-namespace util {
+namespace multio::util {
 
 template <typename T, int width>
 struct fixed_width_val {
@@ -38,5 +37,4 @@ void print_buffer(const std::vector<T>& vec, std::ostream& ostrm = std::cout, co
     copy(begin(vec), end(vec), std::ostream_iterator<T>(ostrm, delim));
 }
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::util

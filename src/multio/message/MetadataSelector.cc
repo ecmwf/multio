@@ -8,8 +8,7 @@
 
 using eckit::LocalConfiguration;
 
-namespace multio {
-namespace message {
+namespace multio::message {
 
 //--------------------------------------------------------------------------------------------------
 
@@ -29,12 +28,10 @@ inline bool selectable(const Message& msg) {
 
 
 MetadataSelector::MetadataSelector(const LocalConfiguration& cfg) :
-    match_(cfg.has("match")
-               ? eckit::Optional<MetadataMatchers>{MetadataMatchers{cfg.getSubConfigurations("match")}}
-               : eckit::Optional<MetadataMatchers>{}),
-    ignore_(cfg.has("ignore")
-                ? eckit::Optional<MetadataMatchers>{MetadataMatchers{cfg.getSubConfigurations("ignore")}}
-                : eckit::Optional<MetadataMatchers>{}) {}
+    match_(cfg.has("match") ? std::optional<MetadataMatchers>{MetadataMatchers{cfg.getSubConfigurations("match")}}
+                            : std::optional<MetadataMatchers>{}),
+    ignore_(cfg.has("ignore") ? std::optional<MetadataMatchers>{MetadataMatchers{cfg.getSubConfigurations("ignore")}}
+                              : std::optional<MetadataMatchers>{}) {}
 
 
 bool MetadataSelector::matches(const Metadata& md) const {
@@ -111,5 +108,4 @@ void MetadataSelectors::print(std::ostream& os) const {
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace message
-}  // namespace multio
+}  // namespace multio::message

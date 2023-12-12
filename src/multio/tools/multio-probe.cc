@@ -4,23 +4,23 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/StdFile.h"
+#include "eckit/log/JSON.h"
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
-#include "eckit/log/JSON.h"
 
 #include "multio/LibMultio.h"
+#include "multio/config/ComponentConfiguration.h"
+#include "multio/config/ConfigurationPath.h"
 #include "multio/server/MultioServer.h"
-#include "multio/util/ConfigurationPath.h"
-#include "multio/util/ConfigurationContext.h"
 #include "multio/tools/MultioTool.h"
 
-using multio::util::configuration_file;
-using multio::util::configuration_file_name;
-using multio::util::configuration_path_name;
-using multio::util::ConfigurationContext;
-using multio::util::ServerConfigurationContext;
+using multio::config::ComponentConfiguration;
+using multio::config::configuration_file;
+using multio::config::configuration_file_name;
+using multio::config::configuration_path_name;
+using multio::config::MultioConfiguration;
 
 using namespace multio::server;
 
@@ -28,7 +28,6 @@ using namespace multio::server;
 
 class MultioProbe final : public multio::MultioTool {
 public:  // methods
-
     MultioProbe(int argc, char** argv);
 
 private:
@@ -51,12 +50,11 @@ private:
     std::string transport_ = "mpi";
     int port_ = 7777;
     bool test_ = false;
-    eckit::Optional<ServerConfigurationContext> confCtx_{};
+    MultioConfiguration multioConf_{};
 };
 
 MultioProbe::MultioProbe(int argc, char** argv) : multio::MultioTool(argc, argv) {
-    options_.push_back(
-        new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>("transport", "Type of transport layer"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("port", "TCP port"));
     options_.push_back(new eckit::option::SimpleOption<bool>("test", "Whether it runs as part of test"));
 }
@@ -65,10 +63,8 @@ void MultioProbe::init(const eckit::option::CmdArgs& args) {
     args.get("transport", transport_);
     args.get("port", port_);
     args.get("test", test_);
-    args.get("server", serverName_);
 
-    confCtx_ = ServerConfigurationContext(ConfigurationContext(), serverName_);
-    confCtx_->config().set("local_port", port_);
+    multioConf_.parsedConfig().set("local_port", port_);
 }
 
 void MultioProbe::finish(const eckit::option::CmdArgs&) {}
@@ -85,19 +81,19 @@ void MultioProbe::execute(const eckit::option::CmdArgs&) {
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioProbe::executeLive() {
-    eckit::Log::info() << "*** Server -- executeLive "<< std::endl;
-    MultioServer server{*confCtx_};
+    eckit::Log::info() << "*** Server -- executeLive " << std::endl;
+    MultioServer server{std::move(multioConf_)};
 }
 
 void MultioProbe::executeTest() {
-    eckit::Log::info() << "*** Server -- executeTest "<< std::endl;
-    MultioServer server{*confCtx_};
+    eckit::Log::info() << "*** Server -- executeTest " << std::endl;
+    MultioServer server{std::move(multioConf_)};
 
     testData();
 }
 
 void MultioProbe::testData() const {
-    if(transport_ == "mpi") {
+    if (transport_ == "mpi") {
         eckit::mpi::comm().barrier();
         return;
     }

@@ -22,11 +22,9 @@
 #include <string_view>  // C++17 available at the point of using
 
 #include "eckit/config/LocalConfiguration.h"
-#include "eckit/utils/Optional.h"
 
 
-namespace multio {
-namespace util {
+namespace multio::util {
 
 /**
  * Replacement of (single) curly braces analogous to PGEN. Example: {var}
@@ -73,8 +71,7 @@ std::string replaceCurly(std::string_view s, Func&& lookup) {
 }
 
 
-eckit::Optional<bool> parseBool(const eckit::LocalConfiguration& cfg, const std::string& key, bool defaultValue);
-eckit::Optional<bool> parseEnabled(const eckit::LocalConfiguration& cfg, bool defaultValue);
+std::optional<bool> parseBool(const eckit::LocalConfiguration& cfg, const std::string& key, bool defaultValue);
+std::optional<bool> parseEnabled(const eckit::LocalConfiguration& cfg, bool defaultValue);
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::util

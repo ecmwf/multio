@@ -22,14 +22,13 @@
 #include "multio/action/ChainedAction.h"
 #include "multio/action/aggregate/AggregationCatalogue.h"
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 using message::Message;
 
 class Aggregate : public ChainedAction {
 public:
-    explicit Aggregate(const ConfigurationContext& confCtx);
+    explicit Aggregate(const ComponentConfiguration& compConf);
 
     void executeImpl(Message msg) override;
 
@@ -50,5 +49,4 @@ private:
     std::map<std::string, std::set<message::Peer>> flushes_;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

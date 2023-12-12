@@ -15,41 +15,38 @@
 
 #pragma once
 
-#include <iosfwd>
-#include <vector>
 
-#include "StatisticsOptions.h"
+#include "PeriodUpdater.h"
+#include "StatisticsConfiguration.h"
+#include "StatisticsIO.h"
 #include "multio/action/ChainedAction.h"
 
 namespace eckit {
 class Configuration;
 }
 
-namespace multio {
-namespace action {
+namespace multio::action {
 
 class TemporalStatistics;
 
 class Statistics : public ChainedAction {
 public:
-    explicit Statistics(const ConfigurationContext& confCtx);
-    ~Statistics();
+    explicit Statistics(const ComponentConfiguration& compConf);
     void executeImpl(message::Message msg) override;
-    message::Metadata outputMetadata(const message::Metadata& inputMetadata, const StatisticsOptions& opt,
-                                     const std::string& key, long timeSpanInSeconds) const;
+    message::Metadata outputMetadata(const message::Metadata& inputMetadata, const StatisticsConfiguration& opt,
+                                     const std::string& key) const;
 
 private:
-    std::string getKey(const message::Message& msg) const;
-    std::string getRestartPartialPath(const message::Message& msg, const StatisticsOptions& opt) const;
+    void DumpRestart();
+    std::string generateKey(const message::Message& msg) const;
     void print(std::ostream& os) const override;
-    bool restartExist(const std::string& key, const StatisticsOptions& opt) const;
-    const std::string timeUnit_;
-    const long timeSpan_;
+    const StatisticsConfiguration cfg_;
     const std::vector<std::string> operations_;
-    const StatisticsOptions options_;
+    std::shared_ptr<PeriodUpdater> periodUpdater_;
+    std::shared_ptr<StatisticsIO> IOmanager_;
+
 
     std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 };
 
-}  // namespace action
-}  // namespace multio
+}  // namespace multio::action

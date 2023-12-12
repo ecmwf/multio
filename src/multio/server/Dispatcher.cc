@@ -15,23 +15,24 @@
 
 using eckit::LocalConfiguration;
 
-namespace multio {
-namespace server {
+namespace multio::server {
 
-Dispatcher::Dispatcher(const util::ConfigurationContext& confCtx, std::shared_ptr<std::atomic<bool>> cont): FailureAware(confCtx), continue_{std::move(cont)} {
+Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue) :
+    FailureAware(compConf), queue_{queue} {
     timer_.start();
 
-    eckit::Log::debug<LibMultio>() << confCtx.config() << std::endl;
+    eckit::Log::debug<LibMultio>() << compConf.parsedConfig() << std::endl;
 
-    util::ConfigurationContext::SubConfigurationContexts plans = confCtx.subContexts("plans", util::ComponentTag::Plan);
-    for (auto&& subCtx: plans) {
-        eckit::Log::debug<LibMultio>() << subCtx.config() << std::endl;
-        plans_.emplace_back(std::make_unique<action::Plan>(std::move(subCtx)));
+    config::ComponentConfiguration::SubComponentConfigurations plans = compConf.subComponents("plans");
+    for (auto&& subComp : plans) {
+        eckit::Log::debug<LibMultio>() << subComp.parsedConfig() << std::endl;
+        plans_.emplace_back(std::make_unique<action::Plan>(std::move(subComp)));
     }
 }
 
-util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, const util::FailureContext& c, util::DefaultFailureState&) const {
-    continue_->store(false, std::memory_order_relaxed);
+util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, const util::FailureContext& c,
+                                                       util::DefaultFailureState&) const {
+    queue_.interrupt(c.eptr);
     return util::FailureHandlerResponse::Rethrow;
 };
 
@@ -41,15 +42,21 @@ Dispatcher::~Dispatcher() {
             << "s -- of which time spent with dispatching " << timing_ << "s" << std::endl;
 }
 
-void Dispatcher::dispatch(eckit::Queue<message::Message>& queue) {
+void Dispatcher::dispatch() {
     util::ScopedTimer timer{timing_};
     withFailureHandling([&]() {
-        message::Message msg;
-        auto sz = queue.pop(msg);
-        while (sz >= 0 && continue_->load(std::memory_order_consume)) {
-            handle(msg);
-            LOG_DEBUG_LIB(multio::LibMultio) << "Size of the dispatch queue: " << sz << std::endl;
-            sz = queue.pop(msg);
+        try {
+            message::Message msg;
+            auto sz = queue_.pop(msg);
+            while (sz >= 0) {
+                handle(msg);
+                LOG_DEBUG_LIB(multio::LibMultio) << "Size of the dispatch queue: " << sz << std::endl;
+                sz = queue_.pop(msg);
+            }
+        }
+        catch (const multio::util::FailureAwareException& ex) {
+            std::cerr << ex << std::endl;
+            throw;
         }
     });
 }
@@ -71,5 +78,4 @@ void Dispatcher::handle(const message::Message& msg) const {
     }
 }
 
-}  // namespace server
-}  // namespace multio
+}  // namespace multio::server

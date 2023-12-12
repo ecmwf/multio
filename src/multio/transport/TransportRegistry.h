@@ -4,39 +4,37 @@
 
 #pragma once
 
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/transport/Transport.h"  // This means circular dependency at the minute
-#include "multio/util/ConfigurationContext.h"
 
 
 namespace eckit {
 class Configuration;
 }
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
+using config::ComponentConfiguration;
 using message::Message;
-using util::ConfigurationContext;
 
 
 class TransportRegistry : public eckit::NonCopyable {
 public:
     static TransportRegistry& instance();
 
-    std::shared_ptr<transport::Transport> get(const ConfigurationContext& config);
+    std::shared_ptr<transport::Transport> get(const ComponentConfiguration& config);
 
     void openConnections();
     void closeConnections();
 
-    void abort(const std::string& serverName);
-    void abortAll();
+    void abort(const std::string& serverName, std::exception_ptr);
+    void abortAll(std::exception_ptr);
 
 private:
-    void add(const std::string& serverName, const ConfigurationContext& fullConfig);
+    void add(const std::string& serverName, const ComponentConfiguration& fullConfig);
 
     std::map<std::string, std::shared_ptr<transport::Transport>> transports_;
     std::mutex mutex_;
 };
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

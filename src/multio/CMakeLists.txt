@@ -22,20 +22,29 @@ list( APPEND multio_library_srcs
 )
 
 list( APPEND multio_util_srcs
-    util/ConfigurationContext.cc
-    util/ConfigurationContext.h
+    util/DateTime.cc
+    util/DateTime.h
     util/Environment.cc
     util/Environment.h
     util/FailureHandling.cc
     util/FailureHandling.h
-    util/MetadataMappings.cc
-    util/MetadataMappings.h
     util/PrecisionTag.cc
     util/PrecisionTag.h
     util/Metadata.cc
     util/Metadata.h
     util/Substitution.cc
     util/Substitution.h
+    util/BinaryUtils.h
+)
+
+list( APPEND multio_config_srcs
+    config/ComponentConfiguration.cc
+    config/ComponentConfiguration.h
+    config/ConfigurationPath.h
+    config/MultioConfiguration.cc
+    config/MultioConfiguration.h
+    config/MetadataMappings.cc
+    config/MetadataMappings.h
 )
 
 
@@ -72,6 +81,8 @@ list( APPEND multio_domain_srcs
     domain/Mappings.h
     domain/Mask.cc
     domain/Mask.h
+    domain/MaskCompression.cc
+    domain/MaskCompression.h
 )
 
 list( APPEND multio_message_srcs
@@ -133,13 +144,12 @@ list( APPEND multio_transport_srcs
     transport/TransportStatistics.h
     transport/StreamPool.cc
     transport/StreamPool.h
-    transport/StreamQueue.cc
-    transport/StreamQueue.h
 )
 
 list( APPEND multio_srcs
     ${multio_library_srcs}
     ${multio_util_srcs}
+    ${multio_config_srcs}
     ${multio_action_srcs}
     ${multio_ifsio_srcs}
     ${multio_domain_srcs}

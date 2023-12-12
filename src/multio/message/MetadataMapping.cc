@@ -1,11 +1,11 @@
 
 #include "MetadataMapping.h"
-#include <sstream>
+
 #include "eckit/exception/Exceptions.h"
 
-namespace multio {
-namespace message {
+#include <sstream>
 
+namespace multio::message {
 
 namespace {
 std::unordered_map<std::string, eckit::LocalConfiguration> constructSourceMap(
@@ -18,21 +18,20 @@ std::unordered_map<std::string, eckit::LocalConfiguration> constructSourceMap(
 }
 
 std::string metadataMappingExceptionReason(const std::string& r) {
-    std::string s{"Metadata mapping failure: "};
+    std::string s{"Mapping failure: "};
     s.append(r);
     return s;
 }
 }  // namespace
 
-MetadataMappingException::MetadataMappingException(const std::string& r, const eckit::CodeLocation& location):
-    eckit::Exception(metadataMappingExceptionReason(r), location) {
-}
+MetadataMappingException::MetadataMappingException(const std::string& r, const eckit::CodeLocation& location) :
+    MetadataException(metadataMappingExceptionReason(r), location) {}
 
 
 MetadataMapping::MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
                                  const eckit::LocalConfiguration& optionalMappings,
                                  const std::vector<eckit::LocalConfiguration>& mapDataList, const std::string& matchKey,
-                                 const eckit::Optional<std::string>& targetPath) :
+                                 const std::optional<std::string>& targetPath) :
     metadataKey_(metadataKey),
     mapping_{mappings},
     optionalMapping_{optionalMappings},
@@ -42,7 +41,7 @@ MetadataMapping::MetadataMapping(const std::string& metadataKey, const eckit::Lo
 MetadataMapping::MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
                                  const eckit::LocalConfiguration& optionalMappings,
                                  const std::unordered_map<std::string, eckit::LocalConfiguration>& source,
-                                 const eckit::Optional<std::string>& targetPath) :
+                                 const std::optional<std::string>& targetPath) :
     metadataKey_(metadataKey),
     mapping_{mappings},
     optionalMapping_{optionalMappings},
@@ -52,7 +51,7 @@ MetadataMapping::MetadataMapping(const std::string& metadataKey, const eckit::Lo
 MetadataMapping::MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
                                  const eckit::LocalConfiguration& optionalMappings,
                                  std::unordered_map<std::string, eckit::LocalConfiguration>&& source,
-                                 const eckit::Optional<std::string>& targetPath) :
+                                 const std::optional<std::string>& targetPath) :
     metadataKey_(metadataKey),
     mapping_{mappings},
     optionalMapping_{optionalMappings},
@@ -82,7 +81,7 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
     }
 
     // TODO handle internals without LocalConfiguration
-    eckit::Optional<eckit::LocalConfiguration> targetConfMaybe{};
+    std::optional<eckit::LocalConfiguration> targetConfMaybe{};
     eckit::LocalConfiguration& ms
         = targetPath_ ? (targetConfMaybe = m.getSubConfiguration(*targetPath_), *targetConfMaybe) : m;
 
@@ -130,5 +129,4 @@ Metadata MetadataMapping::apply(const Metadata& m, MetadataMappingOptions option
     return mc;
 };
 
-}  // namespace message
-}  // namespace multio
+}  // namespace multio::message

@@ -17,11 +17,32 @@
 using multio::message::Message;
 using multio::message::Peer;
 
-namespace multio {
-namespace server {
+namespace multio::server {
 
-MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureAware(confCtx) {
-    ASSERT(confCtx.componentTag() == util::ComponentTag::Client);
+using config::ComponentConfiguration;
+
+namespace {
+
+eckit::LocalConfiguration getClientConf(const MultioConfiguration& multioConf) {
+    if (multioConf.parsedConfig().has("client")) {
+        return multioConf.parsedConfig().getSubConfiguration("client");
+    }
+
+    // Make client work when using only action pipelines
+    if (multioConf.parsedConfig().has("plans")) {
+        return multioConf.parsedConfig();
+    }
+
+    std::ostringstream oss;
+    oss << "Configuration 'client' not found in configuration file " << multioConf.configFile();
+    throw eckit::UserError(oss.str());
+}
+
+}  // namespace
+
+MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf) :
+    MultioConfigurationHolder(std::move(multioConf), config::LocalPeerTag::Client),
+    FailureAware(ComponentConfiguration(conf, multioConfig())) {
     totClientTimer_.start();
 
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
@@ -34,14 +55,15 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureA
             << std::setw(6) << std::setfill('0') << mSecs << " -- ";
 
 
-    LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << confCtx.config() << std::endl;
-    for (auto&& cfg : confCtx.subContexts("plans", ComponentTag::Plan)) {
-        eckit::Log::debug<LibMultio>() << cfg.config() << std::endl;
-        plans_.emplace_back(std::make_unique<action::Plan>(std::move(cfg)))->matchedFields(activeSelectors_);
+    LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << conf << std::endl;
+    for (auto&& cfg : conf.getSubConfigurations("plans")) {
+        eckit::Log::debug<LibMultio>() << cfg << std::endl;
+        plans_.emplace_back(std::make_unique<action::Plan>(ComponentConfiguration(std::move(cfg), multioConfig())))
+            ->matchedFields(activeSelectors_);
     }
 
-    if (confCtx.globalConfig().has("active-matchers")) {
-        for (const auto& m : confCtx.globalConfig().getSubConfigurations("active-matchers")) {
+    if (multioConfig().parsedConfig().has("active-matchers")) {
+        for (const auto& m : multioConfig().parsedConfig().getSubConfigurations("active-matchers")) {
             std::map<std::string, std::set<std::string>> matches;
             for (const auto& k : m.keys()) {
                 auto v = m.getStringVector(k);
@@ -51,13 +73,18 @@ MultioClient::MultioClient(const ClientConfigurationContext& confCtx) : FailureA
     }
 }
 
+MultioClient::MultioClient(MultioConfiguration&& multioConf) :
+    MultioClient(getClientConf(multioConf), std::move(multioConf)) {}
+
+MultioClient::MultioClient() : MultioClient(MultioConfiguration{}) {}
+
 util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t, const util::FailureContext& c,
                                                          util::DefaultFailureState&) const {
     // Last cascading instance, print nested contexts
     eckit::Log::error() << c;
 
     if (t == util::OnClientError::AbortAllTransports) {
-        transport::TransportRegistry::instance().abortAll();
+        transport::TransportRegistry::instance().abortAll(c.eptr);
     }
     return util::FailureHandlerResponse::Rethrow;
 };
@@ -105,5 +132,4 @@ bool MultioClient::isFieldMatched(const message::Metadata& metadata) const {
     return activeSelectors_.matches(metadata);
 }
 
-}  // namespace server
-}  // namespace multio
+}  // namespace multio::server

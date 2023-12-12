@@ -13,13 +13,13 @@
 
 #pragma once
 
+#include "eckit/types/Types.h"
+
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
-
-#include "eckit/types/Types.h"
-#include "eckit/utils/Optional.h"
 
 #include "MetadataMatcher.h"
 
@@ -27,8 +27,7 @@ namespace eckit {
 class LocalConfiguration;
 }
 
-namespace multio {
-namespace message {
+namespace multio::message {
 
 class Message;
 class Metadata;
@@ -53,8 +52,8 @@ private:  // methods
     void print(std::ostream& os) const;
 
 private:  // members
-    eckit::Optional<MetadataMatchers> match_;
-    eckit::Optional<MetadataMatchers> ignore_;
+    std::optional<MetadataMatchers> match_;
+    std::optional<MetadataMatchers> ignore_;
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -86,8 +85,7 @@ private:  // members
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace message
-}  // namespace multio
+}  // namespace multio::message
 
 namespace eckit {
 template <>

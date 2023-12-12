@@ -2,6 +2,13 @@
 
 staged_files=$(git diff --name-only --cached)
 
+if command -v gsed &> /dev/null
+then
+    sed_command=gsed
+else
+    sed_command=sed
+fi
+
 errors=""
 
 for file in $staged_files
@@ -10,12 +17,14 @@ do
     then
         filename=$(basename -- "$file")
         extension="${filename##*.}"
-        if [ "$extenstion" == "h" ] || [ "$extension" == "cc" ]
+        if [ "$extension" == "h" ] || [ "$extension" == "c" ] || [ "$extension" == "cc" ]
         then
             format_result=$(git clang-format -q --style=file $file)
-            errors="$errors$format_result"
-            git add $file
+        else
+            format_result=$($sed_command --in-place -e 's/[[:space:]]*$//' -e '${/^$/d;}' $file)
         fi
+        errors="$errors$format_result"
+        git add $file
     fi
 done
 

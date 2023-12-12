@@ -1,7 +1,7 @@
 
+#include <unistd.h>
 #include <sstream>
 #include <thread>
-#include <unistd.h>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
@@ -14,7 +14,7 @@
 
 namespace multio {
 
-namespace  {
+namespace {
 
 bool process_join_leave_events(MaestroSubscription& join_leave_subscription) {
     static uint16_t nbJoiners;
@@ -27,13 +27,12 @@ bool process_join_leave_events(MaestroSubscription& join_leave_subscription) {
             switch (tmp->kind) {
                 case MSTRO_POOL_EVENT_APP_JOIN:
                     ++nbJoiners;
-                    LOG_DEBUG_LIB(LibMultio) << " *** Application " << tmp->join.component_name
-                                             << " is joining" << std::endl;
+                    LOG_DEBUG_LIB(LibMultio)
+                        << " *** Application " << tmp->join.component_name << " is joining" << std::endl;
                     break;
                 case MSTRO_POOL_EVENT_APP_LEAVE:
                     ++nbLeavers;
-                    LOG_DEBUG_LIB(LibMultio)
-                        << " *** Application " << tmp->leave.appid << " is leaving" << std::endl;
+                    LOG_DEBUG_LIB(LibMultio) << " *** Application " << tmp->leave.appid << " is leaving" << std::endl;
                     break;
                 default:
                     std::ostringstream os;
@@ -49,19 +48,20 @@ bool process_join_leave_events(MaestroSubscription& join_leave_subscription) {
 }
 
 void track_components() {
-//    mstro_cdo_selector selector = nullptr;
-//    ASSERT(MSTRO_OK == mstro_cdo_selector_create(NULL, NULL, NULL, &selector));
+    //    mstro_cdo_selector selector = nullptr;
+    //    ASSERT(MSTRO_OK == mstro_cdo_selector_create(NULL, NULL, NULL, &selector));
 
-//    mstro_subscription subscription;
-//    ASSERT(MSTRO_OK == mstro_subscribe(selector,
-//                                       MSTRO_POOL_EVENT_APP_JOIN | MSTRO_POOL_EVENT_APP_LEAVE,
-//                                       MSTRO_SUBSCRIPTION_OPTS_DEFAULT, &subscription));
+    //    mstro_subscription subscription;
+    //    ASSERT(MSTRO_OK == mstro_subscribe(selector,
+    //                                       MSTRO_POOL_EVENT_APP_JOIN | MSTRO_POOL_EVENT_APP_LEAVE,
+    //                                       MSTRO_SUBSCRIPTION_OPTS_DEFAULT, &subscription));
 
-MaestroSelector match_all_selector{nullptr};
-auto join_leave_subscription = match_all_selector.subscribe(
-    MSTRO_POOL_EVENT_APP_JOIN | MSTRO_POOL_EVENT_APP_LEAVE, MSTRO_SUBSCRIPTION_OPTS_DEFAULT);
+    MaestroSelector match_all_selector{nullptr};
+    auto join_leave_subscription = match_all_selector.subscribe(MSTRO_POOL_EVENT_APP_JOIN | MSTRO_POOL_EVENT_APP_LEAVE,
+                                                                MSTRO_SUBSCRIPTION_OPTS_DEFAULT);
 
-while (process_join_leave_events(join_leave_subscription));
+    while (process_join_leave_events(join_leave_subscription))
+        ;
 }
 }  // namespace
 
@@ -108,24 +108,24 @@ void PoolManager::finish(const eckit::option::CmdArgs&) {
     }
 }
 
-void PoolManager::execute(const eckit::option::CmdArgs &) {
-   auto s = mstro_pm_start();
-   if (s != MSTRO_OK) {
-       std::ostringstream oss;
-       oss << "Failed to start pool manager: " << s << mstro_status_description(s) << std::endl;
-       ASSERT_MSG(false, oss.str());
-   }
+void PoolManager::execute(const eckit::option::CmdArgs&) {
+    auto s = mstro_pm_start();
+    if (s != MSTRO_OK) {
+        std::ostringstream oss;
+        oss << "Failed to start pool manager: " << s << mstro_status_description(s) << std::endl;
+        ASSERT_MSG(false, oss.str());
+    }
 
-   char *info = nullptr;
-   s = mstro_pm_getinfo(&info);
-   if (s!=MSTRO_OK) {
-       std::ostringstream oss;
-       oss << "Failed to obtain pool contact info" << s << mstro_status_description(s) << std::endl;
-   }
+    char* info = nullptr;
+    s = mstro_pm_getinfo(&info);
+    if (s != MSTRO_OK) {
+        std::ostringstream oss;
+        oss << "Failed to obtain pool contact info" << s << mstro_status_description(s) << std::endl;
+    }
 
-   eckit::Log::info() << MSTRO_ENV_POOL_INFO << ";" << info << ";" << std::endl;
+    eckit::Log::info() << MSTRO_ENV_POOL_INFO << ";" << info << ";" << std::endl;
 
-   track_components();
+    track_components();
 }
 }  // namespace multio
 

@@ -24,20 +24,20 @@
 #include "eckit/message/Message.h"
 #include "eckit/types/Types.h"
 
+#include "multio/config/ComponentConfiguration.h"
 #include "multio/sink/DataSink.h"
 #include "multio/sink/IOStats.h"
 #include "multio/sink/Trigger.h"
-#include "multio/util/ConfigurationContext.h"
 
-namespace multio {
+namespace multio::sink {
 
-using util::ConfigurationContext;
+using config::ComponentConfiguration;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 class MultIO final : public DataSink {
 public:
-    explicit MultIO(const ConfigurationContext& config);
+    explicit MultIO(const ComponentConfiguration& config);
 
     ~MultIO() override = default;
 
@@ -74,4 +74,4 @@ private:  // methods
 
 //----------------------------------------------------------------------------------------------------------------------
 
-}  // namespace multio
+}  // namespace multio::sink

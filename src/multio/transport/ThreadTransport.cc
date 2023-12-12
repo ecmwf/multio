@@ -16,18 +16,15 @@
 
 #include "multio/LibMultio.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 ThreadPeer::ThreadPeer(std::thread t) :
-    Peer{"thread", std::hash<std::thread::id>{}(t.get_id())},
-    thread_{std::move(t)} {}
+    Peer{"thread", std::hash<std::thread::id>{}(t.get_id())}, thread_{std::move(t)} {}
 
 
-ThreadTransport::ThreadTransport(const ConfigurationContext& confCtx) :
-    Transport(confCtx),
-    messageQueueSize_(
-        eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
+ThreadTransport::ThreadTransport(const ComponentConfiguration& compConf) :
+    Transport(compConf),
+    messageQueueSize_(eckit::Resource<size_t>("multioMessageQueueSize;$MULTIO_MESSAGE_QUEUE_SIZE", 1024)) {}
 
 void ThreadTransport::openConnections() {
     throw eckit::NotImplemented{Here()};
@@ -51,7 +48,7 @@ Message ThreadTransport::receive() {
     return msg;
 }
 
-void ThreadTransport::abort() {
+void ThreadTransport::abort(std::exception_ptr) {
     eckit::LibEcKit::instance().abort();
 }
 
@@ -74,7 +71,7 @@ PeerList ThreadTransport::createServerPeers() const {
 void ThreadTransport::createPeers() const {
     // Hack to work around the very different logic of creating ThreadPeers.
     // See multio-hammer.cc: MultioHammer::executeThread
-    clientPeers_ = PeerList(confCtx_.config().getUnsigned("clientCount"));
+    clientPeers_ = PeerList(compConf_.parsedConfig().getUnsigned("clientCount"));
 }
 
 void ThreadTransport::print(std::ostream& os) const {
@@ -92,13 +89,11 @@ eckit::Queue<Message>& ThreadTransport::receiveQueue(Peer dest) {
 
     queues_.emplace(dest, std::make_unique<eckit::Queue<Message>>(messageQueueSize_));
 
-    eckit::Log::debug<LibMultio>()
-        << "ADD QUEUE for " << dest << " --- " << queues_.at(dest).get() << std::endl;
+    eckit::Log::debug<LibMultio>() << "ADD QUEUE for " << dest << " --- " << queues_.at(dest).get() << std::endl;
 
     return *queues_.at(dest);
 }
 
 static TransportBuilder<ThreadTransport> ThreadTransportBuilder("thread");
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

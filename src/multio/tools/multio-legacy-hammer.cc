@@ -32,7 +32,8 @@
 #include "multio/tools/MultioTool.h"
 
 // This list is currently sufficient to get to nparams=200 of levtype=ml,type=fc
-const std::unordered_set<size_t> AWKWARD_PARAMS {11, 12, 13, 14, 15, 16, 49, 51, 52, 61, 121, 122, 146, 147, 169, 175, 176, 177, 179, 189, 201, 202};
+const std::unordered_set<size_t> AWKWARD_PARAMS{11,  12,  13,  14,  15,  16,  49,  51,  52,  61,  121,
+                                                122, 146, 147, 169, 175, 176, 177, 179, 189, 201, 202};
 
 namespace multio {
 
@@ -50,11 +51,9 @@ private:
     void finish(const eckit::option::CmdArgs&) override;
 
     void execute(const eckit::option::CmdArgs& args) override;
-
 };
 
-MultioLegacyHammer::MultioLegacyHammer(int argc, char** argv) :
-    multio::MultioTool(argc, argv) {
+MultioLegacyHammer::MultioLegacyHammer(int argc, char** argv) : multio::MultioTool(argc, argv) {
 
     options_.push_back(new eckit::option::SimpleOption<std::string>("class", "Reset class on data"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("expver", "Reset expver on data"));
@@ -84,7 +83,7 @@ void MultioLegacyHammer::execute(const eckit::option::CmdArgs& args) {
     ASSERT(handle);
 
     size_t nensembles = args.getLong("nensembles", 1);
-    size_t number  = args.getLong("number", 1);
+    size_t number = args.getLong("number", 1);
     size_t nsteps = args.getLong("nsteps");
     size_t nlevels = args.getLong("nlevels");
     size_t nparams = args.getLong("nparams");
@@ -116,8 +115,8 @@ void MultioLegacyHammer::execute(const eckit::option::CmdArgs& args) {
     isetfieldcountfdb_(&fdb_addr, &fdb_fieldcount, &fdb_fieldcount);
 
     std::string keyname;
-    codes_keys_iterator *iter = codes_keys_iterator_new(handle, 0, "mars");
-    while(codes_keys_iterator_next(iter)) {
+    codes_keys_iterator* iter = codes_keys_iterator_new(handle, 0, "mars");
+    while (codes_keys_iterator_next(iter)) {
         keyname = codes_keys_iterator_get_name(iter);
         char keyval[1024];
         size_t keylen = sizeof(keyval);

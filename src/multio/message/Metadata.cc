@@ -6,8 +6,7 @@
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/log/JSON.h"
 
-namespace multio {
-namespace message {
+namespace multio::message {
 
 Metadata::Metadata(const eckit::Configuration& config) : eckit::LocalConfiguration{config} {}
 
@@ -24,5 +23,11 @@ Metadata to_metadata(const std::string& fieldId) {
     return Metadata{config};
 }
 
-}  // namespace message
-}  // namespace multio
+MetadataException::MetadataException(const std::string& reason, const eckit::CodeLocation& l) :
+    eckit::Exception(std::string("MetadataException: ") + reason, l){};
+
+MetadataMissingKeyException::MetadataMissingKeyException(const std::string& missingKey, const eckit::CodeLocation& l) :
+    MetadataException(std::string("Missing key \"") + missingKey + std::string("\""), l){};
+
+
+}  // namespace multio::message

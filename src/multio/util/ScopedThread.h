@@ -5,8 +5,7 @@
 
 #include "eckit/exception/Exceptions.h"
 
-namespace multio {
-namespace util {
+namespace multio::util {
 
 class ScopedThread {
 public:
@@ -25,5 +24,4 @@ private:  // members
     std::thread thread_;
 };
 
-}  // namespace util
-}  // namespace multio
+}  // namespace multio::util

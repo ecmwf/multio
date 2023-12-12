@@ -10,7 +10,7 @@ foreach( tool ${_multio_server_tools} )
 endforeach()
 
 list( APPEND _multio_maestro_tools
-    "multio-maestro-syphon" "multio-pool-manager" "multio-maestro-instigator"
+    "multio-pool-manager" "multio-maestro-instigator"
 )
 
 foreach( tool ${_multio_maestro_tools} )
@@ -19,6 +19,12 @@ foreach( tool ${_multio_maestro_tools} )
                             SOURCES ${tool}.cc MultioTool.cc
                             LIBS multio-maestro )
 endforeach()
+
+ecbuild_add_executable( TARGET multio-maestro-syphon
+                        CONDITION HAVE_MAESTRO AND HAVE_PGEN
+                        SOURCES multio-maestro-syphon.cc MultioTool.cc
+                        LIBS multio-maestro pgen)
+
 
 # multio tools for testing the legacy ifsio
 
@@ -57,4 +63,3 @@ ecbuild_add_executable( TARGET    multio-generate-grib-template
 ecbuild_add_executable( TARGET      multio-replay-nemo-capi-partial-agg
                         SOURCES     multio-replay-nemo-capi-partial-agg.cc MultioTool.cc
                         LIBS        multio-api )
-

@@ -11,12 +11,12 @@
 /// @author Tiago Quintino
 /// @date June 2020
 
+#include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <fstream>
 #include <iosfwd>
 #include <tuple>
-#include <cmath>
-#include <algorithm>
 
 #include "EncodeBitsPerValue.h"
 
@@ -36,7 +36,7 @@ using namespace eckit;
 namespace multio {
 
 namespace {
-  static bool multio_debug;
+static bool multio_debug;
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -104,10 +104,9 @@ EncodeBitsPerValue::EncodeBitsPerValue(const Configuration& config) {
     }
 
     if (path.empty()) {
-        Log::warning()
-            << "Path for Encoding BitsPerValue table not configured, MultIO config "
-               "key EncodingBitsPerValueTable or env variable MULTIO_ENCODING_TABLE"
-            << std::endl;
+        Log::warning() << "Path for Encoding BitsPerValue table not configured, MultIO config "
+                          "key EncodingBitsPerValueTable or env variable MULTIO_ENCODING_TABLE"
+                       << std::endl;
     }
     else {
         YAMLConfiguration tablecfg{PathName{path}};
@@ -124,8 +123,7 @@ EncodeBitsPerValue::~EncodeBitsPerValue() = default;
 static std::string fix_levtype(const std::string& levtype) {
     std::string result(levtype);
 
-    std::transform(levtype.begin(), levtype.end(), result.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+    std::transform(levtype.begin(), levtype.end(), result.begin(), [](unsigned char c) { return std::tolower(c); });
 
     if (result == "m")
         result = "ml";
@@ -140,7 +138,8 @@ static std::string fix_levtype(const std::string& levtype) {
 static bool getenv_COMPR_FC_GP_ML() {
     static char* env = ::getenv("COMPR_FC_GP_ML");
     if (env) {
-        LOG_DEBUG(multio_debug, LibMultio) << "Found env var COMPR_FC_GP_ML: " << env << " - " << (bool)std::atoi(env) << std::endl;
+        LOG_DEBUG(multio_debug, LibMultio)
+            << "Found env var COMPR_FC_GP_ML: " << env << " - " << (bool)std::atoi(env) << std::endl;
         return (bool)std::atoi(env);
     }
     return false;
@@ -237,7 +236,8 @@ Encoding EncodeBitsPerValue::getEncoding(int paramid, const std::string& lv) {
     ASSERT(paramid != 0);
     const std::string levtype = fix_levtype(lv);
 
-    LOG_DEBUG(multio_debug, LibMultio) << "EncodeBitsPerValue QUERY : paramid " << paramid << " levtype " << levtype << std::endl;
+    LOG_DEBUG(multio_debug, LibMultio) << "EncodeBitsPerValue QUERY : paramid " << paramid << " levtype " << levtype
+                                       << std::endl;
 
     // check cache
     encode = getCachedBitsPerValue(paramid, levtype);
@@ -264,8 +264,7 @@ Encoding EncodeBitsPerValue::getEncoding(int paramid, const std::string& lv) {
 }
 
 
-int EncodeBitsPerValue::getBitsPerValue(int paramid, const std::string& lv, double min,
-                                        double max) {
+int EncodeBitsPerValue::getBitsPerValue(int paramid, const std::string& lv, double min, double max) {
     Encoding encode = getEncoding(paramid, lv);
     return encode.computeBitsPerValue(min, max);
 }

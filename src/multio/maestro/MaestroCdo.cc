@@ -1,8 +1,8 @@
 
 #include "MaestroCdo.h"
 
-#include <iostream>
 #include <cstring>
+#include <iostream>
 #include "unistd.h"
 
 namespace multio {
@@ -21,11 +21,11 @@ MaestroCdo::MaestroCdo(std::string name, const void* blob, uint64_t size) : name
         set_size_and_data(size, blob);
 }
 
-MaestroCdo::MaestroCdo(MaestroCdo&& rhs) : name_(std::move(rhs.name_)),
-    size_{rhs.size_}, data_{rhs.data_}, cdo_{rhs.cdo_} {
-        rhs.size_ = 0;
-        rhs.data_ = nullptr;
-        rhs.cdo_ = nullptr;
+MaestroCdo::MaestroCdo(MaestroCdo&& rhs) :
+    name_(std::move(rhs.name_)), size_{rhs.size_}, data_{rhs.data_}, cdo_{rhs.cdo_} {
+    rhs.size_ = 0;
+    rhs.data_ = nullptr;
+    rhs.cdo_ = nullptr;
 }
 
 MaestroCdo& MaestroCdo::operator=(MaestroCdo&& rhs) {

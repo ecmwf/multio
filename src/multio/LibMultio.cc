@@ -25,8 +25,7 @@ namespace multio {
 
 REGISTER_LIBRARY(LibMultio);
 
-LibMultio::LibMultio() :
-    Library("multio") {}
+LibMultio::LibMultio() : Library("multio") {}
 
 
 const LibMultio& LibMultio::instance() {
@@ -46,13 +45,13 @@ std::string LibMultio::version() const {
 
 std::string LibMultio::gitsha1(unsigned int count) const {
     std::string sha1(multio_git_sha1());
-    if(sha1.empty()) {
+    if (sha1.empty()) {
         return "not available";
     }
 
-    return sha1.substr(0,std::min(count,40u));
+    return sha1.substr(0, std::min(count, 40u));
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 
-} // namespace multio
+}  // namespace multio

@@ -1,9 +1,9 @@
 ##################################################################
 ## Project features
 
-set( multio_HAVE_FDB5    @multio_HAVE_FDB5@    )
-set( multio_HAVE_MAESTRO @multio_HAVE_MAESTRO@ )
-set( multio_HAVE_MIR     @multio_HAVE_MIR@     )
+set( multio_HAVE_FDB5      @multio_HAVE_FDB5@    )
+set( multio_HAVE_MAESTRO   @multio_HAVE_MAESTRO@ )
+set( multio_HAVE_MIR       @multio_HAVE_MIR@     )
 
 ##################################################################
 ## Project dependencies
@@ -13,6 +13,7 @@ include( CMakeFindDependencyMacro )
 find_dependency( eccodes HINTS ${CMAKE_CURRENT_LIST_DIR}/../eccodes @eccodes_DIR@ )
 find_dependency( eckit   HINTS ${CMAKE_CURRENT_LIST_DIR}/../eckit   @eckit_DIR@ )
 find_dependency( metkit  HINTS ${CMAKE_CURRENT_LIST_DIR}/../metkit  @metkit_DIR@ )
+find_dependency( atlas   HINTS ${CMAKE_CURRENT_LIST_DIR}/../atlas   @atlas_DIR@ )
 
 if( multio_HAVE_FDB5 )
   find_dependency( fdb5 HINTS ${CMAKE_CURRENT_LIST_DIR}/../fdb5 @fdb5_DIR@ )

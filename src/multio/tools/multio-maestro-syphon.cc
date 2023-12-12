@@ -1,8 +1,8 @@
 
-#include <utility>
 #include <tuple>
-#include "eckit/container/Queue.h"
+#include <utility>
 #include "eckit/config/Resource.h"
+#include "eckit/container/Queue.h"
 #include "eckit/linalg/LinearAlgebra.h"
 #include "eckit/log/Log.h"
 #include "eckit/option/FactoryOption.h"
@@ -35,9 +35,8 @@ namespace multio {
 class MaestroSyphon final : public multio::MultioTool, public pgen::RequirementConsumer {
 public:  // methods
     MaestroSyphon(int argc, char** argv);
-    ~MaestroSyphon() {
-        statistics_.report(eckit::Log::info());
-    }
+    ~MaestroSyphon() { statistics_.report(eckit::Log::info()); }
+
 private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << std::endl << "Usage: " << tool << " [options]" << std::endl;
@@ -88,18 +87,28 @@ MaestroSyphon::MaestroSyphon(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<bool>("dryrun", "Run without MIR."));
     options_.push_back(new eckit::option::SimpleOption<bool>("compiled", "Batch generator"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("nworkers", "Number of threaded workers"));
-    options_.push_back(new eckit::option::SimpleOption<std::string>("force-postproc", "Extra values to add to each requirements (e.g. --force-retrieve=resol=av)"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>(
+        "force-postproc", "Extra values to add to each requirements (e.g. --force-retrieve=resol=av)"));
     options_.push_back(new eckit::option::SimpleOption<bool>("all-ready", "Wait for the all-ready CDO."));
 
     options_.push_back(new eckit::option::Separator("MIR options"));
-    options_.push_back(new eckit::option::FactoryOption<mir::key::style::MIRStyleFactory>("style", "Select how the interpolations are performed"));
-    options_.push_back(new eckit::option::FactoryOption<mir::caching::legendre::LegendreLoaderFactory>("legendre-loader", "Select the scheme to load coefficients"));
-    options_.push_back(new eckit::option::FactoryOption<mir::caching::matrix::MatrixLoaderFactory>("matrix-loader", "Select the scheme to load matrix weights"));
-    options_.push_back(new eckit::option::FactoryOption<eckit::linalg::LinearAlgebraDense>("dense-backend", "Linear algebra dense backend (default '" + eckit::linalg::LinearAlgebraDense::backend().name() + "')"));
-    options_.push_back(new eckit::option::FactoryOption<eckit::linalg::LinearAlgebraSparse>("sparse-backend", "Linear algebra sparse backend (default '" + eckit::linalg::LinearAlgebraSparse::backend().name() + "')"));
-    options_.push_back(new eckit::option::FactoryOption<mir::search::TreeFactory>("point-search-trees", "k-d tree control"));
+    options_.push_back(new eckit::option::FactoryOption<mir::key::style::MIRStyleFactory>(
+        "style", "Select how the interpolations are performed"));
+    options_.push_back(new eckit::option::FactoryOption<mir::caching::legendre::LegendreLoaderFactory>(
+        "legendre-loader", "Select the scheme to load coefficients"));
+    options_.push_back(new eckit::option::FactoryOption<mir::caching::matrix::MatrixLoaderFactory>(
+        "matrix-loader", "Select the scheme to load matrix weights"));
+    options_.push_back(new eckit::option::FactoryOption<eckit::linalg::LinearAlgebraDense>(
+        "dense-backend",
+        "Linear algebra dense backend (default '" + eckit::linalg::LinearAlgebraDense::backend().name() + "')"));
+    options_.push_back(new eckit::option::FactoryOption<eckit::linalg::LinearAlgebraSparse>(
+        "sparse-backend",
+        "Linear algebra sparse backend (default '" + eckit::linalg::LinearAlgebraSparse::backend().name() + "')"));
+    options_.push_back(
+        new eckit::option::FactoryOption<mir::search::TreeFactory>("point-search-trees", "k-d tree control"));
 
-    options_.push_back(new eckit::option::SimpleOption<std::string>("directory", "Output directory (default current directory)"));
+    options_.push_back(
+        new eckit::option::SimpleOption<std::string>("directory", "Output directory (default current directory)"));
 }
 
 void MaestroSyphon::init(const eckit::option::CmdArgs& args) {
@@ -152,11 +161,11 @@ void MaestroSyphon::execute(const eckit::option::CmdArgs& args) {
     for (int i = 0; i < nworkers_; i++)
         worker_threads[i].join();
 
-    LOG_DEBUG_LIB(LibMultio) << " MaestroSyphon: detected " << cdoEventCount_
-                             << " cdo events -- it has taken " << timing_.elapsed_ << "s" << std::endl;
+    LOG_DEBUG_LIB(LibMultio) << " MaestroSyphon: detected " << cdoEventCount_ << " cdo events -- it has taken "
+                             << timing_.elapsed_ << "s" << std::endl;
 }
 
-void MaestroSyphon::consume(const pgen::Requirement& req, size_t)  {
+void MaestroSyphon::consume(const pgen::Requirement& req, size_t) {
     util::ScopedTiming timing(statistics_.syphonConsumeTimer_, statistics_.syphonConsumeTiming_);
     auto cdo_name = cdo_namer_.name(req.retrieve());
     requirements_.insert({cdo_name, req});
@@ -171,12 +180,11 @@ void MaestroSyphon::process_join_leave_events(MaestroSubscription& join_leave_su
         while (tmp) {
             switch (tmp->kind) {
                 case MSTRO_POOL_EVENT_APP_JOIN:
-                LOG_DEBUG_LIB(LibMultio) << " *** Application " << tmp->join.component_name
-                                             << " is joining" << std::endl;
+                    LOG_DEBUG_LIB(LibMultio)
+                        << " *** Application " << tmp->join.component_name << " is joining" << std::endl;
                     break;
                 case MSTRO_POOL_EVENT_APP_LEAVE:
-                LOG_DEBUG_LIB(LibMultio) << " *** Application " << tmp->leave.appid
-                                             << " is leaving" << std::endl;
+                    LOG_DEBUG_LIB(LibMultio) << " *** Application " << tmp->leave.appid << " is leaving" << std::endl;
                     break;
                 default:
                     std::ostringstream os;
@@ -198,15 +206,14 @@ void MaestroSyphon::process_offer_events(MaestroSubscription& offer_subscription
         auto tmp = event.raw_event();
         while (tmp) {
             ++cdoEventCount_;
-            ss << " *** CDO event "
-               << mstro_pool_event_description(tmp->kind)
-               << " occured -- cdo name: " << tmp->offer.cdo_name
-               << " ID: " << tmp->serial << '\n';
+            ss << " *** CDO event " << mstro_pool_event_description(tmp->kind)
+               << " occured -- cdo name: " << tmp->offer.cdo_name << " ID: " << tmp->serial << '\n';
             std::string offered_cdo = std::string(tmp->offer.cdo_name);
             ASSERT(req_set_.find(offered_cdo) == req_set_.end());
             if (req_set_.find(offered_cdo) != req_set_.end()) {
                 eckit::Log::info() << "CDO: " << offered_cdo << " already exists!" << std::endl;
-            } else {
+            }
+            else {
                 req_set_.insert(offered_cdo);
             }
             auto it = requirements_.find(offered_cdo);
@@ -234,13 +241,12 @@ void MaestroSyphon::broker() {
 
     MaestroSelector selector{query.c_str()};
 
-    auto offer_subscription = selector.subscribe(MSTRO_POOL_EVENT_OFFER,
-            MSTRO_SUBSCRIPTION_OPTS_SIGNAL_BEFORE|MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
+    auto offer_subscription = selector.subscribe(
+        MSTRO_POOL_EVENT_OFFER, MSTRO_SUBSCRIPTION_OPTS_SIGNAL_BEFORE | MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
 
     MaestroSelector match_all_selector{nullptr};
-    auto join_leave_subscription = match_all_selector.subscribe(
-            MSTRO_POOL_EVENT_APP_JOIN|MSTRO_POOL_EVENT_APP_LEAVE,
-            MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
+    auto join_leave_subscription = match_all_selector.subscribe(MSTRO_POOL_EVENT_APP_JOIN | MSTRO_POOL_EVENT_APP_LEAVE,
+                                                                MSTRO_SUBSCRIPTION_OPTS_REQUIRE_ACK);
 
     readyCdo_ = MaestroCdo{std::string{"READY - "} + std::to_string(number_)};
     eckit::Log::info() << "Offering CDO [" << readyCdo_ << "] to PM." << std::endl;

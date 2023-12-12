@@ -19,35 +19,40 @@
 #include <queue>
 #include <tuple>
 
+#include "eckit/container/Queue.h"
 #include "eckit/io/Buffer.h"
 #include "eckit/log/Statistics.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/mpi/Group.h"
 #include "eckit/serialisation/ResizableMemoryStream.h"
 
+
 #include "multio/transport/StreamPool.h"
-#include "multio/transport/StreamQueue.h"
 #include "multio/transport/Transport.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
+
+struct ReceivedBuffer {
+    MpiBuffer* buffer;
+    size_t size;
+};
 
 using MpiPeerSetup = std::tuple<MpiPeer, eckit::mpi::Group, eckit::mpi::Group, eckit::mpi::Group>;
 
 class MpiTransport final : public Transport {
 public:
-    MpiTransport(const ConfigurationContext& confCtx);
+    MpiTransport(const ComponentConfiguration& compConf);
     ~MpiTransport();
 
 private:
-    MpiTransport(const ConfigurationContext& confCtx, MpiPeerSetup&& peerSetup);
+    MpiTransport(const ComponentConfiguration& compConf, MpiPeerSetup&& peerSetup);
 
     void openConnections() override;
     void closeConnections() override;
 
     Message receive() override;
 
-    void abort() override;
+    void abort(std::exception_ptr) override;
 
     void send(const Message& msg) override;
 
@@ -77,9 +82,9 @@ private:
 
     StreamPool pool_;
 
-    StreamQueue streamQueue_;
+    eckit::Queue<ReceivedBuffer> streamQueue_;
+
     std::queue<Message> msgPack_;
 };
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

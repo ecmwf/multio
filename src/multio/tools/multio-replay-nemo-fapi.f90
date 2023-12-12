@@ -74,13 +74,14 @@ function hasSinglePrecison() result(singlePrecision)
     enddo search
 end function hasSinglePrecison
 
-subroutine multio_custom_error_handler(context, err)
+subroutine multio_custom_error_handler(context, err, info)
     integer(8), intent(inout) :: context  ! Use mpi communicator as context
     integer, intent(in) :: err
+    class(multio_failure_info), intent(in) :: info
     type(fckit_mpi_comm) :: comm
 
     if (err /= MULTIO_SUCCESS) then
-        write (error_unit, *) 'MULTIO ERROR: ',multio_error_string(err)
+        write (error_unit, *) 'MULTIO ERROR: ',multio_error_string(err, info)
         write (error_unit, *) 'Abort mpi...'
 
         if (context /= MPI_UNDEFINED) then
@@ -116,6 +117,14 @@ subroutine init(mio, rank, server_count, client_count)
     cerr = cc%new()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error creating default configuration"
 
+    cerr = cc%set_failure_handler(multio_custom_error_handler, mio_parent_comm)
+    if (cerr /= MULTIO_SUCCESS) then
+         write(error_unit, *) 'setting multio failure handler failed: ',multio_error_string(cerr)
+         ERROR STOP "MULTIO_ERROR"
+    end if
+
+
+
     cerr = cc%mpi_allow_world_default_comm(.FALSE._1)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting default multio mpi allow_world_default_comm"
 
@@ -133,12 +142,8 @@ subroutine init(mio, rank, server_count, client_count)
 
     write(0,*) "add mpi comm nemo"
     call fckit_mpi_addComm("nemo", comm%communicator())
-    ! newcomm = comm%split(color_client, "oce") ! Client splitting done by multio
 
-    write(0,*) "multio_new..."
     newcomm_id = 0
-    write(0,*) "set client id..."
-    cerr = cc%mpi_client_id("oce")
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error setting mpi client id to configuration"
     write(0,*) "set parent comm..."
     mio_parent_comm = comm%communicator()
@@ -164,16 +169,8 @@ subroutine init(mio, rank, server_count, client_count)
     write(0,*) "client_count", client_count
     write(0,*) "server_count", server_count
 
-    cerr = multio_set_failure_handler(multio_custom_error_handler, mio_parent_comm)
-    if (cerr /= MULTIO_SUCCESS) then
-         write(error_unit, *) 'setting multio failure handler failed: ',multio_error_string(cerr)
-         ERROR STOP "MULTIO_ERROR"
-    end if
-
-
-
     ! Performing a few tests
-    cerr = md%new()
+    cerr = md%new(mio)
     cerr = md%set_string("name", "sst")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
@@ -199,7 +196,7 @@ subroutine init(mio, rank, server_count, client_count)
     end if
     cerr = md%delete()
 
-    cerr = md%new()
+    cerr = md%new(mio)
     cerr = md%set_string("category", "ocean-domain-map")
     cerr = mio%field_accepted(md, is_active)
     if (.not. is_active) then
@@ -225,7 +222,7 @@ subroutine init(mio, rank, server_count, client_count)
     end if
     cerr = md%delete()
 
-    cerr = md%new()
+    cerr = md%new(mio)
     cerr = md%set_string("name", "notexisting")
     cerr = mio%field_accepted(md, is_active)
     if (is_active) then
@@ -308,7 +305,7 @@ subroutine set_domains(mio, rank, client_count)
 
     write(0,*) "set_domains..."
 
-    cerr = md%new()
+    cerr = md%new(mio)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 9
 
     do i=1, size(grib_grid_type)
@@ -359,7 +356,7 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
 
     write(0,*) "write_fields", rank, client_count
 
-    cerr = md%new()
+    cerr = md%new(mio)
     if (cerr /= MULTIO_SUCCESS) ERROR STOP 19
 
     cerr = md%set_string("category", "ocean-2d")
@@ -391,7 +388,7 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 25
         cerr = md%set_int("param", grib_param_id(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 26
-        cerr = md%set_string("gridSubType", grib_grid_type(i))
+        cerr = md%set_string("unstructuredGridSubtype", grib_grid_type(i)(1:1))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 27
         cerr = md%set_string("domain", grib_grid_type(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 29

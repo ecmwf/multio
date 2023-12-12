@@ -20,8 +20,7 @@
 #include "eckit/runtime/Main.h"
 #include "eckit/serialisation/MemoryStream.h"
 
-namespace multio {
-namespace transport {
+namespace multio::transport {
 
 namespace {
 Message decodeMessage(eckit::Stream& stream) {
@@ -47,8 +46,8 @@ Message decodeMessage(eckit::Stream& stream) {
     eckit::Buffer buffer(sz);
     stream >> buffer;
 
-    return Message{Message::Header{static_cast<Message::Tag>(t), TcpPeer{src_grp, src_id},
-                                   TcpPeer{dest_grp, dest_id}, std::move(fieldId)},
+    return Message{Message::Header{static_cast<Message::Tag>(t), TcpPeer{src_grp, src_id}, TcpPeer{dest_grp, dest_id},
+                                   std::move(fieldId)},
                    std::move(buffer)};
 }
 }  // namespace
@@ -69,8 +68,7 @@ struct Connection {
     eckit::Select& select_;
     eckit::net::TCPSocket socket_;
 
-    Connection(eckit::Select& select, eckit::net::TCPSocket& socket) :
-        select_{select}, socket_{socket} {
+    Connection(eckit::Select& select, eckit::net::TCPSocket& socket) : select_{select}, socket_{socket} {
         select_.add(socket_);
     }
 
@@ -82,19 +80,18 @@ struct Connection {
     bool ready() { return select_.set(socket_); }
 };
 
-TcpTransport::TcpTransport(const ConfigurationContext& confCtx) :
-    Transport(confCtx), local_{"localhost", confCtx.config().getUnsigned("local_port")} {
-    auto serverConfigs = confCtx.config().getSubConfigurations("servers");
-        eckit::Log::debug() << " *** TcpTransport::constructor" << std::endl;
+TcpTransport::TcpTransport(const ComponentConfiguration& compConf) :
+    Transport(compConf), local_{"localhost", compConf.parsedConfig().getUnsigned("local_port")} {
+    auto serverConfigs = compConf.parsedConfig().getSubConfigurations("servers");
+    eckit::Log::debug() << " *** TcpTransport::constructor" << std::endl;
 
     for (auto cfg : serverConfigs) {
         auto host = cfg.getString("host");
         auto ports = cfg.getUnsignedVector("ports");
 
         if (amIServer(host, ports)) {
-            server_ = std::make_unique<eckit::net::TCPServer>(
-                static_cast<int>(local_.port()),
-                eckit::net::SocketOptions::server());
+            server_ = std::make_unique<eckit::net::TCPServer>(static_cast<int>(local_.port()),
+                                                              eckit::net::SocketOptions::server());
             select_.add(*server_);
         }
         else {
@@ -102,13 +99,13 @@ TcpTransport::TcpTransport(const ConfigurationContext& confCtx) :
             for (const auto port : ports) {
                 try {
                     eckit::net::TCPClient client;
-                    std::unique_ptr<eckit::net::TCPSocket> socket = 
-                        std::make_unique<eckit::net::TCPSocket>(client.connect(host, port, 5, 10));
+                    std::unique_ptr<eckit::net::TCPSocket> socket
+                        = std::make_unique<eckit::net::TCPSocket>(client.connect(host, port, 5, 10));
                     outgoing_.emplace(TcpPeer{host, port}, std::move(socket));
                 }
                 catch (eckit::TooManyRetries& e) {
-                    eckit::Log::error() << "Failed to establish connection to host: " << host
-                                        << ", port: " << port << std::endl;
+                    eckit::Log::error() << "Failed to establish connection to host: " << host << ", port: " << port
+                                        << std::endl;
                 }
             }
         }
@@ -164,7 +161,7 @@ Message TcpTransport::receive() {
     throw eckit::SeriousBug("No message received");
 }
 
-void TcpTransport::abort() {
+void TcpTransport::abort(std::exception_ptr) {
     eckit::LibEcKit::instance().abort();
 }
 
@@ -197,7 +194,7 @@ Peer TcpTransport::localPeer() const {
 PeerList TcpTransport::createServerPeers() const {
     PeerList serverPeers;
 
-    for (auto cfg : confCtx_.config().getSubConfigurations("servers")) {
+    for (auto cfg : compConf_.parsedConfig().getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             serverPeers.emplace_back(std::make_unique<TcpPeer>(host, port));
@@ -208,7 +205,7 @@ PeerList TcpTransport::createServerPeers() const {
 
 void TcpTransport::createPeers() const {
     // Client peers
-    for (auto cfg : confCtx_.config().getSubConfigurations("clients")) {
+    for (auto cfg : compConf_.parsedConfig().getSubConfigurations("clients")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             clientPeers_.emplace_back(std::make_unique<TcpPeer>(host, port));
@@ -216,7 +213,7 @@ void TcpTransport::createPeers() const {
     }
 
     // Server peers
-    for (auto cfg : confCtx_.config().getSubConfigurations("servers")) {
+    for (auto cfg : compConf_.parsedConfig().getSubConfigurations("servers")) {
         auto host = cfg.getString("host");
         for (auto port : cfg.getUnsignedVector("ports")) {
             serverPeers_.emplace_back(std::make_unique<TcpPeer>(host, port));
@@ -242,19 +239,17 @@ bool TcpTransport::acceptConnection() {
 void TcpTransport::waitForEvent() {
     do {
         while (not select_.ready(5)) {
-            eckit::Log::info() << "Waiting... There are "
-                               << eckit::Plural(incoming_.size(), "connection") << " still active"
-                               << std::endl;
+            eckit::Log::info() << "Waiting... There are " << eckit::Plural(incoming_.size(), "connection")
+                               << " still active" << std::endl;
         }
     } while (acceptConnection());
 }
 
 bool TcpTransport::amIServer(const std::string& host, std::vector<size_t> ports) {
-    return ((host == "localhost") || (host == local_.host())) &&
-           (find(begin(ports), end(ports), local_.port()) != end(ports));
+    return ((host == "localhost") || (host == local_.host()))
+        && (find(begin(ports), end(ports), local_.port()) != end(ports));
 }
 
 static TransportBuilder<TcpTransport> TcpTransportBuilder("tcp");
 
-}  // namespace transport
-}  // namespace multio
+}  // namespace multio::transport

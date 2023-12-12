@@ -142,7 +142,7 @@ eckit::Value getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadat
 }
 
 
-void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& param,
+void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& param, std::string domain,
                 const eckit::Value&& inp) {
 
     auto regular_ll = [&param](double west_east_increment, double south_north_increment) {
@@ -153,11 +153,13 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
         const std::string input = util::replaceCurly(inp.as<std::string>(), [](std::string_view replace) {
             std::string lookUpKey{replace};
             char* env = ::getenv(lookUpKey.c_str());
-            return env ? eckit::Optional<std::string>{env} : eckit::Optional<std::string>{};
+            return env ? std::optional<std::string>{env} : std::optional<std::string>{};
         });
 
         static const std::regex sh("(T|TCO|TL)([1-9][0-9]*)");
         static const std::regex gg("([FNO])([1-9][0-9]*)");
+        static const std::regex eORCA("^e?ORCA[0-9]+_[FTUVW]$");
+        static const std::regex eORCA_fromMetadata("^e?ORCA[0-9]+$");
 
 #define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
         static const std::regex ll(fp "/" fp);
@@ -185,6 +187,34 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
 
         if (std::regex_match(input, match, ll)) {
             regular_ll(std::stod(match[1].str()), std::stod(match[4].str()));
+            return;
+        }
+
+        if (std::regex_match(input, match, eORCA)) {
+            std::string sane_name(input);
+            std::transform(sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper);
+            if (sane_name.front() == 'E') {
+                sane_name.front() = 'e';
+            }
+            param.set("gridded", true);
+            param.set("uid", sane_name);
+            param.set("gridType", "orca");
+            return;
+        }
+
+        if (std::regex_match(input, match, eORCA_fromMetadata)) {
+            std::string kind = domain.substr(0, 1);
+            if (kind != "T" && kind != "F" && kind != "U" && kind != "V" && kind != "W") {
+                throw eckit::SeriousBug("action-interpolate :: unrecognized orca grid", Here());
+            }
+            std::string sane_name(input + "_" + kind);
+            std::transform(sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper);
+            if (sane_name.front() == 'E') {
+                sane_name.front() = 'e';
+            }
+            param.set("gridded", true);
+            param.set("uid", sane_name);
+            param.set("gridType", "orca");
             return;
         }
     }
@@ -234,32 +264,59 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
         }
     }
 
+    // Handle Output metadata of the interpolated fields
     if (cfg.has("grid")) {
+        std::string gridKind("none");
         std::vector<double> grid(2, 0.0);
+
         if (cfg.getSubConfiguration("grid").get().isString()) {
 #define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
             static const std::regex ll(fp "/" fp);
+            static const std::regex H("([h|H])([1-9][0-9]*)");
 #undef fp
-            std::smatch match;
+            std::smatch matchll;
+            std::smatch matchH;
             const auto input = cfg.getString("grid");
-            if (std::regex_match(input, match, ll)) {
-                grid[0] = std::stod(match[1].str());
-                grid[1] = std::stod(match[4].str());
+            LOG_DEBUG_LIB(LibMultio) << " Grid is a string ::" << input << std::endl;
+            if (std::regex_match(input, matchll, ll)) {
+                gridKind = "regular_ll";
+                grid[0] = std::stod(matchll[1].str());
+                grid[1] = std::stod(matchll[4].str());
+            }
+            if (std::regex_match(input, matchH, H)) {
+                gridKind = "HEALPix";
+                grid[0] = std::stod(matchH[2].str());
             }
         }
         else if (cfg.getSubConfiguration("grid").get().isList()
                  && cfg.getSubConfiguration("grid").get().head().isDouble()) {
+            gridKind = "regular_ll";
             grid = cfg.getDoubleVector("grid");
+            LOG_DEBUG_LIB(LibMultio) << " Grid is a list (" << gridKind << ")" << grid << std::endl;
         }
-        if (cfg.has("area")) {
-            const auto& area = cfg.getDoubleVector("area");
-            regularLatLongMetadata<message::Metadata>(md, grid, area);
+        //
+        LOG_DEBUG_LIB(LibMultio) << " Grid Kind is ::" << gridKind << std::endl;
+        // Set the mir keywords
+        if (gridKind == "regular_ll") {
+            LOG_DEBUG_LIB(LibMultio) << " + Set metadata for regular_ll grid" << std::endl;
+            if (cfg.has("area")) {
+                const auto& area = cfg.getDoubleVector("area");
+                regularLatLongMetadata<message::Metadata>(md, grid, area);
+            }
+            else {
+                regularLatLongMetadata<message::Metadata>(md, grid, full_area);
+            }
+        }
+        else if (gridKind == "HEALPix") {
+            //
+            md.set("gridded", true);
+            md.set("gridType", "HEALPix");
+            md.set("Nside", grid[0]);
+            md.set("orderingConvention", "ring");
         }
         else {
-            regularLatLongMetadata<message::Metadata>(md, grid, full_area);
+            std::cout << "Grid not implemented" << std::endl;
         }
-        // Allow the encoder to work on regridded grids
-        md.set("gridType", "regular_ll");
     }
 }
 
@@ -269,7 +326,7 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
                              << msg.metadata() << std::endl
                              << std::endl;
 
-    const auto& config = Action::confCtx_.config();
+    const auto& config = Action::compConf_.parsedConfig();
 
     const double* data = reinterpret_cast<const double*>(msg.payload().data());
     const size_t size = msg.payload().size() / sizeof(double);
@@ -279,7 +336,7 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     md.set("precision", "double");
 
     mir::param::SimpleParametrisation inputPar;
-    fill_input(config, inputPar, getInputGrid(config, md));
+    fill_input(config, inputPar, msg.domain(), getInputGrid(config, md));
     if (msg.metadata().has("missingValue") && msg.metadata().getBool("bitmapPresent")) {
         inputPar.set("missing_value", msg.metadata().getDouble("missingValue"));
     }
@@ -298,20 +355,28 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     mir::param::SimpleParametrisation outMetadata;
     mir::output::ResizableOutput output(outData, outMetadata);
 
-    // TODO: Probably this operation needs to be when to plans are called, in this way
-    //       it is walid for all the IO actions as it should be
+    // TODO: Probably this operation needs to be done when plans are called, in this way
+    //       it is valid for all the IO actions as it should be
     auto& originalComm = eckit::mpi::comm();
     eckit::mpi::setCommDefault("self");
     job.execute(input, output);
     eckit::mpi::setCommDefault(originalComm.name().c_str());
     md.set("globalSize", outData.size());
 
+    // Forward the metadata from mir to multIO (at the moment only missingValue)
+    if (outMetadata.has("missing_value")) {
+        double v;
+        outMetadata.get("missing_value", v);
+        md.set("missingValue", v);
+        md.set("bitmapPresent", 1);
+    }
 
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outData.size() * sizeof(double));
 
     LOG_DEBUG_LIB(LibMultio) << "Interpolate :: Metadata of the output message :: " << std::endl
                              << md << std::endl
                              << std::endl;
+
 
     return {message::Message::Header{message::Message::Tag::Field, msg.source(), msg.destination(), std::move(md)},
             std::move(buffer)};

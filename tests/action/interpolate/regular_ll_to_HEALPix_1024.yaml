@@ -19,4 +19,3 @@ plans:
           append: false
           per-server: false # Will give you one file per server
           path: MultIO_regular_ll_to_HEALPix_1024.grib
-

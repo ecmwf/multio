@@ -48,17 +48,17 @@ atlas::Grid readGrid(const std::string& name) {
 }
 
 template <class GridType>
-GridType createGrid(const std::string& gridType) {
+GridType createGrid(const std::string& atlasNamedGrid) {
 
-    const atlas::Grid grid = readGrid(gridType);
+    const atlas::Grid grid = readGrid(atlasNamedGrid);
 
     auto structuredGrid = atlas::StructuredGrid(grid);
 
     return GridType(structuredGrid);
 }
 
-void updateGaussianGrid(codes_handle* handle, const std::string& gridType) {
-    const auto gaussianGrid = createGrid<atlas::GaussianGrid>(gridType);
+void updateGaussianGrid(codes_handle* handle, const std::string& atlasNamedGrid) {
+    const auto gaussianGrid = createGrid<atlas::GaussianGrid>(atlasNamedGrid);
 
     int err = codes_set_long(handle, "N", gaussianGrid.N());
     handleCodesError("eccodes error while setting the N value: ", err, Here());
@@ -93,8 +93,8 @@ void updateGaussianGrid(codes_handle* handle, const std::string& gridType) {
     handleCodesError("eccodes error while setting the longitudeOfLastGridPointInDegrees value: ", err, Here());
 }
 
-void updateRegularLatLonGrid(codes_handle* handle, const std::string& gridType) {
-    const auto llGrid = createGrid<atlas::RegularLonLatGrid>(gridType);
+void updateRegularLatLonGrid(codes_handle* handle, const std::string& atlasNamedGrid) {
+    const auto llGrid = createGrid<atlas::RegularLonLatGrid>(atlasNamedGrid);
     int err = codes_set_long(handle, "Ni", llGrid.nx());
     handleCodesError("eccodes error while setting the Ni value: ", err, Here());
     err = codes_set_long(handle, "Nj", llGrid.ny());
@@ -127,19 +127,19 @@ std::unique_ptr<GribEncoder> makeEncoder(const eckit::LocalConfiguration& conf,
         auto sample = codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err);
         handleCodesError("eccodes error while reading the grib template: ", err, Here());
 
-        if (conf.has("grid-type")) {
-            const auto gridType = conf.getString("grid-type");
+        if (conf.has("atlas-named-grid")) {
+            const auto atlasNamedGrid = conf.getString("atlas-named-grid");
 
-            eckit::Log::info() << "REQUESTED GRID DEFINITION UPDATE: " << gridType << std::endl;
+            eckit::Log::info() << "REQUESTED ATLAS GRID DEFINITION UPDATE: " << atlasNamedGrid << std::endl;
 
-            const auto updateFunction
-                = std::find_if(updateFunctionMap.cbegin(), updateFunctionMap.cend(), [&gridType](const auto& item) {
-                      std::regex r{item.first};
-                      return std::regex_match(gridType, r);
-                  });
+            const auto updateFunction = std::find_if(updateFunctionMap.cbegin(), updateFunctionMap.cend(),
+                                                     [&atlasNamedGrid](const auto& item) {
+                                                         std::regex r{item.first};
+                                                         return std::regex_match(atlasNamedGrid, r);
+                                                     });
 
             if (updateFunction != updateFunctionMap.cend()) {
-                updateFunction->second(sample, gridType);
+                updateFunction->second(sample, atlasNamedGrid);
             }
         }
 
@@ -190,7 +190,7 @@ void Encode::executeImpl(Message msg) {
 
     auto gridUID = std::optional<GridDownloader::GridUIDType>{};
 
-    if (isOcean(msg.metadata())) {
+    if (msg.metadata().has("domain") && !msg.metadata().has("uuidOfHGrid") && isOcean(msg.metadata())) {
         //! TODO shoud not be checked here anymore, encoder_ should have been initialized according to format_
         ASSERT(format_ == "grib");
 
@@ -200,7 +200,7 @@ void Encode::executeImpl(Message msg) {
 
         std::string gridType;
         const auto hasGridType = md.get("gridType", gridType);
-        if (hasGridType && (gridType != "HEALPix")) {
+        if (hasGridType && (gridType == "unstructured_grid")) {
             auto gridCoords
                 = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
             if (gridCoords) {

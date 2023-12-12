@@ -107,16 +107,21 @@ std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& t
 void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
 
     bool hasStartDateTime = (in.has("startDate") && in.has("startTime"));
+    bool hasDataDateTime = (in.has("dataDate") && in.has("dataTime"));
     bool hasDateTime = (in.has("date") && in.has("time"));
 
     // std::cout << "tryMapStepToTimeAndCheckTime..." << std::endl;
-    if (hasStartDateTime || hasDateTime) {
+    if (hasStartDateTime || hasDateTime || hasDataDateTime) {
         util::DateInts startDate;
         util::TimeInts startTime;
 
         if (hasStartDateTime) {
             startDate = util::toDateInts(in.getLong("startDate"));
             startTime = util::toTimeInts(in.getLong("startTime"));
+        }
+        else if (hasDataDateTime) {
+            startDate = util::toDateInts(in.getLong("dataDate"));
+            startTime = util::toTimeInts(in.getLong("dataTime"));
         }
         else if (hasDateTime) {
             startDate = util::toDateInts(in.getLong("date"));
@@ -225,15 +230,46 @@ struct QueriedMarsKeys {
 QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     QueriedMarsKeys ret;
 
-    if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
-        g.setValue("level", 0l);
-        g.setMissing("scaleFactorOfFirstFixedSurface");
-        g.setMissing("scaledValueOfFirstFixedSurface");
-        g.setMissing("scaleFactorOfSecondFixedSurface");
-        g.setMissing("scaledValueOfSecondFixedSurface");
+    // TODO we should be able to determine the type in the metadata and preserve
+    // it Domain usually is always readonly withFirstOf(valueSetter(g, "domain"),
+    // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
+    std::string gridType;
+    const auto hasGridType = md.get("gridType", gridType);
+
+    std::string typeOfLevel;
+    const auto hasTypeOfLevel = md.get("typeOfLevel", typeOfLevel);
+    if (!hasTypeOfLevel) {
+        const auto wam_levtype = lookUpLong(md, "levtype_wam");
+        if (wam_levtype) {
+            g.setValue("indicatorOfTypeOfLevel", wam_levtype);
+        }
+        else if (hasGridType && eckit::StringTools::lower(gridType) != "healpix") {
+            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
+                        LookUpString(md, "indicatorOfTypeOfLevel"));
+        }
+        else if (hasGridType && eckit::StringTools::lower(gridType) == "healpix" && md.getString("levtype") != "o2d"
+                 && md.getString("levtype") != "o3d") {
+            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
+                        LookUpString(md, "indicatorOfTypeOfLevel"));
+        }
+        else if (!hasGridType) {
+            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
+                        LookUpString(md, "indicatorOfTypeOfLevel"));
+        }
+
+        if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
+            g.setValue("level", 0l);
+            g.setMissing("scaleFactorOfFirstFixedSurface");
+            g.setMissing("scaledValueOfFirstFixedSurface");
+            g.setMissing("scaleFactorOfSecondFixedSurface");
+            g.setMissing("scaledValueOfSecondFixedSurface");
+        }
+        else {
+            withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
+        }
     }
     else {
-        withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
+        g.setValue("typeOfLevel", typeOfLevel);
     }
 
     // param might be a string, separated by . for GRIB1.
@@ -261,6 +297,11 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
     withFirstOf(valueSetter(g, "stream"), LookUpString(md, "stream"), LookUpString(md, "marsStream"));
 
+    withFirstOf(valueSetter(g, "subCentre"), LookUpString(md, "subCentre"));
+    withFirstOf(valueSetter(g, "generatingProcessIdentifier"), LookUpString(md, "generatingProcessIdentifier"));
+
+    withFirstOf(valueSetter(g, "setPackingType"), LookUpString(md, "setPackingType"));
+
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
     withFirstOf(valueSetter(g, "number"), LookUpLong(md, "ensemble-member"));
     withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), LookUpLong(md, "ensemble-size"));
@@ -271,12 +312,12 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     }
 
     // Additional parameters passed through for spherical harmonics
-    if (md.has("gridType")) {
+    if (hasGridType) {
         auto hasRegularLLInterpData = [&]() {
             return md.has("Ni") && md.has("Nj") && md.has("north") && md.has("south") && md.has("west")
                 && md.has("east") && md.has("west_east_increment") && md.has("south_north_increment");
         };
-        if (md.getString("gridType") == "sh") {
+        if (gridType == "sh") {
             withFirstOf(valueSetter(g, "complexPacking"), LookUpLong(md, "complexPacking"));
             withFirstOf(valueSetter(g, "pentagonalResolutionParameterJ"),
                         LookUpLong(md, "pentagonalResolutionParameterJ"), LookUpLong(md, "J"));
@@ -290,7 +331,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
             withFirstOf(valueSetter(g, "subSetK"), LookUpLong(md, "subSetK"), LookUpLong(md, "KS"));
             withFirstOf(valueSetter(g, "subSetM"), LookUpLong(md, "subSetM"), LookUpLong(md, "MS"));
         }
-        else if (md.getString("gridType") == "regular_ll" && hasRegularLLInterpData()) {
+        else if (gridType == "regular_ll" && hasRegularLLInterpData()) {
             long scale = 0;
             if (md.getString("gribEdition") == "1") {
                 scale = 1000;
@@ -308,7 +349,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
             g.setValue("iDirectionIncrement", scale * md.getDouble("west_east_increment"));
             g.setValue("jDirectionIncrement", scale * md.getDouble("south_north_increment"));
         }
-        else if (eckit::StringTools::lower(md.getString("gridType")) == "healpix") {
+        else if (eckit::StringTools::lower(gridType) == "healpix") {
             long Nside = md.getLong("Nside");
             g.setValue("Nside", Nside);
             double logp = 45.0;
@@ -528,9 +569,27 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
             (timeRef == "start" ? 2
                                 : ((significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
 
-        g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
-        withFirstOf(valueSetter(g, "timeIncrement"), LookUpLong(md, "sampleIntervalInSeconds"),
-                    LookUpLong(md, "timeStep"));  // Nemo is currently sending timeStep
+        if (const auto timeIncrement = lookUpLong(md, "timeIncrement"); timeIncrement) {
+            if (*timeIncrement != 0) {
+                withFirstOf(valueSetter(g, "indicatorOfUnitForTimeIncrement"),
+                            LookUpLong(md, "indicatorOfUnitForTimeIncrement"));
+                g.setValue("timeIncrement", *timeIncrement);
+            }
+            else {
+                g.setValue("indicatorOfUnitForTimeIncrement", 255);
+                g.setValue("timeIncrement", 0);
+            }
+        }
+        else if (const auto sampleIntervalInSeconds = lookUpLong(md, "sampleIntervalInSeconds");
+                 sampleIntervalInSeconds) {
+            g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
+            g.setValue("timeIncrement", *sampleIntervalInSeconds);
+        }
+        else {
+            g.setValue("indicatorOfUnitForTimeIncrement", timeUnitCodes(util::TimeUnit::Second));
+            withFirstOf(valueSetter(g, "timeIncrement"),
+                        LookUpLong(md, "timeStep"));  // Nemo is currently sending timeStep
+        }
     }
 
 
@@ -584,6 +643,12 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
                     LookUpString(metadata, "experimentVersionNumber"));
     }
 
+    withFirstOf(valueSetter(*this, "subCentre"), LookUpString(metadata, "subCentre"));
+    withFirstOf(valueSetter(*this, "generatingProcessIdentifier"),
+                LookUpString(metadata, "generatingProcessIdentifier"));
+
+    withFirstOf(valueSetter(*this, "setPackingType"), LookUpString(metadata, "setPackingType"));
+
     auto runConfig = config_.getSubConfiguration("run");
 
     auto queriedMarsFields = setMarsKeys(*this, runConfig);
@@ -615,19 +680,26 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     std::string gridType;
     const auto hasGridType = metadata.get("gridType", gridType);
-    if (eckit::StringTools::lower(gridType) != "healpix") {
-        // Set ocean grid information
-        setValue("unstructuredGridType", config_.getString("grid-type"));
+    if (hasGridType && gridType == "unstructured_grid") {
+        std::string unstructuredGridType;
+        const auto hasUnstructuredGridType = metadata.get("unstructuredGridType", unstructuredGridType);
+        if (!hasUnstructuredGridType) {
+            unstructuredGridType = config_.getString("unstructured-grid-type");
+        }
 
-        const auto& gridSubtype = metadata.getString("gridSubtype");
-        setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
+        // Set ocean grid information
+        setValue("unstructuredGridType", unstructuredGridType);
+
+        if (metadata.has("unstructuredGridSubtype")) {
+            setValue("unstructuredGridSubtype", metadata.getString("unstructuredGridSubtype"));
+        }
 
         if (metadata.has("uuidOfHGrid")) {
             const auto& gridUID = metadata.getString("uuidOfHGrid");
             setValue("uuidOfHGrid", gridUID);
-        } else {
-            eckit::Log::warning() << "Ocean grid UUID not available during encoding!"
-                << std::endl;
+        }
+        else {
+            eckit::Log::warning() << "Ocean grid UUID not available during encoding!" << std::endl;
         }
     }
 }
@@ -652,10 +724,9 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit
     setValue("typeOfLevel", md.getString("typeOfLevel"));
 
     // Set ocean grid information
-    setValue("unstructuredGridType", config_.getString("grid-type"));
+    setValue("unstructuredGridType", config_.getString("unstructured-grid-type"));
 
-    const auto& gridSubtype = md.getString("gridSubtype");
-    setValue("unstructuredGridSubtype", gridSubtype.substr(0, 1));
+    setValue("unstructuredGridSubtype", md.getString("unstructuredGridSubtype"));
 
     const auto& gridUID = md.getString("uuidOfHGrid");
     setValue("uuidOfHGrid", gridUID);

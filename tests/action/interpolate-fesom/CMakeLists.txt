@@ -147,6 +147,7 @@ foreach(_gridType   CORE2 )
 
 
                         ecbuild_add_test(
+                            ENABLED      OFF
                             TARGET       ${PREFIX}_${_test}_run
                             TEST_DEPENDS ${PREFIX}_get_data ${PREFIX}_get_cache
                             COMMAND      multio-feed

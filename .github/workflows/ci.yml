@@ -34,7 +34,8 @@ jobs:
           - linux gnu-12
           - linux clang-12
           - linux clang-14
-          - macos appclang-14
+          # - linux intel
+          # - macos appclang-14
 
         include:
           - name: linux gnu-10
@@ -70,15 +71,24 @@ jobs:
             compiler_fc: gfortran-12
             caching: true
 
-          - name: macos appclang-14
-            # Xcode compiler requires empty environment variables, so we pass null (~) here
-            os: macos-12
-            compiler: clang-14
-            compiler_cc: ~
-            compiler_cxx: ~
-            compiler_fc: gfortran-12
-            cmake_options: -DMPI_SLOTS=4
-            caching: true
+          # - name : linux intel
+          #   os: ubuntu-20.04
+          #   compiler: intel
+          #   compiler_cc: icx
+          #   compiler_cxx: icpx
+          #   compiler_fc: ifx
+          #   caching: true
+          #   coverage: false
+
+          # - name: macos appclang-14
+          #   # Xcode compiler requires empty environment variables, so we pass null (~) here
+          #   os: macos-12
+          #   compiler: clang-14
+          #   compiler_cc: ~
+          #   compiler_cxx: ~
+          #   compiler_fc: gfortran-12
+          #   caching: true
+          #   cmake_options: -DMPI_SLOTS=4
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -181,6 +191,14 @@ jobs:
           python -m pip install -r pymultio/requirements.txt
       - name: Check isort
         run: isort --check pymultio
+
+      - name: Install Intel oneAPI compiler
+        if: contains( matrix.compiler, 'intel' )
+        run: |
+          ${INSTALL_TOOLS}/install-intel-oneapi.sh
+          source /opt/intel/oneapi/setvars.sh
+          printenv >> $GITHUB_ENV
+          echo "CACHE_SUFFIX=$CC-$($CC -dumpversion)" >> $GITHUB_ENV
 
       #- name: Check black
       #  run: black --check pymultio

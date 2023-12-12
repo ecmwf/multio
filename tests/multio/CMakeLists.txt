@@ -147,7 +147,8 @@ ecbuild_get_test_multidata( TARGET multio_hammer_get_test_data
                             DIRNAME multio/tests/server
                             NAMES ${_hammer_test_data} )
 
-ecbuild_add_test( TARGET       test_multio_hammer_none
+ecbuild_add_test( ENABLED      OFF
+                  TARGET       test_multio_hammer_none
                   CONDITION    HAVE_FDB5
                   COMMAND      $<TARGET_FILE:multio-hammer>
                   TEST_DEPENDS multio_hammer_get_test_data

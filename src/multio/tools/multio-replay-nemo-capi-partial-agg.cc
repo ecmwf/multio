@@ -28,6 +28,8 @@ using NemoKey = std::string;
 
 struct GribData {
     long param;
+    std::string unstructuredGridSubtype;
+    std::string domain;
     std::string gridType;
     std::string levelType;
 };
@@ -37,10 +39,12 @@ std::map<NemoKey, GribData> fetch_nemo_params(const eckit::Configuration& config
     std::map<std::string, GribData> nemo_map;
     for (auto const& cfg : cfgList) {
         nemo_map[cfg.getString("nemo-id")]
-            = {cfg.getLong("param-id"), cfg.getString("grid-type"), cfg.getString("level-type")};
+            = {cfg.getLong("param-id"), cfg.getString("unstructured-grid-subtype"), cfg.getString("domain"),
+               cfg.getString("grid-type"), cfg.getString("level-type")};
     }
     return nemo_map;
 }
+
 
 class NemoToGrib {
 public:
@@ -236,9 +240,9 @@ void MultioReplayNemoCApi::writeMasks() {
     const std::string grid_prefix[4] = {"T", "U", "V", "W"};
 
     for (const auto& param : parameters_) {
-        const char gridPrefix = paramMap_.get(param).gridType[0];
+        const char gridPrefix = paramMap_.get(param).unstructuredGridSubtype[0];
 
-        auto definition = domainDefinitions_.find(paramMap_.get(param).gridType);
+        auto definition = domainDefinitions_.find(paramMap_.get(param).domain);
         if (definition == domainDefinitions_.end()) {
             throw eckit::SeriousBug{"No domain definitons for this gridType found", Here()};
         }
@@ -443,7 +447,7 @@ void MultioReplayNemoCApi::testData() {
         bool isOutputEqual = true;
         std::size_t fidx = 0;
 
-        auto definitionPair = domainDefinitions_.find(paramMap_.get(param).gridType);
+        auto definitionPair = domainDefinitions_.find(paramMap_.get(param).domain);
         if (definitionPair == domainDefinitions_.end()) {
             throw eckit::SeriousBug{"No domain definitons for this gridType found", Here()};
         }

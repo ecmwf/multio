@@ -46,20 +46,25 @@ struct MetadataMappingOptions {
  *       nemoParam: nemo-id
  *     map:
  *       param: param-id
- *       gridSubtype: grid-type
- *       domain: grid-type
+ *       gridType: grid-type
+ *       unstructuredGridSubtype: unstructured-grid-subtype
+ *       domain: domain
  *       typeOfLevel: level-type
  *
  *   data:
  *     # Co-ordinates
  *     - nemo-id: lat_T
  *       param-id: 250003
- *       grid-type : "T grid"
+ *       grid-type: "unstructured_grid"
+ *       domain : "T grid"
+ *       unstructured-grid-subtype : "T"
  *       level-type : "oceanSurface"
  *
  *     - nemo-id: lon_T
  *       param-id: 250004
- *       grid-type : "T grid"
+ *       grid-type: "unstructured_grid"
+ *       domain : "T grid"
+ *       unstructured-grid-subtype : "T"
  *       level-type : "oceanSurface"
  * ```
  *

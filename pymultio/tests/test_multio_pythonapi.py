@@ -13,7 +13,7 @@ def test_initialisation():
 
 
 def test_multio_version():
-    assert multiopython.Multio(**default_dict).__version__() == "2.1.0"
+    assert multiopython.Multio(**default_dict).__version__() == "2.2.0"
 
 
 def test_multio_wrong_config_path():

@@ -335,7 +335,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     withFirstOf(valueSetter(g, "class"), lookUp<std::string>(md, "class"), lookUp<std::string>(md, "marsClass"));
     withFirstOf(valueSetter(g, "stream"), lookUp<std::string>(md, "stream"), lookUp<std::string>(md, "marsStream"));
 
-    withFirstOf(valueSetter(g, "generatingProcessIdentifier"), lookUp<std::string>(md, "generatingProcessIdentifier"));
+    withFirstOf(valueSetter(g, "generatingProcessIdentifier"), lookUp<std::int64_t>(md, "generatingProcessIdentifier"));
 
     withFirstOf(valueSetter(g, "number"), lookUp<std::int64_t>(md, "ensemble-member"));
     withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), lookUp<std::int64_t>(md, "ensemble-size"));

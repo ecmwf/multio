@@ -334,7 +334,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     if (gribEdition == "2") {
         withFirstOf(valueSetter(g, "subCentre"), lookUp<std::string>(md, "subCentre"));
     }
-    withFirstOf(valueSetter(g, "generatingProcessIdentifier"), lookUp<std::string>(md, "generatingProcessIdentifier"));
+    withFirstOf(valueSetter(g, "generatingProcessIdentifier"), lookUp<std::int64_t>(md, "generatingProcessIdentifier"));
 
     withFirstOf(valueSetter(g, "setPackingType"), lookUp<std::string>(md, "setPackingType"));
 
@@ -709,7 +709,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     withFirstOf(valueSetter(*this, "subCentre"), lookUp<std::string>(metadata, "subCentre"));
     withFirstOf(valueSetter(*this, "generatingProcessIdentifier"),
-                lookUp<std::string>(metadata, "generatingProcessIdentifier"));
+                lookUp<std::int64_t>(metadata, "generatingProcessIdentifier"));
 
     withFirstOf(valueSetter(*this, "setPackingType"), lookUp<std::string>(metadata, "setPackingType"));
 

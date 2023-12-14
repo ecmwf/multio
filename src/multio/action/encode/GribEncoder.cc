@@ -338,7 +338,12 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     withFirstOf(valueSetter(g, "generatingProcessIdentifier"),
                 lookUp<std::int64_t>(md, glossary().generatingProcessIdentifier));
 
+<<<<<<< HEAD
     withFirstOf(valueSetter(g, "setPackingType"), lookUp<std::string>(md, glossary().setPackingType));
+=======
+    withFirstOf(valueSetter(g, "subCentre"), lookUp<std::string>(md, "subCentre"));
+    withFirstOf(valueSetter(g, "generatingProcessIdentifier"), lookUp<std::int64_t>(md, "generatingProcessIdentifier"));
+>>>>>>> dc3e6211 (Fix type for generatingProcessIdentifier)
 
     withFirstOf(valueSetter(g, "expver"), lookUp<std::string>(md, "expver"),
                 lookUp<std::string>(md, glossary().experimentVersionNumber));
@@ -717,7 +722,11 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     withFirstOf(valueSetter(*this, "subCentre"), lookUp<std::string>(metadata, glossary().subCentre));
     withFirstOf(valueSetter(*this, "generatingProcessIdentifier"),
+<<<<<<< HEAD
                 lookUp<std::int64_t>(metadata, glossary().generatingProcessIdentifier));
+=======
+                lookUp<std::int64_t>(metadata, "generatingProcessIdentifier"));
+>>>>>>> dc3e6211 (Fix type for generatingProcessIdentifier)
 
     withFirstOf(valueSetter(*this, "setPackingType"), lookUp<std::string>(metadata, glossary().setPackingType));
 

@@ -57,9 +57,16 @@ MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfigur
 
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << conf << std::endl;
     for (auto&& cfg : conf.getSubConfigurations("plans")) {
-        eckit::Log::debug<LibMultio>() << cfg << std::endl;
-        plans_.emplace_back(std::make_unique<action::Plan>(ComponentConfiguration(std::move(cfg), multioConfig())))
-            ->matchedFields(activeSelectors_);
+        auto enabled = util::parseEnabled(cfg, false);
+        if (!enabled.has_value()) {
+            throw eckit::UserError("Bool expected", Here());
+        }
+
+        if (*enabled) {
+            eckit::Log::debug<LibMultio>() << cfg << std::endl;
+            plans_.emplace_back(std::make_unique<action::Plan>(ComponentConfiguration(std::move(cfg), multioConfig())))
+                ->matchedFields(activeSelectors_);
+        }
     }
 
     if (multioConfig().parsedConfig().has("active-matchers")) {

@@ -44,6 +44,10 @@ constexpr bool operator<(Null, Null) {
     return false;
 }
 
+constexpr bool operator==(Null, Null) {
+    return true;
+}
+
 std::ostream& operator<<(std::ostream& os, const Null&);
 eckit::JSON& operator<<(eckit::JSON& json, const Null&);
 
@@ -100,3 +104,9 @@ struct MetadataTypes {
 //-----------------------------------------------------------------------------
 
 }  // namespace multio::message
+
+
+template <>
+struct std::hash<multio::message::Null> {
+    std::size_t operator()(const multio::message::Null&) const noexcept(true) { return 0; }
+};

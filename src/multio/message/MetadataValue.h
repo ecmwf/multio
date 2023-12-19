@@ -211,3 +211,13 @@ std::optional<MetadataValue> tryToMetadataValue(const eckit::Value& v);
 
 
 }  // namespace multio::message
+
+
+//----------------------------------------------------------------------------------------------------------------------
+
+template <>
+struct std::hash<multio::message::MetadataValue> {
+    std::size_t operator()(const multio::message::MetadataValue& t) const;
+};
+
+//----------------------------------------------------------------------------------------------------------------------

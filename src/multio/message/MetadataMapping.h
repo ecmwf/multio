@@ -74,19 +74,22 @@ struct MetadataMappingOptions {
  */
 class MetadataMapping {
 public:
-    MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
-                    const eckit::LocalConfiguration& optionalMappings,
+    using MatchKeyType = std::string;  // In the future we may want to support multiple keys for matching
+
+    using KeyMapping = std::vector<std::pair<std::string, std::string>>;
+    using DataMapping = std::unordered_map<MetadataValue, message::Metadata>;
+
+    MetadataMapping(const MatchKeyType& metadataKey, const KeyMapping& mappings, const KeyMapping& optionalMappings,
                     const std::vector<eckit::LocalConfiguration>& mapDataList, const std::string& matchKey,
                     const std::optional<std::string>& targetPath = std::optional<std::string>{});
 
-    MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
-                    const eckit::LocalConfiguration& optionalMappings,
-                    const std::unordered_map<std::string, eckit::LocalConfiguration>& source,
+    MetadataMapping(const MatchKeyType& metadataKey, const KeyMapping& mappings, const KeyMapping& optionalMappings,
+                    const std::unordered_map<MetadataValue, eckit::LocalConfiguration>& source,
                     const std::optional<std::string>& targetPath = std::optional<std::string>{});
 
-    MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
-                    const eckit::LocalConfiguration& optionalMappings,
-                    std::unordered_map<std::string, eckit::LocalConfiguration>&& source,
+    MetadataMapping(const MatchKeyType& metadataKey, const DataMapping& mapping,
+                    const std::optional<std::string>& targetPath = std::optional<std::string>{});
+    MetadataMapping(const MatchKeyType& metadataKey, DataMapping&& mapping,
                     const std::optional<std::string>& targetPath = std::optional<std::string>{});
 
 
@@ -100,10 +103,7 @@ public:
 
 private:
     std::string metadataKey_;                    // Describes the key to be looked for in the metadata
-    eckit::LocalConfiguration mapping_;          // Description of a mapping.
-    eckit::LocalConfiguration optionalMapping_;  // Description of a optional mapping.
-    std::unordered_map<std::string, eckit::LocalConfiguration>
-        mapData_;  // Input data on which the mapping is performed
+    DataMapping mapData_;                        // Input data on which the mapping is performed
     std::optional<std::string>
         targetPath_;  // Optional key for a nested dictionary in the metadata at which the mapped data will be written
 };

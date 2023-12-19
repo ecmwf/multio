@@ -6,6 +6,17 @@
 
 namespace multio::config {
 
+
+message::MetadataMapping::KeyMapping toKeyMapping(const eckit::LocalConfiguration& map) {
+    message::MetadataMapping::KeyMapping ret;
+
+    for (const auto& key : map.keys()) {
+        ret.emplace_back(key, map.getString(key));
+    }
+
+    return ret;
+}
+
 const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const MultioConfiguration& multioConf,
                                                                            const std::string& mapping) const {
     const auto& configFile = multioConf.getConfigFile(mapping);
@@ -70,8 +81,8 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
             std::string sourceKey = matchKeys[0];
             std::string targetKey = matchBlock.getString(sourceKey);
 
-            auto mappings = mc.getSubConfiguration("map");
-            auto optionalMappings = mc.getSubConfiguration("optional-map");
+            auto mappings = toKeyMapping(mc.getSubConfiguration("map"));
+            auto optionalMappings = toKeyMapping(mc.getSubConfiguration("optional-map"));
 
             auto targetPath = mc.has("target-path") ? std::optional<std::string>{mc.getString("target-path")}
                                                     : std::optional<std::string>{};

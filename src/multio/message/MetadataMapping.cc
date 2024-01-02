@@ -137,10 +137,10 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
     Metadata& ms = targetPath_ ? (targetConfMaybe = m.get<Metadata>(*targetPath_), *targetConfMaybe) : m;
 
     if (options.overwriteExisting) {
-        ms.update(searchMappingData->second);
+        ms.updateOverwrite(searchMappingData->second);
     }
     else {
-        ms.merge(Metadata{searchMappingData->second});
+        ms.updateNoOverwrite(searchMappingData->second);
     }
 
     if (targetPath_) {

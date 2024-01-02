@@ -130,8 +130,16 @@ public:
      * Adds all Metadata contained in other and returns a Metadata object with key/values that have been overwritten.
      * Existing iterators to this container are invalidated after an update.
      */
-    This update(const This& other);
-    This update(This&& other);
+    void updateOverwrite(const This& other);
+    void updateOverwrite(This&& other);
+
+    /**
+     * Adds all Metadata contained in other and returns a Metadata object with key/values that have been overwritten.
+     * Similar to merge unless that the right-hand-side map is not actively modified.
+     * Existing iterators to this container are invalidated after an update.
+     */
+    void updateNoOverwrite(const This& other);
+    void updateNoOverwrite(This&& other);
 
 
     std::string toString() const;

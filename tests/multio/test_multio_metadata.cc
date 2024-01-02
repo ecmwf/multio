@@ -201,12 +201,63 @@ CASE("Test setting, getting and merging nested metadata") {
 
         // Updating (overwriting) is possible without changing the passed metadata.
         // This may invalidate existing references
-        encOv.update(Metadata{
-            {"encodeBitsPerValue", 123L}, {"typeOfLevel", "oceanModelLayer"}, {"gridType", "unstructured_grid"}});
-        EXPECT(encOv.size() == 4);
-        EXPECT(encOv.get<std::int64_t>("encodeBitsPerValue") == 123L);
-        EXPECT(encOv.get<std::string>("typeOfLevel") == "oceanModelLayer");
-        EXPECT(encOv.get<std::string>("gridType") == "unstructured_grid");
+        {
+            Metadata updateFrom{
+                {"encodeBitsPerValue", 123L}, {"typeOfLevel", "oceanModelLayer"}, {"gridType", "healpix"}};
+
+
+            encOv.updateNoOverwrite(updateFrom);
+            EXPECT(encOv.size() == 4);
+            EXPECT(encOv.get<std::int64_t>("encodeBitsPerValue") == 12L);
+            EXPECT(encOv.get<std::string>("typeOfLevel") == "oceanModel");
+            EXPECT(encOv.get<std::string>("gridType") == "unstructured_grid");
+            EXPECT(updateFrom.size() == 3);
+            EXPECT(updateFrom.get<std::int64_t>("encodeBitsPerValue") == 123L);
+            EXPECT(updateFrom.get<std::string>("typeOfLevel") == "oceanModelLayer");
+            EXPECT(updateFrom.get<std::string>("gridType") == "healpix");
+        }
+
+
+        {
+            Metadata updateFrom{{"encodeBitsPerValue", 123L},
+                                {"typeOfLevel", "oceanModelLayer"},
+                                {"gridType", "healpix"},
+                                {"new_test_key", "test_value"}};
+
+            encOv.updateNoOverwrite(std::move(updateFrom));
+            EXPECT(encOv.size() == 5);
+            EXPECT(encOv.get<std::int64_t>("encodeBitsPerValue") == 12L);
+            EXPECT(encOv.get<std::string>("typeOfLevel") == "oceanModel");
+            EXPECT(encOv.get<std::string>("gridType") == "unstructured_grid");
+            EXPECT(encOv.get<std::string>("new_test_key") == "test_value");
+        }
+
+
+        {
+            Metadata updateFrom{
+                {"encodeBitsPerValue", 123L}, {"typeOfLevel", "oceanModelLayer"}, {"gridType", "healpix"}};
+
+            encOv.updateOverwrite(updateFrom);
+            EXPECT(encOv.size() == 5);
+            EXPECT(encOv.get<std::int64_t>("encodeBitsPerValue") == 123L);
+            EXPECT(encOv.get<std::string>("typeOfLevel") == "oceanModelLayer");
+            EXPECT(encOv.get<std::string>("gridType") == "healpix");
+            EXPECT(encOv.get<std::string>("new_test_key") == "test_value");
+        }
+
+        {
+            Metadata updateFrom{{"encodeBitsPerValue", 123L},
+                                {"typeOfLevel", "oceanModelLayer"},
+                                {"gridType", "healpix"},
+                                {"new_test_key", "test_value2"}};
+
+            encOv.updateOverwrite(std::move(updateFrom));
+            EXPECT(encOv.size() == 5);
+            EXPECT(encOv.get<std::int64_t>("encodeBitsPerValue") == 123L);
+            EXPECT(encOv.get<std::string>("typeOfLevel") == "oceanModelLayer");
+            EXPECT(encOv.get<std::string>("gridType") == "healpix");
+            EXPECT(encOv.get<std::string>("new_test_key") == "test_value2");
+        }
     }
 
     Metadata m2{m};  // copy m for later
@@ -236,11 +287,11 @@ CASE("Test setting, getting and merging nested metadata") {
                     },
                 });
             }
-            EXPECT_EQUAL(countStringVals1, 2);
+            EXPECT_EQUAL(countStringVals1, 3);
             EXPECT_EQUAL(countIntegerVals1, 2);
             EXPECT_EQUAL(countEveryThingElse1, 0);
 
-            EXPECT_EQUAL(encOv.size(), 4);
+            EXPECT_EQUAL(encOv.size(), 5);
         }
 
 
@@ -263,12 +314,12 @@ CASE("Test setting, getting and merging nested metadata") {
                     }
                 });
             }
-            EXPECT_EQUAL(countStringVals2, 2);
+            EXPECT_EQUAL(countStringVals2, 3);
             EXPECT_EQUAL(countIntegerVals2, 2);
             EXPECT_EQUAL(countEveryThingElse2, 0);
 
             // Should be not empty as movement did not happen at all
-            EXPECT_EQUAL(encOv.size(), 4);
+            EXPECT_EQUAL(encOv.size(), 5);
         }
 
         // Test extraction with visit & movement
@@ -287,7 +338,7 @@ CASE("Test setting, getting and merging nested metadata") {
                 });
             }
 
-            EXPECT_EQUAL(stringValues.size(), 2);
+            EXPECT_EQUAL(stringValues.size(), 3);
             EXPECT_EQUAL(integerValues.size(), 2);
 
 
@@ -306,7 +357,7 @@ CASE("Test setting, getting and merging nested metadata") {
     // Test equality values for nested rvalue access
     EXPECT(std::move(m2).get<Metadata>("encoder-overwrites").get<std::int64_t>("encodeBitsPerValue") == 123L);
     EXPECT(std::move(m2).get<Metadata>("encoder-overwrites").get<std::string>("typeOfLevel") == "oceanModelLayer");
-    EXPECT(std::move(m2).get<Metadata>("encoder-overwrites").get<std::string>("gridType") == "unstructured_grid");
+    EXPECT(std::move(m2).get<Metadata>("encoder-overwrites").get<std::string>("gridType") == "healpix");
 }
 
 CASE("Test visit with unwrapped unique ptr") {

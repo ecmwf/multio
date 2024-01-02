@@ -73,23 +73,27 @@ void Metadata::merge(This&& other) {
     values_.merge(std::move(other.values_));
 }
 
-/**
- * Adds all Metadata contained in other and returns a Metadata object with key/values that have been overwritten.
- * Existing iterators to this container are invalidated after an update.
- */
-Metadata Metadata::update(const Metadata& other) {
-    auto tmp = std::move(values_);
-    values_ = other.values_;
-    values_.merge(tmp);
-    return tmp;
+
+void Metadata::updateOverwrite(const Metadata& other) {
+    for (const auto& kv : other.values_) {
+        values_.insert_or_assign(kv.first, kv.second);
+    }
 }
 
 
-Metadata Metadata::update(Metadata&& other) {
+void Metadata::updateOverwrite(Metadata&& other) {
     auto tmp = std::move(values_);
     values_ = std::move(other.values_);
     values_.merge(tmp);
-    return tmp;
+}
+
+void Metadata::updateNoOverwrite(const Metadata& other) {
+    values_.insert(other.values_.begin(), other.values_.end());
+}
+
+
+void Metadata::updateNoOverwrite(Metadata&& other) {
+    values_.merge(other.values_);
 }
 
 

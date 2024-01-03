@@ -30,7 +30,6 @@
 
 #include "multio/LibMultio.h"
 #include "multio/util/DateTime.h"
-#include "multio/message/Glossary.h"
 #include "multio/util/Metadata.h"
 
 
@@ -157,13 +156,13 @@ void tryMapStepToTimeAndCheckTime(message::Metadata& in) {
         }
 
 
-        const auto searchStepRange = in.find("stepRange");
-        const auto searchStartStep = in.find("startStep");
-        const auto searchEndStep = in.find("endStep");
-        const auto searchCurrentDate = in.find("currentDate");
-        const auto searchCurrentTime = in.find("currentTime");
-        const auto searchPreviousDate = in.find("previousDate");
-        const auto searchPreviousTime = in.find("previousTime");
+        const auto searchStepRange = in.find(glossary().stepRange);
+        const auto searchStartStep = in.find(glossary().startStep);
+        const auto searchEndStep = in.find(glossary().endStep);
+        const auto searchCurrentDate = in.find(glossary().currentDate);
+        const auto searchCurrentTime = in.find(glossary().currentTime);
+        const auto searchPreviousDate = in.find(glossary().previousDate);
+        const auto searchPreviousTime = in.find(glossary().previousTime);
         if ((searchStepRange != in.end() || (searchStartStep != in.end() && searchEndStep != in.end()))
             && (searchCurrentDate == in.end() || searchCurrentTime == in.end() || searchPreviousDate == in.end()
                 || searchPreviousTime == in.end())) {
@@ -269,15 +268,16 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             }
         }
         else if (gridType && eckit::StringTools::lower(*gridType) != "healpix") {
-            withFirstOf(valueSetter(g, "levtype"), levtype,
+            withFirstOf(valueSetter(g, "levtype"), lookUp<std::string>(md, glossary().levtype),
                         lookUp<std::string>(md, "indicatorOfTypeOfLevel"));
         }
         else if (gridType && levtype && eckit::StringTools::lower(*gridType) == "healpix" && *levtype != "o2d"
                  && *levtype != "o3d") {
-            withFirstOf(valueSetter(g, "levtype"), levtype, lookUp<std::string>(md, "indicatorOfTypeOfLevel"));
+            withFirstOf(valueSetter(g, "levtype"), lookUp<std::string>(md, glossary().levtype),
+                        lookUp<std::string>(md, "indicatorOfTypeOfLevel"));
         }
         else if (!gridType) {
-            withFirstOf(valueSetter(g, "levtype"), levtype,
+            withFirstOf(valueSetter(g, "levtype"), lookUp<std::string>(md, glossary().levtype),
                         lookUp<std::string>(md, "indicatorOfTypeOfLevel"));
         }
 
@@ -338,15 +338,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     withFirstOf(valueSetter(g, "generatingProcessIdentifier"),
                 lookUp<std::int64_t>(md, glossary().generatingProcessIdentifier));
 
-<<<<<<< HEAD
     withFirstOf(valueSetter(g, "setPackingType"), lookUp<std::string>(md, glossary().setPackingType));
-=======
-    withFirstOf(valueSetter(g, "subCentre"), lookUp<std::string>(md, "subCentre"));
-    withFirstOf(valueSetter(g, "generatingProcessIdentifier"), lookUp<std::int64_t>(md, "generatingProcessIdentifier"));
->>>>>>> dc3e6211 (Fix type for generatingProcessIdentifier)
 
-    withFirstOf(valueSetter(g, "expver"), lookUp<std::string>(md, "expver"),
-                lookUp<std::string>(md, glossary().experimentVersionNumber));
     withFirstOf(valueSetter(g, "number"), lookUp<std::int64_t>(md, glossary().ensembleMember));
     withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), lookUp<std::int64_t>(md, glossary().ensembleSize));
 
@@ -722,11 +715,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     withFirstOf(valueSetter(*this, "subCentre"), lookUp<std::string>(metadata, glossary().subCentre));
     withFirstOf(valueSetter(*this, "generatingProcessIdentifier"),
-<<<<<<< HEAD
                 lookUp<std::int64_t>(metadata, glossary().generatingProcessIdentifier));
-=======
-                lookUp<std::int64_t>(metadata, "generatingProcessIdentifier"));
->>>>>>> dc3e6211 (Fix type for generatingProcessIdentifier)
 
     withFirstOf(valueSetter(*this, "setPackingType"), lookUp<std::string>(metadata, glossary().setPackingType));
 

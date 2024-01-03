@@ -10,6 +10,7 @@
 
 #include "Message.h"
 
+#include "Glossary.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/serialisation/Stream.h"
 
@@ -53,36 +54,35 @@ const Metadata& Message::Header::metadata() const& {
 // }
 
 std::string Message::Header::name() const {
-    if (auto optVal = metadata_.getOpt<std::string>("name"); optVal) {
+    if (auto optVal = metadata_.getOpt<std::string>(glossary().name); optVal) {
         return *optVal;
     }
     throw MetadataMissingKeyException("name", Here());
 }
 
 std::string Message::Header::category() const {
-    if (auto optVal = metadata_.getOpt<std::string>("category"); optVal) {
+    if (auto optVal = metadata_.getOpt<std::string>(glossary().category); optVal) {
         return *optVal;
     }
     throw MetadataMissingKeyException("category", Here());
 }
 
 std::int64_t Message::Header::globalSize() const {
-    if (auto optVal = metadata_.getOpt<std::int64_t>("globalSize"); optVal) {
+    if (auto optVal = metadata_.getOpt<std::int64_t>(glossary().globalSize); optVal) {
         return *optVal;
     }
     throw MetadataMissingKeyException("globalSize", Here());
 }
 
 std::string Message::Header::domain() const {
-    if (auto optVal = metadata_.getOpt<std::string>("domain"); optVal) {
+    if (auto optVal = metadata_.getOpt<std::string>(glossary().domain); optVal) {
         return *optVal;
     }
     throw MetadataMissingKeyException("domain", Here());
 }
 
 util::PrecisionTag Message::Header::precision() const {
-    return util::decodePrecisionTag(metadata_.get<std::string>("precision"));
-    if (auto optVal = metadata_.getOpt<std::string>("precision"); optVal) {
+    if (auto optVal = metadata_.getOpt<std::string>(glossary().precision); optVal) {
         return util::decodePrecisionTag(*optVal);
     }
     throw MetadataMissingKeyException("precision", Here());

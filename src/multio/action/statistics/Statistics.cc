@@ -17,10 +17,14 @@
 #include "TemporalStatistics.h"
 #include "eckit/exception/Exceptions.h"
 #include "multio/LibMultio.h"
+#include "multio/message/Glossary.h"
 #include "multio/message/Message.h"
 #include "multio/util/ScopedTimer.h"
 
 namespace multio::action {
+
+
+using message::glossary;
 
 Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
@@ -49,13 +53,13 @@ void Statistics::DumpRestart() {
 
 std::string Statistics::generateKey(const message::Message& msg) const {
     std::ostringstream os;
-    os << msg.metadata().getOpt<std::string>("param").value_or("") << "-"
-       << msg.metadata().getOpt<std::int64_t>("paramId").value_or(0) << "-"
-       << msg.metadata().getOpt<std::int64_t>("level").value_or(0) << "-"
-       << msg.metadata().getOpt<std::int64_t>("levelist").value_or(0) << "-"
-       << msg.metadata().getOpt<std::string>("levtype").value_or("unknown") << "-"
-       << msg.metadata().getOpt<std::string>("gridType").value_or("unknown") << "-"
-       << msg.metadata().getOpt<std::string>("precision").value_or("unknown") << "-"
+    os << msg.metadata().getOpt<std::string>(glossary().param).value_or("") << "-"
+       << msg.metadata().getOpt<std::int64_t>(glossary().paramId).value_or(0) << "-"
+       << msg.metadata().getOpt<std::int64_t>(glossary().level).value_or(0) << "-"
+       << msg.metadata().getOpt<std::int64_t>(glossary().levelist).value_or(0) << "-"
+       << msg.metadata().getOpt<std::string>(glossary().levtype).value_or("unknown") << "-"
+       << msg.metadata().getOpt<std::string>(glossary().gridType).value_or("unknown") << "-"
+       << msg.metadata().getOpt<std::string>(glossary().precision).value_or("unknown") << "-"
        << std::to_string(std::hash<std::string>{}(msg.source()));
     LOG_DEBUG_LIB(LibMultio) << "Generating key for the field :: " << os.str() << std::endl;
     return os.str();
@@ -78,19 +82,19 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
     // md.set("sampleIntervalUnit", std::string{util::timeUnitToChar(lastPointsDiff.unit)});
     // md.set("sampleInterval", lastPointsDiff.diff);
 
-    md.set("sampleIntervalInSeconds", win.lastPointsDiffInSeconds());
+    md.set(glossary().sampleIntervalInSeconds, win.lastPointsDiffInSeconds());
 
-    md.set("startDate", win.epochPoint().date().yyyymmdd());
-    md.set("startTime", win.epochPoint().time().hhmmss());
-    md.set("step-frequency", win.timeSpanInSteps());
+    md.set(glossary().startDate, win.epochPoint().date().yyyymmdd());
+    md.set(glossary().startTime, win.epochPoint().time().hhmmss());
+    md.set(glossary().stepFrequency, win.timeSpanInSteps());
 
     // md.set("timeSpanInHours", win.timeSpanInHours());
     // md.set("stepRange", win.stepRange());
 
-    md.set("previousDate", win.creationPoint().date().yyyymmdd());
-    md.set("previousTime", win.creationPoint().time().hhmmss());
-    md.set("currentDate", win.endPoint().date().yyyymmdd());
-    md.set("currentTime", win.endPoint().time().hhmmss());
+    md.set(glossary().previousDate, win.creationPoint().date().yyyymmdd());
+    md.set(glossary().previousTime, win.creationPoint().time().hhmmss());
+    md.set(glossary().currentDate, win.endPoint().date().yyyymmdd());
+    md.set(glossary().currentTime, win.endPoint().time().hhmmss());
 
     // md.set("stepInHours", win.endPointInHours());
     // md.set("stepRangeInHours", win.stepRangeInHours());

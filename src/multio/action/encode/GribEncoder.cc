@@ -30,7 +30,6 @@
 
 #include "multio/LibMultio.h"
 #include "multio/util/DateTime.h"
-#include "multio/message/Glossary.h"
 #include "multio/util/Metadata.h"
 
 

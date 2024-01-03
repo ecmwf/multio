@@ -9,9 +9,13 @@
 #include "eckit/filesystem/PathName.h"
 
 #include "multio/LibMultio.h"
+#include "multio/message/Glossary.h"
 #include "multio/util/Substitution.h"
 
+
 namespace multio::action {
+
+using message::glossary;
 
 
 StatisticsConfiguration::StatisticsConfiguration(const config::ComponentConfiguration& compConf) :
@@ -204,10 +208,10 @@ void StatisticsConfiguration::parseLogPrefix(const config::ComponentConfiguratio
 
 void StatisticsConfiguration::readStartTime(const message::Message& msg) {
     std::optional<std::int64_t> timeVal;
-    if (useDateTime() && (timeVal = msg.metadata().get<std::int64_t>("time"))) {
+    if (useDateTime() && (timeVal = msg.metadata().get<std::int64_t>(glossary().time))) {
         startTime_ = *timeVal;
     }
-    else if (!useDateTime() && (timeVal = msg.metadata().get<std::int64_t>("startTime"))) {
+    else if (!useDateTime() && (timeVal = msg.metadata().get<std::int64_t>(glossary().startTime))) {
         startTime_ = *timeVal;
     }
     else {
@@ -218,10 +222,10 @@ void StatisticsConfiguration::readStartTime(const message::Message& msg) {
 
 void StatisticsConfiguration::readStartDate(const message::Message& msg) {
     std::optional<std::int64_t> dateVal;
-    if (useDateTime() && (dateVal = msg.metadata().get<std::int64_t>("date"))) {
+    if (useDateTime() && (dateVal = msg.metadata().get<std::int64_t>(glossary().date))) {
         startDate_ = *dateVal;
     }
-    else if (!useDateTime() && (dateVal = msg.metadata().get<std::int64_t>("startDate"))) {
+    else if (!useDateTime() && (dateVal = msg.metadata().get<std::int64_t>(glossary().startDate))) {
         startDate_ = *dateVal;
     }
     else {
@@ -232,7 +236,7 @@ void StatisticsConfiguration::readStartDate(const message::Message& msg) {
 
 
 void StatisticsConfiguration::readStep(const message::Message& msg) {
-    if (auto step = msg.metadata().getOpt<std::int64_t>("step"); step) {
+    if (auto step = msg.metadata().getOpt<std::int64_t>(glossary().step); step) {
         step_ = *step;
         return;
     }
@@ -242,26 +246,26 @@ void StatisticsConfiguration::readStep(const message::Message& msg) {
 void StatisticsConfiguration::readRestartStep(const message::Message& msg) {
     // TODO: for restart statistics with nemo some special handling is needed
     restartStep_
-        = msg.metadata().getOpt<std::int64_t>("restart-step").value_or(solverSendInitStep_ ? step_ : step_ - 1);
+        = msg.metadata().getOpt<std::int64_t>(glossary().restartStep).value_or(solverSendInitStep_ ? step_ : step_ - 1);
     return;
 };
 
 void StatisticsConfiguration::readTimeStep(const message::Message& msg) {
-    timeStep_ = msg.metadata().getOpt<std::int64_t>("timeStep").value_or(timeStep_);
+    timeStep_ = msg.metadata().getOpt<std::int64_t>(glossary().timeStep).value_or(timeStep_);
     return;
 };
 
 void StatisticsConfiguration::readStepFrequency(const message::Message& msg) {
-    stepFreq_ = msg.metadata().getOpt<std::int64_t>("step-frequency").value_or(stepFreq_);
+    stepFreq_ = msg.metadata().getOpt<std::int64_t>(glossary().stepFrequency).value_or(stepFreq_);
     return;
 };
 
 
 void StatisticsConfiguration::readMissingValue(const message::Message& msg) {
     const auto& md = msg.metadata();
-    auto missingVal = md.getOpt<double>("missingValue");
+    auto missingVal = md.getOpt<double>(glossary().missingValue);
     std::optional<bool> bitMapPresent;
-    if (missingVal && (bitMapPresent = md.get<bool>("bitmapPresent") && *bitMapPresent)) {
+    if (missingVal && (bitMapPresent = md.get<bool>(glossary().bitmapPresent) && *bitMapPresent)) {
         haveMissingValue_ = true;
         missingValue_ = *missingVal;
     }
@@ -277,22 +281,22 @@ void StatisticsConfiguration::createLoggingPrefix(const StatisticsConfiguration&
         os << "(prefix=" << cfg.restartPrefix();
     }
     os << ", step=" << std::left << std::setw(6) << step_;
-    if (auto param = md.getOpt<std::string>("param"); param) {
+    if (auto param = md.getOpt<std::string>(glossary().param); param) {
         os << ", param=" << std::left << std::setw(10) << *param;
     }
-    if (auto paramId = md.getOpt<std::int64_t>("paramId"); paramId) {
+    if (auto paramId = md.getOpt<std::int64_t>(glossary().paramId); paramId) {
         os << ", param=" << std::left << std::setw(10) << *paramId;
     }
     else {
         throw eckit::SeriousBug{"param/paramId metadata not present", Here()};
     }
-    if (auto level = md.getOpt<std::int64_t>("level"); level) {
+    if (auto level = md.getOpt<std::int64_t>(glossary().level); level) {
         os << ", level=" << std::left << std::setw(4) << *level;
     }
-    else if (auto levelist = md.getOpt<std::int64_t>("levelist"); levelist) {
+    else if (auto levelist = md.getOpt<std::int64_t>(glossary().levelist); levelist) {
         os << ", level=" << std::left << std::setw(4) << *levelist;
     }
-    if (auto levtype = md.getOpt<std::string>("levtype"); levtype) {
+    if (auto levtype = md.getOpt<std::string>(glossary().levtype); levtype) {
         os << ", level-type=" << std::left << std::setw(5) << *levtype;
     }
     logPrefix_ = os.str();

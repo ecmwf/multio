@@ -21,8 +21,8 @@
 #include "eccodes.h"
 #include "metkit/codes/GribHandle.h"
 
+#include "multio/message/Glossary.h"
 #include "multio/message/Message.h"
-
 #include "multio/util/MioGribHandle.h"
 
 
@@ -104,10 +104,12 @@ private:
 };
 
 inline bool isOcean(const message::Metadata& metadata) {
+    using message::glossary;
+
     // Check if metadata has a key "nemoParam" or a category starting with "ocean"
     std::optional<std::string> category;
-    return (metadata.find("nemoParam") != metadata.end())
-        || ((category = metadata.getOpt<std::string>("category")) && (category->rfind("ocean") == 0));
+    return (metadata.find(glossary().nemoParam) != metadata.end())
+        || ((category = metadata.getOpt<std::string>(glossary().category)) && (category->rfind("ocean") == 0));
 };
 
 

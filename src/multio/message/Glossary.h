@@ -51,31 +51,65 @@ struct Glossary {
     // using Description = KeyValueDescription<KeyType, ValidTypes>;
 
     // General keys
+    const KeyType name{"name"};
     const KeyType paramId{"paramId"};
+    const KeyType param{"param"};
     const KeyType globalSize{"globalSize"};
     const KeyType domain{"domain"};
     const KeyType date{"date"};
     const KeyType time{"time"};
     const KeyType precision{"precision"};
 
+
+    // Nemo
+    const KeyType nemoParam{"nemoParam"};
+    const KeyType category{"category"};
+
     // Mars keys
     const KeyType type{"type"};
+    const KeyType marsType{"marsType"};
     const KeyType classKey{"class"};
+    const KeyType marsClass{"marsClass"};
     const KeyType stream{"stream"};
+    const KeyType marsStream{"marsStream"};
     const KeyType expver{"expver"};
+    const KeyType experimentVersionNumber{"experimentVersionNumber"};
+    const KeyType levelist{"levelist"};
+    const KeyType levtype{"levtype"};
+    const KeyType levtypeWam{"levtype_wam"};
+    const KeyType dataset{"dataset"};
+    const KeyType activity{"activity"};
+    const KeyType experiment{"experiment"};
+    const KeyType generation{"generation"};
+    const KeyType model{"model"};
+    const KeyType realization{"realization"};
+
+    // Eccodes specific
+    const KeyType gribEdition{"gribEdition"};
+    const KeyType tablesVersion{"tablesVersion"};
+    const KeyType setLocalDefinition{"setLocalDefinition"};
+    const KeyType grib2LocalSectionNumber{"grib2LocalSectionNumber"};
+    const KeyType productionStatusOfProcessedData{"productionStatusOfProcessedData"};
 
     // Eccodes concepts
     const KeyType gridType{"gridType"};
     const KeyType typeOfLevel{"typeOfLevel"};
     const KeyType localDefinitionNumber{"localDefinitionNumber"};
 
-    // Eccodes general
-    const KeyType typeOfGeneratingProcess{"typeOfGeneratingProcess"};  // Analog to mars type
-
     // Additional eccodes keys
+    const KeyType setPackingType{"setPackingType"};
+    const KeyType complexPacking{"complexPacking"};
     const KeyType missingValue{"missingValue"};
     const KeyType bitsPerValue{"bitsPerValue"};
     const KeyType bitmapPresent{"bitmapPresent"};
+
+    // Grib general
+    const KeyType typeOfGeneratingProcess{"typeOfGeneratingProcess"};  // Analog to mars type
+    const KeyType generatingProcessIdentifier{"generatingProcessIdentifier"};
+    const KeyType subCentre{"subCentre"};
+
+    const KeyType ensembleMember{"ensemble-member"};
+    const KeyType ensembleSize{"ensemble-size"};
 
     // Eccodes grib reference date/time - direct setting (alternative to date & time)
     const KeyType year{"year"};
@@ -123,6 +157,56 @@ struct Glossary {
     const KeyType previousDate{"previousDate"};
     const KeyType currentTime{"currentTime"};
     const KeyType currentDate{"currentDate"};
+
+    const KeyType sampleInterval{"sampleInterval"};
+    const KeyType sampleIntervalInSeconds{"sampleIntervalInSeconds"};
+
+    // legacy & conversion
+    const KeyType timeStep{"timeStep"};
+    const KeyType step{"step"};
+    const KeyType stepRange{"stepRange"};
+    const KeyType startStep{"startStep"};
+    const KeyType endStep{"endStep"};
+    const KeyType dataTime{"dataTime"};
+    const KeyType dataDate{"dataDate"};
+
+    const KeyType dateOfAnalysis{"date-of-analysis"};
+    const KeyType timeOfAnalysis{"time-of-analysis"};
+
+    // Statistic
+    const KeyType operation{"operation"};
+    const KeyType restartStep{"restart-step"};
+    const KeyType stepFrequency{"step-frequency"};
+
+    // Healpix
+    const KeyType nside{"Nside"};
+    const KeyType orderingConvention{"orderingConvention"};
+
+    // Spherical harmonics
+    const KeyType pentagonalResolutionParameterJ{"pentagonalResolutionParameterJ"};
+    const KeyType pentagonalResolutionParameterK{"pentagonalResolutionParameterK"};
+    const KeyType pentagonalResolutionParameterM{"pentagonalResolutionParameterM"};
+    const KeyType j{"J"};
+    const KeyType k{"K"};
+    const KeyType m{"M"};
+    const KeyType subSetJ{"subSetJ"};
+    const KeyType subSetK{"subSetK"};
+    const KeyType subSetM{"subSetM"};
+    const KeyType js{"JS"};
+    const KeyType ks{"KS"};
+    const KeyType ms{"MS"};
+
+
+    // Regular ll
+    const KeyType ni{"Ni"};
+    const KeyType nj{"Nj"};
+    const KeyType north{"north"};
+    const KeyType west{"west"};
+    const KeyType south{"south"};
+    const KeyType east{"east"};
+    const KeyType westEastIncrement{"west_east_increment"};
+    const KeyType southNorthIncrement{"south_north_increment"};
+
 
     static const Glossary& instance() {
         static Glossary glossary;

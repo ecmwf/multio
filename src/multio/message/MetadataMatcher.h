@@ -13,9 +13,9 @@
 
 #pragma once
 
-#include <map>
-#include <set>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "eckit/types/Types.h"
@@ -48,7 +48,7 @@ private:  // methods
     void print(std::ostream& os) const;
 
 private:  // members
-    std::map<std::string, std::set<MetadataValue>> matcher_;
+    std::unordered_map<typename MetadataTypes::KeyType, std::unordered_set<MetadataValue>> matcher_;
 };
 
 //--------------------------------------------------------------------------------------------------

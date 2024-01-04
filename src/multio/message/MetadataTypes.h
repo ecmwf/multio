@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include "multio/message/PrehashedKey.h"
 #include "multio/util/TypeTraits.h"
 
 #include "eckit/log/JSON.h"
@@ -41,11 +42,11 @@ struct Null {
     constexpr operator bool() { return false; }
 };
 
-constexpr bool operator<(Null, Null) {
+constexpr bool operator<(Null, Null) noexcept {
     return false;
 }
 
-constexpr bool operator==(Null, Null) {
+constexpr bool operator==(Null, Null) noexcept {
     return true;
 }
 
@@ -64,7 +65,8 @@ eckit::JSON& operator<<(eckit::JSON& json, const Null&);
 // unique pointer will be handled transperently through a `get` and `visit` calls on the metadata object. Thus, the fact
 // that a unique_ptr is used is hidden from the user.
 struct MetadataTypes {
-    using KeyType = std::string;
+    // using KeyType = std::string;
+    using KeyType = PrehashedKey<std::string>;
 
     template <typename ValueType>
     // using MapType = std::unordered_map<KeyType, ValueType>;

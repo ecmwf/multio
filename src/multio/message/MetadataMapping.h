@@ -74,23 +74,24 @@ struct MetadataMappingOptions {
  */
 class MetadataMapping {
 public:
-    using MatchKeyType = std::string;  // In the future we may want to support multiple keys for matching
+    using KeyType = typename MetadataTypes::KeyType;
+    using MatchKeyType = KeyType;  // In the future we may want to support multiple keys for matching
 
-    using KeyMapping = std::vector<std::pair<std::string, std::string>>;
+    using KeyMapping = std::vector<std::pair<KeyType, KeyType>>;
     using DataMapping = std::unordered_map<MetadataValue, message::Metadata>;
 
     MetadataMapping(const MatchKeyType& metadataKey, const KeyMapping& mappings, const KeyMapping& optionalMappings,
-                    const std::vector<eckit::LocalConfiguration>& mapDataList, const std::string& matchKey,
-                    const std::optional<std::string>& targetPath = std::optional<std::string>{});
+                    const std::vector<eckit::LocalConfiguration>& mapDataList, const KeyType& matchKey,
+                    const std::optional<KeyType>& targetPath = std::optional<KeyType>{});
 
     MetadataMapping(const MatchKeyType& metadataKey, const KeyMapping& mappings, const KeyMapping& optionalMappings,
                     const std::unordered_map<MetadataValue, eckit::LocalConfiguration>& source,
-                    const std::optional<std::string>& targetPath = std::optional<std::string>{});
+                    const std::optional<KeyType>& targetPath = std::optional<KeyType>{});
 
     MetadataMapping(const MatchKeyType& metadataKey, const DataMapping& mapping,
-                    const std::optional<std::string>& targetPath = std::optional<std::string>{});
+                    const std::optional<KeyType>& targetPath = std::optional<KeyType>{});
     MetadataMapping(const MatchKeyType& metadataKey, DataMapping&& mapping,
-                    const std::optional<std::string>& targetPath = std::optional<std::string>{});
+                    const std::optional<KeyType>& targetPath = std::optional<KeyType>{});
 
 
     void applyInplace(Metadata&, MetadataMappingOptions options = MetadataMappingOptions{}) const;
@@ -102,9 +103,9 @@ public:
 
 
 private:
-    std::string metadataKey_;                    // Describes the key to be looked for in the metadata
+    MatchKeyType metadataKey_;                   // Describes the key to be looked for in the metadata
     DataMapping mapData_;                        // Input data on which the mapping is performed
-    std::optional<std::string>
+    std::optional<KeyType>
         targetPath_;  // Optional key for a nested dictionary in the metadata at which the mapped data will be written
 };
 

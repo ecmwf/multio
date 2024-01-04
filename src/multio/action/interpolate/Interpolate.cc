@@ -31,6 +31,7 @@
 #include "mir/repres/gauss/reduced/Reduced.h"
 
 #include "multio/LibMultio.h"
+#include "multio/message/Glossary.h"
 #include "multio/message/Message.h"
 #include "multio/util/PrecisionTag.h"
 #include "multio/util/Substitution.h"
@@ -38,19 +39,20 @@
 
 namespace multio::action::interpolate {
 
+using message::glossary;
 using message::MetadataTypes;
 
 namespace {
 
 // Quick and dirty fix to avoid encoding problems with spherical harmonics
-const std::vector<std::string> metadata_black_list{"sphericalHarmonics",
-                                                   "complexPacking",
-                                                   "pentagonalResolutionParameterJ",
-                                                   "pentagonalResolutionParameterK",
-                                                   "pentagonalResolutionParameterM",
-                                                   "subSetJ",
-                                                   "subSetK",
-                                                   "subSetM"};
+const std::vector<typename MetadataTypes::KeyType> metadata_black_list{glossary().sphericalHarmonics,
+                                                                       glossary().complexPacking,
+                                                                       glossary().pentagonalResolutionParameterJ,
+                                                                       glossary().pentagonalResolutionParameterK,
+                                                                       glossary().pentagonalResolutionParameterM,
+                                                                       glossary().subSetJ,
+                                                                       glossary().subSetK,
+                                                                       glossary().subSetM};
 
 const std::vector<double> full_area{90.0, 0.0, -90.0, 360.0};
 

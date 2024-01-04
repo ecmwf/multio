@@ -86,18 +86,19 @@ MetadataMappingException::MetadataMappingException(const std::string& r, const e
 
 
 MetadataMapping::MetadataMapping(const MatchKeyType& metadataKey, const DataMapping& mapping,
-                                 const std::optional<std::string>& targetPath) :
+                                 const std::optional<MetadataMapping::KeyType>& targetPath) :
     metadataKey_(metadataKey), mapData_{mapping}, targetPath_{targetPath} {}
 
 MetadataMapping::MetadataMapping(const MatchKeyType& metadataKey, DataMapping&& mapping,
-                                 const std::optional<std::string>& targetPath) :
+                                 const std::optional<MetadataMapping::KeyType>& targetPath) :
     metadataKey_(metadataKey), mapData_{std::move(mapping)}, targetPath_{targetPath} {}
 
 
 MetadataMapping::MetadataMapping(const MatchKeyType& metadataKey, const KeyMapping& mappings,
                                  const KeyMapping& optionalMappings,
-                                 const std::vector<eckit::LocalConfiguration>& mapDataList, const std::string& matchKey,
-                                 const std::optional<std::string>& targetPath) :
+                                 const std::vector<eckit::LocalConfiguration>& mapDataList,
+                                 const MetadataMapping::KeyType& matchKey,
+                                 const std::optional<MetadataMapping::KeyType>& targetPath) :
     MetadataMapping(
         metadataKey,
         constructDataMapping(metadataKey, mappings, optionalMappings, constructSourceMap(mapDataList, matchKey)),
@@ -106,7 +107,7 @@ MetadataMapping::MetadataMapping(const MatchKeyType& metadataKey, const KeyMappi
 MetadataMapping::MetadataMapping(const MatchKeyType& metadataKey, const KeyMapping& mappings,
                                  const KeyMapping& optionalMappings,
                                  const std::unordered_map<MetadataValue, eckit::LocalConfiguration>& source,
-                                 const std::optional<std::string>& targetPath) :
+                                 const std::optional<MetadataMapping::KeyType>& targetPath) :
     MetadataMapping(metadataKey, constructDataMapping(metadataKey, mappings, optionalMappings, source), targetPath) {}
 
 

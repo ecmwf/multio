@@ -447,8 +447,8 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
             // TODO handle type... however eccodes should support string as well. For
             // some representations the string and integer representation in eccodes
             // differ significantly and my produce wrong results
-            if (g.hasKey(kv.first.c_str())) {
-                kv.second.visit(eckit::Overloaded {
+            if (g.hasKey(kv.first.value().c_str())) {
+                kv.second.visit(eckit::Overloaded{
                     [](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::AllNested> {},
                         [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), MetadataTypes::Lists> {
                             g.setValue(kv.first, vec);

@@ -111,6 +111,7 @@ list( APPEND multio_message_srcs
     message/Peer.h
     message/MetadataMapping.cc
     message/MetadataMapping.h
+    message/PrehashedKey.h
 )
 
 list( APPEND multio_server_srcs

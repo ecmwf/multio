@@ -21,7 +21,7 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
         cfg.get(k, cfgK);
         if (cfgK.get().isList()) {
             auto v = cfg.getSubConfigurations(k);
-            std::set<MetadataValue> s;
+            std::unordered_set<MetadataValue> s;
             unsigned int i = 0;
             for (auto& vi : v) {
                 auto optMetadataValue = tryToMetadataValue(vi.get());
@@ -44,7 +44,7 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
                     << "\" can not be represented by an internal metadata value: " << cfgK.get();
                 throw MetadataException(oss.str());
             }
-            matcher_.emplace(k, std::set<MetadataValue>{std::move(*optMetadataValue)});
+            matcher_.emplace(k, std::unordered_set<MetadataValue>{std::move(*optMetadataValue)});
         }
     }
 }
@@ -61,7 +61,30 @@ bool MetadataMatcher::matches(const Metadata& md) const {
 }
 
 void MetadataMatcher::print(std::ostream& os) const {
-    os << matcher_;
+    os << "{";
+    bool isFirst = true;
+    for (const auto& kv : matcher_) {
+        if (!isFirst) {
+            os << " ,";
+        }
+        else {
+            isFirst = false;
+        }
+        os << kv.first.value() << " => {";
+
+        bool isFirst2 = true;
+        for (const auto& v : kv.second) {
+            if (!isFirst2) {
+                os << " ,";
+            }
+            else {
+                isFirst2 = false;
+            }
+            os << v;
+        }
+        os << "}";
+    }
+    os << "}";
 }
 
 //--------------------------------------------------------------------------------------------------

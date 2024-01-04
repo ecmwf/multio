@@ -183,6 +183,7 @@ struct Glossary {
     const KeyType orderingConvention{"orderingConvention"};
 
     // Spherical harmonics
+    const KeyType sphericalHarmonics{"sphericalHarmonics"};
     const KeyType pentagonalResolutionParameterJ{"pentagonalResolutionParameterJ"};
     const KeyType pentagonalResolutionParameterK{"pentagonalResolutionParameterK"};
     const KeyType pentagonalResolutionParameterM{"pentagonalResolutionParameterM"};

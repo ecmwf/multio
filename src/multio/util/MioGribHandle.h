@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <memory>
 
 #include "metkit/codes/GribHandle.h"
 

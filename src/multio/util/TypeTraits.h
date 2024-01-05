@@ -117,6 +117,31 @@ using TypeListContains = TypeListAny<TypeListContainsExpr<Type>::template Expr, 
 template <typename Type, typename TypeList>
 inline constexpr bool TypeListContains_v = TypeListContains<Type, TypeList>::value;
 
+//-----------------------------------------------------------------------------
+
+template <template <typename> typename Expr, typename TypeList, typename Def = void>
+struct TypeListFirstOf {
+    using type = Def;
+};
+
+template <template <typename> typename Expr, typename TypeList, typename Def>
+using TypeListFirstOf_t = typename TypeListFirstOf<Expr, TypeList, Def>::type;
+
+template <template <typename> typename Expr, typename T1, typename... TS, typename Def>
+struct TypeListFirstOf<Expr, TypeList<T1, TS...>, Def> {
+    using type = std::conditional_t<Expr<T1>::value, T1, TypeListFirstOf_t<Expr, TypeList<TS...>, Def>>;
+};
+
+
+template <typename From, typename ListOfTypes, typename Def = void>
+struct FirstContvertibleTo {
+    template <typename To>
+    using Template = std::is_convertible<From, To>;
+
+    using type = util::TypeListFirstOf_t<Template, ListOfTypes, Def>;
+};
+template <typename From, typename ListOfTypes, typename Def = void>
+using FirstContvertibleTo_t = typename FirstContvertibleTo<From, ListOfTypes, Def>::type;
 
 //-----------------------------------------------------------------------------
 

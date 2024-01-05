@@ -35,7 +35,7 @@ public:
 
     using This = MetadataValue;
     using Base = MetadataValueVariant;
-    using MetadataValueVariant::MetadataValueVariant;
+    // using MetadataValueVariant::MetadataValueVariant;
     using Base::operator=;
 
     MetadataValue(const This& other);
@@ -107,6 +107,27 @@ public:
                                bool>
               = true>
     MetadataValue(T&& val) : Base(std::forward<T>(val)){};
+
+    // Constructor that is required for icpc....
+    template <typename T,
+              std::enable_if_t<(!util::TypeListContains_v<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>
+                                && !std::is_same_v<std::decay_t<T>, This> && !std::is_same_v<std::decay_t<T>, Base>
+                                && !std::is_constructible_v<Base, T>
+                                && !std::is_same_v<util::FirstContvertibleTo_t<T, typename Types::AllWrapped>, void>),
+                               bool>
+              = true>
+    MetadataValue(T&& val) : Base(util::FirstContvertibleTo_t<T, typename Types::AllWrapped>(std::forward<T>(val))){};
+
+
+    // The following two constructors are added because intels icpc has problems with inheriting constructors that
+    // conflict with the previous constructor
+    // // using MetadataValueVariant::MetadataValueVariant;
+    template <typename T1, typename T2, typename... TS,
+              std::enable_if_t<std::is_constructible_v<Base, T1, T2, TS...>, bool> = true>
+    MetadataValue(T1&& v1, T2&& v2, TS&&... vs) :
+        Base(std::forward<T1>(v1), std::forward<T2>(v2), std::forward<TS>(vs)...){};
+
+    MetadataValue() : Base(){};
 
 private:
     // Implementation details

@@ -25,7 +25,8 @@ namespace multio::util {
 //-----------------------------------------------------------------------------
 
 template <typename T>
-struct TypeTag {};
+struct TypeTag { using type = T; };
+
 
 //-----------------------------------------------------------------------------
 
@@ -83,6 +84,8 @@ struct MergeTypeList<TypeList<T1...>, TypeList<T2...>, TS...> {
 };
 
 
+
+
 //-------------------------------------
 
 template <template <typename> typename Expr, typename TypeList>
@@ -119,29 +122,68 @@ inline constexpr bool TypeListContains_v = TypeListContains<Type, TypeList>::val
 
 //-----------------------------------------------------------------------------
 
-template <template <typename> typename Expr, typename TypeList, typename Def = void>
-struct TypeListFirstOf {
-    using type = Def;
+template <typename From, typename To, class = void> struct NotNarrowConstructible: std::false_type {};
+// template <typename From, typename To> struct NotNarrowConstructible<From, To, std::void_t<std::result_of_t<TestNotNarrowConstructible<To>(From)>>>: std::true_type {};
+template <typename From, typename To> struct NotNarrowConstructible<From, To, std::void_t<decltype(To{std::declval<From>()})>>: std::true_type {};
+
+template <typename From, typename To>
+inline constexpr bool NotNarrowConstructible_v = NotNarrowConstructible<From, To>::value;
+
+
+template <typename TI>
+struct BaseOverloadForResolution {
+    TypeTag<TI> operator()(TI) const;
 };
 
-template <template <typename> typename Expr, typename TypeList, typename Def>
-using TypeListFirstOf_t = typename TypeListFirstOf<Expr, TypeList, Def>::type;
-
-template <template <typename> typename Expr, typename T1, typename... TS, typename Def>
-struct TypeListFirstOf<Expr, TypeList<T1, TS...>, Def> {
-    using type = std::conditional_t<Expr<T1>::value, T1, TypeListFirstOf_t<Expr, TypeList<TS...>, Def>>;
+template <typename TI>
+struct IgnoredOverloadForResolution {
+    template<typename T, std::enable_if<!std::is_same_v<T, T>, bool> = true>
+    TypeTag<TI> operator()(T&&) const;
 };
 
 
-template <typename From, typename ListOfTypes, typename Def = void>
-struct FirstContvertibleTo {
-    template <typename To>
-    using Template = std::is_convertible<From, To>;
+template <typename From, typename... TS> struct SaneOverloadResolution;
 
-    using type = util::TypeListFirstOf_t<Template, ListOfTypes, Def>;
+// Base case - defines an operator() that will never participate in overload resolution
+template <typename From> struct SaneOverloadResolution<From> { 
+    template<typename T, std::enable_if<!std::is_same_v<T, T>, bool> = true>
+    TypeTag<void> operator()(T&&) const;
 };
-template <typename From, typename ListOfTypes, typename Def = void>
-using FirstContvertibleTo_t = typename FirstContvertibleTo<From, ListOfTypes, Def>::type;
+
+// Iterating case... add overload only if no narrow conversion is happening 
+template <typename From, typename TI, typename... TS>
+struct SaneOverloadResolution<From, TI, TS...> : SaneOverloadResolution<From, TS...>, std::conditional_t<NotNarrowConstructible_v<From, TI>, BaseOverloadForResolution<TI>, IgnoredOverloadForResolution<TI>> {
+  using SaneOverloadResolution<From, TS...>::operator();
+  using std::conditional_t<NotNarrowConstructible_v<From, TI>, BaseOverloadForResolution<TI>, IgnoredOverloadForResolution<TI>>::operator();
+};
+
+
+// specialization to handle void
+template <typename From, typename... TS>
+struct SaneOverloadResolution<From, void, TS...> : SaneOverloadResolution<From, TS...> {
+  using SaneOverloadResolution<From, TS...>::operator();
+  TypeTag<void> operator()() const;
+};
+
+// specialization to ignore bool conversion
+template <typename From, typename... TS>
+struct SaneOverloadResolution<From, bool, TS...> : SaneOverloadResolution<From, TS...> {
+  using SaneOverloadResolution<From, TS...>::operator();
+  template<typename T, std::enable_if_t<std::is_same_v<std::decay_t<T>, bool>, bool> = true>
+    TypeTag<bool> operator()(T) const;
+};
+
+// specialization to handle TypeList
+template <typename From, typename ...TS1, typename... TS2>
+struct SaneOverloadResolution<From, TypeList<TS1...>, TS2...> : SaneOverloadResolution<From, TS1..., TS2...> {
+  using SaneOverloadResolution<From, TS1..., TS2...>::operator();
+};
+
+
+template <typename From, typename... TS>
+using SaneOverloadResolutionResult_t = typename std::result_of_t<SaneOverloadResolution<From, TS...>(From)>::type;
+
+
 
 //-----------------------------------------------------------------------------
 

@@ -39,8 +39,9 @@ Metadata createScalarMetadata() {
         {"paramId", 123L},
         {"null", {}},  // Default initialization should create a null value
         {"bool", true},
-        {"int64", static_cast<std::int64_t>(64)},
-        {"string", std::string{"string"}},
+        {"double", 0.123},
+        {"int64", 64},
+        {"string", "string"},
     };
 };
 
@@ -65,6 +66,27 @@ CASE("Test getting scala values") {
     EXPECT(createScalarMetadata().get("paramId").get<std::int64_t>() == 123L);  // Test rvalue get access
     EXPECT_THROWS_AS(m.get<std::string>("paramId"), MetadataException);  // TODO test nested MetadataWrongTypeException
     EXPECT_THROWS_AS(m.get("paramId").get<std::string>(),
+                     MetadataException);  // TODO test nested MetadataWrongTypeException
+                     
+    EXPECT(m.get<double>("double") == 0.123);
+    EXPECT(m.get("double").get<double>() == 0.123);
+    EXPECT(mc.get<double>("double") == 0.123);
+    EXPECT(mc.get("double").get<double>() == 0.123);
+    EXPECT(createScalarMetadata().get<double>("double") == 0.123);        // Test rvalue get access
+    EXPECT(createScalarMetadata().get("double").get<double>() == 0.123);  // Test rvalue get access
+    EXPECT_THROWS_AS(m.get<std::string>("double"), MetadataException);  // TODO test nested MetadataWrongTypeException
+    EXPECT_THROWS_AS(m.get("double").get<std::string>(),
+                     MetadataException);  // TODO test nested MetadataWrongTypeException
+                     
+    EXPECT(m.get<std::string>("string") == std::string("string"));
+    EXPECT(m.get("string").get<std::string>() == std::string("string"));
+    EXPECT(mc.get<std::string>("string") == std::string("string"));
+    EXPECT(mc.get("string").get<std::string>() == std::string("string"));
+    EXPECT(createScalarMetadata().get<std::string>("string") == std::string("string"));  // Test rvalue get access
+    EXPECT(createScalarMetadata().get("string").get<std::string>()
+           == std::string("string"));                                   // Test rvalue get access
+    EXPECT_THROWS_AS(m.get<std::int64_t>("string"), MetadataException);  // TODO test nested MetadataWrongTypeException
+    EXPECT_THROWS_AS(m.get("string").get<std::int64_t>(),
                      MetadataException);  // TODO test nested MetadataWrongTypeException
 
     EXPECT(m.get<bool>("bool") == true);
@@ -98,37 +120,65 @@ CASE("Test modifying values") {
     auto& n = m.get("null");
 
     EXPECT_NO_THROW(n.get<Null>());
+    
     // Set value by ref
-    n = "null string";
-    EXPECT(m.get<std::string>("null") == "null string");
+    {
+        n = "null string";
+        EXPECT(m.get<std::string>("null") == "null string");
+    }
 
 
     // Set value by overwrite
-    m.set("null", static_cast<std::int64_t>(0));
-    EXPECT(m.get<std::int64_t>("null") == 0);
+    {
+        m.set("null", 0);
+        EXPECT(m.get<std::int64_t>("null") == 0);
+    }
 
     // Try setting value and lookup
-    auto [itToNull, hasBeenSet] = m.trySet("null", Null{});
+    {
+        auto [itToNull, hasBeenSet] = m.trySet("null", Null{});
 
-    EXPECT(!hasBeenSet);
-    EXPECT(itToNull != m.end());
-    EXPECT(itToNull->second.get<std::int64_t>() == 0);
-    EXPECT(m.get<std::int64_t>("null") == 0);
+        EXPECT(!hasBeenSet);
+        EXPECT(itToNull != m.end());
+        EXPECT(itToNull->second.get<std::int64_t>() == 0);
+        EXPECT(m.get<std::int64_t>("null") == 0);
 
 
-    auto [itToNewKey, newKeyHasBeenSet] = m.trySet("newKey", Null{});
+        auto [itToNewKey, newKeyHasBeenSet] = m.trySet("newKey", Null{});
 
-    EXPECT(newKeyHasBeenSet);
-    EXPECT_NO_THROW(itToNewKey->second.get<Null>());
+        EXPECT(newKeyHasBeenSet);
+        EXPECT_NO_THROW(itToNewKey->second.get<Null>());
 
-    itToNewKey->second = "newValue";
-    EXPECT(m.get<std::string>("newKey") == "newValue");
+        itToNewKey->second = "newValue";
+        EXPECT(m.get<std::string>("newKey") == "newValue");
 
-    // Try get move
-    auto val = std::move(m).get("newKey");
-    EXPECT(val.get<std::string>() == "newValue");
-    EXPECT(itToNewKey->second.get<std::string>() == "");
-    EXPECT(m.get<std::string>("newKey") == "");
+        // Try get move
+        auto val = std::move(m).get("newKey");
+        EXPECT(val.get<std::string>() == "newValue");
+        EXPECT(itToNewKey->second.get<std::string>() == "");
+        EXPECT(m.get<std::string>("newKey") == "");
+    }
+    
+    
+    // Try changing type (double to int)
+    {
+        auto& d = m.get("double");
+
+        EXPECT_NO_THROW(d.get<double>());
+        // Set value by ref
+        d = 123;
+        EXPECT(m.get<std::int64_t>("double") == 123);
+    }
+        
+    // Try changing type (int to double)
+    {
+        auto& i = m.get("paramId");
+
+        EXPECT_NO_THROW(i.get<std::int64_t>());
+        // Set value by ref
+        i = 0.123;
+        EXPECT(m.get<double>("paramId") == 0.123);
+    }
 };
 
 

@@ -2,7 +2,7 @@ mappings:
   - match:
       nemoParam: nemo-id
     map:
-      param: param-id
+      paramId: param-id
       unstructuredGridSubtype: unstructured-grid-subtype
       domain: domain
       gridType: grid-type

@@ -103,7 +103,8 @@ struct MetadataTypes {
                                              NestedListsWrapped>;  // Used for memory layout. Hidden from user.
 };
 
-// Helper for Intel ICPC (no sane conversion yet...) - int is not deduced to int64_t automatically, however we don't want to miss that convenience
+// Helper for Intel ICPC - int is not deduced to int64_t automatically even not through the reimplemented sane
+// conversion, however we don't want to miss that convenience
 template<typename T> struct MetadataValueConversionHelper;
 template<typename T>
 using  MetadataValueConversionHelper_t = typename MetadataValueConversionHelper<T>::type;
@@ -120,11 +121,6 @@ struct MetadataValueConversionHelper<int> { using type = std::int64_t; };
 template<>
 struct MetadataValueConversionHelper<long long> { using type = std::int64_t; };
 
-// // String
-// template<>
-// struct MetadataValueConversionHelper<const char*> { using type = std::string; };
-// template<std::size_t N>
-// struct MetadataValueConversionHelper<const char[N]> { using type = std::string; };
 
 //-----------------------------------------------------------------------------
 

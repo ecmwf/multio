@@ -736,19 +736,20 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     setEncodingSpecificFields(*this, metadata);
 
     // Setting parameter ID
-    auto paramInt = util::visitTranslate<std::int64_t>(metadata.get("param"));
-    if (!paramInt) {
-        std::ostringstream oss;
-        oss << "GribEncoder::setOceanMetadata: Value for param can not be translated to int: ";
-        oss << metadata.get("param");
-        throw eckit::UserError(oss.str(), Here());
-    }
-    if (*paramInt / 1000 == 212) {
+    // auto paramInt = util::visitTranslate<std::int64_t>(metadata.get("param"));
+    auto paramInt = metadata.get<std::int64_t>(glossary().paramId);
+    // if (!paramInt) {
+    //     std::ostringstream oss;
+    //     oss << "GribEncoder::setOceanMetadata: Value for param can not be translated to int: ";
+    //     oss << metadata.get("param");
+    //     throw eckit::UserError(oss.str(), Here());
+    // }
+    if (paramInt / 1000 == 212) {
         // HACK! Support experimental averages.
-        setValue(glossary().paramId, *paramInt + 4000);
+        setValue(glossary().paramId, paramInt + 4000);
     }
     else {
-        setValue(glossary().paramId, *paramInt + ops_to_code.at(metadata.get<std::string>(glossary().operation)));
+        setValue(glossary().paramId, paramInt + ops_to_code.at(metadata.get<std::string>(glossary().operation)));
     }
     setValue(glossary().typeOfLevel, metadata.get<std::string>(glossary().typeOfLevel));
     if (metadata.get<std::string>(glossary().category) == "ocean-3d") {
@@ -807,14 +808,15 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit
     // setValue("numberOfValues", md.get<std::int64_t>(glossary().globalSize));
 
     // Setting parameter ID
-    auto paramInt = util::visitTranslate<std::int64_t>(md.get(glossary().param));
-    if (!paramInt) {
-        std::ostringstream oss;
-        oss << "GribEncoder::setOceanCoordMetadata: Value for param can not be translated to int: ";
-        oss << md.get("param");
-        throw eckit::UserError(oss.str(), Here());
-    }
-    setValue(glossary().paramId, *paramInt);
+    // auto paramInt = util::visitTranslate<std::int64_t>(md.get(glossary().param));
+    auto paramInt = md.get<std::int64_t>(glossary().paramId);
+    // if (!paramInt) {
+    //     std::ostringstream oss;
+    //     oss << "GribEncoder::setOceanCoordMetadata: Value for param can not be translated to int: ";
+    //     oss << md.get("param");
+    //     throw eckit::UserError(oss.str(), Here());
+    // }
+    setValue(glossary().paramId, paramInt);
 
     setValue(glossary().typeOfLevel, md.get<std::string>(glossary().typeOfLevel));
 

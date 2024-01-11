@@ -258,10 +258,13 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 
         if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
             g.setValue("level", 0l);
-            g.setMissing("scaleFactorOfFirstFixedSurface");
-            g.setMissing("scaledValueOfFirstFixedSurface");
-            g.setMissing("scaleFactorOfSecondFixedSurface");
-            g.setMissing("scaledValueOfSecondFixedSurface");
+
+            if (md.getString("gribEdition") == "2") {
+                g.setMissing("scaleFactorOfFirstFixedSurface");
+                g.setMissing("scaledValueOfFirstFixedSurface");
+                g.setMissing("scaleFactorOfSecondFixedSurface");
+                g.setMissing("scaledValueOfSecondFixedSurface");
+            }
         }
         else {
             withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
@@ -487,9 +490,23 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
             g.setValue("startStep", 0l);
         }
     }
-    else {
+    else if (gribEdition == "2") {
         auto previousDateTime = util::wrapDateTime(
             {util::toDateInts(md.getLong("previousDate")), util::toTimeInts(md.getLong("previousTime"))});
+
+                // Now just deal with GRIB2
+        g.setValue("yearOfEndOfOverallTimeInterval", currentDateTime.date.year);
+        g.setValue("monthOfEndOfOverallTimeInterval", currentDateTime.date.month);
+        g.setValue("dayOfEndOfOverallTimeInterval", currentDateTime.date.day);
+        g.setValue("hourOfEndOfOverallTimeInterval", currentDateTime.time.hour);
+        g.setValue("minuteOfEndOfOverallTimeInterval", currentDateTime.time.minute);
+        g.setValue("secondOfEndOfOverallTimeInterval", currentDateTime.time.second);
+
+        g.setValue("indicatorOfUnitForTimeRange", timeUnitCodes(util::TimeUnit::Hour));
+        g.setValue("lengthOfTimeRange", util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
+                                                                    previousDateTime.date, previousDateTime.time)
+                                            / 3600);
+
         if (timeRef == std::string("start")) {
             // Compute diff to current time in some appropriate unit
             g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
@@ -519,20 +536,6 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
                                                               previousDateTime.date, previousDateTime.time)
                                       / 3600);
         }
-
-
-        // Now just deal with GRIB2
-        g.setValue("yearOfEndOfOverallTimeInterval", currentDateTime.date.year);
-        g.setValue("monthOfEndOfOverallTimeInterval", currentDateTime.date.month);
-        g.setValue("dayOfEndOfOverallTimeInterval", currentDateTime.date.day);
-        g.setValue("hourOfEndOfOverallTimeInterval", currentDateTime.time.hour);
-        g.setValue("minuteOfEndOfOverallTimeInterval", currentDateTime.time.minute);
-        g.setValue("secondOfEndOfOverallTimeInterval", currentDateTime.time.second);
-
-        g.setValue("indicatorOfUnitForTimeRange", timeUnitCodes(util::TimeUnit::Hour));
-        g.setValue("lengthOfTimeRange", util::dateTimeDiffInSeconds(currentDateTime.date, currentDateTime.time,
-                                                                    previousDateTime.date, previousDateTime.time)
-                                            / 3600);
 
         if (operation) {
             static const std::map<const std::string, const std::int64_t> TYPE_OF_STATISTICAL_PROCESSING{

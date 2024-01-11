@@ -76,8 +76,11 @@ Plan::Plan(std::tuple<ComponentConfiguration, std::string>&& confAndName) :
         throw eckit::UserError("Bool expected", Here());
     };
     auto root = rootConfig(compConf.parsedConfig(), name_);
-    root_ = ActionFactory::instance().build(root.getString("type"),
-                                            ComponentConfiguration(root, compConf.multioConfig()));
+
+    if (enabled_) {
+        root_ = ActionFactory::instance().build(root.getString("type"),
+            ComponentConfiguration(root, compConf.multioConfig()));
+    }
 }
 
 Plan::Plan(const ComponentConfiguration& compConf) : Plan(getPlanConfiguration(compConf)) {}
@@ -111,7 +114,9 @@ util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t, const util
 
 
 void Plan::matchedFields(message::MetadataSelectors& selectors) const {
-    root_->matchedFields(selectors);
+    if (enabled_) {
+        root_->matchedFields(selectors);
+    }
 }
 
 }  // namespace multio::action

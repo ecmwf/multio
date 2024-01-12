@@ -44,22 +44,28 @@ std::string Message::tag2str(Tag t) {
 Message::Message() : Message(Message::Header{Message::Tag::Empty, Peer{}, Peer{}}) {}
 
 Message::Message(Header&& header, const eckit::Buffer& payload) :
-    Message(std::make_shared<Header>(std::move(header)), std::make_shared<eckit::Buffer>(payload, payload.size())) {}
+    Message(std::move(header), std::make_shared<eckit::Buffer>(payload, payload.size())) {}
 
 Message::Message(Header&& header, eckit::Buffer&& payload) :
-    Message(std::make_shared<Header>(std::move(header)), std::make_shared<eckit::Buffer>(std::move(payload))) {}
+    Message(std::move(header), std::make_shared<eckit::Buffer>(std::move(payload))) {}
 
-Message::Message(Header&& header, std::shared_ptr<eckit::Buffer> payload) :
-    Message(std::make_shared<Header>(std::move(header)), std::move(payload)) {}
+// Message::Message(Header&& header, std::shared_ptr<eckit::Buffer> payload) :
+//     Message(std::make_shared<Header>(std::move(header)), std::move(payload)) {}
 
-Message::Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload) :
+Message::Message(Header&& header, std::shared_ptr<eckit::Buffer>&& payload) :
     version_{protocolVersion()}, header_{std::move(header)}, payload_{std::move(payload)} {}
 
-Message::Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload) :
+Message::Message(Header&& header, const std::shared_ptr<eckit::Buffer>& payload) :
     version_{protocolVersion()}, header_{std::move(header)}, payload_{payload} {}
 
+// Message::Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload) :
+//     version_{protocolVersion()}, header_{std::move(header)}, payload_{std::move(payload)} {}
+
+// Message::Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload) :
+//     version_{protocolVersion()}, header_{std::move(header)}, payload_{payload} {}
+
 const Message::Header& Message::header() const {
-    return *header_;
+    return header_;
 }
 
 int Message::version() const {
@@ -104,7 +110,7 @@ const std::string& Message::fieldId() const {
 }
 
 const Metadata& Message::metadata() const& {
-    return header_->metadata();
+    return header_.metadata();
 }
 
 // Metadata&& Message::metadata() && {
@@ -112,7 +118,7 @@ const Metadata& Message::metadata() const& {
 // }
 
 Message Message::modifyMetadata(Metadata&& md) const {
-    return Message(std::make_shared<Header>(header_->modifyMetadata(std::move(md))), payload_);
+    return Message(header_.modifyMetadata(std::move(md)), payload_);
 };
 
 const eckit::Buffer& Message::payload() const {

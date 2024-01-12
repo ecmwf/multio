@@ -17,10 +17,13 @@
 #include "eckit/message/Message.h"
 
 #include "multio/LibMultio.h"
+#include "multio/message/Glossary.h"
 #include "multio/sink/DataSink.h"
 #include "multio/util/ScopedTimer.h"
 
 namespace multio::action {
+
+using message::glossary;
 
 SingleFieldSink::SingleFieldSink(const ComponentConfiguration& compConf) :
     Action{compConf}, rootPath_{compConf.parsedConfig().getString("root_path", "")} {}
@@ -44,16 +47,26 @@ void SingleFieldSink::executeImpl(Message msg) {
 void SingleFieldSink::write(Message msg) {
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
-    auto paramStr = util::visitTranslate<std::string>(msg.metadata().get("param"));
-    if (!paramStr) {
-        std::ostringstream oss;
-        oss << "Sink::trigger: Value for param can not be translated to string: ";
-        oss << msg.metadata().get("param");
-        throw eckit::UserError(oss.str(), Here());
+    std::string paramOrId;
+    auto searchParam = msg.metadata().find(glossary().param);
+    if (searchParam != msg.metadata().end()) {
+        paramOrId = searchParam->second.get<std::string>();
+    }
+    else {
+        auto searchParamId = msg.metadata().find(glossary().paramId);
+        if (searchParamId != msg.metadata().end()) {
+            paramOrId = eckit::translate<std::string>(searchParamId->second.get<std::int64_t>());
+        }
+        else {
+            std::ostringstream oss;
+            oss << "SingleFieldSink::write: No param or paramId found in metadata:";
+            throw eckit::UserError(oss.str(), Here());
+        }
     }
 
+
     std::ostringstream oss;
-    oss << rootPath_ << msg.metadata().get<std::int64_t>("level") << "::" << *paramStr
+    oss << rootPath_ << msg.metadata().get<std::int64_t>("level") << "::" << paramOrId
         << "::" << msg.metadata().get<std::int64_t>("step");
     eckit::LocalConfiguration config;
 

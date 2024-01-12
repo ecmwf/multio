@@ -58,7 +58,8 @@ public:  // types
     class Header {
     public:
         Header(Tag tag, Peer src, Peer dst, std::string&& fieldId);
-        Header(Tag tag, Peer src, Peer dst, Metadata&& md = message::Metadata{});
+        Header(Tag tag, Peer src, Peer dst, Metadata&& md);
+        Header(Tag tag, Peer src, Peer dst, std::shared_ptr<Metadata> md = std::make_shared<message::Metadata>());
 
         Tag tag() const;
 
@@ -90,7 +91,7 @@ public:  // types
         Peer source_;
         Peer destination_;
 
-        Metadata metadata_;
+        std::shared_ptr<Metadata> metadata_;
         // encode fieldId_ lazily
         mutable std::optional<std::string> fieldId_;  // Make that a hash?
     };
@@ -119,9 +120,10 @@ public:  // methods
     Message();
     Message(Header&& header, const eckit::Buffer& payload = eckit::Buffer{0});
     Message(Header&& header, eckit::Buffer&& payload);
-    Message(Header&& header, std::shared_ptr<eckit::Buffer> payload);
-    Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload);
-    Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload);
+    // Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload);
+    // Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload);
+    Message(Header&& header, std::shared_ptr<eckit::Buffer>&& payload);
+    Message(Header&& header, const std::shared_ptr<eckit::Buffer>& payload);
     // Message(std::shared_ptr<Header> header, std::shared_ptr<eckit::Buffer> payload);
 
 public:
@@ -170,7 +172,7 @@ private:  // methods
 private:  // members
     int version_;
 
-    std::shared_ptr<Header> header_;
+    Header header_;
     std::shared_ptr<eckit::Buffer> payload_;
 };
 

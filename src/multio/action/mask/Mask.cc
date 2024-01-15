@@ -60,6 +60,9 @@ message::Message Mask::createMasked(message::Message msg) const {
     msg.acquire();
     // Now metadata and payload can be modified
 
+    msg.acquire();
+    // Now metadata and payload can be modified
+
     if (applyBitmap_) {
         applyMask<Precision>(msg);
     }

@@ -57,6 +57,12 @@ public:  // types
 
     class Header {
     public:
+        Header(const Header&) = default;
+        Header(Header&&) = default;
+
+        Header& operator=(const Header&) = default;
+        Header& operator=(Header&&) = default;
+
         Header(Tag tag, Peer src, Peer dst, std::string&& fieldId);
         Header(Tag tag, Peer src, Peer dst, Metadata&& md);
         Header(Tag tag, Peer src, Peer dst, std::shared_ptr<Metadata> md = std::make_shared<message::Metadata>());
@@ -116,6 +122,12 @@ public:  // types
 public:  // methods
     static int protocolVersion();
     static std::string tag2str(Tag t);
+
+    Message(const Message&) = default;
+    Message(Message&&) = default;
+
+    Message& operator=(const Message&) = default;
+    Message& operator=(Message&&) = default;
 
     Message();
     Message(Header&& header, const eckit::Buffer& payload = eckit::Buffer{0});

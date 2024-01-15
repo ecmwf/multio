@@ -36,10 +36,10 @@ private:
     message::Message createMasked(message::Message msg) const;
 
     template <typename Precision>
-    void applyMask(message::Message msg) const;
+    void applyMask(message::Message& msg) const;
 
     template <typename Precision>
-    void applyOffset(message::Message msg) const;
+    void applyOffset(message::Message& msg) const;
 
     void print(std::ostream& os) const override;
 

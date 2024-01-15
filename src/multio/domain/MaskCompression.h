@@ -14,6 +14,7 @@
 #pragma once
 
 
+#include "multio/message/SharedPayload.h"
 #include "multio/util/BinaryUtils.h"
 
 #include "eckit/exception/Exceptions.h"
@@ -69,7 +70,9 @@ static constexpr std::size_t MASK_PAYLOAD_HEADER_SIZE = 5;
 static constexpr std::size_t MASK_PAYLOAD_SPARSE_MAX_NUM_BITS = 64;
 
 MaskPayloadHeader decodeMaskPayloadHeader(const unsigned char* b, std::size_t size);
-MaskPayloadHeader decodeMaskPayloadHeader(const eckit::Buffer& b);
+// MaskPayloadHeader decodeMaskPayloadHeader(const eckit::Buffer& b);
+// MaskPayloadHeader decodeMaskPayloadHeader(const PayloadReference& b);
+MaskPayloadHeader decodeMaskPayloadHeader(const message::SharedPayload& b);
 MaskPayloadHeader decodeMaskPayloadHeader(const std::array<unsigned char, MASK_PAYLOAD_HEADER_SIZE>& b);
 
 std::array<unsigned char, MASK_PAYLOAD_HEADER_SIZE> encodeMaskPayloadHeader(MaskPayloadHeader h);
@@ -268,8 +271,8 @@ public:
     using pointer = const bool*;
     using reference = const bool&;
 
-    MaskPayloadIterator(eckit::Buffer const& payload, MaskPayloadHeader header, bool toEnd = false);
-    MaskPayloadIterator(eckit::Buffer const& payload);
+    MaskPayloadIterator(message::PayloadReference const& payload, MaskPayloadHeader header, bool toEnd = false);
+    MaskPayloadIterator(message::PayloadReference const& payload);
 
     MaskPayloadIterator(const This& other);
     MaskPayloadIterator(This&& other) noexcept;
@@ -289,7 +292,7 @@ public:
     bool operator!=(const This& other) const noexcept;
 
 private:
-    eckit::Buffer const& payload_;
+    message::PayloadReference const& payload_;
     MaskPayloadHeader header_;
     std::size_t index_;                   // Global index of the bit
     std::size_t runLengthOffset_;         // runLength only: offset of the payload...
@@ -308,7 +311,10 @@ private:
 
 class EncodedMaskPayload {
 public:
-    EncodedMaskPayload(eckit::Buffer const& payload) : payload_(payload), header_(decodeMaskPayloadHeader(payload_)) {}
+    EncodedMaskPayload(const message::PayloadReference& pr) :
+        payload_(pr), header_(decodeMaskPayloadHeader(payload_)) {}
+    EncodedMaskPayload(const eckit::Buffer& buf) :
+        payload_(message::PayloadReference{buf.data(), buf.size()}), header_(decodeMaskPayloadHeader(payload_)) {}
 
     MaskPayloadIterator begin() const { return MaskPayloadIterator(payload_, header_); }
 
@@ -321,7 +327,7 @@ public:
     std::size_t size() const noexcept { return header_.numBits; }
 
 private:
-    const eckit::Buffer& payload_;
+    message::PayloadReference payload_;
     MaskPayloadHeader header_;
 };
 

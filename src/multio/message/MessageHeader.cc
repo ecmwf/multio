@@ -52,13 +52,32 @@ Peer Message::Header::destination() const {
     return destination_;
 }
 
-const Metadata& Message::Header::metadata() const& {
+const Metadata& Message::Header::metadata() const {
+    return *metadata_;
+}
+Metadata& Message::Header::modifyMetadata() {
     return *metadata_;
 }
 
 // Metadata&& Message::Header::metadata() && {
 //     return std::move(metadata_);
 // }
+
+// Copy or acquire metadata object if only owned by this object
+std::shared_ptr<Metadata> Message::Header::stealOrCopyMetadata() {
+    if (metadata_.use_count() == 1) {
+        return std::move(metadata_);
+    }
+    else {
+        return std::make_shared<Metadata>(*metadata_.get());
+    }
+}
+
+// Copy or acquire metadata object if only owned by this object
+void Message::Header::acquireMetadata() {
+    metadata_ = stealOrCopyMetadata();
+}
+
 
 std::string Message::Header::name() const {
     if (auto optVal = metadata_->getOpt<std::string>(glossary().name); optVal) {

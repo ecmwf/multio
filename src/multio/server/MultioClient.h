@@ -66,6 +66,8 @@ public:
 
     // void dispatch(message::Metadata metadata, eckit::Buffer&& payload, message::Message::Tag tag);
     void dispatch(std::shared_ptr<message::Metadata> metadata, eckit::Buffer&& payload, message::Message::Tag tag);
+    void dispatch(std::shared_ptr<message::Metadata> metadata, const message::PayloadReference& payload,
+                  message::Message::Tag tag);
 
     void dispatch(message::Message msg);
 

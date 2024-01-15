@@ -705,6 +705,14 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
             eckit::Log::warning() << "Ocean grid UUID not available during encoding!" << std::endl;
         }
     }
+    else if (eckit::StringTools::lower(gridType) == "healpix") {
+        long Nside = metadata.getLong("Nside");
+        setValue("Nside", Nside);
+        double logp = 45.0;
+        // Note: Pedro told to use always this to avoid problems with milli and micro degrees
+        setValue("longitudeOfFirstGridPointInDegrees", logp);
+        setValue("orderingConvention", metadata.getString("orderingConvention"));
+    }
 }
 
 void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {

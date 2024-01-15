@@ -103,11 +103,6 @@ namespace {
 
 // Template magic to provide a consistent error-handling approach
 
-int innerWrapFn(std::function<void()> f) {
-    f();
-    return MULTIO_SUCCESS;
-}
-
 MultioErrorValues errorValue(const FailureAwareException& e) {
     return MULTIO_ERROR_ECKIT_EXCEPTION;
 }
@@ -148,9 +143,10 @@ void callFailureHandler(multio_failure_context_t* fctx, int err) {
 }
 
 template <typename FN>
-int wrapApiFunction(FN f, multio_failure_context_t* fh = nullptr) {
+int wrapApiFunction(FN&& f, multio_failure_context_t* fh = nullptr) {
     try {
-        return innerWrapFn(f);
+        std::invoke(std::forward<FN>(f));
+        return MULTIO_SUCCESS;
     }
     catch (FailureAwareException& e) {
         std::ostringstream oss;
@@ -551,7 +547,8 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
             ASSERT(mio);
             ASSERT(md);
 
-            eckit::Buffer domain_def{reinterpret_cast<const char*>(data), size * sizeof(int)};
+            // eckit::Buffer domain_def{static_cast<void*>(data), size * sizeof(int), false};
+            eckit::Buffer domain_def{static_cast<void*>(data), size * sizeof(int)};
             mio->dispatch(md->md, std::move(domain_def), Message::Tag::Domain);
         },
         mio);
@@ -603,7 +600,8 @@ int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const 
 
             md->md->set("precision", "single");
 
-            eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(float)};
+            // eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(float), false};
+            eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(float)};
 
             mio->dispatch(md->md, std::move(field_vals), Message::Tag::Field);
         },
@@ -622,7 +620,8 @@ int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const
 
             md->md->set("precision", "double");
 
-            eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(double)};
+            // eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(double), false};
+            eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(double)};
 
             mio->dispatch(md->md, std::move(field_vals), Message::Tag::Field);
         },

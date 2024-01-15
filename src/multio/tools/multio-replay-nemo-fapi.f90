@@ -27,7 +27,7 @@ program multio_replay_nemo_fapi
     integer(8) :: mio_parent_comm = MPI_UNDEFINED
 
     character(len=3), dimension(4) :: nemo_parameters = ["sst", "ssu", "ssv", "ssw" ]
-    integer, dimension(4) :: grib_param_id = [262101, 212101, 212151, 212202 ]
+    integer, dimension(4) :: grib_param_id = [262101, 262137, 262138, 212202 ]
     character(len=6), dimension(4) :: grib_grid_type = ["T grid", "U grid", "V grid", "W grid" ]
     character(len=12), dimension(4) :: grib_level_type = ["oceanSurface", "oceanSurface", "oceanSurface", "oceanSurface" ]
 

@@ -48,9 +48,18 @@ MaskPayloadHeader decodeMaskPayloadHeader(const unsigned char* b, std::size_t si
     return h;
 }
 
-MaskPayloadHeader decodeMaskPayloadHeader(const eckit::Buffer& b) {
-    return decodeMaskPayloadHeader(static_cast<const unsigned char*>(b.data()), b.size() * sizeof(unsigned char));
+// MaskPayloadHeader decodeMaskPayloadHeader(const eckit::Buffer& b) {
+//     return decodeMaskPayloadHeader(static_cast<const unsigned char*>(b.data()), b.size() * sizeof(unsigned char));
+// }
+
+MaskPayloadHeader decodeMaskPayloadHeader(const message::SharedPayload& p) {
+    return decodeMaskPayloadHeader(static_cast<const unsigned char*>(static_cast<const void*>(p.data())),
+                                   p.size() * sizeof(unsigned char));
 }
+
+// MaskPayloadHeader decodeMaskPayloadHeader(const PayloadReference& p) {
+//     return decodeMaskPayloadHeader(static_cast<const unsigned char*>(p.data), p.size * sizeof(unsigned char));
+// }
 
 MaskPayloadHeader decodeMaskPayloadHeader(const std::array<unsigned char, MASK_PAYLOAD_HEADER_SIZE>& b) {
     return decodeMaskPayloadHeader(b.data(), b.size());
@@ -94,7 +103,8 @@ std::size_t computeBufferSizeMaskBitMask(std::size_t size) {
 
 
 // Iterator for decoding...
-MaskPayloadIterator::MaskPayloadIterator(eckit::Buffer const& payload, MaskPayloadHeader header, bool toEnd) :
+MaskPayloadIterator::MaskPayloadIterator(message::PayloadReference const& payload, MaskPayloadHeader header,
+                                         bool toEnd) :
     payload_(payload),
     header_(header),
     index_(0),
@@ -111,7 +121,7 @@ MaskPayloadIterator::MaskPayloadIterator(eckit::Buffer const& payload, MaskPaylo
     }
 }
 
-MaskPayloadIterator::MaskPayloadIterator(eckit::Buffer const& payload) :
+MaskPayloadIterator::MaskPayloadIterator(message::PayloadReference const& payload) :
     MaskPayloadIterator(payload, decodeMaskPayloadHeader(payload)) {}
 
 MaskPayloadIterator::MaskPayloadIterator(const MaskPayloadIterator& other) :

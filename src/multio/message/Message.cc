@@ -43,20 +43,38 @@ std::string Message::tag2str(Tag t) {
 
 Message::Message() : Message(Message::Header{Message::Tag::Empty, Peer{}, Peer{}}) {}
 
-Message::Message(Header&& header, const eckit::Buffer& payload) :
-    Message(std::move(header), std::make_shared<eckit::Buffer>(payload, payload.size())) {}
+Message::Message(Header&& header) :
+    version_{protocolVersion()}, header_{std::move(header)}, payload_{PayloadReference{nullptr, 0}} {}
 
 Message::Message(Header&& header, eckit::Buffer&& payload) :
-    Message(std::move(header), std::make_shared<eckit::Buffer>(std::move(payload))) {}
+    version_{protocolVersion()},
+    header_{std::move(header)},
+    payload_{std::make_shared<eckit::Buffer>(std::move(payload))} {}
+Message::Message(Header&& header, const eckit::Buffer& payload) :
+    version_{protocolVersion()},
+    header_{std::move(header)},
+    payload_{std::make_shared<eckit::Buffer>(payload.data(), payload.size())} {}
+
+Message::Message(Header&& header, SharedPayload&& payload) :
+    version_{protocolVersion()}, header_{std::move(header)}, payload_{std::move(payload)} {}
+Message::Message(Header&& header, const SharedPayload& payload) :
+    version_{protocolVersion()}, header_{std::move(header)}, payload_{payload} {}
+
+
+// Message::Message(Header&& header, const eckit::Buffer& payload) :
+//     Message(std::move(header), std::make_shared<eckit::Buffer>(payload, payload.size())) {}
+
+// Message::Message(Header&& header, eckit::Buffer&& payload) :
+//     Message(std::move(header), std::make_shared<eckit::Buffer>(std::move(payload))) {}
 
 // Message::Message(Header&& header, std::shared_ptr<eckit::Buffer> payload) :
 //     Message(std::make_shared<Header>(std::move(header)), std::move(payload)) {}
 
-Message::Message(Header&& header, std::shared_ptr<eckit::Buffer>&& payload) :
-    version_{protocolVersion()}, header_{std::move(header)}, payload_{std::move(payload)} {}
+// Message::Message(Header&& header, std::shared_ptr<eckit::Buffer>&& payload) :
+//     version_{protocolVersion()}, header_{std::move(header)}, payload_{std::move(payload)} {}
 
-Message::Message(Header&& header, const std::shared_ptr<eckit::Buffer>& payload) :
-    version_{protocolVersion()}, header_{std::move(header)}, payload_{payload} {}
+// Message::Message(Header&& header, const std::shared_ptr<eckit::Buffer>& payload) :
+//     version_{protocolVersion()}, header_{std::move(header)}, payload_{payload} {}
 
 // Message::Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload) :
 //     version_{protocolVersion()}, header_{std::move(header)}, payload_{std::move(payload)} {}
@@ -65,6 +83,10 @@ Message::Message(Header&& header, const std::shared_ptr<eckit::Buffer>& payload)
 //     version_{protocolVersion()}, header_{std::move(header)}, payload_{payload} {}
 
 const Message::Header& Message::header() const {
+    return header_;
+}
+
+Message::Header& Message::header() {
     return header_;
 }
 
@@ -109,7 +131,7 @@ const std::string& Message::fieldId() const {
     return header().fieldId();
 }
 
-const Metadata& Message::metadata() const& {
+const Metadata& Message::metadata() const {
     return header_.metadata();
 }
 
@@ -117,20 +139,29 @@ const Metadata& Message::metadata() const& {
 //     return std::move(header_).metadata();
 // }
 
+Metadata& Message::modifyMetadata() {
+    return header_.modifyMetadata();
+}
+
 Message Message::modifyMetadata(Metadata&& md) const {
     return Message(header_.modifyMetadata(std::move(md)), payload_);
 };
 
-const eckit::Buffer& Message::payload() const {
-    return *payload_;
-}
-
-std::shared_ptr<eckit::Buffer> Message::sharedPayload() const {
+SharedPayload& Message::payload() {
     return payload_;
 }
 
+const SharedPayload& Message::payload() const {
+    return payload_;
+}
+
+void Message::acquire() {
+    header_.acquireMetadata();
+    payload_.acquire();
+}
+
 size_t Message::size() const {
-    return payload_->size();
+    return payload_.size();
 }
 
 void Message::encode(eckit::Stream& strm) const {

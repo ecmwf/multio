@@ -515,7 +515,7 @@ int multio_flush(multio_handle_t* mio, multio_metadata_t* md) {
             ASSERT(mio);
             ASSERT(md);
 
-            mio->dispatch(md->md, eckit::Buffer{0}, Message::Tag::Flush);
+            mio->dispatch(md->md, multio::message::PayloadReference{nullptr, 0}, Message::Tag::Flush);
         },
         mio);
 #else
@@ -531,7 +531,7 @@ int multio_notify(multio_handle_t* mio, multio_metadata_t* md) {
             ASSERT(mio);
             ASSERT(md);
 
-            mio->dispatch(md->md, eckit::Buffer{0}, Message::Tag::Notification);
+            mio->dispatch(md->md, multio::message::PayloadReference{nullptr, 0}, Message::Tag::Notification);
         },
         mio);
 #else
@@ -548,7 +548,8 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
             ASSERT(md);
 
             // eckit::Buffer domain_def{static_cast<void*>(data), size * sizeof(int), false};
-            eckit::Buffer domain_def{static_cast<void*>(data), size * sizeof(int)};
+            multio::message::PayloadReference domain_def{static_cast<void*>(data), size * sizeof(int)};
+
             mio->dispatch(md->md, std::move(domain_def), Message::Tag::Domain);
         },
         mio);
@@ -601,7 +602,8 @@ int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const 
             md->md->set("precision", "single");
 
             // eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(float), false};
-            eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(float)};
+            multio::message::PayloadReference field_vals{const_cast<void*>(static_cast<const void*>(data)),
+                                                         size * sizeof(float)};
 
             mio->dispatch(md->md, std::move(field_vals), Message::Tag::Field);
         },
@@ -621,7 +623,8 @@ int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const
             md->md->set("precision", "double");
 
             // eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(double), false};
-            eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(double)};
+            multio::message::PayloadReference field_vals{const_cast<void*>(static_cast<const void*>(data)),
+                                                         size * sizeof(double)};
 
             mio->dispatch(md->md, std::move(field_vals), Message::Tag::Field);
         },

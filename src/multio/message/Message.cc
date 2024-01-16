@@ -179,6 +179,31 @@ void Message::print(std::ostream& out) const {
         << ")";
 }
 
+
+LogMessage Message::logMessage() const {
+    return LogMessage{version_, header_.logHeader(), payload_.size()};
+}
+
+
+const std::string& LogMessage::fieldId() const {
+    if (!header_.fieldId_) {
+        if (std::shared_ptr<Metadata> md = header_.metadata_.lock()) {
+            header_.fieldId_ = md->toString();
+        }
+        else {
+            header_.fieldId_ = "<context lost>";
+        }
+    }
+    return *header_.fieldId_;
+}
+
+void LogMessage::print(std::ostream& out) const {
+    out << "Message("
+        << "version=" << version_ << ", tag=" << Message::tag2str(header_.tag_) << ", source=" << header_.source_
+        << ", destination=" << header_.destination_ << ", metadata=" << fieldId() << ", payload-size=" << payload_size_
+        << ")";
+}
+
 eckit::message::Message to_eckit_message(const Message& msg) {
     if (msg.tag() == Message::Tag::Grib) {
         codes_handle* h = codes_handle_new_from_message(nullptr, msg.payload().data(), msg.size());

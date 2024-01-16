@@ -11,6 +11,7 @@
 /// @author Domokos Sarmany
 /// @author Simon Smart
 /// @author Tiago Quintino
+/// @author Philipp Geier
 
 /// @date Jan 2019
 
@@ -22,6 +23,7 @@
 #include "multio/message/Metadata.h"
 #include "multio/message/Peer.h"
 #include "multio/message/SharedPayload.h"
+#include "multio/message/SharedMetadata.h"
 
 #include <memory>
 #include <optional>
@@ -39,6 +41,7 @@ class Message;
 namespace multio::message {
 
 // TODO: we may want to hash the payload (and the header?)
+struct LogMessage;
 
 class Message {
 public:  // types
@@ -56,6 +59,17 @@ public:  // types
         ENDTAG
     };
 
+
+    struct LogHeader {
+        Tag tag_;
+
+        Peer source_;
+        Peer destination_;
+
+        std::weak_ptr<Metadata> metadata_;
+        mutable std::optional<std::string> fieldId_;
+    };
+
     class Header {
     public:
         Header(const Header&) = default;
@@ -66,7 +80,7 @@ public:  // types
 
         Header(Tag tag, Peer src, Peer dst, std::string&& fieldId);
         Header(Tag tag, Peer src, Peer dst, Metadata&& md);
-        Header(Tag tag, Peer src, Peer dst, std::shared_ptr<Metadata> md = std::make_shared<message::Metadata>());
+        Header(Tag tag, Peer src, Peer dst, SharedMetadata md = SharedMetadata{});
 
         Tag tag() const;
 
@@ -97,10 +111,12 @@ public:  // types
             Metadata&& md) const;
 
         // Copy or acquire metadata object if only owned by this object
-        std::shared_ptr<Metadata> stealOrCopyMetadata();
+        SharedMetadata stealOrCopyMetadata() const;
 
         // Copy or acquire metadata object if only owned by this object
         void acquireMetadata();
+
+        LogHeader logHeader() const;
 
     private:
         Tag tag_;
@@ -108,10 +124,11 @@ public:  // types
         Peer source_;
         Peer destination_;
 
-        std::shared_ptr<Metadata> metadata_;
+        SharedMetadata metadata_;
         // encode fieldId_ lazily
         mutable std::optional<std::string> fieldId_;  // Make that a hash?
     };
+
 
     // class Content {
     // public:
@@ -155,6 +172,8 @@ public:  // methods
     // Message(Header&& header, const std::shared_ptr<eckit::Buffer>& payload);
     // // Message(std::shared_ptr<Header> header, std::shared_ptr<eckit::Buffer> payload);
 
+    LogMessage logMessage() const;
+
 public:
     const Header& header() const;
     Header& header();
@@ -182,7 +201,7 @@ public:
     const Metadata& metadata() const;
     Metadata& modifyMetadata();
 
-    Message modifyMetadata(Metadata&& md) const;
+    [[deprecated]] Message modifyMetadata(Metadata&& md) const;
 
     SharedPayload& payload();
     const SharedPayload& payload() const;
@@ -208,6 +227,23 @@ private:  // members
     Header header_;
     SharedPayload payload_;
 };
+
+
+struct LogMessage {
+    int version_;
+
+    Message::LogHeader header_;
+    std::size_t payload_size_;
+
+    const std::string& fieldId() const;
+    void print(std::ostream& out) const;
+
+    friend std::ostream& operator<<(std::ostream& s, const LogMessage& x) {
+        x.print(s);
+        return s;
+    }
+};
+
 
 eckit::message::Message to_eckit_message(const Message& msg);
 

@@ -107,6 +107,8 @@ list( APPEND multio_message_srcs
     message/MetadataMatcher.h
     message/MetadataSelector.cc
     message/MetadataSelector.h
+    message/SharedMetadata.cc
+    message/SharedMetadata.h
     message/SharedPayload.cc
     message/SharedPayload.h
     message/SharedPayloadException.cc

@@ -37,7 +37,7 @@ void AggregationCatalogue::addNew(const message::Message& msg) {
         messageMap_.emplace(msg.fieldId(),
                             message::Message{message::Message::Header{msg.header().tag(), msg.header().destination(),
                                                                       msg.header().destination(),
-                                                                      message::Metadata{msg.header().metadata()}},
+                                                                      msg.header().stealOrCopyMetadata()},
                                              eckit::Buffer{msg.globalSize() * sizeof(Precision)}});
         processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
     });

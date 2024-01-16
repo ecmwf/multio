@@ -27,7 +27,7 @@ extern "C" {
 
 #include "multio/LibMultio.h"
 
-#include "multio/util/ScopedTimer.h"
+#include "multio/util/Timing.h"
 
 
 namespace multio {
@@ -38,9 +38,9 @@ MaestroSink::MaestroSink(const ComponentConfiguration& compConf) : multio::sink:
     LOG_DEBUG_LIB(LibMultio) << *this << std::endl;
     readyCdoEnabled_ = compConf.parsedConfig().getBool("ready-cdo", true);
 
-    eckit::Timing timing;
+    util::Timing<> timing;
     {
-        util::ScopedTimer timer{timing};
+        util::ScopedTiming timer{timing};
         ASSERT(!::getenv("MSTRO_COMPONENT_NAME"));
         ASSERT(::getenv("COMPONENT_NAME"));
         auto componentName
@@ -61,26 +61,30 @@ MaestroSink::MaestroSink(const ComponentConfiguration& compConf) : multio::sink:
             readyCdo_.demand();
         }
     }
-    eckit::Log::info() << " MaestroSink: initialising Maestro has taken " << timing.elapsed_ << "s" << std::endl;
+    timing.process();
+    eckit::Log::info() << " MaestroSink: initialising Maestro has taken " << timing.elapsedTimeSeconds() << "s"
+                       << std::endl;
 }
 
 MaestroSink::~MaestroSink() {
 
-    eckit::Timing timing;
+    util::Timing<> timing;
     {
-        util::ScopedTimer timer{timing};
+        util::ScopedTiming timer{timing};
         if (readyCdoEnabled_)
             readyCdo_.dispose();
         mstro_finalize();
     }
-    eckit::Log::info() << " MaestroSink: finalising Maestro has taken " << timing.elapsed_ << "s" << std::endl;
+    timing.process();
+    eckit::Log::info() << " MaestroSink: finalising Maestro has taken " << timing.elapsedTimeSeconds() << "s"
+                       << std::endl;
 
     statistics_.report(eckit::Log::info());
 }
 
 void MaestroSink::write(eckit::message::Message blob) {
     LOG_DEBUG_LIB(LibMultio) << "MaestroSink::write()" << std::endl;
-    util::ScopedTiming timing(statistics_.sinkWriteTimer_, statistics_.sinkWriteTiming_);
+    util::ScopedTiming timing(statistics_.sinkWriteTiming_);
 
     MaestroMetadata md;
 
@@ -90,17 +94,17 @@ void MaestroSink::write(eckit::message::Message blob) {
     std::ostringstream os;
     os << md;
 
-    util::ScopedTimer timer{timing_};
+    util::ScopedTiming timer{timing_};
 
     std::string name = "";
     {
-        util::ScopedTiming timing(statistics_.sinkNameTimer_, statistics_.sinkNameTiming_);
+        util::ScopedTiming timing(statistics_.sinkNameTiming_);
         name = cdo_namer_.name(md);
     }
     LOG_DEBUG_LIB(LibMultio) << "Name: " << name << std::endl;
 
     {
-        util::ScopedTiming timing(statistics_.sinkCdoCreationTimer_, statistics_.sinkCdoCreationTiming_);
+        util::ScopedTiming timing(statistics_.sinkCdoCreationTiming_);
         offered_cdos_.emplace_back(name.c_str(), blob.data(), blob.length());
     }
     auto& cdo = offered_cdos_.back();
@@ -108,7 +112,7 @@ void MaestroSink::write(eckit::message::Message blob) {
     LOG_DEBUG_LIB(LibMultio) << "metadata: " << md << std::endl;
 
     for (const auto& kw : md.keys()) {
-        util::ScopedTiming timing(statistics_.sinkAttributeTimer_, statistics_.sinkAttributeTiming_);
+        util::ScopedTiming timing(statistics_.sinkAttributeTiming_);
         auto mkey = ".maestro.ecmwf." + kw;
         auto value = md.get<std::string>(kw);
 
@@ -130,7 +134,7 @@ void MaestroSink::write(eckit::message::Message blob) {
     LOG_DEBUG_LIB(LibMultio) << " *** Offer cdo " << name.c_str() << std::endl;
 
     {
-        util::ScopedTiming timing(statistics_.sinkCdoOfferTimer_, statistics_.sinkCdoOfferTiming_);
+        util::ScopedTiming timing(statistics_.sinkCdoOfferTiming_);
         cdo.offer();  // Submit field
         ++cdoCount_;
     }
@@ -140,7 +144,7 @@ void MaestroSink::flush() {
     {
         eckit::Log::info() << "MaestroSink::flush()" << std::endl;
 
-        util::ScopedTimer timer{timing_};
+        util::ScopedTiming timer{timing_};
 
         std::for_each(begin(offered_cdos_), end(offered_cdos_), [](MaestroCdo& cdo) {
             LOG_DEBUG_LIB(LibMultio) << "Withdrawing CDO: " << cdo << std::endl;
@@ -150,9 +154,10 @@ void MaestroSink::flush() {
 
         offered_cdos_.clear();
     }
+    timing_.process();
     eckit::Log::info() << " MaestroSink: CDO count = " << cdoCount_ << " -- writing the last step has taken "
-                       << timing_.elapsed_ << "s" << std::endl;
-    timing_ = eckit::Timing{};  // Resetting
+                       << timing_.elapsedTimeSeconds() << "s" << std::endl;
+    timing_ = util::Timing<>{};  // Resetting
 }
 
 void MaestroSink::print(std::ostream& os) const {

@@ -26,7 +26,7 @@
 #include "GridDownloader.h"
 #include "multio/LibMultio.h"
 #include "multio/config/PathConfiguration.h"
-#include "multio/util/ScopedTimer.h"
+#include "multio/util/Timing.h"
 
 namespace multio::action {
 
@@ -239,7 +239,7 @@ message::Metadata applyOverwrites(const eckit::LocalConfiguration& overwrites, m
 
 message::Message Encode::encodeField(const message::Message& msg, const std::optional<std::string>& gridUID) const {
     try {
-        util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+        util::ScopedTiming timing{statistics_.actionTiming_};
         auto md = this->overwrite_ ? applyOverwrites(*this->overwrite_, msg.metadata()) : msg.metadata();
         if (gridUID) {
             md.set("uuidOfHGrid", gridUID.value());

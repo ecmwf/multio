@@ -1,0 +1,132 @@
+#pragma once
+
+#include "eckit/log/Statistics.h"
+
+#include <time.h>
+#include <array>
+#include <chrono>
+
+namespace multio::util {
+
+template <typename Clock = std::chrono::steady_clock, std::size_t NAgg = 16>
+class Timing {
+    using Duration = typename Clock::duration;
+    using TimePoint = typename Clock::time_point;
+
+public:
+    void tic() {
+        starts_[ind_] = Clock::now();
+        cpu_starts_[ind_] = std::clock();
+    }
+
+    void toc() {
+        ends_[ind_] = Clock::now();
+        cpu_ends_[ind_] = std::clock();
+
+        ++ind_;
+        ++count_;
+        if (ind_ >= NAgg) {
+            process();
+        }
+    }
+
+    Duration elapsedTime() const { return duration_; }
+
+    double elapsedTimeSeconds() const {
+        return std::chrono::duration<double, std::chrono::seconds::period>(duration_).count();
+    }
+
+    // To be devided by CLOCKS_PER_SEC
+    std::clock_t elapsedCPU() const { return cpu_duration_; }
+
+    //
+    double elapsedCPUSeconds() const { return ((double)cpu_duration_) / CLOCKS_PER_SEC; }
+
+    std::size_t updates() const { return count_; }
+
+    operator eckit::Timing() const {
+        process();
+        return eckit::Timing(elapsedTimeSeconds(), elapsedCPUSeconds(), updates());
+    }
+
+    void process() const {
+        if (ind_ == 0)
+            return;
+
+        // Loop over compile time constant to support auto vectorization.
+        // For indices >= ind_ the computed difference should be 0
+        for (std::size_t i = 0; i < NAgg; ++i) {
+            duration_ += ends_[i] - starts_[i];
+        }
+        for (std::size_t i = 0; i < NAgg; ++i) {
+            cpu_duration_ += cpu_ends_[i] - cpu_starts_[i];
+        }
+
+        starts_.fill(TimePoint{});
+        ends_.fill(TimePoint{});
+        cpu_starts_.fill(0);
+        cpu_ends_.fill(0);
+
+        ind_ = 0;
+    }
+
+private:
+    mutable std::size_t ind_{0};
+    std::size_t count_{0};
+
+    mutable Duration duration_{0};
+    // Value initialize arrays to 0 - their diff should be 0 as well
+    mutable std::array<TimePoint, NAgg> starts_{};
+    mutable std::array<TimePoint, NAgg> ends_{};
+
+    mutable clock_t cpu_duration_{0};
+    // Value initialize arrays to 0 - their diff should be 0 as well
+    mutable std::array<std::clock_t, NAgg> cpu_starts_{};
+    mutable std::array<std::clock_t, NAgg> cpu_ends_{};
+};
+
+template <typename Clock, std::size_t NAgg>
+std::ostream& operator<<(std::ostream& os, const Timing<Clock, NAgg>& t) {
+    t.process();
+    os << "Time: " << t.elapsedTimeSeconds() << "s, Cpu: " << t.elapsedCPUSeconds() << "s, Updates: " << t.updates();
+    return os;
+}
+
+
+template <typename Clock = std::chrono::steady_clock, std::size_t NAgg = 16>
+class ScopedTiming {
+    Timing<Clock, NAgg>& timing_;
+
+public:
+    explicit ScopedTiming(Timing<Clock, NAgg>& t) : timing_{t} { timing_.tic(); }
+    ~ScopedTiming() { timing_.toc(); }
+};
+
+// Deduction guide
+template <typename Clock = std::chrono::steady_clock, std::size_t NAgg = 16>
+ScopedTiming(Timing<Clock, NAgg>&) -> ScopedTiming<Clock, NAgg>;
+
+// class ScopedTimer {
+//     eckit::Timing& timing_;
+//     eckit::Timer timer_;
+
+// public:
+//     explicit ScopedTimer(eckit::Timing& t) : timing_{t} { timer_.start(); }
+//     ~ScopedTimer() {
+//         timer_.stop();
+//         timing_ += timer_;
+//     }
+// };
+
+// class ScopedTiming {
+//     eckit::Timer& timer_;
+//     eckit::Timing& timing_;
+//     eckit::Timing start_;
+
+// public:
+//     ScopedTiming(eckit::Timer& timer, eckit::Timing& timing) : timer_{timer}, timing_{timing}, start_{timer} {}
+
+//     ~ScopedTiming() { timing_ += eckit::Timing{timer_} - start_; }
+// };
+
+}  // namespace multio::util

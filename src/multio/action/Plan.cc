@@ -20,8 +20,8 @@
 #include "multio/LibMultio.h"
 #include "multio/action/Action.h"
 #include "multio/config/PlanConfiguration.h"
-#include "multio/util/ScopedTimer.h"
 #include "multio/util/Substitution.h"
+#include "multio/util/Timing.h"
 #include "multio/util/logfile_name.h"
 
 using eckit::LocalConfiguration;
@@ -112,7 +112,7 @@ Plan::~Plan() {
 }
 
 void Plan::process(message::Message msg) {
-    // util::ScopedTimer timer{timing_};
+    util::ScopedTiming<> timer{timing_};
     message::LogMessage lmsg = msg.logMessage();
     withFailureHandling([this, msg = std::move(msg)]() mutable { root_->execute(std::move(msg)); },
                         // For failure handling a copy of the message needs to be captured... Note than the move

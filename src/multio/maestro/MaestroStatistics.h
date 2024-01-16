@@ -1,6 +1,6 @@
 #pragma once
 
-#include "eckit/log/Statistics.h"
+#include "multio/util/Timing.h"
 
 namespace multio {
 
@@ -8,43 +8,26 @@ class MaestroStatistics : public eckit::Statistics {
 public:
     MaestroStatistics();
 
-    eckit::Timing sinkWriteTiming_;
-    eckit::Timer sinkWriteTimer_;
-    eckit::Timing sinkNameTiming_;
-    eckit::Timer sinkNameTimer_;
-    eckit::Timing sinkAttributeTiming_;
-    eckit::Timer sinkAttributeTimer_;
-    eckit::Timing sinkCdoCreationTiming_;
-    eckit::Timer sinkCdoCreationTimer_;
-    eckit::Timing sinkCdoOfferTiming_;
-    eckit::Timer sinkCdoOfferTimer_;
+    util::Timing<> sinkWriteTiming_;
+    util::Timing<> sinkNameTiming_;
+    util::Timing<> sinkAttributeTiming_;
+    util::Timing<> sinkCdoCreationTiming_;
+    util::Timing<> sinkCdoOfferTiming_;
 
-    eckit::Timing syphonInitTiming_;
-    eckit::Timer syphonInitTimer_;
-    eckit::Timing syphonExecuteTiming_;
-    eckit::Timer syphonExecuteTimer_;
-    eckit::Timing syphonConsumeTiming_;
-    eckit::Timer syphonConsumeTimer_;
-    eckit::Timing syphonJoinLeaveTiming_;
-    eckit::Timer syphonJoinLeaveTimer_;
-    eckit::Timing syphonOfferTiming_;
-    eckit::Timer syphonOfferTimer_;
-    eckit::Timing syphonBrokerTiming_;
-    eckit::Timer syphonBrokerTimer_;
-    eckit::Timing syphonFinishTiming_;
-    eckit::Timer syphonFinishTimer_;
+    util::Timing<> syphonInitTiming_;
+    util::Timing<> syphonExecuteTiming_;
+    util::Timing<> syphonConsumeTiming_;
+    util::Timing<> syphonJoinLeaveTiming_;
+    util::Timing<> syphonOfferTiming_;
+    util::Timing<> syphonBrokerTiming_;
+    util::Timing<> syphonFinishTiming_;
 
-    eckit::Timing workerProcessTiming_;
-    eckit::Timer workerProcessTimer_;
-    eckit::Timing workerProcessPopWorkTiming_;
-    eckit::Timer workerProcessPopWorkTimer_;
-    eckit::Timing workerProcessInputTiming_;
-    eckit::Timer workerProcessInputTimer_;
-    eckit::Timing workerProcessJobPrepareTiming_;
-    eckit::Timer workerProcessJobPrepareTimer_;
+    util::Timing<> workerProcessTiming_;
+    util::Timing<> workerProcessPopWorkTiming_;
+    util::Timing<> workerProcessInputTiming_;
+    util::Timing<> workerProcessJobPrepareTiming_;
 
-    eckit::Timing mirTiming_;
-    eckit::Timer mirTimer_;
+    util::Timing<> mirTiming_;
 
     void report(std::ostream& out, const char* indent = "") const;
 };

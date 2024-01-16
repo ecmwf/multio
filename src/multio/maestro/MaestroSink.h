@@ -15,13 +15,13 @@
 
 #include <deque>
 
-#include "eckit/log/Statistics.h"
 
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/maestro/CdoNamer.h"
 #include "multio/maestro/MaestroCdo.h"
 #include "multio/maestro/MaestroStatistics.h"
 #include "multio/sink/DataSink.h"
+#include "multio/util/Timing.h"
 
 
 //--------------------------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ private:
     std::vector<MaestroCdo> offered_cdos_;
 
     CdoNamer cdo_namer_;
-    eckit::Timing timing_;
+    util::Timing<> timing_;
     MaestroStatistics statistics_;
 
     bool readyCdoEnabled_ = true;

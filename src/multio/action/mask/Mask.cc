@@ -87,9 +87,7 @@ void Mask::applyMask(message::Message& msg) const {
     auto git = static_cast<Precision*>(msg.payload().modifyData());
 
     for (const auto bval : bitmask) {
-        if (not bval) {
-            *git = static_cast<Precision>(missingValue_);
-        }
+        *git = (1 - bval) * static_cast<Precision>(missingValue_) + bval * *git;
         ++git;
     }
 }
@@ -104,9 +102,7 @@ void Mask::applyOffset(message::Message& msg) const {
     auto git = static_cast<Precision*>(msg.payload().modifyData());
 
     for (const auto bval : bitmask) {
-        if (bval) {
-            *git += static_cast<Precision>(offsetValue_);
-        }
+        *git += bval * static_cast<Precision>(offsetValue_);
         ++git;
     }
 }

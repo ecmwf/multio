@@ -19,7 +19,6 @@
 #include "multio/LibMultio.h"
 #include "multio/message/Glossary.h"
 #include "multio/sink/DataSink.h"
-#include "multio/util/ScopedTimer.h"
 
 namespace multio::action {
 
@@ -45,7 +44,7 @@ void SingleFieldSink::executeImpl(Message msg) {
 }
 
 void SingleFieldSink::write(Message msg) {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     std::string paramOrId;
     auto searchParam = msg.metadata().find(glossary().param);
@@ -81,7 +80,7 @@ void SingleFieldSink::write(Message msg) {
 }
 
 void SingleFieldSink::flush() const {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     eckit::Log::debug<LibMultio>() << "*** Executing single-field flush for data sinks... " << std::endl;
 

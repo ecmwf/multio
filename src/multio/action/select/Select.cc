@@ -15,7 +15,6 @@
 #include "eckit/exception/Exceptions.h"
 
 #include "multio/LibMultio.h"
-#include "multio/util/ScopedTimer.h"
 
 using multio::message::Message;
 using multio::message::MetadataSelectors;
@@ -33,7 +32,7 @@ void Select::executeImpl(Message msg) {
 }
 
 bool Select::matches(const Message& msg) const {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
     return selectors_.matches(msg);
 }
 

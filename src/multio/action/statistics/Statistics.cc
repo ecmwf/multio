@@ -19,7 +19,7 @@
 #include "multio/LibMultio.h"
 #include "multio/message/Glossary.h"
 #include "multio/message/Message.h"
-#include "multio/util/ScopedTimer.h"
+#include "multio/util/Timing.h"
 
 namespace multio::action {
 
@@ -122,12 +122,12 @@ void Statistics::executeImpl(message::Message msg) {
     IOmanager_->setCurrStep(cfg.restartStep());
     IOmanager_->setKey(key);
 
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     if (fieldStats_.find(key) == fieldStats_.end()) {
         fieldStats_[key] = std::make_unique<TemporalStatistics>(periodUpdater_, operations_, msg, IOmanager_, cfg);
         if (cfg.solver_send_initial_condition()) {
-            util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
             return;
         }
     }
@@ -148,7 +148,6 @@ void Statistics::executeImpl(message::Message msg) {
                                          std::move(payload)});
         }
 
-        util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
         fieldStats_.at(key)->updateWindow(msg, cfg);
     }

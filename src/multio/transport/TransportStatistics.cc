@@ -16,8 +16,9 @@ void TransportStatistics::report(std::ostream& out, const char* indent) const {
     reportCount(out, "    -- Send count (block)", sendCount_, indent);
     reportBytes(out, "    -- Sending data (block)", sendSize_, indent);
     reportTime(out, "    -- Send time (block)", sendTiming_, indent);
-    if (sendTiming_.elapsed_) {
-        reportRate(out, "    -- Send rate (block)", sendSize_ / sendTiming_.elapsed_, indent);
+    double sendTime = sendTiming_.elapsedTimeSeconds();
+    if (sendTime > 0.0) {
+        reportRate(out, "    -- Send rate (block)", sendSize_ / sendTime, indent);
     }
 
     reportTime(out, "    -- Serialise data", encodeTiming_, indent);
@@ -26,8 +27,9 @@ void TransportStatistics::report(std::ostream& out, const char* indent) const {
     reportCount(out, "    -- Receive count", receiveCount_, indent);
     reportBytes(out, "    -- Receiving data", receiveSize_, indent);
     reportTime(out, "    -- Receive timing", receiveTiming_, indent);
-    if (receiveTiming_.elapsed_) {
-        reportRate(out, "    -- Receive rate", receiveSize_ / receiveTiming_.elapsed_, indent);
+    double receiveTime = receiveTiming_.elapsedTimeSeconds();
+    if (receiveTime > 0.0) {
+        reportRate(out, "    -- Receive rate", receiveSize_ / receiveTime, indent);
     }
 
     reportTime(out, "    -- Push-queue timing", pushToQueueTiming_, indent);

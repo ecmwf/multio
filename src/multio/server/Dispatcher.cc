@@ -10,7 +10,6 @@
 #include "multio/domain/Mappings.h"
 #include "multio/domain/Mask.h"
 
-#include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
 
 using eckit::LocalConfiguration;
@@ -21,7 +20,7 @@ using config::ComponentConfiguration;
 
 Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue) :
     FailureAware(compConf), queue_{queue} {
-    timer_.start();
+    timingAll_.tic();
 
     eckit::Log::debug<LibMultio>() << compConf.parsedConfig() << std::endl;
 
@@ -38,12 +37,15 @@ util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, 
 
 Dispatcher::~Dispatcher() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-    logFile << "\n ** Total wall-clock time spent in dispatcher " << eckit::Timing{timer_}.elapsed_
-            << "s -- of which time spent with dispatching " << timing_ << "s" << std::endl;
+    timingAll_.toc();
+    timingAll_.process();
+    timing_.process();
+    logFile << "\n ** Total time spent in dispatcher " << timingAll_.elapsedTimeSeconds()
+            << "s -- of which time spent with dispatching " << timing_.elapsedTimeSeconds() << "s" << std::endl;
 }
 
 void Dispatcher::dispatch() {
-    util::ScopedTimer timer{timing_};
+    util::ScopedTiming<> timer{timing_};
     withFailureHandling([&]() {
         try {
             message::Message msg;

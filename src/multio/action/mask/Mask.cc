@@ -15,7 +15,6 @@
 #include "eckit/log/Log.h"
 
 #include "multio/domain/Mask.h"
-#include "multio/util/ScopedTimer.h"
 
 #include "multio/util/PrecisionTag.h"
 
@@ -51,7 +50,7 @@ void Mask::executeImpl(message::Message msg) {
 
 template <typename Precision>
 message::Message Mask::createMasked(message::Message msg) const {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     msg.acquire();
     // Now metadata and payload can be modified

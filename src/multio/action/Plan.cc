@@ -55,7 +55,6 @@ LocalConfiguration rootConfig(const LocalConfiguration& config, const std::strin
 
 }  // namespace
 
-
 std::vector<std::unique_ptr<action::Plan>> Plan::makePlans(
     const std::vector<eckit::LocalConfiguration>& componentConfig, const config::MultioConfiguration& multioConf,
     message::MetadataSelectors& selectors) {

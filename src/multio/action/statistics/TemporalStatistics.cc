@@ -10,31 +10,6 @@
 
 namespace multio::action {
 
-namespace {
-bool solverResetAccumulatedFields(const message::Message& msg, const StatisticsConfiguration& cfg) {
-
-    if (cfg.solverResetAccumulatedFields() == "hour") {
-        return isBeginningOfHour(msg, cfg);
-    }
-    if (cfg.solverResetAccumulatedFields() == "day") {
-        return isBeginningOfDay(msg, cfg);
-    }
-    if (cfg.solverResetAccumulatedFields() == "month") {
-        return isBeginningOfMonth(msg, cfg);
-    }
-    if (cfg.solverResetAccumulatedFields() == "year") {
-        return isBeginningOfYear(msg, cfg);
-    }
-    if (cfg.solverResetAccumulatedFields() == "never") {
-        return false;
-    }
-
-    std::ostringstream os;
-    os << "Invalid reset period of accumulated fields :: " << cfg.solverResetAccumulatedFields() << std::endl;
-    throw eckit::UserError(os.str(), Here());
-}
-}  // namespace
-
 
 TemporalStatistics::TemporalStatistics(const std::shared_ptr<PeriodUpdater>& periodUpdater,
                                        const std::vector<std::string>& operations, const message::Message& msg,
@@ -65,10 +40,9 @@ void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfi
 
 void TemporalStatistics::updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) {
     LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** Update Window " << std::endl;
-    bool sraf = solverResetAccumulatedFields(msg, cfg);
     window_.updateWindow(periodUpdater_->updatePeriodStart(msg, cfg), periodUpdater_->updatePeriodEnd(msg, cfg));
     for (auto& stat : statistics_) {
-        sraf ? stat->updateWindow() : stat->updateWindow(msg.payload().data(), msg.size());
+        stat->updateWindow(msg.payload().data(), msg.size(), msg, cfg);
     }
     return;
 }

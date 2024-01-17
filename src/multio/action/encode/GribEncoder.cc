@@ -433,10 +433,8 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
             significanceOfReferenceTime = lookUpLong(overwrites, "significanceOfReferenceTime");
         }
     }
-    if (significanceOfReferenceTime) {
-        if (gribEdition == "2") {
-            g.setValue("significanceOfReferenceTime", *significanceOfReferenceTime);
-        }
+    if ((gribEdition == "2") && significanceOfReferenceTime) {
+        g.setValue("significanceOfReferenceTime", *significanceOfReferenceTime);
     }
 
     tryMapStepToTimeAndCheckTime(md);
@@ -506,7 +504,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         auto previousDateTime = util::wrapDateTime(
             {util::toDateInts(md.getLong("previousDate")), util::toTimeInts(md.getLong("previousTime"))});
 
-                // Now just deal with GRIB2
+        // Now just deal with GRIB2
         g.setValue("yearOfEndOfOverallTimeInterval", currentDateTime.date.year);
         g.setValue("monthOfEndOfOverallTimeInterval", currentDateTime.date.month);
         g.setValue("dayOfEndOfOverallTimeInterval", currentDateTime.date.day);
@@ -581,8 +579,10 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         // 255 (MISSING) as typeOfTimeIncrement
         g.setValue(
             "typeOfTimeIncrement",
-            (timeRef == "start" ? 2
-                                : (((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
+            (timeRef == "start"
+                 ? 2
+                 : (((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255
+                                                                                                                 : 1)));
 
         if (const auto timeIncrement = lookUpLong(md, "timeIncrement"); timeIncrement) {
             if (*timeIncrement != 0) {

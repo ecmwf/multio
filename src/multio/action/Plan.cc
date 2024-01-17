@@ -79,7 +79,7 @@ Plan::Plan(std::tuple<ComponentConfiguration, std::string>&& confAndName) :
 
     if (enabled_) {
         root_ = ActionFactory::instance().build(root.getString("type"),
-            ComponentConfiguration(root, compConf.multioConfig()));
+                                                ComponentConfiguration(root, compConf.multioConfig()));
     }
 }
 

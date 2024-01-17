@@ -22,7 +22,9 @@ public:
 
     virtual void updateData(const void* val, long sz) = 0;
 
-    virtual void updateWindow(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) = 0;
+    virtual void updateWindow(const void* data, long sz, const message::Message& msg,
+                              const StatisticsConfiguration& cfg)
+        = 0;
     virtual void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) = 0;
 
     virtual void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const = 0;

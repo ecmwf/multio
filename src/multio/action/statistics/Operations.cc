@@ -14,7 +14,7 @@ std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::s
         for (const auto& op : opNames) {
             stats.push_back(make_operation<Precision>(op, msg.size(), IOmanager, win, cfg));
             if (cfg.solver_send_initial_condition()) {
-                stats.back()->init(msg.payload().data(), msg.size());
+                stats.back()->init(msg.payload().data(), msg.size(), msg, cfg );
             }
             else {
                 if (stats.back()->needStepZero()) {
@@ -23,7 +23,7 @@ std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::s
                     throw eckit::UserError(os.str(), Here());
                 }
                 else {
-                    stats.back()->init();
+                    stats.back()->init(msg, cfg);
                 }
             }
         }

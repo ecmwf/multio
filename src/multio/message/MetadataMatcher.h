@@ -13,8 +13,8 @@
 
 #pragma once
 
+#include <map>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -48,7 +48,8 @@ private:  // methods
     void print(std::ostream& os) const;
 
 private:  // members
-    std::unordered_map<typename MetadataTypes::KeyType, std::unordered_set<MetadataValue>> matcher_;
+    // Use vectorbecause we only iterate over key-pair values
+    std::vector<std::pair<typename MetadataTypes::KeyType, std::unordered_set<MetadataValue>>> matcher_;
 };
 
 //--------------------------------------------------------------------------------------------------

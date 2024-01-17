@@ -80,6 +80,7 @@ public:  // types
 
         Header(Tag tag, Peer src, Peer dst, std::string&& fieldId);
         Header(Tag tag, Peer src, Peer dst, Metadata&& md);
+        // TODO optimize default construction - avoid make shared to optimize cases of default initialization + assignment
         Header(Tag tag, Peer src, Peer dst, SharedMetadata md = SharedMetadata{});
 
         Tag tag() const;

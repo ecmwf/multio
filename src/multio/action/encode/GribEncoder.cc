@@ -242,7 +242,12 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     if (!hasTypeOfLevel) {
         const auto wam_levtype = lookUpLong(md, "levtype_wam");
         if (wam_levtype) {
-            g.setValue("indicatorOfTypeOfLevel", wam_levtype);
+            if (gribEdition == "1") {
+                g.setValue("indicatorOfTypeOfLevel", wam_levtype);
+            }
+            else {
+                g.setValue("typeOfLevel", md.getString("levtype"));
+            }
         }
         else if (hasGridType && eckit::StringTools::lower(gridType) != "healpix") {
             withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),

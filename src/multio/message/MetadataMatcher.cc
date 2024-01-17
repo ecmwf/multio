@@ -15,6 +15,8 @@ namespace multio::message {
 //--------------------------------------------------------------------------------------------------
 
 MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
+    std::map<typename MetadataTypes::KeyType, std::unordered_set<MetadataValue>> matcher;
+
     for (const auto& k : cfg.keys()) {
         // TODO Use config visitor once added to eckit
         eckit::LocalConfiguration cfgK;
@@ -34,7 +36,7 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
                 s.emplace(std::move(*optMetadataValue));
                 ++i;
             }
-            matcher_.emplace(k, std::move(s));
+            matcher.emplace(k, std::move(s));
         }
         else {
             auto optMetadataValue = tryToMetadataValue(cfgK.get());
@@ -44,8 +46,14 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
                     << "\" can not be represented by an internal metadata value: " << cfgK.get();
                 throw MetadataException(oss.str());
             }
-            matcher_.emplace(k, std::unordered_set<MetadataValue>{std::move(*optMetadataValue)});
+            matcher.emplace(k, std::unordered_set<MetadataValue>{std::move(*optMetadataValue)});
         }
+    }
+
+    // Now copy to vector that will get iteratied in future
+    matcher_.reserve(matcher.size());
+    for (auto&& kv : std::move(matcher)) {
+        matcher_.push_back(std::move(kv));
     }
 }
 

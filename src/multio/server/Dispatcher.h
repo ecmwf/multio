@@ -69,7 +69,7 @@ public:
                                                util::DefaultFailureState&) const override;
 
 private:
-    void handle(const message::Message& msg) const;
+    void handle(message::Message msg) const;
 
     eckit::Queue<message::Message>& queue_;
     std::vector<std::unique_ptr<action::Plan>> plans_;

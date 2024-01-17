@@ -264,7 +264,7 @@ Message MpiTransport::receive() {
         while (not msgPack_.empty()) {
             util::ScopedTiming retTiming{statistics_.returnTiming_};
             //! TODO For switch to MPMC queue: combine front() and pop()
-            auto msg = msgPack_.front();
+            auto msg = std::move(msgPack_.front());
             msgPack_.pop();
             return msg;
         }
@@ -276,7 +276,7 @@ Message MpiTransport::receive() {
             while (strm.position() < streamArgs.size) {
                 util::ScopedTiming decodeTiming{statistics_.decodeTiming_};
                 auto msg = decodeMessage(strm);
-                msgPack_.push(msg);
+                msgPack_.push(std::move(msg));
             }
             streamArgs.buffer->status.store(BufferStatus::available, std::memory_order_release);
         }

@@ -51,7 +51,7 @@ void Dispatcher::dispatch() {
             message::Message msg;
             auto sz = queue_.pop(msg);
             while (sz >= 0) {
-                handle(msg);
+                handle(std::move(msg));
                 LOG_DEBUG_LIB(multio::LibMultio) << "Size of the dispatch queue: " << sz << std::endl;
                 sz = queue_.pop(msg);
             }
@@ -63,17 +63,18 @@ void Dispatcher::dispatch() {
     });
 }
 
-void Dispatcher::handle(const message::Message& msg) const {
+void Dispatcher::handle(message::Message msg) const {
     switch (msg.tag()) {
         case message::Message::Tag::Domain:
-            domain::Mappings::instance().add(msg);
+            domain::Mappings::instance().add(std::move(msg));
             break;
 
         case message::Message::Tag::Mask:
-            domain::Mask::instance().add(msg);
+            domain::Mask::instance().add(std::move(msg));
             break;
 
         default:
+            // TODO add proper PlanExecuter that checks select paths befare...
             for (const auto& plan : plans_) {
                 plan->process(msg);
             }

@@ -16,6 +16,7 @@
 
 #include "multio/message/SharedPayload.h"
 #include "multio/util/BinaryUtils.h"
+#include "multio/util/VariantHelpers.h"
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/io/Buffer.h"
@@ -261,21 +262,24 @@ eckit::Buffer encodeMask(const T* maskVals, const std::size_t size) {
 //------------------------------------------------------------------------------
 
 // Iterator for decoding...
-class MaskPayloadIterator {
+class RunLengthIterator {
 public:
-    using This = MaskPayloadIterator;
+    using This = RunLengthIterator;
 
     using iterator_category = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
-    using value_type = bool;
-    using pointer = const bool*;
-    using reference = const bool&;
+    using value_type = std::pair<bool, std::size_t>;
+    using pointer = const std::pair<bool, std::size_t>*;
+    using reference = const std::pair<bool, std::size_t>&;
 
-    MaskPayloadIterator(message::PayloadReference const& payload, MaskPayloadHeader header, bool toEnd = false);
-    MaskPayloadIterator(message::PayloadReference const& payload);
+    RunLengthIterator(message::PayloadReference const& payload, MaskPayloadHeader header, bool toEnd = false);
+    RunLengthIterator(message::PayloadReference const& payload);
 
-    MaskPayloadIterator(const This& other);
-    MaskPayloadIterator(This&& other) noexcept;
+    RunLengthIterator(const This& other) = default;
+    RunLengthIterator(This&& other) noexcept = default;
+
+    RunLengthIterator& operator=(const RunLengthIterator&) = default;
+    RunLengthIterator& operator=(RunLengthIterator&&) = default;
 
     reference operator*() const;
     reference operator*();
@@ -292,16 +296,65 @@ public:
     bool operator!=(const This& other) const noexcept;
 
 private:
-    message::PayloadReference const& payload_;
+    message::PayloadReference payload_;
     MaskPayloadHeader header_;
     std::size_t index_;                   // Global index of the bit
     std::size_t runLengthOffset_;         // runLength only: offset of the payload...
     std::size_t runLengthRemainingBits_;  // runLength only
 
-    uint64_t runLengthNum_;         // runLength only: decoded number of consecutive 0 or 1
-    uint64_t runLengthNumCounter_;  // runLength only: count up to runLengthNum_ - then the next offset and runLengthNum
-                                    // is evaluated. Val_ then toggles
+    std::pair<bool, std::size_t> val_;
+
+    void updateValue() noexcept;
+};
+
+
+class MaskPayloadIterator {
+public:
+    using This = MaskPayloadIterator;
+
+    using iterator_category = std::forward_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using value_type = bool;
+    using pointer = const bool*;
+    using reference = const bool&;
+
+    MaskPayloadIterator(message::PayloadReference const& payload, MaskPayloadHeader header, bool toEnd = false);
+    MaskPayloadIterator(message::PayloadReference const& payload);
+
+    MaskPayloadIterator(const This& other) = default;
+    MaskPayloadIterator(This&& other) noexcept = default;
+
+    MaskPayloadIterator& operator=(const MaskPayloadIterator&) = default;
+    MaskPayloadIterator& operator=(MaskPayloadIterator&&) = default;
+
+    reference operator*() const;
+    reference operator*();
+
+    pointer operator->() const;
+    pointer operator->();
+
+    This& operator++();
+
+    This operator++(int);
+
+    bool operator==(const This& other) const noexcept;
+
+    bool operator!=(const This& other) const noexcept;
+
+private:
+    message::PayloadReference payload_;
+    MaskPayloadHeader header_;
+    std::size_t index_;  // Global index of the bit
     bool val_;
+
+
+    struct RL {
+        RunLengthIterator it;
+        uint64_t counter;  // runLength only: count up to runLengthNum_ - then the next offset and runLengthNum
+                           // is evaluated. Val_ then toggles
+    };
+
+    std::optional<RL> rl_;
 
     void updateValue() noexcept;
 };
@@ -309,11 +362,14 @@ private:
 
 //------------------------------------------------------------------------------
 
-class EncodedMaskPayload {
+//  General container it access with a bitmask iterator
+class EncodedBitMaskPayload {
 public:
-    EncodedMaskPayload(const message::PayloadReference& pr) :
-        payload_(pr), header_(decodeMaskPayloadHeader(payload_)) {}
-    EncodedMaskPayload(const eckit::Buffer& buf) :
+    EncodedBitMaskPayload(const message::PayloadReference& pr, const MaskPayloadHeader& header) :
+        payload_(pr), header_(header) {}
+    EncodedBitMaskPayload(const message::PayloadReference& pr) :
+        EncodedBitMaskPayload(pr, decodeMaskPayloadHeader(payload_)) {}
+    EncodedBitMaskPayload(const eckit::Buffer& buf) :
         payload_(message::PayloadReference{buf.data(), buf.size()}), header_(decodeMaskPayloadHeader(payload_)) {}
 
     MaskPayloadIterator begin() const { return MaskPayloadIterator(payload_, header_); }
@@ -330,6 +386,39 @@ private:
     message::PayloadReference payload_;
     MaskPayloadHeader header_;
 };
+
+
+// Specialized container only applicable for run length encoded payload
+class EncodedRunLengthPayload {
+public:
+    EncodedRunLengthPayload(const message::PayloadReference& pr, const MaskPayloadHeader& header) :
+        payload_(pr), header_(header) {}
+    EncodedRunLengthPayload(const message::PayloadReference& pr) :
+        EncodedRunLengthPayload(pr, decodeMaskPayloadHeader(payload_)) {}
+    EncodedRunLengthPayload(const eckit::Buffer& buf) :
+        payload_(message::PayloadReference{buf.data(), buf.size()}), header_(decodeMaskPayloadHeader(payload_)) {}
+
+    RunLengthIterator begin() const { return RunLengthIterator(payload_, header_); }
+
+    RunLengthIterator cbegin() const { return RunLengthIterator(payload_, header_); }
+
+    RunLengthIterator end() const { return RunLengthIterator(payload_, header_, true); }
+
+    RunLengthIterator cend() const { return RunLengthIterator(payload_, header_, true); }
+
+    std::size_t size() const noexcept { return header_.numBits; }
+
+private:
+    message::PayloadReference payload_;
+    MaskPayloadHeader header_;
+};
+
+
+using EncodedMaskPayload = std::variant<EncodedBitMaskPayload, EncodedRunLengthPayload>;
+
+EncodedMaskPayload getEncodedMaskPayload(const message::PayloadReference& pr, const MaskPayloadHeader& header);
+EncodedMaskPayload getEncodedMaskPayload(const message::PayloadReference& pr);
+EncodedMaskPayload getEncodedMaskPayload(const eckit::Buffer& buf);
 
 
 //------------------------------------------------------------------------------

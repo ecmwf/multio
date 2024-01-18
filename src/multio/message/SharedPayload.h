@@ -38,6 +38,13 @@ struct PayloadReference {
     const void* data() const noexcept { return data_; }
     std::size_t size() const noexcept { return size_; }
 
+    bool operator==(const PayloadReference& other) const noexcept {
+        return (data_ == other.data_) && (size_ == other.size_);
+    }
+    bool operator!=(const PayloadReference& other) const noexcept {
+        return (data_ != other.data_) || (size_ != other.size_);
+    }
+
 
     operator const char*() const { return static_cast<const char*>(data_); };
     operator const void*() const { return data_; };

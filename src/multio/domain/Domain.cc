@@ -129,7 +129,7 @@ void Structured::toBitmask(const message::Message& local, std::vector<bool>& bma
 
     ASSERT(static_cast<std::set<int32_t>::size_type>(ni_global * nj_global) == bmask.size());
 
-    EncodedMaskPayload encodedMaskPayload(local.payload());
+    EncodedBitMaskPayload encodedMaskPayload(local.payload());
     std::size_t expectedBitmaskSize = data_nj * data_ni;
     if (encodedMaskPayload.size() != (data_nj * data_ni)) {
         std::ostringstream oss;

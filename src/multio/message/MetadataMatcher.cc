@@ -4,8 +4,6 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/value/Value.h"  // Remove once config visitor is implemented
 
-#include "multio/message/Message.h"
-
 #include <sstream>
 
 using eckit::LocalConfiguration;
@@ -109,10 +107,6 @@ bool MetadataMatchers::matches(const Metadata& md) const {
             return true;
     }
     return false;
-}
-
-bool MetadataMatchers::matches(const Message& msg) const {
-    return matches(msg.metadata());
 }
 
 void MetadataMatchers::extend(const MetadataMatchers& other) {

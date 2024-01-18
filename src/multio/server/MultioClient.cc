@@ -122,11 +122,6 @@ void MultioClient::dispatch(std::shared_ptr<message::Metadata> metadata, const m
     dispatch(Message{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)}, payload});
 }
 
-// void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload, Message::Tag tag) {
-//     ASSERT(tag < Message::Tag::ENDTAG);
-//     dispatch(Message{Message::Header{tag, Peer{}, Peer{}, std::move(metadata)}, std::move(payload)});
-// }
-
 void MultioClient::dispatch(message::Message msg) {
     withFailureHandling([&]() {
         for (const auto& plan : plans_) {

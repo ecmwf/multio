@@ -28,7 +28,6 @@ class LocalConfiguration;
 
 namespace multio::message {
 
-class Message;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -60,7 +59,6 @@ public:  // methods
     MetadataMatchers() = default;
     explicit MetadataMatchers(const std::vector<eckit::LocalConfiguration>& cfg);
 
-    bool matches(const Message& msg) const;
     bool matches(const Metadata& msg) const;
 
     void extend(const MetadataMatchers& other);

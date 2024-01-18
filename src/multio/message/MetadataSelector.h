@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "Message.h"
 #include "Metadata.h"
 #include "MetadataMatcher.h"
 
@@ -30,6 +31,22 @@ class LocalConfiguration;
 
 namespace multio::message {
 
+
+//--------------------------------------------------------------------------------------------------
+
+inline bool isMessageSelectable(const Message& msg) {
+    switch (msg.tag()) {
+        case Message::Tag::Grib:
+        case Message::Tag::Domain:
+        case Message::Tag::Mask:
+        case Message::Tag::Field:
+            return true;
+        default:
+            return false;
+    }
+}
+
+
 //--------------------------------------------------------------------------------------------------
 
 class MetadataSelector {
@@ -38,7 +55,6 @@ public:  // methods
     MetadataSelector() = default;
     explicit MetadataSelector(const eckit::LocalConfiguration& cfg);
 
-    bool matches(const Message& msg) const;
     bool matches(const Metadata& msg) const;
 
 private:  // methods
@@ -62,6 +78,8 @@ public:  // methods
     MetadataSelectors() = default;
     explicit MetadataSelectors(const eckit::LocalConfiguration& cfg);
     explicit MetadataSelectors(const std::vector<eckit::LocalConfiguration>& cfg);
+
+    bool isEmpty() const;
 
     bool matches(const Message& msg) const;
     bool matches(const Metadata& msg) const;

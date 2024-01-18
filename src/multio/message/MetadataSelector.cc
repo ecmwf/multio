@@ -12,20 +12,6 @@ namespace multio::message {
 
 //--------------------------------------------------------------------------------------------------
 
-namespace {
-inline bool selectable(const Message& msg) {
-    switch (msg.tag()) {
-        case Message::Tag::Grib:
-        case Message::Tag::Domain:
-        case Message::Tag::Mask:
-        case Message::Tag::Field:
-            return true;
-        default:
-            return false;
-    }
-}
-}  // namespace
-
 
 MetadataSelector::MetadataSelector(const LocalConfiguration& cfg) :
     match_(cfg.has("match") ? std::optional<MetadataMatchers>{MetadataMatchers{cfg.getSubConfigurations("match")}}
@@ -36,14 +22,6 @@ MetadataSelector::MetadataSelector(const LocalConfiguration& cfg) :
 
 bool MetadataSelector::matches(const Metadata& md) const {
     return (match_ ? match_->matches(md) : true) && (ignore_ ? !ignore_->matches(md) : true);
-}
-
-bool MetadataSelector::matches(const Message& msg) const {
-    // Only check matches if the message is selectable, pass through otherwise
-    if (!selectable(msg)) {
-        return true;
-    }
-    return matches(msg.metadata());
 }
 
 void MetadataSelector::print(std::ostream& os) const {
@@ -78,6 +56,12 @@ MetadataSelectors::MetadataSelectors(const std::vector<LocalConfiguration>& cfg)
     }
 }
 
+
+bool MetadataSelectors::isEmpty() const {
+    return selectors_.empty();
+}
+
+
 bool MetadataSelectors::matches(const Metadata& md) const {
     for (const auto& selector : selectors_) {
         if (selector.matches(md))
@@ -87,9 +71,13 @@ bool MetadataSelectors::matches(const Metadata& md) const {
 }
 
 bool MetadataSelectors::matches(const Message& msg) const {
+    if (!isMessageSelectable(msg)) {
+        return true;
+    }
+
     // Code duplication because MetedataSelector::matches may be different on a whole message
     for (const auto& selector : selectors_) {
-        if (selector.matches(msg))
+        if (selector.matches(msg.metadata()))
             return true;
     }
     return false;

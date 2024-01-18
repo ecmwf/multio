@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "multio/domain/MaskCompression.h"
 #include "multio/message/Message.h"
 #include "multio/message/Metadata.h"
 
@@ -33,7 +34,8 @@ public:
 
     void add(message::Message msg);
 
-    const std::vector<bool>& get(const std::string& name) const;
+    // const std::vector<bool>& get(const std::string& name) const;
+    EncodedRunLengthPayload get(const std::string& name) const;
 
 private:
     void addPartialMask(message::Message msg);
@@ -41,8 +43,9 @@ private:
     bool allPartsArrived(const message::Message& msg) const;
     void createBitmask(message::Message msg);
 
-    std::map<std::string, std::vector<message::Message>> messages_;
-    std::map<std::string, std::vector<bool>> bitmasks_;
+    std::unordered_map<std::string, std::vector<message::Message>> messages_;
+    // std::unordered_map<std::string, std::vector<bool>> bitmasks_;
+    std::unordered_map<std::string, eckit::Buffer> bitmasks_;
 
     mutable std::mutex mutex_;
 };

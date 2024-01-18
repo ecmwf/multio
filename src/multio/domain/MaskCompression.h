@@ -91,8 +91,8 @@ struct MaskRunLengthProperties {
 };
 
 
-template <typename T>
-MaskRunLengthProperties computeMaskRunLengthProperties(const T* maskVals, std::size_t size) noexcept {
+template <typename Cont>
+MaskRunLengthProperties computeMaskRunLengthProperties(const Cont& maskVals, std::size_t size) noexcept {
     MaskRunLengthProperties p;
     p.bufSize = 0;
     p.numValues = 0;
@@ -135,8 +135,8 @@ MaskRunLengthProperties computeMaskRunLengthProperties(const T* maskVals, std::s
 
 //------------------------------------------------------------------------------
 
-template <typename T>
-eckit::Buffer encodeMaskBitMask(const T* maskVals, const std::size_t size) {
+template <typename Cont>
+eckit::Buffer encodeMaskBitMask(const Cont& maskVals, const std::size_t size) {
     MaskPayloadHeader h;
     h.format = MaskPayloadFormat::BitMask;
     h.numBits = size;
@@ -166,8 +166,8 @@ eckit::Buffer encodeMaskBitMask(const T* maskVals, const std::size_t size) {
 
 //------------------------------------------------------------------------------
 
-template <typename T>
-eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size, const MaskRunLengthProperties props) {
+template <typename Cont>
+eckit::Buffer encodeMaskRunLength(const Cont& maskVals, const std::size_t size, const MaskRunLengthProperties props) {
     MaskPayloadHeader h;
     h.format = MaskPayloadFormat::RunLength;
     h.numBits = size;
@@ -236,8 +236,8 @@ eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size, con
 }
 
 
-template <typename T>
-eckit::Buffer encodeMaskRunLength(const T* maskVals, const std::size_t size) {
+template <typename Cont>
+eckit::Buffer encodeMaskRunLength(const Cont& maskVals, const std::size_t size) {
     return encodeMaskRunLength(maskVals, size, computeMaskRunLengthProperties(maskVals, size));
 }
 
@@ -368,7 +368,7 @@ public:
     EncodedBitMaskPayload(const message::PayloadReference& pr, const MaskPayloadHeader& header) :
         payload_(pr), header_(header) {}
     EncodedBitMaskPayload(const message::PayloadReference& pr) :
-        EncodedBitMaskPayload(pr, decodeMaskPayloadHeader(payload_)) {}
+        EncodedBitMaskPayload(pr, decodeMaskPayloadHeader(pr)) {}
     EncodedBitMaskPayload(const eckit::Buffer& buf) :
         payload_(message::PayloadReference{buf.data(), buf.size()}), header_(decodeMaskPayloadHeader(payload_)) {}
 
@@ -394,7 +394,7 @@ public:
     EncodedRunLengthPayload(const message::PayloadReference& pr, const MaskPayloadHeader& header) :
         payload_(pr), header_(header) {}
     EncodedRunLengthPayload(const message::PayloadReference& pr) :
-        EncodedRunLengthPayload(pr, decodeMaskPayloadHeader(payload_)) {}
+        EncodedRunLengthPayload(pr, decodeMaskPayloadHeader(pr)) {}
     EncodedRunLengthPayload(const eckit::Buffer& buf) :
         payload_(message::PayloadReference{buf.data(), buf.size()}), header_(decodeMaskPayloadHeader(payload_)) {}
 

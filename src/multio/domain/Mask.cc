@@ -77,7 +77,7 @@ void Mask::createBitmask(message::Message inMsg) {
     // Assert invariants such are bound to be creating this the first and last time
     auto bkey = Mask::key(inMsg.metadata());
     // bitmasks_[bkey] = std::move(bitmask);
-    bitmasks_.emplace(bkey, encodeMaskRunLength(bitmask, bitmask.size()));
+    bitmasks_.insert_or_assign(bkey, encodeMaskRunLength(bitmask, bitmask.size()));
 
     messages_.at(inMsg.fieldId()).clear();
 }

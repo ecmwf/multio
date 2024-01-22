@@ -49,8 +49,8 @@ Message::Message(Header&& header, const eckit::Buffer& payload) :
 Message::Message(Header&& header, eckit::Buffer&& payload) :
     Message(std::make_shared<Header>(std::move(header)), std::make_shared<eckit::Buffer>(std::move(payload))) {}
 
-// Message::Message(std::shared_ptr<Header> header, std::shared_ptr<eckit::Buffer> payload) :
-//     Message(std::move(header), std::move(payload)) {}
+Message::Message(Header&& header, std::shared_ptr<eckit::Buffer> payload) :
+    Message(std::make_shared<Header>(std::move(header)), std::move(payload)) {}
 
 Message::Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload) :
     version_{protocolVersion()}, header_{std::move(header)}, payload_{std::move(payload)} {}
@@ -115,12 +115,12 @@ Message Message::modifyMetadata(Metadata&& md) const {
     return Message(std::make_shared<Header>(header_->modifyMetadata(std::move(md))), payload_);
 };
 
-eckit::Buffer& Message::payload() {
+const eckit::Buffer& Message::payload() const {
     return *payload_;
 }
 
-const eckit::Buffer& Message::payload() const {
-    return *payload_;
+std::shared_ptr<eckit::Buffer> Message::sharedPayload() const {
+    return payload_;
 }
 
 size_t Message::size() const {

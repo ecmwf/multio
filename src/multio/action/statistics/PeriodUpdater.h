@@ -15,12 +15,9 @@ public:
     virtual const std::string name() const = 0;
     virtual const std::string timeUnit() const = 0;
     long timeSpan() const;
-    eckit::DateTime updatePeriodStart(const message::Message& msg, const StatisticsConfiguration& cfg);
-    eckit::DateTime updatePeriodEnd(const message::Message& msg, const StatisticsConfiguration& cfg);
     OperationWindow initPeriod(const message::Message& msg, std::shared_ptr<StatisticsIO>& IOmanager,
                                const StatisticsConfiguration& cfg);
 
-private:
     eckit::DateTime computeWinCreationTime(const eckit::DateTime& currentTime);
     eckit::DateTime computeWinEndTime(const eckit::DateTime& currentTime);
     virtual eckit::DateTime computeWinStartTime(const eckit::DateTime& currentTime) = 0;
@@ -40,7 +37,6 @@ public:
     const std::string name() const;
     const std::string timeUnit() const;
 
-private:
     eckit::DateTime computeWinStartTime(const eckit::DateTime& currentTime);
     eckit::DateTime updateWinEndTime(const eckit::DateTime& startPoint);
 };
@@ -55,7 +51,6 @@ public:
     const std::string name() const;
     const std::string timeUnit() const;
 
-private:
     eckit::DateTime computeWinStartTime(const eckit::DateTime& currentTime);
     eckit::DateTime updateWinEndTime(const eckit::DateTime& startPoint);
 };
@@ -70,7 +65,6 @@ public:
     const std::string name() const;
     const std::string timeUnit() const;
 
-private:
     eckit::DateTime computeWinStartTime(const eckit::DateTime& currentTime);
     eckit::DateTime updateWinEndTime(const eckit::DateTime& startPoint);
 };

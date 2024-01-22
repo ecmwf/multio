@@ -57,7 +57,7 @@ void Transport::executeImpl(Message msg) {
     if (md.getBool("toAllServers")) {
         for (auto& server : serverPeers_) {
             auto md = msg.metadata();
-            Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)}, msg.payload()};
+            Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)}, msg.sharedPayload()};
 
             transport_->send(trMsg);
         }
@@ -65,7 +65,7 @@ void Transport::executeImpl(Message msg) {
     else {
         auto server = chooseServer(msg.metadata());
 
-        Message trMsg{Message::Header{msg.tag(), client_, server, std::move(md)}, std::move(msg.payload())};
+        Message trMsg{Message::Header{msg.tag(), client_, server, std::move(md)}, msg.sharedPayload()};
 
         transport_->bufferedSend(trMsg);
     }

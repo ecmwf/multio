@@ -12,7 +12,8 @@ eckit::DateTime epochDateTime(const message::Message& msg, const StatisticsConfi
 
 
 eckit::DateTime prevDateTime(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    return epochDateTime(msg, cfg) + static_cast<eckit::Second>(std::max((cfg.step() - cfg.stepFreq()), 0L) * cfg.timeStep());
+    return epochDateTime(msg, cfg)
+         + static_cast<eckit::Second>(std::max((cfg.step() - cfg.stepFreq()), 0L) * cfg.timeStep());
 }
 
 

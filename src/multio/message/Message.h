@@ -152,7 +152,7 @@ public:
     Message modifyMetadata(Metadata&& md) const;
 
     const eckit::Buffer& payload() const;
-    
+
     std::shared_ptr<eckit::Buffer> sharedPayload() const;
 
     size_t size() const;

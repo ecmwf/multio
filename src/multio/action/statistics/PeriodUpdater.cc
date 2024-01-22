@@ -119,7 +119,7 @@ const std::string MonthPeriodUpdater::timeUnit() const {
 eckit::DateTime MonthPeriodUpdater::computeWinStartTime(const eckit::DateTime& nextTime) {
     const auto& d = nextTime.date();
     const auto& t = nextTime.time();
-                                                                                           
+
     auto year = d.year();
     auto month = d.month();
     return eckit::DateTime{eckit::Date{year, month, 1}, eckit::Time{0}};

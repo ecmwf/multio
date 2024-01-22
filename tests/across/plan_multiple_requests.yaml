@@ -10,4 +10,3 @@ plans:
       - pl:  regular_ll_ml_grib2.tmpl
       - sfc: regular_ll_sfc_grib2.tmpl
     dissemination: "multiple_requests.diss"
-

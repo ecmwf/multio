@@ -115,7 +115,6 @@ void Statistics::executeImpl(message::Message msg) {
     IOmanager_->setCurrStep(cfg.restartStep());
     IOmanager_->setKey(key);
 
-
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     if (fieldStats_.find(key) == fieldStats_.end()) {

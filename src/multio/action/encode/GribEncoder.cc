@@ -236,7 +236,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     std::string gridType;
     const auto hasGridType = md.get("gridType", gridType);
 
-    const auto gribEdition = md.getString("gribEdition");
+    const auto gribEdition = md.getString("gribEdition", "2");
 
     std::string typeOfLevel;
     const auto hasTypeOfLevel = md.get("typeOfLevel", typeOfLevel);
@@ -644,9 +644,7 @@ void GribEncoder::setFieldMetadata(const message::Message& msg) {
 void GribEncoder::setOceanMetadata(const message::Message& msg) {
     const auto& metadata = msg.metadata();
 
-    const auto gribEdition = metadata.getString("gribEdition");
-
-    if ((gribEdition == "2") && metadata.has("dataset")) {
+    if (metadata.has("dataset")) {
         withFirstOf(valueSetter(*this, "tablesVersion"), LookUpLong(metadata, "tablesVersion"));
         withFirstOf(valueSetter(*this, "setLocalDefinition"), LookUpLong(metadata, "setLocalDefinition"));
         withFirstOf(valueSetter(*this, "grib2LocalSectionNumber"), LookUpLong(metadata, "grib2LocalSectionNumber"));
@@ -671,9 +669,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
                     LookUpString(metadata, "experimentVersionNumber"));
     }
 
-    if (gribEdition == "2") {
-        withFirstOf(valueSetter(*this, "subCentre"), LookUpString(metadata, "subCentre"));
-    }
+    withFirstOf(valueSetter(*this, "subCentre"), LookUpString(metadata, "subCentre"));
 
     withFirstOf(valueSetter(*this, "generatingProcessIdentifier"),
                 LookUpString(metadata, "generatingProcessIdentifier"));

@@ -84,7 +84,8 @@ void Mask::applyMask(message::Message msg) const {
         throw eckit::SeriousBug(oss.str(), Here());
     }
 
-    auto git = static_cast<Precision*>(msg.payload().data());
+    // Explicitly modify shared buffer - masked entries should be safe to override
+    auto git = static_cast<Precision*>(msg.sharedPayload()->data());
 
     for (const auto bval : bitmask) {
         if (not bval) {
@@ -101,7 +102,8 @@ void Mask::applyOffset(message::Message msg) const {
 
     ASSERT(bitmask.size() == msg.size() / sizeof(Precision));
 
-    auto git = static_cast<Precision*>(msg.payload().data());
+    // Explicitly modify shared buffer - masked entries should be safe to override
+    auto git = static_cast<Precision*>(msg.sharedPayload()->data());
 
     for (const auto bval : bitmask) {
         if (bval) {

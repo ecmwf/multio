@@ -12,7 +12,8 @@ eckit::DateTime epochDateTime(const message::Message& msg, const StatisticsConfi
 
 
 eckit::DateTime prevDateTime(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    return epochDateTime(msg, cfg) + static_cast<eckit::Second>(std::max((cfg.step() - 1L), 0L) * cfg.timeStep());
+    return epochDateTime(msg, cfg)
+         + static_cast<eckit::Second>(std::max((cfg.step() - cfg.stepFreq()), 0L) * cfg.timeStep());
 }
 
 
@@ -21,7 +22,7 @@ eckit::DateTime currentDateTime(const message::Message& msg, const StatisticsCon
 }
 
 eckit::DateTime nextDateTime(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    return epochDateTime(msg, cfg) + static_cast<eckit::Second>((cfg.step() + 1) * cfg.timeStep());
+    return epochDateTime(msg, cfg) + static_cast<eckit::Second>((cfg.step() + cfg.stepFreq()) * cfg.timeStep());
 }
 
 eckit::DateTime winStartDateTime(const message::Message& msg, const StatisticsConfiguration& cfg) {

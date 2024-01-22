@@ -12,7 +12,7 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
 
     auto search = mappings_.find(configFile.source);
     if (search != mappings_.end()) {
-        return search->second;
+        return *(search->second.get());
     }
     else {
         if (!configFile.content.has("data")) {
@@ -40,8 +40,9 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
             throw message::MetadataMappingException(oss.str(), Here());
         }
         auto mappingsVector = configFile.content.getSubConfigurations("mappings");
-        std::vector<message::MetadataMapping> v;
-        v.reserve(mappingsVector.size());
+        std::unique_ptr<std::vector<message::MetadataMapping>> v
+            = std::make_unique<std::vector<message::MetadataMapping>>();
+        v->reserve(mappingsVector.size());
 
         int mcind = 1;
         for (const auto& mc : mappingsVector) {
@@ -75,12 +76,12 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
             auto targetPath = mc.has("target-path") ? std::optional<std::string>{mc.getString("target-path")}
                                                     : std::optional<std::string>{};
 
-            v.emplace(v.end(), std::move(sourceKey), std::move(mappings), std::move(optionalMappings), sourceList,
-                      std::move(targetKey), std::move(targetPath));
+            v->emplace(v->end(), std::move(sourceKey), std::move(mappings), std::move(optionalMappings), sourceList,
+                       std::move(targetKey), std::move(targetPath));
             ++mcind;
         }
-        mappings_.emplace(mapping, std::move(v));
-        return mappings_.at(mapping);
+
+        return *mappings_.emplace(mapping, std::move(v)).first->second.get();
     }
 }
 

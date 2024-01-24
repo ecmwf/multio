@@ -26,6 +26,7 @@
 #include "eckit/utils/MD5.h"
 #include "eckit/utils/StringTools.h"
 #include "eckit/utils/Translator.h"
+#include "eckit/value/Value.h"
 
 
 #include "multio/LibMultio.h"
@@ -383,18 +384,38 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     return ret;
 }
 
+template <typename KVFunc>
+void visitKeyValues(const eckit::Configuration& c, KVFunc&& func) {
+    for (const auto& k : c.keys()) {
+        auto val = c.getSubConfiguration(k).get();
+
+        if (val.isBool()) {
+            func(k, (bool)val);
+        }
+        else if (val.isNumber()) {
+            func(k, (std::int64_t)val);
+        }
+        else if (val.isDouble()) {
+            func(k, (double)val);
+        }
+        else if (val.isString()) {
+            func(k, (std::string)val);
+        }
+        else {
+            NOTIMP;
+        }
+    }
+}
+
 void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
     if (md.has("encoder-overwrites")) {
         // TODO Refactor with visitor
         auto overwrites = md.getSubConfiguration("encoder-overwrites");
-        for (const auto& k : overwrites.keys()) {
-            // TODO handle type... however eccodes should support string as well. For
-            // some representations the string and integer representation in eccodes
-            // differ significantly and my produce wrong results
+        visitKeyValues(overwrites, [&](const std::string& k, const auto& v) {
             if (g.hasKey(k.c_str())) {
-                g.setValue(k, overwrites.getString(k));
+                g.setValue(k, v);
             }
-        }
+        });
     }
 }
 
@@ -582,12 +603,17 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         // It seems that from this combination eccodes is infering a `stepKey` of avgd (daily average).
         // For daily average the stepRange is shown as 0 instead of 0-24 (desired). Hence with DGov we decided to put
         // 255 (MISSING) as typeOfTimeIncrement
+        //
+        // TO BE DISCUSSED - obviously there is some confusion about typeOfTimeIncrement=1. For analysis I read that it 
+        // should be set to 1. However eccodes thinks different and will not consider it as time range then... hence I explicily set it to 255 now
+        // g.setValue(
+        //     "typeOfTimeIncrement",
+        //     (timeRef == "start" ? 2
+        //                         : ((gribEdition == "2") && (significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
         g.setValue(
             "typeOfTimeIncrement",
-            (timeRef == "start"
-                 ? 2
-                 : (((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255
-                                                                                                                 : 1)));
+            (timeRef == "start" ? 2
+                                : ((gribEdition == "2") ? 255 : 1)));
 
         if (const auto timeIncrement = lookUpLong(md, "timeIncrement"); timeIncrement) {
             if (*timeIncrement != 0) {
@@ -624,7 +650,6 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
 
         g.setValue("hourOfAnalysis", analysisDateTime.time.hour);
         g.setValue("minuteOfAnalysis", analysisDateTime.time.minute);
-        g.setValue("secondOfAnalysis", analysisDateTime.time.second);
     }
 }
 
@@ -641,8 +666,11 @@ void GribEncoder::setFieldMetadata(const message::Message& msg) {
     }
 }
 
+namespace {}
+
 void GribEncoder::setOceanMetadata(const message::Message& msg) {
-    const auto& metadata = msg.metadata();
+    // Copy metadata now to merge with run config
+    auto metadata = msg.metadata();
 
     if (metadata.has("dataset")) {
         withFirstOf(valueSetter(*this, "tablesVersion"), LookUpLong(metadata, "tablesVersion"));
@@ -676,9 +704,10 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     withFirstOf(valueSetter(*this, "setPackingType"), LookUpString(metadata, "setPackingType"));
 
-    auto runConfig = config_.getSubConfiguration("run");
+    visitKeyValues(config_.getSubConfiguration("run"),
+                   [&](const std::string& k, const auto& v) { metadata.set(k, v); });
 
-    auto queriedMarsFields = setMarsKeys(*this, runConfig);
+    auto queriedMarsFields = setMarsKeys(*this, metadata);
     if (queriedMarsFields.type) {
         setValue("typeOfGeneratingProcess", type_of_generating_process.at(*queriedMarsFields.type));
     }
@@ -742,7 +771,11 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {
     setOceanCoordMetadata(metadata, config_.getSubConfiguration("run"));
 }
-void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit::Configuration& runConfig) {
+void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig) {
+    message::Metadata md = metadata;  // copy
+
+    visitKeyValues(runConfig, [&](const std::string& k, const auto& v) { md.set(k, v); });
+
     // Set run-specific md
     setMarsKeys(*this, runConfig);
 

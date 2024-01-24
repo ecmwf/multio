@@ -459,7 +459,7 @@ void setEncodingSpecificFields(GribEncoder& g, const message::Metadata& md) {
 }
 
 void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
-                                 const QueriedMarsKeys& queriedMarsFields) {
+                                 const QueriedMarsKeys& queriedMarsFields, const eckit::LocalConfiguration& runConfig) {
     message::Metadata md = in;  // Copy to allow modification
 
     auto gribEdition = lookUp<std::string>(md, "gribEdition")().value_or("2");
@@ -625,12 +625,17 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
         // It seems that from this combination eccodes is infering a `stepKey` of avgd (daily average).
         // For daily average the stepRange is shown as 0 instead of 0-24 (desired). Hence with DGov we decided to put
         // 255 (MISSING) as typeOfTimeIncrement
+        //
+        // TO BE DISCUSSED - obviously there is some confusion about typeOfTimeIncrement=1. For analysis I read that it 
+        // should be set to 1. However eccodes thinks different and will not consider it as time range then... hence I explicily set it to 255 now
+        // g.setValue(
+        //     "typeOfTimeIncrement",
+        //     (timeRef == "start" ? 2
+        //                         : ((significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
         g.setValue(
             "typeOfTimeIncrement",
-            (timeRef == "start"
-                 ? 2
-                 : (((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255
-                                                                                                                 : 1)));
+            (timeRef == "start" ? 2
+                                : 255));
 
         if (const auto timeIncrement = md.getOpt<std::int64_t>(glossary().timeIncrement); timeIncrement) {
             if (*timeIncrement != 0) {
@@ -656,8 +661,8 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
     }
 
 
-    auto dateOfAnalysis = firstOf(lookUp<std::int64_t>(md, glossary().dateOfAnalysis));
-    auto timeOfAnalysis = firstOf(lookUp<std::int64_t>(md, glossary().timeOfAnalysis)).value_or(0);
+    auto dateOfAnalysis = firstOf(lookUp<std::int64_t>(md, glossary().dateOfAnalysis), lookUp<std::int64_t>(runConfig, glossary().dateOfAnalysis));
+    auto timeOfAnalysis = firstOf(lookUp<std::int64_t>(md, glossary().timeOfAnalysis), lookUp<std::int64_t>(runConfig, glossary().timeOfAnalysis)).value_or(0);
     if (dateOfAnalysis) {
         auto analysisDateTime
             = util::wrapDateTime({util::toDateInts(*dateOfAnalysis), util::toTimeInts(timeOfAnalysis)});
@@ -667,7 +672,6 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
 
         g.setValue("hourOfAnalysis", analysisDateTime.time.hour);
         g.setValue("minuteOfAnalysis", analysisDateTime.time.minute);
-        g.setValue("secondOfAnalysis", analysisDateTime.time.second);
     }
 }
 
@@ -680,7 +684,7 @@ void GribEncoder::setFieldMetadata(const message::Message& msg) {
         auto queriedMarsFields = setMarsKeys(*this, metadata);
         applyOverwrites(*this, metadata);
         setEncodingSpecificFields(*this, metadata);
-        setDateAndStatisticalFields(*this, metadata, queriedMarsFields);
+        setDateAndStatisticalFields(*this, metadata, queriedMarsFields, config_.getSubConfiguration("run"));
     }
 }
 
@@ -727,7 +731,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     }
 
     applyOverwrites(*this, metadata);
-    setDateAndStatisticalFields(*this, metadata, queriedMarsFields);
+    setDateAndStatisticalFields(*this, metadata, queriedMarsFields, runConfig);
     setEncodingSpecificFields(*this, metadata);
 
     // Setting parameter ID

@@ -201,7 +201,8 @@ void Encode::executeImpl(Message msg) {
 
         const auto& md = msg.metadata();
 
-        if (auto searchGridType = md.find("gridType"); searchGridType != md.end() && (searchGridType->second.get<std::string>() != "HEALPix")) {
+        if (auto searchGridType = md.find("gridType");
+            searchGridType != md.end() && (searchGridType->second.get<std::string>() != "HEALPix")) {
             auto gridCoords = gridDownloader_->getGridCoords(msg.domain(), md.get<std::int64_t>("startDate"),
                                                              md.get<std::int64_t>("startTime"));
             if (gridCoords) {
@@ -236,18 +237,23 @@ message::Metadata applyOverwrites(const eckit::LocalConfiguration& overwrites, m
 }
 }  // namespace
 
-message::Message Encode::encodeField(const message::Message& msg, const std::optional<std::string>& gridUID) const {
+message::Message Encode::encodeField(const message::Message& message, const std::optional<std::string>& gridUID) const {
+    auto logMsg = message.logMessage();
     try {
         util::ScopedTiming timing{statistics_.actionTiming_};
-        auto md = this->overwrite_ ? applyOverwrites(*this->overwrite_, msg.metadata()) : msg.metadata();
-        if (gridUID) {
-            md.set("uuidOfHGrid", gridUID.value());
+        message::Message msg{message};
+        msg.header().acquireMetadata();
+        if (this->overwrite_) {
+            applyOverwrites(*this->overwrite_, msg.modifyMetadata());
         }
-        return encoder_->encodeField(msg.modifyMetadata(std::move(md)));
+        if (gridUID) {
+            msg.modifyMetadata().set("uuidOfHGrid", gridUID.value());
+        }
+        return encoder_->encodeField(std::move(msg));
     }
     catch (const std::exception& ex) {
         std::ostringstream oss;
-        oss << "Encode::encodeField " << ex.what() << " with Message: " << msg;
+        oss << "Encode::encodeField " << ex.what() << " with Message: " << logMsg;
         std::throw_with_nested(EncodingException(oss.str(), Here()));
     }
 }

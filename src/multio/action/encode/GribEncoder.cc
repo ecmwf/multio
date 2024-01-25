@@ -420,9 +420,6 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
     if (auto searchOverwrites = md.find("encoder-overwrites"); searchOverwrites != md.end()) {
         // TODO Refactor with visitor
         for (const auto& kv : searchOverwrites->second.get<message::Metadata>()) {
-            // TODO handle type... however eccodes should support string as well. For
-            // some representations the string and integer representation in eccodes
-            // differ significantly and my produce wrong results
             if (g.hasKey(kv.first.value().c_str())) {
                 kv.second.visit(eckit::Overloaded{
                     [](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::AllNested> {},
@@ -459,7 +456,7 @@ void setEncodingSpecificFields(GribEncoder& g, const message::Metadata& md) {
 }
 
 void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
-                                 const QueriedMarsKeys& queriedMarsFields, const eckit::LocalConfiguration& runConfig) {
+                                 const QueriedMarsKeys& queriedMarsFields) {
     message::Metadata md = in;  // Copy to allow modification
 
     auto gribEdition = lookUp<std::string>(md, "gribEdition")().value_or("2");
@@ -661,8 +658,8 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
     }
 
 
-    auto dateOfAnalysis = firstOf(lookUp<std::int64_t>(md, glossary().dateOfAnalysis), lookUp<std::int64_t>(runConfig, glossary().dateOfAnalysis));
-    auto timeOfAnalysis = firstOf(lookUp<std::int64_t>(md, glossary().timeOfAnalysis), lookUp<std::int64_t>(runConfig, glossary().timeOfAnalysis)).value_or(0);
+    auto dateOfAnalysis = firstOf(lookUp<std::int64_t>(md, glossary().dateOfAnalysis));
+    auto timeOfAnalysis = firstOf(lookUp<std::int64_t>(md, glossary().timeOfAnalysis)).value_or(0);
     if (dateOfAnalysis) {
         auto analysisDateTime
             = util::wrapDateTime({util::toDateInts(*dateOfAnalysis), util::toTimeInts(timeOfAnalysis)});
@@ -684,12 +681,12 @@ void GribEncoder::setFieldMetadata(const message::Message& msg) {
         auto queriedMarsFields = setMarsKeys(*this, metadata);
         applyOverwrites(*this, metadata);
         setEncodingSpecificFields(*this, metadata);
-        setDateAndStatisticalFields(*this, metadata, queriedMarsFields, config_.getSubConfiguration("run"));
+        setDateAndStatisticalFields(*this, metadata, queriedMarsFields);
     }
 }
 
 void GribEncoder::setOceanMetadata(const message::Message& msg) {
-    const auto& metadata = msg.metadata();
+    auto metadata = msg.metadata();  // Copy
 
     if (auto searchDataSet = metadata.find("dataset"); searchDataSet != metadata.end()) {
         withFirstOf(valueSetter(*this, "tablesVersion"), lookUp<std::int64_t>(metadata, glossary().tablesVersion));
@@ -723,15 +720,15 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     withFirstOf(valueSetter(*this, "setPackingType"), lookUp<std::string>(metadata, glossary().setPackingType));
 
-    auto runConfig = config_.getSubConfiguration("run");
+    metadata.updateOverwrite(message::toMetadata(config_.getSubConfiguration("run").get()));
 
-    auto queriedMarsFields = setMarsKeys(*this, runConfig);
+    auto queriedMarsFields = setMarsKeys(*this, metadata);
     if (queriedMarsFields.type) {
         setValue(glossary().typeOfGeneratingProcess, type_of_generating_process.at(*queriedMarsFields.type));
     }
 
     applyOverwrites(*this, metadata);
-    setDateAndStatisticalFields(*this, metadata, queriedMarsFields, runConfig);
+    setDateAndStatisticalFields(*this, metadata, queriedMarsFields);
     setEncodingSpecificFields(*this, metadata);
 
     // Setting parameter ID
@@ -795,9 +792,13 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {
     setOceanCoordMetadata(metadata, config_.getSubConfiguration("run"));
 }
-void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit::Configuration& runConfig) {
+void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig) {
+    auto md = metadata;  // copy
+
+    md.updateOverwrite(message::toMetadata(runConfig.get()));
+
     // Set run-specific md
-    setMarsKeys(*this, runConfig);
+    setMarsKeys(*this, md);
 
     setValue(glossary().date, md.get<std::int64_t>(glossary().startDate));
 

@@ -444,9 +444,6 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
     if (auto searchOverwrites = md.find("encoder-overwrites"); searchOverwrites != md.end()) {
         // TODO Refactor with visitor
         for (const auto& kv : searchOverwrites->second.get<message::Metadata>()) {
-            // TODO handle type... however eccodes should support string as well. For
-            // some representations the string and integer representation in eccodes
-            // differ significantly and my produce wrong results
             if (g.hasKey(kv.first.value().c_str())) {
                 kv.second.visit(eckit::Overloaded{
                     [](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::AllNested> {},
@@ -708,10 +705,8 @@ namespace {}
 void GribEncoder::setOceanMetadata(const message::Message& msg) {
     // Copy metadata now to merge with run config
     auto metadata = msg.metadata();
-
-    visitKeyValues(config_.getSubConfiguration("run"),
-                   [&](const std::string& k, const auto& v) { metadata.set(k, v); });
-                   
+    
+    metadata.updateOverwrite(message::toMetadata(config_.getSubConfiguration("run").get()));
 
     auto queriedMarsFields = setMarsKeys(*this, metadata);
     if (queriedMarsFields.type) {
@@ -791,12 +786,12 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {
     setOceanCoordMetadata(metadata, config_.getSubConfiguration("run"));
 }
 void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig) {
-    message::Metadata md = metadata;  // copy
+    auto md = metadata;  // copy
 
-    visitKeyValues(runConfig, [&](const std::string& k, const auto& v) { md.set(k, v); });
+    md.updateOverwrite(message::toMetadata(runConfig.get()));
 
     // Set run-specific md
-    setMarsKeys(*this, runConfig);
+    setMarsKeys(*this, md);
 
     setValue(glossary().date, md.get<std::int64_t>(glossary().startDate));
 

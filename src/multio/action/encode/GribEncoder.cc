@@ -672,38 +672,6 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     // Copy metadata now to merge with run config
     auto metadata = msg.metadata();
 
-    if (metadata.has("dataset")) {
-        withFirstOf(valueSetter(*this, "tablesVersion"), LookUpLong(metadata, "tablesVersion"));
-        withFirstOf(valueSetter(*this, "setLocalDefinition"), LookUpLong(metadata, "setLocalDefinition"));
-        withFirstOf(valueSetter(*this, "grib2LocalSectionNumber"), LookUpLong(metadata, "grib2LocalSectionNumber"));
-        withFirstOf(valueSetter(*this, "productionStatusOfProcessedData"),
-                    LookUpLong(metadata, "productionStatusOfProcessedData"));
-
-        const auto dataset = metadata.getString("dataset");
-        setValue("dataset", dataset);
-
-        if (dataset == "climate-dt") {
-            withFirstOf(valueSetter(*this, "activity"), LookUpString(metadata, "activity"));
-            withFirstOf(valueSetter(*this, "experiment"), LookUpString(metadata, "experiment"));
-            withFirstOf(valueSetter(*this, "generation"), LookUpString(metadata, "generation"));
-            withFirstOf(valueSetter(*this, "model"), LookUpString(metadata, "model"));
-            withFirstOf(valueSetter(*this, "realization"), LookUpString(metadata, "realization"));
-        }
-
-        withFirstOf(valueSetter(*this, "class"), LookUpString(metadata, "class"), LookUpString(metadata, "marsClass"));
-        withFirstOf(valueSetter(*this, "stream"), LookUpString(metadata, "stream"),
-                    LookUpString(metadata, "marsStream"));
-        withFirstOf(valueSetter(*this, "expver"), LookUpString(metadata, "expver"),
-                    LookUpString(metadata, "experimentVersionNumber"));
-    }
-
-    withFirstOf(valueSetter(*this, "subCentre"), LookUpString(metadata, "subCentre"));
-
-    withFirstOf(valueSetter(*this, "generatingProcessIdentifier"),
-                LookUpString(metadata, "generatingProcessIdentifier"));
-
-    withFirstOf(valueSetter(*this, "setPackingType"), LookUpString(metadata, "setPackingType"));
-
     visitKeyValues(config_.getSubConfiguration("run"),
                    [&](const std::string& k, const auto& v) { metadata.set(k, v); });
 

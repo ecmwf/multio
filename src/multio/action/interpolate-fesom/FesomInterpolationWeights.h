@@ -43,6 +43,7 @@ public:
     std::size_t f() const;
     double v() const;
     std::size_t idx(std::size_t scale) const;
+    std::size_t reverse_idx(std::size_t scale) const;
     void print() const;
 };
 
@@ -56,6 +57,7 @@ private:
 
     void clearTriplets();
     void sortTriplets();
+    void reverse_sortTriplets();
 
 
     template <typename T>

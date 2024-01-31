@@ -13,6 +13,8 @@
 #pragma once
 
 #include <iomanip>
+#include <iostream>
+#include <fstream>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -61,26 +63,8 @@ private:
         return fname;
     }
 
-public:
-    Fesom2HEALPix(const message::Message& msg, const std::string& cachePath, const std::string& fesomGridName,
-                  size_t NSide, orderingConvention_e orderingConvention) {
-        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter file cache constructor" << std::endl;
-        // Generate cache file name
-        size_t level = static_cast<size_t>(msg.metadata().getLong("level", msg.metadata().getDouble("levelist", 0)));
-        if ((msg.metadata().getString("category") == "ocean-3d")
-            && (msg.metadata().getString("fesomLevelType") == "level")) {
-            if (level == 0) {
-                std::ostringstream os;
-                os << " - Wrong level for the oceal level: " << std::endl;
-                throw eckit::SeriousBug(os.str(), Here());
-            }
-            level--;
-        }
-        const std::string domain = msg.metadata().getString("domain");
-        std::string file = generateCacheFileName(cachePath, fesomGridName, domain, NSide, orderingConvention, level);
-        // TODO: Here with some flag it is possible to add the possibility
-        // to generate the cache in some way
-        // Initialize from atlasIO cache
+    void readCache( const std::string& file ){
+        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter readCache" << std::endl;
         size_t version;
         size_t NSideR;
         size_t levelR;
@@ -125,21 +109,62 @@ public:
             os << " - Wrong size of values: " << values_.size() << " " << nnz_ << std::endl;
             throw eckit::SeriousBug(os.str(), Here());
         }
-        if (NSideR != NSide) {
-            std::ostringstream os;
-            os << " - Wrng NSide: " << NSideR << " " << NSide << std::endl;
-            throw eckit::SeriousBug(os.str(), Here());
+        // if (NSideR != NSide) {
+        //     std::ostringstream os;
+        //     os << " - Wrng NSide: " << NSideR << " " << NSide << std::endl;
+        //     throw eckit::SeriousBug(os.str(), Here());
+        // }
+        // if (std::fabs(levelR - level) > 1.0E-12) {
+        //     std::ostringstream os;
+        //     os << " - Wrong level: " << levelR << " " << level << std::endl;
+        //     throw eckit::SeriousBug(os.str(), Here());
+        // }
+        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit readCache" << std::endl;        
+        return;
+    }
+
+public:
+    Fesom2HEALPix(const message::Message& msg, const std::string& cachePath, const std::string& fesomGridName,
+                  size_t NSide, orderingConvention_e orderingConvention) {
+        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter file cache constructor (from message)" << std::endl;
+        // Generate cache file name
+        size_t level = static_cast<size_t>(msg.metadata().getLong("level", msg.metadata().getDouble("levelist", 0)));
+        if ((msg.metadata().getString("category") == "ocean-3d")
+            && (msg.metadata().getString("fesomLevelType") == "level")) {
+            if (level == 0) {
+                std::ostringstream os;
+                os << " - Wrong level for the oceal level: " << std::endl;
+                throw eckit::SeriousBug(os.str(), Here());
+            }
+            level--;
         }
-        if (std::fabs(levelR - level) > 1.0E-12) {
-            std::ostringstream os;
-            os << " - Wrong level: " << levelR << " " << level << std::endl;
-            throw eckit::SeriousBug(os.str(), Here());
-        }
-        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit file cache constructor" << std::endl;
+        const std::string domain = msg.metadata().getString("domain");
+        std::string file = generateCacheFileName(cachePath, fesomGridName, domain, NSide, orderingConvention, level);
+        
+        readCache( file );
+
+        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit file cache constructor (from message)" << std::endl;
         // Exit point
         return;
     }
 
+
+
+    Fesom2HEALPix( const std::string& file ) {
+        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter file cache constructor (from filename)" << std::endl;
+        
+        readCache( file );
+
+        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit file cache constructor (from filename)" << std::endl;
+        // Exit point
+        return;
+    }
+
+
+    size_t nnz() const { return nnz_; };
+    size_t nRows() const { return nRows_; };
+    size_t nCols() const { return nCols_; };
+    size_t nOutRows() const { return nOutRows_; };
 
     template <typename InFieldType, typename OutFieldType>
     void interpolate(const InFieldType* fesomField, OutFieldType* HEALPixField, size_t inputSize, size_t outputSize,
@@ -179,6 +204,65 @@ public:
         // Exit point
         return;
     }
+
+
+    void dumpCOO( const std::string& fileName ) {
+        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter dumpCOO" << std::endl;
+
+        // Open the file for writing
+        std::ofstream file( fileName );
+
+        // Check if the file is opened successfully
+        if (!file.is_open()) {
+            std::ostringstream os;
+            os << " - Unable to open output csv file" << std::endl;
+            throw eckit::SeriousBug(os.str(), Here());
+        }
+
+        // Perform the interpolation
+        for (size_t iRow = 0; iRow < nRows_; iRow++) {
+            size_t outIdx = landSeaMask_[iRow];
+            for (size_t colPtr = rowStart_[iRow]; colPtr < rowStart_[iRow + 1]; colPtr++) {
+                size_t iCol = colIdx_[colPtr];
+                MatrixType weight = values_[colPtr];
+                // Write to file
+                file << std::setw(10) << outIdx << ","
+                     << std::setw(10) << iCol << ","
+                     << std::setw(15) << std::fixed << std::setprecision(8) << weight << std::endl;
+            }
+        }
+
+        // Close the file
+        file.close();
+
+        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit dumpCOO" << std::endl;
+        // Exit point
+        return;
+    }
+
+
+
+    void getTriplets( std::vector<Tri>& triplets ) {
+        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter getTriplets" << std::endl;
+
+        // Perform the interpolation
+        triplets.resize(0);
+        for (size_t iRow = 0; iRow < nRows_; iRow++) {
+            size_t outIdx = landSeaMask_[iRow];
+            for (size_t colPtr = rowStart_[iRow]; colPtr < rowStart_[iRow + 1]; colPtr++) {
+                size_t iCol = colIdx_[colPtr];
+                MatrixType weight = values_[colPtr];
+                // Fill triplets
+                triplets.emplace_back(outIdx, iCol, weight);
+            }
+        }
+
+        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit getTriplets" << std::endl;
+        // Exit point
+        return;
+    }
+
+
 };
 
 /**

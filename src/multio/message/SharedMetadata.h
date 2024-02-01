@@ -28,10 +28,10 @@ public:
     using This = SharedMetadata;
     
     SharedMetadata();
-    SharedMetadata(Metadata&&, bool stealOrCopy = false);
-    SharedMetadata(const Metadata&, bool stealOrCopy = false);
-    SharedMetadata(std::shared_ptr<Metadata>, bool stealOrCopy = false);
-    
+    SharedMetadata(Metadata&&, bool moveOrCopy = false);
+    SharedMetadata(const Metadata&, bool moveOrCopy = false);
+    SharedMetadata(std::shared_ptr<Metadata>, bool moveOrCopy = false);
+
     SharedMetadata(const This&) = default;
     SharedMetadata(This&&) noexcept = default;
 
@@ -42,16 +42,15 @@ public:
     Metadata& modify();
     
     void acquire();
-    SharedMetadata stealOrCopy() const;
-    
-   
+    SharedMetadata moveOrCopy() const;
+
+
     // Calling `weakRef` may behave differently befare and after calls to `modify`
     // because metadata can be copied lazily
     std::weak_ptr<Metadata> weakRef() const;
 private:
     std::shared_ptr<Metadata> metadata_;
-    bool stealOrCopy_ = false;
-    
+    bool moveOrCopy_ = false;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

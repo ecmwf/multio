@@ -19,16 +19,16 @@ namespace multio::message {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-SharedMetadata::SharedMetadata() : metadata_{std::make_shared<Metadata>()}, stealOrCopy_{false} {}
+SharedMetadata::SharedMetadata() : metadata_{std::make_shared<Metadata>()}, moveOrCopy_{false} {}
 
-SharedMetadata::SharedMetadata(Metadata&& m, bool stealOrCopy) :
-    metadata_{std::make_shared<Metadata>(std::move(m))}, stealOrCopy_{stealOrCopy} {}
+SharedMetadata::SharedMetadata(Metadata&& m, bool moveOrCopy) :
+    metadata_{std::make_shared<Metadata>(std::move(m))}, moveOrCopy_{moveOrCopy} {}
 
-SharedMetadata::SharedMetadata(const Metadata& m, bool stealOrCopy) :
-    metadata_{std::make_shared<Metadata>(m)}, stealOrCopy_{stealOrCopy} {}
+SharedMetadata::SharedMetadata(const Metadata& m, bool moveOrCopy) :
+    metadata_{std::make_shared<Metadata>(m)}, moveOrCopy_{moveOrCopy} {}
 
-SharedMetadata::SharedMetadata(std::shared_ptr<Metadata> m, bool stealOrCopy) :
-    metadata_{std::move(m)}, stealOrCopy_{stealOrCopy} {}
+SharedMetadata::SharedMetadata(std::shared_ptr<Metadata> m, bool moveOrCopy) :
+    metadata_{std::move(m)}, moveOrCopy_{moveOrCopy} {}
 
 
 const Metadata& SharedMetadata::read() const {
@@ -36,7 +36,7 @@ const Metadata& SharedMetadata::read() const {
 }
 
 Metadata& SharedMetadata::modify() {
-    if (stealOrCopy_ && metadata_.use_count() != 1) {
+    if (moveOrCopy_ && metadata_.use_count() != 1) {
         metadata_ = std::make_shared<Metadata>(*metadata_);
     }
     return *metadata_;
@@ -44,10 +44,10 @@ Metadata& SharedMetadata::modify() {
 
 
 void SharedMetadata::acquire() {
-    stealOrCopy_ = true;
+    moveOrCopy_ = true;
 }
 
-SharedMetadata SharedMetadata::stealOrCopy() const {
+SharedMetadata SharedMetadata::moveOrCopy() const {
     return SharedMetadata{metadata_, true};
 }
 

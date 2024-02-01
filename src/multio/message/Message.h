@@ -108,11 +108,11 @@ public:  // types
         Metadata& modifyMetadata();
 
 
-        [[deprecated("Explicity use stealOrCopy or acquire & modifyMetadata (byref)")]] Header modifyMetadata(
+        [[deprecated("Explicity use moveOrCopy or acquire & modifyMetadata (byref)")]] Header modifyMetadata(
             Metadata&& md) const;
 
         // Copy or acquire metadata object if only owned by this object
-        SharedMetadata stealOrCopyMetadata() const;
+        SharedMetadata moveOrCopyMetadata() const;
 
         // Copy or acquire metadata object if only owned by this object
         void acquireMetadata();

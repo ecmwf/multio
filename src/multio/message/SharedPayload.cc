@@ -54,10 +54,10 @@ eckit::Stream& operator<<(eckit::Stream& strm, const SharedPayload& sp) {
     return strm;
 }
 
-std::shared_ptr<eckit::Buffer> SharedPayload::stealOrCopy() {
+std::shared_ptr<eckit::Buffer> SharedPayload::moveOrCopy() {
     return std::visit(eckit::Overloaded{[&](const std::shared_ptr<eckit::Buffer>& p) -> std::shared_ptr<eckit::Buffer> {
                                             if (p.use_count() == 1) {
-                                                // Now steal the buffer
+                                                // Now move the buffer
                                                 return std::move(p);
                                             }
                                             else {
@@ -71,7 +71,7 @@ std::shared_ptr<eckit::Buffer> SharedPayload::stealOrCopy() {
 }
 
 void SharedPayload::acquire() {
-    (*this) = this->stealOrCopy();
+    (*this) = this->moveOrCopy();
 }
 
 void* SharedPayload::modifyData() {

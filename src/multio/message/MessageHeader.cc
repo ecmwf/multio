@@ -64,8 +64,8 @@ Metadata& Message::Header::modifyMetadata() {
 // }
 
 // Copy or acquire metadata object if only owned by this object
-SharedMetadata Message::Header::stealOrCopyMetadata() const {
-    return metadata_.stealOrCopy();
+SharedMetadata Message::Header::moveOrCopyMetadata() const {
+    return metadata_.moveOrCopy();
 }
 
 // Copy or acquire metadata object if only owned by this object

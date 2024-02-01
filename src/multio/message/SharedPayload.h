@@ -79,7 +79,7 @@ public:
 
 
     // Either reuses the existing shared_ptr if the buffer is unique, otherwise copy into a new buffer
-    std::shared_ptr<eckit::Buffer> stealOrCopy();
+    std::shared_ptr<eckit::Buffer> moveOrCopy();
 
     // Makes sure that this object is the only owner of the data and copy the data if it is not
     void acquire();

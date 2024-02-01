@@ -88,7 +88,7 @@ void writeCSV(const std::vector<std::vector<double>>& matrix, const std::string&
     }
 
     // Write the dimensions as the first line
-    file << matrix[0].size() << " " << matrix.size() << std::endl;
+    // file << matrix[0].size() << " " << matrix.size() << std::endl;
 
     // Write the matrix data
     for (size_t i = 0; i < matrix[0].size(); ++i) {

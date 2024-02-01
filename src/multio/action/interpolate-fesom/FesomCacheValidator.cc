@@ -94,7 +94,7 @@ void FesomCacheValidator::init(const eckit::option::CmdArgs& args) {
     ASSERT(inputFile_tmp.exists());
     eckit::PathName outputPath_tmp{outputPath_};
     outputPath_tmp.mkdir();
-    ASSERT( mode_ != "raw" && mode_ != "columMajor" && mode_ != "rowMajor" );
+    ASSERT( mode_ == "raw" || mode_ == "columMajor" || mode_ == "rowMajor" );
 }
 
 void FesomCacheValidator::execute(const eckit::option::CmdArgs& args) {

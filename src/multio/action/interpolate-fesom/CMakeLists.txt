@@ -23,6 +23,8 @@ ecbuild_add_library(
         atlas_io
 )
 
+
+
 ecbuild_add_executable(
 
     TARGET
@@ -30,6 +32,48 @@ ecbuild_add_executable(
 
     SOURCES
         FesomCacheGenerator.cc
+        ../../tools/MultioTool.cc
+        FesomInterpolationWeights.h
+        FesomInterpolationWeights.cc
+        InterpolateFesom.h
+
+    CONDITION
+        HAVE_ATLAS_IO
+
+    LIBS
+        multio
+        atlas_io
+        eckit
+)
+
+ecbuild_add_executable(
+
+    TARGET
+        fesom-cache-validator
+
+    SOURCES
+        FesomCacheValidator.cc
+        ../../tools/MultioTool.cc
+        FesomInterpolationWeights.h
+        FesomInterpolationWeights.cc
+        InterpolateFesom.h
+
+    CONDITION
+        HAVE_ATLAS_IO
+
+    LIBS
+        multio
+        atlas_io
+        eckit
+)
+
+ecbuild_add_executable(
+
+    TARGET
+        fesom-spmvm-validator
+
+    SOURCES
+        FesomSpmvmValidator.cc
         ../../tools/MultioTool.cc
         FesomInterpolationWeights.h
         FesomInterpolationWeights.cc

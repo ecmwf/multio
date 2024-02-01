@@ -43,6 +43,7 @@ public:
     std::size_t f() const;
     double v() const;
     std::size_t idx(std::size_t scale) const;
+    std::size_t reverse_idx(std::size_t scale) const;
     void print() const;
 };
 
@@ -56,6 +57,7 @@ private:
 
     void clearTriplets();
     void sortTriplets();
+    void reverse_sortTriplets();
 
 
     template <typename T>
@@ -81,6 +83,7 @@ private:
         size_t prev = 1000000000;
         landSeaMask.resize(0);
         rowStart.resize(0);
+
         colIdx.resize(nnz);
         values.resize(nnz);
         for (const auto& t : triplets_) {
@@ -93,14 +96,13 @@ private:
             }
             if (curr != prev) {
                 nRows++;
-                rowStart.push_back(cnt);
+                rowStart.push_back(cnt - 1);
                 landSeaMask.push_back(curr);
             }
             prev = curr;
         }
         nCols = triplets_.size();
         rowStart.push_back(nnz);
-        nCols = triplets_.size();
 
         INTERPOLATE_FESOM_OUT_STREAM << " - FesomIntermopationWeights: exit triplets2CSR"
                                      << (sizeof(T) == 4 ? "<single>" : "<double>") << std::endl;
@@ -141,7 +143,6 @@ public:
                              level)
            << ".atlas";
 
-        // std::cout << os.str() << std::endl;
         atlas::io::RecordWriter record;
         record.compression("none");
         record.set("version", static_cast<size_t>(0));

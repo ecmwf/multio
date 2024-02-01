@@ -26,22 +26,23 @@ public:
         return;
     }
 
-    void updateWindow(const void* data, long sz) override {
+    void updateWindow(const void* data, long sz, const message::Message& msg,
+                      const StatisticsConfiguration& cfg) override {
         std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
         return;
     };
 
-    void updateWindow() override {
+    void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) override {
         std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
         return;
     };
 
-    void init(const void* data, long sz) override {
+    void init(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) override {
         // TODO: Used to save the first field of the window
         return;
     };
 
-    void init() override {
+    void init(const message::Message& msg, const StatisticsConfiguration& cfg) override {
         // TODO: Used to save the initialization time of the window
         return;
     };

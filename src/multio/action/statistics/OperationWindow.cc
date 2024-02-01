@@ -145,12 +145,12 @@ bool OperationWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) 
 
 bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) const {
     // TODO: test without 1 second added. Now it should work
-    if (throw_error && dt > endPoint() + eckit::Second{1.0}) {
+    if (throw_error && dt > endPoint()) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : upper Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
-    return dt <= endPoint() + eckit::Second{1.0};
+    return dt <= endPoint();
 };
 
 long OperationWindow::timeSpanInHours() const {

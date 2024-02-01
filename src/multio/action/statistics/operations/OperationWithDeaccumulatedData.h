@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "multio/action/statistics/TimeUtils.h"
 #include "multio/action/statistics/operations/Operation.h"
 
 namespace multio::action {
@@ -30,32 +31,50 @@ public:
         return;
     }
 
-    void updateWindow(const void* data, long sz) override {
+    void updateWindow(const void* data, long sz, const message::Message& msg,
+                      const StatisticsConfiguration& cfg) override {
         checkSize(sz);
-        const T* val = static_cast<const T*>(data);
-        std::transform(initValues_.begin(), initValues_.end(), val, initValues_.begin(),
-                       [](const T& v1, const T& v2) { return static_cast<T>(v2); });
-        std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
+        if (solverResetAccumulatedFields(msg, cfg)) {
+            std::transform(initValues_.begin(), initValues_.end(), initValues_.begin(),
+                           [](const T& v1) { return static_cast<T>(0.0); });
+            std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
+        }
+        else {
+            const T* val = static_cast<const T*>(data);
+            std::transform(initValues_.begin(), initValues_.end(), val, initValues_.begin(),
+                           [](const T& v1, const T& v2) { return static_cast<T>(v2); });
+            std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
+        }
         return;
     };
 
-    void updateWindow() override {
+    void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) override {
         std::transform(initValues_.begin(), initValues_.end(), initValues_.begin(),
-                       [](const T& v1) { return static_cast<T>(0); });
+                       [](const T& v1) { return static_cast<T>(0.0); });
         std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
         return;
     };
 
-    void init(const void* data, long sz) override {
+    void init(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) override {
         checkSize(sz);
-        const T* val = static_cast<const T*>(data);
-        std::transform(initValues_.begin(), initValues_.end(), val, initValues_.begin(),
-                       [](const T& v1, const T& v2) { return static_cast<T>(v2); });
+        if (solverResetAccumulatedFields(msg, cfg)) {
+            std::transform(initValues_.begin(), initValues_.end(), initValues_.begin(),
+                           [](const T& v1) { return static_cast<T>(0.0); });
+            std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
+        }
+        else {
+            const T* val = static_cast<const T*>(data);
+            std::transform(initValues_.begin(), initValues_.end(), val, initValues_.begin(),
+                           [](const T& v1, const T& v2) { return static_cast<T>(v2); });
+            std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
+        }
         return;
     };
 
-    void init() override {
-        // TODO: Used to save the initialization time of the window
+    void init(const message::Message& msg, const StatisticsConfiguration& cfg) override {
+        std::transform(initValues_.begin(), initValues_.end(), initValues_.begin(),
+                       [](const T& v1) { return static_cast<T>(0.0); });
+        std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
         return;
     };
 
@@ -138,6 +157,29 @@ protected:
 
 private:
     bool needRestart_;
+
+    bool solverResetAccumulatedFields(const message::Message& msg, const StatisticsConfiguration& cfg) {
+
+        if (cfg.solverResetAccumulatedFields() == "hour") {
+            return isBeginningOfHour(msg, cfg);
+        }
+        if (cfg.solverResetAccumulatedFields() == "day") {
+            return isBeginningOfDay(msg, cfg);
+        }
+        if (cfg.solverResetAccumulatedFields() == "month") {
+            return isBeginningOfMonth(msg, cfg);
+        }
+        if (cfg.solverResetAccumulatedFields() == "year") {
+            return isBeginningOfYear(msg, cfg);
+        }
+        if (cfg.solverResetAccumulatedFields() == "never") {
+            return false;
+        }
+
+        std::ostringstream os;
+        os << "Invalid reset period of accumulated fields :: " << cfg.solverResetAccumulatedFields() << std::endl;
+        throw eckit::UserError(os.str(), Here());
+    }
 };
 
 }  // namespace multio::action

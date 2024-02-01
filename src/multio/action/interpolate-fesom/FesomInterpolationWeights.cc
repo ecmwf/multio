@@ -30,6 +30,10 @@ std::size_t Tri::idx(std::size_t scale) const {
     return static_cast<std::size_t>(i_) * scale + static_cast<std::size_t>(j_);
 }
 
+std::size_t Tri::reverse_idx(std::size_t scale) const {
+    return static_cast<std::size_t>(j_) * scale + static_cast<std::size_t>(i_);
+}
+
 
 void Tri::print() const {
     std::cout << std::setw(15) << i_ << "   " << std::setw(15) << j_ << "   " << std::setw(35) << std::setprecision(25)
@@ -113,6 +117,23 @@ void FesomInterpolationWeights::sortTriplets() {
     }
 
     std::sort(triplets_.begin(), triplets_.end(), [](Tri a, Tri b) { return a.idx(1000000000) < b.idx(1000000000); });
+
+    INTERPOLATE_FESOM_OUT_STREAM << " - FesomIntermopationWeights: exit sortTriplets" << std::endl;
+}
+
+
+void FesomInterpolationWeights::reverse_sortTriplets() {
+
+    INTERPOLATE_FESOM_OUT_STREAM << " - FesomIntermopationWeights: enter sortTriplets" << std::endl;
+
+    if (!initialized_) {
+        std::ostringstream os;
+        os << "Object not initialized" << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+
+    std::sort(triplets_.begin(), triplets_.end(),
+              [](Tri a, Tri b) { return a.reverse_idx(1000000000) < b.reverse_idx(1000000000); });
 
     INTERPOLATE_FESOM_OUT_STREAM << " - FesomIntermopationWeights: exit sortTriplets" << std::endl;
 }

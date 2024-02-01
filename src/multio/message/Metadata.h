@@ -227,8 +227,6 @@ std::ostream& operator<<(std::ostream& os, const Metadata& metadata);
 
 Metadata metadataFromYAML(const std::string& yamlString);
 
-std::optional<Metadata> toMetadataMaybe(const eckit::Value& v);
-
 Metadata toMetadata(const eckit::Value& value);
 
 

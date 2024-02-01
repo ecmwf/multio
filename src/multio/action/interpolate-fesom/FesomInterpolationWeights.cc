@@ -132,7 +132,8 @@ void FesomInterpolationWeights::reverse_sortTriplets() {
         throw eckit::SeriousBug(os.str(), Here());
     }
 
-    std::sort(triplets_.begin(), triplets_.end(), [](Tri a, Tri b) { return a.reverse_idx(1000000000) < b.reverse_idx(1000000000); });
+    std::sort(triplets_.begin(), triplets_.end(),
+              [](Tri a, Tri b) { return a.reverse_idx(1000000000) < b.reverse_idx(1000000000); });
 
     INTERPOLATE_FESOM_OUT_STREAM << " - FesomIntermopationWeights: exit sortTriplets" << std::endl;
 }

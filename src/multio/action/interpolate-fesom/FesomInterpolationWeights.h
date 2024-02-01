@@ -83,7 +83,7 @@ private:
         size_t prev = 1000000000;
         landSeaMask.resize(0);
         rowStart.resize(0);
-        // rowStart.push_back(0);
+
         colIdx.resize(nnz);
         values.resize(nnz);
         for (const auto& t : triplets_) {
@@ -96,15 +96,13 @@ private:
             }
             if (curr != prev) {
                 nRows++;
-                rowStart.push_back(cnt-1);
+                rowStart.push_back(cnt - 1);
                 landSeaMask.push_back(curr);
             }
             prev = curr;
         }
         nCols = triplets_.size();
         rowStart.push_back(nnz);
-        // std::cout << nRows << rowSTart.size() << std::endl;
-        // nCols = triplets_.size();
 
         INTERPOLATE_FESOM_OUT_STREAM << " - FesomIntermopationWeights: exit triplets2CSR"
                                      << (sizeof(T) == 4 ? "<single>" : "<double>") << std::endl;
@@ -145,7 +143,6 @@ public:
                              level)
            << ".atlas";
 
-        // std::cout << os.str() << std::endl;
         atlas::io::RecordWriter record;
         record.compression("none");
         record.set("version", static_cast<size_t>(0));

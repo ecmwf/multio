@@ -1,6 +1,6 @@
+#include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <fstream>
 
 #include <algorithm>
 #include <array>
@@ -29,14 +29,14 @@ namespace multio::action::interpolateFESOM {
 
 namespace {
 
-std::vector<std::vector<double>> readCSV(const std::string& fieldsPath, const std::string& fieldsName ) {
+std::vector<std::vector<double>> readCSV(const std::string& fieldsPath, const std::string& fieldsName) {
 
     eckit::PathName inputPath_tmp{fieldsPath};
     ASSERT(inputPath_tmp.exists());
     eckit::PathName inputFile_tmp{fieldsPath + "/" + fieldsName};
     ASSERT(inputFile_tmp.exists());
 
-    std::string filename(fieldsPath+"/"+fieldsName);
+    std::string filename(fieldsPath + "/" + fieldsName);
     std::ifstream file(filename);
     std::vector<std::vector<double>> matrix;
 
@@ -106,7 +106,7 @@ void writeCSV(const std::vector<std::vector<double>>& matrix, const std::string&
     std::cout << "CSV file has been created successfully." << std::endl;
 }
 
-}
+}  // namespace
 
 
 class FesomCacheValidator final : public multio::MultioTool {
@@ -116,19 +116,19 @@ public:  // methods
 private:
     void usage(const std::string& tool) const override {
         eckit::Log::info() << std::endl << "Usage: " << tool << " [options]" << std::endl;
-        eckit::Log::info()
-            << "EXAMPLE: " << std::endl
-            << "fesom-cache-validator  --cachePath=. --fieldPath=. --outputPath=. --cacheFile=file.atlas --fieldFile=inputFields.csv  --outputFile=interpolatedField.csv "
-            << std::endl
-            << "The foramt of the fields must be (every column is a different field):"<< std::endl
-            << " ---------------------------------------------"<< std::endl
-            << "NROWS NCOLS"<< std::endl
-            << "r1c1     r1c2     r1c3     ... r1cNCOLS"<< std::endl
-            << "r2c1     r2c2     r2c3     ... r2cNCOLS"<< std::endl
-            << "  ...  "<< std::endl
-            << "rNROWSc1 rNROWSc2 rNROWSc3 ... rNROWScNCOLS"<< std::endl
-            << " ---------------------------------------------"<< std::endl
-            << std::endl;
+        eckit::Log::info() << "EXAMPLE: " << std::endl
+                           << "fesom-cache-validator  --cachePath=. --fieldPath=. --outputPath=. "
+                              "--cacheFile=file.atlas --fieldFile=inputFields.csv  --outputFile=interpolatedField.csv "
+                           << std::endl
+                           << "The foramt of the fields must be (every column is a different field):" << std::endl
+                           << " ---------------------------------------------" << std::endl
+                           << "NROWS NCOLS" << std::endl
+                           << "r1c1     r1c2     r1c3     ... r1cNCOLS" << std::endl
+                           << "r2c1     r2c2     r2c3     ... r2cNCOLS" << std::endl
+                           << "  ...  " << std::endl
+                           << "rNROWSc1 rNROWSc2 rNROWSc3 ... rNROWScNCOLS" << std::endl
+                           << " ---------------------------------------------" << std::endl
+                           << std::endl;
     }
 
     void init(const eckit::option::CmdArgs& args) override;
@@ -148,7 +148,6 @@ private:
     std::string outputFile_;
 
     std::vector<std::vector<double>> fields_;
-
 };
 
 
@@ -159,14 +158,14 @@ FesomCacheValidator::FesomCacheValidator(int argc, char** argv) :
     fieldPath_{"."},
     fieldFile_{"inputFields.csv"},
     outputPath_{"."},
-    outputFile_{"interpolated_fields.csv"}{
+    outputFile_{"interpolated_fields.csv"} {
 
-    options_.push_back(new eckit::option::SimpleOption<std::string>(
-        "cachePath", "Name of the cache path. Default( \"./\" )"));
+    options_.push_back(
+        new eckit::option::SimpleOption<std::string>("cachePath", "Name of the cache path. Default( \"./\" )"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "cacheFile", "Name of the cache file. Default( \"fesomCache.atlas\" )"));
-    options_.push_back(new eckit::option::SimpleOption<std::string>(
-        "fieldPath", "Path of the field files. Default( \".\" )"));
+    options_.push_back(
+        new eckit::option::SimpleOption<std::string>("fieldPath", "Path of the field files. Default( \".\" )"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "fieldFile", "Name of the field file. Default( \"inputFields.csv\" )"));
 
@@ -182,14 +181,14 @@ FesomCacheValidator::FesomCacheValidator(int argc, char** argv) :
 
 void FesomCacheValidator::init(const eckit::option::CmdArgs& args) {
 
-    args.get( "cachePath",  cachePath_);
-    args.get( "fieldPath",  fieldPath_);
-    args.get( "outputPath", outputPath_);
-    args.get( "cacheFile",  cacheFile_);
-    args.get( "fieldFile",  fieldFile_);
-    args.get( "outputFile", outputFile_);
+    args.get("cachePath", cachePath_);
+    args.get("fieldPath", fieldPath_);
+    args.get("outputPath", outputPath_);
+    args.get("cacheFile", cacheFile_);
+    args.get("fieldFile", fieldFile_);
+    args.get("outputFile", outputFile_);
 
-    fields_ = readCSV( fieldPath_, fieldFile_);
+    fields_ = readCSV(fieldPath_, fieldFile_);
 
     eckit::PathName cachePath_tmp{cachePath_};
     ASSERT(cachePath_tmp.exists());
@@ -207,26 +206,26 @@ void FesomCacheValidator::init(const eckit::option::CmdArgs& args) {
 
 void FesomCacheValidator::execute(const eckit::option::CmdArgs& args) {
 
-    const std::string iFname{cachePath_  + "/" + cacheFile_};
+    const std::string iFname{cachePath_ + "/" + cacheFile_};
     const std::string oFname{outputPath_ + "/" + outputFile_};
-    Fesom2HEALPix<double> cache( iFname );
+    Fesom2HEALPix<double> cache(iFname);
 
     std::vector<std::vector<double>> result;
     std::vector<double> tmp;
-    tmp.resize( cache.nOutRows() );
-    double missing=-999999.0;
+    tmp.resize(cache.nOutRows());
+    double missing = -999999.0;
     result.resize(0);
-    for ( size_t i=0; i<fields_.size(); ++i ){
+    for (size_t i = 0; i < fields_.size(); ++i) {
         std::fill(tmp.begin(), tmp.end(), 0.0);
-        cache.interpolate<double,double>( fields_[i].data(), tmp.data(), fields_[i].size(), cache.nOutRows(), missing );
-        result.push_back( tmp );
+        cache.interpolate<double, double>(fields_[i].data(), tmp.data(), fields_[i].size(), cache.nOutRows(), missing);
+        result.push_back(tmp);
     }
 
-    writeCSV( result, oFname );
+    writeCSV(result, oFname);
 };
 
 
-void FesomCacheValidator::finish(const eckit::option::CmdArgs&) {};
+void FesomCacheValidator::finish(const eckit::option::CmdArgs&){};
 
 }  // namespace multio::action::interpolateFESOM
 

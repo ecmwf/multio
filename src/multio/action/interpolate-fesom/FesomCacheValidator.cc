@@ -1,6 +1,6 @@
+#include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <fstream>
 
 #include <algorithm>
 #include <array>
@@ -74,7 +74,9 @@ FesomCacheValidator::FesomCacheValidator(int argc, char** argv) :
         "outputPath", "Path of the output files with the triplets. Default( \".\" )"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "inputFile", "Name of the input file. Default( \"fesomCache.atlas\" )"));
-    options_.push_back(new eckit::option::SimpleOption<std::string>("sortOption", "Type of sort to be applied to the triplets [\"columMajor\"|\"rowMajor\"|\"raw\"]. Default(\"raw\")"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>(
+        "sortOption",
+        "Type of sort to be applied to the triplets [\"columMajor\"|\"rowMajor\"|\"raw\"]. Default(\"raw\")"));
 
     return;
 }
@@ -94,22 +96,22 @@ void FesomCacheValidator::init(const eckit::option::CmdArgs& args) {
     ASSERT(inputFile_tmp.exists());
     eckit::PathName outputPath_tmp{outputPath_};
     outputPath_tmp.mkdir();
-    ASSERT( mode_ == "raw" || mode_ == "columMajor" || mode_ == "rowMajor" );
+    ASSERT(mode_ == "raw" || mode_ == "columMajor" || mode_ == "rowMajor");
 }
 
 void FesomCacheValidator::execute(const eckit::option::CmdArgs& args) {
 
-    const std::string iFname{inputPath_  + "/" + inputFile_};
+    const std::string iFname{inputPath_ + "/" + inputFile_};
     const std::string oFname{outputPath_ + "/" + outputFile_};
-    Fesom2HEALPix<double> cache( iFname );
+    Fesom2HEALPix<double> cache(iFname);
 
 
-    if ( mode_ == "columMajor" ) {
+    if (mode_ == "columMajor") {
         // Get triplets
         std::vector<Tri> triplets;
-        cache.getTriplets( triplets );
+        cache.getTriplets(triplets);
         // Open the file for writing
-        std::ofstream file( oFname );
+        std::ofstream file(oFname);
         // Check if the file is opened successfully
         if (!file.is_open()) {
             std::ostringstream os;
@@ -117,23 +119,23 @@ void FesomCacheValidator::execute(const eckit::option::CmdArgs& args) {
             throw eckit::SeriousBug(os.str(), Here());
         }
         // Sort triplets
-        std::sort(triplets.begin(), triplets.end(), [](Tri a, Tri b) { return a.reverse_idx(1000000000) < b.reverse_idx(1000000000); });
+        std::sort(triplets.begin(), triplets.end(),
+                  [](Tri a, Tri b) { return a.reverse_idx(1000000000) < b.reverse_idx(1000000000); });
         // Write triplets
         for (const auto& t : triplets) {
-            file << std::setw(10) << t.h() << ","
-                 << std::setw(10) << t.f() << ","
-                 << std::setw(15) << std::fixed << std::setprecision(8) << t.v() << std::endl;        
+            file << std::setw(10) << t.h() << "," << std::setw(10) << t.f() << "," << std::setw(15) << std::fixed
+                 << std::setprecision(8) << t.v() << std::endl;
         }
         // Close the file
         file.close();
     }
 
-    if ( mode_ == "rowMajor" ) {
+    if (mode_ == "rowMajor") {
         // Get triplets
         std::vector<Tri> triplets;
-        cache.getTriplets( triplets );
+        cache.getTriplets(triplets);
         // Open the file for writing
-        std::ofstream file( oFname );
+        std::ofstream file(oFname);
         // Check if the file is opened successfully
         if (!file.is_open()) {
             std::ostringstream os;
@@ -144,24 +146,20 @@ void FesomCacheValidator::execute(const eckit::option::CmdArgs& args) {
         std::sort(triplets.begin(), triplets.end(), [](Tri a, Tri b) { return a.idx(1000000000) < b.idx(1000000000); });
         // Write triplets
         for (const auto& t : triplets) {
-            file << std::setw(10) << t.h() << ","
-                 << std::setw(10) << t.f() << ","
-                 << std::setw(15) << std::fixed << std::setprecision(8) << t.v() << std::endl;        
+            file << std::setw(10) << t.h() << "," << std::setw(10) << t.f() << "," << std::setw(15) << std::fixed
+                 << std::setprecision(8) << t.v() << std::endl;
         }
         // Close the file
         file.close();
     }
 
-    if ( mode_ == "raw" ) {
-        cache.dumpCOO( oFname );
+    if (mode_ == "raw") {
+        cache.dumpCOO(oFname);
     }
-
-
-
 };
 
 
-void FesomCacheValidator::finish(const eckit::option::CmdArgs&) {};
+void FesomCacheValidator::finish(const eckit::option::CmdArgs&){};
 
 }  // namespace multio::action::interpolateFESOM
 

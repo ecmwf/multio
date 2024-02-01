@@ -12,9 +12,9 @@
 
 #pragma once
 
+#include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <fstream>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -63,7 +63,7 @@ private:
         return fname;
     }
 
-    void readCache( const std::string& file ){
+    void readCache(const std::string& file) {
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter readCache" << std::endl;
         size_t version;
         size_t NSideR;
@@ -119,7 +119,7 @@ private:
         //     os << " - Wrong level: " << levelR << " " << level << std::endl;
         //     throw eckit::SeriousBug(os.str(), Here());
         // }
-        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit readCache" << std::endl;        
+        INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit readCache" << std::endl;
         return;
     }
 
@@ -140,8 +140,8 @@ public:
         }
         const std::string domain = msg.metadata().getString("domain");
         std::string file = generateCacheFileName(cachePath, fesomGridName, domain, NSide, orderingConvention, level);
-        
-        readCache( file );
+
+        readCache(file);
 
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit file cache constructor (from message)" << std::endl;
         // Exit point
@@ -149,11 +149,10 @@ public:
     }
 
 
-
-    Fesom2HEALPix( const std::string& file ) {
+    Fesom2HEALPix(const std::string& file) {
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter file cache constructor (from filename)" << std::endl;
-        
-        readCache( file );
+
+        readCache(file);
 
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: exit file cache constructor (from filename)" << std::endl;
         // Exit point
@@ -206,11 +205,11 @@ public:
     }
 
 
-    void dumpCOO( const std::string& fileName ) {
+    void dumpCOO(const std::string& fileName) {
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter dumpCOO" << std::endl;
 
         // Open the file for writing
-        std::ofstream file( fileName );
+        std::ofstream file(fileName);
 
         // Check if the file is opened successfully
         if (!file.is_open()) {
@@ -226,9 +225,8 @@ public:
                 size_t iCol = colIdx_[colPtr];
                 MatrixType weight = values_[colPtr];
                 // Write to file
-                file << std::setw(10) << outIdx << ","
-                     << std::setw(10) << iCol << ","
-                     << std::setw(15) << std::fixed << std::setprecision(8) << weight << std::endl;
+                file << std::setw(10) << outIdx << "," << std::setw(10) << iCol << "," << std::setw(15) << std::fixed
+                     << std::setprecision(8) << weight << std::endl;
             }
         }
 
@@ -241,8 +239,7 @@ public:
     }
 
 
-
-    void getTriplets( std::vector<Tri>& triplets ) {
+    void getTriplets(std::vector<Tri>& triplets) {
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter getTriplets" << std::endl;
 
         // Perform the interpolation
@@ -261,8 +258,6 @@ public:
         // Exit point
         return;
     }
-
-
 };
 
 /**

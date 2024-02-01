@@ -346,8 +346,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
                         LookUpLong(md, "pentagonalResolutionParameterK"), LookUpLong(md, "K"));
             withFirstOf(valueSetter(g, "pentagonalResolutionParameterM"),
                         LookUpLong(md, "pentagonalResolutionParameterM"), LookUpLong(md, "M"));
-            // withFirstOf(ValueSetter{g, "unpackedSubsetPrecision"}, LookUpLong(md,
-            // "unpackedSubsetPrecision"));
+
             withFirstOf(valueSetter(g, "subSetJ"), LookUpLong(md, "subSetJ"), LookUpLong(md, "JS"));
             withFirstOf(valueSetter(g, "subSetK"), LookUpLong(md, "subSetK"), LookUpLong(md, "KS"));
             withFirstOf(valueSetter(g, "subSetM"), LookUpLong(md, "subSetM"), LookUpLong(md, "MS"));
@@ -421,17 +420,9 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
     }
 }
 
-// int GribEncoder::getBitsPerValue(int paramid, const std::string& levtype,
-// double min, double max) {
-//     return encodeBitsPerValue_.getBitsPerValue(paramid, levtype, min, max);
-// }
-
 void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
     // TODO globalSize is expected to be set in md directly. nmuberOf* should be
     // readonly anyway... test removal..
-    // auto gls = lookUpLong(md, "globalSize");
-    // withFirstOf(valueSetter(g, "numberOfDataPoints"), gls); // Readonly
-    // withFirstOf(valueSetter(g, "numberOfValues"), gls);
 
     withFirstOf(valueSetter(g, "missingValue"), LookUpDouble(md, "missingValue"));
     withFirstOf(valueSetter(g, "bitmapPresent"), LookUpBool(md, "bitmapPresent"));
@@ -443,8 +434,6 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     eckit::LocalConfiguration md = in;  // Copy to allow modification
 
     std::string gribEdition = md.getString("gribEdition", "2");
-    // std::string forecastTimeKey = gribEdition == "2" ? "forecastTime" : "startStep";
-
 
     auto operation = lookUpString(md, "operation");
     auto startStep = lookUpLong(md, "startStep");
@@ -606,16 +595,14 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         // For daily average the stepRange is shown as 0 instead of 0-24 (desired). Hence with DGov we decided to put
         // 255 (MISSING) as typeOfTimeIncrement
         //
-        // TO BE DISCUSSED - obviously there is some confusion about typeOfTimeIncrement=1. For analysis I read that it 
-        // should be set to 1. However eccodes thinks different and will not consider it as time range then... hence I explicily set it to 255 now
-        // g.setValue(
+        // TO BE DISCUSSED - obviously there is some confusion about typeOfTimeIncrement=1. For analysis I read that it
+        // should be set to 1. However eccodes thinks different and will not consider it as time range then... hence I
+        // explicily set it to 255 now g.setValue(
         //     "typeOfTimeIncrement",
         //     (timeRef == "start" ? 2
-        //                         : ((gribEdition == "2") && (significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
-        g.setValue(
-            "typeOfTimeIncrement",
-            (timeRef == "start" ? 2
-                                : ((gribEdition == "2") ? 255 : 1)));
+        //                         : ((gribEdition == "2") && (significanceOfReferenceTime &&
+        //                         (*significanceOfReferenceTime == 2)) ? 255 : 1)));
+        g.setValue("typeOfTimeIncrement", (timeRef == "start" ? 2 : ((gribEdition == "2") ? 255 : 1)));
 
         if (const auto timeIncrement = lookUpLong(md, "timeIncrement"); timeIncrement) {
             if (*timeIncrement != 0) {

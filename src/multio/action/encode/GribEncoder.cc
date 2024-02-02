@@ -26,6 +26,7 @@
 #include "eckit/utils/MD5.h"
 #include "eckit/utils/StringTools.h"
 #include "eckit/utils/Translator.h"
+#include "eckit/value/Value.h"
 
 
 #include "multio/LibMultio.h"
@@ -323,6 +324,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
     withFirstOf(valueSetter(g, "number"), LookUpLong(md, "ensemble-member"));
     withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), LookUpLong(md, "ensemble-size"));
+    withFirstOf(valueSetter(g, "methodNumber"), LookUpLong(md, "method-number"));
+    withFirstOf(valueSetter(g, "systemNumber"), LookUpLong(md, "system-number"));
 
     ret.type = firstOf(LookUpString(md, "type"), LookUpString(md, "marsType"));
     if (ret.type) {
@@ -343,8 +346,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
                         LookUpLong(md, "pentagonalResolutionParameterK"), LookUpLong(md, "K"));
             withFirstOf(valueSetter(g, "pentagonalResolutionParameterM"),
                         LookUpLong(md, "pentagonalResolutionParameterM"), LookUpLong(md, "M"));
-            // withFirstOf(ValueSetter{g, "unpackedSubsetPrecision"}, LookUpLong(md,
-            // "unpackedSubsetPrecision"));
+
             withFirstOf(valueSetter(g, "subSetJ"), LookUpLong(md, "subSetJ"), LookUpLong(md, "JS"));
             withFirstOf(valueSetter(g, "subSetK"), LookUpLong(md, "subSetK"), LookUpLong(md, "KS"));
             withFirstOf(valueSetter(g, "subSetM"), LookUpLong(md, "subSetM"), LookUpLong(md, "MS"));
@@ -383,32 +385,44 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     return ret;
 }
 
-void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
-    if (md.has("encoder-overwrites")) {
-        // TODO Refactor with visitor
-        auto overwrites = md.getSubConfiguration("encoder-overwrites");
-        for (const auto& k : overwrites.keys()) {
-            // TODO handle type... however eccodes should support string as well. For
-            // some representations the string and integer representation in eccodes
-            // differ significantly and my produce wrong results
-            if (g.hasKey(k.c_str())) {
-                g.setValue(k, overwrites.getString(k));
-            }
+template <typename KVFunc>
+void visitKeyValues(const eckit::Configuration& c, KVFunc&& func) {
+    for (const auto& k : c.keys()) {
+        auto val = c.getSubConfiguration(k).get();
+
+        if (val.isBool()) {
+            func(k, (bool)val);
+        }
+        else if (val.isNumber()) {
+            func(k, (std::int64_t)val);
+        }
+        else if (val.isDouble()) {
+            func(k, (double)val);
+        }
+        else if (val.isString()) {
+            func(k, (std::string)val);
+        }
+        else {
+            NOTIMP;
         }
     }
 }
 
-// int GribEncoder::getBitsPerValue(int paramid, const std::string& levtype,
-// double min, double max) {
-//     return encodeBitsPerValue_.getBitsPerValue(paramid, levtype, min, max);
-// }
+void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
+    if (md.has("encoder-overwrites")) {
+        // TODO Refactor with visitor
+        auto overwrites = md.getSubConfiguration("encoder-overwrites");
+        visitKeyValues(overwrites, [&](const std::string& k, const auto& v) {
+            if (g.hasKey(k.c_str())) {
+                g.setValue(k, v);
+            }
+        });
+    }
+}
 
 void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
     // TODO globalSize is expected to be set in md directly. nmuberOf* should be
     // readonly anyway... test removal..
-    // auto gls = lookUpLong(md, "globalSize");
-    // withFirstOf(valueSetter(g, "numberOfDataPoints"), gls); // Readonly
-    // withFirstOf(valueSetter(g, "numberOfValues"), gls);
 
     withFirstOf(valueSetter(g, "missingValue"), LookUpDouble(md, "missingValue"));
     withFirstOf(valueSetter(g, "bitmapPresent"), LookUpBool(md, "bitmapPresent"));
@@ -420,8 +434,6 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     eckit::LocalConfiguration md = in;  // Copy to allow modification
 
     std::string gribEdition = md.getString("gribEdition", "2");
-    // std::string forecastTimeKey = gribEdition == "2" ? "forecastTime" : "startStep";
-
 
     auto operation = lookUpString(md, "operation");
     auto startStep = lookUpLong(md, "startStep");
@@ -582,12 +594,15 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         // It seems that from this combination eccodes is infering a `stepKey` of avgd (daily average).
         // For daily average the stepRange is shown as 0 instead of 0-24 (desired). Hence with DGov we decided to put
         // 255 (MISSING) as typeOfTimeIncrement
-        g.setValue(
-            "typeOfTimeIncrement",
-            (timeRef == "start"
-                 ? 2
-                 : (((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255
-                                                                                                                 : 1)));
+        //
+        // TO BE DISCUSSED - obviously there is some confusion about typeOfTimeIncrement=1. For analysis I read that it
+        // should be set to 1. However eccodes thinks different and will not consider it as time range then... hence I
+        // explicily set it to 255 now g.setValue(
+        //     "typeOfTimeIncrement",
+        //     (timeRef == "start" ? 2
+        //                         : ((gribEdition == "2") && (significanceOfReferenceTime &&
+        //                         (*significanceOfReferenceTime == 2)) ? 255 : 1)));
+        g.setValue("typeOfTimeIncrement", (timeRef == "start" ? 2 : ((gribEdition == "2") ? 255 : 1)));
 
         if (const auto timeIncrement = lookUpLong(md, "timeIncrement"); timeIncrement) {
             if (*timeIncrement != 0) {
@@ -624,7 +639,6 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
 
         g.setValue("hourOfAnalysis", analysisDateTime.time.hour);
         g.setValue("minuteOfAnalysis", analysisDateTime.time.minute);
-        g.setValue("secondOfAnalysis", analysisDateTime.time.second);
     }
 }
 
@@ -641,44 +655,16 @@ void GribEncoder::setFieldMetadata(const message::Message& msg) {
     }
 }
 
+namespace {}
+
 void GribEncoder::setOceanMetadata(const message::Message& msg) {
-    const auto& metadata = msg.metadata();
+    // Copy metadata now to merge with run config
+    auto metadata = msg.metadata();
 
-    if (metadata.has("dataset")) {
-        withFirstOf(valueSetter(*this, "tablesVersion"), LookUpLong(metadata, "tablesVersion"));
-        withFirstOf(valueSetter(*this, "setLocalDefinition"), LookUpLong(metadata, "setLocalDefinition"));
-        withFirstOf(valueSetter(*this, "grib2LocalSectionNumber"), LookUpLong(metadata, "grib2LocalSectionNumber"));
-        withFirstOf(valueSetter(*this, "productionStatusOfProcessedData"),
-                    LookUpLong(metadata, "productionStatusOfProcessedData"));
+    visitKeyValues(config_.getSubConfiguration("run"),
+                   [&](const std::string& k, const auto& v) { metadata.set(k, v); });
 
-        const auto dataset = metadata.getString("dataset");
-        setValue("dataset", dataset);
-
-        if (dataset == "climate-dt") {
-            withFirstOf(valueSetter(*this, "activity"), LookUpString(metadata, "activity"));
-            withFirstOf(valueSetter(*this, "experiment"), LookUpString(metadata, "experiment"));
-            withFirstOf(valueSetter(*this, "generation"), LookUpString(metadata, "generation"));
-            withFirstOf(valueSetter(*this, "model"), LookUpString(metadata, "model"));
-            withFirstOf(valueSetter(*this, "realization"), LookUpString(metadata, "realization"));
-        }
-
-        withFirstOf(valueSetter(*this, "class"), LookUpString(metadata, "class"), LookUpString(metadata, "marsClass"));
-        withFirstOf(valueSetter(*this, "stream"), LookUpString(metadata, "stream"),
-                    LookUpString(metadata, "marsStream"));
-        withFirstOf(valueSetter(*this, "expver"), LookUpString(metadata, "expver"),
-                    LookUpString(metadata, "experimentVersionNumber"));
-    }
-
-    withFirstOf(valueSetter(*this, "subCentre"), LookUpString(metadata, "subCentre"));
-
-    withFirstOf(valueSetter(*this, "generatingProcessIdentifier"),
-                LookUpString(metadata, "generatingProcessIdentifier"));
-
-    withFirstOf(valueSetter(*this, "setPackingType"), LookUpString(metadata, "setPackingType"));
-
-    auto runConfig = config_.getSubConfiguration("run");
-
-    auto queriedMarsFields = setMarsKeys(*this, runConfig);
+    auto queriedMarsFields = setMarsKeys(*this, metadata);
     if (queriedMarsFields.type) {
         setValue("typeOfGeneratingProcess", type_of_generating_process.at(*queriedMarsFields.type));
     }
@@ -742,7 +728,11 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {
     setOceanCoordMetadata(metadata, config_.getSubConfiguration("run"));
 }
-void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit::Configuration& runConfig) {
+void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig) {
+    message::Metadata md = metadata;  // copy
+
+    visitKeyValues(runConfig, [&](const std::string& k, const auto& v) { md.set(k, v); });
+
     // Set run-specific md
     setMarsKeys(*this, runConfig);
 

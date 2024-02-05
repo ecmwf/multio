@@ -137,7 +137,7 @@ struct BaseOverloadForResolution {
 
 template <typename TI>
 struct IgnoredOverloadForResolution {
-    template<typename T, std::enable_if<!std::is_same_v<T, T>, bool> = true>
+    template <typename T, std::enable_if_t<!std::is_same_v<T, T>, bool> = true>
     TypeTag<TI> operator()(T&&) const;
 };
 
@@ -145,8 +145,8 @@ struct IgnoredOverloadForResolution {
 template <typename From, typename... TS> struct SaneOverloadResolution;
 
 // Base case - defines an operator() that will never participate in overload resolution
-template <typename From> struct SaneOverloadResolution<From> { 
-    template<typename T, std::enable_if<!std::is_same_v<T, T>, bool> = true>
+template <typename From> struct SaneOverloadResolution<From> {
+    template <typename T, std::enable_if_t<!std::is_same_v<T, T>, bool> = true>
     TypeTag<void> operator()(T&&) const;
 };
 

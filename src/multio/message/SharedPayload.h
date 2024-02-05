@@ -137,8 +137,8 @@ struct variant_alternative<I, multio::message::SharedPayload>
 namespace multio::util {
 
 template <typename T>
-struct util::GetVariantIndex<T, multio::message::SharedPayload>
-    : util::GetVariantIndex<T, multio::message::SharedPayloadVariant> {};
+struct GetVariantIndex<T, multio::message::SharedPayload> : GetVariantIndex<T, multio::message::SharedPayloadVariant> {
+};
 
 }  // namespace multio::util
 

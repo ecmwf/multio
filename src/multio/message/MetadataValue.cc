@@ -27,11 +27,11 @@ namespace multio::message {
 
 
 MetadataValue::MetadataValue(const This& other) :
-    Base{other.visit([](auto&& v) { return Base{wrapNestedMaybe(std::forward<decltype(v)>(v))}; })} {}
+    Base{other.visit([](auto&& v) -> Base { return Base{wrapNestedMaybe(std::forward<decltype(v)>(v))}; })} {}
 
 
 MetadataValue& MetadataValue::operator=(const This& other) {
-    Base::operator=(other.visit([](auto&& v) { return Base{wrapNestedMaybe(std::forward<decltype(v)>(v))}; }));
+    Base::operator=(other.visit([](auto&& v) -> Base { return Base{wrapNestedMaybe(std::forward<decltype(v)>(v))}; }));
     return *this;
 }
 

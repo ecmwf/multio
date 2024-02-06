@@ -54,21 +54,19 @@ public:
     // Static cast to base class is done because gcc had a bug with visiting derived classes:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90943 Not required for gcc12
     template <typename F>
-    decltype(auto) visit(F&& f) const& noexcept(noexcept(util::visitUnwrapUniquePtr(std::forward<F>(f),
-                                                                                    static_cast<Base const&>(*this)))) {
-        return util::visitUnwrapUniquePtr(std::forward<F>(f), static_cast<Base const&>(*this));
+    decltype(auto) visit(F&& f) const& noexcept(noexcept(util::visitUnwrapUniquePtr(std::forward<F>(f), *this))) {
+        return util::visitUnwrapUniquePtr(std::forward<F>(f), *this);
     }
 
     template <typename F>
-    decltype(auto) visit(F&& f) & noexcept(noexcept(util::visitUnwrapUniquePtr(std::forward<F>(f),
-                                                                               static_cast<Base&>(*this)))) {
-        return util::visitUnwrapUniquePtr(std::forward<F>(f), static_cast<Base&>(*this));
+    decltype(auto) visit(F&& f) & noexcept(noexcept(util::visitUnwrapUniquePtr(std::forward<F>(f), *this))) {
+        return util::visitUnwrapUniquePtr(std::forward<F>(f), *this);
     }
 
     template <typename F>
-    decltype(auto) visit(F&& f) && noexcept(
-        noexcept(util::visitUnwrapUniquePtr(std::forward<F>(f), std::move(static_cast<Base&&>(*this))))) {
-        return util::visitUnwrapUniquePtr(std::forward<F>(f), std::move(static_cast<Base&&>(*this)));
+    decltype(auto) visit(F&& f) && noexcept(noexcept(util::visitUnwrapUniquePtr(std::forward<F>(f),
+                                                                                std::move(*this)))) {
+        return util::visitUnwrapUniquePtr(std::forward<F>(f), std::move(*this));
     }
 
 

@@ -36,10 +36,6 @@ void Mappings::add(message::Message msg) {
 
     std::memcpy(local_map.data(), msg.payload().data(), msg.size());
 
-    eckit::Log::debug<LibMultio>() << ": [";
-    util::print_buffer(local_map, eckit::Log::debug<LibMultio>());
-    eckit::Log::debug<LibMultio>() << "]" << std::endl;
-
     if (msg.metadata().getString("representation") == "unstructured") {
         domainMap.emplace(msg.source(), std::make_unique<Unstructured>(std::move(local_map), msg.globalSize()));
         return;

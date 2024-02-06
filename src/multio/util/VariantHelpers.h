@@ -39,19 +39,22 @@ inline constexpr size_t GetVariantIndex_v = GetVariantIndex<T, V>::value;
 
 //-----------------------------------------------------------------------------
 
-template <typename Arg, std::enable_if_t<HasVariantBaseType_v<std::decay_t<Arg>>, bool> = true>
+template <typename Arg,
+          std::enable_if_t<(HasVariantBaseType_v<std::decay_t<Arg>> && !std::is_lvalue_reference_v<Arg>), bool> = true>
+typename std::decay_t<Arg>::Base&& tryToVariantBase(Arg&& arg) noexcept {
+    using Base = typename std::decay_t<Arg>::Base;
+    return static_cast<Base&&>(std::forward<Arg>(arg));
+}
+
+template <typename Arg,
+          std::enable_if_t<(HasVariantBaseType_v<std::decay_t<Arg>> && std::is_lvalue_reference_v<Arg>), bool> = true>
 decltype(auto) tryToVariantBase(Arg&& arg) noexcept {
     using Base = typename std::decay_t<Arg>::Base;
-    if constexpr (std::is_rvalue_reference_v<Arg>) {
-        return static_cast<Base&&>(arg);
+    if constexpr (std::is_const_v<std::remove_reference_t<Arg>>) {
+        return static_cast<Base const&>(arg);
     }
     else {
-        if constexpr (std::is_const_v<std::remove_reference_t<Arg>>) {
-            return static_cast<Base const&>(arg);
-        }
-        else {
-            return static_cast<Base&>(arg);
-        }
+        return static_cast<Base&>(arg);
     }
 }
 

@@ -224,7 +224,7 @@ private:
         std::enable_if_t<util::TypeListContains_v<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>, bool>
         = true>
     static decltype(auto) uniquePtrGetter(This_&& val) {
-        if constexpr (std::is_rvalue_reference_v<This_>) {
+        if constexpr (!std::is_lvalue_reference_v<This_>) {
             return std::move(*(resolvedUniquePtrGetter<std::unique_ptr<T>>(std::forward<This_>(val))).get());
         }
         else {

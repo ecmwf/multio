@@ -48,6 +48,5 @@ int multio_metadata_set_long(multio_metadata_t* md, const char* key, long value)
 int multio_metadata_set_longlong(multio_metadata_t* md, const char* key, long long value);
 int multio_metadata_set_string(multio_metadata_t* md, const char* key, const char* value);
 int multio_metadata_set_bool(multio_metadata_t* md, const char* key, bool value);
-int multio_metadata_set_float(multio_metadata_t* md, const char* key, float value);
 int multio_metadata_set_double(multio_metadata_t* md, const char* key, double value);
 int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, bool* accepted);

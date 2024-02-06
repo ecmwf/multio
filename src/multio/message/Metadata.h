@@ -185,7 +185,7 @@ private:
     static std::optional<T> optionalGetter(This_&& val, const KeyType& k) {
         if (auto search = val.values_.find(k); search != val.values_.end()) {
             try {
-                if constexpr (std::is_rvalue_reference_v<This_>) {
+                if constexpr (!std::is_lvalue_reference_v<This_>) {
                     return std::move(search->second.template get<T>());
                 }
                 else {
@@ -202,7 +202,7 @@ private:
     template <typename This_>
     static std::optional<MetadataValue> optionalGetter(This_&& val, const KeyType& k) noexcept {
         if (auto search = val.values_.find(k); search != val.values_.end()) {
-            if constexpr (std::is_rvalue_reference_v<This_>) {
+            if constexpr (!std::is_lvalue_reference_v<This_>) {
                 return std::optional<MetadataValue>{std::move(search->second)};
             }
             else {

@@ -18,6 +18,7 @@
 #include <memory>  // unique_ptr
 #include <optional>
 #include <type_traits>
+#include <variant>
 #include <vector>
 
 namespace multio::util {
@@ -289,6 +290,33 @@ struct WrapOptional<std::optional<T>> {
 template <typename T>
 using WrapOptional_t = typename WrapOptional<T>::type;
 
+
+//-----------------------------------------------------------------------------
+
+template <typename T>
+struct IsVariant {
+    static constexpr bool value = false;
+};
+template <typename... T>
+struct IsVariant<std::variant<T...>> {
+    static constexpr bool value = true;
+};
+
+template <typename T>
+inline constexpr bool IsVariant_v = IsVariant<T>::value;
+
+
+//-----------------------------------------------------------------------------
+
+template <typename, class = void>
+struct HasVariantBaseType : std::false_type {};
+
+template <typename T>
+struct HasVariantBaseType<T, std::void_t<typename T::Base>>
+    : std::integral_constant<bool, (IsVariant_v<typename T::Base> && std::is_base_of_v<typename T::Base, T>)> {};
+
+template <typename T>
+inline constexpr bool HasVariantBaseType_v = HasVariantBaseType<T>::value;
 
 //-----------------------------------------------------------------------------
 

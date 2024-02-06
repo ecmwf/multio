@@ -39,10 +39,43 @@ inline constexpr size_t GetVariantIndex_v = GetVariantIndex<T, V>::value;
 
 //-----------------------------------------------------------------------------
 
+template <typename Arg, std::enable_if_t<HasVariantBaseType_v<std::decay_t<Arg>>, bool> = true>
+decltype(auto) tryToVariantBase(Arg&& arg) noexcept {
+    using Base = typename std::decay_t<Arg>::Base;
+    if constexpr (std::is_rvalue_reference_v<Arg>) {
+        return static_cast<Base&&>(arg);
+    }
+    else {
+        if constexpr (std::is_const_v<std::remove_reference_t<Arg>>) {
+            return static_cast<Base const&>(arg);
+        }
+        else {
+            return static_cast<Base&>(arg);
+        }
+    }
+}
+
+template <typename Arg, std::enable_if_t<(!HasVariantBaseType_v<std::decay_t<Arg>>), bool> = true>
+Arg&& tryToVariantBase(Arg&& arg) noexcept {
+    return std::forward<Arg>(arg);
+}
+
+
+// Visit helper for derived classes - trying to avoid gcc9 - gcc11 bug:
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90943
+template <typename Func, typename... ValuesToVisit>
+decltype(auto) visit(Func&& f, ValuesToVisit&&... values) noexcept(
+    noexcept(std::visit(std::forward<Func>(f), tryToVariantBase(std::forward<ValuesToVisit>(values))...))) {
+    return std::visit(std::forward<Func>(f), tryToVariantBase(std::forward<ValuesToVisit>(values))...);
+}
+
+
+//-----------------------------------------------------------------------------
+
 template <typename Func, typename... ValuesToVisit>
 decltype(auto) visitUnwrapUniquePtr(Func&& f, ValuesToVisit&&... values) noexcept(noexcept(
-    std::visit(util::forwardUnwrappedUniquePtr(std::forward<Func>(f)), std::forward<ValuesToVisit>(values)...))) {
-    return std::visit(util::forwardUnwrappedUniquePtr(std::forward<Func>(f)), std::forward<ValuesToVisit>(values)...);
+    util::visit(util::forwardUnwrappedUniquePtr(std::forward<Func>(f)), std::forward<ValuesToVisit>(values)...))) {
+    return util::visit(util::forwardUnwrappedUniquePtr(std::forward<Func>(f)), std::forward<ValuesToVisit>(values)...);
 }
 
 
@@ -65,7 +98,7 @@ struct TranslateToMaybe {
 
 template <typename T, typename TypeToVisit>
 decltype(auto) visitTranslate(TypeToVisit&& typeToVisit) noexcept {
-    return std::visit(TranslateToMaybe<T>{}, std::forward<TypeToVisit>(typeToVisit));
+    return util::visit(TranslateToMaybe<T>{}, std::forward<TypeToVisit>(typeToVisit));
 }
 
 //-----------------------------------------------------------------------------

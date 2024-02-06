@@ -18,59 +18,56 @@ namespace multio::message {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-// Due to a bug with gcc - all std::visit are performed explicitly with a cast to the variant base first
-// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90943
-
 const void* SharedPayload::data() const {
-    return std::visit(
+    return util::visit(
         eckit::Overloaded{
             [](const std::shared_ptr<eckit::Buffer>& sharedBuf) -> const void* { return sharedBuf->data(); },
             [](const PayloadReference& ref) -> const void* { return ref.data(); },
         },
-        static_cast<Base const&>(*this));
+        *this);
 }
 
 std::size_t SharedPayload::size() const {
-    return std::visit(
+    return util::visit(
         eckit::Overloaded{
             [](const std::shared_ptr<eckit::Buffer>& sharedBuf) -> std::size_t { return sharedBuf->size(); },
             [](const PayloadReference& ref) -> std::size_t { return ref.size(); },
         },
-        static_cast<Base const&>(*this));
+        *this);
 }
 
 SharedPayload::operator PayloadReference() const {
-    return std::visit(
+    return util::visit(
         eckit::Overloaded{
             [](const std::shared_ptr<eckit::Buffer>& sharedBuf) -> PayloadReference {
                 return PayloadReference{static_cast<const char*>(sharedBuf->data()), sharedBuf->size() * sizeof(char)};
             },
             [](const PayloadReference& ref) -> PayloadReference { return ref; },
         },
-        static_cast<Base const&>(*this));
+        *this);
 }
 
 eckit::Stream& operator<<(eckit::Stream& strm, const SharedPayload& sp) {
-    std::visit(eckit::Overloaded{[&strm](const std::shared_ptr<eckit::Buffer>& p) { strm << *p.get(); },
-                                 [&strm](const PayloadReference& p) { strm.writeBlob(p.data(), p.size()); }},
-               static_cast<SharedPayloadVariant const&>(sp));
+    util::visit(eckit::Overloaded{[&strm](const std::shared_ptr<eckit::Buffer>& p) { strm << *p.get(); },
+                                  [&strm](const PayloadReference& p) { strm.writeBlob(p.data(), p.size()); }},
+                sp);
     return strm;
 }
 
 std::shared_ptr<eckit::Buffer> SharedPayload::moveOrCopy() {
-    return std::visit(eckit::Overloaded{[&](const std::shared_ptr<eckit::Buffer>& p) -> std::shared_ptr<eckit::Buffer> {
-                                            if (p.use_count() == 1) {
-                                                // Now move the buffer
-                                                return std::move(p);
-                                            }
-                                            else {
-                                                return std::make_shared<eckit::Buffer>(p->data(), p->size());
-                                            }
-                                        },
-                                        [&](const PayloadReference& p) {
-                                            return std::make_shared<eckit::Buffer>(p.data(), p.size());
-                                        }},
-                      static_cast<Base&>(*this));
+    return util::visit(
+        eckit::Overloaded{
+            [&](const std::shared_ptr<eckit::Buffer>& p) -> std::shared_ptr<eckit::Buffer> {
+                if (p.use_count() == 1) {
+                    // Now move the buffer
+                    return std::move(p);
+                }
+                else {
+                    return std::make_shared<eckit::Buffer>(p->data(), p->size());
+                }
+            },
+            [&](const PayloadReference& p) { return std::make_shared<eckit::Buffer>(p.data(), p.size()); }},
+        *this);
 }
 
 void SharedPayload::acquire() {
@@ -78,11 +75,11 @@ void SharedPayload::acquire() {
 }
 
 void* SharedPayload::modifyData() {
-    return std::visit(eckit::Overloaded{
-                          [](std::shared_ptr<eckit::Buffer>& sharedBuf) -> void* { return sharedBuf->data(); },
-                          [](PayloadReference& ref) -> void* { throw; },
-                      },
-                      static_cast<Base&>(*this));
+    return util::visit(eckit::Overloaded{
+                           [](std::shared_ptr<eckit::Buffer>& sharedBuf) -> void* { return sharedBuf->data(); },
+                           [](PayloadReference& ref) -> void* { throw; },
+                       },
+                       *this);
 }
 
 }  // namespace multio::message

@@ -80,7 +80,18 @@ void forwardMetadata(const eckit::LocalConfiguration& cfg, DestType& destination
         destination.set(key, cfg.getInt(key));
     }
     else if (value.isString()) {
-        destination.set(key, cfg.getString(key).c_str());
+        if (cfg.getSubConfiguration("grid").get().isString()) {
+            const std::string input = util::replaceCurly(
+                cfg.getSubConfiguration("grid").get().as<std::string>(), [](std::string_view replace) {
+                    std::string lookUpKey{replace};
+                    char* env = ::getenv(lookUpKey.c_str());
+                    return env ? std::optional<std::string>{env} : std::optional<std::string>{};
+                });
+            destination.set(key, input);
+        }
+        else {
+            destination.set(key, cfg.getString(key).c_str());
+        }
     }
     else {
         NOTIMP;
@@ -270,13 +281,18 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
         std::vector<double> grid(2, 0.0);
 
         if (cfg.getSubConfiguration("grid").get().isString()) {
+            const std::string input = util::replaceCurly(
+                cfg.getSubConfiguration("grid").get().as<std::string>(), [](std::string_view replace) {
+                    std::string lookUpKey{replace};
+                    char* env = ::getenv(lookUpKey.c_str());
+                    return env ? std::optional<std::string>{env} : std::optional<std::string>{};
+                });
 #define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
             static const std::regex ll(fp "/" fp);
             static const std::regex H("([h|H])([1-9][0-9]*)");
 #undef fp
             std::smatch matchll;
             std::smatch matchH;
-            const auto input = cfg.getString("grid");
             LOG_DEBUG_LIB(LibMultio) << " Grid is a string ::" << input << std::endl;
             if (std::regex_match(input, matchll, ll)) {
                 gridKind = "regular_ll";

@@ -10,6 +10,7 @@ endif()
 list( APPEND multio_action_plugins
     multio-action-aggregate
     multio-action-encode
+    multio-action-encode-grib2
     multio-action-mask
     multio-action-metadata-mapping
     multio-action-null

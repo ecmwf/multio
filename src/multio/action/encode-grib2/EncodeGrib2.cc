@@ -315,7 +315,8 @@ void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadat
         // valid time remains constant 4 4  Successive times processed have start time of forecast decremented and
         // forecast time incremented so that valid time remains constant 5 5  Floating subinterval of time between
         // forecast time and end of overall time interval
-        out.set("typeOfTimeIncrement", timeRef == "start" ? 2 : 1);
+        // out.set("typeOfTimeIncrement", timeRef == "start" ? 2 : 1);
+        out.set("typeOfTimeIncrement", timeRef == "start" ? 2 : 255);
 
         auto sampleIntervalUnitStr = in.get<std::string>("sampleIntervalUnit");
         auto sampleIntervalUnit = util::timeUnitFromString(sampleIntervalUnitStr);
@@ -342,7 +343,6 @@ void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadat
         auto time = util::toTimeInts(*analysisTime);
         out.set("hourOfAnalysis", time.hour);
         out.set("minuteOfAnalysis", time.minute);
-        out.set("secondOfAnalysis", time.second);
     }
 }
 

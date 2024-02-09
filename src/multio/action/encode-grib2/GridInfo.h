@@ -82,6 +82,8 @@ decltype(auto) dispatchGridType(Func&& func, GridType gridType, Args&&... args) 
             return std::forward<Func>(func)(GridTypeTag<GridType::ReducedLonLat>{}, std::forward<Args>(args)...);
         case GridType::HealPix:
             return std::forward<Func>(func)(GridTypeTag<GridType::HealPix>{}, std::forward<Args>(args)...);
+        default:
+            NOTIMP;
     }
 }
 
@@ -173,8 +175,7 @@ struct CodesKeySetter<UnstructuredGridInfo> {
         CodesKeySetter<BaseGridInfo>{}(i, keySetter);
         keySetter("unstructuredGridType", i.unstructuredGridType);
         keySetter("unstructuredGridSubtype", i.unstructuredGridSubtype);
-        keySetter("unstructuredGridUUID", i.unstructuredGridUUID);
-        keySetter("uuidOfHGrid", i.unstructuredGridType);
+        keySetter("uuidOfHGrid", i.unstructuredGridUUID);
         keySetter("numberOfDataPoints", i.numberOfDataPoints);
     }
 };

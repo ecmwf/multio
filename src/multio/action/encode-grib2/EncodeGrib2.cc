@@ -23,9 +23,14 @@
 #include "multio/action/encode-grib2/Exception.h"
 #include "multio/util/DateTime.h"
 #include "multio/util/Timing.h"
+#include "multio/message/Glossary.h"
+#include "multio/message/MetadataTypes.h"
+
 
 namespace multio::action {
 
+using message::glossary;
+using KeyType = typename message::MetadataTypes::KeyType;
 using config::configuration_path_name;
 
 namespace {
@@ -42,9 +47,11 @@ eckit::LocalConfiguration getEncodingConfiguration(const ComponentConfiguration&
 void applyOverwrites(MioGribHandle& h, const std::optional<eckit::LocalConfiguration>& configOverwrites,
                      const message::Metadata& md) {
     // TODO clean up?? avoid copying metadata and pass metadata by ref to a lambda?
-    auto overwrites = md.getOpt<message::Metadata>("encoder-overwrites").value_or(message::Metadata{});
-    for (auto&& kv : message::toMetadata(configOverwrites->get())) {
-        overwrites.set(std::move(kv.first), std::move(kv.second));
+    auto overwrites = md.getOpt<message::Metadata>(glossary().encoderOverwrites).value_or(message::Metadata{});
+    if (configOverwrites) {
+        for (auto&& kv : message::toMetadata(configOverwrites->get())) {
+            overwrites.set(std::move(kv.first), std::move(kv.second));
+        }
     }
     for (const auto& kv : overwrites) {
         // TODO handle type... however eccodes should support string as well. For
@@ -118,11 +125,11 @@ struct MetadataToGrib {
     MioGribHandle& handle;
 
     template <typename T>
-    void transfer(const std::string& getKey, const std::string& setKey) {
-        handle.setValue(getKey, metadata.get<T>(setKey));
+    void transfer(const KeyType& getKey, const std::string& setKey) {
+        handle.setValue(setKey, metadata.get<T>(getKey));
     }
     template <typename T>
-    bool transferOpt(const std::string& getKey, const std::string& setKey) {
+    bool transferOpt(const KeyType& getKey, const std::string& setKey) {
         if (auto opt = metadata.getOpt<T>(getKey); opt) {
             handle.setValue(setKey, *opt);
             return true;
@@ -131,29 +138,53 @@ struct MetadataToGrib {
     }
 
     template <typename T>
-    void transfer(const std::string& k) {
+    void transfer(const KeyType& k) {
         transfer<T>(k, k);
     }
     template <typename T>
-    bool transferOpt(const std::string& k) {
+    bool transferOpt(const KeyType& k) {
         return transferOpt<T>(k, k);
     }
 
 
     void transferSection1Keys() {
-        this->transfer<std::int64_t>("year");
-        this->transfer<std::int64_t>("month");
-        this->transfer<std::int64_t>("day");
-        this->transfer<std::int64_t>("hour");
-        this->transfer<std::int64_t>("minute");
-        this->transfer<std::int64_t>("second");
+        this->transferOpt<std::int64_t>(glossary().centre);
+        this->transferOpt<std::int64_t>(glossary().subCentre);
+        this->transferOpt<std::int64_t>(glossary().significanceOfReferenceTime);
+        
+        // Check if these keys should be added as well
+        // this->transferOpt<std::int64_t>("tablesVersion");
+        // this->transferOpt<std::int64_t>("localTablesVersion");
+        
+        this->transfer<std::int64_t>(glossary().year);
+        this->transfer<std::int64_t>(glossary().month);
+        this->transfer<std::int64_t>(glossary().day);
+        this->transfer<std::int64_t>(glossary().hour);
+        this->transfer<std::int64_t>(glossary().minute);
+        this->transfer<std::int64_t>(glossary().second);
+        
+        this->transferOpt<std::int64_t>(glossary().productionStatusOfProcessedData);
+        this->transferOpt<std::int64_t>(glossary().typeOfProcessedData);
     }
 
 
     void transferMarsKeys() {
-        this->transferOpt<std::string>("class");
-        this->transferOpt<std::string>("stream");
-        this->transferOpt<std::string>("expver") || this->transferOpt<std::string>("experimentVersionNumber", "expver");
+        if (auto localDef = metadata.getOpt<std::int64_t>(glossary().localDefinitionNumber); localDef) {
+            handle.setValue(glossary().setLocalDefinition, 1);
+            handle.setValue(glossary().localDefinitionNumber, *localDef);
+        }
+        
+        this->transferOpt<std::string>(glossary().classKey);
+        this->transferOpt<std::string>(glossary().stream);
+        this->transferOpt<std::string>(glossary().type);
+        this->transferOpt<std::string>(glossary().expver) || this->transferOpt<std::string>(glossary().experimentVersionNumber, glossary().expver);
+        
+        // 60 - Ocean data analysis date and analysis time
+        this->transferOpt<std::int64_t>(glossary().yearOfAnalysis);
+        this->transferOpt<std::int64_t>(glossary().monthOfAnalysis);
+        this->transferOpt<std::int64_t>(glossary().dayOfAnalysis);
+        this->transferOpt<std::int64_t>(glossary().hourOfAnalysis);
+        this->transferOpt<std::int64_t>(glossary().minuteOfAnalysis);
     }
 };
 
@@ -165,13 +196,13 @@ void multioToEccodesParamId(const std::string& op, const Metadata& in, Metadata&
                                                                            {"accumulate", 2000}, {"maximum", 3000},
                                                                            {"minimum", 4000},    {"stddev", 5000}};
 
-    std::int64_t paramId = in.get<std::int64_t>("paramId");
+    std::int64_t paramId = in.get<std::int64_t>(glossary().paramId);
     if (paramId >= 212000 && paramId < 213000) {
         // HACK! Support experimental averages.
-        out.set("paramId", paramId + 4000);
+        out.set(glossary().paramId, paramId + 4000);
     }
     else {
-        out.set("paramId", paramId + OPS_TO_CODE.at(op));
+        out.set(glossary().paramId, paramId + OPS_TO_CODE.at(op));
     }
 }
 
@@ -179,7 +210,7 @@ void multioToEccodesParamId(const std::string& op, const Metadata& in, Metadata&
 //-----------------------------------------------------------------------------
 
 std::tuple<std::int64_t, std::int64_t> getReferenceDateTime(const std::string& timeRef, const Metadata& in) {
-    static std::unordered_map<std::string, std::tuple<std::string, std::string>> REF_TO_DATETIME_KEYS{
+    static std::unordered_map<std::string, std::tuple<KeyType, KeyType>> REF_TO_DATETIME_KEYS{
         {"start", {"startDate", "startTime"}},
         {"previous", {"previousDate", "previousTime"}},
         {"current", {"currentDate", "currentTime"}},
@@ -200,14 +231,14 @@ void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadat
     // TODO mapping of existing stuff:
     //  - (type && (type == "tpa")) -> timeExtent: timeRange
     //  - type && (type == "fc" || type == "pf") -> timeReference: start
-    auto timeExtent = in.getOpt<std::string>("timeExtent");
+    auto timeExtent = in.getOpt<std::string>(glossary().timeExtent);
 
     if (!timeExtent) {
         return;
     }
-    auto timeFormat = in.getOpt<std::string>("timeFormat");
+    auto timeFormat = in.getOpt<std::string>(glossary().timeFormat);
 
-    auto type = in.getOpt<std::string>("type");
+    auto type = in.getOpt<std::string>(glossary().type);
 
     // bool isTimeRange = op && op != "instant";
     bool isTimeRange = (timeExtent == "timeRange");
@@ -223,13 +254,13 @@ void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadat
 
     bool isLocalTime = timeFormat == "localTime";
     // Will be named to indicatorOfUnitForForecastTime consistently
-    const char* forecasteTimeUnitKey = isLocalTime ? "indicatorOfUnitForForecastTime" : "indicatorOfUnitOfTimeRange";
+    const KeyType& forecasteTimeUnitKey = isLocalTime ? glossary().indicatorOfUnitForForecastTime : glossary().indicatorOfUnitOfTimeRange;
 
 
     // TODO to be moved to some metadata util or put on top of message?
     // Maybe have a separate place for data model that checks these things....
     std::string timeRef = std::invoke([&]() -> std::string {
-        if (auto optTimeRef = in.getOpt<std::string>("timeReference"); optTimeRef) {
+        if (auto optTimeRef = in.getOpt<std::string>(glossary().timeReference); optTimeRef) {
             return *optTimeRef;
         }
 
@@ -242,17 +273,17 @@ void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadat
 
     auto refDateTime = getReferenceDateTime(timeRef, in);
     auto refDate = util::toDateInts(std::get<0>(refDateTime));
-    out.set("year", refDate.year);
-    out.set("month", refDate.month);
-    out.set("day", refDate.day);
+    out.set(glossary().year, refDate.year);
+    out.set(glossary().month, refDate.month);
+    out.set(glossary().day, refDate.day);
 
     auto refTime = util::toTimeInts(std::get<1>(refDateTime));
-    out.set("hour", refTime.hour);
-    out.set("minute", refTime.minute);
-    out.set("second", refTime.second);
+    out.set(glossary().hour, refTime.hour);
+    out.set(glossary().minute, refTime.minute);
+    out.set(glossary().second, refTime.second);
 
-    auto currentDate = util::toDateInts(in.get<std::int64_t>("currentDate"));
-    auto currentTime = util::toTimeInts(in.get<std::int64_t>("currentTime"));
+    auto currentDate = util::toDateInts(in.get<std::int64_t>(glossary().currentDate));
+    auto currentTime = util::toTimeInts(in.get<std::int64_t>(glossary().currentTime));
     if (!isTimeRange) {
         if (timeRef.compare("start") != 0) {
             // Compute diff to current time in some appropriate unit
@@ -266,31 +297,32 @@ void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadat
         }
     }
     else {
-        auto previousDate = util::toDateInts(in.get<std::int64_t>("previousDate"));
-        auto previousTime = util::toTimeInts(in.get<std::int64_t>("previousTime"));
+        // TODO set startStepUnit, startStep etc... insteaf of forecastTime directly
+        auto previousDate = util::toDateInts(in.get<std::int64_t>(glossary().previousDate));
+        auto previousTime = util::toTimeInts(in.get<std::int64_t>(glossary().previousTime));
         if (timeRef.compare("start") != 0) {
             // Compute diff to current time in some appropriate unit
             util::DateTimeDiff diff = util::dateTimeDiff(previousDate, previousTime, refDate, refTime);
             out.set(forecasteTimeUnitKey, timeUnitCodes(diff.unit));
-            out.set("forecastTime", diff.diff);
+            out.set(glossary().forecastTime, diff.diff);
         }
         else {
             // No forecast time is used
             out.set(forecasteTimeUnitKey, 0);
-            out.set("forecastTime", 0);
+            out.set(glossary().forecastTime, 0);
         }
 
-        out.set("yearOfEndOfOverallTimeInterval", currentDate.year);
-        out.set("monthOfEndOfOverallTimeInterval", currentDate.month);
-        out.set("dayOfEndOfOverallTimeInterval", currentDate.day);
-        out.set("hourOfEndOfOverallTimeInterval", currentTime.hour);
-        out.set("minuteOfEndOfOverallTimeInterval", currentTime.minute);
-        out.set("secondOfEndOfOverallTimeInterval", currentTime.second);
+        out.set(glossary().yearOfEndOfOverallTimeInterval, currentDate.year);
+        out.set(glossary().monthOfEndOfOverallTimeInterval, currentDate.month);
+        out.set(glossary().dayOfEndOfOverallTimeInterval, currentDate.day);
+        out.set(glossary().hourOfEndOfOverallTimeInterval, currentTime.hour);
+        out.set(glossary().minuteOfEndOfOverallTimeInterval, currentTime.minute);
+        out.set(glossary().secondOfEndOfOverallTimeInterval, currentTime.second);
 
         util::DateTimeDiff lengthTimeRange = util::dateTimeDiff(currentDate, currentTime, previousDate, previousTime);
 
-        out.set("indicatorOfUnitForTimeRange", timeUnitCodes(lengthTimeRange.unit));
-        out.set("lengthOfTimeRange", lengthTimeRange.diff);
+        out.set(glossary().indicatorOfUnitForTimeRange, timeUnitCodes(lengthTimeRange.unit));
+        out.set(glossary().lengthOfTimeRange, lengthTimeRange.diff);
 
         if (op) {
             static const std::map<const std::string, const std::int64_t> TYPE_OF_STATISTICAL_PROCESSING{
@@ -316,7 +348,7 @@ void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadat
         // forecast time incremented so that valid time remains constant 5 5  Floating subinterval of time between
         // forecast time and end of overall time interval
         // out.set("typeOfTimeIncrement", timeRef == "start" ? 2 : 1);
-        out.set("typeOfTimeIncrement", timeRef == "start" ? 2 : 255);
+        out.set(glossary().typeOfTimeIncrement, timeRef == "start" ? 2 : 255);
 
         auto sampleIntervalUnitStr = in.get<std::string>("sampleIntervalUnit");
         auto sampleIntervalUnit = util::timeUnitFromString(sampleIntervalUnitStr);
@@ -326,23 +358,23 @@ void multioToEccodesDatetime(const std::optional<std::string>& op, const Metadat
                 << sampleIntervalUnitStr << " cannot be parsed to a valid unit (Y,m,d,H,M,S). ";
             throw EncodeGrib2Exception(oss.str(), Here());
         }
-        out.set("indicatorOfUnitForTimeIncrement", timeUnitCodes(*sampleIntervalUnit));
-        out.set("timeIncrement", in.get<std::int64_t>("sampleInterval"));
+        out.set(glossary().indicatorOfUnitForTimeIncrement, timeUnitCodes(*sampleIntervalUnit));
+        out.set(glossary().timeIncrement, in.get<std::int64_t>("sampleInterval"));
     }
 
 
     // Set some additional local ECMWF keys...
-    if (auto analysisDate = in.getOpt<std::int64_t>("date-of-analysis"); analysisDate) {
+    if (auto analysisDate = in.getOpt<std::int64_t>(glossary().dateOfAnalysis); analysisDate) {
         auto date = util::toDateInts(*analysisDate);
-        out.set("yearOfAnalysis", date.year);
-        out.set("monthOfAnalysis", date.month);
-        out.set("dayOfAnalysis", date.day);
+        out.set(glossary().yearOfAnalysis, date.year);
+        out.set(glossary().monthOfAnalysis, date.month);
+        out.set(glossary().dayOfAnalysis, date.day);
     }
 
-    if (auto analysisTime = in.getOpt<std::int64_t>("time-of-analysis"); analysisTime) {
+    if (auto analysisTime = in.getOpt<std::int64_t>(glossary().timeOfAnalysis); analysisTime) {
         auto time = util::toTimeInts(*analysisTime);
-        out.set("hourOfAnalysis", time.hour);
-        out.set("minuteOfAnalysis", time.minute);
+        out.set(glossary().hourOfAnalysis, time.hour);
+        out.set(glossary().minuteOfAnalysis, time.minute);
     }
 }
 
@@ -354,16 +386,16 @@ using CustomMapping = std::unordered_map<std::string, CustomMapFunction>;
 
 
 void mapLevelToFirstFixedSurface(const Metadata& in, Metadata& out) {
-    auto level = in.get<std::int64_t>("level");
+    auto level = in.get<std::int64_t>(glossary().level);
     ASSERT(level > 0);
-    out.set("scaledValueOfFirstFixedSurface", level);
+    out.set(glossary().scaledValueOfFirstFixedSurface, level);
 };
 
 void mapLevelToFixedSurfaces(const Metadata& in, Metadata& out) {
-    auto level = in.get<std::int64_t>("level");
+    auto level = in.get<std::int64_t>(glossary().level);
     ASSERT(level > 0);
-    out.set("scaledValueOfFirstFixedSurface", level - 1);
-    out.set("scaledValueOfSecondFixedSurface", level);
+    out.set(glossary().scaledValueOfFirstFixedSurface, level - 1);
+    out.set(glossary().scaledValueOfSecondFixedSurface, level);
 };
 
 
@@ -394,7 +426,8 @@ const CustomMapping TYPE_OF_LEVEL_MAPPINGS{
 
 
 void multioToEccodesVertical(const Metadata& in, Metadata& out) {
-    if (auto typeOfLevel = in.getOpt<std::string>("typeOfLevel"); typeOfLevel) {
+    if (auto typeOfLevel = in.getOpt<std::string>(glossary().typeOfLevel); typeOfLevel) {
+        out.set(glossary().typeOfLevel, *typeOfLevel);
         if (auto searchTOL = TYPE_OF_LEVEL_MAPPINGS.find(*typeOfLevel); searchTOL != TYPE_OF_LEVEL_MAPPINGS.end()) {
             std::invoke(searchTOL->second, in, out);
         }
@@ -405,7 +438,7 @@ void multioToEccodesVertical(const Metadata& in, Metadata& out) {
 //-----------------------------------------------------------------------------
 
 void multioToEccodes(const Metadata& in, Metadata& out) {
-    auto op = in.getOpt<std::string>("operation");
+    auto op = in.getOpt<std::string>(glossary().operation);
 
     if (op) {
         multioToEccodesParamId(*op, in, out);

@@ -6,6 +6,7 @@
 #include "atlas/grid/StructuredGrid.h"
 #include "atlas/grid/UnstructuredGrid.h"
 #include "atlas/library.h"
+#include "atlas/parallel/mpi/mpi.h"
 
 #include "eckit/config/Configuration.h"
 #include "eckit/utils/Translator.h"
@@ -98,6 +99,14 @@ GridType eccodesGridTypeToGridType(const std::string& eccodesGridType) {
 
 //-----------------------------------------------------------------------------
 
+namespace {
+atlas::Grid readGrid(const std::string& name) {
+    atlas::mpi::Scope mpi_scope("self");
+    return atlas::Grid{name};
+}
+}
+
+
 UnstructuredGridInfo GridInfoCreatorPolicy<GridType::Unstructured>::fromAtlas(const std::string& atlasGridType,
                                                                               const GridInfoCreationOptions& options,
                                                                               const message::Metadata& md) {
@@ -116,7 +125,7 @@ UnstructuredGridInfo GridInfoCreatorPolicy<GridType::Unstructured>::fromAtlas(co
 
     eckit::Log::info() << "Multio Grib2 UnstructuredGrid - downloading " << atlasGridType << std::endl;
 
-    const atlas::Grid grid(atlasGridType);
+    const atlas::Grid grid = readGrid(atlasGridType);
 
     eckit::Log::info() << "Multio Grib2 UnstructuredGrid - completed " << atlasGridType << std::endl;
 

@@ -43,7 +43,11 @@ namespace multio::message {
  * Reasons to have this:
  *  - Keep track of metadata keys that are used - with a proper IDE we can jump to all places a key is used
  *  - Just using strings at multiple places is error prone (typos can happen)
- *  - In the future also type information and specialized access operations should be added
+ *  - In the future also timeFormat information timeFormatespecialized access operations should be aded
+ *  - In processTypealso processTypeinformation timeFormatespecialized access operations should be added
+ *  - In processTypealso SubprocessTypeinformation timeFormatespecialized access operations should bSube added
+ *  - In processTypealso processTypeinformation timeFormatespecialized access operations should be added
+ *  - In processTypealso SubprocessTypeinformation timeFormatespecialized access operations should bSube added
  *  - We can do proper benchmark of metadata operations with typical keys. Moreover its easy to benchmark different key
  * (fixed strings, prehashed strings in case of hashmaps) and maptypes
  */
@@ -119,7 +123,6 @@ struct Glossary {
     // Grib general
     const KeyType typeOfGeneratingProcess{"typeOfGeneratingProcess"};  // Analog to mars type
     const KeyType generatingProcessIdentifier{"generatingProcessIdentifier"};
-    const KeyType subCentre{"subCentre"};
 
     const KeyType perturbationNumber{"perturbationNumber"};
     const KeyType numberOfForecastsInEnsemble{"numberOfForecastsInEnsemble"};
@@ -138,7 +141,13 @@ struct Glossary {
     const KeyType modelErrorType{"modelErrorType"};
     const KeyType iterationNumber{"iterationNumber"};
     const KeyType totalNumberOfIterations{"totalNumberOfIterations"};
-
+   
+    // Grib2 section one
+    const KeyType centre{"centre"};
+    const KeyType subCentre{"subCentre"};
+    const KeyType significanceOfReferenceTime{"significanceOfReferenceTime"};
+    
+    const KeyType typeOfProcessedData{"typeOfProcessedData"};
 
     // Eccodes grib reference date/time - direct setting (alternative to date & time)
     const KeyType year{"year"};
@@ -147,8 +156,11 @@ struct Glossary {
     const KeyType hour{"hour"};
     const KeyType minute{"minute"};
     const KeyType second{"second"};
-
+    
     const KeyType forecastTime{"forecastTime"};
+    const KeyType indicatorOfUnitOfTimeRange{"indicatorOfUnitOfTimeRange"};
+    const KeyType indicatorOfUnitForForecastTime{"indicatorOfUnitForForecastTime"};
+    const KeyType typeOfTimeIncrement{"typeOfTimeIncrement"};
 
     // Eccodes analysis date/time - direct setting (alternative to dateOfAnalysis & timeOfAnalysis) -- ONLY VALID FOR A
     // SPECIFIC localDefinitionNumber
@@ -167,6 +179,7 @@ struct Glossary {
     const KeyType minuteOfEndOfOverallTimeInterval{"minuteOfEndOfOverallTimeInterval"};
     const KeyType secondOfEndOfOverallTimeInterval{"secondOfEndOfOverallTimeInterval"};
     const KeyType typeOfStatisticalProcessing{"typeOfStatisticalProcessing"};
+    const KeyType indicatorOfUnitForTimeRange{"indicatorOfUnitForTimeRange"};
     const KeyType lengthOfTimeRange{"lengthOfTimeRange"};
     const KeyType indicatorOfUnitForTimeIncrement{"indicatorOfUnitForTimeIncrement"};
     const KeyType timeIncrement{"timeIncrement"};
@@ -187,6 +200,7 @@ struct Glossary {
 
 
     // Time model
+    const KeyType timeReference{"timeReference"};
     const KeyType startTime{"startTime"};
     const KeyType startDate{"startDate"};
     const KeyType previousTime{"previousTime"};
@@ -195,6 +209,7 @@ struct Glossary {
     const KeyType currentDate{"currentDate"};
 
     const KeyType sampleInterval{"sampleInterval"};
+    const KeyType sampleIntervalUnit{"sampleIntervalUnit"};
     const KeyType sampleIntervalInSeconds{"sampleIntervalInSeconds"};
 
     // legacy & conversion
@@ -204,9 +219,10 @@ struct Glossary {
     const KeyType stepRange{"stepRange"};
     const KeyType startStep{"startStep"};
     const KeyType endStep{"endStep"};
+    const KeyType startStepUnits{"startStepUnits"};
+    const KeyType endStepUnits{"endStepUnits"};
     const KeyType dataTime{"dataTime"};
     const KeyType dataDate{"dataDate"};
-    const KeyType indicatorOfUnitForTimeRange{"indicatorOfUnitForTimeRange"};
 
     const KeyType dateOfAnalysis{"date-of-analysis"};
     const KeyType timeOfAnalysis{"time-of-analysis"};
@@ -245,6 +261,18 @@ struct Glossary {
     const KeyType east{"east"};
     const KeyType westEastIncrement{"west_east_increment"};
     const KeyType southNorthIncrement{"south_north_increment"};
+    
+    
+    // Grib2 categorization
+    const KeyType timeExtent{"timeExtent"};
+    const KeyType timeFormat{"timeFormat"};
+    const KeyType processType{"processType"};
+    const KeyType processSubType{"processSubType"};
+    const KeyType productCategory{"productCategory"};
+    const KeyType productSubCategory{"productSubCategory"};
+    
+    // Encoding
+    const KeyType encoderOverwrites{"encoder-overwrites"};
 
 
     static const Glossary& instance() {

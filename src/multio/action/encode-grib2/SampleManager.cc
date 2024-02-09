@@ -162,19 +162,19 @@ PreparedSampleArguments SampleManager::prepareSampleArguments(const std::optiona
 SampleManager::InitDomainResult SampleManager::initDomain(const std::string& domainId,
                                                           const PreparedSampleArguments& prepArgs) {
     auto options = prepArgs.gridInfoCreationOptions ? *prepArgs.gridInfoCreationOptions : GridInfoCreationOptions{};
-    auto [it, hasBeenInserted] = gridSamples_.try_emplace(domainId, createGridSample(prepArgs));
+    
+    auto searchGridSample = gridSamples_.find(domainId);
+    if (searchGridSample == gridSamples_.end()) {
+        auto it = gridSamples_.try_emplace(domainId, createGridSample(prepArgs)).first;
+        
+        if (!options.extractLonLatFromUnstructuredGrid) {
+            return SampleManager::InitDomainResult{std::cref(it->second), {}};
+        }
 
-    if (!hasBeenInserted) {
-        throw EncodeGrib2Exception(std::string("SampleManager::initDomain: A domain named \"") + domainId
-                                       + std::string("\" has already been initialized"),
-                                   Here());
-    }
-
-    if (!options.extractLonLatFromUnstructuredGrid) {
-        return SampleManager::InitDomainResult{std::cref(it->second), {}};
-    }
-
-    return SampleManager::InitDomainResult{std::cref(it->second), extractLonLat(it->second)};
+        return SampleManager::InitDomainResult{std::cref(it->second), extractLonLat(it->second)};
+    } 
+    
+    return SampleManager::InitDomainResult{std::cref(searchGridSample->second), {}};
 }
 
 SampleManager::InitDomainResultWithMetadata SampleManager::initDomain(const std::string& domainId,
@@ -313,29 +313,17 @@ SampleManager::PrepareSampleResult SampleManager::prepareSample(const SampleKey&
         // Search for existing sample
         auto searchSample = samples_.find(sampleKey);
         if (searchSample == samples_.end()) {
-            std::optional<SampleManager::HandlesToEncode> encodeAdditionalHandles;
             // Prepare a new sample
-            const GridSample& gridSample = std::invoke([&]() -> const GridSample& {
-                // Check if a grid sample already exists or lazy initialize
-                auto searchGridSample = gridSamples_.find(*sampleKey.domain);
-                if (searchGridSample == gridSamples_.end()) {
-                    InitDomainResult res = initDomain(*sampleKey.domain, prepArgs);
-                    encodeAdditionalHandles = std::move(res.encodeAdditionalHandles);
-                    return res.gridSample.get();
-                }
-                else {
-                    return searchGridSample->second;
-                }
-            });
+            InitDomainResult res = initDomain(*sampleKey.domain, prepArgs);
 
-            auto sample = gridSample.sample->duplicate();
+            auto sample = res.gridSample.get().sample->duplicate();
             sample->setValue(PDT_KEY, sampleKey.productDefinitionTemplateNumber);
 
             // Insert with hint
             auto it = samples_.try_emplace(searchSample, sampleKey, std::move(sample));
             return PrepareSampleResult{{std::move(prepArgs.metadataWithOverwrites)},
                                        it->second->duplicate(),
-                                       std::move(encodeAdditionalHandles)};
+                                       std::move(res.encodeAdditionalHandles)};
         }
         else {
             // Use already prepared sample

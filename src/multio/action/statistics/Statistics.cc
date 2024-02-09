@@ -253,11 +253,15 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
     // }
     auto md = inputMetadata;
 
-    // util::DateTimeDiff lastPointsDiff = win.lastPointsDiff();
 
-    // md.set("sampleIntervalUnit", std::string{util::timeUnitToChar(lastPointsDiff.unit)});
-    // md.set("sampleInterval", lastPointsDiff.diff);
 
+    // Change categorial data
+    md.set(glossary().timeExtent, "timeRange");
+    
+    util::DateTimeDiff lastPointsDiff = win.lastPointsDiff();
+    md.set(glossary().sampleIntervalUnit, std::string{util::timeUnitToChar(lastPointsDiff.unit)});
+    md.set(glossary().sampleInterval, lastPointsDiff.diff);
+    
     md.set(glossary().sampleIntervalInSeconds, win.lastPointsDiffInSeconds());
 
     md.set(glossary().startDate, win.epochPoint().date().yyyymmdd());

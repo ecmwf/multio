@@ -681,14 +681,21 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     else {
         setValue("paramId", metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
     }
-    setValue("typeOfLevel", metadata.getString("typeOfLevel"));
-    if (metadata.getString("category") == "ocean-3d") {
+    const auto& typeOfLevel = metadata.getString("typeOfLevel");
+    setValue("typeOfLevel", typeOfLevel);
+    if (typeOfLevel == "oceanModelLayer") {
         auto level = metadata.getLong("level");
         ASSERT(level > 0);
         setValue("scaledValueOfFirstFixedSurface", level - 1);
         setValue("scaledValueOfSecondFixedSurface", level);
         setValue("scaleFactorOfFirstFixedSurface", 0l);
         setValue("scaleFactorOfSecondFixedSurface", 0l);
+    }
+    if (typeOfLevel == "oceanModel") {
+        auto level = metadata.getLong("level");
+        ASSERT(level > 0);
+        setValue("scaledValueOfFirstFixedSurface", level);
+        setValue("scaleFactorOfFirstFixedSurface", 0l);
     }
 
     std::string gridType;

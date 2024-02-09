@@ -314,7 +314,7 @@ data:
   - nemo-id : woce
     param-id : 262507
     grid-type : "W grid"
-    level-type : "oceanModelLayer"
+    level-type : "oceanModel"
 
   #================================================
   # Parameters added in eccodes 2.30.0 and 2.31.1

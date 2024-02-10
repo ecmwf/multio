@@ -59,7 +59,7 @@ void Transport::executeImpl(Message msg) {
             auto md = msg.metadata();
             Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)}, msg.sharedPayload()};
 
-            transport_->send(trMsg);
+            transport_->bufferedSend(trMsg);
         }
     }
     else {

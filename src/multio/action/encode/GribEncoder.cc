@@ -291,31 +291,31 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
     }
 
-    if ((gribEdition == "2") && md.has("dataset")) {
-        withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
-        withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
-        withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
+    if (gribEdition == "2") {
+        withFirstOf(valueSetter(g, "subCentre"), LookUpString(md, "subCentre"));
         withFirstOf(valueSetter(g, "productionStatusOfProcessedData"),
                     LookUpLong(md, "productionStatusOfProcessedData"));
 
-        const auto dataset = md.getString("dataset");
-        g.setValue("dataset", dataset);
+        if (md.has("dataset")) {
+            withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
+            withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
+            withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
 
-        if (dataset == "climate-dt") {
-            withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
-            withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
-            withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
-            withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
-            withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+            const auto dataset = md.getString("dataset");
+            g.setValue("dataset", dataset);
+
+            if (dataset == "climate-dt") {
+                withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
+                withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
+                withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
+                withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
+                withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+            }
         }
     }
 
     withFirstOf(valueSetter(g, "class"), LookUpString(md, "class"), LookUpString(md, "marsClass"));
     withFirstOf(valueSetter(g, "stream"), LookUpString(md, "stream"), LookUpString(md, "marsStream"));
-
-    if (gribEdition == "2") {
-        withFirstOf(valueSetter(g, "subCentre"), LookUpString(md, "subCentre"));
-    }
 
     withFirstOf(valueSetter(g, "generatingProcessIdentifier"), LookUpString(md, "generatingProcessIdentifier"));
 
@@ -681,14 +681,21 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     else {
         setValue("paramId", metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
     }
-    setValue("typeOfLevel", metadata.getString("typeOfLevel"));
-    if (metadata.getString("category") == "ocean-3d") {
+    const auto& typeOfLevel = metadata.getString("typeOfLevel");
+    setValue("typeOfLevel", typeOfLevel);
+    if (typeOfLevel == "oceanModelLayer") {
         auto level = metadata.getLong("level");
         ASSERT(level > 0);
         setValue("scaledValueOfFirstFixedSurface", level - 1);
         setValue("scaledValueOfSecondFixedSurface", level);
         setValue("scaleFactorOfFirstFixedSurface", 0l);
         setValue("scaleFactorOfSecondFixedSurface", 0l);
+    }
+    if (typeOfLevel == "oceanModel") {
+        auto level = metadata.getLong("level");
+        ASSERT(level > 0);
+        setValue("scaledValueOfFirstFixedSurface", level);
+        setValue("scaleFactorOfFirstFixedSurface", 0l);
     }
 
     std::string gridType;

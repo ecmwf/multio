@@ -417,7 +417,7 @@ data:
     grid-type: "unstructured_grid"
     domain : "W grid"
     unstructured-grid-subtype : "W"
-    level-type : "oceanModelLayer"
+    level-type : "oceanModel"
 
   #================================================
   # Parameters added in eccodes 2.30.0 and 2.31.1

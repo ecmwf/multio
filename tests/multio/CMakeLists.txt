@@ -58,6 +58,11 @@ ecbuild_add_test( TARGET    test_multio_metadata_mapping
                   LIBS      multio multio-action-metadata-mapping multio-action-debug-sink multio-action-print
                   ENVIRONMENT "MULTIO_SERVER_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/config" )
 
+ecbuild_add_test( TARGET    test_multio_select
+                  SOURCES   test_multio_select.cc
+                  LIBS      multio )
+
+
 # Test api
 
 list( APPEND _api_test_environment

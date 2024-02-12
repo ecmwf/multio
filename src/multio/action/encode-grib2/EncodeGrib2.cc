@@ -172,6 +172,11 @@ struct MetadataToGrib {
         if (auto localDef = metadata.getOpt<std::int64_t>(glossary().localDefinitionNumber); localDef) {
             handle.setValue(glossary().setLocalDefinition, 1);
             handle.setValue(glossary().localDefinitionNumber, *localDef);
+            if (auto extraLocalDef = metadata.getOpt<std::int64_t>(glossary().extraLocalSectionNumber); extraLocalDef) {
+                handle.setValue(glossary().extraLocalSectionNumber, *extraLocalDef);
+            } else {
+                handle.setValue(glossary().deleteExtraLocalSection, 1);
+            }
         }
         
         this->transferOpt<std::string>(glossary().classKey);

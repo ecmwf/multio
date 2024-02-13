@@ -9,7 +9,7 @@
 #include "multio/config/MultioConfiguration.h"
 #include "multio/config/PathConfiguration.h"
 #include "multio/domain/MaskCompression.h"
-#include "multio/message/Metadata.h"
+#include "multio/message/Message.h"
 #include "multio/multio_version.h"
 #include "multio/server/MultioClient.h"
 #include "multio/server/MultioServer.h"
@@ -92,7 +92,7 @@ struct multio_data_t : public eckit::Buffer {
 
 struct multio_metadata_t {
     // multio::message::Metadata::Metadata;
-    std::shared_ptr<multio::message::Metadata> md;
+    multio::message::SharedMetadata md;
     multio_handle_t* mio;
 };
 
@@ -599,7 +599,8 @@ int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const 
             ASSERT(mio);
             ASSERT(md);
 
-            md->md->set("precision", "single");
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md->md.modify().set("precision", "single");
 
             // eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(float), false};
             multio::message::PayloadReference field_vals{const_cast<void*>(static_cast<const void*>(data)),
@@ -620,7 +621,8 @@ int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const
             ASSERT(mio);
             ASSERT(md);
 
-            md->md->set("precision", "double");
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md->md.modify().set("precision", "double");
 
             // eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(double), false};
             multio::message::PayloadReference field_vals{const_cast<void*>(static_cast<const void*>(data)),
@@ -641,11 +643,13 @@ int multio_write_field_buffer(multio_handle_t* mio, multio_metadata_t* md, multi
             ASSERT(mio);
             ASSERT(md);
             ASSERT(d);
+
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
             if (byte_size == 4) {
-                md->md->set("precision", "single");
+                md->md.modify().set("precision", "single");
             }
             else if (byte_size == 8) {
-                md->md->set("precision", "double");
+                md->md.modify().set("precision", "double");
             }
             else {
                 ASSERT(false);
@@ -695,7 +699,8 @@ int multio_metadata_set_int(multio_metadata_t* md, const char* key, long long va
             ASSERT(md);
             ASSERT(key);
 
-            md->md->set(key, value);
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md->md.modify().set(key, value);
         },
         md);
 #else
@@ -712,7 +717,8 @@ int multio_metadata_set_string(multio_metadata_t* md, const char* key, const cha
             ASSERT(key);
             ASSERT(value);
 
-            md->md->set(key, value);
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md->md.modify().set(key, value);
         },
         md);
 #else
@@ -727,7 +733,8 @@ int multio_metadata_set_bool(multio_metadata_t* md, const char* key, bool value)
             ASSERT(md);
             ASSERT(key);
 
-            md->md->set(key, value);
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md->md.modify().set(key, value);
         },
         md);
 #else
@@ -743,9 +750,8 @@ int multio_metadata_set_double(multio_metadata_t* md, const char* key, double va
             ASSERT(md);
             ASSERT(key);
 
-            // TODO: it is unclear if we ever need to support setting metadata values as float; even if so, we are
-            // probably better off casting to double for storing it in multio::Metadata
-            md->md->set(key, static_cast<double>(value));
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md->md.modify().set(key, static_cast<double>(value));
         },
         md);
 #else
@@ -883,7 +889,7 @@ int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, boo
             ASSERT(md);
             ASSERT(accepted);
 
-            *accepted = mio->isFieldMatched(*(md->md.get()));
+            *accepted = mio->isFieldMatched(md->md.read());
         },
         mio);
 #else
@@ -899,7 +905,7 @@ int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, boo
 
 Metadata* multio_from_c(multio_metadata_t* md) {
     // return static_cast<Metadata*>(md);
-    return md->md.get();
+    return &(md->md.modify());
 }
 
 // multio_metadata_t* multio_to_c(Metadata* md) {

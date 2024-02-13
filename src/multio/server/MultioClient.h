@@ -64,8 +64,8 @@ public:
     void openConnections();
     void closeConnections();
 
-    void dispatch(std::shared_ptr<message::Metadata> metadata, eckit::Buffer&& payload, message::Message::Tag tag);
-    void dispatch(std::shared_ptr<message::Metadata> metadata, const message::PayloadReference& payload,
+    void dispatch(message::SharedMetadata metadata, eckit::Buffer&& payload, message::Message::Tag tag);
+    void dispatch(message::SharedMetadata metadata, const message::PayloadReference& payload,
                   message::Message::Tag tag);
 
     void dispatch(message::Message msg);

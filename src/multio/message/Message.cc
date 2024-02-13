@@ -32,9 +32,8 @@ int Message::protocolVersion() {
 
 std::string Message::tag2str(Tag t) {
     static std::map<Tag, std::string> m
-        = {{Tag::Empty, "Empty"}, {Tag::Open, "Open"},     {Tag::Close, "Close"},
-           {Tag::Grib, "Grib"},   {Tag::Domain, "Domain"}, {Tag::Mask, "Mask"},
-           {Tag::Field, "Field"}, {Tag::Flush, "Flush"},   {Tag::Notification, "Notification"}};
+        = {{Tag::Empty, "Empty"}, {Tag::Open, "Open"},   {Tag::Close, "Close"}, {Tag::Domain, "Domain"},
+           {Tag::Mask, "Mask"},   {Tag::Field, "Field"}, {Tag::Flush, "Flush"}, {Tag::Notification, "Notification"}};
 
     ASSERT(t < Tag::ENDTAG);
 
@@ -205,11 +204,6 @@ void LogMessage::print(std::ostream& out) const {
 }
 
 eckit::message::Message to_eckit_message(const Message& msg) {
-    if (msg.tag() == Message::Tag::Grib) {
-        codes_handle* h = codes_handle_new_from_message(nullptr, msg.payload().data(), msg.size());
-        return eckit::message::Message{new metkit::codes::CodesContent{h, true}};
-    }
-
     ASSERT(msg.tag() == Message::Tag::Field);
     return eckit::message::Message{new metkit::codes::UserDataContent(msg.payload().data(), msg.size())};
 }

@@ -36,7 +36,6 @@ namespace multio::message {
 
 inline bool isMessageSelectable(const Message& msg) {
     switch (msg.tag()) {
-        case Message::Tag::Grib:
         case Message::Tag::Domain:
         case Message::Tag::Mask:
         case Message::Tag::Field:

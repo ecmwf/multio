@@ -891,7 +891,7 @@ message::Message GribEncoder::setFieldValues(const message::Message& msg) {
     eckit::Buffer buf{this->encoder_->length()};
     encoder_->write(buf);
 
-    return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}},
+    return Message{Message::Header{Message::Tag::Field, Peer{msg.source().group()}, Peer{msg.destination()}},
                    std::move(buf)};
 }
 
@@ -902,7 +902,7 @@ message::Message GribEncoder::setFieldValues(const double* values, size_t count)
     eckit::Buffer buf{this->encoder_->length()};
     encoder_->write(buf);
 
-    return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
+    return Message{Message::Header{Message::Tag::Field, Peer{}, Peer{}}, std::move(buf)};
 }
 
 message::Message GribEncoder::setFieldValues(const float* values, size_t count) {
@@ -911,7 +911,7 @@ message::Message GribEncoder::setFieldValues(const float* values, size_t count) 
     eckit::Buffer buf{this->encoder_->length()};
     encoder_->write(buf);
 
-    return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
+    return Message{Message::Header{Message::Tag::Field, Peer{}, Peer{}}, std::move(buf)};
 }
 
 

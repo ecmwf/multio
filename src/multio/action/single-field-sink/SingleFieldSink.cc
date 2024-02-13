@@ -30,7 +30,6 @@ SingleFieldSink::SingleFieldSink(const ComponentConfiguration& compConf) :
 void SingleFieldSink::executeImpl(Message msg) {
     switch (msg.tag()) {
         case Message::Tag::Field:
-        case Message::Tag::Grib:
             write(msg);
             break;
 

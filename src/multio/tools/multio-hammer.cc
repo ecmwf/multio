@@ -579,6 +579,9 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
                 auto id = std::hash<std::string>{}(field_id) % serverCount_;
                 ASSERT(id < serverPeers.size());
 
+                // TODO - all other transports can use a PayloadReference because the send is performing a copy behind a
+                // blocking call. The  threaded transport is pushing to a queue and is not blocking - may cause
+                // different problems.
                 eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()), field.size() * sizeof(double));
 
                 metadata.set("name", std::to_string(param));
@@ -724,7 +727,8 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
                     CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz), nullptr);
 
-                    Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, eckit::Buffer{buf, sz}};
+                    Message msg{Message::Header{Message::Tag::Field, Peer{"", 0}, Peer{"", 0}},
+                                multio::message::PayloadReference{buf, sz}};
 
                     for (const auto& plan : plans) {
                         plan->process(msg);

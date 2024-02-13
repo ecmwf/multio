@@ -276,7 +276,7 @@ fortint imultio_write_(const void* data, const fortint* words) {
 
         multio::message::Metadata metadata;
         multio::message::Message message{
-            multio::message::Message::Header{Message::Tag::Grib, Peer{}, Peer{}, std::move(metadata)},
+            multio::message::Message::Header{Message::Tag::Field, Peer{}, Peer{}, std::move(metadata)},
             std::move(payload)};
         MIO::instance().dispatch(message);
 

@@ -35,7 +35,6 @@ void Sink::executeImpl(Message msg) {
 
     switch (msg.tag()) {
         case Message::Tag::Field:
-        case Message::Tag::Grib:
             write(msg);
             return;
 

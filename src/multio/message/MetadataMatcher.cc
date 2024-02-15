@@ -63,6 +63,8 @@ MatchKeys::MatchKeys(const LocalConfiguration& cfg, Predicate p, bool enforceSam
     for (auto&& kv : std::move(matcher)) {
         matcher_.push_back(std::move(kv));
     }
+
+    predicate_ = p;
 }
 
 

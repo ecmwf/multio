@@ -8,7 +8,7 @@
  * does it submit to any jurisdiction.
  */
 
-/// @author Simon Smart
+/// @author Philipp Geier
 /// @date Nov 2022
 
 #pragma once

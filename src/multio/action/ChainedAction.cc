@@ -21,7 +21,7 @@ void ChainedAction::executeNext(message::Message msg) const {
     next_->execute(std::move(msg));
 }
 
-void ChainedAction::matchedFields(message::MetadataSelectors& selectors) const {
+void ChainedAction::matchedFields(message::match::MatchReduce& selectors) const {
     // TODO refactor these - passsing down is not directly what we want.
     // Usually we want to only inspect the first action of a plan and check it's requirements...
     // However an observing action, e.g. a print action, should explicitly forward these calls.

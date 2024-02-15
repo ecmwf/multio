@@ -47,7 +47,7 @@ util::FailureHandlerResponse Action::handleFailure(util::OnActionError t, const 
     return util::FailureHandlerResponse::Rethrow;
 };
 
-void Action::matchedFields(message::MetadataSelectors& selectors) const {}
+void Action::matchedFields(message::match::MatchReduce& selectors) const {}
 
 std::ostream& operator<<(std::ostream& os, const Action& a) {
     a.print(os);

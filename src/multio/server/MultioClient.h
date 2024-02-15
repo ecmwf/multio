@@ -17,7 +17,7 @@
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
 #include "multio/message/Metadata.h"
-#include "multio/message/MetadataSelector.h"
+#include "multio/message/MetadataMatcher.h"
 #include "multio/util/FailureHandling.h"
 
 #include "eckit/log/Statistics.h"
@@ -79,7 +79,7 @@ private:
     MultioClient(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf);
 
     std::vector<std::unique_ptr<action::Plan>> plans_;
-    message::MetadataSelectors activeSelectors_;
+    message::match::MatchReduce activeSelectors_;
 
     eckit::Timing totClientTiming_;
     eckit::Timer totClientTimer_;

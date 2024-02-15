@@ -27,8 +27,8 @@
 #include "multio/util/FailureHandling.h"
 #include "multio/util/Timing.h"
 
-namespace multio::message {
-class MetadataSelectors;
+namespace multio::message::match {
+class MatchReduce;
 }
 
 namespace multio::action {
@@ -62,7 +62,7 @@ public:
 
     virtual void process(message::Message msg);
 
-    void matchedFields(message::MetadataSelectors& selectors) const;
+    void matchedFields(message::match::MatchReduce& selectors) const;
 
     util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&,
                                                util::DefaultFailureState&) const override;
@@ -72,7 +72,7 @@ public:
 
     static std::vector<std::unique_ptr<action::Plan>> makePlans(
         const std::vector<eckit::LocalConfiguration>& componentConfig, const config::MultioConfiguration& multioConf,
-        message::MetadataSelectors& selectors);
+        message::match::MatchReduce& selectors);
 
     const std::string& name() const noexcept;
 

@@ -57,7 +57,7 @@ LocalConfiguration rootConfig(const LocalConfiguration& config, const std::strin
 
 std::vector<std::unique_ptr<action::Plan>> Plan::makePlans(
     const std::vector<eckit::LocalConfiguration>& componentConfig, const config::MultioConfiguration& multioConf,
-    message::MetadataSelectors& selectors) {
+    message::match::MatchReduce& selectors) {
 
     std::vector<std::unique_ptr<action::Plan>> plans;
 
@@ -133,7 +133,7 @@ util::FailureHandlerResponse Plan::handleFailure(util::OnPlanError t, const util
 };
 
 
-void Plan::matchedFields(message::MetadataSelectors& selectors) const {
+void Plan::matchedFields(message::match::MatchReduce& selectors) const {
     root_->matchedFields(selectors);
 }
 

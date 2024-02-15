@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "multio/action/ChainedAction.h"
-#include "multio/message/MetadataSelector.h"
+#include "multio/message/MetadataMatcher.h"
 
 namespace multio::action {
 
@@ -40,10 +40,10 @@ private:  // methods
     void executeImpl(message::Message msg) override;
 
     /// @note This describes an algebra, so the function here can be significantly extended to give helpful return
-    void matchedFields(message::MetadataSelectors& selectors) const override;
+    void matchedFields(message::match::MatchReduce& selectors) const override;
 
 private:  // members
-    message::MetadataSelectors selectors_;
+    message::match::MatchReduce selectors_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------

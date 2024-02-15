@@ -26,45 +26,87 @@ namespace eckit {
 class LocalConfiguration;
 }
 
-namespace multio::message {
+namespace multio::message::match {
+
+//--------------------------------------------------------------------------------------------------
+
+
+enum class Predicate : unsigned
+{
+    None = 0,
+    Negate = 1,
+};
+
+enum class Reduce : unsigned
+{
+    Or = 0,
+    And = 1,
+};
 
 
 //--------------------------------------------------------------------------------------------------
 
-class MetadataMatcher {
+class MatchKeys {
 
 public:  // methods
-    explicit MetadataMatcher(const eckit::LocalConfiguration& cfg);
+    explicit MatchKeys(const eckit::LocalConfiguration& cfg, Predicate p = Predicate::None);
 
     bool matches(const Metadata& md) const;
 
 private:  // methods
-    friend std::ostream& operator<<(std::ostream& os, const MetadataMatcher& m) {
+    friend std::ostream& operator<<(std::ostream& os, const MatchKeys& m) {
         m.print(os);
         return os;
     }
 
     void print(std::ostream& os) const;
+
+    void negate();
+    void applyPredicate(Predicate);
 
 private:  // members
     // Use vectorbecause we only iterate over key-pair values
     std::vector<std::pair<typename MetadataTypes::KeyType, std::unordered_set<MetadataValue>>> matcher_;
+    Predicate predicate_;
 };
 
 //--------------------------------------------------------------------------------------------------
 
-class MetadataMatchers {
-
+class MatchReduce {
 public:  // methods
-    MetadataMatchers() = default;
-    explicit MetadataMatchers(const std::vector<eckit::LocalConfiguration>& cfg);
+    // SharedPoiter just used to defer construction - unique_ptr can be used as well but requires defining copy
+    // construction & assignment
+    using Elem = std::variant<MatchKeys, std::shared_ptr<MatchReduce>>;
+    using Container = std::vector<Elem>;
 
-    bool matches(const Metadata& msg) const;
+    // MatchReduce(MatchReduce const&);
+    // MatchReduce(MatchReduce&&) = default;
 
-    void extend(const MetadataMatchers& other);
+    // MatchReduce& operator=(MatchReduce const&);
+    // MatchReduce& operator=(MatchReduce&&) noexcept = default;
+
+    explicit MatchReduce(const eckit::LocalConfiguration& cfg, Predicate p = Predicate::None);
+    explicit MatchReduce(Reduce r = Reduce::And, Predicate p = Predicate::None);
+
+    bool matches(const Metadata& md) const;
+
+    bool isEmpty() const;
+
+    void extend(const MatchKeys&);
+    void extend(MatchKeys&&);
+    void extend(const MatchReduce&);
+    void extend(MatchReduce&&);
+    void extend(const Elem&);
+    void extend(Elem&&);
+
+    void negate();
+    void applyPredicate(Predicate);
+
+    static MatchReduce construct(const eckit::LocalConfiguration&, Predicate p = Predicate::None);
+
 
 private:  // methods
-    friend std::ostream& operator<<(std::ostream& os, const MetadataMatchers& m) {
+    friend std::ostream& operator<<(std::ostream& os, const MatchReduce& m) {
         m.print(os);
         return os;
     }
@@ -72,16 +114,12 @@ private:  // methods
     void print(std::ostream& os) const;
 
 private:  // members
-    std::vector<MetadataMatcher> matchers_;
+    Container matchers_;
+    Reduce reduce_;
+    Predicate predicate_;
 };
+
 
 //--------------------------------------------------------------------------------------------------
 
-}  // namespace multio::message
-
-namespace eckit {
-template <>
-struct VectorPrintSelector<multio::message::MetadataMatcher> {
-    typedef VectorPrintSimple selector;
-};
-}  // namespace eckit
+}  // namespace multio::message::match

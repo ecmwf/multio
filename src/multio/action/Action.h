@@ -28,8 +28,8 @@
 #include "multio/message/Message.h"
 #include "multio/util/FailureHandling.h"
 
-namespace multio::message {
-class MetadataSelectors;
+namespace multio::message::match {
+class MatchReduce;
 }
 
 namespace multio::action {
@@ -63,7 +63,7 @@ public:
 
     void execute(message::Message msg);
 
-    virtual void matchedFields(message::MetadataSelectors& selectors) const;
+    virtual void matchedFields(message::match::MatchReduce& selectors) const;
 
     util::FailureHandlerResponse handleFailure(util::OnActionError, const util::FailureContext&,
                                                util::DefaultFailureState&) const override;

@@ -17,7 +17,7 @@
 #include "multio/LibMultio.h"
 
 using multio::message::Message;
-using multio::message::MetadataSelectors;
+using multio::message::match::MatchReduce;
 
 namespace multio::action {
 
@@ -33,10 +33,10 @@ void Select::executeImpl(Message msg) {
 
 bool Select::matches(const Message& msg) const {
     util::ScopedTiming timing{statistics_.actionTiming_};
-    return selectors_.matches(msg);
+    return selectors_.matches(msg.metadata());
 }
 
-void Select::matchedFields(MetadataSelectors& selectors) const {
+void Select::matchedFields(MatchReduce& selectors) const {
     selectors.extend(selectors_);
 }
 

@@ -230,17 +230,17 @@ void BaseGaussianGridInfoCreationPolicy::fromCodes(BaseGaussianGridInfo& info, c
     try {
         info.n = md.get<std::int64_t>("N");
 
-        info.latitudeOfFirstGridPointInDegrees = md.get<double>("longitudeOfLastGridPointInDegrees");
-        info.longitudeOfFirstGridPointInDegrees = md.get<double>("longitudeOfLastGridPointInDegrees");
-        info.latitudeOfLastGridPointInDegrees = md.get<double>("longitudeOfLastGridPointInDegrees");
+        info.latitudeOfFirstGridPointInDegrees = md.get<double>("latitudeOfFirstGridPointInDegrees");
+        info.longitudeOfFirstGridPointInDegrees = md.get<double>("longitudeOfFirstGridPointInDegrees");
+        info.latitudeOfLastGridPointInDegrees = md.get<double>("latitudeOfLastGridPointInDegrees");
         info.longitudeOfLastGridPointInDegrees = md.get<double>("longitudeOfLastGridPointInDegrees");
     }
     catch (const message::MetadataException& err) {
         std::ostringstream oss;
         oss << "Base GaussianGridInfo creator ::fromCodes: Require keys \"n\" (int64)";
-        oss << ", \"longitudeOfLastGridPointInDegrees\" (double)";
-        oss << ", \"longitudeOfLastGridPointInDegrees\" (double)";
-        oss << ", \"longitudeOfLastGridPointInDegrees\" (double)";
+        oss << ", \"latitudeOfFirstGridPointInDegrees\" (double)";
+        oss << ", \"longitudeOfFirstGridPointInDegrees\" (double)";
+        oss << ", \"latitudeOfLastGridPointInDegrees\" (double)";
         oss << ", \"longitudeOfLastGridPointInDegrees\" (double)";
         oss << " to prepare a codes sample. Otherwise pass down \"" << ATLAS_NAMED_GRID_KEY
             << "\" to retrieve all information from atlas.";

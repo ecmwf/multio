@@ -4,30 +4,16 @@ from .lib import ffi, lib
 from .config import Config
 from .handler import Handler
 from .metadata import Metadata
-"""
-def error_handling(func):
-    def Inner_Function(*args, **kwargs):
-        retval = func(*args, **kwargs)
-        if retval not in (
-            lib.MULTIO_SUCCESS,
-        ):
-            error_str = "Error in function {}: {}".format(func.__name__, ffi.string(lib.multio_error_string(retval)))
-            raise MultioException(error_str)
-    return Inner_Function
-"""
+
 class Multio:
     """This is the main interface class for Multio that users will interact with"""
 
-    def __init__(self, config=None):
-
-        if config == None:
-            raise AttributeError("Config dictionary is required.")
-
-        self.__conf = Config(**config)
+    def __init__(self, **kwargs):
+        self.__conf = Config(**kwargs)
 
         self.__handle = Handler(self.__conf)
 
-        self.__metadata = None
+        self.__dummy_metadata = Metadata(self.__handle, md={})
 
     def __version__(self):
         tmp_str = ffi.new("char**")
@@ -41,12 +27,11 @@ class Multio:
     def start_server(self):
         self.__conf.start_server()
 
-    def create_metadata(self, md=None):
+    # def create_metadata(self, md=None):
+    #     self.__metadata = Metadata(self.__handle, md=md)
 
-        self.__metadata = Metadata(self.__handle, md=md)
-
-    def delete_metadata(self):
-        self.__metadata.delete_metadata()
+    # def delete_metadata(self):
+    #     self.__metadata.delete_metadata()
 
     def open_connections(self):
         self.__handle.open_connections()
@@ -54,35 +39,86 @@ class Multio:
     def close_connections(self):
         self.__handle.close_connections()
 
-    def flush(self):
-        if self.__metadata is not None:
-            self.__handle.flush(self.__metadata)
+    def flush(self, metadata=None):
+        if metadata is None or len(metadata) == 0:
+            self.__handle.flush(self.__dummy_metadata)
         else:
-            raise AttributeError(f"No metadata object instantiated")
+            md = Metadata(self.__handle, md=metadata)
+            self.__handle.flush(md)
+            md.delete_metadata()
 
-    def notify(self):
-        if self.__metadata is not None:
-            self.__handle.notify(self.__metadata)
+    def notify(self, metadata=None):
+        if metadata is None or len(metadata) == 0:
+            self.__handle.notify(self.__dummy_metadata)
         else:
-            raise AttributeError(f"No metadata object instantiated")
+            md = Metadata(self.__handle, md=metadata)
+            self.__handle.notify(md)
+            md.delete_metadata()
 
-    def write_domain(self, data):
-        if self.__metadata is not None:
-            self.__handle.write_domain(self.__metadata, data, len(data))
+    def write_domain(self, data, metadata=None):
+        if metadata is None or len(metadata) == 0:
+            self.__handle.write_domain(self.__dummy_metadata, data)
         else:
-            raise AttributeError(f"No metadata object instantiated")
+            md = Metadata(self.__handle, md=metadata)
+            self.__handle.write_domain(md, data)
+            md.delete_metadata()
 
-    def write_mask(self, data):
-        if self.__metadata is not None:
-            self.__handle.write_mask_float(self.__metadata, data, len(data))
+    def write_mask(self, data, metadata=None):
+        if metadata is None or len(metadata) == 0:
+            self.__handle.write_mask(self.__dummy_metadata, data)
         else:
-            raise AttributeError(f"No metadata object instantiated")
+            md = Metadata(self.__handle, md=metadata)
+            self.__handle.write_mask(md, data)
+            md.delete_metadata()
 
-    def write_field(self, data):
-        if self.__metadata is not None:
-            self.__handle.write_field_float(self.__metadata, data, len(data))
+    def write_mask_float(self, data, metadata=None):
+        if metadata is None or len(metadata) == 0:
+            self.__handle.write_mask_float(self.__dummy_metadata, data)
         else:
-            raise AttributeError(f"No metadata object instantiated")
+            md = Metadata(self.__handle, md=metadata)
+            self.__handle.write_mask_float(md, data)
+            md.delete_metadata()
 
-    def field_accepted(self):
-        return self.__handle.field_accepted(self.__metadata)
+    def write_mask_double(self, data, metadata=None):
+        if metadata is None or len(metadata) == 0:
+            self.__handle.write_mask_double(self.__dummy_metadata, data)
+        else:
+            md = Metadata(self.__handle, md=metadata)
+            self.__handle.write_mask_double(md, data)
+            md.delete_metadata()
+
+    def write_field(self, data, metadata=None):
+        if metadata is None or len(metadata) == 0:
+            self.__handle.write_field(self.__dummy_metadata, data)
+        else:
+            md = Metadata(self.__handle, md=metadata)
+            self.__handle.write_field(md, data)
+            md.delete_metadata()
+
+    def write_field_float(self, data, metadata=None):
+        if metadata is None or len(metadata) == 0:
+            self.__handle.write_field_float(self.__dummy_metadata, data)
+        else:
+            md = Metadata(self.__handle, md=metadata)
+            self.__handle.write_field_float(md, data)
+            md.delete_metadata()
+
+    def write_field_double(self, data, metadata=None):
+        if metadata is None or len(metadata) == 0:
+            self.__handle.write_field_double(self.__dummy_metadata, data)
+        else:
+            md = Metadata(self.__handle, md=metadata)
+            self.__handle.write_field_double(md, data)
+            md.delete_metadata()
+
+    def write_grib(self, data):
+        self.__handle.write_grib_encoded(data)
+
+    def field_accepted(self, metadata=None):
+        if metadata is None or len(metadata) == 0:
+            return self.__handle.field_accepted(self.__dummy_metadata)
+        else:
+            md = Metadata(self.__handle, md=metadata)
+            ret = self.__handle.field_accepted(md)
+            md.delete_metadata()
+            return ret

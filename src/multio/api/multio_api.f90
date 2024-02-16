@@ -62,6 +62,10 @@ module multio_api
         procedure :: write_field_float_2d => multio_write_field_float_2d
         procedure :: write_field_double_2d => multio_write_field_double_2d
         generic   :: write_field => write_field_float_1d, write_field_float_2d, write_field_double_1d, write_field_double_2d
+
+        ! Legacy
+        procedure :: write_grib_encoded => multio_write_grib_encoded
+
         procedure :: field_accepted => multio_field_accepted
         ! procedure :: field_is_active => multio_field_is_active
         ! procedure :: category_is_fully_active => multio_category_is_fully_active
@@ -71,6 +75,7 @@ module multio_api
         type(c_ptr) :: impl = c_null_ptr
     contains
         procedure :: new => multio_new_metadata
+        procedure :: copy => multio_copy_metadata
         procedure :: delete => multio_delete_metadata
         procedure :: set_int => multio_metadata_set_int
         procedure :: set_long => multio_metadata_set_long
@@ -424,6 +429,17 @@ module multio_api
             integer(c_int) :: err
         end function
 
+
+        function c_multio_write_grib_encoded(handle, gribdata, gribsize) result(err) &
+                bind(c, name='multio_write_grib_encoded')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(in), value :: handle
+            type(c_ptr), intent(in), value :: gribdata
+            integer(c_int), intent(in), value :: gribsize
+            integer(c_int) :: err
+        end function
+
         function c_multio_field_accepted(handle, metadata, set_value) result(err) &
                 bind(c, name='multio_field_accepted')
             use, intrinsic :: iso_c_binding
@@ -442,6 +458,15 @@ module multio_api
             implicit none
             type(c_ptr), intent(out) :: metadata
             type(c_ptr), intent(in), value :: handle
+            integer(c_int) :: err
+        end function
+
+        function c_multio_copy_metadata(metadata, mdFrom) result(err) &
+                bind(c, name='multio_copy_metadata')
+            use, intrinsic :: iso_c_binding
+            implicit none
+            type(c_ptr), intent(out) :: metadata
+            type(c_ptr), intent(in), value :: mdFrom
             integer(c_int) :: err
         end function
 
@@ -952,6 +977,17 @@ contains
         err = c_multio_write_field_double(handle%impl, metadata%impl, c_loc(data), size(data))
     end function
 
+
+    ! Legacy
+    function multio_write_grib_encoded(handle, message) result(err)
+        class(multio_handle), intent(inout) :: handle
+        character(len=1), dimension(:), target, intent(in) :: message
+        integer :: err
+
+        err = c_multio_write_grib_encoded(handle%impl, c_loc(message), size(message))
+    end function
+
+
     function multio_field_accepted(handle, metadata, set_value) result(err)
         class(multio_handle), intent(inout) :: handle
         class(multio_metadata), intent(in) :: metadata
@@ -968,6 +1004,13 @@ contains
         class(multio_handle), intent(in) :: handle
         integer :: err
         err = c_multio_new_metadata(metadata%impl, handle%impl)
+    end function
+
+    function multio_copy_metadata(metadata, handle) result(err)
+        class(multio_metadata), intent(inout) :: metadata
+        class(multio_metadata), intent(in) :: handle
+        integer :: err
+        err = c_multio_copy_metadata(metadata%impl, handle%impl)
     end function
 
     function multio_delete_metadata(metadata) result(err)

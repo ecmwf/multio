@@ -62,8 +62,9 @@ const char* multio_error_string(int err) {
 }
 
 struct multio_configuration_t : public MultioConfiguration {
-    multio_configuration_t(const eckit::PathName& fileName = configuration_file_name()) :
-        MultioConfiguration{fileName} {}
+    multio_configuration_t(const eckit::PathName& fileName) : MultioConfiguration{fileName} {}
+
+    multio_configuration_t() : MultioConfiguration{} {}
 
     std::unique_ptr<multio_failure_context_t> failureContext;
 };
@@ -507,10 +508,29 @@ int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const
         mio);
 }
 
+
+int multio_write_grib_encoded(multio_handle_t* mio, void* gribdata, int gribsize) {
+    return wrapApiFunction(
+        [mio, gribdata, gribsize]() {
+            ASSERT(mio);
+            ASSERT(gribdata);
+
+            multio::message::Metadata md;
+            md.set("format", "grib");
+
+            mio->dispatch(std::move(md), eckit::Buffer{gribdata, gribsize * sizeof(char)}, Message::Tag::Field);
+        },
+        mio);
+}
+
+
 int multio_new_metadata(multio_metadata_t** md, multio_handle_t* mio) {
     return wrapApiFunction([md]() { (*md) = new multio_metadata_t{}; }, mio);
 }
 
+int multio_copy_metadata(multio_metadata_t** md, multio_metadata_t* mdFrom) {
+    return wrapApiFunction([md, mdFrom]() { (*md) = new multio_metadata_t{*mdFrom}; }, mdFrom);
+}
 
 int multio_delete_metadata(multio_metadata_t* md) {
     return wrapApiFunction(

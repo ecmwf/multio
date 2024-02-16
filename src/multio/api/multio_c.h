@@ -296,17 +296,34 @@ int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const 
 int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
 
 
+/** Legacy: Writes (partial) fields already grib encoded
+ * \param mio Handle to the multio (client) instance
+ * \param gribdata Pointer to grib message
+ * \param gribsize Length of the grib message in number of bytes
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_write_grib_encoded(multio_handle_t* mio, void* gribdata, int gribsize);
+
+
 /** @} */
 
 
 /** \defgroup Metadata setting */
-/** @{ */
+/** @{*/
 
 /** Creates a multio metadata object
  * \param md Return a handle to the multio metadata object
+ * \param Multio handle/instance to which the metadata relates
  * \returns Return code (#MultioErrorValues)
  */
 int multio_new_metadata(multio_metadata_t** md, multio_handle_t* mio);
+
+/** Creates a multio metadata object from an existing metadata object
+ * \param md Return a handle to the multio metadata object
+ * \param mdFrom Metadata to copy from
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_copy_metadata(multio_metadata_t** md, multio_metadata_t* mdFrom);
 
 
 /** Deletes a multio metadata object

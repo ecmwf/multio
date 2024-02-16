@@ -108,6 +108,7 @@ get_directory_property( MULTIO_DEFINITIONS COMPILE_DEFINITIONS )
 
 include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
 
+
 include_directories( ${MULTIO_INCLUDE_DIRS} )
 
 add_subdirectory( src )
@@ -126,5 +127,6 @@ if( HAVE_FORTRAN AND ECBUILD_INSTALL_FORTRAN_MODULES )
              DESTINATION module/${PROJECT_NAME}
              COMPONENT modules )
 endif()
+
 
 ecbuild_print_summary()

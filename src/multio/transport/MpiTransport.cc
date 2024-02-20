@@ -21,7 +21,7 @@
 
 #include "multio/transport/MpiCommSetup.h"
 #include "multio/util/Environment.h"
-#include "multio/util/ScopedTimer.h"
+#include "multio/util/Timing.h"
 #include "multio/util/logfile_name.h"
 
 namespace multio::transport {
@@ -251,7 +251,7 @@ void MpiTransport::closeConnections() {
 }
 
 Message MpiTransport::receive() {
-    util::ScopedTiming timing{statistics_.totReturnTimer_, statistics_.totReturnTiming_};
+    util::ScopedTiming timing{statistics_.totReturnTiming_};
     /**
      * Read raw messages from streamQueue_ (filled by listen() in other thread)
      *
@@ -262,9 +262,9 @@ Message MpiTransport::receive() {
 
     do {
         while (not msgPack_.empty()) {
-            util::ScopedTiming retTiming{statistics_.returnTimer_, statistics_.returnTiming_};
+            util::ScopedTiming retTiming{statistics_.returnTiming_};
             //! TODO For switch to MPMC queue: combine front() and pop()
-            auto msg = msgPack_.front();
+            auto msg = std::move(msgPack_.front());
             msgPack_.pop();
             return msg;
         }
@@ -274,9 +274,9 @@ Message MpiTransport::receive() {
         if (streamArgs.buffer) {
             eckit::ResizableMemoryStream strm{streamArgs.buffer->content};
             while (strm.position() < streamArgs.size) {
-                util::ScopedTiming decodeTiming{statistics_.decodeTimer_, statistics_.decodeTiming_};
+                util::ScopedTiming decodeTiming{statistics_.decodeTiming_};
                 auto msg = decodeMessage(strm);
-                msgPack_.push(msg);
+                msgPack_.push(std::move(msg));
             }
             streamArgs.buffer->status.store(BufferStatus::available, std::memory_order_release);
         }
@@ -302,7 +302,7 @@ void MpiTransport::send(const Message& msg) {
 
     encodeMessage(stream, msg);
 
-    util::ScopedTiming timing{statistics_.sendTimer_, statistics_.sendTiming_};
+    util::ScopedTiming timing{statistics_.sendTiming_};
 
     auto sz = static_cast<size_t>(stream.bytesWritten());
     auto dest = static_cast<int>(msg.destination().id());
@@ -360,7 +360,7 @@ void MpiTransport::listen() {
     // large buffer?
     auto& buf = pool_.acquireAvailableBuffer(BufferStatus::fillingUp);
     auto sz = blockingReceive(status, buf);
-    util::ScopedTiming timing{statistics_.pushToQueueTimer_, statistics_.pushToQueueTiming_};
+    util::ScopedTiming timing{statistics_.pushToQueueTiming_};
     streamQueue_.push(ReceivedBuffer{&buf, sz});
 }
 
@@ -389,7 +389,7 @@ const eckit::mpi::Comm& MpiTransport::comm() const {
 }
 
 eckit::mpi::Status MpiTransport::probe() {
-    util::ScopedTiming timing{statistics_.probeTimer_, statistics_.probeTiming_};
+    util::ScopedTiming timing{statistics_.probeTiming_};
     auto status = comm().iProbe(comm().anySource(), comm().anyTag());
 
     return status;
@@ -399,7 +399,7 @@ size_t MpiTransport::blockingReceive(eckit::mpi::Status& status, MpiBuffer& buff
     auto sz = comm().getCount<void>(status);
     ASSERT(sz < buffer.content.size());
 
-    util::ScopedTiming timing{statistics_.receiveTimer_, statistics_.receiveTiming_};
+    util::ScopedTiming timing{statistics_.receiveTiming_};
     comm().receive<void>(buffer.content, sz, status.source(), status.tag());
 
     ++statistics_.receiveCount_;
@@ -409,7 +409,7 @@ size_t MpiTransport::blockingReceive(eckit::mpi::Status& status, MpiBuffer& buff
 }
 
 void MpiTransport::encodeMessage(eckit::Stream& strm, const Message& msg) {
-    util::ScopedTiming timing{statistics_.encodeTimer_, statistics_.encodeTiming_};
+    util::ScopedTiming timing{statistics_.encodeTiming_};
 
     msg.encode(strm);
 }

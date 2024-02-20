@@ -26,7 +26,8 @@ namespace multio::test {
 using multio::domain::computeBufferSizeMaskBitMask;
 using multio::domain::computeMaskRunLengthProperties;
 using multio::domain::decodeMaskPayloadHeader;
-using multio::domain::EncodedMaskPayload;
+using multio::domain::EncodedBitMaskPayload;
+using multio::domain::EncodedRunLengthPayload;
 using multio::domain::encodeMask;
 using multio::domain::encodeMaskBitMask;
 using multio::domain::encodeMaskPayloadHeader;
@@ -36,6 +37,7 @@ using multio::domain::MaskPayloadFormat;
 using multio::domain::MaskPayloadHeader;
 using multio::domain::MaskPayloadIterator;
 using multio::domain::MaskRunLengthProperties;
+using multio::domain::RunLengthIterator;
 
 bool equalsMaskPayloadHeader(const MaskPayloadHeader& lhs, const MaskPayloadHeader& rhs) {
     return (lhs.format == rhs.format) && (lhs.numBits == rhs.numBits)
@@ -199,12 +201,13 @@ CASE("Test encode/decode bitmask") {
 
     eckit::Buffer b1 = encodeMaskBitMask(v1.data(), v1.size());
 
-    EncodedMaskPayload em1(b1);
+    EncodedBitMaskPayload em1(b1);
     std::size_t i1 = 0;
     for (bool v : em1) {
         EXPECT(v == static_cast<bool>(v1[i1]));
         ++i1;
     }
+    EXPECT(i1 == 250);
 
     // Fill vector with 1 0 0 0 0 0 0 0 1 ....
     std::vector<float> v2(250);
@@ -214,12 +217,13 @@ CASE("Test encode/decode bitmask") {
 
     eckit::Buffer b2 = encodeMaskBitMask(v2.data(), v2.size());
 
-    EncodedMaskPayload em2(b2);
+    EncodedBitMaskPayload em2(b2);
     std::size_t i2 = 0;
     for (bool v : em2) {
         EXPECT(v == static_cast<bool>(v2[i2]));
         ++i2;
     }
+    EXPECT(i2 == 250);
 
 
     // Fill vector with  0 0 0 0 1 0 0 ... (20x 0) .. 0 1
@@ -230,12 +234,13 @@ CASE("Test encode/decode bitmask") {
 
     eckit::Buffer b3 = encodeMaskBitMask(v3.data(), v3.size());
 
-    EncodedMaskPayload em3(b3);
+    EncodedBitMaskPayload em3(b3);
     std::size_t i3 = 0;
     for (bool v : em3) {
         EXPECT(v == static_cast<bool>(v3[i3]));
         ++i3;
     }
+    EXPECT(i3 == 250);
 }
 
 
@@ -248,12 +253,23 @@ CASE("Test encode/decode run length") {
 
     eckit::Buffer b1 = encodeMaskRunLength(v1.data(), v1.size());
 
-    EncodedMaskPayload em1(b1);
+    EncodedBitMaskPayload em1(b1);
     std::size_t i1 = 0;
     for (bool v : em1) {
         EXPECT(v == static_cast<bool>(v1[i1]));
         ++i1;
     }
+    EXPECT(i1 == 250);
+
+    EncodedRunLengthPayload rl1(b1);
+    i1 = 0;
+    for (const auto& pair : rl1) {
+        for (std::size_t pi = 0; pi < pair.second; ++pi) {
+            EXPECT(pair.first == static_cast<bool>(v1[i1]));
+            ++i1;
+        }
+    }
+    EXPECT(i1 == 250);
 
 
     // Fill vector with 1 0 0 0 0 0 0 0 1 ....
@@ -264,12 +280,23 @@ CASE("Test encode/decode run length") {
 
     eckit::Buffer b2 = encodeMaskRunLength(v2.data(), v2.size());
 
-    EncodedMaskPayload em2(b2);
+    EncodedBitMaskPayload em2(b2);
     std::size_t i2 = 0;
     for (bool v : em2) {
         EXPECT(v == static_cast<bool>(v2[i2]));
         ++i2;
     }
+    EXPECT(i2 == 250);
+
+    EncodedRunLengthPayload rl2(b2);
+    i2 = 0;
+    for (const auto& pair : rl2) {
+        for (std::size_t pi = 0; pi < pair.second; ++pi) {
+            EXPECT(pair.first == static_cast<bool>(v2[i2]));
+            ++i2;
+        }
+    }
+    EXPECT(i2 == 250);
 
 
     // Fill vector with  0 0 0 0 1 0 0 ... (20x 0) .. 0 1
@@ -280,12 +307,23 @@ CASE("Test encode/decode run length") {
 
     eckit::Buffer b3 = encodeMaskRunLength(v3.data(), v3.size());
 
-    EncodedMaskPayload em3(b3);
+    EncodedBitMaskPayload em3(b3);
     std::size_t i3 = 0;
     for (bool v : em3) {
         EXPECT(v == static_cast<bool>(v3[i3]));
         ++i3;
     }
+    EXPECT(i3 == 250);
+
+    EncodedRunLengthPayload rl3(b3);
+    i3 = 0;
+    for (const auto& pair : rl3) {
+        for (std::size_t pi = 0; pi < pair.second; ++pi) {
+            EXPECT(pair.first == static_cast<bool>(v3[i3]));
+            ++i3;
+        }
+    }
+    EXPECT(i3 == 250);
 
 
     // Fill large vector with increasing running numbers from 2**10 to 2**20 (the last one is cut ofc)
@@ -307,12 +345,23 @@ CASE("Test encode/decode run length") {
 
     eckit::Buffer b4 = encodeMaskRunLength(v4.data(), v4.size());
 
-    EncodedMaskPayload em4(b4);
+    EncodedBitMaskPayload em4(b4);
     std::size_t i4 = 0;
     for (bool v : em4) {
         EXPECT(v == static_cast<bool>(v4[i4]));
         ++i4;
     }
+    EXPECT(i4 == v4s);
+
+    EncodedRunLengthPayload rl4(b4);
+    i4 = 0;
+    for (const auto& pair : rl4) {
+        for (std::size_t pi = 0; pi < pair.second; ++pi) {
+            EXPECT(pair.first == static_cast<bool>(v4[i4]));
+            ++i4;
+        }
+    }
+    EXPECT(i4 == v4s);
 
     // Fill vector with 1
     std::size_t v5s = 1 << 25;
@@ -322,12 +371,24 @@ CASE("Test encode/decode run length") {
 
     eckit::Buffer b5 = encodeMaskRunLength(v5.data(), v5.size());
 
-    EncodedMaskPayload em5(b5);
+    EncodedBitMaskPayload em5(b5);
     std::size_t i5 = 0;
     for (bool v : em5) {
         EXPECT(v == static_cast<bool>(v5[i5]));
         ++i5;
     }
+    EXPECT(i5 == v5s);
+
+    EncodedRunLengthPayload rl5(b5);
+    i5 = 0;
+    for (const auto& pair : rl5) {
+        for (std::size_t pi = 0; pi < pair.second; ++pi) {
+            EXPECT(pair.first == static_cast<bool>(v5[i5]));
+            ++i5;
+        }
+    }
+    EXPECT(i5 == v5s);
+
 
     // Fill vector with 0
     std::size_t v6s = 1 << 25;
@@ -337,12 +398,23 @@ CASE("Test encode/decode run length") {
 
     eckit::Buffer b6 = encodeMaskRunLength(v6.data(), v6.size());
 
-    EncodedMaskPayload em6(b6);
+    EncodedBitMaskPayload em6(b6);
     std::size_t i6 = 0;
     for (bool v : em6) {
         EXPECT(v == static_cast<bool>(v6[i6]));
         ++i6;
     }
+    EXPECT(i6 == v6s);
+
+    EncodedRunLengthPayload rl6(b6);
+    i6 = 0;
+    for (const auto& pair : rl6) {
+        for (std::size_t pi = 0; pi < pair.second; ++pi) {
+            EXPECT(pair.first == static_cast<bool>(v6[i6]));
+            ++i6;
+        }
+    }
+    EXPECT(i6 == v6s);
 
 
     // Fill vector with sequences of 16 such that two consecutive numbers fill one byte and all information matches
@@ -364,12 +436,23 @@ CASE("Test encode/decode run length") {
 
     eckit::Buffer b7 = encodeMaskRunLength(v7.data(), v7.size());
 
-    EncodedMaskPayload em7(b7);
+    EncodedBitMaskPayload em7(b7);
     std::size_t i7 = 0;
     for (bool v : em7) {
         EXPECT(v == static_cast<bool>(v7[i7]));
         ++i7;
     }
+    EXPECT(i7 == v7s);
+
+    EncodedRunLengthPayload rl7(b7);
+    i7 = 0;
+    for (const auto& pair : rl7) {
+        for (std::size_t pi = 0; pi < pair.second; ++pi) {
+            EXPECT(pair.first == static_cast<bool>(v7[i7]));
+            ++i7;
+        }
+    }
+    EXPECT(i7 == v7s);
 }
 
 CASE("Test encode/decode run length with a lot of combinations (random)") {
@@ -404,7 +487,7 @@ CASE("Test encode/decode run length with a lot of combinations (random)") {
 
         eckit::Buffer b = encodeMaskRunLength(v.data(), v.size());
 
-        EncodedMaskPayload em(b);
+        EncodedBitMaskPayload em(b);
         std::size_t ib = 0;
         for (bool vEncDec : em) {
             EXPECT(vEncDec == static_cast<bool>(v[ib]));

@@ -11,6 +11,7 @@
 /// @author Domokos Sarmany
 /// @author Simon Smart
 /// @author Tiago Quintino
+/// @author Philipp Geier
 
 /// @date Jan 2019
 
@@ -21,6 +22,8 @@
 
 #include "multio/message/Metadata.h"
 #include "multio/message/Peer.h"
+#include "multio/message/SharedPayload.h"
+#include "multio/message/SharedMetadata.h"
 
 #include <memory>
 #include <optional>
@@ -38,6 +41,7 @@ class Message;
 namespace multio::message {
 
 // TODO: we may want to hash the payload (and the header?)
+struct LogMessage;
 
 class Message {
 public:  // types
@@ -55,10 +59,29 @@ public:  // types
         ENDTAG
     };
 
+
+    struct LogHeader {
+        Tag tag_;
+
+        Peer source_;
+        Peer destination_;
+
+        std::weak_ptr<Metadata> metadata_;
+        mutable std::optional<std::string> fieldId_;
+    };
+
     class Header {
     public:
+        Header(const Header&) = default;
+        Header(Header&&) = default;
+
+        Header& operator=(const Header&) = default;
+        Header& operator=(Header&&) = default;
+
         Header(Tag tag, Peer src, Peer dst, std::string&& fieldId);
-        Header(Tag tag, Peer src, Peer dst, Metadata&& md = message::Metadata{});
+        Header(Tag tag, Peer src, Peer dst, Metadata&& md);
+        // TODO optimize default construction - avoid make shared to optimize cases of default initialization + assignment
+        Header(Tag tag, Peer src, Peer dst, SharedMetadata md = SharedMetadata{});
 
         Tag tag() const;
 
@@ -80,9 +103,21 @@ public:  // types
         void encode(eckit::Stream& strm) const;
 
         // Metadata&& metadata() &&;
-        const Metadata& metadata() const&;
+        const Metadata& metadata() const;
 
-        Header modifyMetadata(Metadata&& md) const;
+        Metadata& modifyMetadata();
+
+
+        [[deprecated("Explicity use moveOrCopy or acquire & modifyMetadata (byref)")]] Header modifyMetadata(
+            Metadata&& md) const;
+
+        // Copy or acquire metadata object if only owned by this object
+        SharedMetadata moveOrCopyMetadata() const;
+
+        // Copy or acquire metadata object if only owned by this object
+        void acquireMetadata();
+
+        LogHeader logHeader() const;
 
     private:
         Tag tag_;
@@ -90,10 +125,11 @@ public:  // types
         Peer source_;
         Peer destination_;
 
-        Metadata metadata_;
+        SharedMetadata metadata_;
         // encode fieldId_ lazily
         mutable std::optional<std::string> fieldId_;  // Make that a hash?
     };
+
 
     // class Content {
     // public:
@@ -116,16 +152,32 @@ public:  // methods
     static int protocolVersion();
     static std::string tag2str(Tag t);
 
+    Message(const Message&) = default;
+    Message(Message&&) = default;
+
+    Message& operator=(const Message&) = default;
+    Message& operator=(Message&&) = default;
+
     Message();
-    Message(Header&& header, const eckit::Buffer& payload = eckit::Buffer{0});
+    Message(Header&& header);
+    Message(Header&& header, const eckit::Buffer& payload);
     Message(Header&& header, eckit::Buffer&& payload);
-    Message(Header&& header, std::shared_ptr<eckit::Buffer> payload);
-    Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload);
-    Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload);
-    // Message(std::shared_ptr<Header> header, std::shared_ptr<eckit::Buffer> payload);
+    Message(Header&& header, SharedPayload&& payload);
+    Message(Header&& header, const SharedPayload& payload);
+
+    // Message(Header&& header, const eckit::Buffer& payload = eckit::Buffer{0});
+    // Message(Header&& header, eckit::Buffer&& payload);
+    // // Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload);
+    // // Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload);
+    // Message(Header&& header, std::shared_ptr<eckit::Buffer>&& payload);
+    // Message(Header&& header, const std::shared_ptr<eckit::Buffer>& payload);
+    // // Message(std::shared_ptr<Header> header, std::shared_ptr<eckit::Buffer> payload);
+
+    LogMessage logMessage() const;
 
 public:
     const Header& header() const;
+    Header& header();
 
     int version() const;
     Tag tag() const;
@@ -147,13 +199,16 @@ public:
 
     // Metadata&& metadata() &&;
 
-    const Metadata& metadata() const&;
+    const Metadata& metadata() const;
+    Metadata& modifyMetadata();
 
-    Message modifyMetadata(Metadata&& md) const;
+    [[deprecated]] Message modifyMetadata(Metadata&& md) const;
 
-    const eckit::Buffer& payload() const;
+    SharedPayload& payload();
+    const SharedPayload& payload() const;
 
-    std::shared_ptr<eckit::Buffer> sharedPayload() const;
+    // Try to acquire metadata & payload or copy otherwise
+    void acquire();
 
     size_t size() const;
 
@@ -170,9 +225,26 @@ private:  // methods
 private:  // members
     int version_;
 
-    std::shared_ptr<Header> header_;
-    std::shared_ptr<eckit::Buffer> payload_;
+    Header header_;
+    SharedPayload payload_;
 };
+
+
+struct LogMessage {
+    int version_;
+
+    Message::LogHeader header_;
+    std::size_t payload_size_;
+
+    const std::string& fieldId() const;
+    void print(std::ostream& out) const;
+
+    friend std::ostream& operator<<(std::ostream& s, const LogMessage& x) {
+        x.print(s);
+        return s;
+    }
+};
+
 
 eckit::message::Message to_eckit_message(const Message& msg);
 

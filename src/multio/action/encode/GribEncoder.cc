@@ -156,13 +156,13 @@ void tryMapStepToTimeAndCheckTime(message::Metadata& in) {
         }
 
 
-        const auto searchStepRange = in.find("stepRange");
-        const auto searchStartStep = in.find("startStep");
-        const auto searchEndStep = in.find("endStep");
-        const auto searchCurrentDate = in.find("currentDate");
-        const auto searchCurrentTime = in.find("currentTime");
-        const auto searchPreviousDate = in.find("previousDate");
-        const auto searchPreviousTime = in.find("previousTime");
+        const auto searchStepRange = in.find(glossary().stepRange);
+        const auto searchStartStep = in.find(glossary().startStep);
+        const auto searchEndStep = in.find(glossary().endStep);
+        const auto searchCurrentDate = in.find(glossary().currentDate);
+        const auto searchCurrentTime = in.find(glossary().currentTime);
+        const auto searchPreviousDate = in.find(glossary().previousDate);
+        const auto searchPreviousTime = in.find(glossary().previousTime);
         if ((searchStepRange != in.end() || (searchStartStep != in.end() && searchEndStep != in.end()))
             && (searchCurrentDate == in.end() || searchCurrentTime == in.end() || searchPreviousDate == in.end()
                 || searchPreviousTime == in.end())) {
@@ -268,16 +268,16 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             }
         }
         else if (gridType && eckit::StringTools::lower(*gridType) != "healpix") {
-            withFirstOf(valueSetter(g, "levtype"), levtype,
+            withFirstOf(valueSetter(g, "levtype"), lookUp<std::string>(md, glossary().levtype),
                         lookUp<std::string>(md, "indicatorOfTypeOfLevel"));
         }
         else if (gridType && levtype && eckit::StringTools::lower(*gridType) == "healpix" && *levtype != "o2d"
                  && *levtype != "o3d") {
-            withFirstOf(valueSetter(g, "levtype"), levtype,
+            withFirstOf(valueSetter(g, "levtype"), lookUp<std::string>(md, glossary().levtype),
                         lookUp<std::string>(md, "indicatorOfTypeOfLevel"));
         }
         else if (!gridType) {
-            withFirstOf(valueSetter(g, "levtype"), levtype,
+            withFirstOf(valueSetter(g, "levtype"), lookUp<std::string>(md, glossary().levtype),
                         lookUp<std::string>(md, "indicatorOfTypeOfLevel"));
         }
 
@@ -330,11 +330,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             withFirstOf(valueSetter(g, "realization"), lookUp<std::string>(md, glossary().realization));
         }
     }
-
-    withFirstOf(valueSetter(g, "class"), lookUp<std::string>(md, glossary().classKey),
-                lookUp<std::string>(md, glossary().marsClass));
-    withFirstOf(valueSetter(g, "stream"), lookUp<std::string>(md, glossary().stream),
-                lookUp<std::string>(md, glossary().marsStream));
+    
 
     if (gribEdition == "2") {
         withFirstOf(valueSetter(g, "subCentre"), lookUp<std::string>(md, glossary().subCentre));
@@ -344,8 +340,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
 
     withFirstOf(valueSetter(g, "setPackingType"), lookUp<std::string>(md, glossary().setPackingType));
 
-    withFirstOf(valueSetter(g, "expver"), lookUp<std::string>(md, "expver"),
-                lookUp<std::string>(md, glossary().experimentVersionNumber));
     withFirstOf(valueSetter(g, "number"), lookUp<std::int64_t>(md, glossary().ensembleMember));
     withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), lookUp<std::int64_t>(md, glossary().ensembleSize));
 
@@ -355,7 +349,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
     }
 
     // Additional parameters passed through for spherical harmonics
-    if (auto gridType = lookUp<std::string>(md, glossary().gridType)(); gridType) {
+    if (gridType) {
         if (*gridType == "sh") {
             withFirstOf(valueSetter(g, "complexPacking"), lookUp<std::int64_t>(md, glossary().complexPacking));
             withFirstOf(valueSetter(g, "pentagonalResolutionParameterJ"),
@@ -426,21 +420,19 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
     if (auto searchOverwrites = md.find("encoder-overwrites"); searchOverwrites != md.end()) {
         // TODO Refactor with visitor
         for (const auto& kv : searchOverwrites->second.get<message::Metadata>()) {
-            // TODO handle type... however eccodes should support string as well. For
-            // some representations the string and integer representation in eccodes
-            // differ significantly and my produce wrong results
-            if (g.hasKey(kv.first.c_str())) {
+            if (g.hasKey(kv.first.value().c_str())) {
                 kv.second.visit(eckit::Overloaded{
                     [](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::AllNested> {},
-                    [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), MetadataTypes::Lists> {
-                        g.setValue(kv.first, vec);
-                    },
-                    [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::NonNullScalars> {
-                        g.setValue(kv.first, v);
-                    },
-                    [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::Nulls> {
-                        g.setValue(kv.first, 0);
-                    }});
+                        [&g, &kv](const auto& vec) -> util::IfTypeOf<decltype(vec), MetadataTypes::Lists> {
+                            g.setValue(kv.first, vec);
+                        },
+                        [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::NonNullScalars> {
+                            g.setValue(kv.first, v);
+                        },
+                        [&g, &kv](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::Nulls> {
+                            g.setValue(kv.first, 0);
+                        }
+                });
             }
         }
     }
@@ -630,12 +622,17 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
         // It seems that from this combination eccodes is infering a `stepKey` of avgd (daily average).
         // For daily average the stepRange is shown as 0 instead of 0-24 (desired). Hence with DGov we decided to put
         // 255 (MISSING) as typeOfTimeIncrement
+        //
+        // TO BE DISCUSSED - obviously there is some confusion about typeOfTimeIncrement=1. For analysis I read that it 
+        // should be set to 1. However eccodes thinks different and will not consider it as time range then... hence I explicily set it to 255 now
+        // g.setValue(
+        //     "typeOfTimeIncrement",
+        //     (timeRef == "start" ? 2
+        //                         : ((significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255 : 1)));
         g.setValue(
             "typeOfTimeIncrement",
-            (timeRef == "start"
-                 ? 2
-                 : (((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) ? 255
-                                                                                                                 : 1)));
+            (timeRef == "start" ? 2
+                                : 255));
 
         if (const auto timeIncrement = md.getOpt<std::int64_t>(glossary().timeIncrement); timeIncrement) {
             if (*timeIncrement != 0) {
@@ -672,7 +669,6 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
 
         g.setValue("hourOfAnalysis", analysisDateTime.time.hour);
         g.setValue("minuteOfAnalysis", analysisDateTime.time.minute);
-        g.setValue("secondOfAnalysis", analysisDateTime.time.second);
     }
 }
 
@@ -690,7 +686,7 @@ void GribEncoder::setFieldMetadata(const message::Message& msg) {
 }
 
 void GribEncoder::setOceanMetadata(const message::Message& msg) {
-    const auto& metadata = msg.metadata();
+    auto metadata = msg.metadata();  // Copy
 
     if (auto searchDataSet = metadata.find("dataset"); searchDataSet != metadata.end()) {
         withFirstOf(valueSetter(*this, "tablesVersion"), lookUp<std::int64_t>(metadata, glossary().tablesVersion));
@@ -700,7 +696,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
                     lookUp<std::int64_t>(metadata, glossary().grib2LocalSectionNumber));
         withFirstOf(valueSetter(*this, glossary().productionStatusOfProcessedData),
                     lookUp<std::int64_t>(metadata, "productionStatusOfProcessedData"));
-                    
+
         const auto dataset = lookUp<std::string>(metadata, glossary().dataset)();
         withFirstOf(valueSetter(*this, "dataset"), dataset);
         if (dataset && *dataset == "climate-dt") {
@@ -724,9 +720,9 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 
     withFirstOf(valueSetter(*this, "setPackingType"), lookUp<std::string>(metadata, glossary().setPackingType));
 
-    auto runConfig = config_.getSubConfiguration("run");
+    metadata.updateOverwrite(message::toMetadata(config_.getSubConfiguration("run").get()));
 
-    auto queriedMarsFields = setMarsKeys(*this, runConfig);
+    auto queriedMarsFields = setMarsKeys(*this, metadata);
     if (queriedMarsFields.type) {
         setValue(glossary().typeOfGeneratingProcess, type_of_generating_process.at(*queriedMarsFields.type));
     }
@@ -796,9 +792,13 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
 void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {
     setOceanCoordMetadata(metadata, config_.getSubConfiguration("run"));
 }
-void GribEncoder::setOceanCoordMetadata(const message::Metadata& md, const eckit::Configuration& runConfig) {
+void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig) {
+    auto md = metadata;  // copy
+
+    md.updateOverwrite(message::toMetadata(runConfig.get()));
+
     // Set run-specific md
-    setMarsKeys(*this, runConfig);
+    setMarsKeys(*this, md);
 
     setValue(glossary().date, md.get<std::int64_t>(glossary().startDate));
 
@@ -891,7 +891,7 @@ message::Message GribEncoder::setFieldValues(const message::Message& msg) {
     eckit::Buffer buf{this->encoder_->length()};
     encoder_->write(buf);
 
-    return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}},
+    return Message{Message::Header{Message::Tag::Field, Peer{msg.source().group()}, Peer{msg.destination()}},
                    std::move(buf)};
 }
 
@@ -902,7 +902,7 @@ message::Message GribEncoder::setFieldValues(const double* values, size_t count)
     eckit::Buffer buf{this->encoder_->length()};
     encoder_->write(buf);
 
-    return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
+    return Message{Message::Header{Message::Tag::Field, Peer{}, Peer{}}, std::move(buf)};
 }
 
 message::Message GribEncoder::setFieldValues(const float* values, size_t count) {
@@ -911,7 +911,7 @@ message::Message GribEncoder::setFieldValues(const float* values, size_t count) 
     eckit::Buffer buf{this->encoder_->length()};
     encoder_->write(buf);
 
-    return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
+    return Message{Message::Header{Message::Tag::Field, Peer{}, Peer{}}, std::move(buf)};
 }
 
 

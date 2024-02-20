@@ -15,7 +15,6 @@
 #include "eckit/log/Log.h"
 
 #include "multio/domain/Mask.h"
-#include "multio/util/ScopedTimer.h"
 
 #include "multio/util/PrecisionTag.h"
 
@@ -51,7 +50,10 @@ void Mask::executeImpl(message::Message msg) {
 
 template <typename Precision>
 message::Message Mask::createMasked(message::Message msg) const {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
+
+    msg.acquire();
+    // Now metadata and payload can be modified
 
     if (applyBitmap_) {
         applyMask<Precision>(msg);
@@ -61,19 +63,16 @@ message::Message Mask::createMasked(message::Message msg) const {
         applyOffset<Precision>(msg);
     }
 
-    message::Metadata md{msg.metadata()};
+    message::Metadata& md = msg.modifyMetadata();
     md.set("missingValue", missingValue_);
     md.set("bitmapPresent", true);
 
-    message::Message maskedMsg{message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(md)},
-                               std::move(msg.payload())};
-
-    return maskedMsg;
+    return msg;
 }
 
 
 template <typename Precision>
-void Mask::applyMask(message::Message msg) const {
+void Mask::applyMask(message::Message& msg) const {
     auto const& bkey = domain::Mask::key(msg.metadata());
     auto const& bitmask = domain::Mask::instance().get(bkey);
 
@@ -84,32 +83,44 @@ void Mask::applyMask(message::Message msg) const {
         throw eckit::SeriousBug(oss.str(), Here());
     }
 
-    // Explicitly modify shared buffer - masked entries should be safe to override
-    auto git = static_cast<Precision*>(msg.sharedPayload()->data());
+    auto git = static_cast<Precision*>(msg.payload().modifyData());
 
-    for (const auto bval : bitmask) {
-        if (not bval) {
-            *git = static_cast<Precision>(missingValue_);
+    std::size_t offset = 0;
+    for (const auto& valLengthPair : bitmask) {
+        if (valLengthPair.first) {
+            offset += valLengthPair.second;
         }
-        ++git;
+        else {
+            std::size_t nextOffset = offset + valLengthPair.second;
+            for (std::size_t i = offset; i < nextOffset; ++i) {
+                git[i] = static_cast<Precision>(missingValue_);
+            }
+            offset = nextOffset;
+        }
     }
 }
 
 template <typename Precision>
-void Mask::applyOffset(message::Message msg) const {
+void Mask::applyOffset(message::Message& msg) const {
     auto const& bkey = domain::Mask::key(msg.metadata());
     auto const& bitmask = domain::Mask::instance().get(bkey);
 
     ASSERT(bitmask.size() == msg.size() / sizeof(Precision));
 
-    // Explicitly modify shared buffer - masked entries should be safe to override
-    auto git = static_cast<Precision*>(msg.sharedPayload()->data());
+    auto git = static_cast<Precision*>(msg.payload().modifyData());
 
-    for (const auto bval : bitmask) {
-        if (bval) {
-            *git += static_cast<Precision>(offsetValue_);
+    std::size_t offset = 0;
+    for (const auto& valLengthPair : bitmask) {
+        if (valLengthPair.first) {
+            std::size_t nextOffset = offset + valLengthPair.second;
+            for (std::size_t i = offset; i < nextOffset; ++i) {
+                git[i] = git[i] + static_cast<Precision>(offsetValue_);
+            }
+            offset = nextOffset;
         }
-        ++git;
+        else {
+            offset += valLengthPair.second;
+        }
     }
 }
 

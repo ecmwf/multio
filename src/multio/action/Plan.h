@@ -19,13 +19,13 @@
 #include <memory>
 #include <optional>
 
-#include "eckit/log/Statistics.h"
 #include "eckit/memory/NonCopyable.h"
 
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/config/MultioConfiguration.h"
 #include "multio/message/Message.h"
 #include "multio/util/FailureHandling.h"
+#include "multio/util/Timing.h"
 
 namespace multio::message {
 class MetadataSelectors;
@@ -76,7 +76,7 @@ public:
 protected:
     const std::string name_;
     const std::unique_ptr<Action> root_;
-    eckit::Timing timing_;
+    util::Timing<> timing_;
 };
 
 

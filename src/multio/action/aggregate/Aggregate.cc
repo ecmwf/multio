@@ -14,7 +14,6 @@
 
 #include "multio/LibMultio.h"
 #include "multio/domain/Mappings.h"
-#include "multio/util/ScopedTimer.h"
 
 namespace multio::action {
 
@@ -34,7 +33,7 @@ void Aggregate::executeImpl(Message msg) {
 }
 
 bool Aggregate::handleField(const Message& msg) {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
     if (not aggCatalogue_.contains(msg.fieldId())) {
         aggCatalogue_.addNew(msg);
     }
@@ -62,7 +61,7 @@ auto Aggregate::flushCount(const Message& msg) {
 
 bool Aggregate::handleFlush(const Message& msg) {
     // Initialise if need be
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     const auto& domainMap = domain::Mappings::instance().get(msg.domain());
     auto flCount = flushCount(msg);
@@ -80,7 +79,7 @@ bool Aggregate::allPartsArrived(const Message& msg) const {
 }
 
 Message Aggregate::globalField(const std::string& fid) {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     // TODO: checking domain consistency is skipped for now...
     // domain::Mappings::instance().checkDomainConsistency(messages_.at(fid));
@@ -89,7 +88,7 @@ Message Aggregate::globalField(const std::string& fid) {
 }
 
 Message Aggregate::globalFlush(const std::string& fid) {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     auto flush = flushes_.extract(fid);
 

@@ -18,6 +18,7 @@
 #include <memory>  // unique_ptr
 #include <optional>
 #include <type_traits>
+#include <variant>
 #include <vector>
 
 namespace multio::util {
@@ -137,7 +138,7 @@ struct BaseOverloadForResolution {
 
 template <typename TI>
 struct IgnoredOverloadForResolution {
-    template<typename T, std::enable_if<!std::is_same_v<T, T>, bool> = true>
+    template <typename T, std::enable_if_t<!std::is_same_v<T, T>, bool> = true>
     TypeTag<TI> operator()(T&&) const;
 };
 
@@ -145,8 +146,8 @@ struct IgnoredOverloadForResolution {
 template <typename From, typename... TS> struct SaneOverloadResolution;
 
 // Base case - defines an operator() that will never participate in overload resolution
-template <typename From> struct SaneOverloadResolution<From> { 
-    template<typename T, std::enable_if<!std::is_same_v<T, T>, bool> = true>
+template <typename From> struct SaneOverloadResolution<From> {
+    template <typename T, std::enable_if_t<!std::is_same_v<T, T>, bool> = true>
     TypeTag<void> operator()(T&&) const;
 };
 
@@ -289,6 +290,33 @@ struct WrapOptional<std::optional<T>> {
 template <typename T>
 using WrapOptional_t = typename WrapOptional<T>::type;
 
+
+//-----------------------------------------------------------------------------
+
+template <typename T>
+struct IsVariant {
+    static constexpr bool value = false;
+};
+template <typename... T>
+struct IsVariant<std::variant<T...>> {
+    static constexpr bool value = true;
+};
+
+template <typename T>
+inline constexpr bool IsVariant_v = IsVariant<T>::value;
+
+
+//-----------------------------------------------------------------------------
+
+template <typename, class = void>
+struct HasVariantBaseType : std::false_type {};
+
+template <typename T>
+struct HasVariantBaseType<T, std::void_t<typename T::Base>>
+    : std::integral_constant<bool, (IsVariant_v<typename T::Base> && std::is_base_of_v<typename T::Base, T>)> {};
+
+template <typename T>
+inline constexpr bool HasVariantBaseType_v = HasVariantBaseType<T>::value;
 
 //-----------------------------------------------------------------------------
 

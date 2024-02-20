@@ -50,6 +50,9 @@ public:
     // pointer or to create a class with explicit memory handling. To avoid explicit memory handling, types wrapped in a
     // unique pointer will be handled transperently through a `get` and `visit` calls on the metadata object. Thus, the
     // fact that a unique_ptr is used is hidden from the user.
+    //
+    // Static cast to base class is done because gcc had a bug with visiting derived classes:
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90943 Not required for gcc12
     template <typename F>
     decltype(auto) visit(F&& f) const& noexcept(noexcept(util::visitUnwrapUniquePtr(std::forward<F>(f), *this))) {
         return util::visitUnwrapUniquePtr(std::forward<F>(f), *this);
@@ -221,7 +224,7 @@ private:
         std::enable_if_t<util::TypeListContains_v<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>, bool>
         = true>
     static decltype(auto) uniquePtrGetter(This_&& val) {
-        if constexpr (std::is_rvalue_reference_v<This_>) {
+        if constexpr (!std::is_lvalue_reference_v<This_>) {
             return std::move(*(resolvedUniquePtrGetter<std::unique_ptr<T>>(std::forward<This_>(val))).get());
         }
         else {
@@ -253,12 +256,12 @@ struct variant_alternative<I, multio::message::MetadataValue>
 namespace multio::util {
 
 template <typename T>
-struct util::GetVariantIndex<T, multio::message::MetadataValue>
-    : util::GetVariantIndex<T, multio::message::MetadataValueVariant> {};
+struct GetVariantIndex<T, multio::message::MetadataValue> : GetVariantIndex<T, multio::message::MetadataValueVariant> {
+};
 
 template <>
-struct util::GetVariantIndex<multio::message::Metadata, multio::message::MetadataValueVariant>
-    : util::GetVariantIndex<std::unique_ptr<multio::message::Metadata>, multio::message::MetadataValueVariant> {};
+struct GetVariantIndex<multio::message::Metadata, multio::message::MetadataValueVariant>
+    : GetVariantIndex<std::unique_ptr<multio::message::Metadata>, multio::message::MetadataValueVariant> {};
 
 }  // namespace multio::util
 

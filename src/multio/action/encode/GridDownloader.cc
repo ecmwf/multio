@@ -177,13 +177,13 @@ void GridDownloader::downloadOrcaGridCoordinates(const config::ComponentConfigur
 
 multio::message::Message GridDownloader::encodeMessage(multio::message::Message&& message, int startDate,
                                                        int startTime) {
-    multio::message::Metadata md{message.metadata()};
-    md.set(glossary().startDate, startDate);
-    md.set(glossary().startTime, startTime);
+    multio::message::Message msg{message};
+    msg.header().acquireMetadata();
 
-    auto updateMessage = message.modifyMetadata(std::move(md));
+    msg.modifyMetadata().set(glossary().startDate, startDate);
+    msg.modifyMetadata().set(glossary().startTime, startTime);
 
-    return encoder_->encodeOceanCoordinates(std::move(updateMessage));
+    return encoder_->encodeOceanCoordinates(std::move(msg));
 }
 
 }  // namespace multio::action

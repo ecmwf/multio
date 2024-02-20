@@ -26,6 +26,7 @@
 
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Message.h"
+#include "multio/util/Timing.h"
 
 namespace eckit {
 class Configuration;
@@ -68,13 +69,13 @@ public:
                                                util::DefaultFailureState&) const override;
 
 private:
-    void handle(const message::Message& msg) const;
+    void handle(message::Message msg) const;
 
     eckit::Queue<message::Message>& queue_;
     std::vector<std::unique_ptr<action::Plan>> plans_;
 
-    eckit::Timing timing_;
-    eckit::Timer timer_;
+    util::Timing<> timing_;
+    util::Timing<> timingAll_;
 };
 
 }  // namespace server

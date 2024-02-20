@@ -102,15 +102,23 @@ public:
         return values_.try_emplace(k, std::forward<V>(v));
     }
 
+    using Iterator = typename MapType::iterator;
+    using ConstIterator = typename MapType::const_iterator;
 
-    auto find(const KeyType& k) { return values_.find(k); };
-    auto find(const KeyType& k) const { return values_.find(k); };
-    auto begin() noexcept { return values_.begin(); };
-    auto begin() const noexcept { return values_.begin(); };
-    auto cbegin() const noexcept { return values_.cbegin(); };
-    auto end() noexcept { return values_.end(); };
-    auto end() const noexcept { return values_.end(); };
-    auto cend() const noexcept { return values_.cend(); };
+
+    Iterator find(const KeyType& k) { return values_.find(k); };
+    ConstIterator find(const KeyType& k) const { return values_.find(k); };
+    Iterator begin() noexcept { return values_.begin(); };
+    ConstIterator begin() const noexcept { return values_.begin(); };
+    ConstIterator cbegin() const noexcept { return values_.cbegin(); };
+    Iterator end() noexcept { return values_.end(); };
+    ConstIterator end() const noexcept { return values_.end(); };
+    ConstIterator cend() const noexcept { return values_.cend(); };
+
+    std::size_t erase(const KeyType& k) { return values_.erase(k); };
+    Iterator erase(Iterator it) { return values_.erase(it); };
+    Iterator erase(ConstIterator it) { return values_.erase(it); };
+    Iterator erase(ConstIterator first, ConstIterator last) { return values_.erase(first, last); };
 
 
     bool empty() const noexcept;
@@ -177,7 +185,7 @@ private:
     static std::optional<T> optionalGetter(This_&& val, const KeyType& k) {
         if (auto search = val.values_.find(k); search != val.values_.end()) {
             try {
-                if constexpr (std::is_rvalue_reference_v<This_>) {
+                if constexpr (!std::is_lvalue_reference_v<This_>) {
                     return std::move(search->second.template get<T>());
                 }
                 else {
@@ -194,7 +202,7 @@ private:
     template <typename This_>
     static std::optional<MetadataValue> optionalGetter(This_&& val, const KeyType& k) noexcept {
         if (auto search = val.values_.find(k); search != val.values_.end()) {
-            if constexpr (std::is_rvalue_reference_v<This_>) {
+            if constexpr (!std::is_lvalue_reference_v<This_>) {
                 return std::optional<MetadataValue>{std::move(search->second)};
             }
             else {
@@ -222,7 +230,7 @@ Metadata metadataFromYAML(const std::string& yamlString);
 Metadata toMetadata(const eckit::Value& value);
 
 
-//----------------------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 
 }  // namespace multio::message

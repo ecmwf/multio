@@ -17,7 +17,6 @@
 
 #include "multio/transport/TransportRegistry.h"
 #include "multio/util/Environment.h"
-#include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
 
 namespace multio::action {
@@ -53,13 +52,13 @@ Transport::Transport(const ComponentConfiguration& compConf) :
 
 void Transport::executeImpl(Message msg) {
     // eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     auto md = msg.metadata();
     if (md.get<bool>("toAllServers")) {
         for (auto& server : serverPeers_) {
             auto md = msg.metadata();
-            Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)}, msg.sharedPayload()};
+            Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)}, msg.payload()};
 
             transport_->send(trMsg);
         }
@@ -67,7 +66,7 @@ void Transport::executeImpl(Message msg) {
     else {
         auto server = chooseServer(msg.metadata());
 
-        Message trMsg{Message::Header{msg.tag(), client_, server, std::move(md)}, msg.sharedPayload()};
+        Message trMsg{Message::Header{msg.tag(), client_, server, std::move(md)}, msg.payload()};
 
         transport_->bufferedSend(trMsg);
     }

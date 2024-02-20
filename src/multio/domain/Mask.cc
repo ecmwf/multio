@@ -39,12 +39,13 @@ void Mask::add(message::Message msg) {
     }
 }
 
-const std::vector<bool>& Mask::get(const std::string& bkey) const {
+// const std::vector<bool>& Mask::get(const std::string& bkey) const {
+EncodedRunLengthPayload Mask::get(const std::string& bkey) const {
     if (bitmasks_.find(bkey) == std::end(bitmasks_)) {
         throw eckit::AssertionFailed("There is no bitmask for " + bkey);
     }
 
-    return bitmasks_.at(bkey);
+    return EncodedRunLengthPayload{bitmasks_.at(bkey)};
 }
 
 void Mask::addPartialMask(message::Message msg) {
@@ -75,7 +76,8 @@ void Mask::createBitmask(message::Message inMsg) {
 
     // Assert invariants such are bound to be creating this the first and last time
     auto bkey = Mask::key(inMsg.metadata());
-    bitmasks_[bkey] = std::move(bitmask);
+    // bitmasks_[bkey] = std::move(bitmask);
+    bitmasks_.insert_or_assign(bkey, encodeMaskRunLength(bitmask, bitmask.size()));
 
     messages_.at(inMsg.fieldId()).clear();
 }

@@ -4,8 +4,6 @@
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/value/Value.h"  // Remove once config visitor is implemented
 
-#include "multio/message/Message.h"
-
 #include <sstream>
 
 using eckit::LocalConfiguration;
@@ -15,13 +13,15 @@ namespace multio::message {
 //--------------------------------------------------------------------------------------------------
 
 MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
+    std::map<typename MetadataTypes::KeyType, std::unordered_set<MetadataValue>> matcher;
+
     for (const auto& k : cfg.keys()) {
         // TODO Use config visitor once added to eckit
         eckit::LocalConfiguration cfgK;
         cfg.get(k, cfgK);
         if (cfgK.get().isList()) {
             auto v = cfg.getSubConfigurations(k);
-            std::set<MetadataValue> s;
+            std::unordered_set<MetadataValue> s;
             unsigned int i = 0;
             for (auto& vi : v) {
                 auto optMetadataValue = tryToMetadataValue(vi.get());
@@ -34,7 +34,7 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
                 s.emplace(std::move(*optMetadataValue));
                 ++i;
             }
-            matcher_.emplace(k, std::move(s));
+            matcher.emplace(k, std::move(s));
         }
         else {
             auto optMetadataValue = tryToMetadataValue(cfgK.get());
@@ -44,8 +44,14 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
                     << "\" can not be represented by an internal metadata value: " << cfgK.get();
                 throw MetadataException(oss.str());
             }
-            matcher_.emplace(k, std::set<MetadataValue>{std::move(*optMetadataValue)});
+            matcher.emplace(k, std::unordered_set<MetadataValue>{std::move(*optMetadataValue)});
         }
+    }
+
+    // Now copy to vector that will get iteratied in future
+    matcher_.reserve(matcher.size());
+    for (auto&& kv : std::move(matcher)) {
+        matcher_.push_back(std::move(kv));
     }
 }
 
@@ -61,7 +67,30 @@ bool MetadataMatcher::matches(const Metadata& md) const {
 }
 
 void MetadataMatcher::print(std::ostream& os) const {
-    os << matcher_;
+    os << "{";
+    bool isFirst = true;
+    for (const auto& kv : matcher_) {
+        if (!isFirst) {
+            os << " ,";
+        }
+        else {
+            isFirst = false;
+        }
+        os << kv.first.value() << " => {";
+
+        bool isFirst2 = true;
+        for (const auto& v : kv.second) {
+            if (!isFirst2) {
+                os << " ,";
+            }
+            else {
+                isFirst2 = false;
+            }
+            os << v;
+        }
+        os << "}";
+    }
+    os << "}";
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -78,10 +107,6 @@ bool MetadataMatchers::matches(const Metadata& md) const {
             return true;
     }
     return false;
-}
-
-bool MetadataMatchers::matches(const Message& msg) const {
-    return matches(msg.metadata());
 }
 
 void MetadataMatchers::extend(const MetadataMatchers& other) {

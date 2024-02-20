@@ -30,10 +30,11 @@ Action::~Action() {
 }
 
 void Action::execute(message::Message msg) {
-    withFailureHandling([&]() { executeImpl(std::move(msg)); },
-                        [&, msg]() {
+    auto lmsg = msg.logMessage();
+    withFailureHandling([&, msg = std::move(msg)]() mutable { executeImpl(std::move(msg)); },
+                        [&, lmsg = std::move(lmsg)]() {
                             std::ostringstream oss;
-                            oss << *this << " with Message: " << msg;
+                            oss << *this << " with Message: " << lmsg;
                             return oss.str();
                         });
 }

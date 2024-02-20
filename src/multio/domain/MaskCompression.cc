@@ -48,9 +48,18 @@ MaskPayloadHeader decodeMaskPayloadHeader(const unsigned char* b, std::size_t si
     return h;
 }
 
-MaskPayloadHeader decodeMaskPayloadHeader(const eckit::Buffer& b) {
-    return decodeMaskPayloadHeader(static_cast<const unsigned char*>(b.data()), b.size() * sizeof(unsigned char));
+// MaskPayloadHeader decodeMaskPayloadHeader(const eckit::Buffer& b) {
+//     return decodeMaskPayloadHeader(static_cast<const unsigned char*>(b.data()), b.size() * sizeof(unsigned char));
+// }
+
+MaskPayloadHeader decodeMaskPayloadHeader(const message::SharedPayload& p) {
+    return decodeMaskPayloadHeader(static_cast<const unsigned char*>(static_cast<const void*>(p.data())),
+                                   p.size() * sizeof(unsigned char));
 }
+
+// MaskPayloadHeader decodeMaskPayloadHeader(const PayloadReference& p) {
+//     return decodeMaskPayloadHeader(static_cast<const unsigned char*>(p.data), p.size * sizeof(unsigned char));
+// }
 
 MaskPayloadHeader decodeMaskPayloadHeader(const std::array<unsigned char, MASK_PAYLOAD_HEADER_SIZE>& b) {
     return decodeMaskPayloadHeader(b.data(), b.size());
@@ -93,45 +102,130 @@ std::size_t computeBufferSizeMaskBitMask(std::size_t size) {
 //------------------------------------------------------------------------------
 
 
-// Iterator for decoding...
-MaskPayloadIterator::MaskPayloadIterator(eckit::Buffer const& payload, MaskPayloadHeader header, bool toEnd) :
+RunLengthIterator::RunLengthIterator(message::PayloadReference const& payload, MaskPayloadHeader header, bool toEnd) :
     payload_(payload),
     header_(header),
     index_(0),
     runLengthOffset_{MASK_PAYLOAD_HEADER_SIZE},
     runLengthRemainingBits_{8},
-    runLengthNum_{0},
-    runLengthNumCounter_{0},
-    val_{header_.runLengthStartValue} {
+    val_{!header_.runLengthStartValue, 0} {
+    if (header_.format != MaskPayloadFormat::RunLength) {
+        throw MaskCompressionException(
+            std::string("RunLengthIterator needs a MaskPayloadHeader with run-length format"));
+    }
+
     if (toEnd) {
-        index_ = header_.numBits - 1;
+        index_ = header_.numBits;
     }
     else {
         updateValue();
     }
 }
 
-MaskPayloadIterator::MaskPayloadIterator(eckit::Buffer const& payload) :
-    MaskPayloadIterator(payload, decodeMaskPayloadHeader(payload)) {}
+RunLengthIterator::RunLengthIterator(message::PayloadReference const& payload) :
+    RunLengthIterator(std::cref(payload), decodeMaskPayloadHeader(payload)) {}
 
-MaskPayloadIterator::MaskPayloadIterator(const MaskPayloadIterator& other) :
-    payload_{other.payload_},
-    header_{other.header_},
-    index_{other.index_},
-    runLengthOffset_{other.runLengthOffset_},
-    runLengthRemainingBits_{other.runLengthRemainingBits_},
-    runLengthNumCounter_{other.runLengthNumCounter_},
-    val_{other.val_} {}
+RunLengthIterator::reference RunLengthIterator::operator*() const {
+    return val_;
+}
 
-MaskPayloadIterator::MaskPayloadIterator(MaskPayloadIterator&& other) noexcept :
-    payload_{other.payload_},
-    header_{other.header_},
-    index_{other.index_},
-    runLengthOffset_{other.runLengthOffset_},
-    runLengthRemainingBits_{other.runLengthRemainingBits_},
-    runLengthNum_{other.runLengthNum_},
-    runLengthNumCounter_{other.runLengthNumCounter_},
-    val_{other.val_} {}
+RunLengthIterator::reference RunLengthIterator::operator*() {
+    return val_;
+}
+
+RunLengthIterator::pointer RunLengthIterator::operator->() const {
+    return &val_;
+}
+
+RunLengthIterator::pointer RunLengthIterator::operator->() {
+    return &val_;
+}
+
+RunLengthIterator& RunLengthIterator::operator++() {
+    updateValue();
+    return *this;
+}
+
+RunLengthIterator RunLengthIterator::operator++(int) {
+    RunLengthIterator current(*this);
+    ++(*this);
+    return current;
+}
+
+bool RunLengthIterator::operator==(const RunLengthIterator& other) const noexcept {
+    return (payload_ == other.payload_) && (index_ == other.index_);
+}
+
+bool RunLengthIterator::operator!=(const RunLengthIterator& other) const noexcept {
+    return (payload_ != other.payload_) || (index_ != other.index_);
+}
+
+
+void RunLengthIterator::updateValue() noexcept {
+    index_ += val_.second;
+    if (index_ >= header_.numBits)
+        return;
+    const std::size_t NUM_BITS = header_.runLengthNumBitsPerInt;
+
+    std::size_t numBitsToRead = NUM_BITS;
+    unsigned char b = payload_[runLengthOffset_];
+    val_.second = 0;
+    do {
+        if (runLengthRemainingBits_ >= numBitsToRead) {
+            std::size_t nextRemainingBits = runLengthRemainingBits_ - numBitsToRead;
+            val_.second |= (b & (((1 << numBitsToRead) - 1) << nextRemainingBits)) >> nextRemainingBits;
+
+            runLengthRemainingBits_ = nextRemainingBits;
+            numBitsToRead = 0;
+        }
+        else {
+            std::size_t nextNumBitsToRead = numBitsToRead - runLengthRemainingBits_;
+            val_.second |= (b & ((1 << runLengthRemainingBits_) - 1)) << nextNumBitsToRead;
+            numBitsToRead = nextNumBitsToRead;
+            runLengthRemainingBits_ = 0;
+        }
+        if (runLengthRemainingBits_ == 0) {
+            ++runLengthOffset_;
+            if (runLengthOffset_ >= payload_.size()) {
+                break;
+            }
+            b = payload_[runLengthOffset_];
+            runLengthRemainingBits_ = 8;
+        }
+    } while (numBitsToRead > 0);
+
+    // Eventually increase number by one as the encoding step decremnets by 1
+    val_.second += 1;
+    val_.first = !val_.first;
+}
+
+
+//------------------------------------------------------------------------------
+
+
+// Iterator for decoding...
+MaskPayloadIterator::MaskPayloadIterator(message::PayloadReference const& payload, MaskPayloadHeader header,
+                                         bool toEnd) :
+    payload_(payload), header_(header), index_(0), val_{header_.runLengthStartValue} {
+    if (toEnd) {
+        index_ = header_.numBits;
+    }
+    else {
+        if (header_.format == MaskPayloadFormat::BitMask) {
+            std::size_t expBufSize = computeBufferSizeMaskBitMask(header_.numBits);
+            if (expBufSize != payload_.size()) {
+                std::ostringstream oss;
+                oss << "MaskPayloadIterator (BitMask): The expected size of the buffer (" << expBufSize
+                    << ") is different to the real size of the buffer: " << payload_.size() << std::endl;
+                throw MaskCompressionException(oss.str());
+            }
+        }
+        updateValue();
+    }
+}
+
+MaskPayloadIterator::MaskPayloadIterator(message::PayloadReference const& payload) :
+    MaskPayloadIterator(std::cref(payload), decodeMaskPayloadHeader(payload)) {}
 
 MaskPayloadIterator::reference MaskPayloadIterator::operator*() const {
     return val_;
@@ -154,12 +248,13 @@ MaskPayloadIterator& MaskPayloadIterator::operator++() {
         case MaskPayloadFormat::RunLength: {
             if ((index_ + 1) < header_.numBits) {
                 ++index_;
-                ++runLengthNumCounter_;
-                if (runLengthNumCounter_ >= runLengthNum_) {
+                ++rl_->counter;
+                if (rl_->counter >= rl_->it->second) {
                     updateValue();
-                    runLengthNumCounter_ = 0;
-                    val_ = !val_;
                 }
+            }
+            else {
+                index_ = header_.numBits;
             }
         } break;
 
@@ -167,6 +262,9 @@ MaskPayloadIterator& MaskPayloadIterator::operator++() {
             if ((index_ + 1) < header_.numBits) {
                 ++index_;
                 updateValue();
+            }
+            else {
+                index_ = header_.numBits;
             }
         }
     }
@@ -180,56 +278,54 @@ MaskPayloadIterator MaskPayloadIterator::operator++(int) {
 }
 
 bool MaskPayloadIterator::operator==(const MaskPayloadIterator& other) const noexcept {
-    return (&payload_ == &other.payload_) && (index_ == other.index_);
+    return (payload_ == other.payload_) && (index_ == other.index_);
 }
 
 bool MaskPayloadIterator::operator!=(const MaskPayloadIterator& other) const noexcept {
-    return (&payload_ != &other.payload_) || (index_ != other.index_);
+    return (payload_ != other.payload_) || (index_ != other.index_);
 }
 
 
 void MaskPayloadIterator::updateValue() noexcept {
     switch (header_.format) {
         case MaskPayloadFormat::RunLength: {
-            const std::size_t NUM_BITS = header_.runLengthNumBitsPerInt;
-
-            std::size_t numBitsToRead = NUM_BITS;
-            unsigned char b = payload_[runLengthOffset_];
-            runLengthNum_ = 0;
-            do {
-                if (runLengthRemainingBits_ >= numBitsToRead) {
-                    std::size_t nextRemainingBits = runLengthRemainingBits_ - numBitsToRead;
-                    runLengthNum_ |= (b & (((1 << numBitsToRead) - 1) << nextRemainingBits)) >> nextRemainingBits;
-
-                    runLengthRemainingBits_ = nextRemainingBits;
-                    numBitsToRead = 0;
-                }
-                else {
-                    std::size_t nextNumBitsToRead = numBitsToRead - runLengthRemainingBits_;
-                    runLengthNum_ |= (b & ((1 << runLengthRemainingBits_) - 1)) << nextNumBitsToRead;
-                    numBitsToRead = nextNumBitsToRead;
-                    runLengthRemainingBits_ = 0;
-                }
-                if (runLengthRemainingBits_ == 0) {
-                    ++runLengthOffset_;
-                    if (runLengthOffset_ >= payload_.size()) {
-                        break;
-                    }
-                    b = payload_[runLengthOffset_];
-                    runLengthRemainingBits_ = 8;
-                }
-            } while (numBitsToRead > 0);
-
-            // Eventually increase number by one as the encoding step decremnets by 1
-            runLengthNum_ += 1;
+            if (index_ == 0) {
+                rl_ = RL{RunLengthIterator{payload_, header_}, 0};
+            }
+            else {
+                ++rl_->it;
+                rl_->counter = 0;
+            }
+            val_ = rl_->it->first;
         } break;
 
         case MaskPayloadFormat::BitMask: {
-            val_ = static_cast<bool>(
-                (payload_[(index_ >> 3) + MASK_PAYLOAD_HEADER_SIZE] >> (index_ & ((1 << 3) - 1)) & 0x01));
+            std::size_t ind = (index_ >> 3) + MASK_PAYLOAD_HEADER_SIZE;
+            val_ = static_cast<bool>(((payload_[ind] >> (index_ & ((1 << 3) - 1))) & 0x01));
         }
     }
 }
+
+//------------------------------------------------------------------------------
+
+EncodedMaskPayload getEncodedMaskPayload(const message::PayloadReference& pr, const MaskPayloadHeader& header) {
+    switch (header.format) {
+        case MaskPayloadFormat::RunLength:
+            return EncodedRunLengthPayload{pr, header};
+        case MaskPayloadFormat::BitMask:
+        default:
+            return EncodedBitMaskPayload{pr, header};
+    }
+}
+
+EncodedMaskPayload getEncodedMaskPayload(const message::PayloadReference& pr) {
+    return getEncodedMaskPayload(pr, decodeMaskPayloadHeader(pr));
+}
+
+EncodedMaskPayload getEncodedMaskPayload(const eckit::Buffer& buf) {
+    return getEncodedMaskPayload(message::PayloadReference{buf.data(), buf.size()});
+}
+
 
 //------------------------------------------------------------------------------
 

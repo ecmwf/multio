@@ -145,54 +145,6 @@ Metadata metadataFromYAML(const std::string& yamlString) {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-std::optional<MetadataValue> toMetadataValue(const eckit::Value& v) {
-    if (v.isList()) {
-        if (v.size() == 0) {
-            return std::nullopt;
-        }
-        auto fillVec = [&v](auto vec) {
-            auto size = v.size();
-            vec.reserve(size);
-            for (unsigned int i = 0; i < size; ++i) {
-                vec.push_back(v[i]);
-            }
-            return MetadataValue{std::move(vec)};
-        };
-
-
-        if (v[0].isNumber()) {
-            return fillVec(std::vector<std::int64_t>{});
-        }
-        if (v[0].isDouble()) {
-            return fillVec(std::vector<double>{});
-        }
-        if (v[0].isBool()) {
-            return fillVec(std::vector<bool>{});
-        }
-        if (v[0].isString()) {
-            return fillVec(std::vector<std::string>{});
-        }
-        return std::nullopt;
-    }
-    if (v.isMap()) {
-        return toMetadata(v);
-    }
-    if (v.isNumber()) {
-        return MetadataValue{(std::int64_t)v};
-    }
-    if (v.isDouble()) {
-        return MetadataValue{(double)v};
-    }
-    if (v.isBool()) {
-        return MetadataValue{(bool)v};
-    }
-    if (v.isString()) {
-        return MetadataValue{(std::string)v};
-    }
-    return std::nullopt;
-}
-
-//----------------------------------------------------------------------------------------------------------------------
 
 Metadata toMetadata(const eckit::Value& v) {
     if (!v.isMap()) {
@@ -205,7 +157,7 @@ Metadata toMetadata(const eckit::Value& v) {
     eckit::Value keys = v.keys();
     for (unsigned int i = 0; i < keys.size(); ++i) {
         std::string key = keys[i];
-        auto mv = toMetadataValue(v[key]);
+        auto mv = tryToMetadataValue(v[key]);
         if (mv) {
             m.set(key, *mv);
         }

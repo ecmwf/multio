@@ -14,8 +14,8 @@
 #pragma once
 
 #include <map>
-#include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "eckit/types/Types.h"
@@ -28,7 +28,6 @@ class LocalConfiguration;
 
 namespace multio::message {
 
-class Message;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -48,7 +47,8 @@ private:  // methods
     void print(std::ostream& os) const;
 
 private:  // members
-    std::map<std::string, std::set<MetadataValue>> matcher_;
+    // Use vectorbecause we only iterate over key-pair values
+    std::vector<std::pair<typename MetadataTypes::KeyType, std::unordered_set<MetadataValue>>> matcher_;
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -59,7 +59,6 @@ public:  // methods
     MetadataMatchers() = default;
     explicit MetadataMatchers(const std::vector<eckit::LocalConfiguration>& cfg);
 
-    bool matches(const Message& msg) const;
     bool matches(const Metadata& msg) const;
 
     void extend(const MetadataMatchers& other);

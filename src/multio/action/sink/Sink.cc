@@ -17,7 +17,6 @@
 #include "eckit/message/Message.h"
 
 #include "multio/LibMultio.h"
-#include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
 
 namespace multio::action {
@@ -36,7 +35,6 @@ void Sink::executeImpl(Message msg) {
 
     switch (msg.tag()) {
         case Message::Tag::Field:
-        case Message::Tag::Grib:
             write(msg);
             return;
 
@@ -54,7 +52,7 @@ void Sink::executeImpl(Message msg) {
 }
 
 void Sink::write(Message msg) {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     eckit::message::Message blob = to_eckit_message(msg);
 
@@ -62,12 +60,12 @@ void Sink::write(Message msg) {
 }
 
 void Sink::flush() {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
     mio_.flush();
 }
 
 void Sink::trigger(const Message& msg) {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     eckit::StringDict metadata;
 

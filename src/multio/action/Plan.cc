@@ -20,8 +20,8 @@
 #include "multio/LibMultio.h"
 #include "multio/action/Action.h"
 #include "multio/config/PlanConfiguration.h"
-#include "multio/util/ScopedTimer.h"
 #include "multio/util/Substitution.h"
+#include "multio/util/Timing.h"
 #include "multio/util/logfile_name.h"
 
 using eckit::LocalConfiguration;
@@ -112,13 +112,14 @@ Plan::~Plan() {
 }
 
 void Plan::process(message::Message msg) {
-    util::ScopedTimer timer{timing_};
-    withFailureHandling([this, &msg]() { root_->execute(std::move(msg)); },
+    util::ScopedTiming<> timer{timing_};
+    message::LogMessage lmsg = msg.logMessage();
+    withFailureHandling([this, msg = std::move(msg)]() mutable { root_->execute(std::move(msg)); },
                         // For failure handling a copy of the message needs to be captured... Note than the move
                         // above happens after the lambdas are initiated
-                        [this, msg]() {
+                        [this, lmsg = std::move(lmsg)]() {
                             std::ostringstream oss;
-                            oss << "Plan \"" << name_ << "\" with Message: " << msg << std::endl;
+                            oss << "Plan \"" << name_ << "\" with Message: " << lmsg << std::endl;
                             return oss.str();
                         });
 }

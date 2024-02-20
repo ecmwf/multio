@@ -7,6 +7,7 @@
 
 #include "multio/domain/MaskCompression.h"
 #include "multio/message/Message.h"
+#include "multio/util/VariantHelpers.h"
 
 namespace multio {
 namespace domain {
@@ -63,9 +64,7 @@ void Unstructured::toGlobalImpl(const message::Message& local, message::Message&
     ASSERT(local.payload().size() == definition_.size() * sizeof(Precision));
 
     auto lit = static_cast<const Precision*>(local.payload().data());
-    // Explicitly modify shared payload because we know that the global message has been created
-    // for aggregation of messages and is not sent out yet
-    auto git = static_cast<Precision*>(global.sharedPayload()->data());
+    auto git = static_cast<Precision*>(global.payload().modifyData());
     for (auto id : definition_) {
         *(git + id) = *lit++;
     }
@@ -130,7 +129,7 @@ void Structured::toBitmask(const message::Message& local, std::vector<bool>& bma
 
     ASSERT(static_cast<std::set<int32_t>::size_type>(ni_global * nj_global) == bmask.size());
 
-    EncodedMaskPayload encodedMaskPayload(local.payload());
+    EncodedBitMaskPayload encodedMaskPayload(local.payload());
     std::size_t expectedBitmaskSize = data_nj * data_ni;
     if (encodedMaskPayload.size() != (data_nj * data_ni)) {
         std::ostringstream oss;
@@ -185,9 +184,7 @@ void Structured::toGlobalImpl(const message::Message& local, message::Message& g
     }
 
     auto lit = static_cast<const Precision*>(local.payload().data());
-    // Explicitly modify shared payload because we know that the global message has been created
-    // for aggregation of messages and is not sent out yet
-    auto git = static_cast<Precision*>(global.sharedPayload()->data());
+    auto git = static_cast<Precision*>(global.payload().modifyData());
     for (auto j = data_jbegin; j != data_jbegin + data_nj; ++j) {
         for (auto i = data_ibegin; i != data_ibegin + data_ni; ++i, ++lit) {
             if (inRange(i, 0, ni) && inRange(j, 0, nj)) {

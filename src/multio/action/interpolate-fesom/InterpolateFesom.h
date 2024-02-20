@@ -171,11 +171,12 @@ public:
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter intrpolate" << std::endl;
         // Check sizes
         // @note: Due to topography the input size can be bigger than the expected number of columns!!!
-        if (inputSize < nCols_) {
-            std::ostringstream os;
-            os << " - Wrong input size: " << inputSize << " " << nCols_ << std::endl;
-            throw eckit::SeriousBug(os.str(), Here());
-        }
+        // this is disabled as it makes interpolation from fesom to healpix inflexible
+        //if (inputSize < nCols_) {
+        //    std::ostringstream os;
+        //    os << " - Wrong input size: " << inputSize << " " << nCols_ << std::endl;
+        //    throw eckit::SeriousBug(os.str(), Here());
+        //}
 
         if (outputSize != nOutRows_) {
             std::ostringstream os;

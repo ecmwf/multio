@@ -326,6 +326,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), LookUpLong(md, "ensemble-size"));
     withFirstOf(valueSetter(g, "methodNumber"), LookUpLong(md, "method-number"));
     withFirstOf(valueSetter(g, "systemNumber"), LookUpLong(md, "system-number"));
+    withFirstOf(valueSetter(g, "offsetToEndOf4DvarWindow"), LookUpLong(md, "anoffset"));
+    withFirstOf(valueSetter(g, "lengthOf4DvarWindow"), LookUpLong(md, "anlength"));
 
     ret.type = firstOf(LookUpString(md, "type"), LookUpString(md, "marsType"));
     if (ret.type) {

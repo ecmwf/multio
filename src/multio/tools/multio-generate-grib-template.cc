@@ -21,6 +21,13 @@ atlas::Grid readGrid(const std::string& name) {
     return atlas::Grid{name};
 }
 
+template <class GridType>
+GridType createGrid(const std::string& atlasNamedGrid) {
+    const atlas::Grid grid = readGrid(atlasNamedGrid);
+    auto structuredGrid = atlas::StructuredGrid(grid);
+    return GridType(structuredGrid);
+}
+
 void handleCodesError(const std::string& errorPrefix, int error, const eckit::CodeLocation& codeLocation) {
     if (error) {
         std::ostringstream oss;
@@ -149,6 +156,31 @@ void setHealpixFields(codes_handle* handle, const eckit::option::CmdArgs& args) 
     handleCodesError("eccodes error while setting the longitudeOfFirstGridPointInDegrees value: ", err, Here());
 }
 
+void setRegularLLFields(codes_handle* handle, const eckit::option::CmdArgs& args) {
+    std::string gridType = "none";
+    args.get("grid", gridType);
+
+    const auto grid = createGrid<atlas::RegularLonLatGrid>(gridType);
+
+    int err = codes_set_long(handle, "Ni", grid.nx());
+    handleCodesError("eccodes error while setting the Ni value: ", err, Here());
+    err = codes_set_long(handle, "Nj", grid.ny());
+    handleCodesError("eccodes error while setting the Nj value: ", err, Here());
+
+    std::vector<double> values(grid.size(), 0.0);
+    err = codes_set_double_array(handle, "values", values.data(), values.size());
+    handleCodesError("eccodes error while setting the values array: ", err, Here());
+
+    double maxLongitude = 0;
+    for (const auto p : grid.xy()) {
+        if (maxLongitude < p.x()) {
+            maxLongitude = p.x();
+        }
+    }
+    err = codes_set_double(handle, "longitudeOfLastGridPointInDegrees", maxLongitude);
+    handleCodesError("eccodes error while setting the longitudeOfLastGridPointInDegrees value: ", err, Here());
+}
+
 }  // namespace
 
 //----------------------------------------------------------------------------------------------------------------
@@ -178,6 +210,8 @@ MultioGenerateGribTemplate::MultioGenerateGribTemplate(int argc, char** argv) : 
         new eckit::option::SimpleOption<long>("generatingProcessIdentifier", "Generating process identifier"));
     options_.push_back(new eckit::option::SimpleOption<long>("spectralTruncation", "Spectral truncation number"));
     options_.push_back(new eckit::option::SimpleOption<bool>("clearValuesOnly", "Only clear the stored values"));
+    options_.push_back(new eckit::option::SimpleOption<bool>("copyPL", "Copies the PL array from sample to output"));
+    options_.push_back(new eckit::option::SimpleOption<std::string>("plSource", "PL array source"));
 }
 
 void MultioGenerateGribTemplate::init(const eckit::option::CmdArgs& args) {
@@ -199,10 +233,53 @@ void MultioGenerateGribTemplate::execute(const eckit::option::CmdArgs& args) {
     err = codes_get_string(sampleHandle, "gridType", buffer, &bufferLen);
     handleCodesError("eccodes error while reading the grid type: ", err, Here());
 
-
+    bool copyPL = false;
+    args.get("copyPL", copyPL);
     bool clearValues = false;
     args.get("clearValuesOnly", clearValues);
-    if (!clearValues) {
+
+    if (copyPL) {
+        std::string plSourcePath = "";
+        args.get("plSource", plSourcePath);
+        eckit::AutoStdFile plFile{plSourcePath};
+        auto plSource = codes_handle_new_from_file(nullptr, plFile, PRODUCT_GRIB, &err);
+        handleCodesError("eccodes error while reading the PL array source: ", err, Here());
+
+        long nj = 0;
+        err = codes_get_long(plSource, "Nj", &nj);
+        handleCodesError("eccodes error while reading the number of PL values: ", err, Here());
+
+        err = codes_set_long(sampleHandle, "Nj", nj);
+        handleCodesError("eccodes error while setting the Nj value: ", err, Here());
+
+        std::vector<double> plArray(nj, 0.0);
+        size_t plSize = plArray.size();
+        err = codes_get_double_array(plSource, "pl", plArray.data(), &plSize);
+        handleCodesError("eccodes error while reading the PL array: ", err, Here());
+
+        err = codes_set_double_array(sampleHandle, "pl", plArray.data(), plArray.size());
+        handleCodesError("eccodes error while setting the PL array: ", err, Here());
+
+        err = codes_handle_delete(plSource);
+        handleCodesError("eccodes error while freeing the PL source handle: ", err, Here());
+
+        const auto numValues = std::accumulate(plArray.cbegin(), plArray.cend(), 0.0);
+        std::vector<double> values(numValues, 0.0);
+        err = codes_set_double_array(sampleHandle, "values", values.data(), values.size());
+        handleCodesError("eccodes error while setting the values array: ", err, Here());
+    }
+
+    if (clearValues) {
+        size_t numValues = 0;
+        err = codes_get_size(sampleHandle, "values", &numValues);
+        handleCodesError("eccodes error while reading the number of values: ", err, Here());
+
+        std::vector<double> values(numValues, 0.0);
+        err = codes_set_double_array(sampleHandle, "values", values.data(), values.size());
+        handleCodesError("eccodes error while setting the values array: ", err, Here());
+    }
+
+    if (!clearValues && !copyPL) {
         long generatingProcessIdentifier = 153;
         args.get("generatingProcessIdentifier", generatingProcessIdentifier);
         err = codes_set_long(sampleHandle, "generatingProcessIdentifier", generatingProcessIdentifier);
@@ -218,7 +295,8 @@ void MultioGenerateGribTemplate::execute(const eckit::option::CmdArgs& args) {
             = {{"reduced_gg", &setReducedGGFields},
                {"sh", &setSHFields},
                {"reduced_ll", &setReducedLLFields},
-               {"healpix", &setHealpixFields}};
+               {"healpix", &setHealpixFields},
+               {"regular_ll", &setRegularLLFields}};
 
         const std::string sampleGridType(buffer);
         if (updateFunctionMap.count(sampleGridType) != 0) {
@@ -230,15 +308,6 @@ void MultioGenerateGribTemplate::execute(const eckit::option::CmdArgs& args) {
             oss << "Grid type " << sampleGridType << " is currently not supported!";
             throw eckit::Exception(oss.str(), Here());
         }
-    }
-    else {
-        size_t numValues = 0;
-        err = codes_get_size(sampleHandle, "values", &numValues);
-        handleCodesError("eccodes error while reading the number of values: ", err, Here());
-
-        std::vector<double> values(numValues, 0.0);
-        err = codes_set_double_array(sampleHandle, "values", values.data(), values.size());
-        handleCodesError("eccodes error while setting the values array: ", err, Here());
     }
 
     std::string outputFilePath = "";

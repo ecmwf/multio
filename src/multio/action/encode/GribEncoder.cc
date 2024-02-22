@@ -302,17 +302,15 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
             g.setValue("productionStatusOfProcessedData", *productionStatusOfProcessedData);
 
             if (*productionStatusOfProcessedData == 12) {
-                if (md.has("dataset")) {
-                    const auto dataset = md.getString("dataset");
-                    g.setValue("dataset", dataset);
+                const auto dataset = md.getString("dataset");
+                g.setValue("dataset", dataset);
 
-                    if (dataset == "climate-dt") {
-                        withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
-                        withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
-                        withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
-                        withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
-                        withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
-                    }
+                if (dataset == "climate-dt") {
+                    withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
+                    withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
+                    withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
+                    withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
+                    withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
                 }
             }
         }

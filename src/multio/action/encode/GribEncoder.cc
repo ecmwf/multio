@@ -293,23 +293,25 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 
     if (gribEdition == "2") {
         withFirstOf(valueSetter(g, "subCentre"), LookUpString(md, "subCentre"));
-        withFirstOf(valueSetter(g, "productionStatusOfProcessedData"),
-                    LookUpLong(md, "productionStatusOfProcessedData"));
+        withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
+        withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
+        withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
 
-        if (md.has("dataset")) {
-            withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
-            withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
-            withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
+        const auto productionStatusOfProcessedData = lookUpLong(md, "productionStatusOfProcessedData");
+        if (productionStatusOfProcessedData) {
+            g.setValue("productionStatusOfProcessedData", *productionStatusOfProcessedData);
 
-            const auto dataset = md.getString("dataset");
-            g.setValue("dataset", dataset);
+            if (*productionStatusOfProcessedData == 12) {
+                const auto dataset = md.getString("dataset");
+                g.setValue("dataset", dataset);
 
-            if (dataset == "climate-dt") {
-                withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
-                withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
-                withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
-                withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
-                withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+                if (dataset == "climate-dt") {
+                    withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
+                    withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
+                    withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
+                    withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
+                    withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+                }
             }
         }
     }

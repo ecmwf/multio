@@ -98,6 +98,7 @@ std::int64_t Message::Header::globalSize() const {
 
 std::string Message::Header::domain() const {
     if (auto optVal = metadata_.read().getOpt<std::string>(glossary().domain); optVal) {
+        return *optVal;
     }
     throw MetadataMissingKeyException(glossary().domain, Here());
 }

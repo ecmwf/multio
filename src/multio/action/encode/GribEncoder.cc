@@ -294,6 +294,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     if (gribEdition == "2") {
         withFirstOf(valueSetter(g, "subCentre"), LookUpString(md, "subCentre"));
         withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
+        withFirstOf(valueSetter(g, "localTablesVersion"), LookUpLong(md, "localTablesVersion"));
         withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
         withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
 

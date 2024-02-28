@@ -241,45 +241,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 
     std::string typeOfLevel;
     const auto hasTypeOfLevel = md.get("typeOfLevel", typeOfLevel);
-    if (!hasTypeOfLevel) {
-        const auto wam_levtype = lookUpLong(md, "levtype_wam");
-        if (wam_levtype) {
-            if (gribEdition == "1") {
-                g.setValue("indicatorOfTypeOfLevel", wam_levtype);
-            }
-            else {
-                g.setValue("typeOfLevel", md.getString("levtype"));
-            }
-        }
-        else if (hasGridType && eckit::StringTools::lower(gridType) != "healpix") {
-            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
-                        LookUpString(md, "indicatorOfTypeOfLevel"));
-        }
-        else if (hasGridType && eckit::StringTools::lower(gridType) == "healpix" && md.getString("levtype") != "o2d"
-                 && md.getString("levtype") != "o3d") {
-            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
-                        LookUpString(md, "indicatorOfTypeOfLevel"));
-        }
-        else if (!hasGridType) {
-            withFirstOf(valueSetter(g, "levtype"), LookUpString(md, "levtype"),
-                        LookUpString(md, "indicatorOfTypeOfLevel"));
-        }
-
-        if (md.has("levtype") && (md.getString("levtype") == "sfc")) {
-            g.setValue("level", 0l);
-
-            if (gribEdition == "2") {
-                g.setMissing("scaleFactorOfFirstFixedSurface");
-                g.setMissing("scaledValueOfFirstFixedSurface");
-                g.setMissing("scaleFactorOfSecondFixedSurface");
-                g.setMissing("scaledValueOfSecondFixedSurface");
-            }
-        }
-        else {
-            withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
-        }
-    }
-    else {
+    if (hasTypeOfLevel) {
         g.setValue("typeOfLevel", typeOfLevel);
     }
 

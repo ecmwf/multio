@@ -1,6 +1,9 @@
 
-#include "multio/config/MultioConfiguration.h"
+#include "eckit/utils/Tokenizer.h"
+
+
 #include "multio/config/MetadataMappings.h"
+#include "multio/config/MultioConfiguration.h"
 
 #include "multio/util/Environment.h"
 #include "multio/util/Substitution.h"
@@ -19,7 +22,101 @@ std::string eckit::Translator<LocalPeerTag, std::string>::operator()(LocalPeerTa
     }
 }
 
+
 namespace multio::config {
+
+
+namespace {
+
+eckit::LocalConfiguration configureFromSinks(const eckit::LocalConfiguration& sinksConf) {
+    std::vector<eckit::LocalConfiguration> actions;
+    actions.push_back(sinksConf);
+    actions[0].set("type", "sink");
+
+    std::vector<eckit::LocalConfiguration> plans;
+    plans.push_back(eckit::LocalConfiguration{});
+    plans[0].set("actions", actions);
+
+    eckit::LocalConfiguration cfg;
+    cfg.set("plans", plans);
+
+    return cfg;
+}
+
+
+ConfigAndPaths configureFromEnv(config::LocalPeerTag tag) {
+    ConfigPaths paths = defaultConfigPaths();
+
+    // Servers only use default environment variables for default
+    if (tag == LocalPeerTag::Server) {
+        return ConfigAndPaths{paths, eckit::LocalConfiguration{eckit::YAMLConfiguration{paths.configFile}}};
+    }
+
+    // Clients can be used in legacy mode to be constructed from sinks or plans configurations with a range of different
+    // envs to check If no default config file is given, all these different options are checked
+    if (paths.configFile.exists()) {
+        return ConfigAndPaths{paths, eckit::LocalConfiguration{eckit::YAMLConfiguration{paths.configFile}}};
+    }
+
+
+    if (::getenv("MULTIO_PLANS")) {
+        std::string cfg(::getenv("MULTIO_PLANS"));
+        std::cout << "MultIO initialising with plans " << cfg << std::endl;
+        paths.configDir = "";
+        return ConfigAndPaths{paths, eckit::LocalConfiguration{eckit::YAMLConfiguration(cfg)}};
+    }
+
+    if (::getenv("MULTIO_PLANS_FILE")) {
+        eckit::PathName filePath(::getenv("MULTIO_PLANS_FILE"));
+        std::cout << "MultIO initialising with plans file " << filePath << std::endl;
+
+        auto paths2 = defaultConfigPaths(filePath);
+        return ConfigAndPaths{paths2, eckit::LocalConfiguration{eckit::YAMLConfiguration{paths2.configDir}}};
+    }
+
+    // IFS Legacy
+    if (::getenv("MULTIO_CONFIG")) {
+        std::string cfg(::getenv("MULTIO_CONFIG"));
+        std::cout << "MultIO initialising with config " << cfg << std::endl;
+        paths.configDir = "";
+        return ConfigAndPaths{paths, configureFromSinks(eckit::LocalConfiguration{eckit::YAMLConfiguration(cfg)})};
+    }
+
+    if (::getenv("MULTIO_CONFIG_FILE")) {
+        eckit::PathName filePath(::getenv("MULTIO_CONFIG_FILE"));
+        std::cout << "MultIO initialising with config file " << filePath << std::endl;
+
+        auto paths2 = defaultConfigPaths(filePath);
+        return ConfigAndPaths{
+            paths2, configureFromSinks(eckit::LocalConfiguration{eckit::YAMLConfiguration{paths2.configDir}})};
+    }
+
+    eckit::Tokenizer parse(":");
+
+    eckit::StringList sinks;
+    parse(::getenv("MULTIO_SINKS") ? ::getenv("MULTIO_SINKS") : "fdb5", sinks);
+
+    ASSERT(sinks.size());
+
+    std::ostringstream oss;
+
+    oss << "{ \"sinks\" : [";
+
+    const char* sep = "";
+    for (eckit::StringList::iterator i = sinks.begin(); i != sinks.end(); ++i) {
+        oss << sep << "{ \"type\" : \"" << *i << "\"";
+        oss << "}";
+        sep = ",";
+    }
+    oss << "] }";
+
+    std::cout << "MultIO initialising with $MULTIO_SINKS " << oss.str() << std::endl;
+
+    std::istringstream iss(oss.str());
+    paths.configDir = "";
+    return ConfigAndPaths{paths, configureFromSinks(eckit::LocalConfiguration{eckit::YAMLConfiguration(iss)})};
+}
+}  // namespace
 
 // MultioConfiguration
 MultioConfiguration::MultioConfiguration(const eckit::LocalConfiguration& globalConfig,
@@ -39,6 +136,15 @@ MultioConfiguration::MultioConfiguration(const eckit::PathName& configFile, Loca
 MultioConfiguration::MultioConfiguration(const eckit::LocalConfiguration& globalConfig, LocalPeerTag localPeerTag) :
     parsedConfig_{globalConfig}, configDir_{}, configFile_{}, localPeerTag_{localPeerTag} {}
 
+
+MultioConfiguration::MultioConfiguration(ConfigAndPaths c, LocalPeerTag localPeerTag) :
+    parsedConfig_{c.parsedConfig},
+    configDir_{c.paths.configDir},
+    configFile_{c.paths.configFile},
+    localPeerTag_{localPeerTag} {}
+
+MultioConfiguration::MultioConfiguration(LocalPeerTag localPeerTag) :
+    MultioConfiguration(configureFromEnv(localPeerTag), localPeerTag) {}
 
 eckit::LocalConfiguration& MultioConfiguration::parsedConfig() {
     return parsedConfig_;

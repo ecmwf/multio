@@ -3,6 +3,17 @@ import os
 from .lib import ffi, lib
 from .config import Config
 
+
+import importlib.util
+
+numpy_spec = importlib.util.find_spec("numpy")
+haveNumpy = numpy_spec is not None
+
+if haveNumpy:
+    import numpy as np
+
+
+
 class Handler:
     """This is the container class for the Multio Handles"""
 
@@ -24,42 +35,107 @@ class Handler:
         lib.multio_close_connections(self.__handle)
 
     def flush(self, metadata):
-
         lib.multio_flush(self.__handle, metadata.get_pointer())
 
     def notify(self, metadata):
 
         lib.multio_notify(self.__handle, metadata.get_pointer())
 
-    def write_domain(self, metadata, data, size):
+    def write_domain(self, metadata, data):
+        size = len(data)
+        sizeInt = ffi.cast("int", size)
+        if haveNumpy and (type(data) == np.ndarray) and (data.dtype == np.int_):
+            intArr = ffi.cast("int*", ffi.from_buffer(data))
+            lib.multio_write_domain(self.__handle, metadata.get_pointer(), intArr, sizeInt)
+        else:
+            intArr = ffi.new(f'int[{size}]', data)
+            lib.multio_write_domain(self.__handle, metadata.get_pointer(), intArr, sizeInt)
 
-        data = ffi.new(f'int[{size}]', data)
-        size = ffi.cast("int", size)
-        lib.multio_write_domain(self.__handle, metadata.get_pointer(), data, size)
+    def write_mask(self, metadata, data):
+        size = len(data)
+        sizeInt = ffi.cast("int", size)
+        if haveNumpy and (type(data) == np.ndarray) and ((data.dtype == np.float32) or (data.dtype == np.float64)):
+            if data.dtype == np.float32:
+                floatArr = ffi.cast("float*", ffi.from_buffer(data))
+                lib.multio_write_mask_float(self.__handle, metadata.get_pointer(), floatArr, sizeInt)
+            else:
+                doubleArr = ffi.cast("double*", ffi.from_buffer(data))
+                lib.multio_write_mask_double(self.__handle, metadata.get_pointer(), doubleArr, sizeInt)
+        else:
+            doubleArr = ffi.new(f'double[{size}]', data)
+            lib.multio_write_mask_double(self.__handle, metadata.get_pointer(), doubleArr, sizeInt)
 
-    def write_mask_float(self, metadata, data, size):
+    def write_mask_float(self, metadata, data):
+        size = len(data)
+        sizeInt = ffi.cast("int", size)
+        if haveNumpy and (type(data) == np.ndarray) and (data.dtype == np.float32):
+            floatArr = ffi.cast("float*", ffi.from_buffer(data))
+            lib.multio_write_mask_float(self.__handle, metadata.get_pointer(), floatArr, sizeInt)
+        else:
+            floatArr = ffi.new(f'float[{size}]', data)
+            lib.multio_write_mask_float(self.__handle, metadata.get_pointer(), floatArr, sizeInt)
 
-        data = ffi.new(f'float[{size}]', data)
-        size = ffi.cast("int", size)
-        lib.multio_write_mask_float(self.__handle, metadata.get_pointer(), data, size)
+    def write_mask_double(self, metadata, data):
+        size = len(data)
+        sizeInt = ffi.cast("int", size)
+        if haveNumpy and (type(data) == np.ndarray) and (data.dtype == np.float64):
+            doubleArr = ffi.cast("double*", ffi.from_buffer(data))
+            lib.multio_write_mask_double(self.__handle, metadata.get_pointer(), doubleArr, sizeInt)
+        else:
+            doubleArr = ffi.new(f'double[{size}]', data)
+            lib.multio_write_mask_double(self.__handle, metadata.get_pointer(), doubleArr, sizeInt)
 
-    def write_mask_double(self, metadata, data, size):
+    def write_field(self, metadata, data):
+        size = len(data)
+        sizeInt = ffi.cast("int", size)
+        if haveNumpy and (type(data) == np.ndarray) and ((data.dtype == np.float32) or (data.dtype == np.float64)):
+            if data.dtype == np.float32:
+                floatArr = ffi.cast("float*", ffi.from_buffer(data))
+                lib.multio_write_field_float(self.__handle, metadata.get_pointer(), floatArr, sizeInt)
+            else:
+                doubleArr = ffi.cast("double*", ffi.from_buffer(data))
+                lib.multio_write_field_double(self.__handle, metadata.get_pointer(), doubleArr, sizeInt)
+        else:
+            doubleArr = ffi.new(f'double[{size}]', data)
+            lib.multio_write_field_double(self.__handle, metadata.get_pointer(), doubleArr, sizeInt)
 
-        data = ffi.new(f'double[{size}]', data)
-        size = ffi.cast("int", size)
-        lib.multio_write_mask_double(self.__handle, metadata.get_pointer(), data, size)
+    def write_field_float(self, metadata, data):
+        size = len(data)
+        sizeInt = ffi.cast("int", size)
+        if haveNumpy and (type(data) == np.ndarray) and (data.dtype == np.float32):
+            floatArr = ffi.cast("float*", ffi.from_buffer(data))
+            lib.multio_write_field_float(self.__handle, metadata.get_pointer(), floatArr, sizeInt)
+        else:
+            floatArr = ffi.new(f'float[{size}]', data)
+            lib.multio_write_field_float(self.__handle, metadata.get_pointer(), floatArr, sizeInt)
 
-    def write_field_float(self, metadata, data, size):
+    def write_field_double(self, metadata, data):
+        size = len(data)
+        sizeInt = ffi.cast("int", size)
+        if haveNumpy and (type(data) == np.ndarray) and (data.dtype == np.float64):
+            doubleArr = ffi.cast("double*", ffi.from_buffer(data))
+            lib.multio_write_field_double(self.__handle, metadata.get_pointer(), doubleArr, sizeInt)
+        else:
+            doubleArr = ffi.new(f'double[{size}]', data)
+            lib.multio_write_field_double(self.__handle, metadata.get_pointer(), doubleArr, sizeInt)
 
-        data = ffi.new(f'float[{size}]', data)
-        size = ffi.cast("int", size)
-        lib.multio_write_field_float(self.__handle, metadata.get_pointer(), data, size)
+    def write_grib_encoded(self, data):
+        if type(data) == bytes:
+            size = len(data)
+            sizeInt = ffi.cast("int", size)
+            voidArr = ffi.cast("void*", ffi.from_buffer(data))
+            lib.multio_write_grib_encoded(self.__handle, voidArr, sizeInt)
 
-    def write_field_double(self, metadata, data, size):
-
-        data = ffi.new(f'double[{size}]', data)
-        size = ffi.cast("int", size)
-        lib.multio_write_field_double(self.__handle, metadata.get_pointer(), data, size)
+        elif haveNumpy and (type(data) == np.ndarray):
+            size = len(data) * np.dtype.itemsize
+            sizeInt = ffi.cast("int", size)
+            voidArr = ffi.cast("void*", ffi.from_buffer(data))
+            lib.multio_write_grib_encoded(self.__handle, voidArr, sizeInt)
+        else:
+            size = len(data)
+            sizeInt = ffi.cast("int", size)
+            charArr = ffi.new(f'char*', data)
+            lib.multio_write_grib_encoded(self.__handle, ffi.cast("void*", charArr), sizeInt)
 
     def field_accepted(self, metadata):
         accepted = False

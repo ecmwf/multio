@@ -41,6 +41,7 @@ int multio_write_mask_float(multio_handle_t* mio, multio_metadata_t* md, const f
 int multio_write_mask_double(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
 int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const float* data, int size);
 int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const double* data, int size);
+int multio_write_grib_encoded(multio_handle_t* mio, void* data, int size);
 int multio_new_metadata(multio_metadata_t** md, multio_handle_t* mio);
 int multio_delete_metadata(multio_metadata_t* md);
 int multio_metadata_set_int(multio_metadata_t* md, const char* key, int value);

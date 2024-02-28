@@ -53,7 +53,7 @@ class PatchedLib:
         libnames.insert(0, findlibs.find("multio-api"))
         libnames.insert(0, findlibs.find("multio-server"))
 
-        for libname in libnames:
+        for libname in [l for l in libnames if l is not None]:
             try:
                 self.__lib = ffi.dlopen(libname)
                 break
@@ -108,7 +108,7 @@ class PatchedLib:
             if retval not in (
                 self.__lib.MULTIO_SUCCESS,
             ):
-                error_str = "Error in function {}: {}".format(name, ffi.string(self.__lib.multio_error_string(retval)))
+                error_str = "Error in function {}: {}".format(name, ffi.string(self.__lib.multio_error_string(retval))).replace('\\n','\n')
                 raise MultioException(error_str)
             return retval
 

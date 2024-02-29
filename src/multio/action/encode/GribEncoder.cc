@@ -358,16 +358,16 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     if (typeOfLevel == "oceanModelLayer") {
         auto level = metadata.getLong("level");
         ASSERT(level > 0);
-        setValue("scaleFactorOfFirstFixedSurface", 0);
+        setValue("scaleFactorOfFirstFixedSurface", 0l);
         setValue("scaledValueOfFirstFixedSurface", level - 1);
-        setValue("scaleFactorOfSecondFixedSurface", 0);
+        setValue("scaleFactorOfSecondFixedSurface", 0l);
         setValue("scaledValueOfSecondFixedSurface", level);
     }
 
     if (typeOfLevel == "oceanModel") {
         auto level = metadata.getLong("level");
         ASSERT(level > 0);
-        setValue("scaleFactorOfFirstFixedSurface", 0);
+        setValue("scaleFactorOfFirstFixedSurface", 0l);
         setValue("scaledValueOfFirstFixedSurface", level);
     }
 

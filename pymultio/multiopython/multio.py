@@ -13,7 +13,11 @@ class Multio:
 
         self.__handle = Handler(self.__conf)
 
-        self.__dummy_metadata = Metadata(self.__handle, md={})
+        self.__dummy_metadata_field = Metadata(self.__handle, md={})
+        self.__dummy_metadata_domain = Metadata(self.__handle, md={})
+        self.__dummy_metadata_mask = Metadata(self.__handle, md={})
+        self.__dummy_metadata_flush = Metadata(self.__handle, md={})
+        self.__dummy_metadata_notification = Metadata(self.__handle, md={})
 
     def __version__(self):
         tmp_str = ffi.new("char**")
@@ -41,7 +45,7 @@ class Multio:
 
     def flush(self, metadata=None):
         if metadata is None or len(metadata) == 0:
-            self.__handle.flush(self.__dummy_metadata)
+            self.__handle.flush(self.__dummy_metadata_flush)
         else:
             md = Metadata(self.__handle, md=metadata)
             self.__handle.flush(md)
@@ -49,7 +53,7 @@ class Multio:
 
     def notify(self, metadata=None):
         if metadata is None or len(metadata) == 0:
-            self.__handle.notify(self.__dummy_metadata)
+            self.__handle.notify(self.__dummy_metadata_notification)
         else:
             md = Metadata(self.__handle, md=metadata)
             self.__handle.notify(md)
@@ -57,7 +61,7 @@ class Multio:
 
     def write_domain(self, data, metadata=None):
         if metadata is None or len(metadata) == 0:
-            self.__handle.write_domain(self.__dummy_metadata, data)
+            self.__handle.write_domain(self.__dummy_metadata_domain, data)
         else:
             md = Metadata(self.__handle, md=metadata)
             self.__handle.write_domain(md, data)
@@ -65,7 +69,7 @@ class Multio:
 
     def write_mask(self, data, metadata=None):
         if metadata is None or len(metadata) == 0:
-            self.__handle.write_mask(self.__dummy_metadata, data)
+            self.__handle.write_mask(self.__dummy_metadata_mask, data)
         else:
             md = Metadata(self.__handle, md=metadata)
             self.__handle.write_mask(md, data)
@@ -73,7 +77,7 @@ class Multio:
 
     def write_mask_float(self, data, metadata=None):
         if metadata is None or len(metadata) == 0:
-            self.__handle.write_mask_float(self.__dummy_metadata, data)
+            self.__handle.write_mask_float(self.__dummy_metadata_mask, data)
         else:
             md = Metadata(self.__handle, md=metadata)
             self.__handle.write_mask_float(md, data)
@@ -81,7 +85,7 @@ class Multio:
 
     def write_mask_double(self, data, metadata=None):
         if metadata is None or len(metadata) == 0:
-            self.__handle.write_mask_double(self.__dummy_metadata, data)
+            self.__handle.write_mask_double(self.__dummy_metadata_mask, data)
         else:
             md = Metadata(self.__handle, md=metadata)
             self.__handle.write_mask_double(md, data)
@@ -89,7 +93,7 @@ class Multio:
 
     def write_field(self, data, metadata=None):
         if metadata is None or len(metadata) == 0:
-            self.__handle.write_field(self.__dummy_metadata, data)
+            self.__handle.write_field(self.__dummy_metadata_field, data)
         else:
             md = Metadata(self.__handle, md=metadata)
             self.__handle.write_field(md, data)
@@ -97,7 +101,7 @@ class Multio:
 
     def write_field_float(self, data, metadata=None):
         if metadata is None or len(metadata) == 0:
-            self.__handle.write_field_float(self.__dummy_metadata, data)
+            self.__handle.write_field_float(self.__dummy_metadata_field, data)
         else:
             md = Metadata(self.__handle, md=metadata)
             self.__handle.write_field_float(md, data)
@@ -105,7 +109,7 @@ class Multio:
 
     def write_field_double(self, data, metadata=None):
         if metadata is None or len(metadata) == 0:
-            self.__handle.write_field_double(self.__dummy_metadata, data)
+            self.__handle.write_field_double(self.__dummy_metadata_field, data)
         else:
             md = Metadata(self.__handle, md=metadata)
             self.__handle.write_field_double(md, data)

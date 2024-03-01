@@ -286,9 +286,15 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         LookUpString(md, "paramId"), LookUpString(md, "param"))};  // param might be a string, separated by . for GRIB1.
                                                                    // String to long convertion should get it right
 
-
     if (paramId) {
         g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
+    }
+
+    if (md.has("levtype_wam") && (gribEdition == "2")) {
+        g.setMissing("scaleFactorOfFirstFixedSurface");
+        g.setMissing("scaledValueOfFirstFixedSurface");
+        g.setMissing("scaleFactorOfSecondFixedSurface");
+        g.setMissing("scaledValueOfSecondFixedSurface");
     }
 
     if (gribEdition == "2") {

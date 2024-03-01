@@ -177,7 +177,7 @@ multio::message::Message GridDownloader::encodeMessage(multio::message::Message&
 
     auto updateMessage = message.modifyMetadata(std::move(md));
 
-    return encoder_->encodeOceanCoordinates(std::move(updateMessage));
+    return encoder_->encodeOceanCoordinates(std::move(updateMessage), eckit::LocalConfiguration{});
 }
 
 }  // namespace multio::action

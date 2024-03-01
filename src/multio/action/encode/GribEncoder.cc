@@ -110,7 +110,6 @@ void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
     bool hasDataDateTime = (in.has("dataDate") && in.has("dataTime"));
     bool hasDateTime = (in.has("date") && in.has("time"));
 
-    // std::cout << "tryMapStepToTimeAndCheckTime..." << std::endl;
     if (hasStartDateTime || hasDateTime || hasDataDateTime) {
         util::DateInts startDate;
         util::TimeInts startTime;
@@ -130,10 +129,6 @@ void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
             in.set("startDate", in.getLong("date"));
             in.set("startTime", in.getLong("time") * 100);
         }
-
-        // std::cout << "startDate: " << startDate.year << " " << startDate.month << " " << startDate.day << std::endl;
-        // std::cout << "startTime: " << startTime.hour << " " << startTime.minute << " " << startTime.second  <<
-        // std::endl;
 
         eckit::DateTime startDateTime(eckit::Date(startDate.year, startDate.month, startDate.day),
                                       eckit::Time(startTime.hour, startTime.minute, startTime.second));
@@ -250,10 +245,53 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     // LookUpString(md, "domain"), LookUpString(md, "globalDomain"));
     std::string gridType;
     const auto hasGridType = md.get("gridType", gridType);
-
     const auto gribEdition = md.getString("gribEdition", "2");
     if ((gribEdition == "2") && (gridType != "sh")) {
         withFirstOf(valueSetter(g, "setPackingType"), LookUpString(md, "setPackingType"));
+    }
+
+    auto localDefinitionNumber = lookUpLong(md, "localDefinitionNumber");
+    auto grib2LocalSectionNumber = lookUpLong(md, "grib2LocalSectionNumber");
+
+
+    if (gribEdition == "2") {
+        withFirstOf(valueSetter(g, "subCentre"), LookUpString(md, "subCentre"));
+        withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
+        if (localDefinitionNumber || grib2LocalSectionNumber) {
+            withFirstOf(valueSetter(g, "localTablesVersion"), LookUpLong(md, "localTablesVersion"));
+            g.setValue("setLocalDefinition", 1);
+            withFirstOf(valueSetter(g, "localDefinitionNumber"), localDefinitionNumber);
+            withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), grib2LocalSectionNumber);
+
+            if (auto extraLocalDef = lookUpLong(md, "extraLocalSectionNumber"); extraLocalDef) {
+                g.setValue("extraLocalSectionNumber", *extraLocalDef);
+            }
+            else {
+                g.setValue("deleteExtraLocalSection", 1);
+            }
+        }
+
+        withFirstOf(valueSetter(g, "productDefinitionTemplateNumber"),
+                    LookUpLong(md, "productDefinitionTemplateNumber"));
+
+
+        const auto productionStatusOfProcessedData = lookUpLong(md, "productionStatusOfProcessedData");
+        if (productionStatusOfProcessedData) {
+            g.setValue("productionStatusOfProcessedData", *productionStatusOfProcessedData);
+
+            if (*productionStatusOfProcessedData == 12) {
+                const auto dataset = md.getString("dataset");
+                g.setValue("dataset", dataset);
+
+                if (dataset == "climate-dt") {
+                    withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
+                    withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
+                    withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
+                    withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
+                    withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+                }
+            }
+        }
     }
 
     std::string typeOfLevel;
@@ -390,10 +428,12 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "generatingProcessIdentifier"), LookUpString(md, "generatingProcessIdentifier"));
 
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
-    withFirstOf(valueSetter(g, "number"), LookUpLong(md, "ensemble-member"));
-    withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), LookUpLong(md, "ensemble-size"));
-    withFirstOf(valueSetter(g, "methodNumber"), LookUpLong(md, "method-number"));
-    withFirstOf(valueSetter(g, "systemNumber"), LookUpLong(md, "system-number"));
+    withFirstOf(valueSetter(g, "perturbationNumber"), LookUpLong(md, "perturbationNumber"),
+                LookUpLong(md, "ensembleMember"), LookUpLong(md, "ensemble-member"));
+    withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), LookUpLong(md, "numberOfForecastsInEnsemble"),
+                LookUpLong(md, "ensembleSize"), LookUpLong(md, "ensemble-size"));
+    withFirstOf(valueSetter(g, "methodNumber"), LookUpLong(md, "methodNumber"), LookUpLong(md, "method-number"));
+    withFirstOf(valueSetter(g, "systemNumber"), LookUpLong(md, "systemNumber"), LookUpLong(md, "system-number"));
     withFirstOf(valueSetter(g, "offsetToEndOf4DvarWindow"), LookUpLong(md, "anoffset"));
     withFirstOf(valueSetter(g, "lengthOf4DvarWindow"), LookUpLong(md, "anlength"));
 
@@ -490,6 +530,12 @@ void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
     }
 }
 
+void applyOverwrites(GribEncoder& g, const CodesOverwrites& overwrites) {
+    for (const auto& kv : overwrites) {
+        std::visit([&](const auto& v) { g.setValue(kv.first, v); }, kv.second);
+    }
+}
+
 void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
     // TODO globalSize is expected to be set in md directly. nmuberOf* should be
     // readonly anyway... test removal..
@@ -531,27 +577,31 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         timeRef = *optTimeRef;
     }
 
-    // TODO: this will not hold in the future - maybe the new category "processType" can be used to check if it's a
-    // forecast
-    // Handling of significanceOfReferenceTime is hacked in for now....
-    bool isReferringToStart = false;
-    if (queriedMarsFields.type) {
-        if (*queriedMarsFields.type == "fc") {
-            // If significanceOfReferenceTime is validityTime (2)
-            // then forecastTime should be set to zero.
-            if ((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
-                isReferringToStart = false;
-                if (gribEdition == "2") {
-                    g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
-                    if (isTimeRange) {
-                        g.setValue("indicatorOfUnitForTimeRange", timeUnitCodes(util::TimeUnit::Hour));
+
+        // TODO: this will not hold in the future - maybe the new category "processType" can be used to check if it's a
+        // forecast
+        // Handling of significanceOfReferenceTime is hacked in for now....
+        bool isReferringToStart = false;
+        if (queriedMarsFields.type) {
+            // Check type starts with fc (fc, fcmonth...)
+            if (queriedMarsFields.type->rfind("fc", 0) == 0) {
+                // If significanceOfReferenceTime is validityTime (2)
+                // then forecastTime should be set to zero.
+                if ((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
+                    isReferringToStart = false;
+                    g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+                    g.setValue("startStep", 0l);
+                    if (gribEdition == "2") {
+                        g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
+                        g.setValue("forecastTime", 0l);
                     }
                     g.setValue("forecastTime", 0l);
                 }
                 g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
                 g.setValue("startStep", 0l);
             }
-            else {
+            // Perturbed or controlled forecast
+            else if (queriedMarsFields.type == "pf" || queriedMarsFields.type == "cf") {
                 isReferringToStart = true;
             }
         }
@@ -714,12 +764,13 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     }
 }
 
-void GribEncoder::setFieldMetadata(const message::Message& msg) {
+void GribEncoder::setFieldMetadata(const message::Message& msg, const eckit::LocalConfiguration& additionalMetadata) {
     if (isOcean(msg.metadata())) {
-        setOceanMetadata(msg);
+        setOceanMetadata(msg, additionalMetadata);
     }
     else {
-        const auto& metadata = msg.metadata();
+        auto metadata = msg.metadata();
+        visitKeyValues(additionalMetadata, [&](const std::string& k, const auto& v) { metadata.set(k, v); });
         auto queriedMarsFields = setMarsKeys(*this, metadata);
         applyOverwrites(*this, metadata);
         setEncodingSpecificFields(*this, metadata);
@@ -729,19 +780,19 @@ void GribEncoder::setFieldMetadata(const message::Message& msg) {
 
 namespace {}
 
-void GribEncoder::setOceanMetadata(const message::Message& msg) {
+void GribEncoder::setOceanMetadata(const message::Message& msg, const eckit::LocalConfiguration& additionalMetadata) {
     // Copy metadata now to merge with run config
     auto metadata = msg.metadata();
 
-    visitKeyValues(config_.getSubConfiguration("run"),
-                   [&](const std::string& k, const auto& v) { metadata.set(k, v); });
+    visitKeyValues(additionalMetadata, [&](const std::string& k, const auto& v) { metadata.set(k, v); });
+
+    applyOverwrites(*this, metadata);
 
     auto queriedMarsFields = setMarsKeys(*this, metadata);
     if (queriedMarsFields.type) {
         setValue("typeOfGeneratingProcess", type_of_generating_process.at(*queriedMarsFields.type));
     }
 
-    applyOverwrites(*this, metadata);
     setDateAndStatisticalFields(*this, metadata, queriedMarsFields);
     setEncodingSpecificFields(*this, metadata);
 
@@ -807,16 +858,14 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     }
 }
 
-void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata) {
-    setOceanCoordMetadata(metadata, config_.getSubConfiguration("run"));
-}
-void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig) {
+void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata,
+                                        const eckit::Configuration& additionalMetadata) {
     message::Metadata md = metadata;  // copy
 
-    visitKeyValues(runConfig, [&](const std::string& k, const auto& v) { md.set(k, v); });
+    visitKeyValues(additionalMetadata, [&](const std::string& k, const auto& v) { md.set(k, v); });
 
     // Set run-specific md
-    setMarsKeys(*this, runConfig);
+    setMarsKeys(*this, metadata);
 
     setValue("date", md.getLong("startDate"));
 
@@ -857,10 +906,11 @@ void GribEncoder::setMissing(const std::string& key) {
     encoder_->setMissing(key);
 }
 
-message::Message GribEncoder::encodeOceanCoordinates(message::Message&& msg) {
+message::Message GribEncoder::encodeOceanCoordinates(message::Message&& msg,
+                                                     const eckit::LocalConfiguration& additionalMetadata) {
     initEncoder();
 
-    setOceanCoordMetadata(msg.metadata());
+    setOceanCoordMetadata(msg.metadata(), additionalMetadata);
 
     return dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
@@ -868,25 +918,15 @@ message::Message GribEncoder::encodeOceanCoordinates(message::Message&& msg) {
     });
 }
 
-message::Message GribEncoder::encodeField(const message::Message& msg) {
+message::Message GribEncoder::encodeField(const message::Message& msg, const CodesOverwrites& overwrites,
+                                          const eckit::LocalConfiguration& additionalMetadata) {
     initEncoder();
-    setFieldMetadata(msg);
+    applyOverwrites(*this, overwrites);
+    setFieldMetadata(msg, additionalMetadata);
     return dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
         return setFieldValues<Precision>(std::move(msg));
     });
-}
-
-message::Message GribEncoder::encodeField(const message::Message& msg, const double* data, size_t sz) {
-    initEncoder();
-    setFieldMetadata(msg);
-    return setFieldValues(data, sz);
-}
-
-message::Message GribEncoder::encodeField(const message::Message& msg, const float* data, size_t sz) {
-    initEncoder();
-    setFieldMetadata(msg);
-    return setFieldValues(data, sz);
 }
 
 
@@ -901,30 +941,6 @@ message::Message GribEncoder::setFieldValues(const message::Message& msg) {
 
     return Message{Message::Header{Message::Tag::Grib, Peer{msg.source().group()}, Peer{msg.destination()}},
                    std::move(buf)};
-}
-
-
-message::Message GribEncoder::setFieldValues(const double* values, size_t count) {
-    encoder_->setDataValues(values, count);
-
-    eckit::Buffer buf{this->encoder_->length()};
-    encoder_->write(buf);
-
-    return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
-}
-
-message::Message GribEncoder::setFieldValues(const float* values, size_t count) {
-    std::vector<double> dvalues(count, 0.0);
-    for (int i = 0; i < count; ++i) {
-        dvalues[i] = double(values[i]);
-    }
-
-    encoder_->setDataValues(dvalues.data(), count);
-
-    eckit::Buffer buf{this->encoder_->length()};
-    encoder_->write(buf);
-
-    return Message{Message::Header{Message::Tag::Grib, Peer{}, Peer{}}, std::move(buf)};
 }
 
 

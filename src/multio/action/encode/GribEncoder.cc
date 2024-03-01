@@ -427,6 +427,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 
     withFirstOf(valueSetter(g, "generatingProcessIdentifier"), LookUpString(md, "generatingProcessIdentifier"));
 
+    withFirstOf(valueSetter(g, "setPackingType"), LookUpString(md, "setPackingType"));
+
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
     withFirstOf(valueSetter(g, "perturbationNumber"), LookUpLong(md, "perturbationNumber"),
                 LookUpLong(md, "ensembleMember"), LookUpLong(md, "ensemble-member"));
@@ -434,8 +436,17 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
                 LookUpLong(md, "ensembleSize"), LookUpLong(md, "ensemble-size"));
     withFirstOf(valueSetter(g, "methodNumber"), LookUpLong(md, "methodNumber"), LookUpLong(md, "method-number"));
     withFirstOf(valueSetter(g, "systemNumber"), LookUpLong(md, "systemNumber"), LookUpLong(md, "system-number"));
-    withFirstOf(valueSetter(g, "offsetToEndOf4DvarWindow"), LookUpLong(md, "anoffset"));
-    withFirstOf(valueSetter(g, "lengthOf4DvarWindow"), LookUpLong(md, "anlength"));
+    withFirstOf(valueSetter(g, "offsetToEndOf4DvarWindow"), LookUpLong(md, "offsetToEndOf4DvarWindow"),
+                LookUpLong(md, "anoffset"));
+    withFirstOf(valueSetter(g, "lengthOf4DvarWindow"), LookUpLong(md, "lengthOf4DvarWindow"),
+                LookUpLong(md, "anlength"));
+
+
+    withFirstOf(valueSetter(g, "componentIndex"), LookUpLong(md, "componentIndex"));
+    withFirstOf(valueSetter(g, "numberOfComponents"), LookUpLong(md, "numberOfComponents"));
+    withFirstOf(valueSetter(g, "modelErrorType"), LookUpLong(md, "modelErrorType"));
+    withFirstOf(valueSetter(g, "iterationNumber"), LookUpLong(md, "iterationNumber"));
+    withFirstOf(valueSetter(g, "totalNumberOfIterations"), LookUpLong(md, "totalNumberOfIterations"));
 
     ret.type = firstOf(LookUpString(md, "type"), LookUpString(md, "marsType"));
     if (ret.type) {

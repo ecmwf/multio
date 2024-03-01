@@ -22,8 +22,6 @@
 
 #include "multio/message/Message.h"
 
-#include <variant>
-
 
 namespace multio::action {
 

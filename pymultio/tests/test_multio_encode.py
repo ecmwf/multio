@@ -1,14 +1,12 @@
-import pytest
-
-from multiopython import Multio
-from collections import OrderedDict
-from pyeccodes import Reader
-
-import numpy as np
-
 import json
 import os
+from collections import OrderedDict
 
+import numpy as np
+import pytest
+from pyeccodes import Reader
+
+from multiopython import Multio
 
 
 def test_encode_stream_mmsf_1():

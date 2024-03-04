@@ -14,9 +14,9 @@
 # limitations under the License.
 
 import os
-import findlibs
 
 import cffi
+import findlibs
 from pkg_resources import parse_version
 
 __multio_version__ = "1.9.0"

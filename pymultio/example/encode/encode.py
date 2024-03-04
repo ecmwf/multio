@@ -1,12 +1,12 @@
-from multiopython import Multio
+import json
+import os
 from collections import OrderedDict
-from pyeccodes import Reader
 
 # Optional
 import numpy as np
+from pyeccodes import Reader
 
-import json
-import os
+from multiopython import Multio
 
 dir = os.path.dirname(__file__)
 

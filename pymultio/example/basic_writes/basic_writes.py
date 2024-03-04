@@ -1,10 +1,10 @@
-from multiopython import Multio
+import json
+import os
 
 # Optional
 import numpy as np
 
-import json
-import os
+from multiopython import Multio
 
 dir = os.path.dirname(__file__)
 

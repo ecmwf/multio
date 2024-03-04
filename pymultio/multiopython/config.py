@@ -2,6 +2,7 @@ import os
 
 from .lib import ffi, lib
 
+
 class Config:
     """This is the main container class for Multio Configs"""
 

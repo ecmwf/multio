@@ -2,7 +2,6 @@ import pytest
 
 import multiopython
 
-
 default_dict = {
       "allow_world" : True,
       "parent_comm" : 1,
@@ -41,8 +40,8 @@ def test_multio_open_close_connections():
     multio.close_connections()
 
 def test_write_field():
-    import os
     import json
+    import os
     os.environ['MULTIO_PLANS'] = json.dumps({
         "plans": [{
             "name": "No op",

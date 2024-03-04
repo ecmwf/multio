@@ -291,6 +291,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     }
 
     if (md.has("levtype_wam") && (gribEdition == "2")) {
+        g.setValue("typeOfFirstFixedSurface", 1);
         g.setMissing("scaleFactorOfFirstFixedSurface");
         g.setMissing("scaledValueOfFirstFixedSurface");
         g.setMissing("scaleFactorOfSecondFixedSurface");

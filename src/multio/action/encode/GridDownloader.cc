@@ -64,14 +64,17 @@ namespace multio::action {
 
 GridDownloader::GridDownloader(const config::ComponentConfiguration& compConf) :
     encoder_(createEncoder(compConf)), templateMetadata_(), gridCoordinatesCache_(), gridUIDCache_() {
-    initTemplateMetadata();
 
-    if (compConf.parsedConfig().has("unstructured-grid-type")) {
-        const auto unstructuredGridType = compConf.parsedConfig().getString("unstructured-grid-type");
-        if (unstructuredGridType.find("ORCA") != std::string::npos) {
-            eckit::Log::info() << "Grid downloader initialized, starting ORCA grid download!" << std::endl;
+    if (encoder_ != nullptr) {
+        initTemplateMetadata();
 
-            downloadOrcaGridCoordinates(compConf);
+        if (compConf.parsedConfig().has("unstructured-grid-type")) {
+            const auto unstructuredGridType = compConf.parsedConfig().getString("unstructured-grid-type");
+            if (unstructuredGridType.find("ORCA") != std::string::npos) {
+                eckit::Log::info() << "Grid downloader initialized, starting ORCA grid download!" << std::endl;
+
+                downloadOrcaGridCoordinates(compConf);
+            }
         }
     }
 }

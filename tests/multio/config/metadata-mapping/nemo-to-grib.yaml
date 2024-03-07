@@ -351,6 +351,14 @@ data:
     unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
+  # Sea surface height with inverse barometer effect
+  - nemo-id : sshwib
+    param-id : 262143
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
+    level-type : "oceanSurface"
+
   #===================================
   # Ocean 3d parameters -- levtype 168
   #===================================

@@ -62,6 +62,20 @@ atlas::Grid readGrid(const std::string& name) {
 
 namespace multio::action {
 
+
+AtlasInstance::AtlasInstance() {
+    atlas::initialize();
+};
+
+AtlasInstance::~AtlasInstance() {
+    atlas::finalize();
+};
+
+AtlasInstance& AtlasInstance::instance() {
+    static AtlasInstance singleton;
+    return singleton;
+};
+
 GridDownloader::GridDownloader(const config::ComponentConfiguration& compConf) :
     encoder_(createEncoder(compConf)), templateMetadata_(), gridCoordinatesCache_(), gridUIDCache_() {
 
@@ -119,7 +133,7 @@ multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gr
 }
 
 void GridDownloader::downloadOrcaGridCoordinates(const config::ComponentConfiguration& compConf) {
-    atlas::initialize();
+    ScopedAtlasInstance scopedAtlasInstance;
 
     const auto baseGridName = compConf.parsedConfig().getString("unstructured-grid-type");
     for (auto const& unstructuredGridSubtype : {"T", "U", "V", "W", "F"}) {
@@ -168,8 +182,6 @@ void GridDownloader::downloadOrcaGridCoordinates(const config::ComponentConfigur
             eckit::Log::info() << "Multio GridDownloader: cached data for grid: " << completeGridName << std::endl;
         }
     }
-
-    atlas::finalize();
 }
 
 multio::message::Message GridDownloader::encodeMessage(multio::message::Message&& message, int startDate,

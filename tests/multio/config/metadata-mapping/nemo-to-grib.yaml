@@ -599,7 +599,7 @@ data:
   - nemo-id : bckineta
     param-id : 262142
     grid-type : "T grid"
-    level-type : "mixingLayer"
+    level-type : "oceanSurface"
 
   # Sea-ice concentration tendency from assimilation increment
   - nemo-id : bckinseaice

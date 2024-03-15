@@ -545,7 +545,7 @@ data:
     level-type : "iceLayerOnWater"
 
   # Snow on ice heat content
-  - nemo-id : isnowhc
+  - nemo-id : snwhc
     param-id : 262015
     grid-type : "T grid"
     level-type : "snowLayerOverIceOnWater"

@@ -574,8 +574,15 @@ data:
     grid-type : "T grid"
     level-type : "entireMeltPond"
 
+  # Sea-ice salinity
   - nemo-id : icesalt
     param-id : 262023
+    grid-type : "T grid"
+    level-type : "iceLayerOnWater"
+
+  # Sea-ice growth
+  - nemo-id : vfxice
+    param-id : 262007
     grid-type : "T grid"
     level-type : "iceLayerOnWater"
 

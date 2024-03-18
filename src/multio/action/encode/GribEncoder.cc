@@ -237,6 +237,9 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     const auto hasGridType = md.get("gridType", gridType);
 
     const auto gribEdition = md.getString("gribEdition", "2");
+    if ((gribEdition == "2") && (gridType != "sh")) {
+        withFirstOf(valueSetter(g, "setPackingType"), LookUpString(md, "setPackingType"));
+    }
 
     std::string typeOfLevel;
     const auto hasTypeOfLevel = md.get("typeOfLevel", typeOfLevel);
@@ -328,8 +331,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "stream"), LookUpString(md, "stream"), LookUpString(md, "marsStream"));
 
     withFirstOf(valueSetter(g, "generatingProcessIdentifier"), LookUpString(md, "generatingProcessIdentifier"));
-
-    withFirstOf(valueSetter(g, "setPackingType"), LookUpString(md, "setPackingType"));
 
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
     withFirstOf(valueSetter(g, "number"), LookUpLong(md, "ensemble-member"));

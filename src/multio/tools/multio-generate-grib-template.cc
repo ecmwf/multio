@@ -227,6 +227,7 @@ MultioGenerateGribTemplate::MultioGenerateGribTemplate(int argc, char** argv) : 
         new eckit::option::SimpleOption<long>("generatingProcessIdentifier", "Generating process identifier"));
     options_.push_back(new eckit::option::SimpleOption<long>("spectralTruncation", "Spectral truncation number"));
     options_.push_back(new eckit::option::SimpleOption<bool>("clearValuesOnly", "Only clear the stored values"));
+    options_.push_back(new eckit::option::SimpleOption<double>("setValuesTo", "Set the stored values to specified value"));
     options_.push_back(new eckit::option::SimpleOption<bool>("copyPL", "Copies the PL array from sample to output"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("plSource", "PL array source"));
 }
@@ -257,6 +258,9 @@ void MultioGenerateGribTemplate::execute(const eckit::option::CmdArgs& args) {
     bool clearValues = false;
     args.get("clearValuesOnly", clearValues);
 
+    double valueToSet = 0.0;
+    args.get("setValuesTo", valueToSet);
+
     if (copyPL) {
         std::string plSourcePath = "";
         args.get("plSource", plSourcePath);
@@ -284,17 +288,17 @@ void MultioGenerateGribTemplate::execute(const eckit::option::CmdArgs& args) {
         handleCodesError("eccodes error while setting the values array: ", err, Here());
     }
 
-    if (clearValues) {
+    if (clearValues || (std::abs(valueToSet) > 0.000001)) {
         size_t numValues = 0;
         err = codes_get_size(sampleHandle.get(), "values", &numValues);
         handleCodesError("eccodes error while reading the number of values: ", err, Here());
 
-        std::vector<double> values(numValues, 0.0);
+        std::vector<double> values(numValues, valueToSet);
         err = codes_set_double_array(sampleHandle.get(), "values", values.data(), values.size());
         handleCodesError("eccodes error while setting the values array: ", err, Here());
     }
 
-    if (!clearValues && !copyPL) {
+    if (!clearValues && !copyPL && (std::abs(valueToSet) < 0.000001)) {
         long generatingProcessIdentifier = 153;
         args.get("generatingProcessIdentifier", generatingProcessIdentifier);
         err = codes_set_long(sampleHandle.get(), "generatingProcessIdentifier", generatingProcessIdentifier);

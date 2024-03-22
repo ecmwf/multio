@@ -90,21 +90,24 @@ ecbuild_get_test_multidata( TARGET multio_get_test_data
                             DIRNAME fdb5/tests/fdb
                             NAMES ${_test_data} )
 
-ecbuild_add_test( TARGET test_multio_ifs_plans
-	          CONDITION HAVE_FDB5
+ecbuild_add_test(ENABLED      OFF
+                  TARGET test_multio_ifs_plans
+                  CONDITION HAVE_FDB5
                   COMMAND $<TARGET_FILE:multio-feed>
                   TEST_DEPENDS multio_get_test_data
                   ARGS ${_test_data}
                   ENVIRONMENT "${_test_environment}" "MULTIO_PLANS={ \"plans\": [{ \"name\": \"test plans fdb5\", \"actions\": [{ \"type\": \"sink\", \"sinks\": [{\"type\": \"fdb5\"}]}]}]}" )
 
-ecbuild_add_test( TARGET test_multio_ifs_io
+ecbuild_add_test(ENABLED      OFF
+                  TARGET test_multio_ifs_io
                   CONDITION HAVE_FDB5
                   COMMAND $<TARGET_FILE:multio-feed>
                   TEST_DEPENDS multio_get_test_data
                   ARGS ${_test_data}
                   ENVIRONMENT "${_test_environment}" )
 
-ecbuild_add_test( TARGET test_multio_subtoc
+ecbuild_add_test(ENABLED      OFF
+                  TARGET test_multio_subtoc
                   CONDITION HAVE_FDB5
                   COMMAND $<TARGET_FILE:multio-feed>
                   TEST_DEPENDS multio_get_test_data

@@ -73,6 +73,7 @@ if( HAVE_FORTRAN )
   ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
   ecbuild_find_package( NAME fckit   VERSION 0.10.0   REQUIRED )
   find_package( MPI COMPONENTS Fortran) # Add explicit mpi for errorcodes -- isn't there a better way?
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/fortran_compile_flags.cmake)
 endif()
 
 
@@ -89,12 +90,67 @@ ecbuild_add_option( FEATURE SANDBOX
                     DEFAULT OFF
                     DESCRIPTION "Sanbox for exploring io server design" )
 
-### sandbox
+### HEALPix tests
 
 ecbuild_add_option( FEATURE HEALPIX_EXAMPLES
                     DEFAULT OFF
                     DESCRIPTION "Enable creation of HEALPix examples" )
 
+
+###  Definitions used by the output manager
+ecbuild_add_option( FEATURE OUTPUT_MANAGER
+                    DEFAULT ON
+                    DESCRIPTION "Build the output manager" )
+
+ecbuild_add_option( FEATURE OUTPUT_MANAGER_GRIBX_BINARY
+                    CONDITION HAVE_OUTPUT_MANAGER
+                    DEFAULT ON
+                    DESCRIPTION "Enable the gribx binary output manager" )
+
+ecbuild_add_option( FEATURE OUTPUT_MANAGER_GRIBX2MULTIO_BIN
+                    CONDITION HAVE_OUTPUT_MANAGER
+                    DEFAULT ON
+                    DESCRIPTION "Enable the gribx2multio binary output manager" )
+
+ecbuild_add_option( FEATURE OUTPUT_MANAGER_GRIBX2MULTIO_RAW
+                    CONDITION HAVE_OUTPUT_MANAGER
+                    DEFAULT ON
+                    DESCRIPTION "Enable the gribx2multio raw output manager" )
+
+ecbuild_add_option( FEATURE OUTPUT_MANAGER_MULTIO_RAW
+                    CONDITION HAVE_OUTPUT_MANAGER
+                    DEFAULT ON
+                    DESCRIPTION "Enable the multio raw output manager" )
+
+ecbuild_add_option( FEATURE OUTPUT_MANAGER_MULTIO_NO_ENC
+                    CONDITION HAVE_OUTPUT_MANAGER
+                    DEFAULT ON
+                    DESCRIPTION "Enable the multio noenc output manager" )
+
+ecbuild_add_option( FEATURE OUTPUT_MANAGER_DEBUG
+                    CONDITION HAVE_OUTPUT_MANAGER
+                    DEFAULT OFF
+                    DESCRIPTION "Enable debug code for the output manager" )
+
+ecbuild_add_option( FEATURE OUTPUT_MANAGER_RELEASE
+                    CONDITION HAVE_OUTPUT_MANAGER
+                    DEFAULT OFF
+                    DESCRIPTION "Enable release code for the output manager" )
+
+ecbuild_add_option( FEATURE OUTPUT_MANAGER_DVELOP
+                    CONDITION HAVE_OUTPUT_MANAGER
+                    DEFAULT OFF
+                    DESCRIPTION "Enable develop code for the output manager" )
+
+ecbuild_add_option( FEATURE OUTPUT_MANAGER_ENCODER_REPORT
+                    CONDITION HAVE_OUTPUT_MANAGER
+                    DEFAULT OFF
+                    DESCRIPTION "Enable generation of the encoding report" )
+
+ecbuild_add_option( FEATURE OUTPUT_MANAGER_TOOL
+                    CONDITION HAVE_OUTPUT_MANAGER
+                    DEFAULT ON
+                    DESCRIPTION "Enable generation of standalone tool" )
 
 ### export package info
 

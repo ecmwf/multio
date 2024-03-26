@@ -10,8 +10,8 @@
 MODULE GRIB_ENCODER_GRIB2_GG_WS_MOD
 
   ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD,           ONLY: JPIM_K
   USE :: GRIB_ENCODER_BASE_MOD, ONLY: GRIB_ENCODER_A
+  USE :: METADATA_BASE_MOD,     ONLY: METADATA_BASE_A
 
 IMPLICIT NONE
 
@@ -25,7 +25,10 @@ TYPE, EXTENDS(GRIB_ENCODER_A) :: ENCODER_GRIB2_GG_WS
   PRIVATE
 
   !> @brief Metadata handlers used to store encoded metadata.
-  INTEGER(KIND=JPIM_K) :: SAMPLE_HANDLE_ = 0_JPIM_K
+  CLASS(METADATA_BASE_A), POINTER :: SAMPLE_ => NULL()
+
+  !> @brief local variable to store the type of the field
+  CHARACTER(LEN=16) :: CLTYPE_ = REPEAT( ' ', 16 )
 
 CONTAINS
   ! Virtual procedures
@@ -185,11 +188,12 @@ END SUBROUTINE DESTROY_GRIB2_GG_WS_ENCODER
 SUBROUTINE ENCODER_GRIB2_GG_WS_INITIALISE( THIS, MODEL_PARAMS, METADATA_KIND )
 
   ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: JPIM_K
-  USE :: OM_CORE_MOD, ONLY: MODEL_PAR_T
-  USE :: GRIB_API,    ONLY: GRIB_NEW_FROM_SAMPLES
-  USE :: GRIB_API,    ONLY: GRIB_SUCCESS
-  USE :: GRIB_API,    ONLY: GRIB_GET_ERROR_STRING
+  USE :: OM_CORE_MOD,          ONLY: MODEL_PAR_T
+  USE :: METADATA_FACTORY_MOD, ONLY: MAKE_METADATA
+
+  USE :: ENCODERS_UTILS_MOD, ONLY: LATEST_TABLE_VERSION
+  USE :: ENCODERS_UTILS_MOD, ONLY: MARS_PRESET_GRIB2_WAM_S
+  USE :: ENCODERS_UTILS_MOD, ONLY: GG_GEOMETRY_PRESET_GRIB2_WAM_S
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -204,9 +208,6 @@ IMPLICIT NONE
   CHARACTER(LEN=*),           INTENT(IN)    :: METADATA_KIND
   TYPE(MODEL_PAR_T),          INTENT(IN)    :: MODEL_PARAMS
 
-  ! Local variables
-  INTEGER(KIND=JPIM_K) :: KRET
-
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
 
@@ -216,44 +217,26 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-  ! Initialise the grib handle
-  CALL GRIB_NEW_FROM_SAMPLES( THIS%SAMPLE_HANDLE_, TRIM(ADJUSTL(SAMPLE_NAME_GRIB2_GG_WS)), STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, 1 )
+  ! Allocate the metadata
+  CALL MAKE_METADATA( METADATA_KIND, THIS%SAMPLE_ )
+
+  ! Load the sample
+  PP_METADATA_INIT_FROM_SAMPLE_NAME( THIS%SAMPLE_, TRIM(ADJUSTL(SAMPLE_NAME_GRIB2_GG_WS)) )
+
+  ! Load the grib sample
+  PP_LOG_DEVELOP_STR( 'ENCODER: grib2, gridded, wave_spectrum, preset' )
+
+  ! Preset operations
+  CALL LATEST_TABLE_VERSION( MODEL_PARAMS, THIS%SAMPLE_ )
+
+  CALL MARS_PRESET_GRIB2_WAM_S( MODEL_PARAMS, THIS%SAMPLE_ )
+
+  CALL GG_GEOMETRY_PRESET_GRIB2_WAM_S( MODEL_PARAMS, THIS%SAMPLE_ )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point on success
-  RETURN
-
-! Error handler
-PP_ERROR_HANDLER
-
-  ErrorHandler: BLOCK
-
-    ! Error handling variables
-    CHARACTER(LEN=:), ALLOCATABLE :: STR
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! HAndle different errors
-    SELECT CASE(ERRIDX)
-    CASE (1)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
-      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to read the sample.', KRET, GRIB_ERROR )
-    CASE DEFAULT
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
-    END SELECT
-
-    ! Trace end of procedure (on error)
-    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-    ! Write the error message and stop the program
-    PP_DEBUG_ABORT( STR )
-
-  END BLOCK ErrorHandler
-
-  ! Exit point on error
   RETURN
 
 END SUBROUTINE ENCODER_GRIB2_GG_WS_INITIALISE
@@ -320,6 +303,7 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
   PP_METADATA_ENTER_PROCEDURE( METADATA )
 
+  PP_LOG_DEVELOP_STR( 'ENCODER: grib2, gridded, wave_spectrum, runtime' )
   EX = .FALSE.
 
   ! Trace end of procedure (on success)
@@ -348,10 +332,6 @@ FUNCTION ENCODER_GRIB2_GG_WS_ENCODE_WAM( THIS, MODEL_PARAMS, GRIB_INFO, &
   USE :: TRACK_TIME_MOD,     ONLY: TIME_HISTORY_T
   USE :: TRACK_TIME_MOD,     ONLY: CURR_TIME_T
   USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
-
-  USE :: ENCODERS_UTILS_MOD, ONLY: LATEST_TABLE_VERSION
-  USE :: ENCODERS_UTILS_MOD, ONLY: MARS_PRESET_GRIB2_WAM_S
-  USE :: ENCODERS_UTILS_MOD, ONLY: GG_GEOMETRY_PRESET_GRIB2_WAM_S
 
   ! Symbols imported by the preprocessor for logging purposes
   PP_LOG_USE_VARS
@@ -395,17 +375,7 @@ IMPLICIT NONE
 
   EX = .FALSE.
 
-  PP_LOG_DEVELOP_STR( 'Grib2 WAVE SPECTRUM encoder' )
-
-  ! Metadata initialisation (clone the sample)
-  CALL METADATA%INIT_FROM_SAMPLE( SAMPLE_NAME_GRIB2_GG_WS, THIS%SAMPLE_HANDLE_ )
-
-  ! Preset operations
-  CALL LATEST_TABLE_VERSION( MODEL_PARAMS, METADATA )
-
-  CALL MARS_PRESET_GRIB2_WAM_S( MODEL_PARAMS, METADATA )
-
-  CALL GG_GEOMETRY_PRESET_GRIB2_WAM_S( MODEL_PARAMS, METADATA )
+  PP_LOG_DEVELOP_STR( 'ENCODER: grib2, gridded, wave_spectrum, runtime' )
 
 
   ! Trace end of procedure (on success)
@@ -426,10 +396,7 @@ END FUNCTION ENCODER_GRIB2_GG_WS_ENCODE_WAM
 SUBROUTINE ENCODER_GRIB2_GG_WS_FINALISE( THIS )
 
   ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: JPIM_K
-  USE :: GRIB_API,    ONLY: GRIB_RELEASE
-  USE :: GRIB_API,    ONLY: GRIB_SUCCESS
-  USE :: GRIB_API,    ONLY: GRIB_GET_ERROR_STRING
+  USE :: METADATA_FACTORY_MOD, ONLY: DESTROY_METADATA
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -442,9 +409,6 @@ IMPLICIT NONE
   ! Dummy arguments
   CLASS(ENCODER_GRIB2_GG_WS), INTENT(INOUT) :: THIS
 
-  ! Local variables
-  INTEGER(KIND=JPIM_K) :: KRET
-
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
 
@@ -455,44 +419,15 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
 
   ! Destroy the handle
-  CALL GRIB_RELEASE( THIS%SAMPLE_HANDLE_, STATUS=KRET )
-  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, 1 )
+  IF ( ASSOCIATED(THIS%SAMPLE_) ) THEN
+    CALL THIS%SAMPLE_%DESTROY()
+    CALL DESTROY_METADATA( THIS%SAMPLE_ )
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point on success
-  RETURN
-
-
-! Error handler
-PP_ERROR_HANDLER
-
-  ErrorHandler: BLOCK
-
-    ! Error handling variables
-    CHARACTER(LEN=:), ALLOCATABLE :: STR
-    CHARACTER(LEN=4096) :: GRIB_ERROR
-
-    ! HAndle different errors
-    SELECT CASE(ERRIDX)
-    CASE (1)
-      GRIB_ERROR = REPEAT(' ', 4096)
-      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
-      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to destroy the sample.', KRET, GRIB_ERROR )
-    CASE DEFAULT
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
-    END SELECT
-
-    ! Trace end of procedure (on error)
-    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-    ! Write the error message and stop the program
-    PP_DEBUG_ABORT( STR )
-
-  END BLOCK ErrorHandler
-
-  ! Exit point on error
   RETURN
 
 END SUBROUTINE ENCODER_GRIB2_GG_WS_FINALISE

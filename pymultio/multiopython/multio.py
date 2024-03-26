@@ -4,6 +4,15 @@ from .lib import ffi, lib
 from .metadata import Metadata
 
 
+import importlib.util
+
+numpy_spec = importlib.util.find_spec("numpy")
+haveNumpy = numpy_spec is not None
+
+if haveNumpy:
+    import numpy as np
+
+
 class _Config:
     """This is the main container class for Multio Configs"""
 
@@ -79,6 +88,12 @@ class Multio:
 
         self._handle = ffi.gc(handle[0], lib.multio_delete_handle)
 
+        self.__dummy_metadata_field = Metadata(self, md={})
+        self.__dummy_metadata_domain = Metadata(self, md={})
+        self.__dummy_metadata_mask = Metadata(self, md={})
+        self.__dummy_metadata_flush = Metadata(self, md={})
+        self.__dummy_metadata_notification = Metadata(self, md={})
+
     def __enter__(self):
         lib.multio_open_connections(self._handle)
         return self
@@ -92,70 +107,110 @@ class Multio:
         versionstr = ffi.string(tmp_str[0]).decode("utf-8")
         return versionstr
 
+    def __check_metadata(self, metadata, dummy_metadata=None):
+        if metadata is None:
+            if dummy_metadata is None:
+                return Metadata(self, md={})
+            else:
+                return dummy_metadata
+        elif isinstance(metadata, dict):
+            return Metadata(self, md=metadata)
+        elif isinstance(metadata, Metadata):
+            return metadata
+        else:
+            raise TypeError(f"Can not handle type {type(metadata)} as metadata")
+
+
     def start_server(self):
         lib.multio_start_server(self.__conf)
 
-    def flush(self, md):
+    def flush(self, metadata=None):
         """
         Indicates all servers that a given step is complete
         Parameters:
             md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
         """
-        if isinstance(md, dict):
-            md = Metadata(self, md=md)
+        md = self.__check_metadata(metadata, self.__dummy_metadata_flush)
         lib.multio_flush(self._handle, md._handle)
 
-    def notify(self, md):
+
+    def notify(self, metadata):
         """
         Notifies all servers (e.g. step notification)
         and potentially performs triggers on sinks.
         Parameters:
             md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
         """
-        if isinstance(md, dict):
-            md = Metadata(self, md=md)
+        md = self.__check_metadata(metadata, self.__dummy_metadata_notification)
         lib.multio_notify(self._handle, md._handle)
 
-    def write_domain(self, md, data):
+
+    def write_domain(self, metadata, data):
         """
         Writes domain information (e.g. local-to-global index mapping) to the server
         Parameters:
             md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
             data(array): Data of a single type usable by multio in the form an array
         """
-        if isinstance(md, dict):
-            md = Metadata(self, md=md)
-        size = ffi.cast("int", len(data))
-        data = ffi.from_buffer("float *", data)
-        lib.multio_write_domain(self._handle, md._handle, data, size)
+        md = self.__check_metadata(metadata, self.__dummy_metadata_domain)
 
-    def write_mask(self, md, data):
+        size = len(data)
+        sizeInt = ffi.cast("int", size)
+        if haveNumpy and (type(data) == np.ndarray) and (data.dtype == np.int_):
+            intArr = ffi.from_buffer("int*", data)
+            lib.multio_write_domain(self._handle, md._handle, intArr, sizeInt)
+        else:
+            intArr = ffi.new(f'int[{size}]', data)
+            lib.multio_write_domain(self._handle, md._handle, intArr, sizeInt)
+
+
+    def write_mask(self, metadata, data):
         """
         Writes masking information (e.g. land-sea mask) to the server
         Parameters:
             md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
             data(array): Data of a single type usable by multio in the form an array
         """
-        if isinstance(md, dict):
-            md = Metadata(self, md=md)
-        size = ffi.cast("int", len(data))
-        data = ffi.from_buffer("float *", data)
-        lib.multio_write_mask_float(self._handle, md._handle, data, size)
+        md = self.__check_metadata(metadata, self.__dummy_metadata_mask)
 
-    def write_field(self, md, data):
+        size = len(data)
+        sizeInt = ffi.cast("int", size)
+        if haveNumpy and (type(data) == np.ndarray) and ((data.dtype == np.float32) or (data.dtype == np.float64)):
+            if data.dtype == np.float32:
+                floatArr = ffi.from_buffer("float*", data)
+                lib.multio_write_mask_float(self._handle, md._handle, floatArr, sizeInt)
+            else:
+                doubleArr = ffi.from_buffer("double*", data)
+                lib.multio_write_mask_double(self._handle, md._handle, doubleArr, sizeInt)
+        else:
+            doubleArr = ffi.new(f'double[{size}]', data)
+            lib.multio_write_mask_double(self._handle, md._handle, doubleArr, sizeInt)
+
+
+    def write_field(self, metadata, data):
         """
         Writes fields
         Parameters:
             md(dict|Metadata): Either a dict to be converted to Metadata on the fly or an existing Metdata object
             data(array): Data of a single type usable by multio in the form an array
         """
-        if isinstance(md, dict):
-            md = Metadata(self, md=md)
-        size = ffi.cast("int", len(data))
-        data = ffi.from_buffer("float *", data)
-        lib.multio_write_field_float(self._handle, md._handle, data, size)
+        md = self.__check_metadata(metadata, self.__dummy_metadata_field)
 
-    def field_accepted(self, md):
+        size = len(data)
+        sizeInt = ffi.cast("int", size)
+        if haveNumpy and (type(data) == np.ndarray) and ((data.dtype == np.float32) or (data.dtype == np.float64)):
+            if data.dtype == np.float32:
+                floatArr = ffi.from_buffer("float*", data)
+                lib.multio_write_field_float(self._handle, md._handle, floatArr, sizeInt)
+            else:
+                doubleArr = ffi.cast("double*", ffi.from_buffer(data))
+                lib.multio_write_field_double(self._handle, md._handle, doubleArr, sizeInt)
+        else:
+            doubleArr = ffi.new(f'double[{size}]', data)
+            lib.multio_write_field_double(self._handle, md._handle, doubleArr, sizeInt)
+
+
+    def field_accepted(self, metadata):
         """
         Determines if the pipelines are configured to accept the specified data
         Parameters:
@@ -163,9 +218,28 @@ class Multio:
         Returns:
             boolean with True if accepted, otherwise False
         """
-        if isinstance(md, dict):
-            md = Metadata(self, md=md)
+        md = self.__check_metadata(metadata)
+
         accepted = False
         accept = ffi.new("bool*", accepted)
         lib.multio_field_accepted(self._handle, md._handle, accept)
         return bool(accept[0])
+
+
+    def write_grib(self, data):
+        if type(data) == bytes:
+            size = len(data)
+            sizeInt = ffi.cast("int", size)
+            voidArr = ffi.from_buffer("void*", from_buffer(data))
+            lib.multio_write_grib_encoded(self._handle, voidArr, sizeInt)
+
+        elif haveNumpy and (type(data) == np.ndarray):
+            size = len(data) * np.dtype.itemsize
+            sizeInt = ffi.cast("int", size)
+            voidArr = ffi.from_buffer("void*", from_buffer(data))
+            lib.multio_write_grib_encoded(self._handle, voidArr, sizeInt)
+        else:
+            size = len(data)
+            sizeInt = ffi.cast("int", size)
+            charArr = ffi.new(f'char*', data)
+            lib.multio_write_grib_encoded(self._handle, ffi.cast("void*", charArr), sizeInt)

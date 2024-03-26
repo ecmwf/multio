@@ -238,6 +238,9 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     const auto hasGridType = md.get("gridType", gridType);
 
     const auto gribEdition = md.getString("gribEdition", "2");
+    if ((gribEdition == "2") && (gridType != "sh")) {
+        withFirstOf(valueSetter(g, "setPackingType"), LookUpString(md, "setPackingType"));
+    }
 
     std::string typeOfLevel;
     const auto hasTypeOfLevel = md.get("typeOfLevel", typeOfLevel);
@@ -245,33 +248,44 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         g.setValue("typeOfLevel", typeOfLevel);
     }
 
-    // param might be a string, separated by . for GRIB1.
-    std::optional<std::string> paramId{firstOf(LookUpString(md, "paramId"), LookUpString(md, "param"))};
+    std::optional<std::string> paramId{firstOf(
+        LookUpString(md, "paramId"), LookUpString(md, "param"))};  // param might be a string, separated by . for GRIB1.
+                                                                   // String to long convertion should get it right
 
-    // String to long convertion should get it right
     if (paramId) {
         g.setValue("paramId", eckit::Translator<std::string, long>{}(*paramId));
     }
 
+    if (md.has("levtype_wam") && (gribEdition == "2")) {
+        g.setValue("typeOfFirstFixedSurface", 1);
+        g.setMissing("scaleFactorOfFirstFixedSurface");
+        g.setMissing("scaledValueOfFirstFixedSurface");
+        g.setMissing("scaleFactorOfSecondFixedSurface");
+        g.setMissing("scaledValueOfSecondFixedSurface");
+    }
+
     if (gribEdition == "2") {
         withFirstOf(valueSetter(g, "subCentre"), LookUpString(md, "subCentre"));
-        withFirstOf(valueSetter(g, "productionStatusOfProcessedData"),
-                    LookUpLong(md, "productionStatusOfProcessedData"));
+        withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
+        withFirstOf(valueSetter(g, "localTablesVersion"), LookUpLong(md, "localTablesVersion"));
+        withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
+        withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
 
-        if (md.has("dataset")) {
-            withFirstOf(valueSetter(g, "tablesVersion"), LookUpLong(md, "tablesVersion"));
-            withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
-            withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
+        const auto productionStatusOfProcessedData = lookUpLong(md, "productionStatusOfProcessedData");
+        if (productionStatusOfProcessedData) {
+            g.setValue("productionStatusOfProcessedData", *productionStatusOfProcessedData);
 
-            const auto dataset = md.getString("dataset");
-            g.setValue("dataset", dataset);
+            if (*productionStatusOfProcessedData == 12) {
+                const auto dataset = md.getString("dataset");
+                g.setValue("dataset", dataset);
 
-            if (dataset == "climate-dt") {
-                withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
-                withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
-                withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
-                withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
-                withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+                if (dataset == "climate-dt") {
+                    withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
+                    withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
+                    withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
+                    withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
+                    withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+                }
             }
         }
     }
@@ -281,13 +295,13 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 
     withFirstOf(valueSetter(g, "generatingProcessIdentifier"), LookUpString(md, "generatingProcessIdentifier"));
 
-    withFirstOf(valueSetter(g, "setPackingType"), LookUpString(md, "setPackingType"));
-
     withFirstOf(valueSetter(g, "expver"), LookUpString(md, "expver"), LookUpString(md, "experimentVersionNumber"));
     withFirstOf(valueSetter(g, "number"), LookUpLong(md, "ensemble-member"));
     withFirstOf(valueSetter(g, "numberOfForecastsInEnsemble"), LookUpLong(md, "ensemble-size"));
     withFirstOf(valueSetter(g, "methodNumber"), LookUpLong(md, "method-number"));
     withFirstOf(valueSetter(g, "systemNumber"), LookUpLong(md, "system-number"));
+    withFirstOf(valueSetter(g, "offsetToEndOf4DvarWindow"), LookUpLong(md, "anoffset"));
+    withFirstOf(valueSetter(g, "lengthOf4DvarWindow"), LookUpLong(md, "anlength"));
 
     ret.type = firstOf(LookUpString(md, "type"), LookUpString(md, "marsType"));
     if (ret.type) {
@@ -643,12 +657,15 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     else {
         setValue("paramId", metadata.getLong("param") + ops_to_code.at(metadata.getString("operation")));
     }
+
     const auto& typeOfLevel = metadata.getString("typeOfLevel");
     setValue("typeOfLevel", typeOfLevel);
     if (typeOfLevel == "oceanModelLayer") {
         auto level = metadata.getLong("level");
         ASSERT(level > 0);
+        setValue("scaleFactorOfFirstFixedSurface", 0l);
         setValue("scaledValueOfFirstFixedSurface", level - 1);
+        setValue("scaleFactorOfSecondFixedSurface", 0l);
         setValue("scaledValueOfSecondFixedSurface", level);
         setValue("scaleFactorOfFirstFixedSurface", 0l);
         setValue("scaleFactorOfSecondFixedSurface", 0l);

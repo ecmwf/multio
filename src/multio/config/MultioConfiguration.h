@@ -76,11 +76,24 @@ struct MPIInitInfo {
 
 //=============================================================================
 
+// Struct for guided construction
+struct ConfigAndPaths {
+    ConfigPaths paths;
+    eckit::LocalConfiguration parsedConfig;
+};
+
+
+//=============================================================================
+
 
 class MultioConfiguration {
+    MultioConfiguration(ConfigAndPaths, LocalPeerTag clientOrServer);
+
 public:
-    MultioConfiguration(const eckit::PathName& configFile = configuration_file_name(),
-                        LocalPeerTag clientOrServer = LocalPeerTag::Client);
+    // Default constructor is configuring from environment variables
+    MultioConfiguration(LocalPeerTag clientOrServer = LocalPeerTag::Client);
+
+    MultioConfiguration(const eckit::PathName& configFile, LocalPeerTag clientOrServer = LocalPeerTag::Client);
 
     MultioConfiguration(const eckit::LocalConfiguration& globalConfig,
                         LocalPeerTag clientOrServer = LocalPeerTag::Client);

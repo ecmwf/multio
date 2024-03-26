@@ -351,6 +351,14 @@ data:
     unstructured-grid-subtype : "T"
     level-type : "oceanSurface"
 
+  # Sea surface height with inverse barometer effect
+  - nemo-id : sshwib
+    param-id : 262143
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
+    level-type : "oceanSurface"
+
   #===================================
   # Ocean 3d parameters -- levtype 168
   #===================================
@@ -716,7 +724,7 @@ data:
     level-type : "iceLayerOnWater"
 
   # Snow on ice heat content
-  - nemo-id : isnowhc
+  - nemo-id : snwhc
     param-id : 262015
     grid-type: "unstructured_grid"
     domain : "T grid"
@@ -755,8 +763,17 @@ data:
     unstructured-grid-subtype : "T"
     level-type : "entireMeltPond"
 
+  # Sea-ice salinity
   - nemo-id : icesalt
     param-id : 262023
+    grid-type: "unstructured_grid"
+    domain : "T grid"
+    unstructured-grid-subtype : "T"
+    level-type : "iceLayerOnWater"
+
+  # Sea-ice growth
+  - nemo-id : vfxice
+    param-id : 262007
     grid-type: "unstructured_grid"
     domain : "T grid"
     unstructured-grid-subtype : "T"
@@ -788,7 +805,7 @@ data:
     grid-type: "unstructured_grid"
     domain : "T grid"
     unstructured-grid-subtype : "T"
-    level-type : "mixingLayer"
+    level-type : "oceanSurface"
 
   # Sea-ice concentration tendency from assimilation increment
   - nemo-id : bckinseaice

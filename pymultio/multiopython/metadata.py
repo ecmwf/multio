@@ -31,7 +31,6 @@ class Metadata:
     def _set_int(self, key, value):
         key = ffi.new("char[]", key.encode("ascii"))
         value = ffi.cast("int", value)
-
         lib.multio_metadata_set_int(self._handle, key, value)
 
     def _set_string(self, key, value):
@@ -47,12 +46,6 @@ class Metadata:
         lib.multio_metadata_set_bool(self._handle, key, value)
 
     def _set_float(self, key, value):
-        key = ffi.new("char[]", key.encode("ascii"))
-        value = ffi.cast("float", value)
-
-        lib.multio_metadata_set_float(self._handle, key, value)
-
-    def _set_double(self, key, value):
         key = ffi.new("char[]", key.encode("ascii"))
         value = ffi.cast("double", value)
 

@@ -27,6 +27,7 @@ implicit none
 
         ! General management of the object
         procedure, public, pass :: new          => multio_new_metadata
+        procedure, public, pass :: copy         => multio_copy_metadata
         procedure, public, pass :: delete       => multio_delete_metadata
         procedure, public, pass :: c_ptr        => multio_metadata_c_ptr
 
@@ -109,6 +110,7 @@ contains
     !!
     !! @return An error code indicating the operation's success.
     !!
+    !! @see multio_copy_metadata
     !! @see multio_delete_metadata
     !!
     function multio_new_metadata(metadata, handle) result(err)
@@ -150,6 +152,58 @@ contains
     end function multio_new_metadata
 
 
+    !> @brief Create a new metadata object from an existing metadata object.
+    !!
+    !! This function creates a new metadata object from an existing metadata objects
+    !! and attaches it to the provided multio handle.
+    !!
+    !! @param [in,out] metadata A pointer to the metadata object handle.
+    !! @param [in]     mdFrom   The existing metadata object that is copied
+    !!
+    !! @return An error code indicating the operation's success.
+    !!
+    !! @see multio_new_metadata
+    !! @see multio_delete_metadata
+    !!
+    function multio_copy_metadata(metadata, mdFrom) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding,   only: c_int
+        ! Variable references from the project
+        use :: multio_api_base_handle_mod, only: multio_base_handle
+        use :: multio_api_constants_mod,   only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_metadata),    intent(inout) :: metadata
+        class(multio_metadata),    intent(inout) :: mdFrom
+        ! Function result
+        integer :: err
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        ! Private interface to the c API
+        interface
+            function c_multio_copy_metadata(metadata, mdFrom) result(err) &
+                    bind(c, name='multio_copy_metadata')
+                use, intrinsic :: iso_c_binding, only: c_ptr
+                use, intrinsic :: iso_c_binding, only: c_int
+            implicit none
+                type(c_ptr),        intent(out) :: metadata
+                type(c_ptr), value, intent(in)  :: mdFrom
+                integer(c_int) :: err
+            end function c_multio_copy_metadata
+        end interface
+        ! Call the c API
+        c_err = c_multio_copy_metadata(metadata%impl, mdFrom%impl )
+        ! Output cast and cleanup
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_copy_metadata
+
+
     !> @brief Delete a metadata object.
     !!
     !! This function deletes a metadata object associated with the provided handle.
@@ -159,6 +213,7 @@ contains
     !! @return An error code indicating the operation's success.
     !!
     !! @see multio_new_metadata
+    !! @see multio_copy_metadata
     !!
     function multio_delete_metadata(metadata) result(err)
         ! Variable references from the fortran language standard modules

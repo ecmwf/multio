@@ -59,6 +59,9 @@ implicit none
                                                 &  write_field_double_2d, &
                                                    write_field_buffer
 
+        procedure, private, pass :: write_grib_encoded => multio_handle_write_grib_encoded
+
+
         ! Utils
         procedure, public,  pass :: field_accepted => multio_handle_field_accepted
 
@@ -780,6 +783,61 @@ contains
         ! Exit point
         return
     end function multio_handle_write_field_buffer
+
+
+    !> @brief Send a raw grib message
+    !!
+    !! This function sends a grib message to the multio of the object
+    !! pointed to by the provided handle.
+    !!
+    !! @param [in,out] handle   A pointer to the object handle.
+    !! @param [in]     message  GRIB message
+    !!
+    !! @return An error code indicating the operation's success.
+    function multio_handle_write_grib_encoded(handle, message) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding, only: c_int
+        use, intrinsic :: iso_c_binding, only: c_loc
+        use, intrinsic :: iso_c_binding, only: c_double
+        ! Variable references from the project
+        use :: multio_api_metadata_mod,  only: multio_metadata
+        use :: multio_api_constants_mod, only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_handle),                        intent(inout) :: handle
+        character(len=1),         dimension(:), target, intent(in) :: message
+
+        ! Function result
+        integer :: err
+
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        integer(kind=c_int) :: c_size
+        ! Private interface to the c API
+        interface
+            function c_multio_write_grib_encoded(handle, gribdata, gribsize) result(err) &
+                bind(c, name='multio_write_grib_encoded')
+                use, intrinsic :: iso_c_binding, only: c_ptr
+                use, intrinsic :: iso_c_binding, only: c_int
+            implicit none
+                type(c_ptr),    value, intent(in) :: handle
+                type(c_ptr),    value, intent(in) :: gribdata
+                integer(c_int), value, intent(in) :: gribsize
+                integer(c_int) :: err
+            end function c_multio_write_grib_encoded
+        end interface
+        ! Implementation
+        c_size = int(size(message),c_int)
+        c_err = c_multio_write_grib_encoded(handle%c_ptr(), c_loc(message), c_size)
+        ! Setting return value
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_handle_write_grib_encoded
 
 
     !> @brief Get the field accepted flag.

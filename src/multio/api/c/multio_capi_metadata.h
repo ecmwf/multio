@@ -7,12 +7,20 @@ extern "C" {
 #endif
 
 /** \defgroup Metadata setting */
-/** @{ */
+/** @{*/
 /** Creates a multio metadata object
  * \param md Return a handle to the multio metadata object
  * \returns Return code (#MultioErrorValues)
  */
 int multio_new_metadata(multio_metadata_t** md, multio_handle_t* mio);
+
+
+/** Creates a multio metadata object from an existing metadata object
+ * \param md Return a handle to the multio metadata object
+ * \param mdFrom Metadata to copy from
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_copy_metadata(multio_metadata_t** md, multio_metadata_t* mdFrom);
 
 
 /** Deletes a multio metadata object

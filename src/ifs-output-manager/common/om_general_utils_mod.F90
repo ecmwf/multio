@@ -260,6 +260,7 @@ END SUBROUTINE OM_READ_TYPE_FROM_ENV
 FUNCTION OM_ENVVAR_IS_DEFINED( CDENVVARNAME, NDLEN ) RESULT(LDIS_DEFINED)
 
   ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
   USE :: OM_CORE_MOD, ONLY: JPIB_K
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -279,8 +280,9 @@ IMPLICIT NONE
 
   ! Local variables
   INTEGER(KIND=JPIB_K) :: NLLEN
-  INTEGER(KIND=JPIB_K) :: STAT
-
+  INTEGER(KIND=JPIM_K) :: STAT
+  INTEGER(KIND=JPIM_K) :: NLLEN4 
+  
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
 
@@ -291,15 +293,17 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
 
   ! Check if the envisonment variable is readable
-  CALL GET_ENVIRONMENT_VARIABLE( CDENVVARNAME, LENGTH=NLLEN, STATUS=STAT )
+  CALL GET_ENVIRONMENT_VARIABLE( CDENVVARNAME, LENGTH=NLLEN4, STATUS=STAT )
 
   ! Read Output Manager Type
   IF ( STAT .EQ. 0 ) THEN
 
+    NLLEN = NLLEN4
     LDIS_DEFINED = .TRUE.
 
   ELSE
 
+    NLLEN = NLLEN4
     LDIS_DEFINED = .FALSE.
 
   ENDIF
@@ -578,6 +582,7 @@ END SUBROUTINE LOG_CURR_TIME
 SUBROUTINE OM_READ_ENVVAR( CDENVVARNAME, CDENVVARVAL, NDLEN )
 
   ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
   USE :: OM_CORE_MOD, ONLY: JPIB_K
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -594,7 +599,8 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), INTENT(OUT) :: NDLEN
 
   ! Local variables
-  INTEGER(KIND=JPIB_K) :: STAT
+  INTEGER(KIND=JPIM_K) :: STAT
+  INTEGER(KIND=JPIM_K) :: NDLEN4
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -606,17 +612,18 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
 
   ! Check if the envisonment variable is readable
-  CALL GET_ENVIRONMENT_VARIABLE( CDENVVARNAME, LENGTH=NDLEN, STATUS=STAT )
+  CALL GET_ENVIRONMENT_VARIABLE( CDENVVARNAME, LENGTH=NDLEN4, STATUS=STAT )
 
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, 1 )
-  PP_DEBUG_CRITICAL_COND_THROW( LEN(CDENVVARVAL) .LT. NDLEN, 2 )
+  PP_DEBUG_CRITICAL_COND_THROW( LEN(CDENVVARVAL) .LT. NDLEN4, 2 )
 
   ! Initialize the variable
   CDENVVARVAL = REPEAT(' ',LEN(CDENVVARVAL))
 
-  ! REad the environment variable
+  ! Read the environment variable
   CALL GET_ENVIRONMENT_VARIABLE( CDENVVARNAME, VALUE=CDENVVARVAL, STATUS=STAT )
+  NDLEN = NDLEN4
 
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, 3 )

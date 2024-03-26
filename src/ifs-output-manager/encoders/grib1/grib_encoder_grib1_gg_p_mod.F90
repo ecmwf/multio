@@ -228,9 +228,6 @@ IMPLICIT NONE
   ! Load teh grib sample
   PP_LOG_DEVELOP_STR( 'ENCODER: grib1, gridded, pressure_level, preset' )
 
-  ! Preset operations (to be moved in the initialisation)
-  CALL LATEST_TABLE_VERSION( MODEL_PARAMS, THIS%SAMPLE_ )
-
   CALL GENERATING_PROCESS_IDENTIFIER_PRESET( MODEL_PARAMS, THIS%SAMPLE_ )
 
   THIS%CLTYPE_ = MARS_PRESET_GRIBX_ATM( MODEL_PARAMS, THIS%SAMPLE_ )

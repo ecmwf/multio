@@ -325,7 +325,7 @@ IMPLICIT NONE
 
   ! Check dummy arguments
   PP_DEBUG_DEVELOP_COND_THROW( THIS%INITIALIZED_, 1 )
-  PP_DEBUG_DEVELOP_COND_THROW( METADATA%INITIALIZED(), 2 )
+  PP_DEBUG_DEVELOP_COND_THROW( .NOT.METADATA%INITIALIZED(), 2 )
 
   ! This procedure has been defined only for some specific implementations
   SELECT TYPE( MD => METADATA )

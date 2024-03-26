@@ -347,7 +347,7 @@ ecbuild_add_library(
 if ( HAVE_OUTPUT_MANAGER_TOOL )
 ecbuild_add_executable(
 
-  TARGET output_manager_tool
+  TARGET standalone-output-manager
 
   SOURCES
     tool/om_tool_cfg_mod.F90

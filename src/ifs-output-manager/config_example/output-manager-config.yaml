@@ -1,0 +1,749 @@
+noop-output-manager:
+  test-grib-info: true
+  test-track-time: true
+  verbose: true
+
+dump-output-manager:
+  dump-folder: './'
+  verbose: true
+  dump-values: false
+  profile: true
+
+gribx-binary-output-manager:
+  fields-file: 'allfields.grib'
+
+gribx2multio-binary-output-manager:
+  multio-plans-file: '../multio-ifs-wam-config.yaml'
+
+gribx2multio-raw-output-manager:
+  multio-plans-file: '../multio-ifsio-config.yaml'
+
+multio-raw-output-manager:
+  multio-plans-file: 'MainPlanFileName.yaml'
+
+multio-no-enc-output-manager:
+  multio-plans-file: 'MainPlanFileName.yaml'
+
+packaging:
+  enable-compression-gridded: false
+
+encoder-manager:
+  enable-grib1-gg-m:  true
+  enable-grib1-gg-p:  true
+  enable-grib1-gg-t:  true
+  enable-grib1-gg-v:  true
+  enable-grib1-gg-s:  true
+  enable-grib1-gg-wi: true
+  enable-grib1-gg-ws: true
+  enable-grib1-sh-m:  true
+  enable-grib1-sh-p:  true
+  enable-grib1-sh-t:  true
+  enable-grib1-sh-v:  true
+  enable-grib1-sh-s:  true
+  enable-grib2-gg-m:  true
+  enable-grib2-gg-p:  true
+  enable-grib2-gg-t:  true
+  enable-grib2-gg-v:  true
+  enable-grib2-gg-s:  true
+  enable-grib2-gg-wi: true
+  enable-grib2-gg-ws: true
+  enable-grib2-sh-m:  true
+  enable-grib2-sh-p:  true
+  enable-grib2-sh-t:  true
+  enable-grib2-sh-v:  true
+  enable-grib2-sh-s:  true
+
+
+grib-info:
+  - param-id: 31
+    short-name: 'ci'
+    description: 'Sea ice area fraction'
+    measure-unit: '(0 - 1)'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 34
+    short-name: 'sst'
+    description: 'Sea surface temperature'
+    measure-unit: 'K'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 49
+    short-name: '10fg'
+    description: 'Maximum 10 metre wind gust since previous post-processing'
+    measure-unit: 'm s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 75
+    short-name: 'crwc'
+    description: 'Specific rain water content'
+    measure-unit: 'kg kg**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 76
+    short-name: 'cswc'
+    description: 'Specific snow water content'
+    measure-unit: 'kg kg**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 77
+    short-name: 'etadot'
+    description: 'Eta-coordinate vertical velocity'
+    measure-unit: 's**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 78
+    short-name: 'tclw'
+    description: 'Total column cloud liquid water'
+    measure-unit: 'kg m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 129
+    short-name: 'z'
+    description: 'Geopotential'
+    measure-unit: 'm**2 s**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 130
+    short-name: 't'
+    description: 'Temperature'
+    measure-unit: 'K'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 131
+    short-name: 'u'
+    description: 'U component of wind'
+    measure-unit: 'm s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 132
+    short-name: 'v'
+    description: 'V component of wind'
+    measure-unit: 'm s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 133
+    short-name: 'q'
+    description: 'Specific humidity'
+    measure-unit: 'kg kg**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 134
+    short-name: 'sp'
+    description: 'Surface pressure'
+    measure-unit: 'Pa'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 135
+    short-name: 'w'
+    description: 'Vertical velocity'
+    measure-unit: 'Pa s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 136
+    short-name: 'tcw'
+    description: 'Total column water'
+    measure-unit: 'kg m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 137
+    short-name: 'tcwv'
+    description: 'Total column vertically-integrated water vapour'
+    measure-unit: 'kg m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 138
+    short-name: 'vo'
+    description: 'Vorticity (relative)'
+    measure-unit: 's**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 142
+    short-name: 'lsp'
+    description: 'Large-scale precipitation'
+    measure-unit: 'm'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 144
+    short-name: 'sf'
+    description: 'Snowfall'
+    measure-unit: 'm of water equivalent'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 151
+    short-name: 'msl'
+    description: 'Mean sea level pressure'
+    measure-unit: 'Pa'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 155
+    short-name: 'd'
+    description: 'Divergence'
+    measure-unit: 's**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 156
+    short-name: 'gh'
+    description: 'Geopotential height'
+    measure-unit: 'gpm'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 157
+    short-name: 'r'
+    description: 'Relative humidity'
+    measure-unit: '%'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 164
+    short-name: 'tcc'
+    description: 'Total cloud cover'
+    measure-unit: '(0 - 1)'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 165
+    short-name: '10u'
+    description: '10 metre U wind component'
+    measure-unit: 'm s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 166
+    short-name: '10v'
+    description: '10 metre V wind component'
+    measure-unit: 'm s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 167
+    short-name: '2t'
+    description: '2 metre temperature'
+    measure-unit: 'K'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 168
+    short-name: '2d'
+    description: '2 metre dewpoint temperature'
+    measure-unit: 'K'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 169
+    short-name: 'ssrd'
+    description: 'Surface short-wave (solar) radiation downwards'
+    measure-unit: 'J m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 175
+    short-name: 'strd'
+    description: 'Surface long-wave (thermal) radiation downwards'
+    measure-unit: 'J m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 176
+    short-name: 'ssr'
+    description: 'Surface net short-wave (solar) radiation'
+    measure-unit: 'J m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 177
+    short-name: 'str'
+    description: 'Surface net long-wave (thermal) radiation'
+    measure-unit: 'J m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 178
+    short-name: 'tsr'
+    description: 'Top net short-wave (solar) radiation'
+    measure-unit: 'J m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 179
+    short-name: 'ttr'
+    description: 'Top net long-wave (thermal) radiation'
+    measure-unit: 'J m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 180
+    short-name: 'ewss'
+    description: 'Time-integrated eastward turbulent surface stress'
+    measure-unit: 'N m**-2 s'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 181
+    short-name: 'nsss'
+    description: 'Time-integrated northward turbulent surface stress'
+    measure-unit: 'N m**-2 s'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 205
+    short-name: 'ro'
+    description: 'Runoff'
+    measure-unit: 'm'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228
+    short-name: 'tp'
+    description: 'Total precipitation'
+    measure-unit: 'm'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 246
+    short-name: 'clwc'
+    description: 'Specific cloud liquid water content'
+    measure-unit: 'kg kg**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 247
+    short-name: 'ciwc'
+    description: 'Specific cloud ice water content'
+    measure-unit: 'kg kg**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 248
+    short-name: 'cc'
+    description: 'Fraction of cloud cover'
+    measure-unit: '(0 - 1)'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 3020
+    short-name: 'vis'
+    description: 'Visibility'
+    measure-unit: 'm'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 3062
+    short-name: 'lsp'
+    description: 'Large-scale precipitation'
+    measure-unit: 'kg m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 140221
+    short-name: 'mp2'
+    description: 'Mean zero-crossing wave period'
+    measure-unit: 's'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 140229
+    short-name: 'swh'
+    description: 'Significant height of combined wind waves and swell'
+    measure-unit: 'm'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 140230
+    short-name: 'mwd'
+    description: 'Mean wave direction'
+    measure-unit: 'Degree true'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 140231
+    short-name: 'pp1d'
+    description: 'Peak wave period'
+    measure-unit: 's'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 140232
+    short-name: 'mwp'
+    description: 'Mean wave period'
+    measure-unit: 's'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 162071
+    short-name: 'viwve'
+    description: 'Vertical integral of eastward water vapour flux'
+    measure-unit: 'kg m**-1 s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 162072
+    short-name: 'viwvn'
+    description: 'Vertical integral of northward water vapour flux'
+    measure-unit: 'kg m**-1 s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228003
+    short-name: 'zust'
+    description: 'Friction velocity'
+    measure-unit: 'm s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228029
+    short-name: 'i10fg'
+    description: 'Instantaneous 10 metre wind gust'
+    measure-unit: 'm s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228050
+    short-name: 'litoti'
+    description: 'Instantaneous total lightning flash density'
+    measure-unit: 'km**-2 day**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228058
+    short-name: 'litota6'
+    description: 'Averaged total lightning flash density in the last 6 hours'
+    measure-unit: 'km**-2 day**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228143
+    short-name: 'cp'
+    description: 'Convective precipitation'
+    measure-unit: 'kg m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228144
+    short-name: 'sf'
+    description: 'Snowfall water equivalent'
+    measure-unit: 'kg m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228164
+    short-name: 'tcc'
+    description: 'Total Cloud Cover'
+    measure-unit: '%'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228216
+    short-name: 'fzra'
+    description: 'Accumulated freezing rain'
+    measure-unit: 'm'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228218
+    short-name: 'crr'
+    description: 'Convective rain rate'
+    measure-unit: 'kg m**-2 s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228219
+    short-name: 'lsrr'
+    description: 'Large scale rain rate'
+    measure-unit: 'kg m**-2 s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228221
+    short-name: 'lssfr'
+    description: 'Large scale snowfall rate water equivalent'
+    measure-unit: 'kg m**-2 s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228228
+    short-name: 'tp'
+    description: 'Total Precipitation'
+    measure-unit: 'kg m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228235
+    short-name: 'mucape'
+    description: 'Most-unstable CAPE'
+    measure-unit: 'J kg**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228236
+    short-name: 'mucin'
+    description: 'Most-unstable CIN'
+    measure-unit: 'J kg**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228246
+    short-name: '100u'
+    description: '100 metre U wind component'
+    measure-unit: 'm s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 228247
+    short-name: '100v'
+    description: '100 metre V wind component'
+    measure-unit: 'm s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 231001
+    short-name: 'fzrawe'
+    description: 'Accumulated freezing rain water equivalent'
+    measure-unit: 'kg m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 231002
+    short-name: 'rowe'
+    description: 'Runoff water equivalent (surface plus subsurface)'
+    measure-unit: 'kg m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 231013
+    short-name: 'rfl04'
+    description: 'Reflectance in 0.4 micron channel'
+    measure-unit: '%'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 260015
+    short-name: 'ptype'
+    description: 'Precipitation type'
+    measure-unit: 'code table (4.201)'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 260199
+    short-name: 'vsw'
+    description: 'Volumetric soil moisture'
+    measure-unit: 'm**3 m**-3'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 260227
+    short-name: 'rfl06'
+    description: 'Reflectance in 0.6 micron channel'
+    measure-unit: '%'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 260228
+    short-name: 'rfl08'
+    description: 'Reflectance in 0.8 micron channel'
+    measure-unit: '%'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 260238
+    short-name: 'wz'
+    description: 'Geometric vertical velocity'
+    measure-unit: 'm s**-1'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 260360
+    short-name: 'sot'
+    description: 'Soil temperature'
+    measure-unit: 'K'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 260510
+    short-name: 'clbt'
+    description: 'Cloudy brightness temperature'
+    measure-unit: 'K'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
+
+  - param-id: 262121
+    short-name: 'hc300m'
+    description: 'Vertically-integrated heat content in the upper 300 m'
+    measure-unit: 'J m**-2'
+    has-grib-1: false
+    has-grib-2: true
+    requested-encoding: 2
+    bits-per-value: [-99,-99,-99,-99,-99,-99,-99]

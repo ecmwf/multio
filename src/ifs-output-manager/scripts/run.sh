@@ -29,10 +29,11 @@ inputDir=""
 binaryPath=""
 samplesPath=""
 yamlConfig=""
+nProcs=1
 
 #
 # Parse command-line arguments
-while getopts "p:l:s:d:i:b:c:y:h" opt; do
+while getopts "p:l:s:d:i:b:c:y:n:h" opt; do
   case ${opt} in
     p) # paramId
       paramId="${OPTARG}"
@@ -77,6 +78,9 @@ while getopts "p:l:s:d:i:b:c:y:h" opt; do
           echo "Error: The yaml configuration file does not exist: ${yamlConfig}"
           exit 1
       fi
+      ;;
+    n) # number of processors
+      nProcs="${OPTARG}"
       ;;
     h)
       usage
@@ -124,7 +128,7 @@ ${binaryPath}/codes_info
 
 #
 # Run the standalone tool
-${binaryPath}/output_manager_tool.SP -t "GRIBX" -i "${inputDir}" -p "${paramId}" -l "${level}" -s "${step}" -y "${yamlConfig}"
+${binaryPath}/standalone-output-manager -t "GRIBX" -n 8 -i "${inputDir}" -p "${paramId}" -l "${level}" -s "${step}" -y "${yamlConfig}"
 
 #
 # Search and extract the reference message

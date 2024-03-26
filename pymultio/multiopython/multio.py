@@ -203,7 +203,7 @@ class Multio:
                 floatArr = ffi.from_buffer("float*", data)
                 lib.multio_write_field_float(self._handle, md._handle, floatArr, sizeInt)
             else:
-                doubleArr = ffi.cast("double*", ffi.from_buffer(data))
+                doubleArr = ffi.from_buffer("double*", data)
                 lib.multio_write_field_double(self._handle, md._handle, doubleArr, sizeInt)
         else:
             doubleArr = ffi.new(f'double[{size}]', data)
@@ -230,13 +230,13 @@ class Multio:
         if type(data) == bytes:
             size = len(data)
             sizeInt = ffi.cast("int", size)
-            voidArr = ffi.from_buffer("void*", from_buffer(data))
+            voidArr = ffi.from_buffer("void*", data)
             lib.multio_write_grib_encoded(self._handle, voidArr, sizeInt)
 
         elif haveNumpy and (type(data) == np.ndarray):
             size = len(data) * np.dtype.itemsize
             sizeInt = ffi.cast("int", size)
-            voidArr = ffi.from_buffer("void*", from_buffer(data))
+            voidArr = ffi.from_buffer("void*", data)
             lib.multio_write_grib_encoded(self._handle, voidArr, sizeInt)
         else:
             size = len(data)

@@ -94,108 +94,95 @@ public:
 
 
     // Implementation details
+private:
+    template <typename TI>
+    static constexpr bool TypeContainedInList_v
+        = util::TypeListContains_v<std::decay_t<TI>, typename Types::AllWrapped>;
+
+    template <typename TI>
+    static constexpr bool NeedsUniquePtrWrapping_v
+        = util::TypeListContains_v<std::unique_ptr<std::decay_t<TI>>, typename Types::AllWrapped>;
+
+    template <typename TI>
+    static constexpr bool IsSameClass_v = std::is_same_v<std::decay_t<TI>, This>;
+
+    template <typename TI>
+    static constexpr bool IsBase_v = std::is_same_v<std::decay_t<TI>, Base>;
+
+    template <typename TI>
+    static constexpr bool CustomConversionExists_v = HasMetadataValueConversionHelper<std::decay_t<TI>>::value;
+
+    template <typename TI>
+    static constexpr bool NeedsCustomConversion_v
+        = !NeedsUniquePtrWrapping_v<TI> && !IsSameClass_v<TI> && !IsBase_v<TI> && CustomConversionExists_v<TI>;
+
+    template <typename TI>
+    static constexpr bool EverythingElse_v
+        = !NeedsUniquePtrWrapping_v<TI> && !IsSameClass_v<TI> && !IsBase_v<TI> && !CustomConversionExists_v<TI>;
 
 
+public:
     // Special constructor to transparently create nested types that are supposed to be wrapped with unique_ptr
-    template <
-        typename T,
-        std::enable_if_t<util::TypeListContains_v<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>, bool>
-        = true>
+    template <typename T, std::enable_if_t<NeedsUniquePtrWrapping_v<T>, bool> = true>
     MetadataValue(T&& val) : MetadataValue(std::make_unique<std::decay_t<T>>(std::forward<T>(val))){};
 
-   
+
     // Constructor that handles predefined conversions for convenience. Required for smooth icpc compilation
-    template <typename T,
-              std::enable_if_t<(!util::TypeListContains_v<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>
-                                && !std::is_same_v<std::decay_t<T>, This> && !std::is_same_v<std::decay_t<T>, Base>
-                                && HasMetadataValueConversionHelper<std::decay_t<T>>::value),
-                               bool>
-              = true>
+    template <typename T, std::enable_if_t<NeedsCustomConversion_v<T>, bool> = true>
     MetadataValue(T&& val) : Base(MetadataValueConversionHelper_t<std::decay_t<T>>(std::forward<T>(val))){};
 
-    // Constructor that deals with all other cases exlusive to the unique_ptr handling - Sane conversion is reimplemented for icpc
-    template <typename T,
-              std::enable_if_t<(!util::TypeListContains_v<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>
-                                && !std::is_same_v<std::decay_t<T>, This> && !std::is_same_v<std::decay_t<T>, Base>
-                                && !HasMetadataValueConversionHelper<std::decay_t<T>>::value
-                                ),
-                               bool>
-              = true>
-    // MetadataValue(T&& val) : Base(util::FirstContvertibleTo_t<T, typename Types::AllWrapped>(std::forward<T>(val))){};
-    MetadataValue(T&& val) : Base(util::SaneOverloadResolutionResult_t<T, typename Types::AllWrapped>{std::forward<T>(val)}){};
+    // Constructor that deals with all other cases exlusive to the unique_ptr handling - Sane conversion is
+    // reimplemented for icpc
+    template <typename T, std::enable_if_t<EverythingElse_v<T>, bool> = true>
+    MetadataValue(T&& val) :
+        Base(util::SaneOverloadResolutionResult_t<T, typename Types::AllWrapped>{std::forward<T>(val)}){};
 
-
-    // // The following two constructors are added because intels icpc has problems with inheriting constructors that
-    // // conflict with the previous constructor
-    // // // using MetadataValueVariant::MetadataValueVariant;
-    // template <typename T1, typename T2, typename... TS,
-    //           std::enable_if_t<std::is_constructible_v<Base, T1, T2, TS...>, bool> = true>
-    // MetadataValue(T1&& v1, T2&& v2, TS&&... vs) :
-    //     Base(std::forward<T1>(v1), std::forward<T2>(v2), std::forward<TS>(vs)...){};
 
     MetadataValue() : Base(){};
 
 
-
     // Overwriting operator= to support transparent unique_ptr creation and implement sane conversion for Intel icpc
-    template <
-        typename T,
-        std::enable_if_t<util::TypeListContains_v<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>, bool>
-        = true>
-    This& operator=(T&& val) { Base::operator=(std::make_unique<std::decay_t<T>>(std::forward<T>(val))); return *this; }
+    template <typename T, std::enable_if_t<NeedsUniquePtrWrapping_v<T>, bool> = true>
+    This& operator=(T&& val) {
+        Base::operator=(std::make_unique<std::decay_t<T>>(std::forward<T>(val)));
+        return *this;
+    }
 
     // Constructor that deals with all other cases exlusive to the unique_ptr handling
-    template <typename T,
-              std::enable_if_t<(!util::TypeListContains_v<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>
-                                && !std::is_same_v<std::decay_t<T>, This> && !std::is_same_v<std::decay_t<T>, Base>
-                                && HasMetadataValueConversionHelper<std::decay_t<T>>::value),
-                               bool>
-              = true>
-    This& operator=(T&& val) { 
+    template <typename T, std::enable_if_t<NeedsCustomConversion_v<T>, bool> = true>
+    This& operator=(T&& val) {
         using TI = MetadataValueConversionHelper_t<std::decay_t<T>>;
         if (this->index() == util::GetVariantIndex_v<TI, Base>) {
             std::get<TI>(*this) = std::forward<T>(val);
-        } else {
-            Base::operator=(TI{std::forward<T>(val)}); 
         }
-        return *this; 
+        else {
+            Base::operator=(TI{std::forward<T>(val)});
+        }
+        return *this;
     }
 
     // Constructor that is required for icpc....
-    template <typename T,
-              std::enable_if_t<(!util::TypeListContains_v<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>
-                                && !std::is_same_v<std::decay_t<T>, This> && !std::is_same_v<std::decay_t<T>, Base>
-                                && !HasMetadataValueConversionHelper<std::decay_t<T>>::value
-                                // && !std::is_same_v<util::OverloadResolutionResult_t<T, typename Types::AllWrapped>, void>),
-                                ),
-                               bool>
-              = true>
-    // MetadataValue(T&& val) : Base(util::FirstContvertibleTo_t<T, typename Types::AllWrapped>(std::forward<T>(val))){};
-    This& operator=(T&& val) { 
+    template <typename T, std::enable_if_t<EverythingElse_v<T>, bool> = true>
+    This& operator=(T&& val) {
         using TI = util::SaneOverloadResolutionResult_t<T, typename Types::AllWrapped>;
         if (this->index() == util::GetVariantIndex_v<TI, Base>) {
             std::get<TI>(*this) = std::forward<T>(val);
-        } else {
-            Base::operator=(TI{std::forward<T>(val)}); 
         }
-        return *this; 
+        else {
+            Base::operator=(TI{std::forward<T>(val)});
+        }
+        return *this;
     }
 
 private:
     // Implementation details
 
-    template <
-        typename T,
-        std::enable_if_t<!util::TypeListContains_v<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>, bool>
-        = true>
+    template <typename T, std::enable_if_t<!NeedsUniquePtrWrapping_v<T>, bool> = true>
     static T&& wrapNestedMaybe(T&& v) noexcept {
         return std::forward<T>(v);
     }
 
-    template <
-        typename T,
-        std::enable_if_t<util::TypeListContains_v<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>, bool>
-        = true>
+    template <typename T, std::enable_if_t<NeedsUniquePtrWrapping_v<T>, bool> = true>
     static std::unique_ptr<std::decay_t<T>> wrapNestedMaybe(T&& v) {
         return std::make_unique<std::decay_t<T>>(std::forward<T>(v));
     }
@@ -206,23 +193,19 @@ private:
 
     template <typename T, typename This_>
     static decltype(auto) resolvedUniquePtrGetter(This_&& val) {
-        static_assert(util::TypeListContains_v<std::decay_t<T>, typename Types::AllWrapped>);
+        static_assert(TypeContainedInList_v<T>);
         if (val.index() == util::GetVariantIndex_v<std::decay_t<T>, Base>) {
             return std::get<T>(std::forward<This_>(val));
         }
         throw MetadataWrongTypeException(util::GetVariantIndex_v<std::decay_t<T>, Base>, val.index(), Here());
     }
 
-    template <typename T, typename This_,
-              std::enable_if_t<util::TypeListContains_v<std::decay_t<T>, typename Types::AllWrapped>, bool> = true>
+    template <typename T, typename This_, std::enable_if_t<TypeContainedInList_v<T>, bool> = true>
     static decltype(auto) uniquePtrGetter(This_&& val) {
         return resolvedUniquePtrGetter<T>(std::forward<This_>(val));
     }
 
-    template <
-        typename T, typename This_,
-        std::enable_if_t<util::TypeListContains_v<std::unique_ptr<std::decay_t<T>>, typename Types::AllWrapped>, bool>
-        = true>
+    template <typename T, typename This_, std::enable_if_t<NeedsUniquePtrWrapping_v<T>, bool> = true>
     static decltype(auto) uniquePtrGetter(This_&& val) {
         if constexpr (!std::is_lvalue_reference_v<This_>) {
             return std::move(*(resolvedUniquePtrGetter<std::unique_ptr<T>>(std::forward<This_>(val))).get());

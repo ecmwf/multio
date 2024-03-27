@@ -11,6 +11,35 @@ namespace multio::message {
 
 namespace {
 
+void applyMapping(Metadata& data, const MetadataMapping::MatchKeyType& metadataKey,
+                  const std::pair<MetadataValue, eckit::LocalConfiguration>& dataPair,
+                  const MetadataMapping::KeyMapping& mapping, bool isOptional) {
+    for (const auto& keyPair : mapping) {
+        if (dataPair.second.has(keyPair.second)) {
+            if (auto mv = tryToMetadataValue(dataPair.second.getSubConfiguration(keyPair.second).get()); mv) {
+                data.set(keyPair.first, std::move(*mv));
+            }
+            else {
+                std::ostringstream oss;
+                oss << "Metadata mapping failure: Source key \"" << metadataKey << "\" in metadata is resolving to \""
+                    << dataPair.first << "\". The value for key \"" << keyPair.second
+                    << "\" can not be parsed to a valid metadata value: "
+                    << dataPair.second.getSubConfiguration(keyPair.second) << std::endl;
+                throw MetadataMappingException(oss.str(), Here());
+            }
+        }
+        else {
+            if (!isOptional) {
+                std::ostringstream oss;
+                oss << "Metadata mapping failure: Source key \"" << metadataKey << "\" in metadata is resolving to \""
+                    << dataPair.first << "\" which mapping is not providing a mapping for key \"" << keyPair.second
+                    << "\"." << std::endl;
+                throw MetadataMappingException(oss.str(), Here());
+            }
+        }
+    }
+}
+
 MetadataMapping::DataMapping constructDataMapping(
     const MetadataMapping::MatchKeyType& metadataKey, const MetadataMapping::KeyMapping& mappings,
     const MetadataMapping::KeyMapping& optionalMappings,
@@ -20,35 +49,8 @@ MetadataMapping::DataMapping constructDataMapping(
     for (const auto& dataPair : source) {
         Metadata data;
 
-        const auto applyMapping = [&](const MetadataMapping::KeyMapping& mapping, bool isOptional) {
-            for (const auto& keyPair : mapping) {
-                if (dataPair.second.has(keyPair.second)) {
-                    if (auto mv = tryToMetadataValue(dataPair.second.getSubConfiguration(keyPair.second).get()); mv) {
-                        data.set(keyPair.first, std::move(*mv));
-                    }
-                    else {
-                        std::ostringstream oss;
-                        oss << "Metadata mapping failure: Source key \"" << metadataKey
-                            << "\" in metadata is resolving to \"" << dataPair.first << "\". The value for key \""
-                            << keyPair.second << "\" can not be parsed to a valid metadata value: "
-                            << dataPair.second.getSubConfiguration(keyPair.second).get() << std::endl;
-                        throw MetadataMappingException(oss.str(), Here());
-                    }
-                }
-                else {
-                    if (!isOptional) {
-                        std::ostringstream oss;
-                        oss << "Metadata mapping failure: Source key \"" << metadataKey
-                            << "\" in metadata is resolving to \"" << dataPair.first
-                            << "\" which mapping is not providing a mapping for key \"" << keyPair.second << "\"."
-                            << std::endl;
-                        throw MetadataMappingException(oss.str(), Here());
-                    }
-                }
-            }
-        };
-        applyMapping(mappings, false);
-        applyMapping(optionalMappings, true);
+        applyMapping(data, metadataKey, dataPair, mappings, false);
+        applyMapping(data, metadataKey, dataPair, optionalMappings, true);
 
         ret.emplace(dataPair.first, std::move(data));
     }

@@ -409,9 +409,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             withFirstOf(valueSetter(g, "orderingConvention"), lookUp<std::string>(md, glossary().orderingConvention));
         }
     }
-    // TODO Remove Part of parameter mapping now
-    // withFirstOf(valueSetter(g, "generatingProcessIdentifier"), lookUp<std::int64_t>(md,
-    // "generatingProcessIdentifier"));
 
     return ret;
 }
@@ -718,14 +715,7 @@ void GribEncoder::setOceanMetadata(const message::Message& msg) {
     setEncodingSpecificFields(*this, metadata);
 
     // Setting parameter ID
-    // auto paramInt = util::visitTranslate<std::int64_t>(metadata.get("param"));
     auto paramInt = metadata.get<std::int64_t>(glossary().paramId);
-    // if (!paramInt) {
-    //     std::ostringstream oss;
-    //     oss << "GribEncoder::setOceanMetadata: Value for param can not be translated to int: ";
-    //     oss << metadata.get("param");
-    //     throw eckit::UserError(oss.str(), Here());
-    // }
     if (paramInt / 1000 == 212) {
         // HACK! Support experimental averages.
         setValue(glossary().paramId, paramInt + 4000);
@@ -795,20 +785,8 @@ void GribEncoder::setOceanCoordMetadata(const message::Metadata& metadata, const
 
     setValue(glossary().date, md.get<std::int64_t>(glossary().startDate));
 
-    // setDomainDimensions
-    // auto gls = lookUp<std::int64_t>(md, glossary().globalSize);
-    // setValue("numberOfDataPoints", md.get<std::int64_t>(glossary().globalSize));
-    // setValue("numberOfValues", md.get<std::int64_t>(glossary().globalSize));
-
     // Setting parameter ID
-    // auto paramInt = util::visitTranslate<std::int64_t>(md.get(glossary().param));
     auto paramInt = md.get<std::int64_t>(glossary().paramId);
-    // if (!paramInt) {
-    //     std::ostringstream oss;
-    //     oss << "GribEncoder::setOceanCoordMetadata: Value for param can not be translated to int: ";
-    //     oss << md.get("param");
-    //     throw eckit::UserError(oss.str(), Here());
-    // }
     setValue(glossary().paramId, paramInt);
 
     setValue(glossary().typeOfLevel, md.get<std::string>(glossary().typeOfLevel));

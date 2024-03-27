@@ -60,27 +60,6 @@ Message::Message(Header&& header, const SharedPayload& payload) :
     version_{protocolVersion()}, header_{std::move(header)}, payload_{payload} {}
 
 
-// Message::Message(Header&& header, const eckit::Buffer& payload) :
-//     Message(std::move(header), std::make_shared<eckit::Buffer>(payload, payload.size())) {}
-
-// Message::Message(Header&& header, eckit::Buffer&& payload) :
-//     Message(std::move(header), std::make_shared<eckit::Buffer>(std::move(payload))) {}
-
-// Message::Message(Header&& header, std::shared_ptr<eckit::Buffer> payload) :
-//     Message(std::make_shared<Header>(std::move(header)), std::move(payload)) {}
-
-// Message::Message(Header&& header, std::shared_ptr<eckit::Buffer>&& payload) :
-//     version_{protocolVersion()}, header_{std::move(header)}, payload_{std::move(payload)} {}
-
-// Message::Message(Header&& header, const std::shared_ptr<eckit::Buffer>& payload) :
-//     version_{protocolVersion()}, header_{std::move(header)}, payload_{payload} {}
-
-// Message::Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload) :
-//     version_{protocolVersion()}, header_{std::move(header)}, payload_{std::move(payload)} {}
-
-// Message::Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload) :
-//     version_{protocolVersion()}, header_{std::move(header)}, payload_{payload} {}
-
 const Message::Header& Message::header() const {
     return header_;
 }

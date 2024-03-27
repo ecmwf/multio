@@ -128,7 +128,10 @@ public:
                   size_t NSide, orderingConvention_e orderingConvention) {
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter file cache constructor (from message)" << std::endl;
         // Generate cache file name
-        size_t level = static_cast<size_t>(msg.metadata().getOpt<std::int64_t>("level").value_or(msg.metadata().getOpt<double>("levelist").value_or(0)));
+        size_t level = static_cast<size_t>(                             //
+            msg.metadata().getOpt<std::int64_t>("level").value_or(      //
+                msg.metadata().getOpt<double>("levelist").value_or(0))  //
+        );
         if ((msg.metadata().get<std::string>("category") == "ocean-3d")
             && (msg.metadata().get<std::string>("fesomLevelType") == "level")) {
             if (level == 0) {

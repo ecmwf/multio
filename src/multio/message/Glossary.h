@@ -36,6 +36,9 @@ namespace multio::message {
 //-----------------------------------------------------------------------------
 
 /**
+ * TODO Think about another option: create namespcae `glosasry` and declare all keys as `const static KeyType
+ * keyName{"keyName"}`
+ *
  * This class is ment to keep track of different metadata keys used within the action provided through multio.
  * Reasons to have this:
  *  - Keep track of metadata keys that are used - with a proper IDE we can jump to all places a key is used

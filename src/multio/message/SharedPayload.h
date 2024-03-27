@@ -27,13 +27,6 @@ struct PayloadReference {
     const void* data_;
     std::size_t size_;
 
-    // PayloadReference() = default;
-    // PayloadReference(const PayloadReference&) = default;
-    // PayloadReference(PayloadReference&&) = default;
-    // PayloadReference& operator=(const PayloadReference&) = default;
-    // PayloadReference& operator=(PayloadReference&&) = default;
-    // PayloadReference(const eckit::Buffer& b): data_{b.data()}, size_{b.size()} {};
-
 
     const void* data() const noexcept { return data_; }
     std::size_t size() const noexcept { return size_; }

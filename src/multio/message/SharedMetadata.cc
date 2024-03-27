@@ -38,6 +38,7 @@ const Metadata& SharedMetadata::read() const {
 Metadata& SharedMetadata::modify() {
     if (moveOrCopy_ && metadata_.use_count() != 1) {
         metadata_ = std::make_shared<Metadata>(*metadata_);
+        moveOrCopy_ = false;
     }
     return *metadata_;
 }

@@ -78,35 +78,35 @@ std::string Message::Header::name() const {
     if (auto optVal = metadata_.read().getOpt<std::string>(glossary().name); optVal) {
         return *optVal;
     }
-    throw MetadataMissingKeyException("name", Here());
+    throw MetadataMissingKeyException(glossary().name, Here());
 }
 
 std::string Message::Header::category() const {
     if (auto optVal = metadata_.read().getOpt<std::string>(glossary().category); optVal) {
         return *optVal;
     }
-    throw MetadataMissingKeyException("category", Here());
+    throw MetadataMissingKeyException(glossary().category, Here());
 }
 
 std::int64_t Message::Header::globalSize() const {
     if (auto optVal = metadata_.read().getOpt<std::int64_t>(glossary().globalSize); optVal) {
         return *optVal;
     }
-    throw MetadataMissingKeyException("globalSize", Here());
+    throw MetadataMissingKeyException(glossary().globalSize, Here());
 }
 
 std::string Message::Header::domain() const {
     if (auto optVal = metadata_.read().getOpt<std::string>(glossary().domain); optVal) {
         return *optVal;
     }
-    throw MetadataMissingKeyException("domain", Here());
+    throw MetadataMissingKeyException(glossary().domain, Here());
 }
 
 util::PrecisionTag Message::Header::precision() const {
     if (auto optVal = metadata_.read().getOpt<std::string>(glossary().precision); optVal) {
         return util::decodePrecisionTag(*optVal);
     }
-    throw MetadataMissingKeyException("precision", Here());
+    throw MetadataMissingKeyException(glossary().precision, Here());
 }
 
 const std::string& Message::Header::fieldId() const {

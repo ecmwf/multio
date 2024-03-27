@@ -37,7 +37,8 @@ public:
 
     This& operator=(const This& other) = default;
     This& operator=(This&& other) noexcept = default;
-    
+
+    // WARNING TO USERS: NEVER STORE THESE REFERENCES
     const Metadata& read() const;
     Metadata& modify();
     

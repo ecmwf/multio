@@ -24,8 +24,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
-// #include <unordered_map>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 
@@ -69,8 +68,7 @@ struct MetadataTypes {
     using KeyType = PrehashedKey<std::string>;
 
     template <typename ValueType>
-    // using MapType = std::unordered_map<KeyType, ValueType>;
-    using MapType = std::map<KeyType, ValueType>;
+    using MapType = std::unordered_map<KeyType, ValueType>;
 
 
     using Nulls = util::TypeList<Null>;

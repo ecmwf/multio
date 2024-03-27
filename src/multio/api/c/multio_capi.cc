@@ -907,7 +907,3 @@ Metadata* multio_from_c(multio_metadata_t* md) {
     // return static_cast<Metadata*>(md);
     return &(md->md.modify());
 }
-
-// multio_metadata_t* multio_to_c(Metadata* md) {
-//     return static_cast<multio_metadata_t*>(md);
-// }

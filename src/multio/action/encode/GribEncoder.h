@@ -107,9 +107,10 @@ inline bool isOcean(const message::Metadata& metadata) {
     using message::glossary;
 
     // Check if metadata has a key "nemoParam" or a category starting with "ocean"
-    std::optional<std::string> category;
-    return (metadata.find(glossary().nemoParam) != metadata.end())
-        || ((category = metadata.getOpt<std::string>(glossary().category)) && (category->rfind("ocean") == 0));
+    std::optional<std::string> category = metadata.getOpt<std::string>(glossary().category);
+    const bool hasNemoParam = metadata.find(glossary().nemoParam) != metadata.end();
+    const bool hasCatOcean = category && (category->rfind("ocean") == 0);
+    return hasNemoParam || hasCatOcean;
 };
 
 

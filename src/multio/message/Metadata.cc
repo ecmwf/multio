@@ -24,13 +24,12 @@ namespace multio::message {
 //----------------------------------------------------------------------------------------------------------------------
 
 // Constructor for unordered_map
-// Metadata::Metadata() : values_{512} {}
-// Metadata::Metadata(std::initializer_list<std::pair<const KeyType, MetadataValue>> li) : values_{std::move(li), 512}
-// {}
+Metadata::Metadata() : values_{512} {}
+Metadata::Metadata(std::initializer_list<std::pair<const KeyType, MetadataValue>> li) : values_{std::move(li), 512} {}
 
 // Construtore for map
-Metadata::Metadata() : values_{} {}
-Metadata::Metadata(std::initializer_list<std::pair<const KeyType, MetadataValue>> li) : values_{std::move(li)} {}
+// Metadata::Metadata() : values_{} {}
+// Metadata::Metadata(std::initializer_list<std::pair<const KeyType, MetadataValue>> li) : values_{std::move(li)} {}
 
 Metadata::Metadata(MapType&& values) : values_{std::move(values)} {}
 

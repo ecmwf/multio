@@ -48,18 +48,12 @@ MaskPayloadHeader decodeMaskPayloadHeader(const unsigned char* b, std::size_t si
     return h;
 }
 
-// MaskPayloadHeader decodeMaskPayloadHeader(const eckit::Buffer& b) {
-//     return decodeMaskPayloadHeader(static_cast<const unsigned char*>(b.data()), b.size() * sizeof(unsigned char));
-// }
 
 MaskPayloadHeader decodeMaskPayloadHeader(const message::SharedPayload& p) {
     return decodeMaskPayloadHeader(static_cast<const unsigned char*>(static_cast<const void*>(p.data())),
                                    p.size() * sizeof(unsigned char));
 }
 
-// MaskPayloadHeader decodeMaskPayloadHeader(const PayloadReference& p) {
-//     return decodeMaskPayloadHeader(static_cast<const unsigned char*>(p.data), p.size * sizeof(unsigned char));
-// }
 
 MaskPayloadHeader decodeMaskPayloadHeader(const std::array<unsigned char, MASK_PAYLOAD_HEADER_SIZE>& b) {
     return decodeMaskPayloadHeader(b.data(), b.size());

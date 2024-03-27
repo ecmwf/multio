@@ -131,23 +131,6 @@ public:  // types
     };
 
 
-    // class Content {
-    // public:
-    //     Content(Header&& header, const eckit::Buffer& payload = eckit::Buffer(0));
-    //     Content(Header&& header, eckit::Buffer&& payload);
-
-    //     size_t size() const;
-
-    //     const Header& header();
-
-    //     eckit::Buffer& payload();
-    //     const eckit::Buffer& payload() const;
-
-    // private:
-    //     const Header header_;
-    //     eckit::Buffer payload_;
-    // };
-
 public:  // methods
     static int protocolVersion();
     static std::string tag2str(Tag t);
@@ -164,14 +147,6 @@ public:  // methods
     Message(Header&& header, eckit::Buffer&& payload);
     Message(Header&& header, SharedPayload&& payload);
     Message(Header&& header, const SharedPayload& payload);
-
-    // Message(Header&& header, const eckit::Buffer& payload = eckit::Buffer{0});
-    // Message(Header&& header, eckit::Buffer&& payload);
-    // // Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload);
-    // // Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload);
-    // Message(Header&& header, std::shared_ptr<eckit::Buffer>&& payload);
-    // Message(Header&& header, const std::shared_ptr<eckit::Buffer>& payload);
-    // // Message(std::shared_ptr<Header> header, std::shared_ptr<eckit::Buffer> payload);
 
     LogMessage logMessage() const;
 

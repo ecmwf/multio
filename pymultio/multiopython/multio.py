@@ -1,10 +1,8 @@
+import importlib.util
 import os
 
 from .lib import ffi, lib
 from .metadata import Metadata
-
-
-import importlib.util
 
 numpy_spec = importlib.util.find_spec("numpy")
 haveNumpy = numpy_spec is not None

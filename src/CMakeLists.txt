@@ -1,2 +1,2 @@
 add_subdirectory( multio )
-add_subdirectory( ifs-output-manager )
+add_subdirectory( ecom )

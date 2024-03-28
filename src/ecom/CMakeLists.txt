@@ -327,7 +327,7 @@ list( APPEND output_manager_src
 # + BUILD OUTPUT MANAGER LIBRARY
 # ======================================================================
 ecbuild_add_library(
-  TARGET  ifs-output-manager
+  TARGET  ecom
   SOURCES ${output_manager_src}
 
   DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
@@ -343,11 +343,15 @@ ecbuild_add_library(
     multio-fapi
 )
 
+# Module directory
+set_target_properties( ecom PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/ecom )
+target_include_directories( ecom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/ecom> )
+
 
 if ( HAVE_OUTPUT_MANAGER_TOOL )
 ecbuild_add_executable(
 
-  TARGET standalone-output-manager
+  TARGET standalone-ecom
 
   SOURCES
     tool/om_tool_cfg_mod.F90
@@ -356,7 +360,7 @@ ecbuild_add_executable(
 
   LIBS
     fckit
-    ifs-output-manager
+    ecom
     eccodes
     eccodes_f90
     multio-fapi

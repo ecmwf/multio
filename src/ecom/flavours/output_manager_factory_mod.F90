@@ -222,7 +222,7 @@ PP_ERROR_HANDLER
       DEALLOCATE(ERRMSG)
 
     CASE (100)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown output manager' )
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown output manager: "'//TRIM(ADJUSTL(OMTYPE))//'"' )
 
     CASE (101)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Error message allocated at the end of the function: ['//TRIM(ADJUSTL(ERRMSG))//']' )

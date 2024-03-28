@@ -266,6 +266,8 @@ list( APPEND output_manager_src
 # Append and build only the output manager needed for the run
 # -----------------------------------------------------------
 if ( HAVE_OUTPUT_MANAGER_GRIBX_BINARY )
+message(STATUS, "Add gribX_binary output manager")
+list( APPEND OUTPUT_MANAGER_BUILD_FLAVOUR "WITH_GRIBX_BINARY_OUTPUT_MANAGER" )
 list( APPEND output_manager_src
     flavours/gribx_binary_output_manager_mod.F90
 )
@@ -275,6 +277,8 @@ endif()
 # Append and build only the output manager needed for the run
 # -----------------------------------------------------------
 if ( HAVE_OUTPUT_MANAGER_GRIBX2MULTIO_BIN )
+message(STATUS, "Add gribX2multio_bin output manager")
+list( APPEND OUTPUT_MANAGER_BUILD_FLAVOUR "WITH_GRIBX2MULTIO_BIN_OUTPUT_MANAGER" )
 list( APPEND output_manager_src
     flavours/gribx2multio_bin_output_manager_mod.F90
 )
@@ -284,6 +288,8 @@ endif()
 # Append and build only the output manager needed for the run
 # -----------------------------------------------------------
 if ( HAVE_OUTPUT_MANAGER_GRIBX2MULTIO_RAW )
+message(STATUS, "Add gribX2multio_raw output manager")
+list( APPEND OUTPUT_MANAGER_BUILD_FLAVOUR "WITH_GRIBX2MULTIO_RAW_OUTPUT_MANAGER" )
 list( APPEND output_manager_src
     flavours/gribx2multio_raw_output_manager_mod.F90
 )
@@ -293,6 +299,8 @@ endif()
 # Append and build only the output manager needed for the run
 # -----------------------------------------------------------
 if ( HAVE_OUTPUT_MANAGER_MULTIO_RAW )
+message(STATUS, "Add multio_raw output manager")
+list( APPEND OUTPUT_MANAGER_BUILD_FLAVOUR "WITH_MULTIO_RAW_OUTPUT_MANAGER" )
 list( APPEND output_manager_src
     flavours/multio_raw_output_manager_mod.F90
 )
@@ -302,6 +310,8 @@ endif()
 # Append and build only the output manager needed for the run
 # -----------------------------------------------------------
 if ( HAVE_OUTPUT_MANAGER_MULTIO_NO_ENC )
+message(STATUS, "Add multio_noenc output manager")
+list( APPEND OUTPUT_MANAGER_BUILD_FLAVOUR "WITH_MULTIO_NO_ENC_OUTPUT_MANAGER" )
 list( APPEND output_manager_src
     flavours/multio_no_enc_output_manager_mod.F90
 )

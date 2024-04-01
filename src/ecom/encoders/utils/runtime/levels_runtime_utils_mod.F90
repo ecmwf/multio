@@ -217,6 +217,10 @@ IMPLICIT NONE
       PP_METADATA_SET( METADATA,  'level', MSG%ILEVG_ ) ! level must be defined at the end
     ENDIF
   ENDIF
+  IF ( MSG%PARAM_ID_ .EQ. 260015 ) THEN
+    PP_METADATA_SET( METADATA,  'scaleFactorOfFirstFixedSurface',  INT(0,JPIB_K) )
+    PP_METADATA_SET( METADATA,  'scaledValueOfFirstFixedSurface', INT(0,JPIB_K) )
+  ENDIF
 
   IF( GRIB_INFO%ITOP_ .GE. 0 .AND. GRIB_INFO%IBOT_ .GE. 0 ) THEN
     PP_METADATA_SET( METADATA,  'typeOfLevel', 'depthBelowLandLayer' )

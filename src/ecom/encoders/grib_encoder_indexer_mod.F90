@@ -118,14 +118,48 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
+  ! Error handling
+  PP_DEBUG_DEVELOP_COND_THROW( MSG%IPREF_.LT.LBOUND(GRIB_INFO%REQUESTED_ENCODING_,1), 1 )
+  PP_DEBUG_DEVELOP_COND_THROW( MSG%IPREF_.GT.UBOUND(GRIB_INFO%REQUESTED_ENCODING_,1), 2 )
+
   ! Create the index of the encoder to be used
-  IDX = ENCODER_ID_PRE( MSG%IPREF_, MSG%IREPRES_, GRIB_INFO%REQUESTED_ENCODING_ )
+  IDX = ENCODER_ID_PRE( MSG%IPREF_, MSG%IREPRES_, GRIB_INFO%REQUESTED_ENCODING_(MSG%IPREF_) )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Index lower than lower bound' )
+    CASE (2)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Index greater than upper bound' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
 
 END FUNCTION ENCODER_ID_ATM_GM
 #undef PP_PROCEDURE_NAME
@@ -175,13 +209,47 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
+  ! Error handling
+  PP_DEBUG_DEVELOP_COND_THROW( MSG%IPREF_.LT.LBOUND(GRIB_INFO%REQUESTED_ENCODING_,1), 1 )
+  PP_DEBUG_DEVELOP_COND_THROW( MSG%IPREF_.GT.UBOUND(GRIB_INFO%REQUESTED_ENCODING_,1), 2 )
+
   ! Create the index of the encoder to be used
-  IDX = ENCODER_ID_PRE( MSG%IPREF_, MSG%IREPRES_, GRIB_INFO%REQUESTED_ENCODING_ )
+  IDX = ENCODER_ID_PRE( MSG%IPREF_, MSG%IREPRES_, GRIB_INFO%REQUESTED_ENCODING_(MSG%IPREF_) )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Index lower than lower bound' )
+    CASE (2)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Index greater than upper bound' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
   RETURN
 
 END FUNCTION ENCODER_ID_WAM_GM

@@ -388,11 +388,14 @@ IMPLICIT NONE
 
   PP_METADATA_SET( METADATA,  'stepType', 'instant' )
 
-  PP_METADATA_SET( METADATA,  'endStep',  CURR_TIME%ISEC )
+  PP_METADATA_SET( METADATA,  'endStep',  CURR_TIME%ISEC/MODEL_PARAMS%SIM_%TSTEP*3600 )
 
   IF ( CURR_TIME%ISEC .GT. 0 .AND. MOD(CURR_TIME%ISEC,3600) .EQ. 0 ) THEN
     PP_METADATA_SET( METADATA,  'stepUnits', 'h' )
   ENDIF
+
+
+  ! WRITE(*,*) 'PLGG time encoder', CURR_TIME%ISEC, MODEL_PARAMS%SIM_%TSTEP
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -448,14 +451,17 @@ IMPLICIT NONE
   ! Here probably some logic is needed to compute this depending if it is an analysis or a forecast
   PP_METADATA_SET( METADATA,  'timeRangeIndicator', 0 )
 
-  PP_METADATA_SET( METADATA,  'stepUnits', 's' )
-
   PP_METADATA_SET( METADATA,  'stepType', 'instant' )
 
-  PP_METADATA_SET( METADATA,  'endStep',  CURR_TIME%ISEC )
+  PP_METADATA_SET( METADATA,  'stepUnits', 's' )
+
+  ! WRITE(*,*) 'Time encoder logging: ', CURR_TIME%ISEC, MODEL_PARAMS%SIM_%TSTEP
+  ! PP_METADATA_SET( METADATA,  'endStep',  CURR_TIME%ISEC )
+  PP_METADATA_SET( METADATA,  'forecastTime',  CURR_TIME%ISEC/MODEL_PARAMS%SIM_%TSTEP )
 
   IF ( CURR_TIME%ISEC .GT. 0 .AND. MOD(CURR_TIME%ISEC,3600) .EQ. 0 ) THEN
     PP_METADATA_SET( METADATA,  'stepUnits', 'h' )
+    PP_METADATA_SET( METADATA,  'indicatorOfUnitOfTimeRange', 'h' )
   ENDIF
 
   ! Trace end of procedure (on success)
@@ -1154,7 +1160,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA,  'stepUnits', 's' )
   PP_METADATA_SET( METADATA,  'stepType',  'accum' )
   PP_METADATA_SET( METADATA,  'startStep',  0 )
-  PP_METADATA_SET( METADATA,  'endStep',  CURR_TIME%ISEC )
+  PP_METADATA_SET( METADATA,  'endStep',  CURR_TIME%ISEC/MODEL_PARAMS%SIM_%TSTEP*3600 )
 
   IF ( CURR_TIME%ISEC .GT. 0 .AND. MOD(CURR_TIME%ISEC,3600) .EQ. 0 ) THEN
     PP_METADATA_SET( METADATA,  'stepUnits', 'h' )
@@ -1212,7 +1218,8 @@ IMPLICIT NONE
   PP_METADATA_ENTER_PROCEDURE( METADATA )
 
   PP_METADATA_SET( METADATA, 'timeRangeIndicator',0)
-
+  PP_METADATA_SET( METADATA, 'productDefinitionTemplateNumber', GRIB_INFO%PRODUCT_DEFINITION_TEMPLATE_NUMBER_ )
+  ! WRITE(*,*) 'ACCUMULATION FROM STEP 0'
   PP_METADATA_SET( METADATA,  'stepUnits', 's' )
   PP_METADATA_SET( METADATA,  'stepType',  'accum' )
   PP_METADATA_SET( METADATA,  'startStep',  0 )
@@ -1666,14 +1673,21 @@ IMPLICIT NONE
   PP_METADATA_ENTER_PROCEDURE( METADATA )
 
   ! Compute the last post processing step in seconds
-  LAST_PP_SEC = TIME_HIST%HIST_(TIME_HIST%SIZE_) * MODEL_PARAMS%SIM_%TSTEP
+  IF ( TIME_HIST%SIZE_ .GT. 1 ) THEN
+    LAST_PP_SEC = TIME_HIST%HIST_(TIME_HIST%SIZE_-1) * MODEL_PARAMS%SIM_%TSTEP
+  ELSE
+    LAST_PP_SEC = 0
+  ENDIF
+
+  ! WRITE(*,*) ' + START STEP :: ', LAST_PP_SEC
+  ! WRITE(*,*) ' + END STEP   :: ', CURR_TIME%ISEC
 
   PP_METADATA_SET( METADATA, 'timeRangeIndicator',0)
 
   PP_METADATA_SET( METADATA,  'stepUnits', 's' )
   PP_METADATA_SET( METADATA,  'stepType',  'max' )
-  PP_METADATA_SET( METADATA,  'startStep', LAST_PP_SEC )
-  PP_METADATA_SET( METADATA,  'endStep',  CURR_TIME%ISEC )
+  PP_METADATA_SET( METADATA,  'startStep', LAST_PP_SEC/MODEL_PARAMS%SIM_%TSTEP*3600 )
+  PP_METADATA_SET( METADATA,  'endStep',  CURR_TIME%ISEC/MODEL_PARAMS%SIM_%TSTEP*3600 )
 
   IF ( CURR_TIME%ISEC .GT. 0 .AND. MOD(CURR_TIME%ISEC,3600) .EQ. 0 ) THEN
     PP_METADATA_SET( METADATA,  'stepUnits', 'h' )

@@ -103,6 +103,7 @@ list( APPEND output_manager_src
   core/om_debug_mod.F90
   core/om_trace_mod.F90
   core/om_core_mod.F90
+  core/grib_info_data_mod.F90
 )
 
 
@@ -143,7 +144,6 @@ list( APPEND output_manager_src
 # Append source files for the raw message management
 # --------------------------------------------------
 list( APPEND output_manager_src
-    grib_info/grib_info_data_mod.F90
     grib_info/grib_info_mod.F90
     grib_info/grib_codes_mod.F90
 )

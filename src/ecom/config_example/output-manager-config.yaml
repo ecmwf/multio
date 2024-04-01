@@ -11,6 +11,7 @@ dump-output-manager:
 
 gribx-binary-output-manager:
   fields-file: 'allfields.grib'
+  verbose: true
 
 gribx2multio-binary-output-manager:
   multio-plans-file: '../multio-ifs-wam-config.yaml'
@@ -59,27 +60,27 @@ grib-info:
     short-name: 'ci'
     description: 'Sea ice area fraction'
     measure-unit: '(0 - 1)'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 34
     short-name: 'sst'
     description: 'Sea surface temperature'
     measure-unit: 'K'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 49
     short-name: '10fg'
     description: 'Maximum 10 metre wind gust since previous post-processing'
     measure-unit: 'm s**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 75
@@ -88,16 +89,16 @@ grib-info:
     measure-unit: 'kg kg**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 76
     short-name: 'cswc'
     description: 'Specific snow water content'
     measure-unit: 'kg kg**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 77
@@ -106,70 +107,70 @@ grib-info:
     measure-unit: 's**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 78
     short-name: 'tclw'
     description: 'Total column cloud liquid water'
     measure-unit: 'kg m**-2'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 129
     short-name: 'z'
     description: 'Geopotential'
     measure-unit: 'm**2 s**-2'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 130
     short-name: 't'
     description: 'Temperature'
     measure-unit: 'K'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 131
     short-name: 'u'
     description: 'U component of wind'
     measure-unit: 'm s**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 132
     short-name: 'v'
     description: 'V component of wind'
     measure-unit: 'm s**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 133
     short-name: 'q'
     description: 'Specific humidity'
     measure-unit: 'kg kg**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 134
     short-name: 'sp'
     description: 'Surface pressure'
     measure-unit: 'Pa'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 135
@@ -178,25 +179,25 @@ grib-info:
     measure-unit: 'Pa s**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 136
     short-name: 'tcw'
     description: 'Total column water'
     measure-unit: 'kg m**-2'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 137
     short-name: 'tcwv'
     description: 'Total column vertically-integrated water vapour'
     measure-unit: 'kg m**-2'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 138
@@ -205,34 +206,34 @@ grib-info:
     measure-unit: 's**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 142
     short-name: 'lsp'
     description: 'Large-scale precipitation'
     measure-unit: 'm'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 144
     short-name: 'sf'
     description: 'Snowfall'
     measure-unit: 'm of water equivalent'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 151
     short-name: 'msl'
     description: 'Mean sea level pressure'
     measure-unit: 'Pa'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 155
@@ -241,7 +242,7 @@ grib-info:
     measure-unit: 's**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 156
@@ -250,16 +251,16 @@ grib-info:
     measure-unit: 'gpm'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 157
     short-name: 'r'
     description: 'Relative humidity'
     measure-unit: '%'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 164
@@ -268,151 +269,151 @@ grib-info:
     measure-unit: '(0 - 1)'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 165
     short-name: '10u'
     description: '10 metre U wind component'
     measure-unit: 'm s**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 166
     short-name: '10v'
     description: '10 metre V wind component'
     measure-unit: 'm s**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 167
     short-name: '2t'
     description: '2 metre temperature'
     measure-unit: 'K'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 168
     short-name: '2d'
     description: '2 metre dewpoint temperature'
     measure-unit: 'K'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 169
     short-name: 'ssrd'
     description: 'Surface short-wave (solar) radiation downwards'
     measure-unit: 'J m**-2'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 175
     short-name: 'strd'
     description: 'Surface long-wave (thermal) radiation downwards'
     measure-unit: 'J m**-2'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 176
     short-name: 'ssr'
     description: 'Surface net short-wave (solar) radiation'
     measure-unit: 'J m**-2'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 177
     short-name: 'str'
     description: 'Surface net long-wave (thermal) radiation'
     measure-unit: 'J m**-2'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 178
     short-name: 'tsr'
     description: 'Top net short-wave (solar) radiation'
     measure-unit: 'J m**-2'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 179
     short-name: 'ttr'
     description: 'Top net long-wave (thermal) radiation'
     measure-unit: 'J m**-2'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 180
     short-name: 'ewss'
     description: 'Time-integrated eastward turbulent surface stress'
     measure-unit: 'N m**-2 s'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 181
     short-name: 'nsss'
     description: 'Time-integrated northward turbulent surface stress'
     measure-unit: 'N m**-2 s'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 205
     short-name: 'ro'
     description: 'Runoff'
     measure-unit: 'm'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228
     short-name: 'tp'
     description: 'Total precipitation'
     measure-unit: 'm'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 246
     short-name: 'clwc'
     description: 'Specific cloud liquid water content'
     measure-unit: 'kg kg**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 247
     short-name: 'ciwc'
     description: 'Specific cloud ice water content'
     measure-unit: 'kg kg**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 248
@@ -421,7 +422,7 @@ grib-info:
     measure-unit: '(0 - 1)'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 3020
@@ -430,7 +431,7 @@ grib-info:
     measure-unit: 'm'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 3062
@@ -439,7 +440,7 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 140221
@@ -448,7 +449,7 @@ grib-info:
     measure-unit: 's'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 140229
@@ -457,7 +458,7 @@ grib-info:
     measure-unit: 'm'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 140230
@@ -466,7 +467,7 @@ grib-info:
     measure-unit: 'Degree true'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 140231
@@ -475,7 +476,7 @@ grib-info:
     measure-unit: 's'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 140232
@@ -484,7 +485,7 @@ grib-info:
     measure-unit: 's'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 162071
@@ -493,7 +494,7 @@ grib-info:
     measure-unit: 'kg m**-1 s**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 162072
@@ -502,7 +503,7 @@ grib-info:
     measure-unit: 'kg m**-1 s**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228003
@@ -511,16 +512,16 @@ grib-info:
     measure-unit: 'm s**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228029
     short-name: 'i10fg'
     description: 'Instantaneous 10 metre wind gust'
     measure-unit: 'm s**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228050
@@ -529,7 +530,7 @@ grib-info:
     measure-unit: 'km**-2 day**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228058
@@ -538,7 +539,7 @@ grib-info:
     measure-unit: 'km**-2 day**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228143
@@ -547,7 +548,7 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228144
@@ -556,7 +557,7 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228164
@@ -565,34 +566,34 @@ grib-info:
     measure-unit: '%'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228216
     short-name: 'fzra'
     description: 'Accumulated freezing rain'
     measure-unit: 'm'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228218
     short-name: 'crr'
     description: 'Convective rain rate'
     measure-unit: 'kg m**-2 s**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228219
     short-name: 'lsrr'
     description: 'Large scale rain rate'
     measure-unit: 'kg m**-2 s**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228221
@@ -601,7 +602,7 @@ grib-info:
     measure-unit: 'kg m**-2 s**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228228
@@ -610,7 +611,7 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228235
@@ -619,7 +620,7 @@ grib-info:
     measure-unit: 'J kg**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228236
@@ -628,25 +629,25 @@ grib-info:
     measure-unit: 'J kg**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228246
     short-name: '100u'
     description: '100 metre U wind component'
     measure-unit: 'm s**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228247
     short-name: '100v'
     description: '100 metre V wind component'
     measure-unit: 'm s**-1'
-    has-grib-1: false
+    has-grib-1: true
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 231001
@@ -655,7 +656,7 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 231002
@@ -664,7 +665,7 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 231013
@@ -673,7 +674,7 @@ grib-info:
     measure-unit: '%'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260015
@@ -682,7 +683,7 @@ grib-info:
     measure-unit: 'code table (4.201)'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260199
@@ -691,7 +692,7 @@ grib-info:
     measure-unit: 'm**3 m**-3'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260227
@@ -700,7 +701,7 @@ grib-info:
     measure-unit: '%'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260228
@@ -709,7 +710,7 @@ grib-info:
     measure-unit: '%'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260238
@@ -718,7 +719,7 @@ grib-info:
     measure-unit: 'm s**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260360
@@ -727,7 +728,7 @@ grib-info:
     measure-unit: 'K'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260510
@@ -736,7 +737,7 @@ grib-info:
     measure-unit: 'K'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 262121
@@ -745,5 +746,5 @@ grib-info:
     measure-unit: 'J m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: 2
+    requested-encoding: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]

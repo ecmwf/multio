@@ -469,39 +469,41 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
 
     tryMapStepToTimeAndCheckTime(md);
 
-    std::string timeRef = std::invoke([&]() -> std::string {
-        if (auto optTimeRef = lookUpString(md, "timeReference"); optTimeRef) {
-            return *optTimeRef;
-        }
+    std::string timeRef;
+    if (auto optTimeRef = lookUpString(md, "timeReference"); optTimeRef) {
+        timeRef = *optTimeRef;
+    }
 
-
-        // TODO: this will not hold in the future - maybe the new category "processType" can be used to check if it's a
-        // forecast
-        // Handling of significanceOfReferenceTime is hacked in for now....
-        bool isReferingToStart = false;
-        if (queriedMarsFields.type) {
-            if (*queriedMarsFields.type == "fc") {
-                // If significanceOfReferenceTime is validityTime (2)
-                // then forecastTime should be set to zero.
-                if ((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
-                    isReferingToStart = false;
-                    g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
-                    g.setValue("startStep", 0l);
-                    if (gribEdition == "2") {
-                        g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
-                        g.setValue("forecastTime", 0l);
+    // TODO: this will not hold in the future - maybe the new category "processType" can be used to check if it's a
+    // forecast
+    // Handling of significanceOfReferenceTime is hacked in for now....
+    bool isReferingToStart = false;
+    if (queriedMarsFields.type) {
+        if (*queriedMarsFields.type == "fc") {
+            // If significanceOfReferenceTime is validityTime (2)
+            // then forecastTime should be set to zero.
+            if ((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
+                isReferingToStart = false;
+                if (gribEdition == "2") {
+                    g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
+                    if (isTimeRange) {
+                        g.setValue("indicatorOfUnitForTimeRange", timeUnitCodes(util::TimeUnit::Hour));
                     }
+                    g.setValue("forecastTime", 0l);
                 }
-                else {
-                    isReferingToStart = true;
-                }
+                g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+                g.setValue("startStep", 0l);
             }
-            else if (queriedMarsFields.type == "pf") {
+            else {
                 isReferingToStart = true;
             }
         }
-        return isReferingToStart ? "start" : (isTimeRange ? "previous" : "current");
-    });
+        else if (queriedMarsFields.type == "pf") {
+            isReferingToStart = true;
+        }
+    }
+
+    timeRef = isReferingToStart ? "start" : (isTimeRange ? "previous" : "current");
 
     auto refDateTimeTup = getReferenceDateTime(timeRef, md);
     auto refDateTime = util::wrapDateTime(

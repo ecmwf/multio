@@ -477,13 +477,13 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
     // TODO: this will not hold in the future - maybe the new category "processType" can be used to check if it's a
     // forecast
     // Handling of significanceOfReferenceTime is hacked in for now....
-    bool isReferingToStart = false;
+    bool isReferringToStart = false;
     if (queriedMarsFields.type) {
         if (*queriedMarsFields.type == "fc") {
             // If significanceOfReferenceTime is validityTime (2)
             // then forecastTime should be set to zero.
             if ((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
-                isReferingToStart = false;
+                isReferringToStart = false;
                 if (gribEdition == "2") {
                     g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
                     if (isTimeRange) {
@@ -495,15 +495,15 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
                 g.setValue("startStep", 0l);
             }
             else {
-                isReferingToStart = true;
+                isReferringToStart = true;
             }
         }
         else if (queriedMarsFields.type == "pf") {
-            isReferingToStart = true;
+            isReferringToStart = true;
         }
     }
 
-    timeRef = isReferingToStart ? "start" : (isTimeRange ? "previous" : "current");
+    timeRef = isReferringToStart ? "start" : (isTimeRange ? "previous" : "current");
 
     auto refDateTimeTup = getReferenceDateTime(timeRef, md);
     auto refDateTime = util::wrapDateTime(

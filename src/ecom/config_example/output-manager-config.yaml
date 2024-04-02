@@ -206,7 +206,7 @@ grib-info:
     measure-unit: 's**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 142
@@ -242,7 +242,7 @@ grib-info:
     measure-unit: 's**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 156

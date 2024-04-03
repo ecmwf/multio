@@ -99,9 +99,9 @@ END SUBROUTINE MARS_PRESET_FREE
 #undef PP_PROCEDURE_TYPE
 
 
-#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'MARS_PRESET_GRIB2_WAM_I'
-SUBROUTINE MARS_PRESET_GRIB2_WAM_I( MODEL_PARAMS, METADATA )
+FUNCTION MARS_PRESET_GRIB2_WAM_I( MODEL_PARAMS, METADATA ) RESULT(CLTYPE)
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,       ONLY: JPIB_K
@@ -121,6 +121,9 @@ IMPLICIT NONE
   TYPE(MODEL_PAR_T),      TARGET,  INTENT(IN)    :: MODEL_PARAMS
   CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
 
+  ! Function Result
+  CHARACTER(LEN=16) :: CLTYPE
+
   ! Local variables
   CHARACTER(LEN=96)     :: CLWORD
   INTEGER(KIND=JPIB_K)  :: ICENTRE
@@ -138,15 +141,8 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA,  'discipline', 10 )
 
 
-!     MODEL IDENTIFICATION.
-  IF (  MODEL_PARAMS%WAM_%CLDOMAIN == 'g' ) THEN
-    PP_METADATA_SET( METADATA,  'generatingProcessIdentifier', MODEL_PARAMS%WAM_%IMDLGRBID_G )
-  ELSE
-    PP_METADATA_SET( METADATA,  'generatingProcessIdentifier', MODEL_PARAMS%WAM_%IMDLGRBID_M )
-  ENDIF
-
-  PP_METADATA_SET( METADATA,  'typeOfLevel', 209 )
-  PP_METADATA_SET( METADATA,  'level', 0 )
+  ! PP_METADATA_SET( METADATA,  'typeOfLevel', 209 )
+  ! PP_METADATA_SET( METADATA,  'level', 0 )
 
   PP_METADATA_SET( METADATA,  'localDefinitionNumber', MODEL_PARAMS%WAM_%NLOCGRB )
 
@@ -157,7 +153,8 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA,  'class', MODEL_PARAMS%WAM_%YCLASS)
 
   ! TYPE
-  PP_METADATA_SET( METADATA,  'type', 2 )
+  CLTYPE = MODEL_PARAMS%WAM_%MARSTYPE
+  PP_METADATA_SET( METADATA,  'type', TRIM(CLTYPE) )
 
   ! STREAM
   PP_DEBUG_CRITICAL_COND_THROW( MODEL_PARAMS%WAM_%ISTREAM.LE.0, 1 )
@@ -224,8 +221,6 @@ IMPLICIT NONE
     ! EPS or DETERMINISTIC HINDCASTS
     ! REFERENCE DATE
     PP_METADATA_SET( METADATA,  'referenceDate',  MODEL_PARAMS%WAM_%IREFDATE )
-  CASE DEFAULT
-    PP_DEBUG_CRITICAL_THROW( 2 )
   END SELECT
 
   ! Trace end of procedure (on success)
@@ -262,14 +257,14 @@ PP_ERROR_HANDLER
   ! Exit point on error
   RETURN
 
-END SUBROUTINE MARS_PRESET_GRIB2_WAM_I
+END FUNCTION MARS_PRESET_GRIB2_WAM_I
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
-#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'MARS_PRESET_GRIB2_WAM_S'
-SUBROUTINE MARS_PRESET_GRIB2_WAM_S( MODEL_PARAMS, METADATA )
+FUNCTION MARS_PRESET_GRIB2_WAM_S( MODEL_PARAMS, METADATA ) RESULT(CLTYPE)
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,       ONLY: JPIB_K
@@ -289,6 +284,9 @@ IMPLICIT NONE
   TYPE(MODEL_PAR_T),      TARGET,  INTENT(IN)    :: MODEL_PARAMS
   CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
 
+  ! Function Result
+  CHARACTER(LEN=16) :: CLTYPE
+
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
 
@@ -306,22 +304,23 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA,  'localDefinitionNumber', 1)
 
   ! Product definiition number
-  IF ( MODEL_PARAMS%WAM_%NTOTENS .GT. 0 ) THEN
-    ! TODO
-    PP_METADATA_SET( METADATA,  'productDefinitionTemplateNumber', MODEL_PARAMS%WAM_%NSPEC2TMPP)
-  ELSE
-    ! TODO
-    PP_METADATA_SET( METADATA,  'productDefinitionTemplateNumber', MODEL_PARAMS%WAM_%NSPEC2TMPD)
-  ENDIF
+  ! IF ( MODEL_PARAMS%WAM_%NTOTENS .GT. 0 ) THEN
+  !   ! TODO
+  !   PP_METADATA_SET( METADATA,  'productDefinitionTemplateNumber', MODEL_PARAMS%WAM_%NSPEC2TMPP)
+  ! ELSE
+  !   ! TODO
+  !   PP_METADATA_SET( METADATA,  'productDefinitionTemplateNumber', MODEL_PARAMS%WAM_%NSPEC2TMPD)
+  ! ENDIF
 
   ! Experiment version
-  PP_METADATA_SET( METADATA,  'expver', MODEL_PARAMS%WAM_%YEXPVER )
+  PP_METADATA_SET( METADATA,  'experimentVersionNumber', MODEL_PARAMS%WAM_%YEXPVER )
 
   ! Class
   PP_METADATA_SET( METADATA,  'class', MODEL_PARAMS%WAM_%YCLASS )
 
-  ! Type
-  PP_METADATA_SET( METADATA,  'type', 2 )
+  ! Type 2 = Analysis?????
+  CLTYPE = MODEL_PARAMS%WAM_%MARSTYPE
+  PP_METADATA_SET( METADATA,  'type', TRIM(CLTYPE) )
 
   ! Stream
   PP_DEBUG_CRITICAL_COND_THROW( MODEL_PARAMS%WAM_%ISTREAM.LE.0, 1 )
@@ -408,7 +407,7 @@ PP_ERROR_HANDLER
   ! Exit point on error
   RETURN
 
-END SUBROUTINE MARS_PRESET_GRIB2_WAM_S
+END FUNCTION MARS_PRESET_GRIB2_WAM_S
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -676,42 +675,6 @@ IMPLICIT NONE
       PP_METADATA_SET( METADATA,  'systemNumber',YPI%NSYSTEM)
       PP_METADATA_SET( METADATA,  'methodNumber',YPI%NMETHOD)
 
-    CASE ( 23 )
-
-      ! 23 -> Coupled atmospheric, wave and ocean means (with hindcast support)
-      ! ------------------------------------------------------------------------
-      PP_METADATA_SET( METADATA,  'systemNumber', YPI%NSYSTEM)
-      PP_METADATA_SET( METADATA,  'methodNumber', YPI%NMETHOD)
-      PP_METADATA_SET( METADATA,  'referenceDate',YPI%NREFERENCE)
-
-    CASE ( 26 )
-
-      ! 26 -> MARS labelling or ensemble forecast data (with hindcast support)
-      ! -----------------------------------------------------------------------
-      PP_METADATA_SET( METADATA,  'referenceDate', YPI%NREFERENCE)
-
-    CASE ( 27, 30 )
-
-      ! 27 -> Forecasting Systems with Variable Resolution (Obsolete)
-      ! 30 -> Forecasting Systems with Variable Resolution
-      ! --------------------------------------------------------------
-
-      ! Date and time of current leg for VAREPS
-      PP_METADATA_SET( METADATA,  'legBaseDate',   YPI%NINDAT)
-      PP_METADATA_SET( METADATA,  'legBaseTime',   SEC2HHMM(YPI%NSSSSS) )
-      PP_METADATA_SET( METADATA,  'legNumber',     YPI%NLEG)
-      PP_METADATA_SET( METADATA,  'referenceDate', YPI%NREFERENCE)
-      ! Coupling parameters
-      IF ( YPI%LDMCC04 ) THEN
-          PP_METADATA_SET( METADATA,  'oceanAtmosphereCoupling',2)
-      ENDIF
-
-    CASE ( 36 )
-
-      ! Long window
-      ! -----------
-      PP_METADATA_SET( METADATA,  'anoffset',YPI%NWINOFF)
-
     CASE ( 18 )
 
       ! Multi-analysis ensemble data
@@ -752,6 +715,43 @@ IMPLICIT NONE
         PP_METADATA_SET( METADATA,  'consensusCount',ICENTRE)
         PP_METADATA_SET( METADATA,  'ccccIdentifiers',CLWORD(1:4*ICENTRE))
       ENDIF
+
+    CASE ( 23 )
+
+      ! 23 -> Coupled atmospheric, wave and ocean means (with hindcast support)
+      ! ------------------------------------------------------------------------
+      PP_METADATA_SET( METADATA,  'systemNumber', YPI%NSYSTEM)
+      PP_METADATA_SET( METADATA,  'methodNumber', YPI%NMETHOD)
+      PP_METADATA_SET( METADATA,  'referenceDate',YPI%NREFERENCE)
+
+    CASE ( 26 )
+
+      ! 26 -> MARS labelling or ensemble forecast data (with hindcast support)
+      ! -----------------------------------------------------------------------
+      PP_METADATA_SET( METADATA,  'referenceDate', YPI%NREFERENCE)
+
+    CASE ( 27, 30 )
+
+      ! 27 -> Forecasting Systems with Variable Resolution (Obsolete)
+      ! 30 -> Forecasting Systems with Variable Resolution
+      ! --------------------------------------------------------------
+
+      ! Date and time of current leg for VAREPS
+      PP_METADATA_SET( METADATA,  'legBaseDate',   YPI%NINDAT)
+      PP_METADATA_SET( METADATA,  'legBaseTime',   SEC2HHMM(YPI%NSSSSS) )
+      PP_METADATA_SET( METADATA,  'legNumber',     YPI%NLEG)
+      PP_METADATA_SET( METADATA,  'referenceDate', YPI%NREFERENCE)
+      ! Coupling parameters
+      IF ( YPI%LDMCC04 ) THEN
+          PP_METADATA_SET( METADATA,  'oceanAtmosphereCoupling',2)
+      ENDIF
+
+    CASE ( 36 )
+
+      ! Long window
+      ! -----------
+      PP_METADATA_SET( METADATA,  'anoffset',YPI%NWINOFF)
+
 
     END SELECT
 

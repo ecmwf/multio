@@ -584,6 +584,9 @@ IMPLICIT NONE
     EX = CFG%GET( 'requested-encoding', TMP )
     PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, 1 )
     IF ( SIZE(TMP) .EQ. 7 ) THEN
+      DO ITMP = 1, 7
+        PP_DEBUG_DEVELOP_COND_THROW( TMP(ITMP).NE.2 .AND. TMP(ITMP).NE.1,  18 )
+      ENDDO
       GRIB_INFO_DB(CNT)%REQUESTED_ENCODING_ = TMP
       DEALLOCATE(TMP)
     ELSE
@@ -784,6 +787,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'description too long' )
     CASE (17)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'description not defined' )
+    CASE (18)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'encoding can be only 1 and 2' )
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
     END SELECT

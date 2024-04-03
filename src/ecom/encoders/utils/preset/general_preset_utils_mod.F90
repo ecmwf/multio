@@ -20,6 +20,7 @@ PUBLIC :: GENERAL_PRESET_FREE
 PUBLIC :: LATEST_TABLE_VERSION
 PUBLIC :: GENERATING_PROCESS_IDENTIFIER_PRESET
 PUBLIC :: SET_PRODUCT_DEFINITION_TEMPLATE_NUMBER_WAM
+PUBLIC :: GENERATING_PROCESS_IDENTIFIER_PRESET_WAM
 
 CONTAINS
 
@@ -284,6 +285,66 @@ IMPLICIT NONE
   RETURN
 
 END SUBROUTINE GENERATING_PROCESS_IDENTIFIER_PRESET
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!>
+!> @brief Sets the Generating Process Identifier (GPI) in the metadata object.
+!>
+!> This function sets the Generating Process Identifier (GPI) into the provided metadata object
+!> using information retrieved from the specified data structure (YDIOS).
+!>
+!> @param [inout] METADATA Metadata object where the GPI will be set.
+!> @param [in]    YDIOS    Data structure used to retrieve the information necessary to compute the GPI.
+!>
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'GENERATING_PROCESS_IDENTIFIER_PRESET_WAM'
+SUBROUTINE GENERATING_PROCESS_IDENTIFIER_PRESET_WAM( MODEL_PARAMS, METADATA )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: JPIB_K
+  USE :: OM_CORE_MOD,        ONLY: PROC_TOPO_T
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),      TARGET,  INTENT(IN)    :: MODEL_PARAMS
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+!     MODEL IDENTIFICATION.
+  IF (  MODEL_PARAMS%WAM_%CLDOMAIN == 'g' ) THEN
+    PP_METADATA_SET( METADATA,  'generatingProcessIdentifier', MODEL_PARAMS%WAM_%IMDLGRBID_G )
+  ELSE
+    PP_METADATA_SET( METADATA,  'generatingProcessIdentifier', MODEL_PARAMS%WAM_%IMDLGRBID_M )
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END SUBROUTINE GENERATING_PROCESS_IDENTIFIER_PRESET_WAM
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

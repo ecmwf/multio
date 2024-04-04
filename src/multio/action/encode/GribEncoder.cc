@@ -65,7 +65,7 @@ const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
 
 const std::map<const std::string, const long> type_of_generating_process{
-    {"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}, {"tpa", 12}};
+    {"an", 0}, {"4v", 0}, {"fc", 2}, {"pf", 4}, {"tpa", 12}};
 
 // // https://codes.ecmwf.int/grib/format/grib2/ctables/4/4/
 std::int64_t timeUnitCodes(util::TimeUnit u) {

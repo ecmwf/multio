@@ -281,8 +281,8 @@ IMPLICIT NONE
   ! Local variables
   INTEGER(KIND=JPIB_K) :: NLLEN
   INTEGER(KIND=JPIM_K) :: STAT
-  INTEGER(KIND=JPIM_K) :: NLLEN4 
-  
+  INTEGER(KIND=JPIM_K) :: NLLEN4
+
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
 

@@ -16,7 +16,7 @@ usage(){
 
 
 #
-# 
+#
 levType2enum(){
 # echo "Input option:: " ${1}
 case ${1} in
@@ -24,12 +24,12 @@ case ${1} in
     echo 1
     return;
     ;;
-  pl) 
+  pl)
     echo 2
     return;
     ;;
   sfc)
-    echo 5	  
+    echo 5
     return;
     ;;
   t)
@@ -117,7 +117,7 @@ while getopts "b:r:y:m:s:l:f:h" opt; do
 done
 
 #
-# 
+#
 export ECCODES_SAMPLES_PATH=/home/valentini/ecmwf/ecom/multio-bundle/source/eccodes/ifs_samples/grib1_mlgrib2
 
 #
@@ -161,7 +161,7 @@ cnt=0;
 err=0;
 echo " - ${N} fields to check: ${dirName}"
 for i in `find . -type f -iname 'msg_*'` ; do
-  cnt=$((${cnt}+1))	
+  cnt=$((${cnt}+1))
   tmp=`echo "scale=10; ${cnt}/${N}*100" | bc -l | sed -e 's/\./,/'`;
   adv=`printf "%6.2f" ${tmp}`;
   # Extract paramId and levelist
@@ -182,8 +182,8 @@ for i in `find . -type f -iname 'msg_*'` ; do
   rm -f *.report
   ${executable} -t "GRIBX" -i "${reproducerFolder}"  -y "${configurationFile}" -s "${step}"  -q "${levTypeEnum}" -r "${r}" -p "${p}" -l "${l}" -n "8"   > encoding.log
   if [[ -f ./allfields_00000001.grib  ]] ; then
-    grib_compare -H "./allfields_00000001.grib" "${i}" > grib_compare.log 2>&1; 
-    if [[ $? -ne 0 ]] ; then  
+    grib_compare -H "./allfields_00000001.grib" "${i}" > grib_compare.log 2>&1;
+    if [[ $? -ne 0 ]] ; then
       # echo "ERROR: encoded file not match"
       # cat encoding.log
       # echo -e "["${KO}"]"
@@ -224,4 +224,3 @@ else
 fi
 # Exit on success
 exit 0
-

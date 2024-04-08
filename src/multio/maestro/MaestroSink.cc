@@ -60,14 +60,15 @@ static const std::map<std::string, MaestroKeySetter> cdoValueSetters{
     {"anoffset", &setInt64Value},
     {"levelist", &setInt64Value},
     {"param", &setInt64Value},
-    {"experiment", &setStringValue},
-    {"activity", &setStringValue},
-    {"generation", &setInt64Value},
-    {"realization", &setInt64Value},
-    {"model", &setStringValue},
-    {"resolution", &setStringValue},
-    {"frequency", &setStringValue},
-    {"direction", &setStringValue},
+    //# Additional attributes (D340.2.2.3). These keys will be put back once version 2.2.3 is released.
+    //{"experiment", &setStringValue},
+    //{"activity", &setStringValue},
+    //{"generation", &setInt64Value},
+    //{"realization", &setInt64Value},
+    //{"model", &setStringValue},
+    //{"resolution", &setStringValue},
+    //{"frequency", &setStringValue},
+    //{"direction", &setStringValue},
 };
 }  // namespace
 

@@ -29,7 +29,7 @@ public:
     void dispose();
     template <typename T>
     void set_attribute(const std::string& key, const T& value, bool copy = true, bool user_owned_attribute_value=false) {
-        ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, key.c_str(), (void**)&value, copy, user_owned_attribute_value));
+        ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, key.c_str(), (void*) value, copy, user_owned_attribute_value));
     }
     template <typename T>
     T get_attribute(const std::string& key) {

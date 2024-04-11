@@ -67,7 +67,6 @@ const std::map<const std::string, const std::string> category_to_levtype{
 const std::map<const std::string, const long> type_of_generating_process{
     {"an", 0}, {"in", 1}, {"fc", 2}, {"pf", 4}, {"tpa", 12}};
 
-
 // // https://codes.ecmwf.int/grib/format/grib2/ctables/4/4/
 std::int64_t timeUnitCodes(util::TimeUnit u) {
     switch (u) {
@@ -228,6 +227,22 @@ struct QueriedMarsKeys {
     std::optional<long> paramId{};
 };
 
+void setLayerTypeOfLevel(GribEncoder& g, const std::string& typeOfLevel, long level) {
+    g.setValue("typeOfLevel", typeOfLevel);
+    g.setValue("scaleFactorOfFirstFixedSurface", 0);
+    g.setValue("scaledValueOfFirstFixedSurface", level - 1);
+    g.setValue("scaleFactorOfSecondFixedSurface", 0);
+    g.setValue("scaledValueOfSecondFixedSurface", level);
+}
+
+using TypeOfLevelSetter = std::function<void(GribEncoder&, const std::string&, long)>;
+
+const std::map<std::string, TypeOfLevelSetter> typeOfLevelSetters {
+    { "snowLayer", &setLayerTypeOfLevel },
+    { "soilLayer", &setLayerTypeOfLevel },
+    { "seaIceLayer", &setLayerTypeOfLevel },
+};
+
 QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     QueriedMarsKeys ret;
     // TODO we should be able to determine the type in the metadata and preserve
@@ -282,7 +297,24 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         }
     }
     else {
-        g.setValue("typeOfLevel", typeOfLevel);
+        if (typeOfLevelSetters.count(typeOfLevel) != 0) {
+            const auto level = lookUpLong(md, "level");
+            const auto levelist = lookUpLong(md, "levelist");
+
+            if (!level && !levelist) {
+                std::ostringstream oss;
+                oss << "setMarsKeys - field " << *lookUpString(md, "paramId") << " with typeOfLevel " << typeOfLevel << ", but no level information!";
+                std::cout << oss.str() << std::endl;
+                throw eckit::UserError(oss.str(), Here());
+            }
+
+            const auto lv = level ? *level : *levelist;
+            typeOfLevelSetters.at(typeOfLevel)(g, typeOfLevel, lv);
+        }
+        else {
+            g.setValue("typeOfLevel", typeOfLevel);
+            withFirstOf(valueSetter(g, "level"), LookUpLong(md, "level"), LookUpLong(md, "levelist"));
+        }
     }
 
     std::optional<std::string> paramId{firstOf(

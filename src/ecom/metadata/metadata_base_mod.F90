@@ -39,6 +39,7 @@ PRIVATE
 INTEGER(KIND=JPIB_K), PARAMETER :: TAB_SIZE = 4_JPIB_K
 INTEGER(KIND=JPIB_K), PARAMETER :: VALUES_PER_LINE = 20_JPIB_K
 
+
 !> @brief Definition of the abstract interface METADATA_BASE_A, which outlines methods
 !>        for initializing, cloning, destroying, and setting various types of values.
 !>
@@ -670,6 +671,7 @@ SUBROUTINE INIT_FROM_SAMPLE_LOGGING( THIS, SAMPLE_NAME, SAMPLE_HANDLE, FNAME, SE
   ! Symbols imported from other modules within the project.
   USE :: OM_DATA_KIND_MOD, ONLY: JPIM_K
   USE :: OM_DATA_KIND_MOD, ONLY: JPIM_K
+  USE :: OM_CORE_MOD,      ONLY: OM_SET_ENCODING_STACK
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -713,6 +715,8 @@ IMPLICIT NONE
   CALL THIS%TRACER_%ADVANCE_LINE()
   THIS%OFFSET_ = THIS%OFFSET_ - 1
 
+  CALL OM_SET_ENCODING_STACK( THIS%TRACER_%LINES_ )
+
   ! Call the actual procedure
   CALL THIS%INIT_FROM_SAMPLE( SAMPLE_NAME, SAMPLE_HANDLE )
 
@@ -742,6 +746,7 @@ SUBROUTINE INIT_FROM_SAMPLE_NAME_LOGGING( THIS, SAMPLE_NAME, FNAME, SECTION_TYPE
 
   ! Symbols imported from other modules within the project.
   USE :: OM_DATA_KIND_MOD, ONLY: JPIM_K
+  USE :: OM_CORE_MOD,      ONLY: OM_SET_ENCODING_STACK
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -777,12 +782,15 @@ IMPLICIT NONE
   CALL WRITE_POS( STR, FNAME, SECTION_TYPE, SECTION_NAME, PROC_TYPE, PROC_NAME, CLINE )
 
   ! Write the key, value pair to the log file
+  CALL THIS%TRACER_%INIT( 'undefined.reprot' )
   CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//'AT :: '//TRIM(STR) )
   CALL THIS%TRACER_%ADVANCE_LINE()
   THIS%OFFSET_ = THIS%OFFSET_ + 1
   CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//'LOADING_SAMPLE "'//TRIM(SAMPLE_NAME)//'"' )
   CALL THIS%TRACER_%ADVANCE_LINE()
   THIS%OFFSET_ = THIS%OFFSET_ - 1
+
+  CALL OM_SET_ENCODING_STACK( THIS%TRACER_%LINES_ )
 
   ! Call the actual procedure
   CALL THIS%INIT_FROM_SAMPLE_NAME( SAMPLE_NAME )
@@ -813,6 +821,7 @@ SUBROUTINE INIT_FROM_METADATA_LOGGING( THIS, OTHER, FNAME, SECTION_TYPE, SECTION
 
   ! Symbols imported from other modules within the project.
   USE :: OM_DATA_KIND_MOD, ONLY: JPIM_K
+  USE :: OM_CORE_MOD,      ONLY: OM_SET_ENCODING_STACK
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -854,6 +863,9 @@ IMPLICIT NONE
   CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//'INIT_FROM_METADATA' )
   CALL THIS%TRACER_%ADVANCE_LINE()
   THIS%OFFSET_ = THIS%OFFSET_ - 1
+  CALL THIS%TRACER_%COPY( OTHER%TRACER_ )
+
+  CALL OM_SET_ENCODING_STACK( THIS%TRACER_%LINES_ )
 
   ! Call the actual procedure
   CALL THIS%INIT_FROM_METADATA( OTHER )
@@ -876,6 +888,7 @@ SUBROUTINE INIT_LOGGING( THIS, STEP, PARAMID, UID, PREFIX, REPRES, FNAME, SECTIO
   ! Symbols imported from other modules within the project.
   USE :: OM_DATA_KIND_MOD, ONLY: JPIB_K
   USE :: OM_DATA_KIND_MOD, ONLY: JPIM_K
+  USE :: OM_CORE_MOD,      ONLY: OM_SET_ENCODING_STACK
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -924,6 +937,8 @@ IMPLICIT NONE
   ! Initialise tracer
   CALL THIS%TRACER_%INIT( TRIM(LOC_FNAME) )
 
+  CALL OM_SET_ENCODING_STACK( THIS%TRACER_%LINES_ )
+
   THIS%OFFSET_ = 0
 
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -942,6 +957,7 @@ SUBROUTINE FINALISE_LOGGING( THIS, FNAME, SECTION_TYPE, SECTION_NAME, PROC_TYPE,
 
   ! Symbols imported from other modules within the project.
   USE :: OM_DATA_KIND_MOD, ONLY: JPIM_K
+  USE :: OM_CORE_MOD,      ONLY: OM_RESET_ENCODING_STACK
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -974,6 +990,7 @@ IMPLICIT NONE
 
   ! Finalise the tracer and dump the file
   CALL THIS%TRACER_%DUMP()
+  CALL OM_RESET_ENCODING_STACK( )
 
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 

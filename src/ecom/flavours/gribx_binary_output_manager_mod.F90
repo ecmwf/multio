@@ -331,6 +331,7 @@ IMPLICIT NONE
   CALL OM_GET_HOSTNAME( HOSTNAME )
   CALL OM_INIT_DEBUG_VARS( HOSTNAME, PID, PROCESSOR_TOPO%MYPROC_IO, PROCESSOR_TOPO%NPROC_IO )
 
+
   ! Check if the file exsts
   INQUIRE( FILE=TRIM(YAMLFNAME), EXIST=EX )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, 1 )
@@ -436,7 +437,7 @@ END SUBROUTINE GRIBX_BIN_SETUP
 !>
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'
 #define PP_PROCEDURE_NAME 'GRIBX_BIN_WRITE_ATM_DP'
-SUBROUTINE GRIBX_BIN_WRITE_ATM_DP( THIS, YDMSG, VALUES )
+SUBROUTINE GRIBX_BIN_WRITE_ATM_DP( THIS, YDMSG, VALUES_DP )
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,              ONLY: JPIM_K
@@ -477,7 +478,7 @@ IMPLICIT NONE
   ! Dummy arguments
   CLASS(GRIBX_BINARY_OUTPUT_MANAGER_T), TARGET, INTENT(INOUT) :: THIS
   TYPE(OM_ATM_MSG_T),                           INTENT(IN)    :: YDMSG
-  REAL(KIND=JPRD_K), DIMENSION(:),              INTENT(IN)    :: VALUES
+  REAL(KIND=JPRD_K), DIMENSION(:),              INTENT(IN)    :: VALUES_DP
 
   ! Local variables
   INTEGER(KIND=JPIB_K) :: UNIT
@@ -507,7 +508,7 @@ IMPLICIT NONE
   CALL OM_SET_CURRENT_MESSAGE_ATM( YDMSG, MSG_PRINT_ATM )
 
   ! Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( SIZE(VALUES).LT.YDMSG%NVALUES_, 1 )
+  PP_DEBUG_CRITICAL_COND_THROW( SIZE(VALUES_DP).LT.YDMSG%NVALUES_, 1 )
 
   ! Associate the pointers to the metadata
   PGMD => THIS%GMD_
@@ -533,7 +534,7 @@ IMPLICIT NONE
 
     !
     ! Set global size and values into the grib handle
-    CALL THIS%GMD_%SET( 'values', VALUES(1:YDMSG%NVALUES_) )
+    CALL THIS%GMD_%SET( 'values', VALUES_DP(1:YDMSG%NVALUES_) )
 
     IF ( THIS%FLUSH_EVERY_MESSAGE_ ) THEN
 
@@ -623,7 +624,7 @@ END SUBROUTINE GRIBX_BIN_WRITE_ATM_DP
 !>
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'
 #define PP_PROCEDURE_NAME 'GRIBX_BIN_WRITE_ATM_SP'
-SUBROUTINE GRIBX_BIN_WRITE_ATM_SP( THIS, YDMSG, VALUES )
+SUBROUTINE GRIBX_BIN_WRITE_ATM_SP( THIS, YDMSG, VALUES_SP )
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,              ONLY: JPIM_K
@@ -664,7 +665,7 @@ IMPLICIT NONE
   ! Dummy arguments
   CLASS(GRIBX_BINARY_OUTPUT_MANAGER_T), TARGET, INTENT(INOUT) :: THIS
   TYPE(OM_ATM_MSG_T),                           INTENT(IN)    :: YDMSG
-  REAL(KIND=JPRM_K), DIMENSION(:),              INTENT(IN)    :: VALUES
+  REAL(KIND=JPRM_K), DIMENSION(:),              INTENT(IN)    :: VALUES_SP
 
   ! Local variables
   INTEGER(KIND=JPIB_K) :: UNIT
@@ -694,7 +695,7 @@ IMPLICIT NONE
   CALL OM_SET_CURRENT_MESSAGE_ATM( YDMSG, MSG_PRINT_ATM )
 
   ! Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( SIZE(VALUES).LT.YDMSG%NVALUES_, 1 )
+  PP_DEBUG_CRITICAL_COND_THROW( SIZE(VALUES_SP).LT.YDMSG%NVALUES_, 1 )
 
   ! Associate the pointers to the metadata
   PGMD => THIS%GMD_
@@ -720,7 +721,7 @@ IMPLICIT NONE
 
     !
     ! Set global size and values into the grib handle
-    CALL THIS%GMD_%SET( 'values', VALUES(1:YDMSG%NVALUES_) )
+    CALL THIS%GMD_%SET( 'values', VALUES_SP(1:YDMSG%NVALUES_) )
 
     IF ( THIS%FLUSH_EVERY_MESSAGE_ ) THEN
 
@@ -746,6 +747,8 @@ IMPLICIT NONE
 
   ! should not happen but just to be sure
   IF ( THIS%GMD_%INITIALIZED() ) THEN
+    ! Destroy the metadata object
+    PP_METADATA_FINALISE_LOGGING( PGMD )
     CALL THIS%GMD_%DESTROY()
   ENDIF
 
@@ -813,7 +816,7 @@ END SUBROUTINE GRIBX_BIN_WRITE_ATM_SP
 !>
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'
 #define PP_PROCEDURE_NAME 'GRIBX_BIN_WRITE_WAM_DP'
-SUBROUTINE GRIBX_BIN_WRITE_WAM_DP( THIS, YDMSG, VALUES )
+SUBROUTINE GRIBX_BIN_WRITE_WAM_DP( THIS, YDMSG, VALUES_DP )
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,              ONLY: JPIM_K
@@ -854,7 +857,7 @@ IMPLICIT NONE
   ! Dummy arguments
   CLASS(GRIBX_BINARY_OUTPUT_MANAGER_T), TARGET, INTENT(INOUT) :: THIS
   TYPE(OM_WAM_MSG_T),                           INTENT(IN)    :: YDMSG
-  REAL(KIND=JPRD_K), DIMENSION(:),              INTENT(IN)    :: VALUES
+  REAL(KIND=JPRD_K), DIMENSION(:),              INTENT(IN)    :: VALUES_DP
 
   ! Local variables
   INTEGER(KIND=JPIB_K) :: UNIT
@@ -884,7 +887,7 @@ IMPLICIT NONE
   CALL OM_SET_CURRENT_MESSAGE_WAM( YDMSG, MSG_PRINT_WAM )
 
   ! Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( SIZE(VALUES).LT.YDMSG%NVALUES_, 1 )
+  PP_DEBUG_CRITICAL_COND_THROW( SIZE(VALUES_DP).LT.YDMSG%NVALUES_, 1 )
 
   ! Associate the pointers to the metadata
   PGMD => THIS%GMD_
@@ -910,7 +913,7 @@ IMPLICIT NONE
 
     !
     ! Set global size and values into the grib handle
-    CALL THIS%GMD_%SET( 'values', VALUES(1:YDMSG%NVALUES_) )
+    CALL THIS%GMD_%SET( 'values', VALUES_DP(1:YDMSG%NVALUES_) )
 
     IF ( THIS%FLUSH_EVERY_MESSAGE_ ) THEN
 
@@ -936,6 +939,8 @@ IMPLICIT NONE
 
   ! should not happen but just to be sure
   IF ( THIS%GMD_%INITIALIZED() ) THEN
+    ! Destroy the metadata object
+    PP_METADATA_FINALISE_LOGGING( PGMD )
     CALL THIS%GMD_%DESTROY()
   ENDIF
 
@@ -999,7 +1004,7 @@ END SUBROUTINE GRIBX_BIN_WRITE_WAM_DP
 !>
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'
 #define PP_PROCEDURE_NAME 'GRIBX_BIN_WRITE_WAM_SP'
-SUBROUTINE GRIBX_BIN_WRITE_WAM_SP( THIS, YDMSG, VALUES )
+SUBROUTINE GRIBX_BIN_WRITE_WAM_SP( THIS, YDMSG, VALUES_SP )
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,              ONLY: JPIM_K
@@ -1041,7 +1046,7 @@ IMPLICIT NONE
   ! Dummy arguments
   CLASS(GRIBX_BINARY_OUTPUT_MANAGER_T), TARGET, INTENT(INOUT) :: THIS
   TYPE(OM_WAM_MSG_T),                           INTENT(IN)    :: YDMSG
-  REAL(KIND=JPRM_K), DIMENSION(:),              INTENT(IN)    :: VALUES
+  REAL(KIND=JPRM_K), DIMENSION(:),              INTENT(IN)    :: VALUES_SP
 
   ! Local variables
   INTEGER(KIND=JPIB_K) :: UNIT
@@ -1062,6 +1067,7 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
+
   ! Profile
   IF ( THIS%PROFILE_ ) THEN
     CALL PROFILE_MESSAGE( THIS%PROFILE_DATA_, YDMSG%ISTEP_, YDMSG%PARAM_ID_, YDMSG%IUID_  )
@@ -1071,7 +1077,7 @@ IMPLICIT NONE
   CALL OM_SET_CURRENT_MESSAGE_WAM( YDMSG, MSG_PRINT_WAM )
 
   ! Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( SIZE(VALUES).LT.YDMSG%NVALUES_, 1 )
+  PP_DEBUG_CRITICAL_COND_THROW( SIZE(VALUES_SP).LT.YDMSG%NVALUES_, 1 )
 
   ! Associate the pointers to the metadata
   PGMD => THIS%GMD_
@@ -1097,7 +1103,7 @@ IMPLICIT NONE
 
     !
     ! Set global size and values into the grib handle
-    CALL THIS%GMD_%SET( 'values', VALUES(1:YDMSG%NVALUES_) )
+    CALL THIS%GMD_%SET( 'values', VALUES_SP(1:YDMSG%NVALUES_) )
 
     IF ( THIS%FLUSH_EVERY_MESSAGE_ ) THEN
 
@@ -1123,6 +1129,8 @@ IMPLICIT NONE
 
   ! should not happen but just to be sure
   IF ( THIS%GMD_%INITIALIZED() ) THEN
+    ! Destroy the metadata object
+    PP_METADATA_FINALISE_LOGGING( PGMD )
     CALL THIS%GMD_%DESTROY()
   ENDIF
 

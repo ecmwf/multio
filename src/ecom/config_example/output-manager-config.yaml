@@ -62,7 +62,8 @@ grib-info:
     measure-unit: '(0 - 1)'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 34
@@ -71,7 +72,8 @@ grib-info:
     measure-unit: 'K'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 49
@@ -80,7 +82,8 @@ grib-info:
     measure-unit: 'm s**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 75
@@ -89,7 +92,8 @@ grib-info:
     measure-unit: 'kg kg**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 76
@@ -98,7 +102,8 @@ grib-info:
     measure-unit: 'kg kg**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 77
@@ -107,7 +112,8 @@ grib-info:
     measure-unit: 's**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 78
@@ -116,7 +122,8 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 129
@@ -125,7 +132,8 @@ grib-info:
     measure-unit: 'm**2 s**-2'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,1,2,2,2,2,2]
+    requested-encoding-gg: [2,1,2,2,2,2,2]
+    requested-encoding-sh: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 130
@@ -134,7 +142,8 @@ grib-info:
     measure-unit: 'K'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,1,2,2,2,2,2]
+    requested-encoding-gg: [2,1,2,2,2,2,2]
+    requested-encoding-sh: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 131
@@ -143,7 +152,8 @@ grib-info:
     measure-unit: 'm s**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,1,2,2,2,2,2]
+    requested-encoding-gg: [2,1,2,2,2,2,2]
+    requested-encoding-sh: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 132
@@ -152,7 +162,8 @@ grib-info:
     measure-unit: 'm s**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,1,2,2,2,2,2]
+    requested-encoding-gg: [2,1,2,2,2,2,2]
+    requested-encoding-sh: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 133
@@ -161,7 +172,8 @@ grib-info:
     measure-unit: 'kg kg**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,1,2,2,2,2,2]
+    requested-encoding-gg: [2,1,2,2,2,2,2]
+    requested-encoding-sh: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 134
@@ -170,7 +182,8 @@ grib-info:
     measure-unit: 'Pa'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 135
@@ -179,7 +192,8 @@ grib-info:
     measure-unit: 'Pa s**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 136
@@ -188,7 +202,8 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 137
@@ -197,7 +212,8 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 138
@@ -206,7 +222,8 @@ grib-info:
     measure-unit: 's**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,1,2,2,2,2,2]
+    requested-encoding-gg: [2,1,2,2,2,2,2]
+    requested-encoding-sh: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 142
@@ -215,7 +232,8 @@ grib-info:
     measure-unit: 'm'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 144
@@ -224,7 +242,8 @@ grib-info:
     measure-unit: 'm of water equivalent'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 151
@@ -233,7 +252,8 @@ grib-info:
     measure-unit: 'Pa'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 155
@@ -242,7 +262,8 @@ grib-info:
     measure-unit: 's**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,1,2,2,2,2,2]
+    requested-encoding-gg: [2,1,2,2,2,2,2]
+    requested-encoding-sh: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 156
@@ -251,7 +272,8 @@ grib-info:
     measure-unit: 'gpm'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 157
@@ -260,7 +282,8 @@ grib-info:
     measure-unit: '%'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,1,2,2,2,2,2]
+    requested-encoding-gg: [2,1,2,2,2,2,2]
+    requested-encoding-sh: [2,1,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 164
@@ -269,7 +292,8 @@ grib-info:
     measure-unit: '(0 - 1)'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 165
@@ -278,7 +302,8 @@ grib-info:
     measure-unit: 'm s**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 166
@@ -287,7 +312,8 @@ grib-info:
     measure-unit: 'm s**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 167
@@ -296,7 +322,8 @@ grib-info:
     measure-unit: 'K'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 168
@@ -305,7 +332,8 @@ grib-info:
     measure-unit: 'K'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 169
@@ -314,7 +342,8 @@ grib-info:
     measure-unit: 'J m**-2'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 175
@@ -323,7 +352,8 @@ grib-info:
     measure-unit: 'J m**-2'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 176
@@ -332,7 +362,8 @@ grib-info:
     measure-unit: 'J m**-2'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 177
@@ -341,7 +372,8 @@ grib-info:
     measure-unit: 'J m**-2'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 178
@@ -350,7 +382,8 @@ grib-info:
     measure-unit: 'J m**-2'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 179
@@ -359,7 +392,8 @@ grib-info:
     measure-unit: 'J m**-2'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 180
@@ -368,7 +402,8 @@ grib-info:
     measure-unit: 'N m**-2 s'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 181
@@ -377,7 +412,8 @@ grib-info:
     measure-unit: 'N m**-2 s'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 205
@@ -386,7 +422,8 @@ grib-info:
     measure-unit: 'm'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228
@@ -395,7 +432,8 @@ grib-info:
     measure-unit: 'm'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 246
@@ -404,7 +442,8 @@ grib-info:
     measure-unit: 'kg kg**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 247
@@ -413,7 +452,8 @@ grib-info:
     measure-unit: 'kg kg**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 248
@@ -422,7 +462,8 @@ grib-info:
     measure-unit: '(0 - 1)'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 3020
@@ -431,7 +472,8 @@ grib-info:
     measure-unit: 'm'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 3062
@@ -440,7 +482,8 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 140221
@@ -449,7 +492,8 @@ grib-info:
     measure-unit: 's'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 140229
@@ -458,7 +502,8 @@ grib-info:
     measure-unit: 'm'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 140230
@@ -467,7 +512,8 @@ grib-info:
     measure-unit: 'Degree true'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 140231
@@ -476,7 +522,8 @@ grib-info:
     measure-unit: 's'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 140232
@@ -485,7 +532,8 @@ grib-info:
     measure-unit: 's'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 162071
@@ -494,7 +542,8 @@ grib-info:
     measure-unit: 'kg m**-1 s**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 162072
@@ -503,7 +552,8 @@ grib-info:
     measure-unit: 'kg m**-1 s**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228003
@@ -512,7 +562,8 @@ grib-info:
     measure-unit: 'm s**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228029
@@ -521,7 +572,8 @@ grib-info:
     measure-unit: 'm s**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228050
@@ -530,7 +582,8 @@ grib-info:
     measure-unit: 'km**-2 day**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228058
@@ -539,7 +592,8 @@ grib-info:
     measure-unit: 'km**-2 day**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228143
@@ -548,7 +602,8 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228144
@@ -557,7 +612,8 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228164
@@ -566,7 +622,8 @@ grib-info:
     measure-unit: '%'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228216
@@ -575,7 +632,8 @@ grib-info:
     measure-unit: 'm'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228218
@@ -584,7 +642,8 @@ grib-info:
     measure-unit: 'kg m**-2 s**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228219
@@ -593,7 +652,8 @@ grib-info:
     measure-unit: 'kg m**-2 s**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228221
@@ -602,7 +662,8 @@ grib-info:
     measure-unit: 'kg m**-2 s**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228228
@@ -611,7 +672,8 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228235
@@ -620,7 +682,8 @@ grib-info:
     measure-unit: 'J kg**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228236
@@ -629,7 +692,8 @@ grib-info:
     measure-unit: 'J kg**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228246
@@ -638,7 +702,8 @@ grib-info:
     measure-unit: 'm s**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 228247
@@ -647,7 +712,8 @@ grib-info:
     measure-unit: 'm s**-1'
     has-grib-1: true
     has-grib-2: true
-    requested-encoding: [2,2,2,2,1,2,2]
+    requested-encoding-gg: [2,2,2,2,1,2,2]
+    requested-encoding-sh: [2,2,2,2,1,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 231001
@@ -656,7 +722,8 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 231002
@@ -665,7 +732,8 @@ grib-info:
     measure-unit: 'kg m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 231013
@@ -674,7 +742,8 @@ grib-info:
     measure-unit: '%'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260015
@@ -683,7 +752,8 @@ grib-info:
     measure-unit: 'code table (4.201)'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260199
@@ -692,7 +762,8 @@ grib-info:
     measure-unit: 'm**3 m**-3'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260227
@@ -701,7 +772,8 @@ grib-info:
     measure-unit: '%'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260228
@@ -710,7 +782,8 @@ grib-info:
     measure-unit: '%'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260238
@@ -719,7 +792,8 @@ grib-info:
     measure-unit: 'm s**-1'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260360
@@ -728,7 +802,8 @@ grib-info:
     measure-unit: 'K'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 260510
@@ -737,7 +812,8 @@ grib-info:
     measure-unit: 'K'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]
 
   - param-id: 262121
@@ -746,5 +822,6 @@ grib-info:
     measure-unit: 'J m**-2'
     has-grib-1: false
     has-grib-2: true
-    requested-encoding: [2,2,2,2,2,2,2]
+    requested-encoding-gg: [2,2,2,2,2,2,2]
+    requested-encoding-sh: [2,2,2,2,2,2,2]
     bits-per-value: [-99,-99,-99,-99,-99,-99,-99]

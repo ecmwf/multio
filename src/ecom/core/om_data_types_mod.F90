@@ -50,6 +50,9 @@ TYPE :: SIM_PAR_T
   ! Table version to be used for grib 2 encoding
   INTEGER(KIND=JPIB_K) :: IGRIB2_TABLES_VERSION_LATEST
 
+  ! Number of tasks in IO group
+  INTEGER(KIND=JPIB_K) :: NPROC_IO
+
   ! yomgrib.F90 - grib coding descriptors
   ! -------------------------------------
   ! NCYCLE : cycle identifier
@@ -534,6 +537,7 @@ END TYPE
 
 
 TYPE :: MODEL_PAR_SERIAL_T
+  INTEGER(KIND=JPIB_K), DIMENSION(44) :: DIMS_
   INTEGER(KIND=JPIB_K), DIMENSION(:), ALLOCATABLE :: IBUF_
   REAL(KIND=JPRD_K),    DIMENSION(:), ALLOCATABLE :: RBUF_
   CHARACTER(LEN=16),    DIMENSION(:), ALLOCATABLE :: CBUF_
@@ -612,12 +616,35 @@ TYPE, EXTENDS(OM_BASE_MSG_A) :: OM_WAM_MSG_T
   CHARACTER(LEN=14)     :: CDATE
 END TYPE
 
+TYPE :: CURR_TIME_T
+
+  !> Current time in seconds
+  INTEGER(KIND=JPIB_K) :: ISEC = 0_JPIB_K
+
+  !> Start time in seconds
+  INTEGER(KIND=JPIB_K) :: ISEC0 = 0_JPIB_K
+
+  !> Current step id
+  INTEGER(KIND=JPIB_K) :: ISTEP = 0_JPIB_K
+
+  !> Start step id
+  INTEGER(KIND=JPIB_K) :: ISTEP0 = 0_JPIB_K
+
+  !> Length of the time step in seconds
+  REAL(KIND=JPRD_K) :: TSTEP = 0.0_JPRD_K
+
+  !> True if the current timestep is is at the beginning of the simulation
+  !> and requires special handling
+  LOGICAL :: IS_STEP_0
+END TYPE
 
 ! Whitelist of public symbols
+PUBLIC :: CURR_TIME_T
 PUBLIC :: PROC_TOPO_T
 PUBLIC :: MODEL_PAR_T
 PUBLIC :: MODEL_PAR_SERIAL_T
 PUBLIC :: SIM_PAR_T
+PUBLIC :: SAT_PAR_T
 PUBLIC :: GEO_PAR_T
 PUBLIC :: ATM_PAR_T
 PUBLIC :: WAM_PAR_T

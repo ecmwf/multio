@@ -11,16 +11,13 @@ MODULE METADATA_TRACER_MOD
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: MAX_LINE
+  USE :: OM_CORE_MOD, ONLY: MAX_LINE_LENGTH
 
 IMPLICIT NONE
 
 ! Default visibility
 PRIVATE
-
-! Module parameters
-INTEGER, PARAMETER :: MAX_LINE = 512
-INTEGER, PARAMETER :: MAX_LINE_LENGTH = 512
-
 
 ! Class used to trace all metadata events
 TYPE :: METADATA_TRACER_T
@@ -36,6 +33,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: ADVANCE_LINE   => MT_ADVANCE_LINE
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: COPY           => MT_COPY
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: DUMP           => MT_DUMP
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: PRINT          => MT_PRINT
 
 END TYPE
 
@@ -50,6 +48,8 @@ SUBROUTINE MT_INIT(THIS, FNAME)
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: MAX_LINE
+  USE :: OM_CORE_MOD, ONLY: MAX_LINE_LENGTH
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -103,6 +103,7 @@ SUBROUTINE MT_APPEND_TO_LINE(THIS, STRING)
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: MAX_LINE_LENGTH
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -178,6 +179,10 @@ END SUBROUTINE MT_APPEND_TO_LINE
 #define PP_PROCEDURE_NAME 'MT_ADVANCE_LINE'
 SUBROUTINE MT_ADVANCE_LINE(THIS)
 
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: MAX_LINE
+  USE :: OM_CORE_MOD, ONLY: MAX_LINE_LENGTH
+
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
 
@@ -251,6 +256,7 @@ SUBROUTINE MT_COPY(THIS, OTHER)
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: MAX_LINE_LENGTH
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -266,6 +272,7 @@ IMPLICIT NONE
 
   ! Local variables
   INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=JPIB_K) :: OFFSET
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -276,13 +283,23 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
+  OFFSET = 0
+  IF ( THIS%LINE_IDX_ .GT. 1 ) THEN
+    DO I = 1, MAX_LINE_LENGTH
+      IF ( THIS%LINES_(THIS%LINE_IDX_-1)(I:I) .EQ. ' ' ) THEN
+        OFFSET = OFFSET + 1
+      ELSE
+        EXIT
+      ENDIF
+    ENDDO
+  ENDIF
+
   ! copy the content of 'other' to 'this'
-  THIS%FNAME_ = OTHER%FNAME_
-  DO I = 1, MAX_LINE
-    THIS%LINES_(I) = REPEAT(' ',MAX_LINE_LENGTH)
-    THIS%LINES_(I) = OTHER%LINES_(I)
+  DO I = 1, OTHER%LINE_IDX_
+    THIS%LINES_(THIS%LINE_IDX_ + I - 1) = REPEAT(' ',MAX_LINE_LENGTH)
+    THIS%LINES_(THIS%LINE_IDX_ + I - 1) = REPEAT(' ',OFFSET)//TRIM(OTHER%LINES_(I))
   END DO
-  THIS%LINE_IDX_ = OTHER%LINE_IDX_
+  THIS%LINE_IDX_ =  THIS%LINE_IDX_ + OTHER%LINE_IDX_
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -377,6 +394,57 @@ PP_ERROR_HANDLER
   RETURN
 
 END SUBROUTINE MT_DUMP
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MT_PRINT'
+SUBROUTINE MT_PRINT(THIS, UNIT)
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(METADATA_TRACER_T), INTENT(IN) :: THIS
+  INTEGER(KIND=JPIB_K),     INTENT(IN) :: UNIT
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=JPIB_K) :: STAT
+
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Write the content of the buffer
+  IF ( THIS%LINE_IDX_ .GT. 1 ) THEN
+    DO I = 1, THIS%LINE_IDX_-1
+      WRITE(UNIT,'(I4.4,A)') I, ' '//TRIM(THIS%LINES_(I))
+    END DO
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END SUBROUTINE MT_PRINT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

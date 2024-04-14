@@ -341,9 +341,6 @@ IMPLICIT NONE
     CALL GRIB_CLONE( IGRIB_HANDLE, THIS%IGRIB_HANDLE_, STATUS=KRET )
     PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, 3 )
 
-    ! Copy the tracer
-    CALL THIS%TRACER_%COPY( MD%TRACER_ )
-
     ! Set the initialization flag to .true.
     THIS%INITIALIZED_ = .TRUE.
 
@@ -368,7 +365,7 @@ PP_ERROR_HANDLER
     CHARACTER(LEN=:), ALLOCATABLE :: STR
     CHARACTER(LEN=4096) :: GRIB_ERROR
 
-    ! HAndle different errors
+    ! Handle different errors
     SELECT CASE(ERRIDX)
     CASE (1)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle already initialized' )
@@ -1142,6 +1139,7 @@ SUBROUTINE GRIB_METADATA_SET_INT32( THIS, KEY, VAL )
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD, ONLY: JPIM_K
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
   USE :: GRIB_API,    ONLY: GRIB_SET_INT
   USE :: GRIB_API,    ONLY: GRIB_SUCCESS
   USE :: GRIB_API,    ONLY: GRIB_GET_ERROR_STRING

@@ -218,31 +218,11 @@ CASE("Metadata can set values") {
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_metadata_set_bool(mdp, "boolMaxValue", true);
     EXPECT(err == MULTIO_SUCCESS);
-    // TBD with interface changes
-    // err = multio_metadata_set_long(mdp, "int8MinValue", std::numeric_limits<std::int8_t>::min());
-    // EXPECT(err == MULTIO_SUCCESS);
-    // err = multio_metadata_set_long(mdp, "int8MaxValue", std::numeric_limits<std::int8_t>::max());
-    // EXPECT(err == MULTIO_SUCCESS);
-    // err = multio_metadata_set_long(mdp, "int16MinValue", std::numeric_limits<std::int16_t>::min());
-    // EXPECT(err == MULTIO_SUCCESS);
-    // err = multio_metadata_set_long(mdp, "int16MaxValue", std::numeric_limits<std::int16_t>::max());
-    // EXPECT(err == MULTIO_SUCCESS);
-    // err = multio_metadata_set_long(mdp, "int32MinValue", std::numeric_limits<std::int32_t>::min());
-    // EXPECT(err == MULTIO_SUCCESS);
-    // err = multio_metadata_set_long(mdp, "int32MaxValue", std::numeric_limits<std::int32_t>::max());
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_metadata_set_int(mdp, "int64MinValue", std::numeric_limits<std::int64_t>::min());
     EXPECT(err == MULTIO_SUCCESS);
     err = multio_metadata_set_int(mdp, "int64MaxValue", std::numeric_limits<std::int64_t>::max());
     EXPECT(err == MULTIO_SUCCESS);
-    // err = multio_metadata_set_float(mdp, "floatLowestValue",
-    //                                 std::numeric_limits<float>::lowest() + std::numeric_limits<float>::epsilon());
-    // EXPECT(err == MULTIO_SUCCESS);
-    // err = multio_metadata_set_float(mdp, "floatMinValue", std::numeric_limits<float>::min() * 2);
-    // EXPECT(err == MULTIO_SUCCESS);
-    // err = multio_metadata_set_float(mdp, "floatMaxValue",
-    //                                 std::numeric_limits<float>::max() - std::numeric_limits<float>::epsilon());
-    // EXPECT(err == MULTIO_SUCCESS);
     err = multio_metadata_set_double(mdp, "doubleLowestValue",
                                      std::numeric_limits<double>::lowest() + std::numeric_limits<double>::epsilon());
     EXPECT(err == MULTIO_SUCCESS);
@@ -258,20 +238,8 @@ CASE("Metadata can set values") {
     EXPECT(md_pCpp->get<std::string>("stringEmptyValue").compare("") == 0);
     EXPECT(md_pCpp->get<bool>("boolMinValue") == false);
     EXPECT(md_pCpp->get<bool>("boolMaxValue") == true);
-    // TBD with interface changes
-    // EXPECT(md_pCpp->get<std::int8_t>("int8MinValue") == std::numeric_limits<std::int8_t>::min());
-    // EXPECT(md_pCpp->get<std::int8_t>("int8MaxValue") == std::numeric_limits<std::int8_t>::max());
-    // EXPECT(md_pCpp->get<std::int16_t>("int16MinValue") == std::numeric_limits<std::int16_t>::min());
-    // EXPECT(md_pCpp->get<std::int16_t>("int16MaxValue") == std::numeric_limits<std::int16_t>::max());
-    // EXPECT(md_pCpp->get<std::int32_t>("int32MinValue") == std::numeric_limits<std::int32_t>::min());
-    // EXPECT(md_pCpp->get<std::int32_t>("int32MaxValue") == std::numeric_limits<std::int32_t>::max());
     EXPECT(md_pCpp->get<std::int64_t>("int64MinValue") == std::numeric_limits<std::int64_t>::min());
     EXPECT(md_pCpp->get<std::int64_t>("int64MaxValue") == std::numeric_limits<std::int64_t>::max());
-    // EXPECT(md_pCpp->get<float>("floatLowestValue")
-    //        == (std::numeric_limits<float>::lowest() + std::numeric_limits<float>::epsilon()));
-    // EXPECT(md_pCpp->get<float>("floatMinValue") == (std::numeric_limits<float>::min() * 2));
-    // EXPECT(md_pCpp->get<float>("floatMaxValue")
-    // == (std::numeric_limits<float>::max() - std::numeric_limits<float>::epsilon()));
     EXPECT(md_pCpp->get<double>("doubleLowestValue")
            == (std::numeric_limits<double>::lowest() + std::numeric_limits<double>::epsilon()));
     EXPECT(md_pCpp->get<double>("doubleMinValue") == (std::numeric_limits<double>::min() * 2));
@@ -285,26 +253,11 @@ CASE("Metadata can set values") {
     EXPECT(md_pCpp->get<std::string>("stringEmptyValue").compare(md_dec.get<std::string>("stringEmptyValue")) == 0);
     EXPECT(md_pCpp->get<bool>("boolMinValue") == md_dec.get<bool>("boolMinValue"));
     EXPECT(md_pCpp->get<bool>("boolMaxValue") == md_dec.get<bool>("boolMaxValue"));
-    // TBD with interface changes
-    // EXPECT(md_pCpp->get<std::int8_t>("int8MinValue") == md_dec.get<std::int8_t>("int8MinValue"));
-    // EXPECT(md_pCpp->get<std::int8_t>("int8MaxValue") == md_dec.get<std::int8_t>("int8MaxValue"));
-    // EXPECT(md_pCpp->get<std::int16_t>("int16MinValue") == md_dec.get<std::int16_t>("int16MinValue"));
-    // EXPECT(md_pCpp->get<std::int16_t>("int16MaxValue") == md_dec.get<std::int16_t>("int16MaxValue"));
-    // EXPECT(md_pCpp->get<std::int32_t>("int32MinValue") == md_dec.get<std::int32_t>("int32MinValue"));
-    // EXPECT(md_pCpp->get<std::int32_t>("int32MaxValue") == md_dec.get<std::int32_t>("int32MaxValue"));
     EXPECT(md_pCpp->get<std::int64_t>("int64MinValue") == md_dec.get<std::int64_t>("int64MinValue"));
     EXPECT(md_pCpp->get<std::int64_t>("int64MaxValue") == md_dec.get<std::int64_t>("int64MaxValue"));
-    // EXPECT(almost_equal(md_pCpp->get<float>("floatLowestValue"), md_dec.get<float>("floatLowestValue"), 1));
-    // EXPECT(almost_equal(md_pCpp->get<float>("floatMinValue"), md_dec.get<float>("floatMinValue"), 1));
-    // EXPECT(almost_equal(md_pCpp->get<float>("floatMaxValue"), md_dec.get<float>("floatMaxValue"), 1));
     EXPECT(almost_equal(md_pCpp->get<double>("doubleLowestValue"), md_dec.get<double>("doubleLowestValue"), 1));
     EXPECT(almost_equal(md_pCpp->get<double>("doubleMinValue"), md_dec.get<double>("doubleMinValue"), 1));
     EXPECT(almost_equal(md_pCpp->get<double>("doubleMaxValue"), md_dec.get<double>("doubleMaxValue"), 1));
-
-
-    // Metadata md_moved = std::move(*md_pCpp);
-    // EXPECT(!md_moved.empty());
-    // // EXPECT(md_pCpp->empty()); // THIS IS FAILING; Change request: https://jira.ecmwf.int/browse/ECKIT-601
 
     EXPECT(err == MULTIO_SUCCESS);
 }
@@ -376,12 +329,6 @@ CASE("Test write field") {
     auto file_name = eckit::PathName{std::string{*path}} / "testWriteOutput.grib";
     EXPECT(file_name.exists());
 }
-
-// TODO:
-//  * test multio_open_connections, multio_close_connections, multio_write_step_complete, multio_write_domain,
-//  multio_write_mask, multio_write_field
-//  * Testing these with MPI in units is not possible here, maybe use another transport layer
-//  * test other transport layers....
 
 }  // namespace multio::test
 

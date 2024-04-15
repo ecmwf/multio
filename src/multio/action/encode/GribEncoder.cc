@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <iostream>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
@@ -66,6 +67,9 @@ const std::map<const std::string, const std::string> category_to_levtype{
 
 const std::map<const std::string, const long> type_of_generating_process{
     {"an", 0}, {"4v", 0}, {"fc", 2}, {"pf", 4}, {"tpa", 12}};
+
+
+const std::unordered_set<std::string> types_with_time_reference_offset{"fc", "fcmean", "cf", "pf", "4v"};
 
 // // https://codes.ecmwf.int/grib/format/grib2/ctables/4/4/
 std::int64_t timeUnitCodes(util::TimeUnit u) {
@@ -556,6 +560,35 @@ void setEncodingSpecificFields(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "bitsPerValue"), LookUpLong(md, "bitsPerValue"));
 }
 
+std::string getTimeReference(GribEncoder& g, const eckit::LocalConfiguration& md,
+                             const QueriedMarsKeys& queriedMarsFields, const std::string& gribEdition, bool isTimeRange,
+                             const std::optional<std::int64_t> significanceOfReferenceTime) {
+    if (auto optTimeRef = lookUpString(md, "timeReference"); optTimeRef) {
+        return *optTimeRef;
+    }
+
+    // TODO: this will not hold in the future - maybe the new category "processType" can be used to check if it's a
+    // forecast
+    // Handling of significanceOfReferenceTime is hacked in for now....
+    bool isReferingToStart = false;
+    if ((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
+        isReferingToStart = false;
+        g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
+        g.setValue("startStep", 0l);
+        if (gribEdition == "2") {
+            g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("forecastTime", 0l);
+        }
+    }
+    else if (queriedMarsFields.type
+             && (types_with_time_reference_offset.find(*queriedMarsFields.type)
+                 != types_with_time_reference_offset.end())) {
+        isReferingToStart = true;
+    }
+
+    return isReferingToStart ? "start" : (isTimeRange ? "previous" : "current");
+}
+
 void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration& in,
                                  const QueriedMarsKeys& queriedMarsFields) {
     eckit::LocalConfiguration md = in;  // Copy to allow modification
@@ -583,45 +616,8 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
 
     tryMapStepToTimeAndCheckTime(md);
 
-    std::string timeRef;
-    if (auto optTimeRef = lookUpString(md, "timeReference"); optTimeRef) {
-        timeRef = *optTimeRef;
-    }
-
-
-        // TODO: this will not hold in the future - maybe the new category "processType" can be used to check if it's a
-        // forecast
-        // Handling of significanceOfReferenceTime is hacked in for now....
-        bool isReferringToStart = false;
-        if (queriedMarsFields.type) {
-            // Check type starts with fc (fc, fcmonth...)
-            if (queriedMarsFields.type->rfind("fc", 0) == 0) {
-                // If significanceOfReferenceTime is validityTime (2)
-                // then forecastTime should be set to zero.
-                if ((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
-                    isReferringToStart = false;
-                    g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
-                    g.setValue("startStep", 0l);
-                    if (gribEdition == "2") {
-                        g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
-                        g.setValue("forecastTime", 0l);
-                    }
-                    g.setValue("forecastTime", 0l);
-                }
-                g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
-                g.setValue("startStep", 0l);
-            }
-            // Perturbed or controlled forecast
-            else if (queriedMarsFields.type == "pf" || queriedMarsFields.type == "cf") {
-                isReferringToStart = true;
-            }
-        }
-        else if (queriedMarsFields.type == "pf") {
-            isReferringToStart = true;
-        }
-    }
-
-    timeRef = isReferringToStart ? "start" : (isTimeRange ? "previous" : "current");
+    std::string timeRef
+        = getTimeReference(g, md, queriedMarsFields, gribEdition, isTimeRange, significanceOfReferenceTime);
 
     auto refDateTimeTup = getReferenceDateTime(timeRef, md);
     auto refDateTime = util::wrapDateTime(

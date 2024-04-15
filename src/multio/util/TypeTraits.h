@@ -123,6 +123,9 @@ inline constexpr bool TypeListContains_v = TypeListContains<Type, TypeList>::val
 
 //-----------------------------------------------------------------------------
 
+// Sane overload resolution - used to initialize and assign values to a variant finding "best" matches.
+// Default in C++20 and supported in C++17 by most but not all compilers (e.g. ICPC does not support it)
+
 template <typename From, typename To, class = void> struct NotNarrowConstructible: std::false_type {};
 // template <typename From, typename To> struct NotNarrowConstructible<From, To, std::void_t<std::result_of_t<TestNotNarrowConstructible<To>(From)>>>: std::true_type {};
 template <typename From, typename To> struct NotNarrowConstructible<From, To, std::void_t<decltype(To{std::declval<From>()})>>: std::true_type {};
@@ -197,6 +200,8 @@ using IfTypeNotOf = std::enable_if_t<!TypeListContains<std::decay_t<T>, TList>::
 
 
 //-----------------------------------------------------------------------------
+
+// Helper to hide unique_ptr container for Metadata
 
 
 template <typename T>
@@ -276,19 +281,6 @@ struct IsOptional<std::optional<T>> {
 
 template <typename T>
 inline constexpr bool IsOptional_v = IsOptional<T>::value;
-
-
-template <typename T>
-struct WrapOptional {
-    using type = std::optional<T>;
-};
-template <typename T>
-struct WrapOptional<std::optional<T>> {
-    using type = std::optional<T>;
-};
-
-template <typename T>
-using WrapOptional_t = typename WrapOptional<T>::type;
 
 
 //-----------------------------------------------------------------------------

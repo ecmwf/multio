@@ -14,7 +14,7 @@ public:
 
     util::Timing<> actionTiming_;
 
-    void report(std::ostream& out, const std::string& type = "Action", const char* indent = "") const;
+    void report(std::ostream& out, const std::string& type = "Action", const char* indent = "");
 };
 
 }  // namespace action

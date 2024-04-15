@@ -44,12 +44,12 @@ public:
 
     std::size_t updates() const { return count_; }
 
-    operator eckit::Timing() const {
+    operator eckit::Timing() {
         process();
         return eckit::Timing(elapsedTimeSeconds(), elapsedCPUSeconds(), updates());
     }
 
-    void process() const {
+    void process() {
         if (ind_ == 0)
             return;
 
@@ -71,22 +71,22 @@ public:
     }
 
 private:
-    mutable std::size_t ind_{0};
+    std::size_t ind_{0};
     std::size_t count_{0};
 
-    mutable Duration duration_{0};
+    Duration duration_{0};
     // Value initialize arrays to 0 - their diff should be 0 as well
-    mutable std::array<TimePoint, NAgg> starts_{};
-    mutable std::array<TimePoint, NAgg> ends_{};
+    std::array<TimePoint, NAgg> starts_{};
+    std::array<TimePoint, NAgg> ends_{};
 
-    mutable clock_t cpu_duration_{0};
+    clock_t cpu_duration_{0};
     // Value initialize arrays to 0 - their diff should be 0 as well
-    mutable std::array<std::clock_t, NAgg> cpu_starts_{};
-    mutable std::array<std::clock_t, NAgg> cpu_ends_{};
+    std::array<std::clock_t, NAgg> cpu_starts_{};
+    std::array<std::clock_t, NAgg> cpu_ends_{};
 };
 
 template <typename Clock, std::size_t NAgg>
-std::ostream& operator<<(std::ostream& os, const Timing<Clock, NAgg>& t) {
+std::ostream& operator<<(std::ostream& os, Timing<Clock, NAgg>& t) {
     t.process();
     os << "Time: " << t.elapsedTimeSeconds() << "s, Cpu: " << t.elapsedCPUSeconds() << "s, Updates: " << t.updates();
     return os;

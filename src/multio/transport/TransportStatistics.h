@@ -40,7 +40,7 @@ public:
 
     util::Timing<> totReturnTiming_;
 
-    void report(std::ostream& out, const char* indent = "") const;
+    void report(std::ostream& out, const char* indent = "");
 };
 
 }  // namespace multio::transport

@@ -29,7 +29,7 @@ public:
 
     util::Timing<> mirTiming_;
 
-    void report(std::ostream& out, const char* indent = "") const;
+    void report(std::ostream& out, const char* indent = "");
 };
 
 }  // namespace multio

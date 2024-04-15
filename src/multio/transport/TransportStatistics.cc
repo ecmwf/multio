@@ -5,7 +5,7 @@ namespace multio::transport {
 
 TransportStatistics::TransportStatistics() {}
 
-void TransportStatistics::report(std::ostream& out, const char* indent) const {
+void TransportStatistics::report(std::ostream& out, const char* indent) {
 
     reportTime(out, "    -- Waiting for buffer", waitTiming_, indent);
 

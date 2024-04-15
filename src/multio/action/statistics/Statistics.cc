@@ -81,16 +81,13 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
     md.set("startTime", win.epochPoint().time().hhmmss());
     md.set("step-frequency", win.timeSpanInSteps());
 
-    // md.set("timeSpanInHours", win.timeSpanInHours());
-    // md.set("stepRange", win.stepRange());
-
     md.set("previousDate", win.creationPoint().date().yyyymmdd());
     md.set("previousTime", win.creationPoint().time().hhmmss());
     md.set("currentDate", win.endPoint().date().yyyymmdd());
     md.set("currentTime", win.endPoint().time().hhmmss());
 
-    // md.set("stepInHours", win.endPointInHours());
-    // md.set("stepRangeInHours", win.stepRangeInHours());
+    md.set("startStepInHours", win.creationPointInHours());
+    md.set("endStepInHours", win.endPointInHours());
 
     return md;
 }

@@ -19,7 +19,7 @@ import cffi
 import findlibs
 from pkg_resources import parse_version
 
-__multio_version__ = "1.9.0"
+__multio_version__ = "2.1.5"
 
 ffi = cffi.FFI()
 

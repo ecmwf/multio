@@ -169,50 +169,36 @@ EncodingException::EncodingException(const std::string& r, const eckit::CodeLoca
 using message::Message;
 using message::Peer;
 
+void makeOverwritesForMap(CodesOverwrites& res, const eckit::LocalConfiguration& conf) {
+    for (const std::string& k : conf.keys()) {
+        auto val = conf.getSubConfiguration(k).get();
+
+        if (val.isBool()) {
+            res.emplace_back(k, (std::int64_t)val);
+        }
+        else if (val.isNumber()) {
+            res.emplace_back(k, (std::int64_t)val);
+        }
+        else if (val.isDouble()) {
+            res.emplace_back(k, (double)val);
+        }
+        else if (val.isString()) {
+            res.emplace_back(k, (std::string)val);
+        }
+        else {
+            NOTIMP;
+        }
+    }
+}
+
 CodesOverwrites makeOverwrites(const eckit::LocalConfiguration& encConf) {
     CodesOverwrites res{};
     if (encConf.get().isMap()) {
-        for (const std::string& k : encConf.keys()) {
-            auto val = encConf.getSubConfiguration(k).get();
-
-            if (val.isBool()) {
-                res.emplace_back(k, (std::int64_t)val);
-            }
-            else if (val.isNumber()) {
-                res.emplace_back(k, (std::int64_t)val);
-            }
-            else if (val.isDouble()) {
-                res.emplace_back(k, (double)val);
-            }
-            else if (val.isString()) {
-                res.emplace_back(k, (std::string)val);
-            }
-            else {
-                NOTIMP;
-            }
-        }
+        makeOverwritesForMap(res, encConf);
     }
     else if (encConf.get().isList()) {
         for (const auto& subConf : encConf.getSubConfigurations()) {
-            for (const std::string& k : subConf.keys()) {
-                auto val = subConf.getSubConfiguration(k).get();
-
-                if (val.isBool()) {
-                    res.emplace_back(k, (std::int64_t)val);
-                }
-                else if (val.isNumber()) {
-                    res.emplace_back(k, (std::int64_t)val);
-                }
-                else if (val.isDouble()) {
-                    res.emplace_back(k, (double)val);
-                }
-                else if (val.isString()) {
-                    res.emplace_back(k, (std::string)val);
-                }
-                else {
-                    NOTIMP;
-                }
-            }
+            makeOverwritesForMap(res, subConf);
         }
     }
     return res;

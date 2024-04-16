@@ -99,48 +99,8 @@ ecbuild_add_option( FEATURE HEALPIX_EXAMPLES
 
 ###  Definitions used by the output manager
 ecbuild_add_option( FEATURE OUTPUT_MANAGER
-                    DEFAULT OFF
+                    DEFAULT ON
                     DESCRIPTION "Build the output manager" )
-
-ecbuild_add_option( FEATURE OUTPUT_MANAGER_GRIBX_BINARY
-                    CONDITION HAVE_OUTPUT_MANAGER
-                    DEFAULT ON
-                    DESCRIPTION "Enable the gribx binary output manager" )
-
-ecbuild_add_option( FEATURE OUTPUT_MANAGER_GRIBX2MULTIO_BIN
-                    CONDITION HAVE_OUTPUT_MANAGER
-                    DEFAULT ON
-                    DESCRIPTION "Enable the gribx2multio binary output manager" )
-
-ecbuild_add_option( FEATURE OUTPUT_MANAGER_GRIBX2MULTIO_RAW
-                    CONDITION HAVE_OUTPUT_MANAGER
-                    DEFAULT ON
-                    DESCRIPTION "Enable the gribx2multio raw output manager" )
-
-ecbuild_add_option( FEATURE OUTPUT_MANAGER_MULTIO_RAW
-                    CONDITION HAVE_OUTPUT_MANAGER
-                    DEFAULT ON
-                    DESCRIPTION "Enable the multio raw output manager" )
-
-ecbuild_add_option( FEATURE OUTPUT_MANAGER_MULTIO_NO_ENC
-                    CONDITION HAVE_OUTPUT_MANAGER
-                    DEFAULT ON
-                    DESCRIPTION "Enable the multio noenc output manager" )
-
-ecbuild_add_option( FEATURE OUTPUT_MANAGER_DEBUG
-                    CONDITION HAVE_OUTPUT_MANAGER
-                    DEFAULT OFF
-                    DESCRIPTION "Enable debug code for the output manager" )
-
-ecbuild_add_option( FEATURE OUTPUT_MANAGER_RELEASE
-                    CONDITION HAVE_OUTPUT_MANAGER
-                    DEFAULT OFF
-                    DESCRIPTION "Enable release code for the output manager" )
-
-ecbuild_add_option( FEATURE OUTPUT_MANAGER_DVELOP
-                    CONDITION HAVE_OUTPUT_MANAGER
-                    DEFAULT OFF
-                    DESCRIPTION "Enable develop code for the output manager" )
 
 ecbuild_add_option( FEATURE OUTPUT_MANAGER_ENCODER_REPORT
                     CONDITION HAVE_OUTPUT_MANAGER

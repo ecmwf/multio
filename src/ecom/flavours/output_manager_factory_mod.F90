@@ -63,22 +63,19 @@ SUBROUTINE MAKE_OUTPUT_MANAGER( OMTYPE, PROCESSOR_TOPO, MODEL_PARAMS, YAML_CFG_F
   USE :: OM_CORE_MOD,              ONLY: MODEL_PAR_T
   USE :: NOOP_MOD,                 ONLY: NOOP_OUTPUT_MANAGER_T
   USE :: DUMP_MOD,                 ONLY: DUMP_OUTPUT_MANAGER_T
+  USE :: GRIBX_BIN_MOD,            ONLY: GRIBX_BINARY_OUTPUT_MANAGER_T
+  USE :: GRIBX2MULTIO_BIN_MOD,     ONLY: GRIBX2MULTIO_BIN_OUTPUT_MANAGER_T
+  USE :: GRIBX2MULTIO_RAW_MOD,     ONLY: GRIBX2MULTIO_RAW_OUTPUT_MANAGER_T
+  USE :: MULTIO_RAW_MOD,           ONLY: MULTIO_RAW_OUTPUT_MANAGER_T
+  USE :: MULTIO_NO_ENC_MOD,        ONLY: MULTIO_NO_ENC_OUTPUT_MANAGER_T
 
-#if defined(WITH_GRIBX_BINARY_OUTPUT_MANAGER)
-  USE :: GRIBX_BIN_MOD, ONLY: GRIBX_BINARY_OUTPUT_MANAGER_T
-#endif
-#if defined(WITH_GRIBX2MULTIO_BIN_OUTPUT_MANAGER)
-  USE :: GRIBX2MULTIO_BIN_MOD, ONLY: GRIBX2MULTIO_BIN_OUTPUT_MANAGER_T
-#endif
-#if defined(WITH_GRIBX2MULTIO_RAW_OUTPUT_MANAGER)
-  USE :: GRIBX2MULTIO_RAW_MOD, ONLY: GRIBX2MULTIO_RAW_OUTPUT_MANAGER_T
-#endif
-#if defined(WITH_MULTIO_RAW_OUTPUT_MANAGER)
-  USE :: MULTIO_RAW_MOD, ONLY: MULTIO_RAW_OUTPUT_MANAGER_T
-#endif
-#if defined(WITH_MULTIO_NO_ENC_OUTPUT_MANAGER)
-  USE :: MULTIO_NO_ENC_MOD, ONLY: MULTIO_NO_ENC_OUTPUT_MANAGER_T
-#endif
+  USE :: NOOP_MOD,                 ONLY: NOOP_OMNAME
+  USE :: DUMP_MOD,                 ONLY: DUMP_OMNAME
+  USE :: GRIBX_BIN_MOD,            ONLY: GRIBX_BINARY_OMNAME
+  USE :: GRIBX2MULTIO_BIN_MOD,     ONLY: GRIBX2MULTIO_BIN_OMNAME
+  USE :: GRIBX2MULTIO_RAW_MOD,     ONLY: GRIBX2MULTIO_RAW_OMNAME
+  USE :: MULTIO_RAW_MOD,           ONLY: MULTIO_RAW_OMNAME
+  USE :: MULTIO_NO_ENC_MOD,        ONLY: MULTIO_NO_ENC_OMNAME
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -121,34 +118,32 @@ IMPLICIT NONE
   ! ------------------------------------------------------------------------------------------------
   ! A no-op output manager. Used to demonstrate behavior without I/O
   ! when addressing complaints or testing scenarios.
-  CASE ( 'NOOP' )
+  CASE ( 'NOOP', NOOP_OMNAME )
     ALLOCATE( NOOP_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
 
+
   ! ------------------------------------------------------------------------------------------------
   ! A dump output manager. Used to dump all the data arrived to the IOserver
-  CASE ( 'DUMP' )
+  CASE ( 'DUMP', DUMP_OMNAME )
     ALLOCATE( DUMP_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
+
 
   ! ------------------------------------------------------------------------------------------------
   ! Grib[1|2] output manager utilizing grib functionalities as a sink,
   ! designed to operate independently of multIO.
-#if defined(WITH_GRIBX_BINARY_OUTPUT_MANAGER)
-  CASE ( 'GRIBX' )
+  CASE ( 'GRIBX', GRIBX_BINARY_OMNAME )
     ALLOCATE( GRIBX_BINARY_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
-#endif
 
 
   ! ------------------------------------------------------------------------------------------------
   ! Grib[1|2] output manager leveraging multIO as a sink,
   ! designed for saving binary-encoded grib files through the multIO API.
-#if defined(WITH_GRIBX2MULTIO_BIN_OUTPUT_MANAGER)
-  CASE ( 'GRIBX2MULTIO_BINARY' )
+  CASE ( 'GRIBX2MULTIO_BINARY', GRIBX2MULTIO_BIN_OMNAME )
     ALLOCATE( GRIBX2MULTIO_BIN_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
-#endif
 
 
   ! ------------------------------------------------------------------------------------------------
@@ -156,23 +151,18 @@ IMPLICIT NONE
   ! grib files are transformed into multIO metadata and a raw data array.
   ! The metadata and data are subsequently handed to the multIO API for
   ! on-the-fly post-processing and storage to disk.
-#if defined(WITH_GRIBX2MULTIO_RAW_OUTPUT_MANAGER)
-  CASE ( 'GRIBX2MULTIO_RAW' )
+  CASE ( 'GRIBX2MULTIO_RAW', GRIBX2MULTIO_RAW_OMNAME )
     ALLOCATE( GRIBX2MULTIO_RAW_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
-#endif
 
 
   ! ------------------------------------------------------------------------------------------------
   ! Pure multIO output manager constructing MultIO metadata directly in the encoders, bypassing
   ! grib eccodes api. The encoding logic is still used. Metadata and data are then passed to the
   ! multIO API for on-the-fly post-processing and storage to disk.
-#if defined(WITH_MULTIO_RAW_OUTPUT_MANAGER)
-  CASE ( 'MULTIO_RAW' )
+  CASE ( 'MULTIO_RAW', MULTIO_RAW_OMNAME )
     ALLOCATE( MULTIO_RAW_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
-#endif
-
 
 ! ------------------------------------------------------------------------------------------------
 ! Pure multIO output manager constructing metadata directly from io_server requests,
@@ -180,11 +170,9 @@ IMPLICIT NONE
 ! model. No encoding logic at all in this output manager. Metadata and data are then passed to the
 ! multIO API for on-the-fly post-processing and storage to disk.
 ! The idea is to use this to test funtionalities of the new MultIO IOserver
-#if defined(WITH_MULTIO_NO_ENC_OUTPUT_MANAGER)
-CASE ( 'MULTIO_NO_ENC' )
+CASE ( 'MULTIO_NO_ENC', MULTIO_NO_ENC_OMNAME )
   ALLOCATE( MULTIO_NO_ENC_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
   PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
-#endif
 
 
   ! ------------------------------------------------------------------------------------------------

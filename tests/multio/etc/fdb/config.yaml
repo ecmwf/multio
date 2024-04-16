@@ -1,8 +1,8 @@
 ---
 type: local
 engine: toc
-schema: @CMAKE_BINARY_DIR@/multio/etc/fdb/schema
+schema: @CMAKE_CURRENT_BINARY_DIR@/test_fdb/etc/schema
 spaces:
 - handler: Default
   roots:
-  - path: @CMAKE_BINARY_DIR@/multio/tests/fdb/root
+  - path: @CMAKE_CURRENT_BINARY_DIR@/test_fdb/root

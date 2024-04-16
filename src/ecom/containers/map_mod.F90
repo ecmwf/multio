@@ -122,6 +122,9 @@ PUBLIC :: MAP_INSERT
 PUBLIC :: MAP_REMOVE
 PUBLIC :: MAP_PRINT
 PUBLIC :: MAP_LIST
+PUBLIC :: MAP_MINIMUM
+PUBLIC :: MAP_MAXIMUM
+PUBLIC :: MAP_GET_SORTED_KEYS_INT
 
 CONTAINS
 
@@ -507,9 +510,9 @@ END SUBROUTINE KEY_COPY
 !> @warning This subroutine does not perform any action if the specified key is already found in the map.
 !>          It is the responsibility of the caller to handle such scenarios appropriately.
 !>
-#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'MAP_INSERT_NODE'
-SUBROUTINE MAP_INSERT_NODE( ROOT, KEY, VALUE )
+FUNCTION MAP_INSERT_NODE( ROOT, KEY, VALUE, FORCE ) RESULT(EX)
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD, ONLY: JPIB_K
@@ -523,8 +526,13 @@ IMPLICIT NONE
   TYPE(MAP_NODE_T), POINTER, INTENT(INOUT) :: ROOT
   TYPE(KEY_T),               INTENT(IN)    :: KEY
   CLASS(*), POINTER,         INTENT(IN)    :: VALUE
+  LOGICAL, OPTIONAL,         INTENT(IN)    :: FORCE
+
+  ! Function result
+  LOGICAL :: EX
 
   ! Local variables
+  LOGICAL :: LOC_FORCE
   TYPE(MAP_NODE_T), POINTER :: INSERTION_POINT
   INTEGER(KIND=JPIB_K) :: FOUND
   INTEGER(KIND=JPIB_K) :: ERR
@@ -535,9 +543,16 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
+  IF ( PRESENT(FORCE) ) THEN
+    LOC_FORCE = FORCE
+  ELSE
+    LOC_FORCE = .FALSE.
+  ENDIF
+
   ! Map is empty
   IF ( ASSOCIATED( ROOT, NIL  ) ) THEN
 
+    EX = .TRUE.
     CALL ALLOCATE_NODE( ROOT )
     INSERTION_POINT => NIL
     CALL MAP_NODE_INIT( ROOT, INSERTION_POINT, KEY, VALUE )
@@ -549,6 +564,7 @@ IMPLICIT NONE
 
     CALL SEARCH( ROOT, INSERTION_POINT, KEY, FOUND )
     IF ( FOUND .NE. 0 ) THEN
+      EX = .TRUE.
       IF ( KEY .LT. INSERTION_POINT%KEY ) THEN
         CALL ALLOCATE_NODE( INSERTION_POINT%LEFT )
         CALL MAP_NODE_INIT( INSERTION_POINT%LEFT, INSERTION_POINT, KEY, VALUE )
@@ -559,8 +575,12 @@ IMPLICIT NONE
         CALL INSERT_FIXUP( ROOT, INSERTION_POINT%RIGHT )
       ENDIF
     ELSE
+      EX = .FALSE.
       ! @todo: decide what to do in the case in which the key is
       !        already present in the map
+      ! IF ( LOC_FORCE ) THEN
+      ! ELSE
+      ! ENDIF
     ENDIF
 
   ENDIF
@@ -571,7 +591,7 @@ IMPLICIT NONE
   ! Exit point on success
   RETURN
 
-END SUBROUTINE MAP_INSERT_NODE
+END FUNCTION MAP_INSERT_NODE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -687,10 +707,10 @@ IMPLICIT NONE
     ! Deallocate right subtree.
     CALL MAP_FREE_NODE( CURRENT%RIGHT, ERR )
 
-  ENDIF
+    ! Free memory
+    CALL DEALLOCATE_NODE( CURRENT, ERR )
 
-  ! Free memory
-  CALL DEALLOCATE_NODE( CURRENT, ERR )
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -2249,9 +2269,9 @@ IMPLICIT NONE
 
   ! Write the current node
   IF ( ROOT%RED ) THEN
-    WRITE(UNIT,'(I6.6,A,I6.6,A)') ROOT%IDX, '   [ label="', ROOT%KEY%K ,'", fillcolor=red]'
+    WRITE(UNIT,'(I6.6,A,I8.8,A)') ROOT%IDX, '   [ label="', ROOT%KEY%K ,'", fillcolor=red]'
   ELSE
-    WRITE(UNIT,'(I6.6,A,I6.6,A)') ROOT%IDX, '   [ label="', ROOT%KEY%K ,'", fillcolor=black]'
+    WRITE(UNIT,'(I6.6,A,I8.8,A)') ROOT%IDX, '   [ label="', ROOT%KEY%K ,'", fillcolor=black]'
   ENDIF
 
   ! Trace end of procedure (on success)
@@ -2371,6 +2391,252 @@ END SUBROUTINE MAP_FREE
 
 
 !>
+!> @brief Get the minimum value in the map.
+!>
+!> This subroutine finalises the given map structure.
+!>
+!> @param [inout] MAP The map structure to be finalised.
+!>
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MAP_MINIMUM'
+SUBROUTINE MAP_MINIMUM( MAP, KEY, VALUE )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MAP_T),       INTENT(INOUT) :: MAP
+  TYPE(KEY_T),       INTENT(OUT)   :: KEY
+  CLASS(*), POINTER, INTENT(OUT)   :: VALUE
+
+  ! Local variables
+  TYPE(MAP_NODE_T), POINTER :: Y
+  INTEGER(KIND=JPIB_K) :: ERR
+  INTEGER(KIND=JPIB_K) :: NUMEL
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization.
+  ERR = 0
+
+  ! Remove the map if it is not empty.
+  IF ( MAP%SIZE .GT. 0 ) THEN
+
+    ! Recursive deletion of the tree.
+    Y => MINIMUM( MAP%ROOT )
+
+    KEY = Y%KEY
+    VALUE => Y%VALUE
+
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END SUBROUTINE MAP_MINIMUM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!>
+!> @brief Get the maximum value of the map.
+!>
+!> This subroutine finalises the given map structure.
+!>
+!> @param [inout] MAP The map structure to be finalised.
+!>
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MAP_MAXIMUM'
+SUBROUTINE MAP_MAXIMUM( MAP, KEY, VALUE )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MAP_T),       INTENT(INOUT) :: MAP
+  TYPE(KEY_T),       INTENT(OUT)   :: KEY
+  CLASS(*), POINTER, INTENT(OUT)   :: VALUE
+
+  ! Local variables
+  TYPE(MAP_NODE_T), POINTER :: Y
+  INTEGER(KIND=JPIB_K) :: ERR
+  INTEGER(KIND=JPIB_K) :: NUMEL
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization.
+  ERR = 0
+
+  ! Remove the map if it is not empty.
+  IF ( MAP%SIZE .GT. 0 ) THEN
+
+    ! Recursive deletion of the tree.
+    Y => MAXIMUM( MAP%ROOT )
+
+    KEY = Y%KEY
+    VALUE => Y%VALUE
+
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END SUBROUTINE MAP_MAXIMUM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'RECURSIVE SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MAP_GET_SORTED_KEYS_INT_NODE'
+RECURSIVE SUBROUTINE MAP_GET_SORTED_KEYS_INT_NODE( NODE, SORTED_KEYS_INT, CNT )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MAP_NODE_T), POINTER,          INTENT(INOUT) :: NODE
+  INTEGER(KIND=JPIM_K), DIMENSION(:), INTENT(INOUT) :: SORTED_KEYS_INT
+  INTEGER(KIND=JPIB_K),               INTENT(INOUT) :: CNT
+
+  ! Local variables
+  TYPE(MAP_NODE_T), POINTER :: Y
+  TYPE(MAP_NODE_T), POINTER :: PREV
+  INTEGER(KIND=JPIB_K) :: ERR
+  INTEGER(KIND=JPIB_K) :: NUMEL
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization.
+  ERR = 0
+
+  ! Remove the map if it is not empty.
+  IF ( .NOT. ASSOCIATED(NODE, NIL) ) THEN
+
+    CALL MAP_GET_SORTED_KEYS_INT_NODE( NODE%LEFT,  SORTED_KEYS_INT, CNT )
+
+    CNT = CNT + 1
+    SORTED_KEYS_INT(CNT) = NODE%KEY%K
+
+    CALL MAP_GET_SORTED_KEYS_INT_NODE( NODE%RIGHT, SORTED_KEYS_INT, CNT )
+
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END SUBROUTINE MAP_GET_SORTED_KEYS_INT_NODE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!>
+!> @brief Get the maximum value of the map.
+!>
+!> This subroutine finalises the given map structure.
+!>
+!> @param [inout] MAP The map structure to be finalised.
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MAP_GET_SORTED_KEYS_INT'
+FUNCTION MAP_GET_SORTED_KEYS_INT( MAP, SORTED_KEYS_INT ) RESULT(EX)
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MAP_T),                        INTENT(INOUT) :: MAP
+  INTEGER(KIND=JPIM_K), DIMENSION(:), INTENT(OUT)   :: SORTED_KEYS_INT
+
+  ! Function result
+  LOGICAL :: EX
+
+  ! Local variables
+  TYPE(MAP_NODE_T), POINTER :: Y
+  TYPE(MAP_NODE_T), POINTER :: PREV
+  INTEGER(KIND=JPIB_K) :: CNT
+  INTEGER(KIND=JPIB_K) :: ERR
+  INTEGER(KIND=JPIB_K) :: NUMEL
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization.
+  ERR = 0
+  EX = .TRUE.
+
+  ! Error handing
+  IF ( MAP%SIZE .NE. SIZE(SORTED_KEYS_INT) ) THEN
+    EX = .FALSE.
+    RETURN
+  ENDIF
+
+  ! Remove the map if it is not empty.
+  IF ( MAP%SIZE .GT. 0 ) THEN
+
+    ! Recursive deletion of the tree.
+    CNT = 0
+    CALL MAP_GET_SORTED_KEYS_INT_NODE( MAP%ROOT, SORTED_KEYS_INT, CNT )
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END FUNCTION MAP_GET_SORTED_KEYS_INT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!>
 !> @brief Inserts a key-value pair into the map.
 !>
 !> This subroutine inserts a key-value pair into the map structure.
@@ -2383,7 +2649,7 @@ END SUBROUTINE MAP_FREE
 !>
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'
 #define PP_PROCEDURE_NAME 'MAP_INSERT'
-SUBROUTINE MAP_INSERT( THIS, KEY, VALUE )
+SUBROUTINE MAP_INSERT( THIS, KEY, VALUE, FORCE )
 
   ! Symbols imported by the preprocessor for tracing purposes
   PP_TRACE_USE_VARS
@@ -2394,6 +2660,10 @@ IMPLICIT NONE
   TYPE(MAP_T),       INTENT(INOUT) :: THIS
   TYPE(KEY_T),       INTENT(IN)    :: KEY
   CLASS(*), POINTER, INTENT(IN)    :: VALUE
+  LOGICAL, OPTIONAL, INTENT(IN)    :: FORCE
+
+  ! Local variables
+  LOGICAL :: EX
 
   ! Local variables declared by the preprocessor for tracing purposes
   PP_TRACE_DECL_VARS
@@ -2401,8 +2671,16 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-  CALL MAP_INSERT_NODE( THIS%ROOT, KEY, VALUE )
-  THIS%SIZE = THIS%SIZE + 1
+  IF ( PRESENT(FORCE) ) THEN
+    EX = MAP_INSERT_NODE( THIS%ROOT, KEY, VALUE, FORCE )
+  ELSE
+    EX = MAP_INSERT_NODE( THIS%ROOT, KEY, VALUE )
+  ENDIF
+
+  ! Update the number of elements in the map
+  IF ( EX ) THEN
+    THIS%SIZE = THIS%SIZE + 1
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -2581,7 +2859,7 @@ END SUBROUTINE MAP_LIST
 !> This subroutine prints the map in dot format.
 !>
 !> @param [inout] THIS The map structure to list the key-value pairs from.
-!> @param [in]    NAME Base nbame of the file where to print the graph.
+!> @param [in]    NAME Basename of the file where to print the graph.
 !> @param [in]    IDX  Index used to generate the name.
 !>
 !> @note The final nema will be: `<basename>_<IDX:8.8>.dot`

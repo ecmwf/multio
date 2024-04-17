@@ -814,7 +814,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA,  'indicatorOfUnitForTimeIncrement',  's' )
   PP_METADATA_SET( METADATA,  'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
 
-  PP_METADATA_SET( METADATA,  'numberOfTimeRange', LENGTH_OF_TIME_RANGE/INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+  PP_METADATA_SET( METADATA,  'numberOfTimeRange', 1 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -1033,7 +1033,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, 'indicatorOfUnitForTimeIncrement',  's' )
   PP_METADATA_SET( METADATA, 'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
 
-  PP_METADATA_SET( METADATA, 'numberOfTimeRange', LENGTH_OF_TIME_RANGE/INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+  PP_METADATA_SET( METADATA, 'numberOfTimeRange', 1 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -1240,7 +1240,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA,  'indicatorOfUnitForTimeIncrement',  's' )
   PP_METADATA_SET( METADATA,  'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
 
-  PP_METADATA_SET( METADATA,  'numberOfTimeRange', LENGTH_OF_TIME_RANGE/INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+  PP_METADATA_SET( METADATA,  'numberOfTimeRange', 1 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -1433,7 +1433,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, 'indicatorOfUnitForTimeIncrement',  's' )
   PP_METADATA_SET( METADATA, 'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
 
-  PP_METADATA_SET( METADATA, 'numberOfTimeRange', LENGTH_OF_TIME_RANGE/INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+  PP_METADATA_SET( METADATA, 'numberOfTimeRange', 1 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -1629,7 +1629,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, 'indicatorOfUnitForTimeIncrement',  's' )
   PP_METADATA_SET( METADATA, 'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
 
-  PP_METADATA_SET( METADATA, 'numberOfTimeRange', LENGTH_OF_TIME_RANGE/INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+  PP_METADATA_SET( METADATA, 'numberOfTimeRange', 1 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -1829,7 +1829,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA,  'indicatorOfUnitForTimeIncrement',  's' )
   PP_METADATA_SET( METADATA,  'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
 
-  PP_METADATA_SET( METADATA,  'numberOfTimeRange', LENGTH_OF_TIME_RANGE/INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+  PP_METADATA_SET( METADATA,  'numberOfTimeRange', 1 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -2019,7 +2019,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, 'indicatorOfUnitForTimeIncrement',  's' )
   PP_METADATA_SET( METADATA, 'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
 
-  PP_METADATA_SET( METADATA, 'numberOfTimeRange', LENGTH_OF_TIME_RANGE/INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+  PP_METADATA_SET( METADATA, 'numberOfTimeRange', 1 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -2211,7 +2211,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, 'indicatorOfUnitForTimeIncrement',  's' )
   PP_METADATA_SET( METADATA, 'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
 
-  PP_METADATA_SET( METADATA, 'numberOfTimeRange', LENGTH_OF_TIME_RANGE/INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+  PP_METADATA_SET( METADATA, 'numberOfTimeRange', 1 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -2418,7 +2418,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA,  'indicatorOfUnitForTimeIncrement',  's' )
   PP_METADATA_SET( METADATA,  'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
 
-  PP_METADATA_SET( METADATA,  'numberOfTimeRange', LENGTH_OF_TIME_RANGE/INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+  PP_METADATA_SET( METADATA,  'numberOfTimeRange', 1 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -2609,7 +2609,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, 'indicatorOfUnitForTimeIncrement',  's' )
   PP_METADATA_SET( METADATA, 'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
 
-  PP_METADATA_SET( METADATA, 'numberOfTimeRange', LENGTH_OF_TIME_RANGE/INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+  PP_METADATA_SET( METADATA, 'numberOfTimeRange', 1 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -2802,7 +2802,7 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, 'indicatorOfUnitForTimeIncrement',  's' )
   PP_METADATA_SET( METADATA, 'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
 
-  PP_METADATA_SET( METADATA, 'numberOfTimeRange', LENGTH_OF_TIME_RANGE/INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+  PP_METADATA_SET( METADATA, 'numberOfTimeRange', 1 )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )

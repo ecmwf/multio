@@ -122,8 +122,22 @@ void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload,
 
 void MultioClient::dispatch(message::Message msg) {
     withFailureHandling([&]() {
-        for (const auto& plan : plans_) {
-            plan->process(msg);
+        if (msg.tag() == message::Message::Tag::Flush) {
+            std::size_t planId = 0;
+
+            for (const auto& plan : plans_) {
+                message::Metadata md = msg.metadata();
+                md.set("clientPlanId", planId);
+
+                plan->process(msg.modifyMetadata(std::move(md)));
+
+                ++planId;
+            }
+        }
+        else {
+            for (const auto& plan : plans_) {
+                plan->process(msg);
+            }
         }
     });
 }

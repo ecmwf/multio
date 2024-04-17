@@ -101,7 +101,7 @@ END SUBROUTINE MARS_PRESET_FREE
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'MARS_PRESET_GRIB2_WAM_I'
-FUNCTION MARS_PRESET_GRIB2_WAM_I( MODEL_PARAMS, METADATA ) RESULT(CLTYPE)
+FUNCTION MARS_PRESET_GRIB2_WAM_I( MODEL_PARAMS, METADATA ) RESULT(CDTYPE)
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,       ONLY: JPIB_K
@@ -122,7 +122,7 @@ IMPLICIT NONE
   CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
 
   ! Function Result
-  CHARACTER(LEN=16) :: CLTYPE
+  CHARACTER(LEN=16) :: CDTYPE
 
   ! Local variables
   CHARACTER(LEN=96)     :: CLWORD
@@ -140,121 +140,23 @@ IMPLICIT NONE
 
   PP_METADATA_SET( METADATA,  'discipline', 10 )
 
-
-  ! PP_METADATA_SET( METADATA,  'typeOfLevel', 209 )
-  ! PP_METADATA_SET( METADATA,  'level', 0 )
-
+  ! Set the default parameters
+  PP_METADATA_SET( METADATA,  'setLocalDefinition', 1 )
   PP_METADATA_SET( METADATA,  'localDefinitionNumber', MODEL_PARAMS%WAM_%NLOCGRB )
-
-  ! EXPERIMENT VERSION
-  PP_METADATA_SET( METADATA,  'expver', MODEL_PARAMS%WAM_%YEXPVER)
-
-  ! CLASS
-  PP_METADATA_SET( METADATA,  'class', MODEL_PARAMS%WAM_%YCLASS)
-
-  ! TYPE
-  CLTYPE = MODEL_PARAMS%WAM_%MARSTYPE
-  PP_METADATA_SET( METADATA,  'type', TRIM(CLTYPE) )
-
-  ! STREAM
-  PP_DEBUG_CRITICAL_COND_THROW( MODEL_PARAMS%WAM_%ISTREAM.LE.0, 1 )
   PP_METADATA_SET( METADATA,  'stream', MODEL_PARAMS%WAM_%ISTREAM )
+  PP_METADATA_SET( METADATA,  'type', TRIM(MODEL_PARAMS%SIM_%CTYPE) )
+  CDTYPE = TRIM(MODEL_PARAMS%SIM_%CTYPE)
+  PP_METADATA_SET( METADATA,  'class', TRIM(MODEL_PARAMS%SIM_%CFCLASS))
+  PP_METADATA_SET( METADATA,  'experimentVersionNumber', MODEL_PARAMS%SIM_%CNMEXP(1:4))
 
-  SELECT CASE ( MODEL_PARAMS%WAM_%NLOCGRB )
-
-  CASE ( 18  )
-
-
-    ! MULTI ANALYSIS ENSEMBLE RUNS
-    PP_METADATA_SET( METADATA,  'modelIdentifier', 'ECMF' )
-    IF (  MODEL_PARAMS%WAM_%NCONSENSUS .EQ. 0) THEN
-      ! Data from one centre
-      IF (  MODEL_PARAMS%WAM_%NDWD .EQ. 1 ) THEN
-        PP_METADATA_SET( METADATA,  'origin', 78 )
-      ELSEIF (  MODEL_PARAMS%WAM_%NMFR .EQ. 1 ) THEN
-        PP_METADATA_SET( METADATA,  'origin', 85 )
-      ELSEIF (  MODEL_PARAMS%WAM_%NNCEP .EQ. 1 ) THEN
-        PP_METADATA_SET( METADATA,  'origin', 7 )
-      ELSEIF (  MODEL_PARAMS%WAM_%NUKM .EQ. 1 ) THEN
-        PP_METADATA_SET( METADATA,  'origin', 74 )
-      ENDIF
-    ELSE
-      ! Consensus analysis (always includes ECMWF)
-      PP_METADATA_SET( METADATA,  'origin', 255 )
-      ICENTRE=1
-      CLWORD='ECMF'
-      IF ( MODEL_PARAMS%WAM_%NDWD .EQ. 1 ) THEN
-        ICENTRE=ICENTRE+1
-        CLWORD=CLWORD//'EDZW'
-      ENDIF
-      IF ( MODEL_PARAMS%WAM_%NMFR .EQ. 1 ) THEN
-        ICENTRE=ICENTRE+1
-        CLWORD=CLWORD//'LFPW'
-      ENDIF
-      IF ( MODEL_PARAMS%WAM_%NNCEP .EQ. 1 ) THEN
-       ICENTRE=ICENTRE+1
-       CLWORD=CLWORD//'KWBC'
-      ENDIF
-      IF ( MODEL_PARAMS%WAM_%NUKM .EQ. 1 ) THEN
-       ICENTRE=ICENTRE+1
-       CLWORD=CLWORD//'EGRR'
-      ENDIF
-      PP_METADATA_SET( METADATA,  'consensusCount', ICENTRE )
-      PP_METADATA_SET( METADATA,  'ccccIdentifiers', CLWORD(1:4*ICENTRE) )
-    ENDIF
-
-  CASE ( 15  )
-    ! SEASONAL FORECASTS
-    ! SYSTEM NUMBER
-    PP_METADATA_SET( METADATA,  'system', MODEL_PARAMS%WAM_%NSYSNB )
-    ! METHOD NUMBER
-    PP_METADATA_SET( METADATA,  'method', MODEL_PARAMS%WAM_%NMETNB )
-  CASE ( 23  )
-    ! Coupled atmospheric, wave and ocean means (with hindcast support)
-    ! SYSTEM NUMBER
-    PP_METADATA_SET( METADATA,  'system', MODEL_PARAMS%WAM_%NSYSNB )
-    ! METHOD NUMBER
-    PP_METADATA_SET( METADATA,  'method', MODEL_PARAMS%WAM_%NMETNB )
-    ! REFERENCE DATE
-    PP_METADATA_SET( METADATA,  'refdate', MODEL_PARAMS%WAM_%IREFDATE )
-  CASE ( 26  )
-    ! EPS or DETERMINISTIC HINDCASTS
-    ! REFERENCE DATE
-    PP_METADATA_SET( METADATA,  'referenceDate',  MODEL_PARAMS%WAM_%IREFDATE )
-  END SELECT
+  ! Handle special local definitions
+  CALL MARS_PRESET_LOCAL_SECTION( MODEL_PARAMS, METADATA )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
-  RETURN
-
-! Error handler
-PP_ERROR_HANDLER
-
-  ErrorHandler: BLOCK
-
-    ! Error handling variables
-    CHARACTER(LEN=:), ALLOCATABLE :: STR
-
-    ! HAndle different errors
-    SELECT CASE(ERRIDX)
-    CASE (1)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Stream must be greater than 0' )
-    CASE DEFAULT
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
-    END SELECT
-
-    ! Trace end of procedure (on error)
-    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-    ! Write the error message and stop the program
-    PP_DEBUG_ABORT( STR )
-
-  END BLOCK ErrorHandler
-
-  ! Exit point on error
   RETURN
 
 END FUNCTION MARS_PRESET_GRIB2_WAM_I
@@ -302,15 +204,6 @@ IMPLICIT NONE
 
   ! Specify the type of local definition to be used
   PP_METADATA_SET( METADATA,  'localDefinitionNumber', 1)
-
-  ! Product definiition number
-  ! IF ( MODEL_PARAMS%WAM_%NTOTENS .GT. 0 ) THEN
-  !   ! TODO
-  !   PP_METADATA_SET( METADATA,  'productDefinitionTemplateNumber', MODEL_PARAMS%WAM_%NSPEC2TMPP)
-  ! ELSE
-  !   ! TODO
-  !   PP_METADATA_SET( METADATA,  'productDefinitionTemplateNumber', MODEL_PARAMS%WAM_%NSPEC2TMPD)
-  ! ENDIF
 
   ! Experiment version
   PP_METADATA_SET( METADATA,  'experimentVersionNumber', MODEL_PARAMS%WAM_%YEXPVER )
@@ -578,6 +471,76 @@ IMPLICIT NONE
   ! Function Result
   CHARACTER(LEN=16) :: CDTYPE
 
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Set the default parameters
+  PP_METADATA_SET( METADATA,  'setLocalDefinition', 1 )
+  PP_METADATA_SET( METADATA,  'localDefinitionNumber',MODEL_PARAMS%SIM_%NLOCGRB )
+  PP_METADATA_SET( METADATA,  'stream',MODEL_PARAMS%SIM_%NSTREAM)
+  PP_METADATA_SET( METADATA,  'type',MODEL_PARAMS%SIM_%CTYPE)
+  CDTYPE = MODEL_PARAMS%SIM_%CTYPE
+  PP_METADATA_SET( METADATA,  'class', MODEL_PARAMS%SIM_%CFCLASS)
+  PP_METADATA_SET( METADATA,  'experimentVersionNumber', MODEL_PARAMS%SIM_%CNMEXP(1:4))
+
+  ! Handle special local definitions
+  CALL MARS_PRESET_LOCAL_SECTION( MODEL_PARAMS, METADATA )
+
+  ! Trace end of procedure (on success)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END FUNCTION MARS_PRESET_GRIBX_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+!> @brief Sets MARS metadata (section 2 in GRIB2) for generic fields.
+!>
+!> This function sets the MARS metadata of a simulation into the provided metadata object
+!> using information retrieved from the specified data structure (YDIOS).
+!>
+!> @param [inout] METADATA Metadata object where the MARS metadata will be set.
+!> @param [in]    YDIOS    Data structure used to retrieve the information necessary for setting the metadata.
+!>
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MARS_PRESET_LOCAL_SECTION'
+SUBROUTINE MARS_PRESET_LOCAL_SECTION( MODEL_PARAMS, METADATA )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: JPIB_K
+  USE :: OM_CORE_MOD,        ONLY: PROC_TOPO_T
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+  USE :: DATETIME_UTILS_MOD, ONLY: SEC2HHMM
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),      TARGET,  INTENT(IN)    :: MODEL_PARAMS
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+
+  ! Function Result
+  CHARACTER(LEN=16) :: CDTYPE
+
   ! Local variables
   LOGICAL, DIMENSION(5) :: CONDITIONS
   CHARACTER(LEN=96)     :: CLWORD
@@ -602,13 +565,6 @@ IMPLICIT NONE
   ASSOCIATE ( YPI                           => MODEL_PARAMS%SIM_, &
 &             ECMWF_LOCAL_DEFINITION_NUMBER => MODEL_PARAMS%SIM_%NLOCGRB )
 
-    ! Set the default parameters
-    PP_METADATA_SET( METADATA,  'localDefinitionNumber',ECMWF_LOCAL_DEFINITION_NUMBER)
-    PP_METADATA_SET( METADATA,  'stream',YPI%NSTREAM)
-    PP_METADATA_SET( METADATA,  'type',YPI%CTYPE)
-    CDTYPE = YPI%CTYPE
-    PP_METADATA_SET( METADATA,  'class',YPI%CFCLASS)
-
     ! Sepcial cases handling
     CONDITIONS(1) = (YPI%CTYPE .EQ. 'cf')    ! Control forecast (gribCode=10)
     CONDITIONS(2) = (YPI%CTYPE .EQ. 'pf')    ! Perturbed forecast (gribCode=11)
@@ -625,9 +581,6 @@ IMPLICIT NONE
     ELSE
       PP_METADATA_SET( METADATA,  'eps',0)
     ENDIF
-
-    ! Set experiment version number
-    PP_METADATA_SET( METADATA,  'experimentVersionNumber', YPI%CNMEXP(1:4))
 
     ! Handling the special cases related to the local definition number
     ! https://codes.ecmwf.int/grib/format/grib1/local/
@@ -764,7 +717,7 @@ IMPLICIT NONE
   ! Exit point on success
   RETURN
 
-END FUNCTION MARS_PRESET_GRIBX_ATM
+END SUBROUTINE MARS_PRESET_LOCAL_SECTION
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

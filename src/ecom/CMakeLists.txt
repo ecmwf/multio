@@ -99,6 +99,7 @@ list( APPEND output_manager_src
   ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90
   core/om_data_kind_mod.F90
   core/om_data_types_mod.F90
+  core/om_constants_mod.F90
   core/om_enumerators_mod.F90
   core/om_debug_mod.F90
   core/om_trace_mod.F90
@@ -213,6 +214,8 @@ list( APPEND output_manager_src
     encoders/utils/preset/geometry_preset_utils_mod.F90
     encoders/utils/preset/mars_preset_utils_mod.F90
     encoders/utils/preset/time_preset_utils_mod.F90
+    encoders/utils/runtime/general_runtime_utils_mod.F90
+    encoders/utils/runtime/compression_runtime_utils_mod.F90
     encoders/utils/runtime/parameters_runtime_utils_mod.F90
     encoders/utils/runtime/levels_runtime_utils_mod.F90
     encoders/utils/runtime/packaging_runtime_utils_mod.F90
@@ -317,6 +320,10 @@ list( APPEND output_manager_src
 )
 endif()
 
+if ( HAVE_OUTPUT_MANAGER_ENCODER_REPORT )
+list( APPEND OUTPUT_MANAGER_BUILD_FLAVOUR "WITH_OUTPUT_MANAGER_ENCODING_REPORT" )
+endif()
+
 #
 # Append output-manager source files to the list
 # ----------------------------------------------
@@ -361,7 +368,7 @@ target_include_directories( ecom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mo
 if ( HAVE_OUTPUT_MANAGER_TOOL )
 ecbuild_add_executable(
 
-  TARGET standalone-ecom
+  TARGET secom
 
   SOURCES
     tool/om_tool_cfg_mod.F90

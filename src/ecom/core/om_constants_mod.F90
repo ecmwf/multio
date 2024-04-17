@@ -1,0 +1,18 @@
+MODULE OM_CONSTANTS_MOD
+
+  USE :: OM_DATA_KIND_MOD, ONLY: JPIB_K
+
+IMPLICIT NONE
+
+  ! Default visibility
+  PRIVATE
+
+  ! Dimensions used for metadata tracer
+  INTEGER(KIND=JPIB_K), PARAMETER :: MAX_LINE = 512
+  INTEGER(KIND=JPIB_K), PARAMETER :: MAX_LINE_LENGTH = 512
+
+  ! Whitelist of public symbols
+  PUBLIC :: MAX_LINE
+  PUBLIC :: MAX_LINE_LENGTH
+
+END MODULE OM_CONSTANTS_MOD

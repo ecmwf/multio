@@ -74,25 +74,26 @@ IMPLICIT NONE
 
   WRITE(LOGUNIT,'(A)')     ' GRIB INFO'
   WRITE(LOGUNIT,'(A)')     ' ---------'
-  WRITE(LOGUNIT,'(A,I8)')  ' + ParamId...............................: ', GI%PARAM_ID_
-  WRITE(LOGUNIT,'(A,A)')   ' + Short Name............................: ', TRIM(GI%SHORT_NAME_)
-  WRITE(LOGUNIT,'(A,A)')   ' + Description...........................: ', TRIM(GI%DESCRIPTION_)
-  WRITE(LOGUNIT,'(A,A)')   ' + Measure Unit..........................: ', TRIM(GI%MEASURE_UNIT_)
-  WRITE(LOGUNIT,'(A,L)')   ' + Has grib1.............................: ', GI%HAS_GRIB1_
-  WRITE(LOGUNIT,'(A,L)')   ' + Has grib2.............................: ', GI%HAS_GRIB2_
-  WRITE(LOGUNIT,'(A,7I8)') ' + Requested encoding....................: ', GI%REQUESTED_ENCODING_
-  WRITE(LOGUNIT,'(A,7I8)') ' + Bits per values.......................: ', GI%BITS_PER_VALUE_
-  WRITE(LOGUNIT,'(A,I8)')  ' + Product definition template number 0..: ', GI%PRODUCT_DEFINITION_TEMPLATE_NUMBER0_
-  WRITE(LOGUNIT,'(A,A)')   ' + Type of statistical process 0.........: ', TRIM(TYPE_OF_STATISTICAL_PROCESS_TO_STRING(GI%TYPE_OF_STATISTICAL_PROCESS0_))
-  WRITE(LOGUNIT,'(A,A)')   ' + Type of timerange 0...................: ', TRIM(TYPE_OF_TIME_RANGE_TO_STRING(GI%TYPE_OF_TIME_RANGE0_))
-  WRITE(LOGUNIT,'(A,I8)')  ' + Overall length of timerange 0.........: ', GI%OVERALL_LENGTH_OF_TIME_RANGE0_
-  WRITE(LOGUNIT,'(A,L)')   ' + Is step 0 valid.......................: ', GI%IS_STEP_VALID0_
-  WRITE(LOGUNIT,'(A,I8)')  ' + Product definition template number....: ', GI%PRODUCT_DEFINITION_TEMPLATE_NUMBER_
-  WRITE(LOGUNIT,'(A,A)')   ' + Type of statistical process...........: ', TRIM(TYPE_OF_STATISTICAL_PROCESS_TO_STRING(GI%TYPE_OF_STATISTICAL_PROCESS_))
-  WRITE(LOGUNIT,'(A,A)')   ' + Type of timerange.....................: ', TRIM(TYPE_OF_TIME_RANGE_TO_STRING(GI%TYPE_OF_TIME_RANGE_))
-  WRITE(LOGUNIT,'(A,I8)')  ' + Overall length of timerange...........: ', GI%OVERALL_LENGTH_OF_TIME_RANGE_
-  WRITE(LOGUNIT,'(A,I8)')  ' + Itop..................................: ', GI%IBOT_
-  WRITE(LOGUNIT,'(A,I8)')  ' + Ibot..................................: ', GI%ITOP_
+  WRITE(LOGUNIT,'(A,I8)')  ' + ParamId.................................: ', GI%PARAM_ID_
+  WRITE(LOGUNIT,'(A,A)')   ' + Short Name..............................: ', TRIM(GI%SHORT_NAME_)
+  WRITE(LOGUNIT,'(A,A)')   ' + Description.............................: ', TRIM(GI%DESCRIPTION_)
+  WRITE(LOGUNIT,'(A,A)')   ' + Measure Unit............................: ', TRIM(GI%MEASURE_UNIT_)
+  WRITE(LOGUNIT,'(A,L)')   ' + Has grib1...............................: ', GI%HAS_GRIB1_
+  WRITE(LOGUNIT,'(A,L)')   ' + Has grib2...............................: ', GI%HAS_GRIB2_
+  WRITE(LOGUNIT,'(A,7I8)') ' + Requested encoding gridded..............: ', GI%REQUESTED_ENCODING_(:,1)
+  WRITE(LOGUNIT,'(A,7I8)') ' + Requested encoding spherical harmonics..: ', GI%REQUESTED_ENCODING_(:,2)
+  WRITE(LOGUNIT,'(A,7I8)') ' + Bits per values.........................: ', GI%BITS_PER_VALUE_
+  WRITE(LOGUNIT,'(A,I8)')  ' + Product definition template number 0....: ', GI%PRODUCT_DEFINITION_TEMPLATE_NUMBER0_
+  WRITE(LOGUNIT,'(A,A)')   ' + Type of statistical process 0...........: ', TRIM(TYPE_OF_STATISTICAL_PROCESS_TO_STRING(GI%TYPE_OF_STATISTICAL_PROCESS0_))
+  WRITE(LOGUNIT,'(A,A)')   ' + Type of timerange 0.....................: ', TRIM(TYPE_OF_TIME_RANGE_TO_STRING(GI%TYPE_OF_TIME_RANGE0_))
+  WRITE(LOGUNIT,'(A,I8)')  ' + Overall length of timerange 0...........: ', GI%OVERALL_LENGTH_OF_TIME_RANGE0_
+  WRITE(LOGUNIT,'(A,L)')   ' + Is step 0 valid.........................: ', GI%IS_STEP_VALID0_
+  WRITE(LOGUNIT,'(A,I8)')  ' + Product definition template number......: ', GI%PRODUCT_DEFINITION_TEMPLATE_NUMBER_
+  WRITE(LOGUNIT,'(A,A)')   ' + Type of statistical process.............: ', TRIM(TYPE_OF_STATISTICAL_PROCESS_TO_STRING(GI%TYPE_OF_STATISTICAL_PROCESS_))
+  WRITE(LOGUNIT,'(A,A)')   ' + Type of timerange.......................: ', TRIM(TYPE_OF_TIME_RANGE_TO_STRING(GI%TYPE_OF_TIME_RANGE_))
+  WRITE(LOGUNIT,'(A,I8)')  ' + Overall length of timerange.............: ', GI%OVERALL_LENGTH_OF_TIME_RANGE_
+  WRITE(LOGUNIT,'(A,I8)')  ' + Itop....................................: ', GI%IBOT_
+  WRITE(LOGUNIT,'(A,I8)')  ' + Ibot....................................: ', GI%ITOP_
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -533,6 +534,11 @@ SUBROUTINE READ_GRIB_INFO_YAML( CFG, MODEL_PARAMS, CNT, IDX )
   USE :: OM_CORE_MOD, ONLY: WAVE_INT_E
   USE :: OM_CORE_MOD, ONLY: WAVE_SPEC_E
 
+  USE :: OM_CORE_MOD, ONLY: REPRES_GRIDDED_E
+  USE :: OM_CORE_MOD, ONLY: REPRES_SPECTRAL_E
+  USE :: OM_CORE_MOD, ONLY: GRIB1_E
+  USE :: OM_CORE_MOD, ONLY: GRIB2_E
+
   USE :: TIME_ASSUMPTIONS_MOD,      ONLY: COMPUTE_TIMING_ZERO
   USE :: TIME_ASSUMPTIONS_MOD,      ONLY: COMPUTE_TIMING
   USE :: PACKAGING_ASSUMPTIONS_MOD, ONLY: COMPUTE_BITS_PER_VALUE_DEFAULT
@@ -560,6 +566,7 @@ IMPLICIT NONE
   LOGICAL :: EX
   INTEGER(KIND=JPIB_K)  :: STAT
   INTEGER(KIND=JPIB_K)  :: ITMP
+  INTEGER(KIND=JPIB_K)  :: JTMP
   INTEGER(KIND=JPIB_K), ALLOCATABLE, DIMENSION(:) :: TMP
   CHARACTER(len=:), ALLOCATABLE :: CTMP
   LOGICAL :: LTMP
@@ -578,22 +585,51 @@ IMPLICIT NONE
 
   GRIB_INFO_DB(CNT)%PARAM_ID_ = IDX
 
-  ! Read the requested encoding
-  IF ( CFG%HAS( 'requested-encoding' ) ) THEN
+  ! Read the requested encoding for gridded fields
+  IF ( CFG%HAS( 'requested-encoding-gg' ) ) THEN
     IF (ALLOCATED(TMP)) DEALLOCATE(TMP)
-    EX = CFG%GET( 'requested-encoding', TMP )
+    EX = CFG%GET( 'requested-encoding-gg', TMP )
     PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, 1 )
     IF ( SIZE(TMP) .EQ. 7 ) THEN
-      DO ITMP = 1, 7
-        PP_DEBUG_DEVELOP_COND_THROW( TMP(ITMP).NE.2 .AND. TMP(ITMP).NE.1,  18 )
-      ENDDO
-      GRIB_INFO_DB(CNT)%REQUESTED_ENCODING_ = TMP
+      GRIB_INFO_DB(CNT)%REQUESTED_ENCODING_(:,REPRES_GRIDDED_E) = TMP
       DEALLOCATE(TMP)
     ELSE
       DEALLOCATE(TMP)
       PP_DEBUG_CRITICAL_THROW( 2 )
     ENDIF
   ENDIF
+
+  ! Read the requested encoding for spherical harmonics
+  IF ( CFG%HAS( 'requested-encoding-sh' ) ) THEN
+    IF (ALLOCATED(TMP)) DEALLOCATE(TMP)
+    EX = CFG%GET( 'requested-encoding-sh', TMP )
+    PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, 1 )
+    IF ( SIZE(TMP) .EQ. 7 ) THEN
+      GRIB_INFO_DB(CNT)%REQUESTED_ENCODING_(:,REPRES_SPECTRAL_E) = TMP
+      DEALLOCATE(TMP)
+    ELSE
+      DEALLOCATE(TMP)
+      PP_DEBUG_CRITICAL_THROW( 2 )
+    ENDIF
+  ENDIF
+
+!!  ! Coherency checks on encoding configuration values
+!!  DO ITMP = 1, 7
+!!    DO JTMP = 1, 2
+!!      IF ( GRIB_INFO_DB(CNT)%REQUESTED_ENCODING_(ITMP,JTMP) .LT. GRIB1_E .OR. &
+!!&          GRIB_INFO_DB(CNT)%REQUESTED_ENCODING_(ITMP,JTMP) .GT. GRIB2_E ) THEN
+!!        PP_DEBUG_CRITICAL_THROW( 18 )
+!!      ENDIF
+!!      IF ( GRIB_INFO_DB(CNT)%REQUESTED_ENCODING_(ITMP,JTMP) .EQ. GRIB1_E .AND. &
+!!&          .NOT.GRIB_INFO_DB(CNT)%HAS_GRIB1_ ) THEN
+!!        PP_DEBUG_CRITICAL_THROW( 19 )
+!!      ENDIF
+!!      IF ( GRIB_INFO_DB(CNT)%REQUESTED_ENCODING_(ITMP,JTMP) .EQ. GRIB2_E .AND. &
+!!&          .NOT.GRIB_INFO_DB(CNT)%HAS_GRIB2_ ) THEN
+!!        PP_DEBUG_CRITICAL_THROW( 20 )
+!!      ENDIF
+!!    ENDDO
+!!  ENDDO
 
   ! Read Bits per Value
   IF ( CFG%HAS( 'bits-per-value' ) ) THEN
@@ -750,6 +786,7 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP_BUF
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
@@ -788,7 +825,17 @@ PP_ERROR_HANDLER
     CASE (17)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'description not defined' )
     CASE (18)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'encoding can be only 1 and 2' )
+      TMP_BUF = REPEAT( ' ', 128 )
+      WRITE(TMP_BUF,'(3I12)') GRIB_INFO_DB(CNT)%PARAM_ID_, ITMP, JTMP
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown encoding requested: '//TRIM(ADJUSTL(TMP_BUF)) )
+    CASE (19)
+      TMP_BUF = REPEAT( ' ', 128 )
+      WRITE(TMP_BUF,'(3I12)') GRIB_INFO_DB(CNT)%PARAM_ID_, ITMP, JTMP
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Grib1 encoding requested not available for the field: '//TRIM(ADJUSTL(TMP_BUF)) )
+    CASE (20)
+      TMP_BUF = REPEAT( ' ', 128 )
+      WRITE(TMP_BUF,'(3I12)') GRIB_INFO_DB(CNT)%PARAM_ID_, ITMP, JTMP
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Grib2 encoding requested not available for the field: '//TRIM(ADJUSTL(TMP_BUF)) )
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
     END SELECT

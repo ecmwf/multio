@@ -1000,8 +1000,8 @@ END SUBROUTINE MULTIO_METADATA_SET_STRING
 SUBROUTINE MULTIO_METADATA_SET_BOOL( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
-  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD, ONLY: JPIB_K
@@ -1020,8 +1020,8 @@ IMPLICIT NONE
   LOGICAL,                  INTENT(IN)    :: VAL
 
   ! Local variables
-  INTEGER(KIND=INT64) :: KVAL
-  INTEGER(KIND=C_INT) :: CERR
+  INTEGER(KIND=C_LONG) :: KVAL
+  INTEGER(KIND=C_INT)  :: CERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1037,9 +1037,9 @@ IMPLICIT NONE
 
   ! Convert the logical to a long
   IF ( VAL ) THEN
-    KVAL = 1
+    KVAL = 1_C_LONG
   ELSE
-    KVAL = 0
+    KVAL = 0_C_LONG
   ENDIF
 
   ! Set the value into the handle
@@ -1104,7 +1104,7 @@ SUBROUTINE MULTIO_METADATA_SET_INT8( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT8
-  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_LONG
   USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -1121,8 +1121,8 @@ IMPLICIT NONE
   INTEGER(KIND=INT8),       INTENT(IN)    :: VAL
 
   ! Local variables
-  INTEGER(KIND=INT64) :: KVAL
-  INTEGER(KIND=C_INT) :: CERR
+  INTEGER(KIND=C_LONG) :: KVAL
+  INTEGER(KIND=C_INT)  :: CERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1137,7 +1137,7 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
   ! This datatype is not supported by grib API
-  KVAL = INT(VAL,INT64)
+  KVAL = INT(VAL,C_LONG)
 
   ! Set the value into the handle
   CERR = THIS%MULTIO_METADATA_%SET_LONG( KEY, KVAL )
@@ -1202,7 +1202,7 @@ SUBROUTINE MULTIO_METADATA_SET_INT16( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT16
-  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_LONG
   USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -1219,8 +1219,8 @@ IMPLICIT NONE
   INTEGER(KIND=INT16),      INTENT(IN)    :: VAL
 
   ! Local variables
-  INTEGER(KIND=INT64) :: KVAL
-  INTEGER(KIND=C_INT) :: CERR
+  INTEGER(KIND=C_LONG) :: KVAL
+  INTEGER(KIND=C_INT)  :: CERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1235,7 +1235,7 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
   ! This datatype is not supported by grib API
-  KVAL = INT(VAL,INT64)
+  KVAL = INT(VAL,C_LONG)
 
   ! Set the value into the handle
   CERR = THIS%MULTIO_METADATA_%SET_LONG( KEY, KVAL )
@@ -1299,7 +1299,7 @@ SUBROUTINE MULTIO_METADATA_SET_INT32( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT32
-  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_LONG
   USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -1316,8 +1316,8 @@ IMPLICIT NONE
   INTEGER(KIND=INT32),      INTENT(IN)    :: VAL
 
   ! Local variables
-  INTEGER(KIND=INT64) :: KVAL
-  INTEGER(KIND=C_INT) :: CERR
+  INTEGER(KIND=C_LONG) :: KVAL
+  INTEGER(KIND=C_INT)  :: CERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1332,7 +1332,7 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
   ! This datatype is not supported by grib API
-  KVAL = INT(VAL,INT64)
+  KVAL = INT(VAL,C_LONG)
 
   ! Set the value into the handle
   CERR = THIS%MULTIO_METADATA_%SET_LONG( KEY, KVAL )
@@ -1396,6 +1396,7 @@ SUBROUTINE MULTIO_METADATA_SET_INT64( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_LONG
   USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -1412,7 +1413,8 @@ IMPLICIT NONE
   INTEGER(KIND=INT64),      INTENT(IN)    :: VAL
 
   ! Local variables
-  INTEGER(KIND=C_INT) :: CERR
+  INTEGER(KIND=C_LONG) :: KVAL
+  INTEGER(KIND=C_INT)  :: CERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1426,8 +1428,11 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
+  ! This datatype is not supported by grib API
+  KVAL = INT(VAL,C_LONG)
+
   ! Set the value into the handle
-  CERR = THIS%MULTIO_METADATA_%SET_LONG( KEY, VAL )
+  CERR = THIS%MULTIO_METADATA_%SET_LONG( KEY, KVAL )
   PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 2 )
 
   ! Trace end of procedure (on success)
@@ -1488,6 +1493,7 @@ SUBROUTINE MULTIO_METADATA_SET_REAL32( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL32
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_FLOAT
   USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -1504,6 +1510,7 @@ IMPLICIT NONE
   REAL(KIND=REAL32),        INTENT(IN)    :: VAL
 
   ! Local variables
+  REAL(KIND=C_FLOAT)  :: ZVAL
   INTEGER(KIND=C_INT) :: CERR
 
   ! Local variables declared by the preprocessor for debugging purposes
@@ -1518,8 +1525,11 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
+  ! Cast the input value to the correct datatype
+  ZVAL = REAL(VAL, C_FLOAT)
+
   ! Set the value into the handle
-  CERR = THIS%MULTIO_METADATA_%SET_FLOAT( KEY, VAL )
+  CERR = THIS%MULTIO_METADATA_%SET_FLOAT( KEY, ZVAL )
   PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 2 )
 
   ! Trace end of procedure (on success)
@@ -1580,6 +1590,7 @@ SUBROUTINE MULTIO_METADATA_SET_REAL64( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_DOUBLE
   USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -1596,6 +1607,7 @@ IMPLICIT NONE
   REAL(KIND=REAL64),        INTENT(IN)    :: VAL
 
   ! Local variables
+  REAL(KIND=C_DOUBLE) :: ZVAL
   INTEGER(KIND=C_INT) :: CERR
 
   ! Local variables declared by the preprocessor for debugging purposes
@@ -1610,8 +1622,11 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
+  ! Cast the input value to the correct datatype
+  ZVAL = REAL(VAL, C_DOUBLE)
+
   ! Set the value into the handle
-  CERR = THIS%MULTIO_METADATA_%SET_DOUBLE( KEY, VAL )
+  CERR = THIS%MULTIO_METADATA_%SET_DOUBLE( KEY, ZVAL )
   PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 2 )
 
   ! Trace end of procedure (on success)
@@ -2134,7 +2149,8 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
   ! Set value to the grib_handle
-  PP_DEBUG_CRITICAL_THROW(2)
+  WRITE(*,*) 'Write arrays into the metadata is still no supported'
+  ! PP_DEBUG_CRITICAL_THROW(2)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -2223,7 +2239,8 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
   ! This datatype is not supported by grib API
-  PP_DEBUG_CRITICAL_THROW( 2 )
+  WRITE(*,*) 'Write arrays into the metadata is still no supported'
+  ! PP_DEBUG_CRITICAL_THROW(2)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -2312,7 +2329,8 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
   ! Set value to the grib_handle
-  PP_DEBUG_CRITICAL_THROW( 2 )
+  WRITE(*,*) 'Write arrays into the metadata is still no supported'
+  ! PP_DEBUG_CRITICAL_THROW(2)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -2401,7 +2419,8 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
   ! Set value to the grib_handle
-  PP_DEBUG_CRITICAL_THROW( 2 )
+  WRITE(*,*) 'Write arrays into the metadata is still no supported'
+  ! PP_DEBUG_CRITICAL_THROW(2)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

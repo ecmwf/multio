@@ -14,6 +14,7 @@ MODULE TIME_RUNTIME_UTILS_MOD
   USE :: TIME_ENCODERS_MOD, ONLY: ENCODERS_OPTIONS_T
   USE :: TIME_ENCODERS_MOD, ONLY: ENCODE_TIME_ATM_IF
   USE :: TIME_ENCODERS_MOD, ONLY: ENCODE_TIME_WAM_IF
+  USE :: OM_CORE_MOD,       ONLY: CURR_TIME_T
 
 IMPLICIT NONE
 
@@ -50,9 +51,236 @@ PUBLIC :: TIME_RUNTIME_FREE
 PUBLIC :: TIME_ENCODERS_ATM
 PUBLIC :: TIME_ENCODERS_WAM
 PUBLIC :: TIME_INDEXER
+PUBLIC :: COMPUTE_CURRENT_TIME
 
 
 CONTAINS
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'COMPUTE_CURRENT_TIME'
+FUNCTION COMPUTE_CURRENT_TIME( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME ) RESULT(EX)
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: JPIB_K
+  USE :: OM_CORE_MOD,        ONLY: JPRD_K
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: OM_BASE_MSG_A
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: TRACK_TIME_MOD,     ONLY: TIME_HISTORY_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),    INTENT(IN)  :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),    INTENT(IN)  :: GRIB_INFO
+  TYPE(TIME_HISTORY_T), INTENT(IN)  :: TIME_HIST
+  TYPE(CURR_TIME_T),    INTENT(OUT) :: CURR_TIME
+
+  ! Function result
+  LOGICAL :: EX
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K)  :: ISTEP
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( TRIM(MODEL_PARAMS%SIM_%CTYPE).NE.'fc', 1 )
+  PP_DEBUG_CRITICAL_COND_THROW( MODEL_PARAMS%SIM_%LPPSTEPS, 2 )
+
+  ! Get current step
+  ISTEP = TIME_HIST%HIST_(TIME_HIST%SIZE_)
+
+  ! Compute Current time
+  ! This must be moved somewhere else since it is shared between
+  ! grib1 and grib2
+  ! IF( MODEL_PARAMS%SIM_%LPPSTEPS ) THEN
+  !   CURR_TIME%TSTEP = 3600._JPRD_K
+  !   CURR_TIME%ISEC  = INT( REAL(ISTEP,JPRD_K)*CURR_TIME%TSTEP, JPIB_K)
+  ! ELSE
+  CURR_TIME%TSTEP = MODEL_PARAMS%SIM_%TSTEP
+  CURR_TIME%ISEC  = INT( REAL(ISTEP,JPRD_K)*CURR_TIME%TSTEP, JPIB_K)
+  ! ENDIF
+
+  ! IF( TRIM(MODEL_PARAMS%SIM_%CTYPE) .EQ. 'fc' ) THEN
+  CURR_TIME%ISEC = CURR_TIME%ISEC + MODEL_PARAMS%SIM_%NSTEPINI*3600
+  ! ENDIF
+
+  ! This was supposed to be different from 0 only for the VAREPS case
+  ! which is not supported anymore
+  CURR_TIME%ISEC0=0
+
+  ! Cehck if the field needs to be encoded
+  EX = TO_BE_ENCODED( GRIB_INFO, TIME_HIST, CURR_TIME )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Instant time encoding logic not implemented for mars type: "'//TRIM(MODEL_PARAMS%SIM_%CTYPE)//'"' )
+    CASE (2)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Logic not implemented for LPPSTEPS' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION COMPUTE_CURRENT_TIME
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'TO_BE_ENCODED'
+FUNCTION TO_BE_ENCODED( GRIB_INFO, TIME_HIST, CURR_TIME ) RESULT(CHECK)
+
+  ! Symbols imported from other modules within the project.
+  USE :: GRIB_INFO_DATA_MOD, ONLY: GRIB_INFO_T
+  USE :: TRACK_TIME_MOD,     ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: TYPE_OF_TIME_RANGE_INSTANT_E
+  USE :: OM_CORE_MOD,        ONLY: TYPE_OF_TIME_RANGE_FROM_STEP0_E
+  USE :: OM_CORE_MOD,        ONLY: TYPE_OF_TIME_RANGE_FROM_LASTPP_E
+  USE :: OM_CORE_MOD,        ONLY: TYPE_OF_TIME_RANGE_FIXED_SIZE_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+
+  ! Dummy arguments
+  TYPE(GRIB_INFO_T),    INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T), INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),    INTENT(INOUT) :: CURR_TIME
+
+  ! Function result
+  LOGICAL :: CHECK
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  SELECT CASE (GRIB_INFO%TYPE_OF_TIME_RANGE_)
+  CASE (TYPE_OF_TIME_RANGE_INSTANT_E)
+    IF ( CURR_TIME%ISEC .EQ. CURR_TIME%ISEC0 ) THEN
+      CHECK = GRIB_INFO%IS_STEP_VALID0_
+      CURR_TIME%IS_STEP_0 = .TRUE.
+    ELSE
+      CHECK = .TRUE.
+      CURR_TIME%IS_STEP_0 = .FALSE.
+    ENDIF
+  CASE (TYPE_OF_TIME_RANGE_FROM_STEP0_E)
+    IF ( CURR_TIME%ISEC .EQ. CURR_TIME%ISEC0 ) THEN
+      CHECK = GRIB_INFO%IS_STEP_VALID0_
+      CURR_TIME%IS_STEP_0 = .TRUE.
+    ELSE
+      CHECK = .TRUE.
+      CURR_TIME%IS_STEP_0 = .FALSE.
+    ENDIF
+  CASE (TYPE_OF_TIME_RANGE_FROM_LASTPP_E)
+    IF ( CURR_TIME%ISEC .EQ. CURR_TIME%ISEC0 ) THEN
+      CHECK = GRIB_INFO%IS_STEP_VALID0_
+      CURR_TIME%IS_STEP_0 = .TRUE.
+    ELSE
+      CHECK = .TRUE.
+      CURR_TIME%IS_STEP_0 = .FALSE.
+    ENDIF
+  CASE (TYPE_OF_TIME_RANGE_FIXED_SIZE_E)
+    IF ( CURR_TIME%ISEC - GRIB_INFO%OVERALL_LENGTH_OF_TIME_RANGE_ .LT. CURR_TIME%ISEC0 ) THEN
+      CHECK = GRIB_INFO%IS_STEP_VALID0_
+      CURR_TIME%IS_STEP_0 = .TRUE.
+    ELSE
+      CHECK = .TRUE.
+      CURR_TIME%IS_STEP_0 = .FALSE.
+    END IF
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( 1 )
+  END SELECT
+
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknknown type of timerange' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION TO_BE_ENCODED
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'TIME_INDEXER'
@@ -533,9 +761,9 @@ SUBROUTINE ENCODE_TIME_ATM( THIS, MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME,
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
   USE :: GRIB_INFO_DATA_MOD, ONLY: GRIB_INFO_T
   USE :: TRACK_TIME_MOD,     ONLY: TIME_HISTORY_T
-  USE :: TRACK_TIME_MOD,     ONLY: CURR_TIME_T
   USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
   USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
 
@@ -699,9 +927,9 @@ SUBROUTINE ENCODE_TIME_WAM( THIS, MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME,
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
   USE :: GRIB_INFO_DATA_MOD, ONLY: GRIB_INFO_T
   USE :: TRACK_TIME_MOD,     ONLY: TIME_HISTORY_T
-  USE :: TRACK_TIME_MOD,     ONLY: CURR_TIME_T
   USE :: OM_CORE_MOD,        ONLY: OM_WAM_MSG_T
   USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
 

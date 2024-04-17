@@ -557,7 +557,7 @@ IMPLICIT NONE
     KDTYPE_OF_STATISTICAL_PROCESSING = TYPE_OF_STATISTICAL_PROCESS_ACCUMUL_E ! Accumulation
     KDTYPE_OF_TIMERANGE              = TYPE_OF_TIME_RANGE_FROM_STEP0_E
     KDLENGTH_OF_TIMERANGE_IN_SECONDS = -1
-    LDVALID = .TRUE.
+    LDVALID = .FALSE.
 
 
   ! NGRBPTYPESEVR6 - 260338 Precipitation type (most severe) in the last 6 hours
@@ -576,7 +576,7 @@ IMPLICIT NONE
     KDTYPE_OF_STATISTICAL_PROCESSING = TYPE_OF_STATISTICAL_PROCESS_ACCUMUL_E ! Accumulation
     KDTYPE_OF_TIMERANGE              = TYPE_OF_TIME_RANGE_FROM_STEP0_E
     KDLENGTH_OF_TIMERANGE_IN_SECONDS = -1
-    LDVALID = .TRUE.
+    LDVALID = .FALSE.
 
   ! NGRB10FG -  49 gust at 10 m level since previous post-processing
   ! NGRBMX2T - 201 Maximum temperature at 2m since last post-processing
@@ -610,7 +610,7 @@ IMPLICIT NONE
     KDTYPE_OF_STATISTICAL_PROCESSING = TYPE_OF_STATISTICAL_PROCESS_INSTANT_E ! Instant
     KDTYPE_OF_TIMERANGE              = TYPE_OF_TIME_RANGE_INSTANT_E
     KDLENGTH_OF_TIMERANGE_IN_SECONDS = 0
-    LDVALID = .TRUE.
+    LDVALID = .FALSE.
 
   END SELECT
 
@@ -776,13 +776,15 @@ IMPLICIT NONE
   ! NGRBLICGA1  - 228053 - 1h averaged cloud-to-ground lightning flash density
   CASE(NGRBLITOTA1, NGRBLICGA1)
     IF ( IS_ENSAMBLE_SIMULATION( YDMODEL_PARAMETERS ) ) THEN
-      ! 1 - Individual ensemble forecast, control and perturbed,
-      !     at a horizontal level or in a horizontal layer at a point in time
-      KD_PRODUCT_DEFINITION_TEMPLATE_NUMBER = 1
+      ! 11 - Individual ensemble forecast, control and perturbed,
+      !      at a horizontal level or in a horizontal layer, in a
+      !      continuous or non-continuous interval
+      KD_PRODUCT_DEFINITION_TEMPLATE_NUMBER = 11
     ELSE
-      ! 0 - Analysis or forecast at a horizontal level or in a
-      !     horizontal layer at a point in time
-      KD_PRODUCT_DEFINITION_TEMPLATE_NUMBER = 0
+      ! 8 - Average, accumulation, extreme values or other statistically
+      !     processed values at a horizontal level or in a horizontal
+      !     layer in a continuous or non-continuous time interval
+      KD_PRODUCT_DEFINITION_TEMPLATE_NUMBER = 8
     ENDIF
     KDTYPE_OF_STATISTICAL_PROCESSING = TYPE_OF_STATISTICAL_PROCESS_AVERAGE_E ! Average
     KDTYPE_OF_TIMERANGE              = TYPE_OF_TIME_RANGE_FIXED_SIZE_E
@@ -793,13 +795,15 @@ IMPLICIT NONE
   ! NGRBLICGA3  - 228059 - 3h averaged cloud-to-ground lightning flash density
   CASE(NGRBLITOTA3, NGRBLICGA3)
     IF ( IS_ENSAMBLE_SIMULATION( YDMODEL_PARAMETERS ) ) THEN
-      ! 1 - Individual ensemble forecast, control and perturbed,
-      !     at a horizontal level or in a horizontal layer at a point in time
-      KD_PRODUCT_DEFINITION_TEMPLATE_NUMBER = 1
+      ! 11 - Individual ensemble forecast, control and perturbed,
+      !      at a horizontal level or in a horizontal layer, in a
+      !      continuous or non-continuous interval
+      KD_PRODUCT_DEFINITION_TEMPLATE_NUMBER = 11
     ELSE
-      ! 0 - Analysis or forecast at a horizontal level or in a
-      !     horizontal layer at a point in time
-      KD_PRODUCT_DEFINITION_TEMPLATE_NUMBER = 0
+      ! 8 - Average, accumulation, extreme values or other statistically
+      !     processed values at a horizontal level or in a horizontal
+      !     layer in a continuous or non-continuous time interval
+      KD_PRODUCT_DEFINITION_TEMPLATE_NUMBER = 8
     ENDIF
     KDTYPE_OF_STATISTICAL_PROCESSING = TYPE_OF_STATISTICAL_PROCESS_AVERAGE_E ! Average
     KDTYPE_OF_TIMERANGE              = TYPE_OF_TIME_RANGE_FIXED_SIZE_E
@@ -810,13 +814,15 @@ IMPLICIT NONE
   ! NGRBLICGA6  - 228060 - 6h averaged cloud-to-ground lightning flash density
   CASE(NGRBLITOTA6, NGRBLICGA6)
     IF ( IS_ENSAMBLE_SIMULATION( YDMODEL_PARAMETERS ) ) THEN
-      ! 1 - Individual ensemble forecast, control and perturbed,
-      !     at a horizontal level or in a horizontal layer at a point in time
-      KD_PRODUCT_DEFINITION_TEMPLATE_NUMBER = 1
+      ! 11 - Individual ensemble forecast, control and perturbed,
+      !      at a horizontal level or in a horizontal layer, in a
+      !      continuous or non-continuous interval
+      KD_PRODUCT_DEFINITION_TEMPLATE_NUMBER = 11
     ELSE
-      ! 0 - Analysis or forecast at a horizontal level or in a
-      !     horizontal layer at a point in time
-      KD_PRODUCT_DEFINITION_TEMPLATE_NUMBER = 0
+      ! 8 - Average, accumulation, extreme values or other statistically
+      !     processed values at a horizontal level or in a horizontal
+      !     layer in a continuous or non-continuous time interval
+      KD_PRODUCT_DEFINITION_TEMPLATE_NUMBER = 8
     ENDIF
     KDTYPE_OF_STATISTICAL_PROCESSING = TYPE_OF_STATISTICAL_PROCESS_AVERAGE_E ! Average
     KDTYPE_OF_TIMERANGE              = TYPE_OF_TIME_RANGE_FIXED_SIZE_E

@@ -18,7 +18,7 @@ TYPE :: COMMAND_LINE_ARGS_T
   LOGICAL :: VERBOSE
   LOGICAL :: BIG_ENDIAN_READ
   INTEGER(KIND=JPIB_K) :: PROC_IDX=1
-  INTEGER(KIND=JPIB_K) :: NPROCS
+  INTEGER(KIND=JPIB_K) :: NPROCS=-99
   INTEGER(KIND=JPIB_K) :: NENTRIES
   CHARACTER(LEN=32)    :: OUTPUT_MANAGER_TYPE
   CHARACTER(LEN=4096)  :: INPUT_DIR
@@ -119,7 +119,7 @@ IMPLICIT NONE
   WRITE(OUTPUT_UNIT,*) ' + -l || --level               :: list of levels to be processed. The grammar is the same used for param ids'
   WRITE(OUTPUT_UNIT,*) ' + -s || --step                :: list of steps to be processed. The grammar is the same used for param ids'
   WRITE(OUTPUT_UNIT,*) ' + -r || --representation      :: [1=gridded, 2=spectral]'
-  WRITE(OUTPUT_UNIT,*) ' + -n || --n-procs             :: number of processors'
+  WRITE(OUTPUT_UNIT,*) ' + -n || --n-procs             :: use data from a specific io-server (number of processors of the io-server to use)'
   WRITE(OUTPUT_UNIT,*) ' + -q || --level-type          :: [1=model_level, 2=pressure_level, 3=vorticity_level, 4=theta_level, 5=surface_level, 6=wave_int, 7=wave_spec]'
   WRITE(OUTPUT_UNIT,*) ' + -h || --help || ?           :: print this message'
   WRITE(OUTPUT_UNIT,*) ' +'
@@ -146,7 +146,7 @@ IMPLICIT NONE
   CFG%OUTPUT_MANAGER_TYPE = 'NOOP'
   CFG%INPUT_DIR = '.'
   CFG%YAML_CONFIGURATION = './output_manager_cfg.yaml'
-  CFG%NPROCS = 1
+  CFG%NPROCS = -99
 
   IF ( ALLOCATED( CFG%PARAM_ID) ) THEN
     DEALLOCATE( CFG%PARAM_ID )

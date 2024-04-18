@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
+#include <unordered_set>
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/log/Statistics.h"
@@ -55,11 +56,27 @@ MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfigur
             << std::setw(6) << std::setfill('0') << mSecs << " -- ";
 
 
+    std::unordered_set<std::string> planNames;
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << conf << std::endl;
+    std::size_t planIndex = 0;
     for (auto&& cfg : conf.getSubConfigurations("plans")) {
         eckit::Log::debug<LibMultio>() << cfg << std::endl;
-        plans_.emplace_back(std::make_unique<action::Plan>(ComponentConfiguration(std::move(cfg), multioConfig())))
-            ->matchedFields(activeSelectors_);
+
+        std::ostringstream defaultPlanName;
+        defaultPlanName << "Client plan " << planIndex;
+
+        const auto& plan = plans_.emplace_back(std::make_unique<action::Plan>(
+            ComponentConfiguration(std::move(cfg), multioConfig()), defaultPlanName.str()));
+
+        if (planNames.find(plan->name()) != planNames.end()) {
+            std::ostringstream oss;
+            oss << "Plan names must be unique. The plan with name  \"" << plan->name() << "\" already exists";
+            throw eckit::UserError(oss.str());
+        }
+        planNames.insert(plan->name());
+
+        plan->matchedFields(activeSelectors_);
+        ++planIndex;
     }
 
     if (multioConfig().parsedConfig().has("active-matchers")) {
@@ -123,15 +140,11 @@ void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload,
 void MultioClient::dispatch(message::Message msg) {
     withFailureHandling([&]() {
         if (msg.tag() == message::Message::Tag::Flush) {
-            std::size_t planId = 0;
-
             for (const auto& plan : plans_) {
                 message::Metadata md = msg.metadata();
-                md.set("clientPlanId", planId);
+                md.set("clientPlanName", plan->name());
 
                 plan->process(msg.modifyMetadata(std::move(md)));
-
-                ++planId;
             }
         }
         else {

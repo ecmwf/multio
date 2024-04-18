@@ -61,7 +61,7 @@ private:
     Plan(std::tuple<ComponentConfiguration, std::string>&& confAndName);
 
 public:
-    Plan(const ComponentConfiguration& compConf);
+    Plan(const ComponentConfiguration& compConf, const std::string& defaultPlanName = "anonymous");
     virtual ~Plan();
 
     virtual void process(message::Message msg);
@@ -70,6 +70,8 @@ public:
 
     util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&,
                                                util::DefaultFailureState&) const override;
+
+    const std::string& name() const noexcept;
 
 protected:
     bool enabled_;

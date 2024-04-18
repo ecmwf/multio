@@ -52,15 +52,16 @@ LocalConfiguration rootConfig(const LocalConfiguration& config, const std::strin
     return createActionList(actions);
 }
 
-std::tuple<ComponentConfiguration, std::string> getPlanConfiguration(const ComponentConfiguration& compConf) {
+std::tuple<ComponentConfiguration, std::string> getPlanConfiguration(const ComponentConfiguration& compConf,
+                                                                     const std::string& defaultPlanName) {
     if (compConf.parsedConfig().has("file")) {
         const auto& file = compConf.multioConfig().getConfigFile(
             compConf.multioConfig().replaceCurly(compConf.parsedConfig().getString("file")));
         return std::make_tuple(ComponentConfiguration(file.content, compConf.multioConfig()),
                                file.content.has("name") ? file.content.getString("name") : file.source.asString());
     }
-    return std::make_tuple(compConf, compConf.parsedConfig().has("name") ? compConf.parsedConfig().getString("name")
-                                                                         : std::string("anonymous"));
+    return std::make_tuple(
+        compConf, compConf.parsedConfig().has("name") ? compConf.parsedConfig().getString("name") : defaultPlanName);
 }
 
 }  // namespace
@@ -83,7 +84,8 @@ Plan::Plan(std::tuple<ComponentConfiguration, std::string>&& confAndName) :
     }
 }
 
-Plan::Plan(const ComponentConfiguration& compConf) : Plan(getPlanConfiguration(compConf)) {}
+Plan::Plan(const ComponentConfiguration& compConf, const std::string& defaultPlanName) :
+    Plan(getPlanConfiguration(compConf, defaultPlanName)) {}
 
 Plan::~Plan() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
@@ -118,5 +120,10 @@ void Plan::matchedFields(message::MetadataSelectors& selectors) const {
         root_->matchedFields(selectors);
     }
 }
+
+const std::string& Plan::name() const noexcept {
+    return name_;
+}
+
 
 }  // namespace multio::action

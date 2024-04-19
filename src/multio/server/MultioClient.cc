@@ -56,17 +56,14 @@ MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfigur
             << std::setw(6) << std::setfill('0') << mSecs << " -- ";
 
 
+    // TODO: Put the whole plan list in a separate class and make this logic reusable
     std::unordered_set<std::string> planNames;
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << conf << std::endl;
-    std::size_t planIndex = 0;
     for (auto&& cfg : conf.getSubConfigurations("plans")) {
         eckit::Log::debug<LibMultio>() << cfg << std::endl;
 
-        std::ostringstream defaultPlanName;
-        defaultPlanName << "Client plan " << planIndex;
-
-        const auto& plan = plans_.emplace_back(std::make_unique<action::Plan>(
-            ComponentConfiguration(std::move(cfg), multioConfig()), defaultPlanName.str()));
+        const auto& plan = plans_.emplace_back(
+            std::make_unique<action::Plan>(ComponentConfiguration(std::move(cfg), multioConfig())));
 
         if (planNames.find(plan->name()) != planNames.end()) {
             std::ostringstream oss;
@@ -76,7 +73,6 @@ MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfigur
         planNames.insert(plan->name());
 
         plan->matchedFields(activeSelectors_);
-        ++planIndex;
     }
 
     if (multioConfig().parsedConfig().has("active-matchers")) {

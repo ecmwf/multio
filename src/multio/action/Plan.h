@@ -61,7 +61,7 @@ private:
     Plan(std::tuple<ComponentConfiguration, std::string>&& confAndName);
 
 public:
-    Plan(const ComponentConfiguration& compConf, const std::string& defaultPlanName = "anonymous");
+    Plan(const ComponentConfiguration& compConf);
     virtual ~Plan();
 
     virtual void process(message::Message msg);

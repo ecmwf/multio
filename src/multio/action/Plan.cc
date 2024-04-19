@@ -52,16 +52,17 @@ LocalConfiguration rootConfig(const LocalConfiguration& config, const std::strin
     return createActionList(actions);
 }
 
-std::tuple<ComponentConfiguration, std::string> getPlanConfiguration(const ComponentConfiguration& compConf,
-                                                                     const std::string& defaultPlanName) {
+std::tuple<ComponentConfiguration, std::string> getPlanConfiguration(const ComponentConfiguration& compConf) {
     if (compConf.parsedConfig().has("file")) {
         const auto& file = compConf.multioConfig().getConfigFile(
             compConf.multioConfig().replaceCurly(compConf.parsedConfig().getString("file")));
         return std::make_tuple(ComponentConfiguration(file.content, compConf.multioConfig()),
                                file.content.has("name") ? file.content.getString("name") : file.source.asString());
     }
-    return std::make_tuple(
-        compConf, compConf.parsedConfig().has("name") ? compConf.parsedConfig().getString("name") : defaultPlanName);
+    if (compConf.parsedConfig().has("name")) {
+        return std::make_tuple(compConf, compConf.parsedConfig().getString("name"));
+    }
+    throw eckit::UserError("Plan must have a key unique name. Please add a key \"name\".");
 }
 
 }  // namespace
@@ -84,8 +85,7 @@ Plan::Plan(std::tuple<ComponentConfiguration, std::string>&& confAndName) :
     }
 }
 
-Plan::Plan(const ComponentConfiguration& compConf, const std::string& defaultPlanName) :
-    Plan(getPlanConfiguration(compConf, defaultPlanName)) {}
+Plan::Plan(const ComponentConfiguration& compConf) : Plan(getPlanConfiguration(compConf)) {}
 
 Plan::~Plan() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};

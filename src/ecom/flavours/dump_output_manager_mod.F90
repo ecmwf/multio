@@ -31,7 +31,7 @@ PRIVATE
 
 
 !> Output manager name
-CHARACTER(LEN=*), PARAMETER :: DUMP_OMNAME='dump-fortran-data-repreducer'
+CHARACTER(LEN=*), PARAMETER :: DUMP_OMNAME='dump-fortran-data-reproducer'
 
 !>
 !> @brief Definition of the `DUMP_OUTPUT_MANAGER_T` derived type.

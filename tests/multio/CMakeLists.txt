@@ -1,14 +1,10 @@
 if(HAVE_FDB5)
 
-# This directory path is defined in ${CMAKE_CURRENT_BINARY_DIR}/test_fdb/config.yaml file
-file( MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/test_fdb/ )
-file( MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/test_fdb/etc )
-file( MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/test_fdb/root )
+configure_file( etc/fdb/schema      ${CMAKE_BINARY_DIR}/multio/etc/fdb/schema      @ONLY )
+configure_file( etc/fdb/config.yaml ${CMAKE_BINARY_DIR}/multio/etc/fdb/config.yaml @ONLY )
 
-
-configure_file( etc/fdb/schema      ${CMAKE_CURRENT_BINARY_DIR}/test_fdb/etc/schema      @ONLY )
-configure_file( etc/fdb/config.yaml ${CMAKE_CURRENT_BINARY_DIR}/test_fdb/etc/config.yaml @ONLY )
-
+# This directory path is defined in ${CMAKE_BINARY_DIR}/multio/etc/fdb/config.yaml file
+file( MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/multio/tests/fdb/root )
 
 endif(HAVE_FDB5)
 

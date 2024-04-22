@@ -339,6 +339,9 @@ IMPLICIT NONE
   ! Initialize enconding informations
   CALL SUENCODING_INFO( CFG, PROCESSOR_TOPO, MODEL_PARAMS, THIS%VERBOSE_ )
 
+  ! Initialise all the encoders
+  CALL MAKE_ENCODERS( CFG, MODEL_PARAMS, 'GRIB' )
+
   ! Destroy the fckit configuration object
   CALL CFG%FINAL()
 

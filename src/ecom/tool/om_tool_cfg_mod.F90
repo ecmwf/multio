@@ -490,6 +490,7 @@ IMPLICIT NONE
       ENDIF
     ELSE
       BUF = S
+      STAT = 0
     ENDIF
 
     ! End of file exception
@@ -660,6 +661,7 @@ IMPLICIT NONE
 
       BUF = F
       READ_ = .FALSE.
+      STAT = 0
 
     ELSE
 

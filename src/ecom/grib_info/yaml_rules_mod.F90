@@ -77,6 +77,7 @@ SUBROUTINE INIT_RULES( CFG, VERBOSE )
   USE :: MAP_MOD,      ONLY: MAP_FREE
   USE :: MAP_MOD,      ONLY: MAP_PRINT
   USE :: MAP_MOD,      ONLY: MAP_GET_SORTED_KEYS_INT
+  USE :: OM_CORE_MOD,  ONLY: UNDEF_PARAM_E
   USE :: OM_CORE_MOD,  ONLY: LOOKUP_TABLE
   USE :: OM_CORE_MOD,  ONLY: LOOKUP_TABLE_BWD
 
@@ -181,7 +182,7 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.EX, 4 )
 
   ! Construct the lookup table
-  LOOKUP_TABLE=-99
+  LOOKUP_TABLE = UNDEF_PARAM_E
   DO I = 1, SIZE(LOOKUP_TABLE_BWD)
     LOOKUP_TABLE(LOOKUP_TABLE_BWD(I)) = I
   ENDDO
@@ -196,6 +197,8 @@ IMPLICIT NONE
 
   ! Free the map
   CALL MAP_FREE( MAP )
+
+  WRITE(*,*) 'DEBUG CODE:: ', ALLOCATED(RULES)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1474,6 +1477,7 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: I
   INTEGER(KIND=JPIB_K) :: CNT
   INTEGER(KIND=JPIB_K) :: RID
+  LOGICAL :: LTMP
   LOGICAL :: MATCH
 
   ! Local variables declared by the preprocessor for debugging purposes
@@ -1494,6 +1498,8 @@ IMPLICIT NONE
 
   ! Search loop
   DO I = 1, SIZE(RULES)
+    !WRITE(*,*) ' '
+    !WRITE(*,*) ' CHECKING RULE(',I,'): ', RULES(I)%NAME
 
     ! Initialize the mathc variable
     MATCH = ANY( [ ALLOCATED(RULES(I)%MATCHER%LEV_TYPE), &
@@ -1502,22 +1508,40 @@ IMPLICIT NONE
 &                  ALLOCATED(RULES(I)%MATCHER%PARAM_ID) ] )
 
     IF ( ALLOCATED(RULES(I)%MATCHER%LEV_TYPE) ) THEN
-      MATCH = MATCH .AND. ANY( RULES(I)%MATCHER%LEV_TYPE .EQ. LEV_TYPE )
+      LTMP = ANY( RULES(I)%MATCHER%LEV_TYPE .EQ. LEV_TYPE )
+      MATCH = MATCH .AND. LTMP
+    !  WRITE(*,*) 'LevType matched: ', LTMP, LEV_TYPE
+    !ELSE
+    !  WRITE(*,*) 'LevType automatically matched: ', LEV_TYPE
     ENDIF
 
     IF ( ALLOCATED(RULES(I)%MATCHER%REPRES) ) THEN
-      MATCH = MATCH .AND. ANY( RULES(I)%MATCHER%REPRES .EQ. REPRES )
+      LTMP = ANY( RULES(I)%MATCHER%REPRES .EQ. REPRES )
+      MATCH = MATCH .AND. LTMP
+    !  WRITE(*,*) 'Repres matched: ', LTMP, REPRES
+    !ELSE
+    !  WRITE(*,*) 'Repres automatically matched: ', REPRES
     ENDIF
 
     IF ( ALLOCATED(RULES(I)%MATCHER%LEVEL) ) THEN
-      MATCH = MATCH .AND. ANY( RULES(I)%MATCHER%LEVEL .EQ. LEVEL )
+      LTMP = ANY( RULES(I)%MATCHER%LEVEL .EQ. LEVEL )
+      MATCH = MATCH .AND. LTMP
+    !  WRITE(*,*) 'Level matched: ', LTMP, LEVEL
+    !ELSE
+    !  WRITE(*,*) 'Level automatically matched: ', LEVEL
     ENDIF
 
     IF ( ALLOCATED(RULES(I)%MATCHER%PARAM_ID) ) THEN
-      MATCH = MATCH .AND. ANY( RULES(I)%MATCHER%PARAM_ID .EQ. PARAM_ID )
+      LTMP = ANY( RULES(I)%MATCHER%PARAM_ID .EQ. PARAM_ID )
+      MATCH = MATCH .AND. LTMP
+    !  WRITE(*,*) 'ParamId matched: ', LTMP, PARAM_ID
+    !ELSE
+    !  WRITE(*,*) 'ParamId automatically matched: ', PARAM_ID
     ENDIF
 
     ! Update match counter
+    ! WRITE(*,*) 'Match: ', MATCH
+    ! WRITE(*,*) '-------------------------------------------------------'
     IF ( MATCH ) THEN
       CNT = CNT + 1
       RID = I
@@ -1526,8 +1550,8 @@ IMPLICIT NONE
   ENDDO
 
   ! Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( CNT.LE.1, 1 )
-  PP_DEBUG_CRITICAL_COND_THROW( CNT.GT.1, 2 )
+  PP_DEBUG_CRITICAL_COND_THROW( CNT.LT.1, 2 )
+  PP_DEBUG_CRITICAL_COND_THROW( CNT.GT.1, 3 )
 
   ! Associate the rule definitions to the output variable
   DEFINITIONS = RULES(RID)%DEFINITIONS
@@ -1546,15 +1570,26 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=1024) :: TMP
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
     CASE (1)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Rules not allocated' )
     CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'No match found' )
+      WRITE(TMP,'(A1,I8,A2,I8,A2,I8,A2,I8,A1)') &
+&          ' (', PARAM_ID, &
+&          ', ', LEV_TYPE, &
+&          ', ', REPRES, &
+&          ', ', LEVEL, ')'
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'No match found: '//TRIM(TMP) )
     CASE (3)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Multiple matches found' )
+      WRITE(TMP,'(A1,I8,A2,I8,A2,I8,A2,I8,A1)') &
+&          ' (', PARAM_ID, &
+&          ', ', LEV_TYPE, &
+&          ', ', REPRES, &
+&          ', ', LEVEL, ')'
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Multiple matches found: '//TRIM(TMP) )
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
     END SELECT

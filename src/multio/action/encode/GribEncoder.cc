@@ -237,10 +237,10 @@ void setLayerTypeOfLevel(GribEncoder& g, const std::string& typeOfLevel, long le
 
 using TypeOfLevelSetter = std::function<void(GribEncoder&, const std::string&, long)>;
 
-const std::map<std::string, TypeOfLevelSetter> typeOfLevelSetters {
-    { "snowLayer", &setLayerTypeOfLevel },
-    { "soilLayer", &setLayerTypeOfLevel },
-    { "seaIceLayer", &setLayerTypeOfLevel },
+const std::map<std::string, TypeOfLevelSetter> typeOfLevelSetters{
+    {"snowLayer", &setLayerTypeOfLevel},
+    {"soilLayer", &setLayerTypeOfLevel},
+    {"seaIceLayer", &setLayerTypeOfLevel},
 };
 
 QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
@@ -303,7 +303,8 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 
             if (!level && !levelist) {
                 std::ostringstream oss;
-                oss << "setMarsKeys - field " << *lookUpString(md, "paramId") << " with typeOfLevel " << typeOfLevel << ", but no level information!";
+                oss << "setMarsKeys - field " << *lookUpString(md, "paramId") << " with typeOfLevel " << typeOfLevel
+                    << ", but no level information!";
                 std::cout << oss.str() << std::endl;
                 throw eckit::UserError(oss.str(), Here());
             }
@@ -365,12 +366,18 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
                     withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
 
                     if (paramId && ((*paramId == "260199") || (*paramId == "260360") || (*paramId == "262024"))) {
-                        withFirstOf(valueSetter(g, "typeOfFirstFixedSurface"), LookUpString(md, "typeOfFirstFixedSurface"));
-                        withFirstOf(valueSetter(g, "scaleFactorOfFirstFixedSurface"), LookUpString(md, "scaleFactorOfFirstFixedSurface"));
-                        withFirstOf(valueSetter(g, "scaledValueOfFirstFixedSurface"), LookUpString(md, "scaledValueOfFirstFixedSurface"));
-                        withFirstOf(valueSetter(g, "typeOfSecondFixedSurface"), LookUpString(md, "typeOfSecondFixedSurface"));
-                        withFirstOf(valueSetter(g, "scaleFactorOfSecondFixedSurface"), LookUpString(md, "scaleFactorOfSecondFixedSurface"));
-                        withFirstOf(valueSetter(g, "scaledValueOfSecondFixedSurface"), LookUpString(md, "scaledValueOfSecondFixedSurface"));
+                        withFirstOf(valueSetter(g, "typeOfFirstFixedSurface"),
+                                    LookUpString(md, "typeOfFirstFixedSurface"));
+                        withFirstOf(valueSetter(g, "scaleFactorOfFirstFixedSurface"),
+                                    LookUpString(md, "scaleFactorOfFirstFixedSurface"));
+                        withFirstOf(valueSetter(g, "scaledValueOfFirstFixedSurface"),
+                                    LookUpString(md, "scaledValueOfFirstFixedSurface"));
+                        withFirstOf(valueSetter(g, "typeOfSecondFixedSurface"),
+                                    LookUpString(md, "typeOfSecondFixedSurface"));
+                        withFirstOf(valueSetter(g, "scaleFactorOfSecondFixedSurface"),
+                                    LookUpString(md, "scaleFactorOfSecondFixedSurface"));
+                        withFirstOf(valueSetter(g, "scaledValueOfSecondFixedSurface"),
+                                    LookUpString(md, "scaledValueOfSecondFixedSurface"));
                     }
                 }
             }

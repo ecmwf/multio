@@ -59,8 +59,10 @@ std::tuple<ComponentConfiguration, std::string> getPlanConfiguration(const Compo
         return std::make_tuple(ComponentConfiguration(file.content, compConf.multioConfig()),
                                file.content.has("name") ? file.content.getString("name") : file.source.asString());
     }
-    return std::make_tuple(compConf, compConf.parsedConfig().has("name") ? compConf.parsedConfig().getString("name")
-                                                                         : std::string("anonymous"));
+    if (compConf.parsedConfig().has("name")) {
+        return std::make_tuple(compConf, compConf.parsedConfig().getString("name"));
+    }
+    throw eckit::UserError("Plan must have a key unique name. Please add a key \"name\".");
 }
 
 }  // namespace
@@ -118,5 +120,10 @@ void Plan::matchedFields(message::MetadataSelectors& selectors) const {
         root_->matchedFields(selectors);
     }
 }
+
+const std::string& Plan::name() const noexcept {
+    return name_;
+}
+
 
 }  // namespace multio::action

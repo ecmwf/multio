@@ -71,6 +71,8 @@ public:
     util::FailureHandlerResponse handleFailure(util::OnPlanError, const util::FailureContext&,
                                                util::DefaultFailureState&) const override;
 
+    const std::string& name() const noexcept;
+
 protected:
     bool enabled_;
     std::string name_;

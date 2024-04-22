@@ -227,7 +227,8 @@ MultioGenerateGribTemplate::MultioGenerateGribTemplate(int argc, char** argv) : 
         new eckit::option::SimpleOption<long>("generatingProcessIdentifier", "Generating process identifier"));
     options_.push_back(new eckit::option::SimpleOption<long>("spectralTruncation", "Spectral truncation number"));
     options_.push_back(new eckit::option::SimpleOption<bool>("clearValuesOnly", "Only clear the stored values"));
-    options_.push_back(new eckit::option::SimpleOption<double>("setValuesTo", "Set the stored values to specified value"));
+    options_.push_back(
+        new eckit::option::SimpleOption<double>("setValuesTo", "Set the stored values to specified value"));
     options_.push_back(new eckit::option::SimpleOption<bool>("copyPL", "Copies the PL array from sample to output"));
     options_.push_back(new eckit::option::SimpleOption<std::string>("plSource", "PL array source"));
 }

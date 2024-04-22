@@ -19,17 +19,17 @@ grib-msg-to-multio-to-fdb:
   profile: true
 
 grib-header-decoded-to-multio-plans:
-  multio-plans-file: '../multio-ifsio-config.yaml'
+  multio-plans-file: '../multio-debug-plan.yaml'
   verbose: true
   profile: true
 
 plain-encoding-metadata-to-multio-plans:
-  multio-plans-file: 'MainPlanFileName.yaml'
+  multio-plans-file: '../multio-debug-plan.yaml'
   verbose: true
   profile: true
 
 fortran-metadata-to-multio-plans:
-  multio-plans-file: 'MainPlanFileName.yaml'
+  multio-plans-file: '../multio-debug-plan.yaml'
   verbose: true
   profile: true
 

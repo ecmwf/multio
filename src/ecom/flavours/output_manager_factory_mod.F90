@@ -164,15 +164,15 @@ IMPLICIT NONE
     ALLOCATE( MULTIO_RAW_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
 
-! ------------------------------------------------------------------------------------------------
-! Pure multIO output manager constructing metadata directly from io_server requests,
-! bypassing the grib/eccodes API. The metadata are directly the raw information arriving from the
-! model. No encoding logic at all in this output manager. Metadata and data are then passed to the
-! multIO API for on-the-fly post-processing and storage to disk.
-! The idea is to use this to test funtionalities of the new MultIO IOserver
-CASE ( 'MULTIO_NO_ENC', MULTIO_NO_ENC_OMNAME )
-  ALLOCATE( MULTIO_NO_ENC_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
-  PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
+  ! ------------------------------------------------------------------------------------------------
+  ! Pure multIO output manager constructing metadata directly from io_server requests,
+  ! bypassing the grib/eccodes API. The metadata are directly the raw information arriving from the
+  ! model. No encoding logic at all in this output manager. Metadata and data are then passed to the
+  ! multIO API for on-the-fly post-processing and storage to disk.
+  ! The idea is to use this to test funtionalities of the new MultIO IOserver
+  CASE ( 'MULTIO_NO_ENC', MULTIO_NO_ENC_OMNAME )
+    ALLOCATE( MULTIO_NO_ENC_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
+    PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
 
 
   ! ------------------------------------------------------------------------------------------------

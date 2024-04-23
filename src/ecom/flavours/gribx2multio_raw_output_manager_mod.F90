@@ -37,7 +37,7 @@ IMPLICIT NONE
 PRIVATE
 
 !> Output manager name
-CHARACTER(LEN=*), PARAMETER :: GRIBX2MULTIO_RAW_OMNAME='grib-header-decoded-to-multio-plans'
+CHARACTER(LEN=*), PARAMETER :: GRIBX2MULTIO_RAW_OMNAME='grib-header-to-multio'
 
 !>
 !> @brief Definition of the `GRIBX2MULTIO_RAW_OUTPUT_MANAGER_T` derived type.

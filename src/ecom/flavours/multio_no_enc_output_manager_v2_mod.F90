@@ -31,7 +31,7 @@ IMPLICIT NONE
 PRIVATE
 
 !> Output manager name
-CHARACTER(LEN=*), PARAMETER :: MULTIO_NO_ENC_OMNAME='fortran-metadata-to-multio-plans'
+CHARACTER(LEN=*), PARAMETER :: MULTIO_NO_ENC_OMNAME='fortran-metadata-to-multio'
 
 !>
 !> @brief Definition of the `MULTIO_NO_ENC_OUTPUT_MANAGER_T` derived type.

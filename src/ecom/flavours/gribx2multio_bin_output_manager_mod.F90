@@ -35,7 +35,7 @@ IMPLICIT NONE
 PRIVATE
 
 !> Output manager name
-CHARACTER(LEN=*), PARAMETER :: GRIBX2MULTIO_BIN_OMNAME='grib-msg-to-multio-to-fdb'
+CHARACTER(LEN=*), PARAMETER :: GRIBX2MULTIO_BIN_OMNAME='grib-msg-to-multio'
 
 !>
 !> @brief Definition of the `GRIBX2MULTIO_BIN_OUTPUT_MANAGER_T` derived type.

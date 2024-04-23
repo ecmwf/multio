@@ -35,7 +35,7 @@ IMPLICIT NONE
 PRIVATE
 
 !> Output manager name
-CHARACTER(LEN=*), PARAMETER :: MULTIO_RAW_OMNAME='plain-encoding-metadata-to-multio-plans'
+CHARACTER(LEN=*), PARAMETER :: MULTIO_RAW_OMNAME='full-grib-header-to-multio'
 
 !>
 !> @brief Definition of the `MULTIO_RAW_OUTPUT_MANAGER_T` derived type.

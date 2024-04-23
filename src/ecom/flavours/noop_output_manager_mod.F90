@@ -29,7 +29,7 @@ IMPLICIT NONE
 PRIVATE
 
 !> Output manager name
-CHARACTER(LEN=*), PARAMETER :: NOOP_OMNAME='no-op-and-memory-tests'
+CHARACTER(LEN=*), PARAMETER :: NOOP_OMNAME='no-io-info-log'
 
 !>
 !> @brief Definition of the `NOOP_OUTPUT_MANAGER_T` derived type.
@@ -49,7 +49,7 @@ TYPE, EXTENDS(OUTPUT_MANAGER_BASE_A) :: NOOP_OUTPUT_MANAGER_T
   !> Model parameters
   TYPE(MODEL_PAR_T), POINTER :: MODEL_PAR_ => NULL()
 
-  !> Test grib info module and service (mainly to be used with valgrind to check for memory leacks)
+  !> Test grib info module and service (mainly to be used with valgrind to check for memory leaks)
   LOGICAL :: TEST_ENCODING_INFO_ = .FALSE.
 
   !> Test track encoders, to be used for:

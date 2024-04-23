@@ -13,22 +13,22 @@ grib-msg-to-file:
   verbose: true
   profile: true
 
-grib-msg-to-multio-to-fdb:
+grib-msg-to-multio:
   multio-plans-file: '../multio-ifs-wam-config.yaml'
   verbose: true
   profile: true
 
-grib-header-decoded-to-multio-plans:
+grib-header-to-multio:
   multio-plans-file: '../multio-debug-plan.yaml'
   verbose: true
   profile: true
 
-plain-encoding-metadata-to-multio-plans:
+full-grib-header-to-multio:
   multio-plans-file: '../multio-debug-plan.yaml'
   verbose: true
   profile: true
 
-fortran-metadata-to-multio-plans:
+fortran-metadata-to-multio:
   multio-plans-file: '../multio-debug-plan.yaml'
   verbose: true
   profile: true

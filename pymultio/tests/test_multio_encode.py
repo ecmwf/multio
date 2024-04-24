@@ -276,9 +276,9 @@ def test_encode_stream_lwda_1():
     assert(gribs[0].get("type") == "4v")
     assert(gribs[0].get("offsetToEndOf4DvarWindow") == 3)
     assert(gribs[0].get("lengthOf4DvarWindow") == 4)
-    assert(gribs[0].get("forecastTime") == 0) # 4v is analysis, no offset
+    assert(gribs[0].get("forecastTime") == 1) # 4v is trajectory
     assert(gribs[0].get("date") == 20240101)
-    assert(gribs[0].get("hour") == 1) # 4v is analysis, no offset - startStep is added here
+    assert(gribs[0].get("hour") == 0) # 4v is trajectory
     assert(gribs[0].get("minute") == 12)
     assert(gribs[0].get("second") == 0)
 

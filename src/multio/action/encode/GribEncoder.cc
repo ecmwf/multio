@@ -358,7 +358,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
                 }
             }
 
-            if (*productionStatusOfProcessedData == 1) {
+            if (*productionStatusOfProcessedData == 2) {
                 const auto data_class = md.getString("class");
                 if (data_class == "ed") {
                     withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));

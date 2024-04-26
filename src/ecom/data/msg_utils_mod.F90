@@ -174,10 +174,10 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-  ! Error handling
-  PP_DEBUG_DEVELOP_COND_THROW( LEN(CDPREF).LT.7,  1 )
+  ! Error handling TODO: This check is not ok
+  ! PP_DEBUG_DEVELOP_COND_THROW( LEN(CDPREF).LT.7,  1 )
 
-  IF(CDPREF(1:2) == 'SF' .OR. CDPREF(1:1) == 's') THEN
+  IF(CDPREF(1:2) == 'SF' .OR. CDPREF(1:1) == 's' .OR. CDPREF(1:3) == 'sfc') THEN
     IPREF = SURFACE_E
   ELSEIF(CDPREF(1:2) == 'ML' .OR. CDPREF(1:1) == 'm') THEN
     IPREF = MODEL_LEVEL_E

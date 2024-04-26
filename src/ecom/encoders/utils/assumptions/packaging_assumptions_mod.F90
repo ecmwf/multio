@@ -18,6 +18,8 @@ LOGICAL :: LG_ENABLE_COMPRESSION_GRIDDED = .FALSE.
 
 ! Whitelist of public symbols
 PUBLIC :: COMPUTE_BITS_PER_VALUE_DEFAULT
+PUBLIC :: COMPUTE_BITS_PER_VALUE
+PUBLIC :: COMPUTE_PACKING_TYPE
 PUBLIC :: PACKAGING_ASSUMPTIONS_INIT
 PUBLIC :: PACKAGING_ASSUMPTIONS_FREE
 
@@ -184,7 +186,7 @@ IMPLICIT NONE
   IF ( ALL(CONDITIONS) ) THEN
     IBITS = MODEL_PARAMS%SIM_%NBITSEXPR
   ELSE
-    IBITS = LOOKUP_BITS_PER_VALUE_DEFAULT( MODEL_PARAMS, KGRIBID, KPREFIX )
+    IBITS = LOOKUP_BITS_PER_VALUE_DEFAULT( MODEL_PARAMS, KGRIBID, KPREFIX, LG_ENABLE_COMPRESSION_GRIDDED )
   ENDIF
 
   ! Trace end of procedure (on success)
@@ -198,9 +200,204 @@ END FUNCTION COMPUTE_BITS_PER_VALUE_DEFAULT
 #undef PP_PROCEDURE_TYPE
 
 
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'COMPUTE_PACKING_TYPE'
+FUNCTION COMPUTE_PACKING_TYPE( MODEL_PARAMS, KGRIBID, KREPRES ) RESULT(PACKING_TYPE)
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: MODEL_PAR_T
+
+  USE :: OM_CORE_MOD, ONLY: PACKING_TYPE_GRIB_SIMPLE_E
+  USE :: OM_CORE_MOD, ONLY: PACKING_TYPE_GRIB_COMPLEX_E
+  USE :: OM_CORE_MOD, ONLY: REPRES_GRIDDED_E
+  USE :: OM_CORE_MOD, ONLY: REPRES_SPECTRAL_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),    INTENT(IN) :: MODEL_PARAMS
+  INTEGER(KIND=JPIB_K), INTENT(IN) :: KGRIBID
+  INTEGER(KIND=JPIB_K), INTENT(IN) :: KREPRES
+
+  ! Function Result
+  INTEGER(KIND=JPIB_K) :: PACKING_TYPE
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  SELECT CASE ( KREPRES )
+
+  CASE (REPRES_GRIDDED_E)
+    PACKING_TYPE = PACKING_TYPE_GRIB_SIMPLE_E
+  CASE (REPRES_SPECTRAL_E)
+    PACKING_TYPE = PACKING_TYPE_GRIB_COMPLEX_E
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW(1)
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown representation' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION COMPUTE_PACKING_TYPE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'COMPUTE_BITS_PER_VALUE'
+FUNCTION COMPUTE_BITS_PER_VALUE( MODEL_PARAMS, KGRIBID, KPREFIX, KREPRES, ENABLE_COMPRESSION ) RESULT(IBITS)
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD, ONLY: REPRES_GRIDDED_E
+  USE :: OM_CORE_MOD, ONLY: REPRES_SPECTRAL_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),    INTENT(IN) :: MODEL_PARAMS
+  INTEGER(KIND=JPIB_K), INTENT(IN) :: KGRIBID
+  INTEGER(KIND=JPIB_K), INTENT(IN) :: KPREFIX
+  INTEGER(KIND=JPIB_K), INTENT(IN) :: KREPRES
+  LOGICAL,              INTENT(IN) :: ENABLE_COMPRESSION
+
+  ! Function Result
+  INTEGER(KIND=JPIB_K) :: IBITS
+
+  ! Local variables
+  LOGICAL, DIMENSION(3) :: CONDITIONS
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Conditions to use NBITSEXPR
+  CONDITIONS(1) = MODEL_PARAMS%SIM_%NBITSEXPR>0
+  CONDITIONS(2) = (KGRIBID .GE. 80)
+  CONDITIONS(3) = (KGRIBID .LE. 120)
+
+  ! NBITSEXPR   - Number of bits for GRIB encoding of experimental parameters (default=-1 in which case multio is deciding)
+  SELECT CASE (KREPRES)
+
+  CASE (REPRES_GRIDDED_E)
+
+    IF ( ALL(CONDITIONS) ) THEN
+      IBITS = MODEL_PARAMS%SIM_%NBITSEXPR
+    ELSE
+      IBITS = LOOKUP_BITS_PER_VALUE_DEFAULT( MODEL_PARAMS, KGRIBID, KPREFIX, ENABLE_COMPRESSION )
+    ENDIF
+
+  CASE (REPRES_SPECTRAL_E)
+
+    IBITS = 16_JPIB_K
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( 1 )
+
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown representation' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION COMPUTE_BITS_PER_VALUE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'
 #define PP_PROCEDURE_NAME 'LOOKUP_BITS_PER_VALUE_DEFAULT'
-FUNCTION LOOKUP_BITS_PER_VALUE_DEFAULT(  MODEL_PARAMS, KGRIBID, KPREFIX ) RESULT(IBITS_PER_VALUE)
+FUNCTION LOOKUP_BITS_PER_VALUE_DEFAULT(  MODEL_PARAMS, KGRIBID, KPREFIX, ENABLE_COMPRESSION ) RESULT(IBITS_PER_VALUE)
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD, ONLY: JPIB_K
@@ -231,6 +428,7 @@ IMPLICIT NONE
   TYPE(MODEL_PAR_T),    INTENT(IN) :: MODEL_PARAMS
   INTEGER(KIND=JPIB_K), INTENT(IN) :: KGRIBID
   INTEGER(KIND=JPIB_K), INTENT(IN) :: KPREFIX
+  LOGICAL,              INTENT(IN) :: ENABLE_COMPRESSION
 
   ! Function result
   INTEGER(KIND=JPIB_K) :: IBITS_PER_VALUE
@@ -278,7 +476,7 @@ IMPLICIT NONE
 &          KGRIBID .EQ. NGRBCSBT ) THEN
     IBITS_PER_VALUE = 10
 
-  ELSEIF ( LG_ENABLE_COMPRESSION_GRIDDED .AND. &
+  ELSEIF ( ENABLE_COMPRESSION .AND. &
 &           KPREFIX.EQ.MODEL_LEVEL_E ) THEN
     IBITS_PER_VALUE = 10
 

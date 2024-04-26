@@ -262,3 +262,5 @@ ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_partial_agg
 
 # Install files
 add_subdirectory(config)
+
+add_subdirectory(action)

@@ -29,6 +29,10 @@ IMPLICIT NONE
 ! Default visibility
 PRIVATE
 
+
+!> Output manager name
+CHARACTER(LEN=*), PARAMETER :: DUMP_OMNAME='dump-fortran-data-reproducer'
+
 !>
 !> @brief Definition of the `DUMP_OUTPUT_MANAGER_T` derived type.
 !>
@@ -118,6 +122,7 @@ CONTAINS
 
   ! Whitelist of public symbols
   PUBLIC :: DUMP_OUTPUT_MANAGER_T
+  PUBLIC :: DUMP_OMNAME
 
 CONTAINS
 
@@ -161,11 +166,11 @@ IMPLICIT NONE
   THIS%OUT_DIR_ = REPEAT(' ',LEN(THIS%OUT_DIR_))
 
   ! PArse the configuration
-  IF ( CFG%GET( 'dump-output-manager', DUMP_CFG ) ) THEN
+  IF ( CFG%GET( DUMP_OMNAME, DUMP_CFG ) ) THEN
 
     ! Read the dump directory from the YAML file
     IF ( ALLOCATED(CLTMP) ) DEALLOCATE(CLTMP)
-    IF ( DUMP_CFG%GET( 'dump-folder', CLTMP  ) ) THEN
+    IF ( DUMP_CFG%GET( 'path', CLTMP  ) ) THEN
       PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(CLTMP), 1 )
       PP_DEBUG_CRITICAL_COND_THROW( LEN(CLTMP).GT.LEN(THIS%OUT_DIR_), 2 )
       THIS%OUT_DIR_ = CLTMP(:)
@@ -371,7 +376,7 @@ IMPLICIT NONE
   ! Logging
   IF ( THIS%VERBOSE_ ) THEN
     THIS%LOG_FNAME_ = REPEAT(' ',LEN(THIS%LOG_FNAME_))
-    WRITE(THIS%LOG_FNAME_,'(A,I8.8,A)', IOSTAT=STAT) 'dump_output_manager_', PROCESSOR_TOPO%MYPROC_IO, '.log'
+    WRITE(THIS%LOG_FNAME_,'(A,I8.8,A)', IOSTAT=STAT) DUMP_OMNAME//'-output-manager-', PROCESSOR_TOPO%MYPROC_IO, '.log'
     PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, 2 )
     OPEN( FILE=TRIM(THIS%LOG_FNAME_), NEWUNIT=THIS%LOG_UNIT_, ACTION='WRITE', STATUS='REPLACE', IOSTAT=STAT )
     PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, 3 )

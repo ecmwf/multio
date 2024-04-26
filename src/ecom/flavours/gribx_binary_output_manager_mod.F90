@@ -32,6 +32,9 @@ IMPLICIT NONE
 ! Default visibility
 PRIVATE
 
+!> Output manager name
+CHARACTER(LEN=*), PARAMETER :: GRIBX_BINARY_OMNAME='grib-msg-to-file'
+
 !>
 !> @brief Definition of the `GRIBX_BINARY_OUTPUT_MANAGER_T` derived type.
 !>
@@ -71,8 +74,13 @@ TYPE, EXTENDS(OUTPUT_MANAGER_BASE_A) :: GRIBX_BINARY_OUTPUT_MANAGER_T
   ! True if we need to flush every message
   LOGICAL :: FLUSH_EVERY_MESSAGE_ = .FALSE.
 
-  !> Enable profiling
+  !
+  ! Enable profiling
   LOGICAL :: PROFILE_ = .FALSE.
+
+  !
+  ! True for verbose execution
+  LOGICAL :: SAVE_REPORT_ = .FALSE.
 
   !
   ! True for verbose execution
@@ -114,6 +122,7 @@ END TYPE
 
 ! Whitelist of public symbols
 PUBLIC :: GRIBX_BINARY_OUTPUT_MANAGER_T
+PUBLIC :: GRIBX_BINARY_OMNAME
 
 CONTAINS
 
@@ -158,10 +167,10 @@ IMPLICIT NONE
   THIS%FIELDS_FILE_ = REPEAT(' ',LEN(THIS%FIELDS_FILE_))
 
   ! Parse the configuration
-  IF ( CFG%GET( 'gribx-binary-output-manager', GRIBX_BIN_CFG ) ) THEN
+  IF ( CFG%GET( GRIBX_BINARY_OMNAME, GRIBX_BIN_CFG ) ) THEN
 
     IF ( ALLOCATED(CLTMP) ) DEALLOCATE(CLTMP)
-    IF ( GRIBX_BIN_CFG%GET( 'fields-file-basename', CLTMP  ) ) THEN
+    IF ( GRIBX_BIN_CFG%GET( 'path', CLTMP  ) ) THEN
       PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(CLTMP), 1 )
       PP_DEBUG_CRITICAL_COND_THROW( LEN(CLTMP).GT.LEN(THIS%FIELDS_FILE_), 2 )
       WRITE(THIS%FIELDS_FILE_,'(A,A,I8.8,A)') TRIM(CLTMP), '_', THIS%TOPOLOGY_%MYPROC_IO, '.grib'
@@ -189,6 +198,13 @@ IMPLICIT NONE
       THIS%VERBOSE_ = LTMP
     ELSE
       THIS%VERBOSE_ = .FALSE.
+    ENDIF
+
+    ! Read from YAML file the flag to enable track time testing
+    IF ( GRIBX_BIN_CFG%GET( 'report', LTMP  ) ) THEN
+      THIS%SAVE_REPORT_ = LTMP
+    ELSE
+      THIS%SAVE_REPORT_ = .FALSE.
     ENDIF
 
     ! Deallocate the dump-output-manager object
@@ -265,8 +281,7 @@ SUBROUTINE GRIBX_BIN_SETUP( THIS, YAMLFNAME, PROCESSOR_TOPO, MODEL_PARAMS )
   USE :: OM_CORE_MOD,              ONLY: MODEL_PAR_T
   USE :: OM_CORE_MOD,              ONLY: OM_INIT_DEBUG_VARS
   USE :: GRIB_ENCODER_MANAGER_MOD, ONLY: MAKE_ENCODERS
-  USE :: TRACK_TIME_MOD,           ONLY: SUTRAK_TIME
-  USE :: GRIB_INFO_MOD,            ONLY: SUGRIB_INFO_YAML
+  USE :: ENCODING_INFO_MOD,        ONLY: SUENCODING_INFO
   USE :: PAR_UTILS_MOD,            ONLY: PAR_PRINT
   USE :: OM_GENERAL_UTILS_MOD,     ONLY: LOG_VERSION
   USE :: OM_GENERAL_UTILS_MOD,     ONLY: LOG_CURR_TIME
@@ -342,11 +357,8 @@ IMPLICIT NONE
   ! Read the specific configuration for "GRIBX_BINARY" output manager
   CALL THIS%READ_CFG_FROM_YAML( CFG )
 
-  ! Initialise grib info
-  CALL SUGRIB_INFO_YAML( CFG, PROCESSOR_TOPO, MODEL_PARAMS )
-
-  ! Initialise time tracker for messages
-  CALL SUTRAK_TIME( CFG, MODEL_PARAMS )
+  ! Initialize enconding informations
+  CALL SUENCODING_INFO( CFG, PROCESSOR_TOPO, MODEL_PARAMS, THIS%VERBOSE_ )
 
   ! Initialise all the encoders
   CALL MAKE_ENCODERS( CFG, MODEL_PARAMS, 'GRIB' )
@@ -364,7 +376,7 @@ IMPLICIT NONE
   ! Logging
   IF ( THIS%VERBOSE_ ) THEN
     THIS%LOG_FNAME_ = REPEAT(' ',LEN(THIS%LOG_FNAME_))
-    WRITE(THIS%LOG_FNAME_,'(A,I8.8,A)', IOSTAT=STAT) 'gribx_bin_output_manager_', PROCESSOR_TOPO%MYPROC_IO, '.log'
+    WRITE(THIS%LOG_FNAME_,'(A,I8.8,A)', IOSTAT=STAT) GRIBX_BINARY_OMNAME//'-output-manager-', PROCESSOR_TOPO%MYPROC_IO, '.log'
     PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, 2 )
     OPEN( FILE=TRIM(THIS%LOG_FNAME_), NEWUNIT=THIS%LOG_UNIT_, ACTION='WRITE', STATUS='REPLACE', IOSTAT=STAT )
     PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, 3 )
@@ -443,18 +455,18 @@ SUBROUTINE GRIBX_BIN_WRITE_ATM_DP( THIS, YDMSG, VALUES_DP )
   USE :: OM_CORE_MOD,              ONLY: JPIM_K
   USE :: OM_CORE_MOD,              ONLY: JPIB_K
   USE :: OM_CORE_MOD,              ONLY: JPRD_K
+  USE :: OM_CORE_MOD,              ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,              ONLY: TIME_HISTORY_T
   USE :: OM_CORE_MOD,              ONLY: OM_ATM_MSG_T
   USE :: OM_CORE_MOD,              ONLY: OM_SET_CURRENT_MESSAGE_ATM
+  USE :: OM_CORE_MOD,              ONLY: OM_RESET_ENCODING_INFO
+  USE :: ENCODING_INFO_MOD,        ONLY: ENCODING_INFO_ACCESS_OR_CREATE
+  USE :: ENCODING_INFO_MOD,        ONLY: GRIB_INFO_PRINT
+  USE :: ENCODING_INFO_MOD,        ONLY: TRACK_TIME_PRINT
   USE :: METADATA_FACTORY_MOD,     ONLY: METADATA_BASE_A
   USE :: GRIB_ENCODER_MANAGER_MOD, ONLY: ENCODE_ATM
-  USE :: GRIB_INFO_DATA_MOD,       ONLY: GRIB_INFO_T
-  USE :: GRIB_INFO_MOD,            ONLY: GRIB_INFO_GET
-  USE :: GRIB_INFO_MOD,            ONLY: GRIB_INFO_PRINT
-  USE :: TRACK_TIME_MOD,           ONLY: TIME_HISTORY_T
-  USE :: TRACK_TIME_MOD,           ONLY: TRACK_TIME_ACCESS_OR_CREATE
-  USE :: TRACK_TIME_MOD,           ONLY: TRACK_TIME_PRINT
-  USE :: MSG_UTILS_MOD,            ONLY: MSG_PRINT_ATM
   USE :: OM_GENERAL_UTILS_MOD,     ONLY: LOG_CURR_TIME
+  USE :: MSG_UTILS_MOD,            ONLY: MSG_PRINT_ATM
   USE :: OM_PROFILE_MOD,           ONLY: PROFILE_MESSAGE
 
   ! Symbols imported from other libraries
@@ -514,11 +526,11 @@ IMPLICIT NONE
   PGMD => THIS%GMD_
   PP_METADATA_INIT_LOGGING( PGMD, YDMSG%ISTEP_, YDMSG%PARAM_ID_, YDMSG%IUID_, YDMSG%IPREF_, YDMSG%IREPRES_ )
 
-  ! Lookup grib informations related to the requested paramId
-  CALL GRIB_INFO_GET( YDMSG%PARAM_ID_, GRIB_INFO )
-
-  ! Recover information about last time the field has been encoded
-  CALL TRACK_TIME_ACCESS_OR_CREATE( YDMSG%PARAM_ID_, YDMSG%IUID_, YDMSG%ISTEP_, TIME_HIST )
+  ! Get encoding info
+  PP_LOG_DEVELOP_STR( 'Collect grib info of the current field' )
+  CALL ENCODING_INFO_ACCESS_OR_CREATE( THIS%MODEL_PAR_, YDMSG%PARAM_ID_, YDMSG%IPREF_, &
+&                                      YDMSG%IREPRES_,  YDMSG%IUID_, YDMSG%ISTEP_,     &
+&                                      GRIB_INFO, TIME_HIST )
 
   ! If needed log message
   IF ( THIS%VERBOSE_ ) THEN
@@ -560,9 +572,14 @@ IMPLICIT NONE
 
   ! should not happen but just to be sure
   IF ( THIS%GMD_%INITIALIZED() ) THEN
-    PP_METADATA_FINALISE_LOGGING( PGMD )
+    IF ( THIS%SAVE_REPORT_ ) THEN
+      PP_METADATA_FINALISE_LOGGING( PGMD )
+    ENDIF
     CALL THIS%GMD_%DESTROY()
   ENDIF
+
+  ! Reset encdoing info
+  CALL OM_RESET_ENCODING_INFO()
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -630,18 +647,18 @@ SUBROUTINE GRIBX_BIN_WRITE_ATM_SP( THIS, YDMSG, VALUES_SP )
   USE :: OM_CORE_MOD,              ONLY: JPIM_K
   USE :: OM_CORE_MOD,              ONLY: JPIB_K
   USE :: OM_CORE_MOD,              ONLY: JPRM_K
+  USE :: OM_CORE_MOD,              ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,              ONLY: TIME_HISTORY_T
   USE :: OM_CORE_MOD,              ONLY: OM_ATM_MSG_T
   USE :: OM_CORE_MOD,              ONLY: OM_SET_CURRENT_MESSAGE_ATM
+  USE :: OM_CORE_MOD,              ONLY: OM_RESET_ENCODING_INFO
+  USE :: ENCODING_INFO_MOD,        ONLY: ENCODING_INFO_ACCESS_OR_CREATE
+  USE :: ENCODING_INFO_MOD,        ONLY: GRIB_INFO_PRINT
+  USE :: ENCODING_INFO_MOD,        ONLY: TRACK_TIME_PRINT
   USE :: METADATA_FACTORY_MOD,     ONLY: METADATA_BASE_A
   USE :: GRIB_ENCODER_MANAGER_MOD, ONLY: ENCODE_ATM
-  USE :: GRIB_INFO_DATA_MOD,       ONLY: GRIB_INFO_T
-  USE :: GRIB_INFO_MOD,            ONLY: GRIB_INFO_GET
-  USE :: GRIB_INFO_MOD,            ONLY: GRIB_INFO_PRINT
-  USE :: TRACK_TIME_MOD,           ONLY: TIME_HISTORY_T
-  USE :: TRACK_TIME_MOD,           ONLY: TRACK_TIME_ACCESS_OR_CREATE
-  USE :: TRACK_TIME_MOD,           ONLY: TRACK_TIME_PRINT
-  USE :: MSG_UTILS_MOD,            ONLY: MSG_PRINT_ATM
   USE :: OM_GENERAL_UTILS_MOD,     ONLY: LOG_CURR_TIME
+  USE :: MSG_UTILS_MOD,            ONLY: MSG_PRINT_ATM
   USE :: OM_PROFILE_MOD,           ONLY: PROFILE_MESSAGE
 
   ! Symbols imported from other libraries
@@ -701,11 +718,11 @@ IMPLICIT NONE
   PGMD => THIS%GMD_
   PP_METADATA_INIT_LOGGING( PGMD, YDMSG%ISTEP_, YDMSG%PARAM_ID_, YDMSG%IUID_, YDMSG%IPREF_, YDMSG%IREPRES_ )
 
-  ! Lookup grib informations related to the requested paramId
-  CALL GRIB_INFO_GET( YDMSG%PARAM_ID_, GRIB_INFO )
-
-  ! Recover information about last time the field has been encoded
-  CALL TRACK_TIME_ACCESS_OR_CREATE( YDMSG%PARAM_ID_, YDMSG%IUID_, YDMSG%ISTEP_, TIME_HIST )
+  ! Get encoding info
+  PP_LOG_DEVELOP_STR( 'Collect grib info of the current field' )
+  CALL ENCODING_INFO_ACCESS_OR_CREATE( THIS%MODEL_PAR_, YDMSG%PARAM_ID_, YDMSG%IPREF_, &
+&                                      YDMSG%IREPRES_,  YDMSG%IUID_, YDMSG%ISTEP_,     &
+&                                      GRIB_INFO, TIME_HIST )
 
   ! If needed log message
   IF ( THIS%VERBOSE_ ) THEN
@@ -748,9 +765,14 @@ IMPLICIT NONE
   ! should not happen but just to be sure
   IF ( THIS%GMD_%INITIALIZED() ) THEN
     ! Destroy the metadata object
-    PP_METADATA_FINALISE_LOGGING( PGMD )
+    IF ( THIS%SAVE_REPORT_ ) THEN
+      PP_METADATA_FINALISE_LOGGING( PGMD )
+    ENDIF
     CALL THIS%GMD_%DESTROY()
   ENDIF
+
+  ! Reset encdoing info
+  CALL OM_RESET_ENCODING_INFO()
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -822,16 +844,16 @@ SUBROUTINE GRIBX_BIN_WRITE_WAM_DP( THIS, YDMSG, VALUES_DP )
   USE :: OM_CORE_MOD,              ONLY: JPIM_K
   USE :: OM_CORE_MOD,              ONLY: JPIB_K
   USE :: OM_CORE_MOD,              ONLY: JPRD_K
+  USE :: OM_CORE_MOD,              ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,              ONLY: TIME_HISTORY_T
   USE :: OM_CORE_MOD,              ONLY: OM_WAM_MSG_T
   USE :: OM_CORE_MOD,              ONLY: OM_SET_CURRENT_MESSAGE_WAM
+  USE :: OM_CORE_MOD,              ONLY: OM_RESET_ENCODING_INFO
+  USE :: ENCODING_INFO_MOD,        ONLY: ENCODING_INFO_ACCESS_OR_CREATE
+  USE :: ENCODING_INFO_MOD,        ONLY: GRIB_INFO_PRINT
+  USE :: ENCODING_INFO_MOD,        ONLY: TRACK_TIME_PRINT
   USE :: METADATA_FACTORY_MOD,     ONLY: METADATA_BASE_A
   USE :: GRIB_ENCODER_MANAGER_MOD, ONLY: ENCODE_WAM
-  USE :: GRIB_INFO_DATA_MOD,       ONLY: GRIB_INFO_T
-  USE :: GRIB_INFO_MOD,            ONLY: GRIB_INFO_GET
-  USE :: GRIB_INFO_MOD,            ONLY: GRIB_INFO_PRINT
-  USE :: TRACK_TIME_MOD,           ONLY: TIME_HISTORY_T
-  USE :: TRACK_TIME_MOD,           ONLY: TRACK_TIME_ACCESS_OR_CREATE
-  USE :: TRACK_TIME_MOD,           ONLY: TRACK_TIME_PRINT
   USE :: MSG_UTILS_MOD,            ONLY: MSG_PRINT_WAM
   USE :: OM_GENERAL_UTILS_MOD,     ONLY: LOG_CURR_TIME
   USE :: OM_PROFILE_MOD,           ONLY: PROFILE_MESSAGE
@@ -893,11 +915,11 @@ IMPLICIT NONE
   PGMD => THIS%GMD_
   PP_METADATA_INIT_LOGGING( PGMD, YDMSG%ISTEP_, YDMSG%PARAM_ID_, YDMSG%IUID_, YDMSG%IPREF_, YDMSG%IREPRES_ )
 
-  ! Lookup grib informations related to the requested paramId
-  CALL GRIB_INFO_GET( YDMSG%PARAM_ID_, GRIB_INFO )
-
-  ! Recover information about last time the field has been encoded
-  CALL TRACK_TIME_ACCESS_OR_CREATE( YDMSG%PARAM_ID_, YDMSG%IUID_, YDMSG%ISTEP_, TIME_HIST )
+  ! Get encoding info
+  PP_LOG_DEVELOP_STR( 'Collect grib info of the current field' )
+  CALL ENCODING_INFO_ACCESS_OR_CREATE( THIS%MODEL_PAR_, YDMSG%PARAM_ID_, YDMSG%IPREF_, &
+&                                      YDMSG%IREPRES_,  YDMSG%IUID_, YDMSG%ISTEP_,     &
+&                                      GRIB_INFO, TIME_HIST )
 
   ! If needed log message
   IF ( THIS%VERBOSE_ ) THEN
@@ -940,9 +962,14 @@ IMPLICIT NONE
   ! should not happen but just to be sure
   IF ( THIS%GMD_%INITIALIZED() ) THEN
     ! Destroy the metadata object
-    PP_METADATA_FINALISE_LOGGING( PGMD )
+    IF ( THIS%SAVE_REPORT_ ) THEN
+      PP_METADATA_FINALISE_LOGGING( PGMD )
+    ENDIF
     CALL THIS%GMD_%DESTROY()
   ENDIF
+
+  ! Reset encdoing info
+  CALL OM_RESET_ENCODING_INFO()
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1010,16 +1037,16 @@ SUBROUTINE GRIBX_BIN_WRITE_WAM_SP( THIS, YDMSG, VALUES_SP )
   USE :: OM_CORE_MOD,              ONLY: JPIM_K
   USE :: OM_CORE_MOD,              ONLY: JPIB_K
   USE :: OM_CORE_MOD,              ONLY: JPRM_K
+  USE :: OM_CORE_MOD,              ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,              ONLY: TIME_HISTORY_T
   USE :: OM_CORE_MOD,              ONLY: OM_WAM_MSG_T
   USE :: OM_CORE_MOD,              ONLY: OM_SET_CURRENT_MESSAGE_WAM
+  USE :: OM_CORE_MOD,              ONLY: OM_RESET_ENCODING_INFO
+  USE :: ENCODING_INFO_MOD,        ONLY: ENCODING_INFO_ACCESS_OR_CREATE
+  USE :: ENCODING_INFO_MOD,        ONLY: GRIB_INFO_PRINT
+  USE :: ENCODING_INFO_MOD,        ONLY: TRACK_TIME_PRINT
   USE :: METADATA_FACTORY_MOD,     ONLY: METADATA_BASE_A
   USE :: GRIB_ENCODER_MANAGER_MOD, ONLY: ENCODE_WAM
-  USE :: GRIB_INFO_DATA_MOD,       ONLY: GRIB_INFO_T
-  USE :: GRIB_INFO_MOD,            ONLY: GRIB_INFO_GET
-  USE :: GRIB_INFO_MOD,            ONLY: GRIB_INFO_PRINT
-  USE :: TRACK_TIME_MOD,           ONLY: TIME_HISTORY_T
-  USE :: TRACK_TIME_MOD,           ONLY: TRACK_TIME_ACCESS_OR_CREATE
-  USE :: TRACK_TIME_MOD,           ONLY: TRACK_TIME_PRINT
   USE :: MSG_UTILS_MOD,            ONLY: MSG_PRINT_WAM
   USE :: OM_GENERAL_UTILS_MOD,     ONLY: LOG_CURR_TIME
   USE :: OM_PROFILE_MOD,           ONLY: PROFILE_MESSAGE
@@ -1083,11 +1110,11 @@ IMPLICIT NONE
   PGMD => THIS%GMD_
   PP_METADATA_INIT_LOGGING( PGMD, YDMSG%ISTEP_, YDMSG%PARAM_ID_, YDMSG%IUID_, YDMSG%IPREF_, YDMSG%IREPRES_ )
 
-  ! Lookup grib informations related to the requested paramId
-  CALL GRIB_INFO_GET( YDMSG%PARAM_ID_, GRIB_INFO )
-
-  ! Recover information about last time the field has been encoded
-  CALL TRACK_TIME_ACCESS_OR_CREATE( YDMSG%PARAM_ID_, YDMSG%IUID_, YDMSG%ISTEP_, TIME_HIST )
+  ! Get encoding info
+  PP_LOG_DEVELOP_STR( 'Collect grib info of the current field' )
+  CALL ENCODING_INFO_ACCESS_OR_CREATE( THIS%MODEL_PAR_, YDMSG%PARAM_ID_, YDMSG%IPREF_, &
+&                                      YDMSG%IREPRES_,  YDMSG%IUID_, YDMSG%ISTEP_,     &
+&                                      GRIB_INFO, TIME_HIST )
 
   ! If needed log message
   IF ( THIS%VERBOSE_ ) THEN
@@ -1130,9 +1157,14 @@ IMPLICIT NONE
   ! should not happen but just to be sure
   IF ( THIS%GMD_%INITIALIZED() ) THEN
     ! Destroy the metadata object
-    PP_METADATA_FINALISE_LOGGING( PGMD )
+    IF ( THIS%SAVE_REPORT_ ) THEN
+      PP_METADATA_FINALISE_LOGGING( PGMD )
+    ENDIF
     CALL THIS%GMD_%DESTROY()
   ENDIF
+
+  ! Reset encdoing info
+  CALL OM_RESET_ENCODING_INFO()
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1566,9 +1598,8 @@ SUBROUTINE GRIBX_BIN_FINALISE( THIS )
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,              ONLY: JPIM_K
   USE :: OM_CORE_MOD,              ONLY: JPIB_K
+  USE :: ENCODING_INFO_MOD,        ONLY: ENCODING_INFO_FREE
   USE :: GRIB_ENCODER_MANAGER_MOD, ONLY: DESTROY_ENCODERS
-  USE :: GRIB_INFO_MOD,            ONLY: GRIB_INFO_FREE
-  USE :: TRACK_TIME_MOD,           ONLY: TRACK_TIME_FREE
   USE :: OM_GENERAL_UTILS_MOD,     ONLY: LOG_CURR_TIME
   USE :: OM_PROFILE_MOD,           ONLY: PROFILE_END_SIMULATION
 
@@ -1623,8 +1654,7 @@ IMPLICIT NONE
 
   ! Destroy services
   CALL DESTROY_ENCODERS()
-  CALL GRIB_INFO_FREE()
-  CALL TRACK_TIME_FREE()
+  CALL ENCODING_INFO_FREE()
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

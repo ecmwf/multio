@@ -51,35 +51,11 @@ execute_process(
 #
 # + CONFIGURE HEADERS
 # ======================================================================
-if ( HAVE_OUTPUT_MANAGER_DEBUG )
-set( OUTPUT_MANAGER_BUILD_FLAVOUR "DEBUG" )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/output_manager_version_mod.F90.in                            ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/debug/output_manager_preprocessor_utils.h.in         ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/debug/output_manager_preprocessor_trace_utils.h.in   ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_trace_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/debug/output_manager_preprocessor_logging_utils.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_logging_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/debug/output_manager_preprocessor_errhdl_utils.h.in  ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_errhdl_utils.h  )
-elseif ( HAVE_OUTPUT_MANAGER_RELEASE )
-set( OUTPUT_MANAGER_BUILD_FLAVOUR "RELEASE" )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/output_manager_version_mod.F90.in                              ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/release/output_manager_preprocessor_utils.h.in         ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/release/output_manager_preprocessor_trace_utils.h.in   ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_trace_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/release/output_manager_preprocessor_logging_utils.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_logging_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/release/output_manager_preprocessor_errhdl_utils.h.in  ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_errhdl_utils.h  )
-elseif ( HAVE_OUTPUT_MANAGER_DVELOP )
-set( OUTPUT_MANAGER_BUILD_FLAVOUR "DEVELOP" )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/output_manager_version_mod.F90.in                              ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/develop/output_manager_preprocessor_utils.h.in         ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/develop/output_manager_preprocessor_trace_utils.h.in   ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_trace_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/develop/output_manager_preprocessor_logging_utils.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_logging_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/develop/output_manager_preprocessor_errhdl_utils.h.in  ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_errhdl_utils.h  )
-else (  )
-set( OUTPUT_MANAGER_BUILD_FLAVOUR "STANDARD" )
 configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/output_manager_version_mod.F90.in                               ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90  )
 configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_utils.h.in         ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_utils.h  )
 configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_trace_utils.h.in   ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_trace_utils.h  )
 configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_logging_utils.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_logging_utils.h  )
 configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_errhdl_utils.h.in  ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_errhdl_utils.h  )
-endif()
 
 
 #
@@ -118,10 +94,9 @@ list( APPEND output_manager_src
 list( APPEND output_manager_src
     common/om_general_utils_c.c
     common/om_general_utils_mod.F90
-    common/om_multio_utils_mod.F90
+    common/om_multio_utils_v1_mod.F90
     common/om_profile_mod.F90
     common/datetime_utils_mod.F90
-    common/track_time_mod.F90
 )
 
 #
@@ -145,7 +120,8 @@ list( APPEND output_manager_src
 # Append source files for the raw message management
 # --------------------------------------------------
 list( APPEND output_manager_src
-    grib_info/grib_info_mod.F90
+    grib_info/encoding_info_mod.F90
+    grib_info/yaml_rules_mod.F90
     grib_info/grib_codes_mod.F90
 )
 
@@ -189,7 +165,7 @@ list( APPEND output_manager_src
 # ----------------------------------------
 list( APPEND output_manager_src
     metadata/metadata_base_mod.F90
-    metadata/multIO_metadata_mod.F90
+    metadata/multIO_metadata_v1_mod.F90
     metadata/grib_metadata_mod.F90
     metadata/metadata_factory_mod.F90
     metadata/metadata_tracer_mod.F90
@@ -263,73 +239,17 @@ list( APPEND output_manager_src
     flavours/output_manager_base_mod.F90
     flavours/noop_output_manager_mod.F90
     flavours/dump_output_manager_mod.F90
-)
-
-#
-# Append and build only the output manager needed for the run
-# -----------------------------------------------------------
-if ( HAVE_OUTPUT_MANAGER_GRIBX_BINARY )
-message(STATUS, "Add gribX_binary output manager")
-list( APPEND OUTPUT_MANAGER_BUILD_FLAVOUR "WITH_GRIBX_BINARY_OUTPUT_MANAGER" )
-list( APPEND output_manager_src
     flavours/gribx_binary_output_manager_mod.F90
-)
-endif()
-
-#
-# Append and build only the output manager needed for the run
-# -----------------------------------------------------------
-if ( HAVE_OUTPUT_MANAGER_GRIBX2MULTIO_BIN )
-message(STATUS, "Add gribX2multio_bin output manager")
-list( APPEND OUTPUT_MANAGER_BUILD_FLAVOUR "WITH_GRIBX2MULTIO_BIN_OUTPUT_MANAGER" )
-list( APPEND output_manager_src
     flavours/gribx2multio_bin_output_manager_mod.F90
-)
-endif()
-
-#
-# Append and build only the output manager needed for the run
-# -----------------------------------------------------------
-if ( HAVE_OUTPUT_MANAGER_GRIBX2MULTIO_RAW )
-message(STATUS, "Add gribX2multio_raw output manager")
-list( APPEND OUTPUT_MANAGER_BUILD_FLAVOUR "WITH_GRIBX2MULTIO_RAW_OUTPUT_MANAGER" )
-list( APPEND output_manager_src
     flavours/gribx2multio_raw_output_manager_mod.F90
-)
-endif()
-
-#
-# Append and build only the output manager needed for the run
-# -----------------------------------------------------------
-if ( HAVE_OUTPUT_MANAGER_MULTIO_RAW )
-message(STATUS, "Add multio_raw output manager")
-list( APPEND OUTPUT_MANAGER_BUILD_FLAVOUR "WITH_MULTIO_RAW_OUTPUT_MANAGER" )
-list( APPEND output_manager_src
     flavours/multio_raw_output_manager_mod.F90
+    flavours/multio_no_enc_output_manager_v1_mod.F90
+    flavours/output_manager_factory_mod.F90
 )
-endif()
-
-#
-# Append and build only the output manager needed for the run
-# -----------------------------------------------------------
-if ( HAVE_OUTPUT_MANAGER_MULTIO_NO_ENC )
-message(STATUS, "Add multio_noenc output manager")
-list( APPEND OUTPUT_MANAGER_BUILD_FLAVOUR "WITH_MULTIO_NO_ENC_OUTPUT_MANAGER" )
-list( APPEND output_manager_src
-    flavours/multio_no_enc_output_manager_mod.F90
-)
-endif()
 
 if ( HAVE_OUTPUT_MANAGER_ENCODER_REPORT )
 list( APPEND OUTPUT_MANAGER_BUILD_FLAVOUR "WITH_OUTPUT_MANAGER_ENCODING_REPORT" )
 endif()
-
-#
-# Append output-manager source files to the list
-# ----------------------------------------------
-list( APPEND output_manager_src
-    flavours/output_manager_factory_mod.F90
-)
 
 
 #
@@ -368,7 +288,7 @@ target_include_directories( ecom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mo
 if ( HAVE_OUTPUT_MANAGER_TOOL )
 ecbuild_add_executable(
 
-  TARGET secom
+  TARGET ecom-feed
 
   SOURCES
     tool/om_tool_cfg_mod.F90
@@ -385,6 +305,28 @@ ecbuild_add_executable(
   LINKER_LANGUAGE Fortran
 
 )
+
+ecbuild_add_executable(
+
+  TARGET ecom-parser
+
+  SOURCES
+    yaml/yaml_parser_prog.F90
+
+  LIBS
+    fckit
+    ecom
+    eccodes
+    eccodes_f90
+    multio-fapi
+
+  LINKER_LANGUAGE Fortran
+
+)
 endif()
+
+
+#set_target_properties( ecom PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/ecom )
+#target_include_directories( ecom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/ecom> )
 
 endif()

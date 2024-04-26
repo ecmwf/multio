@@ -77,7 +77,7 @@ CONTAINS
 !> @return PCB Pointer to the newly allocated circular buffer.
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'TRACB_NEWCK_TIME_PUSH'
+#define PP_PROCEDURE_NAME 'CB_NEW'
 FUNCTION CB_NEW(THIS, CAPACITY) RESULT(PCB)
 
   ! Symbols imported from other modules within the project.

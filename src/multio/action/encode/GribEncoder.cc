@@ -293,6 +293,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
                     withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
                     withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
                     withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+                    withFirstOf(valueSetter(g, "resolution"), LookUpString(md, "resolution"));
                 }
             }
         }
@@ -397,6 +398,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
                     withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
                     withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
                     withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+                    withFirstOf(valueSetter(g, "resolution"), LookUpString(md, "resolution"));
                 }
             }
 

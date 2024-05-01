@@ -130,7 +130,12 @@ std::unique_ptr<GribEncoder> makeEncoder(const eckit::LocalConfiguration& conf,
         handleCodesError("eccodes error while reading the grib template: ", err, Here());
 
         if (conf.has("atlas-named-grid")) {
-            const auto atlasNamedGrid = conf.getString("atlas-named-grid");
+            const auto atlasNamedGrid = util::replaceCurly(conf.getString("atlas-named-grid"),
+            [](std::string_view replace) {
+                std::string lookUpKey{replace};
+                char* env = ::getenv(lookUpKey.c_str());
+                return env ? std::optional<std::string>{env} : std::optional<std::string>{};
+            });
 
             eckit::Log::info() << "REQUESTED ATLAS GRID DEFINITION UPDATE: " << atlasNamedGrid << std::endl;
 

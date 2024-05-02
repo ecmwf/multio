@@ -290,3 +290,26 @@ jobs:
           repository: private-downstream-ci
           event_type: downstream-ci-hpc
           payload: '{"multio": "ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}"}'
+
+
+  notify:
+    name: notify
+    runs-on: ubuntu-latest
+    needs:
+      - qa
+      - downstream-ci
+      - downstream-ci-hpc
+      - hpc-downstream-ci
+      - hpc-downstream-ci-hpc
+    if: always()
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Notify Teams
+        uses: ./
+        with:
+          incoming_webhook: ${{ secrets.MS_TEAMS_INCOMING_WEBHOOK }}
+          needs_context: ${{ toJSON(needs) }}
+          notify_on: |
+            success

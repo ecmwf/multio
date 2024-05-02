@@ -1,0 +1,9 @@
+dependencies: |
+  ecmwf/ecbuild
+  ecmwf/eccodes
+  ecmwf/eckit
+  ecmwf/atlas
+  ecmwf/metkit
+  ecmwf/mir
+dependency_branch: develop
+parallelism_factor: 8

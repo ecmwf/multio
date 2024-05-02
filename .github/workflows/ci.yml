@@ -5,7 +5,8 @@ on:
   # Trigger the workflow on all pushes, except on tag creation
   push:
     branches:
-      - '**'
+      - 'master'
+      - 'develop'
     tags-ignore:
       - '**'
 
@@ -14,6 +15,10 @@ on:
 
   # Allow workflow to be dispatched on demand
   workflow_dispatch: ~
+
+  # Trigger after public PR approved for CI
+  pull_request_target:
+    types: [labeled]
 
 env:
   INSTALL_TOOLS: ${{ github.workspace }}/install-tools
@@ -224,3 +229,62 @@ jobs:
             LD_LIBRARY_PATH=${{ steps.build-test.outputs.lib_path }}:$LD_LIBRARY_PATH python -m pytest --cov=./ --cov-report=xml
           fi
           python -m coverage report
+
+  # Run CI including downstream packages on self-hosted runners
+  downstream-ci:
+    name: downstream-ci
+    if: ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
+    # uses: ecmwf-actions/downstream-ci/.github/workflows/downstream-ci.yml@main
+    # For testing
+    uses: geier1993/downstream-ci/.github/workflows/downstream-ci.yml@add-multio
+    with:
+      multio: ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
+      codecov_upload: true
+    secrets: inherit
+
+  # Run CI of private downstream packages on self-hosted runners
+  private-downstream-ci:
+    name: private-downstream-ci
+    needs: [downstream-ci]
+    if: (success() || failure()) && ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Dispatch private downstream CI
+        uses: ecmwf-actions/dispatch-private-downstream-ci@v1
+        with:
+          token: ${{ secrets.GH_REPO_READ_TOKEN }}
+          owner: ecmwf-actions
+          repository: private-downstream-ci
+          event_type: downstream-ci
+          payload: '{"multio": "ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}"}'
+
+  # Build downstream packages on HPC
+  downstream-ci-hpc:
+    name: downstream-ci-hpc
+    if: ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
+    # uses: ecmwf-actions/downstream-ci/.github/workflows/downstream-ci-hpc.yml@main
+    # For testing
+    uses: geier1993/downstream-ci/.github/workflows/downstream-ci-hpc.yml@add-multio
+    with:
+      multio: ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
+    secrets: inherit
+
+  # Run CI of private downstream packages on HPC
+  private-downstream-ci-hpc:
+    name: private-downstream-ci-hpc
+    needs: [downstream-ci-hpc]
+    if: (success() || failure()) && ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Dispatch private downstream CI
+        uses: ecmwf-actions/dispatch-private-downstream-ci@v1
+        with:
+          token: ${{ secrets.GH_REPO_READ_TOKEN }}
+          owner: ecmwf-actions
+          repository: private-downstream-ci
+          event_type: downstream-ci-hpc
+          payload: '{"multio": "ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}"}'

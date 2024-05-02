@@ -63,8 +63,8 @@ public:
     IteratorMapper(const This& other) :
         container_{other.container_}, mapper_{other.mapper_}, it_{other.it_}, val_{other.val_} {}
 
-    IteratorMapper(This&& other) noexcept(std::is_nothrow_move_constructible_v<IteratorType>
-                                          && std::is_nothrow_move_constructible_v<OptValueType>) :
+    IteratorMapper(This&& other) noexcept(
+        std::is_nothrow_move_constructible_v<IteratorType>&& std::is_nothrow_move_constructible_v<OptValueType>) :
         container_{other.container_}, mapper_{other.mapper_}, it_{std::move(other.it_)}, val_{std::move(other.val_)} {}
 
     This& operator=(const This& other) {

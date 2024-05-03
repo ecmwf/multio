@@ -136,4 +136,9 @@ void Plan::matchedFields(message::MetadataSelectors& selectors) const {
     root_->matchedFields(selectors);
 }
 
+const std::string& Plan::name() const noexcept {
+    return name_;
+}
+
+
 }  // namespace multio::action

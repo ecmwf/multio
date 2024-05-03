@@ -13,8 +13,8 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "Cray")
   set(initsnan_flags      "-ei")
 
   set(convert_flags       "")
-  set(linelength_flags    "")
-  set(nofma_flags         "")
+  set(linelength_flags    "-N 1023")
+  set(nofma_flags         "-h nofma")
 
 
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
@@ -43,8 +43,8 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI|NVHPC")
   set(fpe_flags           "-Ktrap=fp")
   set(checkbounds_flags   "-Mbounds")
 
-  set(convert_flags       "")
-  set(linelength_flags    "")
+  set(convert_flags       "-byteswapio")
+  set(linelength_flags    "-M free -M extend")
   set(nofma_flags         "")
 
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Flang")
@@ -75,9 +75,10 @@ if( CMAKE_BUILD_TYPE MATCHES "Debug" AND NOT CMAKE_Fortran_COMPILER_ID MATCHES P
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-  if( NOT CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 10 )
-    ecbuild_add_fortran_flags( "-fallow-argument-mismatch" NAME argument_mismatch )
-  endif()
+  # if( NOT CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 10 )
+  #   ecbuild_add_fortran_flags( "-fallow-argument-mismatch" NAME argument_mismatch )
+  # endif()
+  ecbuild_add_fortran_flags( "-Wall -Wpedantic" NAME warnings )
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "Flang")

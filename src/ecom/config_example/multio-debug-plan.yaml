@@ -1,0 +1,9 @@
+plans:
+  - name: save-generated-gribs
+    actions:
+      - type: print
+        stream: cout
+        prefix: " ++ MULTIO_PRINT_DEBUG_PLAN :: "
+
+      - type: sink
+        sinks: []

@@ -115,6 +115,7 @@ private:
 
         std::vector<eckit::LocalConfiguration> plans;
         plans.push_back(eckit::LocalConfiguration{});
+        plans[0].set("name", "IFSIO Plan configured from sink");
         plans[0].set("actions", actions);
 
         eckit::LocalConfiguration cfg;

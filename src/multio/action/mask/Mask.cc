@@ -42,6 +42,11 @@ Mask::Mask(const ComponentConfiguration& compConf) :
     offsetValue_{compConf.parsedConfig().getDouble("offset-value", 273.15)} {}
 
 void Mask::executeImpl(message::Message msg) {
+    if (msg.tag() != message::Message::Tag::Field) {
+        executeNext(std::move(msg));
+        return;
+    }
+
     executeNext(dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
         return createMasked<Precision>(std::move(msg));

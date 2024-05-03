@@ -348,9 +348,6 @@ END SUBROUTINE MULTIO_METADATA_SET_MULTIO_HANDLE
 #define PP_PROCEDURE_NAME 'MULTIO_METADATA_INIT_FROM_METADATA'
 SUBROUTINE MULTIO_METADATA_INIT_FROM_METADATA( THIS, METADATA )
 
-  ! Symbolds imported from intrinsic modules
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
-
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,       ONLY: JPIM_K
   USE :: GRIB_METADATA_MOD, ONLY: GRIB_METADATA_T
@@ -373,7 +370,7 @@ IMPLICIT NONE
 
   ! Local variables
   INTEGER(KIND=JPIM_K) :: IGRIB_HANDLE
-  INTEGER(KIND=C_INT)  :: CERR
+  INTEGER(KIND=JPIM_K) :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -397,11 +394,11 @@ IMPLICIT NONE
   CLASS IS( MULTIO_METADATA_T )
 
     ! Read the sample and set the initialization flag to .true.
-    CERR = THIS%MULTIO_METADATA_%NEW( THIS%MULTIO_HANDLE_ )
-    PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 4 )
+    ERR = THIS%MULTIO_METADATA_%NEW( THIS%MULTIO_HANDLE_ )
+    PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.0, 4 )
 
-    CERR = THIS%MULTIO_METADATA_%COPY( MD%MULTIO_METADATA_ )
-    PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 5 )
+    ERR = THIS%MULTIO_METADATA_%COPY( MD%MULTIO_METADATA_ )
+    PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.0, 5 )
 
     ! Copy the tracer
     CALL THIS%TRACER_%COPY( MD%TRACER_ )
@@ -414,8 +411,8 @@ IMPLICIT NONE
   CLASS IS( GRIB_METADATA_T )
 
     ! Read the sample and set the initialization flag to .true.
-    CERR = THIS%MULTIO_METADATA_%NEW( THIS%MULTIO_HANDLE_ )
-    PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 4 )
+    ERR = THIS%MULTIO_METADATA_%NEW( THIS%MULTIO_HANDLE_ )
+    PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.0, 4 )
 
     ! Copy the tracer
     CALL THIS%TRACER_%COPY( MD%TRACER_ )
@@ -456,7 +453,7 @@ PP_ERROR_HANDLER
     CASE (3)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Multio handle not associated' )
     CASE (4)
-      MIO_ERR_STR = MULTIO_ERROR_STRING(CERR)
+      MIO_ERR_STR = MULTIO_ERROR_STRING(ERR)
       IF ( ALLOCATED( MIO_ERR_STR ) ) THEN
         PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to create new metadata: '//TRIM(ADJUSTL(MIO_ERR_STR)) )
         DEALLOCATE( MIO_ERR_STR )
@@ -464,7 +461,7 @@ PP_ERROR_HANDLER
         PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to create new metadata' )
       ENDIF
     CASE (5)
-      MIO_ERR_STR = MULTIO_ERROR_STRING(CERR)
+      MIO_ERR_STR = MULTIO_ERROR_STRING(ERR)
       IF ( ALLOCATED( MIO_ERR_STR ) ) THEN
         PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to clone multIO metadata: '//TRIM(ADJUSTL(MIO_ERR_STR)) )
         DEALLOCATE( MIO_ERR_STR )
@@ -506,8 +503,8 @@ END SUBROUTINE MULTIO_METADATA_INIT_FROM_METADATA
 #define PP_PROCEDURE_NAME 'MULTIO_METADATA_INIT_FROM_SAMPLE_NAME'
 SUBROUTINE MULTIO_METADATA_INIT_FROM_SAMPLE_NAME( THIS, SAMPLE_NAME )
 
-  ! Symbolds imported from intrinsic modules
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
 
   ! Symbols imported from other modules within the project.
   USE :: MULTIO_API,  ONLY: MULTIO_HANDLE
@@ -525,8 +522,8 @@ IMPLICIT NONE
   CHARACTER(LEN=*),         INTENT(IN)    :: SAMPLE_NAME
 
   ! Local variables
-  LOGICAL             :: LOC_DISTRIBUTE
-  INTEGER(KIND=C_INT) :: CERR
+  LOGICAL              :: LOC_DISTRIBUTE
+  INTEGER(KIND=JPIM_K) :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -543,10 +540,11 @@ IMPLICIT NONE
 
 
   ! Read the sample and set the initialization flag to .true.
-  CERR = THIS%MULTIO_METADATA_%NEW( THIS%MULTIO_HANDLE_ )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 3 )
-  CERR = THIS%MULTIO_METADATA_%SET_STRING( 'eccodes_sample', SAMPLE_NAME )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 4 )
+  ERR = THIS%MULTIO_METADATA_%NEW( THIS%MULTIO_HANDLE_ )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.0, 3 )
+
+  ERR = THIS%MULTIO_METADATA_%SET_STRING( 'eccodes_sample', SAMPLE_NAME )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.0, 4 )
   THIS%INITIALIZED_ = .TRUE.
 
   ! Trace end of procedure (on success)
@@ -613,8 +611,6 @@ END SUBROUTINE MULTIO_METADATA_INIT_FROM_SAMPLE_NAME
 #define PP_PROCEDURE_NAME 'MULTIO_METADATA_INIT_FROM_SAMPLE'
 SUBROUTINE MULTIO_METADATA_INIT_FROM_SAMPLE( THIS, SAMPLE_NAME, SAMPLE_HANDLE )
 
-  ! Symbolds imported from intrinsic modules
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD, ONLY: JPIM_K
@@ -634,8 +630,8 @@ IMPLICIT NONE
   INTEGER(KIND=JPIM_K),     INTENT(IN)    :: SAMPLE_HANDLE
 
   ! Local variables
-  LOGICAL             :: LOC_DISTRIBUTE
-  INTEGER(KIND=C_INT) :: CERR
+  LOGICAL              :: LOC_DISTRIBUTE
+  INTEGER(KIND=JPIM_K) :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -652,10 +648,10 @@ IMPLICIT NONE
 
 
   ! Read the sample and set the initialization flag to .true.
-  CERR = THIS%MULTIO_METADATA_%NEW( THIS%MULTIO_HANDLE_ )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 3 )
-  CERR = THIS%MULTIO_METADATA_%SET_STRING( 'eccodes_sample', SAMPLE_NAME )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 4 )
+  ERR = THIS%MULTIO_METADATA_%NEW( THIS%MULTIO_HANDLE_ )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.0, 3 )
+  ERR = THIS%MULTIO_METADATA_%SET_STRING( 'eccodes_sample', SAMPLE_NAME )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.0, 4 )
   THIS%INITIALIZED_ = .TRUE.
 
   ! Trace end of procedure (on success)
@@ -719,10 +715,8 @@ END SUBROUTINE MULTIO_METADATA_INIT_FROM_SAMPLE
 #define PP_PROCEDURE_NAME 'MULTIO_METADATA_INIT_DEFAULT'
 SUBROUTINE MULTIO_METADATA_INIT_DEFAULT( THIS )
 
-  ! Symbolds imported from intrinsic modules
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
-
   ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
   USE :: MULTIO_API,  ONLY: MULTIO_HANDLE
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -737,7 +731,7 @@ IMPLICIT NONE
   CLASS(MULTIO_METADATA_T), INTENT(INOUT) :: THIS
 
   ! Local variables
-  INTEGER(KIND=C_INT) :: CERR
+  INTEGER(KIND=JPIM_K) :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -753,8 +747,8 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.ASSOCIATED(THIS%MULTIO_HANDLE_), 2 )
 
   ! Read the sample and set the initialization flag to .true.
-  CERR = THIS%MULTIO_METADATA_%NEW( THIS%MULTIO_HANDLE_ )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 3 )
+  ERR = THIS%MULTIO_METADATA_%NEW( THIS%MULTIO_HANDLE_ )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.0, 3 )
   THIS%INITIALIZED_ = .TRUE.
 
   ! Trace end of procedure (on success)
@@ -817,8 +811,8 @@ END SUBROUTINE MULTIO_METADATA_INIT_DEFAULT
 #define PP_PROCEDURE_NAME 'MULTIO_METADATA_DESTROY'
 SUBROUTINE MULTIO_METADATA_DESTROY( THIS )
 
-  ! Symbolds imported from intrinsic modules
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -832,7 +826,7 @@ IMPLICIT NONE
   CLASS(MULTIO_METADATA_T), INTENT(INOUT) :: THIS
 
   ! Local variables
-  INTEGER(KIND=C_INT) :: CERR
+  INTEGER(KIND=JPIM_K) :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -847,8 +841,8 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
   ! Set the value into the handle
-  CERR = THIS%MULTIO_METADATA_%DELETE( )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 2 )
+  ERR = THIS%MULTIO_METADATA_%DELETE( )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.0, 2 )
   THIS%INITIALIZED_ = .FALSE.
 
 
@@ -908,8 +902,12 @@ END SUBROUTINE MULTIO_METADATA_DESTROY
 #define PP_PROCEDURE_NAME 'MULTIO_METADATA_SET_STRING'
 SUBROUTINE MULTIO_METADATA_SET_STRING( THIS, KEY, VAL )
 
-  ! Symbolds imported from intrinsic modules
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+
+  ! Symbols imported from other libraries
+  USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
+  USE :: MULTIO_API, ONLY: MULTIO_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -925,7 +923,7 @@ IMPLICIT NONE
   CHARACTER(LEN=*),         INTENT(IN)    :: VAL
 
   ! Local variables
-  INTEGER(KIND=C_INT) :: CERR
+  INTEGER(KIND=JPIM_K) :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -940,8 +938,8 @@ IMPLICIT NONE
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
   ! Set the value into the handle
-  CERR = THIS%MULTIO_METADATA_%SET_STRING( KEY, VAL )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 2 )
+  ERR = THIS%MULTIO_METADATA_%SET_STRING( KEY, VAL )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS, 2 )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -956,6 +954,7 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
@@ -964,7 +963,13 @@ PP_ERROR_HANDLER
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
 
     CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to set a string in the metadata' )
+      MIO_ERR_STR = MULTIO_ERROR_STRING(ERR)
+      IF ( ALLOCATED( MIO_ERR_STR ) ) THEN
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata: '//TRIM(ADJUSTL(MIO_ERR_STR)) )
+        DEALLOCATE( MIO_ERR_STR )
+      ELSE
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata' )
+      ENDIF
 
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
@@ -999,12 +1004,12 @@ END SUBROUTINE MULTIO_METADATA_SET_STRING
 #define PP_PROCEDURE_NAME 'MULTIO_METADATA_SET_BOOL'
 SUBROUTINE MULTIO_METADATA_SET_BOOL( THIS, KEY, VAL )
 
-  ! Symbolds imported from intrinsic modules
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
-
   ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+
+  ! Symbols imported from other libraries
+  USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
+  USE :: MULTIO_API, ONLY: MULTIO_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1020,8 +1025,8 @@ IMPLICIT NONE
   LOGICAL,                  INTENT(IN)    :: VAL
 
   ! Local variables
-  INTEGER(KIND=C_LONG) :: KVAL
-  INTEGER(KIND=C_INT)  :: CERR
+  INTEGER(KIND=JPIM_K) :: KVAL
+  INTEGER(KIND=JPIM_K) :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1037,14 +1042,14 @@ IMPLICIT NONE
 
   ! Convert the logical to a long
   IF ( VAL ) THEN
-    KVAL = 1_C_LONG
+    KVAL = 1_JPIM_K
   ELSE
-    KVAL = 0_C_LONG
+    KVAL = 0_JPIM_K
   ENDIF
 
   ! Set the value into the handle
-  CERR = THIS%MULTIO_METADATA_%SET_LONG( KEY, KVAL )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 2 )
+  ERR = THIS%MULTIO_METADATA_%SET( KEY, KVAL )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS, 2 )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1059,6 +1064,7 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
@@ -1067,7 +1073,13 @@ PP_ERROR_HANDLER
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
 
     CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Failed to set the value inside the metadata' )
+      MIO_ERR_STR = MULTIO_ERROR_STRING(ERR)
+      IF ( ALLOCATED( MIO_ERR_STR ) ) THEN
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata: '//TRIM(ADJUSTL(MIO_ERR_STR)) )
+        DEALLOCATE( MIO_ERR_STR )
+      ELSE
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata' )
+      ENDIF
 
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
@@ -1104,8 +1116,13 @@ SUBROUTINE MULTIO_METADATA_SET_INT8( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT8
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_LONG
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+
+  ! Symbols imported from other libraries
+  USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
+  USE :: MULTIO_API, ONLY: MULTIO_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1121,8 +1138,7 @@ IMPLICIT NONE
   INTEGER(KIND=INT8),       INTENT(IN)    :: VAL
 
   ! Local variables
-  INTEGER(KIND=C_LONG) :: KVAL
-  INTEGER(KIND=C_INT)  :: CERR
+  INTEGER(KIND=JPIM_K)  :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1136,12 +1152,9 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
-  ! This datatype is not supported by grib API
-  KVAL = INT(VAL,C_LONG)
-
   ! Set the value into the handle
-  CERR = THIS%MULTIO_METADATA_%SET_LONG( KEY, KVAL )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 2 )
+  ERR = THIS%MULTIO_METADATA_%SET( KEY, VAL )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS, 2 )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1156,6 +1169,7 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
 
 
     ! HAndle different errors
@@ -1165,7 +1179,13 @@ PP_ERROR_HANDLER
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
 
     CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Failed to set the value inside the metadata' )
+      MIO_ERR_STR = MULTIO_ERROR_STRING(ERR)
+      IF ( ALLOCATED( MIO_ERR_STR ) ) THEN
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata: '//TRIM(ADJUSTL(MIO_ERR_STR)) )
+        DEALLOCATE( MIO_ERR_STR )
+      ELSE
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata' )
+      ENDIF
 
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
@@ -1202,8 +1222,13 @@ SUBROUTINE MULTIO_METADATA_SET_INT16( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT16
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_LONG
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+
+  ! Symbols imported from other libraries
+  USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
+  USE :: MULTIO_API, ONLY: MULTIO_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1219,8 +1244,7 @@ IMPLICIT NONE
   INTEGER(KIND=INT16),      INTENT(IN)    :: VAL
 
   ! Local variables
-  INTEGER(KIND=C_LONG) :: KVAL
-  INTEGER(KIND=C_INT)  :: CERR
+  INTEGER(KIND=JPIM_K)  :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1234,12 +1258,9 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
-  ! This datatype is not supported by grib API
-  KVAL = INT(VAL,C_LONG)
-
   ! Set the value into the handle
-  CERR = THIS%MULTIO_METADATA_%SET_LONG( KEY, KVAL )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 2 )
+  ERR = THIS%MULTIO_METADATA_%SET( KEY, VAL )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS, 2 )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1254,6 +1275,7 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
@@ -1262,7 +1284,13 @@ PP_ERROR_HANDLER
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Failed to set the value inside the metadata' )
 
     CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Failed to set the value inside the metadata' )
+      MIO_ERR_STR = MULTIO_ERROR_STRING(ERR)
+      IF ( ALLOCATED( MIO_ERR_STR ) ) THEN
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata: '//TRIM(ADJUSTL(MIO_ERR_STR)) )
+        DEALLOCATE( MIO_ERR_STR )
+      ELSE
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata' )
+      ENDIF
 
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
@@ -1299,8 +1327,13 @@ SUBROUTINE MULTIO_METADATA_SET_INT32( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT32
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_LONG
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+
+  ! Symbols imported from other libraries
+  USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
+  USE :: MULTIO_API, ONLY: MULTIO_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1316,8 +1349,7 @@ IMPLICIT NONE
   INTEGER(KIND=INT32),      INTENT(IN)    :: VAL
 
   ! Local variables
-  INTEGER(KIND=C_LONG) :: KVAL
-  INTEGER(KIND=C_INT)  :: CERR
+  INTEGER(KIND=JPIM_K)  :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1331,12 +1363,9 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
-  ! This datatype is not supported by grib API
-  KVAL = INT(VAL,C_LONG)
-
   ! Set the value into the handle
-  CERR = THIS%MULTIO_METADATA_%SET_LONG( KEY, KVAL )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 2 )
+  ERR = THIS%MULTIO_METADATA_%SET( KEY, VAL )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS, 2 )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1351,6 +1380,7 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
@@ -1359,7 +1389,13 @@ PP_ERROR_HANDLER
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
 
     CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Failed to set the value inside the metadata' )
+      MIO_ERR_STR = MULTIO_ERROR_STRING(ERR)
+      IF ( ALLOCATED( MIO_ERR_STR ) ) THEN
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata: '//TRIM(ADJUSTL(MIO_ERR_STR)) )
+        DEALLOCATE( MIO_ERR_STR )
+      ELSE
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata' )
+      ENDIF
 
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
@@ -1396,8 +1432,13 @@ SUBROUTINE MULTIO_METADATA_SET_INT64( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_LONG
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+
+  ! Symbols imported from other libraries
+  USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
+  USE :: MULTIO_API, ONLY: MULTIO_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1413,8 +1454,7 @@ IMPLICIT NONE
   INTEGER(KIND=INT64),      INTENT(IN)    :: VAL
 
   ! Local variables
-  INTEGER(KIND=C_LONG) :: KVAL
-  INTEGER(KIND=C_INT)  :: CERR
+  INTEGER(KIND=JPIM_K) :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1428,12 +1468,9 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
-  ! This datatype is not supported by grib API
-  KVAL = INT(VAL,C_LONG)
-
   ! Set the value into the handle
-  CERR = THIS%MULTIO_METADATA_%SET_LONG( KEY, KVAL )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 2 )
+  ERR = THIS%MULTIO_METADATA_%SET( KEY, VAL )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS, 2 )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1448,6 +1485,7 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
@@ -1456,7 +1494,13 @@ PP_ERROR_HANDLER
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
 
     CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Failed to set the value inside the metadata' )
+      MIO_ERR_STR = MULTIO_ERROR_STRING(ERR)
+      IF ( ALLOCATED( MIO_ERR_STR ) ) THEN
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata: '//TRIM(ADJUSTL(MIO_ERR_STR)) )
+        DEALLOCATE( MIO_ERR_STR )
+      ELSE
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata' )
+      ENDIF
 
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
@@ -1493,8 +1537,13 @@ SUBROUTINE MULTIO_METADATA_SET_REAL32( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL32
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_FLOAT
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+
+  ! Symbols imported from other libraries
+  USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
+  USE :: MULTIO_API, ONLY: MULTIO_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1510,8 +1559,7 @@ IMPLICIT NONE
   REAL(KIND=REAL32),        INTENT(IN)    :: VAL
 
   ! Local variables
-  REAL(KIND=C_FLOAT)  :: ZVAL
-  INTEGER(KIND=C_INT) :: CERR
+  INTEGER(KIND=JPIM_K) :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1525,12 +1573,9 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
-  ! Cast the input value to the correct datatype
-  ZVAL = REAL(VAL, C_FLOAT)
-
   ! Set the value into the handle
-  CERR = THIS%MULTIO_METADATA_%SET_FLOAT( KEY, ZVAL )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 2 )
+  ERR = THIS%MULTIO_METADATA_%SET( KEY, VAL )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS, 2 )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1545,6 +1590,7 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
@@ -1553,7 +1599,13 @@ PP_ERROR_HANDLER
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
 
     CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Failed to set the value inside the metadata' )
+      MIO_ERR_STR = MULTIO_ERROR_STRING(ERR)
+      IF ( ALLOCATED( MIO_ERR_STR ) ) THEN
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata: '//TRIM(ADJUSTL(MIO_ERR_STR)) )
+        DEALLOCATE( MIO_ERR_STR )
+      ELSE
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata' )
+      ENDIF
 
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle already initialized' )
@@ -1590,8 +1642,13 @@ SUBROUTINE MULTIO_METADATA_SET_REAL64( THIS, KEY, VAL )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_DOUBLE
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+
+  ! Symbols imported from other libraries
+  USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
+  USE :: MULTIO_API, ONLY: MULTIO_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1607,8 +1664,7 @@ IMPLICIT NONE
   REAL(KIND=REAL64),        INTENT(IN)    :: VAL
 
   ! Local variables
-  REAL(KIND=C_DOUBLE) :: ZVAL
-  INTEGER(KIND=C_INT) :: CERR
+  INTEGER(KIND=JPIM_K) :: ERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1622,12 +1678,9 @@ IMPLICIT NONE
   ! This procedure can be called only if the object is initialized
   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
 
-  ! Cast the input value to the correct datatype
-  ZVAL = REAL(VAL, C_DOUBLE)
-
   ! Set the value into the handle
-  CERR = THIS%MULTIO_METADATA_%SET_DOUBLE( KEY, ZVAL )
-  PP_DEBUG_CRITICAL_COND_THROW( CERR.NE.0, 2 )
+  ERR = THIS%MULTIO_METADATA_%SET( KEY, VAL )
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS, 2 )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1642,6 +1695,7 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
@@ -1650,7 +1704,13 @@ PP_ERROR_HANDLER
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
 
     CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Failed to set the value inside the metadata' )
+      MIO_ERR_STR = MULTIO_ERROR_STRING(ERR)
+      IF ( ALLOCATED( MIO_ERR_STR ) ) THEN
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata: '//TRIM(ADJUSTL(MIO_ERR_STR)) )
+        DEALLOCATE( MIO_ERR_STR )
+      ELSE
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata' )
+      ENDIF
 
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
@@ -2562,16 +2622,17 @@ SUBROUTINE MULTIO_GRIB_TO_MD_SPECTRAL( MIOMD, KGRIB_HANDLE )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD, ONLY: JPIM_K
 
   ! Symbols imported from other libraries
   USE :: ECCODES,    ONLY: CODES_GET
+  USE :: ECCODES,    ONLY: CODES_SUCCESS
   USE :: MULTIO_API, ONLY: MULTIO_METADATA
   USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
   USE :: MULTIO_API, ONLY: MULTIO_ERROR_STRING
+  USE :: ECCODES,    ONLY: CODES_GET_ERROR_STRING
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -2587,7 +2648,8 @@ IMPLICIT NONE
 
   ! Local variabels
   INTEGER(KIND=INT64)  :: IVALUE
-  INTEGER(KIND=C_INT)  :: CERR
+  INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=JPIM_K) :: CERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -2599,43 +2661,51 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
 
 
-  CALL CODES_GET(KGRIB_HANDLE,"sphericalHarmonics",IVALUE)
-  CERR = MIOMD%SET_LONG("sphericalHarmonics",IVALUE)
+  CALL CODES_GET(KGRIB_HANDLE,"sphericalHarmonics",IVALUE,STATUS=KRET)
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 50 )
+  CERR = MIOMD%SET("sphericalHarmonics",IVALUE)
   PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 1 )
 
 
-  CALL CODES_GET(KGRIB_HANDLE,"complexPacking",IVALUE)
-  CERR = MIOMD%SET_LONG("complexPacking",IVALUE)
+  CALL CODES_GET(KGRIB_HANDLE,"complexPacking",IVALUE,STATUS=KRET)
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 51 )
+  CERR = MIOMD%SET("complexPacking",IVALUE)
   PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 2 )
 
 
-  CALL CODES_GET(KGRIB_HANDLE,"pentagonalResolutionParameterJ",IVALUE)
-  CERR = MIOMD%SET_LONG("pentagonalResolutionParameterJ",IVALUE)
+  CALL CODES_GET(KGRIB_HANDLE,"pentagonalResolutionParameterJ",IVALUE,STATUS=KRET)
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 52 )
+  CERR = MIOMD%SET("pentagonalResolutionParameterJ",IVALUE)
   PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 3 )
 
 
-  CALL CODES_GET(KGRIB_HANDLE,"pentagonalResolutionParameterK",IVALUE)
-  CERR = MIOMD%SET_LONG("pentagonalResolutionParameterK",IVALUE)
+  CALL CODES_GET(KGRIB_HANDLE,"pentagonalResolutionParameterK",IVALUE,STATUS=KRET)
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 53 )
+  CERR = MIOMD%SET("pentagonalResolutionParameterK",IVALUE)
   PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 4 )
 
 
-  CALL CODES_GET(KGRIB_HANDLE,"pentagonalResolutionParameterM",IVALUE)
-  CERR = MIOMD%SET_LONG("pentagonalResolutionParameterM",IVALUE)
+  CALL CODES_GET(KGRIB_HANDLE,"pentagonalResolutionParameterM",IVALUE,STATUS=KRET)
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 54 )
+  CERR = MIOMD%SET("pentagonalResolutionParameterM",IVALUE)
   PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 5 )
 
 
-  CALL CODES_GET(KGRIB_HANDLE,"subSetJ",IVALUE)
-  CERR = MIOMD%SET_LONG("subSetJ",IVALUE)
+  CALL CODES_GET(KGRIB_HANDLE,"subSetJ",IVALUE,STATUS=KRET)
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 55 )
+  CERR = MIOMD%SET("subSetJ",IVALUE)
   PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 6 )
 
 
-  CALL CODES_GET(KGRIB_HANDLE,"subSetK",IVALUE)
-  CERR = MIOMD%SET_LONG("subSetK",IVALUE)
+  CALL CODES_GET(KGRIB_HANDLE,"subSetK",IVALUE,STATUS=KRET)
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 56 )
+  CERR = MIOMD%SET("subSetK",IVALUE)
   PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 7 )
 
 
-  CALL CODES_GET(KGRIB_HANDLE,"subSetM",IVALUE)
-  CERR = MIOMD%SET_LONG("subSetM",IVALUE)
+  CALL CODES_GET(KGRIB_HANDLE,"subSetM",IVALUE,STATUS=KRET)
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 57 )
+  CERR = MIOMD%SET("subSetM",IVALUE)
   PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 8 )
 
 
@@ -2653,6 +2723,7 @@ PP_ERROR_HANDLER
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
     CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
+    CHARACTER(LEN=4096) :: GRIB_ERROR
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
@@ -2689,6 +2760,41 @@ PP_ERROR_HANDLER
       MIO_ERR_STR = MULTIO_ERROR_STRING(CERR)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to set MultIO metadata (subSetM): '//TRIM(ADJUSTL(MIO_ERR_STR)) )
       IF ( ALLOCATED( MIO_ERR_STR ) ) DEALLOCATE( MIO_ERR_STR )
+
+
+    CASE (50)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "sphericalHarmonics" from handle', KRET, GRIB_ERROR )
+    CASE (51)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "complexPacking" from handle', KRET, GRIB_ERROR )
+    CASE (52)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "pentagonalResolutionParameterJ" from handle', KRET, GRIB_ERROR )
+    CASE (53)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "pentagonalResolutionParameterK" from handle', KRET, GRIB_ERROR )
+    CASE (54)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "pentagonalResolutionParameterM" from handle', KRET, GRIB_ERROR )
+    CASE (55)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "subSetJ" from handle', KRET, GRIB_ERROR )
+    CASE (56)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "subSetK" from handle', KRET, GRIB_ERROR )
+    CASE (57)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "subSetM" from handle', KRET, GRIB_ERROR )
+
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
     END SELECT
@@ -2716,7 +2822,6 @@ SUBROUTINE MULTIO_GRIB_TO_MD( MIOMD, KGRIB_HANDLE )
 
   ! Symbolds imported from intrinsic modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
-  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD, ONLY: JPIM_K
@@ -2728,6 +2833,7 @@ SUBROUTINE MULTIO_GRIB_TO_MD( MIOMD, KGRIB_HANDLE )
   USE :: ECCODES,    ONLY: CODES_GET
   USE :: ECCODES,    ONLY: CODES_IS_DEFINED
   USE :: ECCODES,    ONLY: CODES_KEYS_ITERATOR_DELETE
+  USE :: ECCODES,    ONLY: CODES_GET_ERROR_STRING
   USE :: ECCODES,    ONLY: CODES_SUCCESS
   USE :: MULTIO_API, ONLY: MULTIO_METADATA
   USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
@@ -2748,6 +2854,7 @@ IMPLICIT NONE
   ! Local variables
   CHARACTER(LEN=20)    :: NAME_SPACE
   INTEGER(KIND=JPIM_K) :: KITER
+  INTEGER(KIND=JPIM_K) :: KRET
   INTEGER(KIND=JPIM_K) :: IRET
   INTEGER(KIND=JPIM_K) :: IHAS
   INTEGER(KIND=INT64)  :: DATADATE
@@ -2759,7 +2866,7 @@ IMPLICIT NONE
   INTEGER(KIND=INT64)  :: TIMEINCREMENT
   CHARACTER(LEN=256)   :: KEY
   CHARACTER(LEN=256)   :: VALUE
-  INTEGER(KIND=C_INT)  :: CERR
+  INTEGER(KIND=JPIM_K) :: CERR
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -2774,13 +2881,14 @@ IMPLICIT NONE
   NAME_SPACE='mars'
 
   ! Create a new iterator
-  CALL CODES_KEYS_ITERATOR_NEW( KGRIB_HANDLE, KITER, NAME_SPACE )
+  CALL CODES_KEYS_ITERATOR_NEW( KGRIB_HANDLE, KITER, NAME_SPACE, STATUS=KRET )
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 50 )
 
   ! Loop over the keywords
   MarsKeywords: DO
 
     ! Read the next key
-    CALL CODES_KEYS_ITERATOR_NEXT( KITER, IRET )
+    CALL CODES_KEYS_ITERATOR_NEXT( KITER, STATUS=IRET )
 
     ! Exit condition (No more keywords)
     IF ( IRET .NE. CODES_SUCCESS ) THEN
@@ -2788,74 +2896,90 @@ IMPLICIT NONE
     ENDIF
 
     ! Get key name
-    CALL CODES_KEYS_ITERATOR_GET_NAME( KITER, KEY )
+    CALL CODES_KEYS_ITERATOR_GET_NAME( KITER, KEY, STATUS=KRET )
+    PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 51 )
 
     ! Get value and set to multio metadata
-    CALL CODES_GET( KGRIB_HANDLE, TRIM(KEY), VALUE )
-    CERR = MIOMD%SET_STRING( KEY, VALUE )
+    CALL CODES_GET( KGRIB_HANDLE, TRIM(KEY), VALUE, STATUS=KRET )
+    PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 52 )
+    CERR = MIOMD%SET( KEY, VALUE )
     PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 1 )
 
   END DO MarsKeywords
 
   ! Configure grib edition
-  CALL CODES_GET( KGRIB_HANDLE, "edition", VALUE )
-  CERR = MIOMD%SET_STRING( "gribEdition", VALUE )
+  CALL CODES_GET( KGRIB_HANDLE, "edition", VALUE, STATUS=KRET )
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 53 )
+  CERR = MIOMD%SET( "gribEdition", VALUE )
   PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 2 )
 
 
   IF (VALUE.EQ. "2") THEN
-    CALL CODES_GET( KGRIB_HANDLE, "dataDate", DATADATE )
-    CERR = MIOMD%SET_LONG( "startDate", DATADATE )
+    CALL CODES_GET( KGRIB_HANDLE, "dataDate", DATADATE, STATUS=KRET )
+    PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 54 )
+    CERR = MIOMD%SET( "startDate", DATADATE )
     PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 3 )
 
-    CALL CODES_GET( KGRIB_HANDLE, "dataTime", DATATIME )
-    CERR = MIOMD%SET_LONG( "startTime", DATATIME )
+    CALL CODES_GET( KGRIB_HANDLE, "dataTime", DATATIME, STATUS=KRET )
+    PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 55 )
+    CERR = MIOMD%SET( "startTime", DATATIME )
     PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 4 )
 
-    CALL CODES_GET( KGRIB_HANDLE, "stepUnits", STEPUNITS )
-    CERR = MIOMD%SET_LONG( "stepUnits", STEPUNITS )
+    CALL CODES_GET( KGRIB_HANDLE, "stepUnits", STEPUNITS, STATUS=KRET )
+    PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 56 )
+    CERR = MIOMD%SET( "stepUnits", STEPUNITS )
     PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 5 )
 
-    CALL CODES_GET( KGRIB_HANDLE, "startStep", STARTSTEP )
-    CERR = MIOMD%SET_LONG("startStep",STARTSTEP)
+    CALL CODES_GET( KGRIB_HANDLE, "startStep", STARTSTEP, STATUS=KRET )
+    PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 57 )
+    CERR = MIOMD%SET("startStep",STARTSTEP)
     PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 6 )
 
-    CALL CODES_GET( KGRIB_HANDLE, "endStep", ENDSTEP )
-    CERR = MIOMD%SET_LONG( "endStep", ENDSTEP )
+    CALL CODES_GET( KGRIB_HANDLE, "endStep", ENDSTEP, STATUS=KRET )
+    PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 58 )
+    CERR = MIOMD%SET( "endStep", ENDSTEP )
     PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 7 )
 
-    CALL CODES_IS_DEFINED( KGRIB_HANDLE, "timeIncrement", IHAS )
+    CALL CODES_IS_DEFINED( KGRIB_HANDLE, "timeIncrement", IHAS, STATUS=KRET )
+    PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 59 )
     IF (IHAS.NE. 0) THEN
 
-      CALL CODES_GET( KGRIB_HANDLE, "indicatorOfUnitForTimeIncrement", TIMEINCREMENTUNIT )
-      CERR = MIOMD%SET_LONG( "indicatorOfUnitForTimeIncrement", TIMEINCREMENTUNIT )
+      CALL CODES_GET( KGRIB_HANDLE, "indicatorOfUnitForTimeIncrement", TIMEINCREMENTUNIT, STATUS=KRET )
+      PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 60 )
+      CERR = MIOMD%SET( "indicatorOfUnitForTimeIncrement", TIMEINCREMENTUNIT )
       PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 8 )
 
-      CALL CODES_GET( KGRIB_HANDLE, "timeIncrement", TIMEINCREMENT )
-      CERR = MIOMD%SET_LONG( "timeIncrement", TIMEINCREMENT )
+      CALL CODES_GET( KGRIB_HANDLE, "timeIncrement", TIMEINCREMENT, STATUS=KRET )
+      PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 61 )
+      CERR = MIOMD%SET( "timeIncrement", TIMEINCREMENT )
       PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 9 )
 
     ENDIF
   ELSE
-    CALL CODES_GET( KGRIB_HANDLE, "stepUnits", STEPUNITS )
-    CERR = MIOMD%SET_LONG( "stepUnits", STEPUNITS )
+    CALL CODES_GET( KGRIB_HANDLE, "stepUnits", STEPUNITS, STATUS=KRET )
+    PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 62 )
+    CERR = MIOMD%SET( "stepUnits", STEPUNITS )
     PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 10 )
 
-    CALL CODES_GET( KGRIB_HANDLE, "startStep", STARTSTEP )
-    CERR = MIOMD%SET_LONG( "startStep", STARTSTEP )
+    CALL CODES_GET( KGRIB_HANDLE, "startStep", STARTSTEP, STATUS=KRET )
+    PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 63 )
+    CERR = MIOMD%SET( "startStep", STARTSTEP )
     PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 11 )
 
-    CALL CODES_GET( KGRIB_HANDLE, "endStep", ENDSTEP )
-    CERR = MIOMD%SET_LONG( "endStep", ENDSTEP )
+    CALL CODES_GET( KGRIB_HANDLE, "endStep", ENDSTEP, STATUS=KRET )
+    PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 64 )
+    CERR = MIOMD%SET( "endStep", ENDSTEP )
     PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 12 )
   ENDIF
 
-  CALL CODES_GET( KGRIB_HANDLE, "paramId", VALUE )
-  CERR = MIOMD%SET_STRING( "paramId", VALUE )
+  CALL CODES_GET( KGRIB_HANDLE, "paramId", VALUE, STATUS=KRET )
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 65 )
+  CERR = MIOMD%SET( "paramId", VALUE )
   PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 13 )
 
-  CALL CODES_GET( KGRIB_HANDLE, "gridType", VALUE )
-  CERR = MIOMD%SET_STRING( "gridType", VALUE )
+  CALL CODES_GET( KGRIB_HANDLE, "gridType", VALUE, STATUS=KRET )
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 66 )
+  CERR = MIOMD%SET( "gridType", VALUE )
   PP_DEBUG_DEVELOP_COND_THROW( CERR.NE.MULTIO_SUCCESS, 14 )
 
   IF ( VALUE.EQ. "sh") THEN
@@ -2863,7 +2987,8 @@ IMPLICIT NONE
   ENDIF
 
   ! Delete the iterator
-  CALL CODES_KEYS_ITERATOR_DELETE( KITER )
+  CALL CODES_KEYS_ITERATOR_DELETE( KITER, STATUS=KRET )
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.CODES_SUCCESS, 67 )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -2879,6 +3004,7 @@ PP_ERROR_HANDLER
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
     CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
+    CHARACTER(LEN=4096) :: GRIB_ERROR
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
@@ -2939,6 +3065,81 @@ PP_ERROR_HANDLER
       MIO_ERR_STR = MULTIO_ERROR_STRING(CERR)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to set MultIO metadata (gridType): '//TRIM(ADJUSTL(MIO_ERR_STR)) )
       IF ( ALLOCATED( MIO_ERR_STR ) ) DEALLOCATE( MIO_ERR_STR )
+
+
+    CASE (50)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to create new grib iterator ', KRET, GRIB_ERROR )
+    CASE (51)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get key from iterator', KRET, GRIB_ERROR )
+    CASE (52)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get key value from hanlde: "'//TRIM(KEY)//'"', KRET, GRIB_ERROR )
+    CASE (53)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "edition" from handle', KRET, GRIB_ERROR )
+    CASE (54)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "dataDate" from handle ', KRET, GRIB_ERROR )
+    CASE (55)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "dataTime" from handle ', KRET, GRIB_ERROR )
+    CASE (56)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "stepUnits" from handle ', KRET, GRIB_ERROR )
+    CASE (57)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "startStep" from handle ', KRET, GRIB_ERROR )
+    CASE (58)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "endStep" from handle ', KRET, GRIB_ERROR )
+    CASE (59)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "timeIncrement" from handle ', KRET, GRIB_ERROR )
+    CASE (60)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "indicatorOfUnitForTimeIncrement" from handle ', KRET, GRIB_ERROR )
+    CASE (61)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "timeIncrement" from handle ', KRET, GRIB_ERROR )
+    CASE (62)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "stepUnits" from handle ', KRET, GRIB_ERROR )
+    CASE (63)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "startStep" from handle ', KRET, GRIB_ERROR )
+    CASE (64)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "endStep" from handle ', KRET, GRIB_ERROR )
+    CASE (65)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "paramId" from handle ', KRET, GRIB_ERROR )
+    CASE (66)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to get grib "gridType" from handle ', KRET, GRIB_ERROR )
+    CASE (67)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL CODES_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to destroy grib iterator ', KRET, GRIB_ERROR )
+
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
     END SELECT

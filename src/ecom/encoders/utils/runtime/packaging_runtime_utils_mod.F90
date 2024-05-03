@@ -256,12 +256,7 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( MSG%IPREF_.LE.0, 1 )
   PP_DEBUG_CRITICAL_COND_THROW( MSG%IPREF_.GT.7, 2 )
 
-  IBITS = GRIB_INFO%BITS_PER_VALUE_( MSG%IPREF_ )
-
-  PP_DEBUG_CRITICAL_COND_THROW( IBITS.LT.1,  3 )
-  PP_DEBUG_CRITICAL_COND_THROW( IBITS.GT.64, 4 )
-
-  PP_METADATA_SET( METADATA,  'numberOfBitsContainingEachPackedValue', IBITS )
+  PP_METADATA_SET( METADATA,  'numberOfBitsContainingEachPackedValue', GRIB_INFO%BITS_PER_VALUE )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -285,10 +280,6 @@ PP_ERROR_HANDLER
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'IPrefix lower than 1' )
     CASE (2)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'IPrefix greater than 7' )
-    CASE (3)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'BitsPerValue lower than 1' )
-    CASE (4)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'BitsPerValue greater than 64' )
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
     END SELECT
@@ -334,9 +325,6 @@ IMPLICIT NONE
   TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
   CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
 
-  ! Local variables
-  INTEGER(KIND=JPIB_K) :: IBITS
-
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
 
@@ -350,12 +338,7 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( MSG%IPREF_.LE.0, 1 )
   PP_DEBUG_CRITICAL_COND_THROW( MSG%IPREF_.GT.7, 2 )
 
-  IBITS = GRIB_INFO%BITS_PER_VALUE_( MSG%IPREF_ )
-
-  PP_DEBUG_CRITICAL_COND_THROW( IBITS.LT.1,  3 )
-  PP_DEBUG_CRITICAL_COND_THROW( IBITS.GT.64, 4 )
-
-  PP_METADATA_SET( METADATA,  'numberOfBitsContainingEachPackedValue', IBITS )
+  PP_METADATA_SET( METADATA,  'numberOfBitsContainingEachPackedValue', GRIB_INFO%BITS_PER_VALUE )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -379,10 +362,6 @@ PP_ERROR_HANDLER
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'IPrefix lower than 1' )
     CASE (2)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'IPrefix greater than 7' )
-    CASE (3)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'BitsPerValue lower than 1' )
-    CASE (4)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'BitsPerValue greater than 64' )
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
     END SELECT
@@ -467,7 +446,7 @@ IMPLICIT NONE
   ELSE
     ISTRUNC = MIN( 10 ,MODEL_PARAMS%GEO_%ISMAX )
   ENDIF
-  PP_METADATA_SET( METADATA,  'numberOfBitsContainingEachPackedValue', IBITSSH )
+  PP_METADATA_SET( METADATA,  'numberOfBitsContainingEachPackedValue', GRIB_INFO%BITS_PER_VALUE )
 
 
   PP_LOG_DEVELOP_STR( 'GRIB2: Spherical harmonics Packaging 0' )

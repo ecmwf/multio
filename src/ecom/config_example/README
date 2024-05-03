@@ -10,4 +10,4 @@ ln -s <sourcedir>/multio/ifs-output-manager/config_example/output-manager-config
 ln -s <builddir>/bin/standalone-output-manager .
 
 
-./standalone-output-manager -t 'NOOP' -y "./output-manager-config.yaml" -i "./reproducer" -n 8 -v -d
+./ecom-feed -t 'NOOP' -y "./output-manager-config.yaml" -i "./reproducer" -n 8 -v -d

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
+#include <unordered_set>
 
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/log/Statistics.h"
@@ -56,7 +57,19 @@ MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfigur
 
 
     LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << conf << std::endl;
+
     plans_ = action::Plan::makePlans(conf.getSubConfigurations("plans"), multioConfig(), activeSelectors_);
+
+    // TODO: Put the whole plan list in a separate class and make this logic reusable
+    std::unordered_set<std::string> planNames;
+    for (const auto& plan : plans_) {
+        if (planNames.find(plan->name()) != std::cend(planNames)) {
+            std::ostringstream oss;
+            oss << "Plan names must be unique. The plan with name  \"" << plan->name() << "\" already exists";
+            throw eckit::UserError(oss.str());
+        }
+        planNames.insert(plan->name());
+    }
 
     if (multioConfig().parsedConfig().has("active-matchers")) {
         for (const auto& m : multioConfig().parsedConfig().getSubConfigurations("active-matchers")) {
@@ -118,8 +131,18 @@ void MultioClient::dispatch(message::Metadata metadata, eckit::Buffer&& payload,
 
 void MultioClient::dispatch(message::Message msg) {
     withFailureHandling([&]() {
-        for (const auto& plan : plans_) {
-            plan->process(msg);
+        if (msg.tag() == message::Message::Tag::Flush) {
+            for (const auto& plan : plans_) {
+                message::Metadata md = msg.metadata();
+                md.set("clientPlanName", plan->name());
+
+                plan->process(msg.modifyMetadata(std::move(md)));
+            }
+        }
+        else {
+            for (const auto& plan : plans_) {
+                plan->process(msg);
+            }
         }
     });
 }

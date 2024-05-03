@@ -28,6 +28,9 @@ IMPLICIT NONE
 ! Default visibility
 PRIVATE
 
+!> Output manager name
+CHARACTER(LEN=*), PARAMETER :: NOOP_OMNAME='no-io-info-log'
+
 !>
 !> @brief Definition of the `NOOP_OUTPUT_MANAGER_T` derived type.
 !>
@@ -46,11 +49,8 @@ TYPE, EXTENDS(OUTPUT_MANAGER_BASE_A) :: NOOP_OUTPUT_MANAGER_T
   !> Model parameters
   TYPE(MODEL_PAR_T), POINTER :: MODEL_PAR_ => NULL()
 
-  !> Test grib info module and service (mainly to be used with valgrind to check for memory leacks)
-  LOGICAL :: TEST_GRIB_INFO_ = .FALSE.
-
-  !> Test track time functionlaity (mainly to be used with valgrind to check for memory leacks)
-  LOGICAL :: TEST_TRACK_TIME_ = .FALSE.
+  !> Test grib info module and service (mainly to be used with valgrind to check for memory leaks)
+  LOGICAL :: TEST_ENCODING_INFO_ = .FALSE.
 
   !> Test track encoders, to be used for:
   LOGICAL :: VERBOSE_ = .FALSE.
@@ -91,6 +91,7 @@ CONTAINS
 
   ! Whitelist of public symbols
   PUBLIC :: NOOP_OUTPUT_MANAGER_T
+  PUBLIC :: NOOP_OMNAME
 
 CONTAINS
 
@@ -128,20 +129,13 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
 
   ! Read the options from YAML
-  IF ( CFG%GET( 'noop-output-manager', NOOP_CFG ) ) THEN
-
-    ! Read from YAML file the flag to enable grib info testing
-    IF ( NOOP_CFG%GET( 'test-grib-info', LTMP  ) ) THEN
-      THIS%TEST_GRIB_INFO_ = LTMP
-    ELSE
-      THIS%TEST_GRIB_INFO_ = .FALSE.
-    ENDIF
+  IF ( CFG%GET( NOOP_OMNAME, NOOP_CFG ) ) THEN
 
     ! Read from YAML file the flag to enable track time testing
-    IF ( NOOP_CFG%GET( 'test-track-time', LTMP  ) ) THEN
-      THIS%TEST_TRACK_TIME_ = LTMP
+    IF ( NOOP_CFG%GET( 'encoding-info', LTMP  ) ) THEN
+      THIS%TEST_ENCODING_INFO_ = LTMP
     ELSE
-      THIS%TEST_TRACK_TIME_ = .FALSE.
+      THIS%TEST_ENCODING_INFO_ = .FALSE.
     ENDIF
 
     ! Read from YAML file the flag to enable verbose execution
@@ -160,9 +154,8 @@ IMPLICIT NONE
     CALL NOOP_CFG%FINAL()
 
     ! Default value for the options
-    THIS%TEST_GRIB_INFO_  = .FALSE.
-    THIS%TEST_TRACK_TIME_ = .FALSE.
-    THIS%VERBOSE_         = .FALSE.
+    THIS%TEST_ENCODING_INFO_ = .FALSE.
+    THIS%VERBOSE_            = .FALSE.
 
   ENDIF
 
@@ -229,14 +222,13 @@ SUBROUTINE NOOP_SETUP( THIS, YAMLFNAME, PROCESSOR_TOPO, MODEL_PARAMS )
   USE :: OM_CORE_MOD,          ONLY: MODEL_PAR_T
   USE :: OM_CORE_MOD,          ONLY: OM_INIT_DEBUG_VARS
   USE :: PAR_UTILS_MOD,        ONLY: PAR_WRITE
-  USE :: TRACK_TIME_MOD,       ONLY: SUTRAK_TIME
-  USE :: GRIB_INFO_MOD,        ONLY: SUGRIB_INFO_YAML
   USE :: PAR_UTILS_MOD,        ONLY: PAR_PRINT
   USE :: OM_GENERAL_UTILS_MOD, ONLY: LOG_VERSION
   USE :: OM_GENERAL_UTILS_MOD, ONLY: LOG_CURR_TIME
   USE :: OM_GENERAL_UTILS_MOD, ONLY: LOG_SYSINFO
   USE :: OM_GENERAL_UTILS_MOD, ONLY: OM_GETPID
   USE :: OM_GENERAL_UTILS_MOD, ONLY: OM_GET_HOSTNAME
+  USE :: ENCODING_INFO_MOD,    ONLY: SUENCODING_INFO
 
   ! Symbols imported from other libraries
   USE :: FCKIT_PATHNAME_MODULE,      ONLY: FCKIT_PATHNAME
@@ -300,17 +292,8 @@ IMPLICIT NONE
   ! Read the specific configuration for "DUMP" output manager
   CALL THIS%READ_CFG_FROM_YAML( CFG )
 
-  ! Initialise grib info
-  IF ( THIS%TEST_GRIB_INFO_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Initialise grib info functionalities...' )
-    CALL SUGRIB_INFO_YAML( CFG, PROCESSOR_TOPO, MODEL_PARAMS )
-  ENDIF
-
-  ! Initialise time tracker
-  IF ( THIS%TEST_TRACK_TIME_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Initialise track time functionalities...' )
-    CALL SUTRAK_TIME( CFG, MODEL_PARAMS )
-  ENDIF
+  ! Initialize enconding informations
+  CALL SUENCODING_INFO( CFG, PROCESSOR_TOPO, MODEL_PARAMS, THIS%VERBOSE_ )
 
   ! Destroy the fckit configuration object
   CALL CFG%FINAL()
@@ -320,7 +303,7 @@ IMPLICIT NONE
   ! Logging
   IF ( THIS%VERBOSE_ ) THEN
     THIS%LOG_FNAME_ = REPEAT(' ',LEN(THIS%LOG_FNAME_))
-    WRITE(THIS%LOG_FNAME_,'(A,I8.8,A)', IOSTAT=STAT) 'noop_output_manager_', PROCESSOR_TOPO%MYPROC_IO, '.log'
+    WRITE(THIS%LOG_FNAME_,'(A,I8.8,A)', IOSTAT=STAT) NOOP_OMNAME//'-output-manager-', PROCESSOR_TOPO%MYPROC_IO, '.log'
     PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, 2 )
     OPEN( FILE=TRIM(THIS%LOG_FNAME_), NEWUNIT=THIS%LOG_UNIT_, ACTION='WRITE', STATUS='REPLACE', IOSTAT=STAT )
     PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, 3 )
@@ -389,16 +372,16 @@ SUBROUTINE NOOP_WRITE_ATM_DP( THIS, YDMSG, VALUES_DP )
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,          ONLY: JPIB_K
   USE :: OM_CORE_MOD,          ONLY: JPRD_K
+  USE :: OM_CORE_MOD,          ONLY: GRIB_INFO_T
   USE :: OM_CORE_MOD,          ONLY: OM_ATM_MSG_T
+  USE :: OM_CORE_MOD,          ONLY: TIME_HISTORY_T
   USE :: OM_CORE_MOD,          ONLY: OM_SET_CURRENT_MESSAGE_ATM
-  USE :: GRIB_INFO_DATA_MOD,   ONLY: GRIB_INFO_T
-  USE :: GRIB_INFO_MOD,        ONLY: GRIB_INFO_GET
-  USE :: GRIB_INFO_MOD,        ONLY: GRIB_INFO_PRINT
-  USE :: TRACK_TIME_MOD,       ONLY: TIME_HISTORY_T
-  USE :: TRACK_TIME_MOD,       ONLY: TRACK_TIME_ACCESS_OR_CREATE
-  USE :: TRACK_TIME_MOD,       ONLY: TRACK_TIME_PRINT
+  USE :: OM_CORE_MOD,          ONLY: OM_RESET_ENCODING_INFO
   USE :: MSG_UTILS_MOD,        ONLY: MSG_PRINT_ATM
   USE :: OM_GENERAL_UTILS_MOD, ONLY: LOG_CURR_TIME
+  USE :: ENCODING_INFO_MOD,    ONLY: ENCODING_INFO_ACCESS_OR_CREATE
+  USE :: ENCODING_INFO_MOD,    ONLY: GRIB_INFO_PRINT
+  USE :: ENCODING_INFO_MOD,    ONLY: TRACK_TIME_PRINT
 
   ! Symbols imported by the preprocessor for logging purposes
   PP_LOG_USE_VARS
@@ -441,29 +424,22 @@ IMPLICIT NONE
     CALL MSG_PRINT_ATM( YDMSG, THIS%LOG_UNIT_ )
   ENDIF
 
-  ! Collect grib info of the curent field
-  IF ( THIS%TEST_GRIB_INFO_ ) THEN
+  ! Get encoding info
+  IF ( THIS%TEST_ENCODING_INFO_ ) THEN
     PP_LOG_DEVELOP_STR( 'Collect grib info of the current field' )
-    CALL GRIB_INFO_GET( YDMSG%PARAM_ID_, GRIB_INFO )
+    CALL ENCODING_INFO_ACCESS_OR_CREATE( THIS%MODEL_PAR_, YDMSG%PARAM_ID_, YDMSG%IPREF_, &
+&                                        YDMSG%IREPRES_,  YDMSG%IUID_, YDMSG%ISTEP_, &
+&                                        GRIB_INFO, TIME_HIST )
+    IF ( THIS%VERBOSE_ ) THEN
+      PP_LOG_DEVELOP_STR( 'Log the grib informations' )
+      CALL GRIB_INFO_PRINT( GRIB_INFO, THIS%LOG_UNIT_ )
+      PP_LOG_DEVELOP_STR( 'Log the postprocessing history of the field' )
+      CALL TRACK_TIME_PRINT( TIME_HIST, THIS%LOG_UNIT_ )
+    ENDIF
   ENDIF
 
-  ! If needed log grib info
-  IF ( THIS%VERBOSE_ .AND. THIS%TEST_GRIB_INFO_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Log the grib informations' )
-    CALL GRIB_INFO_PRINT( GRIB_INFO, THIS%LOG_UNIT_ )
-  ENDIF
-
-  ! Get the last postprocessing step of the current field and update the history
-  IF ( THIS%TEST_TRACK_TIME_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Get the last postprocessing step of the current field and update the history' )
-    CALL TRACK_TIME_ACCESS_OR_CREATE( YDMSG%PARAM_ID_, YDMSG%IUID_, YDMSG%ISTEP_, TIME_HIST )
-  ENDIF
-
-  ! If needed log optput history of the field
-  IF ( THIS%VERBOSE_ .AND. THIS%TEST_TRACK_TIME_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Log the postprocessing history of the field' )
-    CALL TRACK_TIME_PRINT( TIME_HIST, THIS%LOG_UNIT_ )
-  ENDIF
+  ! Reset encdoing info
+  CALL OM_RESET_ENCODING_INFO()
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -519,16 +495,16 @@ SUBROUTINE NOOP_WRITE_ATM_SP( THIS, YDMSG, VALUES_SP )
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,          ONLY: JPIB_K
   USE :: OM_CORE_MOD,          ONLY: JPRM_K
+  USE :: OM_CORE_MOD,          ONLY: GRIB_INFO_T
   USE :: OM_CORE_MOD,          ONLY: OM_ATM_MSG_T
+  USE :: OM_CORE_MOD,          ONLY: TIME_HISTORY_T
   USE :: OM_CORE_MOD,          ONLY: OM_SET_CURRENT_MESSAGE_ATM
-  USE :: GRIB_INFO_DATA_MOD,   ONLY: GRIB_INFO_T
-  USE :: GRIB_INFO_MOD,        ONLY: GRIB_INFO_GET
-  USE :: GRIB_INFO_MOD,        ONLY: GRIB_INFO_PRINT
-  USE :: TRACK_TIME_MOD,       ONLY: TIME_HISTORY_T
-  USE :: TRACK_TIME_MOD,       ONLY: TRACK_TIME_ACCESS_OR_CREATE
-  USE :: TRACK_TIME_MOD,       ONLY: TRACK_TIME_PRINT
+  USE :: OM_CORE_MOD,          ONLY: OM_RESET_ENCODING_INFO
   USE :: MSG_UTILS_MOD,        ONLY: MSG_PRINT_ATM
   USE :: OM_GENERAL_UTILS_MOD, ONLY: LOG_CURR_TIME
+  USE :: ENCODING_INFO_MOD,    ONLY: ENCODING_INFO_ACCESS_OR_CREATE
+  USE :: ENCODING_INFO_MOD,    ONLY: GRIB_INFO_PRINT
+  USE :: ENCODING_INFO_MOD,    ONLY: TRACK_TIME_PRINT
 
   ! Symbols imported by the preprocessor for logging purposes
   PP_LOG_USE_VARS
@@ -571,29 +547,22 @@ IMPLICIT NONE
     CALL MSG_PRINT_ATM( YDMSG, THIS%LOG_UNIT_ )
   ENDIF
 
-  ! Collect grib info of the curent field
-  IF ( THIS%TEST_GRIB_INFO_ ) THEN
+  ! Get encoding info
+  IF ( THIS%TEST_ENCODING_INFO_ ) THEN
     PP_LOG_DEVELOP_STR( 'Collect grib info of the current field' )
-    CALL GRIB_INFO_GET( YDMSG%PARAM_ID_, GRIB_INFO )
+    CALL ENCODING_INFO_ACCESS_OR_CREATE( THIS%MODEL_PAR_, YDMSG%PARAM_ID_, YDMSG%IPREF_, &
+&                                        YDMSG%IREPRES_,  YDMSG%IUID_, YDMSG%ISTEP_, &
+&                                        GRIB_INFO, TIME_HIST )
+    IF ( THIS%VERBOSE_ ) THEN
+      PP_LOG_DEVELOP_STR( 'Log the grib informations' )
+      CALL GRIB_INFO_PRINT( GRIB_INFO, THIS%LOG_UNIT_ )
+      PP_LOG_DEVELOP_STR( 'Log the postprocessing history of the field' )
+      CALL TRACK_TIME_PRINT( TIME_HIST, THIS%LOG_UNIT_ )
+    ENDIF
   ENDIF
 
-  ! If needed log grib info
-  IF ( THIS%VERBOSE_ .AND. THIS%TEST_GRIB_INFO_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Log the grib informations' )
-    CALL GRIB_INFO_PRINT( GRIB_INFO, THIS%LOG_UNIT_ )
-  ENDIF
-
-  ! Get the last postprocessing step of the current field and update the history
-  IF ( THIS%TEST_TRACK_TIME_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Get the last postprocessing step of the current field and update the history' )
-    CALL TRACK_TIME_ACCESS_OR_CREATE( YDMSG%PARAM_ID_, YDMSG%IUID_, YDMSG%ISTEP_, TIME_HIST )
-  ENDIF
-
-  ! If needed log optput history of the field
-  IF ( THIS%VERBOSE_ .AND. THIS%TEST_TRACK_TIME_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Log the postprocessing history of the field' )
-    CALL TRACK_TIME_PRINT( TIME_HIST, THIS%LOG_UNIT_ )
-  ENDIF
+  ! Reset encdoing info
+  CALL OM_RESET_ENCODING_INFO()
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -649,16 +618,16 @@ SUBROUTINE NOOP_WRITE_WAM_DP( THIS, YDMSG, VALUES_DP )
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,          ONLY: JPIB_K
   USE :: OM_CORE_MOD,          ONLY: JPRD_K
+  USE :: OM_CORE_MOD,          ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,          ONLY: TIME_HISTORY_T
   USE :: OM_CORE_MOD,          ONLY: OM_WAM_MSG_T
   USE :: OM_CORE_MOD,          ONLY: OM_SET_CURRENT_MESSAGE_WAM
-  USE :: GRIB_INFO_DATA_MOD,   ONLY: GRIB_INFO_T
-  USE :: GRIB_INFO_MOD,        ONLY: GRIB_INFO_GET
-  USE :: GRIB_INFO_MOD,        ONLY: GRIB_INFO_PRINT
-  USE :: TRACK_TIME_MOD,       ONLY: TIME_HISTORY_T
-  USE :: TRACK_TIME_MOD,       ONLY: TRACK_TIME_ACCESS_OR_CREATE
-  USE :: TRACK_TIME_MOD,       ONLY: TRACK_TIME_PRINT
+  USE :: OM_CORE_MOD,          ONLY: OM_RESET_ENCODING_INFO
   USE :: MSG_UTILS_MOD,        ONLY: MSG_PRINT_WAM
   USE :: OM_GENERAL_UTILS_MOD, ONLY: LOG_CURR_TIME
+  USE :: ENCODING_INFO_MOD,    ONLY: ENCODING_INFO_ACCESS_OR_CREATE
+  USE :: ENCODING_INFO_MOD,    ONLY: GRIB_INFO_PRINT
+  USE :: ENCODING_INFO_MOD,    ONLY: TRACK_TIME_PRINT
 
   ! Symbols imported by the preprocessor for logging purposes
   PP_LOG_USE_VARS
@@ -702,28 +671,21 @@ IMPLICIT NONE
   ENDIF
 
   ! Collect grib info of the curent field
-  IF ( THIS%TEST_GRIB_INFO_ ) THEN
+  IF ( THIS%TEST_ENCODING_INFO_ ) THEN
     PP_LOG_DEVELOP_STR( 'Collect grib info of the current field' )
-    CALL GRIB_INFO_GET( YDMSG%PARAM_ID_, GRIB_INFO )
+    CALL ENCODING_INFO_ACCESS_OR_CREATE( THIS%MODEL_PAR_, YDMSG%PARAM_ID_, YDMSG%IPREF_, &
+&                                        YDMSG%IREPRES_,  YDMSG%IUID_, YDMSG%ISTEP_, &
+&                                        GRIB_INFO, TIME_HIST )
+    IF ( THIS%VERBOSE_ ) THEN
+      PP_LOG_DEVELOP_STR( 'Log the grib informations' )
+      CALL GRIB_INFO_PRINT( GRIB_INFO, THIS%LOG_UNIT_ )
+      PP_LOG_DEVELOP_STR( 'Log the postprocessing history of the field' )
+      CALL TRACK_TIME_PRINT( TIME_HIST, THIS%LOG_UNIT_ )
+    ENDIF
   ENDIF
 
-  ! If needed log grib info
-  IF ( THIS%VERBOSE_ .AND. THIS%TEST_GRIB_INFO_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Log the grib informations' )
-    CALL GRIB_INFO_PRINT( GRIB_INFO, THIS%LOG_UNIT_ )
-  ENDIF
-
-  ! Get the last postprocessing step of the current field and update the history
-  IF ( THIS%TEST_TRACK_TIME_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Get the last postprocessing step of the current field and update the history' )
-    CALL TRACK_TIME_ACCESS_OR_CREATE( YDMSG%PARAM_ID_, YDMSG%IUID_, YDMSG%ISTEP_, TIME_HIST )
-  ENDIF
-
-  ! If needed log optput history of the field
-  IF ( THIS%VERBOSE_ .AND. THIS%TEST_TRACK_TIME_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Log the postprocessing history of the field' )
-    CALL TRACK_TIME_PRINT( TIME_HIST, THIS%LOG_UNIT_ )
-  ENDIF
+  ! Reset encdoing info
+  CALL OM_RESET_ENCODING_INFO()
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -783,16 +745,16 @@ SUBROUTINE NOOP_WRITE_WAM_SP( THIS, YDMSG, VALUES_SP )
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,          ONLY: JPIB_K
   USE :: OM_CORE_MOD,          ONLY: JPRM_K
+  USE :: OM_CORE_MOD,          ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,          ONLY: TIME_HISTORY_T
   USE :: OM_CORE_MOD,          ONLY: OM_WAM_MSG_T
   USE :: OM_CORE_MOD,          ONLY: OM_SET_CURRENT_MESSAGE_WAM
-  USE :: GRIB_INFO_DATA_MOD,   ONLY: GRIB_INFO_T
-  USE :: GRIB_INFO_MOD,        ONLY: GRIB_INFO_GET
-  USE :: GRIB_INFO_MOD,        ONLY: GRIB_INFO_PRINT
-  USE :: TRACK_TIME_MOD,       ONLY: TIME_HISTORY_T
-  USE :: TRACK_TIME_MOD,       ONLY: TRACK_TIME_ACCESS_OR_CREATE
-  USE :: TRACK_TIME_MOD,       ONLY: TRACK_TIME_PRINT
+  USE :: OM_CORE_MOD,          ONLY: OM_RESET_ENCODING_INFO
   USE :: MSG_UTILS_MOD,        ONLY: MSG_PRINT_WAM
   USE :: OM_GENERAL_UTILS_MOD, ONLY: LOG_CURR_TIME
+  USE :: ENCODING_INFO_MOD,    ONLY: ENCODING_INFO_ACCESS_OR_CREATE
+  USE :: ENCODING_INFO_MOD,    ONLY: GRIB_INFO_PRINT
+  USE :: ENCODING_INFO_MOD,    ONLY: TRACK_TIME_PRINT
 
   ! Symbols imported by the preprocessor for logging purposes
   PP_LOG_USE_VARS
@@ -836,28 +798,21 @@ IMPLICIT NONE
   ENDIF
 
   ! Collect grib info of the curent field
-  IF ( THIS%TEST_GRIB_INFO_ ) THEN
+  IF ( THIS%TEST_ENCODING_INFO_ ) THEN
     PP_LOG_DEVELOP_STR( 'Collect grib info of the current field' )
-    CALL GRIB_INFO_GET( YDMSG%PARAM_ID_, GRIB_INFO )
+    CALL ENCODING_INFO_ACCESS_OR_CREATE( THIS%MODEL_PAR_, YDMSG%PARAM_ID_, YDMSG%IPREF_, &
+&                                        YDMSG%IREPRES_,  YDMSG%IUID_, YDMSG%ISTEP_, &
+&                                        GRIB_INFO, TIME_HIST )
+    IF ( THIS%VERBOSE_ ) THEN
+      PP_LOG_DEVELOP_STR( 'Log the grib informations' )
+      CALL GRIB_INFO_PRINT( GRIB_INFO, THIS%LOG_UNIT_ )
+      PP_LOG_DEVELOP_STR( 'Log the postprocessing history of the field' )
+      CALL TRACK_TIME_PRINT( TIME_HIST, THIS%LOG_UNIT_ )
+    ENDIF
   ENDIF
 
-  ! If needed log grib info
-  IF ( THIS%VERBOSE_ .AND. THIS%TEST_GRIB_INFO_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Log the grib informations' )
-    CALL GRIB_INFO_PRINT( GRIB_INFO, THIS%LOG_UNIT_ )
-  ENDIF
-
-  ! Get the last postprocessing step of the current field and update the history
-  IF ( THIS%TEST_TRACK_TIME_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Get the last postprocessing step of the current field and update the history' )
-    CALL TRACK_TIME_ACCESS_OR_CREATE( YDMSG%PARAM_ID_, YDMSG%IUID_, YDMSG%ISTEP_, TIME_HIST )
-  ENDIF
-
-  ! If needed log optput history of the field
-  IF ( THIS%VERBOSE_ .AND. THIS%TEST_TRACK_TIME_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Log the postprocessing history of the field' )
-    CALL TRACK_TIME_PRINT( TIME_HIST, THIS%LOG_UNIT_ )
-  ENDIF
+  ! Reset encdoing info
+  CALL OM_RESET_ENCODING_INFO()
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1080,8 +1035,7 @@ SUBROUTINE NOOP_FINALISE( THIS )
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,              ONLY: JPIB_K
-  USE :: GRIB_INFO_MOD,            ONLY: GRIB_INFO_FREE
-  USE :: TRACK_TIME_MOD,           ONLY: TRACK_TIME_FREE
+  USE :: ENCODING_INFO_MOD,        ONLY: ENCODING_INFO_FREE
   USE :: GRIB_ENCODER_MANAGER_MOD, ONLY: DESTROY_ENCODERS
   USE :: OM_GENERAL_UTILS_MOD,     ONLY: LOG_CURR_TIME
 
@@ -1121,14 +1075,10 @@ IMPLICIT NONE
     PP_DEBUG_CRITICAL_COND_THROW( STAT.NE.0, 1 )
   ENDIF
 
-  IF ( THIS%TEST_GRIB_INFO_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Free grib info' )
-    CALL GRIB_INFO_FREE()
-  ENDIF
 
-  IF ( THIS%TEST_TRACK_TIME_ ) THEN
-    PP_LOG_DEVELOP_STR( 'Free track time' )
-    CALL TRACK_TIME_FREE()
+  IF ( THIS%TEST_ENCODING_INFO_ ) THEN
+    PP_LOG_DEVELOP_STR( 'Free grib info' )
+    CALL ENCODING_INFO_FREE()
   ENDIF
 
   ! Trace end of procedure (on success)

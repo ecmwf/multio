@@ -90,20 +90,19 @@ jobs:
   notify:
     name: notify
     runs-on: ubuntu-latest
-    # needs:
-    #   - downstream-ci
-    #   - downstream-ci-hpc
-    #   - private-downstream-ci
-    #   - private-downstream-ci-hpc
-    # if: always() && ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
-    if: always()
+    needs:
+      - downstream-ci
+      - downstream-ci-hpc
+      - private-downstream-ci
+      - private-downstream-ci-hpc
+    if: always() && ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
     steps:
       - name: Trigger Teams notification
         uses: ecmwf-actions/notify-teams@v1
         with:
           incoming_webhook: ${{ secrets.MS_TEAMS_INCOMING_WEBHOOK }}
-          # needs_context: ${{ toJSON(needs) }}
+          needs_context: ${{ toJSON(needs) }}
           notify_on: |
             failure
             fixed
-            success
+            # success

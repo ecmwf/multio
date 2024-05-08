@@ -28,10 +28,6 @@ if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )
 endif()
 
-if( NOT eckit_HAVE_MPI )
-  ecbuild_critical( "eckit must be built with MPI support" )
-endif()
-
 ### fdb5 plugin
 
 ecbuild_add_option( FEATURE FDB5
@@ -77,7 +73,9 @@ ecbuild_add_option( FEATURE MULTIO_DUMMY_API
 if( HAVE_FORTRAN )
     ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module)
     ecbuild_find_package( NAME fckit   VERSION 0.10.0   REQUIRED )
-    find_package( MPI COMPONENTS Fortran) # Add explicit mpi for errorcodes -- isn't there a better way?
+    if (eckit_HAVE_MPI)
+        find_package( MPI COMPONENTS Fortran) # Add explicit mpi for errorcodes -- isn't there a better way?
+    endif (eckit_HAVE_MPI)
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/fortran_compile_flags.cmake)
 endif()
 

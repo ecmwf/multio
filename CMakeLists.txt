@@ -22,7 +22,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ecbuild_find_package( NAME eccodes     VERSION  2.31.2   REQUIRED )
 ecbuild_find_package( NAME eckit       VERSION  1.24     REQUIRED )
 ecbuild_find_package( NAME metkit      VERSION  1.10     REQUIRED )
-ecbuild_find_package( NAME atlas       VERSION  0.35   REQUIRED )
+ecbuild_find_package( NAME atlas       VERSION  0.35     REQUIRED )
 
 if( NOT metkit_HAVE_GRIB )
   ecbuild_critical( "metkit must be built with GRIB support" )

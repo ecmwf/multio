@@ -1,5 +1,6 @@
 name: Notify new PR
 
+# Needs the worklow to be located in the branche the PR is merged to
 on:
   pull_request_target:
     types:

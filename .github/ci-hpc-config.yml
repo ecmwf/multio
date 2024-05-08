@@ -2,11 +2,11 @@ dependencies: |
   ecmwf/ecbuild
   ecmwf/eccodes
   ecmwf/eckit
+  ecmwf/metkit
   ecmwf/fckit
   ecmwf/fdb
   ecmwf/atlas
   ecmwf/atlas-orca
-  ecmwf/metkit
   ecmwf/mir
 dependency_branch: develop
 parallelism_factor: 8

@@ -1,12 +1,14 @@
-dependencies: |
-  ecmwf/ecbuild
-  ecmwf/eccodes
-  ecmwf/eckit
-  ecmwf/metkit
-  ecmwf/fckit
-  ecmwf/fdb
-  ecmwf/atlas
-  ecmwf/atlas-orca
-  ecmwf/mir
-dependency_branch: develop
-parallelism_factor: 8
+build:
+  modules:
+    - ninja
+  dependencies:
+    - ecmwf/ecbuild@develop
+    - ecmwf/eccodes@develop
+    - ecmwf/eckit@develop
+    - ecmwf/metkit@develop
+    - ecmwf/fckit@develop
+    - ecmwf/fdb@develop
+    - ecmwf/atlas@develop
+    - ecmwf/atlas-orca@develop
+    - ecmwf/mir@develop
+  parallel: 64

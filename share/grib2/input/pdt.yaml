@@ -485,6 +485,8 @@ groups:
             - indicatorOfUnitForTimeRangeForReferencePeriod
             - lengthOfTimeRangeForReferencePeriod
 
+    generalisedTile:
+
 # Keys interfering with other sections:
 # - discipline...
 # Ocean keys set grib stuff (250003 - 250012)
@@ -3671,6 +3673,18 @@ pdt:
                 - typeOfStatisticalProcessingForTimeRangeForReferencePeriod
                 - indicatorOfUnitForTimeRangeForReferencePeriod
                 - lengthOfTimeRangeForReferencePeriod
+
+
+    113:
+        groups:
+            - parameter
+            - generalisedTile
+            - generatingProcess
+            - forecastTime
+            - horizontal
+            - pointInTime
+        name: Generalised tiles at a horizontal level or horizontal layer at a point in time
+        keys:
 
 
     254:

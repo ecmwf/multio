@@ -12,7 +12,7 @@ program multio_replay_nemo_fapi
     use multio_api
     use fckit_module
     use fckit_mpi_module
-    use mpi_f08 ! for error codes
+    use mpi ! for error codes
     implicit none
 
     integer :: rank, client_count, server_count

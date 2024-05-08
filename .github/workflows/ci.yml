@@ -20,11 +20,6 @@ on:
   pull_request_target:
     types: [labeled]
 
-env:
-  INSTALL_TOOLS: ${{ github.workspace }}/install-tools
-  CTEST_PARALLEL_LEVEL: 1
-  CACHE_SUFFIX: v1
-
 jobs:
   # Run CI including downstream packages on self-hosted runners
   downstream-ci:

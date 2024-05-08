@@ -15,3 +15,5 @@ build:
     - ecmwf/atlas-orca@develop
     - ecmwf/mir@develop
   parallel: 64
+  env:
+    - CTEST_PARALLEL_LEVEL=1

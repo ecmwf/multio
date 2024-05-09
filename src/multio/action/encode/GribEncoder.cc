@@ -619,11 +619,10 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
             // No forecast time is used
             g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
             g.setValue("startStep", 0l);
-            if (gribEdition == "2") {
-                g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
-                g.setValue("forecastTime", 0l);
-            }
 
+            // Is this really needed on top of setting stepUnits?
+            g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
+            g.setValue("forecastTime", 0l);
 
             // Set endStep to please MARS
             g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
@@ -670,7 +669,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
         //     (timeRef == "start" ? 2
         //                         : ((gribEdition == "2") && (significanceOfReferenceTime &&
         //                         (*significanceOfReferenceTime == 2)) ? 255 : 1)));
-        g.setValue("typeOfTimeIncrement", (timeRef == "start" ? 2 : ((gribEdition == "2") ? 255 : 1)));
+        g.setValue("typeOfTimeIncrement", (timeRef == "start" ? 2 : 255));
 
         if (const auto timeIncrement = lookUpLong(md, "timeIncrement"); timeIncrement) {
             if (*timeIncrement != 0) {

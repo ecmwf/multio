@@ -694,6 +694,9 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
                         LookUpLong(md, "timeStep"));  // Nemo is currently sending timeStep
         }
     }
+    else {
+        // Do nothing special for GRIB1 -- Time-range encoding not supported?
+    }
 
 
     auto dateOfAnalysis = firstOf(LookUpLong(md, "date-of-analysis"));

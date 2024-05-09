@@ -541,15 +541,11 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
             // then forecastTime should be set to zero.
             if ((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
                 isReferringToStart = false;
-                if (gribEdition == "2") {
-                    g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
-                    if (isTimeRange) {
-                        g.setValue("indicatorOfUnitForTimeRange", timeUnitCodes(util::TimeUnit::Hour));
-                    }
-                    g.setValue("forecastTime", 0l);
+                g.setValue("indicatorOfUnitOfTimeRange", timeUnitCodes(util::TimeUnit::Hour));
+                if (isTimeRange) {
+                    g.setValue("indicatorOfUnitForTimeRange", timeUnitCodes(util::TimeUnit::Hour));
                 }
-                g.setValue("stepUnits", timeUnitCodes(util::TimeUnit::Hour));
-                g.setValue("startStep", 0l);
+                g.setValue("forecastTime", 0l);
             }
             else {
                 isReferringToStart = true;

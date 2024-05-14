@@ -702,7 +702,8 @@ SUBROUTINE READ_FILTER( CFG, MATCHER, VERBOSE)
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
 
   ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD,   ONLY: JPIB_K
+  USE :: MSG_UTILS_MOD, ONLY: CLEVTYPE2ILEVTYPE
 
   ! Symbols imported from other libraries
   USE :: FCKIT_CONFIGURATION_MODULE, ONLY: FCKIT_CONFIGURATION
@@ -1339,116 +1340,6 @@ END FUNCTION CREPRES2IREPRES
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
-
-
-
-
-#define PP_PROCEDURE_TYPE 'SUBROUTINE'
-#define PP_PROCEDURE_NAME 'CLEVTYPE2ILEVTYPE'
-FUNCTION CLEVTYPE2ILEVTYPE( CLEVTYPE ) RESULT(ILEVTYPE)
-
-  ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: JPIB_K
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HHL_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HPL_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HL_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_ML_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_O2D_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_O3D_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PL_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PT_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PV_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_SFC_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_SOL_E
-
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  ! Dummy arguments
-  CHARACTER(LEN=*), INTENT(IN) :: CLEVTYPE
-
-  ! Function result
-  INTEGER(KIND=JPIB_K) :: ILEVTYPE
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  SELECT CASE ( CLEVTYPE )
-
-  CASE ( 'hhl' )
-    ILEVTYPE = LEVTYPE_HHL_E
-  CASE ( 'hpl' )
-    ILEVTYPE = LEVTYPE_HPL_E
-  CASE ( 'hl' )
-    ILEVTYPE = LEVTYPE_HL_E
-  CASE ( 'ml' )
-    ILEVTYPE = LEVTYPE_ML_E
-  CASE ( 'o2d' )
-    ILEVTYPE = LEVTYPE_O2D_E
-  CASE ( 'o3d' )
-    ILEVTYPE = LEVTYPE_O3D_E
-  CASE ( 'pl' )
-    ILEVTYPE = LEVTYPE_PL_E
-  CASE ( 'pt' )
-    ILEVTYPE = LEVTYPE_PT_E
-  CASE ( 'pv' )
-    ILEVTYPE = LEVTYPE_PV_E
-  CASE ( 'sfc' )
-    ILEVTYPE = LEVTYPE_SFC_E
-  CASE ( 'sol' )
-    ILEVTYPE = LEVTYPE_SOL_E
-  CASE DEFAULT
-    PP_DEBUG_CRITICAL_THROW( 1 )
-  END SELECT
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point
-  RETURN
-
-
-! Error handler
-PP_ERROR_HANDLER
-
-  ErrorHandler: BLOCK
-
-    ! Error handling variables
-    CHARACTER(LEN=:), ALLOCATABLE :: STR
-
-    ! HAndle different errors
-    SELECT CASE(ERRIDX)
-    CASE (1)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown levtype' )
-    CASE DEFAULT
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
-    END SELECT
-
-    ! Trace end of procedure (on error)
-    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-    ! Write the error message and stop the program
-    PP_DEBUG_ABORT( STR )
-
-  END BLOCK ErrorHandler
-
-  ! Exit point on error
-  RETURN
-
-END FUNCTION CLEVTYPE2ILEVTYPE
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'

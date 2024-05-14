@@ -17,6 +17,7 @@ PRIVATE
 ! Whitelist of public symbols
 PUBLIC :: OM_ENVVAR_IS_DEFINED
 PUBLIC :: OM_READ_ENVVAR
+PUBLIC :: OM_REPLACE_ENVVAR_IN_STRING
 PUBLIC :: LOG_CURR_TIME
 PUBLIC :: LOG_VERSION
 PUBLIC :: LOG_SYSINFO
@@ -578,6 +579,167 @@ END SUBROUTINE LOG_CURR_TIME
 
 
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'OM_REPLACE_ENVVAR_IN_STRING'
+SUBROUTINE OM_REPLACE_ENVVAR_IN_STRING( INPSTR, OUTSTR )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*), INTENT(IN)  :: INPSTR
+  CHARACTER(LEN=*), INTENT(OUT) :: OUTSTR
+
+  ! Local variables
+  CHARACTER(LEN=1024)  :: TMPSTR
+  CHARACTER(LEN=1024)  :: ENVVAR
+  INTEGER(KIND=JPIB_K) :: ELEN
+  INTEGER(KIND=JPIM_K) :: ISRC
+  INTEGER(KIND=JPIM_K) :: IDST
+  INTEGER(KIND=JPIM_K) :: ITMP
+  INTEGER(KIND=JPIM_K) :: N
+  INTEGER(KIND=JPIM_K) :: M
+  INTEGER(KIND=JPIM_K) :: Q
+  INTEGER(KIND=JPIM_K) :: STAT
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of local variables
+  N=LEN_TRIM(INPSTR)
+  M=LEN(OUTSTR)
+  Q=LEN(TMPSTR)
+  OUTSTR = REPEAT(' ',M)
+
+  ! Loop
+  ISRC = 0
+  IDST = 0
+  Forward: DO
+
+    ! Increment source index
+    ISRC = ISRC + 1
+
+    ! Exit condition
+    IF ( ISRC .GT. N ) THEN
+      EXIT Forward
+    ENDIF
+
+    ! Check for substitution
+    IF ( INPSTR(ISRC:ISRC) .EQ. '$' ) THEN
+      ISRC = ISRC + 1
+      IF ( INPSTR(ISRC:ISRC) .EQ. '{' ) THEN
+        TMPSTR=REPEAT(' ',1024)
+        ITMP = 0
+        ReadEnv: DO
+          ISRC = ISRC + 1
+          PP_DEBUG_DEVELOP_COND_THROW( ISRC .GT. N, 0 )
+          IF ( INPSTR(ISRC:ISRC) .EQ. '}' ) THEN
+            EXIT ReadEnv
+          ELSE
+            ITMP = ITMP + 1
+            PP_DEBUG_DEVELOP_COND_THROW( ITMP .GT. Q,  1 )
+            TMPSTR(ITMP:ITMP) = INPSTR(ISRC:ISRC)
+          ENDIF
+        ENDDO ReadEnv
+      ELSE
+        PP_DEBUG_DEVELOP_THROW( 2 )
+      ENDIF
+
+      ! Check if the environment variable exists
+      PP_DEBUG_DEVELOP_COND_THROW( .NOT.OM_ENVVAR_IS_DEFINED( TMPSTR, NDLEN=ELEN ), 3 )
+      PP_DEBUG_DEVELOP_COND_THROW( ELEN.GT.LEN(ENVVAR), 4 )
+
+      ! Read Environment variable
+      CALL OM_READ_ENVVAR( TMPSTR, ENVVAR, ELEN )
+
+      ! Forward environment variable
+      DO ITMP = 1, LEN_TRIM(ENVVAR)
+        IDST = IDST + 1
+        PP_DEBUG_DEVELOP_COND_THROW( IDST .GT. M,  5 )
+        OUTSTR(IDST:IDST) = ENVVAR(ITMP:ITMP)
+      ENDDO
+    ELSE
+      IDST = IDST + 1
+      PP_DEBUG_DEVELOP_COND_THROW( IDST .GT. M,  6 )
+      OUTSTR(IDST:IDST) = INPSTR(ISRC:ISRC)
+    ENDIF
+
+  ENDDO Forward
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+
+    CASE (0)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Hit end of string while searching closed bracket' )
+
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Temporary string too short' )
+
+    CASE (2)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Expected open bracket after $ to lookup environment variable' )
+
+    CASE (3)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Environment variable is not defined: '//TRIM(TMPSTR) )
+
+    CASE (4)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Environment variable too short' )
+
+    CASE (5)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Destination string too short' )
+
+    CASE (6)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Destination string too short' )
+
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END SUBROUTINE OM_REPLACE_ENVVAR_IN_STRING
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
 #define PP_PROCEDURE_NAME 'OM_READ_ENVVAR'
 SUBROUTINE OM_READ_ENVVAR( CDENVVARNAME, CDENVVARVAL, NDLEN )
 
@@ -649,7 +811,7 @@ PP_ERROR_HANDLER
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Impossible to read environment variable: '//TRIM(CDENVVARNAME) )
 
     CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Output ariable too short for the environment variable' )
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Output variable too short for the environment variable' )
 
     CASE (3)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Failed to read environment variable: '//TRIM(CDENVVARNAME) )

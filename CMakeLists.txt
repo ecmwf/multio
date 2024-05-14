@@ -99,7 +99,7 @@ ecbuild_add_option( FEATURE HEALPIX_EXAMPLES
 
 ###  Definitions used by the output manager
 ecbuild_add_option( FEATURE OUTPUT_MANAGER
-                    DEFAULT OFF
+	            DEFAULT ON
                     DESCRIPTION "Build the output manager" )
 
 ecbuild_add_option( FEATURE OUTPUT_MANAGER_ENCODER_REPORT

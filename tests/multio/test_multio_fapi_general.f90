@@ -1,19 +1,19 @@
 module test_multio_fapi_general
     use multio_api
-    use, intrinsic :: iso_fortran_env
+    use, intrinsic :: iso_fortran_env, only: int64, error_unit
     use, intrinsic :: iso_c_binding
     implicit none
 
     integer :: test_error_handler_calls = 0
-    integer(8) :: test_error_handler_last_context
+    integer(int64) :: test_error_handler_last_context
     integer :: test_error_handler_last_error
 
     integer :: test_error_handler_calls2 = 0
-    integer(8) :: test_error_handler_last_context2
+    integer(int64) :: test_error_handler_last_context2
     integer :: test_error_handler_last_error2
 
     integer :: test_error_handler_calls3 = 0
-    integer(8) :: test_error_handler_last_context3
+    integer(int64) :: test_error_handler_last_context3
     integer :: test_error_handler_last_error3
 
 contains
@@ -108,10 +108,10 @@ contains
         ! Test that we can set failure handler and that it is being called on error with appropriate information
 
         logical :: success
-        integer(8) :: original_context = 123456
-        integer(8) :: context
-        integer(8) :: context2
-        integer(8) :: context3
+        integer(int64) :: original_context = 123456
+        integer(int64) :: context
+        integer(int64) :: context2
+        integer(int64) :: context3
         integer :: err
         type(multio_configuration) :: cc
         type(multio_handle) :: mio
@@ -357,7 +357,7 @@ contains
     end function
 
     subroutine test_error_handler(context, error, info)
-        integer(8), intent(inout) :: context
+        integer(int64), intent(inout) :: context
         integer, intent(in) :: error
         class(multio_failure_info), intent(in) :: info
 
@@ -367,7 +367,7 @@ contains
     end subroutine
 
     subroutine test_error_handler2(context, error, info)
-        integer(8), intent(inout) :: context
+        integer(int64), intent(inout) :: context
         integer, intent(in) :: error
         class(multio_failure_info), intent(in) :: info
 
@@ -377,7 +377,7 @@ contains
     end subroutine
 
     subroutine test_error_handler3(context, error, info)
-        integer(8), intent(inout) :: context
+        integer(int64), intent(inout) :: context
         integer, intent(in) :: error
         class(multio_failure_info), intent(in) :: info
 

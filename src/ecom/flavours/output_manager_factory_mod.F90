@@ -110,10 +110,10 @@ IMPLICIT NONE
   ERRMSG = ''
   NULLIFY(OM)
 
-
   !
   ! Allocate the requested IOmanager
   SELECT CASE(TRIM(ADJUSTL(OMTYPE)))
+
 
   ! ------------------------------------------------------------------------------------------------
   ! A no-op output manager. Used to demonstrate behavior without I/O
@@ -164,6 +164,7 @@ IMPLICIT NONE
     ALLOCATE( MULTIO_RAW_OUTPUT_MANAGER_T::OM, STAT=STAT, ERRMSG=ERRMSG )
     PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
 
+
   ! ------------------------------------------------------------------------------------------------
   ! Pure multIO output manager constructing metadata directly from io_server requests,
   ! bypassing the grib/eccodes API. The metadata are directly the raw information arriving from the
@@ -179,6 +180,7 @@ IMPLICIT NONE
   CASE DEFAULT
     PP_DEBUG_DEVELOP_THROW( 100 )
   END SELECT
+
 
   ! Initialize the object
   CALL OM%SETUP( YAML_CFG_FNAME, PROCESSOR_TOPO, MODEL_PARAMS )

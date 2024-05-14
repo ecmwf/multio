@@ -26,6 +26,8 @@ PUBLIC :: OM_MKDIR
 PUBLIC :: OM_CHDIR
 PUBLIC :: OM_TOLOWER
 PUBLIC :: OM_TOUPPER
+PUBLIC :: TOUPPER
+PUBLIC :: TOLOWER
 PUBLIC :: OM_GET_HOSTNAME
 PUBLIC :: OM_GETPID
 PUBLIC :: OM_GETMEM
@@ -639,25 +641,20 @@ IMPLICIT NONE
     ENDIF
 
     ! Check for substitution
-    IF ( INPSTR(ISRC:ISRC) .EQ. '$' ) THEN
-      ISRC = ISRC + 1
-      IF ( INPSTR(ISRC:ISRC) .EQ. '{' ) THEN
-        TMPSTR=REPEAT(' ',1024)
-        ITMP = 0
-        ReadEnv: DO
-          ISRC = ISRC + 1
-          PP_DEBUG_DEVELOP_COND_THROW( ISRC .GT. N, 0 )
-          IF ( INPSTR(ISRC:ISRC) .EQ. '}' ) THEN
-            EXIT ReadEnv
-          ELSE
-            ITMP = ITMP + 1
-            PP_DEBUG_DEVELOP_COND_THROW( ITMP .GT. Q,  1 )
-            TMPSTR(ITMP:ITMP) = INPSTR(ISRC:ISRC)
-          ENDIF
-        ENDDO ReadEnv
-      ELSE
-        PP_DEBUG_DEVELOP_THROW( 2 )
-      ENDIF
+    IF ( INPSTR(ISRC:ISRC) .EQ. '{' ) THEN
+      TMPSTR=REPEAT(' ',1024)
+      ITMP = 0
+      ReadEnv: DO
+        ISRC = ISRC + 1
+        PP_DEBUG_DEVELOP_COND_THROW( ISRC .GT. N, 1 )
+        IF ( INPSTR(ISRC:ISRC) .EQ. '}' ) THEN
+          EXIT ReadEnv
+        ELSE
+          ITMP = ITMP + 1
+          PP_DEBUG_DEVELOP_COND_THROW( ITMP .GT. Q,  2 )
+          TMPSTR(ITMP:ITMP) = INPSTR(ISRC:ISRC)
+        ENDIF
+      ENDDO ReadEnv
 
       ! Check if the environment variable exists
       PP_DEBUG_DEVELOP_COND_THROW( .NOT.OM_ENVVAR_IS_DEFINED( TMPSTR, NDLEN=ELEN ), 3 )
@@ -697,14 +694,11 @@ PP_ERROR_HANDLER
     ! Handle different errors
     SELECT CASE(ERRIDX)
 
-    CASE (0)
+    CASE (1)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Hit end of string while searching closed bracket' )
 
-    CASE (1)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Temporary string too short' )
-
     CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Expected open bracket after $ to lookup environment variable' )
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Temporary string too short' )
 
     CASE (3)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Environment variable is not defined: '//TRIM(TMPSTR) )
@@ -1336,6 +1330,67 @@ END FUNCTION OM_GETPID
 #undef PP_PROCEDURE_TYPE
 
 
+
+
+PURE FUNCTION TOUPPER( INPSTR ) RESULT(OUTSTR)
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*), INTENT(IN) :: INPSTR
+
+  ! Function result
+  CHARACTER(LEN=LEN_TRIM(INPSTR)) :: OUTSTR
+
+  ! Local variables
+  INTEGER :: I
+  INTEGER :: ASCIIVALUE
+
+  ! Convert each character to uppercase
+  DO I = 1, LEN_TRIM(INPSTR)
+    ASCIIVALUE = ICHAR(INPSTR(I:I))
+    IF (ASCIIVALUE .GE. ICHAR('a') .AND. ASCIIVALUE .LE. ICHAR('z')) THEN
+      OUTSTR(I:I) = CHAR(ASCIIVALUE - ICHAR('a') + ICHAR('A'))
+    ELSE
+      OUTSTR(I:I) = INPSTR(I:I)
+    END IF
+  END DO
+
+  ! Exit point
+  RETURN
+
+END FUNCTION TOUPPER
+
+
+
+PURE FUNCTION TOLOWER( INPSTR ) RESULT(OUTSTR)
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*), INTENT(IN) :: INPSTR
+
+  ! Function result
+  CHARACTER(LEN=LEN_TRIM(INPSTR)) :: OUTSTR
+
+  ! Local variables
+  INTEGER :: I
+  INTEGER :: ASCIIVALUE
+
+  ! Convert each character to uppercase
+  DO I = 1, LEN_TRIM(INPSTR)
+    ASCIIVALUE = ICHAR(INPSTR(I:I))
+    IF (ASCIIVALUE .GE. ICHAR('A') .AND. ASCIIVALUE .LE. ICHAR('Z')) THEN
+      OUTSTR(I:I) = CHAR(ASCIIVALUE - ICHAR('A') + ICHAR('a'))
+    ELSE
+      OUTSTR(I:I) = INPSTR(I:I)
+    END IF
+  END DO
+
+  ! Exit point
+  RETURN
+
+END FUNCTION TOLOWER
 
 
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'

@@ -1131,7 +1131,7 @@ IMPLICIT NONE
 
 
   IF ( VERBOSE ) THEN
-    WRITE(ERROR_UNIT,*) 'Read packingTYpe'
+    WRITE(ERROR_UNIT,*) 'Read packingType'
   ENDIF
   IF ( CFG%GET( 'packingType', CLTMP  ) ) THEN
     SELECT CASE (CLTMP)
@@ -1265,9 +1265,9 @@ END FUNCTION IS_INTEGER
 FUNCTION CREPRES2IREPRES( CREPRES ) RESULT(IREPRES)
 
   ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: REPRES_GRIDDED_E
-  USE :: OM_CORE_MOD, ONLY: REPRES_SPECTRAL_E
-  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD,   ONLY: REPRES_GRIDDED_E
+  USE :: OM_CORE_MOD,   ONLY: REPRES_SPECTRAL_E
+  USE :: OM_CORE_MOD,   ONLY: JPIB_K
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1347,7 +1347,9 @@ END FUNCTION CREPRES2IREPRES
 SUBROUTINE MATCH_RULES( PARAM_ID, LEV_TYPE, REPRES, LEVEL, DEFINITIONS )
 
   ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD,   ONLY: JPIB_K
+  USE :: MSG_UTILS_MOD, ONLY: ILEVTYPE2CLEVTYPE
+  USE :: MSG_UTILS_MOD, ONLY: IREPRES2CREPRES
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1365,6 +1367,8 @@ IMPLICIT NONE
   TYPE(DEFINITIONS_T),  INTENT(OUT) :: DEFINITIONS
 
   ! Local variables
+  CHARACTER(LEN=16)    :: CI
+  CHARACTER(LEN=4096)  :: RMATCH
   INTEGER(KIND=JPIB_K) :: I
   INTEGER(KIND=JPIB_K) :: CNT
   INTEGER(KIND=JPIB_K) :: RID
@@ -1380,7 +1384,7 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-
+  ! Local variables initialisation
   CNT = 0
   RID = 0
 
@@ -1388,6 +1392,7 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(RULES), 1 )
 
   ! Search loop
+  RMATCH = '( '
   DO I = 1, SIZE(RULES)
     !WRITE(*,*) ' '
     !WRITE(*,*) ' CHECKING RULE(',I,'): ', RULES(I)%NAME
@@ -1436,6 +1441,12 @@ IMPLICIT NONE
     IF ( MATCH ) THEN
       CNT = CNT + 1
       RID = I
+      WRITE(CI,'(I10)') I
+      IF ( CNT .EQ. 1 ) THEN
+        RMATCH = TRIM(RMATCH)//'{id='//TRIM(ADJUSTL(CI))//', name="'//TRIM(ADJUSTL(RULES(I)%NAME))//'"}'
+      ELSE
+        RMATCH = TRIM(RMATCH)//', '//'{id='//TRIM(ADJUSTL(CI))//', name="'//TRIM(ADJUSTL(RULES(I)%NAME))//'"}'
+      ENDIF
     ENDIF
 
   ENDDO
@@ -1461,26 +1472,29 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
-    CHARACTER(LEN=1024) :: TMP
+    CHARACTER(LEN=1024) :: TMP1
+    CHARACTER(LEN=1024) :: TMP2
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
     CASE (1)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Rules not allocated' )
     CASE (2)
-      WRITE(TMP,'(A1,I8,A2,I8,A2,I8,A2,I8,A1)') &
-&          ' (', PARAM_ID, &
-&          ', ', LEV_TYPE, &
-&          ', ', REPRES, &
-&          ', ', LEVEL, ')'
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'No match found: '//TRIM(TMP) )
+      WRITE(TMP1,'(A1,I8,A2,I8,A2,I8,A2,I8,A1)') &
+&          ' ( paramID=', PARAM_ID, &
+&          ', levtype="', ILEVTYPE2CLEVTYPE(LEV_TYPE), &
+&          '", repres="', IREPRES2CREPRES(REPRES), &
+&          '", level=', LEVEL, ')'
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'No match found for field: '//TRIM(TMP1) )
     CASE (3)
-      WRITE(TMP,'(A1,I8,A2,I8,A2,I8,A2,I8,A1)') &
-&          ' (', PARAM_ID, &
-&          ', ', LEV_TYPE, &
-&          ', ', REPRES, &
-&          ', ', LEVEL, ')'
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Multiple matches found: '//TRIM(TMP) )
+      RMATCH = TRIM(RMATCH)//' )'
+      WRITE(TMP2,'(I8)') CNT
+      WRITE(TMP1,'(A1,I8,A2,I8,A2,I8,A2,I8,A1)') &
+&          ' ( paramId=', PARAM_ID, &
+&          ', levtype="', ILEVTYPE2CLEVTYPE(LEV_TYPE), &
+&          '", repres="', IREPRES2CREPRES(REPRES), &
+&          '", level=', LEVEL, ')'
+      PP_DEBUG_CREATE_ERROR_MSG( STR, TRIM(ADJUSTL(TMP2))//' matches rules=>'//TRIM(ADJUSTL(RMATCH))//' found for field: '//TRIM(TMP1) )
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
     END SELECT

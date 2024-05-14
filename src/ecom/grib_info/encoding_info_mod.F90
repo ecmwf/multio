@@ -706,6 +706,9 @@ SUBROUTINE GRIB_INFO_PRINT( GI, LOGUNIT )
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,          ONLY: JPIB_K
   USE :: OM_CORE_MOD,          ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,          ONLY: PACKING_TYPE_GRIB_SIMPLE_E
+  USE :: OM_CORE_MOD,          ONLY: PACKING_TYPE_GRIB_SIMPLE_E
+  USE :: OM_CORE_MOD,          ONLY: PACKING_TYPE_GRIB_COMPLEX_E
   USE :: TIME_ASSUMPTIONS_MOD, ONLY: TYPE_OF_STATISTICAL_PROCESS_TO_STRING
   USE :: TIME_ASSUMPTIONS_MOD, ONLY: TYPE_OF_TIME_RANGE_TO_STRING
 
@@ -735,7 +738,15 @@ IMPLICIT NONE
   WRITE(LOGUNIT,'(A)') ' ---------'
   WRITE(LOGUNIT,'(A,7I8)') ' + Requested encoding......................: ', GI%REQUESTED_ENCODING
   WRITE(LOGUNIT,'(A,7I8)') ' + Bits per values.........................: ', GI%BITS_PER_VALUE
-  WRITE(LOGUNIT,'(A,7I8)') ' + Packing type............................: ', GI%PACKING_TYPE
+  WRITE(LOGUNIT,'(A,7I8)') ' + (I) Packing type........................: ', GI%PACKING_TYPE
+  SELECT CASE (GI%PACKING_TYPE)
+  CASE ( PACKING_TYPE_GRIB_SIMPLE_E )
+    WRITE(LOGUNIT,'(A)')     ' + (C) Packing type........................: grib_simple'
+  CASE ( PACKING_TYPE_GRIB_CCSDE_E )
+    WRITE(LOGUNIT,'(A)')     ' + (C) Packing type........................: grib_ccsds'
+  CASE ( PACKING_TYPE_GRIB_COMPLEX_E )
+    WRITE(LOGUNIT,'(A)')     ' + (C) Packing type........................: spectral_complex'
+  END SELECT
   WRITE(LOGUNIT,'(A,L)')   ' + Is step 0 valid.........................: ', GI%IS_STEP0_VALID_
   WRITE(LOGUNIT,'(A,I8)')  ' + Product definition template number......: ', GI%PRODUCT_DEFINITION_TEMPLATE_NUMBER_
   WRITE(LOGUNIT,'(A,A)')   ' + Type of statistical process.............: ', TRIM(TYPE_OF_STATISTICAL_PROCESS_TO_STRING(GI%TYPE_OF_STATISTICAL_PROCESS_))

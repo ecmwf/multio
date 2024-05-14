@@ -4,6 +4,8 @@ build:
   modules_package:
     - eckit:openmpi
     - atlas:openmpi
+  dependency_cmake_options:
+    - ecmwf/mir: "-DENABLE_BUILD_TOOLS=ON"
   dependencies:
     - ecmwf/ecbuild@develop
     - ecmwf/eccodes@develop

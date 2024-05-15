@@ -31,6 +31,10 @@ PRIVATE
 ! Whitelist of public symbols
 PUBLIC :: CPREF2IPREF
 PUBLIC :: IPREF2MSGTYPE
+PUBLIC :: IPREFIX2ILEVTYPE
+PUBLIC :: CLEVTYPE2ILEVTYPE
+PUBLIC :: ILEVTYPE2CLEVTYPE
+PUBLIC :: IREPRES2CREPRES
 
 
 PUBLIC :: MSG_CREATE_NAME
@@ -235,6 +239,443 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION CPREF2IPREF
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'IPREFIX2ILEVTYPE'
+FUNCTION IPREFIX2ILEVTYPE( IPREFIX, PARAM_ID ) RESULT(ILEVTYPE)
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+
+  USE :: GRIB_CODES_MOD, ONLY: NGRBRSN
+  USE :: GRIB_CODES_MOD, ONLY: NGRBTSN
+  USE :: GRIB_CODES_MOD, ONLY: NGRBWSN
+  USE :: GRIB_CODES_MOD, ONLY: NGRBSD
+  USE :: GRIB_CODES_MOD, ONLY: NGRB100U
+  USE :: GRIB_CODES_MOD, ONLY: NGRB100V
+
+  USE :: OM_CORE_MOD, ONLY: MODEL_LEVEL_E
+  USE :: OM_CORE_MOD, ONLY: PRESSURE_LEVEL_E
+  USE :: OM_CORE_MOD, ONLY: VORTICITY_LEVEL_E
+  USE :: OM_CORE_MOD, ONLY: THETA_LEVEL_E
+  USE :: OM_CORE_MOD, ONLY: SURFACE_E
+  USE :: OM_CORE_MOD, ONLY: WAVE_INT_E
+  USE :: OM_CORE_MOD, ONLY: WAVE_SPEC_E
+
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HHL_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HPL_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HL_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_ML_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_O2D_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_O3D_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PL_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PT_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PV_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_SFC_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_SOL_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K) , INTENT(IN) :: IPREFIX
+  INTEGER(KIND=JPIB_K) , INTENT(IN) :: PARAM_ID
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: ILEVTYPE
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! NGRBRSN  - 33     - Snow density
+  ! NGRBTSN  - 238    - Temperature of snow layer
+  ! NGRBWSN  - 228038 - Snow liquid water (multi-layer)
+  ! NGRBSD   - 228141 - Snow depth (multi-layer)
+
+  SELECT CASE ( IPREFIX )
+
+  CASE ( MODEL_LEVEL_E )
+    SELECT CASE (PARAM_ID)
+    CASE ( NGRB100U, NGRB100V )
+      ILEVTYPE = LEVTYPE_HL_E
+    CASE DEFAULT
+      ILEVTYPE = LEVTYPE_ML_E
+    END SELECT
+  CASE ( PRESSURE_LEVEL_E )
+    SELECT CASE (PARAM_ID)
+    CASE ( NGRB100U, NGRB100V )
+      ILEVTYPE = LEVTYPE_HL_E
+    CASE DEFAULT
+      ILEVTYPE = LEVTYPE_PL_E
+    END SELECT
+  CASE ( VORTICITY_LEVEL_E )
+    ILEVTYPE = LEVTYPE_PV_E
+  CASE ( THETA_LEVEL_E )
+    ILEVTYPE = LEVTYPE_PT_E
+  CASE ( SURFACE_E )
+    SELECT CASE (PARAM_ID)
+    CASE ( NGRBRSN, NGRBTSN, NGRBWSN, NGRBSD, 231027 )
+      ILEVTYPE = LEVTYPE_SOL_E
+    CASE DEFAULT
+      ILEVTYPE = LEVTYPE_SFC_E
+    END SELECT
+  CASE ( WAVE_INT_E )
+    ILEVTYPE = LEVTYPE_SFC_E
+  CASE ( WAVE_SPEC_E )
+    ILEVTYPE = LEVTYPE_SFC_E
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( 1 )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown levtype' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION IPREFIX2ILEVTYPE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'CLEVTYPE2ILEVTYPE'
+FUNCTION CLEVTYPE2ILEVTYPE( CLEVTYPE ) RESULT(ILEVTYPE)
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HHL_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HPL_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HL_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_ML_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_O2D_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_O3D_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PL_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PT_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PV_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_SFC_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_SOL_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CHARACTER(LEN=*), INTENT(IN) :: CLEVTYPE
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: ILEVTYPE
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  SELECT CASE ( CLEVTYPE )
+
+  CASE ( 'hhl' )
+    ILEVTYPE = LEVTYPE_HHL_E
+  CASE ( 'hpl' )
+    ILEVTYPE = LEVTYPE_HPL_E
+  CASE ( 'hl' )
+    ILEVTYPE = LEVTYPE_HL_E
+  CASE ( 'ml' )
+    ILEVTYPE = LEVTYPE_ML_E
+  CASE ( 'o2d' )
+    ILEVTYPE = LEVTYPE_O2D_E
+  CASE ( 'o3d' )
+    ILEVTYPE = LEVTYPE_O3D_E
+  CASE ( 'pl' )
+    ILEVTYPE = LEVTYPE_PL_E
+  CASE ( 'pt' )
+    ILEVTYPE = LEVTYPE_PT_E
+  CASE ( 'pv' )
+    ILEVTYPE = LEVTYPE_PV_E
+  CASE ( 'sfc' )
+    ILEVTYPE = LEVTYPE_SFC_E
+  CASE ( 'sol' )
+    ILEVTYPE = LEVTYPE_SOL_E
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( 1 )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown levtype' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION CLEVTYPE2ILEVTYPE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'ILEVTYPE2CLEVTYPE'
+FUNCTION ILEVTYPE2CLEVTYPE( ILEVTYPE ) RESULT(CLEVTYPE)
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HHL_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HPL_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HL_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_ML_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_O2D_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_O3D_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PL_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PT_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PV_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_SFC_E
+  USE :: OM_CORE_MOD, ONLY: LEVTYPE_SOL_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN) :: ILEVTYPE
+
+  ! Function result
+  CHARACTER(LEN=3) :: CLEVTYPE
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  SELECT CASE ( ILEVTYPE )
+
+  CASE ( LEVTYPE_HHL_E )
+    CLEVTYPE = 'hhl'
+  CASE ( LEVTYPE_HPL_E )
+    CLEVTYPE = 'hpl'
+  CASE ( LEVTYPE_HL_E )
+    CLEVTYPE = 'hl'
+  CASE ( LEVTYPE_ML_E )
+    CLEVTYPE = 'ml'
+  CASE ( LEVTYPE_O2D_E )
+    CLEVTYPE = 'o2d'
+  CASE ( LEVTYPE_O3D_E )
+    CLEVTYPE = 'o3d'
+  CASE ( LEVTYPE_PL_E )
+    CLEVTYPE = 'pl'
+  CASE ( LEVTYPE_PT_E )
+    CLEVTYPE = 'pt'
+  CASE ( LEVTYPE_PV_E )
+    CLEVTYPE = 'pv'
+  CASE ( LEVTYPE_SFC_E )
+    CLEVTYPE = 'sfc'
+  CASE ( LEVTYPE_SOL_E )
+    CLEVTYPE = 'sol'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( 1 )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown levtype' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION ILEVTYPE2CLEVTYPE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'IREPRES2CREPRES'
+FUNCTION IREPRES2CREPRES( IREPRES ) RESULT(CREPRES)
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: REPRES_GRIDDED_E
+  USE :: OM_CORE_MOD, ONLY: REPRES_SPECTRAL_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN) :: IREPRES
+
+  ! Function result
+  CHARACTER(LEN=20) :: CREPRES
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  SELECT CASE ( IREPRES )
+
+  CASE ( REPRES_GRIDDED_E )
+    CREPRES = 'gridded'
+  CASE ( REPRES_SPECTRAL_E )
+    CREPRES = 'spherical_harmonics'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( 1 )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown levtype' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION IREPRES2CREPRES
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1460,7 +1901,10 @@ IMPLICIT NONE
   WRITE(UNIT,*) ' + MSG_BASE%PARAM_ID_............ :: ', DATA%PARAM_ID_
   WRITE(UNIT,*) ' + MSG_BASE%ISTEP_............... :: ', DATA%ISTEP_
   WRITE(UNIT,*) ' + MSG_BASE%IPREF_............... :: ', DATA%IPREF_
+  WRITE(UNIT,*) ' + MSG_BASE%ILEVTYPE_............ :: ', IPREFIX2ILEVTYPE( DATA%IPREF_, DATA%PARAM_ID_ )
+  WRITE(UNIT,*) ' + MSG_BASE%CLEVTYPE_............ :: ', ILEVTYPE2CLEVTYPE( IPREFIX2ILEVTYPE( DATA%IPREF_, DATA%PARAM_ID_ ) )
   WRITE(UNIT,*) ' + MSG_BASE%IREPRES_............. :: ', DATA%IREPRES_
+  WRITE(UNIT,*) ' + MSG_BASE%CREPRES_............. :: ', IREPRES2CREPRES( DATA%IREPRES_ )
   WRITE(UNIT,*) ' + MSG_BASE%NVALUES_............. :: ', DATA%NVALUES_
   WRITE(UNIT,*) ' + MSG_BASE%NUNDF_............... :: ', DATA%NUNDF_
   WRITE(UNIT,*) ' + MSG_BASE%XUNDF_............... :: ', DATA%XUNDF_
@@ -2018,7 +2462,10 @@ IMPLICIT NONE
   WRITE(UNIT,*) ' + MSG_BASE%PARAM_ID_............ :: ', DATA%PARAM_ID_
   WRITE(UNIT,*) ' + MSG_BASE%ISTEP_............... :: ', DATA%ISTEP_
   WRITE(UNIT,*) ' + MSG_BASE%IPREF_............... :: ', DATA%IPREF_
+  WRITE(UNIT,*) ' + MSG_BASE%ILEVTYPE_............ :: ', IPREFIX2ILEVTYPE( DATA%IPREF_, DATA%PARAM_ID_ )
+  WRITE(UNIT,*) ' + MSG_BASE%CLEVTYPE_............ :: ', ILEVTYPE2CLEVTYPE( IPREFIX2ILEVTYPE( DATA%IPREF_, DATA%PARAM_ID_ ) )
   WRITE(UNIT,*) ' + MSG_BASE%IREPRES_............. :: ', DATA%IREPRES_
+  WRITE(UNIT,*) ' + MSG_BASE%CREPRES_............. :: ', IREPRES2CREPRES( DATA%IREPRES_ )
   WRITE(UNIT,*) ' + MSG_BASE%NVALUES_............. :: ', DATA%NVALUES_
   WRITE(UNIT,*) ' + MSG_BASE%NUNDF_............... :: ', DATA%NUNDF_
   WRITE(UNIT,*) ' + MSG_BASE%XUNDF_............... :: ', DATA%XUNDF_

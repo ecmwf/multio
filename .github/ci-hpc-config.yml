@@ -18,6 +18,7 @@ build:
     - ecmwf/atlas-orca@develop
     - ecmwf/mir@develop
   parallel: 64
+  ntasks: 16
   env:
     - CTEST_PARALLEL_LEVEL=1
     - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples

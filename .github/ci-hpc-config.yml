@@ -5,7 +5,8 @@ build:
     - eckit:openmpi
     - atlas:openmpi
   dependency_cmake_options:
-    - ecmwf/mir: "-DENABLE_BUILD_TOOLS=ON"
+    - "ecmwf/mir: '-DENABLE_BUILD_TOOLS=ON'"
+    - "ecmwf/fdb: '-DENABLE_LUSTRE=OFF'"
   dependencies:
     - ecmwf/ecbuild@develop
     - ecmwf/eccodes@develop

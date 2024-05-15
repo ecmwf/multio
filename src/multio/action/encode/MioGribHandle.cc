@@ -25,7 +25,7 @@ void codesCheckRelaxed(int ret, const std::string& name, const T& value) {
     if (ret != 0) {
         std::ostringstream oss;
         oss << "Multio GribEncoder: CODES return value != NULL for operation on field: " << name << " with value "
-            << value << ". EECODES error message: " << codes_get_error_message(ret) << std::endl;
+            << value << ". ECCODES error message: " << codes_get_error_message(ret) << std::endl;
         throw eckit::SeriousBug(oss.str(), Here());
     }
     CODES_CHECK(ret, NULL);

@@ -1,4 +1,4 @@
-no-op-and-memory-testing:
+no-io-info-log:
   encoding-info: true
   verbose: true
 
@@ -37,112 +37,116 @@ fortran-metadata-to-multio:
 
 encoding-rules:
 
-
-  - rule: 'grib1_surfaces_gridded'
-    filter:
-      levType: ['sfc']
-      repres: ['gridded']
-      paramId: [ 31, 34, 49, 78, 134, 136, 137, 142, 144, 151, 165, 166, 168, 169, 175, 176, 177, 178, 179, 180, 181, 205, 228, 228029, 228216, 228218, 228219 ]
-
-    encode:
-      gribEdition: 1
-      packingType: 'grid_simple'
-
-
-  - rule: 'grib1_height_level_gridded'
-    filter:
-      levType: ['hl']
-      repres: ['gridded']
-      paramId: [ 228246, 228247 ]
-
-    encode:
-      gribEdition: 1
-      packingType: 'grid_simple'
-
-
-  - rule: 'grib1_sol_gridded'
-    filter:
-      levType: ['sol']
-      repres: ['gridded']
-      paramId: [ 33, 238 ]
-
+  defaults:
     encode:
       gribEdition: 2
-      packingType: 'grid_simple'
+
+  rules:
+    - rule: 'grib1_surfaces_gridded'
+      filter:
+        levtype: ['sfc']
+        repres: ['gridded']
+        paramId: [ 31, 34, 49, 78, 134, 136, 137, 142, 144, 151, 165, 166, 168, 169, 175, 176, 177, 178, 179, 180, 181, 205, 228, 228029, 228216, 228218, 228219 ]
+
+      encode:
+        gribEdition: 1
+        packingType: 'grid_simple'
 
 
-  - rule: 'grib2_surfaces_gridded'
-    filter:
-      levType: ['sfc']
-      repres: ['gridded']
-      paramId: [ 75, 76, 77, 129, 130, 131, 132, 133, 135, 138, 155, 156, 157, 164, 167, 246, 247, 248, 3020, 3062, 162071, 162072, 228003, 228050, 228058, 228143, 228144, 228164, 228221, 228228, 228235, 228236, 228246, 228247, 231001, 231002, 231013, 260015, 260199, 260227, 260228, 260238, 260360, 260510, 262121 ]
+    - rule: 'grib1_height_level_gridded'
+      filter:
+        levtype: ['hl']
+        repres: ['gridded']
+        paramId: [ 228246, 228247 ]
 
-    encode:
-      gribEdition: 2
-      packingType: 'grid_simple'
-
-
-  - rule: 'grib1_ptv_levels_gridded'
-    filter:
-      levType: [ 'pl', 'pv', 'pt' ]
-      repres: ['gridded']
-      paramId: [ 129, 130, 131, 132, 133, 138, 155, 157 ]
-
-    encode:
-      gribEdition: 1
-      packingType: 'grid_simple'
+      encode:
+        gribEdition: 1
+        packingType: 'grid_simple'
 
 
-  - rule: 'grib2_ptv_levels_gridded'
-    filter:
-      levType: [ 'pl', 'pv', 'pt' ]
-      repres: ['gridded']
-      paramId: [ 31, 34, 49, 75, 76, 77, 78, 134, 135, 136, 137, 142, 144, 151, 156, 164, 165, 166, 167, 168, 169, 175, 176, 177, 178, 179, 180, 181, 205, 228, 246, 247, 248, 3020, 3062, 162071, 162072, 228003, 228029, 228050, 228058, 228143, 228144, 228164, 228216, 228218, 228219, 228221, 228228, 228235, 228236, 231001, 231002, 231013, 260015, 260199, 260227, 260228, 260238, 260360, 260510, 262121 ]
+    - rule: 'grib1_sol_gridded'
+      filter:
+        levtype: ['sol']
+        repres: ['gridded']
+        paramId: [ 33, 238 ]
 
-    encode:
-      gribEdition: 2
-      packingType: 'grid_simple'
-
-
-  - rule: 'grib2_ml_gridded'
-    filter:
-      levType: ['ml']
-      repres: ['gridded']
-      paramId: [ 31, 34, 49, 75, 76, 77, 78, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 142, 144, 151, 155, 156, 157, 164, 165, 166, 167, 168, 169, 175, 176, 177, 178, 179, 180, 181, 205, 228, 246, 247, 248, 3020, 3062, 162071, 162072, 228003, 228029, 228050, 228058, 228143, 228144, 228164, 228216, 228218, 228219, 228221, 228228, 228235, 228236, 231001, 231002, 231013, 260015, 260199, 260227, 260228, 260238, 260360, 260510, 262121 ]
-
-    encode:
-      gribEdition: 2
-      packingType: 'grid_simple'
+      encode:
+        gribEdition: 2
+        packingType: 'grid_simple'
 
 
-  - rule: 'grib2_wam_int_gridded'
-    filter:
-      levType: ['sfc']
-      repres: ['gridded']
-      paramId: [ 140221, 140229, 140230, 140231, 140232 ]
+    - rule: 'grib2_surfaces_gridded'
+      filter:
+        levtype: ['sfc']
+        repres: ['gridded']
+        paramId: [ 75, 76, 77, 129, 130, 131, 132, 133, 135, 138, 155, 156, 157, 164, 167, 246, 247, 248, 3020, 3062, 162071, 162072, 228003, 228050, 228058, 228143, 228144, 228164, 228221, 228228, 228235, 228236, 228246, 228247, 231001, 231002, 231013, 260015, 260199, 260227, 260228, 260238, 260360, 260510, 262121 ]
 
-    encode:
-      gribEdition: 2
-      packingType: 'grid_simple'
-
-
-  - rule: 'grib2_ml_spherical_harmonics'
-    filter:
-      levType: ['ml']
-      repres: ['spherical_harmonics']
-      paramId: [ 77, 135, 138, 152, 155 ]
-
-    encode:
-      gribEdition: 2
-      packingType: 'spectral_complex'
+      encode:
+        gribEdition: 2
+        packingType: 'grid_simple'
 
 
-  - rule: 'grib2_pl_spherical_harmonics'
-    filter:
-      levType: ['pl']
-      repres: ['spherical_harmonics']
-      paramId: [ 138, 155 ]
+    - rule: 'grib1_ptv_levels_gridded'
+      filter:
+        levtype: [ 'pl', 'pv', 'pt' ]
+        repres: ['gridded']
+        paramId: [ 129, 130, 131, 132, 133, 138, 155, 157 ]
 
-    encode:
-      gribEdition: 2
-      packingType: 'spectral_complex'
+      encode:
+        gribEdition: 1
+        packingType: 'grid_simple'
+
+
+    - rule: 'grib2_ptv_levels_gridded'
+      filter:
+        levtype: [ 'pl', 'pv', 'pt' ]
+        repres: ['gridded']
+        paramId: [ 31, 34, 49, 75, 76, 77, 78, 134, 135, 136, 137, 142, 144, 151, 156, 164, 165, 166, 167, 168, 169, 175, 176, 177, 178, 179, 180, 181, 205, 228, 246, 247, 248, 3020, 3062, 162071, 162072, 228003, 228029, 228050, 228058, 228143, 228144, 228164, 228216, 228218, 228219, 228221, 228228, 228235, 228236, 231001, 231002, 231013, 260015, 260199, 260227, 260228, 260238, 260360, 260510, 262121 ]
+
+      encode:
+        gribEdition: 2
+        packingType: 'grid_simple'
+
+
+    - rule: 'grib2_ml_gridded'
+      filter:
+        levtype: ['ml']
+        repres: ['gridded']
+        paramId: [ 31, 34, 49, 75, 76, 77, 78, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 142, 144, 151, 155, 156, 157, 164, 165, 166, 167, 168, 169, 175, 176, 177, 178, 179, 180, 181, 205, 228, 246, 247, 248, 3020, 3062, 162071, 162072, 228003, 228029, 228050, 228058, 228143, 228144, 228164, 228216, 228218, 228219, 228221, 228228, 228235, 228236, 231001, 231002, 231013, 260015, 260199, 260227, 260228, 260238, 260360, 260510, 262121 ]
+
+      encode:
+        gribEdition: 2
+        packingType: 'grid_simple'
+
+
+    - rule: 'grib2_wam_int_gridded'
+      filter:
+        levtype: ['sfc']
+        repres: ['gridded']
+        paramId: [ 140221, 140229, 140230, 140231, 140232 ]
+
+      encode:
+        gribEdition: 2
+        packingType: 'grid_simple'
+
+
+    - rule: 'grib2_ml_spherical_harmonics'
+      filter:
+        levtype: ['ml']
+        repres: ['spherical_harmonics']
+        paramId: [ 77, 135, 138, 152, 155 ]
+
+      encode:
+        gribEdition: 2
+        packingType: 'spectral_complex'
+
+
+    - rule: 'grib2_pl_spherical_harmonics'
+      filter:
+        levtype: ['pl']
+        repres: ['spherical_harmonics']
+        paramId: [ 138, 155 ]
+
+      encode:
+        gribEdition: 2
+        packingType: 'spectral_complex'

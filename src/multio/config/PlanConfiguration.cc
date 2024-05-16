@@ -119,7 +119,7 @@ std::vector<long> requestParseLongArray(const std::string& param, const MarsRequ
         long from = eckit::Translator<std::string, long>{}(values[0]);
         long to = eckit::Translator<std::string, long>{}(values[2]);
         long by = 1;
-        if (values[3] == "by") {
+        if (values.size() > 4 && values[3] == "by") {
             by = eckit::Translator<std::string, long>{}(values[4]);
         }
         for (long i = from; i <= to; i += by) {

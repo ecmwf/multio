@@ -2,7 +2,6 @@ import pytest
 
 import multiopython
 
-
 default_dict = {
       "allow_world" : True,
       "parent_comm" : 1,
@@ -17,7 +16,7 @@ def test_initialisation_no_config():
     multiopython.Multio()
 
 def test_multio_version():
-    assert(multiopython.Multio(**default_dict).__version__() == '2.1.0')
+    assert(multiopython.Multio(**default_dict).__version__() == '2.1.5')
 
 def test_multio_wrong_config_path():
     default_dict['config_path'] = "I_AM_NOT_HERE/multio/config/multio-server.yaml"
@@ -41,8 +40,8 @@ def test_multio_open_close_connections():
     multio.close_connections()
 
 def test_write_field():
-    import os
     import json
+    import os
     os.environ['MULTIO_PLANS'] = json.dumps({
         "plans": [{
             "name": "No op",

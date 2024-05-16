@@ -62,16 +62,33 @@ atlas::Grid readGrid(const std::string& name) {
 
 namespace multio::action {
 
+
+AtlasInstance::AtlasInstance() {
+    atlas::initialize();
+};
+
+AtlasInstance::~AtlasInstance() {
+    atlas::finalize();
+};
+
+AtlasInstance& AtlasInstance::instance() {
+    static AtlasInstance singleton;
+    return singleton;
+};
+
 GridDownloader::GridDownloader(const config::ComponentConfiguration& compConf) :
     encoder_(createEncoder(compConf)), templateMetadata_(), gridCoordinatesCache_(), gridUIDCache_() {
-    initTemplateMetadata();
 
-    if (compConf.parsedConfig().has("unstructured-grid-type")) {
-        const auto unstructuredGridType = compConf.parsedConfig().getString("unstructured-grid-type");
-        if (unstructuredGridType.find("ORCA") != std::string::npos) {
-            eckit::Log::info() << "Grid downloader initialized, starting ORCA grid download!" << std::endl;
+    if (encoder_ != nullptr) {
+        initTemplateMetadata();
 
-            downloadOrcaGridCoordinates(compConf);
+        if (compConf.parsedConfig().has("unstructured-grid-type")) {
+            const auto unstructuredGridType = compConf.parsedConfig().getString("unstructured-grid-type");
+            if (unstructuredGridType.find("ORCA") != std::string::npos) {
+                eckit::Log::info() << "Grid downloader initialized, starting ORCA grid download!" << std::endl;
+
+                downloadOrcaGridCoordinates(compConf);
+            }
         }
     }
 }
@@ -116,7 +133,7 @@ multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gr
 }
 
 void GridDownloader::downloadOrcaGridCoordinates(const config::ComponentConfiguration& compConf) {
-    atlas::initialize();
+    ScopedAtlasInstance scopedAtlasInstance;
 
     const auto baseGridName = compConf.parsedConfig().getString("unstructured-grid-type");
     for (auto const& unstructuredGridSubtype : {"T", "U", "V", "W", "F"}) {
@@ -165,8 +182,6 @@ void GridDownloader::downloadOrcaGridCoordinates(const config::ComponentConfigur
             eckit::Log::info() << "Multio GridDownloader: cached data for grid: " << completeGridName << std::endl;
         }
     }
-
-    atlas::finalize();
 }
 
 multio::message::Message GridDownloader::encodeMessage(multio::message::Message&& message, int startDate,
@@ -177,7 +192,7 @@ multio::message::Message GridDownloader::encodeMessage(multio::message::Message&
 
     auto updateMessage = message.modifyMetadata(std::move(md));
 
-    return encoder_->encodeOceanCoordinates(std::move(updateMessage));
+    return encoder_->encodeOceanCoordinates(std::move(updateMessage), eckit::LocalConfiguration{});
 }
 
 }  // namespace multio::action

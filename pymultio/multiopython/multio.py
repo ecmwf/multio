@@ -1,9 +1,10 @@
 import os
 
-from .lib import ffi, lib
 from .config import Config
 from .handler import Handler
+from .lib import ffi, lib
 from .metadata import Metadata
+
 
 class Multio:
     """This is the main interface class for Multio that users will interact with"""

@@ -19,11 +19,11 @@ public:
 
 
     Minimum(const std::string& name, long sz, const OperationWindow& win, const StatisticsConfiguration& cfg) :
-        OperationWithData<T>{name, "minimum", sz, true, win, cfg} {}
+        OperationWithData<T>{name, "minimum", sz, true, win, cfg, std::numeric_limits<T>::max()} {}
 
     Minimum(const std::string& name, long sz, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
             const StatisticsConfiguration& cfg) :
-        OperationWithData<T>{name, "minimum", sz, true, win, IOmanager, cfg} {};
+        OperationWithData<T>{name, "minimum", sz, true, win, IOmanager, cfg, std::numeric_limits<T>::max()} {};
 
     void compute(eckit::Buffer& buf) override {
         checkTimeInterval();

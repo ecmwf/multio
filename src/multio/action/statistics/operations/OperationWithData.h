@@ -13,28 +13,27 @@ public:
     using Operation::name_;
 
     OperationWithData(const std::string& name, const std::string& operation, long sz, bool needRestart,
-                      const OperationWindow& win, const StatisticsConfiguration& cfg) :
+                      const OperationWindow& win, const StatisticsConfiguration& cfg, T initial_value = 0.0) :
         Operation{name, operation, win, cfg},
-        values_{std::vector<T>(sz /= sizeof(T), 0.0)},
-        needRestart_{needRestart} {}
+        values_{std::vector<T>(sz /= sizeof(T), initial_value)},
+        needRestart_{needRestart}, initialValue_{initial_value} {}
 
     OperationWithData(const std::string& name, const std::string& operation, long sz, bool needRestart,
                       const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
-                      const StatisticsConfiguration& cfg) :
-        Operation{name, operation, win, cfg}, values_{std::vector<T>(sz /= sizeof(T), 0.0)}, needRestart_{needRestart} {
+                      const StatisticsConfiguration& cfg, T initial_value = 0.0) :
+        Operation{name, operation, win, cfg}, values_{std::vector<T>(sz /= sizeof(T), initial_value)}, needRestart_{needRestart},
+        initialValue_{initial_value}
+    {
         load(IOmanager, cfg);
-        return;
     }
 
     void updateWindow(const void* data, long sz, const message::Message& msg,
                       const StatisticsConfiguration& cfg) override {
-        std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
-        return;
+        std::fill(values_.begin(), values_.end(), initialValue_);
     };
 
     void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) override {
-        std::transform(values_.begin(), values_.end(), values_.begin(), [](T v) { return static_cast<T>(0.0); });
-        return;
+        std::fill(values_.begin(), values_.end(), initialValue_);
     };
 
     void init(const void* data, long sz, const message::Message& msg, const StatisticsConfiguration& cfg) override {
@@ -114,6 +113,7 @@ protected:
 
 private:
     bool needRestart_;
+    const T initialValue_;
 };
 
 }  // namespace multio::action

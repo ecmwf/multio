@@ -208,17 +208,11 @@ IMPLICIT NONE
     LOOKUP_TABLE(LOOKUP_TABLE_BWD(I)) = I
   ENDDO
 
-  ! WRITE(*,*) LOOKUP_TABLE_BWD
-  ! WRITE(*,*) ' + MIN: ', MIN_PARAM_ID
-  ! WRITE(*,*) ' + MAX: ', MAX_PARAM_ID
-  ! WRITE(*,*) ' + NUM: ', NUM_PARAM_ID
-
+  ! Print the unique set of paramId in the configuration
   CALL MAP_PRINT( MAP, 'test', 0_JPIB_K )
 
   ! Free the map
   CALL MAP_FREE( MAP )
-
-  ! WRITE(*,*) 'DEBUG CODE:: ', ALLOCATED(RULES)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -888,29 +882,6 @@ IMPLICIT NONE
       PP_DEBUG_CRITICAL_THROW( 3 )
     ENDIF
 
-!  Need introspection in FCKit to handle this case!!
-!  ELSEIF ( CFG%GET( 'levtype', CLTMP  ) ) THEN
-!
-!    IF ( ALLOCATED(ATMP) ) THEN
-!
-!      ! Allocate levtype rule
-!      ALLOCATE(MATCHER%LEV_TYPE(1), STAT=STAT, ERRMSG=ERRMSG )
-!      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
-!
-!      ! Convert levtype to integer and store it in the rule
-!      MATCHER%LEV_TYPE(1) = CLEVTYPE2ILEVTYPE( CLTMP )
-!      IF ( VERBOSE ) THEN
-!        WRITE(ERROR_UNIT,*) 'levtype: ', MATCHER%LEV_TYPE(1), CLTMP, SIZE(MATCHER%LEV_TYPE)
-!      ENDIF
-!
-!      ! Free the temporary string array
-!      DEALLOCATE(CLTMP, STAT=STAT, ERRMSG=ERRMSG )
-!      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 2 )
-!
-!    ELSE
-!      PP_DEBUG_CRITICAL_THROW( 3 )
-!    ENDIF
-
   ENDIF
 
 
@@ -940,29 +911,6 @@ IMPLICIT NONE
       PP_DEBUG_CRITICAL_THROW( 6 )
     ENDIF
 
-!  Need introspection in FCKit to handle this case!!
-!  ELSEIF ( CFG%GET( 'repres', CLTMP  ) ) THEN
-!
-!    IF ( ALLOCATED(CLTMP) ) THEN
-!
-!      ! Allocate repres rule
-!      ALLOCATE(MATCHER%REPRES(1), STAT=STAT, ERRMSG=ERRMSG )
-!      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 4)
-!
-!      ! Convert repres to integer and store it in the rule
-!      MATCHER%REPRES(1) = CREPRES2IREPRES( CLTMP )
-!      IF ( VERBOSE ) THEN
-!        WRITE(ERROR_UNIT,*) 'repres: ', MATCHER%REPRES(1), CLTMP, SIZE(MATCHER%REPRES)
-!      ENDIF
-!
-!      ! Free the temporary string array
-!      DEALLOCATE(CLTMP, STAT=STAT, ERRMSG=ERRMSG )
-!      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 5 )
-!
-!    ELSE
-!      PP_DEBUG_CRITICAL_THROW( 6 )
-!    ENDIF
-!
   ENDIF
 
 
@@ -992,31 +940,6 @@ IMPLICIT NONE
     ELSE
       PP_DEBUG_CRITICAL_THROW( 10 )
     ENDIF
-
-!  Need introspection in FCKit to handle this case!!
-!  ELSEIF ( CFG%GET( 'level', CLTMP  ) ) THEN
-!
-!    IF ( ALLOCATED(CLTMP) ) THEN
-!
-!      ! Allocate level rule
-!      ALLOCATE( MATCHER%LEVEL(1), STAT=STAT, ERRMSG=ERRMSG )
-!      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 7 )
-!
-!      ! Store level in the rule
-!        PP_DEBUG_CRITICAL_COND_THROW( .NOT.IS_INTEGER( CLTMP ), 8 )
-!        READ(CLTMP,*) ITMP
-!        MATCHER%LEVEL(1) = ITMP
-!        IF ( VERBOSE ) THEN
-!          WRITE(ERROR_UNIT,*) 'level: ', MATCHER%LEVEL(1), CLTMP, SIZE(MATCHER%LEVEL)
-!        ENDIF
-!
-!      ! Free the temporary string array
-!      DEALLOCATE(CLTMP, STAT=STAT, ERRMSG=ERRMSG )
-!      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 9 )
-!
-!    ELSE
-!      PP_DEBUG_CRITICAL_THROW( 10 )
-!    ENDIF
 
   ENDIF
 
@@ -1537,8 +1460,6 @@ IMPLICIT NONE
   ! Search loop
   RMATCH = '( '
   DO I = 1, SIZE(RULES)
-    !WRITE(*,*) ' '
-    !WRITE(*,*) ' CHECKING RULE(',I,'): ', RULES(I)%NAME
 
     ! Initialize the mathc variable
     MATCH = ANY( [ ALLOCATED(RULES(I)%MATCHER%LEV_TYPE), &

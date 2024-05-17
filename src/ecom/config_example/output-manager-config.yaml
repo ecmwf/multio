@@ -64,7 +64,7 @@ encoding-rules:
         packingType: 'grid_simple'
 
 
-    - rule: 'grib1_sol_gridded'
+    - rule: 'grib2_sol_gridded'
       filter:
         levtype: ['sol']
         repres: ['gridded']

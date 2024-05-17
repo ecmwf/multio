@@ -28,11 +28,11 @@ bool process_join_leave_events(MaestroSubscription& join_leave_subscription) {
                 case MSTRO_POOL_EVENT_APP_JOIN:
                     ++nbJoiners;
                     LOG_DEBUG_LIB(LibMultio)
-                        << " *** Application " << tmp->join.component_name << " is joining" << std::endl;
+                        << " *** Application " << tmp->payload.join.component_name << " is joining" << std::endl;
                     break;
                 case MSTRO_POOL_EVENT_APP_LEAVE:
                     ++nbLeavers;
-                    LOG_DEBUG_LIB(LibMultio) << " *** Application " << tmp->leave.appid << " is leaving" << std::endl;
+                    LOG_DEBUG_LIB(LibMultio) << " *** Application " << tmp->payload.leave.appid << " is leaving" << std::endl;
                     break;
                 default:
                     std::ostringstream os;

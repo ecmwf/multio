@@ -564,7 +564,7 @@ contains
         fstr = transfer(tmp(1:length), fstr)
     end function
 
-    subroutine failure_handler_wrapper(context_id, error, info) &
+    subroutine multio_failure_handler_wrapper(context_id, error, info) &
                 bind(c)
         type(c_ptr), value :: context_id
         integer(c_int), intent(in), value :: error
@@ -754,7 +754,7 @@ contains
 
         new_id_loc = failure_info_list%add(handler_fn, context)
         call c_f_pointer(new_id_loc, cc%failure_id)
-        err = c_multio_config_set_failure_handler(cc%impl, c_funloc(failure_handler_wrapper), new_id_loc)
+        err = c_multio_config_set_failure_handler(cc%impl, c_funloc(multio_failure_handler_wrapper), new_id_loc)
 
         if(ASSOCIATED(old_id)) then
             call failure_info_list%remove(old_id)
@@ -789,7 +789,7 @@ contains
 
         new_id_loc = failure_info_list%add(handler_fn, context)
         call c_f_pointer(new_id_loc, mio%failure_id)
-        err = c_multio_handle_set_failure_handler(mio%impl, c_funloc(failure_handler_wrapper), new_id_loc)
+        err = c_multio_handle_set_failure_handler(mio%impl, c_funloc(multio_failure_handler_wrapper), new_id_loc)
 
         if(ASSOCIATED(old_id)) then
             call failure_info_list%remove(old_id)

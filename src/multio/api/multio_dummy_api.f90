@@ -111,7 +111,7 @@ contains
         err = 0
     end function
 
-    subroutine failure_handler_wrapper(unused_context, error)
+    subroutine multio_failure_handler_wrapper(unused_context, error)
         type(c_ptr), value :: unused_context
         integer(c_long), intent(in), value :: error
     end subroutine

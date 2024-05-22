@@ -114,7 +114,7 @@ contains
         ! Function Result
         type(c_funptr) :: c_addr
         ! Implementation
-        c_addr = c_funloc(failure_handler_wrapper)
+        c_addr = c_funloc(multio_failure_handler_wrapper)
         ! Exit point
         return
     end function multio_fort_failure_wrapper_addr
@@ -298,8 +298,8 @@ contains
     !! @param [in] c_error  Identifier of the error.
     !! @param [in] c_info   Opaque information about the error.
     !!
-    subroutine failure_handler_wrapper(c_pidx, c_error, c_info) &
-                bind(c, name='failure_handler_wrapper')
+    subroutine multio_failure_handler_wrapper(c_pidx, c_error, c_info) &
+                bind(c, name='multio_failure_handler_wrapper')
 
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding, only: c_ptr
@@ -326,6 +326,6 @@ contains
 #endif
         ! Exit point
         return
-    end subroutine failure_handler_wrapper
+    end subroutine multio_failure_handler_wrapper
 
 end module multio_api_error_handling_mod

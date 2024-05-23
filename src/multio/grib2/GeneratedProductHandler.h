@@ -50,12 +50,12 @@ namespace multio::grib2 {
 
 enum class KeyTypes : unsigned int
 {
-    FloatType,
     IntType,
-    StringArrayType,
     StringType,
-    FloatArrayType,
+    FloatType,
     IntArrayType,
+    StringArrayType,
+    FloatArrayType,
 };
 
 
@@ -83,7 +83,18 @@ struct Grib2ProductHandler {
     enum class TimeFormat : unsigned int
     {
         None = 0,
+        WithReferencePeriod,
         LocalTime,
+    };
+
+
+    enum class SpatialExtent : unsigned int
+    {
+        None = 0,
+        ClusterStatRectangular,
+        GeneralisedTile,
+        ClusterStatCircular,
+        FocalStatistics,
     };
 
 
@@ -91,62 +102,60 @@ struct Grib2ProductHandler {
     {
         None = 0,
         Percentile,
-        IndividualEnsemble,
-        Probability,
-        DerivedEnsemble,
-        Categorial,
         Quantile,
-    };
-
-
-    enum class ProductCategory : unsigned int
-    {
-        None = 0,
-        SpatialStatisticalProcessing,
-        ReferencePeriod,
-        CcittIA5,
-        SpatioTemporalTile,
-        Wave,
-        PostProcess,
-        Optical,
-        Partitioned,
-        Chemical,
-        CrossSect,
-        Radar,
-        Aerosol,
-        Hovmoeller,
-        Satellite,
-    };
-
-
-    enum class ProductSubCategory : unsigned int
-    {
-        None = 0,
-        Srcsink,
-        Distribution,
-        StatisticalOverLatLong,
-        Optical,
-        SpectraFormula,
-        PeriodRange,
-        QualityValue,
-        OpticalSrcsink,
-        SpectraList,
+        Categorial,
+        DerivedForecast,
+        Reforecast,
+        Probability,
     };
 
 
     enum class ProcessSubType : unsigned int
     {
         None = 0,
-        ClusterStatRectangular,
-        Reforecast,
-        ClusterStatCircular,
+        Ensemble,
+    };
+
+
+    enum class ProductCategory : unsigned int
+    {
+        None = 0,
+        Wave,
+        Hovmoeller,
+        Partitioned,
+        CcittIA5,
+        Satellite,
+        Radar,
+        Aerosol,
+        SpatioTemporalTile,
+        Optical,
+        Chemical,
+        CrossSect,
+        PostProcess,
+        SpatialStatisticalProcessing,
+    };
+
+
+    enum class ProductSubCategory : unsigned int
+    {
+        None = 0,
+        RadioNuclide,
+        SpectraFormula,
+        OpticalSourceSink,
+        StatisticalOverLatLong,
+        Distribution,
+        QualityValue,
+        Optical,
+        PeriodRange,
+        SourceSink,
+        SpectraList,
     };
 
 
     TimeExtent parseTimeExtent(std::optional<std::string> val) const {
-        static const std::unordered_map<std::string, TimeExtent> map{{{"timeRange", TimeExtent::TimeRange},
-                                                                      {"pointInTime", TimeExtent::PointInTime},
-                                                                      {"None", TimeExtent::None}}};
+        static const std::unordered_map<std::string, TimeExtent> map{{{"None", TimeExtent::None},
+                                                                      {"timeRange", TimeExtent::TimeRange},
+                                                                      {"pointInTime", TimeExtent::PointInTime}}};
 
         if (!val) {
             return TimeExtent::None;
@@ -158,13 +167,15 @@ struct Grib2ProductHandler {
         }
         throw message::MetadataException{
             std::string("parseTimeExtent(") + *val
-            + std::string("): Value for timeExtent does not match on of the following [timeRange, pointInTime, None]")};
+            + std::string("): Value for timeExtent does not match on of the following [None, timeRange, pointInTime]")};
     }
 
 
     TimeFormat parseTimeFormat(std::optional<std::string> val) const {
         static const std::unordered_map<std::string, TimeFormat> map{
-            {{"localTime", TimeFormat::LocalTime}, {"None", TimeFormat::None}}};
+            {{"withReferencePeriod", TimeFormat::WithReferencePeriod},
+             {"None", TimeFormat::None},
+             {"localTime", TimeFormat::LocalTime}}};
 
         if (!val) {
             return TimeFormat::None;
@@ -176,19 +187,43 @@ struct Grib2ProductHandler {
         }
         throw message::MetadataException{
             std::string("parseTimeFormat(") + *val
-            + std::string("): Value for timeFormat does not match on of the following [localTime, None]")};
+            + std::string(
+                "): Value for timeFormat does not match on of the following [withReferencePeriod, None, localTime]")};
+    }
+
+
+    SpatialExtent parseSpatialExtent(std::optional<std::string> val) const {
+        static const std::unordered_map<std::string, SpatialExtent> map{
+            {{"generalisedTile", SpatialExtent::GeneralisedTile},
+             {"focalStatistics", SpatialExtent::FocalStatistics},
+             {"None", SpatialExtent::None},
+             {"clusterStatCircular", SpatialExtent::ClusterStatCircular},
+             {"clusterStatRectangular", SpatialExtent::ClusterStatRectangular}}};
+
+        if (!val) {
+            return SpatialExtent::None;
+        }
+
+        auto it = map.find(*val);
+        if (it != map.end()) {
+            return it->second;
+        }
+        throw message::MetadataException{
+            std::string("parseSpatialExtent(") + *val
+            + std::string("): Value for spatialExtent does not match on of the following [generalisedTile, "
+                          "focalStatistics, None, clusterStatCircular, clusterStatRectangular]")};
     }
 
 
     ProcessType parseProcessType(std::optional<std::string> val) const {
         static const std::unordered_map<std::string, ProcessType> map{
             {{"percentile", ProcessType::Percentile},
-             {"individualEnsemble", ProcessType::IndividualEnsemble},
-             {"probability", ProcessType::Probability},
-             {"derivedEnsemble", ProcessType::DerivedEnsemble},
-             {"categorial", ProcessType::Categorial},
+             {"None", ProcessType::None},
              {"quantile", ProcessType::Quantile},
-             {"None", ProcessType::None}}};
+             {"derivedForecast", ProcessType::DerivedForecast},
+             {"categorial", ProcessType::Categorial},
+             {"reforecast", ProcessType::Reforecast},
+             {"probability", ProcessType::Probability}}};
 
         if (!val) {
             return ProcessType::None;
@@ -200,81 +235,14 @@ struct Grib2ProductHandler {
         }
         throw message::MetadataException{
             std::string("parseProcessType(") + *val
-            + std::string("): Value for processType does not match on of the following [percentile, "
-                          "individualEnsemble, probability, derivedEnsemble, categorial, quantile, None]")};
-    }
-
-
-    ProductCategory parseProductCategory(std::optional<std::string> val) const {
-        static const std::unordered_map<std::string, ProductCategory> map{
-            {{"spatialStatisticalProcessing", ProductCategory::SpatialStatisticalProcessing},
-             {"referencePeriod", ProductCategory::ReferencePeriod},
-             {"ccittIA5", ProductCategory::CcittIA5},
-             {"spatioTemporalTile", ProductCategory::SpatioTemporalTile},
-             {"wave", ProductCategory::Wave},
-             {"postProcess", ProductCategory::PostProcess},
-             {"optical", ProductCategory::Optical},
-             {"partitioned", ProductCategory::Partitioned},
-             {"chemical", ProductCategory::Chemical},
-             {"crossSect", ProductCategory::CrossSect},
-             {"radar", ProductCategory::Radar},
-             {"aerosol", ProductCategory::Aerosol},
-             {"hovmoeller", ProductCategory::Hovmoeller},
-             {"satellite", ProductCategory::Satellite},
-             {"None", ProductCategory::None}}};
-
-        if (!val) {
-            return ProductCategory::None;
-        }
-
-        auto it = map.find(*val);
-        if (it != map.end()) {
-            return it->second;
-        }
-        throw message::MetadataException{
-            std::string("parseProductCategory(") + *val
-            + std::string(
-                "): Value for productCategory does not match on of the following [spatialStatisticalProcessing, "
-                "referencePeriod, ccittIA5, spatioTemporalTile, wave, postProcess, optical, partitioned, chemical, "
-                "crossSect, radar, aerosol, hovmoeller, satellite, None]")};
-    }
-
-
-    ProductSubCategory parseProductSubCategory(std::optional<std::string> val) const {
-        static const std::unordered_map<std::string, ProductSubCategory> map{
-            {{"srcsink", ProductSubCategory::Srcsink},
-             {"distribution", ProductSubCategory::Distribution},
-             {"statisticalOverLatLong", ProductSubCategory::StatisticalOverLatLong},
-             {"optical", ProductSubCategory::Optical},
-             {"spectraFormula", ProductSubCategory::SpectraFormula},
-             {"periodRange", ProductSubCategory::PeriodRange},
-             {"qualityValue", ProductSubCategory::QualityValue},
-             {"opticalSrcsink", ProductSubCategory::OpticalSrcsink},
-             {"spectraList", ProductSubCategory::SpectraList},
-             {"None", ProductSubCategory::None}}};
-
-        if (!val) {
-            return ProductSubCategory::None;
-        }
-
-        auto it = map.find(*val);
-        if (it != map.end()) {
-            return it->second;
-        }
-        throw message::MetadataException{
-            std::string("parseProductSubCategory(") + *val
-            + std::string("): Value for productSubCategory does not match on of the following [srcsink, distribution, "
-                          "statisticalOverLatLong, optical, spectraFormula, periodRange, qualityValue, opticalSrcsink, "
-                          "spectraList, None]")};
+            + std::string("): Value for processType does not match on of the following [percentile, None, quantile, "
+                          "derivedForecast, categorial, reforecast, probability]")};
     }
 
 
     ProcessSubType parseProcessSubType(std::optional<std::string> val) const {
         static const std::unordered_map<std::string, ProcessSubType> map{
-            {{"clusterStatCircular", ProcessSubType::ClusterStatCircular},
-             {"clusterStatRectangular", ProcessSubType::ClusterStatRectangular},
-             {"reforecast", ProcessSubType::Reforecast},
-             {"None", ProcessSubType::None}}};
+            {{"None", ProcessSubType::None}, {"ensemble", ProcessSubType::Ensemble}}};
 
         if (!val) {
             return ProcessSubType::None;
@@ -286,8 +254,70 @@ struct Grib2ProductHandler {
         }
         throw message::MetadataException{
             std::string("parseProcessSubType(") + *val
-            + std::string("): Value for processSubType does not match on of the following [clusterStatCircular, "
-                          "clusterStatRectangular, reforecast, None]")};
+            + std::string("): Value for processSubType does not match on of the following [None, ensemble]")};
+    }
+
+
+    ProductCategory parseProductCategory(std::optional<std::string> val) const {
+        static const std::unordered_map<std::string, ProductCategory> map{
+            {{"wave", ProductCategory::Wave},
+             {"hovmoeller", ProductCategory::Hovmoeller},
+             {"partitioned", ProductCategory::Partitioned},
+             {"ccittIA5", ProductCategory::CcittIA5},
+             {"None", ProductCategory::None},
+             {"satellite", ProductCategory::Satellite},
+             {"radar", ProductCategory::Radar},
+             {"aerosol", ProductCategory::Aerosol},
+             {"spatioTemporalTile", ProductCategory::SpatioTemporalTile},
+             {"optical", ProductCategory::Optical},
+             {"chemical", ProductCategory::Chemical},
+             {"crossSect", ProductCategory::CrossSect},
+             {"postProcess", ProductCategory::PostProcess},
+             {"spatialStatisticalProcessing", ProductCategory::SpatialStatisticalProcessing}}};
+
+        if (!val) {
+            return ProductCategory::None;
+        }
+
+        auto it = map.find(*val);
+        if (it != map.end()) {
+            return it->second;
+        }
+        throw message::MetadataException{
+            std::string("parseProductCategory(") + *val
+            + std::string("): Value for productCategory does not match on of the following [wave, hovmoeller, "
+                          "partitioned, ccittIA5, None, satellite, radar, aerosol, spatioTemporalTile, optical, "
+                          "chemical, crossSect, postProcess, spatialStatisticalProcessing]")};
+    }
+
+
+    ProductSubCategory parseProductSubCategory(std::optional<std::string> val) const {
+        static const std::unordered_map<std::string, ProductSubCategory> map{
+            {{"radioNuclide", ProductSubCategory::RadioNuclide},
+             {"spectraFormula", ProductSubCategory::SpectraFormula},
+             {"opticalSourceSink", ProductSubCategory::OpticalSourceSink},
+             {"statisticalOverLatLong", ProductSubCategory::StatisticalOverLatLong},
+             {"None", ProductSubCategory::None},
+             {"distribution", ProductSubCategory::Distribution},
+             {"qualityValue", ProductSubCategory::QualityValue},
+             {"optical", ProductSubCategory::Optical},
+             {"periodRange", ProductSubCategory::PeriodRange},
+             {"sourceSink", ProductSubCategory::SourceSink},
+             {"spectraList", ProductSubCategory::SpectraList}}};
+
+        if (!val) {
+            return ProductSubCategory::None;
+        }
+
+        auto it = map.find(*val);
+        if (it != map.end()) {
+            return it->second;
+        }
+        throw message::MetadataException{
+            std::string("parseProductSubCategory(") + *val
+            + std::string("): Value for productSubCategory does not match on of the following [radioNuclide, "
+                          "spectraFormula, opticalSourceSink, statisticalOverLatLong, None, distribution, "
+                          "qualityValue, optical, periodRange, sourceSink, spectraList]")};
     }
 
 
@@ -296,144 +326,184 @@ struct Grib2ProductHandler {
         std::unordered_map<
             TimeFormat,
             std::unordered_map<
-                ProcessType,
+                SpatialExtent,
                 std::unordered_map<
-                    ProcessSubType,
-                    std::unordered_map<ProductCategory, std::unordered_map<ProductSubCategory, std::int64_t>>>>>>;
+                    ProcessType,
+                    std::unordered_map<
+                        ProcessSubType,
+                        std::unordered_map<ProductCategory, std::unordered_map<ProductSubCategory, std::int64_t>>>>>>>;
 
     std::int64_t inferProductDefinitionTemplateNumber(const message::Metadata& metadata) const {
         // TODO may be read from file in future
         static const DecisionMap map{
-            {{TimeExtent::TimeRange,
-              {{TimeFormat::LocalTime,
-                {{ProcessType::IndividualEnsemble,
-                  {{ProcessSubType::None,
-                    {{ProductCategory::PostProcess, {{ProductSubCategory::None, 98}}},
-                     {ProductCategory::None, {{ProductSubCategory::None, 96}}}}}}},
-                 {ProcessType::None,
-                  {{ProcessSubType::None,
-                    {{ProductCategory::PostProcess, {{ProductSubCategory::None, 97}}},
-                     {ProductCategory::None, {{ProductSubCategory::None, 95}}}}}}}}},
-               {TimeFormat::None,
-                {{ProcessType::Percentile,
-                  {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 10}}}}}}},
-                 {ProcessType::IndividualEnsemble,
-                  {{ProcessSubType::Reforecast, {{ProductCategory::None, {{ProductSubCategory::None, 61}}}}},
-                   {ProcessSubType::None,
-                    {{ProductCategory::ReferencePeriod, {{ProductSubCategory::None, 106}}},
-                     {ProductCategory::SpatioTemporalTile, {{ProductSubCategory::None, 63}}},
-                     {ProductCategory::PostProcess, {{ProductSubCategory::None, 73}}},
-                     {ProductCategory::Optical, {{ProductSubCategory::None, 111}}},
-                     {ProductCategory::Chemical,
-                      {{ProductSubCategory::Distribution, 68},
-                       {ProductSubCategory::Srcsink, 79},
-                       {ProductSubCategory::None, 43}}},
-                     {ProductCategory::Aerosol, {{ProductSubCategory::Srcsink, 84}, {ProductSubCategory::None, 85}}},
-                     {ProductCategory::Satellite, {{ProductSubCategory::None, 34}}},
-                     {ProductCategory::None, {{ProductSubCategory::None, 11}}}}}}},
-                 {ProcessType::Probability,
-                  {{ProcessSubType::None,
-                    {{ProductCategory::ReferencePeriod, {{ProductSubCategory::None, 112}}},
-                     {ProductCategory::None, {{ProductSubCategory::None, 9}}}}}}},
-                 {ProcessType::DerivedEnsemble,
-                  {{ProcessSubType::ClusterStatCircular, {{ProductCategory::None, {{ProductSubCategory::None, 14}}}}},
-                   {ProcessSubType::ClusterStatRectangular,
-                    {{ProductCategory::None, {{ProductSubCategory::None, 13}}}}},
-                   {ProcessSubType::None,
-                    {{ProductCategory::ReferencePeriod, {{ProductSubCategory::None, 107}}},
-                     {ProductCategory::None, {{ProductSubCategory::None, 12}}}}}}},
-                 {ProcessType::Categorial,
-                  {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 91}}}}}}},
-                 {ProcessType::Quantile,
-                  {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 87}}}}}}},
-                 {ProcessType::None,
-                  {{ProcessSubType::None,
-                    {{ProductCategory::ReferencePeriod, {{ProductSubCategory::None, 105}}},
-                     {ProductCategory::SpatioTemporalTile, {{ProductSubCategory::None, 62}}},
-                     {ProductCategory::PostProcess, {{ProductSubCategory::None, 72}}},
-                     {ProductCategory::Optical, {{ProductSubCategory::None, 110}}},
-                     {ProductCategory::Chemical,
-                      {{ProductSubCategory::Distribution, 67},
-                       {ProductSubCategory::Srcsink, 78},
-                       {ProductSubCategory::None, 42}}},
-                     {ProductCategory::CrossSect, {{ProductSubCategory::None, 1001}}},
-                     {ProductCategory::Aerosol, {{ProductSubCategory::Srcsink, 82}, {ProductSubCategory::None, 46}}},
-                     {ProductCategory::Hovmoeller, {{ProductSubCategory::None, 1101}}},
-                     {ProductCategory::None, {{ProductSubCategory::None, 8}}}}}}}}}}},
-             {TimeExtent::PointInTime,
-              {{TimeFormat::LocalTime,
-                {{ProcessType::IndividualEnsemble,
-                  {{ProcessSubType::None,
-                    {{ProductCategory::PostProcess, {{ProductSubCategory::None, 94}}},
-                     {ProductCategory::None, {{ProductSubCategory::None, 92}}}}}}},
-                 {ProcessType::None,
-                  {{ProcessSubType::None,
-                    {{ProductCategory::PostProcess, {{ProductSubCategory::None, 93}}},
-                     {ProductCategory::None, {{ProductSubCategory::None, 88}}}}}}}}},
-               {TimeFormat::None,
-                {{ProcessType::Percentile,
-                  {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 6}}}}}}},
-                 {ProcessType::IndividualEnsemble,
-                  {{ProcessSubType::Reforecast, {{ProductCategory::None, {{ProductSubCategory::None, 60}}}}},
-                   {ProcessSubType::None,
-                    {{ProductCategory::SpatioTemporalTile, {{ProductSubCategory::None, 59}}},
-                     {ProductCategory::Wave,
-                      {{ProductSubCategory::SpectraList, 100},
-                       {ProductSubCategory::SpectraFormula, 102},
-                       {ProductSubCategory::PeriodRange, 104}}},
-                     {ProductCategory::PostProcess, {{ProductSubCategory::None, 71}}},
-                     {ProductCategory::Optical, {{ProductSubCategory::None, 109}}},
-                     {ProductCategory::Partitioned, {{ProductSubCategory::None, 54}}},
-                     {ProductCategory::Chemical,
-                      {{ProductSubCategory::Distribution, 58},
-                       {ProductSubCategory::Srcsink, 77},
-                       {ProductSubCategory::None, 41}}},
-                     {ProductCategory::Aerosol,
-                      {{ProductSubCategory::OpticalSrcsink, 81},
-                       {ProductSubCategory::Optical, 49},
-                       {ProductSubCategory::None, 45}}},
-                     {ProductCategory::Satellite, {{ProductSubCategory::None, 33}}},
-                     {ProductCategory::None, {{ProductSubCategory::None, 1}}}}}}},
-                 {ProcessType::Probability,
-                  {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 5}}}}}}},
-                 {ProcessType::DerivedEnsemble,
-                  {{ProcessSubType::ClusterStatCircular, {{ProductCategory::None, {{ProductSubCategory::None, 4}}}}},
-                   {ProcessSubType::ClusterStatRectangular, {{ProductCategory::None, {{ProductSubCategory::None, 3}}}}},
-                   {ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 2}}}}}}},
-                 {ProcessType::Categorial,
-                  {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 51}}}}}}},
-                 {ProcessType::Quantile,
-                  {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 86}}}}}}},
-                 {ProcessType::None,
-                  {{ProcessSubType::None,
-                    {{ProductCategory::SpatialStatisticalProcessing, {{ProductSubCategory::None, 15}}},
-                     {ProductCategory::SpatioTemporalTile, {{ProductSubCategory::None, 55}}},
-                     {ProductCategory::Wave,
-                      {{ProductSubCategory::SpectraList, 99},
-                       {ProductSubCategory::SpectraFormula, 101},
-                       {ProductSubCategory::PeriodRange, 103}}},
-                     {ProductCategory::PostProcess, {{ProductSubCategory::None, 70}}},
-                     {ProductCategory::Optical, {{ProductSubCategory::None, 108}}},
-                     {ProductCategory::Partitioned, {{ProductSubCategory::None, 53}}},
-                     {ProductCategory::Chemical,
-                      {{ProductSubCategory::Distribution, 57},
-                       {ProductSubCategory::Srcsink, 76},
-                       {ProductSubCategory::None, 40}}},
-                     {ProductCategory::CrossSect,
-                      {{ProductSubCategory::StatisticalOverLatLong, 1002}, {ProductSubCategory::None, 1000}}},
-                     {ProductCategory::Aerosol,
-                      {{ProductSubCategory::OpticalSrcsink, 80}, {ProductSubCategory::Optical, 48}}},
-                     {ProductCategory::Hovmoeller, {{ProductSubCategory::None, 1100}}},
-                     {ProductCategory::Satellite, {{ProductSubCategory::None, 32}}},
-                     {ProductCategory::None, {{ProductSubCategory::None, 0}}}}}}}}}}},
-             {TimeExtent::None,
+            {{TimeExtent::None,
               {{TimeFormat::None,
-                {{ProcessType::None,
-                  {{ProcessSubType::None,
-                    {{ProductCategory::Radar, {{ProductSubCategory::None, 20}}},
-                     {ProductCategory::Satellite,
-                      {{ProductSubCategory::QualityValue, 35}, {ProductSubCategory::None, 31}}},
-                     {ProductCategory::CcittIA5, {{ProductSubCategory::None, 254}}}}}}}}}}}}};
+                {{SpatialExtent::None,
+                  {{ProcessType::None,
+                    {{ProcessSubType::None,
+                      {{ProductCategory::CcittIA5, {{ProductSubCategory::None, 254}}},
+                       {ProductCategory::Satellite,
+                        {{ProductSubCategory::None, 31}, {ProductSubCategory::QualityValue, 35}}},
+                       {ProductCategory::Radar, {{ProductSubCategory::None, 20}}}}}}}}}}}}},
+             {TimeExtent::TimeRange,
+              {{TimeFormat::WithReferencePeriod,
+                {{SpatialExtent::None,
+                  {{ProcessType::None,
+                    {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 105}}}}},
+                     {ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 106}}}}}}},
+                   {ProcessType::DerivedForecast,
+                    {{ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 107}}}}}}},
+                   {ProcessType::Probability,
+                    {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 112}}}}}}}}},
+                 {SpatialExtent::FocalStatistics,
+                  {{ProcessType::Probability,
+                    {{ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 123}}}}}}}}}}},
+               {TimeFormat::None,
+                {{SpatialExtent::GeneralisedTile,
+                  {{ProcessType::None,
+                    {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 114}}}}},
+                     {ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 116}}}}}}}}},
+                 {SpatialExtent::FocalStatistics,
+                  {{ProcessType::Probability,
+                    {{ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 122}}}}}}}}},
+                 {SpatialExtent::None,
+                  {{ProcessType::Percentile,
+                    {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 10}}}}}}},
+                   {ProcessType::None,
+                    {{ProcessSubType::None,
+                      {{ProductCategory::Hovmoeller, {{ProductSubCategory::None, 1101}}},
+                       {ProductCategory::None, {{ProductSubCategory::None, 8}}},
+                       {ProductCategory::Aerosol,
+                        {{ProductSubCategory::None, 46}, {ProductSubCategory::SourceSink, 82}}},
+                       {ProductCategory::Chemical,
+                        {{ProductSubCategory::RadioNuclide, 126},
+                         {ProductSubCategory::None, 42},
+                         {ProductSubCategory::Distribution, 67},
+                         {ProductSubCategory::SourceSink, 78}}},
+                       {ProductCategory::Optical, {{ProductSubCategory::None, 110}}},
+                       {ProductCategory::CrossSect, {{ProductSubCategory::None, 1001}}},
+                       {ProductCategory::PostProcess, {{ProductSubCategory::None, 72}}},
+                       {ProductCategory::SpatioTemporalTile, {{ProductSubCategory::None, 62}}}}},
+                     {ProcessSubType::Ensemble,
+                      {{ProductCategory::None, {{ProductSubCategory::None, 118}}},
+                       {ProductCategory::Aerosol,
+                        {{ProductSubCategory::None, 85}, {ProductSubCategory::SourceSink, 84}}},
+                       {ProductCategory::Satellite, {{ProductSubCategory::None, 34}}},
+                       {ProductCategory::Chemical,
+                        {{ProductSubCategory::RadioNuclide, 127},
+                         {ProductSubCategory::None, 43},
+                         {ProductSubCategory::Distribution, 68},
+                         {ProductSubCategory::SourceSink, 79}}},
+                       {ProductCategory::Optical, {{ProductSubCategory::None, 111}}},
+                       {ProductCategory::PostProcess, {{ProductSubCategory::None, 73}}},
+                       {ProductCategory::SpatioTemporalTile, {{ProductSubCategory::None, 63}}}}}}},
+                   {ProcessType::Quantile,
+                    {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 87}}}}}}},
+                   {ProcessType::DerivedForecast,
+                    {{ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 12}}}}}}},
+                   {ProcessType::Categorial,
+                    {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 91}}}}}}},
+                   {ProcessType::Reforecast,
+                    {{ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 61}}}}}}},
+                   {ProcessType::Probability,
+                    {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 9}}}}},
+                     {ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 120}}}}}}}}},
+                 {SpatialExtent::ClusterStatCircular,
+                  {{ProcessType::DerivedForecast,
+                    {{ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 14}}}}}}}}},
+                 {SpatialExtent::ClusterStatRectangular,
+                  {{ProcessType::DerivedForecast,
+                    {{ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 13}}}}}}}}}}},
+               {TimeFormat::LocalTime,
+                {{SpatialExtent::None,
+                  {{ProcessType::None,
+                    {{ProcessSubType::None,
+                      {{ProductCategory::PostProcess, {{ProductSubCategory::None, 97}}},
+                       {ProductCategory::None, {{ProductSubCategory::None, 95}}}}},
+                     {ProcessSubType::Ensemble,
+                      {{ProductCategory::PostProcess, {{ProductSubCategory::None, 98}}},
+                       {ProductCategory::None, {{ProductSubCategory::None, 96}}}}}}}}}}}}},
+             {TimeExtent::PointInTime,
+              {{TimeFormat::None,
+                {{SpatialExtent::GeneralisedTile,
+                  {{ProcessType::None,
+                    {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 113}}}}},
+                     {ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 115}}}}}}}}},
+                 {SpatialExtent::FocalStatistics,
+                  {{ProcessType::Probability,
+                    {{ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 121}}}}}}}}},
+                 {SpatialExtent::None,
+                  {{ProcessType::Percentile,
+                    {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 6}}}}}}},
+                   {ProcessType::None,
+                    {{ProcessSubType::None,
+                      {{ProductCategory::Wave,
+                        {{ProductSubCategory::SpectraList, 99},
+                         {ProductSubCategory::PeriodRange, 103},
+                         {ProductSubCategory::SpectraFormula, 101}}},
+                       {ProductCategory::SpatialStatisticalProcessing, {{ProductSubCategory::None, 15}}},
+                       {ProductCategory::Hovmoeller, {{ProductSubCategory::None, 1100}}},
+                       {ProductCategory::Partitioned, {{ProductSubCategory::None, 53}}},
+                       {ProductCategory::None, {{ProductSubCategory::None, 0}}},
+                       {ProductCategory::Aerosol,
+                        {{ProductSubCategory::OpticalSourceSink, 80}, {ProductSubCategory::Optical, 48}}},
+                       {ProductCategory::Satellite, {{ProductSubCategory::None, 32}}},
+                       {ProductCategory::Chemical,
+                        {{ProductSubCategory::RadioNuclide, 124},
+                         {ProductSubCategory::None, 40},
+                         {ProductSubCategory::Distribution, 57},
+                         {ProductSubCategory::SourceSink, 76}}},
+                       {ProductCategory::Optical, {{ProductSubCategory::None, 108}}},
+                       {ProductCategory::CrossSect,
+                        {{ProductSubCategory::None, 1000}, {ProductSubCategory::StatisticalOverLatLong, 1002}}},
+                       {ProductCategory::PostProcess, {{ProductSubCategory::None, 70}}},
+                       {ProductCategory::SpatioTemporalTile, {{ProductSubCategory::None, 55}}}}},
+                     {ProcessSubType::Ensemble,
+                      {{ProductCategory::Wave,
+                        {{ProductSubCategory::SpectraList, 100},
+                         {ProductSubCategory::PeriodRange, 104},
+                         {ProductSubCategory::SpectraFormula, 102}}},
+                       {ProductCategory::Partitioned, {{ProductSubCategory::None, 54}}},
+                       {ProductCategory::None, {{ProductSubCategory::None, 117}}},
+                       {ProductCategory::Aerosol,
+                        {{ProductSubCategory::Optical, 49},
+                         {ProductSubCategory::None, 45},
+                         {ProductSubCategory::OpticalSourceSink, 81}}},
+                       {ProductCategory::Satellite, {{ProductSubCategory::None, 33}}},
+                       {ProductCategory::Chemical,
+                        {{ProductSubCategory::RadioNuclide, 125},
+                         {ProductSubCategory::None, 41},
+                         {ProductSubCategory::Distribution, 58},
+                         {ProductSubCategory::SourceSink, 77}}},
+                       {ProductCategory::Optical, {{ProductSubCategory::None, 109}}},
+                       {ProductCategory::PostProcess, {{ProductSubCategory::None, 71}}},
+                       {ProductCategory::SpatioTemporalTile, {{ProductSubCategory::None, 59}}}}}}},
+                   {ProcessType::Quantile,
+                    {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 86}}}}}}},
+                   {ProcessType::DerivedForecast,
+                    {{ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 2}}}}}}},
+                   {ProcessType::Categorial,
+                    {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 51}}}}}}},
+                   {ProcessType::Reforecast,
+                    {{ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 60}}}}}}},
+                   {ProcessType::Probability,
+                    {{ProcessSubType::None, {{ProductCategory::None, {{ProductSubCategory::None, 5}}}}},
+                     {ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 119}}}}}}}}},
+                 {SpatialExtent::ClusterStatCircular,
+                  {{ProcessType::DerivedForecast,
+                    {{ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 4}}}}}}}}},
+                 {SpatialExtent::ClusterStatRectangular,
+                  {{ProcessType::DerivedForecast,
+                    {{ProcessSubType::Ensemble, {{ProductCategory::None, {{ProductSubCategory::None, 3}}}}}}}}}}},
+               {TimeFormat::LocalTime,
+                {{SpatialExtent::None,
+                  {{ProcessType::None,
+                    {{ProcessSubType::None,
+                      {{ProductCategory::PostProcess, {{ProductSubCategory::None, 93}}},
+                       {ProductCategory::None, {{ProductSubCategory::None, 88}}}}},
+                     {ProcessSubType::Ensemble,
+                      {{ProductCategory::PostProcess, {{ProductSubCategory::None, 94}}},
+                       {ProductCategory::None, {{ProductSubCategory::None, 92}}}}}}}}}}}}}}};
 
 
         auto timeExtentStr = metadata.getOpt<std::string>("timeExtent");
@@ -468,17 +538,38 @@ struct Grib2ProductHandler {
         }
 
 
-        auto processTypeStr = metadata.getOpt<std::string>("processType");
-        auto processType = parseProcessType(processTypeStr);
+        auto spatialExtentStr = metadata.getOpt<std::string>("spatialExtent");
+        auto spatialExtent = parseSpatialExtent(spatialExtentStr);
 
-        auto processTypeIt = timeFormatIt->second.find(processType);
+        auto spatialExtentIt = timeFormatIt->second.find(spatialExtent);
 
-        if (processTypeIt == timeFormatIt->second.end()) {
+        if (spatialExtentIt == timeFormatIt->second.end()) {
             std::ostringstream oss;
             oss << "No productDefinitionTemplate can be mapped for ";
             oss << "timeExtent: " << (timeExtentStr ? std::string(*timeExtentStr) : std::string("None"));
             oss << ", ";
             oss << "timeFormat: " << (timeFormatStr ? std::string(*timeFormatStr) : std::string("None"));
+            oss << ", ";
+            oss << "spatialExtent: " << (spatialExtentStr ? std::string(*spatialExtentStr) : std::string("None"));
+
+
+            throw message::MetadataException{oss.str()};
+        }
+
+
+        auto processTypeStr = metadata.getOpt<std::string>("processType");
+        auto processType = parseProcessType(processTypeStr);
+
+        auto processTypeIt = spatialExtentIt->second.find(processType);
+
+        if (processTypeIt == spatialExtentIt->second.end()) {
+            std::ostringstream oss;
+            oss << "No productDefinitionTemplate can be mapped for ";
+            oss << "timeExtent: " << (timeExtentStr ? std::string(*timeExtentStr) : std::string("None"));
+            oss << ", ";
+            oss << "timeFormat: " << (timeFormatStr ? std::string(*timeFormatStr) : std::string("None"));
+            oss << ", ";
+            oss << "spatialExtent: " << (spatialExtentStr ? std::string(*spatialExtentStr) : std::string("None"));
             oss << ", ";
             oss << "processType: " << (processTypeStr ? std::string(*processTypeStr) : std::string("None"));
 
@@ -498,6 +589,8 @@ struct Grib2ProductHandler {
             oss << "timeExtent: " << (timeExtentStr ? std::string(*timeExtentStr) : std::string("None"));
             oss << ", ";
             oss << "timeFormat: " << (timeFormatStr ? std::string(*timeFormatStr) : std::string("None"));
+            oss << ", ";
+            oss << "spatialExtent: " << (spatialExtentStr ? std::string(*spatialExtentStr) : std::string("None"));
             oss << ", ";
             oss << "processType: " << (processTypeStr ? std::string(*processTypeStr) : std::string("None"));
             oss << ", ";
@@ -519,6 +612,8 @@ struct Grib2ProductHandler {
             oss << "timeExtent: " << (timeExtentStr ? std::string(*timeExtentStr) : std::string("None"));
             oss << ", ";
             oss << "timeFormat: " << (timeFormatStr ? std::string(*timeFormatStr) : std::string("None"));
+            oss << ", ";
+            oss << "spatialExtent: " << (spatialExtentStr ? std::string(*spatialExtentStr) : std::string("None"));
             oss << ", ";
             oss << "processType: " << (processTypeStr ? std::string(*processTypeStr) : std::string("None"));
             oss << ", ";
@@ -542,6 +637,8 @@ struct Grib2ProductHandler {
             oss << "timeExtent: " << (timeExtentStr ? std::string(*timeExtentStr) : std::string("None"));
             oss << ", ";
             oss << "timeFormat: " << (timeFormatStr ? std::string(*timeFormatStr) : std::string("None"));
+            oss << ", ";
+            oss << "spatialExtent: " << (spatialExtentStr ? std::string(*spatialExtentStr) : std::string("None"));
             oss << ", ";
             oss << "processType: " << (processTypeStr ? std::string(*processTypeStr) : std::string("None"));
             oss << ", ";
@@ -568,12 +665,6 @@ struct Grib2ProductHandler {
                "hoursAfterDataCutoff", "minutesAfterDataCutoff", "indicatorOfUnitOfTimeRange", "forecastTime",
                "typeOfLevel", "scaleFactorOfFirstFixedSurface", "scaledValueOfFirstFixedSurface",
                "scaleFactorOfSecondFixedSurface", "scaledValueOfSecondFixedSurface"}},
-             {1,
-              {"paramId", "typeOfGeneratingProcess", "backgroundProcess", "generatingProcessIdentifier",
-               "hoursAfterDataCutoff", "minutesAfterDataCutoff", "indicatorOfUnitOfTimeRange", "forecastTime",
-               "typeOfLevel", "scaleFactorOfFirstFixedSurface", "scaledValueOfFirstFixedSurface",
-               "scaleFactorOfSecondFixedSurface", "scaledValueOfSecondFixedSurface", "typeOfEnsembleForecast",
-               "perturbationNumber", "numberOfForecastsInEnsemble"}},
              {2,
               {"paramId", "typeOfGeneratingProcess", "backgroundProcess", "generatingProcessIdentifier",
                "hoursAfterDataCutoff", "minutesAfterDataCutoff", "indicatorOfUnitOfTimeRange", "forecastTime",
@@ -671,6 +762,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -703,6 +795,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -731,36 +824,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
-               "numberOfTimeRange",
-               "numberOfMissingInStatisticalProcess",
-               "typeOfStatisticalProcessing",
-               "typeOfTimeIncrement",
-               "indicatorOfUnitForTimeRange",
-               "lengthOfTimeRange",
-               "indicatorOfUnitForTimeIncrement",
-               "timeIncrement"}},
-             {11,
-              {"paramId",
-               "typeOfGeneratingProcess",
-               "backgroundProcess",
-               "generatingProcessIdentifier",
-               "hoursAfterDataCutoff",
-               "minutesAfterDataCutoff",
-               "indicatorOfUnitOfTimeRange",
-               "forecastTime",
-               "typeOfLevel",
-               "scaleFactorOfFirstFixedSurface",
-               "scaledValueOfFirstFixedSurface",
-               "scaleFactorOfSecondFixedSurface",
-               "scaledValueOfSecondFixedSurface",
-               "typeOfEnsembleForecast",
-               "perturbationNumber",
-               "numberOfForecastsInEnsemble",
-               "yearOfEndOfOverallTimeInterval",
-               "monthOfEndOfOverallTimeInterval",
-               "dayOfEndOfOverallTimeInterval",
-               "hourOfEndOfOverallTimeInterval",
-               "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -790,6 +854,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -834,6 +899,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -877,6 +943,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -935,6 +1002,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -979,6 +1047,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1010,6 +1079,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1062,6 +1132,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1154,7 +1225,7 @@ struct Grib2ProductHandler {
                "numberOfForecastsInEnsemble"}},
              {55,
               {"paramId", "tileClassification", "totalNumberOfTileAttributePairs", "numberOfUsedSpatialTiles",
-               "tileIndex", "numberOfUsedTileAttributes", "attributeOfTile", "typeOfGeneratingProcess",
+               "tileIndex", "numberOfUsedTileAttributes", "combinationOfAttributesOfTile", "typeOfGeneratingProcess",
                "backgroundProcess", "generatingProcessIdentifier", "hoursAfterDataCutoff", "minutesAfterDataCutoff",
                "indicatorOfUnitOfTimeRange", "forecastTime", "typeOfLevel", "scaleFactorOfFirstFixedSurface",
                "scaledValueOfFirstFixedSurface", "scaleFactorOfSecondFixedSurface", "scaledValueOfSecondFixedSurface"}},
@@ -1210,7 +1281,7 @@ struct Grib2ProductHandler {
                "numberOfUsedSpatialTiles",
                "tileIndex",
                "numberOfUsedTileAttributes",
-               "attributeOfTile",
+               "combinationOfAttributesOfTile",
                "typeOfGeneratingProcess",
                "backgroundProcess",
                "generatingProcessIdentifier",
@@ -1277,6 +1348,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1292,7 +1364,7 @@ struct Grib2ProductHandler {
                "numberOfUsedSpatialTiles",
                "tileIndex",
                "numberOfUsedTileAttributes",
-               "attributeOfTile",
+               "combinationOfAttributesOfTile",
                "typeOfGeneratingProcess",
                "backgroundProcess",
                "generatingProcessIdentifier",
@@ -1310,6 +1382,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1325,7 +1398,7 @@ struct Grib2ProductHandler {
                "numberOfUsedSpatialTiles",
                "tileIndex",
                "numberOfUsedTileAttributes",
-               "attributeOfTile",
+               "combinationOfAttributesOfTile",
                "typeOfGeneratingProcess",
                "backgroundProcess",
                "generatingProcessIdentifier",
@@ -1346,6 +1419,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1380,6 +1454,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1417,6 +1492,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1460,6 +1536,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1493,6 +1570,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1533,6 +1611,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1565,6 +1644,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1648,6 +1728,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1683,6 +1764,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1717,6 +1799,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1752,6 +1835,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -1807,6 +1891,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -2122,6 +2207,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -2165,6 +2251,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -2211,6 +2298,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -2289,6 +2377,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -2324,6 +2413,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -2351,6 +2441,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -2380,6 +2471,519 @@ struct Grib2ProductHandler {
                "typeOfStatisticalProcessingForTimeRangeForReferencePeriod",
                "indicatorOfUnitForTimeRangeForReferencePeriod",
                "lengthOfTimeRangeForReferencePeriod"}},
+             {113,
+              {"paramId",
+               "tileClassification",
+               "typeOfTile",
+               "numberOfUsedSpatialTiles",
+               "numberOfUsedTileAttributeCombinationsForTypeOfTile",
+               "combinationOfAttributesOfTile",
+               "totalNumberOfTileAttributeCombinations",
+               "tileIndex",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface"}},
+             {114,
+              {"paramId",
+               "tileClassification",
+               "typeOfTile",
+               "numberOfUsedSpatialTiles",
+               "numberOfUsedTileAttributeCombinationsForTypeOfTile",
+               "combinationOfAttributesOfTile",
+               "totalNumberOfTileAttributeCombinations",
+               "tileIndex",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface",
+               "yearOfEndOfOverallTimeInterval",
+               "monthOfEndOfOverallTimeInterval",
+               "dayOfEndOfOverallTimeInterval",
+               "hourOfEndOfOverallTimeInterval",
+               "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
+               "numberOfTimeRange",
+               "numberOfMissingInStatisticalProcess",
+               "typeOfStatisticalProcessing",
+               "typeOfTimeIncrement",
+               "indicatorOfUnitForTimeRange",
+               "lengthOfTimeRange",
+               "indicatorOfUnitForTimeIncrement",
+               "timeIncrement"}},
+             {115,
+              {"paramId",
+               "tileClassification",
+               "typeOfTile",
+               "numberOfUsedSpatialTiles",
+               "numberOfUsedTileAttributeCombinationsForTypeOfTile",
+               "combinationOfAttributesOfTile",
+               "totalNumberOfTileAttributeCombinations",
+               "tileIndex",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface",
+               "typeOfEnsembleForecast",
+               "perturbationNumber",
+               "numberOfForecastsInEnsemble"}},
+             {116,
+              {"paramId",
+               "tileClassification",
+               "typeOfTile",
+               "numberOfUsedSpatialTiles",
+               "numberOfUsedTileAttributeCombinationsForTypeOfTile",
+               "combinationOfAttributesOfTile",
+               "totalNumberOfTileAttributeCombinations",
+               "tileIndex",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface",
+               "typeOfEnsembleForecast",
+               "perturbationNumber",
+               "numberOfForecastsInEnsemble",
+               "yearOfEndOfOverallTimeInterval",
+               "monthOfEndOfOverallTimeInterval",
+               "dayOfEndOfOverallTimeInterval",
+               "hourOfEndOfOverallTimeInterval",
+               "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
+               "numberOfTimeRange",
+               "numberOfMissingInStatisticalProcess",
+               "typeOfStatisticalProcessing",
+               "typeOfTimeIncrement",
+               "indicatorOfUnitForTimeRange",
+               "lengthOfTimeRange",
+               "indicatorOfUnitForTimeIncrement",
+               "timeIncrement"}},
+             {117,
+              {"paramId", "typeOfGeneratingProcess", "backgroundProcess", "generatingProcessIdentifier",
+               "hoursAfterDataCutoff", "minutesAfterDataCutoff", "indicatorOfUnitOfTimeRange", "forecastTime",
+               "typeOfLevel", "scaleFactorOfFirstFixedSurface", "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface", "scaledValueOfSecondFixedSurface", "typeOfEnsembleForecast",
+               "perturbationNumber", "numberOfForecastsInEnsemble"}},
+             {118,
+              {"paramId",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface",
+               "typeOfEnsembleForecast",
+               "perturbationNumber",
+               "numberOfForecastsInEnsemble",
+               "yearOfEndOfOverallTimeInterval",
+               "monthOfEndOfOverallTimeInterval",
+               "dayOfEndOfOverallTimeInterval",
+               "hourOfEndOfOverallTimeInterval",
+               "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
+               "numberOfTimeRange",
+               "numberOfMissingInStatisticalProcess",
+               "typeOfStatisticalProcessing",
+               "typeOfTimeIncrement",
+               "indicatorOfUnitForTimeRange",
+               "lengthOfTimeRange",
+               "indicatorOfUnitForTimeIncrement",
+               "timeIncrement"}},
+             {119,
+              {"paramId",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface",
+               "typeOfEnsembleForecast",
+               "numberOfForecastsInEnsemble",
+               "forecastProbabilityNumber",
+               "totalNumberOfForecastProbabilities",
+               "probabilityType",
+               "lowerLimit",
+               "upperLimit"}},
+             {120,
+              {"paramId",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface",
+               "typeOfEnsembleForecast",
+               "numberOfForecastsInEnsemble",
+               "forecastProbabilityNumber",
+               "totalNumberOfForecastProbabilities",
+               "probabilityType",
+               "lowerLimit",
+               "upperLimit",
+               "yearOfEndOfOverallTimeInterval",
+               "monthOfEndOfOverallTimeInterval",
+               "dayOfEndOfOverallTimeInterval",
+               "hourOfEndOfOverallTimeInterval",
+               "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
+               "numberOfTimeRange",
+               "numberOfMissingInStatisticalProcess",
+               "typeOfStatisticalProcessing",
+               "typeOfTimeIncrement",
+               "indicatorOfUnitForTimeRange",
+               "lengthOfTimeRange",
+               "indicatorOfUnitForTimeIncrement",
+               "timeIncrement"}},
+             {121,
+              {"paramId",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface",
+               "typeOfEnsembleForecast",
+               "numberOfForecastsInEnsemble",
+               "forecastProbabilityNumber",
+               "totalNumberOfForecastProbabilities",
+               "probabilityType",
+               "lowerLimit",
+               "upperLimit",
+               "spatialVicinityType",
+               "numberOfSpatialVicinityValues",
+               "spatialVicinityValue",
+               "spatialVicinityProcessing",
+               "spatialVicinityProcessingArgument1",
+               "spatialVicinityProcessingArgument2",
+               "spatialVicinityMissingData",
+               "temporalVicinityProcessing",
+               "temporalVicinityUnit",
+               "temporalVicinityTowardsPast",
+               "temporalVicinityTowardsFuture"}},
+             {122,
+              {"paramId",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface",
+               "typeOfEnsembleForecast",
+               "numberOfForecastsInEnsemble",
+               "forecastProbabilityNumber",
+               "totalNumberOfForecastProbabilities",
+               "probabilityType",
+               "lowerLimit",
+               "upperLimit",
+               "yearOfEndOfOverallTimeInterval",
+               "monthOfEndOfOverallTimeInterval",
+               "dayOfEndOfOverallTimeInterval",
+               "hourOfEndOfOverallTimeInterval",
+               "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
+               "numberOfTimeRange",
+               "numberOfMissingInStatisticalProcess",
+               "typeOfStatisticalProcessing",
+               "typeOfTimeIncrement",
+               "indicatorOfUnitForTimeRange",
+               "lengthOfTimeRange",
+               "indicatorOfUnitForTimeIncrement",
+               "timeIncrement",
+               "spatialVicinityType",
+               "numberOfSpatialVicinityValues",
+               "spatialVicinityValue",
+               "spatialVicinityProcessing",
+               "spatialVicinityProcessingArgument1",
+               "spatialVicinityProcessingArgument2",
+               "spatialVicinityMissingData",
+               "temporalVicinityProcessing",
+               "temporalVicinityUnit",
+               "temporalVicinityTowardsPast",
+               "temporalVicinityTowardsFuture"}},
+             {123,
+              {"paramId",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface",
+               "yearOfEndOfOverallTimeInterval",
+               "monthOfEndOfOverallTimeInterval",
+               "dayOfEndOfOverallTimeInterval",
+               "hourOfEndOfOverallTimeInterval",
+               "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
+               "numberOfTimeRange",
+               "numberOfMissingInStatisticalProcess",
+               "typeOfStatisticalProcessing",
+               "typeOfTimeIncrement",
+               "indicatorOfUnitForTimeRange",
+               "lengthOfTimeRange",
+               "indicatorOfUnitForTimeIncrement",
+               "timeIncrement",
+               "typeOfEnsembleForecast",
+               "numberOfForecastsInEnsemble",
+               "forecastProbabilityNumber",
+               "totalNumberOfForecastProbabilities",
+               "probabilityType",
+               "lowerLimit",
+               "upperLimit",
+               "typeOfReferenceDataset",
+               "typeOfRelationToReferenceDataset",
+               "numberOfAdditionalParameterForReferencePeriod",
+               "scaleFactorOfAdditionalParameterForReferencePeriod",
+               "scaledValueOfAdditionalParameterForReferencePeriod",
+               "yearOfStartOfReferencePeriod",
+               "monthOfStartOfReferencePeriod",
+               "dayOfStartOfReferencePeriod",
+               "hourOfStartOfReferencePeriod",
+               "minuteOfStartOfReferencePeriod",
+               "secondOfStartOfReferencePeriod",
+               "sampleSizeOfReferencePeriod",
+               "numberOfReferencePeriodTimeRanges",
+               "typeOfStatisticalProcessingForTimeRangeForReferencePeriod",
+               "indicatorOfUnitForTimeRangeForReferencePeriod",
+               "lengthOfTimeRangeForReferencePeriod",
+               "spatialVicinityType",
+               "numberOfSpatialVicinityValues",
+               "spatialVicinityValue",
+               "spatialVicinityProcessing",
+               "spatialVicinityProcessingArgument1",
+               "spatialVicinityProcessingArgument2",
+               "spatialVicinityMissingData",
+               "temporalVicinityProcessing",
+               "temporalVicinityUnit",
+               "temporalVicinityTowardsPast",
+               "temporalVicinityTowardsFuture"}},
+             {124,
+              {"paramId",
+               "constituentType",
+               "sourceSinkChemicalPhysicalProcess",
+               "transportModelUsed",
+               "requestedByEntity",
+               "scenarioOrigin",
+               "NWPused",
+               "releaseStartYear",
+               "releaseStartMonth",
+               "releaseStartDay",
+               "releaseStartHour",
+               "releaseStartMinute",
+               "releaseStartSecond",
+               "wallClockInitialTimeOfExecutionYear",
+               "wallClockInitialTimeOfExecutionMonth",
+               "wallClockInitialTimeOfExecutionDay",
+               "wallClockInitialTimeOfExecutionHour",
+               "wallClockInitialTimeOfExecutionMinute",
+               "wallClockInitialTimeOfExecutionSecond",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface"}},
+             {125,
+              {"paramId",
+               "constituentType",
+               "sourceSinkChemicalPhysicalProcess",
+               "transportModelUsed",
+               "requestedByEntity",
+               "scenarioOrigin",
+               "NWPused",
+               "releaseStartYear",
+               "releaseStartMonth",
+               "releaseStartDay",
+               "releaseStartHour",
+               "releaseStartMinute",
+               "releaseStartSecond",
+               "wallClockInitialTimeOfExecutionYear",
+               "wallClockInitialTimeOfExecutionMonth",
+               "wallClockInitialTimeOfExecutionDay",
+               "wallClockInitialTimeOfExecutionHour",
+               "wallClockInitialTimeOfExecutionMinute",
+               "wallClockInitialTimeOfExecutionSecond",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface",
+               "typeOfEnsembleForecast",
+               "perturbationNumber",
+               "numberOfForecastsInEnsemble"}},
+             {126,
+              {"paramId",
+               "constituentType",
+               "sourceSinkChemicalPhysicalProcess",
+               "transportModelUsed",
+               "requestedByEntity",
+               "scenarioOrigin",
+               "NWPused",
+               "releaseStartYear",
+               "releaseStartMonth",
+               "releaseStartDay",
+               "releaseStartHour",
+               "releaseStartMinute",
+               "releaseStartSecond",
+               "wallClockInitialTimeOfExecutionYear",
+               "wallClockInitialTimeOfExecutionMonth",
+               "wallClockInitialTimeOfExecutionDay",
+               "wallClockInitialTimeOfExecutionHour",
+               "wallClockInitialTimeOfExecutionMinute",
+               "wallClockInitialTimeOfExecutionSecond",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface",
+               "yearOfEndOfOverallTimeInterval",
+               "monthOfEndOfOverallTimeInterval",
+               "dayOfEndOfOverallTimeInterval",
+               "hourOfEndOfOverallTimeInterval",
+               "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
+               "numberOfTimeRange",
+               "numberOfMissingInStatisticalProcess",
+               "typeOfStatisticalProcessing",
+               "typeOfTimeIncrement",
+               "indicatorOfUnitForTimeRange",
+               "lengthOfTimeRange",
+               "indicatorOfUnitForTimeIncrement",
+               "timeIncrement"}},
+             {127,
+              {"paramId",
+               "constituentType",
+               "sourceSinkChemicalPhysicalProcess",
+               "transportModelUsed",
+               "requestedByEntity",
+               "scenarioOrigin",
+               "NWPused",
+               "releaseStartYear",
+               "releaseStartMonth",
+               "releaseStartDay",
+               "releaseStartHour",
+               "releaseStartMinute",
+               "releaseStartSecond",
+               "wallClockInitialTimeOfExecutionYear",
+               "wallClockInitialTimeOfExecutionMonth",
+               "wallClockInitialTimeOfExecutionDay",
+               "wallClockInitialTimeOfExecutionHour",
+               "wallClockInitialTimeOfExecutionMinute",
+               "wallClockInitialTimeOfExecutionSecond",
+               "typeOfGeneratingProcess",
+               "backgroundProcess",
+               "generatingProcessIdentifier",
+               "hoursAfterDataCutoff",
+               "minutesAfterDataCutoff",
+               "indicatorOfUnitOfTimeRange",
+               "forecastTime",
+               "typeOfLevel",
+               "scaleFactorOfFirstFixedSurface",
+               "scaledValueOfFirstFixedSurface",
+               "scaleFactorOfSecondFixedSurface",
+               "scaledValueOfSecondFixedSurface",
+               "yearOfEndOfOverallTimeInterval",
+               "monthOfEndOfOverallTimeInterval",
+               "dayOfEndOfOverallTimeInterval",
+               "hourOfEndOfOverallTimeInterval",
+               "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
+               "numberOfTimeRange",
+               "numberOfMissingInStatisticalProcess",
+               "typeOfStatisticalProcessing",
+               "typeOfTimeIncrement",
+               "indicatorOfUnitForTimeRange",
+               "lengthOfTimeRange",
+               "indicatorOfUnitForTimeIncrement",
+               "timeIncrement",
+               "typeOfEnsembleForecast",
+               "perturbationNumber",
+               "numberOfForecastsInEnsemble"}},
              {254, {"paramId", "numberOfCharacters"}},
              {1000,
               {"paramId", "typeOfGeneratingProcess", "backgroundProcess", "generatingProcessIdentifier",
@@ -2418,6 +3022,7 @@ struct Grib2ProductHandler {
                "dayOfEndOfOverallTimeInterval",
                "hourOfEndOfOverallTimeInterval",
                "minuteOfEndOfOverallTimeInterval",
+               "secondOfEndOfOverallTimeInterval",
                "numberOfTimeRange",
                "numberOfMissingInStatisticalProcess",
                "typeOfStatisticalProcessing",
@@ -2438,8 +3043,7 @@ struct Grib2ProductHandler {
 
     std::reference_wrapper<const KeyInfo> keyInfoForKey(const Key& k) const {
         static const KeyInfoMap map{
-            {{"paramId",
-              {{KeyTypes::IntType}, {{"parameterCategory", "parameterNumber", "secondOfEndOfOverallTimeInterval"}}}},
+            {{"paramId", {{KeyTypes::IntType}, {{"parameterCategory", "parameterNumber"}}}},
              {"parameterCategory", {{KeyTypes::IntType}, {{}}}},
              {"parameterNumber", {{KeyTypes::IntType}, {{}}}},
              {"startStep", {{KeyTypes::IntType, KeyTypes::StringType}, {{}}}},
@@ -2566,7 +3170,7 @@ struct Grib2ProductHandler {
              {"inputProcessIdentifier", {{KeyTypes::IntType}, {{}}}},
              {"inputOriginatingCentre", {{KeyTypes::IntType}, {{}}}},
              {"typeOfPostProcessing", {{KeyTypes::IntType}, {{}}}},
-             {"tileClassification", {{KeyTypes::IntType}, {{}}}},
+             {"tileClassification", {{KeyTypes::StringType}, {{}}}},
              {"totalNumberOfTileAttributePairs", {{KeyTypes::IntType}, {{}}}},
              {"numberOfUsedSpatialTiles", {{KeyTypes::IntType}, {{}}}},
              {"tileIndex", {{KeyTypes::IntType}, {{}}}},
@@ -2630,6 +3234,39 @@ struct Grib2ProductHandler {
               {{KeyTypes::IntType, KeyTypes::IntArrayType}, {{}}}},
              {"indicatorOfUnitForTimeRangeForReferencePeriod", {{KeyTypes::IntType, KeyTypes::IntArrayType}, {{}}}},
              {"lengthOfTimeRangeForReferencePeriod", {{KeyTypes::IntType, KeyTypes::IntArrayType}, {{}}}},
+             {"transportModelUsed", {{KeyTypes::IntType}, {{}}}},
+             {"requestedByEntity", {{KeyTypes::StringType}, {{}}}},
+             {"scenarioOrigin", {{KeyTypes::IntType}, {{}}}},
+             {"NWPused", {{KeyTypes::IntType}, {{}}}},
+             {"releaseStartYear", {{KeyTypes::IntType}, {{}}}},
+             {"releaseStartMonth", {{KeyTypes::IntType}, {{}}}},
+             {"releaseStartDay", {{KeyTypes::IntType}, {{}}}},
+             {"releaseStartHour", {{KeyTypes::IntType}, {{}}}},
+             {"releaseStartMinute", {{KeyTypes::IntType}, {{}}}},
+             {"releaseStartSecond", {{KeyTypes::IntType}, {{}}}},
+             {"wallClockInitialTimeOfExecutionYear", {{KeyTypes::IntType}, {{}}}},
+             {"wallClockInitialTimeOfExecutionMonth", {{KeyTypes::IntType}, {{}}}},
+             {"wallClockInitialTimeOfExecutionDay", {{KeyTypes::IntType}, {{}}}},
+             {"wallClockInitialTimeOfExecutionHour", {{KeyTypes::IntType}, {{}}}},
+             {"wallClockInitialTimeOfExecutionMinute", {{KeyTypes::IntType}, {{}}}},
+             {"wallClockInitialTimeOfExecutionSecond", {{KeyTypes::IntType}, {{}}}},
+             {"typeOfTile", {{KeyTypes::StringType}, {{}}}},
+             {"numberOfUsedTileAttributeCombinationsForTypeOfTile", {{KeyTypes::IntType}, {{}}}},
+             {"numberOfUsedTileAttributesForTileAttributeCombination", {{KeyTypes::IntType}, {{}}}},
+             {"totalNumberOfTileAttributeCombinations", {{KeyTypes::IntType}, {{}}}},
+             {"combinationOfAttributesOfTile",
+              {{KeyTypes::StringType}, {{"numberOfUsedTileAttributesForTileAttributeCombination", "attributeOfTile"}}}},
+             {"spatialVicinityType", {{KeyTypes::IntType}, {{}}}},
+             {"numberOfSpatialVicinityValues", {{KeyTypes::IntType}, {{}}}},
+             {"spatialVicinityValue", {{KeyTypes::IntType}, {{}}}},
+             {"spatialVicinityProcessing", {{KeyTypes::IntType}, {{}}}},
+             {"spatialVicinityProcessingArgument1", {{KeyTypes::IntType}, {{}}}},
+             {"spatialVicinityProcessingArgument2", {{KeyTypes::IntType}, {{}}}},
+             {"spatialVicinityMissingData", {{KeyTypes::IntType}, {{}}}},
+             {"temporalVicinityProcessing", {{KeyTypes::IntType}, {{}}}},
+             {"temporalVicinityUnit", {{KeyTypes::IntType}, {{}}}},
+             {"temporalVicinityTowardsPast", {{KeyTypes::IntType}, {{}}}},
+             {"temporalVicinityTowardsFuture", {{KeyTypes::IntType}, {{}}}},
              {"numberOfCharacters", {{KeyTypes::IntType}, {{}}}}}};
 
         if (auto search = map.find(k); search != map.end()) {

@@ -23,8 +23,8 @@ keyMappings:
     #     - dayOfEndOfOverallTimeInterval
     #     - hourOfEndOfOverallTimeInterval
     #     - minuteOfEndOfOverallTimeInterval
-        - secondOfEndOfOverallTimeInterval
-        # - lengthOfTimeRange # only for typeOfTimeIncrement != 1...
+    #     - secondOfEndOfOverallTimeInterval
+    #     - lengthOfTimeRange # only for typeOfTimeIncrement != 1...
 
     # Ignore that - enforce using startStep and endStep separately
     # stepRange:
@@ -61,6 +61,9 @@ keyMappings:
         # - genVertHeightCoords
 
 
+    combinationOfAttributesOfTile:
+        - numberOfUsedTileAttributesForTileAttributeCombination
+        - attributeOfTile
 
 
 # All key may be null
@@ -357,9 +360,57 @@ keyTypes:
     indicatorOfUnitForTimeRangeForReferencePeriod: [IntType, IntArrayType]
     lengthOfTimeRangeForReferencePeriod: [IntType, IntArrayType]
 
+    # radioNuclide:
+    transportModelUsed: IntType
+    requestedByEntity: StringType
+    scenarioOrigin: IntType
+    NWPused: IntType
+    releaseStartYear: IntType
+    releaseStartMonth: IntType
+    releaseStartDay: IntType
+    releaseStartHour: IntType
+    releaseStartMinute: IntType
+    releaseStartSecond: IntType
+    wallClockInitialTimeOfExecutionYear: IntType
+    wallClockInitialTimeOfExecutionMonth: IntType
+    wallClockInitialTimeOfExecutionDay: IntType
+    wallClockInitialTimeOfExecutionHour: IntType
+    wallClockInitialTimeOfExecutionMinute: IntType
+    wallClockInitialTimeOfExecutionSecond: IntType
+
+
+    # generalisedTile
+    tileClassification: StringType
+    typeOfTile: StringType
+    numberOfUsedSpatialTiles: IntType
+    numberOfUsedTileAttributeCombinationsForTypeOfTile: IntType
+    numberOfUsedTileAttributesForTileAttributeCombination: IntType
+    attributeOfTile: IntType
+    totalNumberOfTileAttributeCombinations: IntType
+    tileIndex: IntType
+
+    combinationOfAttributesOfTile: StringType
+
+
+    # focalStatistics
+    spatialVicinityType: IntType
+    numberOfSpatialVicinityValues: IntType
+    spatialVicinityValue: IntType
+    spatialVicinityProcessing: IntType
+    spatialVicinityProcessingArgument1: IntType
+    spatialVicinityProcessingArgument2: IntType
+    spatialVicinityMissingData: IntType
+    temporalVicinityProcessing: IntType
+    temporalVicinityUnit: IntType
+    temporalVicinityTowardsPast: IntType
+    temporalVicinityTowardsFuture: IntType
+
+
+
+
+
     # ccittIA5
     numberOfCharacters: IntType
-
 
 
 

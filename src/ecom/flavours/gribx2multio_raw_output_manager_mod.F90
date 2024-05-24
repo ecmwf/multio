@@ -453,6 +453,9 @@ SUBROUTINE GRIBX2MULTIO_RAW_WRITE_ATM_DP( THIS, YDMSG, VALUES_DP )
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_INJECT_PARAMETERS
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_WRITE_VALUES_DP
 
+  ! Symbols imported from other modules within the project.
+  USE :: MULTIO_API, ONLY: MULTIO_METADATA
+
   ! Symbols imported by the preprocessor for logging purposes
   PP_LOG_USE_VARS
 
@@ -473,6 +476,7 @@ IMPLICIT NONE
   TYPE(TIME_HISTORY_T) :: TIME_HIST
   TYPE(GRIB_INFO_T), POINTER :: GRIB_INFO
   CLASS(METADATA_BASE_A), POINTER :: PGMD
+  TYPE(MULTIO_METADATA), POINTER :: MMD
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_LOG_DECL_VARS
@@ -522,11 +526,14 @@ IMPLICIT NONE
     ! Create multio metadata from a grib metadata
     CALL THIS%MMD_%INIT_FROM_METADATA( PGMD )
 
+    ! Get the multio Metadata
+    MMD => THIS%MMD_%GET_MULTIO_METADATA()
+
     ! Inject parameters in the metadata
-    CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, THIS%MMD_%GET_MULTIO_METADATA() )
+    CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, MMD )
 
     ! Write to multio plans
-    CALL MULTIO_WRITE_VALUES_DP( THIS%MIO_, THIS%MMD_%GET_MULTIO_METADATA(), VALUES_DP )
+    CALL MULTIO_WRITE_VALUES_DP( THIS%MIO_, MMD, VALUES_DP )
 
   ENDIF
 
@@ -614,6 +621,9 @@ SUBROUTINE GRIBX2MULTIO_RAW_WRITE_ATM_SP( THIS, YDMSG, VALUES_SP )
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_INJECT_PARAMETERS
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_WRITE_VALUES_SP
 
+  ! Symbols imported from other modules within the project.
+  USE :: MULTIO_API, ONLY: MULTIO_METADATA
+
   ! Symbols imported by the preprocessor for logging purposes
   PP_LOG_USE_VARS
 
@@ -634,6 +644,7 @@ IMPLICIT NONE
   TYPE(TIME_HISTORY_T) :: TIME_HIST
   TYPE(GRIB_INFO_T), POINTER :: GRIB_INFO
   CLASS(METADATA_BASE_A), POINTER :: PGMD
+  TYPE(MULTIO_METADATA), POINTER :: MMD
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_LOG_DECL_VARS
@@ -684,11 +695,14 @@ IMPLICIT NONE
     ! Create multio metadata from a grib metadata
     CALL THIS%MMD_%INIT_FROM_METADATA( PGMD )
 
+    ! Get the multio Metadata
+    MMD => THIS%MMD_%GET_MULTIO_METADATA()
+
     ! Inject parameters in the metadata
-    CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, THIS%MMD_%GET_MULTIO_METADATA() )
+    CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, MMD )
 
     ! Write to multio plans
-    CALL MULTIO_WRITE_VALUES_SP( THIS%MIO_, THIS%MMD_%GET_MULTIO_METADATA(), VALUES_SP )
+    CALL MULTIO_WRITE_VALUES_SP( THIS%MIO_, MMD, VALUES_SP )
 
   ENDIF
 
@@ -777,6 +791,9 @@ SUBROUTINE GRIBX2MULTIO_RAW_WRITE_WAM_DP( THIS, YDMSG, VALUES_DP )
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_INJECT_PARAMETERS
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_WRITE_VALUES_DP
 
+  ! Symbols imported from other modules within the project.
+  USE :: MULTIO_API, ONLY: MULTIO_METADATA
+
   ! Symbols imported by the preprocessor for logging purposes
   PP_LOG_USE_VARS
 
@@ -797,6 +814,7 @@ IMPLICIT NONE
   TYPE(TIME_HISTORY_T) :: TIME_HIST
   TYPE(GRIB_INFO_T), POINTER :: GRIB_INFO
   CLASS(METADATA_BASE_A), POINTER :: PGMD
+  TYPE(MULTIO_METADATA), POINTER :: MMD
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_LOG_DECL_VARS
@@ -847,11 +865,14 @@ IMPLICIT NONE
     ! Create multio metadata from a grib metadata
     CALL THIS%MMD_%INIT_FROM_METADATA( PGMD )
 
+    ! Get the multio Metadata
+    MMD => THIS%MMD_%GET_MULTIO_METADATA()
+
     ! Inject parameters in the metadata
-    CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, THIS%MMD_%GET_MULTIO_METADATA() )
+    CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, MMD )
 
     ! Write to multio plans
-    CALL MULTIO_WRITE_VALUES_DP( THIS%MIO_, THIS%MMD_%GET_MULTIO_METADATA(), VALUES_DP )
+    CALL MULTIO_WRITE_VALUES_DP( THIS%MIO_, MMD, VALUES_DP )
 
   ENDIF
 
@@ -939,6 +960,9 @@ SUBROUTINE GRIBX2MULTIO_RAW_WRITE_WAM_SP( THIS, YDMSG, VALUES_SP )
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_INJECT_PARAMETERS
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_WRITE_VALUES_SP
 
+  ! Symbols imported from other modules within the project.
+  USE :: MULTIO_API, ONLY: MULTIO_METADATA
+
   ! Symbols imported by the preprocessor for logging purposes
   PP_LOG_USE_VARS
 
@@ -959,6 +983,7 @@ IMPLICIT NONE
   TYPE(TIME_HISTORY_T) :: TIME_HIST
   TYPE(GRIB_INFO_T), POINTER :: GRIB_INFO
   CLASS(METADATA_BASE_A), POINTER :: PGMD
+  TYPE(MULTIO_METADATA), POINTER :: MMD
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_LOG_DECL_VARS
@@ -1008,11 +1033,14 @@ IMPLICIT NONE
     ! Create multio metadata from a grib metadata
     CALL THIS%MMD_%INIT_FROM_METADATA( PGMD )
 
+    ! Get the multio Metadata
+    MMD => THIS%MMD_%GET_MULTIO_METADATA()
+
     ! Inject parameters in the metadata
-    CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, THIS%MMD_%GET_MULTIO_METADATA() )
+    CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, MMD )
 
     ! Write to multio plans
-    CALL MULTIO_WRITE_VALUES_SP( THIS%MIO_, THIS%MMD_%GET_MULTIO_METADATA(), VALUES_SP )
+    CALL MULTIO_WRITE_VALUES_SP( THIS%MIO_, MMD, VALUES_SP )
 
   ENDIF
 

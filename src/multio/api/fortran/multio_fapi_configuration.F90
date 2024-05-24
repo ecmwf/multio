@@ -296,11 +296,13 @@ contains
         use :: multio_api_constants_mod,      only: MULTIO_SUCCESS
     implicit none
         ! Dummy arguments
-        class(multio_configuration),  intent(inout) :: cc
-        procedure(failure_handler_t)                :: handler
-        integer(int64),               intent(inout) :: context
+        class(multio_configuration),           intent(inout) :: cc
+        procedure(failure_handler_t), pointer, intent(in)    :: handler
+        integer(int64),                        intent(inout) :: context
         ! Function result
         integer :: err
+
+
 #if !defined(MULTIO_DUMMY_API)
         ! Local variabels
         integer(kind=c_int) :: c_err

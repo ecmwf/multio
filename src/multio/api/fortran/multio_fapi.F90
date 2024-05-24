@@ -35,6 +35,7 @@ module multio_api
     use :: multio_api_utils_mod, only: multio_error_string
 
     ! Failure handling
+    use :: multio_api_error_handling_mod, only: failure_handler_t
     use :: multio_api_error_handling_mod, only: multio_failure_info
 
 implicit none
@@ -65,5 +66,6 @@ implicit none
 
     ! Public error handling
     public :: multio_failure_info
+    public :: failure_handler_t
 
 end module multio_api

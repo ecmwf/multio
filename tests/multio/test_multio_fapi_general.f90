@@ -104,6 +104,8 @@ contains
     end function
 
     function test_multio_set_failure_handler() result(success)
+        use :: multio_api, only: failure_handler_t
+    implicit none
 
         ! Test that we can set failure handler and that it is being called on error with appropriate information
 
@@ -120,6 +122,7 @@ contains
         type(multio_configuration) :: cc3
         type(multio_handle) :: mio3
         character(:), allocatable :: name
+        procedure(failure_handler_t), pointer :: pf
 
         success = .true.
         context = original_context
@@ -139,7 +142,8 @@ contains
         end if
 
         ! Set test error handler and its context
-        if (cc%set_failure_handler(test_error_handler, context) /= MULTIO_SUCCESS) then
+        pf => test_error_handler
+        if (cc%set_failure_handler(pf, context) /= MULTIO_SUCCESS) then
             write(error_unit, *) 'setting failure handler failed: ',multio_error_string(err)
             success = .false.
             return
@@ -222,7 +226,9 @@ contains
             success = .false.
             return
         end if
-        if (cc2%set_failure_handler(test_error_handler2, context2) /= MULTIO_SUCCESS) then
+
+        pf => test_error_handler2
+        if (cc2%set_failure_handler(pf, context2) /= MULTIO_SUCCESS) then
             write(error_unit, *) 'setting failure handler failed (2): ',multio_error_string(err)
             success = .false.
             return
@@ -233,7 +239,8 @@ contains
             success = .false.
             return
         end if
-        if (cc3%set_failure_handler(test_error_handler3, context3) /= MULTIO_SUCCESS) then
+        pf => test_error_handler3
+        if (cc3%set_failure_handler(pf, context3) /= MULTIO_SUCCESS) then
             write(error_unit, *) 'setting failure handler failed (3): ',multio_error_string(err)
             success = .false.
             return
@@ -252,7 +259,9 @@ contains
             success = .false.
             return
         end if
-        if (cc2%set_failure_handler(test_error_handler2, context2) /= MULTIO_SUCCESS) then
+
+        pf => test_error_handler2
+        if (cc2%set_failure_handler(pf, context2) /= MULTIO_SUCCESS) then
             write(error_unit, *) 'setting failure handler failed (2,2): ',multio_error_string(err)
             success = .false.
             return
@@ -357,9 +366,12 @@ contains
     end function
 
     subroutine test_error_handler(context, error, info)
+        use, intrinsic :: iso_fortran_env, only: int64
+        use :: multio_api, only: multio_failure_info
+    implicit none
         integer(int64), intent(inout) :: context
         integer, intent(in) :: error
-        class(multio_failure_info), intent(in) :: info
+        type(multio_failure_info), intent(in) :: info
 
         test_error_handler_calls = test_error_handler_calls + 1
         test_error_handler_last_context = context
@@ -367,9 +379,12 @@ contains
     end subroutine
 
     subroutine test_error_handler2(context, error, info)
+        use, intrinsic :: iso_fortran_env, only: int64
+        use :: multio_api, only: multio_failure_info
+    implicit none
         integer(int64), intent(inout) :: context
         integer, intent(in) :: error
-        class(multio_failure_info), intent(in) :: info
+        type(multio_failure_info), intent(in) :: info
 
         test_error_handler_calls2 = test_error_handler_calls2 + 1
         test_error_handler_last_context2 = context
@@ -377,9 +392,12 @@ contains
     end subroutine
 
     subroutine test_error_handler3(context, error, info)
+        use, intrinsic :: iso_fortran_env, only: int64
+        use :: multio_api, only: multio_failure_info
+    implicit none
         integer(int64), intent(inout) :: context
         integer, intent(in) :: error
-        class(multio_failure_info), intent(in) :: info
+        type(multio_failure_info), intent(in) :: info
 
         test_error_handler_calls3 = test_error_handler_calls3 + 1
         test_error_handler_last_context3 = context

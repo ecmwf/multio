@@ -24,30 +24,24 @@ module multio_api_error_handling_mod
     use, intrinsic :: iso_c_binding,   only: c_ptr
     use, intrinsic :: iso_c_binding,   only: c_null_ptr
     use, intrinsic :: iso_fortran_env, only: int64
-
+    use :: multio_api_constants_mod, only: multio_failure_info
 implicit none
 
     ! Default visibility
     private
 
 
-    ! Error handling definitions
-    type :: multio_failure_info
-        type(c_ptr) :: impl = c_null_ptr
-    end type
-
-
     !>
     !! Interface of the failure handlers
     !! All failure handlers set from fortran codes need to have this interface
-    abstract interface
+    interface
         subroutine failure_handler_t(context, error, info)
             use, intrinsic :: iso_fortran_env, only: int64
-            import :: multio_failure_info
+            use :: multio_api_constants_mod, only: multio_failure_info
         implicit none
-            integer(int64),             intent(inout) :: context
-            integer,                    intent(in)    :: error
-            class(multio_failure_info), intent(in)    :: info
+            integer(int64),            intent(inout) :: context
+            integer,                   intent(in)    :: error
+            type(multio_failure_info), intent(in)    :: info
         end subroutine failure_handler_t
     end interface
 
@@ -138,12 +132,13 @@ contains
     subroutine multio_fort_failure_call(ffi, id, err, info)
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding, only: c_int
+        use :: multio_api_constants_mod, only: multio_failure_info
     implicit none
         ! Dummy arguments
         class(multio_fort_failure_info_list), intent(inout) :: ffi
         integer(c_int),                       intent(in)    :: id
         integer,                              intent(in)    :: err
-        class(multio_failure_info),           intent(in)    :: info
+        type(multio_failure_info),            intent(in)    :: info
 #if !defined(MULTIO_DUMMY_API)
         ! Local variables
         type(multio_fort_failure_info_node), pointer :: node
@@ -188,7 +183,7 @@ contains
     implicit none
         ! Dummy arguments
         class(multio_fort_failure_info_list),  intent(inout) :: ffi
-        procedure(failure_handler_t)                         :: handler_fn
+        procedure(failure_handler_t), pointer, intent(in)    :: handler_fn
         integer(int64),                        intent(in)    :: context
         ! Function result
         type(c_ptr) :: new_id_loc
@@ -310,6 +305,7 @@ contains
         use, intrinsic :: iso_c_binding, only: c_ptr
         use, intrinsic :: iso_c_binding, only: c_int
         use, intrinsic :: iso_c_binding, only: c_f_pointer
+        use :: multio_api_constants_mod, only: multio_failure_info
 
     implicit none
         ! Dummy arguments

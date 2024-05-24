@@ -12,7 +12,7 @@ MaestroCdo::MaestroCdo() {}
 MaestroCdo::MaestroCdo(std::string name) : name_{name} {
     declare();
     int64_t size = 0;
-    ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, ".maestro.core.cdo.scope.local-size", (void**)&size, true));
+    ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, ".maestro.core.cdo.scope.local-size", (void**)&size, true, false));
 }
 
 MaestroCdo::MaestroCdo(std::string name, const void* blob, uint64_t size) : name_{name} {
@@ -97,8 +97,8 @@ void MaestroCdo::set_size_and_data(uint64_t size, const void* data) {
     ASSERT(posix_memalign((void**)&data_, (size_t)sysconf(_SC_PAGESIZE), size_) == 0);
     ::memcpy(data_, data, size_);
 
-    ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, ".maestro.core.cdo.raw-ptr", data_, false));
-    ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, ".maestro.core.cdo.scope.local-size", &size_, true));
+    ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, ".maestro.core.cdo.raw-ptr", data_, false, true));
+    ASSERT(MSTRO_OK == mstro_cdo_attribute_set(cdo_, ".maestro.core.cdo.scope.local-size", &size_, true, false));
 }
 
 void MaestroCdo::get_size_and_data() {

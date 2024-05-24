@@ -18,6 +18,8 @@
 #include "eckit/io/StdFile.h"
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
+#include "eckit/value/Value.h"
+
 
 #include "atlas/grid.h"
 #include "atlas/library.h"
@@ -128,7 +130,12 @@ std::unique_ptr<GribEncoder> makeEncoder(const eckit::LocalConfiguration& conf,
         handleCodesError("eccodes error while reading the grib template: ", err, Here());
 
         if (conf.has("atlas-named-grid")) {
-            const auto atlasNamedGrid = conf.getString("atlas-named-grid");
+            const auto atlasNamedGrid
+                = util::replaceCurly(conf.getString("atlas-named-grid"), [](std::string_view replace) {
+                      std::string lookUpKey{replace};
+                      char* env = ::getenv(lookUpKey.c_str());
+                      return env ? std::optional<std::string>{env} : std::optional<std::string>{};
+                  });
 
             eckit::Log::info() << "REQUESTED ATLAS GRID DEFINITION UPDATE: " << atlasNamedGrid << std::endl;
 
@@ -167,12 +174,51 @@ EncodingException::EncodingException(const std::string& r, const eckit::CodeLoca
 using message::Message;
 using message::Peer;
 
+void makeOverwritesForMap(CodesOverwrites& res, const eckit::LocalConfiguration& conf) {
+    for (const std::string& k : conf.keys()) {
+        auto val = conf.getSubConfiguration(k).get();
+
+        if (val.isBool()) {
+            res.emplace_back(k, (std::int64_t)val);
+        }
+        else if (val.isNumber()) {
+            res.emplace_back(k, (std::int64_t)val);
+        }
+        else if (val.isDouble()) {
+            res.emplace_back(k, (double)val);
+        }
+        else if (val.isString()) {
+            res.emplace_back(k, (std::string)val);
+        }
+        else {
+            NOTIMP;
+        }
+    }
+}
+
+CodesOverwrites makeOverwrites(const eckit::LocalConfiguration& encConf) {
+    CodesOverwrites res{};
+    if (encConf.get().isMap()) {
+        makeOverwritesForMap(res, encConf);
+    }
+    else if (encConf.get().isList()) {
+        for (const auto& subConf : encConf.getSubConfigurations()) {
+            makeOverwritesForMap(res, subConf);
+        }
+    }
+    return res;
+}
+
 Encode::Encode(const ComponentConfiguration& compConf, const eckit::LocalConfiguration& encConf) :
     ChainedAction{compConf},
     format_{encConf.getString("format")},
-    overwrite_{encConf.has("overwrite")
-                   ? std::optional<eckit::LocalConfiguration>{encConf.getSubConfiguration("overwrite")}
-                   : std::optional<eckit::LocalConfiguration>{}},
+    overwrite_{makeOverwrites(encConf.has("overwrite")
+                                  ? eckit::LocalConfiguration{encConf.getSubConfiguration("overwrite")}
+                                  : eckit::LocalConfiguration{})},
+    additionalMetadata_{encConf.has("additional-metadata")
+                            ? eckit::LocalConfiguration{encConf.getSubConfiguration("additional-metadata")}
+                            : (encConf.has("run") ? eckit::LocalConfiguration{encConf.getSubConfiguration("run")}
+                                                  : eckit::LocalConfiguration{})},
     encoder_{makeEncoder(encConf, compConf.multioConfig())},
     gridDownloader_{std::make_unique<multio::action::GridDownloader>(compConf)} {}
 
@@ -223,26 +269,15 @@ void Encode::print(std::ostream& os) const {
     os << ")";
 }
 
-namespace {
-message::Metadata applyOverwrites(const eckit::LocalConfiguration& overwrites, message::Metadata md) {
-    auto nested = md.getSubConfiguration("encoder-overwrites");
-    for (const auto& k : overwrites.keys()) {
-        // TODO handle type...
-        nested.set(k, overwrites.getString(k));
-    }
-    md.set("encoder-overwrites", nested);
-    return md;
-}
-}  // namespace
 
 message::Message Encode::encodeField(const message::Message& msg, const std::optional<std::string>& gridUID) const {
     try {
         util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-        auto md = this->overwrite_ ? applyOverwrites(*this->overwrite_, msg.metadata()) : msg.metadata();
+        auto md = msg.metadata();
         if (gridUID) {
             md.set("uuidOfHGrid", gridUID.value());
         }
-        return encoder_->encodeField(msg.modifyMetadata(std::move(md)));
+        return encoder_->encodeField(msg.modifyMetadata(std::move(md)), this->overwrite_, this->additionalMetadata_);
     }
     catch (const std::exception& ex) {
         std::ostringstream oss;

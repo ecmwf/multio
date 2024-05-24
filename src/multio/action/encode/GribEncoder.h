@@ -22,8 +22,13 @@
 
 #include "multio/message/Message.h"
 
+#include <variant>
+
 
 namespace multio::action {
+
+using CodesScalarValue = std::variant<std::int64_t, double, std::string>;
+using CodesOverwrites = std::vector<std::pair<std::string, CodesScalarValue>>;
 
 class GribEncoder {
 public:
@@ -54,11 +59,11 @@ public:
     };
     bool hasKey(const char* key);
 
-    message::Message encodeOceanCoordinates(message::Message&& msg);
+    message::Message encodeOceanCoordinates(message::Message&& msg,
+                                            const eckit::LocalConfiguration& additionalMetadata);
 
-    message::Message encodeField(const message::Message& msg);
-    message::Message encodeField(const message::Message& msg, const double* data, size_t sz);
-    message::Message encodeField(const message::Message& msg, const float* data, size_t sz);
+    message::Message encodeField(const message::Message& msg, const CodesOverwrites& overwrites,
+                                 const eckit::LocalConfiguration& additionalMetadata);
 
     // TODO May be refactored
     // int getBitsPerValue(int paramid, const std::string& levtype, double min, double max);
@@ -72,18 +77,14 @@ private:
 
     void initEncoder();
 
-    void setFieldMetadata(const message::Message& msg);
-    void setOceanMetadata(const message::Message& msg);
+    void setFieldMetadata(const message::Message& msg, const eckit::LocalConfiguration& additionalMetadata);
+    void setOceanMetadata(const message::Message& msg, const eckit::LocalConfiguration& additionalMetadata);
 
-    void setOceanCoordMetadata(const message::Metadata& metadata);
-    void setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& runConfig);
+    void setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& additionalMetadata);
 
     template <typename T>
     message::Message setFieldValues(const message::Message& msg);
 
-
-    message::Message setFieldValues(const double* values, size_t count);
-    message::Message setFieldValues(const float* values, size_t count);
 
     const eckit::LocalConfiguration config_;
 

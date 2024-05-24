@@ -42,6 +42,9 @@ TYPE :: RULE_T
   TYPE(DEFINITIONS_T) :: DEFINITIONS
 END TYPE
 
+!> Default encoding setup
+INTEGER(KIND=JPIB_K) :: DEFAULT_EDITION=-1_JPIB_K
+
 !> Set of all encoding rules to be used
 TYPE(RULE_T), TARGET, DIMENSION(:), ALLOCATABLE :: RULES
 
@@ -102,6 +105,8 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: J
   INTEGER(KIND=JPIB_K) :: STAT
   CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+  TYPE(FCKIT_CONFIGURATION) :: DEFAULTS_CFG
+  TYPE(FCKIT_CONFIGURATION) :: ENCODING_RULES_CFG
   TYPE(FCKIT_CONFIGURATION), ALLOCATABLE, DIMENSION(:) :: RULES_CFG
   TYPE(MAP_T) :: MAP
   TYPE(KEY_T) :: KEY
@@ -118,36 +123,52 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
 
   ! Reading the encoding rules
-  IF ( CFG%GET( 'encoding-rules', RULES_CFG ) ) THEN
+  IF ( CFG%GET( 'encoding-rules', ENCODING_RULES_CFG ) ) THEN
 
-    ! Logging
-    IF ( VERBOSE ) THEN
-      WRITE(ERROR_UNIT,*) 'The size of the allocated object is: ', SIZE(RULES_CFG)
+    ! Read the specific encoding rules
+    IF ( ENCODING_RULES_CFG%GET( 'defaults', DEFAULTS_CFG ) ) THEN
+      CALL READ_DEFAULTS( DEFAULTS_CFG, VERBOSE )
     ENDIF
 
-    ! Memory allocation
-    ALLOCATE(RULES(SIZE(RULES_CFG)), STAT=STAT, ERRMSG=ERRMSG )
-    PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
+    ! Read the specific encoding rules
+    IF ( ENCODING_RULES_CFG%GET( 'rules', RULES_CFG ) ) THEN
 
-    ! Loop over the rules and read rule configuration
-    DO I = 1, SIZE(RULES_CFG)
       ! Logging
       IF ( VERBOSE ) THEN
-        WRITE(ERROR_UNIT,*) 'Reading the next rule: ', I
+        WRITE(ERROR_UNIT,*) 'The size of the allocated object is: ', SIZE(RULES_CFG)
       ENDIF
-      CALL READ_NAME( RULES_CFG(I), RULES(I)%NAME, VERBOSE )
-      CALL READ_ACTIONS( RULES_CFG(I), RULES(I), VERBOSE )
-    ENDDO
 
-    ! Log rules names
-    IF ( VERBOSE ) THEN
-      WRITE(ERROR_UNIT,*) RULES(1)%NAME
+      ! Memory allocation
+      ALLOCATE(RULES(SIZE(RULES_CFG)), STAT=STAT, ERRMSG=ERRMSG )
+      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
+
+      ! Loop over the rules and read rule configuration
+      DO I = 1, SIZE(RULES_CFG)
+        ! Logging
+        IF ( VERBOSE ) THEN
+          WRITE(ERROR_UNIT,*) 'Reading the next rule: ', I
+        ENDIF
+        CALL READ_NAME( RULES_CFG(I), RULES(I)%NAME, VERBOSE )
+        CALL READ_ACTIONS( RULES_CFG(I), RULES(I), VERBOSE )
+      ENDDO
+
+      ! Log rules names
+      IF ( VERBOSE ) THEN
+        WRITE(ERROR_UNIT,*) RULES(1)%NAME
+      ENDIF
+
     ENDIF
 
-    ! Free configuration array
-    CALL DEALLOCATE_FCKIT_CONFIGURATION( RULES_CFG )
+      ! Free defaults
+      CALL DEFAULTS_CFG%FINAL()
+
+      ! Free rules array
+      CALL DEALLOCATE_FCKIT_CONFIGURATION( RULES_CFG )
 
   ENDIF
+
+  ! Free memory
+  CALL ENCODING_RULES_CFG%FINAL()
 
   ! Compute the number of paramIds for the hash table
   CALL MAP_INIT( MAP )
@@ -187,18 +208,11 @@ IMPLICIT NONE
     LOOKUP_TABLE(LOOKUP_TABLE_BWD(I)) = I
   ENDDO
 
-  WRITE(*,*) LOOKUP_TABLE_BWD
-
-  WRITE(*,*) ' + MIN: ', MIN_PARAM_ID
-  WRITE(*,*) ' + MAX: ', MAX_PARAM_ID
-  WRITE(*,*) ' + NUM: ', NUM_PARAM_ID
-
+  ! Print the unique set of paramId in the configuration
   CALL MAP_PRINT( MAP, 'test', 0_JPIB_K )
 
   ! Free the map
   CALL MAP_FREE( MAP )
-
-  WRITE(*,*) 'DEBUG CODE:: ', ALLOCATED(RULES)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -462,6 +476,109 @@ END SUBROUTINE RULES_DIMS
 #undef PP_PROCEDURE_TYPE
 
 
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'READ_DEFAULTS'
+SUBROUTINE READ_DEFAULTS( CFG, VERBOSE )
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+
+  ! Symbols imported from other libraries
+  USE :: FCKIT_CONFIGURATION_MODULE, ONLY: FCKIT_CONFIGURATION
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FCKIT_CONFIGURATION), INTENT(IN) :: CFG
+  LOGICAL,                   INTENT(IN) :: VERBOSE
+
+  ! Local variables
+  TYPE(FCKIT_CONFIGURATION) :: ENCODE_CFG
+  INTEGER(KIND=JPIB_K) :: ITMP
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Read rule's name
+  IF ( CFG%GET( 'encode', ENCODE_CFG  ) ) THEN
+    IF ( ENCODE_CFG%GET( 'gribEdition', ITMP ) ) THEN
+      DEFAULT_EDITION = ITMP
+      PP_DEBUG_CRITICAL_COND_THROW( DEFAULT_EDITION.LT.1, 1 )
+      PP_DEBUG_CRITICAL_COND_THROW( DEFAULT_EDITION.GT.2, 2 )
+      IF ( VERBOSE ) THEN
+        WRITE(ERROR_UNIT,*) 'Default Edition: ', DEFAULT_EDITION
+      ENDIF
+    ELSE
+      PP_DEBUG_CRITICAL_THROW( 3 )
+    ENDIF
+  ELSE
+    DEFAULT_EDITION = -1_JPIB_K
+  ENDIF
+
+  ! Free memory
+  CALL ENCODE_CFG%FINAL()
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Default edition lower than 1' )
+    CASE (2)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Default edition greater then 2' )
+    CASE (3)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Default gribEdition expected' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END SUBROUTINE READ_DEFAULTS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'
 #define PP_PROCEDURE_NAME 'READ_NAME'
 SUBROUTINE READ_NAME( CFG, NAME, VERBOSE )
@@ -510,7 +627,7 @@ IMPLICIT NONE
       ! Store the rule name
       NAME = CLTMP(:)
       IF ( VERBOSE ) THEN
-        WRITE(ERROR_UNIT,*) 'Rule name: ', NAME
+        WRITE(ERROR_UNIT,*) 'Rule name: ', TRIM(ADJUSTL(NAME))
       ENDIF
 
       ! Free temporary string
@@ -702,7 +819,8 @@ SUBROUTINE READ_FILTER( CFG, MATCHER, VERBOSE)
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
 
   ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD,   ONLY: JPIB_K
+  USE :: MSG_UTILS_MOD, ONLY: CLEVTYPE2ILEVTYPE
 
   ! Symbols imported from other libraries
   USE :: FCKIT_CONFIGURATION_MODULE, ONLY: FCKIT_CONFIGURATION
@@ -739,12 +857,12 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
 
 
-  ! Read rules for levType
-  IF ( CFG%GET( 'levType', ATMP  ) ) THEN
+  ! Read rules for levtype
+  IF ( CFG%GET( 'levtype', ATMP  ) ) THEN
 
     IF ( ALLOCATED(ATMP) ) THEN
 
-      ! Allocate levType rule
+      ! Allocate levtype rule
       ALLOCATE(MATCHER%LEV_TYPE(SIZE(ATMP)), STAT=STAT, ERRMSG=ERRMSG )
       PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
 
@@ -752,34 +870,12 @@ IMPLICIT NONE
       DO I = 1, SIZE(ATMP)
         MATCHER%LEV_TYPE(I) = CLEVTYPE2ILEVTYPE( ATMP(I) )
         IF ( VERBOSE ) THEN
-          WRITE(ERROR_UNIT,*) 'levType: ', I, MATCHER%LEV_TYPE(I), ATMP(I), SIZE(MATCHER%LEV_TYPE)
+          WRITE(ERROR_UNIT,*) 'levtype: ', I, MATCHER%LEV_TYPE(I), ATMP(I), SIZE(MATCHER%LEV_TYPE)
         ENDIF
       ENDDO
 
       ! Free the temporary string array
       DEALLOCATE(ATMP, STAT=STAT, ERRMSG=ERRMSG )
-      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 2 )
-
-    ELSE
-      PP_DEBUG_CRITICAL_THROW( 3 )
-    ENDIF
-
-  ELSEIF ( CFG%GET( 'levType', CLTMP  ) ) THEN
-
-    IF ( ALLOCATED(ATMP) ) THEN
-
-      ! Allocate levType rule
-      ALLOCATE(MATCHER%LEV_TYPE(1), STAT=STAT, ERRMSG=ERRMSG )
-      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 1 )
-
-      ! Convert levtype to integer and store it in the rule
-      MATCHER%LEV_TYPE(1) = CLEVTYPE2ILEVTYPE( CLTMP )
-      IF ( VERBOSE ) THEN
-        WRITE(ERROR_UNIT,*) 'levType: ', MATCHER%LEV_TYPE(1), CLTMP, SIZE(MATCHER%LEV_TYPE)
-      ENDIF
-
-      ! Free the temporary string array
-      DEALLOCATE(CLTMP, STAT=STAT, ERRMSG=ERRMSG )
       PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 2 )
 
     ELSE
@@ -815,28 +911,6 @@ IMPLICIT NONE
       PP_DEBUG_CRITICAL_THROW( 6 )
     ENDIF
 
-  ELSEIF ( CFG%GET( 'repres', CLTMP  ) ) THEN
-
-    IF ( ALLOCATED(CLTMP) ) THEN
-
-      ! Allocate repres rule
-      ALLOCATE(MATCHER%REPRES(1), STAT=STAT, ERRMSG=ERRMSG )
-      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 4)
-
-      ! Convert repres to integer and store it in the rule
-      MATCHER%REPRES(1) = CREPRES2IREPRES( CLTMP )
-      IF ( VERBOSE ) THEN
-        WRITE(ERROR_UNIT,*) 'repres: ', MATCHER%REPRES(1), CLTMP, SIZE(MATCHER%REPRES)
-      ENDIF
-
-      ! Free the temporary string array
-      DEALLOCATE(CLTMP, STAT=STAT, ERRMSG=ERRMSG )
-      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 5 )
-
-    ELSE
-      PP_DEBUG_CRITICAL_THROW( 6 )
-    ENDIF
-
   ENDIF
 
 
@@ -861,30 +935,6 @@ IMPLICIT NONE
 
       ! Free the temporary string array
       DEALLOCATE(ATMP, STAT=STAT, ERRMSG=ERRMSG )
-      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 9 )
-
-    ELSE
-      PP_DEBUG_CRITICAL_THROW( 10 )
-    ENDIF
-
-  ELSEIF ( CFG%GET( 'level', CLTMP  ) ) THEN
-
-    IF ( ALLOCATED(CLTMP) ) THEN
-
-      ! Allocate level rule
-      ALLOCATE( MATCHER%LEVEL(1), STAT=STAT, ERRMSG=ERRMSG )
-      PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 7 )
-
-      ! Store level in the rule
-        PP_DEBUG_CRITICAL_COND_THROW( .NOT.IS_INTEGER( CLTMP ), 8 )
-        READ(CLTMP,*) ITMP
-        MATCHER%LEVEL(1) = ITMP
-        IF ( VERBOSE ) THEN
-          WRITE(ERROR_UNIT,*) 'level: ', MATCHER%LEVEL(1), CLTMP, SIZE(MATCHER%LEVEL)
-        ENDIF
-
-      ! Free the temporary string array
-      DEALLOCATE(CLTMP, STAT=STAT, ERRMSG=ERRMSG )
       PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 9 )
 
     ELSE
@@ -1130,7 +1180,7 @@ IMPLICIT NONE
 
 
   IF ( VERBOSE ) THEN
-    WRITE(ERROR_UNIT,*) 'Read packingTYpe'
+    WRITE(ERROR_UNIT,*) 'Read packingType'
   ENDIF
   IF ( CFG%GET( 'packingType', CLTMP  ) ) THEN
     SELECT CASE (CLTMP)
@@ -1264,9 +1314,9 @@ END FUNCTION IS_INTEGER
 FUNCTION CREPRES2IREPRES( CREPRES ) RESULT(IREPRES)
 
   ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: REPRES_GRIDDED_E
-  USE :: OM_CORE_MOD, ONLY: REPRES_SPECTRAL_E
-  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD,   ONLY: REPRES_GRIDDED_E
+  USE :: OM_CORE_MOD,   ONLY: REPRES_SPECTRAL_E
+  USE :: OM_CORE_MOD,   ONLY: JPIB_K
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1341,122 +1391,18 @@ END FUNCTION CREPRES2IREPRES
 
 
 
-
-
-#define PP_PROCEDURE_TYPE 'SUBROUTINE'
-#define PP_PROCEDURE_NAME 'CLEVTYPE2ILEVTYPE'
-FUNCTION CLEVTYPE2ILEVTYPE( CLEVTYPE ) RESULT(ILEVTYPE)
-
-  ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: JPIB_K
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HHL_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HPL_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HL_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_ML_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_O2D_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_O3D_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PL_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PT_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PV_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_SFC_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_SOL_E
-
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  ! Dummy arguments
-  CHARACTER(LEN=*), INTENT(IN) :: CLEVTYPE
-
-  ! Function result
-  INTEGER(KIND=JPIB_K) :: ILEVTYPE
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  SELECT CASE ( CLEVTYPE )
-
-  CASE ( 'hhl' )
-    ILEVTYPE = LEVTYPE_HHL_E
-  CASE ( 'hpl' )
-    ILEVTYPE = LEVTYPE_HPL_E
-  CASE ( 'hl' )
-    ILEVTYPE = LEVTYPE_HL_E
-  CASE ( 'ml' )
-    ILEVTYPE = LEVTYPE_ML_E
-  CASE ( 'o2d' )
-    ILEVTYPE = LEVTYPE_O2D_E
-  CASE ( 'o3d' )
-    ILEVTYPE = LEVTYPE_O3D_E
-  CASE ( 'pl' )
-    ILEVTYPE = LEVTYPE_PL_E
-  CASE ( 'pt' )
-    ILEVTYPE = LEVTYPE_PT_E
-  CASE ( 'pv' )
-    ILEVTYPE = LEVTYPE_PV_E
-  CASE ( 'sfc' )
-    ILEVTYPE = LEVTYPE_SFC_E
-  CASE ( 'sol' )
-    ILEVTYPE = LEVTYPE_SOL_E
-  CASE DEFAULT
-    PP_DEBUG_CRITICAL_THROW( 1 )
-  END SELECT
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point
-  RETURN
-
-
-! Error handler
-PP_ERROR_HANDLER
-
-  ErrorHandler: BLOCK
-
-    ! Error handling variables
-    CHARACTER(LEN=:), ALLOCATABLE :: STR
-
-    ! HAndle different errors
-    SELECT CASE(ERRIDX)
-    CASE (1)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown levtype' )
-    CASE DEFAULT
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
-    END SELECT
-
-    ! Trace end of procedure (on error)
-    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-    ! Write the error message and stop the program
-    PP_DEBUG_ABORT( STR )
-
-  END BLOCK ErrorHandler
-
-  ! Exit point on error
-  RETURN
-
-END FUNCTION CLEVTYPE2ILEVTYPE
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
-
-
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'
 #define PP_PROCEDURE_NAME 'MATCH_RULES'
 SUBROUTINE MATCH_RULES( PARAM_ID, LEV_TYPE, REPRES, LEVEL, DEFINITIONS )
 
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: OUTPUT_UNIT
+
   ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD,   ONLY: JPIB_K
+  USE :: OM_CORE_MOD,   ONLY: UNDEF_PARAM_E
+  USE :: MSG_UTILS_MOD, ONLY: ILEVTYPE2CLEVTYPE
+  USE :: MSG_UTILS_MOD, ONLY: IREPRES2CREPRES
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1474,6 +1420,11 @@ IMPLICIT NONE
   TYPE(DEFINITIONS_T),  INTENT(OUT) :: DEFINITIONS
 
   ! Local variables
+  CHARACTER(LEN=16)    :: CI
+  CHARACTER(LEN=16)    :: CPARAM_ID
+  CHARACTER(LEN=16)    :: CLEVEL
+  CHARACTER(LEN=4096)  :: RMATCH
+  CHARACTER(LEN=1024)  :: FLDSTR
   INTEGER(KIND=JPIB_K) :: I
   INTEGER(KIND=JPIB_K) :: CNT
   INTEGER(KIND=JPIB_K) :: RID
@@ -1489,17 +1440,26 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-
+  ! Local variables initialisation
   CNT = 0
   RID = 0
 
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(RULES), 1 )
 
+  ! String for the input field to be parsed
+  FLDSTR = REPEAT(' ',1024)
+  WRITE(CPARAM_ID,'(I16)') PARAM_ID
+  WRITE(CLEVEL,'(I16)') LEVEL
+  WRITE(FLDSTR,'(A)') &
+&          '{ paramID='//TRIM(ADJUSTL(CPARAM_ID))// &
+&          ', levtype="'//TRIM(ADJUSTL(ILEVTYPE2CLEVTYPE(LEV_TYPE)))// &
+&          '", repres="'//TRIM(ADJUSTL(IREPRES2CREPRES(REPRES)))// &
+&          '", level='//TRIM(ADJUSTL(CLEVEL))// '}'
+
   ! Search loop
+  RMATCH = '( '
   DO I = 1, SIZE(RULES)
-    !WRITE(*,*) ' '
-    !WRITE(*,*) ' CHECKING RULE(',I,'): ', RULES(I)%NAME
 
     ! Initialize the mathc variable
     MATCH = ANY( [ ALLOCATED(RULES(I)%MATCHER%LEV_TYPE), &
@@ -1510,51 +1470,57 @@ IMPLICIT NONE
     IF ( ALLOCATED(RULES(I)%MATCHER%LEV_TYPE) ) THEN
       LTMP = ANY( RULES(I)%MATCHER%LEV_TYPE .EQ. LEV_TYPE )
       MATCH = MATCH .AND. LTMP
-    !  WRITE(*,*) 'LevType matched: ', LTMP, LEV_TYPE
-    !ELSE
-    !  WRITE(*,*) 'LevType automatically matched: ', LEV_TYPE
     ENDIF
 
     IF ( ALLOCATED(RULES(I)%MATCHER%REPRES) ) THEN
       LTMP = ANY( RULES(I)%MATCHER%REPRES .EQ. REPRES )
       MATCH = MATCH .AND. LTMP
-    !  WRITE(*,*) 'Repres matched: ', LTMP, REPRES
-    !ELSE
-    !  WRITE(*,*) 'Repres automatically matched: ', REPRES
     ENDIF
 
     IF ( ALLOCATED(RULES(I)%MATCHER%LEVEL) ) THEN
       LTMP = ANY( RULES(I)%MATCHER%LEVEL .EQ. LEVEL )
       MATCH = MATCH .AND. LTMP
-    !  WRITE(*,*) 'Level matched: ', LTMP, LEVEL
-    !ELSE
-    !  WRITE(*,*) 'Level automatically matched: ', LEVEL
     ENDIF
 
     IF ( ALLOCATED(RULES(I)%MATCHER%PARAM_ID) ) THEN
       LTMP = ANY( RULES(I)%MATCHER%PARAM_ID .EQ. PARAM_ID )
       MATCH = MATCH .AND. LTMP
-    !  WRITE(*,*) 'ParamId matched: ', LTMP, PARAM_ID
-    !ELSE
-    !  WRITE(*,*) 'ParamId automatically matched: ', PARAM_ID
     ENDIF
 
     ! Update match counter
-    ! WRITE(*,*) 'Match: ', MATCH
-    ! WRITE(*,*) '-------------------------------------------------------'
     IF ( MATCH ) THEN
       CNT = CNT + 1
       RID = I
+      WRITE(CI,'(I10)') I
+      IF ( CNT .EQ. 1 ) THEN
+        RMATCH = TRIM(RMATCH)//'{id='//TRIM(ADJUSTL(CI))//', name="'//TRIM(ADJUSTL(RULES(I)%NAME))//'"}'
+      ELSE
+        RMATCH = TRIM(RMATCH)//', '//'{id='//TRIM(ADJUSTL(CI))//', name="'//TRIM(ADJUSTL(RULES(I)%NAME))//'"}'
+      ENDIF
     ENDIF
 
   ENDDO
 
+  ! Apply default rule if needed
+  IF ( CNT.LT.1 .AND. DEFAULT_EDITION.GT.0 ) THEN
+    DEFINITIONS%EDITION = DEFAULT_EDITION
+    DEFINITIONS%BITS_PER_VALUE = -1
+    DEFINITIONS%PACKING_TYPE = UNDEF_PARAM_E
+  ENDIF
+
   ! Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( CNT.LT.1, 2 )
+  PP_DEBUG_CRITICAL_COND_THROW( (CNT.LT.1).AND.(DEFAULT_EDITION.LT.0), 2 )
   PP_DEBUG_CRITICAL_COND_THROW( CNT.GT.1, 3 )
 
   ! Associate the rule definitions to the output variable
   DEFINITIONS = RULES(RID)%DEFINITIONS
+
+  ! Loggin rules match
+  IF ( CNT  .EQ. 1 ) THEN
+    WRITE(*,*) ' + ENCODING_RULES_LOG: applied rule: '//TRIM(ADJUSTL(RMATCH))//') to field: '//TRIM(ADJUSTL(FLDSTR))
+  ELSE
+    WRITE(*,*) ' + ENCODING_RULES_LOG: applied default rule to field: '//TRIM(ADJUSTL(FLDSTR))
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1570,26 +1536,18 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=:), ALLOCATABLE :: STR
-    CHARACTER(LEN=1024) :: TMP
+    CHARACTER(LEN=1024) :: TMP2
 
     ! HAndle different errors
     SELECT CASE(ERRIDX)
     CASE (1)
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Rules not allocated' )
     CASE (2)
-      WRITE(TMP,'(A1,I8,A2,I8,A2,I8,A2,I8,A1)') &
-&          ' (', PARAM_ID, &
-&          ', ', LEV_TYPE, &
-&          ', ', REPRES, &
-&          ', ', LEVEL, ')'
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'No match found: '//TRIM(TMP) )
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'No match found for field: '//TRIM(ADJUSTL(FLDSTR)) )
     CASE (3)
-      WRITE(TMP,'(A1,I8,A2,I8,A2,I8,A2,I8,A1)') &
-&          ' (', PARAM_ID, &
-&          ', ', LEV_TYPE, &
-&          ', ', REPRES, &
-&          ', ', LEVEL, ')'
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Multiple matches found: '//TRIM(TMP) )
+      RMATCH = TRIM(RMATCH)//' )'
+      WRITE(TMP2,'(I8)') CNT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, TRIM(ADJUSTL(TMP2))//' matches rules=>'//TRIM(ADJUSTL(RMATCH))//' found for field: '//TRIM(ADJUSTL(FLDSTR)) )
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
     END SELECT

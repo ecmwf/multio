@@ -181,10 +181,11 @@ void MaestroSyphon::process_join_leave_events(MaestroSubscription& join_leave_su
             switch (tmp->kind) {
                 case MSTRO_POOL_EVENT_APP_JOIN:
                     LOG_DEBUG_LIB(LibMultio)
-                        << " *** Application " << tmp->join.component_name << " is joining" << std::endl;
+                        << " *** Application " << tmp->payload.join.component_name << " is joining" << std::endl;
                     break;
                 case MSTRO_POOL_EVENT_APP_LEAVE:
-                    LOG_DEBUG_LIB(LibMultio) << " *** Application " << tmp->leave.appid << " is leaving" << std::endl;
+                    LOG_DEBUG_LIB(LibMultio)
+                        << " *** Application " << tmp->payload.leave.appid << " is leaving" << std::endl;
                     break;
                 default:
                     std::ostringstream os;

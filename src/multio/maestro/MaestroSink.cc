@@ -17,6 +17,7 @@
 #include <cstring>
 #include <string>
 #include <thread>
+#include <type_traits>
 
 extern "C" {
 #include <maestro.h>
@@ -29,6 +30,39 @@ extern "C" {
 
 #include "multio/util/ScopedTimer.h"
 
+namespace {
+static void setStringValue(multio::MaestroCdo& cdo, const std::string& key, const std::string& value) {
+    cdo.set_attribute(key.c_str(), value.c_str(), true);
+}
+
+static void setInt64Value(multio::MaestroCdo& cdo, const std::string& key, const std::string& value) {
+    int64_t intvalue = std::stoi(value);
+    cdo.set_attribute(key.c_str(), &intvalue, true);
+}
+
+static void setUInt64Value(multio::MaestroCdo& cdo, const std::string& key, const std::string& value) {
+    uint64_t intvalue = std::stoi(value);
+    cdo.set_attribute(key.c_str(), &intvalue, true);
+}
+
+using MaestroKeySetter = std::add_pointer<void(multio::MaestroCdo&, const std::string&, const std::string&)>::type;
+
+static const std::map<std::string, MaestroKeySetter> cdoValueSetters{
+    {"class", &setStringValue},   {"expver", &setStringValue},  {"stream", &setStringValue},
+    {"date", &setStringValue},    {"time", &setStringValue},    {"domain", &setStringValue},
+    {"type", &setStringValue},    {"levtype", &setStringValue}, {"step", &setInt64Value},
+    {"anoffset", &setInt64Value}, {"levelist", &setInt64Value}, {"param", &setInt64Value},
+    // # Additional attributes (D340.2.2.3). These keys will be put back once version 2.2.3 is released.
+    //{"experiment", &setStringValue},
+    //{"activity", &setStringValue},
+    //{"generation", &setInt64Value},
+    //{"realization", &setInt64Value},
+    //{"model", &setStringValue},
+    //{"resolution", &setStringValue},
+    //{"frequency", &setStringValue},
+    //{"direction", &setStringValue},
+};
+}  // namespace
 
 namespace multio {
 
@@ -37,6 +71,8 @@ MaestroSink::MaestroSink(const ComponentConfiguration& compConf) : multio::sink:
 
     LOG_DEBUG_LIB(LibMultio) << *this << std::endl;
     readyCdoEnabled_ = compConf.parsedConfig().getBool("ready-cdo", true);
+
+    schemaName_ = compConf.parsedConfig().getString("schema", ".maestro.ecmwf.");
 
     eckit::Timing timing;
     {
@@ -109,19 +145,12 @@ void MaestroSink::write(eckit::message::Message blob) {
 
     for (const auto& kw : md.keys()) {
         util::ScopedTiming timing(statistics_.sinkAttributeTimer_, statistics_.sinkAttributeTiming_);
-        auto mkey = ".maestro.ecmwf." + kw;
+
+        auto mkey = schemaName_ + kw;
         auto value = md.get<std::string>(kw);
 
-        if (kw == "class" || kw == "domain" || kw == "expver" || kw == "levtype" || kw == "stream" || kw == "type") {
-            cdo.set_attribute(mkey.c_str(), value.c_str(), true);
-        }
-        else if (kw == "levelist" || kw == "number" || kw == "param" || kw == "step") {
-            int64_t intvalue = std::stoi(value);
-            cdo.set_attribute(mkey.c_str(), intvalue, true);
-        }
-        else if (kw == "time") {
-            uint64_t intvalue = std::stoi(value);
-            cdo.set_attribute(mkey.c_str(), intvalue, true);
+        if (cdoValueSetters.count(kw) != 0) {
+            std::invoke(cdoValueSetters.at(kw), cdo, mkey, value);
         }
     }
 

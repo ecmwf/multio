@@ -80,10 +80,10 @@ CASE("Set and get CDO attributes") {
     MaestroCdo cdo{"name"};
 
     int64_t step{2};
-    cdo.set_attribute<int64_t>(".maestro.ecmwf.step", step, true);  // int()
+    cdo.set_attribute<int64_t*>(".maestro.ecmwf.step", &step, true);  // int()
 
     uint64_t time{12};
-    cdo.set_attribute<uint64_t>(".maestro.ecmwf.time", time, true);  // uint()
+    cdo.set_attribute<uint64_t*>(".maestro.ecmwf.time", &time, true);  // uint()
 
     std::string expver{"0001"};
     cdo.set_attribute<const char*>(".maestro.ecmwf.expver", expver.c_str(), true);  // str()
@@ -92,7 +92,7 @@ CASE("Set and get CDO attributes") {
     auto seconds = static_cast<int>(std::chrono::seconds(now).count());
     auto nanoseconds = static_cast<int>(std::chrono::nanoseconds(now).count());
     mstro_timestamp date{seconds, nanoseconds, 0};
-    cdo.set_attribute<mstro_timestamp>(".maestro.ecmwf.date", date, true);  // timestamp()
+    cdo.set_attribute<mstro_timestamp*>(".maestro.ecmwf.date", &date, true);  // timestamp()
 
     // it takes some time to copy attribute values
     // we should do a short sleep before getting the attribute values

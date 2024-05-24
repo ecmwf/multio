@@ -229,6 +229,7 @@ SUBROUTINE ENCODING_INFO_ACCESS_OR_CREATE( MODEL_PARAMS, PARAM_ID, PREFIX, REPRE
   USE :: CIRCULAR_BUFFER_MOD, ONLY: CB_INIT
   USE :: CIRCULAR_BUFFER_MOD, ONLY: CB_GET_ALL
   USE :: YAML_RULES_MOD,      ONLY: DEFINITIONS_T
+  USE :: MSG_UTILS_MOD,       ONLY: IPREFIX2ILEVTYPE
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -517,144 +518,6 @@ END SUBROUTINE INITIALIZE_GRIB_INFO
 #undef PP_PROCEDURE_TYPE
 
 
-
-#define PP_PROCEDURE_TYPE 'SUBROUTINE'
-#define PP_PROCEDURE_NAME 'IPREFIX2ILEVTYPE'
-FUNCTION IPREFIX2ILEVTYPE( IPREFIX, PARAM_ID ) RESULT(ILEVTYPE)
-
-  ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: JPIB_K
-
-  USE :: GRIB_CODES_MOD, ONLY: NGRBRSN
-  USE :: GRIB_CODES_MOD, ONLY: NGRBTSN
-  USE :: GRIB_CODES_MOD, ONLY: NGRBWSN
-  USE :: GRIB_CODES_MOD, ONLY: NGRBSD
-  USE :: GRIB_CODES_MOD, ONLY: NGRB100U
-  USE :: GRIB_CODES_MOD, ONLY: NGRB100V
-
-  USE :: OM_CORE_MOD, ONLY: MODEL_LEVEL_E
-  USE :: OM_CORE_MOD, ONLY: PRESSURE_LEVEL_E
-  USE :: OM_CORE_MOD, ONLY: VORTICITY_LEVEL_E
-  USE :: OM_CORE_MOD, ONLY: THETA_LEVEL_E
-  USE :: OM_CORE_MOD, ONLY: SURFACE_E
-  USE :: OM_CORE_MOD, ONLY: WAVE_INT_E
-  USE :: OM_CORE_MOD, ONLY: WAVE_SPEC_E
-
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HHL_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HPL_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_HL_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_ML_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_O2D_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_O3D_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PL_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PT_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_PV_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_SFC_E
-  USE :: OM_CORE_MOD, ONLY: LEVTYPE_SOL_E
-
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  ! Dummy arguments
-  INTEGER(KIND=JPIB_K) , INTENT(IN) :: IPREFIX
-  INTEGER(KIND=JPIB_K) , INTENT(IN) :: PARAM_ID
-
-  ! Function result
-  INTEGER(KIND=JPIB_K) :: ILEVTYPE
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  ! NGRBRSN  - 33     - Snow density
-  ! NGRBTSN  - 238    - Temperature of snow layer
-  ! NGRBWSN  - 228038 - Snow liquid water (multi-layer)
-  ! NGRBSD   - 228141 - Snow depth (multi-layer)
-
-  SELECT CASE ( IPREFIX )
-
-  CASE ( MODEL_LEVEL_E )
-    SELECT CASE (PARAM_ID)
-    CASE ( NGRB100U, NGRB100V )
-      ILEVTYPE = LEVTYPE_HL_E
-    CASE DEFAULT
-      ILEVTYPE = LEVTYPE_ML_E
-    END SELECT
-  CASE ( PRESSURE_LEVEL_E )
-    SELECT CASE (PARAM_ID)
-    CASE ( NGRB100U, NGRB100V )
-      ILEVTYPE = LEVTYPE_HL_E
-    CASE DEFAULT
-      ILEVTYPE = LEVTYPE_PL_E
-    END SELECT
-  CASE ( VORTICITY_LEVEL_E )
-    ILEVTYPE = LEVTYPE_PV_E
-  CASE ( THETA_LEVEL_E )
-    ILEVTYPE = LEVTYPE_PT_E
-  CASE ( SURFACE_E )
-    SELECT CASE (PARAM_ID)
-    CASE ( NGRBRSN, NGRBTSN, NGRBWSN, NGRBSD, 231027 )
-      ILEVTYPE = LEVTYPE_SOL_E
-    CASE DEFAULT
-      ILEVTYPE = LEVTYPE_SFC_E
-    END SELECT
-  CASE ( WAVE_INT_E )
-    ILEVTYPE = LEVTYPE_SFC_E
-  CASE ( WAVE_SPEC_E )
-    ILEVTYPE = LEVTYPE_SFC_E
-  CASE DEFAULT
-    PP_DEBUG_CRITICAL_THROW( 1 )
-  END SELECT
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point
-  RETURN
-
-
-! Error handler
-PP_ERROR_HANDLER
-
-  ErrorHandler: BLOCK
-
-    ! Error handling variables
-    CHARACTER(LEN=:), ALLOCATABLE :: STR
-
-    ! HAndle different errors
-    SELECT CASE(ERRIDX)
-    CASE (1)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown levtype' )
-    CASE DEFAULT
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
-    END SELECT
-
-    ! Trace end of procedure (on error)
-    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-    ! Write the error message and stop the program
-    PP_DEBUG_ABORT( STR )
-
-  END BLOCK ErrorHandler
-
-  ! Exit point on error
-  RETURN
-
-END FUNCTION IPREFIX2ILEVTYPE
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
-
-
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'ENCODING_INFO_NEW'
 FUNCTION ENCODING_INFO_NEW() RESULT(PEI)
@@ -843,6 +706,9 @@ SUBROUTINE GRIB_INFO_PRINT( GI, LOGUNIT )
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,          ONLY: JPIB_K
   USE :: OM_CORE_MOD,          ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,          ONLY: PACKING_TYPE_GRIB_SIMPLE_E
+  USE :: OM_CORE_MOD,          ONLY: PACKING_TYPE_GRIB_CCSDE_E
+  USE :: OM_CORE_MOD,          ONLY: PACKING_TYPE_GRIB_COMPLEX_E
   USE :: TIME_ASSUMPTIONS_MOD, ONLY: TYPE_OF_STATISTICAL_PROCESS_TO_STRING
   USE :: TIME_ASSUMPTIONS_MOD, ONLY: TYPE_OF_TIME_RANGE_TO_STRING
 
@@ -872,7 +738,15 @@ IMPLICIT NONE
   WRITE(LOGUNIT,'(A)') ' ---------'
   WRITE(LOGUNIT,'(A,7I8)') ' + Requested encoding......................: ', GI%REQUESTED_ENCODING
   WRITE(LOGUNIT,'(A,7I8)') ' + Bits per values.........................: ', GI%BITS_PER_VALUE
-  WRITE(LOGUNIT,'(A,7I8)') ' + Packing type............................: ', GI%PACKING_TYPE
+  WRITE(LOGUNIT,'(A,7I8)') ' + (I) Packing type........................: ', GI%PACKING_TYPE
+  SELECT CASE (GI%PACKING_TYPE)
+  CASE ( PACKING_TYPE_GRIB_SIMPLE_E )
+    WRITE(LOGUNIT,'(A)')     ' + (C) Packing type........................: grib_simple'
+  CASE ( PACKING_TYPE_GRIB_CCSDE_E )
+    WRITE(LOGUNIT,'(A)')     ' + (C) Packing type........................: grib_ccsds'
+  CASE ( PACKING_TYPE_GRIB_COMPLEX_E )
+    WRITE(LOGUNIT,'(A)')     ' + (C) Packing type........................: spectral_complex'
+  END SELECT
   WRITE(LOGUNIT,'(A,L)')   ' + Is step 0 valid.........................: ', GI%IS_STEP0_VALID_
   WRITE(LOGUNIT,'(A,I8)')  ' + Product definition template number......: ', GI%PRODUCT_DEFINITION_TEMPLATE_NUMBER_
   WRITE(LOGUNIT,'(A,A)')   ' + Type of statistical process.............: ', TRIM(TYPE_OF_STATISTICAL_PROCESS_TO_STRING(GI%TYPE_OF_STATISTICAL_PROCESS_))

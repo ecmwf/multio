@@ -56,6 +56,7 @@ private:
 
     bool readyCdoEnabled_ = true;
     MaestroCdo readyCdo_;
+    std::string schemaName_;
 };
 
 }  // namespace multio

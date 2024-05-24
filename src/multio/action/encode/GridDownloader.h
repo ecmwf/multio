@@ -24,6 +24,30 @@
 
 namespace multio::action {
 
+/**
+ * The Grid downloader may be used from different actions and should not call atlas::initialize() or atlas::finalize()
+ * multiple times. Atlas has no ref counting - other libraries may be still using atlas, hence we should not finalize it
+ * during the run. Moreover after finalizing, some Logs seems to get deallocated and can not be used after a second
+ * initialization.
+ */
+class AtlasInstance : private eckit::NonCopyable {
+private:  // methods
+    AtlasInstance();
+
+public:  // methods
+    static AtlasInstance& instance();
+    ~AtlasInstance();
+};
+
+class ScopedAtlasInstance {
+private:  // methods
+    AtlasInstance& instance_;
+
+public:  // methods
+    ScopedAtlasInstance() : instance_{AtlasInstance::instance()} {};
+};
+
+
 class GribEncoder;
 
 struct GridCoordinates {
@@ -63,5 +87,6 @@ private:
     GridCoordinateCache gridCoordinatesCache_;
     GridUIDCache gridUIDCache_;
 };
+
 
 }  // namespace multio::action

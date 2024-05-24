@@ -16,7 +16,7 @@ def test_initialisation_no_config():
     multiopython.Multio()
 
 def test_multio_version():
-    assert(multiopython.Multio(**default_dict).__version__() == '2.1.5')
+    assert(multiopython.Multio(**default_dict).__version__() == '2.1.6')
 
 def test_multio_wrong_config_path():
     default_dict['config_path'] = "I_AM_NOT_HERE/multio/config/multio-server.yaml"

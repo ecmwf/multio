@@ -44,7 +44,7 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI|NVHPC")
   set(checkbounds_flags   "-Mbounds")
 
   set(convert_flags       "-byteswapio")
-  set(linelength_flags    "-M free -M extend")
+  set(linelength_flags    "-Mfree -Mextend")
   set(nofma_flags         "")
 
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Flang")

@@ -59,7 +59,7 @@ implicit none
                                                 &  write_field_double_2d, &
                                                    write_field_buffer
 
-        procedure, private, pass :: write_grib_encoded => multio_handle_write_grib_encoded
+        procedure, public, pass :: write_grib_encoded => multio_handle_write_grib_encoded
 
 
         ! Utils

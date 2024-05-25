@@ -94,7 +94,7 @@ list( APPEND output_manager_src
 list( APPEND output_manager_src
     common/om_general_utils_c.c
     common/om_general_utils_mod.F90
-    common/om_multio_utils_v1_mod.F90
+    common/om_multio_utils_v2_mod.F90
     common/om_profile_mod.F90
     common/datetime_utils_mod.F90
 )
@@ -165,7 +165,7 @@ list( APPEND output_manager_src
 # ----------------------------------------
 list( APPEND output_manager_src
     metadata/metadata_base_mod.F90
-    metadata/multIO_metadata_v1_mod.F90
+    metadata/multIO_metadata_v2_mod.F90
     metadata/grib_metadata_mod.F90
     metadata/metadata_factory_mod.F90
     metadata/metadata_tracer_mod.F90
@@ -243,7 +243,7 @@ list( APPEND output_manager_src
     flavours/gribx2multio_bin_output_manager_mod.F90
     flavours/gribx2multio_raw_output_manager_mod.F90
     flavours/multio_raw_output_manager_mod.F90
-    flavours/multio_no_enc_output_manager_v1_mod.F90
+    flavours/multio_no_enc_output_manager_v2_mod.F90
     flavours/output_manager_factory_mod.F90
 )
 

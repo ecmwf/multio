@@ -133,6 +133,8 @@ list( APPEND output_manager_src
 # Append source files for management of the encoders
 # --------------------------------------------------
 list( APPEND output_manager_src
+
+    encoders/grib_encoder_factory_mod.F90
     encoders/grib_encoder_indexer_mod.F90
     encoders/grib_encoder_base_mod.F90
     encoders/grib_encoder_manager_mod.F90
@@ -180,7 +182,6 @@ list( APPEND output_manager_src
 # Append output-manager source files to the list
 # ----------------------------------------------
 list( APPEND output_manager_src
-    encoders/utils/encoders_utils_mod.F90
     encoders/utils/runtime/time_encoders_mod.F90
     encoders/utils/assumptions/general_assumptions_mod.F90
     encoders/utils/assumptions/level_assumptions_mod.F90

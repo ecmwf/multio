@@ -36,6 +36,7 @@ PUBLIC :: OM_TOC
 PUBLIC :: OM_READ_TYPE_FROM_ENV
 PUBLIC :: OM_READ_YAML_FROM_ENV
 PUBLIC :: OM_IS_LITTLE_ENDIAN
+PUBLIC :: OM_FINDLOC
 
 CONTAINS
 
@@ -323,6 +324,60 @@ IMPLICIT NONE
   RETURN
 
 END FUNCTION OM_ENVVAR_IS_DEFINED
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'OM_FINDLOC'
+FUNCTION OM_FINDLOC( DAT, REF ) RESULT(LOC)
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), DIMENSION(:), INTENT(IN) :: DAT
+  INTEGER(KIND=JPIB_K),               INTENT(IN) :: REF
+
+  ! Function Result
+  INTEGER(KIND=JPIB_K) :: LOC
+
+  ! Local variables
+  LOGICAL :: FOUND
+  INTEGER(KIND=JPIB_K) :: I
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  LOC = 0_JPIB_K
+  SearchLoop: DO I = 1, SIZE(DAT)
+    IF ( DAT(I) .EQ. REF ) THEN
+      LOC = I
+      EXIT SearchLoop
+    ENDIF
+  ENDDO SearchLoop
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+END FUNCTION OM_FINDLOC
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

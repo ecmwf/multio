@@ -1,0 +1,818 @@
+!> @file
+!>
+!> @brief Definition of an empty output manager
+!>
+!> @author Mirco Valentini
+!> @date January 12, 2024
+
+! Include preprocessor utils
+#include "output_manager_preprocessor_utils.h"
+#include "output_manager_preprocessor_trace_utils.h"
+#include "output_manager_preprocessor_logging_utils.h"
+#include "output_manager_preprocessor_errhdl_utils.h"
+
+! Definition of the module
+#define PP_FILE_NAME 'gribx2multio_raw_mod.F90'
+#define PP_SECTION_TYPE 'MODULE'
+#define PP_SECTION_NAME 'GRIBX2MULTIO_RAW_MOD'
+MODULE GRIB_ENCODERS_FACTORY_MOD
+IMPLICIT NONE
+
+! Default visibility
+PRIVATE
+
+INTERFACE
+
+!>
+!> @brief interface used for the construction of a generic encoders
+!>
+!> @param [in] MODEL_PARAMS   Model parameters that are frozen during the simulation
+!> @param [in] ENCODER        Encoder to be allocated
+!>
+!> @result The newly contructed encoder
+!>
+SUBROUTINE MAKE_FCN_IF( CFG, MODEL_PARAMS, METADATA_KIND, ENCODER, MIOH )
+  USE :: OM_CORE_MOD,           ONLY: MODEL_PAR_T
+  USE :: GRIB_ENCODER_BASE_MOD, ONLY: GRIB_ENCODER_A
+  USE :: FCKIT_CONFIGURATION_MODULE, ONLY: FCKIT_CONFIGURATION
+  USE :: MULTIO_API,                 ONLY: MULTIO_HANDLE
+IMPLICIT NONE
+  TYPE(FCKIT_CONFIGURATION),      INTENT(IN)    :: CFG
+  TYPE(MODEL_PAR_T),              INTENT(IN)    :: MODEL_PARAMS
+  CHARACTER(LEN=*),               INTENT(IN)    :: METADATA_KIND
+  CLASS(GRIB_ENCODER_A), POINTER, INTENT(INOUT) :: ENCODER
+  TYPE(MULTIO_HANDLE), OPTIONAL,  INTENT(IN)    :: MIOH
+END SUBROUTINE MAKE_FCN_IF
+!>
+!> @brief interface used for the destruction of an encoder
+!>
+!> @param [ioout] the encoder to be destructed
+!>
+SUBROUTINE DESTROY_FCN_IF( ENCODER )
+  USE :: OM_CORE_MOD,           ONLY: JPIB_K
+  USE :: GRIB_ENCODER_BASE_MOD, ONLY: GRIB_ENCODER_A
+IMPLICIT NONE
+  CLASS(GRIB_ENCODER_A), POINTER, INTENT(INOUT) :: ENCODER
+END SUBROUTINE DESTROY_FCN_IF
+END INTERFACE
+
+! Whitelist of public symbols
+PUBLIC :: MAKE_ENCODER
+PUBLIC :: MAKE_FCN_IF
+PUBLIC :: DESTROY_FCN_IF
+
+CONTAINS
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MAKE_ENCODER'
+SUBROUTINE MAKE_ENCODER( LEVTYPE, REPRES, EDITION, CONSTRUCTOR, DESTRUCTOR )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: GRIB1_E
+  USE :: OM_CORE_MOD, ONLY: GRIB2_E
+  USE :: GRIB_ENCODER_BASE_MOD, ONLY: GRIB_ENCODER_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K),               INTENT(IN)  :: LEVTYPE
+  INTEGER(KIND=JPIB_K),               INTENT(IN)  :: REPRES
+  INTEGER(KIND=JPIB_K),               INTENT(IN)  :: EDITION
+  PROCEDURE(MAKE_FCN_IF),    POINTER, INTENT(OUT) :: CONSTRUCTOR
+  PROCEDURE(DESTROY_FCN_IF), POINTER, INTENT(OUT) :: DESTRUCTOR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  SELECT CASE( EDITION )
+    CASE ( GRIB1_E )
+      CALL MAKE_ENCODER_GRIB1( LEVTYPE, REPRES, CONSTRUCTOR, DESTRUCTOR )
+    CASE ( GRIB2_E )
+      CALL MAKE_ENCODER_GRIB2( LEVTYPE, REPRES, CONSTRUCTOR, DESTRUCTOR )
+    CASE DEFAULT
+      PP_DEBUG_CRITICAL_THROW( 1 )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+  PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown grib edition' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point (on error)
+  RETURN
+
+END SUBROUTINE MAKE_ENCODER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MAKE_ENCODER_GRIB1'
+SUBROUTINE MAKE_ENCODER_GRIB1( LEVTYPE, REPRES, CONSTRUCTOR, DESTRUCTOR )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: REPRES_GRIDDED_E
+  USE :: OM_CORE_MOD, ONLY: REPRES_SPECTRAL_E
+  USE :: GRIB_ENCODER_BASE_MOD, ONLY: GRIB_ENCODER_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K),               INTENT(IN)  :: LEVTYPE
+  INTEGER(KIND=JPIB_K),               INTENT(IN)  :: REPRES
+  PROCEDURE(MAKE_FCN_IF),    POINTER, INTENT(OUT) :: CONSTRUCTOR
+  PROCEDURE(DESTROY_FCN_IF), POINTER, INTENT(OUT) :: DESTRUCTOR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  SELECT CASE( REPRES )
+    CASE ( REPRES_GRIDDED_E )
+      CALL MAKE_ENCODER_GRIB1_GRIDDED( LEVTYPE, CONSTRUCTOR, DESTRUCTOR )
+    CASE ( REPRES_SPECTRAL_E )
+      CALL MAKE_ENCODER_GRIB2_SPECTRAL( LEVTYPE, CONSTRUCTOR, DESTRUCTOR )
+    CASE DEFAULT
+      PP_DEBUG_CRITICAL_THROW( 1 )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+  PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown representation' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point (on error)
+  RETURN
+
+END SUBROUTINE MAKE_ENCODER_GRIB1
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MAKE_ENCODER_GRIB2'
+SUBROUTINE MAKE_ENCODER_GRIB2( LEVTYPE, REPRES, CONSTRUCTOR, DESTRUCTOR )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: OM_CORE_MOD, ONLY: REPRES_GRIDDED_E
+  USE :: OM_CORE_MOD, ONLY: REPRES_SPECTRAL_E
+  USE :: GRIB_ENCODER_BASE_MOD, ONLY: GRIB_ENCODER_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K),               INTENT(IN)  :: LEVTYPE
+  INTEGER(KIND=JPIB_K),               INTENT(IN)  :: REPRES
+  PROCEDURE(MAKE_FCN_IF),    POINTER, INTENT(OUT) :: CONSTRUCTOR
+  PROCEDURE(DESTROY_FCN_IF), POINTER, INTENT(OUT) :: DESTRUCTOR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  SELECT CASE( REPRES )
+    CASE ( REPRES_GRIDDED_E )
+      CALL MAKE_ENCODER_GRIB1_GRIDDED( LEVTYPE, CONSTRUCTOR, DESTRUCTOR )
+    CASE ( REPRES_SPECTRAL_E )
+      CALL MAKE_ENCODER_GRIB2_SPECTRAL( LEVTYPE, CONSTRUCTOR, DESTRUCTOR )
+    CASE DEFAULT
+      PP_DEBUG_CRITICAL_THROW( 1 )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+  PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown representation' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point (on error)
+  RETURN
+
+END SUBROUTINE MAKE_ENCODER_GRIB2
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MAKE_ENCODER_GRIB1_GRIDDED'
+SUBROUTINE MAKE_ENCODER_GRIB1_GRIDDED( LEVTYPE, CONSTRUCTOR, DESTRUCTOR )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,           ONLY: JPIB_K
+  USE :: OM_ENUMERATORS_MOD,    ONLY: MODEL_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: PRESSURE_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: VORTICITY_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: THETA_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: SURFACE_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: WAVE_INT_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: WAVE_SPEC_E
+  USE :: GRIB_ENCODER_BASE_MOD, ONLY: GRIB_ENCODER_A
+
+  ! Grib1 gridded encoders
+  USE :: GRIB_ENCODER_GRIB1_GG_P_MOD,  ONLY: MAKE_GRIB1_GG_P_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_GG_T_MOD,  ONLY: MAKE_GRIB1_GG_T_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_GG_V_MOD,  ONLY: MAKE_GRIB1_GG_V_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_GG_S_MOD,  ONLY: MAKE_GRIB1_GG_S_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_GG_M_MOD,  ONLY: MAKE_GRIB1_GG_M_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_GG_WI_MOD, ONLY: MAKE_GRIB1_GG_WI_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_GG_WS_MOD, ONLY: MAKE_GRIB1_GG_WS_ENCODER
+
+  USE :: GRIB_ENCODER_GRIB1_GG_P_MOD,  ONLY: DESTROY_GRIB1_GG_P_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_GG_T_MOD,  ONLY: DESTROY_GRIB1_GG_T_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_GG_V_MOD,  ONLY: DESTROY_GRIB1_GG_V_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_GG_S_MOD,  ONLY: DESTROY_GRIB1_GG_S_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_GG_M_MOD,  ONLY: DESTROY_GRIB1_GG_M_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_GG_WI_MOD, ONLY: DESTROY_GRIB1_GG_WI_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_GG_WS_MOD, ONLY: DESTROY_GRIB1_GG_WS_ENCODER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K),               INTENT(IN)  :: LEVTYPE
+  PROCEDURE(MAKE_FCN_IF),    POINTER, INTENT(OUT) :: CONSTRUCTOR
+  PROCEDURE(DESTROY_FCN_IF), POINTER, INTENT(OUT) :: DESTRUCTOR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! initialisation
+  NULLIFY(CONSTRUCTOR, DESTRUCTOR)
+
+  SELECT CASE( LEVTYPE )
+  CASE (MODEL_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB1_GG_M_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_GG_M_ENCODER
+  CASE (PRESSURE_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB1_GG_P_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_GG_P_ENCODER
+  CASE (VORTICITY_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB1_GG_P_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_GG_P_ENCODER
+  CASE (THETA_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB1_GG_T_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_GG_T_ENCODER
+  CASE (SURFACE_E)
+    CONSTRUCTOR => MAKE_GRIB1_GG_S_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_GG_S_ENCODER
+  CASE (WAVE_INT_E)
+    CONSTRUCTOR => MAKE_GRIB1_GG_WI_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_GG_WI_ENCODER
+  CASE (WAVE_SPEC_E)
+    CONSTRUCTOR => MAKE_GRIB1_GG_WS_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_GG_WS_ENCODER
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( 1 )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+  PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown levtype' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point (on error)
+  RETURN
+
+END SUBROUTINE MAKE_ENCODER_GRIB1_GRIDDED
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MAKE_ENCODER_GRIB2_GRIDDED'
+SUBROUTINE MAKE_ENCODER_GRIB2_GRIDDED( LEVTYPE, CONSTRUCTOR, DESTRUCTOR )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,           ONLY: JPIB_K
+  USE :: OM_ENUMERATORS_MOD,    ONLY: MODEL_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: PRESSURE_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: VORTICITY_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: THETA_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: SURFACE_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: WAVE_INT_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: WAVE_SPEC_E
+  USE :: GRIB_ENCODER_BASE_MOD, ONLY: GRIB_ENCODER_A
+
+  ! Grib1 gridded encoders
+  USE :: GRIB_ENCODER_GRIB2_GG_P_MOD,  ONLY: MAKE_GRIB2_GG_P_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_GG_T_MOD,  ONLY: MAKE_GRIB2_GG_T_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_GG_V_MOD,  ONLY: MAKE_GRIB2_GG_V_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_GG_S_MOD,  ONLY: MAKE_GRIB2_GG_S_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_GG_M_MOD,  ONLY: MAKE_GRIB2_GG_M_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_GG_WI_MOD, ONLY: MAKE_GRIB2_GG_WI_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_GG_WS_MOD, ONLY: MAKE_GRIB2_GG_WS_ENCODER
+
+  USE :: GRIB_ENCODER_GRIB2_GG_P_MOD,  ONLY: DESTROY_GRIB2_GG_P_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_GG_T_MOD,  ONLY: DESTROY_GRIB2_GG_T_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_GG_V_MOD,  ONLY: DESTROY_GRIB2_GG_V_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_GG_S_MOD,  ONLY: DESTROY_GRIB2_GG_S_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_GG_M_MOD,  ONLY: DESTROY_GRIB2_GG_M_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_GG_WI_MOD, ONLY: DESTROY_GRIB2_GG_WI_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_GG_WS_MOD, ONLY: DESTROY_GRIB2_GG_WS_ENCODER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K),               INTENT(IN)  :: LEVTYPE
+  PROCEDURE(MAKE_FCN_IF),    POINTER, INTENT(OUT) :: CONSTRUCTOR
+  PROCEDURE(DESTROY_FCN_IF), POINTER, INTENT(OUT) :: DESTRUCTOR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! initialisation
+  NULLIFY(CONSTRUCTOR, DESTRUCTOR)
+
+  SELECT CASE( LEVTYPE )
+  CASE (MODEL_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB2_GG_M_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_GG_M_ENCODER
+  CASE (PRESSURE_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB2_GG_P_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_GG_P_ENCODER
+  CASE (VORTICITY_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB2_GG_V_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_GG_V_ENCODER
+  CASE (THETA_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB2_GG_T_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_GG_T_ENCODER
+  CASE (SURFACE_E)
+    CONSTRUCTOR => MAKE_GRIB2_GG_S_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_GG_S_ENCODER
+  CASE (WAVE_INT_E)
+    CONSTRUCTOR => MAKE_GRIB2_GG_WI_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_GG_WI_ENCODER
+  CASE (WAVE_SPEC_E)
+    CONSTRUCTOR => MAKE_GRIB2_GG_WS_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_GG_WS_ENCODER
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( 1 )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+  PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown levtype' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point (on error)
+  RETURN
+
+END SUBROUTINE MAKE_ENCODER_GRIB2_GRIDDED
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MAKE_ENCODER_GRIB1_SPECTRAL'
+SUBROUTINE MAKE_ENCODER_GRIB1_SPECTRAL( LEVTYPE, CONSTRUCTOR, DESTRUCTOR )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,           ONLY: JPIB_K
+  USE :: OM_ENUMERATORS_MOD,    ONLY: MODEL_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: PRESSURE_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: VORTICITY_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: THETA_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: SURFACE_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: WAVE_INT_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: WAVE_SPEC_E
+  USE :: GRIB_ENCODER_BASE_MOD, ONLY: GRIB_ENCODER_A
+
+  ! Grib1 gridded encoders
+  USE :: GRIB_ENCODER_GRIB1_SH_P_MOD,  ONLY: MAKE_GRIB1_SH_P_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_SH_T_MOD,  ONLY: MAKE_GRIB1_SH_T_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_SH_V_MOD,  ONLY: MAKE_GRIB1_SH_V_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_SH_S_MOD,  ONLY: MAKE_GRIB1_SH_S_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_SH_M_MOD,  ONLY: MAKE_GRIB1_SH_M_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_SH_WI_MOD, ONLY: MAKE_GRIB1_SH_WI_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_SH_WS_MOD, ONLY: MAKE_GRIB1_SH_WS_ENCODER
+
+  USE :: GRIB_ENCODER_GRIB1_SH_P_MOD,  ONLY: DESTROY_GRIB1_SH_P_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_SH_T_MOD,  ONLY: DESTROY_GRIB1_SH_T_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_SH_V_MOD,  ONLY: DESTROY_GRIB1_SH_V_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_SH_S_MOD,  ONLY: DESTROY_GRIB1_SH_S_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_SH_M_MOD,  ONLY: DESTROY_GRIB1_SH_M_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_SH_WI_MOD, ONLY: DESTROY_GRIB1_SH_WI_ENCODER
+  USE :: GRIB_ENCODER_GRIB1_SH_WS_MOD, ONLY: DESTROY_GRIB1_SH_WS_ENCODER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K),               INTENT(IN)  :: LEVTYPE
+  PROCEDURE(MAKE_FCN_IF),    POINTER, INTENT(OUT) :: CONSTRUCTOR
+  PROCEDURE(DESTROY_FCN_IF), POINTER, INTENT(OUT) :: DESTRUCTOR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! initialisation
+  NULLIFY(CONSTRUCTOR, DESTRUCTOR)
+
+  SELECT CASE( LEVTYPE )
+  CASE (MODEL_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB1_SH_M_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_SH_M_ENCODER
+  CASE (PRESSURE_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB1_SH_P_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_SH_P_ENCODER
+  CASE (VORTICITY_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB1_SH_V_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_SH_V_ENCODER
+  CASE (THETA_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB1_SH_T_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_SH_T_ENCODER
+  CASE (SURFACE_E)
+    CONSTRUCTOR => MAKE_GRIB1_SH_S_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_SH_S_ENCODER
+  CASE (WAVE_INT_E)
+    CONSTRUCTOR => MAKE_GRIB1_SH_WI_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_SH_WI_ENCODER
+  CASE (WAVE_SPEC_E)
+    CONSTRUCTOR => MAKE_GRIB1_SH_WS_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB1_SH_WS_ENCODER
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( 1 )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+  PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown levtype' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point (on error)
+  RETURN
+
+END SUBROUTINE MAKE_ENCODER_GRIB1_SPECTRAL
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MAKE_ENCODER_GRIB2_SPECTRAL'
+SUBROUTINE MAKE_ENCODER_GRIB2_SPECTRAL( LEVTYPE, CONSTRUCTOR, DESTRUCTOR )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,           ONLY: JPIB_K
+  USE :: OM_ENUMERATORS_MOD,    ONLY: MODEL_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: PRESSURE_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: VORTICITY_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: THETA_LEVEL_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: SURFACE_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: WAVE_INT_E
+  USE :: OM_ENUMERATORS_MOD,    ONLY: WAVE_SPEC_E
+  USE :: GRIB_ENCODER_BASE_MOD, ONLY: GRIB_ENCODER_A
+
+  ! Grib1 gridded encoders
+  USE :: GRIB_ENCODER_GRIB2_SH_P_MOD,  ONLY: MAKE_GRIB2_SH_P_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_SH_T_MOD,  ONLY: MAKE_GRIB2_SH_T_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_SH_V_MOD,  ONLY: MAKE_GRIB2_SH_V_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_SH_S_MOD,  ONLY: MAKE_GRIB2_SH_S_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_SH_M_MOD,  ONLY: MAKE_GRIB2_SH_M_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_SH_WI_MOD, ONLY: MAKE_GRIB2_SH_WI_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_SH_WS_MOD, ONLY: MAKE_GRIB2_SH_WS_ENCODER
+
+  USE :: GRIB_ENCODER_GRIB2_SH_P_MOD,  ONLY: DESTROY_GRIB2_SH_P_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_SH_T_MOD,  ONLY: DESTROY_GRIB2_SH_T_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_SH_V_MOD,  ONLY: DESTROY_GRIB2_SH_V_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_SH_S_MOD,  ONLY: DESTROY_GRIB2_SH_S_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_SH_M_MOD,  ONLY: DESTROY_GRIB2_SH_M_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_SH_WI_MOD, ONLY: DESTROY_GRIB2_SH_WI_ENCODER
+  USE :: GRIB_ENCODER_GRIB2_SH_WS_MOD, ONLY: DESTROY_GRIB2_SH_WS_ENCODER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K),               INTENT(IN)  :: LEVTYPE
+  PROCEDURE(MAKE_FCN_IF),    POINTER, INTENT(OUT) :: CONSTRUCTOR
+  PROCEDURE(DESTROY_FCN_IF), POINTER, INTENT(OUT) :: DESTRUCTOR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! initialisation
+  NULLIFY(CONSTRUCTOR, DESTRUCTOR)
+
+  SELECT CASE( LEVTYPE )
+  CASE (MODEL_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB2_SH_M_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_SH_M_ENCODER
+  CASE (PRESSURE_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB2_SH_P_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_SH_P_ENCODER
+  CASE (VORTICITY_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB2_SH_V_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_SH_V_ENCODER
+  CASE (THETA_LEVEL_E)
+    CONSTRUCTOR => MAKE_GRIB2_SH_T_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_SH_T_ENCODER
+  CASE (SURFACE_E)
+    CONSTRUCTOR => MAKE_GRIB2_SH_S_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_SH_S_ENCODER
+  CASE (WAVE_INT_E)
+    CONSTRUCTOR => MAKE_GRIB2_SH_WI_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_SH_WI_ENCODER
+  CASE (WAVE_SPEC_E)
+    CONSTRUCTOR => MAKE_GRIB2_SH_WS_ENCODER
+    DESTRUCTOR  => DESTROY_GRIB2_SH_WS_ENCODER
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( 1 )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+  PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unknown levtype' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point (on error)
+  RETURN
+
+END SUBROUTINE MAKE_ENCODER_GRIB2_SPECTRAL
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+END MODULE GRIB_ENCODERS_FACTORY_MOD
+#undef PP_SECTION_NAME
+#undef PP_SECTION_TYPE
+#undef PP_FILE_NAME

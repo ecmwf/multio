@@ -12,7 +12,7 @@ program multio_replay_nemo_fapi
     use multio_api
     use fckit_module
     use fckit_mpi_module
-    use mpi_f08 ! for error codes
+    use mpi ! for error codes
     implicit none
 
     integer :: rank, client_count, server_count
@@ -24,7 +24,7 @@ program multio_replay_nemo_fapi
     logical singlePrecision
 
     type(multio_handle) :: mio
-    integer(8) :: mio_parent_comm = MPI_UNDEFINED
+    integer(int64) :: mio_parent_comm = MPI_UNDEFINED
 
     character(len=3), dimension(4) :: nemo_parameters = ["sst", "ssu", "ssv", "ssw" ]
     integer, dimension(4) :: grib_param_id = [262101, 212101, 212151, 212202 ]
@@ -75,9 +75,13 @@ function hasSinglePrecison() result(singlePrecision)
 end function hasSinglePrecison
 
 subroutine multio_custom_error_handler(context, err, info)
-    integer(8), intent(inout) :: context  ! Use mpi communicator as context
-    integer, intent(in) :: err
-    class(multio_failure_info), intent(in) :: info
+    use, intrinsic :: iso_fortran_env, only: int64
+    use :: multio_api, only: multio_failure_info
+    use fckit_module,  only: fckit_mpi_comm
+implicit none
+    integer(int64), intent(inout) :: context  ! Use mpi communicator as context
+    integer,        intent(in)    :: err
+    type(multio_failure_info), intent(in) :: info
     type(fckit_mpi_comm) :: comm
 
     if (err /= MULTIO_SUCCESS) then
@@ -95,6 +99,8 @@ end subroutine
 
 
 subroutine init(mio, rank, server_count, client_count)
+    use :: multio_api, only: failure_handler_t
+implicit none
     integer(kind=c_int) :: cerr
     integer :: ierror
     integer, intent(out) :: rank
@@ -107,6 +113,7 @@ subroutine init(mio, rank, server_count, client_count)
     integer(c_int) :: newcomm_id
     type(multio_handle), intent(inout) :: mio
     type(multio_metadata) :: md
+    procedure(failure_handler_t), pointer :: pf
 
     type(multio_configuration) :: cc
     ! for tests
@@ -117,7 +124,9 @@ subroutine init(mio, rank, server_count, client_count)
     cerr = cc%new()
     if (cerr /= MULTIO_SUCCESS) ERROR STOP "Error creating default configuration"
 
-    cerr = cc%set_failure_handler(multio_custom_error_handler, mio_parent_comm)
+
+    pf => multio_custom_error_handler
+    cerr = cc%set_failure_handler(pf, mio_parent_comm)
     if (cerr /= MULTIO_SUCCESS) then
          write(error_unit, *) 'setting multio failure handler failed: ',multio_error_string(cerr)
          ERROR STOP "MULTIO_ERROR"

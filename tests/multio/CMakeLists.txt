@@ -128,11 +128,13 @@ ecbuild_add_test( TARGET test_multio_hammer_thread
                   ARGS --transport=thread --nbclients=5 --nbservers=3
                   ENVIRONMENT "${_test_environment}" )
 
+if (eckit_HAVE_MPI)
 ecbuild_add_test( TARGET      test_multio_hammer_mpi
                   COMMAND     $<TARGET_FILE:multio-hammer>
                   ARGS        --transport=mpi --nbclients=5 --nbservers=3
                   MPI         8
                   ENVIRONMENT "${_test_environment}" )
+endif (eckit_HAVE_MPI)
 
 ecbuild_add_test( TARGET test_multio_hammer_tcp
                   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tcp-launch.sh
@@ -155,6 +157,10 @@ ecbuild_add_test( ENABLED      OFF
                   ARGS         ${_hammer_test_data} --transport=none
                   MPI          1
                   ENVIRONMENT  "${_test_environment}" )
+
+
+
+if (eckit_HAVE_MPI)
 
 list( APPEND _nemo_test_data
   "nemo.tar.gz"
@@ -222,6 +228,7 @@ ecbuild_add_test( TARGET       test_multio_replay_nemo_fapi
                   ARGS         $<TARGET_FILE:multio-replay-nemo-fapi>
                                $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
                   ENVIRONMENT  "${_test_environment}"
+                  ENABLED      OFF
 )
 
 ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_masked
@@ -241,6 +248,8 @@ ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_partial_agg
                   ENVIRONMENT  "${_test_environment}"
                                "MULTIO_SERVER_CONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/config/multio-server-test-partial-agg.yaml"
 )
+
+endif(eckit_HAVE_MPI)
 
 
 # Install files

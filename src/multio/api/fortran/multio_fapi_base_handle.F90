@@ -261,9 +261,9 @@ contains
         use :: multio_api_constants_mod,      only: MULTIO_SUCCESS
     implicit none
         ! Dummy arguments
-        class(multio_base_handle),    intent(inout) :: handle
-        procedure(failure_handler_t)                :: handler
-        integer(int64),               intent(inout) :: context
+        class(multio_base_handle),             intent(inout) :: handle
+        procedure(failure_handler_t), pointer, intent(in) :: handler
+        integer(int64),                        intent(inout) :: context
         ! Function result
         integer :: err
 #if !defined(MULTIO_DUMMY_API)

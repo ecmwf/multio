@@ -7,6 +7,10 @@
 !!
 
 module multio_api_constants_mod
+
+    use, intrinsic :: iso_c_binding,   only: c_ptr
+    use, intrinsic :: iso_c_binding,   only: c_null_ptr
+
 implicit none
 
     ! Default visibility
@@ -19,7 +23,14 @@ implicit none
     integer, parameter :: MULTIO_ERROR_UNKNOWN_EXCEPTION = 3
 
 
+    ! Error handling definitions
+    type :: multio_failure_info
+        type(c_ptr) :: impl = c_null_ptr
+    end type
+
+
     ! Whitelist of public symbols
+    public :: multio_failure_info
     public :: MULTIO_SUCCESS
     public :: MULTIO_ERROR_ECKIT_EXCEPTION
     public :: MULTIO_ERROR_GENERAL_EXCEPTION

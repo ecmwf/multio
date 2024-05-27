@@ -5,7 +5,8 @@ on:
   # Trigger the workflow on all pushes, except on tag creation
   push:
     branches:
-      - '**'
+      - 'master'
+      - 'develop'
     tags-ignore:
       - '**'
 
@@ -15,212 +16,84 @@ on:
   # Allow workflow to be dispatched on demand
   workflow_dispatch: ~
 
-env:
-  INSTALL_TOOLS: ${{ github.workspace }}/install-tools
-  CTEST_PARALLEL_LEVEL: 1
-  CACHE_SUFFIX: v1
+  # Trigger after public PR approved for CI
+  pull_request_target:
+    types: [labeled]
 
 jobs:
-  ci:
-    name: ci
+  # Run CI including downstream packages on self-hosted runners
+  downstream-ci:
+    name: downstream-ci
+    if: ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
+    uses: ecmwf-actions/downstream-ci/.github/workflows/downstream-ci.yml@main
+    with:
+      multio: ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
+      codecov_upload: true
+      clang_format: true
+    secrets: inherit
 
-    strategy:
-      fail-fast: false # false: try to complete all jobs
-
-      matrix:
-        build_type: [Release]
-        name:
-          - linux gnu-10
-          - linux gnu-12
-          - linux clang-12
-          - linux clang-14
-          # - linux intel
-          # - macos appclang-14
-
-        include:
-          - name: linux gnu-10
-            os: ubuntu-20.04
-            compiler: gnu-10
-            compiler_cc: gcc-10
-            compiler_cxx: g++-10
-            compiler_fc: gfortran-10
-            caching: true
-
-          - name: linux gnu-12
-            os: ubuntu-22.04
-            compiler: gnu-12
-            compiler_cc: gcc-12
-            compiler_cxx: g++-12
-            compiler_fc: gfortran-12
-            caching: true
-            cmake_options: -DENABLE_OMP_CXX=OFF
-
-          - name: linux clang-12
-            os: ubuntu-20.04
-            compiler: clang-12
-            compiler_cc: clang-12
-            compiler_cxx: clang++-12
-            compiler_fc: gfortran-10
-            caching: true
-
-          - name: linux clang-14
-            os: ubuntu-22.04
-            compiler: clang-14
-            compiler_cc: clang-14
-            compiler_cxx: clang++-14
-            compiler_fc: gfortran-12
-            caching: true
-
-          # - name : linux intel
-          #   os: ubuntu-20.04
-          #   compiler: intel
-          #   compiler_cc: icx
-          #   compiler_cxx: icpx
-          #   compiler_fc: ifx
-          #   caching: true
-          #   coverage: false
-
-          # - name: macos appclang-14
-          #   # Xcode compiler requires empty environment variables, so we pass null (~) here
-          #   os: macos-12
-          #   compiler: clang-14
-          #   compiler_cc: ~
-          #   compiler_cxx: ~
-          #   compiler_fc: gfortran-12
-          #   caching: true
-          #   cmake_options: -DMPI_SLOTS=4
-
-    runs-on: ${{ matrix.os }}
+  # Run CI of private downstream packages on self-hosted runners
+  private-downstream-ci:
+    name: private-downstream-ci
+    needs: [downstream-ci]
+    if: (success() || failure()) && ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Homebrew
-        id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@master
-
-      - name: Environment
-        run: |
-          echo "DEPS_DIR=${{ runner.temp }}/deps" >> $GITHUB_ENV
-          echo "CC=${{ matrix.compiler_cc }}"     >> $GITHUB_ENV
-          echo "CXX=${{ matrix.compiler_cxx }}"   >> $GITHUB_ENV
-          echo "FC=${{ matrix.compiler_fc }}"     >> $GITHUB_ENV
-          if [[ "${{ matrix.os }}" =~ ^macos ]]; then
-            export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-            export HOMEBREW_NO_AUTO_UPDATE=1
-            export HOMEBREW_NO_INSTALL_CLEANUP=1
-            echo "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1" >> $GITHUB_ENV
-            echo "HOMEBREW_NO_AUTO_UPDATE=1"                >> $GITHUB_ENV
-            echo "HOMEBREW_NO_INSTALL_CLEANUP=1"            >> $GITHUB_ENV
-            brew install ninja
-          else
-            sudo apt-get update
-            sudo apt-get install ninja-build
-          fi
-          printenv
-      - name: Cache Dependencies
-        # There seems to be a problem with cached NVHPC dependencies, leading to SIGILL perhaps due to slightly different architectures
-        if: matrix.caching
-        id: deps-cache
-        uses: pat-s/always-upload-cache@v2.1.5
+      - name: Dispatch private downstream CI
+        uses: ecmwf-actions/dispatch-private-downstream-ci@v1
         with:
-          path: ${{ env.DEPS_DIR }}
-          key: deps-${{ matrix.os }}-${{ matrix.compiler }}-v1
+          token: ${{ secrets.GH_REPO_READ_TOKEN }}
+          owner: ecmwf-actions
+          repository: private-downstream-ci
+          event_type: downstream-ci
+          payload: '{"multio": "ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}"}'
 
-      - name: Install Intel oneAPI compiler
-        if: contains( matrix.compiler, 'intel' )
-        run: |
-          ${INSTALL_TOOLS}/install-intel-oneapi.sh
-          source /opt/intel/oneapi/setvars.sh
-          printenv >> $GITHUB_ENV
-          echo "CACHE_SUFFIX=$(icc -dumpversion)" >> $GITHUB_ENV
-      - name: Install MPI
-        shell: bash -eux {0}
-        run: |
-          FCFLAGS=-fPIC CFLAGS=-fPIC FFLAGS=-fPIC ${INSTALL_TOOLS}/install-mpi.sh --mpi openmpi --prefix  ${DEPS_DIR}/openmpi
-          [ -f ${DEPS_DIR}/openmpi/env.sh ] && source ${DEPS_DIR}/openmpi/env.sh
-          [ -z ${MPI_HOME+x} ] || echo "MPI_HOME=${MPI_HOME}" >> $GITHUB_ENV
-      - name: Install FFTW
-        shell: bash -eux {0}
-        run: |
-          ${INSTALL_TOOLS}/install-fftw.sh --version 3.3.10 --prefix ${DEPS_DIR}/fftw
-          echo "FFTW_ROOT=${DEPS_DIR}/fftw" >> $GITHUB_ENV
-      - name: Set Build & Test Environment
-        run: |
-          # Only add --oversubscribe arg for openmpi
-          [ -z ${I_MPI_ROOT+x} ] && echo "MPI_ARGS=--oversubscribe" >> $GITHUB_ENV
-          # Add mpirun to path for testing
-          [ -z ${MPI_HOME+x} ] || echo "${MPI_HOME}/bin" >> $GITHUB_PATH
-      - name: Build & Test
-        id: build-test
-        uses: ecmwf-actions/build-package@v2
+  # Build downstream packages on HPC
+  downstream-ci-hpc:
+    name: downstream-ci-hpc
+    if: ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
+    uses: ecmwf-actions/downstream-ci/.github/workflows/downstream-ci-hpc.yml@main
+    with:
+      multio: ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
+    secrets: inherit
+
+  # Run CI of private downstream packages on HPC
+  private-downstream-ci-hpc:
+    name: private-downstream-ci-hpc
+    needs: [downstream-ci-hpc]
+    if: (success() || failure()) && ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Dispatch private downstream CI
+        uses: ecmwf-actions/dispatch-private-downstream-ci@v1
         with:
-          # lcov fails for gcc-12, re-enable self_coverage later
-          self_coverage: false
-          force_build: true
-          cache_suffix: '${{ matrix.build_type }}-${{ env.CACHE_SUFFIX }}'
-          recreate_cache: ${{ matrix.caching == false }}
-          dependencies: |
-            ecmwf/ecbuild
-            ecmwf/eckit
-            ecmwf/fckit
-            MathisRosenhauer/libaec@master
-            ecmwf/eccodes
-            ecmwf/metkit
-            ecmwf/fdb
-            ecmwf/atlas
-            ecmwf/atlas-orca
-          dependency_branch: develop
-          dependency_cmake_options: |
-            ecmwf/eckit: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF  -DENABLE_ECKIT_SQL=OFF"
-            ecmwf/fckit: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF"
-            ecmwf/atlas: "-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_TESTS=OFF -DATLAS_BITS_LOCAL=32 ${{ matrix.cmake_options }}"
-          cmake_options: '-G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DENABLE_LEGACY_IFSIO=ON ${{ matrix.cmake_options }}'
-          ctest_options: '${{ matrix.ctest_options }}'
+          token: ${{ secrets.GH_REPO_READ_TOKEN }}
+          owner: ecmwf-actions
+          repository: private-downstream-ci
+          event_type: downstream-ci-hpc
+          payload: '{"multio": "ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}"}'
 
-      # test pymultio
-      - name: Setup python env
-        uses: actions/setup-python@v4
+
+  notify:
+    name: notify
+    runs-on: ubuntu-latest
+    needs:
+      - downstream-ci
+      - downstream-ci-hpc
+      - private-downstream-ci
+      - private-downstream-ci-hpc
+    if: always() && ${{ !github.event.pull_request.head.repo.fork && github.event.action != 'labeled' || github.event.label.name == 'approved-for-ci' }}
+    steps:
+      - name: Trigger Teams notification
+        uses: ecmwf-actions/notify-teams@v1
         with:
-          python-version: '3.11'
-
-      - name: Install python deps
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install black flake8 isort pytest pytest-cov pyeccodes numpy findlibs
-          python -m pip install -r pymultio/requirements.txt
-      - name: Check isort
-        run: isort --check pymultio
-
-      - name: Install Intel oneAPI compiler
-        if: contains( matrix.compiler, 'intel' )
-        run: |
-          ${INSTALL_TOOLS}/install-intel-oneapi.sh
-          source /opt/intel/oneapi/setvars.sh
-          printenv >> $GITHUB_ENV
-          echo "CACHE_SUFFIX=$CC-$($CC -dumpversion)" >> $GITHUB_ENV
-
-      #- name: Check black
-      #  run: black --check pymultio
-
-      # - name: Check flake8
-      #   run: flake8 pymultio
-
-      - name: Verify Source Distribution
-        shell: bash -eux {0}
-        run: |
-          cd pymultio
-          python setup.py sdist
-          python -m pip install dist/*
-      - name: Run pytest
-        #env:
-        #  LD_LIBRARY_PATH: ${{ steps.build-test.outputs.lib_path }}
-        shell: bash -eux {0}
-        run: |
-          cd pymultio
-          if [[ "${{ matrix.os }}" =~ ^macos ]]; then
-            LD_LIBRARY_PATH=${{ steps.build-test.outputs.lib_path }} python -m pytest --cov=./ --cov-report=xml
-          else
-            LD_LIBRARY_PATH=${{ steps.build-test.outputs.lib_path }}:$LD_LIBRARY_PATH python -m pytest --cov=./ --cov-report=xml
-          fi
-          python -m coverage report
+          incoming_webhook: ${{ secrets.MS_TEAMS_INCOMING_WEBHOOK }}
+          needs_context: ${{ toJSON(needs) }}
+          notify_on: |
+            failure
+            fixed
+            # success

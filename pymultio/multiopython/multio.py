@@ -143,7 +143,7 @@ class Multio:
         lib.multio_notify(self._handle, md._handle)
 
 
-    def write_domain(self, metadata, data):
+    def write_domain(self, data, metadata=None):
         """
         Writes domain information (e.g. local-to-global index mapping) to the server
         Parameters:
@@ -162,7 +162,7 @@ class Multio:
             lib.multio_write_domain(self._handle, md._handle, intArr, sizeInt)
 
 
-    def write_mask(self, metadata, data):
+    def write_mask(self, data, metadata=None):
         """
         Writes masking information (e.g. land-sea mask) to the server
         Parameters:
@@ -185,7 +185,7 @@ class Multio:
             lib.multio_write_mask_double(self._handle, md._handle, doubleArr, sizeInt)
 
 
-    def write_field(self, metadata, data):
+    def write_field(self, data, metadata=None):
         """
         Writes fields
         Parameters:

@@ -50,7 +50,7 @@ IMPLICIT NONE
   ! Local variables
   LOGICAL :: EX
   LOGICAL :: LTMP
-  TYPE(FCKIT_CONFIGURATION) :: PACK
+  TYPE(FCKIT_CONFIGURATION) :: PACK_CFG
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -61,14 +61,14 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-  IF ( CFG%GET( 'packaging', PACK ) ) THEN
-    EX = PACK%GET( 'enable-compression-gridded', LTMP  )
+  IF ( CFG%GET( 'packaging', PACK_CFG ) ) THEN
+    EX = PACK_CFG%GET( 'enable-compression-gridded', LTMP  )
     PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, 1 )
     LG_ENABLE_COMPRESSION_GRIDDED = LTMP
-    CALL PACK%FINAL()
+    CALL PACK_CFG%FINAL()
   ELSE
     LG_ENABLE_COMPRESSION_GRIDDED = .FALSE.
-    CALL PACK%FINAL()
+    CALL PACK_CFG%FINAL()
   ENDIF
 
   ! Trace end of procedure (on success)

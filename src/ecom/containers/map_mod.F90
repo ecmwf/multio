@@ -1417,7 +1417,7 @@ IMPLICIT NONE
       ! node.
       Y = X%PARENT
 
-      SEARCH: DO
+      DO
 
         IF ( .NOT.ASSOCIATED( Y, NIL ) .AND. ASSOCIATED( X_, Y%RIGHT ) ) THEN
 
@@ -1427,11 +1427,11 @@ IMPLICIT NONE
 
         ELSE
 
-          EXIT SEARCH
+          EXIT
 
         ENDIF
 
-      ENDDO SEARCH
+      ENDDO
 
     ENDIF
 
@@ -1514,7 +1514,7 @@ IMPLICIT NONE
       ! node.
       Y = X%PARENT
 
-      SEARCH: DO
+      DO
 
         IF ( .NOT.ASSOCIATED( Y, NIL ) .AND. ASSOCIATED( X_, Y%LEFT ) ) THEN
 
@@ -1524,11 +1524,11 @@ IMPLICIT NONE
 
         ELSE
 
-          EXIT SEARCH
+          EXIT
 
         ENDIF
 
-      ENDDO SEARCH
+      ENDDO
 
     ENDIF
 
@@ -1930,11 +1930,11 @@ IMPLICIT NONE
   ! Reconfigurazione dei colori.
   DO WHILE( .NOT.ASSOCIATED( X, ROOT ) .AND. .NOT.X%RED )
 
-    LEFT_CHILD : IF ( ASSOCIATED( X, X%PARENT%LEFT ) ) THEN
+    IF ( ASSOCIATED( X, X%PARENT%LEFT ) ) THEN
 
       W => X%PARENT%RIGHT
 
-      CASE_1 : IF ( W%RED ) THEN
+      IF ( W%RED ) THEN
 
         W%RED = .FALSE.
 
@@ -1944,7 +1944,7 @@ IMPLICIT NONE
 
         W => X%PARENT%RIGHT
 
-      ENDIF  CASE_1
+      ENDIF
 
 
       ! IF ( ASSOCIATED( W, NIL) ) THEN
@@ -1952,14 +1952,14 @@ IMPLICIT NONE
       !   RETURN
       ! ENDIF
 
-      CASE_2_3_4 : IF ( ( .NOT.W%LEFT%RED ) .AND. ( .NOT.W%RIGHT%RED ) ) THEN
+      IF ( ( .NOT.W%LEFT%RED ) .AND. ( .NOT.W%RIGHT%RED ) ) THEN
         W%RED = .TRUE.
 
         X => X%PARENT
 
       ELSE
 
-        CASE_3 : IF ( .NOT.W%RIGHT%RED ) THEN ! CASO 3
+        IF ( .NOT.W%RIGHT%RED ) THEN ! CASO 3
 
           W%LEFT%RED = .FALSE.
 
@@ -1969,7 +1969,7 @@ IMPLICIT NONE
 
           W => X%PARENT%RIGHT
 
-        ENDIF CASE_3
+        ENDIF
 
         W%RED = X%PARENT%RED
 
@@ -1981,13 +1981,13 @@ IMPLICIT NONE
 
         X => ROOT
 
-      ENDIF CASE_2_3_4
+      ENDIF
 
       ELSE ! Right child
 
       W => X%PARENT%LEFT
 
-      CASE_1B : IF ( W%RED ) THEN
+      IF ( W%RED ) THEN
 
         W%RED = .FALSE.
 
@@ -1997,14 +1997,14 @@ IMPLICIT NONE
 
         W => X%PARENT%LEFT
 
-      ENDIF  CASE_1B
+      ENDIF
 
       ! IF ( ASSOCIATED( W, NIL) ) THEN
       !   ERROR
       !   RETURN
       ! ENDIF
 
-      CASE_2_3_4B : IF ( .NOT.W%RIGHT%RED .AND. .NOT.W%LEFT%RED ) THEN
+      IF ( .NOT.W%RIGHT%RED .AND. .NOT.W%LEFT%RED ) THEN
 
         W%RED = .TRUE.
 
@@ -2012,7 +2012,7 @@ IMPLICIT NONE
 
       ELSE
 
-        CASE_3B : IF ( .NOT.W%LEFT%RED ) THEN
+        IF ( .NOT.W%LEFT%RED ) THEN
 
           W%RIGHT%RED = .FALSE.
 
@@ -2022,7 +2022,7 @@ IMPLICIT NONE
 
           W => X%PARENT%LEFT
 
-        ENDIF CASE_3B
+        ENDIF
 
         W%RED = X%PARENT%RED
 
@@ -2034,9 +2034,9 @@ IMPLICIT NONE
 
         X => ROOT
 
-      ENDIF CASE_2_3_4B
+      ENDIF
 
-    ENDIF LEFT_CHILD
+    ENDIF
 
   ENDDO
 

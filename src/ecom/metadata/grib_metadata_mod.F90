@@ -106,9 +106,6 @@ CONTAINS
   !> @brief Sets a 64-bit real value.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_REAL64  => GRIB_METADATA_SET_REAL64
 
-  !> @brief Sets a 128-bit real value.
-  ! PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_REAL128 => GRIB_METADATA_SET_REAL128
-
   !> @brief Sets an array of string values.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_STRING_ARRAY => GRIB_METADATA_SET_STRING_ARRAY
 
@@ -132,9 +129,6 @@ CONTAINS
 
   !> @brief Sets an array of 64-bit real values.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_REAL64_ARRAY  => GRIB_METADATA_SET_REAL64_ARRAY
-
-  !> @brief Sets an array of 128-bit real values.
-  ! PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_REAL128_ARRAY => GRIB_METADATA_SET_REAL128_ARRAY
 
 END TYPE
 
@@ -1507,89 +1501,6 @@ END SUBROUTINE GRIB_METADATA_SET_REAL64
 #undef PP_PROCEDURE_TYPE
 
 
-!> @brief Sets a 128-bit real value.
-!>
-!> This procedure sets a 128-bit real value associated with a specified key.
-!>
-!> @param [inout] this The object where the integer value is to be set.
-!> @param [in]    key  The key used to store the integer value.
-!> @param [in]    val  The 128-bit real value to be stored.
-!>
-! #define PP_PROCEDURE_TYPE 'SUBROUTINE'
-! #define PP_PROCEDURE_NAME 'GRIB_METADATA_SET_REAL128'
-! SUBROUTINE GRIB_METADATA_SET_REAL128( THIS, KEY, VAL )
-!
-!   ! Symbolds imported from intrinsic modules
-!   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL128
-!
-!   ! Symbols imported by the preprocessor for debugging purposes
-!   PP_DEBUG_USE_VARS
-!
-!   ! Symbols imported by the preprocessor for tracing purposes
-!   PP_TRACE_USE_VARS
-!
-! IMPLICIT NONE
-!
-!   ! Dummy arguments
-!   CLASS(GRIB_METADATA_T), INTENT(INOUT) :: THIS
-!   CHARACTER(LEN=*),       INTENT(IN)    :: KEY
-!   REAL(KIND=REAL128),     INTENT(IN)    :: VAL
-!
-!   ! Local variables declared by the preprocessor for debugging purposes
-!   PP_DEBUG_DECL_VARS
-!
-!   ! Local variables declared by the preprocessor for tracing purposes
-!   PP_TRACE_DECL_VARS
-!
-!   ! Trace begin of procedure
-!   PP_TRACE_ENTER_PROCEDURE()
-!
-!   ! This procedure can be called only if the object is initialized
-!   PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
-!
-!   ! This datatype is not supported by grib API
-!   PP_DEBUG_CRITICAL_THROW( 2 )
-!
-!   ! Trace end of procedure (on success)
-!   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-!
-!   ! Exit point on success
-!   RETURN
-!
-! ! Error handler
-! PP_ERROR_HANDLER
-!
-!   ErrorHandler: BLOCK
-!
-!     ! Error handling variables
-!     CHARACTER(LEN=:), ALLOCATABLE :: STR
-!
-!     ! HAndle different errors
-!     SELECT CASE(ERRIDX)
-!     CASE (1)
-!       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
-!     CASE (2)
-!       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Impossible to write an array of  16-bit integer on a grib handle' )
-!     CASE DEFAULT
-!       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
-!     END SELECT
-!
-!     ! Trace end of procedure (on error)
-!     PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-!
-!     ! Write the error message and stop the program
-!     PP_DEBUG_ABORT( STR )
-!
-!   END BLOCK ErrorHandler
-!
-!   ! Exit point on error
-!   RETURN
-!
-! END SUBROUTINE GRIB_METADATA_SET_REAL128
-! #undef PP_PROCEDURE_NAME
-! #undef PP_PROCEDURE_TYPE
-
-
 !> @brief Sets an array of strings values as metadata.
 !>
 !> This procedure allows the user to store metadata in the object by associating
@@ -2314,91 +2225,6 @@ PP_ERROR_HANDLER
 END SUBROUTINE GRIB_METADATA_SET_REAL64_ARRAY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
-
-!>
-!> @brief Sets an array of 128-bit real values as metadata.
-!>
-!> This procedure allows the user to store metadata in the object by associating
-!> a key with an array of 128-bit real values.
-!>
-!> @param [inout] this   The object where metadata is to be set.
-!> @param [in]    key    The key used to store the metadata.
-!> @param [in]    values An array of 128-bit real values representing the metadata to be stored.
-!>
-!#define PP_PROCEDURE_TYPE 'SUBROUTINE'
-!#define PP_PROCEDURE_NAME 'GRIB_METADATA_SET_REAL128_ARRAY'
-!SUBROUTINE GRIB_METADATA_SET_REAL128_ARRAY( THIS, KEY, VALUES )
-!
-!  ! Symbolds imported from intrinsic modules
-!  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL128
-!
-!  ! Symbols imported by the preprocessor for debugging purposes
-!  PP_DEBUG_USE_VARS
-!
-!  ! Symbols imported by the preprocessor for tracing purposes
-!  PP_TRACE_USE_VARS
-!
-!IMPLICIT NONE
-!
-!  ! Dummy arguments
-!  CLASS(GRIB_METADATA_T),           INTENT(INOUT) :: THIS
-!  CHARACTER(LEN=*),                 INTENT(IN)    :: KEY
-!  REAL(KIND=REAL128), DIMENSION(:), INTENT(IN)    :: VALUES
-!
-!  ! Local variables declared by the preprocessor for debugging purposes
-!  PP_DEBUG_DECL_VARS
-!
-!  ! Local variables declared by the preprocessor for tracing purposes
-!  PP_TRACE_DECL_VARS
-!
-!  ! Trace begin of procedure
-!  PP_TRACE_ENTER_PROCEDURE()
-!
-!  ! This procedure can be called only if the object is initialized
-!  PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
-!
-!  ! This datatype is not supported by grib API
-!  PP_DEBUG_CRITICAL_THROW( 2 )
-!
-!  ! Trace end of procedure (on success)
-!  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-!
-!  ! Exit point on success
-!  RETURN
-!
-!! Error handler
-!PP_ERROR_HANDLER
-!
-!  ErrorHandler: BLOCK
-!
-!    ! Error handling variables
-!    CHARACTER(LEN=:), ALLOCATABLE :: STR
-!
-!    ! HAndle different errors
-!    SELECT CASE(ERRIDX)
-!    CASE (1)
-!      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
-!    CASE (2)
-!      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Impossible to write an array of  16-bit integer on a grib handle' )
-!    CASE DEFAULT
-!      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
-!    END SELECT
-!
-!    ! Trace end of procedure (on error)
-!    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-!
-!    ! Write the error message and stop the program
-!    PP_DEBUG_ABORT( STR )
-!
-!  END BLOCK ErrorHandler
-!
-!  ! Exit point on error
-!  RETURN
-!
-!END SUBROUTINE GRIB_METADATA_SET_REAL128_ARRAY
-!#undef PP_PROCEDURE_NAME
-!#undef PP_PROCEDURE_TYPE
-
 
 END MODULE GRIB_METADATA_MOD
 #undef PP_SECTION_NAME

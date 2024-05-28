@@ -97,9 +97,6 @@ CONTAINS
   !> @brief Sets a 64-bit real value.
   PROCEDURE(SET_REAL64_IF), DEFERRED, PUBLIC, PASS :: SET_REAL64
 
-  !> @brief Sets a 128-bit real value.
-  ! PROCEDURE(SET_REAL128_IF), DEFERRED, PUBLIC, PASS :: SET_REAL128
-
   !> @brief Sets an array of string values.
   PROCEDURE(SET_STRING_ARRAY_IF), DEFERRED, PUBLIC, PASS :: SET_STRING_ARRAY
 
@@ -124,9 +121,6 @@ CONTAINS
   !> @brief Sets an array of 64-bit real values.
   PROCEDURE(SET_REAL64_ARRAY_IF), DEFERRED, PUBLIC, PASS :: SET_REAL64_ARRAY
 
-  !> @brief Sets an array of 128-bit real values.
-  !PROCEDURE(SET_REAL128_ARRAY_IF), DEFERRED, PUBLIC, PASS :: SET_REAL128_ARRAY
-
   !> @brief Generic set procedure that can handle all supported data types.
   GENERIC, PUBLIC :: SET => SET_STRING
   GENERIC, PUBLIC :: SET => SET_BOOL
@@ -136,7 +130,6 @@ CONTAINS
   GENERIC, PUBLIC :: SET => SET_INT64
   GENERIC, PUBLIC :: SET => SET_REAL32
   GENERIC, PUBLIC :: SET => SET_REAL64
-  !GENERIC, PUBLIC :: SET => SET_REAL128
   GENERIC, PUBLIC :: SET => SET_STRING_ARRAY
   GENERIC, PUBLIC :: SET => SET_BOOL_ARRAY
   GENERIC, PUBLIC :: SET => SET_INT8_ARRAY
@@ -145,7 +138,6 @@ CONTAINS
   GENERIC, PUBLIC :: SET => SET_INT64_ARRAY
   GENERIC, PUBLIC :: SET => SET_REAL32_ARRAY
   GENERIC, PUBLIC :: SET => SET_REAL64_ARRAY
-  !GENERIC, PUBLIC :: SET => SET_REAL128_ARRAY
 
 
   !> @brief Generic initialization function combining default and file-based initialization.
@@ -188,9 +180,6 @@ CONTAINS
   !> @brief Sets a 64-bit real value with logging.
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: SET_REAL64_LOGGING => SET_REAL64_LOGGING
 
-  !> @brief Sets a 128-bit real value with logging.
-  ! PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: SET_REAL128_LOGGING => SET_REAL128_LOGGING
-
   !> @brief Sets an array of string values with logging.
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: SET_STRING_ARRAY_LOGGING => SET_STRING_ARRAY_LOGGING
 
@@ -215,9 +204,6 @@ CONTAINS
   !> @brief Sets an array of 64-bit real values with logging.
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: SET_REAL64_ARRAY_LOGGING => SET_REAL64_ARRAY_LOGGING
 
-  !> @brief Sets an array of 128-bit real values with logging.
-  ! PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: SET_REAL128_ARRAY_LOGGING => SET_REAL128_ARRAY_LOGGING
-
 
   !> @brief Generic set_logging procedure that can handle all supported data types.
   GENERIC, PUBLIC :: SET_LOGGING => SET_STRING_LOGGING
@@ -228,7 +214,6 @@ CONTAINS
   GENERIC, PUBLIC :: SET_LOGGING => SET_INT64_LOGGING
   GENERIC, PUBLIC :: SET_LOGGING => SET_REAL32_LOGGING
   GENERIC, PUBLIC :: SET_LOGGING => SET_REAL64_LOGGING
-  !GENERIC, PUBLIC :: SET_LOGGING => SET_REAL128_LOGGING
   GENERIC, PUBLIC :: SET_LOGGING => SET_STRING_ARRAY_LOGGING
   GENERIC, PUBLIC :: SET_LOGGING => SET_BOOL_ARRAY_LOGGING
   GENERIC, PUBLIC :: SET_LOGGING => SET_INT8_ARRAY_LOGGING
@@ -237,7 +222,6 @@ CONTAINS
   GENERIC, PUBLIC :: SET_LOGGING => SET_INT64_ARRAY_LOGGING
   GENERIC, PUBLIC :: SET_LOGGING => SET_REAL32_ARRAY_LOGGING
   GENERIC, PUBLIC :: SET_LOGGING => SET_REAL64_ARRAY_LOGGING
-  !GENERIC, PUBLIC :: SET_LOGGING => SET_REAL128_ARRAY_LOGGING
 
   !> @brief Logging management procedures
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: INIT_LOGGING     => INIT_LOGGING
@@ -470,23 +454,6 @@ IMPLICIT NONE
   REAL(KIND=REAL64),      INTENT(IN)    :: VAL
 END SUBROUTINE SET_REAL64_IF
 
-!> @brief Sets a 128-bit real value.
-!>
-!> This procedure sets a 128-bit real value associated with a specified key.
-!>
-!> @param [inout] this The object where the integer value is to be set.
-!> @param [in]    key  The key used to store the integer value.
-!> @param [in]    val  The 128-bit real value to be stored.
-!>
-! SUBROUTINE SET_REAL128_IF( THIS, KEY, VAL )
-!   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL128
-!   IMPORT :: METADATA_BASE_A
-! IMPLICIT NONE
-!   CLASS(METADATA_BASE_A), INTENT(INOUT) :: THIS
-!   CHARACTER(LEN=*),       INTENT(IN)    :: KEY
-!   REAL(KIND=REAL128),     INTENT(IN)    :: VAL
-! END SUBROUTINE SET_REAL128_IF
-
 !> @brief Sets an array of strings values as metadata.
 !>
 !> This procedure allows the user to store metadata in the object by associating
@@ -628,24 +595,6 @@ IMPLICIT NONE
   CHARACTER(LEN=*),                INTENT(IN)    :: KEY
   REAL(KIND=REAL64), DIMENSION(:), INTENT(IN)    :: VALUES
 END SUBROUTINE SET_REAL64_ARRAY_IF
-
-!> @brief Sets an array of 128-bit real values as metadata.
-!>
-!> This procedure allows the user to store metadata in the object by associating
-!> a key with an array of 128-bit real values.
-!>
-!> @param [inout] this   The object where metadata is to be set.
-!> @param [in]    key    The key used to store the metadata.
-!> @param [in]    values An array of 128-bit real values representing the metadata to be stored.
-!>
-! SUBROUTINE SET_REAL128_ARRAY_IF( THIS, KEY, VALUES )
-!   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL128
-!   IMPORT :: METADATA_BASE_A
-! IMPLICIT NONE
-!   CLASS(METADATA_BASE_A),            INTENT(INOUT) :: THIS
-!   CHARACTER(LEN=*),                 INTENT(IN)    :: KEY
-!   REAL(KIND=REAL128), DIMENSION(:), INTENT(IN)    :: VALUES
-! END SUBROUTINE SET_REAL128_ARRAY_IF
 
 END INTERFACE
 
@@ -1744,82 +1693,6 @@ END SUBROUTINE SET_REAL64_LOGGING
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
-!> @brief Sets a 128-bit real value.
-!>
-!> This procedure sets a 128-bit real value associated with a specified key.
-!>
-!> @param [inout] this The object where the integer value is to be set.
-!> @param [in]    key  The key used to store the integer value.
-!> @param [in]    val  The 128-bit real value to be stored.
-!>
-!#define PP_PROCEDURE_TYPE 'SUBROUTINE'
-!#define PP_PROCEDURE_NAME 'SET_REAL128_LOGGING'
-!SUBROUTINE SET_REAL128_LOGGING( THIS, KEY, VAL, FNAME, SECTION_TYPE, SECTION_NAME, PROC_TYPE, PROC_NAME, CLINE )
-!
-!  ! Symbols imported from other modules within the project.
-!  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL128
-!
-!  ! Symbols imported from other modules within the project.
-!  USE :: OM_DATA_KIND_MOD, ONLY: JPIM_K
-!
-!  ! Symbols imported by the preprocessor for debugging purposes
-!  PP_DEBUG_USE_VARS
-!
-!  ! Symbols imported by the preprocessor for tracing purposes
-!  PP_TRACE_USE_VARS
-!
-!IMPLICIT NONE
-!
-!  ! Dummy arguments
-!  CLASS(METADATA_BASE_A), INTENT(INOUT) :: THIS
-!  CHARACTER(LEN=*),       INTENT(IN)    :: KEY
-!  REAL(KIND=REAL128),     INTENT(IN)    :: VAL
-!  CHARACTER(LEN=*),       INTENT(IN)    :: FNAME
-!  CHARACTER(LEN=*),       INTENT(IN)    :: SECTION_TYPE
-!  CHARACTER(LEN=*),       INTENT(IN)    :: SECTION_NAME
-!  CHARACTER(LEN=*),       INTENT(IN)    :: PROC_TYPE
-!  CHARACTER(LEN=*),       INTENT(IN)    :: PROC_NAME
-!  INTEGER(KIND=JPIM_K),   INTENT(IN)    :: CLINE
-!
-!  ! Local variables
-!  CHARACTER(LEN=1024) :: STR
-!  CHARACTER(LEN=16)   :: STR2
-!
-!  ! Local variables declared by the preprocessor for debugging purposes
-!  PP_DEBUG_DECL_VARS
-!
-!  ! Local variables declared by the preprocessor for tracing purposes
-!  PP_TRACE_DECL_VARS
-!
-!  ! Trace begin of procedure
-!  PP_TRACE_ENTER_PROCEDURE()
-!
-!  ! Get the position in the code
-!  CALL WRITE_POS( STR, FNAME, SECTION_TYPE, SECTION_NAME, PROC_TYPE, PROC_NAME, CLINE  )
-!
-!  ! Write the key, value pair to the log file
-!  CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//'AT :: '//TRIM(STR) )
-!  CALL THIS%TRACER_%ADVANCE_LINE()
-!  THIS%OFFSET_ = THIS%OFFSET_ + 1
-!  STR2 = REPEAT(' ',16)
-!  WRITE(STR2,'(F11.4)') VAL
-!  CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//'SET_REAL32 '//TRIM(KEY)//' = '//TRIM(ADJUSTL(STR2)) )
-!  CALL THIS%TRACER_%ADVANCE_LINE()
-!  THIS%OFFSET_ = THIS%OFFSET_ - 1
-!
-!  ! Call the proper set routine
-!  CALL THIS%SET_REAL128( KEY, VAL )
-!
-!  ! Trace end of procedure (on success)
-!  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-!
-!  ! Exit point on success
-!  RETURN
-!
-!END SUBROUTINE SET_REAL128_LOGGING
-!#undef PP_PROCEDURE_NAME
-!#undef PP_PROCEDURE_TYPE
-
 
 !> @brief Sets an array of strings values as metadata.
 !>
@@ -2715,118 +2588,6 @@ END SUBROUTINE SET_REAL64_ARRAY_LOGGING
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
-
-!> @brief Sets an array of 128-bit real values as metadata.
-!>
-!> This procedure allows the user to store metadata in the object by associating
-!> a key with an array of 128-bit real values.
-!>
-!> @param [inout] this   The object where metadata is to be set.
-!> @param [in]    key    The key used to store the metadata.
-!> @param [in]    values An array of 128-bit real values representing the metadata to be stored.
-!>
-! #define PP_PROCEDURE_TYPE 'SUBROUTINE'
-! #define PP_PROCEDURE_NAME 'SET_REAL128_ARRAY_LOGGING'
-! SUBROUTINE SET_REAL128_ARRAY_LOGGING( THIS, KEY, VALUES, FNAME, SECTION_TYPE, SECTION_NAME, PROC_TYPE, PROC_NAME, CLINE )
-!
-!   ! Symbols imported from other modules within the project.
-!   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL128
-!
-!   ! Symbols imported from other modules within the project.
-!   USE :: OM_DATA_KIND_MOD, ONLY: JPIB_K
-!   USE :: OM_DATA_KIND_MOD, ONLY: JPIM_K
-!
-!   ! Symbols imported by the preprocessor for debugging purposes
-!   PP_DEBUG_USE_VARS
-!
-!   ! Symbols imported by the preprocessor for tracing purposes
-!   PP_TRACE_USE_VARS
-!
-! IMPLICIT NONE
-!
-!   ! Dummy arguments
-!   CLASS(METADATA_BASE_A),           INTENT(INOUT) :: THIS
-!   CHARACTER(LEN=*),                 INTENT(IN)    :: KEY
-!   REAL(KIND=REAL128), DIMENSION(:), INTENT(IN)    :: VALUES
-!   CHARACTER(LEN=*),                 INTENT(IN)    :: FNAME
-!   CHARACTER(LEN=*),                 INTENT(IN)    :: SECTION_TYPE
-!   CHARACTER(LEN=*),                 INTENT(IN)    :: SECTION_NAME
-!   CHARACTER(LEN=*),                 INTENT(IN)    :: PROC_TYPE
-!   CHARACTER(LEN=*),                 INTENT(IN)    :: PROC_NAME
-!   INTEGER(KIND=JPIM_K),             INTENT(IN)    :: CLINE
-!
-!   ! Local variables
-!   CHARACTER(LEN=16)    :: TMP
-!   CHARACTER(LEN=1024)  :: STR
-!   CHARACTER(LEN=16)    :: STR2
-!   INTEGER(KIND=JPIB_K) :: CNT
-!   INTEGER(KIND=JPIB_K) :: I
-!
-!   ! Local variables declared by the preprocessor for debugging purposes
-!   PP_DEBUG_DECL_VARS
-!
-!   ! Local variables declared by the preprocessor for tracing purposes
-!   PP_TRACE_DECL_VARS
-!
-!   ! Trace begin of procedure
-!   PP_TRACE_ENTER_PROCEDURE()
-!
-!   ! Get the position in the code
-!   CALL WRITE_POS( STR, FNAME, SECTION_TYPE, SECTION_NAME, PROC_TYPE, PROC_NAME, CLINE  )
-!
-!   ! Length of the array
-!   TMP = REPEAT(' ',16)
-!   WRITE(TMP,'(I16)') SIZE(VALUES)
-!
-!   ! Write the key, value pair to the log file
-!   CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//'AT :: '//TRIM(STR) )
-!   CALL THIS%TRACER_%ADVANCE_LINE()
-!   THIS%OFFSET_ = THIS%OFFSET_ + 1
-!   CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//'SET_REAL128_ARRAY('//TRIM(ADJUSTL(TMP))//') '//TRIM(KEY)//' = [ ...' )
-!   CALL THIS%TRACER_%ADVANCE_LINE()
-!   CNT = 0
-!   WriteLoop: DO
-!     DO I = 1, MIN( VALUES_PER_LINE, SIZE(VALUES)-CNT)
-!       CNT = CNT + 1
-!       STR2 = REPEAT(' ',16)
-!       WRITE(STR2,'(F11.4)') VALUES(CNT)
-!       IF ( I .EQ. 1 ) THEN
-!         IF ( CNT .LT. SIZE(VALUES) ) THEN
-!           CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//TRIM(STR2)//',' )
-!         ELSE
-!           CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//TRIM(STR2) )
-!         ENDIF
-!       ELSE
-!         IF ( CNT .LT. SIZE(VALUES) ) THEN
-!           CALL THIS%TRACER_%APPEND_TO_LINE( TRIM(STR2)//',' )
-!         ELSE
-!           CALL THIS%TRACER_%APPEND_TO_LINE( TRIM(STR2) )
-!         ENDIF
-!       ENDIF
-!     ENDDO
-!     IF ( CNT .GE. SIZE(VALUES) ) THEN
-!       CALL THIS%TRACER_%APPEND_TO_LINE( ' ] ' )
-!       CALL THIS%TRACER_%ADVANCE_LINE()
-!       EXIT WriteLoop
-!     ELSE
-!       CALL THIS%TRACER_%APPEND_TO_LINE( ' ...' )
-!       CALL THIS%TRACER_%ADVANCE_LINE()
-!     ENDIF
-!   ENDDO WriteLoop
-!   THIS%OFFSET_ = THIS%OFFSET_ - 1
-!
-!   ! Call the proper set routine
-!   CALL THIS%SET_REAL128_ARRAY( KEY, VALUES )
-!
-!   ! Trace end of procedure (on success)
-!   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-!
-!   ! Exit point on success
-!   RETURN
-!
-! END SUBROUTINE SET_REAL128_ARRAY_LOGGING
-! #undef PP_PROCEDURE_NAME
-! #undef PP_PROCEDURE_TYPE
 
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'
 #define PP_PROCEDURE_NAME 'WRITE_POS'

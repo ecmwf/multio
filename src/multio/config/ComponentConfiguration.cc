@@ -21,7 +21,7 @@ ComponentConfiguration SubComponentIteratorMapper::operator()(const eckit::Local
 
 ComponentConfiguration::ComponentConfiguration(const eckit::LocalConfiguration& componentConfig,
                                                const MultioConfiguration& multioConf) :
-    componentConf_(componentConfig), multioConf_(multioConf){};
+    componentConf_(componentConfig), multioConf_(multioConf) {}
 
 //=============================================================================
 

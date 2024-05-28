@@ -225,7 +225,7 @@ void FesomCacheValidator::execute(const eckit::option::CmdArgs& args) {
 };
 
 
-void FesomCacheValidator::finish(const eckit::option::CmdArgs&){};
+void FesomCacheValidator::finish(const eckit::option::CmdArgs&) {}
 
 }  // namespace multio::action::interpolateFESOM
 

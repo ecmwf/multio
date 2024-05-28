@@ -1417,7 +1417,7 @@ IMPLICIT NONE
       ! node.
       Y = X%PARENT
 
-      DO
+      DO WHILE(.TRUE.)
 
         IF ( .NOT.ASSOCIATED( Y, NIL ) .AND. ASSOCIATED( X_, Y%RIGHT ) ) THEN
 
@@ -1514,7 +1514,7 @@ IMPLICIT NONE
       ! node.
       Y = X%PARENT
 
-      DO
+      DO WHILE(.TRUE.)
 
         IF ( .NOT.ASSOCIATED( Y, NIL ) .AND. ASSOCIATED( X_, Y%LEFT ) ) THEN
 
@@ -1583,7 +1583,7 @@ IMPLICIT NONE
   Y => X
 
   ! Search cycle.
-  SEARCH: DO
+  DO WHILE(.TRUE.)
 
     IF ( .NOT.ASSOCIATED( Y%LEFT, NIL ) ) THEN
 
@@ -1591,11 +1591,11 @@ IMPLICIT NONE
 
     ELSE
 
-      EXIT SEARCH
+      EXIT
 
     ENDIF
 
-  ENDDO SEARCH
+  ENDDO
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1646,7 +1646,7 @@ IMPLICIT NONE
   Y => X
 
   ! Search cycle.
-  SEARCH: DO
+  DO WHILE(.TRUE.)
 
     IF ( .NOT.ASSOCIATED( Y%RIGHT, NIL ) ) THEN
 
@@ -1654,11 +1654,11 @@ IMPLICIT NONE
 
     ELSE
 
-      EXIT SEARCH
+      EXIT
 
     ENDIF
 
-  ENDDO SEARCH
+  ENDDO
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1983,7 +1983,7 @@ IMPLICIT NONE
 
       ENDIF
 
-      ELSE ! Right child
+    ELSE ! Right child
 
       W => X%PARENT%LEFT
 

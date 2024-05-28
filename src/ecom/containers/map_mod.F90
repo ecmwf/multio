@@ -1415,9 +1415,9 @@ IMPLICIT NONE
       ! If the node has not right child, then the successor is the
       ! nearest parent node whose left child is a parent of the
       ! node.
-      Y = X%PARENT
+      Y => X%PARENT
 
-      DO WHILE(.TRUE.)
+      DO
 
         IF ( .NOT.ASSOCIATED( Y, NIL ) .AND. ASSOCIATED( X_, Y%RIGHT ) ) THEN
 
@@ -1512,9 +1512,9 @@ IMPLICIT NONE
       ! If the node has not left child, then the predecessor is the
       ! nearest  parent node whose right child is a parent of the
       ! node.
-      Y = X%PARENT
+      Y => X%PARENT
 
-      DO WHILE(.TRUE.)
+      DO
 
         IF ( .NOT.ASSOCIATED( Y, NIL ) .AND. ASSOCIATED( X_, Y%LEFT ) ) THEN
 

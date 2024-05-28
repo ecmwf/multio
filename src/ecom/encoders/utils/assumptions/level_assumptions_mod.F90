@@ -99,9 +99,10 @@ END SUBROUTINE LEVEL_ASSUMPTIONS_FREE
 SUBROUTINE COMPUTE_TOPBOT( MODEL_PARAMS, PARAMID, ITOP, IBOT )
 
   ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: JPIB_K
-  USE :: OM_CORE_MOD, ONLY: MODEL_PAR_T
-  USE :: OM_CORE_MOD, ONLY: UNDEF_PARAM_E
+  USE :: OM_CORE_MOD,          ONLY: JPIB_K
+  USE :: OM_CORE_MOD,          ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,          ONLY: UNDEF_PARAM_E
+  USE :: OM_GENERAL_UTILS_MOD, ONLY: OM_FINDLOC
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -133,7 +134,8 @@ IMPLICIT NONE
   IL = UNDEF_PARAM_E
 
   ! Compute top/bottom levels (Fortran 2008 FindLoc)
-  IL = FINDLOC( MODEL_PARAMS%GEO_%NSFLEVS(:,1), PARAMID, DIM=1)
+  ! IL = FINDLOC( MODEL_PARAMS%GEO_%NSFLEVS(:,1), PARAMID, DIM=1)
+  IL = OM_FINDLOC( MODEL_PARAMS%GEO_%NSFLEVS(:,1), PARAMID )
 
   ! If found then associate ibot/itop
   IF( IL .NE. 0 ) THEN

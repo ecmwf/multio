@@ -111,7 +111,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_REAL64  => MULTIO_METADATA_SET_REAL64
 
   !> @brief Sets a 128-bit real value.
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_REAL128 => MULTIO_METADATA_SET_REAL128
+  !PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_REAL128 => MULTIO_METADATA_SET_REAL128
 
   !> @brief Sets an array of string values.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_STRING_ARRAY => MULTIO_METADATA_SET_STRING_ARRAY
@@ -138,7 +138,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_REAL64_ARRAY  => MULTIO_METADATA_SET_REAL64_ARRAY
 
   !> @brief Sets an array of 128-bit real values.
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_REAL128_ARRAY => MULTIO_METADATA_SET_REAL128_ARRAY
+  !PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_REAL128_ARRAY => MULTIO_METADATA_SET_REAL128_ARRAY
 
 END TYPE
 
@@ -1741,82 +1741,82 @@ END SUBROUTINE MULTIO_METADATA_SET_REAL64
 !> @param [in]    key  The key used to store the integer value.
 !> @param [in]    val  The 128-bit real value to be stored.
 !>
-#define PP_PROCEDURE_TYPE 'SUBROUTINE'
-#define PP_PROCEDURE_NAME 'MULTIO_METADATA_SET_REAL128'
-SUBROUTINE MULTIO_METADATA_SET_REAL128( THIS, KEY, VAL )
-
-  ! Symbolds imported from intrinsic modules
-  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL128
-
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-IMPLICIT NONE
-
-  ! Dummy arguments
-  CLASS(MULTIO_METADATA_T), INTENT(INOUT) :: THIS
-  CHARACTER(LEN=*),         INTENT(IN)    :: KEY
-  REAL(KIND=REAL128),       INTENT(IN)    :: VAL
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  ! This procedure can be called only if the object is initialized
-  PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
-
-  ! This datatype is not supported by grib API
-  PP_DEBUG_CRITICAL_THROW( 2 )
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point on success
-  RETURN
-
-! Error handler
-PP_ERROR_HANDLER
-
-  ErrorHandler: BLOCK
-
-    ! Error handling variables
-    CHARACTER(LEN=:), ALLOCATABLE :: STR
-
-    ! HAndle different errors
-    SELECT CASE(ERRIDX)
-
-    CASE (1)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
-
-    CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Impossible to write an array of  16-bit integer on a grib handle' )
-
-    CASE DEFAULT
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
-
-    END SELECT
-
-    ! Trace end of procedure (on error)
-    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-    ! Write the error message and stop the program
-    PP_DEBUG_ABORT( STR )
-
-  END BLOCK ErrorHandler
-
-  ! Exit point on error
-  RETURN
-
-END SUBROUTINE MULTIO_METADATA_SET_REAL128
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
+!#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+!#define PP_PROCEDURE_NAME 'MULTIO_METADATA_SET_REAL128'
+!SUBROUTINE MULTIO_METADATA_SET_REAL128( THIS, KEY, VAL )
+!
+!  ! Symbolds imported from intrinsic modules
+!  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL128
+!
+!  ! Symbols imported by the preprocessor for debugging purposes
+!  PP_DEBUG_USE_VARS
+!
+!  ! Symbols imported by the preprocessor for tracing purposes
+!  PP_TRACE_USE_VARS
+!IMPLICIT NONE
+!
+!  ! Dummy arguments
+!  CLASS(MULTIO_METADATA_T), INTENT(INOUT) :: THIS
+!  CHARACTER(LEN=*),         INTENT(IN)    :: KEY
+!  REAL(KIND=REAL128),       INTENT(IN)    :: VAL
+!
+!  ! Local variables declared by the preprocessor for debugging purposes
+!  PP_DEBUG_DECL_VARS
+!
+!  ! Local variables declared by the preprocessor for tracing purposes
+!  PP_TRACE_DECL_VARS
+!
+!  ! Trace begin of procedure
+!  PP_TRACE_ENTER_PROCEDURE()
+!
+!  ! This procedure can be called only if the object is initialized
+!  PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
+!
+!  ! This datatype is not supported by grib API
+!  PP_DEBUG_CRITICAL_THROW( 2 )
+!
+!  ! Trace end of procedure (on success)
+!  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+!
+!  ! Exit point on success
+!  RETURN
+!
+!! Error handler
+!PP_ERROR_HANDLER
+!
+!  ErrorHandler: BLOCK
+!
+!    ! Error handling variables
+!    CHARACTER(LEN=:), ALLOCATABLE :: STR
+!
+!    ! HAndle different errors
+!    SELECT CASE(ERRIDX)
+!
+!    CASE (1)
+!      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
+!
+!    CASE (2)
+!      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Impossible to write an array of  16-bit integer on a grib handle' )
+!
+!    CASE DEFAULT
+!      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+!
+!    END SELECT
+!
+!    ! Trace end of procedure (on error)
+!    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+!
+!    ! Write the error message and stop the program
+!    PP_DEBUG_ABORT( STR )
+!
+!  END BLOCK ErrorHandler
+!
+!  ! Exit point on error
+!  RETURN
+!
+!END SUBROUTINE MULTIO_METADATA_SET_REAL128
+!#undef PP_PROCEDURE_NAME
+!#undef PP_PROCEDURE_TYPE
 
 
 !> @brief Sets an array of strings values as metadata.
@@ -2535,84 +2535,84 @@ END SUBROUTINE MULTIO_METADATA_SET_REAL64_ARRAY
 !> @param [in]    key    The key used to store the metadata.
 !> @param [in]    values An array of 128-bit real values representing the metadata to be stored.
 !>
-#define PP_PROCEDURE_TYPE 'SUBROUTINE'
-#define PP_PROCEDURE_NAME 'MULTIO_METADATA_SET_REAL128_ARRAY'
-SUBROUTINE MULTIO_METADATA_SET_REAL128_ARRAY( THIS, KEY, VALUES )
-
-  ! Symbolds imported from intrinsic modules
-  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL128
-
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  ! Dummy arguments
-  CLASS(MULTIO_METADATA_T),         INTENT(INOUT) :: THIS
-  CHARACTER(LEN=*),                 INTENT(IN)    :: KEY
-  REAL(KIND=REAL128), DIMENSION(:), INTENT(IN)    :: VALUES
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  ! This procedure can be called only if the object is initialized
-  PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
-
-  ! This datatype is not supported by grib API
-  PP_DEBUG_CRITICAL_THROW( 2 )
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-
-  ! Exit point on success
-  RETURN
-
-! Error handler
-PP_ERROR_HANDLER
-
-  ErrorHandler: BLOCK
-
-    ! Error handling variables
-    CHARACTER(LEN=:), ALLOCATABLE :: STR
-
-    ! HAndle different errors
-    SELECT CASE(ERRIDX)
-
-    CASE (1)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
-
-    CASE (2)
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Impossible to write an array of  16-bit integer on a grib handle' )
-
-    CASE DEFAULT
-      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
-
-    END SELECT
-
-    ! Trace end of procedure (on error)
-    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-    ! Write the error message and stop the program
-    PP_DEBUG_ABORT( STR )
-
-  END BLOCK ErrorHandler
-
-  ! Exit point on error
-  RETURN
-
-END SUBROUTINE MULTIO_METADATA_SET_REAL128_ARRAY
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
+!#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+!#define PP_PROCEDURE_NAME 'MULTIO_METADATA_SET_REAL128_ARRAY'
+!SUBROUTINE MULTIO_METADATA_SET_REAL128_ARRAY( THIS, KEY, VALUES )
+!
+!  ! Symbolds imported from intrinsic modules
+!  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL128
+!
+!  ! Symbols imported by the preprocessor for debugging purposes
+!  PP_DEBUG_USE_VARS
+!
+!  ! Symbols imported by the preprocessor for tracing purposes
+!  PP_TRACE_USE_VARS
+!
+!IMPLICIT NONE
+!
+!  ! Dummy arguments
+!  CLASS(MULTIO_METADATA_T),         INTENT(INOUT) :: THIS
+!  CHARACTER(LEN=*),                 INTENT(IN)    :: KEY
+!  REAL(KIND=REAL128), DIMENSION(:), INTENT(IN)    :: VALUES
+!
+!  ! Local variables declared by the preprocessor for debugging purposes
+!  PP_DEBUG_DECL_VARS
+!
+!  ! Local variables declared by the preprocessor for tracing purposes
+!  PP_TRACE_DECL_VARS
+!
+!  ! Trace begin of procedure
+!  PP_TRACE_ENTER_PROCEDURE()
+!
+!  ! This procedure can be called only if the object is initialized
+!  PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
+!
+!  ! This datatype is not supported by grib API
+!  PP_DEBUG_CRITICAL_THROW( 2 )
+!
+!  ! Trace end of procedure (on success)
+!  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+!
+!
+!  ! Exit point on success
+!  RETURN
+!
+!! Error handler
+!PP_ERROR_HANDLER
+!
+!  ErrorHandler: BLOCK
+!
+!    ! Error handling variables
+!    CHARACTER(LEN=:), ALLOCATABLE :: STR
+!
+!    ! HAndle different errors
+!    SELECT CASE(ERRIDX)
+!
+!    CASE (1)
+!      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
+!
+!    CASE (2)
+!      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Impossible to write an array of  16-bit integer on a grib handle' )
+!
+!    CASE DEFAULT
+!      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+!
+!    END SELECT
+!
+!    ! Trace end of procedure (on error)
+!    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+!
+!    ! Write the error message and stop the program
+!    PP_DEBUG_ABORT( STR )
+!
+!  END BLOCK ErrorHandler
+!
+!  ! Exit point on error
+!  RETURN
+!
+!END SUBROUTINE MULTIO_METADATA_SET_REAL128_ARRAY
+!#undef PP_PROCEDURE_NAME
+!#undef PP_PROCEDURE_TYPE
 
 
 

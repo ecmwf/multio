@@ -2,7 +2,7 @@
 
 #include <chrono>
 #include <sstream>
-
+#include <cstring>
 #include <fcntl.h>
 #include <unistd.h>
 

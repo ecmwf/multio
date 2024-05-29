@@ -65,6 +65,30 @@ implicit none
                                &  set_fbool,  &
                                &  set_real32, &
                                &  set_real64
+
+        ! Overload integers
+        procedure, private, pass :: set_int8_array     => multio_metadata_set_int8_array
+        procedure, private, pass :: set_int16_array    => multio_metadata_set_int16_array
+        procedure, private, pass :: set_int32_array    => multio_metadata_set_int32_array
+        procedure, private, pass :: set_int64_array    => multio_metadata_set_int64_array
+        generic,   public        :: set_int_array      => set_int8_array, &
+                                                       &  set_int16_array, &
+                                                       &  set_int32_array, &
+                                                       &  set_int64_array
+
+        ! Oversload real
+        procedure, private, pass :: set_real32_array   => multio_metadata_set_real32_array
+        procedure, private, pass :: set_real64_array   => multio_metadata_set_real64_array
+        generic,   public        :: set_real_array     => set_real32, set_real64_array
+
+        ! Overload all datatypes
+        generic, public :: set_array => set_int8_array,   &
+                                     &  set_int16_array,  &
+                                     &  set_int32_array,  &
+                                     &  set_int64_array,  &
+                                     &  set_real32_array, &
+                                     &  set_real64_array
+
     end type ! multio_metadata
 
     ! Public symbols whitelist
@@ -345,6 +369,7 @@ contains
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding,   only: c_loc
         use, intrinsic :: iso_c_binding,   only: c_int
+        use, intrinsic :: iso_c_binding,   only: c_int8_t
         use, intrinsic :: iso_c_binding,   only: c_char
         use, intrinsic :: iso_c_binding,   only: c_null_char
         use, intrinsic :: iso_fortran_env, only: int8
@@ -360,26 +385,27 @@ contains
 #if !defined(MULTIO_DUMMY_API)
         ! Local variables
         integer(kind=c_int) :: c_err
-        integer(kind=c_int) :: c_value
+        integer(kind=c_int8_t) :: c_value
         character(:,kind=c_char), allocatable, target :: nullified_key
         ! Private interface to the c API
         interface
-            function c_multio_metadata_set_int(metadata, key, value) result(err) &
-                    bind(c, name='multio_metadata_set_int')
+            function c_multio_metadata_set_int8(metadata, key, value) result(err) &
+                    bind(c, name='multio_metadata_set_int8')
                 use, intrinsic :: iso_c_binding, only: c_ptr
                 use, intrinsic :: iso_c_binding, only: c_int
+                use, intrinsic :: iso_c_binding,   only: c_int8_t
             implicit none
-                type(c_ptr),    value, intent(in) :: metadata
-                type(c_ptr),    value, intent(in) :: key
-                integer(c_int), value, intent(in) :: value
+                type(c_ptr),       value, intent(in) :: metadata
+                type(c_ptr),       value, intent(in) :: key
+                integer(c_int8_t), value, intent(in) :: value
                 integer(c_int) :: err
-            end function c_multio_metadata_set_int
+            end function c_multio_metadata_set_int8
         end interface
         ! Initialization and allocation
         nullified_key = trim(key) // c_null_char
-        c_value = int(value,c_int)
+        c_value = int(value,c_int8_t)
         ! Call the c API
-        c_err = c_multio_metadata_set_int(metadata%c_ptr(), c_loc(nullified_key), c_value)
+        c_err = c_multio_metadata_set_int8(metadata%c_ptr(), c_loc(nullified_key), c_value)
         ! Output cast and cleanup
         if (allocated(nullified_key)) deallocate(nullified_key)
         err = int(c_err,kind(err))
@@ -414,6 +440,7 @@ contains
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding,   only: c_loc
         use, intrinsic :: iso_c_binding,   only: c_int
+        use, intrinsic :: iso_c_binding,   only: c_int16_t
         use, intrinsic :: iso_c_binding,   only: c_char
         use, intrinsic :: iso_c_binding,   only: c_null_char
         use, intrinsic :: iso_fortran_env, only: int16
@@ -429,26 +456,27 @@ contains
 #if !defined(MULTIO_DUMMY_API)
         ! Local variables
         integer(kind=c_int) :: c_err
-        integer(kind=c_int) :: c_value
+        integer(kind=c_int16_t) :: c_value
         character(:,kind=c_char), allocatable, target :: nullified_key
         ! Private interface to the c API
         interface
-            function c_multio_metadata_set_int(metadata, key, value) result(err) &
-                    bind(c, name='multio_metadata_set_int')
+            function c_multio_metadata_set_int16(metadata, key, value) result(err) &
+                    bind(c, name='multio_metadata_set_int16')
                 use, intrinsic :: iso_c_binding, only: c_ptr
                 use, intrinsic :: iso_c_binding, only: c_int
+                use, intrinsic :: iso_c_binding, only: c_int16_t
             implicit none
-                type(c_ptr),    value, intent(in) :: metadata
-                type(c_ptr),    value, intent(in) :: key
-                integer(c_int), value, intent(in) :: value
+                type(c_ptr),        value, intent(in) :: metadata
+                type(c_ptr),        value, intent(in) :: key
+                integer(c_int16_t), value, intent(in) :: value
                 integer(c_int) :: err
-            end function c_multio_metadata_set_int
+            end function c_multio_metadata_set_int16
         end interface
         ! Initialization and allocation
         nullified_key = trim(key) // c_null_char
-        c_value = int(value,c_int)
+        c_value = int(value,c_int16_t)
         ! Call the c API
-        c_err = c_multio_metadata_set_int(metadata%c_ptr(), c_loc(nullified_key), c_value)
+        c_err = c_multio_metadata_set_int16(metadata%c_ptr(), c_loc(nullified_key), c_value)
         ! Output cast and cleanup
         if (allocated(nullified_key)) deallocate(nullified_key)
         err = int(c_err,kind(err))
@@ -483,6 +511,7 @@ contains
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding,   only: c_loc
         use, intrinsic :: iso_c_binding,   only: c_int
+        use, intrinsic :: iso_c_binding,   only: c_int32_t
         use, intrinsic :: iso_c_binding,   only: c_char
         use, intrinsic :: iso_c_binding,   only: c_null_char
         use, intrinsic :: iso_fortran_env, only: int32
@@ -498,26 +527,27 @@ contains
 #if !defined(MULTIO_DUMMY_API)
         ! Local variables
         integer(kind=c_int) :: c_err
-        integer(kind=c_int) :: c_value
+        integer(kind=c_int32_t) :: c_value
         character(:,kind=c_char), allocatable, target :: nullified_key
         ! Private interface to the c API
         interface
-            function c_multio_metadata_set_int(metadata, key, value) result(err) &
-                    bind(c, name='multio_metadata_set_int')
+            function c_multio_metadata_set_int32(metadata, key, value) result(err) &
+                    bind(c, name='multio_metadata_set_int32')
                 use, intrinsic :: iso_c_binding, only: c_ptr
                 use, intrinsic :: iso_c_binding, only: c_int
+                use, intrinsic :: iso_c_binding, only: c_int32_t
             implicit none
-                type(c_ptr),    value, intent(in) :: metadata
-                type(c_ptr),    value, intent(in) :: key
-                integer(c_int), value, intent(in) :: value
+                type(c_ptr),        value, intent(in) :: metadata
+                type(c_ptr),        value, intent(in) :: key
+                integer(c_int32_t), value, intent(in) :: value
                 integer(c_int) :: err
-            end function c_multio_metadata_set_int
+            end function c_multio_metadata_set_int32
         end interface
         ! Initialization and allocation
         nullified_key = trim(key) // c_null_char
-        c_value = int(value,c_int)
+        c_value = int(value,c_int32_t)
         ! Call the c API
-        c_err = c_multio_metadata_set_int(metadata%c_ptr(), c_loc(nullified_key), c_value)
+        c_err = c_multio_metadata_set_int32(metadata%c_ptr(), c_loc(nullified_key), c_value)
         ! Output cast and cleanup
         if (allocated(nullified_key)) deallocate(nullified_key)
         err = int(c_err,kind(err))
@@ -552,7 +582,7 @@ contains
         ! Variable references from the fortran language standard modules
         use, intrinsic :: iso_c_binding,   only: c_loc
         use, intrinsic :: iso_c_binding,   only: c_int
-        use, intrinsic :: iso_c_binding,   only: c_long
+        use, intrinsic :: iso_c_binding,   only: c_int64_t
         use, intrinsic :: iso_c_binding,   only: c_char
         use, intrinsic :: iso_c_binding,   only: c_null_char
         use, intrinsic :: iso_fortran_env, only: int64
@@ -568,27 +598,27 @@ contains
 #if !defined(MULTIO_DUMMY_API)
         ! Local variables
         integer(kind=c_int) :: c_err
-        integer(kind=c_long) :: c_value
+        integer(kind=c_int64_t) :: c_value
         character(:,kind=c_char), allocatable, target :: nullified_key
         ! Private interface to the c API
         interface
-            function c_multio_metadata_set_long(metadata, key, value) result(err) &
-                    bind(c, name='multio_metadata_set_long')
+            function c_multio_metadata_set_int64(metadata, key, value) result(err) &
+                    bind(c, name='multio_metadata_set_int64')
                 use, intrinsic :: iso_c_binding, only: c_ptr
                 use, intrinsic :: iso_c_binding, only: c_int
-                use, intrinsic :: iso_c_binding, only: c_long
+                use, intrinsic :: iso_c_binding, only: c_int64_t
             implicit none
-                type(c_ptr),     value, intent(in) :: metadata
-                type(c_ptr),     value, intent(in) :: key
-                integer(c_long), value, intent(in) :: value
+                type(c_ptr),        value, intent(in) :: metadata
+                type(c_ptr),        value, intent(in) :: key
+                integer(c_int64_t), value, intent(in) :: value
                 integer(c_int) :: err
-            end function c_multio_metadata_set_long
+            end function c_multio_metadata_set_int64
         end interface
         ! Initialization and allocation
         nullified_key = trim(key) // c_null_char
-        c_value = int(value,c_int)
+        c_value = int(value,c_int64_t)
         ! Call the c API
-        c_err = c_multio_metadata_set_long(metadata%c_ptr(), c_loc(nullified_key), c_value)
+        c_err = c_multio_metadata_set_int64(metadata%c_ptr(), c_loc(nullified_key), c_value)
         ! Output cast and cleanup
         if (allocated(nullified_key)) deallocate(nullified_key)
         err = int(c_err,kind(err))
@@ -879,5 +909,440 @@ contains
         ! Exit point
         return
     end function multio_metadata_set_cbool
+
+
+
+
+
+    !> @brief Set a new key-value pair with an array of integer values (8 bits wide).
+    !!
+    !! This function sets a new key-value pair with an array of integer values in the metadata.
+    !!
+    !! @param [in,out] metadata A handle passed object pointer.
+    !! @param [in]     key      The key to be set.
+    !! @param [in]     value    The value to be set.
+    !!
+    !! @return An error code indicating the operation's success.
+    !!
+    !! @see multio_metadata_set_int16_array
+    !! @see multio_metadata_set_int32_array
+    !! @see multio_metadata_set_int64_array
+    !! @see multio_metadata_set_real32_array
+    !! @see multio_metadata_set_real64_array
+    !! @see multio_metadata_set_fbool_array
+    !! @see multio_metadata_set_cbool_array
+    !!
+    function multio_metadata_set_int8_array(metadata, key, values) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding,   only: c_loc
+        use, intrinsic :: iso_c_binding,   only: c_int
+        use, intrinsic :: iso_c_binding,   only: c_size_t
+        use, intrinsic :: iso_c_binding,   only: c_char
+        use, intrinsic :: iso_c_binding,   only: c_null_char
+        use, intrinsic :: iso_fortran_env, only: int8
+        ! Variable references from the project
+        use :: multio_api_constants_mod,   only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_metadata),                   intent(inout) :: metadata
+        character(len=*),                         intent(in)    :: key
+        integer(kind=int8), dimension(:), target, intent(in)    :: values
+        ! Function result
+        integer :: err
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        integer(kind=c_size_t) :: sz
+        character(:,kind=c_char), allocatable, target :: nullified_key
+        ! Private interface to the c API
+        interface
+            function c_multio_metadata_set_int8_array(metadata, key, value, size) result(err) &
+                    bind(c, name='multio_metadata_set_int8_array')
+                use, intrinsic :: iso_c_binding, only: c_ptr
+                use, intrinsic :: iso_c_binding, only: c_int
+                use, intrinsic :: iso_c_binding, only: c_size_t
+            implicit none
+                type(c_ptr), value, intent(in) :: metadata
+                type(c_ptr), value, intent(in) :: key
+                type(c_ptr), value, intent(in) :: value
+                integer(c_size_t), value, intent(in) :: size
+                integer(c_int) :: err
+            end function c_multio_metadata_set_int8_array
+        end interface
+        ! Initialization and allocation
+        nullified_key = trim(key) // c_null_char
+        sz = int(size(values), kind=c_size_t)
+        ! Call the c API
+        c_err = c_multio_metadata_set_int8_array(metadata%c_ptr(), c_loc(nullified_key), c_loc(values), sz )
+        ! Output cast and cleanup
+        if (allocated(nullified_key)) deallocate(nullified_key)
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_metadata_set_int8_array
+
+
+   !> @brief Set a new key-value pair with an array of integer values (8 bits wide).
+    !!
+    !! This function sets a new key-value pair with an array of integer values in the metadata.
+    !!
+    !! @param [in,out] metadata A handle passed object pointer.
+    !! @param [in]     key      The key to be set.
+    !! @param [in]     value    The value to be set.
+    !!
+    !! @return An error code indicating the operation's success.
+    !!
+    !! @see multio_metadata_set_int16_array
+    !! @see multio_metadata_set_int32_array
+    !! @see multio_metadata_set_int64_array
+    !! @see multio_metadata_set_real32_array
+    !! @see multio_metadata_set_real64_array
+    !! @see multio_metadata_set_fbool_array
+    !! @see multio_metadata_set_cbool_array
+    !!
+    function multio_metadata_set_int16_array(metadata, key, values) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding,   only: c_loc
+        use, intrinsic :: iso_c_binding,   only: c_int
+        use, intrinsic :: iso_c_binding,   only: c_size_t
+        use, intrinsic :: iso_c_binding,   only: c_char
+        use, intrinsic :: iso_c_binding,   only: c_null_char
+        use, intrinsic :: iso_fortran_env, only: int16
+        ! Variable references from the project
+        use :: multio_api_constants_mod,   only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_metadata),                    intent(inout) :: metadata
+        character(len=*),                          intent(in)    :: key
+        integer(kind=int16), dimension(:), target, intent(in)    :: values
+        ! Function result
+        integer :: err
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        integer(kind=c_size_t) :: sz
+        character(:,kind=c_char), allocatable, target :: nullified_key
+        ! Private interface to the c API
+        interface
+            function c_multio_metadata_set_int16_array(metadata, key, value, size) result(err) &
+                    bind(c, name='multio_metadata_set_int16_array')
+                use, intrinsic :: iso_c_binding, only: c_ptr
+                use, intrinsic :: iso_c_binding, only: c_int
+                use, intrinsic :: iso_c_binding, only: c_size_t
+            implicit none
+                type(c_ptr), value, intent(in) :: metadata
+                type(c_ptr), value, intent(in) :: key
+                type(c_ptr), value, intent(in) :: value
+                integer(c_size_t), value, intent(in) :: size
+                integer(c_int) :: err
+            end function c_multio_metadata_set_int16_array
+        end interface
+        ! Initialization and allocation
+        nullified_key = trim(key) // c_null_char
+        sz = int(size(values), kind=c_size_t)
+        ! Call the c API
+        c_err = c_multio_metadata_set_int16_array(metadata%c_ptr(), c_loc(nullified_key), c_loc(values), sz )
+        ! Output cast and cleanup
+        if (allocated(nullified_key)) deallocate(nullified_key)
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_metadata_set_int16_array
+
+
+
+   !> @brief Set a new key-value pair with an array of integer values (8 bits wide).
+    !!
+    !! This function sets a new key-value pair with an array of integer values in the metadata.
+    !!
+    !! @param [in,out] metadata A handle passed object pointer.
+    !! @param [in]     key      The key to be set.
+    !! @param [in]     value    The value to be set.
+    !!
+    !! @return An error code indicating the operation's success.
+    !!
+    !! @see multio_metadata_set_int16_array
+    !! @see multio_metadata_set_int32_array
+    !! @see multio_metadata_set_int64_array
+    !! @see multio_metadata_set_real32_array
+    !! @see multio_metadata_set_real64_array
+    !! @see multio_metadata_set_fbool_array
+    !! @see multio_metadata_set_cbool_array
+    !!
+    function multio_metadata_set_int32_array(metadata, key, values) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding,   only: c_loc
+        use, intrinsic :: iso_c_binding,   only: c_int
+        use, intrinsic :: iso_c_binding,   only: c_size_t
+        use, intrinsic :: iso_c_binding,   only: c_char
+        use, intrinsic :: iso_c_binding,   only: c_null_char
+        use, intrinsic :: iso_fortran_env, only: int32
+        ! Variable references from the project
+        use :: multio_api_constants_mod,   only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_metadata),                    intent(inout) :: metadata
+        character(len=*),                          intent(in)    :: key
+        integer(kind=int32), dimension(:), target, intent(in)    :: values
+        ! Function result
+        integer :: err
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        integer(kind=c_size_t) :: sz
+        character(:,kind=c_char), allocatable, target :: nullified_key
+        ! Private interface to the c API
+        interface
+            function c_multio_metadata_set_int32_array(metadata, key, value, size) result(err) &
+                    bind(c, name='multio_metadata_set_int32_array')
+                use, intrinsic :: iso_c_binding, only: c_ptr
+                use, intrinsic :: iso_c_binding, only: c_int
+                use, intrinsic :: iso_c_binding, only: c_size_t
+            implicit none
+                type(c_ptr), value, intent(in) :: metadata
+                type(c_ptr), value, intent(in) :: key
+                type(c_ptr), value, intent(in) :: value
+                integer(c_size_t), value, intent(in) :: size
+                integer(c_int) :: err
+            end function c_multio_metadata_set_int32_array
+        end interface
+        ! Initialization and allocation
+        nullified_key = trim(key) // c_null_char
+        sz = int(size(values), kind=c_size_t)
+        ! Call the c API
+        c_err = c_multio_metadata_set_int32_array(metadata%c_ptr(), c_loc(nullified_key), c_loc(values), sz )
+        ! Output cast and cleanup
+        if (allocated(nullified_key)) deallocate(nullified_key)
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_metadata_set_int32_array
+
+
+
+
+   !> @brief Set a new key-value pair with an array of integer values (8 bits wide).
+    !!
+    !! This function sets a new key-value pair with an array of integer values in the metadata.
+    !!
+    !! @param [in,out] metadata A handle passed object pointer.
+    !! @param [in]     key      The key to be set.
+    !! @param [in]     value    The value to be set.
+    !!
+    !! @return An error code indicating the operation's success.
+    !!
+    !! @see multio_metadata_set_int16_array
+    !! @see multio_metadata_set_int32_array
+    !! @see multio_metadata_set_int64_array
+    !! @see multio_metadata_set_real32_array
+    !! @see multio_metadata_set_real64_array
+    !! @see multio_metadata_set_fbool_array
+    !! @see multio_metadata_set_cbool_array
+    !!
+    function multio_metadata_set_int64_array(metadata, key, values) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding,   only: c_loc
+        use, intrinsic :: iso_c_binding,   only: c_int
+        use, intrinsic :: iso_c_binding,   only: c_size_t
+        use, intrinsic :: iso_c_binding,   only: c_char
+        use, intrinsic :: iso_c_binding,   only: c_null_char
+        use, intrinsic :: iso_fortran_env, only: int64
+        ! Variable references from the project
+        use :: multio_api_constants_mod,   only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_metadata),                    intent(inout) :: metadata
+        character(len=*),                          intent(in)    :: key
+        integer(kind=int64), dimension(:), target, intent(in)    :: values
+        ! Function result
+        integer :: err
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        integer(kind=c_size_t) :: sz
+        character(:,kind=c_char), allocatable, target :: nullified_key
+        ! Private interface to the c API
+        interface
+            function c_multio_metadata_set_int64_array(metadata, key, value, size) result(err) &
+                    bind(c, name='multio_metadata_set_int64_array')
+                use, intrinsic :: iso_c_binding, only: c_ptr
+                use, intrinsic :: iso_c_binding, only: c_int
+                use, intrinsic :: iso_c_binding, only: c_size_t
+            implicit none
+                type(c_ptr), value, intent(in) :: metadata
+                type(c_ptr), value, intent(in) :: key
+                type(c_ptr), value, intent(in) :: value
+                integer(c_size_t), value, intent(in) :: size
+                integer(c_int) :: err
+            end function c_multio_metadata_set_int64_array
+        end interface
+        ! Initialization and allocation
+        nullified_key = trim(key) // c_null_char
+        sz = int(size(values), kind=c_size_t)
+        ! Call the c API
+        c_err = c_multio_metadata_set_int64_array(metadata%c_ptr(), c_loc(nullified_key), c_loc(values), sz )
+        ! Output cast and cleanup
+        if (allocated(nullified_key)) deallocate(nullified_key)
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_metadata_set_int64_array
+
+
+
+   !> @brief Set a new key-value pair with an array of integer values (8 bits wide).
+    !!
+    !! This function sets a new key-value pair with an array of integer values in the metadata.
+    !!
+    !! @param [in,out] metadata A handle passed object pointer.
+    !! @param [in]     key      The key to be set.
+    !! @param [in]     value    The value to be set.
+    !!
+    !! @return An error code indicating the operation's success.
+    !!
+    !! @see multio_metadata_set_int16_array
+    !! @see multio_metadata_set_int32_array
+    !! @see multio_metadata_set_int64_array
+    !! @see multio_metadata_set_real32_array
+    !! @see multio_metadata_set_real64_array
+    !! @see multio_metadata_set_fbool_array
+    !! @see multio_metadata_set_cbool_array
+    !!
+    function multio_metadata_set_real32_array(metadata, key, values) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding,   only: c_loc
+        use, intrinsic :: iso_c_binding,   only: c_int
+        use, intrinsic :: iso_c_binding,   only: c_size_t
+        use, intrinsic :: iso_c_binding,   only: c_char
+        use, intrinsic :: iso_c_binding,   only: c_null_char
+        use, intrinsic :: iso_fortran_env, only: real32
+        ! Variable references from the project
+        use :: multio_api_constants_mod,   only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_metadata),                  intent(inout) :: metadata
+        character(len=*),                        intent(in)    :: key
+        real(kind=real32), dimension(:), target, intent(in)    :: values
+        ! Function result
+        integer :: err
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        integer(kind=c_size_t) :: sz
+        character(:,kind=c_char), allocatable, target :: nullified_key
+        ! Private interface to the c API
+        interface
+            function c_multio_metadata_set_real32_array(metadata, key, value, size) result(err) &
+                    bind(c, name='multio_metadata_set_float_array')
+                use, intrinsic :: iso_c_binding, only: c_ptr
+                use, intrinsic :: iso_c_binding, only: c_int
+                use, intrinsic :: iso_c_binding, only: c_size_t
+            implicit none
+                type(c_ptr), value, intent(in) :: metadata
+                type(c_ptr), value, intent(in) :: key
+                type(c_ptr), value, intent(in) :: value
+                integer(c_size_t), value, intent(in) :: size
+                integer(c_int) :: err
+            end function c_multio_metadata_set_real32_array
+        end interface
+        ! Initialization and allocation
+        nullified_key = trim(key) // c_null_char
+        sz = int(size(values), kind=c_size_t)
+        ! Call the c API
+        c_err = c_multio_metadata_set_real32_array(metadata%c_ptr(), c_loc(nullified_key), c_loc(values), sz )
+        ! Output cast and cleanup
+        if (allocated(nullified_key)) deallocate(nullified_key)
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_metadata_set_real32_array
+
+
+
+
+   !> @brief Set a new key-value pair with an array of integer values (8 bits wide).
+    !!
+    !! This function sets a new key-value pair with an array of integer values in the metadata.
+    !!
+    !! @param [in,out] metadata A handle passed object pointer.
+    !! @param [in]     key      The key to be set.
+    !! @param [in]     value    The value to be set.
+    !!
+    !! @return An error code indicating the operation's success.
+    !!
+    !! @see multio_metadata_set_int16_array
+    !! @see multio_metadata_set_int32_array
+    !! @see multio_metadata_set_int64_array
+    !! @see multio_metadata_set_real32_array
+    !! @see multio_metadata_set_real64_array
+    !! @see multio_metadata_set_fbool_array
+    !! @see multio_metadata_set_cbool_array
+    !!
+    function multio_metadata_set_real64_array(metadata, key, values) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding,   only: c_loc
+        use, intrinsic :: iso_c_binding,   only: c_int
+        use, intrinsic :: iso_c_binding,   only: c_size_t
+        use, intrinsic :: iso_c_binding,   only: c_char
+        use, intrinsic :: iso_c_binding,   only: c_null_char
+        use, intrinsic :: iso_fortran_env, only: real64
+        ! Variable references from the project
+        use :: multio_api_constants_mod,   only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_metadata),                  intent(inout) :: metadata
+        character(len=*),                        intent(in)    :: key
+        real(kind=real64), dimension(:), target, intent(in)    :: values
+        ! Function result
+        integer :: err
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        integer(kind=c_size_t) :: sz
+        character(:,kind=c_char), allocatable, target :: nullified_key
+        ! Private interface to the c API
+        interface
+            function c_multio_metadata_set_real64_array(metadata, key, value, size) result(err) &
+                    bind(c, name='multio_metadata_set_double_array')
+                use, intrinsic :: iso_c_binding, only: c_ptr
+                use, intrinsic :: iso_c_binding, only: c_int
+                use, intrinsic :: iso_c_binding, only: c_size_t
+            implicit none
+                type(c_ptr), value, intent(in) :: metadata
+                type(c_ptr), value, intent(in) :: key
+                type(c_ptr), value, intent(in) :: value
+                integer(c_size_t), value, intent(in) :: size
+                integer(c_int) :: err
+            end function c_multio_metadata_set_real64_array
+        end interface
+        ! Initialization and allocation
+        nullified_key = trim(key) // c_null_char
+        sz = int(size(values), kind=c_size_t)
+        ! Call the c API
+        c_err = c_multio_metadata_set_real64_array(metadata%c_ptr(), c_loc(nullified_key), c_loc(values), sz )
+        ! Output cast and cleanup
+        if (allocated(nullified_key)) deallocate(nullified_key)
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_metadata_set_real64_array
 
 end module multio_api_metadata_mod

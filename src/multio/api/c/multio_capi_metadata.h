@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+#include <cstddef>
 #include "multio_capi_types.h"
 
 #ifdef __cplusplus
@@ -91,6 +93,101 @@ int multio_metadata_set_float(multio_metadata_t* md, const char* key, float valu
  * \returns Return code (#MultioErrorValues)
  */
 int multio_metadata_set_double(multio_metadata_t* md, const char* key, double value);
+
+
+
+
+/** Sets a metadata key-value pair for integer values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Integer value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_int8(multio_metadata_t* md, const char* key, int8_t value);
+
+
+/** Sets a metadata key-value pair for integer values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Integer value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_int16(multio_metadata_t* md, const char* key, int16_t value);
+
+
+/** Sets a metadata key-value pair for integer values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Integer value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_int32(multio_metadata_t* md, const char* key, int32_t value);
+
+
+/** Sets a metadata key-value pair for integer values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Integer value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_int64(multio_metadata_t* md, const char* key, int64_t value);
+
+
+
+/** Sets a metadata key-value pair for integer values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Integer value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_int8_array(multio_metadata_t* md, const char* key, int8_t* value, size_t count);
+
+
+/** Sets a metadata key-value pair for integer values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Integer value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_int16_array(multio_metadata_t* md, const char* key, int16_t* value, size_t count);
+
+
+/** Sets a metadata key-value pair for integer values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Integer value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_int32_array(multio_metadata_t* md, const char* key, int32_t* value, size_t count);
+
+
+/** Sets a metadata key-value pair for integer values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Integer value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_int64_array(multio_metadata_t* md, const char* key, int64_t* value, size_t count);
+
+
+/** Sets a metadata key-value pair for integer values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Integer value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_float_array(multio_metadata_t* md, const char* key, float* value, size_t count);
+
+
+/** Sets a metadata key-value pair for integer values
+ * \param md Handle to the multio metadata object
+ * \param key C-string key to be set
+ * \param value Integer value to be set
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_metadata_set_double_array(multio_metadata_t* md, const char* key, double* value, size_t count);
+
+
 
 /** @} */
 

@@ -754,6 +754,122 @@ int multio_metadata_set_longlong(multio_metadata_t* md, const char* key, long lo
 #endif
 }
 
+
+
+
+int multio_metadata_set_int8(multio_metadata_t* md, const char* key, int8_t value) {
+#if !defined(MULTIO_DUMMY_API)
+    return multio_metadata_set_int(md, key, static_cast<int>(value));
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_metadata_set_int16(multio_metadata_t* md, const char* key, int16_t value) {
+#if !defined(MULTIO_DUMMY_API)
+    return multio_metadata_set_int(md, key, static_cast<int>(value));
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_metadata_set_int32(multio_metadata_t* md, const char* key, int32_t value) {
+#if !defined(MULTIO_DUMMY_API)
+    return multio_metadata_set_int(md, key, static_cast<int>(value));
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_metadata_set_int64(multio_metadata_t* md, const char* key, int64_t value) {
+#if !defined(MULTIO_DUMMY_API)
+    return multio_metadata_set_long(md, key, static_cast<long>(value));
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_metadata_set_int8_array(multio_metadata_t* md, const char* key, int8_t* value, size_t count) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [md, key, value, count]() {
+            ASSERT(md);
+            ASSERT(key);
+            std::vector<int> vec(count);
+            for ( size_t i=0; i<count; i++ ){
+                vec[i] = static_cast<int>(value[i]);
+            }
+            md->set(key, vec);
+        },
+        md);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_metadata_set_int16_array(multio_metadata_t* md, const char* key, int16_t* value, size_t count) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [md, key, value, count]() {
+            ASSERT(md);
+            ASSERT(key);
+            std::vector<int> vec(count);
+            for ( size_t i=0; i<count; i++ ){
+                vec[i] = static_cast<int>(value[i]);
+            }
+            md->set(key, vec);
+        },
+        md);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_metadata_set_int32_array(multio_metadata_t* md, const char* key, int32_t* value, size_t count) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [md, key, value, count]() {
+            ASSERT(md);
+            ASSERT(key);
+            std::vector<int> vec(count);
+            for ( size_t i=0; i<count; i++ ){
+                vec[i] = static_cast<int>(value[i]);
+            }
+            md->set(key, vec);
+        },
+        md);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_metadata_set_int64_array(multio_metadata_t* md, const char* key, int64_t* value, size_t count) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [md, key, value, count]() {
+            ASSERT(md);
+            ASSERT(key);
+            std::vector<long> vec(count);
+            for ( size_t i=0; i<count; i++ ){
+                vec[i] = static_cast<long>(value[i]);
+            }
+            md->set(key, vec);
+        },
+        md);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+
 int multio_metadata_set_string(multio_metadata_t* md, const char* key, const char* value) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
@@ -806,10 +922,43 @@ int multio_metadata_set_double(multio_metadata_t* md, const char* key, double va
         [md, key, value]() {
             ASSERT(md);
             ASSERT(key);
+            md->set(key, value);
+        },
+        md);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
 
-            // TODO: it is unclear if we ever need to support setting metadata values as float; even if so, we are
-            // probably better off casting to double for storing it in multio::Metadata
-            md->set(key, static_cast<double>(value));
+int multio_metadata_set_float_array(multio_metadata_t* md, const char* key, float *value, size_t count) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [md, key, value, count]() {
+            ASSERT(md);
+            ASSERT(key);
+            std::vector<float> vec(count);
+            for ( size_t i=0; i<count; i++ ){
+                vec[i] = static_cast<float>(value[i]);
+            }
+            md->set(key, vec);
+        },
+        md);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+int multio_metadata_set_double_array(multio_metadata_t* md, const char* key, double *value, size_t count) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [md, key, value, count]() {
+            ASSERT(md);
+            ASSERT(key);
+            std::vector<double> vec(count);
+            for ( size_t i=0; i<count; i++ ){
+                vec[i] = static_cast<double>(value[i]);
+            }
+            md->set(key, vec);
         },
         md);
 #else

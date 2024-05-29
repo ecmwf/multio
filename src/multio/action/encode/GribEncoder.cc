@@ -124,7 +124,7 @@ void tryMapStepToTimeAndCheckTime(eckit::LocalConfiguration& in) {
         }
         else if (hasDataDateTime) {
             startDate = util::toDateInts(in.getLong("dataDate"));
-            startTime = util::toTimeInts(in.getLong("dataTime"));
+            startTime = util::toTimeInts(in.getLong("dataTime") * 100);
         }
         else if (hasDateTime) {
             startDate = util::toDateInts(in.getLong("date"));

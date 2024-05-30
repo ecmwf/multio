@@ -21,6 +21,7 @@ list( APPEND multio_action_plugins
     multio-action-transport
     multio-action-renumber-healpix
     multio-action-interpolate-fesom
+    multio-action-ifs-metadata-mapping
 )
 
 if( HAVE_MIR )

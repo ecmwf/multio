@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.yaml": "yaml",
         "__bit_reference": "cpp",
         "__bits": "cpp",
         "__config": "cpp",
@@ -78,7 +79,14 @@
         "algorithm": "cpp",
         "functional": "cpp",
         "iterator": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "*.tcc": "cpp",
+        "cinttypes": "cpp",
+        "condition_variable": "cpp",
+        "memory_resource": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp"
     },
     "C_Cpp.dimInactiveRegions": false,
     "python.formatting.provider": "black"

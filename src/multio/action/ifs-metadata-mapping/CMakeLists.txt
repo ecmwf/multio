@@ -1,11 +1,11 @@
 ecbuild_add_library(
 
     TARGET
-        multio-action-output-manager
+        multio-action-ifs-metadata-mapping
 
     SOURCES
-        OutputManager.cc
-        OutputManager.h
+        IFS_MetadataMapping.cc
+        IFS_MetadataMapping.h
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}

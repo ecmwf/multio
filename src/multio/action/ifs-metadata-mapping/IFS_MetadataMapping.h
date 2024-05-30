@@ -26,11 +26,8 @@
 #include "multio/LibMultio.h"
 #include "multio/action/ChainedAction.h"
 
-#include "OutputManagerMetadata.h"
-#include "OutputManagerEncoders.h"
-#include "OutputManagerDebug.h"
 
-namespace multio::action::outputManager {
+namespace multio::action::ifsMetadataMapping {
 
 
 
@@ -38,24 +35,21 @@ namespace multio::action::outputManager {
 /**
  * \class MultIO Action for constructing MuleIO metadata from ifs/fortran metadata
  */
-template <typename T>
-class OutputManager final : public ChainedAction {
+class IFS_MetadataMapping final : public ChainedAction {
 public:
     using ChainedAction::ChainedAction;
-    explicit OutputManager(const ComponentConfiguration& compConf);
+    explicit IFS_MetadataMapping(const ComponentConfiguration& compConf);
 
 private:
 
-    std::unique_ptr<Flavour<T>> flavour_;
-
-    eckit::LocalConfiguration encodingRules_;
-
-    std::map<std::string, GribEncoder> encoders_;
-
+    eckit::LocalConfiguration simulationParameters_;
+    // std::unique_ptr<Flavour<T>> flavour_;
+    // eckit::LocalConfiguration encodingRules_;
+    // std::map<std::string, GribEncoder> encoders_;
+    void getSimulationParameters( const message::Metadata& metadata);
     void print(std::ostream&) const override;
     void executeImpl(message::Message) override;
 
-    std::string generateKey(const message::Message& msg) const;
 };
 
 

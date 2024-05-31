@@ -8,6 +8,7 @@
 #include "multio/LibMultio.h"
 #include "multio/action/statistics/StatisticsIO.h"
 
+#include "Statistics_debug.h"
 namespace multio::action {
 
 namespace {
@@ -111,7 +112,7 @@ void OperationWindow::updateData(const eckit::DateTime& currentPoint) {
     prevPoint_ = currPoint_;
     currPoint_ = currentPoint;
     count_++;
-    LOG_DEBUG_LIB(LibMultio) << "Update window :: " << count_ << std::endl;
+    STATISTICS_OUT_STREAM << "Update window :: " << count_ << std::endl;
     return;
 }
 
@@ -129,7 +130,7 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
 
 bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
     bool ret = gtLowerBound(dt, true) && leUpperBound(dt, false);
-    LOG_DEBUG_LIB(LibMultio) << " ------ Is " << dt << " within " << *this << "? -- " << (ret ? "yes" : "no")
+    STATISTICS_OUT_STREAM << " ------ Is " << dt << " within " << *this << "? -- " << (ret ? "yes" : "no")
                              << std::endl;
     return ret;
 }

@@ -11,6 +11,7 @@
 #include "multio/LibMultio.h"
 #include "multio/util/Substitution.h"
 
+#include "Statistics_debug.h"
 namespace multio::action {
 
 
@@ -295,24 +296,24 @@ void StatisticsConfiguration::createLoggingPrefix(const StatisticsConfiguration&
 
 
 void StatisticsConfiguration::dumpConfiguration() {
-    LOG_DEBUG_LIB(LibMultio) << " + useDateTime_                :: " << useDateTime_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + stepFreq_                   :: " << stepFreq_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + timeStep_                   :: " << timeStep_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + startDate_                  :: " << startDate_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + startTime_                  :: " << startTime_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + restart_                    :: " << restart_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + readRestart_                :: " << readRestart_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + writeRestart_               :: " << writeRestart_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + step_                       :: " << step_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + restartStep_                :: " << restartStep_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + solverSendInitStep_         :: " << solverSendInitStep_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + haveMissingValue_           :: " << haveMissingValue_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + missingValue_               :: " << missingValue_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + restartPath_                :: " << restartPath_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + restartPrefix_              :: " << restartPrefix_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + restartLib_                 :: " << restartLib_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + logPrefix_                  :: " << logPrefix_ << ";" << std::endl;
-    LOG_DEBUG_LIB(LibMultio) << " + resetAccumulatedFieldsFreq_ :: " << accumulatedFieldsResetFreqency_ << ";"
+    STATISTICS_OUT_STREAM << " + useDateTime_                :: " << useDateTime_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + stepFreq_                   :: " << stepFreq_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + timeStep_                   :: " << timeStep_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + startDate_                  :: " << startDate_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + startTime_                  :: " << startTime_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + restart_                    :: " << restart_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + readRestart_                :: " << readRestart_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + writeRestart_               :: " << writeRestart_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + step_                       :: " << step_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + restartStep_                :: " << restartStep_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + solverSendInitStep_         :: " << solverSendInitStep_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + haveMissingValue_           :: " << haveMissingValue_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + missingValue_               :: " << missingValue_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + restartPath_                :: " << restartPath_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + restartPrefix_              :: " << restartPrefix_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + restartLib_                 :: " << restartLib_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + logPrefix_                  :: " << logPrefix_ << ";" << std::endl;
+    STATISTICS_OUT_STREAM << " + resetAccumulatedFieldsFreq_ :: " << accumulatedFieldsResetFreqency_ << ";"
                              << std::endl;
     return;
 }

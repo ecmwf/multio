@@ -20,6 +20,7 @@
 #include "multio/message/Message.h"
 #include "multio/util/ScopedTimer.h"
 
+#include "Statistics_debug.h"
 namespace multio::action {
 
 Statistics::Statistics(const ComponentConfiguration& compConf) :
@@ -35,7 +36,7 @@ void Statistics::DumpRestart() {
         IOmanager_->reset();
         IOmanager_->setSuffix(periodUpdater_->name());
         for (auto it = fieldStats_.begin(); it != fieldStats_.end(); it++) {
-            LOG_DEBUG_LIB(LibMultio) << "Restart for field with key :: " << it->first << ", "
+            STATISTICS_OUT_STREAM << "Restart for field with key :: " << it->first << ", "
                                      << it->second->cwin().currPointInSteps() << std::endl;
             IOmanager_->setCurrStep(it->second->cwin().currPointInSteps());
             IOmanager_->setPrevStep(it->second->cwin().lastFlushInSteps());
@@ -54,7 +55,7 @@ std::string Statistics::generateKey(const message::Message& msg) const {
        << msg.metadata().getString("levtype", "unknown") << "-" << msg.metadata().getString("gridType", "unknown")
        << "-" << msg.metadata().getString("precision", "unknown") << "-"
        << std::to_string(std::hash<std::string>{}(msg.source()));
-    LOG_DEBUG_LIB(LibMultio) << "Generating key for the field :: " << os.str() << std::endl;
+    STATISTICS_OUT_STREAM << "Generating key for the field :: " << os.str() << std::endl;
     return os.str();
 }
 

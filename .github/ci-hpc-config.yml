@@ -30,6 +30,7 @@ intel_mpi:
       ntasks: 16
       env:
         - CTEST_PARALLEL_LEVEL=1
+        - OMPI_MCA_rmaps_base_oversubscribe=1
         - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
         - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions
 
@@ -58,6 +59,7 @@ hpcx_openmpi:
       ntasks: 16
       env:
         - CTEST_PARALLEL_LEVEL=1
+        - OMPI_MCA_rmaps_base_oversubscribe=1
         - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
         - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions
 
@@ -86,6 +88,7 @@ openmpi:
       ntasks: 16
       env:
         - CTEST_PARALLEL_LEVEL=1
+        - OMPI_MCA_rmaps_base_oversubscribe=1
         - ECCODES_SAMPLES_PATH=$ECCODES_DIR/share/eccodes/samples
         - ECCODES_DEFINITION_PATH=$ECCODES_DIR/share/eccodes/definitions
 

@@ -21,7 +21,13 @@ namespace multio {
 
 //----------------------------------------------------------------------------------------------------------------------
 
-class LibMultio : public eckit::system::Library {
+// TEST DO NOT MERGE - just want to have a failing CI to test notiication
+class 
+LibMultio 
+: 
+public 
+eckit::system::Library 
+{
 public:
     LibMultio();
 

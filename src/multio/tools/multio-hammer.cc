@@ -224,10 +224,11 @@ public:  // methods
 private:
     using PeerList = std::vector<std::unique_ptr<Peer>>;
 
-    class TestPolicy : public MultioConfigurationHolder {
+    class TestPolicy {
     public:
-        TestPolicy(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf, size_t clientCount) :
-            MultioConfigurationHolder(std::move(multioConf)), conf_(conf), clientCount_(clientCount) {}
+        TestPolicy(const eckit::LocalConfiguration& conf, std::optional<MultioConfiguration>&& multioConf,
+                   size_t clientCount) :
+            multioHandle(std::move(multioConf)), conf_(conf), clientCount_(clientCount) {}
         virtual ~TestPolicy() = default;
 
         virtual PeerList computeServerPeers() = 0;
@@ -237,6 +238,9 @@ private:
         virtual void execute(MultioHammer& hammer, const eckit::option::CmdArgs&) const { hammer.executeGeneric(); }
 
         virtual void checkData(MultioHammer& hammer) const { hammer.testData(); }
+
+        // Make multio conf public
+        std::optional<MultioConfigurationHolder> multioHandle;
 
     protected:
         eckit::LocalConfiguration conf_;
@@ -265,13 +269,13 @@ private:
 
         std::shared_ptr<Transport> createTransport() override {
             if (comm_.rank() < clientCount_) {
-                multioConfig().setLocalPeerTag(multio::config::LocalPeerTag::Client);
+                multioHandle->multioConfig().setLocalPeerTag(multio::config::LocalPeerTag::Client);
             }
             else {
-                multioConfig().setLocalPeerTag(multio::config::LocalPeerTag::Server);
+                multioHandle->multioConfig().setLocalPeerTag(multio::config::LocalPeerTag::Server);
             }
             return std::shared_ptr<Transport>(
-                TransportFactory::instance().build("mpi", ComponentConfiguration(conf_, multioConfig())));
+                TransportFactory::instance().build("mpi", ComponentConfiguration(conf_, multioHandle->multioConfig())));
         };
 
         void checkData(MultioHammer& hammer) const override {
@@ -291,8 +295,12 @@ private:
     class TCPTestPolicy final : public TestPolicy {
     public:
         TCPTestPolicy(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf, size_t clientCount,
-                      int localPort) :
-            TestPolicy(conf, std::move(multioConf), clientCount), port_(localPort), rank_(-1) {}
+                      int localPort, bool checkDataOnly) :
+            TestPolicy(conf, checkDataOnly ? std::nullopt : std::optional<MultioConfiguration>{std::move(multioConf)},
+                       clientCount),
+            port_(localPort),
+            rank_(-1),
+            checkDataOnly_{checkDataOnly} {}
 
         PeerList computeServerPeers() override {
             PeerList serverPeers;
@@ -327,14 +335,17 @@ private:
         std::shared_ptr<Transport> createTransport() override {
             conf_.set("local_port", port_);
             return std::shared_ptr<Transport>(
-                TransportFactory::instance().build("tcp", ComponentConfiguration(conf_, multioConfig())));
+                TransportFactory::instance().build("tcp", ComponentConfiguration(conf_, multioHandle->multioConfig())));
         };
 
-        void checkData(MultioHammer& hammer) const override {
-            // Wait for the plan to finish.
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+        void execute(MultioHammer& hammer, const eckit::option::CmdArgs&) const override {
+            if (!checkDataOnly_) {
+                hammer.executeGeneric();
+            }
+        }
 
-            if (rank_ == 0) {
+        void checkData(MultioHammer& hammer) const override {
+            if (checkDataOnly_) {
                 // Test is destructive(deletes the output files), only perform the test on the first process.
                 hammer.testData();
             }
@@ -343,6 +354,7 @@ private:
     private:
         int port_;
         int rank_;
+        bool checkDataOnly_;
     };
 
     class ThreadTestPolicy final : public TestPolicy {
@@ -358,8 +370,8 @@ private:
         int computeRank() override { return 0; }
 
         std::shared_ptr<Transport> createTransport() override {
-            return std::shared_ptr<Transport>(
-                TransportFactory::instance().build("thread", ComponentConfiguration(conf_, multioConfig())));
+            return std::shared_ptr<Transport>(TransportFactory::instance().build(
+                "thread", ComponentConfiguration(conf_, multioHandle->multioConfig())));
         };
 
         void execute(MultioHammer& hammer, const eckit::option::CmdArgs&) const override { hammer.executeThread(); }
@@ -417,7 +429,6 @@ private:
     std::string configPath_ = "";
     std::string transportType_ = "none";
     int port_ = 7777;
-    int rank_ = 0;
 
     size_t clientCount_ = 1;
     size_t serverCount_ = 1;
@@ -427,9 +438,8 @@ private:
 
     long ensMember_ = 1;
     long sleep_ = 0;
+    bool checkDataOnly_ = 0;
 
-    PeerList serverPeers_;
-    std::shared_ptr<Transport> transport_;
     std::unique_ptr<TestPolicy> testPolicy_;
 
     eckit::LocalConfiguration conf_{};
@@ -468,6 +478,7 @@ MultioHammer::MultioHammer(int argc, char** argv) : multio::MultioTool(argc, arg
     options_.push_back(new eckit::option::SimpleOption<size_t>("nbsteps", "Number of output time steps"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("member", "Ensemble member"));
     options_.push_back(new eckit::option::SimpleOption<long>("sleep", "Seconds of simulated work per step"));
+    options_.push_back(new eckit::option::SimpleOption<bool>("check-data-only", "For TCP: will only check data"));
 }
 
 
@@ -483,6 +494,7 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
     args.get("nbparams", paramCount_);
     args.get("member", ensMember_);
     args.get("sleep", sleep_);
+    args.get("check-data-only", checkDataOnly_);
 
     MultioConfiguration multioConf;
     if (configPath_.empty()) {
@@ -502,7 +514,7 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
          [this, &multioConf]() { return std::make_unique<MPITestPolicy>(conf_, std::move(multioConf), clientCount_); }},
         {"tcp",
          [this, &multioConf]() {
-             return std::make_unique<TCPTestPolicy>(conf_, std::move(multioConf), clientCount_, port_);
+             return std::make_unique<TCPTestPolicy>(conf_, std::move(multioConf), clientCount_, port_, checkDataOnly_);
          }},
         {"thread",
          [this, &multioConf]() {
@@ -517,10 +529,6 @@ void MultioHammer::init(const eckit::option::CmdArgs& args) {
     transportType_ = conf_.getString("transport");
 
     testPolicy_ = policyFactory.at(transportType_)();
-
-    serverPeers_ = testPolicy_->computeServerPeers();
-    rank_ = testPolicy_->computeRank();
-    transport_ = testPolicy_->createTransport();
 }
 
 void MultioHammer::finish(const eckit::option::CmdArgs&) {}
@@ -528,12 +536,13 @@ void MultioHammer::finish(const eckit::option::CmdArgs&) {}
 //---------------------------------------------------------------------------------------------------------------
 
 void MultioHammer::startListening(std::shared_ptr<Transport> transport) {
-    Listener listener(ComponentConfiguration(conf_, testPolicy_->multioConfig()), *transport);
+    Listener listener(ComponentConfiguration(conf_, testPolicy_->multioHandle->multioConfig()), *transport);
     listener.start();
 }
 
 void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transport> transport,
                             const size_t client_list_id) const {
+    // TODO Use multio client poperly instead of accessing transport
     Peer client = transport->localPeer();
 
     // Open all servers and close them when going out of scope
@@ -625,7 +634,7 @@ void MultioHammer::testData() {
                                       + std::string("::") + std::to_string(step);
                 std::string field_id = R"({"level":)" + std::to_string(level) + R"(,"param":)" + std::to_string(param)
                                      + R"(,"step":)" + std::to_string(step) + "}";
-                auto expect = global_test_field(field_id);
+                auto expect = global_test_field(field_id, field_size());
                 auto actual = file_content(file_name);
 
                 LOG_DEBUG_LIB(LibMultio) << "field id = " << field_id << std::endl;
@@ -646,29 +655,41 @@ void MultioHammer::testData() {
 }
 
 void MultioHammer::executeGeneric() {
-    auto const iAmServer = (rank_ >= clientCount_);
+    if (!testPolicy_->multioHandle)
+        return;
+
+    PeerList serverPeers{testPolicy_->computeServerPeers()};
+    int rank{testPolicy_->computeRank()};
+    std::shared_ptr<Transport> transport{testPolicy_->createTransport()};
+
+    auto const iAmServer = (rank >= clientCount_);
 
     if (iAmServer) {
-        startListening(transport_);
+        startListening(transport);
     }
     else {
-        sendData(serverPeers_, transport_, rank_);
+        sendData(serverPeers, transport, rank);
     }
 }
 
 void MultioHammer::executeThread() {
     // Spawn servers
+    if (!testPolicy_->multioHandle)
+        return;
+
     PeerList serverPeers;
+    std::shared_ptr<Transport> transport{testPolicy_->createTransport()};
+
     for (size_t i = 0; i != serverCount_; ++i) {
         serverPeers.emplace_back(
-            std::make_unique<ThreadPeer>(std::thread{&MultioHammer::startListening, this, transport_}));
+            std::make_unique<ThreadPeer>(std::thread{&MultioHammer::startListening, this, transport}));
     }
 
     // Spawn clients
     PeerList clientPeers;
     for (auto client : sequence(clientCount_, 0)) {
         clientPeers.emplace_back(std::make_unique<ThreadPeer>(
-            std::thread{&MultioHammer::sendData, this, std::cref(serverPeers), transport_, client}));
+            std::thread{&MultioHammer::sendData, this, std::cref(serverPeers), transport, client}));
     }
 }
 
@@ -679,8 +700,8 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
     codes_handle* handle = codes_handle_new_from_file(nullptr, fin, PRODUCT_GRIB, &err);
     ASSERT(handle);
 
-    std::vector<std::unique_ptr<Plan>> plans
-        = multio::action::Plan::makePlans(conf_.getSubConfigurations("plans"), testPolicy_->multioConfig());
+    std::vector<std::unique_ptr<Plan>> plans = multio::action::Plan::makePlans(
+        conf_.getSubConfigurations("plans"), testPolicy_->multioHandle->multioConfig());
     std::string expver = "xxxx";
     auto size = expver.size();
     CODES_CHECK(codes_set_string(handle, "expver", expver.c_str(), &size), nullptr);

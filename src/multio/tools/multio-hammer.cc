@@ -438,7 +438,7 @@ private:
 
     long ensMember_ = 1;
     long sleep_ = 0;
-    bool checkDataOnly_ = 0;
+    bool checkDataOnly_ = false;
 
     std::unique_ptr<TestPolicy> testPolicy_;
 

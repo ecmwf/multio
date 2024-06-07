@@ -29,4 +29,12 @@ do
     if [[ $tmp != 0 ]]; then code=$tmp; fi
 done
 
+echo "All clients and servers stopped... spawning test child"
+
+# Finally run and check
+cmd="$binary --transport=\"tcp\" --check-data-only=true"
+eval $cmd
+tmp=$?
+if [[ $tmp != 0 ]]; then code=$tmp; fi
+
 exit $code

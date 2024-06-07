@@ -221,6 +221,12 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
                 metadata.set("step-frequency", 1);
             }
 
+            // Multio pipelines require hhmmss format
+            if (metadata.has("time")) {
+                auto time = 100 * metadata.getLong("time");
+                metadata.set("time", time);
+            }
+
             eckit::Buffer data = msg.decode();
 
             metadata.set("globalSize", data.size() / sizeof(double));

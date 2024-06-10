@@ -62,7 +62,7 @@ private:
 
     void bufferedSend(const Message& msg) override;
 
-    Peer localPeer() const override;
+    const Peer& localPeer() const override;
 
     PeerList createServerPeers() const override;
 

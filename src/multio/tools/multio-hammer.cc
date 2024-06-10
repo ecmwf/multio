@@ -543,7 +543,7 @@ void MultioHammer::startListening(std::shared_ptr<Transport> transport) {
 void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transport> transport,
                             const size_t client_list_id) const {
     // TODO Use multio client poperly instead of accessing transport
-    Peer client = transport->localPeer();
+    const Peer& client = transport->localPeer();
 
     // Open all servers and close them when going out of scope
     std::vector<std::unique_ptr<Connection>> connections;

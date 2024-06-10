@@ -347,7 +347,7 @@ void MpiTransport::print(std::ostream& os) const {
     os << "MpiTransport(" << local_ << ")";
 }
 
-Peer MpiTransport::localPeer() const {
+const Peer& MpiTransport::localPeer() const {
     return local_;
 }
 

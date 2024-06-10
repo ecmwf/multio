@@ -187,7 +187,7 @@ void TcpTransport::bufferedSend(const Message&) {
     throw eckit::NotImplemented{Here()};
 }
 
-Peer TcpTransport::localPeer() const {
+const Peer& TcpTransport::localPeer() const {
     return local_;
 }
 

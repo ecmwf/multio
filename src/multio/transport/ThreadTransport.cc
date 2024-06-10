@@ -40,7 +40,7 @@ void ThreadTransport::closeConnections() {
 
 Message ThreadTransport::receive() {
 
-    Peer receiver = localPeer();
+    const Peer& receiver = localPeer();
 
     auto& queue = receiveQueue(receiver);
 
@@ -64,8 +64,9 @@ void ThreadTransport::bufferedSend(const Message&) {
     throw eckit::NotImplemented{Here()};
 }
 
-Peer ThreadTransport::localPeer() const {
-    return Peer{"thread", std::hash<std::thread::id>{}(std::this_thread::get_id())};
+const Peer& ThreadTransport::localPeer() const {
+    thread_local static Peer peer{"thread", std::hash<std::thread::id>{}(std::this_thread::get_id())};
+    return peer;
 }
 
 PeerList ThreadTransport::createServerPeers() const {

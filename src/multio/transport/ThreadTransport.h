@@ -55,7 +55,7 @@ private:
 
     void print(std::ostream& os) const override;
 
-    Peer localPeer() const override;
+    const Peer& localPeer() const override;
 
     PeerList createServerPeers() const override;
 

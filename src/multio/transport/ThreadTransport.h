@@ -31,6 +31,8 @@ class ThreadPeer : public Peer {
 public:
     ThreadPeer(std::thread t);
 
+    void join();
+
 private:
     util::ScopedThread thread_;
 };

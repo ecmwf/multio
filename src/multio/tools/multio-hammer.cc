@@ -691,6 +691,18 @@ void MultioHammer::executeThread() {
         clientPeers.emplace_back(std::make_unique<ThreadPeer>(
             std::thread{&MultioHammer::sendData, this, std::cref(serverPeers), transport, client}));
     }
+
+    for (auto& t : clientPeers) {
+        if (ThreadPeer* p = dynamic_cast<ThreadPeer*>(t.get()); p != nullptr) {
+            p->join();
+        }
+    }
+
+    for (auto& t : serverPeers) {
+        if (ThreadPeer* p = dynamic_cast<ThreadPeer*>(t.get()); p != nullptr) {
+            p->join();
+        }
+    }
 }
 
 void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {

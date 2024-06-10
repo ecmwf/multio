@@ -71,6 +71,10 @@ void Dispatcher::handle(const message::Message& msg) const {
             domain::Mask::instance().add(msg);
             break;
 
+        case message::Message::Tag::Parametrization:
+            parametrization::Parametrization::instance().add(msg);
+            break;
+
         default:
             for (const auto& plan : plans_) {
                 plan->process(msg);

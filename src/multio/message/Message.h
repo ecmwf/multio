@@ -49,6 +49,7 @@ public:  // types
         Grib,
         Domain,
         Mask,
+        Parametrization,
         Field,
         Flush,
         Notification,

@@ -234,11 +234,24 @@ void setLayerTypeOfLevel(GribEncoder& g, const std::string& typeOfLevel, long le
     g.setValue("scaledValueOfSecondFixedSurface", level);
 }
 
+void setSoilLayerTypeOfLevel(GribEncoder& g, const std::string& typeOfLevel, long level) {
+    g.setValue("typeOfLevel", typeOfLevel);
+
+    g.setValue("typeOfFirstFixedSurface", 151);
+    g.setValue("typeOfSecondFixedSurface", 151);
+
+    g.setValue("scaleFactorOfFirstFixedSurface", 0);
+    g.setValue("scaleFactorOfSecondFixedSurface", 0);
+
+    g.setValue("scaledValueOfFirstFixedSurface", level - 1);
+    g.setValue("scaledValueOfSecondFixedSurface", level);
+}
+
 using TypeOfLevelSetter = std::function<void(GribEncoder&, const std::string&, long)>;
 
 const std::map<std::string, TypeOfLevelSetter> typeOfLevelSetters{
     {"snowLayer", &setLayerTypeOfLevel},
-    {"soilLayer", &setLayerTypeOfLevel},
+    {"soilLayer", &setSoilLayerTypeOfLevel},
     {"seaIceLayer", &setLayerTypeOfLevel},
 };
 
@@ -278,26 +291,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
 
         withFirstOf(valueSetter(g, "productDefinitionTemplateNumber"),
                     LookUpLong(md, "productDefinitionTemplateNumber"));
-
-
-        const auto productionStatusOfProcessedData = lookUpLong(md, "productionStatusOfProcessedData");
-        if (productionStatusOfProcessedData) {
-            g.setValue("productionStatusOfProcessedData", *productionStatusOfProcessedData);
-
-            if (*productionStatusOfProcessedData == 12) {
-                const auto dataset = md.getString("dataset");
-                g.setValue("dataset", dataset);
-
-                if (dataset == "climate-dt") {
-                    withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
-                    withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
-                    withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
-                    withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
-                    withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
-                    withFirstOf(valueSetter(g, "resolution"), LookUpString(md, "resolution"));
-                }
-            }
-        }
     }
 
     std::string typeOfLevel;
@@ -324,6 +317,11 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         }
     }
 
+    const auto productionStatusOfProcessedData = lookUpLong(md, "productionStatusOfProcessedData");
+    if (productionStatusOfProcessedData) {
+        g.setValue("productionStatusOfProcessedData", *productionStatusOfProcessedData);
+    }
+
     std::optional<std::string> paramId{firstOf(
         LookUpString(md, "paramId"), LookUpString(md, "param"))};  // param might be a string, separated by . for GRIB1.
                                                                    // String to long convertion should get it right
@@ -347,10 +345,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
         withFirstOf(valueSetter(g, "setLocalDefinition"), LookUpLong(md, "setLocalDefinition"));
         withFirstOf(valueSetter(g, "grib2LocalSectionNumber"), LookUpLong(md, "grib2LocalSectionNumber"));
 
-        const auto productionStatusOfProcessedData = lookUpLong(md, "productionStatusOfProcessedData");
         if (productionStatusOfProcessedData) {
-            g.setValue("productionStatusOfProcessedData", *productionStatusOfProcessedData);
-
             if (*productionStatusOfProcessedData == 12) {
                 const auto dataset = md.getString("dataset");
                 g.setValue("dataset", dataset);
@@ -371,21 +366,6 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
                     withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
                     withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
                     withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
-
-                    if (paramId && ((*paramId == "260199") || (*paramId == "260360") || (*paramId == "262024"))) {
-                        withFirstOf(valueSetter(g, "typeOfFirstFixedSurface"),
-                                    LookUpString(md, "typeOfFirstFixedSurface"));
-                        withFirstOf(valueSetter(g, "scaleFactorOfFirstFixedSurface"),
-                                    LookUpString(md, "scaleFactorOfFirstFixedSurface"));
-                        withFirstOf(valueSetter(g, "scaledValueOfFirstFixedSurface"),
-                                    LookUpString(md, "scaledValueOfFirstFixedSurface"));
-                        withFirstOf(valueSetter(g, "typeOfSecondFixedSurface"),
-                                    LookUpString(md, "typeOfSecondFixedSurface"));
-                        withFirstOf(valueSetter(g, "scaleFactorOfSecondFixedSurface"),
-                                    LookUpString(md, "scaleFactorOfSecondFixedSurface"));
-                        withFirstOf(valueSetter(g, "scaledValueOfSecondFixedSurface"),
-                                    LookUpString(md, "scaledValueOfSecondFixedSurface"));
-                    }
                 }
             }
         }

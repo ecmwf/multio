@@ -258,7 +258,18 @@ public:
                 }
             })();
             auto errorTagMaybe = ComponentFailureTraits::parse(unparsedOnErrTag);
+
+            // Tag has been specified in the option but could not be parsed
+            if (unparsedOnErrTagMaybe && !errorTagMaybe) {
+                std::ostringstream oss;
+                oss << "Unsupported value \"" << unparsedOnErrTag << "\" for key \""
+                    << ComponentFailureTraits::configKey() << "\" for FailureAware configuration for component "
+                    << ComponentFailureTraits::componentName();
+                throw FailureAwareException(oss.str(), Here());
+            }
+
             parsedOnErrTag_ = errorTagMaybe ? *errorTagMaybe : ComponentFailureTraits::defaultOnErrorTag();
+
 
             if (subConfigMaybe) {
                 options_ = ComponentFailureTraits::parseFailureOptions(*subConfigMaybe);

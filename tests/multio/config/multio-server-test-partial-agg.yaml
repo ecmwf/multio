@@ -22,7 +22,7 @@ mpi-communicators:
 
 
 client:
-  on-error: abort-all-transports
+  on-error: abort-transport
   plans:
     - name: ocean-replay-grid-info-stream
       actions:

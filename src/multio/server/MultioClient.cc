@@ -92,7 +92,7 @@ util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t, 
     // Last cascading instance, print nested contexts
     eckit::Log::error() << c;
 
-    if (t == util::OnClientError::AbortAllTransports) {
+    if (t == util::OnClientError::AbortTransport) {
         transport::TransportRegistry::instance().abortAll(c.eptr);
     }
     return util::FailureHandlerResponse::Rethrow;

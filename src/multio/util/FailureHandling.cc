@@ -11,8 +11,8 @@ std::string eckit::Translator<OnClientError, std::string>::operator()(OnClientEr
             return std::string("propagate");
         case OnClientError::Recover:
             return std::string("recover");
-        case OnClientError::AbortAllTransports:
-            return std::string("abort-all-transports");
+        case OnClientError::AbortTransport:
+            return std::string("abort-transport");
         default:
             throw eckit::SeriousBug("Unknown OnClientError tag", Here());
     }

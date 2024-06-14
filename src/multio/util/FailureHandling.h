@@ -49,7 +49,7 @@ enum class OnClientError : unsigned
 {
     Propagate = PROPAGATE_ERROR,
     Recover = RECOVER_ERROR,
-    AbortAllTransports,
+    AbortTransport,
 };
 
 enum class OnServerError : unsigned

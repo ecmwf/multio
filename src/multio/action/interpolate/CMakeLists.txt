@@ -17,3 +17,22 @@ ecbuild_add_library(
         multio
         mir
 )
+
+ecbuild_add_executable(
+
+    TARGET
+        cache-generator-fesom-2-mir
+
+    SOURCES
+        FesomCacheGenerator.cc
+        ../../tools/MultioTool.cc
+
+    CONDITION
+        HAVE_ATLAS_IO
+
+    LIBS
+        multio
+        atlas_io
+        eckit
+        mir
+)

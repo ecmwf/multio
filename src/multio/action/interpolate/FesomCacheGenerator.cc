@@ -10,6 +10,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <iomanip>
+#include <cmath>
 
 #include "eckit/linalg/Triplet.h"
 #include "eckit/exception/Exceptions.h"
@@ -79,7 +81,7 @@ std::string fesomCacheName(const std::string& fesomName, const std::string& doma
                    [](unsigned char c) { return std::tolower(c); });
     os << "fesom_" << fesomName << "_" << localDomain << "_to_HEALPix_" << std::setw(6) << std::setfill('0') << NSide
        << "_" << precision << "_" << orderingConvention << "_" << std::setw(8)
-       << std::setfill('0') << static_cast<size_t>(std::fabs(level * 1000));
+       << std::setfill('0') << static_cast<size_t>(std::fabs(level * 1000)) << ".mat";
     return os.str();
 }
 
@@ -95,8 +97,7 @@ private:
         eckit::Log::info() << std::endl << "Usage: " << tool << " [options]" << std::endl;
         eckit::Log::info()
             << "EXAMPLE: " << std::endl
-            << "fesom-cache-generator --mode=fromTriplets --inputPath=. --inputFile=CORE2_ngrid_NSIDE32_0_ring.csv "
-               "--dumpTriplets=1"
+            << "fesom-cache-generator --inputPath=. --inputFile=CORE2_ngrid_NSIDE32_0_ring.csv "
             << std::endl
             << std::endl;
     }
@@ -114,8 +115,6 @@ private:
     std::string outputPath_;
     std::string outputPrecision_;
     std::string inputFile_;
-    std::string workingMode_;
-    bool dumpTriplets_;
 
 
     std::string fesomName_;
@@ -135,8 +134,6 @@ Fesom2mirCacheGenerator::Fesom2mirCacheGenerator(int argc, char** argv) :
     inputPath_{"."},
     outputPath_{"."},
     inputFile_{"CORE2_ngrid_NSIDE32_0_ring.csv"},
-    workingMode_{"fromTriplets"},
-    dumpTriplets_{false},
     fesomName_{"CORE2"},
     domain_{"ngrid"},
     NSide_{0},
@@ -144,14 +141,11 @@ Fesom2mirCacheGenerator::Fesom2mirCacheGenerator(int argc, char** argv) :
     orderingConvention_{orderingConvention_e::RING} {
 
     options_.push_back(new eckit::option::SimpleOption<std::string>(
-        "mode", "WorkingMode [fromTriplets]. Default( \"fromTriplets\" )"));
-    options_.push_back(new eckit::option::SimpleOption<std::string>(
         "inputPath", "Path of the input files with the triplets. Default( \".\" )"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "outputPath", "Path of the output files with the triplets. Default( \".\" )"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "inputFile", "Name of the input file. Default( \"CORE2_ngrid_NSIDE32_0_ring.csv\" )"));
-    options_.push_back(new eckit::option::SimpleOption<bool>("dumpTriplets", "Dump all the triplets to screen"));
 
     return;
 }
@@ -179,8 +173,8 @@ void Fesom2mirCacheGenerator::loadTriplets(std::vector<eckit::linalg::Triplet>& 
             iFESOM = std::stoi(matchLine[2].str());
             weight = std::stod(matchLine[3].str());
             // This code is not safe, it assumes that the indices are all used
-            Nrow = std::max(Nrow_, static_cast<size_t>(iHEALPix + 1));
-            Ncol = std::max(Ncol_, static_cast<size_t>(iFESOM + 1));
+            Nrow = std::max(Nrow, static_cast<size_t>(iHEALPix + 1));
+            Ncol = std::max(Ncol, static_cast<size_t>(iFESOM + 1));
         }
         else {
             throw eckit::SeriousBug("Unable to parse line: " + line, Here());
@@ -192,52 +186,31 @@ void Fesom2mirCacheGenerator::loadTriplets(std::vector<eckit::linalg::Triplet>& 
 
 
 void Fesom2mirCacheGenerator::init(const eckit::option::CmdArgs& args) {
+    args.get("inputPath", inputPath_);
+    args.get("outputPath", outputPath_);
+    args.get("inputFile", inputFile_);
 
-    args.get("mode", workingMode_);
-    ASSERT(workingMode_ == "fromTriplets");
-
-    if (workingMode_ == "fromTriplets") {
-        args.get("inputPath", inputPath_);
-        args.get("outputPath", outputPath_);
-        args.get("inputFile", inputFile_);
-        args.get("dumpTriplets", dumpTriplets_);
-
-        eckit::PathName inputPath_tmp{inputPath_};
-        ASSERT(inputPath_tmp.exists());
-        eckit::PathName inputFile_tmp{inputPath_ + "/" + inputFile_};
-        ASSERT(inputFile_tmp.exists());
-        eckit::PathName outputPath_tmp{outputPath_};
-        outputPath_tmp.mkdir();
-        parseInputFileName(inputFile_, fesomName_, domain_, NSide_, level_, orderingConvention_);
-    }
+    eckit::PathName inputPath_tmp{inputPath_};
+    ASSERT(inputPath_tmp.exists());
+    eckit::PathName inputFile_tmp{inputPath_ + "/" + inputFile_};
+    ASSERT(inputFile_tmp.exists());
+    eckit::PathName outputPath_tmp{outputPath_};
+    outputPath_tmp.mkdir();
+    parseInputFileName(inputFile_tmp.baseName().asString(), fesomName_,
+        domain_, NSide_, level_, orderingConvention_);
 }
 
 void Fesom2mirCacheGenerator::execute(const eckit::option::CmdArgs& args) {
+    std::vector<eckit::linalg::Triplet> triplets;
+    loadTriplets(triplets, Nrow_, Ncol_);
 
-    size_t level;
-    size_t nnz;
-    size_t nRows;
-    size_t nCols;
-    size_t nOutRows;
-    std::vector<std::int32_t> landSeaMask;
-    std::vector<std::int32_t> rowStart;
-    std::vector<std::int32_t> colIdx;
-    std::vector<float> valuesf;
-    std::vector<double> valuesd;
+    const auto orderingConvention = orderingConvention_enum2string(orderingConvention_);
+    const auto cacheFileName = fesomCacheName(fesomName_, domain_, "double",
+        NSide_, orderingConvention, level_);
 
-    if (workingMode_ == "fromTriplets") {
-        std::vector<eckit::linalg::Triplet> triplets;
-
-        loadTriplets(triplets, Nrow_, Ncol_);
-
-        {
-            mir::method::WeightMatrix W(Nrow_, Ncol_);
-            W.setFromTriplets(triplets);
-            W.save(fesomCacheName(fesomName_, domain_, "double",
-                           NSide_, orderingConvention_enum2string(orderingConvention_), level_));
-        }
-
-    }
+    mir::method::WeightMatrix W(Nrow_, Ncol_);
+    W.setFromTriplets(triplets);
+    W.save(cacheFileName);
 };
 
 

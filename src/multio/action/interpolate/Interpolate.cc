@@ -141,12 +141,14 @@ std::string fesomCacheName(const std::string& fesomName, const std::string& doma
                    [](unsigned char c) { return std::tolower(c); });
     os << "fesom_" << fesomName << "_" << localDomain << "_to_HEALPix_" << std::setw(6) << std::setfill('0') << NSide
        << "_" << precision << "_" << orderingConvention << "_" << std::setw(8)
-       << std::setfill('0') << static_cast<size_t>(std::fabs(level * 1000));
+       << std::setfill('0') << static_cast<size_t>(std::fabs(level * 1000)) << ".mat";
     return os.str();
 }
 
 template <typename T>
-std::string generateKey(const message::Message& msg, size_t NSide, const std::string& orderingConvention ) {
+std::string generateKey(const message::Message& msg, const std::string& cache_path, 
+    size_t NSide, const std::string& orderingConvention)
+{
     // TODO: Probably missing the kind of fesom grid in the name
     //       need to see the metadata to understand how to extract it
     size_t level = static_cast<size_t>(msg.metadata().getLong("level", msg.metadata().getDouble("levelist", 0)));
@@ -168,7 +170,7 @@ std::string generateKey(const message::Message& msg, size_t NSide, const std::st
     std::string key = fesomCacheName(fesomGridName, msg.domain(), (sizeof(T) == 4 ? "single" : "double"), NSide,
                                      orderingConvention, level);
 
-    return key;
+    return cache_path + "/" + key;
 }
 
 }  // namespace
@@ -273,7 +275,7 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
             return;
         }
 
-        if ( std::regex_match(input, match, eORCA_fromMetadata)) {
+        if ( std::regex_match(input, match, FESOM)) {
             param.set("gridded", true);
             param.set("gridType", "unstructured_grid");
             param.set("numberOfPoints", payload_size );
@@ -408,7 +410,14 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                     throw eckit::SeriousBug(os.str(), Here());
                 }
                 const auto& options = cfg.getSubConfiguration("options");
-                set(options, "interpolation-matrix", generateKey<double>(msg, grid[0], "ring") );
+                const auto cache_path = cfg.has("cache-path") ? cfg.getString("cache-path") : "";
+                const auto expanded_cache_path = util::replaceCurly(cache_path, [](std::string_view replace) {
+                    std::string lookUpKey{replace};
+                    char* env = ::getenv(lookUpKey.c_str());
+                    return env ? std::optional<std::string>{env} : std::optional<std::string>{};
+                });
+                const auto weights_file = generateKey<double>(msg, expanded_cache_path, grid[0], "ring");
+                destination.set("interpolation-matrix", weights_file);
             }
 
         }
@@ -438,6 +447,9 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     fill_input(config, inputPar, size,  msg.domain(), inp );
     if (msg.metadata().has("missingValue") && msg.metadata().getBool("bitmapPresent")) {
         inputPar.set("missing_value", msg.metadata().getDouble("missingValue"));
+    } else if (config.getSubConfiguration("options").has("missing_value")) {
+        inputPar.set("missing_value", 
+            config.getSubConfiguration("options").getDouble("missing_value"));
     }
 
     mir::input::RawInput input(data, size, inputPar);

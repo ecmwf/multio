@@ -22,6 +22,13 @@
 
 #include "multio/sink/DataSink.h"
 
+#define HAVE_GRIBJUMP 1 // For now...
+
+#ifdef HAVE_GRIBJUMP
+    #include "gribjump/GribJump.h"
+    #include "gribjump/info/InfoAggregator.h"
+#endif
+
 namespace multio::sink {
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -43,6 +50,12 @@ private:
     }
 
     fdb5::FDB fdb_;
+
+    bool useGribjump_{true};
+#ifdef HAVE_GRIBJUMP
+    // Maybe this is nicer than using a gribjump object and having to add gribjump.aggregate API.
+    gribjump::InfoAggregator cache_; // todo conditionally compile this
+#endif
 };
 
 }  // namespace multio::sink

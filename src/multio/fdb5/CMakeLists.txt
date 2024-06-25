@@ -10,6 +10,7 @@ ecbuild_add_library(
 
     CONDITION
         HAVE_FDB5
+        # HAVE_GRIBJUMP ?
 
     PRIVATE_INCLUDES
       ${FDB5_INCLUDE_DIRS}
@@ -18,4 +19,5 @@ ecbuild_add_library(
     PUBLIC_LIBS
         multio
         fdb5
+        gribjump
 )

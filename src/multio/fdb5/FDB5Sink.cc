@@ -66,18 +66,40 @@ fdb5::Config fdb5_configuration(const ComponentConfiguration& compConf) {
 
 FDB5Sink::FDB5Sink(const ComponentConfiguration& compConf) : DataSink(compConf), fdb_{fdb5_configuration(compConf)} {
     LOG_DEBUG_LIB(LibMultio) << "Config = " << compConf.parsedConfig() << std::endl;
+
+    #ifdef HAVE_GRIBJUMP
+        if (useGribjump_) 
+            fdb_.registerCallback([this](const fdb5::Key& internalKey, const fdb5::FieldLocation& location) {
+                cache_.add(internalKey, location.fullUri());
+            });
+    #endif
+
+    // gribjump configuration?
 }
 
 void FDB5Sink::write(eckit::message::Message msg) {
     LOG_DEBUG_LIB(LibMultio) << "FDB5Sink::write()" << std::endl;
+    
+    fdb5::Key internalKey = fdb_.archive(msg);
 
-    fdb_.archive(msg);
+    #ifdef HAVE_GRIBJUMP
+        if (useGribjump_){
+            LOG_DEBUG_LIB(LibMultio) << "FDB5Sink::write() using GribJump." << std::endl;
+
+            cache_.add(internalKey, msg);
+        }
+    #endif
+    
 }
 
 void FDB5Sink::flush() {
     LOG_DEBUG_LIB(LibMultio) << "FDB5Sink::flush()" << std::endl;
 
     fdb_.flush();
+
+    #ifdef HAVE_GRIBJUMP
+        if (useGribjump_) cache_.flush();
+    #endif
 }
 
 void FDB5Sink::print(std::ostream& os) const {

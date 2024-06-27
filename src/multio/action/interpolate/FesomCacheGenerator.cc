@@ -125,7 +125,7 @@ private:
     size_t Ncol_;
     orderingConvention_e orderingConvention_;
 
-    void loadTriplets(std::vector<eckit::linalg::Triplet>& triplets, size_t& Nrow, size_t& Ncol ) const;
+    void loadTriplets(std::vector<eckit::linalg::Triplet>& triplets) const;
 };
 
 
@@ -146,12 +146,13 @@ Fesom2mirCacheGenerator::Fesom2mirCacheGenerator(int argc, char** argv) :
         "outputPath", "Path of the output files with the triplets. Default( \".\" )"));
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "inputFile", "Name of the input file. Default( \"CORE2_ngrid_NSIDE32_0_ring.csv\" )"));
+    options_.push_back(new eckit::option::SimpleOption<size_t>("nCols", "Size of the fesom grid."));
 
     return;
 }
 
 
-void Fesom2mirCacheGenerator::loadTriplets(std::vector<eckit::linalg::Triplet>& triplets, size_t& Nrow, size_t& Ncol) const {
+void Fesom2mirCacheGenerator::loadTriplets(std::vector<eckit::linalg::Triplet>& triplets) const {
     std::ifstream file(inputPath_ + "/" + inputFile_);
     if (!file.good()) {
         throw eckit::SeriousBug("Unable to read the input file", Here());
@@ -159,8 +160,6 @@ void Fesom2mirCacheGenerator::loadTriplets(std::vector<eckit::linalg::Triplet>& 
 
     std::string line;
     triplets.resize(0);
-    Nrow = 0;
-    Ncol = 0;
     while (std::getline(file, line)) {
         int32_t iHEALPix;
         int32_t iFESOM;
@@ -172,9 +171,6 @@ void Fesom2mirCacheGenerator::loadTriplets(std::vector<eckit::linalg::Triplet>& 
             iHEALPix = std::stoi(matchLine[1].str());
             iFESOM = std::stoi(matchLine[2].str());
             weight = std::stod(matchLine[3].str());
-            // This code is not safe, it assumes that the indices are all used
-            Nrow = std::max(Nrow, static_cast<size_t>(iHEALPix + 1));
-            Ncol = std::max(Ncol, static_cast<size_t>(iFESOM + 1));
         }
         else {
             throw eckit::SeriousBug("Unable to parse line: " + line, Here());
@@ -196,13 +192,19 @@ void Fesom2mirCacheGenerator::init(const eckit::option::CmdArgs& args) {
     ASSERT(inputFile_tmp.exists());
     eckit::PathName outputPath_tmp{outputPath_};
     outputPath_tmp.mkdir();
-    parseInputFileName(inputFile_tmp.baseName().asString(), fesomName_,
+    parseInputFileName(inputFile_, fesomName_,
         domain_, NSide_, level_, orderingConvention_);
+
+    args.get("nCols", Ncol_);
+    Nrow_ = NSide_ * NSide_ * 12;
 }
 
 void Fesom2mirCacheGenerator::execute(const eckit::option::CmdArgs& args) {
     std::vector<eckit::linalg::Triplet> triplets;
-    loadTriplets(triplets, Nrow_, Ncol_);
+    loadTriplets(triplets);
+
+    std::sort(begin(triplets), end(triplets),
+        [](const auto& a, const auto& b) { return a.row() < b.row(); });
 
     const auto orderingConvention = orderingConvention_enum2string(orderingConvention_);
     const auto cacheFileName = fesomCacheName(fesomName_, domain_, "double",

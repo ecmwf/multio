@@ -637,8 +637,13 @@ void MultioHammer::testData() {
             for (auto level : sequence(levelCount_, 1)) {
                 std::string file_name = std::to_string(level) + std::string("::") + std::to_string(param)
                                       + std::string("::") + std::to_string(step);
-                std::string field_id = R"({"level":)" + std::to_string(level) + R"(,"param":)" + std::to_string(param)
-                                     + R"(,"step":)" + std::to_string(step) + "}";
+                Metadata metadata;
+                metadata.set("level", level);
+                metadata.set("param", param);
+                metadata.set("step", step);
+
+                std::string field_id = metadata.toString();
+
                 auto expect = global_test_field(field_id, field_size());
                 auto actual = file_content(file_name);
 

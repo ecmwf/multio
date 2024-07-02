@@ -229,6 +229,8 @@ Metadata metadataFromYAML(const std::string& yamlString);
 
 Metadata toMetadata(const eckit::Value& value);
 
+Metadata toMetadata(const eckit::Configuration& value);
+
 
 //-----------------------------------------------------------------------------
 

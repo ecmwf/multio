@@ -168,5 +168,22 @@ Metadata toMetadata(const eckit::Value& v) {
 
 //----------------------------------------------------------------------------------------------------------------------
 
+Metadata toMetadata(const eckit::Configuration& v) {
+    Metadata m;
+
+    auto keys = v.keys();
+    for (unsigned int i = 0; i < keys.size(); ++i) {
+        auto mv = tryToMetadataValue(v, keys[i]);
+        if (mv) {
+            m.set(keys[i], *mv);
+        }
+    }
+
+    return m;
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------
+
 
 }  // namespace multio::message

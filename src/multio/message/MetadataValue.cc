@@ -16,6 +16,7 @@
 
 #include "multio/message/Metadata.h"
 
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/parser/YAMLParser.h"
 
 #include <sstream>
@@ -109,6 +110,62 @@ std::optional<MetadataValue> tryToMetadataValue(const eckit::Value& v) {
         return MetadataValue{(std::string)v};
     }
     return std::nullopt;
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------
+
+namespace {
+template <typename T>
+T getValueByType(const eckit::Configuration& c, const std::string& key) {
+    T val;
+    c.get(key, val);
+    return val;
+}
+}  // namespace
+
+// Ugly helper to deal with value less eckit::Configuration
+std::optional<MetadataValue> tryToMetadataValue(const eckit::Configuration& c, const std::string& key) {
+    if (c.isBoolean(key)) {
+        return getValueByType<bool>(c, key);
+    }
+    if (c.isBooleanList(key)) {
+        auto intList = getValueByType<std::vector<std::int64_t>>(c, key);
+        std::vector<bool> boolList;
+        boolList.reserve(intList.size());
+        for (const auto& v : intList) {
+            boolList.push_back(v);
+        }
+        return boolList;
+    }
+    if (c.isFloatingPoint(key)) {
+        return getValueByType<double>(c, key);
+    }
+    if (c.isFloatingPointList(key)) {
+        return getValueByType<std::vector<double>>(c, key);
+    }
+    if (c.isIntegral(key)) {
+        return getValueByType<std::int64_t>(c, key);
+    }
+    if (c.isIntegralList(key)) {
+        return getValueByType<std::vector<std::int64_t>>(c, key);
+    }
+    if (c.isList(key)) {
+        return getValueByType<std::int64_t>(c, key);
+    }
+    if (c.isString(key)) {
+        return getValueByType<std::string>(c, key);
+    }
+    if (c.isStringList(key)) {
+        return getValueByType<std::vector<std::string>>(c, key);
+    }
+    if (c.isSubConfiguration(key)) {
+        return toMetadata(getValueByType<eckit::LocalConfiguration>(c, key));
+    }
+    if (c.isNull(key)) {
+        return MetadataValue{};
+    }
+    return {};
 }
 
 

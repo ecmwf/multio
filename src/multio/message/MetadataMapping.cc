@@ -16,7 +16,7 @@ void applyMapping(Metadata& data, const MetadataMapping::MatchKeyType& metadataK
                   const MetadataMapping::KeyMapping& mapping, bool isOptional) {
     for (const auto& keyPair : mapping) {
         if (dataPair.second.has(keyPair.second)) {
-            if (auto mv = tryToMetadataValue(dataPair.second.getSubConfiguration(keyPair.second).get()); mv) {
+            if (auto mv = tryToMetadataValue(dataPair.second, keyPair.second); mv) {
                 data.set(keyPair.first, std::move(*mv));
             }
             else {
@@ -63,7 +63,7 @@ std::unordered_map<MetadataValue, eckit::LocalConfiguration> constructSourceMap(
     const std::vector<eckit::LocalConfiguration>& mapDataList, const MetadataMapping::MatchKeyType& key) {
     std::unordered_map<MetadataValue, eckit::LocalConfiguration> map;
     for (auto const& cfg : mapDataList) {
-        if (auto k = tryToMetadataValue(cfg.getSubConfiguration(key).get()); k) {
+        if (auto k = tryToMetadataValue(cfg, key); k) {
             map.insert({*k, cfg});
         }
         else {

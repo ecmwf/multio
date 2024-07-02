@@ -37,7 +37,7 @@ const std::vector<message::MetadataMapping>& MetadataMappings::getMappings(const
         for (auto& s : sourceList) {
             for (auto& key : s.keys()) {
                 // Replace the value if it is string
-                if (s.getSubConfiguration(key).get().isString()) {
+                if (s.isString(key)) {
                     s.set(key, multioConf.replaceCurly(s.getString(key)));
                 }
             }

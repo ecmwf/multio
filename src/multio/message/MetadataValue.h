@@ -18,6 +18,7 @@
 #include "multio/message/MetadataTypes.h"
 #include "multio/util/VariantHelpers.h"
 
+#include "eckit/config/Configuration.h"
 #include "eckit/log/JSON.h"
 #include "eckit/value/Value.h"
 
@@ -261,6 +262,9 @@ eckit::JSON& operator<<(eckit::JSON& json, const MetadataValue& mv);
 std::ostream& operator<<(std::ostream& os, const MetadataValue& metadataValue);
 
 std::optional<MetadataValue> tryToMetadataValue(const eckit::Value& v);
+
+// Ugly helper to deal with value less eckit::Configuration
+std::optional<MetadataValue> tryToMetadataValue(const eckit::Configuration& v, const std::string& key);
 
 
 //----------------------------------------------------------------------------------------------------------------------

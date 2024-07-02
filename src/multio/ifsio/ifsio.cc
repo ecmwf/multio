@@ -305,7 +305,7 @@ fortint imultio_write_raw_(const void* configuration, const void* data, const fo
 
         eckit::Buffer payload{reinterpret_cast<const char*>(data), len};
 
-        multio::message::Metadata metadata{multio::message::toMetadata(conf->get())};
+        multio::message::Metadata metadata{multio::message::toMetadata(*conf)};
         multio::message::Message message{
             multio::message::Message::Header{Message::Tag::Field, Peer{}, Peer{}, std::move(metadata)},
             std::move(payload)};

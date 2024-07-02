@@ -142,7 +142,7 @@ CASE("test_multio_with_event_trigger") {
 
                 eckit::Log::info() << "JSON content: " << os.str() << std::endl;
 
-                message::Metadata md{message::toMetadata(eckit::YAMLConfiguration{os.str()}.get())};
+                message::Metadata md{message::toMetadata(eckit::YAMLConfiguration{os.str()})};
                 eckit::message::Message msg{new TestDataContent{os.str().c_str(), os.str().length(), md}};
 
                 mio->write(msg);

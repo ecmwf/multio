@@ -233,7 +233,7 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
 
             // Multio pipelines require hhmmss format
             if (metadata.has("time")) {
-                auto time = 100 * metadata.getLong("time");
+                auto time = metadata.getLong("time");
                 metadata.set("time", time);
             }
 

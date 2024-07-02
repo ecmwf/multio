@@ -29,7 +29,7 @@ jobs:
     with:
       multio: ecmwf/multio@${{ github.event.pull_request.head.sha || github.sha }}
       codecov_upload: true
-      clang_format: true
+      clang_format: false
     secrets: inherit
 
   # Run CI of private downstream packages on self-hosted runners

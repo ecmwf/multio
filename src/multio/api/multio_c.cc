@@ -383,7 +383,6 @@ int multio_new_handle_default(multio_handle_t** mio) {
 int multio_delete_handle(multio_handle_t* mio) {
     return wrapApiFunction([mio]() {
         ASSERT(mio);
-        // std::cout << "multio_delete_handle" << std::endl;
         delete mio;
     });
 }

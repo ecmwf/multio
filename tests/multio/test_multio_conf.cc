@@ -40,7 +40,6 @@ CASE("Create default context and tranverse client plans") {
 
     int i = 0;
     for (ComponentConfiguration subConf : clientConf.subComponents("plans")) {
-        // std::cout << subConf.parsedConfig().getString("name") << std::endl;
         switch (i) {
             case 0:
                 EXPECT(subConf.parsedConfig().getString("name") == "ocean-replay-grid-info-stream");

@@ -139,7 +139,7 @@ public:
         Base(util::SaneOverloadResolutionResult_t<T, typename Types::AllWrapped>{std::forward<T>(val)}){};
 
 
-    MetadataValue() : Base(){};
+    MetadataValue() : Base() {};
 
 
     // Overwriting operator= to support transparent unique_ptr creation and implement sane conversion for Intel icpc

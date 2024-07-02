@@ -691,10 +691,7 @@ int multio_write_grib_encoded(multio_handle_t* mio, void* gribdata, int gribsize
 int multio_new_metadata(multio_metadata_t** md, multio_handle_t* mio) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
-        [md, mio]() {
-            (*md) = new multio_metadata_t{std::make_shared<multio::message::Metadata>(), mio};
-        },
-        mio);
+        [md, mio]() { (*md) = new multio_metadata_t{std::make_shared<multio::message::Metadata>(), mio}; }, mio);
 #else
     return MULTIO_SUCCESS;
 #endif

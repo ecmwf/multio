@@ -37,14 +37,14 @@ std::size_t SharedPayload::size() const {
 }
 
 SharedPayload::operator PayloadReference() const {
-    return util::visit(
-        eckit::Overloaded{
-            [](const std::shared_ptr<eckit::Buffer>& sharedBuf) -> PayloadReference {
-                return PayloadReference{static_cast<const char*>(sharedBuf->data()), sharedBuf->size() * sizeof(char)};
-            },
-            [](const PayloadReference& ref) -> PayloadReference { return ref; },
-        },
-        *this);
+    return util::visit(eckit::Overloaded{
+                           [](const std::shared_ptr<eckit::Buffer>& sharedBuf) -> PayloadReference {
+                               return PayloadReference{static_cast<const char*>(sharedBuf->data()),
+                                                       sharedBuf->size() * sizeof(char)};
+                           },
+                           [](const PayloadReference& ref) -> PayloadReference { return ref; },
+                       },
+                       *this);
 }
 
 eckit::Stream& operator<<(eckit::Stream& strm, const SharedPayload& sp) {

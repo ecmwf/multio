@@ -90,7 +90,7 @@ public:
     SharedPayload(T&& val) : Base(util::SaneOverloadResolutionResult_t<T, SharedPayloadTypes>{std::forward<T>(val)}){};
 
 
-    SharedPayload() : Base(){};
+    SharedPayload() : Base() {};
 
 
     // Constructor that is required for icpc....

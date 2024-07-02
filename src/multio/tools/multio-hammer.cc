@@ -30,7 +30,7 @@
 #include "multio/transport/MpiTransport.h"
 #include "multio/transport/TcpTransport.h"
 #include "multio/transport/ThreadTransport.h"
-#include "multio/util/ScopedTimer.h"
+#include "multio/util/Timing.h"
 #include "multio/util/print_buffer.h"
 
 using multio::LibMultio;
@@ -554,15 +554,15 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
     auto idxm = generate_index_map(client_list_id, clientCount_);
     eckit::Buffer buffer(reinterpret_cast<const char*>(idxm.data()), idxm.size() * sizeof(int32_t));
     std::unique_ptr<Domain> index_map
-        = std::make_unique<Unstructured>(std::move(idxm), static_cast<long>(field_size()));
+        = std::make_unique<Unstructured>(std::move(idxm), static_cast<std::int64_t>(field_size()));
 
     // send partial mapping
     for (auto& server : serverPeers) {
         Metadata metadata;
-        metadata.set("name", "grid-point")
-            .set("category", "atms-domain-map")
-            .set("globalSize", static_cast<long>(field_size()))
-            .set("representation", "unstructured");
+        metadata.set("name", "grid-point");
+        metadata.set("category", "atms-domain-map");
+        metadata.set("globalSize", static_cast<std::int64_t>(field_size()));
+        metadata.set("representation", "unstructured");
 
         Message msg{Message::Header{Message::Tag::Domain, client, *server, std::move(metadata)}, buffer};
 
@@ -574,9 +574,11 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
         for (auto param : sequence(paramCount_, 1)) {
             for (auto level : sequence(levelCount_, 1)) {
                 Metadata metadata;
-                metadata.set("level", level).set("param", param).set("step", step);
+                metadata.set("level", level);
+                metadata.set("param", param);
+                metadata.set("step", step);
 
-                std::string field_id = multio::message::to_string(metadata);
+                std::string field_id = metadata.toString();
 
                 std::vector<double> field;
                 auto& global_field = global_test_field(field_id, field_size(), transportType_, client_list_id);
@@ -586,14 +588,17 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
                 auto id = std::hash<std::string>{}(field_id) % serverCount_;
                 ASSERT(id < serverPeers.size());
 
+                // TODO - all other transports can use a PayloadReference because the send is performing a copy behind a
+                // blocking call. The  threaded transport is pushing to a queue and is not blocking - may cause
+                // different problems.
                 eckit::Buffer buffer(reinterpret_cast<const char*>(field.data()), field.size() * sizeof(double));
 
-                metadata.set("name", std::to_string(param))
-                    .set("param", std::to_string(param))
-                    .set("category", "model-level")
-                    .set("globalSize", static_cast<long>(field_size()))
-                    .set("domain", "grid-point")
-                    .set("precision", "double");
+                metadata.set("name", std::to_string(param));
+                metadata.set("param", std::to_string(param));
+                metadata.set("category", "model-level");
+                metadata.set("globalSize", static_cast<std::int64_t>(field_size()));
+                metadata.set("domain", "grid-point");
+                metadata.set("precision", "double");
 
                 Message msg{Message::Header{Message::Tag::Field, client, *serverPeers[id], std::move(metadata)},
                             std::move(buffer)};
@@ -604,10 +609,10 @@ void MultioHammer::sendData(const PeerList& serverPeers, std::shared_ptr<Transpo
 
         // Send flush messages
         Metadata md;
-        md.set("step", eckit::Translator<long, std::string>{}(step))
-            .set("category", "atms-checkpoint")
-            .set("trigger", "step")
-            .set("domain", "grid-point");
+        md.set("step", eckit::Translator<std::int64_t, std::string>{}(step));
+        md.set("category", "atms-checkpoint");
+        md.set("trigger", "step");
+        md.set("domain", "grid-point");
         for (auto& server : serverPeers) {
             Message flush{Message::Header{Message::Tag::Flush, client, *server, Metadata{md}}};
             transport->send(flush);
@@ -751,7 +756,8 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
                     CODES_CHECK(codes_get_message(handle, reinterpret_cast<const void**>(&buf), &sz), nullptr);
 
-                    Message msg{Message::Header{Message::Tag::Grib, Peer{"", 0}, Peer{"", 0}}, eckit::Buffer{buf, sz}};
+                    Message msg{Message::Header{Message::Tag::Field, Peer{"", 0}, Peer{"", 0}},
+                                multio::message::PayloadReference{buf, sz}};
 
                     for (const auto& plan : plans) {
                         plan->process(msg);
@@ -761,11 +767,11 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
         }
 
         Metadata md;
-        md.set("step", eckit::Translator<long, std::string>()(step))
-            .set("category", "atms-checkpoint")
-            .set("trigger", "step")
-            .set("domain", "grid-point")
-            .set("precision", "double");
+        md.set("step", eckit::Translator<std::int64_t, std::string>()(step));
+        md.set("category", "atms-checkpoint");
+        md.set("trigger", "step");
+        md.set("domain", "grid-point");
+        md.set("precision", "double");
 
         Message msg{Message::Header{Message::Tag::Flush, Peer{}, Peer{}, Metadata{md}}};
         for (const auto& plan : plans) {
@@ -787,12 +793,13 @@ void MultioHammer::executePlans(const eckit::option::CmdArgs& args) {
 
 int main(int argc, char** argv) {
     int ret;
-    eckit::Timing timing_;
+    multio::util::Timing<> timing_;
     {
-        multio::util::ScopedTimer scTimer{timing_};
+        multio::util::ScopedTiming scTimer{timing_};
         MultioHammer tool{argc, argv};
         ret = tool.start();
     }
+    timing_.process();
     eckit::Log::info() << "-- Total hammer:   " << timing_ << "s" << std::endl;
     return ret;
 }

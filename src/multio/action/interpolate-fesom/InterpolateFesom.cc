@@ -14,6 +14,7 @@
 
 #include <cmath>
 #include <iomanip>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -33,64 +34,26 @@ namespace multio::action::interpolateFESOM {
 namespace {
 
 // TODO: Add the metadata we want to remove from the FESOM metadata
-const std::vector<std::string> metadata_black_list{
+const std::set<std::string> metadata_black_list{
     "precision", "unstructuredGridType", "unstructuredGridSubtype", "gridType", "domain", "globalSize",
     "precision", "uuidOfHGrid"};
-
-
-template <typename DestType>
-void forwardMetadata(const eckit::LocalConfiguration& cfg, DestType& destination, const std::string& key,
-                     const eckit::Value& value) {
-    INTERPOLATE_FESOM_OUT_STREAM << " - enter forward_metadata" << std::endl;
-    if (value.isList()) {
-        if (value.head().isDouble()) {
-            destination.set(key, cfg.getDoubleVector(key));
-        }
-        else if (value.head().isNumber()) {
-            destination.set(key, cfg.getLongVector(key));
-        }
-        else if (value.isString()) {
-            destination.set(key, cfg.getStringVector(key));
-        }
-        else {
-            NOTIMP;
-        }
-        return;
-    }
-    if (value.isBool()) {
-        destination.set(key, cfg.getBool(key));
-    }
-    else if (value.isDouble()) {
-        destination.set(key, cfg.getDouble(key));
-    }
-    else if (value.isNumber()) {
-        destination.set(key, cfg.getInt(key));
-    }
-    else if (value.isString()) {
-        destination.set(key, cfg.getString(key).c_str());
-    }
-    else {
-        NOTIMP;
-    }
-    INTERPOLATE_FESOM_OUT_STREAM << " - exit forward_metadata" << std::endl;
-};
 
 
 void fill_metadata(const message::Metadata& in_md, message::Metadata& out_md, size_t NSide,
                    orderingConvention_e orderingConvention, size_t globalSize, util::PrecisionTag outputPrecision,
                    double missingValue) {
     INTERPOLATE_FESOM_OUT_STREAM << " - enter fill_metadata" << std::endl;
-    for (auto& key : in_md.keys()) {
-        if (std::find(metadata_black_list.cbegin(), metadata_black_list.cend(), key) == metadata_black_list.cend()) {
-            forwardMetadata<message::Metadata>(in_md, out_md, key, in_md.getSubConfiguration(key).get());
+    for (auto& keyPair : in_md) {
+        if (metadata_black_list.find(keyPair.first) == metadata_black_list.cend()) {
+            out_md.set(keyPair.first, keyPair.second);
         }
     }
     out_md.set("gridType", "healpix");
     out_md.set("orderingConvention", orderingConvention_enum2string(orderingConvention));
-    out_md.set("Nside", NSide);
-    out_md.set("globalSize", globalSize);
+    out_md.set<std::int64_t>("Nside", NSide);
+    out_md.set<std::int64_t>("globalSize", globalSize);
     out_md.set("precision", outputPrecision == util::PrecisionTag::Float ? "single" : "double");
-    out_md.set("bitmapPresent", 1);
+    out_md.set<bool>("bitmapPresent", 1);
     out_md.set("missingValue", missingValue);
     INTERPOLATE_FESOM_OUT_STREAM << " - exit fill_metadata" << std::endl;
     return;
@@ -145,9 +108,12 @@ std::string InterpolateFesom<T>::generateKey(const message::Message& msg) const 
     INTERPOLATE_FESOM_OUT_STREAM << " - InterpolateFesom :: enter generateKey" << std::endl;
     // TODO: Probably missing the kind of fesom grid in the name
     //       neeed to see the metadata to understand how to extract it
-    size_t level = static_cast<size_t>(msg.metadata().getLong("level", msg.metadata().getDouble("levelist", 0)));
-    if ((msg.metadata().getString("category") == "ocean-3d")
-        && (msg.metadata().getString("fesomLevelType") == "level")) {
+    size_t level = static_cast<size_t>(                             //
+        msg.metadata().getOpt<std::int64_t>("level").value_or(      //
+            msg.metadata().getOpt<double>("levelist").value_or(0))  //
+    );
+    if ((msg.metadata().get<std::string>("category") == "ocean-3d")
+        && (msg.metadata().get<std::string>("fesomLevelType") == "level")) {
         if (level == 0) {
             std::ostringstream os;
             os << " - Wrong level for the oceal level" << std::endl;
@@ -155,7 +121,8 @@ std::string InterpolateFesom<T>::generateKey(const message::Message& msg) const 
         }
         level--;
     }
-    if (!msg.metadata().has("unstructuredGridType")) {
+    auto searchUnstructuredGridType = msg.metadata().find("unstructuredGridType");
+    if (searchUnstructuredGridType == msg.metadata().end()) {
         std::ostringstream os;
         os << " - \"unstructuredGridType\" not present in the metadata" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
@@ -165,7 +132,7 @@ std::string InterpolateFesom<T>::generateKey(const message::Message& msg) const 
     //     os << " - \"unstructuredGridSubtype\" not present in the metadata" << std::endl;
     //     throw eckit::SeriousBug(os.str(), Here());
     // }
-    std::string fesomGridName = msg.metadata().getString("unstructuredGridType");
+    std::string fesomGridName = searchUnstructuredGridType->second.get<std::string>();
     std::string key = fesomCacheName(fesomGridName, msg.domain(), (sizeof(T) == 4 ? "single" : "double"), NSide_,
                                      orderingConvention_, level);
 
@@ -195,7 +162,7 @@ void InterpolateFesom<T>::executeImpl(message::Message msg) {
     if (Interpolators_.find(key) == Interpolators_.end()) {
         // no need to check for grid type since it is already checked in the generateKey function
         Interpolators_[key] = std::make_unique<Fesom2HEALPix<T>>(
-            msg, cachePath_, msg.metadata().getString("unstructuredGridType"), NSide_, orderingConvention_);
+            msg, cachePath_, msg.metadata().get<std::string>("unstructuredGridType"), NSide_, orderingConvention_);
     }
 
     executeNext(util::dispatchPrecisionTag(msg.precision(), [&](auto in_pt) -> message::Message {

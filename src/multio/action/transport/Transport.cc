@@ -11,17 +11,18 @@
 #include "Transport.h"
 
 #include <algorithm>
+#include <sstream>
 
 #include "eckit/config/Resource.h"
 
 #include "multio/transport/TransportRegistry.h"
 #include "multio/util/Environment.h"
-#include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
 
 namespace multio::action {
 
 using message::Message;
+using message::MetadataTypes;
 using transport::TransportRegistry;
 
 namespace {
@@ -51,13 +52,13 @@ Transport::Transport(const ComponentConfiguration& compConf) :
 
 void Transport::executeImpl(Message msg) {
     // eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     auto md = msg.metadata();
-    if (md.getBool("toAllServers")) {
+    if (md.get<bool>("toAllServers")) {
         for (auto& server : serverPeers_) {
             auto md = msg.metadata();
-            Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)}, msg.sharedPayload()};
+            Message trMsg{Message::Header{msg.tag(), client_, *server, std::move(md)}, msg.payload()};
 
             transport_->bufferedSend(trMsg);
         }
@@ -65,7 +66,7 @@ void Transport::executeImpl(Message msg) {
     else {
         auto server = chooseServer(msg.metadata());
 
-        Message trMsg{Message::Header{msg.tag(), client_, server, std::move(md)}, msg.sharedPayload()};
+        Message trMsg{Message::Header{msg.tag(), client_, server, std::move(md)}, msg.payload()};
 
         transport_->bufferedSend(trMsg);
     }
@@ -78,20 +79,26 @@ void Transport::print(std::ostream& os) const {
 message::Peer Transport::chooseServer(const message::Metadata& metadata) {
     ASSERT_MSG(serverCount_ > 0, "No server to choose from");
 
-    auto getMetadataValue = [&](const std::string& hashKey) {
-        if (!metadata.has(hashKey)) {
+    auto getMetadataValue = [&](const std::string& hashKey) -> const message::MetadataValue& {
+        auto searchHashKey = metadata.find(hashKey);
+        if (searchHashKey == metadata.end()) {
             std::ostringstream os;
             os << "The hash key \"" << hashKey << "\" is not defined in the metadata object: " << metadata << std::endl;
             throw transport::TransportException(os.str(), Here());
         }
-        return metadata.getString(hashKey);
+        return searchHashKey->second;
     };
 
     auto constructHash = [&]() {
         std::ostringstream os;
 
         for (const std::string& s : hashKeys_) {
-            os << getMetadataValue(s);
+            getMetadataValue(s).visit(eckit::Overloaded{
+                [&s](const auto& v) -> util::IfTypeNotOf<decltype(v), MetadataTypes::Scalars> {
+                    throw message::MetadataWrongTypeException(s, Here());
+                },
+                [&os](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::Scalars> { os << v; },
+            });
         }
         return os.str();
     };

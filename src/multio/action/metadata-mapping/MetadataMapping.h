@@ -30,9 +30,7 @@ public:
     void executeImpl(message::Message msg) override;
 
 protected:
-    void applyInplace(message::Metadata& msg) const;
-    message::Metadata apply(const message::Metadata& msg) const;
-    message::Metadata apply(message::Metadata&& msg) const;
+    void applyInplace(message::Metadata& md) const;
 
 private:
     void print(std::ostream& os) const override;

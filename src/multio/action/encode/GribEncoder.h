@@ -16,11 +16,14 @@
 
 #include <memory>
 
-#include "MioGribHandle.h"
+#include "eckit/config/LocalConfiguration.h"
+
 #include "eccodes.h"
 #include "metkit/codes/GribHandle.h"
 
+#include "multio/message/Glossary.h"
 #include "multio/message/Message.h"
+#include "multio/util/MioGribHandle.h"
 
 #include <variant>
 
@@ -29,6 +32,7 @@ namespace multio::action {
 
 using CodesScalarValue = std::variant<std::int64_t, double, std::string>;
 using CodesOverwrites = std::vector<std::pair<std::string, CodesScalarValue>>;
+using multio::util::MioGribHandle;
 
 class GribEncoder {
 public:
@@ -44,7 +48,7 @@ public:
     template <typename T>
     void setValue(const std::string& key, T v) {
         if constexpr (std::is_signed_v<T> && std::is_integral_v<T>) {
-            encoder_->setValue(key, static_cast<long>(v));
+            encoder_->setValue(key, static_cast<std::int64_t>(v));
         }
         else {
             encoder_->setValue(key, v);
@@ -54,16 +58,19 @@ public:
     void setMissing(const std::string& key);
 
     template <typename T>
+    void setValue(const std::string& key, const std::vector<T>& v) {
+        encoder_->setValue(key, v);
+    };
+    template <typename T>
     void setDataValues(const T* data, size_t count) {
         encoder_->setDataValues(data, count);
     };
     bool hasKey(const char* key);
 
-    message::Message encodeOceanCoordinates(message::Message&& msg,
-                                            const eckit::LocalConfiguration& additionalMetadata);
+    message::Message encodeOceanCoordinates(message::Message&& msg, const message::Metadata& additionalMetadata);
 
-    message::Message encodeField(const message::Message& msg, const CodesOverwrites& overwrites,
-                                 const eckit::LocalConfiguration& additionalMetadata);
+    message::Message encodeField(message::Message&& msg, const CodesOverwrites& overwrites,
+                                 const message::Metadata& additionalMetadata);
 
     // TODO May be refactored
     // int getBitsPerValue(int paramid, const std::string& levtype, double min, double max);
@@ -77,13 +84,13 @@ private:
 
     void initEncoder();
 
-    void setFieldMetadata(const message::Message& msg, const eckit::LocalConfiguration& additionalMetadata);
-    void setOceanMetadata(const message::Message& msg, const eckit::LocalConfiguration& additionalMetadata);
+    void setFieldMetadata(message::Metadata& md);
+    void setOceanMetadata(message::Metadata& md);
 
-    void setOceanCoordMetadata(const message::Metadata& metadata, const eckit::Configuration& additionalMetadata);
+    void setOceanCoordMetadata(message::Metadata& md);
 
     template <typename T>
-    message::Message setFieldValues(const message::Message& msg);
+    message::Message setFieldValues(message::Message&& msg);
 
 
     const eckit::LocalConfiguration config_;
@@ -96,9 +103,13 @@ private:
 };
 
 inline bool isOcean(const message::Metadata& metadata) {
+    using message::glossary;
+
     // Check if metadata has a key "nemoParam" or a category starting with "ocean"
-    return metadata.has("nemoParam")
-        || (metadata.has("category") && (metadata.getString("category").rfind("ocean") == 0));
+    std::optional<std::string> category = metadata.getOpt<std::string>(glossary().category);
+    const bool hasNemoParam = metadata.find(glossary().nemoParam) != metadata.end();
+    const bool hasCatOcean = category && (category->rfind("ocean") == 0);
+    return hasNemoParam || hasCatOcean;
 };
 
 

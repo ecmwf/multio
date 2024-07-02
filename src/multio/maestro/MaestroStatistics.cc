@@ -4,7 +4,7 @@ namespace multio {
 
 MaestroStatistics::MaestroStatistics() {}
 
-void MaestroStatistics::report(std::ostream& out, const char* indent) const {
+void MaestroStatistics::report(std::ostream& out, const char* indent) {
     reportTime(out, "MaestroSink: write method: ", sinkWriteTiming_, indent);
     reportTime(out, "MaestroSink: name creation: ", sinkNameTiming_, indent);
     reportTime(out, "MaestroSink: setting attributes: ", sinkAttributeTiming_, indent);

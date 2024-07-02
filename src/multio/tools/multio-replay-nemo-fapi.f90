@@ -27,7 +27,7 @@ program multio_replay_nemo_fapi
     integer(int64) :: mio_parent_comm = MPI_UNDEFINED
 
     character(len=3), dimension(4) :: nemo_parameters = ["sst", "ssu", "ssv", "ssw" ]
-    integer, dimension(4) :: grib_param_id = [262101, 212101, 212151, 212202 ]
+    integer, dimension(4) :: grib_param_id = [262101, 262137, 262138, 212202 ]
     character(len=6), dimension(4) :: grib_grid_type = ["T grid", "U grid", "V grid", "W grid" ]
     character(len=12), dimension(4) :: grib_level_type = ["oceanSurface", "oceanSurface", "oceanSurface", "oceanSurface" ]
 
@@ -395,8 +395,8 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 24
         cerr = md%set_string("nemoParam", nemo_parameters(i))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 25
-        cerr = md%set_int("param", grib_param_id(i))
-        if (cerr /= MULTIO_SUCCESS) ERROR STOP 26
+        ! cerr = md%set_int("param", grib_param_id(i))
+        ! if (cerr /= MULTIO_SUCCESS) ERROR STOP 26
         cerr = md%set_string("unstructuredGridSubtype", grib_grid_type(i)(1:1))
         if (cerr /= MULTIO_SUCCESS) ERROR STOP 27
         cerr = md%set_string("domain", grib_grid_type(i))

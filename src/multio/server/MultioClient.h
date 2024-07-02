@@ -15,6 +15,8 @@
 
 #include "multio/action/Plan.h"
 #include "multio/config/ComponentConfiguration.h"
+#include "multio/message/Message.h"
+#include "multio/message/Metadata.h"
 #include "multio/message/MetadataSelector.h"
 #include "multio/util/FailureHandling.h"
 
@@ -31,10 +33,6 @@ namespace multio {
 using config::MultioConfiguration;
 using config::MultioConfigurationHolder;
 
-namespace message {
-class Message;
-class Metadata;
-}  // namespace message
 
 namespace server {
 
@@ -66,7 +64,9 @@ public:
     void openConnections();
     void closeConnections();
 
-    void dispatch(message::Metadata metadata, eckit::Buffer&& payload, message::Message::Tag tag);
+    void dispatch(message::SharedMetadata metadata, eckit::Buffer&& payload, message::Message::Tag tag);
+    void dispatch(message::SharedMetadata metadata, const message::PayloadReference& payload,
+                  message::Message::Tag tag);
 
     void dispatch(message::Message msg);
 

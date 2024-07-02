@@ -23,6 +23,9 @@
 #include "eckit/log/Log.h"
 #include "eckit/mpi/Comm.h"
 
+#include "multio/message/Glossary.h"
+
+
 namespace {
 const std::unordered_map<std::string, int> latParamIds{
     {"T", 250003}, {"U", 250005}, {"V", 250007}, {"W", 250009}, {"F", 250011}};
@@ -62,7 +65,6 @@ atlas::Grid readGrid(const std::string& name) {
 
 namespace multio::action {
 
-
 AtlasInstance::AtlasInstance() {
     atlas::initialize();
 };
@@ -75,6 +77,8 @@ AtlasInstance& AtlasInstance::instance() {
     static AtlasInstance singleton;
     return singleton;
 };
+
+using message::glossary;
 
 GridDownloader::GridDownloader(const config::ComponentConfiguration& compConf) :
     encoder_(createEncoder(compConf)), templateMetadata_(), gridCoordinatesCache_(), gridUIDCache_() {
@@ -111,11 +115,11 @@ std::optional<GridCoordinates> GridDownloader::getGridCoords(const GridDownloade
 
 void GridDownloader::initTemplateMetadata() {
     templateMetadata_.set("step", 0);
-    templateMetadata_.set("typeOfLevel", "oceanSurface");
-    templateMetadata_.set("level", 0);
+    templateMetadata_.set(glossary().typeOfLevel, "oceanSurface");
+    templateMetadata_.set(glossary().level, 0);
     templateMetadata_.set("category", "ocean-grid-coordinate");
-    templateMetadata_.set("bitsPerValue", 16);
-    templateMetadata_.set("precision", "double");
+    templateMetadata_.set(glossary().bitsPerValue, 16);
+    templateMetadata_.set(glossary().precision, "double");
 }
 
 multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gridSize,
@@ -123,9 +127,9 @@ multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gr
                                                                        const std::string& gridUID, int paramId) {
     multio::message::Metadata md(templateMetadata_);
 
-    md.set("globalSize", gridSize);
-    md.set("unstructuredGridSubtype", unstructuredGridSubtype);
-    md.set("uuidOfHGrid", gridUID);
+    md.set<std::int64_t>(glossary().globalSize, gridSize);
+    md.set(glossary().unstructuredGridSubtype, unstructuredGridSubtype);
+    md.set(glossary().uuidOfHGrid, gridUID);
 
     md.set("param", paramId);
 
@@ -186,13 +190,13 @@ void GridDownloader::downloadOrcaGridCoordinates(const config::ComponentConfigur
 
 multio::message::Message GridDownloader::encodeMessage(multio::message::Message&& message, int startDate,
                                                        int startTime) {
-    multio::message::Metadata md{message.metadata()};
-    md.set("startDate", startDate);
-    md.set("startTime", startTime);
+    multio::message::Message msg{message};
+    msg.header().acquireMetadata();
 
-    auto updateMessage = message.modifyMetadata(std::move(md));
+    msg.modifyMetadata().set(glossary().startDate, startDate);
+    msg.modifyMetadata().set(glossary().startTime, startTime);
 
-    return encoder_->encodeOceanCoordinates(std::move(updateMessage), eckit::LocalConfiguration{});
+    return encoder_->encodeOceanCoordinates(std::move(msg), message::Metadata{});
 }
 
 }  // namespace multio::action

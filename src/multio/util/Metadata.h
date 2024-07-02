@@ -22,63 +22,45 @@
 
 #pragma once
 
+#include "eckit/config/LocalConfiguration.h"
+
+#include "multio/util/TypeTraits.h"
+#include "multio/util/VariantHelpers.h"
+
 #include <optional>
 #include <string>
 
+
 namespace eckit {
 class Configuration;
+class LocalConfiguration;
 }
 
 namespace multio::util {
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
-template <typename T>
-struct IsOptional {
-    static constexpr bool value = false;
-};
-template <typename T>
-struct IsOptional<std::optional<T>> {
-    static constexpr bool value = true;
-};
-
-
-template <typename T>
-struct WrapOptional {
-    using type = std::optional<T>;
-};
-template <typename T>
-struct WrapOptional<std::optional<T>> {
-    using type = std::optional<T>;
-};
-
-template <typename T>
-using WrapOptional_t = typename WrapOptional<T>::type;
-
-
-//-----------------------------------------------------------------------------------------------------------------------------------------
-
 // Idenitiy function for Optionals
-template <typename T, std::enable_if_t<IsOptional<std::decay_t<T>>::value, bool> = true>
+template <typename T, std::enable_if_t<IsOptional_v<std::decay_t<T>>, bool> = true>
 T&& evalToOptional(T&& opt) noexcept {
     return std::forward<T>(opt);
 }
 
 // Evaluate functions, assume to return optional
-template <typename T, std::enable_if_t<(!(IsOptional<std::decay_t<T>>::value)), bool> = true>
+template <typename T, std::enable_if_t<(!(IsOptional_v<std::decay_t<T>>)), bool> = true>
 auto evalToOptional(T&& call) noexcept(noexcept(std::forward<T>(call)())) {
     return std::forward<T>(call)();
 }
 
 
 // Idenitiy function for Optionals
-template <typename T, std::enable_if_t<IsOptional<std::decay_t<T>>::value, bool> = true>
+template <typename T, std::enable_if_t<IsOptional_v<std::decay_t<T>>, bool> = true>
 T&& makeOptional(T&& opt) noexcept {
     return std::forward<T>(opt);
 }
 
 // Evaluate functions, assume to return optional
-template <typename T, std::enable_if_t<(!(IsOptional<std::decay_t<T>>::value)), bool> = true>
+template <typename T, std::enable_if_t<(!(IsOptional_v<std::decay_t<T>>)), bool> = true>
 auto makeOptional(T&& noOpt) noexcept(noexcept(std::optional<std::decay_t<T>>{std::forward<T>(noOpt)})) {
     return std::optional<std::decay_t<T>>{std::forward<T>(noOpt)};
 }
@@ -149,30 +131,136 @@ auto withFirstOf(OptFunc&& func, T&& m, TS&&... ts) noexcept(
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
 // Perform a lazy lookup.
-template <typename T>
+template <typename T, typename Container>
 class LookUp {
 private:
-    const eckit::Configuration& c_;
+    const Container& c_;
     std::string key_;
 
 public:
-    LookUp(const eckit::Configuration& c, const std::string& key) : c_(c), key_(key){};
+    LookUp(const Container& c, const std::string& key) : c_(c), key_(key){};
 
-    std::optional<T> operator()() const;
+    std::optional<T> operator()() const { return c_.template getOpt<T>(key_); }
 };
 
-using LookUpLong = LookUp<long>;
-using LookUpString = LookUp<std::string>;
-using LookUpDouble = LookUp<double>;
-using LookUpFloat = LookUp<float>;
-using LookUpBool = LookUp<bool>;
+template <typename T, typename Container>
+LookUp<T, Container> lookUp(const Container& c, const std::string& k) noexcept {
+    return LookUp<T, Container>{c, k};
+};
+
+
+template <typename T, typename Container>
+class LookUpTranslate {
+private:
+    const Container& c_;
+    std::string key_;
+
+public:
+    LookUpTranslate(const Container& c, const std::string& key) : c_(c), key_(key){};
+
+    std::optional<T> operator()() const { return util::visitTranslate<T>(c_.get(key_)); }
+};
+
+
+template <typename T, typename Container>
+LookUpTranslate<T, Container> lookUpTranslate(const Container& c, const std::string& k) noexcept {
+    return LookUpTranslate<T, Container>{c, k};
+};
+
 
 // Perform lookups
-std::optional<long> lookUpLong(const eckit::Configuration& c, const std::string& key);
+std::optional<std::int64_t> lookUpInt64(const eckit::Configuration& c, const std::string& key);
 std::optional<std::string> lookUpString(const eckit::Configuration& c, const std::string& key);
 std::optional<double> lookUpDouble(const eckit::Configuration& c, const std::string& key);
 std::optional<float> lookUpFloat(const eckit::Configuration& c, const std::string& key);
 std::optional<bool> lookUpBool(const eckit::Configuration& c, const std::string& key);
+
+template <>
+std::optional<std::int64_t> LookUp<std::int64_t, eckit::Configuration>::operator()() const {
+    return lookUpInt64(c_, key_);
+}
+template <>
+std::optional<std::string> LookUp<std::string, eckit::Configuration>::operator()() const {
+    return lookUpString(c_, key_);
+}
+template <>
+std::optional<double> LookUp<double, eckit::Configuration>::operator()() const {
+    return lookUpDouble(c_, key_);
+}
+template <>
+std::optional<float> LookUp<float, eckit::Configuration>::operator()() const {
+    return lookUpFloat(c_, key_);
+}
+template <>
+std::optional<bool> LookUp<bool, eckit::Configuration>::operator()() const {
+    return lookUpBool(c_, key_);
+}
+
+
+template <>
+std::optional<std::int64_t> LookUp<std::int64_t, eckit::LocalConfiguration>::operator()() const {
+    return lookUpInt64(c_, key_);
+}
+template <>
+std::optional<std::string> LookUp<std::string, eckit::LocalConfiguration>::operator()() const {
+    return lookUpString(c_, key_);
+}
+template <>
+std::optional<double> LookUp<double, eckit::LocalConfiguration>::operator()() const {
+    return lookUpDouble(c_, key_);
+}
+template <>
+std::optional<float> LookUp<float, eckit::LocalConfiguration>::operator()() const {
+    return lookUpFloat(c_, key_);
+}
+template <>
+std::optional<bool> LookUp<bool, eckit::LocalConfiguration>::operator()() const {
+    return lookUpBool(c_, key_);
+}
+
+
+template <>
+std::optional<std::int64_t> LookUpTranslate<std::int64_t, eckit::Configuration>::operator()() const {
+    return lookUpInt64(c_, key_);
+}
+template <>
+std::optional<std::string> LookUpTranslate<std::string, eckit::Configuration>::operator()() const {
+    return lookUpString(c_, key_);
+}
+template <>
+std::optional<double> LookUpTranslate<double, eckit::Configuration>::operator()() const {
+    return lookUpDouble(c_, key_);
+}
+template <>
+std::optional<float> LookUpTranslate<float, eckit::Configuration>::operator()() const {
+    return lookUpFloat(c_, key_);
+}
+template <>
+std::optional<bool> LookUpTranslate<bool, eckit::Configuration>::operator()() const {
+    return lookUpBool(c_, key_);
+}
+
+
+template <>
+std::optional<std::int64_t> LookUpTranslate<std::int64_t, eckit::LocalConfiguration>::operator()() const {
+    return lookUpInt64(c_, key_);
+}
+template <>
+std::optional<std::string> LookUpTranslate<std::string, eckit::LocalConfiguration>::operator()() const {
+    return lookUpString(c_, key_);
+}
+template <>
+std::optional<double> LookUpTranslate<double, eckit::LocalConfiguration>::operator()() const {
+    return lookUpDouble(c_, key_);
+}
+template <>
+std::optional<float> LookUpTranslate<float, eckit::LocalConfiguration>::operator()() const {
+    return lookUpFloat(c_, key_);
+}
+template <>
+std::optional<bool> LookUpTranslate<bool, eckit::LocalConfiguration>::operator()() const {
+    return lookUpBool(c_, key_);
+}
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 

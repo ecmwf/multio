@@ -228,7 +228,7 @@ const std::vector<message::MetadataMapping>& MultioConfiguration::getMetadataMap
 };
 
 
-//=============================================================================
+//-----------------------------------------------------------------------------
 
 MultioConfigurationHolder::MultioConfigurationHolder(MultioConfiguration&& multioConf) :
     multioConf_(std::move(multioConf)) {}
@@ -243,6 +243,6 @@ MultioConfiguration& MultioConfigurationHolder::multioConfig() noexcept {
 };
 
 
-//=============================================================================
+//-----------------------------------------------------------------------------
 
 }  // namespace multio::config

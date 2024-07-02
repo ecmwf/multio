@@ -9,13 +9,14 @@
 #include "multio/config/MultioConfiguration.h"
 #include "multio/config/PathConfiguration.h"
 #include "multio/domain/MaskCompression.h"
-#include "multio/message/Metadata.h"
+#include "multio/message/Message.h"
 #include "multio/multio_version.h"
 #include "multio/server/MultioClient.h"
 #include "multio/server/MultioServer.h"
 #include "multio/util/FailureHandling.h"
 
 #include <functional>
+#include <memory>
 #include <optional>
 
 using multio::message::Message;
@@ -90,8 +91,9 @@ struct multio_data_t : public eckit::Buffer {
     multio_handle_t* mio;
 };
 
-struct multio_metadata_t : public multio::message::Metadata {
-    using multio::message::Metadata::Metadata;
+struct multio_metadata_t {
+    // multio::message::Metadata::Metadata;
+    multio::message::SharedMetadata md;
     multio_handle_t* mio;
 };
 
@@ -101,11 +103,6 @@ struct multio_metadata_t : public multio::message::Metadata {
 namespace {
 
 // Template magic to provide a consistent error-handling approach
-
-int innerWrapFn(std::function<void()> f) {
-    f();
-    return MULTIO_SUCCESS;
-}
 
 MultioErrorValues errorValue(const FailureAwareException& e) {
     return MULTIO_ERROR_ECKIT_EXCEPTION;
@@ -147,9 +144,10 @@ void callFailureHandler(multio_failure_context_t* fctx, int err) {
 }
 
 template <typename FN>
-int wrapApiFunction(FN f, multio_failure_context_t* fh = nullptr) {
+int wrapApiFunction(FN&& f, multio_failure_context_t* fh = nullptr) {
     try {
-        return innerWrapFn(f);
+        std::invoke(std::forward<FN>(f));
+        return MULTIO_SUCCESS;
     }
     catch (FailureAwareException& e) {
         std::ostringstream oss;
@@ -518,7 +516,7 @@ int multio_flush(multio_handle_t* mio, multio_metadata_t* md) {
             ASSERT(mio);
             ASSERT(md);
 
-            mio->dispatch(*md, eckit::Buffer{0}, Message::Tag::Flush);
+            mio->dispatch(md->md, multio::message::PayloadReference{nullptr, 0}, Message::Tag::Flush);
         },
         mio);
 #else
@@ -534,7 +532,7 @@ int multio_notify(multio_handle_t* mio, multio_metadata_t* md) {
             ASSERT(mio);
             ASSERT(md);
 
-            mio->dispatch(*md, eckit::Buffer{0}, Message::Tag::Notification);
+            mio->dispatch(md->md, multio::message::PayloadReference{nullptr, 0}, Message::Tag::Notification);
         },
         mio);
 #else
@@ -550,8 +548,10 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
             ASSERT(mio);
             ASSERT(md);
 
-            eckit::Buffer domain_def{reinterpret_cast<const char*>(data), size * sizeof(int)};
-            mio->dispatch(*md, std::move(domain_def), Message::Tag::Domain);
+            // eckit::Buffer domain_def{static_cast<void*>(data), size * sizeof(int), false};
+            multio::message::PayloadReference domain_def{static_cast<void*>(data), size * sizeof(int)};
+
+            mio->dispatch(md->md, std::move(domain_def), Message::Tag::Domain);
         },
         mio);
 #else
@@ -568,7 +568,7 @@ int multio_write_mask_float(multio_handle_t* mio, multio_metadata_t* md, const f
 
             eckit::Buffer mask_vals = multio::domain::encodeMask(data, size);
 
-            mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
+            mio->dispatch(md->md, std::move(mask_vals), Message::Tag::Mask);
         },
         mio);
 #else
@@ -585,7 +585,7 @@ int multio_write_mask_double(multio_handle_t* mio, multio_metadata_t* md, const 
 
             eckit::Buffer mask_vals = multio::domain::encodeMask(data, size);
 
-            mio->dispatch(*md, std::move(mask_vals), Message::Tag::Mask);
+            mio->dispatch(md->md, std::move(mask_vals), Message::Tag::Mask);
         },
         mio);
 #else
@@ -600,11 +600,14 @@ int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const 
             ASSERT(mio);
             ASSERT(md);
 
-            md->set("precision", "single");
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md->md.modify().set("precision", "single");
 
-            eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(float)};
+            // eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(float), false};
+            multio::message::PayloadReference field_vals{const_cast<void*>(static_cast<const void*>(data)),
+                                                         size * sizeof(float)};
 
-            mio->dispatch(*md, std::move(field_vals), Message::Tag::Field);
+            mio->dispatch(md->md, std::move(field_vals), Message::Tag::Field);
         },
         mio);
 #else
@@ -619,11 +622,15 @@ int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const
             ASSERT(mio);
             ASSERT(md);
 
-            md->set("precision", "double");
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md->md.modify().set("precision", "double");
 
-            eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(double)};
+            // eckit::Buffer field_vals{const_cast<void*>(static_cast<const void*>(data)), size * sizeof(double),
+            // false};
+            multio::message::PayloadReference field_vals{const_cast<void*>(static_cast<const void*>(data)),
+                                                         size * sizeof(double)};
 
-            mio->dispatch(*md, std::move(field_vals), Message::Tag::Field);
+            mio->dispatch(md->md, std::move(field_vals), Message::Tag::Field);
         },
         mio);
 #else
@@ -639,11 +646,13 @@ int multio_write_field_buffer(multio_handle_t* mio, multio_metadata_t* md, multi
             ASSERT(mio);
             ASSERT(md);
             ASSERT(d);
+
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
             if (byte_size == 4) {
-                md->set("precision", "single");
+                md->md.modify().set("precision", "single");
             }
             else if (byte_size == 8) {
-                md->set("precision", "double");
+                md->md.modify().set("precision", "double");
             }
             else {
                 ASSERT(false);
@@ -651,7 +660,7 @@ int multio_write_field_buffer(multio_handle_t* mio, multio_metadata_t* md, multi
 
             eckit::Buffer* tmp = reinterpret_cast<eckit::Buffer*>(d);
 
-            mio->dispatch(*md, std::move(*tmp), Message::Tag::Field);
+            mio->dispatch(md->md, std::move(*tmp), Message::Tag::Field);
         },
         mio);
 #else
@@ -681,7 +690,11 @@ int multio_write_grib_encoded(multio_handle_t* mio, void* gribdata, int gribsize
 
 int multio_new_metadata(multio_metadata_t** md, multio_handle_t* mio) {
 #if !defined(MULTIO_DUMMY_API)
-    return wrapApiFunction([md]() { (*md) = new multio_metadata_t{}; }, mio);
+    return wrapApiFunction(
+        [md, mio]() {
+            (*md) = new multio_metadata_t{std::make_shared<multio::message::Metadata>(), mio};
+        },
+        mio);
 #else
     return MULTIO_SUCCESS;
 #endif
@@ -709,14 +722,15 @@ int multio_delete_metadata(multio_metadata_t* md) {
 }
 
 
-int multio_metadata_set_int(multio_metadata_t* md, const char* key, int value) {
+int multio_metadata_set_int(multio_metadata_t* md, const char* key, long long value) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [md, key, value]() {
             ASSERT(md);
             ASSERT(key);
 
-            md->set(key, value);
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md->md.modify().set(key, value);
         },
         md);
 #else
@@ -724,35 +738,6 @@ int multio_metadata_set_int(multio_metadata_t* md, const char* key, int value) {
 #endif
 }
 
-int multio_metadata_set_long(multio_metadata_t* md, const char* key, long value) {
-#if !defined(MULTIO_DUMMY_API)
-    return wrapApiFunction(
-        [md, key, value]() {
-            ASSERT(md);
-            ASSERT(key);
-
-            md->set(key, value);
-        },
-        md);
-#else
-    return MULTIO_SUCCESS;
-#endif
-}
-
-int multio_metadata_set_longlong(multio_metadata_t* md, const char* key, long long value) {
-#if !defined(MULTIO_DUMMY_API)
-    return wrapApiFunction(
-        [md, key, value]() {
-            ASSERT(md);
-            ASSERT(key);
-
-            md->set(key, value);
-        },
-        md);
-#else
-    return MULTIO_SUCCESS;
-#endif
-}
 
 int multio_metadata_set_string(multio_metadata_t* md, const char* key, const char* value) {
 #if !defined(MULTIO_DUMMY_API)
@@ -762,7 +747,8 @@ int multio_metadata_set_string(multio_metadata_t* md, const char* key, const cha
             ASSERT(key);
             ASSERT(value);
 
-            md->set(key, value);
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md->md.modify().set(key, value);
         },
         md);
 #else
@@ -777,7 +763,8 @@ int multio_metadata_set_bool(multio_metadata_t* md, const char* key, bool value)
             ASSERT(md);
             ASSERT(key);
 
-            md->set(key, value);
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md->md.modify().set(key, value);
         },
         md);
 #else
@@ -785,20 +772,6 @@ int multio_metadata_set_bool(multio_metadata_t* md, const char* key, bool value)
 #endif
 }
 
-int multio_metadata_set_float(multio_metadata_t* md, const char* key, float value) {
-#if !defined(MULTIO_DUMMY_API)
-    return wrapApiFunction(
-        [md, key, value]() {
-            ASSERT(md);
-            ASSERT(key);
-
-            md->set(key, value);
-        },
-        md);
-#else
-    return MULTIO_SUCCESS;
-#endif
-}
 
 int multio_metadata_set_double(multio_metadata_t* md, const char* key, double value) {
 #if !defined(MULTIO_DUMMY_API)
@@ -807,9 +780,8 @@ int multio_metadata_set_double(multio_metadata_t* md, const char* key, double va
             ASSERT(md);
             ASSERT(key);
 
-            // TODO: it is unclear if we ever need to support setting metadata values as float; even if so, we are
-            // probably better off casting to double for storing it in multio::Metadata
-            md->set(key, static_cast<double>(value));
+            md->md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md->md.modify().set(key, static_cast<double>(value));
         },
         md);
 #else
@@ -947,7 +919,7 @@ int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, boo
             ASSERT(md);
             ASSERT(accepted);
 
-            *accepted = mio->isFieldMatched(*md);
+            *accepted = mio->isFieldMatched(md->md.read());
         },
         mio);
 #else
@@ -962,9 +934,6 @@ int multio_field_accepted(multio_handle_t* mio, const multio_metadata_t* md, boo
 // Casting between cpp and c type for testing
 
 Metadata* multio_from_c(multio_metadata_t* md) {
-    return static_cast<Metadata*>(md);
-}
-
-multio_metadata_t* multio_to_c(Metadata* md) {
-    return static_cast<multio_metadata_t*>(md);
+    // return static_cast<Metadata*>(md);
+    return &(md->md.modify());
 }

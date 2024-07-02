@@ -25,11 +25,17 @@ MetadataMapping::MetadataMapping(const ComponentConfiguration& compConf) :
 void MetadataMapping::executeImpl(message::Message msg) {
     switch (msg.tag()) {
         case (message::Message::Tag::Field): {
-            executeNext(msg.modifyMetadata(apply(std::move(msg).metadata())));
+            // TODO optimize for mappings that do not have to match and avoid copying medata
+
+            // Get own copy of metadata in the message
+            msg.header().acquireMetadata();
+
+            applyInplace(msg.modifyMetadata());
+            executeNext(std::move(msg));
             break;
         }
         default: {
-            executeNext(msg);
+            executeNext(std::move(msg));
             break;
         }
     };
@@ -39,16 +45,6 @@ void MetadataMapping::applyInplace(message::Metadata& md) const {
     for (const auto& m : mappings_) {
         m.applyInplace(md, options_);
     }
-};
-message::Metadata MetadataMapping::apply(const message::Metadata& md) const {
-    message::Metadata mdc(md);
-    applyInplace(mdc);
-    return mdc;
-};
-message::Metadata MetadataMapping::apply(message::Metadata&& md) const {
-    message::Metadata mdc(std::move(md));
-    applyInplace(mdc);
-    return mdc;
 };
 
 void MetadataMapping::print(std::ostream& os) const {

@@ -2,7 +2,7 @@
 
 #include <iosfwd>
 
-#include "eckit/log/Statistics.h"
+#include "multio/util/Timing.h"
 
 namespace multio::transport {
 
@@ -19,38 +19,28 @@ public:
     std::size_t receiveCount_ = 0;
     std::size_t receiveSize_ = 0;
 
-    eckit::Timing waitTiming_;
-    eckit::Timer waitTimer_;
+    util::Timing<> waitTiming_;
 
-    eckit::Timing isendTiming_;
-    eckit::Timer isendTimer_;
+    util::Timing<> isendTiming_;
 
-    eckit::Timing sendTiming_;
-    eckit::Timer sendTimer_;
+    util::Timing<> sendTiming_;
 
-    eckit::Timing encodeTiming_;
-    eckit::Timer encodeTimer_;
+    util::Timing<> encodeTiming_;
 
 
-    eckit::Timing probeTiming_;
-    eckit::Timer probeTimer_;
+    util::Timing<> probeTiming_;
 
-    eckit::Timing receiveTiming_;
-    eckit::Timer receiveTimer_;
+    util::Timing<> receiveTiming_;
 
-    eckit::Timing pushToQueueTiming_;
-    eckit::Timer pushToQueueTimer_;
+    util::Timing<> pushToQueueTiming_;
 
-    eckit::Timing decodeTiming_;
-    eckit::Timer decodeTimer_;
+    util::Timing<> decodeTiming_;
 
-    eckit::Timing returnTiming_;
-    eckit::Timer returnTimer_;
+    util::Timing<> returnTiming_;
 
-    eckit::Timing totReturnTiming_;
-    eckit::Timer totReturnTimer_;
+    util::Timing<> totReturnTiming_;
 
-    void report(std::ostream& out, const char* indent = "") const;
+    void report(std::ostream& out, const char* indent = "");
 };
 
 }  // namespace multio::transport

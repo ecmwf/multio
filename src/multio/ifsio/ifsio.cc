@@ -39,6 +39,7 @@
 #include "metkit/codes/CodesContent.h"
 #include "multio/sink/MultIO.h"
 
+
 using namespace eckit;
 using namespace metkit;
 using namespace multio;
@@ -276,7 +277,7 @@ fortint imultio_write_(const void* data, const fortint* words) {
 
         multio::message::Metadata metadata;
         multio::message::Message message{
-            multio::message::Message::Header{Message::Tag::Grib, Peer{}, Peer{}, std::move(metadata)},
+            multio::message::Message::Header{Message::Tag::Field, Peer{}, Peer{}, std::move(metadata)},
             std::move(payload)};
         MIO::instance().dispatch(message);
 
@@ -304,7 +305,7 @@ fortint imultio_write_raw_(const void* configuration, const void* data, const fo
 
         eckit::Buffer payload{reinterpret_cast<const char*>(data), len};
 
-        multio::message::Metadata metadata{*conf};
+        multio::message::Metadata metadata{multio::message::toMetadata(conf->get())};
         multio::message::Message message{
             multio::message::Message::Header{Message::Tag::Field, Peer{}, Peer{}, std::move(metadata)},
             std::move(payload)};

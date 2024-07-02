@@ -3,7 +3,7 @@ plans:
     actions:
       - type: select
         match:
-          - param: 129
+          - param: "129"
       - type: interpolate
         input: T1279
         grid: [0.5, 0.5]

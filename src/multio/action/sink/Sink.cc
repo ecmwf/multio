@@ -11,12 +11,12 @@
 #include "Sink.h"
 
 #include <fstream>
+#include <sstream>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/message/Message.h"
 
 #include "multio/LibMultio.h"
-#include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
 
 namespace multio::action {
@@ -35,7 +35,6 @@ void Sink::executeImpl(Message msg) {
 
     switch (msg.tag()) {
         case Message::Tag::Field:
-        case Message::Tag::Grib:
             write(msg);
             return;
 
@@ -53,7 +52,7 @@ void Sink::executeImpl(Message msg) {
 }
 
 void Sink::write(Message msg) {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     eckit::message::Message blob = to_eckit_message(msg);
 
@@ -61,27 +60,34 @@ void Sink::write(Message msg) {
 }
 
 void Sink::flush() {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
     mio_.flush();
 }
 
 void Sink::trigger(const Message& msg) {
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     eckit::StringDict metadata;
 
-    if (!msg.metadata().has("trigger")) {
+    auto triggerKey = msg.metadata().getOpt<std::string>("trigger");
+    if (!triggerKey) {
         throw message::MetadataMissingKeyException("trigger", Here());
     }
-    const std::string triggerKey = msg.metadata().getString("trigger");
-
-    if (!msg.metadata().has(triggerKey)) {
-        throw message::MetadataMissingKeyException(triggerKey, Here());
+    auto searchTriggerKey = msg.metadata().find(*triggerKey);
+    if (searchTriggerKey == msg.metadata().end()) {
+        throw message::MetadataMissingKeyException(*triggerKey, Here());
     }
-    // TODO - handle type correctly once metadata is refactored
-    metadata[triggerKey] = msg.metadata().getString(triggerKey);
 
-    eckit::Log::debug<LibMultio>() << "Trigger " << triggerKey << " with value " << metadata[triggerKey]
+    auto triggerKeyVal = util::visitTranslate<std::string>(searchTriggerKey->second);
+    if (!triggerKeyVal) {
+        std::ostringstream oss;
+        oss << "Sink::trigger: Value for triggerKey \"" << *triggerKey << "\" can not be translated to string: ";
+        oss << searchTriggerKey->second;
+        throw eckit::UserError(oss.str(), Here());
+    }
+    metadata[*triggerKey] = *triggerKeyVal;
+
+    eckit::Log::debug<LibMultio>() << "Trigger " << *triggerKey << " with value " << metadata[*triggerKey]
                                    << " is being called..." << std::endl;
 
     mio_.trigger(metadata);

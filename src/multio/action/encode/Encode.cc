@@ -28,7 +28,7 @@
 #include "GridDownloader.h"
 #include "multio/LibMultio.h"
 #include "multio/config/PathConfiguration.h"
-#include "multio/util/ScopedTimer.h"
+#include "multio/util/Timing.h"
 
 namespace multio::action {
 
@@ -215,10 +215,12 @@ Encode::Encode(const ComponentConfiguration& compConf, const eckit::LocalConfigu
     overwrite_{makeOverwrites(encConf.has("overwrite")
                                   ? eckit::LocalConfiguration{encConf.getSubConfiguration("overwrite")}
                                   : eckit::LocalConfiguration{})},
-    additionalMetadata_{encConf.has("additional-metadata")
-                            ? eckit::LocalConfiguration{encConf.getSubConfiguration("additional-metadata")}
-                            : (encConf.has("run") ? eckit::LocalConfiguration{encConf.getSubConfiguration("run")}
-                                                  : eckit::LocalConfiguration{})},
+    additionalMetadata_{
+        message::toMetadata((encConf.has("additional-metadata")
+                                 ? eckit::LocalConfiguration{encConf.getSubConfiguration("additional-metadata")}
+                                 : (encConf.has("run") ? eckit::LocalConfiguration{encConf.getSubConfiguration("run")}
+                                                       : eckit::LocalConfiguration{}))
+                                .get())},
     encoder_{makeEncoder(encConf, compConf.multioConfig())},
     gridDownloader_{std::make_unique<multio::action::GridDownloader>(compConf)} {}
 
@@ -236,7 +238,10 @@ void Encode::executeImpl(Message msg) {
 
     auto gridUID = std::optional<GridDownloader::GridUIDType>{};
 
-    if (msg.metadata().has("domain") && !msg.metadata().has("uuidOfHGrid") && isOcean(msg.metadata())) {
+    auto& md = msg.metadata();
+    auto searchDomain = md.find("domain");
+    auto searchUUIDOfHGrid = md.find("uuidOfHGrid");
+    if (searchDomain != md.end() && searchUUIDOfHGrid == md.end() && isOcean(md)) {
         //! TODO shoud not be checked here anymore, encoder_ should have been initialized according to format_
         ASSERT(format_ == "grib");
 
@@ -244,11 +249,10 @@ void Encode::executeImpl(Message msg) {
 
         const auto& md = msg.metadata();
 
-        std::string gridType;
-        const auto hasGridType = md.get("gridType", gridType);
-        if (hasGridType && (gridType == "unstructured_grid")) {
-            auto gridCoords
-                = gridDownloader_->getGridCoords(msg.domain(), md.getInt32("startDate"), md.getInt32("startTime"));
+        if (auto searchGridType = md.find("gridType");
+            searchGridType != md.end() && (searchGridType->second.get<std::string>() != "HEALPix")) {
+            auto gridCoords = gridDownloader_->getGridCoords(msg.domain(), md.get<std::int64_t>("startDate"),
+                                                             md.get<std::int64_t>("startTime"));
             if (gridCoords) {
                 executeNext(gridCoords.value().Lat);
                 executeNext(gridCoords.value().Lon);
@@ -269,19 +273,20 @@ void Encode::print(std::ostream& os) const {
     os << ")";
 }
 
-
-message::Message Encode::encodeField(const message::Message& msg, const std::optional<std::string>& gridUID) const {
+message::Message Encode::encodeField(const message::Message& message, const std::optional<std::string>& gridUID) const {
+    auto logMsg = message.logMessage();
     try {
-        util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-        auto md = msg.metadata();
+        util::ScopedTiming timing{statistics_.actionTiming_};
+        message::Message msg{message};
+        msg.header().acquireMetadata();
         if (gridUID) {
-            md.set("uuidOfHGrid", gridUID.value());
+            msg.modifyMetadata().set("uuidOfHGrid", gridUID.value());
         }
-        return encoder_->encodeField(msg.modifyMetadata(std::move(md)), this->overwrite_, this->additionalMetadata_);
+        return encoder_->encodeField(std::move(msg), overwrite_, additionalMetadata_);
     }
     catch (const std::exception& ex) {
         std::ostringstream oss;
-        oss << "Encode::encodeField " << ex.what() << " with Message: " << msg;
+        oss << "Encode::encodeField " << ex.what() << " with Message: " << logMsg;
         std::throw_with_nested(EncodingException(oss.str(), Here()));
     }
 }

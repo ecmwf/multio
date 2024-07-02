@@ -57,31 +57,38 @@ std::string parseCacheFileName(const ComponentConfiguration& compConf) {
 }
 
 void checkMetadata(const message::Metadata& md) {
-    if (!md.has("gridType")) {
+    auto searchGridType = md.find("gridType");
+    if (searchGridType == md.end()) {
         std::ostringstream oss;
         oss << "HEALPix_ring2nest: expected \"gridType\" option" << std::endl;
         throw eckit::UserError(oss.str(), Here());
     }
-    if (!md.has("Nside")) {
+
+    auto searchNSide = md.find("Nside");
+    if (searchNSide == md.end()) {
         std::ostringstream oss;
         oss << "HEALPix_ring2nest: expected \"Nside\" option" << std::endl;
         throw eckit::UserError(oss.str(), Here());
     }
-    if (!md.has("orderingConvention")) {
+
+    auto searchOrderingConvention = md.find("orderingConvention");
+    if (searchOrderingConvention == md.end()) {
         std::ostringstream oss;
         oss << "HEALPix_ring2nest: expected \"orderingConvention\" option" << std::endl;
         throw eckit::UserError(oss.str(), Here());
     }
-    if (md.getString("gridType") != "healpix" && md.getString("gridType") != "HEALPix") {
+    if (const std::string& gridType = searchGridType->second.get<std::string>();
+        gridType != "healpix" && gridType != "HEALPix") {
         std::ostringstream oss;
-        oss << "HEALPix_ring2nest: expected \"gridType\" = \"HEALPix\", instead it is equal to: "
-            << md.getString("gridType") << std::endl;
+        oss << "HEALPix_ring2nest: expected \"gridType\" = \"HEALPix\", instead it is equal to: " << gridType
+            << std::endl;
         throw eckit::UserError(oss.str(), Here());
     }
-    if (md.getString("orderingConvention") != "ring") {
+    if (const std::string& orderingConvention = searchOrderingConvention->second.get<std::string>();
+        orderingConvention != "ring") {
         std::ostringstream oss;
         oss << "HEALPix_ring2nest: expected \"orderingConvention\" = \"ring\", instead it is equal to: "
-            << md.getString("orderingConvention") << std::endl;
+            << orderingConvention << std::endl;
         throw eckit::UserError(oss.str(), Here());
     }
 }
@@ -117,9 +124,9 @@ void HEALPixRingToNest::executeImpl(message::Message msg) {
     checkMetadata(msg.metadata());
 
     // Lookup cache
-    auto key = static_cast<size_t>(msg.metadata().getLong("Nside"));
+    auto key = static_cast<size_t>(msg.metadata().get<std::int64_t>("Nside"));
     if (mapping_.find(key) == mapping_.end()) {
-        mapping_[key] = makeMapping(static_cast<size_t>(msg.metadata().getLong("Nside")), cacheFileName_);
+        mapping_[key] = makeMapping(static_cast<size_t>(msg.metadata().get<std::int64_t>("Nside")), cacheFileName_);
     }
     const auto& map = mapping_.at(key);
 

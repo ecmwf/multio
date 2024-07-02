@@ -32,9 +32,8 @@ int Message::protocolVersion() {
 
 std::string Message::tag2str(Tag t) {
     static std::map<Tag, std::string> m
-        = {{Tag::Empty, "Empty"}, {Tag::Open, "Open"},     {Tag::Close, "Close"},
-           {Tag::Grib, "Grib"},   {Tag::Domain, "Domain"}, {Tag::Mask, "Mask"},
-           {Tag::Field, "Field"}, {Tag::Flush, "Flush"},   {Tag::Notification, "Notification"}};
+        = {{Tag::Empty, "Empty"}, {Tag::Open, "Open"},   {Tag::Close, "Close"}, {Tag::Domain, "Domain"},
+           {Tag::Mask, "Mask"},   {Tag::Field, "Field"}, {Tag::Flush, "Flush"}, {Tag::Notification, "Notification"}};
 
     ASSERT(t < Tag::ENDTAG);
 
@@ -43,23 +42,30 @@ std::string Message::tag2str(Tag t) {
 
 Message::Message() : Message(Message::Header{Message::Tag::Empty, Peer{}, Peer{}}) {}
 
-Message::Message(Header&& header, const eckit::Buffer& payload) :
-    Message(std::make_shared<Header>(std::move(header)), std::make_shared<eckit::Buffer>(payload, payload.size())) {}
+Message::Message(Header&& header) :
+    version_{protocolVersion()}, header_{std::move(header)}, payload_{PayloadReference{nullptr, 0}} {}
 
 Message::Message(Header&& header, eckit::Buffer&& payload) :
-    Message(std::make_shared<Header>(std::move(header)), std::make_shared<eckit::Buffer>(std::move(payload))) {}
+    version_{protocolVersion()},
+    header_{std::move(header)},
+    payload_{std::make_shared<eckit::Buffer>(std::move(payload))} {}
+Message::Message(Header&& header, const eckit::Buffer& payload) :
+    version_{protocolVersion()},
+    header_{std::move(header)},
+    payload_{std::make_shared<eckit::Buffer>(payload.data(), payload.size())} {}
 
-Message::Message(Header&& header, std::shared_ptr<eckit::Buffer> payload) :
-    Message(std::make_shared<Header>(std::move(header)), std::move(payload)) {}
-
-Message::Message(std::shared_ptr<Header>&& header, std::shared_ptr<eckit::Buffer>&& payload) :
+Message::Message(Header&& header, SharedPayload&& payload) :
     version_{protocolVersion()}, header_{std::move(header)}, payload_{std::move(payload)} {}
-
-Message::Message(std::shared_ptr<Header>&& header, const std::shared_ptr<eckit::Buffer>& payload) :
+Message::Message(Header&& header, const SharedPayload& payload) :
     version_{protocolVersion()}, header_{std::move(header)}, payload_{payload} {}
 
+
 const Message::Header& Message::header() const {
-    return *header_;
+    return header_;
+}
+
+Message::Header& Message::header() {
+    return header_;
 }
 
 int Message::version() const {
@@ -91,7 +97,7 @@ std::string Message::category() const {
     return header().category();
 }
 
-long Message::globalSize() const {
+std::int64_t Message::globalSize() const {
     return header().globalSize();
 }
 
@@ -103,28 +109,37 @@ const std::string& Message::fieldId() const {
     return header().fieldId();
 }
 
-const Metadata& Message::metadata() const& {
-    return header_->metadata();
+const Metadata& Message::metadata() const {
+    return header_.metadata();
 }
 
 // Metadata&& Message::metadata() && {
 //     return std::move(header_).metadata();
 // }
 
-Message Message::modifyMetadata(Metadata&& md) const {
-    return Message(std::make_shared<Header>(header_->modifyMetadata(std::move(md))), payload_);
-};
-
-const eckit::Buffer& Message::payload() const {
-    return *payload_;
+Metadata& Message::modifyMetadata() {
+    return header_.modifyMetadata();
 }
 
-std::shared_ptr<eckit::Buffer> Message::sharedPayload() const {
+Message Message::modifyMetadata(Metadata&& md) const {
+    return Message(header_.modifyMetadata(std::move(md)), payload_);
+};
+
+SharedPayload& Message::payload() {
     return payload_;
 }
 
+const SharedPayload& Message::payload() const {
+    return payload_;
+}
+
+void Message::acquire() {
+    header_.acquireMetadata();
+    payload_.acquire();
+}
+
 size_t Message::size() const {
-    return payload_->size();
+    return payload_.size();
 }
 
 void Message::encode(eckit::Stream& strm) const {
@@ -142,12 +157,32 @@ void Message::print(std::ostream& out) const {
         << ")";
 }
 
-eckit::message::Message to_eckit_message(const Message& msg) {
-    if (msg.tag() == Message::Tag::Grib) {
-        codes_handle* h = codes_handle_new_from_message(nullptr, msg.payload().data(), msg.size());
-        return eckit::message::Message{new metkit::codes::CodesContent{h, true}};
-    }
 
+LogMessage Message::logMessage() const {
+    return LogMessage{version_, header_.logHeader(), payload_.size()};
+}
+
+
+const std::string& LogMessage::fieldId() const {
+    if (!header_.fieldId_) {
+        if (std::shared_ptr<Metadata> md = header_.metadata_.lock()) {
+            header_.fieldId_ = md->toString();
+        }
+        else {
+            header_.fieldId_ = "<context lost>";
+        }
+    }
+    return *header_.fieldId_;
+}
+
+void LogMessage::print(std::ostream& out) const {
+    out << "Message("
+        << "version=" << version_ << ", tag=" << Message::tag2str(header_.tag_) << ", source=" << header_.source_
+        << ", destination=" << header_.destination_ << ", metadata=" << fieldId() << ", payload-size=" << payload_size_
+        << ")";
+}
+
+eckit::message::Message to_eckit_message(const Message& msg) {
     ASSERT(msg.tag() == Message::Tag::Field);
     return eckit::message::Message{new metkit::codes::UserDataContent(msg.payload().data(), msg.size())};
 }

@@ -17,10 +17,14 @@
 #include "TemporalStatistics.h"
 #include "eckit/exception/Exceptions.h"
 #include "multio/LibMultio.h"
+#include "multio/message/Glossary.h"
 #include "multio/message/Message.h"
-#include "multio/util/ScopedTimer.h"
+#include "multio/util/Timing.h"
 
 namespace multio::action {
+
+
+using message::glossary;
 
 Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
@@ -49,10 +53,13 @@ void Statistics::DumpRestart() {
 
 std::string Statistics::generateKey(const message::Message& msg) const {
     std::ostringstream os;
-    os << msg.metadata().getString("param", "") << "-" << msg.metadata().getString("paramId", "") << "-"
-       << msg.metadata().getLong("level", 0) << "-" << msg.metadata().getLong("levelist", 0) << "-"
-       << msg.metadata().getString("levtype", "unknown") << "-" << msg.metadata().getString("gridType", "unknown")
-       << "-" << msg.metadata().getString("precision", "unknown") << "-"
+    os << msg.metadata().getOpt<std::string>(glossary().param).value_or("") << "-"
+       << msg.metadata().getOpt<std::int64_t>(glossary().paramId).value_or(0) << "-"
+       << msg.metadata().getOpt<std::int64_t>(glossary().level).value_or(0) << "-"
+       << msg.metadata().getOpt<std::int64_t>(glossary().levelist).value_or(0) << "-"
+       << msg.metadata().getOpt<std::string>(glossary().levtype).value_or("unknown") << "-"
+       << msg.metadata().getOpt<std::string>(glossary().gridType).value_or("unknown") << "-"
+       << msg.metadata().getOpt<std::string>(glossary().precision).value_or("unknown") << "-"
        << std::to_string(std::hash<std::string>{}(msg.source()));
     LOG_DEBUG_LIB(LibMultio) << "Generating key for the field :: " << os.str() << std::endl;
     return os.str();
@@ -75,16 +82,19 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
     // md.set("sampleIntervalUnit", std::string{util::timeUnitToChar(lastPointsDiff.unit)});
     // md.set("sampleInterval", lastPointsDiff.diff);
 
-    md.set("sampleIntervalInSeconds", win.lastPointsDiffInSeconds());
+    md.set(glossary().sampleIntervalInSeconds, win.lastPointsDiffInSeconds());
 
-    md.set("startDate", win.epochPoint().date().yyyymmdd());
-    md.set("startTime", win.epochPoint().time().hhmmss());
-    md.set("step-frequency", win.timeSpanInSteps());
+    md.set(glossary().startDate, win.epochPoint().date().yyyymmdd());
+    md.set(glossary().startTime, win.epochPoint().time().hhmmss());
+    md.set(glossary().stepFrequency, win.timeSpanInSteps());
 
-    md.set("previousDate", win.creationPoint().date().yyyymmdd());
-    md.set("previousTime", win.creationPoint().time().hhmmss());
-    md.set("currentDate", win.endPoint().date().yyyymmdd());
-    md.set("currentTime", win.endPoint().time().hhmmss());
+    // md.set("timeSpanInHours", win.timeSpanInHours());
+    // md.set("stepRange", win.stepRange());
+
+    md.set(glossary().previousDate, win.creationPoint().date().yyyymmdd());
+    md.set(glossary().previousTime, win.creationPoint().time().hhmmss());
+    md.set(glossary().currentDate, win.endPoint().date().yyyymmdd());
+    md.set(glossary().currentTime, win.endPoint().time().hhmmss());
 
     md.set("startStepInHours", win.creationPointInHours());
     md.set("endStepInHours", win.endPointInHours());
@@ -112,12 +122,12 @@ void Statistics::executeImpl(message::Message msg) {
     IOmanager_->setCurrStep(cfg.restartStep());
     IOmanager_->setKey(key);
 
-    util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+
+    util::ScopedTiming timing{statistics_.actionTiming_};
 
     if (fieldStats_.find(key) == fieldStats_.end()) {
         fieldStats_[key] = std::make_unique<TemporalStatistics>(periodUpdater_, operations_, msg, IOmanager_, cfg);
         if (cfg.solver_send_initial_condition()) {
-            util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
             return;
         }
     }
@@ -138,7 +148,6 @@ void Statistics::executeImpl(message::Message msg) {
                                          std::move(payload)});
         }
 
-        util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
         fieldStats_.at(key)->updateWindow(msg, cfg);
     }

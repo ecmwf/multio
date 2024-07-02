@@ -10,7 +10,6 @@
 #include "multio/domain/Mappings.h"
 #include "multio/domain/Mask.h"
 
-#include "multio/util/ScopedTimer.h"
 #include "multio/util/logfile_name.h"
 
 using eckit::LocalConfiguration;
@@ -21,7 +20,7 @@ using config::ComponentConfiguration;
 
 Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue) :
     FailureAware(compConf), queue_{queue} {
-    timer_.start();
+    timingAll_.tic();
 
     eckit::Log::debug<LibMultio>() << compConf.parsedConfig() << std::endl;
 
@@ -38,18 +37,21 @@ util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, 
 
 Dispatcher::~Dispatcher() {
     std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-    logFile << "\n ** Total wall-clock time spent in dispatcher " << eckit::Timing{timer_}.elapsed_
-            << "s -- of which time spent with dispatching " << timing_ << "s" << std::endl;
+    timingAll_.toc();
+    timingAll_.process();
+    timing_.process();
+    logFile << "\n ** Total time spent in dispatcher " << timingAll_.elapsedTimeSeconds()
+            << "s -- of which time spent with dispatching " << timing_.elapsedTimeSeconds() << "s" << std::endl;
 }
 
 void Dispatcher::dispatch() {
-    util::ScopedTimer timer{timing_};
+    util::ScopedTiming<> timer{timing_};
     withFailureHandling([&]() {
         try {
             message::Message msg;
             auto sz = queue_.pop(msg);
             while (sz >= 0) {
-                handle(msg);
+                handle(std::move(msg));
                 LOG_DEBUG_LIB(multio::LibMultio) << "Size of the dispatch queue: " << sz << std::endl;
                 sz = queue_.pop(msg);
             }
@@ -61,17 +63,18 @@ void Dispatcher::dispatch() {
     });
 }
 
-void Dispatcher::handle(const message::Message& msg) const {
+void Dispatcher::handle(message::Message msg) const {
     switch (msg.tag()) {
         case message::Message::Tag::Domain:
-            domain::Mappings::instance().add(msg);
+            domain::Mappings::instance().add(std::move(msg));
             break;
 
         case message::Message::Tag::Mask:
-            domain::Mask::instance().add(msg);
+            domain::Mask::instance().add(std::move(msg));
             break;
 
         default:
+            // TODO add proper PlanExecuter that checks select paths befare...
             for (const auto& plan : plans_) {
                 plan->process(msg);
             }

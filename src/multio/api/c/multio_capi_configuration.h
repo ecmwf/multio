@@ -44,7 +44,7 @@ int multio_config_set_failure_handler(multio_configuration_t* config, multio_fai
                                       void* usercontext);
 
 
-/* ==================================================================================================== */
+/* ---------------------------------------------------------------------------------------------------- */
 
 
 /** Overwrite global MPI options for default splitting.

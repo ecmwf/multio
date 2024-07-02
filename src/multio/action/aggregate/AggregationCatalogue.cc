@@ -34,11 +34,11 @@ void AggregationCatalogue::addNew(const message::Message& msg) {
         // The source of the message is the same as the destination - otherwise on serverside the source is depending on
         // the source of the first arriving although all multiple sources are combined on the servier (which is the
         // destination).
-        messageMap_.emplace(msg.fieldId(),
-                            message::Message{message::Message::Header{msg.header().tag(), msg.header().destination(),
-                                                                      msg.header().destination(),
-                                                                      message::Metadata{msg.header().metadata()}},
-                                             eckit::Buffer{msg.globalSize() * sizeof(Precision)}});
+        messageMap_.emplace(
+            msg.fieldId(),
+            message::Message{message::Message::Header{msg.header().tag(), msg.header().destination(),
+                                                      msg.header().destination(), msg.header().moveOrCopyMetadata()},
+                             eckit::Buffer{msg.globalSize() * sizeof(Precision)}});
         processedParts_.emplace(msg.fieldId(), std::set<message::Peer>{});
     });
 }

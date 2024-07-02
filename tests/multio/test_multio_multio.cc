@@ -19,6 +19,7 @@
 #include "multio/sink/FileSink.h"
 #include "multio/sink/MultIO.h"
 
+
 #include "TestDataContent.h"
 #include "TestHelpers.h"
 
@@ -134,14 +135,14 @@ CASE("test_multio_with_event_trigger") {
                 [step, level, stream](eckit::JSON& json) {
                     json.startObject();
                     json << "stream" << stream;
-                    json << "step" << eckit::Translator<long, std::string>{}(step);
-                    json << "level" << eckit::Translator<long, std::string>{}(level);
+                    json << "step" << eckit::Translator<std::int64_t, std::string>{}(step);
+                    json << "level" << eckit::Translator<std::int64_t, std::string>{}(level);
                     json.endObject();
                 }(json);
 
                 eckit::Log::info() << "JSON content: " << os.str() << std::endl;
 
-                message::Metadata md{eckit::YAMLConfiguration{os.str()}};
+                message::Metadata md{message::toMetadata(eckit::YAMLConfiguration{os.str()}.get())};
                 eckit::message::Message msg{new TestDataContent{os.str().c_str(), os.str().length(), md}};
 
                 mio->write(msg);

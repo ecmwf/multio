@@ -26,7 +26,7 @@
 
 namespace multio::message {
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
 struct MetadataMappingOptions {
     bool enforceMatch;
@@ -34,7 +34,7 @@ struct MetadataMappingOptions {
 };
 
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
 
 /**
@@ -74,20 +74,24 @@ struct MetadataMappingOptions {
  */
 class MetadataMapping {
 public:
-    MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
-                    const eckit::LocalConfiguration& optionalMappings,
-                    const std::vector<eckit::LocalConfiguration>& mapDataList, const std::string& matchKey,
-                    const std::optional<std::string>& targetPath = std::optional<std::string>{});
+    using KeyType = typename MetadataTypes::KeyType;
+    using MatchKeyType = KeyType;  // In the future we may want to support multiple keys for matching
 
-    MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
-                    const eckit::LocalConfiguration& optionalMappings,
-                    const std::unordered_map<std::string, eckit::LocalConfiguration>& source,
-                    const std::optional<std::string>& targetPath = std::optional<std::string>{});
+    using KeyMapping = std::vector<std::pair<KeyType, KeyType>>;
+    using DataMapping = std::unordered_map<MetadataValue, message::Metadata>;
 
-    MetadataMapping(const std::string& metadataKey, const eckit::LocalConfiguration& mappings,
-                    const eckit::LocalConfiguration& optionalMappings,
-                    std::unordered_map<std::string, eckit::LocalConfiguration>&& source,
-                    const std::optional<std::string>& targetPath = std::optional<std::string>{});
+    MetadataMapping(const MatchKeyType& metadataKey, const KeyMapping& mappings, const KeyMapping& optionalMappings,
+                    const std::vector<eckit::LocalConfiguration>& mapDataList, const KeyType& matchKey,
+                    const std::optional<KeyType>& targetPath = std::optional<KeyType>{});
+
+    MetadataMapping(const MatchKeyType& metadataKey, const KeyMapping& mappings, const KeyMapping& optionalMappings,
+                    const std::unordered_map<MetadataValue, eckit::LocalConfiguration>& source,
+                    const std::optional<KeyType>& targetPath = std::optional<KeyType>{});
+
+    MetadataMapping(const MatchKeyType& metadataKey, const DataMapping& mapping,
+                    const std::optional<KeyType>& targetPath = std::optional<KeyType>{});
+    MetadataMapping(const MatchKeyType& metadataKey, DataMapping&& mapping,
+                    const std::optional<KeyType>& targetPath = std::optional<KeyType>{});
 
 
     void applyInplace(Metadata&, MetadataMappingOptions options = MetadataMappingOptions{}) const;
@@ -99,23 +103,20 @@ public:
 
 
 private:
-    std::string metadataKey_;                    // Describes the key to be looked for in the metadata
-    eckit::LocalConfiguration mapping_;          // Description of a mapping.
-    eckit::LocalConfiguration optionalMapping_;  // Description of a optional mapping.
-    std::unordered_map<std::string, eckit::LocalConfiguration>
-        mapData_;  // Input data on which the mapping is performed
-    std::optional<std::string>
+    MatchKeyType metadataKey_;  // Describes the key to be looked for in the metadata
+    DataMapping mapData_;       // Input data on which the mapping is performed
+    std::optional<KeyType>
         targetPath_;  // Optional key for a nested dictionary in the metadata at which the mapped data will be written
 };
 
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
 class MetadataMappingException : public MetadataException {
 public:
     MetadataMappingException(const std::string& reason, const eckit::CodeLocation& location = eckit::CodeLocation());
 };
 
-//=====================================================================================================================
+//---------------------------------------------------------------------------------------------------------------------
 
 }  // namespace multio::message

@@ -24,7 +24,7 @@ class Metadata:
         elif isinstance(value, bool):
             self._set_bool(key, value)
         elif isinstance(value, float):
-            self._set_float(key, value)
+            self._set_double(key, value)
         else:
             raise TypeError(f"{type(value).__name__} is not allowed for metadata")
 
@@ -45,7 +45,7 @@ class Metadata:
 
         lib.multio_metadata_set_bool(self._handle, key, value)
 
-    def _set_float(self, key, value):
+    def _set_double(self, key, value):
         key = ffi.new("char[]", key.encode("ascii"))
         value = ffi.cast("double", value)
 

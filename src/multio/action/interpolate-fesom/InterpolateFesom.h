@@ -128,9 +128,12 @@ public:
                   size_t NSide, orderingConvention_e orderingConvention) {
         INTERPOLATE_FESOM_OUT_STREAM << " - Fesom2HEALPix: enter file cache constructor (from message)" << std::endl;
         // Generate cache file name
-        size_t level = static_cast<size_t>(msg.metadata().getLong("level", msg.metadata().getDouble("levelist", 0)));
-        if ((msg.metadata().getString("category") == "ocean-3d")
-            && (msg.metadata().getString("fesomLevelType") == "level")) {
+        size_t level = static_cast<size_t>(                             //
+            msg.metadata().getOpt<std::int64_t>("level").value_or(      //
+                msg.metadata().getOpt<double>("levelist").value_or(0))  //
+        );
+        if ((msg.metadata().get<std::string>("category") == "ocean-3d")
+            && (msg.metadata().get<std::string>("fesomLevelType") == "level")) {
             if (level == 0) {
                 std::ostringstream os;
                 os << " - Wrong level for the oceal level: " << std::endl;
@@ -138,7 +141,7 @@ public:
             }
             level--;
         }
-        const std::string domain = msg.metadata().getString("domain");
+        const std::string domain = msg.metadata().get<std::string>("domain");
         std::string file = generateCacheFileName(cachePath, fesomGridName, domain, NSide, orderingConvention, level);
 
         readCache(file);

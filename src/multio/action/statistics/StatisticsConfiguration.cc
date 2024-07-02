@@ -9,9 +9,13 @@
 #include "eckit/filesystem/PathName.h"
 
 #include "multio/LibMultio.h"
+#include "multio/message/Glossary.h"
 #include "multio/util/Substitution.h"
 
+
 namespace multio::action {
+
+using message::glossary;
 
 
 StatisticsConfiguration::StatisticsConfiguration(const config::ComponentConfiguration& compConf) :
@@ -203,11 +207,12 @@ void StatisticsConfiguration::parseLogPrefix(const config::ComponentConfiguratio
 };
 
 void StatisticsConfiguration::readStartTime(const message::Message& msg) {
-    if (useDateTime() && msg.metadata().has("time")) {
-        startTime_ = msg.metadata().getLong("time");
+    std::optional<std::int64_t> timeVal;
+    if (useDateTime() && (timeVal = msg.metadata().get<std::int64_t>(glossary().time))) {
+        startTime_ = *timeVal;
     }
-    else if (!useDateTime() && msg.metadata().has("startTime")) {
-        startTime_ = msg.metadata().getLong("startTime");
+    else if (!useDateTime() && (timeVal = msg.metadata().get<std::int64_t>(glossary().startTime))) {
+        startTime_ = *timeVal;
     }
     else {
         throw eckit::SeriousBug{"Unable to find start time", Here()};
@@ -216,11 +221,12 @@ void StatisticsConfiguration::readStartTime(const message::Message& msg) {
 };
 
 void StatisticsConfiguration::readStartDate(const message::Message& msg) {
-    if (useDateTime() && msg.metadata().has("date")) {
-        startDate_ = msg.metadata().getLong("date");
+    std::optional<std::int64_t> dateVal;
+    if (useDateTime() && (dateVal = msg.metadata().get<std::int64_t>(glossary().date))) {
+        startDate_ = *dateVal;
     }
-    else if (!useDateTime() && msg.metadata().has("startDate")) {
-        startDate_ = msg.metadata().getLong("startDate");
+    else if (!useDateTime() && (dateVal = msg.metadata().get<std::int64_t>(glossary().startDate))) {
+        startDate_ = *dateVal;
     }
     else {
         throw eckit::SeriousBug{"Unable to find start date", Here()};
@@ -230,40 +236,44 @@ void StatisticsConfiguration::readStartDate(const message::Message& msg) {
 
 
 void StatisticsConfiguration::readStep(const message::Message& msg) {
-    if (!msg.metadata().has("step")) {
-        throw eckit::SeriousBug{"Step metadata not present", Here()};
+    if (auto step = msg.metadata().getOpt<std::int64_t>(glossary().step); step) {
+        step_ = *step;
+        return;
     }
-    step_ = msg.metadata().getLong("step");
-    return;
+    throw eckit::SeriousBug{"Step metadata not present", Here()};
 };
 
 void StatisticsConfiguration::readRestartStep(const message::Message& msg) {
     // TODO: for restart statistics with nemo some special handling is needed
-    restartStep_ = msg.metadata().getLong("restart-step", solverSendInitStep_ ? step_ : step_ - 1);
+    restartStep_
+        = msg.metadata().getOpt<std::int64_t>(glossary().restartStep).value_or(solverSendInitStep_ ? step_ : step_ - 1);
     return;
 };
 
 void StatisticsConfiguration::readTimeStep(const message::Message& msg) {
-    timeStep_ = msg.metadata().getLong("timeStep", timeStep_);
+    timeStep_ = msg.metadata().getOpt<std::int64_t>(glossary().timeStep).value_or(timeStep_);
     return;
 };
 
 void StatisticsConfiguration::readStepFrequency(const message::Message& msg) {
-    stepFreq_ = msg.metadata().getLong("step-frequency", stepFreq_);
+    stepFreq_ = msg.metadata().getOpt<std::int64_t>(glossary().stepFrequency).value_or(stepFreq_);
     return;
 };
 
 
 void StatisticsConfiguration::readMissingValue(const message::Message& msg) {
-    if (msg.metadata().has("missingValue") && msg.metadata().has("bitmapPresent")
-        && msg.metadata().getBool("bitmapPresent")) {
+    const auto& md = msg.metadata();
+    auto missingVal = md.getOpt<double>(glossary().missingValue);
+    std::optional<bool> bitMapPresent;
+    if (missingVal && (bitMapPresent = md.get<bool>(glossary().bitmapPresent) && *bitMapPresent)) {
         haveMissingValue_ = true;
-        missingValue_ = msg.metadata().getDouble("missingValue");
+        missingValue_ = *missingVal;
     }
     return;
 };
 void StatisticsConfiguration::createLoggingPrefix(const StatisticsConfiguration& cfg, const message::Message& msg) {
     std::ostringstream os;
+    const auto& md = msg.metadata();
     if (cfg.logPrefix() != "Plan") {
         os << "(prefix=" << cfg.logPrefix();
     }
@@ -271,23 +281,23 @@ void StatisticsConfiguration::createLoggingPrefix(const StatisticsConfiguration&
         os << "(prefix=" << cfg.restartPrefix();
     }
     os << ", step=" << std::left << std::setw(6) << step_;
-    if (msg.metadata().has("param")) {
-        os << ", param=" << std::left << std::setw(10) << msg.metadata().getString("param");
+    if (auto param = md.getOpt<std::string>(glossary().param); param) {
+        os << ", param=" << std::left << std::setw(10) << *param;
     }
-    else if (msg.metadata().has("paramId")) {
-        os << ", param=" << std::left << std::setw(10) << msg.metadata().getString("paramId");
+    if (auto paramId = md.getOpt<std::int64_t>(glossary().paramId); paramId) {
+        os << ", param=" << std::left << std::setw(10) << *paramId;
     }
     else {
         throw eckit::SeriousBug{"param/paramId metadata not present", Here()};
     }
-    if (msg.metadata().has("level")) {
-        os << ", level=" << std::left << std::setw(4) << msg.metadata().getLong("level");
+    if (auto level = md.getOpt<std::int64_t>(glossary().level); level) {
+        os << ", level=" << std::left << std::setw(4) << *level;
     }
-    else if (msg.metadata().has("levelist")) {
-        os << ", level=" << std::left << std::setw(4) << msg.metadata().getLong("levelist");
+    else if (auto levelist = md.getOpt<std::int64_t>(glossary().levelist); levelist) {
+        os << ", level=" << std::left << std::setw(4) << *levelist;
     }
-    if (msg.metadata().has("levtype")) {
-        os << ", level-type=" << std::left << std::setw(5) << msg.metadata().getString("levtype");
+    if (auto levtype = md.getOpt<std::string>(glossary().levtype); levtype) {
+        os << ", level-type=" << std::left << std::setw(5) << *levtype;
     }
     logPrefix_ = os.str();
     return;

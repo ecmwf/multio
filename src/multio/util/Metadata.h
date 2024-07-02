@@ -92,8 +92,8 @@ Res firstOfTyped() noexcept(noexcept(Res{})) {
 }
 
 template <typename Res, typename T, typename... TS>
-Res firstOfTyped(T&& m, TS&&... ts) noexcept(
-    noexcept(evalToOptional(std::forward<T>(m))) && noexcept(firstOfTyped<Res>(std::forward<TS>(ts)...))) {
+Res firstOfTyped(T&& m, TS&&... ts) noexcept(noexcept(evalToOptional(std::forward<T>(m)))
+                                             && noexcept(firstOfTyped<Res>(std::forward<TS>(ts)...))) {
     auto em = evalToOptional(std::forward<T>(m));
     if (em) {
         // Return with RVO
@@ -117,9 +117,10 @@ auto withFirstOfTyped(Func&& func) noexcept(noexcept(makeOptional(std::forward<F
     return makeOptional(std::forward<Func>(func)(ArgType{}));
 }
 template <typename ArgType, typename Func, typename T, typename... TS>
-auto withFirstOfTyped(Func&& func, T&& m, TS&&... ts) noexcept(noexcept(evalToOptional(std::forward<T>(m))) && noexcept(
-    makeOptional(std::forward<Func>(func)(evalToOptional(std::forward<T>(
-        m))))) && noexcept(withFirstOfTyped<ArgType>(std::forward<Func>(func), std::forward<TS>(ts)...))) {
+auto withFirstOfTyped(Func&& func, T&& m, TS&&... ts) noexcept(
+    noexcept(evalToOptional(std::forward<T>(m)))
+    && noexcept(makeOptional(std::forward<Func>(func)(evalToOptional(std::forward<T>(m)))))
+    && noexcept(withFirstOfTyped<ArgType>(std::forward<Func>(func), std::forward<TS>(ts)...))) {
     auto em = evalToOptional(std::forward<T>(m));
     if (em) {
         return makeOptional(std::forward<Func>(func)(std::move(em)));
@@ -134,7 +135,8 @@ auto withFirstOfTyped(Func&& func, T&& m, TS&&... ts) noexcept(noexcept(evalToOp
 // function
 template <typename OptFunc, typename T, typename... TS>
 auto withFirstOf(OptFunc&& func, T&& m, TS&&... ts) noexcept(
-    noexcept(bool(func)) && noexcept(withFirstOfTyped<std::decay_t<decltype(evalToOptional(std::forward<T>(m)))>>(
+    noexcept(bool(func))
+    && noexcept(withFirstOfTyped<std::decay_t<decltype(evalToOptional(std::forward<T>(m)))>>(
         (*(std::forward<OptFunc>(func))), std::forward<T>(m), std::forward<TS>(ts)...))) {
     using ArgType = std::decay_t<decltype(evalToOptional(std::forward<T>(m)))>;
     using OptRetType = decltype(withFirstOfTyped<ArgType>((*(std::forward<OptFunc>(func))), std::forward<T>(m),
@@ -156,7 +158,7 @@ private:
     std::string key_;
 
 public:
-    LookUp(const eckit::Configuration& c, const std::string& key) : c_(c), key_(key){};
+    LookUp(const eckit::Configuration& c, const std::string& key) : c_(c), key_(key) {};
 
     std::optional<T> operator()() const;
 };

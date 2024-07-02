@@ -13,11 +13,11 @@
 #include "multio/action/interpolate/Interpolate.h"
 
 #include <algorithm>
+#include <iomanip>
 #include <regex>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <iomanip>
-#include <sstream>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/mpi/Comm.h"
@@ -131,7 +131,6 @@ void regularLatLongMetadata(DestType& param, std::vector<double> grid, std::vect
 };
 
 
-
 std::string fesomCacheName(const std::string& fesomName, const std::string& domain, const std::string& precision,
                            size_t NSide, const std::string& orderingConvention, double level) {
     std::ostringstream os;
@@ -140,15 +139,14 @@ std::string fesomCacheName(const std::string& fesomName, const std::string& doma
     std::transform(localDomain.begin(), localDomain.end(), localDomain.begin(),
                    [](unsigned char c) { return std::tolower(c); });
     os << "fesom_" << fesomName << "_" << localDomain << "_to_HEALPix_" << std::setw(6) << std::setfill('0') << NSide
-       << "_" << precision << "_" << orderingConvention << "_" << std::setw(8)
-       << std::setfill('0') << static_cast<size_t>(std::fabs(level * 1000)) << ".mat";
+       << "_" << precision << "_" << orderingConvention << "_" << std::setw(8) << std::setfill('0')
+       << static_cast<size_t>(std::fabs(level * 1000)) << ".mat";
     return os.str();
 }
 
 template <typename T>
-std::string generateKey(const message::Message& msg, const std::string& cache_path, 
-    size_t NSide, const std::string& orderingConvention)
-{
+std::string generateKey(const message::Message& msg, const std::string& cache_path, size_t NSide,
+                        const std::string& orderingConvention) {
     // TODO: Probably missing the kind of fesom grid in the name
     //       need to see the metadata to understand how to extract it
     size_t level = static_cast<size_t>(msg.metadata().getLong("level", msg.metadata().getDouble("levelist", 0)));
@@ -198,8 +196,8 @@ eckit::Value getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadat
 }
 
 
-void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& param, size_t payload_size, std::string domain,
-                const eckit::Value& inp) {
+void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& param, size_t payload_size,
+                std::string domain, const eckit::Value& inp) {
 
     auto regular_ll = [&param](double west_east_increment, double south_north_increment) {
         regularLatLongMetadata(param, std::vector<double>{west_east_increment, south_north_increment}, full_area);
@@ -275,10 +273,10 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
             return;
         }
 
-        if ( std::regex_match(input, match, FESOM)) {
+        if (std::regex_match(input, match, FESOM)) {
             param.set("gridded", true);
             param.set("gridType", "unstructured_grid");
-            param.set("numberOfPoints", payload_size );
+            param.set("numberOfPoints", payload_size);
             return;
         }
     }
@@ -320,12 +318,12 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
     }
 
     // Forward to mir the options
-    bool interpolationMatrix=false;
+    bool interpolationMatrix = false;
     if (cfg.has("options")) {
         const auto& options = cfg.getSubConfiguration("options");
         for (const auto& key : options.keys()) {
             set(options, key, options.getSubConfiguration(key).get());
-            if ( key == "interpolation" && options.getString(key) == "matrix" ) {
+            if (key == "interpolation" && options.getString(key) == "matrix") {
                 interpolationMatrix = true;
             }
         }
@@ -364,7 +362,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                  && cfg.getSubConfiguration("grid").get().head().isDouble()) {
             gridKind = "regular_ll";
             grid = cfg.getDoubleVector("grid");
-            if ( interpolationMatrix ) {
+            if (interpolationMatrix) {
                 std::ostringstream os;
                 os << " - interpolation matrix supported only for fesom -> Healpix" << std::endl;
                 throw eckit::SeriousBug(os.str(), Here());
@@ -384,7 +382,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                 regularLatLongMetadata<message::Metadata>(md, grid, full_area);
             }
 
-            if ( interpolationMatrix ) {
+            if (interpolationMatrix) {
                 std::ostringstream os;
                 os << " - interpolation matrix supported only for fesom -> Healpix" << std::endl;
                 throw eckit::SeriousBug(os.str(), Here());
@@ -398,13 +396,13 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             md.set("orderingConvention", "ring");
 
             // If no interpolation matrix name is provided, generate one
-            if ( interpolationMatrix ) {
+            if (interpolationMatrix) {
                 const std::string input = util::replaceCurly(inp.as<std::string>(), [](std::string_view replace) {
                     std::string lookUpKey{replace};
                     char* env = ::getenv(lookUpKey.c_str());
                     return env ? std::optional<std::string>{env} : std::optional<std::string>{};
                 });
-                if ( input != "fesom" ){
+                if (input != "fesom") {
                     std::ostringstream os;
                     os << " - interpolation matrix supported only for fesom -> Healpix" << std::endl;
                     throw eckit::SeriousBug(os.str(), Here());
@@ -419,7 +417,6 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                 const auto weights_file = generateKey<double>(msg, expanded_cache_path, grid[0], "ring");
                 destination.set("interpolation-matrix", weights_file);
             }
-
         }
         else {
             std::cout << "Grid not implemented" << std::endl;
@@ -444,12 +441,12 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
 
     mir::param::SimpleParametrisation inputPar;
     eckit::Value inp = getInputGrid(config, md);
-    fill_input(config, inputPar, size,  msg.domain(), inp );
+    fill_input(config, inputPar, size, msg.domain(), inp);
     if (msg.metadata().has("missingValue") && msg.metadata().getBool("bitmapPresent")) {
         inputPar.set("missing_value", msg.metadata().getDouble("missingValue"));
-    } else if (config.getSubConfiguration("options").has("missing_value")) {
-        inputPar.set("missing_value", 
-            config.getSubConfiguration("options").getDouble("missing_value"));
+    }
+    else if (config.getSubConfiguration("options").has("missing_value")) {
+        inputPar.set("missing_value", config.getSubConfiguration("options").getDouble("missing_value"));
     }
 
     mir::input::RawInput input(data, size, inputPar);

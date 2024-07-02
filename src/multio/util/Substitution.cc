@@ -11,12 +11,12 @@ std::optional<bool> parseBool(const eckit::LocalConfiguration& cfg, const std::s
     eckit::Value input = cfg.has(key)
                            ? cfg.getSubConfiguration(key).get().isString()
                                ? eckit::Value{eckit::Translator<std::string, bool>{}(util::replaceCurly(
-                                   cfg.getString(key),
-                                   [](std::string_view replace) {
-                                       std::string lookUpKey{replace};
-                                       char* env = ::getenv(lookUpKey.c_str());
-                                       return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-                                   }))}
+                                     cfg.getString(key),
+                                     [](std::string_view replace) {
+                                         std::string lookUpKey{replace};
+                                         char* env = ::getenv(lookUpKey.c_str());
+                                         return env ? std::optional<std::string>{env} : std::optional<std::string>{};
+                                     }))}
                                : cfg.getSubConfiguration(key).get()
                            : eckit::Value{defaultValue};
     return input.isBool() ? std::optional<bool>{input.as<bool>()} : std::optional<bool>{};

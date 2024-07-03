@@ -1,0 +1,21 @@
+plans:
+  - name: FESOM_to_HEALPIX_1024
+    actions:
+      - type: print
+        stream: cout
+      - type: interpolate
+        input: fosom
+        grid: H1024
+        options:
+          interpolation: matrix
+      - type: print
+        stream: cout
+      - type: encode
+        format: grib
+        template: Reference_eORCA12_W_to_HEALPix_1024.grib
+      - type: sink
+        sinks:
+        - type: file
+          append: false
+          per-server: false # Will give you one file per server
+          path: MultIO_eORCA12_W_to_HEALPix_1024.grib

@@ -461,7 +461,6 @@ int multio_delete_handle(multio_handle_t* mio) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction([mio]() {
         ASSERT(mio);
-        // std::cout << "multio_delete_handle" << std::endl;
         delete mio;
     });
 #else

@@ -335,13 +335,10 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             searchTOLSetter->second(g, *typeOfLevel, lv);
         }
         else {
-            g.setValue(glossary().typeOfLevel, typeOfLevel);
+            g.setValue(glossary().typeOfLevel, *typeOfLevel);
             withFirstOf(valueSetter(g, glossary().level), lookUp<std::int64_t>(md, glossary().level),
                         lookUp<std::int64_t>(md, glossary().levelist));
         }
-    }
-    else {
-        g.setValue("typeOfLevel", *typeOfLevel);
     }
 
     const auto productionStatusOfProcessedData = lookUp<std::int64_t>(md, glossary().productionStatusOfProcessedData)();

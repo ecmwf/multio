@@ -99,14 +99,14 @@ IMPLICIT NONE
   WRITE(OUTPUT_UNIT,*) ' + --------------------------------------'
   WRITE(OUTPUT_UNIT,*) ' + '
   WRITE(OUTPUT_UNIT,*) ' + OPTIONS ARE: '
-  WRITE(OUTPUT_UNIT,*) ' + -t || --output-manager-type :: type of output manager to use. (Default: "NOOP")'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "NOOP"'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "DUMP"'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "GRIBX"'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "GRIBX2MULTIO_BINARY"'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "GRIBX2MULTIO_RAW"'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "MULTIO_RAW"'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "MULTIO_NO_ENC"'
+  WRITE(OUTPUT_UNIT,*) ' + -t || --output-manager-type :: type of output manager to use. (Default: "NO-IO-INFO-LOG")'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "NO-IO-INFO-LOG"'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "DUMP-FORTRAN-DATA-REPRODUCER"'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "GRIB-MSG-TO-FILE"'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "GRIB-MSG-TO-MULTIO"'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "GRIB-HEADER-TO-MULTIO"'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "FULL-GRIB-HEADER-TO-MULTIO"'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "FORTRAN-METADATA-TO-MULTIO"'
   WRITE(OUTPUT_UNIT,*) ' + -i || --input-dir           :: input directory where all the binary reproducers are (Default: ".")'
   WRITE(OUTPUT_UNIT,*) ' + -y || --yaml-cfg            :: name of the "yaml" configuration file of the output manager (Default: "./output_manager_cfg.yaml")'
   WRITE(OUTPUT_UNIT,*) ' + -d || --dry-run             :: Just print to screen the "toc.bin" file. (Default: .FALSE.)'
@@ -125,7 +125,7 @@ IMPLICIT NONE
   WRITE(OUTPUT_UNIT,*) ' +'
   WRITE(OUTPUT_UNIT,*) ' + ATTENTION: the values NEED to be surrounded by double quotes to avoid unexpected behaviours!!!!'
   WRITE(OUTPUT_UNIT,*) ' + '
-  WRITE(OUTPUT_UNIT,*) ' + EXAMPLE: output_manager_tool.SP  -t NOOP  -i "." -y "/ec/res4/scratch/mavm/develop_v7/raps/multio_yaml/output-manager-config.yaml"   -v -p [137]'
+  WRITE(OUTPUT_UNIT,*) ' + EXAMPLE: ecom-feed  -t NO-IO-INFO-LOG  -i "." -y "/ec/res4/scratch/mavm/develop_v7/raps/multio_yaml/output-manager-config.yaml"   -v -p [137]'
   WRITE(OUTPUT_UNIT,*) ' + '
 
   RETURN
@@ -143,7 +143,7 @@ IMPLICIT NONE
   CFG%DRYRUN = .FALSE.
   CFG%VERBOSE = .FALSE.
   CFG%BIG_ENDIAN_READ = .FALSE.
-  CFG%OUTPUT_MANAGER_TYPE = 'NOOP'
+  CFG%OUTPUT_MANAGER_TYPE = 'NO-IO-INFO-LOG'
   CFG%INPUT_DIR = '.'
   CFG%YAML_CONFIGURATION = './output_manager_cfg.yaml'
   CFG%NPROCS = -99

@@ -294,7 +294,48 @@ ecbuild_add_executable(
   SOURCES
     tool/om_tool_cfg_mod.F90
     tool/om_tool_utils_mod.F90
-    tool/om_tool_prog.F90
+    tool/om_tool_feed_prog.F90
+
+  LIBS
+    fckit
+    ecom
+    eccodes
+    eccodes_f90
+    multio-fapi
+
+  LINKER_LANGUAGE Fortran
+
+)
+
+
+ecbuild_add_executable(
+
+  TARGET ecom-list
+
+  SOURCES
+    tool/om_tool_cfg_mod.F90
+    tool/om_tool_utils_mod.F90
+    tool/om_tool_list_prog.F90
+
+  LIBS
+    fckit
+    ecom
+    eccodes
+    eccodes_f90
+    multio-fapi
+
+  LINKER_LANGUAGE Fortran
+
+)
+
+ecbuild_add_executable(
+
+  TARGET ecom-conf
+
+  SOURCES
+    tool/om_tool_cfg_mod.F90
+    tool/om_tool_utils_mod.F90
+    tool/om_tool_conf_prog.F90
 
   LIBS
     fckit

@@ -24,6 +24,9 @@ PROGRAM OM_TOOL_PROG
   USE :: OM_TOOL_CFG_MOD, ONLY: MATCH
 
   ! Symbols imported from the main library of the project.
+  USE :: OM_API_MOD, ONLY: IPREFIX2ILEVTYPE
+  USE :: OM_API_MOD, ONLY: ILEVTYPE2CLEVTYPE
+  USE :: OM_API_MOD, ONLY: IREPRES2CREPRES
   USE :: OM_API_MOD, ONLY: JPIB_K
   USE :: OM_API_MOD, ONLY: VALUES_SP_E
   USE :: OM_API_MOD, ONLY: VALUES_DP_E
@@ -98,9 +101,6 @@ IMPLICIT NONE
   ! Extract topology informations and all model parameters from the IOserver data structure
   CALL PREPARE_OUTPUT_MANAGER_EC( TRIM(CFG%INPUT_DIR), CFG%PROC_IDX, YLTOPO, YLOMP, CFG%BIG_ENDIAN_READ, CFG%VERBOSE )
 
-  ! Consttruct an outu manager
-  CALL MAKE_OUTPUT_MANAGER( CFG%OUTPUT_MANAGER_TYPE, YLTOPO, YLOMP, CFG%YAML_CONFIGURATION, YLOM )
-
   ! Read and merge all the toc files
   IF ( CFG%NPROCS .GT. 0 ) THEN
     TOCFNAME = REPEAT( ' ', 2048 )
@@ -111,6 +111,9 @@ IMPLICIT NONE
     CALL TOC_READ_ALL( TRIM(CFG%INPUT_DIR), TOC, YLOMP%SIM_%NPROC_IO, CFG%BIG_ENDIAN_READ, CFG%VERBOSE )
   ENDIF
 
+  WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
+  WRITE(OUTPUT_UNIT,'(A20,A10,A10,A10,A10,A10,A10,A4,A20,A10)') ' message type', 'paramId', 'level/uid', 'step', 'proc', 'repres', 'prefix', '    ', 'crepres', 'clevtype'
+
   ! Loop over the toc entries
   FeederLoop: DO TOCID = 1, SIZE(TOC)
 
@@ -118,133 +121,44 @@ IMPLICIT NONE
 
     ! ==============================================================================================
     CLASS IS ( TOC_SIM_INIT_T )
-
-      IF ( CFG%DRYRUN ) THEN
-        WRITE(OUTPUT_UNIT,*) '---------------------------------------------------------------------'
-        WRITE(OUTPUT_UNIT,*) 'Begin of simulation'
-      ENDIF
+      WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
+      WRITE(OUTPUT_UNIT,*) 'Begin of simulation'
       CYCLE FeederLoop
 
     ! ==============================================================================================
     CLASS IS ( TOC_ATM_FIELD_T )
 
       IF ( MATCH( CFG, A%PARAM_ID_, A%U_ID_, A%STEP_ID_, A%PROC_ID_, A%REPRES_ID_, A%PREFIX_ID_ ) ) THEN
-        IF ( .NOT.CFG%DRYRUN ) THEN
-          SELECT CASE ( A%VAL_TYPE_ )
-          CASE ( VALUES_SP_E )
-
-            ! Read the next message to be processed
-            CALL READ_ATM_MESSAGE( TRIM(CFG%INPUT_DIR), A%PROC_ID_, A%MSG_ID_, A%MSG_ADDR_, &
-&                YLATMMSG, CFG%BIG_ENDIAN_READ, CFG%VERBOSE )
-
-            ! Read the values
-            CALL READ_VAL_SP( TRIM(CFG%INPUT_DIR), A%PROC_ID_, A%MSG_ID_, A%VAL_ADDR_, &
-&                  A%VAL_LB_, A%VAL_UB_, VALUES_SP, CFG%BIG_ENDIAN_READ, CFG%VERBOSE )
-
-            ! Write data to the output manager
-            CALL YLOM%WRITE_ATM_SP( YLATMMSG, VALUES_SP )
-
-          CASE ( VALUES_DP_E )
-
-            ! Read the next message to be processed
-            CALL READ_ATM_MESSAGE( TRIM(CFG%INPUT_DIR), A%PROC_ID_, A%MSG_ID_, A%MSG_ADDR_, YLATMMSG, CFG%BIG_ENDIAN_READ, CFG%VERBOSE )
-
-            ! Rdad the values
-            CALL READ_VAL_DP( TRIM(CFG%INPUT_DIR), A%PROC_ID_, A%MSG_ID_, A%VAL_ADDR_, &
-&                  A%VAL_LB_, A%VAL_UB_, VALUES_DP, CFG%BIG_ENDIAN_READ, CFG%VERBOSE )
-
-            ! Write data to the output manager
-            CALL YLOM%WRITE_ATM_DP( YLATMMSG, VALUES_DP )
-
-          CASE DEFAULT
-            WRITE(OUTPUT_UNIT,*) 'Unknown val type'
-            STOP
-          END SELECT
-        ELSE
-          WRITE(OUTPUT_UNIT,'(A,I10,I10,I10)') 'Atm. message:       ', A%PARAM_ID_, A%U_ID_, A%STEP_ID_
-        ENDIF
-
+        WRITE(OUTPUT_UNIT,'(A,I10,I10,I10,I10,I10,I10,A4,A20,A10)') 'Atm. message:       ', A%PARAM_ID_, A%U_ID_, A%STEP_ID_, A%PROC_ID_, A%REPRES_ID_, A%PREFIX_ID_, '    ', IREPRES2CREPRES(A%REPRES_ID_), ILEVTYPE2CLEVTYPE(IPREFIX2ILEVTYPE(A%PREFIX_ID_,A%PARAM_ID_))
       ENDIF
 
     ! ==============================================================================================
     CLASS IS ( TOC_WAM_FIELD_T )
 
       IF ( MATCH( CFG, A%PARAM_ID_, A%U_ID_, A%STEP_ID_, A%PROC_ID_, A%REPRES_ID_, A%PREFIX_ID_ ) ) THEN
-        IF ( .NOT.CFG%DRYRUN ) THEN
-
-          ! Check that the message file exist
-          SELECT CASE ( A%VAL_TYPE_ )
-          CASE ( VALUES_SP_E )
-
-            ! Read the next message to be processed
-            CALL READ_WAM_MESSAGE( TRIM(CFG%INPUT_DIR), A%PROC_ID_, A%MSG_ID_, A%MSG_ADDR_, YLWAMMSG, CFG%BIG_ENDIAN_READ, CFG%VERBOSE )
-
-            ! Read the values
-            CALL READ_VAL_SP( TRIM(CFG%INPUT_DIR), A%PROC_ID_, A%MSG_ID_, A%VAL_ADDR_, &
-&                A%VAL_LB_, A%VAL_UB_, VALUES_SP, CFG%BIG_ENDIAN_READ, CFG%VERBOSE )
-
-            ! Write data to the output manager
-            CALL YLOM%WRITE_WAM_SP( YLWAMMSG, VALUES_SP )
-
-          CASE ( VALUES_DP_E )
-
-            ! Read the next message to be processed
-            CALL READ_WAM_MESSAGE( TRIM(CFG%INPUT_DIR), A%PROC_ID_, A%MSG_ID_, A%MSG_ADDR_, YLWAMMSG, CFG%BIG_ENDIAN_READ, CFG%VERBOSE )
-
-            ! Rdad the values
-            CALL READ_VAL_DP( TRIM(CFG%INPUT_DIR), A%PROC_ID_, A%MSG_ID_, A%VAL_ADDR_, &
-&                A%VAL_LB_, A%VAL_UB_, VALUES_DP, CFG%BIG_ENDIAN_READ, CFG%VERBOSE )
-
-            ! Write data to the output manager
-            CALL YLOM%WRITE_WAM_DP( YLWAMMSG, VALUES_DP )
-
-          CASE DEFAULT
-            WRITE(OUTPUT_UNIT,*) 'Unknown val type'
-            STOP
-          END SELECT
-
-        ELSE
-          WRITE(OUTPUT_UNIT,'(A,I10,I10,I10)') 'Wam. message:       ', A%PARAM_ID_, A%U_ID_, A%STEP_ID_
-        ENDIF
+        WRITE(OUTPUT_UNIT,'(A,I10,I10,I10,I10,I10,I10,A4,A20,A10)') 'Wam. message:       ', A%PARAM_ID_, A%U_ID_, A%STEP_ID_, A%PROC_ID_, A%REPRES_ID_, A%PREFIX_ID_, '    ', IREPRES2CREPRES(A%REPRES_ID_), ILEVTYPE2CLEVTYPE(IPREFIX2ILEVTYPE(A%PREFIX_ID_,A%PARAM_ID_))
       ENDIF
 
 
     ! ==============================================================================================
     CLASS IS ( TOC_FLUSH_STEP_T )
-      IF ( .NOT.CFG%DRYRUN ) THEN
-        CALL YLOM%FLUSH_STEP( A%STEP_ )
-      ELSE
-        WRITE(OUTPUT_UNIT,*) '---------------------------------------------------------------------'
-        WRITE(OUTPUT_UNIT,'(A,I10)') 'Flush:              ', A%STEP_
-      ENDIF
+      WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
+      WRITE(OUTPUT_UNIT,'(A,I10)') 'Flush:              ', A%STEP_
 
     ! ==============================================================================================
     CLASS IS ( TOC_FLUSH_STEP_RST_T )
-      IF ( .NOT.CFG%DRYRUN ) THEN
-        CALL YLOM%FLUSH_STEP_AND_TRIGGER_RESTART( A%STEP_ )
-      ELSE
-        WRITE(OUTPUT_UNIT,*) '---------------------------------------------------------------------'
-        WRITE(OUTPUT_UNIT,'(A,I10)') 'Flush and restart:  ', A%STEP_
-      ENDIF
+      WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
+      WRITE(OUTPUT_UNIT,'(A,I10)') 'Flush and restart:  ', A%STEP_
 
     ! ==============================================================================================
     CLASS IS ( TOC_FLUSH_LAST_STEP_T )
-      IF ( .NOT.CFG%DRYRUN ) THEN
-        CALL YLOM%FLUSH_LAST_STEP( A%STEP_ )
-      ELSE
-        WRITE(OUTPUT_UNIT,*) '---------------------------------------------------------------------'
-        WRITE(OUTPUT_UNIT,'(A,I10)') 'Flush last step:    ', A%STEP_
-      ENDIF
+      WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
+      WRITE(OUTPUT_UNIT,'(A,I10)') 'Flush last step:    ', A%STEP_
 
     ! ==============================================================================================
     CLASS IS ( TOC_SIM_END_T )
-      IF ( .NOT.CFG%DRYRUN ) THEN
-        ! WRITE(*,*) 'I AM THE DESTROYER'
-        CALL DESTROY_OUTPUT_MANAGER( YLOM )
-      ELSE
-        WRITE(OUTPUT_UNIT,*) '---------------------------------------------------------------------'
-        WRITE(OUTPUT_UNIT,*) 'End of simulation'
-      ENDIF
+      WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
+      WRITE(OUTPUT_UNIT,*) 'End of simulation'
       EXIT FeederLoop
 
     ! ==============================================================================================

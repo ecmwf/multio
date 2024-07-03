@@ -464,6 +464,9 @@ IMPLICIT NONE
     GRIB_INFO%PACKING_TYPE = COMPUTE_PACKING_TYPE( MODEL_PARAMS, PARAM_ID, REPRES )
   ENDIF
 
+  ! Direct to FDB flag
+  GRIB_INFO%DIRECT_TO_FDB = DEFINITIONS%DIRECT_TO_FDB
+
 
   ! Configure Levels (using definitions from YAML file and hardcoded assuptions)
   IF ( LEV_TYPE .EQ. LEVTYPE_SOL_E ) THEN

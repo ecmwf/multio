@@ -227,6 +227,8 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
+  RETURN
+
   ! Allocate the metadata
   IF ( PRESENT(MIOH) ) THEN
     CALL MAKE_METADATA( METADATA_KIND, THIS%SAMPLE_, MIOH=MIOH )
@@ -388,6 +390,7 @@ IMPLICIT NONE
   PP_METADATA_ENTER_PROCEDURE( METADATA )
 
   EX = .FALSE.
+  RETURN
 
   PP_LOG_DEVELOP_STR( 'ENCODER: grib2, gridded, wave_spectrum, runtime' )
 

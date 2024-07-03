@@ -6,6 +6,7 @@ MODULE GRIB_CODES_MOD
 IMPLICIT NONE
 
 
+
 !     ------------------------------------------------------------------
 !*    GRIB CODING DESCRIPTORS
 
@@ -19,7 +20,7 @@ IMPLICIT NONE
 ! NGRBVP    -  2 Velocity potential
 ! NGRBPT    -  3 Potential Temperature
 ! NGRBSRO   -  8 Surface Runoff
-! NGRBSSRO  -  9 Sub-Surface Runoff
+! NGRBSSRO  -  9 Sub-Surface Runoff 
 ! NGRBALUVP - 15 MODIS albedo UV-vis parallel radiation
 ! NGRBALUVD - 16 MODIS albedo UV-vis diffuse radiation
 ! NGRBALNIP - 17 MODIS albedo Near-IR parallel radiation
@@ -50,15 +51,15 @@ IMPLICIT NONE
 ! NGRBISTL4 - 38 Ice surface temperature layer 4
 ! NGRBSWVL1 - 39 Volumetric soil water content layer 1
 ! NGRBSWVL2 - 40 Volumetric soil water content layer 2
-! NGRBSWVL3 - 41 Volumetric soil water content layer 3
-! NGRBSWVL4 - 42 Volumetric soil water content layer 4
+! NGRBSWVL3 - 41 Volumetric soil water content layer 3      
+! NGRBSWVL4 - 42 Volumetric soil water content layer 4 
 ! NGRBSLT   - 43 Soil type
 ! NGRBES   -  44 Evaporation of snow
 ! NGRBSMLT -  45 Snow melt
-! NGRBDSRP -  47 Direct solar radiation
+! NGRBDSRP -  47 Direct solar radiation 
 !                Incident on a plane perpendicular to the Sun's direction
 ! NGRB10FG -  49 gust at 10 m level
-! NGRBLSPF -  50 large scale precipitation fraction
+! NGRBLSPF -  50 large scale precipitation fraction 
 
 ! NGRBMONT  - 53 Montgomery Geopotential
 ! NGRBPRES  - 54 Pressure on Theta and PV surfaces
@@ -73,7 +74,7 @@ IMPLICIT NONE
 ! NGRBCAPES-  228044 wind shear*sqrt(cape)
 ! NGRBMXCAP6- 228035 maximum CAPE in the last 6 hours
 ! NGRBMXCAPS6-228036 maximum CAPES in the last 6 hours
-
+ 
 ! NGRBPV   -  60 Potential Vorticity
 ! NGRBLAIL -  66 Leaf Area Index Low vegitation
 ! NGRBLAIH -  67 Leaf Area Index High vegitation
@@ -88,13 +89,13 @@ IMPLICIT NONE
 ! NGRBTCRW -  228089 Total column rain water
 ! NGRBTCSW -  228090 Total column snow water
 ! NGRBTCSLW - 228088 Total column supercooled liquid water
-! NGRBSPD  -  80 !! 80 and 81 extra grib code introduced to
+! NGRBSPD  -  80 !! 80 and 81 extra grib code introduced to 
 ! NGRBSVD  -  81 !! introduce extra fields for NH Not MARS codes!!!!!!
 
 ! NGRB082 to NGRB117 reserved for extra fields. Do not use for permanent post-processed fields
 
 ! Codes for Extended control variable
-! NGRBALPHA  - 90 Alpha control variable
+! NGRBALPHA  - 90 Alpha control variable 
 ! NGRBSKTECV - 91 Skin temperatures
 ! NGRBSSHECV - 92 Sea surface height
 ! NGRBTSLECV - 93 Surface temperatures
@@ -113,13 +114,13 @@ IMPLICIT NONE
 ! Codes for 2D and 3D extra fields
 ! NGRBMINXTRA  to NGRBMAXXTRA
 
-! NGRBMX2T3 - 228026 Maximum temperature at 2 m since last 3 hours
-! NGRBMN2T3 - 228027 Minimum temperature at 2 m since last 3 hours
+! NGRBMX2T3 - 228026 Maximum temperature at 2 m since last 3 hours 
+! NGRBMN2T3 - 228027 Minimum temperature at 2 m since last 3 hours 
 ! NGRB10FG3 - 228028 Wind gust at 10 metres since last 3 hours
 ! NGRBI10FG - 228029 Wind gust at 10 metres ("instantaneous")
-! NGRBMX2T6 - 121 Maximum temperature at 2 m since last 6 hours
-! NGRBMN2T6 - 122 Minimum temperature at 2 m since last 6 hours
-! NGRB10FG6 - 123 Wind gust at 10 metres since last 6 hours
+! NGRBMX2T6 - 121 Maximum temperature at 2 m since last 6 hours 
+! NGRBMN2T6 - 122 Minimum temperature at 2 m since last 6 hours 
+! NGRB10FG6 - 123 Wind gust at 10 metres since last 6 hours 
 ! NGRBEMIS  - 124 Surface Longwave emissivity # has replaced NGRB212
 
 ! NGRBETADOT - 077 Etadotdpdeta
@@ -130,8 +131,8 @@ IMPLICIT NONE
 ! NGRBT    - 130 Temperature
 ! NGRBU    - 131 U-velocity
 ! NGRBV    - 132 V-velocity
-! NGRBUCUR - 131 U-velocity, using (ocean) table 151
-! NGRBVCUR - 132 V-velocity, using (ocean) table 151
+! NGRBUCUR - 262140 Eastward surface sea water velocity
+! NGRBVCUR - 262139 Northward surface sea water velocity
 ! NGRBSSS  - 151130 sea surface salinity, (ocean table 151)
 
 ! NGRBQ    - 133 Specific humidity
@@ -151,7 +152,7 @@ IMPLICIT NONE
 ! NGRBBLD  - 145 Boundary layer dissipation
 ! NGRBSSHF - 146 Surface sensible heat flux
 ! NGRBSLHF - 147 Surface latent heat flux
-! NGRBCHNK - 148 Charnock parameter
+! NGRBCHNK - 148 Charnock parameter 
 ! NGRBSNR  - 149 Surface net radiation
 ! NGRBTNR  - 150 Top net radiation
 ! NGRBMSL  - 151 Mean sea level pressure
@@ -191,6 +192,7 @@ IMPLICIT NONE
 ! NGRB10NV - 228132 10 metre v neutral wind
 ! NGRB2T   - 167 2 metre temperature
 ! NGRB2D   - 168 2 metre dewpoint temperature
+! NGRB2R   - 260242 2 metre relative humidity
 ! NGRB2SH  - 174096 2 metre specific humidity
 ! NGRBSSRD - 169 Surface solar radiation downwards
 ! NGRBSTL2 - 170 Soil temperature level 2
@@ -219,6 +221,8 @@ IMPLICIT NONE
 ! NGRBBTMP - 194 Brightness temperature (K)
 ! NGRBCLBT - 260510 Cloudy brightness temperature
 ! NGRBCSBT - 260511 Clear-sky brightness temperature
+! NGRBCDRFL - 260512 Cloudy reflectance
+! NGRBCRRFL - 260513 Clear-sky reflectance
 ! NGRBLGWS - 195 Latitudinal component of gravity wave stress
 ! NGRBMGWS - 196 Meridional component of gravity wave stress
 ! NGRBGWD  - 197 Gravity wave dissipation
@@ -230,9 +234,9 @@ IMPLICIT NONE
 ! NGRBO3   - 203 Ozone mixing ratio (EC prognostic ozone)
 ! NGRBPAW  - 204 Precipitation analysis weights
 ! NGRBRO   - 205 Runoff
-! NGRBTCO3 - 206 Total column ozone
+! NGRBTCO3 - 206 Total column ozone 
 ! NGRB10SI - 207 10m wind speed
-! NGRBTSRC - 208 Top solar radiation clear sky
+! NGRBTSRC - 208 Top solar radiation clear sky 
 ! NGRBTTRC - 209 Top thermal radiation clear sky
 ! NGRBSSRC - 210 Surface solar radiation clear sky
 ! NGRBSTRC - 211 Surface thermal radiation clear sky
@@ -246,7 +250,7 @@ IMPLICIT NONE
 ! NGRBDHCC - 216 Diabatic heating by cumulus convection?
 ! NGRBDHLC - 217 Diabatic heating by large-scale condensation?
 ! NGRBVDZW - 218 INTSURFTEMPERATU (vertical diffusion of zonal wind?)
-! NGRBVDMW - 219 PROFTEMPERATURE (vertical diffusion of meridional wind?)
+! NGRBVDMW - 219 PROFTEMPERATURE (vertical diffusion of meridional wind?) 
 
 ! NGRB221  - 221 Not used
 ! NGRBCTZW - 222 Convective tendency of zonal wind
@@ -299,7 +303,7 @@ IMPLICIT NONE
 ! NGRBDCTB  - 228017 Duct base height
 ! NGRBTPLB  - 228018 Trapping layer base height
 ! NGRBTPLT  - 228019 Trapping layer top height
-! NGRBSSRDC - 228129 Surface clear-sky downward solar radiation
+! NGRBSSRDC - 228129 Surface clear-sky downward solar radiation 
 ! NGRBSTRDC - 228130 Surface clear-sky downward thermal radiation
 
 !-- land carbon dioxide fields in Table 228 ---------------------
@@ -312,7 +316,7 @@ IMPLICIT NONE
 ! NGRBIGPP - 228084 Istantaneous gross primary production for CO2
 ! NGRBIREC - 228085 Istantaneous ecosysten respiration for CO2
 
-! NGRBCO2TYP- 129172 CO2 photosynthesis type (C3/C4)
+! NGRBCO2TYP- 129172 CO2 photosynthesis type (C3/C4) 
 
 !-- ocean fields in Table 151 ---------------------
 ! NGRBOCT   - 128 *In situ* ocean temperature
@@ -324,7 +328,7 @@ IMPLICIT NONE
 ! NGRBOCDEP - 137 bathymetry (bottom layer depth)
 ! NGRBOCLDP - 176 layer thickness (scalar & vector)
 ! NGRBOCLZ  - 213 layer depth
-! NGRBADVT  - 214 correction term for temperature
+! NGRBADVT  - 214 correction term for temperature 
 ! NGRBADVS  - 215 correction term for salinity
 
 !-- aerosols in Table 210 -------------------------
@@ -359,7 +363,7 @@ IMPLICIT NONE
 ! NGRBAERGN14 - 029 aerosol gain acc. 14 2D
 ! NGRBAERGN15 - 030 aerosol gain acc. 15 2D
 
-! NGRBAERLS01 - 031 black carbon biog.      clim2D
+! NGRBAERLS01 - 031 black carbon biog.      clim2D 
 ! NGRBAERLS02 - 032 black carbon fossil     clim2D
 ! NGRBAERLS03 - 033 organic matter biog.    clim2D
 ! NGRBAERLS04 - 034 organic amtter fossil   clim2D
@@ -375,14 +379,14 @@ IMPLICIT NONE
 
 ! NGRBAERLS14 - 044 aerosol loss acc. 14        2D
 ! NGRBAERLS15 - 045 aerosol loss acc. 15        2D
-! NGRBAERPR   - 046 aerosol precursor mixing ratio
-! NGRBAERSM   - 047 small aerosols mixing ratio
-! NGRBAERLG   - 048 large aerosols mixing ratio ! This is used for the total mixing
-!                                                 ratio if JB_STRUCT%JB_DATA%NAEROCV=1
+! NGRBAERPR   - 046 aerosol precursor mixing ratio 
+! NGRBAERSM   - 047 small aerosols mixing ratio  
+! NGRBAERLG   - 048 large aerosols mixing ratio ! This is used for the total mixing 
+!                                                 ratio if YDML_GCONFIG%YGFL%NAEROCV=1
 ! NGRBAODPR   - 049 aerosol precursor opt.depth 2D
 ! NGRBAODSM   - 050 small aerosols opt. depth   2D
 ! NGRBAODLG   - 051 large aerosols opt. depth   2D
-! NGRBAERDEP  - 052 dust emission potential clim2D
+! NGRBAERDEP  - 052 dust emission potential clim2D 
 ! NGRBAERLTS  - 053 lifting threshold speed clim2D
 ! NGRBAERSCC  - 054 soli clay content       clim2D
 
@@ -403,7 +407,7 @@ IMPLICIT NONE
 ! NGRBAEODTO670  - 214 aerosol total optical depth 670 nm 2D
 ! NGRBAEODTO865  - 215 aerosol total optical depth 865 nm 2D
 ! NGRBAEODTO1240  - 216 aerosol total optical depth 1240 nm 2D
-
+ 
 ! NGRBAEODVSU - 243 optical depth volc.sulphate 2D
 ! NGRBAEODVFA - 244 optical depth volc.fly ash  2D
 
@@ -434,13 +438,62 @@ IMPLICIT NONE
 ! NGRBVIWVE     - 162071  Vertical integral of eastward water vapour flux
 ! NGRBVIWVN     - 162072  Vertical integral of northward water vapour flux
 
+! Vertically-integrated variables for energy budget diagnostics
+! NGRBVIKE      - 162059  Vert.-int. kinetic energy   
+! NGRBVITHE     - 162060  Vertically-integrated thermal energy
+! NGRBVIPIE     - 162061  Vert.-int. potential+internal energy
+! NGRBVIPILE    - 162062  Vert.-int. potential+internal+latent energy
+! NGRBVITOE     - 162063  Vert.-int. total energy
+! NGRBVIWEN     - 162093  Vert.-int. water enthalpy
+
+! Accumulated vertically-integrated variables for budget diagnostics
+! NGRBTIVIEM  - 233015 time-int. vert.-int. eastward mass flux
+! NGRBTIVINM  - 233016 time-int. vert.-int. northward mass flux
+! NGRBTIVIEWV - 233022 time-int. vert.-int. eastward water vapour flux
+! NGRBTIVINWV - 233023 time-int. vert.-int. northward water vapour flux
+! NGRBTIVIELW - 233024 time-int. vert.-int. eastward cloud liquid water flux
+! NGRBTIVINLW - 233025 time-int. vert.-int. northward cloud liquid water flux
+! NGRBTIVIEIW - 233026 time-int. vert.-int. eastward cloud ice water flux
+! NGRBTIVINIW - 233027 time-int. vert.-int. northward cloud ice water flux
+! NGRBTIVIER  - 233028 time-int. vert.-int. eastward rain flux
+! NGRBTIVINR  - 233029 time-int. vert.-int. northward rain flux
+! NGRBTIVIES  - 233030 time-int. vert.-int. eastward snow flux
+! NGRBTIVINS  - 233031 time-int. vert.-int. northward snow flux
+! NGRBTIVIEOZ - 233032 time-int. vert.-int. eastward ozone flux
+! NGRBTIVINOZ - 233033 time-int. vert.-int. northward ozone flux
+! NGRBTIVISOZ - 233035 time-int. vert.-int. net source of ozone
+! NGRBTIVIEEN - 233004 time-int. vert.-int. eastward enthalpy flux
+! NGRBTIVINEN - 233005 time-int. vert.-int. northward enthalpy flux
+! NGRBTIVIEG  - 233000 time-int. vert.-int. eastward geopotential flux
+! NGRBTIVING  - 233001 time-int. vert.-int. northward geopotential flux
+! NGRBTIVIEKE - 233006 time-int. vert.-int. eastward kinetic energy flux
+! NGRBTIVINKE - 233007 time-int. vert.-int. northward kinetic energy flux
+! NGRBTIVIETE - 233008 time-int. vert.-int. eastward total energy flux
+! NGRBTIVINTE - 233009 time-int. vert.-int. northward total energy flux
+
+! Accumulated divergence of vertically-integrated variables for diagnostics
+! NGRBTIDVIM  - 233014 time-int. divergence of vert.-int. mass flux
+! NGRBTIDVIWV - 233017 time-int. divergence of vert.-int. water vapour flux
+! NGRBTIDVILW - 233018 time-int. divergence of vert.-int. cloud liquid water flux
+! NGRBTIDVIIW - 233019 time-int. divergence of vert.-int. cloud ice water flux
+! NGRBTIDVIR  - 233020 time-int. divergence of vert.-int. rain flux
+! NGRBTIDVIS  - 233021 time-int. divergence of vert.-int. snow flux
+! NGRBTIDVIOZ - 233034 time-int. divergence of vert.-int. ozone flux
+! NGRBTIDVIEN - 233010 time-int. divergence of vert.-int. enthalpy flux
+! NGRBTIDVIG  - 233003 time-int. divergence of vert.-int. geopotential flux
+! NGRBTIDVIKE - 233011 time-int. divergence of vert.-int. kinetic energy flux
+! NGRBTIDVITE - 233012 time-int. divergence of vert.-int. total energy flux
+! NGRBTIDVIWEN- 233013 time-int. divergence of vert.-int. water enthalpy flux
+! NGRBTIDVIWG - 233002 time-int. divergence of vert.-int. water geopotential flux
+
 ! NGRBCO2OF     - 210067 CO2 - ocean flux
 ! NGRBCO2NBF    - 210068 CO2 - biosphere flux
 ! NGRBCO2APF    - 210069 CO2 - anthropogenic emissions
 ! NGRBCO2FIRE   - 210080 CO2 - biomass burning
 ! NGRBCH4F      - 210070 CH4 surface fluxes - aggregated field
 ! NGRBCH4FIRE   - 210082 CH4 - fire emissions
-! NGRBCH4       - 219004 CH4 emissions (wetlands)
+! NGRBICH4WET   - 228104 Instantaenous CH4 emissions (wetlands)
+! NGRBCH4WET    - 228109 Accumulated CH4 emissions (wetlands)
 !
 ! Lightning fields
 ! NGRBLITOTI  - 228050 Instantaneous total lightning flash density
@@ -478,9 +531,6 @@ IMPLICIT NONE
 !                  - 210066 Total column GHG3: Nitrous Oxide
 
 !---------------------------------------------------
-
-INTEGER(KIND=JPIB_K), PARAMETER :: JPGHG=3
-INTEGER(KIND=JPIB_K), PARAMETER :: JPGHG_ASSIM=2
 
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSTRF  =  1
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVP    =  2
@@ -632,8 +682,8 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBZ    = 129
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBT    = 130
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBU    = 131
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBV    = 132
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBUCUR = 151131
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVCUR = 151132
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBUCUR = 262140
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVCUR = 262139
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSSS  = 151130
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBQ    = 133
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSP   = 134
@@ -701,6 +751,7 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRB200V = 228240
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB200SI= 228241
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB2T   = 167
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB2D   = 168
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRB2R   = 260242
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB2SH  = 174096
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSSRD = 169
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSTL2 = 170
@@ -729,6 +780,8 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBNEOV = 193
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBBTMP = 194
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCLBT = 260510
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCSBT = 260511
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCDRFL = 260512
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCRRFL = 260513
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLGWS = 195
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMGWS = 196
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBGWD  = 197
@@ -803,21 +856,21 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBATZE = 253
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBATMW = 254
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRB255  = 255
 !-- lake depth ancillary + lake prognostics -- Table 228 ---
-INTEGER(KIND=JPIB_K) :: NGRBDL=228007
-INTEGER(KIND=JPIB_K) :: NGRBLMLT=228008
-INTEGER(KIND=JPIB_K) :: NGRBLMLD=228009
-INTEGER(KIND=JPIB_K) :: NGRBLBLT=228010
-INTEGER(KIND=JPIB_K) :: NGRBLTLT=228011
-INTEGER(KIND=JPIB_K) :: NGRBLSHF=228012
-INTEGER(KIND=JPIB_K) :: NGRBLICT=228013
-INTEGER(KIND=JPIB_K) :: NGRBLICD=228014
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBDL   = 228007
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLMLT = 228008
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLMLD = 228009
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLBLT = 228010
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLTLT = 228011
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLSHF = 228012
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLICT = 228013
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBLICD = 228014
 !-- land carbon dioxide diagnostics -- Table 228 ---
-INTEGER(KIND=JPIB_K) :: NGRBNEE  = 228080
-INTEGER(KIND=JPIB_K) :: NGRBGPP  = 228081
-INTEGER(KIND=JPIB_K) :: NGRBREC  = 228082
-INTEGER(KIND=JPIB_K) :: NGRBINEE = 228083
-INTEGER(KIND=JPIB_K) :: NGRBIGPP = 228084
-INTEGER(KIND=JPIB_K) :: NGRBIREC = 228085
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBNEE  = 228080
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBGPP  = 228081
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBREC  = 228082
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBINEE = 228083
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBIGPP = 228084
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBIREC = 228085
 !-- ducting diagnostics -- Table 228 ---------------
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBDNDZN = 228015
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBDNDZA = 228016
@@ -832,8 +885,8 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSTRDC= 228130
 !-- ocean mixed layer -- Table 151 ----------------
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBOCT   = 151129
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBOCS   = 151130
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBOCU   = 151131
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBOCV   = 151132
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBOCU   = 262140
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBOCV   = 262139
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBOCVVS = 105
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBOCVDF = 106
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBOCDEP = 107
@@ -959,6 +1012,51 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBMAXERA  = 162113
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVIWVE   = 162071
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVIWVN   = 162072
 
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVIKE    = 162059
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVITHE   = 162060
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVIPIE   = 162061
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVIPILE  = 162062
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVITOE   = 162063
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBVIWEN   = 162093
+
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVIEM  = 233015
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVINM  = 233016
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVIEWV = 233022
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVINWV = 233023
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVIELW = 233024
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVINLW = 233025
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVIEIW = 233026
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVINIW = 233027
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVIER  = 233028
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVINR  = 233029
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVIES  = 233030
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVINS  = 233031
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVIEOZ = 233032
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVINOZ = 233033
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVISOZ = 233035
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVIEEN = 233004
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVINEN = 233005
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVIEG  = 233000
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVING  = 233001
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVIEKE = 233006
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVINKE = 233007
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVIETE = 233008
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIVINTE = 233009
+
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVIM  = 233014
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVIWV = 233017
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVILW = 233018
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVIIW = 233019
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVIR  = 233020
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVIS  = 233021
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVIOZ = 233034
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVIEN = 233010
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVIG  = 233003
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVIKE = 233011
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVITE = 233012
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVIWEN= 233013
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTIDVIWG = 233002
+
 !---------------------------------------------------
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCO2OF   = 210067
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCO2NBF  = 210068
@@ -966,7 +1064,8 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCO2APF  = 210069
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCO2FIRE = 210080
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCH4F    = 210070
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCH4FIRE = 210082
-INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCH4WET  = 228104
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBICH4WET = 228104
+INTEGER(KIND=JPIB_K), PARAMETER :: NGRBCH4WET  = 228109
 !---------------------------------------------------
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBFASGPPCOEF = 228078
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBFASRECCOEF = 228079
@@ -1022,10 +1121,8 @@ INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSSSO  = 151130
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBTEM300= 151164
 INTEGER(KIND=JPIB_K), PARAMETER :: NGRBSAL300= 151175
 
-INTEGER(KIND=JPIB_K), PARAMETER, DIMENSION(JPGHG) :: NGRBGHG = (/&
+INTEGER(KIND=JPIB_K), PARAMETER, DIMENSION(3) :: NGRBGHG = (/&
  & 210061, 210062, 210063/)
-INTEGER(KIND=JPIB_K),  PARAMETER,DIMENSION(JPGHG) :: NGRBTCGHG = (/&
+INTEGER(KIND=JPIB_K),  PARAMETER,DIMENSION(3) :: NGRBTCGHG = (/&
  & 210064, 210065, 210066/)
-!     ------------------------------------------------------------------
-
 END MODULE GRIB_CODES_MOD

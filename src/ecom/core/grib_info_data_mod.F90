@@ -56,6 +56,9 @@ TYPE :: GRIB_INFO_T
   INTEGER(KIND=JPIB_K) :: OVERALL_LENGTH_OF_TIME_RANGE_ = UNDEF_PARAM_E
   INTEGER(KIND=JPIB_K) :: IBOT_ = UNDEF_PARAM_E
   INTEGER(KIND=JPIB_K) :: ITOP_ = UNDEF_PARAM_E
+  ! Option that needs to be specified per field, but used onli by
+  ! "grib-header-to-multio" output manager
+  LOGICAL :: DIRECT_TO_FDB = .FALSE.
 END TYPE
 
 ! Time history datatype

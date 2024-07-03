@@ -210,7 +210,7 @@ IMPLICIT NONE
   ENDDO
 
   ! Print the unique set of paramId in the configuration
-  CALL MAP_PRINT( MAP, 'test', 0_JPIB_K )
+  CALL MAP_PRINT( MAP, 'input-parameters', 0_JPIB_K )
 
   ! Free the map
   CALL MAP_FREE( MAP )

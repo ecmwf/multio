@@ -14,22 +14,22 @@ grib-msg-to-file:
   profile: true
 
 grib-msg-to-multio:
-  multio-plans-file: '../multio-ifs-wam-config.yaml'
+  multio-plans-file: '/perm/mavm/testsData/ecom-config/multio-ifs-wam-config.yaml'
   verbose: true
   profile: true
 
 grib-header-to-multio:
-  multio-plans-file: '../multio-debug-plan.yaml'
+  multio-plans-file: '/perm/mavm/testsData/ecom-config/multio-debug-plan.yaml'
   verbose: true
   profile: true
 
 full-grib-header-to-multio:
-  multio-plans-file: '../multio-debug-plan.yaml'
+  multio-plans-file: '/perm/mavm/testsData/ecom-config/multio-debug-plan.yaml'
   verbose: true
   profile: true
 
 fortran-metadata-to-multio:
-  multio-plans-file: '../multio-debug-plan.yaml'
+  multio-plans-file: '/perm/mavm/testsData/ecom-config/multio-debug-plan.yaml'
   verbose: true
   profile: true
 
@@ -50,7 +50,7 @@ encoding-rules:
       encode:
         gribEdition: 2
         packingType: 'grid_ccsds'
-        directToFDB: false
+        directToFDB: true
 
 
     - rule: 'grib2_gridded_pl'
@@ -58,6 +58,19 @@ encoding-rules:
         levtype: ['pl']
         repres:  ['gridded']
         paramId:  [ 60, 75, 76, 133, 203, 246, 247, 248, 260290 ]
+
+      encode:
+        gribEdition: 2
+        packingType: 'grid_ccsds'
+        directToFDB: true
+
+
+
+    - rule: 'grib2_gridded_pl_to_plan'
+      filter:
+        levtype: ['pl']
+        repres:  ['gridded']
+        paramId:  [ 247 ]
 
       encode:
         gribEdition: 2
@@ -81,7 +94,7 @@ encoding-rules:
       encode:
         gribEdition: 2
         packingType: 'grid_ccsds'
-        directToFDB: false
+        directToFDB: true
 
 
     - rule: 'grib2_gridded_sol'
@@ -93,7 +106,7 @@ encoding-rules:
       encode:
         gribEdition: 2
         packingType: 'grid_ccsds'
-        directToFDB: false
+        directToFDB: true
 
 
     - rule: 'grib2_spherical_harmonics_ml'
@@ -105,7 +118,7 @@ encoding-rules:
       encode:
         gribEdition: 2
         packingType: 'spectral_complex'
-        directToFDB: false
+        directToFDB: true
 
 
     - rule: 'grib2_spherical_harmonics_pl'
@@ -117,5 +130,5 @@ encoding-rules:
       encode:
         gribEdition: 2
         packingType: 'spectral_complex'
-        directToFDB: false
+        directToFDB: true
 

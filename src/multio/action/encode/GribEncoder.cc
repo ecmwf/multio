@@ -586,9 +586,9 @@ std::string getTimeReference(GribEncoder& g, const eckit::LocalConfiguration& md
             else {
                 isReferingToStart = true;
             }
-        } 
+        }
         else if (types_with_time_reference_offset.find(*queriedMarsFields.type)
-            != types_with_time_reference_offset.end()) {
+                 != types_with_time_reference_offset.end()) {
             isReferingToStart = true;
         }
     }

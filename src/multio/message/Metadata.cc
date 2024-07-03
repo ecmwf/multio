@@ -24,10 +24,10 @@ Metadata to_metadata(const std::string& fieldId) {
 }
 
 MetadataException::MetadataException(const std::string& reason, const eckit::CodeLocation& l) :
-    eckit::Exception(std::string("MetadataException: ") + reason, l){};
+    eckit::Exception(std::string("MetadataException: ") + reason, l) {};
 
 MetadataMissingKeyException::MetadataMissingKeyException(const std::string& missingKey, const eckit::CodeLocation& l) :
-    MetadataException(std::string("Missing key \"") + missingKey + std::string("\""), l){};
+    MetadataException(std::string("Missing key \"") + missingKey + std::string("\""), l) {};
 
 
 }  // namespace multio::message

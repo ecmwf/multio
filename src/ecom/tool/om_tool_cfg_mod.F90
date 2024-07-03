@@ -24,6 +24,7 @@ TYPE :: COMMAND_LINE_ARGS_T
   CHARACTER(LEN=4096)  :: INPUT_DIR
   CHARACTER(LEN=4096)  :: YAML_CONFIGURATION
   INTEGER(JPIB_K), DIMENSION(:), ALLOCATABLE :: PARAM_ID
+  INTEGER(JPIB_K), DIMENSION(:), ALLOCATABLE :: ZPARAM_ID
   INTEGER(JPIB_K), DIMENSION(:), ALLOCATABLE :: U_ID
   INTEGER(JPIB_K), DIMENSION(:), ALLOCATABLE :: STEP_ID
   INTEGER(KIND=JPIB_K), DIMENSION(:), ALLOCATABLE :: REPRES_ID
@@ -67,6 +68,10 @@ IMPLICIT NONE
     EX = ANY( PARAM_ID .EQ. CFG%PARAM_ID )
   ENDIF
 
+  IF ( EX .AND. ALLOCATED( CFG%ZPARAM_ID ) ) THEN
+    EX = .NOT.ANY( PARAM_ID .EQ. CFG%ZPARAM_ID )
+  ENDIF
+
   IF ( EX .AND. ALLOCATED( CFG%U_ID ) ) THEN
     EX = ANY( U_ID .EQ. CFG%U_ID )
   ENDIF
@@ -99,14 +104,14 @@ IMPLICIT NONE
   WRITE(OUTPUT_UNIT,*) ' + --------------------------------------'
   WRITE(OUTPUT_UNIT,*) ' + '
   WRITE(OUTPUT_UNIT,*) ' + OPTIONS ARE: '
-  WRITE(OUTPUT_UNIT,*) ' + -t || --output-manager-type :: type of output manager to use. (Default: "NOOP")'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "NOOP"'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "DUMP"'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "GRIBX"'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "GRIBX2MULTIO_BINARY"'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "GRIBX2MULTIO_RAW"'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "MULTIO_RAW"'
-  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "MULTIO_NO_ENC"'
+  WRITE(OUTPUT_UNIT,*) ' + -t || --output-manager-type :: type of output manager to use. (Default: "NO-IO-INFO-LOG")'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "NO-IO-INFO-LOG"'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "DUMP-FORTRAN-DATA-REPRODUCER"'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "GRIB-MSG-TO-FILE"'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "GRIB-MSG-TO-MULTIO"'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "GRIB-HEADER-TO-MULTIO"'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "FULL-GRIB-HEADER-TO-MULTIO"'
+  WRITE(OUTPUT_UNIT,*) ' +                                 |-> "FORTRAN-METADATA-TO-MULTIO"'
   WRITE(OUTPUT_UNIT,*) ' + -i || --input-dir           :: input directory where all the binary reproducers are (Default: ".")'
   WRITE(OUTPUT_UNIT,*) ' + -y || --yaml-cfg            :: name of the "yaml" configuration file of the output manager (Default: "./output_manager_cfg.yaml")'
   WRITE(OUTPUT_UNIT,*) ' + -d || --dry-run             :: Just print to screen the "toc.bin" file. (Default: .FALSE.)'
@@ -116,6 +121,7 @@ IMPLICIT NONE
   WRITE(OUTPUT_UNIT,*) ' +                                 |-> "*"         a star: all the param ids are processd (Defaul behaviour)'
   WRITE(OUTPUT_UNIT,*) ' +                                 |-> "1"         a number: only the paramid that match the number is processed'
   WRITE(OUTPUT_UNIT,*) ' +                                 |-> "[1,2,3,4]" a list of numbers: all the param ids that match the numbers in the list are processed'
+  WRITE(OUTPUT_UNIT,*) ' + -z || --excluded-param-id   :: list of the param-ids to be excluded'
   WRITE(OUTPUT_UNIT,*) ' + -l || --level               :: list of levels to be processed. The grammar is the same used for param ids'
   WRITE(OUTPUT_UNIT,*) ' + -s || --step                :: list of steps to be processed. The grammar is the same used for param ids'
   WRITE(OUTPUT_UNIT,*) ' + -r || --representation      :: [1=gridded, 2=spectral]'
@@ -125,7 +131,7 @@ IMPLICIT NONE
   WRITE(OUTPUT_UNIT,*) ' +'
   WRITE(OUTPUT_UNIT,*) ' + ATTENTION: the values NEED to be surrounded by double quotes to avoid unexpected behaviours!!!!'
   WRITE(OUTPUT_UNIT,*) ' + '
-  WRITE(OUTPUT_UNIT,*) ' + EXAMPLE: output_manager_tool.SP  -t NOOP  -i "." -y "/ec/res4/scratch/mavm/develop_v7/raps/multio_yaml/output-manager-config.yaml"   -v -p [137]'
+  WRITE(OUTPUT_UNIT,*) ' + EXAMPLE: ecom-feed  -t NO-IO-INFO-LOG  -i "." -y "/ec/res4/scratch/mavm/develop_v7/raps/multio_yaml/output-manager-config.yaml"   -v -p [137]'
   WRITE(OUTPUT_UNIT,*) ' + '
 
   RETURN
@@ -143,7 +149,7 @@ IMPLICIT NONE
   CFG%DRYRUN = .FALSE.
   CFG%VERBOSE = .FALSE.
   CFG%BIG_ENDIAN_READ = .FALSE.
-  CFG%OUTPUT_MANAGER_TYPE = 'NOOP'
+  CFG%OUTPUT_MANAGER_TYPE = 'NO-IO-INFO-LOG'
   CFG%INPUT_DIR = '.'
   CFG%YAML_CONFIGURATION = './output_manager_cfg.yaml'
   CFG%NPROCS = -99
@@ -361,6 +367,18 @@ IMPLICIT NONE
       ELSE
         POS = 0
         EX = READ_INTEGER_ARRAY( TRIM(TMP), POS, '-', CFG%PARAM_ID, S )
+      ENDIF
+
+    ! ----------------------------------------------------------------------------------------------
+    CASE ( '-z', '--excluded-param-id' )
+      I = I + 1
+      TMP = REPEAT(' ',4096)
+      CALL GET_COMMAND_ARGUMENT( I, TMP )
+      IF ( TRIM(ADJUSTL(TMP)) .EQ. '*' ) THEN
+        WRITE(*,*) 'parameters = all'
+      ELSE
+        POS = 0
+        EX = READ_INTEGER_ARRAY( TRIM(TMP), POS, '-', CFG%ZPARAM_ID, S )
       ENDIF
 
     ! ----------------------------------------------------------------------------------------------

@@ -84,6 +84,9 @@ TYPE, EXTENDS(OUTPUT_MANAGER_BASE_A) :: GRIBX2MULTIO_RAW_OUTPUT_MANAGER_T
   !> File used for logging purposes (if needed)
   CHARACTER(LEN=1024)  :: LOG_FNAME_ = REPEAT(' ',1024)
 
+  !> Binary file
+  CHARACTER(LEN=1), DIMENSION(:), ALLOCATABLE :: MESSAGE_DATA_
+
   !> Multio Handle used to interact with multio
   TYPE(MULTIO_HANDLE) :: MIO_
 
@@ -452,6 +455,7 @@ SUBROUTINE GRIBX2MULTIO_RAW_WRITE_ATM_DP( THIS, YDMSG, VALUES_DP )
   USE :: OM_PROFILE_MOD,           ONLY: PROFILE_MESSAGE
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_INJECT_PARAMETERS
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_WRITE_VALUES_DP
+  USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_WRITE_BINARY_GRIB
 
   ! Symbols imported from other modules within the project.
   USE :: MULTIO_API, ONLY: MULTIO_METADATA
@@ -523,17 +527,28 @@ IMPLICIT NONE
   ! Encode throws an error if an error happens, and return false if the field does not need to be emitted
   IF ( ENCODE_ATM( THIS%MODEL_PAR_, GRIB_INFO, TIME_HIST, YDMSG, PGMD ) ) THEN
 
-    ! Create multio metadata from a grib metadata
-    CALL THIS%MMD_%INIT_FROM_METADATA( PGMD )
+    IF ( GRIB_INFO%DIRECT_TO_FDB ) THEN
 
-    ! Get the multio Metadata
-    MMD => THIS%MMD_%GET_MULTIO_METADATA()
+      ! Set values into the grib handle
+      CALL THIS%GMD_%SET( 'values', VALUES_DP(1:YDMSG%NVALUES_) )
 
-    ! Inject parameters in the metadata
-    CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, MMD )
+      ! Write the encoded grib file to FDB using multIO
+      CALL MULTIO_WRITE_BINARY_GRIB( THIS%MIO_, THIS%MESSAGE_DATA_, THIS%GMD_%GET_HANDLE() )
 
-    ! Write to multio plans
-    CALL MULTIO_WRITE_VALUES_DP( THIS%MIO_, MMD, VALUES_DP )
+    ELSE
+
+      ! Create multio metadata from a grib metadata
+      CALL THIS%MMD_%INIT_FROM_METADATA( PGMD )
+
+      ! Get the multio Metadata
+      MMD => THIS%MMD_%GET_MULTIO_METADATA()
+
+      ! Inject parameters in the metadata
+      CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, MMD )
+
+      ! Write to multio plans
+      CALL MULTIO_WRITE_VALUES_DP( THIS%MIO_, MMD, VALUES_DP )
+    ENDIF
 
   ENDIF
 
@@ -620,6 +635,7 @@ SUBROUTINE GRIBX2MULTIO_RAW_WRITE_ATM_SP( THIS, YDMSG, VALUES_SP )
   USE :: OM_PROFILE_MOD,           ONLY: PROFILE_MESSAGE
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_INJECT_PARAMETERS
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_WRITE_VALUES_SP
+  USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_WRITE_BINARY_GRIB
 
   ! Symbols imported from other modules within the project.
   USE :: MULTIO_API, ONLY: MULTIO_METADATA
@@ -692,17 +708,29 @@ IMPLICIT NONE
   ! Encode throws an error if an error happens, and return false if the field does not need to be emitted
   IF ( ENCODE_ATM( THIS%MODEL_PAR_, GRIB_INFO, TIME_HIST, YDMSG, PGMD ) ) THEN
 
-    ! Create multio metadata from a grib metadata
-    CALL THIS%MMD_%INIT_FROM_METADATA( PGMD )
+    IF ( GRIB_INFO%DIRECT_TO_FDB ) THEN
 
-    ! Get the multio Metadata
-    MMD => THIS%MMD_%GET_MULTIO_METADATA()
+      ! Set values into the grib handle
+      CALL THIS%GMD_%SET( 'values', VALUES_SP(1:YDMSG%NVALUES_) )
 
-    ! Inject parameters in the metadata
-    CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, MMD )
+      ! Write the encoded grib file to FDB using multIO
+      CALL MULTIO_WRITE_BINARY_GRIB( THIS%MIO_, THIS%MESSAGE_DATA_, THIS%GMD_%GET_HANDLE() )
 
-    ! Write to multio plans
-    CALL MULTIO_WRITE_VALUES_SP( THIS%MIO_, MMD, VALUES_SP )
+    ELSE
+
+      ! Create multio metadata from a grib metadata
+      CALL THIS%MMD_%INIT_FROM_METADATA( PGMD )
+
+      ! Get the multio Metadata
+      MMD => THIS%MMD_%GET_MULTIO_METADATA()
+
+      ! Inject parameters in the metadata
+      CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, MMD )
+
+      ! Write to multio plans
+      CALL MULTIO_WRITE_VALUES_SP( THIS%MIO_, MMD, VALUES_SP )
+
+    ENDIF
 
   ENDIF
 
@@ -790,6 +818,7 @@ SUBROUTINE GRIBX2MULTIO_RAW_WRITE_WAM_DP( THIS, YDMSG, VALUES_DP )
   USE :: OM_PROFILE_MOD,           ONLY: PROFILE_MESSAGE
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_INJECT_PARAMETERS
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_WRITE_VALUES_DP
+  USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_WRITE_BINARY_GRIB
 
   ! Symbols imported from other modules within the project.
   USE :: MULTIO_API, ONLY: MULTIO_METADATA
@@ -862,17 +891,30 @@ IMPLICIT NONE
   ! Encode throws an error if an error happens, and return false if the field does not need to be emitted
   IF ( ENCODE_WAM( THIS%MODEL_PAR_, GRIB_INFO, TIME_HIST, YDMSG, PGMD ) ) THEN
 
-    ! Create multio metadata from a grib metadata
-    CALL THIS%MMD_%INIT_FROM_METADATA( PGMD )
 
-    ! Get the multio Metadata
-    MMD => THIS%MMD_%GET_MULTIO_METADATA()
+    IF ( GRIB_INFO%DIRECT_TO_FDB ) THEN
 
-    ! Inject parameters in the metadata
-    CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, MMD )
+      ! Set values into the grib handle
+      CALL THIS%GMD_%SET( 'values', VALUES_DP(1:YDMSG%NVALUES_) )
 
-    ! Write to multio plans
-    CALL MULTIO_WRITE_VALUES_DP( THIS%MIO_, MMD, VALUES_DP )
+      ! Write the encoded grib file to FDB using multIO
+      CALL MULTIO_WRITE_BINARY_GRIB( THIS%MIO_, THIS%MESSAGE_DATA_, THIS%GMD_%GET_HANDLE() )
+
+    ELSE
+
+      ! Create multio metadata from a grib metadata
+      CALL THIS%MMD_%INIT_FROM_METADATA( PGMD )
+
+      ! Get the multio Metadata
+      MMD => THIS%MMD_%GET_MULTIO_METADATA()
+
+      ! Inject parameters in the metadata
+      CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, MMD )
+
+      ! Write to multio plans
+      CALL MULTIO_WRITE_VALUES_DP( THIS%MIO_, MMD, VALUES_DP )
+
+    ENDIF
 
   ENDIF
 
@@ -959,6 +1001,7 @@ SUBROUTINE GRIBX2MULTIO_RAW_WRITE_WAM_SP( THIS, YDMSG, VALUES_SP )
   USE :: OM_PROFILE_MOD,           ONLY: PROFILE_MESSAGE
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_INJECT_PARAMETERS
   USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_WRITE_VALUES_SP
+  USE :: OM_MULTIO_UTILS_MOD,      ONLY: MULTIO_WRITE_BINARY_GRIB
 
   ! Symbols imported from other modules within the project.
   USE :: MULTIO_API, ONLY: MULTIO_METADATA
@@ -1030,17 +1073,29 @@ IMPLICIT NONE
   ! Encode throws an error if an error happens, and return false if the field does not need to be emitted
   IF ( ENCODE_WAM( THIS%MODEL_PAR_, GRIB_INFO, TIME_HIST, YDMSG, PGMD ) ) THEN
 
-    ! Create multio metadata from a grib metadata
-    CALL THIS%MMD_%INIT_FROM_METADATA( PGMD )
+    IF ( GRIB_INFO%DIRECT_TO_FDB ) THEN
 
-    ! Get the multio Metadata
-    MMD => THIS%MMD_%GET_MULTIO_METADATA()
+      ! Set values into the grib handle
+      CALL THIS%GMD_%SET( 'values', VALUES_SP(1:YDMSG%NVALUES_) )
 
-    ! Inject parameters in the metadata
-    CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, MMD )
+      ! Write the encoded grib file to FDB using multIO
+      CALL MULTIO_WRITE_BINARY_GRIB( THIS%MIO_, THIS%MESSAGE_DATA_, THIS%GMD_%GET_HANDLE() )
 
-    ! Write to multio plans
-    CALL MULTIO_WRITE_VALUES_SP( THIS%MIO_, MMD, VALUES_SP )
+    ELSE
+
+      ! Create multio metadata from a grib metadata
+      CALL THIS%MMD_%INIT_FROM_METADATA( PGMD )
+
+      ! Get the multio Metadata
+      MMD => THIS%MMD_%GET_MULTIO_METADATA()
+
+      ! Inject parameters in the metadata
+      CALL MULTIO_INJECT_PARAMETERS( THIS%MODEL_PAR_, MMD )
+
+      ! Write to multio plans
+      CALL MULTIO_WRITE_VALUES_SP( THIS%MIO_, MMD, VALUES_SP )
+
+    ENDIF
 
   ENDIF
 

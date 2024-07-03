@@ -107,7 +107,7 @@ ecbuild_add_option( FEATURE OUTPUT_MANAGER
 
 ecbuild_add_option( FEATURE OUTPUT_MANAGER_ENCODER_REPORT
                     CONDITION HAVE_OUTPUT_MANAGER
-                    DEFAULT OFF
+		    DEFAULT ON
                     DESCRIPTION "Enable generation of the encoding report" )
 
 ecbuild_add_option( FEATURE OUTPUT_MANAGER_TOOL

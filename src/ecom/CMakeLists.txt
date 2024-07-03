@@ -122,6 +122,7 @@ list( APPEND output_manager_src
 list( APPEND output_manager_src
     grib_info/encoding_info_mod.F90
     grib_info/yaml_rules_mod.F90
+    grib_info/yaml_time_assumptions_mod.F90
     grib_info/grib_codes_mod.F90
 )
 
@@ -285,6 +286,28 @@ ecbuild_add_library(
 set_target_properties( ecom PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/ecom )
 target_include_directories( ecom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/ecom> )
 
+ecbuild_add_library(
+  TARGET  ecom-utils
+  SOURCES
+    tool/om_tool_utils_mod.F90
+    tool/om_tool_cfg_mod.F90
+
+  DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
+
+  PRIVATE_INCLUDES
+    ${CMAKE_BINARY_DIR}/include
+    ${OUTPUT_MANAGER_INCLUDE_PATH}
+
+  PUBLIC_LIBS
+    fckit
+    ecom
+
+)
+
+# Module directory
+set_target_properties( ecom-utils PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/ecom )
+target_include_directories( ecom-utils PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/ecom> )
+
 
 if ( HAVE_OUTPUT_MANAGER_TOOL )
 ecbuild_add_executable(
@@ -292,13 +315,52 @@ ecbuild_add_executable(
   TARGET ecom-feed
 
   SOURCES
-    tool/om_tool_cfg_mod.F90
-    tool/om_tool_utils_mod.F90
-    tool/om_tool_prog.F90
+    tool/om_tool_feed_prog.F90
 
   LIBS
     fckit
     ecom
+    ecom-utils
+    eccodes
+    eccodes_f90
+    multio-fapi
+
+  LINKER_LANGUAGE Fortran
+
+)
+
+
+
+ecbuild_add_executable(
+
+  TARGET ecom-list
+
+  SOURCES
+    tool/om_tool_list_prog.F90
+
+  LIBS
+    fckit
+    ecom
+    ecom-utils
+    eccodes
+    eccodes_f90
+    multio-fapi
+
+  LINKER_LANGUAGE Fortran
+
+)
+
+ecbuild_add_executable(
+
+  TARGET ecom-conf
+
+  SOURCES
+    tool/om_tool_conf_prog.F90
+
+  LIBS
+    fckit
+    ecom
+    ecom-utils
     eccodes
     eccodes_f90
     multio-fapi

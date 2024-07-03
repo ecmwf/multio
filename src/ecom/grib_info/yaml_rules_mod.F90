@@ -5,7 +5,7 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 ! Definition of the module
-#define PP_FILE_NAME 'rules_mod.F90'
+#define PP_FILE_NAME 'yaml_rules_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
 #define PP_SECTION_NAME 'YAML_RULES_MOD'
 MODULE YAML_RULES_MOD
@@ -33,6 +33,7 @@ TYPE :: DEFINITIONS_T
   INTEGER(KIND=JPIB_K) :: EDITION=-99
   INTEGER(KIND=JPIB_K) :: BITS_PER_VALUE=-99
   INTEGER(KIND=JPIB_K) :: PACKING_TYPE=-99
+  LOGICAL :: DIRECT_TO_FDB=.FALSE.
 END TYPE
 
 !> Container for rules
@@ -209,7 +210,7 @@ IMPLICIT NONE
   ENDDO
 
   ! Print the unique set of paramId in the configuration
-  CALL MAP_PRINT( MAP, 'test', 0_JPIB_K )
+  CALL MAP_PRINT( MAP, 'input-parameters', 0_JPIB_K )
 
   ! Free the map
   CALL MAP_FREE( MAP )
@@ -1126,6 +1127,7 @@ IMPLICIT NONE
   ! Local variables
   CHARACTER(LEN=:), ALLOCATABLE :: CLTMP
   INTEGER(KIND=JPIB_K) :: ITMP
+  LOGICAL :: LTMP
   LOGICAL :: EX
 
   ! Local variables declared by the preprocessor for debugging purposes
@@ -1171,6 +1173,7 @@ IMPLICIT NONE
         PP_DEBUG_CRITICAL_THROW( 3 )
       END SELECT
     ENDIF
+    IF (ALLOCATED(CLTMP)) DEALLOCATE(CLTMP)
     IF ( VERBOSE ) THEN
       WRITE(ERROR_UNIT,*) 'Bits per value: ', ENCODE_OPTIONS%BITS_PER_VALUE
     ENDIF
@@ -1196,9 +1199,22 @@ IMPLICIT NONE
     IF ( VERBOSE ) THEN
       WRITE(ERROR_UNIT,*) 'Packing type: ', ENCODE_OPTIONS%PACKING_TYPE
     ENDIF
-    DEALLOCATE(CLTMP)
+    IF (ALLOCATED(CLTMP)) DEALLOCATE(CLTMP)
   ELSE
     ENCODE_OPTIONS%PACKING_TYPE = UNDEF_PARAM_E
+  ENDIF
+
+
+  IF ( VERBOSE ) THEN
+    WRITE(ERROR_UNIT,*) 'Read directToFDB flag'
+  ENDIF
+  IF ( CFG%GET( 'directToFDB', LTMP  ) ) THEN
+    ENCODE_OPTIONS%DIRECT_TO_FDB = LTMP
+    IF ( VERBOSE ) THEN
+      WRITE(ERROR_UNIT,*) 'direct To FDB: ', ENCODE_OPTIONS%DIRECT_TO_FDB
+    ENDIF
+  ELSE
+    ENCODE_OPTIONS%PACKING_TYPE = .FALSE.
   ENDIF
 
   ! Trace end of procedure (on success)
@@ -1506,6 +1522,7 @@ IMPLICIT NONE
     DEFINITIONS%EDITION = DEFAULT_EDITION
     DEFINITIONS%BITS_PER_VALUE = -1
     DEFINITIONS%PACKING_TYPE = UNDEF_PARAM_E
+    RETURN
   ENDIF
 
   ! Error handling

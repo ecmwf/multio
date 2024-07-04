@@ -62,12 +62,12 @@ std::string Statistics::generateKey(const message::Message& msg) const {
 message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetadata, const StatisticsConfiguration& cfg,
                                              const std::string& key) const {
     auto& win = fieldStats_.at(key)->cwin();
-    if (win.endPointInSeconds() % 3600 != 0L) {
-        std::ostringstream os;
-        os << "Step in seconds needs to be a multiple of 3600 :: " << fieldStats_.at(key)->win().endPointInSeconds()
-           << std::endl;
-        throw eckit::SeriousBug(os.str(), Here());
-    }
+    // if (win.endPointInSeconds() % 3600 != 0L) {
+    //     std::ostringstream os;
+    //     os << "Step in seconds needs to be a multiple of 3600 :: " << fieldStats_.at(key)->win().endPointInSeconds()
+    //        << std::endl;
+    //     throw eckit::SeriousBug(os.str(), Here());
+    // }
     auto md = inputMetadata;
 
     // util::DateTimeDiff lastPointsDiff = win.lastPointsDiff();

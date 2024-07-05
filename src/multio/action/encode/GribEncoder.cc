@@ -389,7 +389,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
                         withFirstOf(valueSetter(g, glossary().experiment),
                                     lookUp<std::string>(md, glossary().experiment));
                         withFirstOf(valueSetter(g, glossary().generation),
-                                    lookUp<std::string>(md, glossary().generation));
+                                    lookUp<std::int64_t>(md, glossary().generation));
                         withFirstOf(valueSetter(g, glossary().model), lookUp<std::string>(md, glossary().model));
                         withFirstOf(valueSetter(g, glossary().realization),
                                     lookUp<std::string>(md, glossary().realization));

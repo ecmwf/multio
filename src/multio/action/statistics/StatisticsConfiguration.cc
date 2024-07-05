@@ -236,6 +236,10 @@ void StatisticsConfiguration::readStartDate(const message::Message& msg) {
 
 
 void StatisticsConfiguration::readStep(const message::Message& msg) {
+    if (auto step = msg.metadata().getOpt<std::int64_t>(glossary().endStep); step) {
+        step_ = *step;
+        return;
+    }
     if (auto step = msg.metadata().getOpt<std::int64_t>(glossary().step); step) {
         step_ = *step;
         return;

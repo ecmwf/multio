@@ -297,7 +297,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
 
     if (gribEdition == "2") {
         withFirstOf(valueSetter(g, glossary().subCentre), lookUp<std::int64_t>(md, glossary().subCentre));
-        withFirstOf(valueSetter(g, glossary().tablesVersion), lookUp<std::string>(md, glossary().tablesVersion));
+        withFirstOf(valueSetter(g, glossary().tablesVersion), lookUp<std::int64_t>(md, glossary().tablesVersion));
         if (localDefinitionNumber || grib2LocalSectionNumber) {
             withFirstOf(valueSetter(g, glossary().localTablesVersion),
                         lookUp<std::int64_t>(md, glossary().localTablesVersion));

@@ -177,7 +177,7 @@ using message::Peer;
 void makeOverwritesForMap(CodesOverwrites& res, const eckit::LocalConfiguration& conf) {
     for (const std::string& k : conf.keys()) {
         if (conf.isBoolean(k)) {
-            res.emplace_back(k, conf.getBool(k));
+            res.emplace_back(k, (std::int64_t)conf.getBool(k));
         }
         else if (conf.isIntegral(k)) {
             res.emplace_back(k, conf.getLong(k));

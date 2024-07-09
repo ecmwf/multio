@@ -338,7 +338,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             //
             md.set("gridded", true);
             md.set("gridType", "HEALPix");
-            md.set("Nside", grid[0]);
+            md.set("Nside", (std::int64_t)grid[0]);
             md.set("orderingConvention", "ring");
         }
         else {

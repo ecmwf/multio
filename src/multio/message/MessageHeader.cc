@@ -129,10 +129,6 @@ void Message::Header::encode(eckit::Stream& strm) const {
     strm << fieldId();
 }
 
-Message::Header Message::Header::modifyMetadata(Metadata&& md) const {
-    return Header{tag_, std::move(source_), std::move(destination_), std::move(md)};
-}
-
 Message::LogHeader Message::Header::logHeader() const {
     return Message::LogHeader{tag_, source_, destination_, metadata_.weakRef(), fieldId_};
 }

@@ -40,10 +40,6 @@ static void setInt64Value(multio::MaestroCdo& cdo, const std::string& key, const
     cdo.set_attribute(key.c_str(), &intvalue, true);
 }
 
-static void setUInt64Value(multio::MaestroCdo& cdo, const std::string& key, const std::string& value) {
-    uint64_t intvalue = std::stoi(value);
-    cdo.set_attribute(key.c_str(), &intvalue, true);
-}
 
 using MaestroKeySetter = std::add_pointer<void(multio::MaestroCdo&, const std::string&, const std::string&)>::type;
 

@@ -176,19 +176,17 @@ using message::Peer;
 
 void makeOverwritesForMap(CodesOverwrites& res, const eckit::LocalConfiguration& conf) {
     for (const std::string& k : conf.keys()) {
-        auto val = conf.getSubConfiguration(k).get();
-
-        if (val.isBool()) {
-            res.emplace_back(k, (std::int64_t)val);
+        if (conf.isBoolean(k)) {
+            res.emplace_back(k, conf.getBool(k));
         }
-        else if (val.isNumber()) {
-            res.emplace_back(k, (std::int64_t)val);
+        else if (conf.isIntegral(k)) {
+            res.emplace_back(k, conf.getLong(k));
         }
-        else if (val.isDouble()) {
-            res.emplace_back(k, (double)val);
+        else if (conf.isFloatingPoint(k)) {
+            res.emplace_back(k, conf.getDouble(k));
         }
-        else if (val.isString()) {
-            res.emplace_back(k, (std::string)val);
+        else if (conf.isString(k)) {
+            res.emplace_back(k, conf.getString(k));
         }
         else {
             NOTIMP;
@@ -198,12 +196,14 @@ void makeOverwritesForMap(CodesOverwrites& res, const eckit::LocalConfiguration&
 
 CodesOverwrites makeOverwrites(const eckit::LocalConfiguration& encConf) {
     CodesOverwrites res{};
-    if (encConf.get().isMap()) {
-        makeOverwritesForMap(res, encConf);
-    }
-    else if (encConf.get().isList()) {
-        for (const auto& subConf : encConf.getSubConfigurations()) {
-            makeOverwritesForMap(res, subConf);
+    if (encConf.has("overwrite")) {
+        if (encConf.isSubConfiguration("overwrite")) {
+            makeOverwritesForMap(res, encConf.getSubConfiguration("overwrite"));
+        }
+        else if (encConf.isSubConfigurationList("overwrite")) {
+            for (const auto& subConf : encConf.getSubConfigurations("overwrite")) {
+                makeOverwritesForMap(res, subConf);
+            }
         }
     }
     return res;
@@ -212,15 +212,12 @@ CodesOverwrites makeOverwrites(const eckit::LocalConfiguration& encConf) {
 Encode::Encode(const ComponentConfiguration& compConf, const eckit::LocalConfiguration& encConf) :
     ChainedAction{compConf},
     format_{encConf.getString("format")},
-    overwrite_{makeOverwrites(encConf.has("overwrite")
-                                  ? eckit::LocalConfiguration{encConf.getSubConfiguration("overwrite")}
-                                  : eckit::LocalConfiguration{})},
+    overwrite_{makeOverwrites(encConf)},
     additionalMetadata_{
-        message::toMetadata((encConf.has("additional-metadata")
-                                 ? eckit::LocalConfiguration{encConf.getSubConfiguration("additional-metadata")}
-                                 : (encConf.has("run") ? eckit::LocalConfiguration{encConf.getSubConfiguration("run")}
-                                                       : eckit::LocalConfiguration{}))
-                                .get())},
+        message::toMetadata(encConf.has("additional-metadata")
+                                ? eckit::LocalConfiguration{encConf.getSubConfiguration("additional-metadata")}
+                                : (encConf.has("run") ? eckit::LocalConfiguration{encConf.getSubConfiguration("run")}
+                                                      : eckit::LocalConfiguration{}))},
     encoder_{makeEncoder(encConf, compConf.multioConfig())},
     gridDownloader_{std::make_unique<multio::action::GridDownloader>(compConf)} {}
 

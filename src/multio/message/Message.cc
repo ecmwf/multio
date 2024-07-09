@@ -113,17 +113,9 @@ const Metadata& Message::metadata() const {
     return header_.metadata();
 }
 
-// Metadata&& Message::metadata() && {
-//     return std::move(header_).metadata();
-// }
-
 Metadata& Message::modifyMetadata() {
     return header_.modifyMetadata();
 }
-
-Message Message::modifyMetadata(Metadata&& md) const {
-    return Message(header_.modifyMetadata(std::move(md)), payload_);
-};
 
 SharedPayload& Message::payload() {
     return payload_;
@@ -134,8 +126,16 @@ const SharedPayload& Message::payload() const {
 }
 
 void Message::acquire() {
-    header_.acquireMetadata();
+    acquireMetadata();
+    acquirePayload();
+}
+
+void Message::acquirePayload() {
     payload_.acquire();
+}
+
+void Message::acquireMetadata() {
+    header_.acquireMetadata();
 }
 
 size_t Message::size() const {

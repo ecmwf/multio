@@ -30,11 +30,11 @@ namespace {
 void replaceCurly(const ComponentConfiguration& compConf, eckit::LocalConfiguration& cfg) {
     for (auto& key : cfg.keys()) {
         // Replace the value if it is string
-        if (cfg.getSubConfiguration(key).get().isString()) {
+        if (cfg.isString(key)) {
             cfg.set(key, compConf.multioConfig().replaceCurly(cfg.getString(key)));
         }
         // Recursive replace of curly brackets
-        if (cfg.getSubConfiguration(key).get().isMap()) {
+        if (cfg.isSubConfiguration(key)) {
             auto tmp = cfg.getSubConfiguration(key);
             replaceCurly(compConf, tmp);
             cfg.set(key, tmp);

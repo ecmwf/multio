@@ -57,49 +57,46 @@ const std::vector<typename MetadataTypes::KeyType> metadata_black_list{glossary(
 const std::vector<double> full_area{90.0, 0.0, -90.0, 360.0};
 
 template <typename DestType>
-void forwardMetadata(const eckit::LocalConfiguration& cfg, DestType& destination, const std::string& key,
-                     const eckit::Value& value) {
-    if (value.isList()) {
-        if (value.head().isDouble()) {
-            destination.set(key, cfg.getDoubleVector(key));
-        }
-        else if (value.head().isNumber()) {
-            destination.set(key, cfg.getLongVector(key));
-        }
-        else if (value.isString()) {
-            destination.set(key, cfg.getStringVector(key));
-        }
-        else {
-            NOTIMP;
-        }
+void forwardMetadata(const eckit::LocalConfiguration& cfg, DestType& destination, const std::string& key) {
+    if (cfg.isFloatingPointList(key)) {
+        destination.set(key, cfg.getDoubleVector(key));
         return;
     }
-    if (value.isBool()) {
+    if (cfg.isIntegralList(key)) {
+        destination.set(key, cfg.getLongVector(key));
+        return;
+    }
+    if (cfg.isStringList(key)) {
+        destination.set(key, cfg.getStringVector(key));
+        return;
+    }
+    if (cfg.isBoolean(key)) {
         destination.set(key, cfg.getBool(key));
+        return;
     }
-    else if (value.isDouble()) {
+    if (cfg.isFloatingPoint(key)) {
         destination.set(key, cfg.getDouble(key));
+        return;
     }
-    else if (value.isNumber()) {
-        destination.set(key, cfg.getInt(key));
+    if (cfg.isIntegral(key)) {
+        destination.set(key, cfg.getLong(key));
+        return;
     }
-    else if (value.isString()) {
-        if (cfg.getSubConfiguration("grid").get().isString()) {
-            const std::string input = util::replaceCurly(
-                cfg.getSubConfiguration("grid").get().as<std::string>(), [](std::string_view replace) {
-                    std::string lookUpKey{replace};
-                    char* env = ::getenv(lookUpKey.c_str());
-                    return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-                });
+    if (cfg.isString(key)) {
+        if (cfg.isString("grid")) {
+            const std::string input = util::replaceCurly(cfg.getString("grid"), [](std::string_view replace) {
+                std::string lookUpKey{replace};
+                char* env = ::getenv(lookUpKey.c_str());
+                return env ? std::optional<std::string>{env} : std::optional<std::string>{};
+            });
             destination.set(key, input);
         }
         else {
             destination.set(key, cfg.getString(key).c_str());
         }
+        return;
     }
-    else {
-        NOTIMP;
-    }
+    NOTIMP;
 };
 
 template <typename DestType>
@@ -147,118 +144,113 @@ void fill_out_metadata(const message::Metadata& in_md, message::Metadata& out_md
     return;
 };
 
-eckit::Value getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadata& md) {
+message::MetadataValue getInputGrid(const eckit::LocalConfiguration& cfg, message::Metadata& md) {
     auto searchAtlasGridKind = md.find("atlas-grid-kind");
     if (searchAtlasGridKind != md.end()) {  // metadata has always precedence
-        // TODO: name is bad on purpose (no software support this at the moment)
-        return searchAtlasGridKind->second.visit(eckit::Overloaded{
-            [](auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::AllNested, eckit::Value> { return {}; },
-            [](auto& vec) -> util::IfTypeOf<decltype(vec), MetadataTypes::Lists, eckit::Value> {
-                std::vector<eckit::Value> valList;
-                valList.reserve(vec.size());
-                for (const auto& v : vec) {
-                    valList.emplace_back(v);
-                }
-                return eckit::Value{std::move(valList)};
-            },
-            [](auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::NonNullScalars, eckit::Value> {
-                return eckit::Value{v};
-            },
-            [](auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::Nulls, eckit::Value> { return eckit::Value{}; }});
+        return searchAtlasGridKind->second;
     }
     if (cfg.has("input")) {  // configuration file is second option
-        return eckit::Value{cfg.getSubConfiguration("input").get()};
+        auto res = message::tryToMetadataValue(cfg, "input");
+        if (res) {
+            return *res;
+        }
     }
-
     throw eckit::SeriousBug("action-interpolate :: Unable to identify input grid", Here());
 }
 
 
 void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametrisation& param, std::string domain,
-                const eckit::Value&& inp) {
+                const message::MetadataValue&& inp) {
 
     auto regular_ll = [&param](double west_east_increment, double south_north_increment) {
         regularLatLongMetadata(param, std::vector<double>{west_east_increment, south_north_increment}, full_area);
     };
 
-    if (inp.isString()) {
-        const std::string input = util::replaceCurly(inp.as<std::string>(), [](std::string_view replace) {
-            std::string lookUpKey{replace};
-            char* env = ::getenv(lookUpKey.c_str());
-            return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-        });
 
-        static const std::regex sh("(T|TCO|TL)([1-9][0-9]*)");
-        static const std::regex gg("([FNO])([1-9][0-9]*)");
-        static const std::regex eORCA("^e?ORCA[0-9]+_[FTUVW]$");
-        static const std::regex eORCA_fromMetadata("^e?ORCA[0-9]+$");
+    inp.visit([&](auto& v) {
+        if constexpr (std::is_same_v<std::decay_t<decltype(v)>, std::string>) {
+            const std::string input = util::replaceCurly(v, [](std::string_view replace) {
+                std::string lookUpKey{replace};
+                char* env = ::getenv(lookUpKey.c_str());
+                return env ? std::optional<std::string>{env} : std::optional<std::string>{};
+            });
+
+            static const std::regex sh("(T|TCO|TL)([1-9][0-9]*)");
+            static const std::regex gg("([FNO])([1-9][0-9]*)");
+            static const std::regex eORCA("^e?ORCA[0-9]+_[FTUVW]$");
+            static const std::regex eORCA_fromMetadata("^e?ORCA[0-9]+$");
 
 #define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
-        static const std::regex ll(fp "/" fp);
+            static const std::regex ll(fp "/" fp);
 #undef fp
 
-        std::smatch match;
-        if (std::regex_match(input, match, sh)) {
-            param.set("spectral", true);
-            param.set("gridType", "sh");
-            param.set("truncation", std::stol(match[2].str()));
-            return;
-        }
-
-        if (std::regex_match(input, match, gg)) {
-            param.set("gridded", true);
-            param.set("gridType", match[1].str() == "F" ? "regular_gg" : "reduced_gg");
-            param.set("N", std::stol(match[2].str()));
-            param.set("north", 90.).set("west", 0.).set("south", -90.).set("east", 360.);
-
-            if (match[1].str() != "F") {
-                param.set("pl", mir::repres::gauss::reduced::Reduced::pls(match[0].str()));
+            std::smatch match;
+            if (std::regex_match(input, match, sh)) {
+                param.set("spectral", true);
+                param.set("gridType", "sh");
+                param.set("truncation", std::stol(match[2].str()));
+                return;
             }
-            return;
-        }
 
-        if (std::regex_match(input, match, ll)) {
-            regular_ll(std::stod(match[1].str()), std::stod(match[4].str()));
-            return;
-        }
+            if (std::regex_match(input, match, gg)) {
+                param.set("gridded", true);
+                param.set("gridType", match[1].str() == "F" ? "regular_gg" : "reduced_gg");
+                param.set("N", std::stol(match[2].str()));
+                param.set("north", 90.).set("west", 0.).set("south", -90.).set("east", 360.);
 
-        if (std::regex_match(input, match, eORCA)) {
-            std::string sane_name(input);
-            std::transform(sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper);
-            if (sane_name.front() == 'E') {
-                sane_name.front() = 'e';
+                if (match[1].str() != "F") {
+                    param.set("pl", mir::repres::gauss::reduced::Reduced::pls(match[0].str()));
+                }
+                return;
             }
-            param.set("gridded", true);
-            param.set("uid", sane_name);
-            param.set("gridType", "orca");
-            return;
-        }
 
-        if (std::regex_match(input, match, eORCA_fromMetadata)) {
-            std::string kind = domain.substr(0, 1);
-            if (kind != "T" && kind != "F" && kind != "U" && kind != "V" && kind != "W") {
-                throw eckit::SeriousBug("action-interpolate :: unrecognized orca grid", Here());
+            if (std::regex_match(input, match, ll)) {
+                std::cout << "matched ll:" << std::endl;
+                regular_ll(std::stod(match[1].str()), std::stod(match[4].str()));
+                return;
             }
-            std::string sane_name(input + "_" + kind);
-            std::transform(sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper);
-            if (sane_name.front() == 'E') {
-                sane_name.front() = 'e';
+
+            if (std::regex_match(input, match, eORCA)) {
+                std::string sane_name(input);
+                std::transform(sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper);
+                if (sane_name.front() == 'E') {
+                    sane_name.front() = 'e';
+                }
+                param.set("gridded", true);
+                param.set("uid", sane_name);
+                param.set("gridType", "orca");
+                return;
             }
-            param.set("gridded", true);
-            param.set("uid", sane_name);
-            param.set("gridType", "orca");
-            return;
-        }
-    }
 
-    if (inp.isList()) {
-        if (inp.size() == 2) {
-            regular_ll(inp[0], inp[1]);
-            return;
-        }
-    }
+            if (std::regex_match(input, match, eORCA_fromMetadata)) {
+                if (domain.empty()) {
+                    throw eckit::SeriousBug(
+                        "action-interpolate :: domain is empty - can not infere which orca grid is being used", Here());
+                }
 
-    NOTIMP;
+                std::string kind = domain.substr(0, 1);
+                if (kind != "T" && kind != "F" && kind != "U" && kind != "V" && kind != "W") {
+                    throw eckit::SeriousBug("action-interpolate :: unrecognized orca grid", Here());
+                }
+                std::string sane_name(input + "_" + kind);
+                std::transform(sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper);
+                if (sane_name.front() == 'E') {
+                    sane_name.front() = 'e';
+                }
+                param.set("gridded", true);
+                param.set("uid", sane_name);
+                param.set("gridType", "orca");
+                return;
+            }
+        }
+        else if constexpr (std::is_same_v<std::decay_t<decltype(v)>, std::vector<double>>) {
+            if (v.size() == 2) {
+                regular_ll(v[0], v[1]);
+                return;
+            }
+        }
+        NOTIMP;
+    });
 }
 
 
@@ -278,13 +270,13 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
     ASSERT(not postproc.contains("input"));
     ASSERT(not postproc.contains("options"));
 
-    auto set = [&destination](const eckit::LocalConfiguration& cfg, const std::string& key, const eckit::Value& value) {
-        forwardMetadata<mir::param::SimpleParametrisation>(cfg, destination, key, value);
+    auto set = [&destination](const eckit::LocalConfiguration& cfg, const std::string& key) {
+        forwardMetadata<mir::param::SimpleParametrisation>(cfg, destination, key);
     };
 
     for (const auto& key : postproc) {
         if (cfg.has(key)) {
-            set(cfg, key, cfg.getSubConfiguration(key).get());
+            set(cfg, key);
         }
     }
 
@@ -292,7 +284,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
     if (cfg.has("options")) {
         const auto& options = cfg.getSubConfiguration("options");
         for (const auto& key : options.keys()) {
-            set(options, key, options.getSubConfiguration(key).get());
+            set(options, key);
         }
     }
 
@@ -301,13 +293,12 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
         std::string gridKind("none");
         std::vector<double> grid(2, 0.0);
 
-        if (cfg.getSubConfiguration("grid").get().isString()) {
-            const std::string input = util::replaceCurly(
-                cfg.getSubConfiguration("grid").get().as<std::string>(), [](std::string_view replace) {
-                    std::string lookUpKey{replace};
-                    char* env = ::getenv(lookUpKey.c_str());
-                    return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-                });
+        if (cfg.isString("grid")) {
+            const std::string input = util::replaceCurly(cfg.getString("grid"), [](std::string_view replace) {
+                std::string lookUpKey{replace};
+                char* env = ::getenv(lookUpKey.c_str());
+                return env ? std::optional<std::string>{env} : std::optional<std::string>{};
+            });
 #define fp "([+]?([0-9]*[.])?[0-9]+([eE][-+][0-9]+)?)"
             static const std::regex ll(fp "/" fp);
             static const std::regex H("([h|H])([1-9][0-9]*)");
@@ -325,8 +316,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
                 grid[0] = std::stod(matchH[2].str());
             }
         }
-        else if (cfg.getSubConfiguration("grid").get().isList()
-                 && cfg.getSubConfiguration("grid").get().head().isDouble()) {
+        else if (cfg.isFloatingPointList("grid")) {
             gridKind = "regular_ll";
             grid = cfg.getDoubleVector("grid");
             LOG_DEBUG_LIB(LibMultio) << " Grid is a list (" << gridKind << ")" << grid << std::endl;
@@ -373,7 +363,8 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
     md.set("precision", "double");
 
     mir::param::SimpleParametrisation inputPar;
-    fill_input(config, inputPar, msg.domain(), getInputGrid(config, md));
+    fill_input(config, inputPar, msg.metadata().getOpt<std::string>(glossary().domain).value_or(""),
+               getInputGrid(config, md));
     auto searchMissingValue = msg.metadata().find("missingValue");
     auto searchBitmapPresent = msg.metadata().find("bitmapPresent");
     if (searchMissingValue != msg.metadata().end() && searchBitmapPresent != msg.metadata().end()) {

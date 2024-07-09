@@ -16,32 +16,39 @@ MetadataMatcher::MetadataMatcher(const LocalConfiguration& cfg) {
     std::map<typename MetadataTypes::KeyType, std::unordered_set<MetadataValue>> matcher;
 
     for (const auto& k : cfg.keys()) {
-        // TODO Use config visitor once added to eckit
-        eckit::LocalConfiguration cfgK;
-        cfg.get(k, cfgK);
-        if (cfgK.get().isList()) {
-            auto v = cfg.getSubConfigurations(k);
+        if (cfg.isIntegralList(k)) {
             std::unordered_set<MetadataValue> s;
-            unsigned int i = 0;
-            for (auto& vi : v) {
-                auto optMetadataValue = tryToMetadataValue(vi.get());
-                if (!optMetadataValue) {
-                    std::ostringstream oss;
-                    oss << "Matcher for key \"" << k << "\"[" << i
-                        << "] can not be  represented by an internal metadata value: " << vi.get();
-                    throw MetadataException(oss.str());
-                }
-                s.emplace(std::move(*optMetadataValue));
-                ++i;
+            for (auto&& vi : cfg.getLongVector(k)) {
+                s.emplace(vi);
             }
             matcher.emplace(k, std::move(s));
         }
+        else if (cfg.isFloatingPointList(k)) {
+            std::unordered_set<MetadataValue> s;
+            for (auto&& vi : cfg.getFloatVector(k)) {
+                s.emplace(vi);
+            }
+            matcher.emplace(k, std::move(s));
+        }
+        else if (cfg.isStringList(k)) {
+            std::unordered_set<MetadataValue> s;
+            for (auto&& vi : cfg.getStringVector(k)) {
+                s.emplace(std::move(vi));
+            }
+            matcher.emplace(k, std::move(s));
+        }
+        else if (cfg.isList(k)) {
+            std::ostringstream oss;
+            oss << "Matcher for key \"" << k << "\""
+                << " seems to be a list of mixed or non scalar types - can only handle list of int, float or string: "
+                << cfg;
+            throw MetadataException(oss.str());
+        }
         else {
-            auto optMetadataValue = tryToMetadataValue(cfgK.get());
+            auto optMetadataValue = tryToMetadataValue(cfg, k);
             if (!optMetadataValue) {
                 std::ostringstream oss;
-                oss << "Matcher for key \"" << k
-                    << "\" can not be represented by an internal metadata value: " << cfgK.get();
+                oss << "Matcher for key \"" << k << "\" can not be represented by an internal metadata value: " << cfg;
                 throw MetadataException(oss.str());
             }
             matcher.emplace(k, std::unordered_set<MetadataValue>{std::move(*optMetadataValue)});

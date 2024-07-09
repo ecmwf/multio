@@ -103,14 +103,10 @@ public:  // types
 
         void encode(eckit::Stream& strm) const;
 
-        // Metadata&& metadata() &&;
         const Metadata& metadata() const;
 
         Metadata& modifyMetadata();
 
-
-        [[deprecated("Explicity use moveOrCopy or acquire & modifyMetadata (byref)")]] Header modifyMetadata(
-            Metadata&& md) const;
 
         // Copy or acquire metadata object if only owned by this object
         SharedMetadata moveOrCopyMetadata() const;
@@ -178,13 +174,14 @@ public:
     const Metadata& metadata() const;
     Metadata& modifyMetadata();
 
-    [[deprecated]] Message modifyMetadata(Metadata&& md) const;
-
     SharedPayload& payload();
     const SharedPayload& payload() const;
 
     // Try to acquire metadata & payload or copy otherwise
     void acquire();
+
+    void acquireMetadata();
+    void acquirePayload();
 
     size_t size() const;
 

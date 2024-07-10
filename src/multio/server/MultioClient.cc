@@ -139,10 +139,11 @@ void MultioClient::dispatch(message::Message msg) {
     withFailureHandling([&]() {
         if (msg.tag() == message::Message::Tag::Flush) {
             for (const auto& plan : plans_) {
-                msg.acquireMetadata();
-                msg.modifyMetadata().set("clientPlanName", plan->name());
+                message::Message msg2{msg};
+                msg2.acquireMetadata();
+                msg2.modifyMetadata().set("clientPlanName", plan->name());
 
-                plan->process(std::move(msg));
+                plan->process(std::move(msg2));
             }
         }
         else {

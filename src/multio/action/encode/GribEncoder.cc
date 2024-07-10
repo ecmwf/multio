@@ -572,12 +572,6 @@ std::string getTimeReference(GribEncoder& g, const message::Metadata& md, const 
         if (*queriedMarsFields.type == "fc") {
             if ((gribEdition == "2") && significanceOfReferenceTime && (*significanceOfReferenceTime == 2)) {
                 isReferingToStart = false;
-                g.setValue(glossary().stepUnits, timeUnitCodes(util::TimeUnit::Hour));
-                g.setValue(glossary().startStep, 0);
-                if (isTimeRange) {
-                    g.setValue(glossary().indicatorOfUnitForTimeRange, timeUnitCodes(util::TimeUnit::Hour));
-                    g.setValue(glossary().forecastTime, 0);
-                }
             }
             else {
                 isReferingToStart = true;

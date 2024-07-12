@@ -78,6 +78,8 @@ PUBLIC :: INSTANT_TIME_ENCODER_GRIB1_ATM
 PUBLIC :: INSTANT_TIME_ENCODER_GRIB2_ATM
 PUBLIC :: INSTANT_TIME_ENCODER_GRIB1_WAM
 PUBLIC :: INSTANT_TIME_ENCODER_GRIB2_WAM
+PUBLIC :: AVERAGE_FROM_STEP0_TIME_ENCODER_GRIB1_ATM
+PUBLIC :: AVERAGE_FROM_STEP0_TIME_ENCODER_GRIB2_ATM
 PUBLIC :: AVERAGE_FROM_LASTPP_TIME_ENCODER_GRIB1_ATM
 PUBLIC :: AVERAGE_FROM_LASTPP_TIME_ENCODER_GRIB2_ATM
 PUBLIC :: AVERAGE_FIXED_RANGE_TIME_ENCODER_GRIB1_ATM
@@ -100,6 +102,18 @@ PUBLIC :: MAX_FIXED_RANGE_TIME_ENCODER_GRIB1_ATM
 PUBLIC :: MAX_FIXED_RANGE_TIME_ENCODER_GRIB2_ATM
 PUBLIC :: MAX_FROM_STEP0_TIME_ENCODER_GRIB1_ATM
 PUBLIC :: MAX_FROM_STEP0_TIME_ENCODER_GRIB2_ATM
+PUBLIC :: SEVERITY_FROM_LASTPP_TIME_ENCODER_GRIB1_ATM
+PUBLIC :: SEVERITY_FROM_LASTPP_TIME_ENCODER_GRIB2_ATM
+PUBLIC :: SEVERITY_FIXED_RANGE_TIME_ENCODER_GRIB1_ATM
+PUBLIC :: SEVERITY_FIXED_RANGE_TIME_ENCODER_GRIB2_ATM
+PUBLIC :: SEVERITY_FROM_STEP0_TIME_ENCODER_GRIB1_ATM
+PUBLIC :: SEVERITY_FROM_STEP0_TIME_ENCODER_GRIB2_ATM
+PUBLIC :: MODE_FROM_LASTPP_TIME_ENCODER_GRIB1_ATM
+PUBLIC :: MODE_FROM_LASTPP_TIME_ENCODER_GRIB2_ATM
+PUBLIC :: MODE_FIXED_RANGE_TIME_ENCODER_GRIB1_ATM
+PUBLIC :: MODE_FIXED_RANGE_TIME_ENCODER_GRIB2_ATM
+PUBLIC :: MODE_FROM_STEP0_TIME_ENCODER_GRIB1_ATM
+PUBLIC :: MODE_FROM_STEP0_TIME_ENCODER_GRIB2_ATM
 
 CONTAINS
 
@@ -323,7 +337,7 @@ IMPLICIT NONE
   PP_METADATA_ENTER_PROCEDURE( METADATA )
 
   ! Generate the error message
-  PP_DEBUG_CREATE_ERROR_MSG( STR, 'ATM encoder not implemented' )
+  PP_DEBUG_CRITICAL_THROW( 1 )
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -335,12 +349,213 @@ IMPLICIT NONE
   ! Exit point
   RETURN
 
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'ATM encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
 END SUBROUTINE NOT_IMPLEMENTED_ATM
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'AVERAGE_FROM_STEP0_TIME_ENCODER_GRIB1_ATM'
+SUBROUTINE AVERAGE_FROM_STEP0_TIME_ENCODER_GRIB1_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Generate the error message
+  PP_DEBUG_CRITICAL_THROW( 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Write the error message and stop the program
+  PP_DEBUG_ABORT( STR )
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE AVERAGE_FROM_STEP0_TIME_ENCODER_GRIB1_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'AVERAGE_FROM_STEP0_TIME_ENCODER_GRIB2_ATM'
+SUBROUTINE AVERAGE_FROM_STEP0_TIME_ENCODER_GRIB2_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Generate the error message
+  PP_DEBUG_CRITICAL_THROW( 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Write the error message and stop the program
+  PP_DEBUG_ABORT( STR )
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE AVERAGE_FROM_STEP0_TIME_ENCODER_GRIB2_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 
@@ -1214,7 +1429,6 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( TRIM(MODEL_PARAMS%SIM_%CTYPE).NE.'fc', 1 )
   PP_DEBUG_CRITICAL_COND_THROW( MOD(CURR_TIME%ISEC,3600).NE.0, 2 )
   PP_DEBUG_CRITICAL_COND_THROW( CURR_TIME%IS_STEP_0, 3 )
-  PP_DEBUG_CRITICAL_THROW( 4 )
 
   ! Compute the last post processing step in seconds
   ! This works also for the first step because the time history array starts from index 0
@@ -2858,6 +3072,1152 @@ PP_ERROR_HANDLER
 END SUBROUTINE MAX_FROM_STEP0_TIME_ENCODER_GRIB2_ATM
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'SEVERITY_FROM_STEP0_TIME_ENCODER_GRIB1_ATM'
+SUBROUTINE SEVERITY_FROM_STEP0_TIME_ENCODER_GRIB1_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Generate the error message
+  PP_DEBUG_CRITICAL_THROW( 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Write the error message and stop the program
+  PP_DEBUG_ABORT( STR )
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE SEVERITY_FROM_STEP0_TIME_ENCODER_GRIB1_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'SEVERITY_FROM_STEP0_TIME_ENCODER_GRIB2_ATM'
+SUBROUTINE SEVERITY_FROM_STEP0_TIME_ENCODER_GRIB2_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Generate the error message
+  PP_DEBUG_CRITICAL_THROW( 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Write the error message and stop the program
+  PP_DEBUG_ABORT( STR )
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE SEVERITY_FROM_STEP0_TIME_ENCODER_GRIB2_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'SEVERITY_FROM_LASTPP_TIME_ENCODER_GRIB1_ATM'
+SUBROUTINE SEVERITY_FROM_LASTPP_TIME_ENCODER_GRIB1_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Generate the error message
+  PP_DEBUG_CRITICAL_THROW( 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Write the error message and stop the program
+  PP_DEBUG_ABORT( STR )
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE SEVERITY_FROM_LASTPP_TIME_ENCODER_GRIB1_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'SEVERITY_FROM_LASTPP_TIME_ENCODER_GRIB2_ATM'
+SUBROUTINE SEVERITY_FROM_LASTPP_TIME_ENCODER_GRIB2_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Generate the error message
+  PP_DEBUG_CRITICAL_THROW( 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Write the error message and stop the program
+  PP_DEBUG_ABORT( STR )
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE SEVERITY_FROM_LASTPP_TIME_ENCODER_GRIB2_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'SEVERITY_FIXED_RANGE_TIME_ENCODER_GRIB1_ATM'
+SUBROUTINE SEVERITY_FIXED_RANGE_TIME_ENCODER_GRIB1_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Generate the error message
+  PP_DEBUG_CRITICAL_THROW( 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Write the error message and stop the program
+  PP_DEBUG_ABORT( STR )
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE SEVERITY_FIXED_RANGE_TIME_ENCODER_GRIB1_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'SEVERITY_FIXED_RANGE_TIME_ENCODER_GRIB2_ATM'
+SUBROUTINE SEVERITY_FIXED_RANGE_TIME_ENCODER_GRIB2_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: FORECAST_TIME
+  INTEGER(KIND=JPIB_K) :: LENGTH_OF_TIME_RANGE
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+
+  ! This is an assumption currently made because the code for "analysis" is not ready
+  PP_DEBUG_CRITICAL_COND_THROW( TRIM(MODEL_PARAMS%SIM_%CTYPE).NE.'fc', 1 )
+  PP_DEBUG_CRITICAL_COND_THROW( MOD(CURR_TIME%ISEC,3600).NE.0, 2 )
+  PP_DEBUG_CRITICAL_COND_THROW( CURR_TIME%IS_STEP_0, 3 )
+
+  FORECAST_TIME = MAX(0,CURR_TIME%ISEC-GRIB_INFO%OVERALL_LENGTH_OF_TIME_RANGE_)
+  LENGTH_OF_TIME_RANGE = CURR_TIME%ISEC - FORECAST_TIME
+
+  PP_DEBUG_CRITICAL_COND_THROW( MOD(FORECAST_TIME,3600).NE.0, 5 )
+  PP_DEBUG_CRITICAL_COND_THROW( MOD(LENGTH_OF_TIME_RANGE,3600).NE.0, 6 )
+
+  PP_METADATA_SET( METADATA, 'timeRangeIndicator',0)
+  PP_METADATA_SET( METADATA, 'significanceOfReferenceTime', 1 )
+
+  PP_METADATA_SET( METADATA, 'typeOfStatisticalProcessing', 100 )
+
+  PP_METADATA_SET( METADATA, 'indicatorOfUnitOfTimeRange', 'h' )
+  PP_METADATA_SET( METADATA, 'forecastTime',  FORECAST_TIME/3600 )
+
+  PP_METADATA_SET( METADATA, 'indicatorOfUnitForTimeRange', 'h' )
+  PP_METADATA_SET( METADATA, 'lengthOfTimeRange',  LENGTH_OF_TIME_RANGE/3600 )
+
+  PP_METADATA_SET( METADATA, 'typeOfTimeIncrement',  2 )
+  PP_METADATA_SET( METADATA, 'indicatorOfUnitForTimeIncrement',  's' )
+  PP_METADATA_SET( METADATA, 'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+
+  PP_METADATA_SET( METADATA, 'numberOfTimeRange', 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Instant time encoding logic not implemented for mars type: "'//TRIM(MODEL_PARAMS%SIM_%CTYPE)//'"' )
+    CASE (2)
+      TMP=REPEAT(' ',128)
+      WRITE(TMP,'(I8)') CURR_TIME%ISEC
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Forecast time is supposed to be an exact multiple of 1 hour: '//TRIM(ADJUSTL(TMP)) )
+    CASE (3)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Step 0 for average fields not implemented' )
+    CASE (4)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Not implemented' )
+    CASE (5)
+      TMP=REPEAT(' ',128)
+      WRITE(TMP,'(I8)') FORECAST_TIME
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Forecast time must be integer multiple of 3600: '//TRIM(ADJUSTL(TMP)) )
+    CASE (6)
+      TMP=REPEAT(' ',128)
+      WRITE(TMP,'(I8)') LENGTH_OF_TIME_RANGE
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'length of timerange must be an integer multiple of 3600: '//TRIM(ADJUSTL(TMP)) )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END SUBROUTINE SEVERITY_FIXED_RANGE_TIME_ENCODER_GRIB2_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MODE_FROM_STEP0_TIME_ENCODER_GRIB1_ATM'
+SUBROUTINE MODE_FROM_STEP0_TIME_ENCODER_GRIB1_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Generate the error message
+  PP_DEBUG_CRITICAL_THROW( 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Write the error message and stop the program
+  PP_DEBUG_ABORT( STR )
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE MODE_FROM_STEP0_TIME_ENCODER_GRIB1_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MODE_FROM_STEP0_TIME_ENCODER_GRIB2_ATM'
+SUBROUTINE MODE_FROM_STEP0_TIME_ENCODER_GRIB2_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Generate the error message
+  PP_DEBUG_CRITICAL_THROW( 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Write the error message and stop the program
+  PP_DEBUG_ABORT( STR )
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE MODE_FROM_STEP0_TIME_ENCODER_GRIB2_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MODE_FROM_LASTPP_TIME_ENCODER_GRIB1_ATM'
+SUBROUTINE MODE_FROM_LASTPP_TIME_ENCODER_GRIB1_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Generate the error message
+  PP_DEBUG_CRITICAL_THROW( 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Write the error message and stop the program
+  PP_DEBUG_ABORT( STR )
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE MODE_FROM_LASTPP_TIME_ENCODER_GRIB1_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MODE_FROM_LASTPP_TIME_ENCODER_GRIB2_ATM'
+SUBROUTINE MODE_FROM_LASTPP_TIME_ENCODER_GRIB2_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Generate the error message
+  PP_DEBUG_CRITICAL_THROW( 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Write the error message and stop the program
+  PP_DEBUG_ABORT( STR )
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE MODE_FROM_LASTPP_TIME_ENCODER_GRIB2_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MODE_FIXED_RANGE_TIME_ENCODER_GRIB1_ATM'
+SUBROUTINE MODE_FIXED_RANGE_TIME_ENCODER_GRIB1_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  CHARACTER(LEN=:), ALLOCATABLE :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! Generate the error message
+  PP_DEBUG_CRITICAL_THROW( 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Write the error message and stop the program
+  PP_DEBUG_ABORT( STR )
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE MODE_FIXED_RANGE_TIME_ENCODER_GRIB1_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MODE_FIXED_RANGE_TIME_ENCODER_GRIB2_ATM'
+SUBROUTINE MODE_FIXED_RANGE_TIME_ENCODER_GRIB2_ATM( MODEL_PARAMS, GRIB_INFO, TIME_HIST, CURR_TIME, MSG, METADATA, OPTIONS )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,        ONLY: GRIB_INFO_T
+  USE :: OM_CORE_MOD,        ONLY: TIME_HISTORY_T
+  USE :: OM_CORE_MOD,        ONLY: CURR_TIME_T
+  USE :: OM_CORE_MOD,        ONLY: OM_ATM_MSG_T
+  USE :: METADATA_BASE_MOD,  ONLY: METADATA_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T),               INTENT(IN)    :: MODEL_PARAMS
+  TYPE(GRIB_INFO_T),               INTENT(IN)    :: GRIB_INFO
+  TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
+  TYPE(CURR_TIME_T),               INTENT(IN)    :: CURR_TIME
+  TYPE(OM_ATM_MSG_T),              INTENT(IN)    :: MSG
+  CLASS(METADATA_BASE_A), POINTER, INTENT(INOUT) :: METADATA
+  TYPE(ENCODERS_OPTIONS_T),        INTENT(IN)    :: OPTIONS
+
+  ! Error handling variables
+  INTEGER(KIND=JPIB_K) :: FORECAST_TIME
+  INTEGER(KIND=JPIB_K) :: LENGTH_OF_TIME_RANGE
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+  PP_METADATA_ENTER_PROCEDURE( METADATA )
+
+  ! This is an assumption currently made because the code for "analysis" is not ready
+  PP_DEBUG_CRITICAL_COND_THROW( TRIM(MODEL_PARAMS%SIM_%CTYPE).NE.'fc', 1 )
+  PP_DEBUG_CRITICAL_COND_THROW( MOD(CURR_TIME%ISEC,3600).NE.0, 2 )
+  PP_DEBUG_CRITICAL_COND_THROW( CURR_TIME%IS_STEP_0, 3 )
+
+  FORECAST_TIME = MAX(0,CURR_TIME%ISEC-GRIB_INFO%OVERALL_LENGTH_OF_TIME_RANGE_)
+  LENGTH_OF_TIME_RANGE = CURR_TIME%ISEC - FORECAST_TIME
+
+  PP_DEBUG_CRITICAL_COND_THROW( MOD(FORECAST_TIME,3600).NE.0, 5 )
+  PP_DEBUG_CRITICAL_COND_THROW( MOD(LENGTH_OF_TIME_RANGE,3600).NE.0, 6 )
+
+  PP_METADATA_SET( METADATA, 'timeRangeIndicator',0)
+  PP_METADATA_SET( METADATA, 'significanceOfReferenceTime', 1 )
+
+  PP_METADATA_SET( METADATA, 'typeOfStatisticalProcessing', 101 )
+
+  PP_METADATA_SET( METADATA, 'indicatorOfUnitOfTimeRange', 'h' )
+  PP_METADATA_SET( METADATA, 'forecastTime',  FORECAST_TIME/3600 )
+
+  PP_METADATA_SET( METADATA, 'indicatorOfUnitForTimeRange', 'h' )
+  PP_METADATA_SET( METADATA, 'lengthOfTimeRange',  LENGTH_OF_TIME_RANGE/3600 )
+
+  PP_METADATA_SET( METADATA, 'typeOfTimeIncrement',  2 )
+  PP_METADATA_SET( METADATA, 'indicatorOfUnitForTimeIncrement',  's' )
+  PP_METADATA_SET( METADATA, 'timeIncrement', INT(MODEL_PARAMS%SIM_%TSTEP, KIND=JPIB_K)  )
+
+  PP_METADATA_SET( METADATA, 'numberOfTimeRange', 1 )
+
+  ! Trace end of procedure (on error)
+  PP_METADATA_EXIT_PROCEDURE( METADATA )
+  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Instant time encoding logic not implemented for mars type: "'//TRIM(MODEL_PARAMS%SIM_%CTYPE)//'"' )
+    CASE (2)
+      TMP=REPEAT(' ',128)
+      WRITE(TMP,'(I8)') CURR_TIME%ISEC
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Forecast time is supposed to be an exact multiple of 1 hour: '//TRIM(ADJUSTL(TMP)) )
+    CASE (3)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Step 0 for average fields not implemented' )
+    CASE (4)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Not implemented' )
+    CASE (5)
+      TMP=REPEAT(' ',128)
+      WRITE(TMP,'(I8)') FORECAST_TIME
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Forecast time must be integer multiple of 3600: '//TRIM(ADJUSTL(TMP)) )
+    CASE (6)
+      TMP=REPEAT(' ',128)
+      WRITE(TMP,'(I8)') LENGTH_OF_TIME_RANGE
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'length of timerange must be an integer multiple of 3600: '//TRIM(ADJUSTL(TMP)) )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+END SUBROUTINE MODE_FIXED_RANGE_TIME_ENCODER_GRIB2_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
 
 
 END MODULE TIME_ENCODERS_MOD

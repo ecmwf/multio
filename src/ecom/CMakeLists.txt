@@ -122,6 +122,7 @@ list( APPEND output_manager_src
 list( APPEND output_manager_src
     grib_info/encoding_info_mod.F90
     grib_info/yaml_rules_mod.F90
+    grib_info/yaml_time_assumptions_mod.F90
     grib_info/grib_codes_mod.F90
 )
 

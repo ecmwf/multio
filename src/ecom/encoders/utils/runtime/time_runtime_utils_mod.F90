@@ -339,6 +339,7 @@ SUBROUTINE TIME_RUNTIME_INIT( CFG, MODEL_PARAMS )
 
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD,  ONLY: MODEL_PAR_T
+  USE :: OM_CORE_MOD,  ONLY: JPIB_K
 
   ! Symbols imported from other libraries
   USE :: FCKIT_CONFIGURATION_MODULE, ONLY: FCKIT_CONFIGURATION

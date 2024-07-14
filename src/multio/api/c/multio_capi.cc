@@ -600,6 +600,7 @@ int multio_write_field_float(multio_handle_t* mio, multio_metadata_t* md, const 
             ASSERT(md);
 
             md->set("precision", "single");
+            md->set("format", "raw");
 
             eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(float)};
 
@@ -619,6 +620,7 @@ int multio_write_field_double(multio_handle_t* mio, multio_metadata_t* md, const
             ASSERT(md);
 
             md->set("precision", "double");
+            md->set("format", "raw");
 
             eckit::Buffer field_vals{reinterpret_cast<const char*>(data), size * sizeof(double)};
 
@@ -638,6 +640,7 @@ int multio_write_field_buffer(multio_handle_t* mio, multio_metadata_t* md, multi
             ASSERT(mio);
             ASSERT(md);
             ASSERT(d);
+            md->set("format", "raw");
             if (byte_size == 4) {
                 md->set("precision", "single");
             }

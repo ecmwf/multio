@@ -408,6 +408,9 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
                     withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
                     withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
                     withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+                    withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
+                    withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
+                    withFirstOf(valueSetter(g, "resolution"), LookUpString(md, "resolution"));
 
                     if (paramId && ((*paramId == "260199") || (*paramId == "260360") || (*paramId == "262024"))) {
                         withFirstOf(valueSetter(g, "typeOfFirstFixedSurface"),

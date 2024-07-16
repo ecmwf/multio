@@ -39,7 +39,8 @@ CONTAINS
 END TYPE
 
 ! Name of the grib sample to be loaded
-CHARACTER(LEN=*), PARAMETER :: SAMPLE_NAME_GRIB1_SH_WS='sh_sfc'
+! CHARACTER(LEN=*), PARAMETER :: SAMPLE_NAME_GRIB1_SH_WS='sh_sfc'
+CHARACTER(LEN=*), PARAMETER :: SAMPLE_NAME_GRIB1_SH_WS='multio-sh-sfc-grib1'
 
 ! Whitelist of public symbols
 PUBLIC :: MAKE_GRIB1_SH_WS_ENCODER

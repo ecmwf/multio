@@ -12,4 +12,13 @@ WRITE(*,*) STR
 #define PP_LOG_DEVELOP_STR( STR )
 #endif
 
+#if 0
+#define PP_LOG_DEVELOP_COND_STR( COND, FMT, STR ) \
+IF ( COND ) THEN; \
+WRITE(*,FMT) STR;  \
+ENDIF
+#else
+#define PP_LOG_DEVELOP_COND_STR( COND, FMT, STR )
+#endif
+
 #endif

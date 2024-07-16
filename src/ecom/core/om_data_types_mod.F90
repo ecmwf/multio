@@ -613,10 +613,17 @@ TYPE, EXTENDS(OM_BASE_MSG_A) :: OM_WAM_MSG_T
   INTEGER (KIND=JPIB_K) :: IFCST
   INTEGER (KIND=JPIB_K) :: NSTEP
   CHARACTER(LEN=2)      :: MARSTYPE
-  CHARACTER(LEN=14)     :: CDATE
+  CHARACTER(LEN=14)     :: CDATE  !> @brief true if there are missing values in the message
 END TYPE
 
 TYPE :: CURR_TIME_T
+
+  !> Reference time of the simulation (DataDate,DataTime)
+  INTEGER(KIND=JPIB_K), DIMENSION(6) :: SIM_REF_TIME = 0_JPIB_K
+
+  !> PAcked version of the above information
+  INTEGER(KIND=JPIB_K) :: DATADATE
+  INTEGER(KIND=JPIB_K) :: DATATIME
 
   !> Current time in seconds
   INTEGER(KIND=JPIB_K) :: ISEC = 0_JPIB_K

@@ -74,6 +74,9 @@ CONTAINS
   PROCEDURE(DESTROY_IF), DEFERRED, PUBLIC, PASS :: DESTROY
 
   !> @brief Sets a string value.
+  PROCEDURE(SET_MISSING_IF), DEFERRED, PUBLIC, PASS :: SET_MISSING
+
+  !> @brief Sets a string value.
   PROCEDURE(SET_STRING_IF), DEFERRED, PUBLIC, PASS :: SET_STRING
 
   !> @brief Sets a boolean value.
@@ -155,6 +158,8 @@ CONTAINS
   !> @brief Init from other metadata and logging
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: INIT_FROM_METADATA_LOGGING => INIT_FROM_METADATA_LOGGING
 
+  !> @brief Sets a missing valuye.
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: SET_MISSING_LOGGING => SET_MISSING_LOGGING
 
   !> @brief Sets a string value with logging.
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: SET_STRING_LOGGING => SET_STRING_LOGGING
@@ -319,6 +324,21 @@ SUBROUTINE DESTROY_IF( THIS )
 IMPLICIT NONE
   CLASS(METADATA_BASE_A), INTENT(INOUT) :: THIS
 END SUBROUTINE DESTROY_IF
+
+
+!> @brief Sets a string value.
+!>
+!> This procedure sets a mising value associated to a key.
+!>
+!> @param [inout] this The object where the missing value is to be set.
+!> @param [in]    key  The key used to store the missing value.
+!>
+SUBROUTINE SET_MISSING_IF( THIS, KEY )
+  IMPORT :: METADATA_BASE_A
+IMPLICIT NONE
+  CLASS(METADATA_BASE_A), INTENT(INOUT) :: THIS
+  CHARACTER(LEN=*),       INTENT(IN)    :: KEY
+END SUBROUTINE SET_MISSING_IF
 
 !> @brief Sets a string value.
 !>
@@ -1087,6 +1107,76 @@ END SUBROUTINE EXIT_PROCEDURE
 
 
 
+!> @brief Sets a missing value.
+!>
+!> This procedure sets a missing value associated with a specified key.
+!>
+!> @param [inout] this The object where the missing value is to be set.
+!> @param [in]    key  The key used to store the missing value.
+!>
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'SET_MISSING_LOGGING'
+SUBROUTINE SET_MISSING_LOGGING( THIS, KEY, FNAME, SECTION_TYPE, SECTION_NAME, PROC_TYPE, PROC_NAME, CLINE )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_DATA_KIND_MOD, ONLY: JPIM_K
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(METADATA_BASE_A), INTENT(INOUT) :: THIS
+  CHARACTER(LEN=*),       INTENT(IN)    :: KEY
+  CHARACTER(LEN=*),       INTENT(IN)    :: FNAME
+  CHARACTER(LEN=*),       INTENT(IN)    :: SECTION_TYPE
+  CHARACTER(LEN=*),       INTENT(IN)    :: SECTION_NAME
+  CHARACTER(LEN=*),       INTENT(IN)    :: PROC_TYPE
+  CHARACTER(LEN=*),       INTENT(IN)    :: PROC_NAME
+  INTEGER(KIND=JPIM_K),   INTENT(IN)    :: CLINE
+
+  ! Local variables
+  CHARACTER(LEN=1024) :: STR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Get the position in the code
+  CALL WRITE_POS( STR, FNAME, SECTION_TYPE, SECTION_NAME, PROC_TYPE, PROC_NAME, CLINE )
+
+  ! Write the key, value pair to the log file
+  CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//'AT :: '//TRIM(STR) )
+  CALL THIS%TRACER_%ADVANCE_LINE()
+  THIS%OFFSET_ = THIS%OFFSET_ + 1
+  CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//'SET_MISSING '//TRIM(KEY) )
+  CALL THIS%TRACER_%ADVANCE_LINE()
+  THIS%OFFSET_ = THIS%OFFSET_ - 1
+
+  ! Call the proper set routine
+  CALL THIS%SET_MISSING( KEY )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END SUBROUTINE SET_MISSING_LOGGING
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
 !> @brief Sets a string value.
 !>
 !> This procedure sets a string value associated with a specified key.
@@ -1656,7 +1746,7 @@ IMPLICIT NONE
 
   ! Local variables
   CHARACTER(LEN=1024) :: STR
-  CHARACTER(LEN=16)   :: STR2
+  CHARACTER(LEN=1024)   :: STR2
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1674,8 +1764,12 @@ IMPLICIT NONE
   CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//'AT :: '//TRIM(STR) )
   CALL THIS%TRACER_%ADVANCE_LINE()
   THIS%OFFSET_ = THIS%OFFSET_ + 1
-  STR2 = REPEAT(' ',16)
-  WRITE(STR2,'(F11.4)') VAL
+  STR2 = REPEAT(' ',1024)
+  IF ( VAL .GT. -HUGE(REAL64)/100 .AND. VAL .LT. HUGE(REAL64)/100 ) THEN
+    WRITE(STR2,'(F16.8)') VAL
+  ELSE
+    WRITE(STR2,'(A)') 'Num. Limit'
+  ENDIF
   CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//'SET_REAL64 '//TRIM(KEY)//' = '//TRIM(ADJUSTL(STR2)) )
   CALL THIS%TRACER_%ADVANCE_LINE()
   THIS%OFFSET_ = THIS%OFFSET_ - 1
@@ -2518,7 +2612,7 @@ IMPLICIT NONE
   ! Local variables
   CHARACTER(LEN=16)    :: TMP
   CHARACTER(LEN=1024)  :: STR
-  CHARACTER(LEN=16)    :: STR2
+  CHARACTER(LEN=1024)  :: STR2
   INTEGER(KIND=JPIB_K) :: CNT
   INTEGER(KIND=JPIB_K) :: I
 
@@ -2548,8 +2642,12 @@ IMPLICIT NONE
   WriteLoop: DO
     DO I = 1, MIN( VALUES_PER_LINE, SIZE(VALUES)-CNT)
       CNT = CNT + 1
-      STR2 = REPEAT(' ',16)
-      WRITE(STR2,'(F11.4)') VALUES(CNT)
+      STR2 = REPEAT(' ',1024)
+      IF ( VALUES(CNT) .GT. -HUGE(REAL64)/100 .AND. VALUES(CNT) .LT. HUGE(REAL64)/100 ) THEN
+        WRITE(STR2,'(F16.8)') VALUES(CNT)
+      ELSE
+        WRITE(STR2,'(A)') 'Num. Limit'
+      ENDIF
       IF ( I .EQ. 1 ) THEN
         IF ( CNT .LT. SIZE(VALUES) ) THEN
           CALL THIS%TRACER_%APPEND_TO_LINE( REPEAT(' ', THIS%OFFSET_*TAB_SIZE)//TRIM(STR2)//',' )

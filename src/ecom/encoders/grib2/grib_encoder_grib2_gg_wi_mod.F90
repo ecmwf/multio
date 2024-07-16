@@ -39,7 +39,8 @@ CONTAINS
 END TYPE
 
 ! Name of the grib sample to be loaded
-CHARACTER(LEN=*), PARAMETER :: SAMPLE_NAME_GRIB2_GG_WI='gg_sfc_grib2'
+! CHARACTER(LEN=*), PARAMETER :: SAMPLE_NAME_GRIB2_GG_WI='gg_sfc_grib2'
+CHARACTER(LEN=*), PARAMETER :: SAMPLE_NAME_GRIB2_GG_WI='multio-gg-sfc-grib2'
 
 ! Whitelist of public symbols
 PUBLIC :: MAKE_GRIB2_GG_WI_ENCODER
@@ -229,8 +230,6 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-  RETURN
-
   ! Allocate the metadata
   IF ( PRESENT(MIOH) ) THEN
     CALL MAKE_METADATA( METADATA_KIND, THIS%SAMPLE_, MIOH=MIOH )
@@ -384,9 +383,7 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
   PP_METADATA_ENTER_PROCEDURE( METADATA )
 
-  EX = .FALSE.
-  RETURN
-
+  EX = .TRUE.
 
   PP_LOG_DEVELOP_STR( 'ENCODER: grib2, gridded, wave_integral, runtime' )
 

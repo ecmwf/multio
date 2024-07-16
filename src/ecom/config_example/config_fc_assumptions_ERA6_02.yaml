@@ -42,6 +42,9 @@ assumptions-rules:
         type-of-statistical-process: 'max'
         emit-step-zero: False
 
+      level-assumption:
+
+
 
     - rule: 'min_since_last_pp_noens'
       filter:

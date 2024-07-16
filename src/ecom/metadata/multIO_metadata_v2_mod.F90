@@ -86,6 +86,9 @@ CONTAINS
   !> @brief Destroys the object.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: DESTROY => MULTIO_METADATA_DESTROY
 
+  !> @brief Sets a missing value.
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_MISSING => MULTIO_METADATA_SET_MISSING
+
   !> @brief Sets a string value.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_STRING => MULTIO_METADATA_SET_STRING
 
@@ -880,6 +883,106 @@ PP_ERROR_HANDLER
   RETURN
 
 END SUBROUTINE MULTIO_METADATA_DESTROY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!> @brief Sets a string value.
+!>
+!> This procedure sets a string value associated with a specified key.
+!>
+!> @param [inout] this The object where the string value is to be set.
+!> @param [in]    key  The key used to store the string value.
+!> @param [in]    val  The string value to be stored.
+!>
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'MULTIO_METADATA_SET_MISSING'
+SUBROUTINE MULTIO_METADATA_SET_MISSING( THIS, KEY )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+
+  ! Symbols imported from other libraries
+  USE :: MULTIO_API, ONLY: MULTIO_SUCCESS
+  USE :: MULTIO_API, ONLY: MULTIO_ERROR_STRING
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(MULTIO_METADATA_T), INTENT(INOUT) :: THIS
+  CHARACTER(LEN=*),         INTENT(IN)    :: KEY
+
+  ! Local variables
+  INTEGER(KIND=JPIM_K) :: ERR
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! This procedure can be called only if the object is initialized
+  PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
+
+  ! Set the value into the handle
+  PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS, 2 )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=:), ALLOCATABLE :: MIO_ERR_STR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
+
+    CASE (2)
+      MIO_ERR_STR = MULTIO_ERROR_STRING(ERR)
+      IF ( ALLOCATED( MIO_ERR_STR ) ) THEN
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata: '//TRIM(ADJUSTL(MIO_ERR_STR)) )
+        DEALLOCATE( MIO_ERR_STR )
+      ELSE
+        PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to write into multio metadata' )
+      ENDIF
+
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END SUBROUTINE MULTIO_METADATA_SET_MISSING
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

@@ -545,8 +545,6 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-  ! WRITE(*,*) 'Passo di qui!!!!'
-
   ! Check if the file is opened
   INQUIRE( UNIT=VALUNIT, OPENED=VALOPENED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT.VALOPENED, 1)

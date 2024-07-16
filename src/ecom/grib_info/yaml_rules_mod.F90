@@ -1157,7 +1157,9 @@ IMPLICIT NONE
     WRITE(ERROR_UNIT,*) 'Read bitsPerValue'
   ENDIF
   IF ( CFG%GET( 'bitsPerValue', CLTMP  ) ) THEN
-    WRITE(ERROR_UNIT,*) 'Read bitsPerValue', TRIM(CLTMP)
+    IF ( VERBOSE ) THEN
+      WRITE(ERROR_UNIT,*) 'Read bitsPerValue', TRIM(CLTMP)
+    ENDIF
     IF ( IS_INTEGER(CLTMP) ) THEN
       READ(CLTMP,*) ITMP
       PP_DEBUG_CRITICAL_COND_THROW( ITMP.LT.1,  1 )
@@ -1532,12 +1534,9 @@ IMPLICIT NONE
   ! Associate the rule definitions to the output variable
   DEFINITIONS = RULES(RID)%DEFINITIONS
 
-  ! Loggin rules match
-  IF ( CNT  .EQ. 1 ) THEN
-    WRITE(*,*) ' + ENCODING_RULES_LOG: applied rule: '//TRIM(ADJUSTL(RMATCH))//') to field: '//TRIM(ADJUSTL(FLDSTR))
-  ELSE
-    WRITE(*,*) ' + ENCODING_RULES_LOG: applied default rule to field: '//TRIM(ADJUSTL(FLDSTR))
-  ENDIF
+  ! Logging
+  PP_LOG_DEVELOP_COND_STR( (CNT.EQ.1), '(A128)', ' + ENCODING_RULES_LOG: applied rule: '//TRIM(ADJUSTL(RMATCH))//') to field: '//TRIM(ADJUSTL(FLDSTR)) )
+  PP_LOG_DEVELOP_COND_STR( (CNT.NE.1), '(A128)', ' + ENCODING_RULES_LOG: applied default rule to field: '//TRIM(ADJUSTL(FLDSTR)) )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

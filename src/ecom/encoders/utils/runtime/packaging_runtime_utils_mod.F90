@@ -146,6 +146,8 @@ IMPLICIT NONE
   IF ( MSG%NUNDF_ .GT. 0 ) THEN
     PP_METADATA_SET( METADATA,  'bitmapPresent', .TRUE. )
     PP_METADATA_SET( METADATA,  'missingValue', MSG%XUNDF_ )
+  ELSE
+    PP_METADATA_SET( METADATA,  'bitmapPresent', .FALSE. )
   ENDIF
 
   ! Trace end of procedure (on success)
@@ -257,6 +259,7 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( MSG%IPREF_.GT.7, 2 )
 
   PP_METADATA_SET( METADATA,  'numberOfBitsContainingEachPackedValue', GRIB_INFO%BITS_PER_VALUE )
+  ! PP_METADATA_SET( METADATA,  'setBitsPerValue', GRIB_INFO%BITS_PER_VALUE )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -339,6 +342,7 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( MSG%IPREF_.GT.7, 2 )
 
   PP_METADATA_SET( METADATA,  'numberOfBitsContainingEachPackedValue', GRIB_INFO%BITS_PER_VALUE )
+  ! PP_METADATA_SET( METADATA,  'setBitsPerValue', GRIB_INFO%BITS_PER_VALUE )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -446,7 +450,9 @@ IMPLICIT NONE
   ELSE
     ISTRUNC = MIN( 10 ,MODEL_PARAMS%GEO_%ISMAX )
   ENDIF
+
   PP_METADATA_SET( METADATA,  'numberOfBitsContainingEachPackedValue', GRIB_INFO%BITS_PER_VALUE )
+  ! PP_METADATA_SET( METADATA,  'setBitsPerValue', GRIB_INFO%BITS_PER_VALUE )
 
 
   PP_LOG_DEVELOP_STR( 'GRIB2: Spherical harmonics Packaging 0' )
@@ -463,6 +469,7 @@ IMPLICIT NONE
   ELSE
     PP_METADATA_SET( METADATA,  'laplacianOperator', 0.0_JPRB_K )
   ENDIF
+
   PP_LOG_DEVELOP_STR( 'GRIB2: Spherical harmonics Packaging 1' )
   PP_METADATA_SET( METADATA,  'subSetJ', ISTRUNC )
   PP_METADATA_SET( METADATA,  'subSetK', ISTRUNC )

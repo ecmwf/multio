@@ -83,6 +83,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: DESTROY => GRIB_METADATA_DESTROY
 
   !> @brief Sets a string value.
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_MISSING => GRIB_METADATA_SET_MISSING
+
+  !> @brief Sets a string value.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_STRING => GRIB_METADATA_SET_STRING
 
   !> @brief Sets a boolean value.
@@ -406,8 +409,15 @@ END SUBROUTINE GRIB_METADATA_INIT_FROM_METADATA
 #define PP_PROCEDURE_NAME 'GRIB_METADATA_INIT_FROM_SAMPLE_NAME'
 SUBROUTINE GRIB_METADATA_INIT_FROM_SAMPLE_NAME( THIS, SAMPLE_NAME )
 
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_DOUBLE
+
   ! Symbols imported from other modules within the project.
   USE :: OM_CORE_MOD, ONLY: JPIM_K
+  USE :: OM_CORE_MOD, ONLY: JPIB_K
+  USE :: GRIB_API,    ONLY: GRIB_GET
+  USE :: GRIB_API,    ONLY: GRIB_SET
   USE :: GRIB_API,    ONLY: GRIB_NEW_FROM_SAMPLES
   USE :: GRIB_API,    ONLY: GRIB_SUCCESS
   USE :: GRIB_API,    ONLY: GRIB_GET_ERROR_STRING
@@ -426,6 +436,10 @@ IMPLICIT NONE
 
   ! Local variables
   INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=C_LONG) :: NVALUES
+  INTEGER(KIND=JPIB_K) :: STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+  REAL(KIND=C_DOUBLE), ALLOCATABLE, DIMENSION(:) :: DUMMY_FIELD
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -442,6 +456,40 @@ IMPLICIT NONE
   ! Read the sample ad if it's necessary distribute it
   CALL GRIB_NEW_FROM_SAMPLES( THIS%IGRIB_HANDLE_, TRIM(ADJUSTL(SAMPLE_NAME)), STATUS=KRET )
   PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, 2 )
+
+  ! ------------------------------------------------------------------------------------------------
+  ! ** Patch to fix the fact that the samples are not all stripped from values
+  ! ------------------------------------------------------------------------------------------------
+  CALL GRIB_GET( THIS%IGRIB_HANDLE_, 'numberOfValues', NVALUES, STATUS=KRET )
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, 3 )
+
+  ! Allocate a temporary buffer to strip the values the values
+  ALLOCATE( DUMMY_FIELD(NVALUES), STAT=STAT, ERRMSG=ERRMSG )
+  PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 4 )
+  DUMMY_FIELD = 0.0_C_DOUBLE
+
+  ! Set the values to the handle
+  CALL GRIB_SET( THIS%IGRIB_HANDLE_, 'values', DUMMY_FIELD, STATUS=KRET )
+  PP_DEBUG_DEVELOP_COND_THROW( KRET.NE.GRIB_SUCCESS, 5 )
+
+  ! Free temporary buffer
+  DEALLOCATE( DUMMY_FIELD, STAT=STAT, ERRMSG=ERRMSG )
+  PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 6 )
+
+  ! Set the values to the handle
+  CALL GRIB_SET( THIS%IGRIB_HANDLE_, 'bitmapPresent', 0_C_LONG, STATUS=KRET )
+  PP_DEBUG_DEVELOP_COND_THROW( KRET.NE.GRIB_SUCCESS, 7 )
+
+  ! NOTE: An alternative is to set the bitmapPresent to 1 and the missing value set to the same value
+  ! used to initialize the array (Chat with Eugen and Shahram 25/07/2024)
+  ! ------------------------------------------------------------------------------------------------
+
+  ! Check error message
+  IF ( ALLOCATED(ERRMSG) ) THEN
+    DEALLOCATE(ERRMSG)
+  ENDIF
+
+  ! Set the initialization flag to .true.
   THIS%INITIALIZED_ = .TRUE.
 
   ! Trace end of procedure (on success)
@@ -467,6 +515,24 @@ PP_ERROR_HANDLER
       GRIB_ERROR = REPEAT(' ', 4096)
       CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to load the sample.', KRET, GRIB_ERROR )
+    CASE (3)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to read "numberOfValues" the sample.', KRET, GRIB_ERROR )
+    CASE (4)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'error allocating space for temporary buffer -> '//TRIM(ADJUSTL(ERRMSG)) )
+      DEALLOCATE(ERRMSG)
+    CASE (5)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to set "values".', KRET, GRIB_ERROR )
+    CASE (6)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'error deallocating temporary buffer -> '//TRIM(ADJUSTL(ERRMSG)) )
+      DEALLOCATE(ERRMSG)
+    CASE (7)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to set "bitmapPresent".', KRET, GRIB_ERROR )
     CASE DEFAULT
       PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
     END SELECT
@@ -749,6 +815,98 @@ PP_ERROR_HANDLER
   RETURN
 
 END SUBROUTINE GRIB_METADATA_DESTROY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!> @brief Sets a string value.
+!>
+!> This procedure sets a string value associated with a specified key.
+!>
+!> @param [inout] this The object where the string value is to be set.
+!> @param [in]    key  The key used to store the string value.
+!> @param [in]    val  The string value to be stored.
+!>
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'GRIB_METADATA_SET_MISSING'
+SUBROUTINE GRIB_METADATA_SET_MISSING( THIS, KEY )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD, ONLY: JPIM_K
+  USE :: GRIB_API,    ONLY: GRIB_SET_MISSING
+  USE :: GRIB_API,    ONLY: GRIB_SUCCESS
+  USE :: GRIB_API,    ONLY: GRIB_GET_ERROR_STRING
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(GRIB_METADATA_T), INTENT(INOUT) :: THIS
+  CHARACTER(LEN=*),       INTENT(IN)    :: KEY
+
+  ! Local variables
+  INTEGER(KIND=JPIM_K) :: KRET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! This procedure can be called only if the object is initialized
+  PP_DEBUG_DEVELOP_COND_THROW( .NOT.THIS%INITIALIZED_, 1 )
+
+  ! Set the value into the handle
+  CALL GRIB_SET_MISSING( THIS%IGRIB_HANDLE_, KEY, STATUS=KRET )
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, 2 )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=4096) :: GRIB_ERROR
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Handle not initialized' )
+    CASE (2)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_CREATE_ERROR_MSG_GRIB( STR, 'Unable to set missing value.', KRET, GRIB_ERROR )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END SUBROUTINE GRIB_METADATA_SET_MISSING
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

@@ -65,8 +65,8 @@ const std::map<const std::string, const long> type_of_statistical_processing{
 const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
 
-const std::map<const std::string, const long> type_of_generating_process{
-    {"an", 0}, {"4v", 0}, {"fc", 2}, {"pf", 4}, {"tpa", 12}};
+const std::map<const std::string, const long> type_of_generating_process{{"an", 0}, {"4v", 0}, {"fc", 2},
+                                                                         {"cf", 4}, {"pf", 4}, {"tpa", 12}};
 
 
 const std::unordered_set<std::string> types_with_time_reference_offset{"fc", "fcmean", "cf", "pf", "4v"};

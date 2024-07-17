@@ -450,6 +450,14 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "lengthOf4DvarWindow"), LookUpLong(md, "lengthOf4DvarWindow"),
                 LookUpLong(md, "anlength"));
 
+    // Metadata for ensemble forecast
+    withFirstOf(valueSetter(g, "oceanAtmosphereCoupling"), LookUpLong(md, "oceanAtmosphereCoupling"));
+    withFirstOf(valueSetter(g, "legBaseDate"), LookUpLong(md, "legBaseDate"));
+    withFirstOf(valueSetter(g, "legBaseTime"), LookUpLong(md, "legBaseTime"));
+    withFirstOf(valueSetter(g, "legNumber"), LookUpLong(md, "legNumber"));
+    withFirstOf(valueSetter(g, "referenceDate"), LookUpLong(md, "referenceDate"));
+    withFirstOf(valueSetter(g, "climateDateFrom"), LookUpLong(md, "climateDateFrom"));
+    withFirstOf(valueSetter(g, "climateDateTo"), LookUpLong(md, "climateDateTo"));
 
     withFirstOf(valueSetter(g, "componentIndex"), LookUpLong(md, "componentIndex"));
     withFirstOf(valueSetter(g, "numberOfComponents"), LookUpLong(md, "numberOfComponents"));

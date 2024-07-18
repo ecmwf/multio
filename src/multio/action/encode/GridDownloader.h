@@ -76,6 +76,8 @@ private:
     using GridCoordinateCache = std::unordered_map<DomainType, GridCoordinates>;
     using GridUIDCache = std::unordered_map<DomainType, GridUIDType>;
 
+    void populateUIDCache(const config::ComponentConfiguration& compConf);
+
     void initTemplateMetadata();
     multio::message::Metadata createMetadataFromCoordsData(size_t gridSize, const std::string& unstructuredGridSubtype,
                                                            const std::string& gridUID, int paramId);

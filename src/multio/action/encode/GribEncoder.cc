@@ -65,8 +65,8 @@ const std::map<const std::string, const long> type_of_statistical_processing{
 const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
 
-const std::map<const std::string, const long> type_of_generating_process{
-    {"an", 0}, {"4v", 0}, {"fc", 2}, {"pf", 4}, {"tpa", 12}};
+const std::map<const std::string, const long> type_of_generating_process{{"an", 0}, {"4v", 0}, {"fc", 2},
+                                                                         {"cf", 4}, {"pf", 4}, {"tpa", 12}};
 
 
 const std::unordered_set<std::string> types_with_time_reference_offset{"fc", "fcmean", "cf", "pf", "4v"};
@@ -366,6 +366,9 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
                     withFirstOf(valueSetter(g, "activity"), LookUpString(md, "activity"));
                     withFirstOf(valueSetter(g, "experiment"), LookUpString(md, "experiment"));
                     withFirstOf(valueSetter(g, "realization"), LookUpString(md, "realization"));
+                    withFirstOf(valueSetter(g, "generation"), LookUpString(md, "generation"));
+                    withFirstOf(valueSetter(g, "model"), LookUpString(md, "model"));
+                    withFirstOf(valueSetter(g, "resolution"), LookUpString(md, "resolution"));
                 }
             }
         }
@@ -390,6 +393,14 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const eckit::Configuration& md) {
     withFirstOf(valueSetter(g, "lengthOf4DvarWindow"), LookUpLong(md, "lengthOf4DvarWindow"),
                 LookUpLong(md, "anlength"));
 
+    // Metadata for ensemble forecast
+    withFirstOf(valueSetter(g, "oceanAtmosphereCoupling"), LookUpLong(md, "oceanAtmosphereCoupling"));
+    withFirstOf(valueSetter(g, "legBaseDate"), LookUpLong(md, "legBaseDate"));
+    withFirstOf(valueSetter(g, "legBaseTime"), LookUpLong(md, "legBaseTime"));
+    withFirstOf(valueSetter(g, "legNumber"), LookUpLong(md, "legNumber"));
+    withFirstOf(valueSetter(g, "referenceDate"), LookUpLong(md, "referenceDate"));
+    withFirstOf(valueSetter(g, "climateDateFrom"), LookUpLong(md, "climateDateFrom"));
+    withFirstOf(valueSetter(g, "climateDateTo"), LookUpLong(md, "climateDateTo"));
 
     withFirstOf(valueSetter(g, "componentIndex"), LookUpLong(md, "componentIndex"));
     withFirstOf(valueSetter(g, "numberOfComponents"), LookUpLong(md, "numberOfComponents"));

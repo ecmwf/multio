@@ -1,0 +1,15 @@
+mappings:
+  - match:
+      paramId: paramId
+    map:
+      typeOfLevel: typeOfLevel
+
+data:
+  - paramId: 186
+    typeOfLevel: "lowCloudLayer"
+
+  - paramId: 187
+    typeOfLevel: "mediumCloudLayer"
+
+  - paramId: 188
+    typeOfLevel: "highCloudLayer"

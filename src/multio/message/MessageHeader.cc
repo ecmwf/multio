@@ -57,7 +57,6 @@ const Metadata& Message::Header::metadata() const {
 }
 Metadata& Message::Header::modifyMetadata() {
     return metadata_.modify();
-    ;
 }
 
 // Metadata&& Message::Header::metadata() && {

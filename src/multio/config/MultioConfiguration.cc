@@ -230,6 +230,12 @@ const std::vector<message::MetadataMapping>& MultioConfiguration::getMetadataMap
 
 //-----------------------------------------------------------------------------
 
+std::queue<message::Message>& MultioConfiguration::debugSink() const {
+    return debugSink_;
+};
+
+//-----------------------------------------------------------------------------
+
 MultioConfigurationHolder::MultioConfigurationHolder(MultioConfiguration&& multioConf) :
     multioConf_(std::move(multioConf)) {}
 

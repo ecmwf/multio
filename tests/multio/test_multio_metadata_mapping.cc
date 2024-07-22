@@ -13,7 +13,9 @@
 
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/testing/Test.h"
+#include "multio/action/Plan.h"
 #include "multio/config/MultioConfiguration.h"
+#include "multio/config/PathConfiguration.h"
 #include "multio/message/Message.h"
 #include "multio/message/Metadata.h"
 #include "multio/util/VariantHelpers.h"
@@ -80,6 +82,53 @@ CASE("Test mapping tol") {
 
         EXPECT(searchTOL != md.end());
         EXPECT_EQUAL(searchTOL->second.get<std::string>(), "still here");
+    }
+};
+
+
+CASE("Test mapping tol (action)") {
+    std::string actions(R"json({
+                  "name": "Test tol",
+                  "actions" : [{
+                        "type": "print",
+                        "stream": "cout",
+                        "prefix": "PRE MAPPING"
+                    },
+                    {
+                      "type" : "metadata-mapping",
+                      "mapping" : "{~}/metadata-mapping/test-mapping-tol.yaml",
+                      "enforce-matching": false,
+                      "overwrite-existing": true
+                    }, 
+                    {
+                        "type": "print",
+                        "stream": "cout",
+                        "prefix": "POST MAPPING"
+                    },
+                    {
+                      "type" : "debug-sink"
+                    }]
+                }
+                )json");
+
+    config::ConfigAndPaths configAndPaths;
+    configAndPaths.paths = config::defaultConfigPaths();
+    configAndPaths.parsedConfig = eckit::LocalConfiguration{eckit::YAMLConfiguration(actions)};
+
+    config::MultioConfiguration multioConf{configAndPaths};
+    auto& debugSink = multioConf.debugSink();
+
+    multio::action::Plan plan{config::ComponentConfiguration{multioConf.parsedConfig(), multioConf}};
+
+    {
+        EXPECT_NO_THROW(plan.process(
+            message::Message{{message::Message::Tag::Field, {}, {}, message::Metadata{{{"paramId", 187}}}}}));
+        EXPECT(debugSink.size() == 1);
+        const auto& md = debugSink.front().metadata();
+        auto searchTOL = md.find("typeOfLevel");
+
+        EXPECT(searchTOL != md.end());
+        EXPECT_EQUAL(searchTOL->second.get<std::string>(), "mediumCloudLayer");
     }
 };
 

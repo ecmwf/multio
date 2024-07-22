@@ -56,6 +56,7 @@ const Metadata& Message::Header::metadata() const {
     return metadata_.read();
 }
 Metadata& Message::Header::modifyMetadata() {
+    fieldId_ = std::nullopt;
     return metadata_.modify();
 }
 

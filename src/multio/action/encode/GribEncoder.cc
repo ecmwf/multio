@@ -280,6 +280,7 @@ const std::map<std::string, TypeOfLevelSetter> typeOfLevelSetters{
     {"mediumCloudLayer", &setLevelUnrelatedTypeOfLevel},
     {"lowCloudLayer", &setLevelUnrelatedTypeOfLevel},
     {"highCloudLayer", &setLevelUnrelatedTypeOfLevel},
+    {"meanSea", &setLevelUnrelatedTypeOfLevel},
 };
 
 

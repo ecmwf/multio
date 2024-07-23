@@ -164,10 +164,10 @@ std::variant<MatchKeys, MatchReduce> constructMatchIgnore(const LocalConfigurati
     eckit::LocalConfiguration cfgK;
     cfg.get(key, cfgK);
 
-    if (cfgK.get().isMap()) {
-        return MatchKeys{cfgK, p};
+    if (cfg.isSubConfiguration(key)) {
+        return MatchKeys{cfg.getSubConfiguration(key), p};
     }
-    else if (cfgK.get().isList()) {
+    else if (cfg.isSubConfigurationList(key)) {
         auto v = cfg.getSubConfigurations(key);
 
         if (v.size() == 1) {
@@ -175,18 +175,8 @@ std::variant<MatchKeys, MatchReduce> constructMatchIgnore(const LocalConfigurati
         }
         else {
             MatchReduce res(Reduce::Or, p);
-            std::size_t i = 0;
             for (auto& vi : v) {
-
-                if (!vi.get().isMap()) {
-                    std::ostringstream oss;
-                    oss << "MetadataMatcher: The block for \"" << key
-                        << "\" is expected to be a map or list of maps. This one is a list, but the " << i
-                        << " element is no map: " << cfg;
-                    throw MetadataException(oss.str(), Here());
-                }
                 res.extend(MatchKeys{vi});
-                ++i;
             }
             return res;
         }
@@ -202,11 +192,12 @@ std::variant<MatchKeys, MatchReduce> constructMatchIgnore(const LocalConfigurati
 }  // namespace
 
 MatchReduce MatchReduce::construct(const LocalConfiguration& cfg, Predicate p) {
-    if (!cfg.get().isMap()) {
-        std::ostringstream oss;
-        oss << "MetadataMatcher: Expected a map: " << cfg;
-        throw MetadataException(oss.str(), Here());
-    }
+    // TODO - we have no options to check this anymore
+    // if (!cfg.get().isMap()) {
+    //     std::ostringstream oss;
+    //     oss << "MetadataMatcher: Expected a map: " << cfg;
+    //     throw MetadataException(oss.str(), Here());
+    // }
 
     bool hasAny = cfg.has("any");
     bool hasAll = cfg.has("all");
@@ -259,26 +250,15 @@ MatchReduce MatchReduce::construct(const LocalConfiguration& cfg, Predicate p) {
         MatchReduce res{hasAll ? Reduce::And : Reduce::Or, p};
         std::string key = hasAll ? "all" : "any";
 
-        eckit::LocalConfiguration cfgK;
-        cfg.get(key, cfgK);
-        if (!cfgK.get().isList()) {
+        if (!cfg.isSubConfigurationList(key)) {
             std::ostringstream oss;
             oss << "MetadataMatcher: The block for \"" << key << "\" is expected to be a list of maps: " << cfg;
             throw MetadataException(oss.str(), Here());
         }
 
         auto v = cfg.getSubConfigurations(key);
-        std::size_t i = 0;
         for (auto& vi : v) {
-            if (!vi.get().isMap()) {
-                std::ostringstream oss;
-                oss << "MetadataMatcher: The block for \"" << key
-                    << "\" is expected to be a list of maps. This one is a list, but the " << i
-                    << " element is not a map: " << cfg;
-                throw MetadataException(oss.str(), Here());
-            }
             res.extend(construct(vi, Predicate::None));
-            ++i;
         }
 
         return res;

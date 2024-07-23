@@ -246,6 +246,10 @@ struct QueriedMarsKeys {
     std::optional<std::int64_t> paramId{};
 };
 
+void setLevelUnrelatedTypeOfLevel(GribEncoder& g, const std::string& typeOfLevel, long level) {
+    g.setValue("typeOfLevel", typeOfLevel);
+}
+
 void setLayerTypeOfLevel(GribEncoder& g, const std::string& typeOfLevel, long level) {
     g.setValue("typeOfLevel", typeOfLevel);
     g.setValue("scaleFactorOfFirstFixedSurface", 0);
@@ -273,6 +277,9 @@ const std::map<std::string, TypeOfLevelSetter> typeOfLevelSetters{
     {"snowLayer", &setLayerTypeOfLevel},
     {"soilLayer", &setSoilLayerTypeOfLevel},
     {"seaIceLayer", &setLayerTypeOfLevel},
+    {"mediumCloudLayer", &setLevelUnrelatedTypeOfLevel},
+    {"lowCloudLayer", &setLevelUnrelatedTypeOfLevel},
+    {"highCloudLayer", &setLevelUnrelatedTypeOfLevel},
 };
 
 

@@ -479,6 +479,45 @@ CASE("Test default match + ignore combination with reduce-and") {
     EXPECT_EQUAL(sel.matches(message::Metadata{{{"name", "c"}, {"format", "grib"}}}), false);
 }
 
+
+CASE("Test enfore same key type") {
+    {
+        std::stringstream confString;
+        confString << R"json(
+              {
+                  "match": {
+                      "name": [ "a", "b" ]
+                  },
+                  "ignore": {
+                      "format": "grib"
+                  }
+            })json";
+
+        message::match::MatchReduce sel{eckit::LocalConfiguration{eckit::YAMLConfiguration(confString)}};
+        EXPECT(!sel.isEmpty());
+
+        EXPECT_THROWS_AS(sel.matches(message::Metadata{{{"name", 1}}}), message::MetadataException);
+    }
+    {
+        std::stringstream confString;
+        confString << R"json(
+              {
+                  "enforce-same-key-types": false,
+                  "match": {
+                      "name": [ "a", "b" ]
+                  },
+                  "ignore": {
+                      "format": "grib"
+                  }
+            })json";
+
+        message::match::MatchReduce sel{eckit::LocalConfiguration{eckit::YAMLConfiguration(confString)}};
+        EXPECT(!sel.isEmpty());
+
+        EXPECT_EQUAL(sel.matches(message::Metadata{{{"name", 1}}}), false);
+    }
+}
+
 //-----------------------------------------------------------------------------
 
 }  // namespace test

@@ -12,7 +12,8 @@ namespace multio::message::match {
 
 //--------------------------------------------------------------------------------------------------
 
-MatchKeys::MatchKeys(const LocalConfiguration& cfg, Predicate p) {
+MatchKeys::MatchKeys(const LocalConfiguration& cfg, Predicate p, bool enforceSameKeyTypes) :
+    predicate_{p}, enforceSameKeyTypes_{enforceSameKeyTypes} {
     std::map<typename MetadataTypes::KeyType, std::unordered_set<MetadataValue>> matcher;
 
     for (const auto& k : cfg.keys()) {
@@ -60,8 +61,6 @@ MatchKeys::MatchKeys(const LocalConfiguration& cfg, Predicate p) {
     for (auto&& kv : std::move(matcher)) {
         matcher_.push_back(std::move(kv));
     }
-
-    predicate_ = p;
 }
 
 
@@ -75,6 +74,32 @@ bool MatchKeys::matches(const Metadata& md) const {
             break;
         }
         if (kv.second.find(searchKey->second) == kv.second.end()) {
+            if (enforceSameKeyTypes_) {
+                if (kv.second.size() == 0) {
+                    std::ostringstream oss;
+                    oss << "[enforce-same-key-type] Matcher for key \"" << kv.first << "\" is an empty set";
+                    throw MetadataException(oss.str());
+                }
+
+                if (kv.second.begin()->index() != searchKey->second.index()) {
+                    std::ostringstream oss;
+                    oss << "[enforce-same-key-type] Matcher for key \"" << kv.first
+                        << "\" contains values of a different type than the metadata." << std::endl;
+                    oss << "metadata: " << md << std::endl;
+                    oss << "match keys: {";
+                    bool first = true;
+                    for (const auto& v : kv.second) {
+                        if (!first) {
+                            oss << ", ";
+                            first = false;
+                        }
+                        oss << v;
+                    }
+                    oss << "}";
+                    throw MetadataException(oss.str());
+                }
+            }
+
             res = false;
             break;
         }
@@ -160,23 +185,23 @@ Predicate invert(Predicate p) {
 }
 
 std::variant<MatchKeys, MatchReduce> constructMatchIgnore(const LocalConfiguration& cfg, const std::string& key,
-                                                          Predicate p) {
+                                                          Predicate p, bool enforceSameKeyTypes) {
     eckit::LocalConfiguration cfgK;
     cfg.get(key, cfgK);
 
     if (cfg.isSubConfiguration(key)) {
-        return MatchKeys{cfg.getSubConfiguration(key), p};
+        return MatchKeys{cfg.getSubConfiguration(key), p, enforceSameKeyTypes};
     }
     else if (cfg.isSubConfigurationList(key)) {
         auto v = cfg.getSubConfigurations(key);
 
         if (v.size() == 1) {
-            return MatchKeys{v[0], p};
+            return MatchKeys{v[0], p, enforceSameKeyTypes};
         }
         else {
             MatchReduce res(Reduce::Or, p);
             for (auto& vi : v) {
-                res.extend(MatchKeys{vi});
+                res.extend(MatchKeys{vi, Predicate::None, enforceSameKeyTypes});
             }
             return res;
         }
@@ -191,7 +216,7 @@ std::variant<MatchKeys, MatchReduce> constructMatchIgnore(const LocalConfigurati
 
 }  // namespace
 
-MatchReduce MatchReduce::construct(const LocalConfiguration& cfg, Predicate p) {
+MatchReduce MatchReduce::construct(const LocalConfiguration& cfg, Predicate p, bool enforceSameKeyTypesParent) {
     // TODO - we have no options to check this anymore
     // if (!cfg.get().isMap()) {
     //     std::ostringstream oss;
@@ -205,6 +230,9 @@ MatchReduce MatchReduce::construct(const LocalConfiguration& cfg, Predicate p) {
     bool hasIgnore = cfg.has("ignore");
     bool hasMatchOrIgnore = hasMatch || hasIgnore;
     bool hasNot = cfg.has("not");
+
+    bool enforceSameKeyTypes
+        = cfg.has("enforce-same-key-types") ? cfg.getBool("enforce-same-key-types") : enforceSameKeyTypesParent;
 
     int checkKeySum = ((int)hasAny + (int)hasAll + (int)hasNot + (int)hasMatchOrIgnore);
 
@@ -223,26 +251,26 @@ MatchReduce MatchReduce::construct(const LocalConfiguration& cfg, Predicate p) {
     }
 
     if (hasNot) {
-        return construct(cfg.getSubConfiguration("not"), invert(p));
+        return construct(cfg.getSubConfiguration("not"), invert(p), enforceSameKeyTypes);
     }
     else if (hasMatchOrIgnore) {
         if (hasMatch && hasIgnore) {
             MatchReduce res{Reduce::And, p};
             std::visit([&](auto&& v) { res.extend(std::move(v)); },
-                       constructMatchIgnore(cfg, "match", Predicate::None));
+                       constructMatchIgnore(cfg, "match", Predicate::None, enforceSameKeyTypes));
             std::visit([&](auto&& v) { res.extend(std::move(v)); },
-                       constructMatchIgnore(cfg, "ignore", Predicate::Negate));
+                       constructMatchIgnore(cfg, "ignore", Predicate::Negate, enforceSameKeyTypes));
             return res;
         }
         else {
-            return std::visit(
-                eckit::Overloaded{[&](MatchKeys&& mk) -> MatchReduce {
-                                      MatchReduce res{Reduce::Or, Predicate::None};
-                                      res.extend(std::move(mk));
-                                      return res;
-                                  },
-                                  [&](MatchReduce&& mr) -> MatchReduce { return mr; }},
-                constructMatchIgnore(cfg, hasMatch ? "match" : "ignore", hasMatch ? p : negatePredicate(p)));
+            return std::visit(eckit::Overloaded{[&](MatchKeys&& mk) -> MatchReduce {
+                                                    MatchReduce res{Reduce::Or, Predicate::None};
+                                                    res.extend(std::move(mk));
+                                                    return res;
+                                                },
+                                                [&](MatchReduce&& mr) -> MatchReduce { return mr; }},
+                              constructMatchIgnore(cfg, hasMatch ? "match" : "ignore",
+                                                   hasMatch ? p : negatePredicate(p), enforceSameKeyTypes));
         }
     }
     else {
@@ -258,7 +286,7 @@ MatchReduce MatchReduce::construct(const LocalConfiguration& cfg, Predicate p) {
 
         auto v = cfg.getSubConfigurations(key);
         for (auto& vi : v) {
-            res.extend(construct(vi, Predicate::None));
+            res.extend(construct(vi, Predicate::None, enforceSameKeyTypes));
         }
 
         return res;

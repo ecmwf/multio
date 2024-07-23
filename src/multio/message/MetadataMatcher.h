@@ -49,7 +49,7 @@ enum class Reduce : unsigned
 class MatchKeys {
 
 public:  // methods
-    explicit MatchKeys(const eckit::LocalConfiguration& cfg, Predicate p = Predicate::None);
+    explicit MatchKeys(const eckit::LocalConfiguration& cfg, Predicate p, bool enforceMatchKeys);
 
     bool matches(const Metadata& md) const;
 
@@ -65,9 +65,10 @@ private:  // methods
     void applyPredicate(Predicate);
 
 private:  // members
+    Predicate predicate_;
+    bool enforceSameKeyTypes_;
     // Use vectorbecause we only iterate over key-pair values
     std::vector<std::pair<typename MetadataTypes::KeyType, std::unordered_set<MetadataValue>>> matcher_;
-    Predicate predicate_;
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -102,7 +103,8 @@ public:  // methods
     void negate();
     void applyPredicate(Predicate);
 
-    static MatchReduce construct(const eckit::LocalConfiguration&, Predicate p = Predicate::None);
+    static MatchReduce construct(const eckit::LocalConfiguration&, Predicate p = Predicate::None,
+                                 bool enforceSameKeyTypesParent = true);
 
 
 private:  // methods

@@ -79,7 +79,7 @@ private:
     MultioClient(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf);
 
     std::vector<std::unique_ptr<action::Plan>> plans_;
-    message::match::MatchReduce activeSelectors_;
+    message::match::MatchReduce activeSelectors_{message::match::Reduce::Or};
 
     eckit::Timing totClientTiming_;
     eckit::Timer totClientTimer_;

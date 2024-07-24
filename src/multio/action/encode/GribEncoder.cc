@@ -61,8 +61,8 @@ const std::map<const std::string, const std::int64_t> type_of_statistical_proces
 const std::map<const std::string, const std::string> category_to_levtype{
     {"ocean-grid-coordinate", "oceanSurface"}, {"ocean-2d", "oceanSurface"}, {"ocean-3d", "oceanModelLevel"}};
 
-const std::map<const std::string, const std::int64_t> type_of_generating_process{
-    {"an", 0}, {"4v", 1}, {"fc", 2}, {"pf", 4}, {"tpa", 12}};
+const std::map<const std::string, const long> type_of_generating_process{{"an", 0}, {"4v", 0}, {"fc", 2},
+                                                                         {"cf", 4}, {"pf", 4}, {"tpa", 12}};
 
 
 const std::unordered_set<std::string> types_with_time_reference_offset{"fc", "fcmean", "cf", "pf", "4v"};
@@ -410,10 +410,12 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
             if (*productionStatusOfProcessedData == 2) {
                 const auto data_class = lookUp<std::string>(md, glossary().classKey)();
                 if (data_class == "ed") {
-                    withFirstOf(valueSetter(g, glossary().activity), lookUp<std::string>(md, glossary().activity));
-                    withFirstOf(valueSetter(g, glossary().experiment), lookUp<std::string>(md, glossary().experiment));
-                    withFirstOf(valueSetter(g, glossary().realization),
-                                lookUp<std::string>(md, glossary().realization));
+                    withFirstOf(valueSetter(g, "activity"), lookUp<std::string>(md, "activity"));
+                    withFirstOf(valueSetter(g, "experiment"), lookUp<std::string>(md, "experiment"));
+                    withFirstOf(valueSetter(g, "realization"), lookUp<std::string>(md, "realization"));
+                    withFirstOf(valueSetter(g, "generation"), lookUp<std::string>(md, "generation"));
+                    withFirstOf(valueSetter(g, "model"), lookUp<std::string>(md, "model"));
+                    withFirstOf(valueSetter(g, "resolution"), lookUp<std::string>(md, "resolution"));
                 }
             }
         }
@@ -451,6 +453,14 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
                 lookUp<std::int64_t>(md, glossary().lengthOf4DvarWindow),
                 lookUp<std::int64_t>(md, glossary().anlength));
 
+    // Metadata for ensemble forecast
+    withFirstOf(valueSetter(g, "oceanAtmosphereCoupling"), lookUp<std::int64_t>(md, "oceanAtmosphereCoupling"));
+    withFirstOf(valueSetter(g, "legBaseDate"), lookUp<std::int64_t>(md, "legBaseDate"));
+    withFirstOf(valueSetter(g, "legBaseTime"), lookUp<std::int64_t>(md, "legBaseTime"));
+    withFirstOf(valueSetter(g, "legNumber"), lookUp<std::int64_t>(md, "legNumber"));
+    withFirstOf(valueSetter(g, "referenceDate"), lookUp<std::int64_t>(md, "referenceDate"));
+    withFirstOf(valueSetter(g, "climateDateFrom"), lookUp<std::int64_t>(md, "climateDateFrom"));
+    withFirstOf(valueSetter(g, "climateDateTo"), lookUp<std::int64_t>(md, "climateDateTo"));
 
     withFirstOf(valueSetter(g, glossary().componentIndex), lookUp<std::int64_t>(md, glossary().componentIndex));
     withFirstOf(valueSetter(g, glossary().numberOfComponents), lookUp<std::int64_t>(md, glossary().numberOfComponents));

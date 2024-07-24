@@ -14,6 +14,7 @@
 
 #include "atlas/grid/Grid.h"
 #include "atlas/grid/Iterator.h"
+#include "atlas/grid/SpecRegistry.h"
 #include "atlas/library.h"
 #include "atlas/parallel/mpi/mpi.h"
 
@@ -83,6 +84,10 @@ using message::glossary;
 GridDownloader::GridDownloader(const config::ComponentConfiguration& compConf) :
     encoder_(createEncoder(compConf)), templateMetadata_(), gridCoordinatesCache_(), gridUIDCache_() {
 
+    ScopedAtlasInstance scopedAtlasInstance;
+
+    populateUIDCache(compConf);
+
     if (encoder_ != nullptr) {
         initTemplateMetadata();
 
@@ -113,6 +118,23 @@ std::optional<GridCoordinates> GridDownloader::getGridCoords(const GridDownloade
     return GridCoordinates{encodedLat, encodedLon};
 }
 
+void GridDownloader::populateUIDCache(const config::ComponentConfiguration& compConf) {
+    if (compConf.parsedConfig().has("unstructured-grid-type")) {
+        atlas::mpi::Scope mpi_scope("self");
+
+        const auto baseGridName = compConf.parsedConfig().getString("unstructured-grid-type");
+        for (auto const& unstructuredGridSubtype : {"T", "U", "V", "W", "F"}) {
+            const auto completeGridName = baseGridName + "_" + unstructuredGridSubtype;
+
+            const auto gridSpec = atlas::grid::SpecRegistry::get(completeGridName);
+            const auto gridUID = gridSpec.getString("uid");
+
+            gridUIDCache_.emplace(std::piecewise_construct, std::tuple(std::string(unstructuredGridSubtype) + " grid"),
+                                  std::tuple(gridUID));
+        }
+    }
+}
+
 void GridDownloader::initTemplateMetadata() {
     templateMetadata_.set("step", 0);
     templateMetadata_.set(glossary().typeOfLevel, "oceanSurface");
@@ -137,8 +159,6 @@ multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gr
 }
 
 void GridDownloader::downloadOrcaGridCoordinates(const config::ComponentConfiguration& compConf) {
-    ScopedAtlasInstance scopedAtlasInstance;
-
     const auto baseGridName = compConf.parsedConfig().getString("unstructured-grid-type");
     for (auto const& unstructuredGridSubtype : {"T", "U", "V", "W", "F"}) {
         const auto completeGridName = baseGridName + "_" + unstructuredGridSubtype;
@@ -150,9 +170,6 @@ void GridDownloader::downloadOrcaGridCoordinates(const config::ComponentConfigur
         eckit::Log::info() << "Multio GridDownloader: grid " << completeGridName << " downloaded!" << std::endl;
 
         const auto gridUID = grid.uid();
-
-        gridUIDCache_.emplace(std::piecewise_construct, std::tuple(std::string(unstructuredGridSubtype) + " grid"),
-                              std::tuple(gridUID));
 
         if (encoder_ != nullptr) {
             const auto gridSize = grid.size();

@@ -490,7 +490,7 @@ message::Message Interpolate::InterpolateMessage<double>(message::Message&& msg)
         double v;
         outMetadata.get("missing_value", v);
         md.set("missingValue", v);
-        md.set("bitmapPresent", 1);
+        md.set("bitmapPresent", true);
     }
 
     eckit::Buffer buffer(reinterpret_cast<const char*>(outData.data()), outData.size() * sizeof(double));

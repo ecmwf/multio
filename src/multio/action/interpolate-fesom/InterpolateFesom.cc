@@ -53,7 +53,7 @@ void fill_metadata(const message::Metadata& in_md, message::Metadata& out_md, si
     out_md.set<std::int64_t>("Nside", NSide);
     out_md.set<std::int64_t>("globalSize", globalSize);
     out_md.set("precision", outputPrecision == util::PrecisionTag::Float ? "single" : "double");
-    out_md.set<bool>("bitmapPresent", 1);
+    out_md.set<bool>("bitmapPresent", true);
     out_md.set("missingValue", missingValue);
     INTERPOLATE_FESOM_OUT_STREAM << " - exit fill_metadata" << std::endl;
     return;

@@ -819,7 +819,9 @@ void GribEncoder::setOceanMetadata(message::Metadata& md) {
         setValue(glossary().paramId, paramInt + 4000);
     }
     else {
-        setValue(glossary().paramId, paramInt + ops_to_code.at(md.get<std::string>(glossary().operation)));
+        const auto operation = md.getOpt<std::string>(glossary().operation);
+        const auto paramIdIncrement = operation ? ops_to_code.at(*operation) : 0;
+        setValue(glossary().paramId, paramInt + paramIdIncrement);
     }
 
     const auto& typeOfLevel = md.get<std::string>(glossary().typeOfLevel);

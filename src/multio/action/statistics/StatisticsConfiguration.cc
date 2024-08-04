@@ -267,13 +267,12 @@ void StatisticsConfiguration::readStepFrequency(const message::Message& msg) {
 
 void StatisticsConfiguration::readMissingValue(const message::Message& msg) {
     const auto& md = msg.metadata();
-    auto missingVal = md.getOpt<double>(glossary().missingValue);
-    std::optional<bool> bitMapPresent;
-    if (missingVal && (bitMapPresent = md.get<bool>(glossary().bitmapPresent) && *bitMapPresent)) {
-        haveMissingValue_ = true;
+    const auto missingVal = md.getOpt<double>(glossary().missingValue);
+    const auto bitMapPresent = md.getOpt<bool>(glossary().bitmapPresent);
+    haveMissingValue_ = missingVal && bitMapPresent && *bitMapPresent;
+    if (haveMissingValue_) {
         missingValue_ = *missingVal;
     }
-    return;
 };
 void StatisticsConfiguration::createLoggingPrefix(const StatisticsConfiguration& cfg, const message::Message& msg) {
     std::ostringstream os;
@@ -432,7 +431,7 @@ bool StatisticsConfiguration::solver_send_initial_condition() const {
 }
 
 bool StatisticsConfiguration::haveMissingValue() const {
-    return haveMissingValue_ != 0;
+    return haveMissingValue_;
 };
 
 double StatisticsConfiguration::missingValue() const {

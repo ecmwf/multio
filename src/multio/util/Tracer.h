@@ -32,6 +32,8 @@ public:
 
     void recordEvent(uint64_t event);
 
+    void flushCurrentChunk();
+
 private:
     Tracer(Tracer const&) = delete;
     Tracer& operator=(Tracer const&) = delete;

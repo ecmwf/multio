@@ -28,6 +28,72 @@
 #include "multio/transport/TransportRegistry.h"
 #include "multio/util/ScopedThread.h"
 
+#ifdef MULTIO_SERVER_MEMORY_PROFILE_ENABLED
+
+#include "multio/util/MemoryInformation.h"
+#include "multio/util/TraceEventIds.h"
+#include "multio/util/Tracer.h"
+
+using namespace multio::util;
+
+namespace {
+const auto tracerMemoryReportPeriod = std::chrono::seconds(10);
+const auto tracerFlushPeriod = std::chrono::minutes(10);
+
+const auto tracerNumberOfChunks = 8;
+const auto tracerEventsPerChunk = 32768;
+
+const auto tracerValueMask = 0xFFFFFFFFULL;
+const auto unitShiftAmount = 32;
+
+const std::unordered_map<multio::util::InformationTypes, uint64_t> infoTypeToTraceIdMapping = {
+    { multio::util::InformationTypes::PeakVirtualMemory, MULTIO_PEAK_VIRTUAL_MEMORY },
+    { multio::util::InformationTypes::VirtualMemory, MULTIO_VIRTUAL_MEMORY },
+    { multio::util::InformationTypes::LockedVirtualMemory, MULTIO_LOCKED_VIRTUAL_MEMORY },
+    { multio::util::InformationTypes::PinnedVirtualMemory, MULTIO_PINNED_VIRTUAL_MEMORY },
+    { multio::util::InformationTypes::MaximumResidentMemory, MULTIO_MAXIMUM_RESIDENT_MEMORY },
+    { multio::util::InformationTypes::ResidentMemory, MULTIO_RESIDENT_MEMORY },
+    { multio::util::InformationTypes::AnonimousResidentMemory, MULTIO_ANONIMOUS_RESIDENT_MEMORY },
+    { multio::util::InformationTypes::FileMappingResidentMemory, MULTIO_FILE_MAPPING_RESIDENT_MEMORY },
+    { multio::util::InformationTypes::SharedResidentMemory, MULTIO_SHARED_RESIDENT_MEMORY },
+    { multio::util::InformationTypes::DataVirtualMemory, MULTIO_DATA_VIRTUAL_MEMORY },
+    { multio::util::InformationTypes::StackVirtualMemory, MULTIO_STACK_VIRTUAL_MEMORY },
+    { multio::util::InformationTypes::TextSegmentVirtualMemory, MULTIO_TEXT_SEGMENT_VIRTUAL_MEMORY },
+    { multio::util::InformationTypes::SharedLibraryTextVirtualMemory, MULTIO_SHARED_LIBRARY_VIRTUAL_MEMORY },
+    { multio::util::InformationTypes::PageTableEntryVirtualMemory, MULTIO_PAGE_TABLE_ENTRY_VIRTUAL_MEMORY },
+    { multio::util::InformationTypes::SecondLevelPageTableEntryVirtualMemory, MULTIO_SECOND_LEVEL_PAGE_TABLE_ENTRY_VIRTUAL_MEMORY },
+    { multio::util::InformationTypes::SwappedOutVirtualMemory, MULTIO_SWAPPED_OUT_VIRTUAL_MEMORY },
+    { multio::util::InformationTypes::HugeTablesMemory, MULTIO_HUGE_TABLE_MEMORY },
+};
+
+const std::unordered_map<multio::util::InformationSizeUnits, uint64_t> sizeUnitToTraceValueMapping = {
+    { multio::util::InformationSizeUnits::Bytes, 0},
+    { multio::util::InformationSizeUnits::KiloBytes, 1},
+    { multio::util::InformationSizeUnits::MegaBytes, 2},
+    { multio::util::InformationSizeUnits::GigaBytes, 3},
+};
+
+multio::util::Tracer tracer(tracerNumberOfChunks, tracerEventsPerChunk, "./multio_memory.bin");
+
+void reportMemoryUsage() {
+    const multio::util::MemoryInformation usage;
+    const auto keys = usage.getAvailableKeys();
+
+    for (const auto key : keys) {
+        const auto item = usage.get(key);
+
+        const auto id = infoTypeToTraceIdMapping.at(key);
+        const auto value = item.Value & tracerValueMask;
+        const uint64_t unit = sizeUnitToTraceValueMapping.at(item.Unit) << unitShiftAmount;
+
+        tracer.recordEvent(id | unit | value);
+    }
+}
+
+}
+
+#endif
+
 namespace multio::server {
 
 using message::Message;
@@ -109,8 +175,32 @@ void Listener::start() {
 
 void Listener::listen() {
     withFailureHandling([this]() {
+
+#ifdef MULTIO_SERVER_MEMORY_PROFILE_ENABLED
+        tracer.startWriterThread();
+
+        auto last_report_time = std::chrono::system_clock::now();
+        auto last_flush_time = std::chrono::system_clock::now();
+#endif
+
         do {
             transport_.listen();
+
+#ifdef MULTIO_SERVER_MEMORY_PROFILE_ENABLED
+            const auto current_time = std::chrono::system_clock::now();
+            const auto elapsed_from_report = current_time - last_report_time;
+            const auto elapsed_from_flush = current_time - last_flush_time;
+
+            if (elapsed_from_report > tracerMemoryReportPeriod) {
+                reportMemoryUsage();
+                last_report_time = current_time;
+            }
+
+            if (elapsed_from_flush > tracerFlushPeriod) {
+                tracer.flushCurrentChunk();
+                last_flush_time = current_time;
+            }
+#endif
         } while (msgQueue_.checkInterrupt() && !msgQueue_.closed());
     });
 }

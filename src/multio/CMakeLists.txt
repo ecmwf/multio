@@ -35,10 +35,19 @@ list( APPEND multio_util_srcs
     util/Substitution.cc
     util/Substitution.h
     util/BinaryUtils.h
-    util/RingBuffer.h
-    util/Tracer.h
-    util/Tracer.cc
 )
+
+if ( ENABLE_MULTIO_SERVER_MEMORY_PROFILE )
+    list( APPEND multio_util_srcs
+        util/RingBuffer.h
+        util/Tracer.h
+        util/Tracer.cc
+        util/TraceEventIds.h
+        util/MemoryInformation.h
+        util/MemoryInformation.cc
+    )
+    set(multio_utils_definitions "MULTIO_SERVER_MEMORY_PROFILE_ENABLED")
+endif()
 
 list( APPEND multio_config_srcs
     config/ComponentConfiguration.cc
@@ -186,6 +195,8 @@ ecbuild_add_library(
     PRIVATE_INCLUDES
       ${METKIT_INCLUDE_DIRS}
       ${ECKIT_INCLUDE_DIRS}
+
+    PRIVATE_DEFINITIONS ${multio_utils_definitions}
 
     PUBLIC_LIBS
         metkit eckit eckit_mpi)

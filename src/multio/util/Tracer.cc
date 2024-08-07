@@ -107,6 +107,37 @@ void Tracer::recordEvent(uint64_t event) {
     traceChunks_[chunk][index + 1] = timestamp;
 }
 
+void Tracer::flushCurrentChunk() {
+    bool updated = false;
+    uint32_t chunk = 0;
+    uint32_t chunkAndIndex = currentChunkAndIndex_.load(std::memory_order::memory_order_acquire);
+
+    do {
+        chunk = (chunkAndIndex & CHUNK_MASK) >> CHUNK_SHIFT;
+
+        // get the next available chunk from the available queue
+        auto availableChunkId = availableQueue_.pop();
+        while (!availableChunkId) {
+            availableChunkId = availableQueue_.pop();
+        }
+
+        auto chunkNext = (availableChunkId.value() << CHUNK_SHIFT) & CHUNK_MASK;
+        updated = currentChunkAndIndex_.compare_exchange_strong(
+            chunkAndIndex, chunkNext, std::memory_order::memory_order_acq_rel, std::memory_order_acquire);
+
+        // we wanted to change the chunk
+        if (updated) {
+            // we changed the chunk, push the completed chunk to the write queue
+            writeQueue_.push(chunk);
+        }
+        else {
+            // some other thread updated the chunk counters, most likely also changing the chunk,
+            // so we put the available chunk we retrieved back in the available queue
+            availableQueue_.push(chunkNext);
+        }
+    } while (!updated);
+}
+
 void Tracer::writerThread_() {
     const auto myRank = eckit::mpi::comm().rank();
 

@@ -157,7 +157,7 @@ IMPLICIT NONE
       ALLOCATE(V)
       V = A%PARAM_ID_
       VALUE => V
-      CALL MAP_INSERT( MAP(A%REPRES_ID_, IPREFIX2ILEVTYPE(A%PREFIX_ID_,A%PARAM_ID_)), KEY, VALUE )
+      CALL MAP_INSERT( MAP(A%REPRES_ID_, IPREFIX2ILEVTYPE(A%PREFIX_ID_,A%PARAM_ID_,A%U_ID_,A%REPRES_ID_)), KEY, VALUE )
 
     ! ==============================================================================================
     CLASS IS ( TOC_WAM_FIELD_T )
@@ -166,7 +166,7 @@ IMPLICIT NONE
       ALLOCATE(V)
       V = A%PARAM_ID_
       VALUE => V
-      CALL MAP_INSERT( MAP(A%REPRES_ID_, IPREFIX2ILEVTYPE(A%PREFIX_ID_,A%PARAM_ID_)), KEY, VALUE )
+      CALL MAP_INSERT( MAP(A%REPRES_ID_, IPREFIX2ILEVTYPE(A%PREFIX_ID_,A%PARAM_ID_,A%U_ID_,A%REPRES_ID_)), KEY, VALUE )
 
     ! ==============================================================================================
     CLASS IS ( TOC_FLUSH_STEP_T )

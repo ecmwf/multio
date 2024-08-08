@@ -291,6 +291,7 @@ ecbuild_add_library(
   SOURCES
     tool/om_tool_utils_mod.F90
     tool/om_tool_cfg_mod.F90
+    tool/om_tool_distributor_mod.F90
 
   DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
 
@@ -386,6 +387,28 @@ ecbuild_add_executable(
   LINKER_LANGUAGE Fortran
 
 )
+
+set(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
+ecbuild_add_executable(
+
+  TARGET ecom-dist-feed
+
+  SOURCES
+    tool/om_tool_dist_feed_prog.F90
+
+  LIBS
+    fckit
+    ecom
+    ecom-utils
+    eccodes
+    eccodes_f90
+    multio-fapi
+    mpi
+
+  LINKER_LANGUAGE Fortran
+
+)
+
 endif()
 
 

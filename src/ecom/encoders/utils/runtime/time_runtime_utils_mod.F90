@@ -52,9 +52,149 @@ PUBLIC :: TIME_ENCODERS_ATM
 PUBLIC :: TIME_ENCODERS_WAM
 PUBLIC :: TIME_INDEXER
 PUBLIC :: COMPUTE_CURRENT_TIME
+PUBLIC :: COMPUTE_REFERENCE_TIME
 
 
 CONTAINS
+
+
+!>
+!> @brief Pre-sets the date and time of the simulation
+!>
+!> This function sets the time informations of a simulation into the provided metadata object
+!> using information retrieved from the specified data structure (YDIOS).
+!>
+!> @param [inout] METADATA Metadata object where the GPI will be set.
+!> @param [in]    YDIOS    Data structure used to retrieve the information necessary to compute the GPI.
+!>
+!> @todo Deprecation Notice: The functionality related to VAREPS is deprecated and will not be used in the future.
+!>       All code related to VAREPS should be removed.
+!>
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'COMPUTE_REFERENCE_TIME'
+SUBROUTINE COMPUTE_REFERENCE_TIME( MODEL_PARAMS, DATADATE, DATATIME, DYYYY1, DMM1, DDD1, THH1, TMM1, TSS1 )
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,        ONLY: JPIB_K
+  USE :: OM_CORE_MOD,        ONLY: PROC_TOPO_T
+  USE :: OM_CORE_MOD,        ONLY: MODEL_PAR_T
+  USE :: DATETIME_UTILS_MOD, ONLY: PACK_HHMM
+  USE :: DATETIME_UTILS_MOD, ONLY: SEC2HH_MM_SS
+  USE :: DATETIME_UTILS_MOD, ONLY: UNPACK_YYYYMMDD
+  USE :: DATETIME_UTILS_MOD, ONLY: PACK_YYYYMMDD
+  USE :: DATETIME_UTILS_MOD, ONLY: DATE_SUB_DAYS
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(MODEL_PAR_T), TARGET, INTENT(IN)  :: MODEL_PARAMS
+  INTEGER(KIND=JPIB_K),      INTENT(OUT) :: DATADATE
+  INTEGER(KIND=JPIB_K),      INTENT(OUT) :: DATATIME
+  INTEGER(KIND=JPIB_K),      INTENT(OUT) :: DYYYY1
+  INTEGER(KIND=JPIB_K),      INTENT(OUT) :: DMM1
+  INTEGER(KIND=JPIB_K),      INTENT(OUT) :: DDD1
+  INTEGER(KIND=JPIB_K),      INTENT(OUT) :: THH1
+  INTEGER(KIND=JPIB_K),      INTENT(OUT) :: TMM1
+  INTEGER(KIND=JPIB_K),      INTENT(OUT) :: TSS1
+
+  ! Local variables
+  LOGICAL, DIMENSION(2) :: CONDITION1
+  LOGICAL, DIMENSION(2) :: CONDITION2
+
+  INTEGER(KIND=JPIB_K) :: DYYYY
+  INTEGER(KIND=JPIB_K) :: DMM
+  INTEGER(KIND=JPIB_K) :: DDD
+  INTEGER(KIND=JPIB_K) :: THH
+  INTEGER(KIND=JPIB_K) :: TMM
+  INTEGER(KIND=JPIB_K) :: TSS
+  INTEGER(KIND=JPIB_K) :: IFCDA_INI
+  INTEGER(KIND=JPIB_K) :: IFCHO_RES
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ASSOCIATE ( YPI => MODEL_PARAMS%SIM_ )
+
+    ! Extract date/time components
+    CALL UNPACK_YYYYMMDD( YPI%NINDAT, DYYYY, DMM, DDD )
+    CALL SEC2HH_MM_SS( YPI%NSSSSS, THH, TMM, TSS )
+
+    ! Initialization of the modified date/time
+    ! NOTE: Apparently minutes and seconds are cut away in the grib encoding,
+    !       not sure it is the correct way to proceed
+    DYYYY1 = DYYYY
+    DMM1   = DMM
+    DDD1   = DDD
+    THH1   = THH
+    TMM1   = 0
+    TSS1   = 0
+
+    ! First special case
+    CONDITION1(1) = (YPI%CTYPE .EQ. 'fc') ! 'type' is forecast (gribCode=9)
+    CONDITION1(2) = (YPI%LOBSC1)          ! .T. = term of observations included in configuration 1
+
+    ! Second special case
+    CONDITION2(1) = (YPI%LVAREPS)     ! .T. when running with variable resolution
+    CONDITION2(2) = (YPI%NLEG .GE. 2) ! current VAREPS leg number (eg 1(2) for the T399(T255) part of a T399-T255 VAREPS)
+
+
+    ! If needed modify the time
+    IF ( ALL(CONDITION1) ) THEN
+      ! NOTE: This code works because NSTEPINI is supposed to be less than 24
+      ! NSTEPINI: Initial step in hours for the initial conditions
+      !           at the beginning of 4D-Var trajectory (usually 3 hours).
+      !           It is used to update the step while saving the FCs along
+      !           the first trajectory.
+      THH1 = THH - YPI%NSTEPINI
+      IF ( THH1 .LT. 0 ) THEN
+        THH1 = THH1 + 24
+        ! TODO: Replace custom function with Julian date provided in eccodes
+        CALL DATE_SUB_DAYS( DYYYY, DMM, DDD, INT(-1,JPIB_K), DYYYY1, DMM1, DDD1 )
+      ENDIF
+
+    ELSEIF ( ALL(CONDITION2) ) THEN
+      ! NFCHO_TRUNC_INI: forecast step used to define the ICs (ie NFCHO_TRUNC of previous VAREPS LEG)
+      IFCDA_INI = YPI%NFCHO_TRUNC_INI/24
+      IFCHO_RES = MOD(YPI%NFCHO_TRUNC_INI, 24)
+      THH1 = THH - IFCHO_RES
+      TMM1 = 0
+      TSS1 = 0
+      IF ( THH1 .LT. 0 ) THEN
+        THH1 = THH1 + 24
+        IFCDA_INI = IFCDA_INI + 1
+      ENDIF
+      ! TODO: Replace custom function with Julian date provided in eccodes
+      CALL DATE_SUB_DAYS( DYYYY, DMM, DDD, -IFCDA_INI, DYYYY1, DMM1, DDD1 )
+
+    ENDIF
+
+    ! Output date and time
+    DATADATE = PACK_YYYYMMDD( DYYYY1, DMM1, DDD1 )
+    DATATIME = PACK_HHMM( THH1, TMM1 )
+
+  END ASSOCIATE
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END SUBROUTINE COMPUTE_REFERENCE_TIME
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'SUBROUTINE'
@@ -89,6 +229,14 @@ IMPLICIT NONE
 
   ! Local variables
   INTEGER(KIND=JPIB_K)  :: ISTEP
+  INTEGER(KIND=JPIB_K)  :: DATADATE
+  INTEGER(KIND=JPIB_K)  :: DATATIME
+  INTEGER(KIND=JPIB_K)  :: DYYYY
+  INTEGER(KIND=JPIB_K)  :: DMM
+  INTEGER(KIND=JPIB_K)  :: DDD
+  INTEGER(KIND=JPIB_K)  :: THH
+  INTEGER(KIND=JPIB_K)  :: TMM
+  INTEGER(KIND=JPIB_K)  :: TSS
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -102,6 +250,21 @@ IMPLICIT NONE
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( TRIM(MODEL_PARAMS%SIM_%CTYPE).NE.'fc', 1 )
   PP_DEBUG_CRITICAL_COND_THROW( MODEL_PARAMS%SIM_%LPPSTEPS, 2 )
+
+
+  ! Compute the reference time of the simulation
+  ! TODO: For performaces reson this can be cached in case of "fc" type
+  CALL COMPUTE_REFERENCE_TIME( MODEL_PARAMS, &
+&                              CURR_TIME%DATADATE,        &
+&                              CURR_TIME%DATATIME,        &
+&                              CURR_TIME%SIM_REF_TIME(1), &
+&                              CURR_TIME%SIM_REF_TIME(2), &
+&                              CURR_TIME%SIM_REF_TIME(3), &
+&                              CURR_TIME%SIM_REF_TIME(4), &
+&                              CURR_TIME%SIM_REF_TIME(5), &
+&                              CURR_TIME%SIM_REF_TIME(6)  )
+
+
 
   ! Get current step
   ISTEP = TIME_HIST%HIST_(TIME_HIST%SIZE_)

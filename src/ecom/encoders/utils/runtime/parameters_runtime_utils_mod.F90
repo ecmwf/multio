@@ -230,6 +230,9 @@ IMPLICIT NONE
   ENDIF
 
 
+
+
+
   ! Update the parameter according to the type
   ! TODO: need to explain this messy logic
   SELECT CASE ( CDTYPE(1:2) )
@@ -250,7 +253,14 @@ IMPLICIT NONE
 
   CASE DEFAULT
     IF( ITABLE .NE. 128 ) IPARAM = ITABLE*1000 + IPARAM
-
+    SELECT CASE (IPARAM)
+    CASE (35,36,37,38)
+      IPARAM = 262024
+    CASE (39,40,41,42)
+      IPARAM = 260199
+    CASE (139,170,183,236)
+      IPARAM = 260360
+    END SELECT
   END SELECT
 
 

@@ -251,7 +251,7 @@ void fill_input(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametr
             }
 
             if (std::regex_match(input, match, ll)) {
-                std::cout << "matched ll:" << std::endl;
+                LOG_DEBUG_LIB(LibMultio) << "matched ll:" << std::endl;
                 regular_ll(std::stod(match[1].str()), std::stod(match[4].str()));
                 return;
             }
@@ -432,7 +432,7 @@ void fill_job(const eckit::LocalConfiguration& cfg, mir::param::SimpleParametris
             }
         }
         else {
-            std::cout << "Grid not implemented" << std::endl;
+            throw eckit::UserError("action-interpolate :: Grid not implemented", Here());
         }
     }
 }

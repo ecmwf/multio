@@ -403,7 +403,7 @@ IMPLICIT NONE
 
   ILPARAM = COMPUTE_PARAM_GRIBX_ATM( MODEL_PARAMS, GRIB_INFO, MSG, THIS%CLTYPE_, METADATA )
 
-  ! TOWIL Hacks until we use multi-level soil parameters etc
+#if defined(NEW_SOL_ENCODING)
   SELECT CASE (ILPARAM)
   CASE( NGRBMX2T3, NGRBMN2T3, NGRB10FG3, &
 &       NGRB10FG6, &
@@ -415,6 +415,22 @@ IMPLICIT NONE
       PP_METADATA_SET( METADATA,  'paramId',ILPARAM)
     ENDIF
   END SELECT
+#else
+  SELECT CASE (ILPARAM)
+  CASE( NGRBMX2T3, NGRBMN2T3, NGRB10FG3, &
+&       NGRB10FG6, &
+&       35,36,37,38, &
+&       39,40,41,42, &
+&       139,170,183,236, &
+&       200001:200999, &  ! Class 4i & me, see above
+&       80)               ! See sekf_write.F90
+    PP_METADATA_SET( METADATA,  'paramIdECMF',ILPARAM)
+  CASE DEFAULT
+    IF(ILPARAM .NE. 128) THEN
+      PP_METADATA_SET( METADATA,  'paramId',ILPARAM)
+    ENDIF
+  END SELECT
+#endif
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )

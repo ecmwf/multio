@@ -611,6 +611,7 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
   PP_METADATA_ENTER_PROCEDURE( METADATA )
 
+#if defined(NEW_SOL_ENCODING)
   ! Mapping levels
   SELECT CASE ( MSG%PARAM_ID_ )
   CASE (35)
@@ -633,6 +634,17 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA,  'scaledValueOfSecondFixedSurface', LEVEL )
 
   PP_METADATA_SET( METADATA,  'level', LEVEL ) ! level must be defined at the end
+#else
+  ! Set type of level
+  PP_METADATA_SET( METADATA,  'typeOfFirstFixedSurface', INT(1,JPIB_K) )
+  PP_METADATA_SET_MISSING( METADATA,  'scaleFactorOfFirstFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA,  'scaledValueOfFirstFixedSurface' )
+  PP_METADATA_SET( METADATA,  'typeOfSecondFixedSurface', INT(255,JPIB_K) )
+  PP_METADATA_SET_MISSING( METADATA,  'scaleFactorOfSecondFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA,  'scaledValueOfSecondFixedSurface' )
+  ! Set level
+  PP_METADATA_SET( METADATA,  'level', INT(0,JPIB_K) )
+#endif
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
@@ -713,6 +725,7 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
   PP_METADATA_ENTER_PROCEDURE( METADATA )
 
+#if defined(NEW_SOL_ENCODING)
   ! Mapping levels
   SELECT CASE ( MSG%PARAM_ID_ )
   CASE (39,139)
@@ -735,8 +748,19 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA,  'scaledValueOfSecondFixedSurface', LEVEL )
 
   PP_METADATA_SET( METADATA,  'level', LEVEL ) ! level must be defined at the end
+#else
+  ! Set type of level
+  PP_METADATA_SET( METADATA,  'typeOfFirstFixedSurface', INT(1,JPIB_K) )
+  PP_METADATA_SET_MISSING( METADATA,  'scaleFactorOfFirstFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA,  'scaledValueOfFirstFixedSurface' )
+  PP_METADATA_SET( METADATA,  'typeOfSecondFixedSurface', INT(255,JPIB_K) )
+  PP_METADATA_SET_MISSING( METADATA,  'scaleFactorOfSecondFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA,  'scaledValueOfSecondFixedSurface' )
+  ! Set level
+  PP_METADATA_SET( METADATA,  'level', INT(0,JPIB_K) )
+#endif
 
-!  ENDIF
+
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA )

@@ -232,43 +232,79 @@ IMPLICIT NONE
   ! Dummy arguments
   TYPE(COMMAND_LINE_ARGS_T), INTENT(INOUT) :: CFG
 
+  ! Local variables
+  CHARACTER(LEN=1024) :: CTMP
+  CHARACTER(LEN=32) :: CINT
+  CHARACTER(LEN=32) :: CFMT
+
   ! Print values of the configuration
-  WRITE(OUTPUT_UNIT,*) ' + DryRun                  :: ', CFG%DRYRUN
-  WRITE(OUTPUT_UNIT,*) ' + Verbose                 :: ', CFG%VERBOSE
-  WRITE(OUTPUT_UNIT,*) ' + Big endian read         :: ', CFG%BIG_ENDIAN_READ
-  WRITE(OUTPUT_UNIT,*) ' + Output manager type     :: ', TRIM(ADJUSTL(CFG%OUTPUT_MANAGER_TYPE))
-  WRITE(OUTPUT_UNIT,*) ' + Input directory         :: ', TRIM(ADJUSTL(CFG%INPUT_DIR))
-  WRITE(OUTPUT_UNIT,*) ' + YAML configuration file :: ', TRIM(ADJUSTL(CFG%YAML_CONFIGURATION))
+
+  WRITE(OUTPUT_UNIT,*) '  '
+  WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
+  WRITE(OUTPUT_UNIT,*) ' ECOM :: Command line options'
+  WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
+  WRITE(OUTPUT_UNIT,*) '+ DryRun                  :: ', CFG%DRYRUN
+  WRITE(OUTPUT_UNIT,*) '+ Verbose                 :: ', CFG%VERBOSE
+  WRITE(OUTPUT_UNIT,*) '+ Big endian read         :: ', CFG%BIG_ENDIAN_READ
+  WRITE(OUTPUT_UNIT,*) '+ Output manager type     :: ', TRIM(ADJUSTL(CFG%OUTPUT_MANAGER_TYPE))
+
+  CTMP=REPEAT(' ',LEN(CTMP))
+  CINT=REPEAT(' ',32)
+  CFMT=REPEAT(' ',32)
+  CTMP=' + Input directory         :: '//TRIM(ADJUSTL(CFG%INPUT_DIR))
+  WRITE(CINT,'(I10)') LEN_TRIM(CTMP)
+  WRITE(CFMT,'(A)') '(A'//TRIM(ADJUSTL(CINT))//')'
+  WRITE(OUTPUT_UNIT,'(A)') TRIM(CTMP)
+
+  CTMP=REPEAT(' ',LEN(CTMP))
+  CINT=REPEAT(' ',32)
+  CFMT=REPEAT(' ',32)
+  CTMP=' + YAML configuration file :: '//TRIM(ADJUSTL(CFG%YAML_CONFIGURATION))
+  WRITE(CINT,'(I10)') LEN_TRIM(CTMP)
+  WRITE(CFMT,'(A)') '(A'//TRIM(ADJUSTL(CINT))//')'
+  WRITE(OUTPUT_UNIT,'(A)') TRIM(CTMP)
 
   IF ( ALLOCATED( CFG%PARAM_ID) ) THEN
-    WRITE(OUTPUT_UNIT,*)  ' + param ids               :: ', CFG%PARAM_ID
+    CINT=REPEAT(' ',32)
+    WRITE(CINT,'(I10)') CFG%PARAM_ID
+    WRITE(OUTPUT_UNIT,*)  '+ param ids               :: '//TRIM(ADJUSTL(CINT))
   ELSE
-    WRITE(OUTPUT_UNIT,*)  ' + param ids               :: all'
+    WRITE(OUTPUT_UNIT,*)  '+ param ids               :: all'
   ENDIF
 
   IF ( ALLOCATED( CFG%U_ID) ) THEN
-    WRITE(OUTPUT_UNIT,*)  ' + levels ids              :: ', CFG%U_ID
+    CINT=REPEAT(' ',32)
+    WRITE(CINT,'(I10)') CFG%U_ID
+    WRITE(OUTPUT_UNIT,*)  '+ levels ids              :: '//TRIM(ADJUSTL(CINT))
   ELSE
-    WRITE(OUTPUT_UNIT,*)  ' + levels ids              :: all'
+    WRITE(OUTPUT_UNIT,*)  '+ levels ids              :: all'
   ENDIF
 
   IF ( ALLOCATED( CFG%STEP_ID) ) THEN
-    WRITE(OUTPUT_UNIT,*)  ' + steps ids               :: ', CFG%STEP_ID
+    CINT=REPEAT(' ',32)
+    WRITE(CINT,'(I10)') CFG%STEP_ID
+    WRITE(OUTPUT_UNIT,*)  '+ steps ids               :: '//TRIM(ADJUSTL(CINT))
   ELSE
-    WRITE(OUTPUT_UNIT,*)  ' + steps ids               :: all'
+    WRITE(OUTPUT_UNIT,*)  '+ steps ids               :: all'
   ENDIF
 
   IF ( ALLOCATED( CFG%REPRES_ID) ) THEN
-    WRITE(OUTPUT_UNIT,*)  ' + representation          :: ', CFG%REPRES_ID
+    CINT=REPEAT(' ',32)
+    WRITE(CINT,'(I10)') CFG%REPRES_ID
+    WRITE(OUTPUT_UNIT,*)  '+ representation          :: '//TRIM(ADJUSTL(CINT))
   ELSE
-    WRITE(OUTPUT_UNIT,*)  ' + representation          :: all'
+    WRITE(OUTPUT_UNIT,*)  '+ representation          :: all'
   ENDIF
 
   IF ( ALLOCATED( CFG%PREFIX_ID) ) THEN
-    WRITE(OUTPUT_UNIT,*)  ' + prefix                  :: ', CFG%PREFIX_ID
+    CINT=REPEAT(' ',32)
+    WRITE(CINT,'(I10)') CFG%PREFIX_ID
+    WRITE(OUTPUT_UNIT,*)  '+ prefix                  :: '//TRIM(ADJUSTL(CINT))
   ELSE
-    WRITE(OUTPUT_UNIT,*)  ' + prefix                  :: all'
+    WRITE(OUTPUT_UNIT,*)  '+ prefix                  :: all'
   ENDIF
+  WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
+  WRITE(OUTPUT_UNIT,*) '  '
 
   ! Exit point
   RETURN

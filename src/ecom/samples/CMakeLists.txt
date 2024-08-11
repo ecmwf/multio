@@ -1,0 +1,8 @@
+file(GLOB samples_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.tmpl")
+
+install(
+    FILES       ${samples_files}
+    DESTINATION ${MULTIO_SAMPLE_DIR}
+    PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)
+
+

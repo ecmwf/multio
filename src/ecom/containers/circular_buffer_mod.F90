@@ -27,181 +27,27 @@ IMPLICIT NONE
 
   !> @brief data structure that contains all the relevant fields needed to define a circular buffer
   TYPE :: CIRCULARBUFFER_T
-    INTEGER(KIND=JPIB_K), ALLOCATABLE, DIMENSION(:) :: BUFFER
-    INTEGER(KIND=JPIB_K) :: HEAD = 1
-    INTEGER(KIND=JPIB_K) :: TAIL = 1
-    INTEGER(KIND=JPIB_K) :: SIZE = 0
-    INTEGER(KIND=JPIB_K) :: CAPACITY=-99
+    PRIVATE
+    INTEGER(KIND=JPIB_K), ALLOCATABLE, DIMENSION(:) :: BUFFER_
+    INTEGER(KIND=JPIB_K) :: HEAD_ = 1
+    INTEGER(KIND=JPIB_K) :: TAIL_ = 1
+    INTEGER(KIND=JPIB_K) :: SIZE_ = 0
+    INTEGER(KIND=JPIB_K) :: CAPACITY_=-99
+  CONTAINS
+    PROCEDURE, PUBLIC, PASS :: INIT     => CB_INIT
+    PROCEDURE, PUBLIC, PASS :: ENQUEUE  => CB_ENQUEUE
+    PROCEDURE, PUBLIC, PASS :: DEQUEUE  => CB_DEQUEUE
+    PROCEDURE, PUBLIC, PASS :: GET      => CB_GET
+    PROCEDURE, PUBLIC, PASS :: GET_ALL  => CB_GET_ALL
+    PROCEDURE, PUBLIC, PASS :: SIZE     => CB_SIZE
+    PROCEDURE, PUBLIC, PASS :: IS_EMPTY => CB_IS_EMPTY
+    PROCEDURE, PUBLIC, PASS :: FREE     => CB_FREE
   END TYPE
-
-  !> @brief node in a list that contains pointer to circular buffers.
-  TYPE :: CB_LIST_NODE_T
-    CLASS(CIRCULARBUFFER_T), POINTER :: CB_ => NULL()
-    TYPE(CB_LIST_NODE_T), POINTER :: NEXT_ => NULL()
-    TYPE(CB_LIST_NODE_T), POINTER :: PREV_ => NULL()
-  END TYPE
-
-  !> @brief List of circular buffers
-  TYPE :: CB_LIST_T
-    TYPE(CB_LIST_NODE_T), POINTER :: HEAD_ => NULL()
-    TYPE(CB_LIST_NODE_T), POINTER :: TAIL_ => NULL()
-    INTEGER(KIND=JPIB_K) :: SIZE = 0
-  END TYPE
-
 
   ! Whitelist of public symbols (datatypes)
   PUBLIC :: CIRCULARBUFFER_T
-  PUBLIC :: CB_LIST_T
-
-  ! Whitelist of public symbols (precedures)
-  PUBLIC :: CB_INIT
-  PUBLIC :: CB_ENQUEUE
-  PUBLIC :: CB_SIZE
-  PUBLIC :: CB_GET
-  PUBLIC :: CB_GET_ALL
-  PUBLIC :: CB_NEW
-  PUBLIC :: CB_FREE_ALL
 
 CONTAINS
-
-!>
-!> @brief Allocates a new circular buffer.
-!>
-!> This function allocates memory for a new circular buffer with the specified capacity.
-!> The circular buffer structure is initialized, and memory is allocated to hold elements
-!> based on the specified capacity.
-!>
-!> @param [out] THIS     The circular buffer structure to be initialized.
-!> @param [in]  CAPACITY The capacity of the circular buffer.
-!>
-!> @return PCB Pointer to the newly allocated circular buffer.
-!>
-#define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'CB_NEW'
-FUNCTION CB_NEW(THIS, CAPACITY) RESULT(PCB)
-
-  ! Symbols imported from other modules within the project.
-  USE :: OM_CORE_MOD, ONLY: JPIB_K
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  ! Dummy arguments
-  TYPE(CB_LIST_T),      INTENT(OUT) :: THIS
-  INTEGER(KIND=JPIB_K), INTENT(IN)  :: CAPACITY
-
-  ! Local variables
-  CLASS(CIRCULARBUFFER_T), POINTER :: PCB
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  ! Initialisation
-  NULLIFY( PCB )
-
-  ! Allocation
-  IF ( .NOT. ASSOCIATED(THIS%HEAD_) ) THEN
-    ALLOCATE( THIS%HEAD_ )
-    THIS%TAIL_ => THIS%HEAD_
-    ALLOCATE( THIS%HEAD_%CB_ )
-    CALL CB_INIT( THIS%HEAD_%CB_, CAPACITY )
-    PCB => THIS%TAIL_%CB_
-    THIS%SIZE = 1
-    NULLIFY(THIS%HEAD_%PREV_)
-    NULLIFY(THIS%HEAD_%NEXT_)
-  ELSE
-    ALLOCATE( THIS%TAIL_%NEXT_ )
-    THIS%TAIL_%NEXT_%PREV_ => THIS%TAIL_
-    THIS%TAIL_ => THIS%TAIL_%NEXT_
-    NULLIFY(THIS%TAIL_%NEXT_)
-    PCB => THIS%TAIL_%CB_
-    THIS%SIZE = THIS%SIZE + 1
-  ENDIF
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point on success
-  RETURN
-
-END FUNCTION CB_NEW
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
-
-
-!>
-!> @brief Frees memory allocated for all circular buffers.
-!>
-!> This subroutine frees the memory allocated for all circular buffers in the list.
-!> It deallocates memory associated with each circular buffer and resets the list.
-!>
-!> @param [out] THIS The circular buffer list structure to be freed.
-!>
-#define PP_PROCEDURE_TYPE 'SUBROUTINE'
-#define PP_PROCEDURE_NAME 'CB_FREE_ALL'
-SUBROUTINE CB_FREE_ALL(THIS)
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  ! Dummy arguments
-  TYPE(CB_LIST_T), INTENT(OUT) :: THIS
-
-  ! Local variables
-  TYPE(CB_LIST_NODE_T), POINTER :: CURR
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  IF ( ASSOCIATED(THIS%HEAD_) ) THEN
-
-    DO
-
-      IF ( .NOT.ASSOCIATED(THIS%TAIL_) ) THEN
-        EXIT
-      ENDIF
-
-      CURR => THIS%TAIL_
-      THIS%TAIL_ => THIS%TAIL_%PREV_
-      IF ( ASSOCIATED(THIS%TAIL_) ) THEN
-        NULLIFY(THIS%TAIL_%NEXT_)
-      ENDIF
-
-      DEALLOCATE( CURR%CB_ )
-      ! Paranoid operation
-      NULLIFY( CURR%CB_ )
-      DEALLOCATE( CURR )
-      NULLIFY(CURR)
-
-      THIS%SIZE = THIS%SIZE - 1
-
-    ENDDO
-
-    NULLIFY(THIS%TAIL_)
-    NULLIFY(THIS%HEAD_)
-    THIS%SIZE = 0
-
-  ENDIF
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point on success
-  RETURN
-
-END SUBROUTINE CB_FREE_ALL
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
 
 
 !>
@@ -226,8 +72,8 @@ SUBROUTINE CB_INIT(THIS, CAPACITY)
 IMPLICIT NONE
 
   ! Dummy arguments
-  TYPE(CIRCULARBUFFER_T), INTENT(OUT) :: THIS
-  INTEGER(KIND=JPIB_K),   INTENT(IN)  :: CAPACITY
+  CLASS(CIRCULARBUFFER_T), INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: CAPACITY
 
   ! Local variables declared by the preprocessor for tracing purposes
   PP_TRACE_DECL_VARS
@@ -235,8 +81,12 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-  THIS%CAPACITY = CAPACITY
-  ALLOCATE( THIS%BUFFER(CAPACITY) )
+  ! Free memory just to avoid memory leaks
+  CALL THIS%FREE()
+
+  ! Initialize the circular buffer
+  THIS%CAPACITY_ = CAPACITY
+  ALLOCATE( THIS%BUFFER_(CAPACITY) )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -245,6 +95,52 @@ IMPLICIT NONE
   RETURN
 
 END SUBROUTINE CB_INIT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!>
+!> @brief Initializes a circular buffer with the specified capacity.
+!>
+!> This subroutine initializes a circular buffer with the specified capacity.
+!> It allocates memory for the circular buffer and sets its capacity.
+!>
+!> @param [out] THIS The circular buffer structure to be initialized.
+!> @param [in]  CAPACITY The capacity of the circular buffer.
+!>
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'CB_FREE'
+SUBROUTINE CB_FREE( THIS )
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(CIRCULARBUFFER_T), INTENT(INOUT) :: THIS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  THIS%HEAD_ = 1
+  THIS%TAIL_ = 1
+  THIS%SIZE_ = 0
+  THIS%CAPACITY_=-99
+  IF ( ALLOCATED(THIS%BUFFER_) ) THEN
+    DEALLOCATE(THIS%BUFFER_)
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END SUBROUTINE CB_FREE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -271,8 +167,8 @@ SUBROUTINE CB_ENQUEUE(THIS, VALUE)
 IMPLICIT NONE
 
   ! Dummy arguments
-  TYPE(CIRCULARBUFFER_T), INTENT(INOUT) :: THIS
-  INTEGER(KIND=JPIB_K),   INTENT(IN) :: VALUE
+  CLASS(CIRCULARBUFFER_T), INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: VALUE
 
   ! Local variables
   INTEGER(KIND=JPIB_K) :: TMP
@@ -285,16 +181,16 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
 
   ! If the buffer is full then remove the last element
-  IF (THIS%SIZE .EQ. THIS%CAPACITY) THEN
+  IF (THIS%SIZE_ .EQ. THIS%CAPACITY_) THEN
     EX = CB_DEQUEUE( THIS, TMP )
   ENDIF
 
   ! Add element to the buffer
-  THIS%BUFFER(THIS%HEAD) = VALUE
+  THIS%BUFFER_(THIS%HEAD_) = VALUE
 
   ! Update head and tail
-  THIS%HEAD = MOD(THIS%HEAD, THIS%CAPACITY) + 1
-  THIS%SIZE = THIS%SIZE + 1
+  THIS%HEAD_ = MOD(THIS%HEAD_, THIS%CAPACITY_) + 1
+  THIS%SIZE_ = THIS%SIZE_ + 1
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -331,8 +227,8 @@ FUNCTION CB_DEQUEUE(THIS, VALUE) RESULT(EX)
 IMPLICIT NONE
 
   ! Dummy arguments
-  TYPE(CIRCULARBUFFER_T), INTENT(INOUT) :: THIS
-  INTEGER(KIND=JPIB_K),   INTENT(OUT)   :: VALUE
+  CLASS(CIRCULARBUFFER_T), INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),    INTENT(OUT)   :: VALUE
 
   ! Function result
   LOGICAL :: EX
@@ -343,14 +239,14 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-  IF ( THIS%SIZE .EQ. 0 ) THEN
+  IF ( THIS%SIZE_ .EQ. 0 ) THEN
     EX = .FALSE.
     VALUE = -9999
   ELSE
     EX = .TRUE.
-    VALUE = THIS%BUFFER(THIS%TAIL)
-    THIS%TAIL = MOD(THIS%TAIL, THIS%CAPACITY) + 1
-    THIS%SIZE = THIS%SIZE - 1
+    VALUE = THIS%BUFFER_(THIS%TAIL_)
+    THIS%TAIL_ = MOD(THIS%TAIL_, THIS%CAPACITY_) + 1
+    THIS%SIZE_ = THIS%SIZE_ - 1
   ENDIF
 
   ! Trace end of procedure (on success)
@@ -395,9 +291,9 @@ FUNCTION CB_GET(THIS, I, VALUE) RESULT(EX)
 IMPLICIT NONE
 
   ! Dummy arguments
-  TYPE(CIRCULARBUFFER_T), INTENT(INOUT) :: THIS
-  INTEGER(KIND=JPIB_K),   INTENT(IN)    :: I
-  INTEGER(KIND=JPIB_K),   INTENT(OUT)   :: VALUE
+  CLASS(CIRCULARBUFFER_T), INTENT(IN)  :: THIS
+  INTEGER(KIND=JPIB_K),    INTENT(IN)  :: I
+  INTEGER(KIND=JPIB_K),    INTENT(OUT) :: VALUE
 
   ! Function result
   LOGICAL :: EX
@@ -408,12 +304,12 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-  IF ( THIS%SIZE .EQ. 0 .OR. THIS%CAPACITY .LT. I) THEN
+  IF ( THIS%SIZE_ .EQ. 0 .OR. THIS%CAPACITY_ .LT. I) THEN
     EX = .FALSE.
     VALUE = -9999
   ELSE
     EX = .TRUE.
-    VALUE = THIS%BUFFER(MOD(THIS%HEAD+THIS%CAPACITY-I-1,THIS%CAPACITY)+1)
+    VALUE = THIS%BUFFER_(MOD(THIS%HEAD_+THIS%CAPACITY_-I-1,THIS%CAPACITY_)+1)
   ENDIF
 
   ! Trace end of procedure (on success)
@@ -450,9 +346,9 @@ FUNCTION CB_GET_ALL(THIS, SZ, VALUES) RESULT(EX)
 IMPLICIT NONE
 
   ! Dummy arguments
-  TYPE(CIRCULARBUFFER_T),             INTENT(INOUT) :: THIS
-  INTEGER(KIND=JPIB_K),               INTENT(OUT)   :: SZ
-  INTEGER(KIND=JPIB_K), DIMENSION(:), INTENT(OUT)   :: VALUES
+  CLASS(CIRCULARBUFFER_T),            INTENT(IN)  :: THIS
+  INTEGER(KIND=JPIB_K),               INTENT(OUT) :: SZ
+  INTEGER(KIND=JPIB_K), DIMENSION(:), INTENT(OUT) :: VALUES
 
   ! Function result
   LOGICAL :: EX
@@ -467,10 +363,10 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
 
   VALUES = -9999
-  SZ = MIN( SIZE(VALUES), THIS%SIZE )
+  SZ = MIN( SIZE(VALUES), THIS%SIZE_ )
   DO I = 1, SZ
     EX = .TRUE.
-    VALUES(SZ-I+1) = THIS%BUFFER(MOD(THIS%HEAD+THIS%CAPACITY-I-1,THIS%CAPACITY)+1)
+    VALUES(SZ-I+1) = THIS%BUFFER_(MOD(THIS%HEAD_+THIS%CAPACITY_-I-1,THIS%CAPACITY_)+1)
   ENDDO
 
   ! Trace end of procedure (on success)
@@ -507,7 +403,7 @@ FUNCTION CB_SIZE(THIS) RESULT(SIZE)
 IMPLICIT NONE
 
   ! Dummy arguments
-  TYPE(CIRCULARBUFFER_T), INTENT(IN) :: THIS
+  CLASS(CIRCULARBUFFER_T), INTENT(IN) :: THIS
 
   ! Function result
   INTEGER(KIND=JPIB_K) :: SIZE
@@ -518,7 +414,7 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
-  SIZE = THIS%SIZE
+  SIZE = THIS%SIZE_
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -527,6 +423,47 @@ IMPLICIT NONE
   RETURN
 
 END FUNCTION CB_SIZE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!>
+!> @brief True if the queue is empty
+!>
+!> @param [in]  THIS The circular buffer structure.
+!>
+!> @return IS_EMPTY A flag that is true if the queue is empty
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CB_IS_EMPTY'
+FUNCTION CB_IS_EMPTY(THIS) RESULT(IS_EMPTY)
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(CIRCULARBUFFER_T), INTENT(IN) :: THIS
+
+  ! Function result
+  LOGICAL :: IS_EMPTY
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  IS_EMPTY = (THIS%SIZE_.EQ.0)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+END FUNCTION CB_IS_EMPTY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

@@ -295,7 +295,7 @@ int multio_config_set_failure_handler(multio_configuration_t* cc, multio_failure
             auto f = cc->failureContext.get();
             f->handler = handler;
             f->usercontext = usercontext;
-            eckit::Log::info() << "MultIO setting failure handler callable" << std::endl;
+            // eckit::Log::debug<LibMultio>() << "MultIO setting failure handler callable" << std::endl;
         },
         cc);
 #else
@@ -313,7 +313,7 @@ int multio_handle_set_failure_handler(multio_handle_t* mio, multio_failure_handl
             auto f = mio->failureContext.get();
             f->handler = handler;
             f->usercontext = usercontext;
-            eckit::Log::info() << "MultIO setting failure handler callable" << std::endl;
+            // eckit::Log::debug<LibMultio>() << "MultIO setting failure handler callable" << std::endl;
         },
         mio);
 #else

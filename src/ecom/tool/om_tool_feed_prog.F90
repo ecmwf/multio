@@ -90,9 +90,10 @@ IMPLICIT NONE
   ! Parse command line options
   CALL PARSE_COMMAND_LINE_OPTIONS( CFG )
 
-  ! Log teh configuration of hte tool
-  CALL PRINT_COMMAND_LINE_OPTIONS( CFG )
-
+  ! Log the configuration of hte tool
+  IF ( CFG%VERBOSE ) THEN
+    CALL PRINT_COMMAND_LINE_OPTIONS( CFG )
+  ENDIF
 
   ! Set the verbosity of the hooks at begin and end of every function
   CALL SET_HOOK_VERBOSITY( .FALSE. )
@@ -122,8 +123,10 @@ IMPLICIT NONE
     CALL TOC_READ_ALL( TRIM(CFG%INPUT_DIR), TOC, YLOMP%SIM_%NPROC_IO, CFG%BIG_ENDIAN_READ, CFG%VERBOSE )
   ENDIF
 
-  WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
-  WRITE(OUTPUT_UNIT,'(A20,A10,A10,A10,A10,A10,A10,A4,A20,A10)') ' message type', 'paramId', 'level/uid', 'step', 'proc', 'repres', 'prefix', '    ', 'crepres', 'clevtype'
+  IF ( CFG%VERBOSE ) THEN
+    WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
+    WRITE(OUTPUT_UNIT,'(A20,A10,A10,A10,A10,A10,A10,A4,A20,A10)') ' message type', 'paramId', 'level/uid', 'step', 'proc', 'repres', 'prefix', '    ', 'crepres', 'clevtype'
+  ENDIF
 
   ! Loop over the toc entries
   FeederLoop: DO TOCID = 1, SIZE(TOC)

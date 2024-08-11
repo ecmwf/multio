@@ -2204,18 +2204,15 @@ IMPLICIT NONE
   LENGTH = LEN_TRIM(STR)
 
   ! Initialize ISINT to false
-  ISINT = .FALSE.
+  ISINT = .TRUE.
 
   ! Check each character to see if it's a digit
   DO I = 1, LENGTH
     IF (.NOT.( ICHAR(STR(I:I)) .GE. ICHAR('0') .AND. &
 &              ICHAR(STR(I:I)) .LE. ICHAR('9')) ) THEN
-      RETURN
+      ISINT = .FALSE.
     END IF
   END DO
-
-  ! If all characters are digits, set ISINT to true
-  ISINT = .TRUE.
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

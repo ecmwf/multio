@@ -174,7 +174,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -264,7 +264,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -354,7 +354,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -453,7 +453,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -552,7 +552,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -651,7 +651,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -750,7 +750,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -851,7 +851,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -950,7 +950,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -1049,7 +1049,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -1148,7 +1148,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -1235,7 +1235,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -1325,7 +1325,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -1415,7 +1415,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -1514,7 +1514,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -1613,7 +1613,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -1712,7 +1712,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -1811,7 +1811,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -1912,7 +1912,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -2011,7 +2011,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -2110,7 +2110,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -2209,7 +2209,7 @@ IMPLICIT NONE
   END SELECT
 
   ! Trace end of procedure (on error)
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -2290,16 +2290,41 @@ IMPLICIT NONE
   PP_METADATA_ENTER_PROCEDURE( METADATA )
 
   ! Generate the error message
-  PP_DEBUG_CREATE_ERROR_MSG( STR, 'WAM encoder error' )
+  PP_DEBUG_CRITICAL_THROW(1)
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
+  RETURN
+
+  ! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'WAM time encoder error' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
   RETURN
 
 END SUBROUTINE ERROR_WAM
@@ -2349,16 +2374,41 @@ IMPLICIT NONE
   PP_METADATA_ENTER_PROCEDURE( METADATA )
 
   ! Generate the error message
-  PP_DEBUG_CREATE_ERROR_MSG( STR, 'ATM encoder error' )
+  PP_DEBUG_CRITICAL_THROW(1)
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
+  RETURN
+
+  ! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'ATM time encoder error' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
   RETURN
 
 END SUBROUTINE ERROR_ATM
@@ -2408,16 +2458,41 @@ IMPLICIT NONE
   PP_METADATA_ENTER_PROCEDURE( METADATA )
 
   ! Generate the error message
-  PP_DEBUG_CREATE_ERROR_MSG( STR, 'WAM encoder not implemented' )
+  PP_DEBUG_CRITICAL_THROW(1)
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'WAM encoder not implemented' )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
   RETURN
 
 END SUBROUTINE NOT_IMPLEMENTED_WAM
@@ -2471,10 +2546,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -2582,7 +2654,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -2679,10 +2751,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -2768,10 +2837,8 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
 
   ! Exit point
   RETURN
@@ -5401,10 +5468,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -5490,10 +5554,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -5578,10 +5639,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -5667,10 +5725,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -5755,10 +5810,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -5874,7 +5926,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -5979,10 +6031,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -6068,10 +6117,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -6156,10 +6202,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -6245,10 +6288,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -6333,10 +6373,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-  ! Write the error message and stop the program
-  PP_DEBUG_ABORT( STR )
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN
@@ -6451,7 +6488,7 @@ IMPLICIT NONE
 
   ! Trace end of procedure (on error)
   PP_METADATA_EXIT_PROCEDURE( METADATA )
-  PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
   ! Exit point
   RETURN

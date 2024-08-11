@@ -954,6 +954,13 @@ message::Message GribEncoder::setFieldValues(message::Message&& msg) {
 
     this->setDataValues(beg, msg.globalSize());
 
+    msg.header().acquireMetadata();
+    const auto& metadata = msg.metadata();
+    auto offsetByValue = metadata.getOpt<double>("offsetValuesBy");
+    if (offsetByValue) {
+        setValue("offsetValuesBy", *offsetByValue);
+    }
+
     eckit::Buffer buf{this->encoder_->length()};
     encoder_->write(buf);
 

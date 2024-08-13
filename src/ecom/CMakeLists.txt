@@ -388,29 +388,29 @@ ecbuild_add_executable(
 
 )
 
-set(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
-ecbuild_add_executable(
-
-  TARGET ecom-dist-feed
-
-  SOURCES
-    tool/om_tool_dist_feed_prog.F90
-
-  INCLUDES
-    ${MPI_Fortran_INCLUDE_DIRS}
-
-  LIBS
-    fckit
-    ecom
-    ecom-utils
-    eccodes
-    eccodes_f90
-    multio-fapi
-    ${MPI_Fortran_LIBRARIES}
-
-  LINKER_LANGUAGE Fortran
-
-)
+#set(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
+#ecbuild_add_executable(
+#
+#  TARGET ecom-dist-feed
+#
+#  SOURCES
+#    tool/om_tool_dist_feed_prog.F90
+#
+#  INCLUDES
+#    ${MPI_Fortran_INCLUDE_DIRS}
+#
+#  LIBS
+#    fckit
+#    ecom
+#    ecom-utils
+#    eccodes
+#    eccodes_f90
+#    multio-fapi
+#    ${MPI_Fortran_LIBRARIES}
+#
+#  LINKER_LANGUAGE Fortran
+#
+#)
 
 
 #target_link_libraries( ecom-dist-feed PUBLIC ${MPI_Fortran_LIBRARIES} )

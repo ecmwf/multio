@@ -289,9 +289,9 @@ target_include_directories( ecom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/mo
 ecbuild_add_library(
   TARGET  ecom-utils
   SOURCES
+    tool/om_tool_distributor_mod.F90
     tool/om_tool_utils_mod.F90
     tool/om_tool_cfg_mod.F90
-    tool/om_tool_distributor_mod.F90
 
   DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
 

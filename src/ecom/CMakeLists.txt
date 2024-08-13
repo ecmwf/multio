@@ -1,8 +1,5 @@
 if ( HAVE_OUTPUT_MANAGER )
 
-# Install samples in the proper directory
-set( MULTIO_SAMPLE_DIR  share/ecom/samples )
-
 # Update on new big features
 set(OUTPUT_MANAGER_MAJOR 0)
 
@@ -414,11 +411,5 @@ ecbuild_add_executable(
 
 endif()
 
-
-# Add the samples subdirectory
-add_subdirectory( samples )
-
-#set_target_properties( ecom PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/module/ecom )
-#target_include_directories( ecom PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/module/ecom> )
 
 endif()

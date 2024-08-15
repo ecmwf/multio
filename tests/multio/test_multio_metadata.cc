@@ -18,6 +18,7 @@
 
 namespace multio::test {
 
+using multio::message::BaseMetadata;
 using multio::message::Metadata;
 using multio::message::MetadataException;
 using multio::message::MetadataKeyException;
@@ -223,8 +224,8 @@ CASE("Test setting, getting and merging nested metadata") {
 
     // Possible real code
     if (auto searchEncOv = m.find("encoder-overwrites"); searchEncOv != m.end()) {
-        EXPECT_NO_THROW(searchEncOv->second.get<Metadata>());
-        auto& encOv = searchEncOv->second.get<Metadata>();
+        EXPECT_NO_THROW(searchEncOv->second.get<BaseMetadata>());
+        auto& encOv = searchEncOv->second.get<BaseMetadata>();
 
         // Merging allows extracts and moves values from an existing metadata only if they are not already contained
         Metadata mergeByRef{{"encodeBitsPerValue", 12L}, {"typeOfLevel", "unimportantValue"}};
@@ -310,8 +311,8 @@ CASE("Test setting, getting and merging nested metadata") {
 
     // Finally the encoder action can iterator all values and set it somewhere else
     if (auto searchEncOv = m.find("encoder-overwrites"); searchEncOv != m.end()) {
-        EXPECT_NO_THROW(searchEncOv->second.get<Metadata>());
-        auto encOv = std::move(searchEncOv->second.get<Metadata>());
+        EXPECT_NO_THROW(searchEncOv->second.get<BaseMetadata>());
+        auto encOv = std::move(searchEncOv->second.get<BaseMetadata>());
 
         {
             int countStringVals1 = 0;
@@ -401,44 +402,45 @@ CASE("Test setting, getting and merging nested metadata") {
 
 
     // Test equality values for nested rvalue access
-    EXPECT(std::move(m2).get<Metadata>("encoder-overwrites").get<std::int64_t>("encodeBitsPerValue") == 123L);
-    EXPECT(std::move(m2).get<Metadata>("encoder-overwrites").get<std::string>("typeOfLevel") == "oceanModelLayer");
-    EXPECT(std::move(m2).get<Metadata>("encoder-overwrites").get<std::string>("gridType") == "healpix");
+    EXPECT(std::move(m2).get<BaseMetadata>("encoder-overwrites").get<std::int64_t>("encodeBitsPerValue") == 123L);
+    EXPECT(std::move(m2).get<BaseMetadata>("encoder-overwrites").get<std::string>("typeOfLevel") == "oceanModelLayer");
+    EXPECT(std::move(m2).get<BaseMetadata>("encoder-overwrites").get<std::string>("gridType") == "healpix");
 }
 
 CASE("Test visit with unwrapped unique ptr") {
     {
-        MetadataValue v{Metadata{{"key1", "value1"}}};
+        MetadataValue v{BaseMetadata{{"key1", "value1"}}};
 
         static_cast<MetadataValue&>(v).visit(
-            eckit::Overloaded{[](Metadata&) { EXPECT(true); }, [](auto& other) { EXPECT(false); }});
+            eckit::Overloaded{[](BaseMetadata&) { EXPECT(true); }, [](auto& other) { EXPECT(false); }});
 
         static_cast<const MetadataValue&>(v).visit(
-            eckit::Overloaded{[](const Metadata&) { EXPECT(true); }, [](const auto& other) { EXPECT(false); }});
+            eckit::Overloaded{[](const BaseMetadata&) { EXPECT(true); }, [](const auto& other) { EXPECT(false); }});
 
         static_cast<MetadataValue&&>(v).visit(
-            eckit::Overloaded{[](Metadata&&) { EXPECT(true); }, [](auto&& other) { EXPECT(false); }});
+            eckit::Overloaded{[](BaseMetadata&&) { EXPECT(true); }, [](auto&& other) { EXPECT(false); }});
     }
 
     {
-        MetadataValue v{Metadata{{"key1", "value1"}}};
+        MetadataValue v{BaseMetadata{{"key1", "value1"}}};
 
         // This is rather a static complication test than a dynamic test
-        Metadata& ref = static_cast<MetadataValue&>(v).get<Metadata>();
-        const Metadata& cref = static_cast<const MetadataValue&>(v).get<Metadata>();
-        Metadata&& tref = static_cast<MetadataValue&&>(v).get<Metadata>();
+        BaseMetadata& ref = static_cast<MetadataValue&>(v).get<BaseMetadata>();
+        const BaseMetadata& cref = static_cast<const MetadataValue&>(v).get<BaseMetadata>();
+        BaseMetadata&& tref = static_cast<MetadataValue&&>(v).get<BaseMetadata>();
 
         // All references should be valid
         EXPECT_EQUAL(ref.size(), 1);
         EXPECT_EQUAL(cref.size(), 1);
         EXPECT_EQUAL(tref.size(), 1);
 
-        Metadata moved{std::move(tref)};
+        BaseMetadata moved{std::move(tref)};
         // After movement references should point to an empty metadata
         EXPECT_EQUAL(ref.size(), 0);
         EXPECT_EQUAL(cref.size(), 0);
     }
 }
+
 
 }  // namespace multio::test
 

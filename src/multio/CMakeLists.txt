@@ -91,6 +91,8 @@ list( APPEND multio_domain_srcs
 )
 
 list( APPEND multio_message_srcs
+    message/BaseMetadata.h
+    message/BaseMetadata.cc
     message/Message.cc
     message/MessageHeader.cc
     message/Message.h
@@ -112,6 +114,8 @@ list( APPEND multio_message_srcs
     message/SharedPayload.h
     message/SharedPayloadException.cc
     message/SharedPayloadException.h
+    message/Parametrization.cc
+    message/Parametrization.h
     message/Peer.cc
     message/Peer.h
     message/MetadataMapping.cc

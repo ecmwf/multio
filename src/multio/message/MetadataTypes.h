@@ -33,6 +33,7 @@ namespace multio::message {
 //-----------------------------------------------------------------------------
 
 // Forward declaration
+class BaseMetadata;
 class Metadata;
 
 //-----------------------------------------------------------------------------
@@ -47,6 +48,9 @@ constexpr bool operator<(Null, Null) noexcept {
 
 constexpr bool operator==(Null, Null) noexcept {
     return true;
+}
+constexpr bool operator!=(Null, Null) noexcept {
+    return false;
 }
 
 std::ostream& operator<<(std::ostream& os, const Null&);
@@ -78,12 +82,13 @@ struct MetadataTypes {
     using NonNullScalars = util::MergeTypeList_t<Integers, Floats, Strings>;
     using Scalars = util::MergeTypeList_t<Nulls, NonNullScalars>;
 
+    using Bytes = util::TypeList<std::vector<unsigned char>>;
     using IntegerLists = util::MapTypeList_t<std::vector, Integers>;
     using FloatLists = util::MapTypeList_t<std::vector, Floats>;
     using StringLists = util::MapTypeList_t<std::vector, Strings>;
-    using Lists = util::MergeTypeList_t<IntegerLists, FloatLists, StringLists>;
+    using Lists = util::MergeTypeList_t<Bytes, IntegerLists, FloatLists, StringLists>;
 
-    using Nested = util::TypeList<Metadata>;
+    using Nested = util::TypeList<BaseMetadata>;
     using NestedWrapped = util::MapTypeList_t<std::unique_ptr, Nested>;  // Used for memory layout. Hidden from user.
 
     // Example for general lists:

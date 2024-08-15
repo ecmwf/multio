@@ -120,6 +120,10 @@ void MioGribHandle::setValue(const char* key, const std::vector<bool>& values) {
     codesCheckRelaxed(codes_set_long_array(raw(), key, v.data(), v.size()), key, "<bool/long array ...>");
 }
 
+void MioGribHandle::setValue(const char* key, const std::vector<unsigned char>& values) {
+    setValue(key, values.data());
+}
+
 void MioGribHandle::setValue(const char* key, const std::vector<double>& values) {
     LOG_DEBUG_LIB(LibMultio) << "*** Setting values (";
     for (const auto& d : values) {

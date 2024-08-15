@@ -243,8 +243,8 @@ struct GetVariantIndex<T, multio::message::MetadataValue> : GetVariantIndex<T, m
 };
 
 template <>
-struct GetVariantIndex<multio::message::Metadata, multio::message::MetadataValueVariant>
-    : GetVariantIndex<std::unique_ptr<multio::message::Metadata>, multio::message::MetadataValueVariant> {};
+struct GetVariantIndex<multio::message::BaseMetadata, multio::message::MetadataValueVariant>
+    : GetVariantIndex<std::unique_ptr<multio::message::BaseMetadata>, multio::message::MetadataValueVariant> {};
 
 }  // namespace multio::util
 

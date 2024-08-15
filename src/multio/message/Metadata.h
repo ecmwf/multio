@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "multio/message/MetadataValue.h"
+#include "multio/message/BaseMetadata.h"
 
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -22,208 +22,65 @@
 
 namespace multio::message {
 
-class Metadata {
+class Metadata : public BaseMetadata {
 public:
+    using Base = BaseMetadata;
     using This = Metadata;
     using KeyType = typename MetadataTypes::KeyType;
     using MapType = typename MetadataTypes::MapType<MetadataValue>;
 
-public:
-    Metadata(const Metadata&) = default;
-    Metadata(Metadata&&) noexcept = default;
+    virtual ~Metadata() {};
 
-    Metadata();
-    Metadata(std::initializer_list<std::pair<const KeyType, MetadataValue>> li);
+    using BaseMetadata::BaseMetadata;
 
-protected:
-    // Used from update()
-    Metadata(MapType&& values);
+    Metadata(const BaseMetadata& b) : BaseMetadata(b) {}
+    BaseMetadata toBaseMetadata() const { return BaseMetadata{values_}; }
+    operator std::unique_ptr<BaseMetadata>() { return std::make_unique<BaseMetadata>(values_); }
 
-public:
-    This& operator=(const This&) = default;
-    This& operator=(This&&) noexcept = default;
+    using Base::operator=;
 
-    MetadataValue&& get(const KeyType& k) &&;
-    MetadataValue& get(const KeyType& k) &;
-    const MetadataValue& get(const KeyType& k) const&;
+    using Base::get;
+    using Base::getOpt;
 
 
-    std::optional<MetadataValue> getOpt(const KeyType& k) && noexcept { return optionalGetter(std::move(*this), k); }
-    std::optional<MetadataValue> getOpt(const KeyType& k) & noexcept { return optionalGetter(*this, k); }
-    std::optional<MetadataValue> getOpt(const KeyType& k) const& noexcept { return optionalGetter(*this, k); }
+    using Base::operator[];
 
-    template <typename T>
-    T&& get(const KeyType& k) && {
-        return std::move(referenceGetter<T>(*this, k).get());
-    }
-
-    template <typename T>
-    T& get(const KeyType& k) & {
-        return referenceGetter<T>(*this, k).get();
-    }
-
-    template <typename T>
-    const T& get(const KeyType& k) const& {
-        return referenceGetter<T>(*this, k).get();
-    }
-
-    template <typename T>
-    std::optional<T> getOpt(const KeyType& k) && noexcept {
-        return optionalGetter<T>(std::move(*this), k);
-    }
-
-    template <typename T>
-    std::optional<T> getOpt(const KeyType& k) const& noexcept {
-        return optionalGetter<T>(*this, k);
-    }
-
-    MetadataValue& operator[](const KeyType& key);
-    MetadataValue& operator[](KeyType&& key);
-
-    template <typename V>
-    void set(KeyType&& k, V&& v) {
-        values_.insert_or_assign(std::move(k), std::forward<V>(v));
-    }
-
-    template <typename V>
-    void set(const KeyType& k, V&& v) {
-        values_.insert_or_assign(k, std::forward<V>(v));
-    }
-
-    // Adds a value if not already contained
-    template <typename V>
-    auto trySet(KeyType&& k, V&& v) {
-        return values_.try_emplace(std::move(k), std::forward<V>(v));
-    }
-
-    // Adds a value if not already contained
-    template <typename V>
-    auto trySet(const KeyType& k, V&& v) {
-        return values_.try_emplace(k, std::forward<V>(v));
-    }
+    using Base::set;
+    using Base::trySet;
 
     using Iterator = typename MapType::iterator;
     using ConstIterator = typename MapType::const_iterator;
 
+    // Onlything we need to change to support lookups in parametrization
+    Iterator find(const KeyType& k) override;
+    ConstIterator find(const KeyType& k) const override;
+    ;
 
-    Iterator find(const KeyType& k) { return values_.find(k); };
-    ConstIterator find(const KeyType& k) const { return values_.find(k); };
-    Iterator begin() noexcept { return values_.begin(); };
-    ConstIterator begin() const noexcept { return values_.begin(); };
-    ConstIterator cbegin() const noexcept { return values_.cbegin(); };
-    Iterator end() noexcept { return values_.end(); };
-    ConstIterator end() const noexcept { return values_.end(); };
-    ConstIterator cend() const noexcept { return values_.cend(); };
+    using Base::begin;
+    using Base::cbegin;
+    using Base::cend;
+    using Base::end;
 
-    std::size_t erase(const KeyType& k) { return values_.erase(k); };
-    Iterator erase(Iterator it) { return values_.erase(it); };
-    Iterator erase(ConstIterator it) { return values_.erase(it); };
-    Iterator erase(ConstIterator first, ConstIterator last) { return values_.erase(first, last); };
+    using Base::erase;
 
+    using Base::empty;
 
-    bool empty() const noexcept;
+    using Base::size;
 
-    std::size_t size() const noexcept;
+    using Base::clear;
 
-    void clear() noexcept;
+    using Base::merge;
 
-    /**
-     * Extracts all values from other metadata whose keys are not contained yet in this metadata.
-     * Explicitly always modifies both metadata.
-     */
-    void merge(This& other);
-    void merge(This&& other);
+    using Base::updateNoOverwrite;
+    using Base::updateOverwrite;
 
-    /**
-     * Adds all Metadata contained in other and returns a Metadata object with key/values that have been overwritten.
-     * Existing iterators to this container are invalidated after an update.
-     */
-    void updateOverwrite(const This& other);
-    void updateOverwrite(This&& other);
-
-    /**
-     * Adds all Metadata contained in other and returns a Metadata object with key/values that have been overwritten.
-     * Similar to merge unless that the right-hand-side map is not actively modified.
-     * Existing iterators to this container are invalidated after an update.
-     */
-    void updateNoOverwrite(const This& other);
-    void updateNoOverwrite(This&& other);
-
-
-    std::string toString() const;
-    void json(eckit::JSON& j) const;
-
-private:
-    MapType values_;
-
-    //----------------------------------------------------------------------------------------------------------------------
-
-    // Implementation details
-
-    template <typename T, typename This_>
-    static decltype(auto) referenceGetter(This_&& val, const KeyType& k) {
-        if (auto search = val.values_.find(k); search != val.values_.end()) {
-            try {
-                return std::ref(search->second.template get<T>());
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        throw MetadataMissingKeyException(k, Here());
-    }
-
-    template <typename This_>
-    static decltype(auto) referenceGetter(This_&& val, const KeyType& k) {
-        if (auto search = val.values_.find(k); search != val.values_.end()) {
-            return std::ref(search->second);
-        }
-        throw MetadataMissingKeyException(k, Here());
-    }
-
-    template <typename T, typename This_>
-    static std::optional<T> optionalGetter(This_&& val, const KeyType& k) {
-        if (auto search = val.values_.find(k); search != val.values_.end()) {
-            try {
-                if constexpr (!std::is_lvalue_reference_v<This_>) {
-                    return std::move(search->second.template get<T>());
-                }
-                else {
-                    return search->second.template get<T>();
-                }
-            }
-            catch (const MetadataException& err) {
-                std::throw_with_nested(MetadataKeyException(k, err.what(), Here()));
-            }
-        }
-        return std::nullopt;
-    }
-
-    template <typename This_>
-    static std::optional<MetadataValue> optionalGetter(This_&& val, const KeyType& k) noexcept {
-        if (auto search = val.values_.find(k); search != val.values_.end()) {
-            if constexpr (!std::is_lvalue_reference_v<This_>) {
-                return std::optional<MetadataValue>{std::move(search->second)};
-            }
-            else {
-                return std::optional<MetadataValue>{search->second};
-            }
-        }
-        return std::nullopt;
-    }
-
-    //----------------------------------------------------------------------------------------------------------------------
+    using Base::json;
+    using Base::toString;
 };
 
 
 //----------------------------------------------------------------------------------------------------------------------
 
-eckit::JSON& operator<<(eckit::JSON& json, const Metadata& metadata);
-
-std::ostream& operator<<(std::ostream& os, const Metadata& metadata);
-
-
-//----------------------------------------------------------------------------------------------------------------------
 
 Metadata metadataFromYAML(const std::string& yamlString);
 

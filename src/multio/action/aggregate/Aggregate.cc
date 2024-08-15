@@ -47,7 +47,6 @@ bool Aggregate::handleField(const Message& msg) {
 }
 
 auto Aggregate::flushCount(const Message& msg) {
-
     auto res = flushes_[msg.fieldId()].emplace(msg.source());
 
     if (not res.second) {

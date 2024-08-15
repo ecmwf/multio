@@ -181,7 +181,10 @@ std::optional<MetadataValue> tryToMetadataValue(const eckit::Configuration& c, c
 std::size_t std::hash<multio::message::MetadataValue>::operator()(const multio::message::MetadataValue& t) const {
     return t.visit([&](const auto& v) -> std::size_t {
         using T = std::decay_t<decltype(v)>;
-        if constexpr (std::is_same_v<T, multio::message::Metadata>) {
+        if constexpr (std::is_same_v<T, multio::message::BaseMetadata>) {
+            throw multio::message::MetadataException("Hashing of Metadata is not supported", Here());
+        }
+        else if constexpr (std::is_same_v<T, multio::message::Metadata>) {
             throw multio::message::MetadataException("Hashing of Metadata is not supported", Here());
         }
         else if constexpr (multio::util::IsVector_v<T>) {

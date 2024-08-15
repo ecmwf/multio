@@ -547,7 +547,7 @@ QueriedMarsKeys setMarsKeys(GribEncoder& g, const Dict& md) {
 void applyOverwrites(GribEncoder& g, const message::Metadata& md) {
     if (auto searchOverwrites = md.find("encoder-overwrites"); searchOverwrites != md.end()) {
         // TODO Refactor with visitor
-        for (const auto& kv : searchOverwrites->second.get<message::Metadata>()) {
+        for (const auto& kv : searchOverwrites->second.get<message::BaseMetadata>()) {
             if (g.hasKey(kv.first.value().c_str())) {
                 kv.second.visit(eckit::Overloaded{
                     [](const auto& v) -> util::IfTypeOf<decltype(v), MetadataTypes::AllNested> {},
@@ -629,7 +629,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const message::Metadata& in,
     auto significanceOfReferenceTime = lookUp<std::int64_t>(md, "significanceOfReferenceTime")();
     if (!significanceOfReferenceTime) {
         if (auto searchEncoderOverwrites = md.find("encoder-overwrites"); searchEncoderOverwrites != md.end()) {
-            const auto& overwrites = md.get<message::Metadata>("encoder-overwrites");
+            const auto& overwrites = md.get<message::BaseMetadata>("encoder-overwrites");
             significanceOfReferenceTime = lookUp<std::int64_t>(overwrites, "significanceOfReferenceTime")();
         }
     }

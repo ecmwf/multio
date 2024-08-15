@@ -137,7 +137,7 @@ void MetadataMapping::applyInplace(Metadata& m, MetadataMappingOptions options) 
 
     // TODO handle internals without LocalConfiguration
     std::optional<Metadata> targetConfMaybe{};
-    Metadata& ms = targetPath_ ? (targetConfMaybe = m.get<Metadata>(*targetPath_), *targetConfMaybe) : m;
+    Metadata& ms = targetPath_ ? (targetConfMaybe = m.get<BaseMetadata>(*targetPath_), *targetConfMaybe) : m;
 
     if (options.overwriteExisting) {
         ms.updateOverwrite(searchMappingData->second);

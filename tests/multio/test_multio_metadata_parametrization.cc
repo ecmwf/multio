@@ -45,6 +45,12 @@ CASE("Test update parametrization") {
     Metadata m;
     EXPECT(m.get<std::int64_t>("a") == 1);
     EXPECT(m.get<double>("b") == 1.0);
+
+
+    unsigned char data[5] = {0x1, 0x2, 0x3, 0x4, 0x5};
+    unsigned char data2[5] = {0x1, 0x0, 0x0, 0x0, 0x5};
+    EXPECT_NO_THROW(Parametrization::instance().update("domain", data, 5));
+    EXPECT_THROWS_AS(Parametrization::instance().update("domain", data2, 5), MetadataException);
 };
 
 

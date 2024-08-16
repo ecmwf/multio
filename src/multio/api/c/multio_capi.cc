@@ -680,8 +680,8 @@ int multio_write_grib_encoded(multio_handle_t* mio, void* gribdata, int gribsize
             ASSERT(gribdata);
 
             multio::message::Metadata md;
-            md.acquire();  // Make sure metadata is not stored in a stateful container from last write
-            md.modify().set("format", "grib");
+            // md.acquire();  // Make sure metadata is not stored in a stateful container from last write
+            md.set("format", "grib");
 
             mio->dispatch(std::move(md), eckit::Buffer{gribdata, gribsize * sizeof(char)}, Message::Tag::Field);
         },

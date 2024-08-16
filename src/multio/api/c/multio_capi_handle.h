@@ -37,6 +37,22 @@ int multio_flush(multio_handle_t* mio, multio_metadata_t* md);
 int multio_notify(multio_handle_t* mio, multio_metadata_t* md);
 
 
+/** Writes static metadata information to clients and all servers
+ * \param mio Handle to the multio (client) instance
+ * \param md Metadata information about the domain
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_write_parametrization(multio_handle_t* mio, multio_metadata_t* md);
+
+/** Writes static metadata information to clients and all servers
+ * \param mio Handle to the multio (client) instance
+ * \param data Pointer to the data containing the index mapping
+ * \param size Size of the data containing the index mapping
+ * \returns Return code (#MultioErrorValues)
+ */
+int multio_write_parametrization_array(multio_handle_t* mio, const char* md, const int* data, int size);
+
+
 /** Writes domain information (e.g. local-to-global index mapping) to the server
  * \param mio Handle to the multio (client) instance
  * \param md Metadata information about the domain

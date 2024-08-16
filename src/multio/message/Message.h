@@ -56,6 +56,7 @@ public:  // types
         Field,
         Flush,
         Notification,
+        Parametrization,
         ENDTAG
     };
 

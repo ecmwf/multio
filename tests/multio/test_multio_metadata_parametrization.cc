@@ -35,12 +35,15 @@ CASE("Test update parametrization") {
     Parametrization::instance().clear();
     Parametrization::instance().update(Metadata{{"a", 1}, {"b", 1.0}});
 
+
     EXPECT_NO_THROW(Parametrization::instance().update(Metadata{{"a", 1}, {"b", 1.0}}));
     EXPECT_THROWS_AS(Parametrization::instance().update(Metadata{{"a", 2}}), MetadataException);
+
 
     const BaseMetadata& par = Parametrization::instance().get();
     EXPECT(par.get<std::int64_t>("a") == 1);
     EXPECT(par.get<double>("b") == 1.0);
+
 
     Metadata m;
     EXPECT(m.get<std::int64_t>("a") == 1);
@@ -51,6 +54,27 @@ CASE("Test update parametrization") {
     unsigned char data2[5] = {0x1, 0x0, 0x0, 0x0, 0x5};
     EXPECT_NO_THROW(Parametrization::instance().update("domain", data, 5));
     EXPECT_THROWS_AS(Parametrization::instance().update("domain", data2, 5), MetadataException);
+
+
+    EXPECT_NO_THROW(Parametrization::instance().update(message::Message({
+        {
+            message::Message::Tag::Parametrization,
+            message::Peer{},
+            message::Peer{},
+            Metadata{{"c", 3}, {"payloadKey", "domain"}},
+        },
+        message::SharedPayload{message::PayloadReference{data, 5}},
+    })));
+    EXPECT_THROWS_AS(Parametrization::instance().update(message::Message({
+                         {
+                             message::Message::Tag::Parametrization,
+                             message::Peer{},
+                             message::Peer{},
+                             Metadata{{"c", 3}, {"payloadKey", "domain"}},
+                         },
+                         message::SharedPayload{message::PayloadReference{data2, 5}},
+                     })),
+                     MetadataException);
 };
 
 

@@ -2,9 +2,12 @@
 #pragma once
 
 #include "multio/message/BaseMetadata.h"
+#include "multio/message/Message.h"
 
 
 namespace multio::message {
+
+static std::string PARAMETRIZATION_PAYLOAD_KEY = "payloadKey";
 
 class Parametrization {
 public:
@@ -25,6 +28,9 @@ public:
 
     // Update a specific key with a vector of bytes as value
     void update(const std::string& key, const void* data, std::size_t size);
+
+    // Update a specific key with a vector of bytes as value
+    void update(const Message& msg);
 
     void clear();
 

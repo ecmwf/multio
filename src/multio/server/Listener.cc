@@ -83,6 +83,7 @@ void Listener::start() {
                     break;
 
                 case Message::Tag::Domain:
+                case Message::Tag::Parametrization:
                 case Message::Tag::Mask:
                 case Message::Tag::Notification:
                 case Message::Tag::Flush:

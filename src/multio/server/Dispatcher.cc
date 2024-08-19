@@ -65,6 +65,7 @@ void Dispatcher::handle(message::Message msg) const {
             break;
 
         case message::Message::Tag::Parametrization:
+            LOG_DEBUG_LIB(multio::LibMultio) << "Server received parametrization: " << msg << std::endl;
             message::Parametrization::instance().update(std::move(msg));
             break;
 

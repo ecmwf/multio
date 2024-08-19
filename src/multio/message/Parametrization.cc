@@ -14,6 +14,7 @@
 #include <algorithm>
 
 #include "eckit/log/Log.h"
+#include "multio/LibMultio.h"
 
 
 namespace multio {
@@ -74,6 +75,7 @@ void Parametrization::update(const Message& msg) {
 void Parametrization::update(const std::string& key, const MetadataValue& val) {
     auto it = data_.find(key);
     if (it == data_.end()) {
+        eckit::Log::debug<LibMultio>() << "Parametrization :: " << key << ": " << val << std::endl;
         data_.set(key, val);
     }
     else {
@@ -84,6 +86,11 @@ void Parametrization::update(const std::string& key, const MetadataValue& val) {
             throw MetadataException(oss.str(), Here());
         }
     }
+}
+
+
+void Parametrization::print(std::ostream& out) const {
+    out << "Parametrization :: " << data_;
 }
 
 

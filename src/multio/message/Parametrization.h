@@ -34,7 +34,14 @@ public:
 
     void clear();
 
+
 private:
+    void print(std::ostream& out) const;
+
+    friend std::ostream& operator<<(std::ostream& s, const Parametrization& x) {
+        x.print(s);
+        return s;
+    }
     void update(const std::string& key, const MetadataValue&);
 
     // TODO use RW lock (maybe with atomic flag)

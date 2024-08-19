@@ -596,10 +596,10 @@ int multio_write_parametrization_array(multio_handle_t* mio, const char* key, co
             ASSERT(key);
 
 
-            multio::message::PayloadReference data{static_cast<const void*>(data), size * sizeof(int)};
+            multio::message::PayloadReference payload{static_cast<const void*>(data), size * sizeof(int)};
 
-            mio->dispatch(Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)}}, std::move(data),
-                          Message::Tag::Parametrization);
+            mio->dispatch(Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)}},
+                          std::move(payload), Message::Tag::Parametrization);
         },
         mio);
 #else

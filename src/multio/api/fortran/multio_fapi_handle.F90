@@ -37,6 +37,12 @@ implicit none
         ! Domain handling
         procedure, public,  pass :: write_domain         => multio_handle_write_domain
 
+        ! Parametrization handling
+        procedure, public,  pass :: write_parametrization_metadata => multio_handle_write_parametrization
+        procedure, public,  pass :: write_parametrization_array    => multio_handle_write_parametrization_array
+        generic,   public        :: write_parametrization          => write_parametrization_array, &
+                                                                    & write_parametrization_metadata
+
         ! Mask handling
         procedure, private, pass :: write_mask_float_1d  => multio_handle_write_mask_float_1d
         procedure, private, pass :: write_mask_double_1d => multio_handle_write_mask_double_1d
@@ -230,6 +236,124 @@ contains
         ! Exit point
         return
     end function multio_handle_write_domain
+
+
+    !> @brief Send parametrization information to multio.
+    !!
+    !! This function sends parametrization information (global & static metadata) to the multio of the object
+    !! pointed to by the provided handle.
+    !!
+    !! @param [in,out] handle   A pointer to the object handle.
+    !! @param [in]     metadata Metadata to be sent with the parametrization.
+    !!
+    !! @return An error code indicating the operation's success.
+    !!
+    !! @todo Implement for different kinds.
+    !!
+    function multio_handle_write_parametrization(handle, metadata) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding, only: c_int
+        use, intrinsic :: iso_c_binding, only: c_loc
+        ! Variable references from the project
+        use :: multio_api_metadata_mod,  only: multio_metadata
+        use :: multio_api_constants_mod, only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_handle),           intent(inout) :: handle
+        class(multio_metadata),         intent(inout) :: metadata
+        ! Function result
+        integer :: err
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        ! Private interface to the c API
+        interface
+            function c_multio_write_parametrization(handle, metadata) result(err) &
+                    bind(c, name='multio_write_parametrization')
+                    use, intrinsic :: iso_c_binding, only: c_ptr
+                    use, intrinsic :: iso_c_binding, only: c_int
+            implicit none
+                type(c_ptr),    value, intent(in) :: handle
+                type(c_ptr),    value, intent(in) :: metadata
+                integer(c_int) :: err
+            end function c_multio_write_parametrization
+        end interface
+        ! Implementation
+        c_err  = c_multio_write_parametrization(handle%c_ptr(), metadata%c_ptr())
+        ! Setting return value
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_handle_write_parametrization
+
+
+    !> @brief Send parametrization information to multio.
+    !!
+    !! This function sends parametrization information (global & static metadata) to the multio of the object
+    !! pointed to by the provided handle.
+    !!
+    !! @param [in,out] handle   A pointer to the object handle.
+    !! @param [in]     metadata Metadata to be sent with the parametrization_array.
+    !! @param [in]     data     Domain data.
+    !!
+    !! @return An error code indicating the operation's success.
+    !!
+    !! @todo Implement for different kinds.
+    !!
+    function multio_handle_write_parametrization_array(handle, key, data) result(err)
+        ! Variable references from the fortran language standard modules
+        use, intrinsic :: iso_c_binding, only: c_int
+        use, intrinsic :: iso_c_binding, only: c_char
+        use, intrinsic :: iso_c_binding, only: c_null_char
+        use, intrinsic :: iso_c_binding, only: c_loc
+        ! Variable references from the project
+        use :: multio_api_metadata_mod,  only: multio_metadata
+        use :: multio_api_constants_mod, only: MULTIO_SUCCESS
+    implicit none
+        ! Dummy arguments
+        class(multio_handle),           intent(inout) :: handle
+        character(len=*),               intent(in)    :: key
+        integer, dimension(:),  target, intent(in)    :: data
+        ! Function result
+        integer :: err
+#if !defined(MULTIO_DUMMY_API)
+        ! Local variables
+        integer(kind=c_int) :: c_err
+        integer(kind=c_int) :: c_size
+        character(:,kind=c_char), allocatable, target :: nullified_key
+        ! Private interface to the c API
+        interface
+            function c_multio_write_parametrization_array(handle, key, data, size) result(err) &
+                    bind(c, name='multio_write_parametrization_array')
+                    use, intrinsic :: iso_c_binding, only: c_ptr
+                    use, intrinsic :: iso_c_binding, only: c_int
+            implicit none
+                type(c_ptr),    value, intent(in) :: handle
+                type(c_ptr),    value, intent(in) :: key
+                type(c_ptr),    value, intent(in) :: data
+                integer(c_int), value, intent(in) :: size
+                integer(c_int) :: err
+            end function c_multio_write_parametrization_array
+        end interface
+        ! Implementation
+        nullified_key = trim(key) // c_null_char
+        c_size = int(size(data),c_int)
+        c_err  = c_multio_write_parametrization_array(handle%c_ptr(), c_loc(nullified_key), c_loc(data), c_size)
+        ! Output cast and cleanup
+        if (allocated(nullified_key)) deallocate(nullified_key)
+        ! Setting return value
+        err = int(c_err,kind(err))
+#else
+        err = int(MULTIO_SUCCESS,kind(err))
+#endif
+        ! Exit point
+        return
+    end function multio_handle_write_parametrization_array
+
+
 
 
     !> @brief Send a one-dimensional float mask.
@@ -867,7 +991,6 @@ contains
         integer :: err
 #if !defined(MULTIO_DUMMY_API)
         ! Local variables
-        character(:), allocatable, target :: nullified_field
         integer(kind=c_int) :: c_err
         logical(kind=c_bool) :: c_set_value
         ! Private interface to the c API

@@ -36,6 +36,10 @@ void Sink::executeImpl(Message msg) {
         case Message::Tag::Notification:
             trigger(msg);
             return;
+            
+        case Message::Tag::Parametrization:
+            // Nothing to do
+            return;
 
         default:
             throw eckit::SeriousBug("Cannot handle message <" + Message::tag2str(msg.tag()) + ">");

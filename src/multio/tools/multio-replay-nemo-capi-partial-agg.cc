@@ -227,7 +227,7 @@ void MultioReplayNemoCApi::setDomains(bool onlyLoadDefinitions) {
             multio_metadata_set_int(md, "globalSize", globalSize_);
             multio_metadata_set_bool(md, "toAllServers", true);
 
-            multio_write_domain(multio_handle, md, buffer.data(), sz);
+            multio_write_domain_int32(multio_handle, md, buffer.data(), sz);
         }
 
         domainDefinitions_.emplace(std::make_pair(grid.first, std::move(buffer)));

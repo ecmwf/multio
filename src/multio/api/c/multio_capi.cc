@@ -553,7 +553,7 @@ int multio_notify(multio_handle_t* mio, multio_metadata_t* md) {
 }
 
 
-int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, int size) {
+int multio_write_domain_int64(multio_handle_t* mio, multio_metadata_t* md, int64_t* data, int size) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, md, data, size]() {
@@ -561,7 +561,25 @@ int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, 
             ASSERT(md);
 
             // eckit::Buffer domain_def{static_cast<void*>(data), size * sizeof(int), false};
-            multio::message::PayloadReference domain_def{static_cast<void*>(data), size * sizeof(int)};
+            multio::message::PayloadReference domain_def{static_cast<void*>(data), size * sizeof(int64_t)};
+
+            mio->dispatch(md->md, std::move(domain_def), Message::Tag::Domain);
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+int multio_write_domain_int32(multio_handle_t* mio, multio_metadata_t* md, int32_t* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, md, data, size]() {
+            ASSERT(mio);
+            ASSERT(md);
+
+            // eckit::Buffer domain_def{static_cast<void*>(data), size * sizeof(int), false};
+            multio::message::PayloadReference domain_def{static_cast<void*>(data), size * sizeof(int32_t)};
 
             mio->dispatch(md->md, std::move(domain_def), Message::Tag::Domain);
         },
@@ -578,6 +596,9 @@ int multio_write_parametrization(multio_handle_t* mio, multio_metadata_t* md) {
         [mio, md]() {
             ASSERT(mio);
             ASSERT(md);
+            
+            md->md.acquire();
+            md->md.modify().set("category", "parametrization");
 
             mio->dispatch(md->md, eckit::Buffer{}, Message::Tag::Parametrization);
         },
@@ -588,7 +609,47 @@ int multio_write_parametrization(multio_handle_t* mio, multio_metadata_t* md) {
 }
 
 
-int multio_write_parametrization_array(multio_handle_t* mio, const char* key, const int* data, int size) {
+int multio_write_parametrization_int32_array(multio_handle_t* mio, const char* key, const int32_t* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, key, data, size]() {
+            ASSERT(mio);
+            ASSERT(key);
+
+
+            multio::message::PayloadReference payload{static_cast<const void*>(data), size * sizeof(int32_t)};
+
+            mio->dispatch(Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)}, {"category", "parametrization"}},
+                          std::move(payload), Message::Tag::Parametrization);
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_write_parametrization_int64_array(multio_handle_t* mio, const char* key, const int64_t* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, key, data, size]() {
+            ASSERT(mio);
+            ASSERT(key);
+
+
+            multio::message::PayloadReference payload{static_cast<const void*>(data), size * sizeof(int64_t)};
+
+            mio->dispatch(Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)}, {"category", "parametrization"}},
+                          std::move(payload), Message::Tag::Parametrization);
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_write_parametrization_double_array(multio_handle_t* mio, const char* key, const double* data, int size) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction(
         [mio, key, data, size]() {
@@ -598,7 +659,27 @@ int multio_write_parametrization_array(multio_handle_t* mio, const char* key, co
 
             multio::message::PayloadReference payload{static_cast<const void*>(data), size * sizeof(int)};
 
-            mio->dispatch(Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)}},
+            mio->dispatch(Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)}, {"category", "parametrization"}},
+                          std::move(payload), Message::Tag::Parametrization);
+        },
+        mio);
+#else
+    return MULTIO_SUCCESS;
+#endif
+}
+
+
+int multio_write_parametrization_float_array(multio_handle_t* mio, const char* key, const float* data, int size) {
+#if !defined(MULTIO_DUMMY_API)
+    return wrapApiFunction(
+        [mio, key, data, size]() {
+            ASSERT(mio);
+            ASSERT(key);
+
+
+            multio::message::PayloadReference payload{static_cast<const void*>(data), size * sizeof(int)};
+
+            mio->dispatch(Metadata{{multio::message::PARAMETRIZATION_PAYLOAD_KEY, std::string(key)}, {"category", "parametrization"}},
                           std::move(payload), Message::Tag::Parametrization);
         },
         mio);

@@ -51,7 +51,10 @@ int multio_write_parametrization(multio_handle_t* mio, multio_metadata_t* md);
  * \param size Size of the data containing the index mapping
  * \returns Return code (#MultioErrorValues)
  */
-int multio_write_parametrization_array(multio_handle_t* mio, const char* key, const int* data, int size);
+int multio_write_parametrization_int32_array(multio_handle_t* mio, const char* key, const int32_t* data, int size);
+int multio_write_parametrization_int64_array(multio_handle_t* mio, const char* key, const int64_t* data, int size);
+int multio_write_parametrization_float_array(multio_handle_t* mio, const char* key, const float* data, int size);
+int multio_write_parametrization_double_array(multio_handle_t* mio, const char* key, const double* data, int size);
 
 
 /** Writes domain information (e.g. local-to-global index mapping) to the server
@@ -61,7 +64,8 @@ int multio_write_parametrization_array(multio_handle_t* mio, const char* key, co
  * \param size Size of the data containing the index mapping
  * \returns Return code (#MultioErrorValues)
  */
-int multio_write_domain(multio_handle_t* mio, multio_metadata_t* md, int* data, int size);
+int multio_write_domain_int64(multio_handle_t* mio, multio_metadata_t* md, int64_t* data, int size);
+int multio_write_domain_int32(multio_handle_t* mio, multio_metadata_t* md, int32_t* data, int size);
 
 
 /** Writes masking information (e.g. land-sea mask) to the server

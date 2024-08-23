@@ -37,7 +37,7 @@ list( APPEND multio_util_srcs
     util/BinaryUtils.h
 )
 
-if ( ENABLE_MULTIO_SERVER_MEMORY_PROFILE )
+if ( ENABLE_MULTIO_SERVER_MEMORY_PROFILE OR ENABLE_MULTIO_CLIENT_MEMORY_PROFILE )
     list( APPEND multio_util_srcs
         util/RingBuffer.h
         util/Tracer.h
@@ -46,7 +46,14 @@ if ( ENABLE_MULTIO_SERVER_MEMORY_PROFILE )
         util/MemoryInformation.h
         util/MemoryInformation.cc
     )
-    set(multio_utils_definitions "MULTIO_SERVER_MEMORY_PROFILE_ENABLED")
+endif()
+
+if ( ENABLE_MULTIO_SERVER_MEMORY_PROFILE )
+    list(APPEND multio_utils_definitions "MULTIO_SERVER_MEMORY_PROFILE_ENABLED")
+endif()
+
+if ( ENABLE_MULTIO_CLIENT_MEMORY_PROFILE )
+    list(APPEND multio_utils_definitions "MULTIO_CLIENT_MEMORY_PROFILE_ENABLED")
 endif()
 
 list( APPEND multio_config_srcs

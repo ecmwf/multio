@@ -37,7 +37,7 @@
 using namespace multio::util;
 
 namespace {
-const auto tracerMemoryReportPeriod = std::chrono::seconds(10);
+const auto tracerMemoryReportPeriod = std::chrono::seconds(1);
 const auto tracerFlushPeriod = std::chrono::minutes(10);
 
 const auto tracerNumberOfChunks = 8;

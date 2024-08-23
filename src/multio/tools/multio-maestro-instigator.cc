@@ -70,13 +70,13 @@ void MaestroInstigator::execute(const eckit::option::CmdArgs&) {
             while (tmp) {
                 switch (tmp->kind) {
                     case MSTRO_POOL_EVENT_APP_JOIN:
-                        std::cout << mstro_clock() << ",JOIN," << tmp->serial << ", { " << tmp->payload.join.appid << ",\""
-                                  << tmp->payload.join.component_name << "\" }" << std::endl;
+                        std::cout << mstro_clock() << ",JOIN," << tmp->serial << ", { " << tmp->payload.join.appid
+                                  << ",\"" << tmp->payload.join.component_name << "\" }" << std::endl;
                         ++joinCount;
                         break;
                     case MSTRO_POOL_EVENT_APP_LEAVE:
-                        std::cout << mstro_clock() << ",LEAVE," << tmp->serial << ", { " << tmp->payload.leave.appid << " }"
-                                  << std::endl;
+                        std::cout << mstro_clock() << ",LEAVE," << tmp->serial << ", { " << tmp->payload.leave.appid
+                                  << " }" << std::endl;
                         ++leaveCount;
                         break;
                     default:

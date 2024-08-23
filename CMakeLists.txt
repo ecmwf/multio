@@ -116,6 +116,10 @@ ecbuild_add_option( FEATURE MULTIO_SERVER_MEMORY_PROFILE
                     DEFAULT OFF
                     DESCRIPTION "Enable multio server memory profiling" )
 
+ecbuild_add_option( FEATURE MULTIO_CLIENT_MEMORY_PROFILE
+                    DEFAULT OFF
+                    DESCRIPTION "Enable multio client memory profiling" )
+
 ### export package info
 
 set( MULTIO_CONFIG_DIR     share/multio/config )

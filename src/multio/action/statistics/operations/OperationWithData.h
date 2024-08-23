@@ -16,14 +16,16 @@ public:
                       const OperationWindow& win, const StatisticsConfiguration& cfg, T initial_value = 0.0) :
         Operation{name, operation, win, cfg},
         values_{std::vector<T>(sz /= sizeof(T), initial_value)},
-        needRestart_{needRestart}, initialValue_{initial_value} {}
+        needRestart_{needRestart},
+        initialValue_{initial_value} {}
 
     OperationWithData(const std::string& name, const std::string& operation, long sz, bool needRestart,
                       const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
                       const StatisticsConfiguration& cfg, T initial_value = 0.0) :
-        Operation{name, operation, win, cfg}, values_{std::vector<T>(sz /= sizeof(T), initial_value)}, needRestart_{needRestart},
-        initialValue_{initial_value}
-    {
+        Operation{name, operation, win, cfg},
+        values_{std::vector<T>(sz /= sizeof(T), initial_value)},
+        needRestart_{needRestart},
+        initialValue_{initial_value} {
         load(IOmanager, cfg);
     }
 

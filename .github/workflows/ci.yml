@@ -32,10 +32,7 @@ jobs:
         name:
           - linux gnu-10
           - linux gnu-12
-          - linux clang-12
           - linux clang-14
-          # - linux intel
-          # - macos appclang-14
 
         include:
           - name: linux gnu-10
@@ -55,14 +52,6 @@ jobs:
             caching: true
             cmake_options: -DENABLE_OMP_CXX=OFF
 
-          - name: linux clang-12
-            os: ubuntu-20.04
-            compiler: clang-12
-            compiler_cc: clang-12
-            compiler_cxx: clang++-12
-            compiler_fc: gfortran-10
-            caching: true
-
           - name: linux clang-14
             os: ubuntu-22.04
             compiler: clang-14
@@ -70,25 +59,6 @@ jobs:
             compiler_cxx: clang++-14
             compiler_fc: gfortran-12
             caching: true
-
-          # - name : linux intel
-          #   os: ubuntu-20.04
-          #   compiler: intel
-          #   compiler_cc: icx
-          #   compiler_cxx: icpx
-          #   compiler_fc: ifx
-          #   caching: true
-          #   coverage: false
-
-          # - name: macos appclang-14
-          #   # Xcode compiler requires empty environment variables, so we pass null (~) here
-          #   os: macos-12
-          #   compiler: clang-14
-          #   compiler_cc: ~
-          #   compiler_cxx: ~
-          #   compiler_fc: gfortran-12
-          #   caching: true
-          #   cmake_options: -DMPI_SLOTS=4
 
     runs-on: ${{ matrix.os }}
     steps:

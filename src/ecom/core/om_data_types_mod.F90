@@ -123,7 +123,7 @@ TYPE :: SIM_PAR_T
 
 
   ! yomrip0.F90 - time related quantities
-  ! NINDAT : run initial date in the form AAAAMMDD
+  ! NINDAT : run initial date in the form YYYYMMDD
   INTEGER(KIND=JPIB_K) :: NINDAT
 
   ! NSSSSS : initial time in seconds (e.g. for 12h, 43200)

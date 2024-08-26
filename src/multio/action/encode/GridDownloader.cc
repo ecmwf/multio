@@ -26,6 +26,7 @@
 
 #include "multio/message/Glossary.h"
 #include "multio/util/Substitution.h"
+#include "multio/util/Environment.h"
 
 namespace {
 const std::unordered_map<std::string, int> latParamIds{
@@ -63,13 +64,8 @@ atlas::Grid readGrid(const std::string& name) {
 }
 
 std::string getUnstructuredGridType(const multio::config::ComponentConfiguration& compConf) {
-    return multio::util::replaceCurly(
-        compConf.parsedConfig().getString("unstructured-grid-type"),
-        [](std::string_view replace) {
-            std::string lookUpKey{replace};
-            char* env = ::getenv(lookUpKey.c_str());
-            return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-        });
+    std::optional<std::string_view> (*F)(std::string_view) = &multio::util::getEnv;
+    return multio::util::replaceCurly(compConf.parsedConfig().getString("unstructured-grid-type"), F);
 }
 
 }  // namespace

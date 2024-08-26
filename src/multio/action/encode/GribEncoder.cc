@@ -34,6 +34,7 @@
 #include "multio/util/DateTime.h"
 #include "multio/util/Metadata.h"
 #include "multio/util/Substitution.h"
+#include "multio/util/Environment.h"
 
 #include "multio/util/PrecisionTag.h"
 
@@ -237,13 +238,8 @@ std::optional<ValueSetter> valueSetter(GribEncoder& g, const std::string& key) {
 }
 
 std::string getUnstructuredGridType(const eckit::LocalConfiguration& config) {
-    return multio::util::replaceCurly(
-        config.getString("unstructured-grid-type"),
-        [](std::string_view replace) {
-            std::string lookUpKey{replace};
-            char* env = ::getenv(lookUpKey.c_str());
-            return env ? std::optional<std::string>{env} : std::optional<std::string>{};
-        });
+    std::optional<std::string_view> (*F)(std::string_view) = &multio::util::getEnv;
+    return multio::util::replaceCurly(config.getString("unstructured-grid-type"), F);
 }
 
 }  // namespace

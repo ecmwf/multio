@@ -62,9 +62,9 @@ private:
 
 public:
     Plan(const ComponentConfiguration& compConf);
-    virtual ~Plan();
+    ~Plan();
 
-    virtual void process(message::Message msg);
+    void process(message::Message msg);
 
     void matchedFields(message::MetadataSelectors& selectors) const;
 

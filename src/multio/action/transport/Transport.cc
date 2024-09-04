@@ -17,7 +17,6 @@
 #include "multio/transport/TransportRegistry.h"
 #include "multio/util/Environment.h"
 #include "multio/util/ScopedTimer.h"
-#include "multio/util/logfile_name.h"
 
 namespace multio::action {
 
@@ -50,7 +49,6 @@ Transport::Transport(const ComponentConfiguration& compConf) :
     distType_{distributionType()} {}
 
 void Transport::executeImpl(Message msg) {
-    // eckit::Log::info() << "Execute transport action for message " << msg << std::endl;
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
     auto md = msg.metadata();

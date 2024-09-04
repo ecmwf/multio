@@ -11,7 +11,6 @@
 #include "multio/domain/Mask.h"
 
 #include "multio/util/ScopedTimer.h"
-#include "multio/util/logfile_name.h"
 
 using eckit::LocalConfiguration;
 
@@ -36,11 +35,7 @@ util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, 
     return util::FailureHandlerResponse::Rethrow;
 };
 
-Dispatcher::~Dispatcher() {
-    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-    logFile << "\n ** Total wall-clock time spent in dispatcher " << eckit::Timing{timer_}.elapsed_
-            << "s -- of which time spent with dispatching " << timing_ << "s" << std::endl;
-}
+Dispatcher::~Dispatcher() = default;
 
 void Dispatcher::dispatch() {
     util::ScopedTimer timer{timing_};

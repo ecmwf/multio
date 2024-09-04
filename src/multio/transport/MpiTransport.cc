@@ -22,7 +22,6 @@
 #include "multio/transport/MpiCommSetup.h"
 #include "multio/util/Environment.h"
 #include "multio/util/ScopedTimer.h"
-#include "multio/util/logfile_name.h"
 
 namespace multio::transport {
 
@@ -228,11 +227,7 @@ MpiTransport::MpiTransport(const ComponentConfiguration& compConf, MpiPeerSetup&
 
 MpiTransport::MpiTransport(const ComponentConfiguration& compConf) : MpiTransport(compConf, setupMPI_(compConf)) {}
 
-MpiTransport::~MpiTransport() {
-    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-    logFile << "\n ** " << *this << "\n";
-    statistics_.report(logFile);
-}
+MpiTransport::~MpiTransport() = default;
 
 void MpiTransport::openConnections() {
     for (auto& server : serverPeers()) {

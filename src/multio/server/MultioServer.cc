@@ -11,7 +11,6 @@
 
 #include "multio/LibMultio.h"
 #include "multio/transport/Transport.h"
-#include "multio/util/logfile_name.h"
 
 namespace multio::server {
 
@@ -40,17 +39,6 @@ MultioServer::MultioServer(const eckit::LocalConfiguration& conf, MultioConfigur
         TransportFactory::instance().build(conf.getString("transport"), ComponentConfiguration(conf, multioConfig()))},
     listener_{ComponentConfiguration(conf, multioConfig()), *transport_} {
     LOG_DEBUG_LIB(multio::LibMultio) << "Server config: " << conf << std::endl;
-    eckit::Log::info() << "*** Server -- constructor " << conf << std::endl;
-
-    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-
-    struct ::timeval tstamp;
-    ::gettimeofday(&tstamp, 0);
-    auto mSecs = tstamp.tv_usec;
-
-    logFile << "MultioServer starts at " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
-            << std::setw(6) << std::setfill('0') << mSecs << " -- ";
-
 
     eckit::Log::info() << "Server start listening..." << std::endl;
     withFailureHandling([&]() { listener_.start(); });
@@ -59,6 +47,8 @@ MultioServer::MultioServer(const eckit::LocalConfiguration& conf, MultioConfigur
 
 MultioServer::MultioServer(MultioConfiguration&& multioConf) :
     MultioServer(getServerConf(multioConf), std::move(multioConf)) {}
+
+MultioServer::~MultioServer() = default;
 
 util::FailureHandlerResponse MultioServer::handleFailure(util::OnServerError t, const util::FailureContext& c,
                                                          util::DefaultFailureState&) const {
@@ -71,16 +61,5 @@ util::FailureHandlerResponse MultioServer::handleFailure(util::OnServerError t, 
     }
     return util::FailureHandlerResponse::Rethrow;
 };
-
-MultioServer::~MultioServer() {
-    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-
-    struct ::timeval tstamp;
-    ::gettimeofday(&tstamp, 0);
-    auto mSecs = tstamp.tv_usec;
-
-    logFile << "MultioServer stops at " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
-            << std::setw(6) << std::setfill('0') << mSecs << std::endl;
-}
 
 }  // namespace multio::server

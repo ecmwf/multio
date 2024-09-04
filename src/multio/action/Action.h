@@ -59,7 +59,6 @@ struct ActionFailureTraits {
 class Action : private eckit::NonCopyable, public FailureAware<ActionFailureTraits> {
 public:
     explicit Action(const ComponentConfiguration& compConf);
-    ~Action() override;
 
     void execute(message::Message msg);
 

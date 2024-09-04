@@ -32,7 +32,6 @@ using message::Message;
 class Sink : public Action {
 public:
     explicit Sink(const ComponentConfiguration& compConf);
-    ~Sink();
 
     void executeImpl(message::Message msg) override;
 
@@ -44,8 +43,6 @@ private:
     void flush();
 
     void trigger(const Message& msg);
-
-    bool report_;
 
     sink::MultIO mio_;
 };

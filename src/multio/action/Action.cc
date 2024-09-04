@@ -9,7 +9,6 @@
 #include "eckit/runtime/Main.h"
 
 #include "multio/LibMultio.h"
-#include "multio/util/logfile_name.h"
 
 
 namespace multio::action {
@@ -22,12 +21,6 @@ using eckit::Log;
 
 Action::Action(const ComponentConfiguration& compConf) :
     FailureAware(compConf), compConf_(compConf), type_{compConf.parsedConfig().getString("type")} {}
-
-Action::~Action() {
-    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-
-    statistics_.report(logFile, type_);
-}
 
 void Action::execute(message::Message msg) {
     withFailureHandling([&]() { executeImpl(std::move(msg)); },

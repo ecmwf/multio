@@ -60,7 +60,6 @@ class MultioClient : public MultioConfigurationHolder, public util::FailureAware
 public:
     MultioClient();
     MultioClient(MultioConfiguration&& multioConf);
-
     ~MultioClient();
 
     void openConnections();

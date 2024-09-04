@@ -53,11 +53,10 @@ struct ServerFailureTraits {
 class MultioServer : public MultioConfigurationHolder, public FailureAware<ServerFailureTraits> {
 public:
     MultioServer(MultioConfiguration&& multioConf);
+    ~MultioServer();
 
     util::FailureHandlerResponse handleFailure(util::OnServerError, const util::FailureContext&,
                                                util::DefaultFailureState&) const override;
-
-    ~MultioServer();
 
 private:
     MultioServer(const eckit::LocalConfiguration& conf, MultioConfiguration&& multioConf);

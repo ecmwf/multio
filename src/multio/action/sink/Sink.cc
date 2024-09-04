@@ -17,19 +17,10 @@
 #include "eckit/message/Message.h"
 
 #include "multio/LibMultio.h"
-#include "multio/util/logfile_name.h"
 
 namespace multio::action {
 
-Sink::Sink(const ComponentConfiguration& compConf) :
-    Action(compConf), report_{compConf.parsedConfig().getBool("report", true)}, mio_{compConf} {}
-
-Sink::~Sink() {
-    if (report_) {
-        std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-        mio_.report(logFile);
-    }
-}
+Sink::Sink(const ComponentConfiguration& compConf) : Action(compConf), mio_{compConf} {}
 
 void Sink::executeImpl(Message msg) {
 

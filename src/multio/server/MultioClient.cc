@@ -13,7 +13,6 @@
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 #include "multio/transport/TransportRegistry.h"
-#include "multio/util/logfile_name.h"
 
 using multio::message::Message;
 using multio::message::Peer;
@@ -46,20 +45,6 @@ MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfigur
     FailureAware(ComponentConfiguration(conf, multioConfig())) {
     totClientTimer_.start();
 
-    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-
-    struct ::timeval tstamp;
-    ::gettimeofday(&tstamp, 0);
-    auto mSecs = tstamp.tv_usec;
-
-    logFile << "MultioClient starts at " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
-            << std::setw(6) << std::setfill('0') << mSecs << " -- ";
-
-
-    LOG_DEBUG_LIB(multio::LibMultio) << "Client config: " << conf << std::endl;
-
-    plans_ = action::Plan::makePlans(conf.getSubConfigurations("plans"), multioConfig(), activeSelectors_);
-
     // TODO: Put the whole plan list in a separate class and make this logic reusable
     std::unordered_set<std::string> planNames;
     for (const auto& plan : plans_) {
@@ -87,6 +72,8 @@ MultioClient::MultioClient(MultioConfiguration&& multioConf) :
 
 MultioClient::MultioClient() : MultioClient(MultioConfiguration{}) {}
 
+MultioClient::~MultioClient() = default;
+
 util::FailureHandlerResponse MultioClient::handleFailure(util::OnClientError t, const util::FailureContext& c,
                                                          util::DefaultFailureState&) const {
     // Last cascading instance, print nested contexts
@@ -107,21 +94,6 @@ void MultioClient::openConnections() {
 void MultioClient::closeConnections() {
     withFailureHandling([]() { transport::TransportRegistry::instance().closeConnections(); },
                         []() { return std::string("MultioClient::closeConnections"); });
-}
-
-MultioClient::~MultioClient() {
-    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-
-    struct ::timeval tstamp;
-    ::gettimeofday(&tstamp, 0);
-    auto mSecs = tstamp.tv_usec;
-
-    logFile << "MultioClient stops at " << eckit::DateTime{static_cast<double>(tstamp.tv_sec)}.time().now() << ":"
-            << std::setw(6) << std::setfill('0') << mSecs;
-
-
-    logFile << "\n ** Total wall-clock time spent in MultioClient " << eckit::Timing{totClientTimer_}.elapsed_ << "s"
-            << std::endl;
 }
 
 void MultioClient::dispatch(message::SharedMetadata metadata, eckit::Buffer&& payload, Message::Tag tag) {

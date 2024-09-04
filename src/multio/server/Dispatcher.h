@@ -75,7 +75,6 @@ private:
     std::vector<std::unique_ptr<action::Plan>> plans_;
 
     util::Timing<> timing_;
-    util::Timing<> timingAll_;
 };
 
 }  // namespace server

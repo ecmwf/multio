@@ -10,8 +10,6 @@
 #include "multio/domain/Mappings.h"
 #include "multio/domain/Mask.h"
 
-#include "multio/util/logfile_name.h"
-
 using eckit::LocalConfiguration;
 
 namespace multio::server {
@@ -20,7 +18,6 @@ using config::ComponentConfiguration;
 
 Dispatcher::Dispatcher(const config::ComponentConfiguration& compConf, eckit::Queue<message::Message>& queue) :
     FailureAware(compConf), queue_{queue} {
-    timingAll_.tic();
 
     eckit::Log::debug<LibMultio>() << compConf.parsedConfig() << std::endl;
 
@@ -35,14 +32,7 @@ util::FailureHandlerResponse Dispatcher::handleFailure(util::OnDispatchError t, 
     return util::FailureHandlerResponse::Rethrow;
 };
 
-Dispatcher::~Dispatcher() {
-    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-    timingAll_.toc();
-    timingAll_.process();
-    timing_.process();
-    logFile << "\n ** Total time spent in dispatcher " << timingAll_.elapsedTimeSeconds()
-            << "s -- of which time spent with dispatching " << timing_.elapsedTimeSeconds() << "s" << std::endl;
-}
+Dispatcher::~Dispatcher() = default;
 
 void Dispatcher::dispatch() {
     util::ScopedTiming<> timer{timing_};

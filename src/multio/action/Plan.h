@@ -58,9 +58,9 @@ struct PlanFailureTraits {
 class Plan : private eckit::NonCopyable, public FailureAware<PlanFailureTraits> {
 public:
     Plan(const ComponentConfiguration& compConf);
-    virtual ~Plan();
+    ~Plan();
 
-    virtual void process(message::Message msg);
+    void process(message::Message msg);
 
     void matchedFields(message::match::MatchReduce& selectors) const;
 

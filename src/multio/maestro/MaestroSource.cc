@@ -13,12 +13,7 @@ namespace multio {
 
 MaestroSource::MaestroSource(const eckit::option::CmdArgs& args) : Source(args) {}
 
-MaestroSource::~MaestroSource() {
-    std::stringstream ss;
-    ss << std::this_thread::get_id();
-    std::ofstream logfile{std::string{"worker_" + ss.str() + "_source.log"}, std::fstream::app};
-    logfile << "Source timing: " << timing_ << std::endl;
-}
+MaestroSource::~MaestroSource() = default;
 
 size_t MaestroSource::retrieve(const std::map<std::string, std::string>& retrieve, eckit::Buffer& field) const {
     util::ScopedTiming retrieveTiming(timer_, timing_);

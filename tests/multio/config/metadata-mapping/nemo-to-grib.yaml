@@ -577,7 +577,7 @@ data:
 
   # Surface X component of sea water velocity
   - nemo-id : ssu
-    param-id : 262137
+    param-id : 262138
     grid-type: "unstructured_grid"
     domain : "U grid"
     unstructured-grid-subtype : "U"
@@ -589,7 +589,7 @@ data:
 
   # Surface Y component of sea water velocity
   - nemo-id : ssv
-    param-id : 262138
+    param-id : 262137
     grid-type: "unstructured_grid"
     domain : "V grid"
     unstructured-grid-subtype : "V"

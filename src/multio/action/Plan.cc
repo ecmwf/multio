@@ -22,7 +22,6 @@
 #include "multio/config/PlanConfiguration.h"
 #include "multio/util/Substitution.h"
 #include "multio/util/Timing.h"
-#include "multio/util/logfile_name.h"
 
 using eckit::LocalConfiguration;
 
@@ -106,10 +105,7 @@ Plan::Plan(const ComponentConfiguration& compConf) :
         rootConfig(compConf.parsedConfig(), name_).getString("type"),
         ComponentConfiguration(rootConfig(compConf.parsedConfig(), name_), compConf.multioConfig()))} {}
 
-Plan::~Plan() {
-    std::ofstream logFile{util::logfile_name(), std::ios_base::app};
-    logFile << "\n ** Plan " << name_ << " -- total wall-clock time spent processing: " << timing_ << "s" << std::endl;
-}
+Plan::~Plan() = default;
 
 void Plan::process(message::Message msg) {
     util::ScopedTiming<> timer{timing_};

@@ -45,6 +45,8 @@ MultioClient::MultioClient(const eckit::LocalConfiguration& conf, MultioConfigur
     FailureAware(ComponentConfiguration(conf, multioConfig())) {
     totClientTimer_.start();
 
+    plans_ = action::Plan::makePlans(conf.getSubConfigurations("plans"), multioConfig(), activeSelectors_);
+
     // TODO: Put the whole plan list in a separate class and make this logic reusable
     std::unordered_set<std::string> planNames;
     for (const auto& plan : plans_) {

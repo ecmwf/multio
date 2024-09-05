@@ -1,3 +1,4 @@
+add_subdirectory(ifs-mapping)
 add_subdirectory(metadata-mapping)
 add_subdirectory(debug-sink)
 add_subdirectory(renumber-healpix)

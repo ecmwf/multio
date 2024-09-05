@@ -22,8 +22,12 @@ list( APPEND multio_library_srcs
 )
 
 list( APPEND multio_util_srcs
+    util/Mars2GribMetadataSetter.h
+    util/Mars2GribMetadataSetter.cc
     util/DateTime.cc
     util/DateTime.h
+    util/Grib2TimeUnit.cc
+    util/Grib2TimeUnit.h
     util/Environment.cc
     util/Environment.h
     util/FailureHandling.cc
@@ -37,6 +41,8 @@ list( APPEND multio_util_srcs
     util/BinaryUtils.h
     util/MioGribHandle.h
     util/MioGribHandle.cc
+    util/Hash.h
+    util/Hash.cc
     util/Timing.h
 )
 

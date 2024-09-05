@@ -245,6 +245,13 @@ struct Glossary {
     const KeyType southNorthIncrement{"south_north_increment"};
 
 
+    // IFS/ATM mapping
+    const KeyType ifsPrefix{"prefix"};
+    const KeyType ifsRepres{"repres"};
+    const KeyType ifsCurrStep{"curr_step"};
+    const KeyType ifsPrevPP{"prev_pp"};
+
+
     static const Glossary& instance() {
         static Glossary glossary;
         return glossary;

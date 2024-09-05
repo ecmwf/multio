@@ -183,12 +183,15 @@ std::size_t std::hash<multio::message::MetadataValue>::operator()(const multio::
         using T = std::decay_t<decltype(v)>;
         if constexpr (std::is_same_v<T, multio::message::BaseMetadata>) {
             throw multio::message::MetadataException("Hashing of Metadata is not supported", Here());
+            return 0;
         }
         else if constexpr (std::is_same_v<T, multio::message::Metadata>) {
             throw multio::message::MetadataException("Hashing of Metadata is not supported", Here());
+            return 0;
         }
         else if constexpr (multio::util::IsVector_v<T>) {
             throw multio::message::MetadataException("Hashing of vector is not supported", Here());
+            return 0;
         }
         else {
             return std::hash<T>{}(v);

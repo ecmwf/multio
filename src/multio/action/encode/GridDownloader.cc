@@ -25,7 +25,8 @@
 #include "eckit/mpi/Comm.h"
 
 #include "multio/message/Glossary.h"
-
+#include "multio/util/Substitution.h"
+#include "multio/util/Environment.h"
 
 namespace {
 const std::unordered_map<std::string, int> latParamIds{
@@ -62,6 +63,11 @@ atlas::Grid readGrid(const std::string& name) {
     return atlas::Grid{name};
 }
 
+std::string getUnstructuredGridType(const multio::config::ComponentConfiguration& compConf) {
+    std::optional<std::string_view> (*F)(std::string_view) = &multio::util::getEnv;
+    return multio::util::replaceCurly(compConf.parsedConfig().getString("unstructured-grid-type"), F);
+}
+
 }  // namespace
 
 namespace multio::action {
@@ -92,7 +98,8 @@ GridDownloader::GridDownloader(const config::ComponentConfiguration& compConf) :
         initTemplateMetadata();
 
         if (compConf.parsedConfig().has("unstructured-grid-type")) {
-            const auto unstructuredGridType = compConf.parsedConfig().getString("unstructured-grid-type");
+            const auto unstructuredGridType = getUnstructuredGridType(compConf);
+
             if (unstructuredGridType.find("ORCA") != std::string::npos) {
                 eckit::Log::info() << "Grid downloader initialized, starting ORCA grid download!" << std::endl;
 
@@ -122,7 +129,8 @@ void GridDownloader::populateUIDCache(const config::ComponentConfiguration& comp
     if (compConf.parsedConfig().has("unstructured-grid-type")) {
         atlas::mpi::Scope mpi_scope("self");
 
-        const auto baseGridName = compConf.parsedConfig().getString("unstructured-grid-type");
+        const auto baseGridName = getUnstructuredGridType(compConf);
+
         for (auto const& unstructuredGridSubtype : {"T", "U", "V", "W", "F"}) {
             const auto completeGridName = baseGridName + "_" + unstructuredGridSubtype;
 
@@ -159,7 +167,8 @@ multio::message::Metadata GridDownloader::createMetadataFromCoordsData(size_t gr
 }
 
 void GridDownloader::downloadOrcaGridCoordinates(const config::ComponentConfiguration& compConf) {
-    const auto baseGridName = compConf.parsedConfig().getString("unstructured-grid-type");
+    const auto baseGridName = getUnstructuredGridType(compConf);
+
     for (auto const& unstructuredGridSubtype : {"T", "U", "V", "W", "F"}) {
         const auto completeGridName = baseGridName + "_" + unstructuredGridSubtype;
 

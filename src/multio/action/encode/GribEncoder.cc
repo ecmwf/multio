@@ -33,7 +33,8 @@
 #include "multio/LibMultio.h"
 #include "multio/util/DateTime.h"
 #include "multio/util/Metadata.h"
-
+#include "multio/util/Substitution.h"
+#include "multio/util/Environment.h"
 
 #include "multio/util/PrecisionTag.h"
 
@@ -234,6 +235,11 @@ std::optional<ValueSetter> valueSetter(GribEncoder& g, const std::string& key) {
     else {
         return std::optional<ValueSetter>();
     }
+}
+
+std::string getUnstructuredGridType(const eckit::LocalConfiguration& config) {
+    std::optional<std::string_view> (*F)(std::string_view) = &multio::util::getEnv;
+    return multio::util::replaceCurly(config.getString("unstructured-grid-type"), F);
 }
 
 }  // namespace
@@ -850,7 +856,7 @@ void GribEncoder::setOceanMetadata(message::Metadata& md) {
             setValue(glossary().unstructuredGridType, searchGridType->second.template get<std::string>());
         }
         else {
-            setValue(glossary().unstructuredGridType, config_.getString("unstructured-grid-type"));
+            setValue(glossary().unstructuredGridType, getUnstructuredGridType(config_));
         }
 
         if (auto searchGridSubtype = md.find(glossary().unstructuredGridSubtype); searchGridSubtype != md.end()) {
@@ -886,7 +892,7 @@ void GribEncoder::setOceanCoordMetadata(message::Metadata& md) {
     setValue(glossary().typeOfLevel, md.get<std::string>(glossary().typeOfLevel));
 
     // Set ocean grid information
-    setValue(glossary().unstructuredGridType, config_.getString("unstructured-grid-type"));
+    setValue(glossary().unstructuredGridType, getUnstructuredGridType(config_));
 
     const auto& gridSubtype
         = md.get<std::string>("gridSubtype");  // TO BE REMOVED IN THE FUTURE - should be named unstructuredGridType

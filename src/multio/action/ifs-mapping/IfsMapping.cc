@@ -180,18 +180,20 @@ ifs::UniqueFieldId IfsMapping::fieldIdFromMetadata(const message::Metadata& md) 
         using T = std::decay_t<decltype(val)>;
         if constexpr (std::is_same_v<T, std::string>) {
             m2gPrefixToLevType_.insert_or_assign(eckit::Value{glossary().ifsPrefix}, eckit::Value{val});
-        }
+            return;
+        } 
         if constexpr (std::is_same_v<T, std::int64_t>) {
             m2gPrefixToLevType_.insert_or_assign(eckit::Value{glossary().ifsPrefix}, eckit::Value{val});
+            return;
         }
         NOTIMP; 
     }); 
     
     m2gPrefixToLevType_.insert_or_assign(eckit::Value{glossary().paramId}, eckit::Value{res.paramId});
-    m2gPrefixToLevType_.insert_or_assign(eckit::Value{glossary().ifsPrefix}, eckit::Value{res.level});
+    m2gPrefixToLevType_.insert_or_assign(eckit::Value{glossary().level}, eckit::Value{res.level});
     
     
-    util::Mars2GribMetadataSetter keySetter{levTypeMd_};
+    util::Mars2GribMetadataSetter keySetter{levTypeMd_, true};
     metkit::mars2grib::convertMars2Grib(m2gPrefixToLevType_, keySetter, metkit::mars2grib::ifsPrefixToLevTypeRuleList());
     res.levtype = levTypeMd_.get<std::string>("levType");
     
@@ -216,21 +218,21 @@ const ifs::ParamIdInfo& IfsMapping::getParamIdInfo(std::int64_t pid) {
     if (searchPid == paramIdInfo_.end()) {
         m2gPid_.insert_or_assign("paramId", pid);
         message::BaseMetadata md;
-        util::Mars2GribMetadataSetter keySetter{md};
+        util::Mars2GribMetadataSetter keySetter{md, true};
         metkit::mars2grib::convertMars2Grib(m2gPid_, keySetter, metkit::mars2grib::statParamRuleList());
         
         ifs::ParamIdInfo info;
-        if (auto search = md.find("typeOfStatisticalProcessing"); search != md.end()) {
-            info.typeOfStatisticalProcessing = search->second.get<std::int64_t>();
+        if (auto tosp = md.getOpt<std::int64_t>("typeOfStatisticalProcessing"); tosp) {
+            info.typeOfStatisticalProcessing = *tosp;
             info.typeOfTimeRange = ifs::TypeOfTimeRange::FromLastPP;
             info.emitStepZero = false;
             
-            if (auto searchLength = md.find("lengthOfTimeRange"); searchLength != md.end()) {
-                info.lengthOfTimeRange = searchLength->second.get<std::int64_t>();
+            if (auto len = md.getOpt<std::int64_t>("lengthOfTimeRange"); len) {
+                info.lengthOfTimeRange = *len;
                 info.typeOfTimeRange = ifs::TypeOfTimeRange::FixedSize;
             }
-            if (auto searchIndicator = md.find("indicatorOfUnitForTimeRange"); searchIndicator != md.end()) {
-                info.indicatorOfUnitForTimeRange = searchIndicator->second.get<std::int64_t>();
+            if (auto ind = md.getOpt<std::int64_t>("indicatorOfUnitForTimeRange"); ind) {
+                info.indicatorOfUnitForTimeRange = ind;
             }
         } else {
             info.typeOfTimeRange = ifs::TypeOfTimeRange::Instant;
@@ -257,4 +259,5 @@ void IfsMapping::print(std::ostream& os) const {
 
 
 static ActionBuilder<IfsMapping> IfsMappingBuilder("ifs-mapping");
+
 }  // namespace multio::action

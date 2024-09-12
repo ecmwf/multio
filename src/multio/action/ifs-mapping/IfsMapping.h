@@ -27,7 +27,7 @@
 namespace multio::action::ifs {
 
 /**
- * Example messag metadata={"format":"raw","precision":"double","missing_value":1.79769e+308,"nmissing":0,"nvalues":654400,"level":1,"repres":1,"prefix":1,"prev_pp":-1,"curr_step":4,"paramID":133","model":"ifsosphere"}
+ * Example messag metadata={"format":"raw","precision":"double","missingValue":1.79769e+308,"numberOfMissingValues":0,"numberOfValues":654400,"level":1,"repres":1,"prefix":1,"previousProcessingPoint":-1,"currentStep":4,"paramId":133","model":"ifsosphere"}
  */
 
 enum class Repres: std::int64_t {

@@ -30,7 +30,7 @@ int Message::protocolVersion() {
     return 1;
 }
 
-std::string Message::tag2str(Tag t) {
+const std::string& Message::tag2str(Tag t) {
     static std::map<Tag, std::string> m = {{Tag::Empty, "Empty"},
                                            {Tag::Open, "Open"},
                                            {Tag::Close, "Close"},
@@ -48,6 +48,24 @@ std::string Message::tag2str(Tag t) {
 
     return tstr->second;
 }
+
+
+Message::Tag Message::parseTag(const std::string& tagStr) {
+    static std::map<std::string, Tag> m = {{"Empty", Tag::Empty},
+                                           {"Open", Tag::Open},
+                                           {"Close", Tag::Close},
+                                           {"Domain", Tag::Domain},
+                                           {"Mask", Tag::Mask},
+                                           {"Field", Tag::Field},
+                                           {"Flush", Tag::Flush},
+                                           {"Notification", Tag::Notification},
+                                           {"Parametrization", Tag::Parametrization}};
+    auto tag = m.find(tagStr);
+    ASSERT(tag != m.end());
+
+    return tag->second;
+}
+
 
 Message::Message() : Message(Message::Header{Message::Tag::Empty, Peer{}, Peer{}}) {}
 

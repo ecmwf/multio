@@ -209,7 +209,6 @@ void MultioReplayNemoCApi::setDomains(bool onlyLoadDefinitions) {
         multio_new_metadata(&md, multio_handle);
 
         // Global size is constant for all domains, send by parametrization (mainly for testing purpose...)
-        multio_metadata_set_string(md, "category", "parametrization");
         multio_metadata_set_bool(md, "toAllServers", true);
         multio_metadata_set_int(md, "globalSize", globalSize_);
         multio_write_parametrization(multio_handle, md);

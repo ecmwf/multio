@@ -449,6 +449,8 @@ IMPLICIT NONE
         LON_STRET_DEG = 180._JPRD_K/(2.0_JPRD_K*ASIN(1.0_JPRD_K))*REAL(YPI%RLOCEN,JPRD_K)
 
         IF( YPI%NSTTYP .GE. 2 ) THEN
+          ERR = MIOMD%SET('gridType','stretched_rotated_sh')
+          PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS,  1 )
           ERR = MIOMD%SET('sphericalHarmonicsType','stretched_rotated_sh')
           PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS,  1 )
           ERR = MIOMD%SET('latitudeOfStretchingPoleInDegrees', LAT_STRET_DEG )
@@ -458,15 +460,17 @@ IMPLICIT NONE
           ERR = MIOMD%SET('stretchingFactor',YPI%RSTRET)
           PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS,  1 )
         ELSEIF( ABS(YPI%RSTRET-1.0_JPRD_K) .GE. 1.E-14_JPRD_K ) THEN
+          ERR = MIOMD%SET('gridType', 'stretched_sh' )
+          PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS,  1 )
           ERR = MIOMD%SET('sphericalHarmonicsType', 'stretched_sh' )
           PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS,  1 )
           ERR = MIOMD%SET('stretchingFactor', YPI%RSTRET )
           PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS,  1 )
         ELSE
-
+          ERR = MIOMD%SET('gridType','sh')
+          PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS,  1 )
           ERR = MIOMD%SET('sphericalHarmonicsType','sh')
           PP_DEBUG_CRITICAL_COND_THROW( ERR.NE.MULTIO_SUCCESS,  1 )
-
         ENDIF
 
         ERR = MIOMD%SET('pentagonalResolutionParameterJ',YPI%ISMAX)

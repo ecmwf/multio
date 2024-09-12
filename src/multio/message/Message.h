@@ -59,8 +59,7 @@ public:  // types
         Parametrization,
         ENDTAG
     };
-
-
+    
     struct LogHeader {
         Tag tag_;
 
@@ -131,7 +130,9 @@ public:  // types
 
 public:  // methods
     static int protocolVersion();
-    static std::string tag2str(Tag t);
+    static const std::string& tag2str(Tag t);
+    static Tag parseTag(const std::string&);
+
 
     Message(const Message&) = default;
     Message(Message&&) = default;
@@ -244,3 +245,9 @@ message::Message convert_precision(message::Message&& msg) {
 
 
 }  // namespace multio::message
+
+template <>
+struct std::hash<multio::message::Message::Tag> {
+    std::size_t operator()(const multio::message::Message::Tag& t) const noexcept(true) { return (std::size_t)t; }
+};
+

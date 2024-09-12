@@ -246,10 +246,10 @@ struct Glossary {
 
 
     // IFS/ATM mapping
-    const KeyType ifsPrefix{"prefix"};
-    const KeyType ifsRepres{"repres"};
-    const KeyType ifsCurrStep{"curr_step"};
-    const KeyType ifsPrevPP{"prev_pp"};
+    const KeyType ifsPrefix{"ifsPrefix"};
+    const KeyType ifsRepres{"ifsRepres"};
+    const KeyType ifsCurrStep{"currentStep"};
+    const KeyType ifsPrevPP{"previousProcessingPoint"};
 
 
     static const Glossary& instance() {

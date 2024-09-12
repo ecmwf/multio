@@ -14,6 +14,14 @@ mpi-communicators:
 
 client:
   plans:
+    - name: ocean-replay-grid-parametrization-stream
+      actions:
+        - type: tag-filter
+          tags: Parametrization
+
+        - type: transport
+          target: server
+          
     - name: ocean-replay-grid-info-stream
       actions:
         - type: select

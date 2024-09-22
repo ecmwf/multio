@@ -53,16 +53,27 @@ void decode(const atlas::io::Metadata& metadata, const atlas::io::Data& data, Su
 
 AtlasIO::AtlasIO(const std::string& path, const std::string& prefix) : StatisticsIO{path, prefix, "atlasIO"} {};
 
-void AtlasIO::write(const std::string& name, std::size_t writeSize) {
+void AtlasIO::write(const std::string& name, std::size_t fieldSize, std::size_t writeSize) {
     LOG_DEBUG_LIB(LibMultio) << " - The name of the window write file is :: " << generateCurrFileName(name)
                              << std::endl;
-    removeCurrFile(name);
     const std::string fname = generateCurrFileName(name);
     atlas::io::RecordWriter record;
     SubVector<std::uint64_t> dat{buffer_.data(), writeSize};
+    record.set("size", fieldSize, no_compression);
     record.set(name, atlas::io::ref(dat), no_compression);
     record.write(fname);
-    removePrevFile(name);
+    return;
+};
+
+void AtlasIO::readSize(const std::string& name, std::size_t& readSize) {
+    LOG_DEBUG_LIB(LibMultio) << " - The name of the operation read file is :: " << generateCurrFileName(name)
+                             << std::endl;
+    const std::string fname = generateCurrFileName(name);
+    checkFileExist(fname);
+    std::uint64_t sz;
+    atlas::io::RecordReader record(fname);
+    record.read("size", sz ).wait();
+    readSize = static_cast<std::size_t>(sz);
     return;
 };
 

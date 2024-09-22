@@ -241,6 +241,73 @@ fortint imultio_flush_() {
     return 0;
 }
 
+fortint imultio_flush_restart_() {
+    try {
+        eckit::AutoLock<MIO> lock(MIO::instance());
+
+        MULTIO_TRACE_FUNC();
+
+        multio::message::Metadata metadata;
+        metadata.set("flushKind", "step-and-restart");
+        multio::message::Message message{
+            multio::message::Message::Header{Message::Tag::Flush, Peer{}, Peer{}, std::move(metadata)},
+            eckit::Buffer{0}};
+        MIO::instance().dispatch(message);
+
+        MIO::instance().log(true);
+        MIO::instance().dirty(false);
+    }
+    catch (std::exception& e) {
+        return ifsio_handle_error(e);
+    }
+    return 0;
+}
+
+fortint imultio_flush_step_( const fortint* step ) {
+    try {
+        eckit::AutoLock<MIO> lock(MIO::instance());
+
+        MULTIO_TRACE_FUNC();
+
+        multio::message::Metadata metadata;
+        metadata.set("flushKind", "step" );
+        metadata.set("step", step );
+        multio::message::Message message{
+            multio::message::Message::Header{Message::Tag::Flush, Peer{}, Peer{}, std::move(metadata)},
+            eckit::Buffer{0}};
+        MIO::instance().dispatch(message);
+
+        MIO::instance().log(true);
+        MIO::instance().dirty(false);
+    }
+    catch (std::exception& e) {
+        return ifsio_handle_error(e);
+    }
+    return 0;
+}
+
+fortint imultio_flush_last_() {
+    try {
+        eckit::AutoLock<MIO> lock(MIO::instance());
+
+        MULTIO_TRACE_FUNC();
+
+        multio::message::Metadata metadata;
+        metadata.set("flushKind", "last-step");
+        multio::message::Message message{
+            multio::message::Message::Header{Message::Tag::Flush, Peer{}, Peer{}, std::move(metadata)},
+            eckit::Buffer{0}};
+        MIO::instance().dispatch(message);
+
+        MIO::instance().log(true);
+        MIO::instance().dirty(false);
+    }
+    catch (std::exception& e) {
+        return ifsio_handle_error(e);
+    }
+    return 0;
+}
+
 fortint imultio_notify_step_(const fortint* step) {
     try {
         eckit::AutoLock<MIO> lock(MIO::instance());

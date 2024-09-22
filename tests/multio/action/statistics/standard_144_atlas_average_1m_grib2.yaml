@@ -7,9 +7,12 @@ plans:
         operations: [ average ]
         options:
           initial-condition-present: true
+          restart-path: "."
           restart-prefix: "NamesAreNotGuaranteedToBeUniqueAcrossPlans"
-          restart: true
+          read-restart: true
+          write-restart: true
           restart-lib: "atlas_io"
+          restart-time: "20200122-020000"
           step-frequency: 1
           time-step: 3600
           use-current-time: true

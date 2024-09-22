@@ -49,6 +49,10 @@ ecbuild_add_executable( TARGET    multio-feed
                         SOURCES   multio-feed.cc MultioTool.cc
                         LIBS      multio-api )
 
+ecbuild_add_executable( TARGET    multio-statistics-stress-test
+                        SOURCES   multio-statistics-stress-test.cc MultioTool.cc
+                        LIBS      multio-api )
+
 # TODO ADD SOME FCKIT condition
 ecbuild_add_executable( TARGET    multio-replay-nemo-fapi
                         CONDITION HAVE_FORTRAN

@@ -33,9 +33,9 @@ void yyyymmdd2ymd(uint64_t yyyymmdd, long& y, long& m, long& d) {
 }
 
 void hhmmss2hms(uint64_t hhmmss, long& h, long& m, long& s) {
-    h = static_cast<long>(hhmmss % 100);
+    s = static_cast<long>(hhmmss % 100);
     m = static_cast<long>((hhmmss % 10000) / 100);
-    s = static_cast<long>((hhmmss % 1000000) / 10000);
+    h = static_cast<long>((hhmmss % 1000000) / 10000);
     if (s < 0 || s > 59) {
         throw eckit::SeriousBug("invalid seconds range", Here());
     }
@@ -57,7 +57,26 @@ eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
 }  // namespace
 
 
-OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) :
+OperationWindow make_window( const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg) {
+    eckit::DateTime epochPoint{cfg.epoch()};
+    eckit::DateTime startPoint{periodUpdater->computeWinStartTime(cfg.winStart())};
+    eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(cfg.winStart())};
+    eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
+    return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeStep()};
+};
+
+OperationWindow load_window( std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt ) {
+    IOmanager->pushDir( "operationWindow" );
+    std::ostringstream logos;
+    logos << " - Loading operationWindow from: " << IOmanager->getCurrentDir()  << std::endl;
+    std::cout << logos.str() << std::endl;
+    OperationWindow opwin{IOmanager, opt};
+    IOmanager->popDir();
+    return opwin;
+};
+
+
+OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) :
     epochPoint_{eckit::Date{0}, eckit::Time{0}},
     startPoint_{eckit::Date{0}, eckit::Time{0}},
     creationPoint_{eckit::Date{0}, eckit::Time{0}},
@@ -67,7 +86,7 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     lastFlush_{eckit::Date{0}, eckit::Time{0}},
     timeStepInSeconds_{0},
     count_{0} {
-    load(IOmanager, cfg);
+    load(IOmanager, opt);
     return;
 }
 
@@ -84,24 +103,25 @@ OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit:
     timeStepInSeconds_{timeStepInSeconds},
     count_{0} {}
 
+
 long OperationWindow::count() const {
     return count_;
 }
 
-void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) {
-    IOBuffer restartState{IOmanager->getBuffer(restartSize())};
-    IOmanager->read("window", restartSize());
-    deserialize(restartState);
-    restartState.zero();
-    return;
-}
-
-void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const {
+void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
     IOBuffer restartState{IOmanager->getBuffer(restartSize())};
     restartState.zero();
     serialize(restartState);
-    IOmanager->write("window", restartSize());
+    IOmanager->write("operationWindow", static_cast<size_t>(16), restartSize() );
     IOmanager->flush();
+    return;
+}
+
+void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
+    IOBuffer restartState{IOmanager->getBuffer(restartSize())};
+    IOmanager->read( "operationWindow", restartSize() );
+    deserialize(restartState);
+    restartState.zero();
     return;
 }
 
@@ -409,7 +429,7 @@ size_t OperationWindow::restartSize() const {
 }
 
 void OperationWindow::print(std::ostream& os) const {
-    os << "MovingWindow(" << startPoint_ << " to " << endPoint() << ")";
+    os << "OperationWindow(" << startPoint_ << " to " << endPoint() << ")";
 }
 
 std::ostream& operator<<(std::ostream& os, const OperationWindow& a) {

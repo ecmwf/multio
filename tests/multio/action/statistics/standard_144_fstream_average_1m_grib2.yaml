@@ -10,6 +10,7 @@ plans:
           restart-prefix: "NamesAreNotGuaranteedToBeUniqueAcrossPlans"
           restart: true
           restart-lib: "fstream_io"
+          restart-time: "20200126-000000"
           step-frequency: 1
           time-step: 3600
           use-current-time: true

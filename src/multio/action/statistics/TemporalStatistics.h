@@ -6,9 +6,9 @@
 
 #include "OperationWindow.h"
 #include "Operations.h"
-#include "PeriodUpdater.h"
-#include "StatisticsConfiguration.h"
+#include "PeriodUpdaters.h"
 #include "StatisticsIO.h"
+#include "multio/action/statistics/cfg/StatisticsConfiguration.h"
 
 
 namespace multio::action {
@@ -20,16 +20,18 @@ public:
     op::iterator begin() { return statistics_.begin(); };
     op::iterator end() { return statistics_.end(); };
 
-    TemporalStatistics(const std::shared_ptr<PeriodUpdater>& periodUpdater, const std::vector<std::string>& operations,
-                       const message::Message& msg, std::shared_ptr<StatisticsIO>& IOmanager,
-                       const StatisticsConfiguration& cfg);
+    TemporalStatistics(const std::string& output_freq,
+                       const std::vector<std::string>& operations, const message::Message& msg,
+                       std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg);
+
+    TemporalStatistics(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
     bool isEndOfWindow(message::Message& msg, const StatisticsConfiguration& cfg);
 
     void updateData(message::Message& msg, const StatisticsConfiguration& cfg);
     void updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg);
 
-    void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const;
+    void dump(std::shared_ptr<StatisticsIO>& IOmanager,  const StatisticsOptions& opt) const;
 
     const OperationWindow& cwin() const;
     OperationWindow& win();
@@ -37,7 +39,7 @@ public:
     void print(std::ostream& os) const;
 
 private:
-    const std::shared_ptr<PeriodUpdater>& periodUpdater_;
+    std::unique_ptr<PeriodUpdater> periodUpdater_;
     OperationWindow window_;
     std::vector<std::unique_ptr<Operation>> statistics_;
 

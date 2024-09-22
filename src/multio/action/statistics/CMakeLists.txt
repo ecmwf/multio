@@ -1,15 +1,21 @@
 
 list( APPEND _statistics_sources
-    StatisticsConfiguration.cc
-    StatisticsConfiguration.h
+    cfg/StatisticsConfiguration.cc
+    cfg/StatisticsConfiguration.h
+    cfg/StatisticsOptions.cc
+    cfg/StatisticsOptions.h
+    periodUpdaters/PeriodUpdater.h
+    periodUpdaters/HourPeriodUpdater.h
+    periodUpdaters/DayPeriodUpdater.h
+    periodUpdaters/MonthPeriodUpdater.h
     StatisticsIO.cc
     StatisticsIO.h
     io/FstreamIO.cc
     io/FstreamIO.h
     TimeUtils.cc
     TimeUtils.h
-    PeriodUpdater.cc
-    PeriodUpdater.h
+    PeriodUpdaters.cc
+    PeriodUpdaters.h
     OperationWindow.cc
     OperationWindow.h
     Operations.cc

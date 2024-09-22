@@ -10,7 +10,6 @@ template <typename T, typename = std::enable_if_t<std::is_floating_point<T>::val
 class DeAccumulate final : public OperationWithDeaccumulatedData<T> {
 public:
     using OperationWithDeaccumulatedData<T>::name_;
-    using OperationWithDeaccumulatedData<T>::cfg_;
     using OperationWithDeaccumulatedData<T>::logHeader_;
     using OperationWithDeaccumulatedData<T>::initValues_;
     using OperationWithDeaccumulatedData<T>::values_;
@@ -22,49 +21,49 @@ public:
     DeAccumulate(const std::string& name, long sz, const OperationWindow& win, const StatisticsConfiguration& cfg) :
         OperationWithDeaccumulatedData<T>{name, "accumulate", sz, true, win, cfg} {}
 
-    DeAccumulate(const std::string& name, long sz, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
-                 const StatisticsConfiguration& cfg) :
-        OperationWithDeaccumulatedData<T>{name, "accumulate", sz, true, win, IOmanager, cfg} {};
+    DeAccumulate(const std::string& name, const OperationWindow& win, std::shared_ptr<StatisticsIO>& IOmanager,
+                  const StatisticsOptions& opt) :
+        OperationWithDeaccumulatedData<T>{name, "accumulate", true, win, IOmanager, opt} {};
 
-    void compute(eckit::Buffer& buf) override {
-        checkTimeInterval();
+    void compute(eckit::Buffer& buf, const StatisticsConfiguration& cfg) override {
+        checkTimeInterval(cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".compute().count=" << win_.count() << std::endl;
         auto val = static_cast<T*>(buf.data());
-        cfg_.haveMissingValue() ? computeWithMissing(val) : computeWithoutMissing(val);
+        cfg.bitmapPresent() ? computeWithMissing(val,cfg) : computeWithoutMissing(val,cfg);
         return;
     }
 
-    void updateData(const void* data, long sz) override {
-        checkSize(sz);
+    void updateData(const void* data, long sz, const StatisticsConfiguration& cfg) override {
+        checkSize(sz,cfg);
         LOG_DEBUG_LIB(LibMultio) << logHeader_ << ".update().count=" << win_.count() << std::endl;
         const T* val = static_cast<const T*>(data);
-        cfg_.haveMissingValue() ? updateWithMissing(val) : updateWithoutMissing(val);
+        cfg.bitmapPresent() ? updateWithMissing(val,cfg) : updateWithoutMissing(val,cfg);
         return;
     }
 
 private:
-    void computeWithoutMissing(T* val) {
+    void computeWithoutMissing(T* val, const StatisticsConfiguration& cfg) {
         std::transform(values_.begin(), values_.end(), initValues_.begin(), val,
                        [](T v1, T v2) { return static_cast<T>(v1 - v2); });
         return;
     }
 
-    void computeWithMissing(T* val) {
-        double m = cfg_.missingValue();
+    void computeWithMissing(T* val, const StatisticsConfiguration& cfg) {
+        double m = cfg.missingValue();
         std::transform(values_.begin(), values_.end(), initValues_.begin(), val,
                        [m](T v1, T v2) { return static_cast<T>(m == v1 ? m : v1 - v2); });
         return;
     }
 
 
-    void updateWithoutMissing(const T* val) {
+    void updateWithoutMissing(const T* val, const StatisticsConfiguration& cfg) {
         std::transform(values_.begin(), values_.end(), val, values_.begin(),
                        [](T v1, T v2) { return static_cast<T>(v2); });
         return;
     }
 
-    void updateWithMissing(const T* val) {
-        double m = cfg_.missingValue();
+    void updateWithMissing(const T* val, const StatisticsConfiguration& cfg) {
+        double m = cfg.missingValue();
         std::transform(values_.begin(), values_.end(), val, values_.begin(),
                        [m](T v1, T v2) { return static_cast<T>(m == v2 ? m : v2); });
         return;

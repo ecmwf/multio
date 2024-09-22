@@ -5,7 +5,10 @@
 
 #include "eckit/types/DateTime.h"
 
-#include "StatisticsConfiguration.h"
+
+#include "multio/action/statistics/cfg/StatisticsOptions.h"
+#include "multio/action/statistics/cfg/StatisticsConfiguration.h"
+#include "multio/action/statistics/periodUpdaters/PeriodUpdater.h"
 #include "StatisticsIO.h"
 #include "multio/message/Message.h"
 #include "multio/util/DateTime.h"
@@ -14,7 +17,7 @@ namespace multio::action {
 
 class OperationWindow {
 public:
-    OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg);
+    OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
     OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
                     const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, long timeStepInSeconds);
@@ -24,8 +27,8 @@ public:
     void updateData(const eckit::DateTime& currentPoint);
     void updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
 
-    void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const;
-    void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg);
+    void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const;
+    void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt );
 
     bool isWithin(const eckit::DateTime& dt) const;
     bool gtLowerBound(const eckit::DateTime& dt, bool throw_error) const;
@@ -115,4 +118,8 @@ private:
     friend std::ostream& operator<<(std::ostream& os, const OperationWindow& a);
 };
 
+OperationWindow make_window( const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg);
+OperationWindow load_window( std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt );
+
 }  // namespace multio::action
+

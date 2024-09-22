@@ -69,6 +69,19 @@ public:
 
     std::vector<std::string> keys() { return eckit::LocalConfiguration::keys(); }
 };
+
+void parseStepRange(std::string const& stepRange, long& startStep, long& endStep ) {
+    static const std::regex period_grammar("([0-9]+)-([0-9]+)");
+    std::smatch match;
+    if (std::regex_match(stepRange, match, period_grammar)) {
+        startStep = std::stol(match[1].str());
+        endStep   = std::stol(match[2].str());
+    }
+    else {
+        throw eckit::SeriousBug("Wrong grammar in period definition : " + stepRange, Here());
+    }
+};
+
 }  // namespace
 
 class MultioFeed final : public multio::MultioTool {
@@ -101,6 +114,11 @@ private:
     bool decodeDoubleData_ = false;
     bool decodeSingleData_ = false;
     std::string configPath_ = "";
+    std::string stepRange_ = "";
+    long minStep_ = -1;
+    long maxStep_ = 1000000000;
+
+
 };
 
 MultioFeed::MultioFeed(int argc, char** argv) :
@@ -116,6 +134,11 @@ MultioFeed::MultioFeed(int argc, char** argv) :
                                               "(with data in single precision)"));
     options_.push_back(
         new eckit::option::SimpleOption<std::string>("plans", "Path to YAML/JSON file containing plans and actions."));
+
+
+    options_.push_back(
+        new eckit::option::SimpleOption<std::string>("stepRange", "Range of steps to process (e.g. 0-23)"));
+
 }
 
 void MultioFeed::init(const eckit::option::CmdArgs& args) {
@@ -132,6 +155,15 @@ void MultioFeed::init(const eckit::option::CmdArgs& args) {
     }
 
     args.get("plans", configPath_);
+
+    if ( args.has("stepRange") ){
+        args.get("stepRange", stepRange_);
+    }
+    else {
+        stepRange_ = "0-1000000000";
+    }
+
+    parseStepRange( stepRange_, minStep_, maxStep_ );
 
     if (!configPath_.empty()) {
         ::setenv("MULTIO_PLANS_FILE", configPath_.c_str(), 1);
@@ -160,6 +192,13 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
             mdOpts.valueRepresentation = ValueRepresentation::Native;
             mdOpts.nameSpace = "";
             msg.getMetadata(gathererDetailed, mdOpts);
+
+            if (metadataDetailed.has("stepRange")) {
+                long step = metadataDetailed.getLong("stepRange");
+                if (step < minStep_ || step > maxStep_) {
+                    continue;
+                }
+            }
 
             if (metadataDetailed.has("gridType"))
                 metadata.set("gridType", metadataDetailed.getString("gridType"));
@@ -265,9 +304,16 @@ void MultioFeed::execute(const eckit::option::CmdArgs& args) {
                 ASSERT(false);
             }
         }
+
+
+        if (imultio_flush_()) {
+            ASSERT(false);
+        }
+
+
     }
 
-    if (imultio_flush_()) {
+    if (imultio_flush_last_()) {
         ASSERT(false);
     }
 

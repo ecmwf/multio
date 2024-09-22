@@ -16,10 +16,10 @@
 #pragma once
 
 
-#include "PeriodUpdater.h"
-#include "StatisticsConfiguration.h"
+#include "PeriodUpdaters.h"
 #include "StatisticsIO.h"
 #include "multio/action/ChainedAction.h"
+#include "multio/action/statistics/cfg/StatisticsOptions.h"
 
 namespace eckit {
 class Configuration;
@@ -37,12 +37,14 @@ public:
                                      const std::string& key) const;
 
 private:
+    std::string lastDateTime_;
     void DumpRestart();
+    void LoadRestart();
     std::string generateKey(const message::Message& msg) const;
     void print(std::ostream& os) const override;
-    const StatisticsConfiguration cfg_;
+    const StatisticsOptions opt_;
     const std::vector<std::string> operations_;
-    std::shared_ptr<PeriodUpdater> periodUpdater_;
+    std::string outputFrequency_;
     std::shared_ptr<StatisticsIO> IOmanager_;
 
 

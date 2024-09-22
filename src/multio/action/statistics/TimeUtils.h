@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StatisticsConfiguration.h"
+#include "multio/action/statistics/cfg/StatisticsConfiguration.h"
 #include "eckit/types/DateTime.h"
 #include "multio/message/Message.h"
 

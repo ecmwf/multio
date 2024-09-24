@@ -69,6 +69,10 @@ std::unique_ptr<PeriodUpdater> load_period_updater(std::shared_ptr<StatisticsIO>
     std::string periodKind=files[0].baseName(false).asString();
     // parsePeriodFileName( files[0].baseName(false).asString(), periodKind );
 
+    // std::ostringstream logos;
+    // logos << "     - Loading periodUpdater from: " << IOmanager->getCurrentDir()  << std::endl;
+    // LOG_DEBUG_LIB(LibMultio) << logos.str() << std::endl;
+
     bool found = false;
     if (periodKind == "hour") {
         found = true;

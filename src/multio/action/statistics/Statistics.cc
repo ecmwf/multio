@@ -154,6 +154,17 @@ void Statistics::executeImpl(message::Message msg) {
             return;
         }
     }
+    else {
+        // A simulation that sends step 0, send also step 0 in the restarted simulations.
+        // Because of this if the windos was already present, we need check if the current time is
+        // the same as the current point in the window due to a restarted window. And in this case just exit.
+        // Obviously this check is not meaningful for newly created windows
+        auto& ts = *(stat->second);
+        if ( cfg.curr() == ts.cwin().currPoint() && opt_.solver_send_initial_condition() ) {
+            util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+            return;
+        }
+    }
 
     auto& ts = *(stat->second);
 
@@ -163,6 +174,7 @@ void Statistics::executeImpl(message::Message msg) {
     //    << std::endl;
     // std::cout << os.str() << std::endl;
 
+    // In any case if the current time is greater than the current point in the window, we have a problem
     if ( cfg.curr() <= ts.cwin().currPoint() ) {
         std::ostringstream os;
         os << "Current time is greater than the current point in the window :: " << cfg.curr().date().yyyymmdd() << " "

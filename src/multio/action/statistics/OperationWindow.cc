@@ -67,9 +67,9 @@ OperationWindow make_window( const std::unique_ptr<PeriodUpdater>& periodUpdater
 
 OperationWindow load_window( std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt ) {
     IOmanager->pushDir( "operationWindow" );
-    std::ostringstream logos;
-    logos << " - Loading operationWindow from: " << IOmanager->getCurrentDir()  << std::endl;
-    std::cout << logos.str() << std::endl;
+    // std::ostringstream logos;
+    // logos << "     - Loading operationWindow from: " << IOmanager->getCurrentDir()  << std::endl;
+    // LOG_DEBUG_LIB(LibMultio) << logos.str() << std::endl;
     OperationWindow opwin{IOmanager, opt};
     IOmanager->popDir();
     return opwin;

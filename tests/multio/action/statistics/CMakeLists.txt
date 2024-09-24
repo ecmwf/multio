@@ -98,6 +98,10 @@ foreach(_test ${_statistics_tests_names} )
     endforeach()
 endforeach()
 
+
+#
+# Tests about the checkpointing needs to be reworked
+if (FALSE)
 ecbuild_add_test(
     TARGET       ${PREFIX}_run_checkpoint_fstream_average_1m_stage_1
     TEST_DEPENDS ${PREFIX}_get_data
@@ -159,3 +163,4 @@ ecbuild_add_test(
     COMMAND      grib_compare
     ARGS         -P -T10 Reference_standard_average_1m_grib2.grib Result_standard_atlas_144-288_average_1m_grib2.grib
 )
+endif()

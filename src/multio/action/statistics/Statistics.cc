@@ -118,7 +118,10 @@ void Statistics::executeImpl(message::Message msg) {
     if (msg.tag() == message::Message::Tag::Flush) {
         if ( msg.metadata().has( "flushKind" )  ) {
             std::string flushKind = msg.metadata().getString( "flushKind" );
-            if ( flushKind == "step-and-restart" || flushKind == "last-step" ) {
+            if ( flushKind == "step-and-restart" ||
+                 flushKind == "last-step" ||
+                 flushKind == "end-of-simulation" ||
+                 flushKind == "close-connection" ) {
                 std::cout << "Performing a Dump :: Flush kind :: " << flushKind << "Last DateTime :: " << lastDateTime_ <<  std::endl;
                 IOmanager_->setDateTime( lastDateTime_ );
                 DumpRestart();

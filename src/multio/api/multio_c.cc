@@ -383,12 +383,13 @@ int multio_new_handle_default(multio_handle_t** mio) {
 int multio_delete_handle(multio_handle_t* mio) {
     return wrapApiFunction([mio]() {
         ASSERT(mio);
-        multio_metadata_t* md;
-        multio_new_metadata( &md, mio);
-        md->set("flushKind", "end-of-simulation");
-        mio->dispatch(*md, eckit::Buffer{0}, Message::Tag::Flush);
-        multio_delete_metadata(md);
-        // TODO add sleep
+
+        multio::message::Metadata md;
+        md.set("flushKind", "end-of-simulation");
+        
+	mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
+        
+	// TODO add sleep
         delete mio;
     });
 }
@@ -407,11 +408,7 @@ int multio_open_connections(multio_handle_t* mio) {
     return wrapApiFunction(
         [mio]() {
             ASSERT(mio);
-            multio_metadata_t* md;
-            multio_new_metadata( &md, mio);
-            md->set("flushKind", "close-connection");
-            mio->dispatch(*md, eckit::Buffer{0}, Message::Tag::Flush);
-            multio_delete_metadata(md);
+
             mio->openConnections();
         },
         mio);
@@ -421,8 +418,13 @@ int multio_close_connections(multio_handle_t* mio) {
     return wrapApiFunction(
         [mio]() {
             ASSERT(mio);
-
-            mio->closeConnections();
+            
+	    multio::message::Metadata md;
+            md.set("flushKind", "end-of-simulation");
+            
+	    mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
+            
+	    mio->closeConnections();
         },
         mio);
 }

@@ -39,6 +39,7 @@ public:
 private:
     std::string lastDateTime_;
     void DumpRestart();
+    void CreateLatestSymLink();
     void LoadRestart();
     std::string generateKey(const message::Message& msg) const;
     void print(std::ostream& os) const override;

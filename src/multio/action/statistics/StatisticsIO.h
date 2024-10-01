@@ -51,11 +51,13 @@ public:
     virtual ~StatisticsIO();
 
     void setDateTime(const std::string& dateTime);
+    std::string getDateTime();
+
 
     std::string pushDir( const std::string& directory );
     std::string popDir( );
-    std::string getCurrentDir(  ) const;
-
+    std::string getCurrentDir(  ) const; 
+    std::string getRestartSymLink(  ) const; //This returns the restart dir for the current plan
     IOBuffer getBuffer(std::size_t size);
     std::vector<eckit::PathName> getFiles();
     std::vector<eckit::PathName> getDirs();

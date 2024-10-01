@@ -117,6 +117,10 @@ void StatisticsIO::setDateTime(const std::string& dateTime) {
     return;
 };
 
+std::string StatisticsIO::getDateTime() {
+    return dateTime_;
+}
+
 std::string StatisticsIO::pushDir(const std::string& directory) {
     path_.push_back(directory);
     return getCurrentDir();
@@ -163,6 +167,12 @@ std::string StatisticsIO::getCurrentDir() const {
         os << "/" << dir;
     }
     eckit::PathName{os.str()}.mkdir();
+    return os.str();
+};
+
+std::string StatisticsIO::getRestartSymLink() const {
+    std::ostringstream os;
+    os << basePath_ << "/" << uniqueID_<< "/" << "latest";
     return os.str();
 };
 

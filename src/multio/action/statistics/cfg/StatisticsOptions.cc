@@ -22,7 +22,7 @@ StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& comp
     solverSendInitStep_{false},
     readRestart_{false},
     writeRestart_{false},
-    restartTime_{"00000000-000000"},
+    restartTime_{"latest"},//00000000-000000
     restartPath_{"."},
     restartPrefix_{"StatisticsRestartFile"},
     restartLib_{"fstream_io"},
@@ -210,9 +210,9 @@ void StatisticsOptions::parseRestartPath(const config::ComponentConfiguration& c
 void StatisticsOptions::parseRestartTime(const config::ComponentConfiguration& compConf,
                                          const eckit::LocalConfiguration& cfg) {
     // Read the path used to restart statistics
-    // Default value is "."
+    // Default value is "latest"
     if (cfg.has("restart-time")) {
-        restartTime_ = compConf.multioConfig().replaceCurly(cfg.getString("restart-time", "."));
+        restartTime_ = compConf.multioConfig().replaceCurly(cfg.getString("restart-time", "latest"));
     }
     return;
 };

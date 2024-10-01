@@ -10,6 +10,7 @@
 
 #include "Statistics.h"
 
+#include <unistd.h> //currently needed because ECKIT PathName only has hardlinks for for the directories we need a symlink
 #include <algorithm>
 #include <unordered_map>
 
@@ -51,6 +52,24 @@ void Statistics::DumpRestart() {
     }
 }
 
+void Statistics::CreateLatestSymLink() {
+
+    std::string latestPath = IOmanager_->getRestartSymLink();
+    std::string currentDateTime = IOmanager_->getDateTime();
+    //Even though eckit::PathName::link is a hardlink and does not work blow exists() follows the link and isLink also works for symlinks and hence the eckit calls can be used here
+    if ( eckit::PathName{latestPath}.exists() && eckit::PathName{latestPath}.isLink()){
+
+        eckit::PathName{latestPath}.unlink();
+    }
+    
+    // create latest symlink 
+    // TODO If eckit allows symlinks for directories instead of hard links it would be good to use eckit
+    // //eckit::PathName::link(eckit::PathName{latestPath},eckit::PathName{IOmanager_->getCurrentDir()});
+    symlink(currentDateTime.c_str(),latestPath.c_str());
+    LOG_DEBUG_LIB(LibMultio) << "Created Symlink from " << currentDateTime << " to "
+                                     << latestPath << std::endl;
+    
+}
 
 void Statistics::LoadRestart() {
     if (opt_.readRestart()) {
@@ -58,6 +77,7 @@ void Statistics::LoadRestart() {
         std::ostringstream logos;
         std::cout << logos.str() << std::endl;
         std::vector<eckit::PathName> dirs = IOmanager_->getDirs();
+
         for ( const auto& dir : dirs ) {    std::ostringstream logos;
             IOmanager_->pushDir(dir.baseName());
             fieldStats_[dir.baseName()] = std::make_unique<TemporalStatistics>( IOmanager_, opt_ );
@@ -125,6 +145,7 @@ void Statistics::executeImpl(message::Message msg) {
                 std::cout << "Performing a Dump :: Flush kind :: " << flushKind << "Last DateTime :: " << lastDateTime_ <<  std::endl;
                 IOmanager_->setDateTime( lastDateTime_ );
                 DumpRestart();
+                CreateLatestSymLink();
             }
         }
         executeNext(msg);

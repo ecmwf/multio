@@ -23,7 +23,7 @@ namespace multio::action {
 
 //--------------------------------------------------------------------------------------------------
 
-Select::Select(const ComponentConfiguration& compConf) : ChainedAction{compConf}, selectors_{compConf.parsedConfig()} {}
+Select::Select(const ComponentConfiguration& compConf) : ChainedAction{compConf}, selectors_{MatchReduce::construct( compConf.parsedConfig())} {}
 
 void Select::executeImpl(Message msg) {
     if (matches(msg)) {

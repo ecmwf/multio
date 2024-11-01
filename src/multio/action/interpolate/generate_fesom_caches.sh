@@ -16,8 +16,8 @@ if [[ -n $SLURM_JOB_ID ]]; then
     for f in $files
     do
         fname=$(basename ${f})
-        ${BDIR}/bin/cache-generator-fesom-2-mir --inputPath=${1} --inputFile=${fname} --nCols=${3}
+        ${BDIR}/bin/cache-generator-fesom-2-mir --inputPath=${1} --inputFile=${fname} --nCols=${3} --fesomName=${4}
     done
 else
-    sbatch --export=BDIR $0 $1 $2 $3
+    sbatch --export=BDIR $0 $1 $2 $3 $4
 fi

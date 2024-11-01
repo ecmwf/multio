@@ -146,6 +146,8 @@ Fesom2mirCacheGenerator::Fesom2mirCacheGenerator(int argc, char** argv) :
     options_.push_back(new eckit::option::SimpleOption<std::string>(
         "inputFile", "Name of the input file. Default( \"CORE2_ngrid_NSIDE32_0_ring.csv\" )"));
     options_.push_back(new eckit::option::SimpleOption<size_t>("nCols", "Size of the fesom grid."));
+    options_.push_back(new eckit::option::SimpleOption<std::string>(
+        "fesomName", "Name of the Fesom Grid. Default( \"CORE2\")"));
 
     return;
 }
@@ -184,6 +186,7 @@ void Fesom2mirCacheGenerator::init(const eckit::option::CmdArgs& args) {
     args.get("inputPath", inputPath_);
     args.get("outputPath", outputPath_);
     args.get("inputFile", inputFile_);
+    args.get("fesomName", fesomName_);
 
     eckit::PathName inputPath_tmp{inputPath_};
     ASSERT(inputPath_tmp.exists());

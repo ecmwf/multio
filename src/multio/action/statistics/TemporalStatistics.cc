@@ -29,12 +29,15 @@ TemporalStatistics::TemporalStatistics( std::shared_ptr<StatisticsIO>& IOmanager
 void TemporalStatistics::dump(std::shared_ptr<StatisticsIO>& IOmanager,  const StatisticsOptions& opt) const {
     LOG_DEBUG_LIB(LibMultio) << opt.logPrefix() << " *** Dump restart files" << std::endl;
     IOmanager->pushDir( "periodUpdater" );
+    IOmanager->createCurrentDir();
     periodUpdater_->dump(IOmanager, opt);
     IOmanager->popDir();
     IOmanager->pushDir( "operationWindow" );
+    IOmanager->createCurrentDir();
     window_.dump(IOmanager, opt);
     IOmanager->popDir();
     IOmanager->pushDir( "operations" );
+    IOmanager->createCurrentDir();
     for (auto& stat : statistics_) {
         stat->dump(IOmanager, opt);
     }

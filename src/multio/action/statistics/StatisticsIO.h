@@ -56,8 +56,13 @@ public:
 
     std::string pushDir( const std::string& directory );
     std::string popDir( );
-    std::string getCurrentDir(  ) const; 
     std::string getRestartSymLink(  ) const; //This returns the restart dir for the current plan
+    std::string getCurrentDir(  ) const;
+    std::string getUniqueRestartDir() const;
+    bool currentDirExists() const;
+    void createCurrentDir() const;
+    void createDateTimeDir() const;
+
     IOBuffer getBuffer(std::size_t size);
     std::vector<eckit::PathName> getFiles();
     std::vector<eckit::PathName> getDirs();
@@ -76,6 +81,7 @@ protected:
     std::string dateTime_;
     std::string uniqueID_;
     const std::string ext_;
+    bool hasValidDateTime_;
 
     std::vector<std::uint64_t> buffer_;
 };

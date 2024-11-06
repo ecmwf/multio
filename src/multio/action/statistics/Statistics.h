@@ -37,10 +37,13 @@ public:
                                      const std::string& key) const;
 
 private:
+    bool needRestart_;
     std::string lastDateTime_;
     void DumpRestart();
     void CreateLatestSymLink();
     void LoadRestart();
+    std::unique_ptr<TemporalStatistics> LoadRestartByKey(const std::string& key);
+    bool HasRestartKey(const std::string& key);
     std::string generateKey(const message::Message& msg) const;
     void print(std::ostream& os) const override;
     const StatisticsOptions opt_;

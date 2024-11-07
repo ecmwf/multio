@@ -28,11 +28,12 @@ namespace multio::action {
 
 Statistics::Statistics(const ComponentConfiguration& compConf) :
     ChainedAction{compConf},
-    lastDateTime_{""},
     needRestart_{false},
+    lastDateTime_{""},
     opt_{compConf},
     operations_{compConf.parsedConfig().getStringVector("operations")},
     outputFrequency_{compConf.parsedConfig().getString("output-frequency")},
+    remapParamID_{compConf},
     IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {
     // if ( opt_.readRestart() ) {
     //     LoadRestart();
@@ -242,8 +243,11 @@ void Statistics::executeImpl(message::Message msg) {
             eckit::Buffer payload;
             payload.resize((*it)->byte_size());
             payload.zero();
-            md.set("operation", (*it)->operation());
-            md.set("operation-frequency", compConf_.parsedConfig().getString("output-frequency"));
+            std::string opname = (*it)->operation();
+            std::string outputFrequency = compConf_.parsedConfig().getString("output-frequency");
+            md.set("operation", opname);
+            md.set("operation-frequency", outputFrequency);
+            remapParamID_.ApplyRemap( md, opname, outputFrequency );
             (*it)->compute(payload, cfg);
             executeNext(message::Message{message::Message::Header{message::Message::Tag::Field, msg.source(),
                                                                   msg.destination(), message::Metadata{md}},

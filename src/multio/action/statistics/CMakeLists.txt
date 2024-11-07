@@ -31,6 +31,8 @@ list( APPEND _statistics_sources
     operations/Maximum.h
     operations/DeAccumulate.h
     operations/FixedWindowFluxAverage.h
+    RemapParamID.cc
+    RemapParamID.h
     TemporalStatistics.cc
     TemporalStatistics.h
     Statistics.cc

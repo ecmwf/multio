@@ -18,6 +18,7 @@
 
 #include "PeriodUpdaters.h"
 #include "StatisticsIO.h"
+#include "RemapParamID.h"
 #include "multio/action/ChainedAction.h"
 #include "multio/action/statistics/cfg/StatisticsOptions.h"
 
@@ -49,8 +50,8 @@ private:
     const StatisticsOptions opt_;
     const std::vector<std::string> operations_;
     std::string outputFrequency_;
+    RemapParamID remapParamID_;
     std::shared_ptr<StatisticsIO> IOmanager_;
-
 
     std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 };

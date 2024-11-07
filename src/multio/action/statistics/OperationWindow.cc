@@ -135,12 +135,12 @@ bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
 }
 
 bool OperationWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) const {
-    if (throw_error && creationPoint_ >= dt) {
+    if (throw_error && creationPoint_ > dt) {
         std::ostringstream os;
         os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     }
-    return dt > creationPoint_;
+    return dt >= creationPoint_;
 };
 
 bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) const {

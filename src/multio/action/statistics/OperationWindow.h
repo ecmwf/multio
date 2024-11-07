@@ -20,7 +20,8 @@ public:
     OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
     OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
-                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, long timeStepInSeconds);
+                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
+                    long timeStepInSeconds, long windowType);
 
     long count() const;
 
@@ -30,9 +31,12 @@ public:
     void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const;
     void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt );
 
+    std::string windowType() const;
     bool isWithin(const eckit::DateTime& dt) const;
     bool gtLowerBound(const eckit::DateTime& dt, bool throw_error) const;
+    bool geLowerBound(const eckit::DateTime& dt, bool throw_error) const;
     bool leUpperBound(const eckit::DateTime& dt, bool throw_error) const;
+    bool ltUpperBound(const eckit::DateTime& dt, bool throw_error) const;
 
     long timeSpanInSeconds() const;
     long timeSpanInHours() const;
@@ -110,6 +114,7 @@ private:
 
     long timeStepInSeconds_;
     long count_;
+    long type_;
 
     void serialize(IOBuffer& currState) const;
     void deserialize(const IOBuffer& currState);

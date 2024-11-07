@@ -29,7 +29,6 @@ private:
     std::string stepKey_;
     std::string bitmapPresentKey_;
     std::string missingValueKey_;
-    std::string accumulatedFieldsResetFreqency_;
 
     // Default values for configurations
     long stepFreq_;
@@ -43,6 +42,8 @@ private:
     std::string restartPrefix_;
     std::string restartLib_;
     std::string logPrefix_;
+    std::string windowType_;
+    std::string accumulatedFieldsResetFreqency_;
 
 private:
 
@@ -71,6 +72,7 @@ private:
     void parseRestartTime(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
     void parseRestartLib(const eckit::LocalConfiguration& cfg);
     void parseLogPrefix(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
+    void parseWindowType(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
     void parseSolverResetAccumulatedFields(const config::ComponentConfiguration& compConf,
                                            const eckit::LocalConfiguration& cfg);
 
@@ -93,6 +95,7 @@ public:
     const std::string& stepFreqKey() const;
     const std::string& stepKey() const;
     const std::string& logPrefix() const;
+    const std::string& windowType() const;
 
     // Handle missing value
     const std::string& bitmapPresentKey() const;

@@ -62,7 +62,19 @@ OperationWindow make_window( const std::unique_ptr<PeriodUpdater>& periodUpdater
     eckit::DateTime startPoint{periodUpdater->computeWinStartTime(cfg.winStart())};
     eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(cfg.winStart())};
     eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
-    return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeStep()};
+    long windowType = 0;
+    if ( cfg.options().windowType() == "forward-offset" ){
+        windowType = 0;
+    }
+    else if ( cfg.options().windowType() == "backward-offset" ) {
+        windowType = 1;
+    }
+    else {
+        std::ostringstream os;
+        os << " Unknown window type " << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    };
+    return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeStep(), windowType};
 };
 
 OperationWindow load_window( std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt ) {
@@ -85,14 +97,15 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     endPoint_{eckit::Date{0}, eckit::Time{0}},
     lastFlush_{eckit::Date{0}, eckit::Time{0}},
     timeStepInSeconds_{0},
-    count_{0} {
+    count_{0},
+    type_{0} {
     load(IOmanager, opt);
     return;
 }
 
 OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
                                  const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
-                                 long timeStepInSeconds) :
+                                 long timeStepInSeconds, long windowType) :
     epochPoint_{epochPoint},
     startPoint_{startPoint},
     creationPoint_{creationPoint},
@@ -101,7 +114,8 @@ OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit:
     endPoint_{endPoint},
     lastFlush_{epochPoint},
     timeStepInSeconds_{timeStepInSeconds},
-    count_{0} {}
+    count_{0},
+    type_{windowType} {}
 
 
 long OperationWindow::count() const {
@@ -146,9 +160,32 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
     return;
 }
 
+std::string OperationWindow::windowType() const {
+    if (type_ == 0) {
+        return std::string{"forward-offset"};
+    } else if (type_ == 1) {
+        return std::string{"backward-offset"};
+    } else {
+        std::ostringstream os;
+        os << *this << " Unknown window type " << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+}
+
 
 bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
-    bool ret = gtLowerBound(dt, true) && leUpperBound(dt, false);
+    bool ret;
+    if ( type_ == 0 ) {
+        ret = gtLowerBound(dt, false) && leUpperBound(dt, false);
+    }
+    else if ( type_ == 1 ) {
+        ret = geLowerBound(dt, false) && ltUpperBound(dt, false);
+    }
+    else {
+        std::ostringstream os;
+        os << *this << " Unknown window type " << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
     LOG_DEBUG_LIB(LibMultio) << " ------ Is " << dt << " within " << *this << "? -- " << (ret ? "yes" : "no")
                              << std::endl;
     return ret;
@@ -163,6 +200,15 @@ bool OperationWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) 
     return dt > creationPoint_;
 };
 
+bool OperationWindow::geLowerBound(const eckit::DateTime& dt, bool throw_error) const {
+    if (throw_error && creationPoint_ > dt) {
+        std::ostringstream os;
+        os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+    return dt >= creationPoint_;
+};
+
 bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) const {
     // TODO: test without 1 second added. Now it should work
     if (throw_error && dt > endPoint()) {
@@ -171,6 +217,16 @@ bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) 
         throw eckit::SeriousBug(os.str(), Here());
     }
     return dt <= endPoint();
+};
+
+bool OperationWindow::ltUpperBound(const eckit::DateTime& dt, bool throw_error) const {
+    // TODO: test without 1 second added. Now it should work
+    if (throw_error && dt >= endPoint()) {
+        std::ostringstream os;
+        os << *this << " : " << dt << " is outside of current period : upper Bound violation" << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+    return dt < endPoint();
 };
 
 long OperationWindow::timeSpanInHours() const {
@@ -402,6 +458,7 @@ void OperationWindow::serialize(IOBuffer& currState) const {
 
     currState[14] = static_cast<std::uint64_t>(timeStepInSeconds_);
     currState[15] = static_cast<std::uint64_t>(count_);
+    currState[16] = static_cast<std::uint64_t>(type_);
 
     currState.computeChecksum();
 
@@ -420,12 +477,13 @@ void OperationWindow::deserialize(const IOBuffer& currState) {
     lastFlush_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[12]), static_cast<long>(currState[13]));
     timeStepInSeconds_ = static_cast<long>(currState[14]);
     count_ = static_cast<long>(currState[15]);
+    type_ = static_cast<long>(currState[16]);
 
     return;
 }
 
 size_t OperationWindow::restartSize() const {
-    return static_cast<size_t>(17);
+    return static_cast<size_t>(18);
 }
 
 void OperationWindow::print(std::ostream& os) const {

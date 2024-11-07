@@ -27,6 +27,7 @@ StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& comp
     restartPrefix_{"StatisticsRestartFile"},
     restartLib_{"fstream_io"},
     logPrefix_{"Plan"},
+    windowType_{"forward-offset"},
     accumulatedFieldsResetFreqency_{"month"}
 {
     // Dump usage
@@ -67,6 +68,7 @@ StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& comp
         parseRestartLib(options);
         parseRestartTime(compConf, options);
         parseLogPrefix(compConf, options);
+        parseWindowType(compConf, options);
         parseSolverResetAccumulatedFields(compConf, options);
     }
 
@@ -237,6 +239,15 @@ void StatisticsOptions::parseLogPrefix(const config::ComponentConfiguration& com
     return;
 };
 
+void StatisticsOptions::parseWindowType(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg) {
+    windowType_ = cfg.getString("window-type", "forward-offset");
+    if ( windowType_ != "forward-offset" && windowType_ != "backward-offset" ) {
+        std::ostringstream os;
+        os << "Invalid window type :: " << windowType_ << std::endl;
+        throw eckit::UserError(os.str(), Here());
+    }
+    return;
+};
 
 void StatisticsOptions::parseSolverResetAccumulatedFields(const config::ComponentConfiguration& compConf,
                                                                 const eckit::LocalConfiguration& cfg) {
@@ -365,6 +376,11 @@ const std::string& StatisticsOptions::restartPath() const {
 
 
 const std::string& StatisticsOptions::restartPrefix() const {
+    return restartPrefix_;
+};
+
+
+const std::string& StatisticsOptions::windowType() const {
     return restartPrefix_;
 };
 

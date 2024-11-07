@@ -11,9 +11,9 @@ hasMapping_{false},paramIDMap_{} {
         hasMapping_ = true;
         for (const auto& mapping : mappings) {
             auto matcher = mapping.getSubConfiguration("where");
-            std::string param           = matcher.getString("param");
-            std::string operation       = matcher.getString("operation");
-            std::string outputFrequency = matcher.getString("output-frequency");
+            std::string param           = matcher.getString("param-is");
+            std::string operation       = matcher.getString("operation-is");
+            std::string outputFrequency = matcher.getString("output-frequency-is");
             std::string newParam        = mapping.getString("map-to-param");
             std::ostringstream key;
             // TODO: outptuFrequqncy should always be computed in seconds

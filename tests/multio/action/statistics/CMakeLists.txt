@@ -65,28 +65,46 @@ foreach(_test ${_statistics_tests_names} )
             set(_reference Result_${_kind}_${_start}_${_test}.grib)
             set(_feed ${_kind}_${_start}_statistics_test_data.grib)
 
-            ecbuild_add_test(
-                TARGET       ${PREFIX}_run_${_kind}_${_start}_${_test}
-                TEST_DEPENDS ${PREFIX}_get_data
-                COMMAND      multio-feed
-                ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/${_kind}_${_start}_${_test}.yaml ${_feed}
-            )
 
-            ecbuild_add_test(
-                TARGET       ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
-                TEST_DEPENDS ${PREFIX}_run_${_kind}_${_start}_${_test}
-                ARGS         -H ${_reference} ${_result}
-                COMMAND      grib_compare
-            )
+            if( (_test MATCHES "^.*regrid.*$") )
 
-            if( HAVE_MIR AND (_test MATCHES "^.*regrid.*$") )
-                ecbuild_add_test(
-                    TARGET       ${PREFIX}_check_values_${_kind}_${_start}_${_test}
-                    TEST_DEPENDS ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
-                    COMMAND      mir-compare
-                    ARGS         ${_reference} ${_result} --ignore-above-latitude=89.9 --ignore-below-latitude=-89.9
-                )
+                if ( HAVE_MIR )
+                    ecbuild_add_test(
+                        TARGET       ${PREFIX}_run_${_kind}_${_start}_${_test}
+                        TEST_DEPENDS ${PREFIX}_get_data
+                        COMMAND      multio-feed
+                        ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/${_kind}_${_start}_${_test}.yaml ${_feed}
+                    )
+
+                    ecbuild_add_test(
+                        TARGET       ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
+                        TEST_DEPENDS ${PREFIX}_run_${_kind}_${_start}_${_test}
+                        ARGS         -H ${_reference} ${_result}
+                        COMMAND      grib_compare
+                   )
+
+                    ecbuild_add_test(
+                        TARGET       ${PREFIX}_check_values_${_kind}_${_start}_${_test}
+                        TEST_DEPENDS ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
+                        COMMAND      mir-compare
+                        ARGS         ${_reference} ${_result} --ignore-above-latitude=89.9 --ignore-below-latitude=-89.9
+                    )
+                endif()
             else()
+                ecbuild_add_test(
+                    TARGET       ${PREFIX}_run_${_kind}_${_start}_${_test}
+                    TEST_DEPENDS ${PREFIX}_get_data
+                    COMMAND      multio-feed
+                    ARGS          --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/${_kind}_${_start}_${_test}.yaml ${_feed}
+                )
+
+                ecbuild_add_test(
+                    TARGET       ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
+                    TEST_DEPENDS ${PREFIX}_run_${_kind}_${_start}_${_test}
+                    ARGS         -H ${_reference} ${_result}
+                    COMMAND      grib_compare
+                )
+
                 ecbuild_add_test(
                     TARGET       ${PREFIX}_check_values_${_kind}_${_start}_${_test}
                     TEST_DEPENDS ${PREFIX}_check_metadata_${_kind}_${_start}_${_test}
@@ -94,6 +112,7 @@ foreach(_test ${_statistics_tests_names} )
                     ARGS         -P -T10 ${_reference} ${_result}
                 )
             endif()
+
         endforeach()
     endforeach()
 endforeach()

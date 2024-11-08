@@ -60,10 +60,10 @@ std::unique_ptr<PeriodUpdater> load_period_updater(std::shared_ptr<StatisticsIO>
     std::vector<eckit::PathName> files = IOmanager->getFiles();
 
     if (files.empty()) {
-        throw eckit::SeriousBug("No subdirectories found in: " + IOmanager->getCurrentDir(), Here());
+        throw eckit::SeriousBug("No files found in: " + IOmanager->getCurrentDir(), Here());
     }
     if ( files.size() > 1 ) {
-        throw eckit::SeriousBug("More than one subdirectory found in: " + IOmanager->getCurrentDir(), Here());
+        throw eckit::SeriousBug("More than one file found in: " + IOmanager->getCurrentDir(), Here());
     }
 
     std::string periodKind=files[0].baseName(false).asString();

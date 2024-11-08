@@ -48,7 +48,7 @@ protected:
     void baseDump( const std::string& name, std::shared_ptr<StatisticsIO>& IOmanager,  const StatisticsOptions& opt ) const {
         IOBuffer restartState{IOmanager->getBuffer(restartSize())};
         restartState.zero();
-        serialize(restartState);
+        serialize(restartState, IOmanager->getCurrentDir() + "/" + name + "_dump.txt", opt);
         IOmanager->write(name, static_cast<size_t>(1), restartSize() );
         IOmanager->flush();
         return;
@@ -57,7 +57,7 @@ protected:
     void load( const std::string& name, std::shared_ptr<StatisticsIO>& IOmanager,  const StatisticsOptions& opt ) {
         IOBuffer restartState{IOmanager->getBuffer(restartSize())};
         IOmanager->read( name, restartSize() );
-        deserialize(restartState);
+        deserialize(restartState, IOmanager->getCurrentDir() + "/" + name + "_load.txt", opt);
         restartState.zero();
         return;
     };
@@ -68,15 +68,29 @@ private:
         return static_cast<size_t>(2);
     }
 
-    void serialize(IOBuffer& currState) const {
+    void serialize(IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) const {
+        if (opt.debugRestart()) {
+            std::ofstream outFile(fname);
+            //outFile << name() << std::endl;
+            //outFile << timeUnit() << std::endl;
+            outFile << span_ << std::endl;
+            outFile.close();
+        }
         currState[0] = static_cast<std::uint64_t>(span_);
         currState.computeChecksum();
         return;
     }
 
-    void deserialize(const IOBuffer& currState) {
+    void deserialize(const IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) {
         currState.checkChecksum();
         span_ = static_cast<long>(currState[0]);
+        if (opt.debugRestart()) {
+            std::ofstream outFile(fname);
+            // outFile << name() << std::endl;
+            // outFile << timeUnit() << std::endl;
+            outFile << span_ << std::endl;
+            outFile.close();
+        }
         return;
     }
 

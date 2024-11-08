@@ -156,9 +156,16 @@ std::vector<eckit::PathName> StatisticsIO::getFiles( ) {
         throw eckit::SeriousBug{os.str(), Here()};
     }
     std::string path = getCurrentDir();
+    std::vector<eckit::PathName> files_tmp;
     std::vector<eckit::PathName> files;
     std::vector<eckit::PathName> dirs;
-    eckit::PathName{path}.children( files, dirs );
+    eckit::PathName{path}.children( files_tmp, dirs );
+    for ( const auto& file : files_tmp ) {
+        if ( file.extension() != ".txt" ) {
+            files.push_back(file);
+            LOG_DEBUG_LIB(LibMultio) << "File found :: " << file << ", " << file.extension() << std::endl;
+        }
+    }
     return files;
 };
 

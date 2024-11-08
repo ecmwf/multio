@@ -22,6 +22,7 @@ StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& comp
     solverSendInitStep_{false},
     readRestart_{false},
     writeRestart_{false},
+    debugRestart_{false},
     restartTime_{"latest"},//00000000-000000
     restartPath_{"."},
     restartPrefix_{"StatisticsRestartFile"},
@@ -62,6 +63,7 @@ StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& comp
         parseTimeStep(options);
         parseInitialConditionPresent(options);
         parseWriteRestart(options);
+        parseDebugRestart(options);
         parseReadRestart(options);
         parseRestartPath(compConf, options);
         parseRestartPrefix(compConf, options);
@@ -168,6 +170,21 @@ void StatisticsOptions::parseWriteRestart(const eckit::LocalConfiguration& cfg) 
     r = util::parseBool(cfg, "write-restart", false);
     if (r) {
         writeRestart_ = *r;
+    }
+    else {
+        usage();
+        throw eckit::SeriousBug{"Unable to read restart", Here()};
+    }
+    return;
+};
+
+void StatisticsOptions::parseDebugRestart(const eckit::LocalConfiguration& cfg) {
+    // Used to determine if the simulation need to save/load
+    // restart files.
+    std::optional<bool> r;
+    r = util::parseBool(cfg, "debug-restart", false);
+    if (r) {
+        debugRestart_ = *r;
     }
     else {
         usage();
@@ -362,6 +379,11 @@ bool StatisticsOptions::readRestart() const {
 
 bool StatisticsOptions::writeRestart() const {
     return writeRestart_;
+};
+
+
+bool StatisticsOptions::debugRestart() const {
+    return debugRestart_;
 };
 
 

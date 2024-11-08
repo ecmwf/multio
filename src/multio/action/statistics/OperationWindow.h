@@ -116,8 +116,8 @@ private:
     long count_;
     long type_;
 
-    void serialize(IOBuffer& currState) const;
-    void deserialize(const IOBuffer& currState);
+    void serialize(IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) const;
+    void deserialize(const IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt);
 
     void print(std::ostream& os) const;
     friend std::ostream& operator<<(std::ostream& os, const OperationWindow& a);

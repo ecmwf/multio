@@ -36,6 +36,7 @@ private:
     bool solverSendInitStep_;
     bool readRestart_;
     bool writeRestart_;
+    bool debugRestart_;
     std::string restartTime_;
 
     std::string restartPath_;
@@ -66,6 +67,7 @@ private:
     void parseTimeStep(const eckit::LocalConfiguration& cfg);
     void parseInitialConditionPresent(const eckit::LocalConfiguration& cfg);
     void parseWriteRestart(const eckit::LocalConfiguration& cfg);
+    void parseDebugRestart(const eckit::LocalConfiguration& cfg);
     void parseReadRestart(const eckit::LocalConfiguration& cfg);
     void parseRestartPath(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
     void parseRestartPrefix(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
@@ -107,6 +109,7 @@ public:
     bool solver_send_initial_condition() const;
     bool readRestart() const;
     bool writeRestart() const;
+    bool debugRestart() const;
 
     const std::string& restartTime() const;
     const std::string& restartPath() const;

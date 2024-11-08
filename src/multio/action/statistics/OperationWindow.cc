@@ -125,7 +125,7 @@ long OperationWindow::count() const {
 void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
     IOBuffer restartState{IOmanager->getBuffer(restartSize())};
     restartState.zero();
-    serialize(restartState);
+    serialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_dump.txt", opt );
     IOmanager->write("operationWindow", static_cast<size_t>(16), restartSize() );
     IOmanager->flush();
     return;
@@ -134,7 +134,7 @@ void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const Stati
 void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
     IOBuffer restartState{IOmanager->getBuffer(restartSize())};
     IOmanager->read( "operationWindow", restartSize() );
-    deserialize(restartState);
+    deserialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_load.txt", opt);
     restartState.zero();
     return;
 }
@@ -432,8 +432,22 @@ long OperationWindow::lastFlushInSteps() const {
     return (lastFlush_ - epochPoint_) / timeStepInSeconds_;
 }
 
-void OperationWindow::serialize(IOBuffer& currState) const {
+void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) const {
 
+    if ( opt.debugRestart() ) {
+        std::ofstream outFile(fname);
+        outFile << "epochPoint_ :: " << epochPoint_ << std::endl;
+        outFile << "startPoint_ :: " << startPoint_ << std::endl;
+        outFile << "endPoint_ :: " << endPoint_ << std::endl;
+        outFile << "creationPoint_ :: " << creationPoint_ << std::endl;
+        outFile << "prevPoint_ :: " << prevPoint_ << std::endl;
+        outFile << "currPoint_ :: " << currPoint_ << std::endl;
+        outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
+        outFile << "timeStepInSeconds_ :: " << timeStepInSeconds_ << std::endl;
+        outFile << "count_ :: " << count_ << std::endl;
+        outFile << "type_ :: " << type_ << std::endl;
+        outFile.close();
+    }
 
     currState[0] = static_cast<std::uint64_t>(epochPoint_.date().yyyymmdd());
     currState[1] = static_cast<std::uint64_t>(epochPoint_.time().hhmmss());
@@ -465,7 +479,7 @@ void OperationWindow::serialize(IOBuffer& currState) const {
     return;
 }
 
-void OperationWindow::deserialize(const IOBuffer& currState) {
+void OperationWindow::deserialize(const IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) {
 
     currState.checkChecksum();
     epochPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[0]), static_cast<long>(currState[1]));
@@ -478,6 +492,21 @@ void OperationWindow::deserialize(const IOBuffer& currState) {
     timeStepInSeconds_ = static_cast<long>(currState[14]);
     count_ = static_cast<long>(currState[15]);
     type_ = static_cast<long>(currState[16]);
+
+    if ( opt.debugRestart() ) {
+        std::ofstream outFile(fname);
+        outFile << "epochPoint_ :: " << epochPoint_ << std::endl;
+        outFile << "startPoint_ :: " << startPoint_ << std::endl;
+        outFile << "endPoint_ :: " << endPoint_ << std::endl;
+        outFile << "creationPoint_ :: " << creationPoint_ << std::endl;
+        outFile << "prevPoint_ :: " << prevPoint_ << std::endl;
+        outFile << "currPoint_ :: " << currPoint_ << std::endl;
+        outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
+        outFile << "timeStepInSeconds_ :: " << timeStepInSeconds_ << std::endl;
+        outFile << "count_ :: " << count_ << std::endl;
+        outFile << "type_ :: " << type_ << std::endl;
+        outFile.close();
+    }
 
     return;
 }

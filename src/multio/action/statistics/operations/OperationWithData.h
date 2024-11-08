@@ -54,8 +54,8 @@ public:
         if (needRestart_) {
             IOBuffer restartState{IOmanager->getBuffer(restartSize())};
             restartState.zero();
-            serialize(restartState);
             std::string fname = restartFileName();
+            serialize(restartState, IOmanager->getCurrentDir() + "/" + fname + "_dump.txt", opt);
             IOmanager->write(fname, values_.size(), restartSize());
             IOmanager->flush();
         }
@@ -70,14 +70,14 @@ public:
             values_.resize(sz);
             IOBuffer restartState{IOmanager->getBuffer(restartSize())};
             IOmanager->read(fname, restartSize());
-            deserialize(restartState);
+            deserialize(restartState, IOmanager->getCurrentDir() + "/" + fname + "_load.txt", opt);
             restartState.zero();
         }
         return;
     };
 
 protected:
-    void serialize(IOBuffer& restartState) const {
+    void serialize(IOBuffer& restartState, const std::string& fname, const StatisticsOptions& opt) const {
 
         size_t sz = values_.size();
         size_t cnt=0;
@@ -89,10 +89,19 @@ protected:
             cnt++;
         }
         restartState.computeChecksum();
+
+        if (opt.debugRestart()) {
+            std::ofstream outFile(fname);
+            outFile << "values(" << sz << ")" << std::endl;
+            for (size_t i = 0; i < sz; ++i) {
+                outFile << i << ", " << values_[i] << std::endl;
+            }
+            outFile.close();
+        }
         return;
     };
 
-    void deserialize(const IOBuffer& restartState) {
+    void deserialize(const IOBuffer& restartState, const std::string& fname, const StatisticsOptions& opt) {
         restartState.checkChecksum();
         size_t cnt=0;
         size_t sz = values_.size();
@@ -101,6 +110,14 @@ protected:
             double dv = *reinterpret_cast<double*>(&lv);
             values_[i] = static_cast<T>(dv);
             cnt++;
+        }
+        if (opt.debugRestart()) {
+            std::ofstream outFile(fname);
+            outFile << "values(" << sz << ")" << std::endl;
+            for (size_t i = 0; i < sz; ++i) {
+                outFile << i << ", " << values_[i] << std::endl;
+            }
+            outFile.close();
         }
         return;
     };

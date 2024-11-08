@@ -196,7 +196,7 @@ void Statistics::executeImpl(message::Message msg) {
             fieldStats_[key] = LoadTemporalStatisticsFromKey(key);
         }
         else {
-            fieldStats_[key] = std::make_shared<TemporalStatistics>(outputFrequency_, operations_, msg, IOmanager_, cfg);
+            fieldStats_[key] = std::make_unique<TemporalStatistics>(outputFrequency_, operations_, msg, IOmanager_, cfg);
         }
         stat = fieldStats_.find(key);
     }

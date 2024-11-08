@@ -71,7 +71,7 @@ OperationWindow make_window( const std::unique_ptr<PeriodUpdater>& periodUpdater
     }
     else {
         std::ostringstream os;
-        os << " Unknown window type " << std::endl;
+        os << " Unknown window type: " << cfg.options().windowType() << std::endl;
         throw eckit::SeriousBug(os.str(), Here());
     };
     return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeStep(), windowType};

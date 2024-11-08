@@ -381,7 +381,7 @@ const std::string& StatisticsOptions::restartPrefix() const {
 
 
 const std::string& StatisticsOptions::windowType() const {
-    return restartPrefix_;
+    return windowType_;
 };
 
 

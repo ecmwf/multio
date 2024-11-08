@@ -86,7 +86,7 @@ void Statistics::LoadRestart() {
     }
 }
 
-std::unique_ptr<TemporalStatistics> Statistics::LoadRestartByKey( const std::string& key ) {
+std::unique_ptr<TemporalStatistics> Statistics::LoadTemporalStatisticsFromKey( const std::string& key ) {
     IOmanager_->setDateTime(opt_.restartTime());
     IOmanager_->pushDir(key);
     if ( !IOmanager_->currentDirExists() ) {
@@ -193,30 +193,23 @@ void Statistics::executeImpl(message::Message msg) {
     auto stat = fieldStats_.find(key);
     if ( stat == fieldStats_.end() ) {
         if ( opt_.readRestart() && HasRestartKey(key) ) {
-            fieldStats_[key] = LoadRestartByKey(key);
+            fieldStats_[key] = LoadTemporalStatisticsFromKey(key);
         }
         else {
-            fieldStats_[key] = std::make_unique<TemporalStatistics>(outputFrequency_, operations_, msg, IOmanager_, cfg);
+            fieldStats_[key] = std::make_shared<TemporalStatistics>(outputFrequency_, operations_, msg, IOmanager_, cfg);
         }
         stat = fieldStats_.find(key);
-        if (opt_.solver_send_initial_condition()) {
-            util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-            return;
-        }
-    }
-    else {
-        // A simulation that sends step 0, send also step 0 in the restarted simulations.
-        // Because of this if the window was already present, we need check if the current time is
-        // the same as the current point in the window due to a restarted window. And in this case just exit.
-        // Obviously this check is not meaningful for newly created windows
-        auto& ts = *(stat->second);
-        if ( cfg.curr() == ts.cwin().currPoint() && opt_.solver_send_initial_condition() ) {
-            util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
-            return;
-        }
     }
 
+    // Exit if the current time is the same as the current point in the
+    // window and the solver does not send the initial condition.
+    // This can happen when the solver is sending the initial condition
+    // and and the same point is already present in the restart
     auto& ts = *(stat->second);
+    if ( cfg.curr() == ts.cwin().currPoint() && opt_.solver_send_initial_condition() ) {
+        util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
+        return;
+    }
 
     // std::ostringstream os;
     // os << "Current time vs current point in the  window :: "

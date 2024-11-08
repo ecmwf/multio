@@ -453,8 +453,8 @@ void OperationWindow::serialize(IOBuffer& currState) const {
     currState[10] = static_cast<std::uint64_t>(currPoint_.date().yyyymmdd());
     currState[11] = static_cast<std::uint64_t>(currPoint_.time().hhmmss());
 
-    currState[12] = static_cast<std::uint64_t>(currPoint_.date().yyyymmdd());
-    currState[13] = static_cast<std::uint64_t>(currPoint_.time().hhmmss());
+    currState[12] = static_cast<std::uint64_t>(lastFlush_.date().yyyymmdd());
+    currState[13] = static_cast<std::uint64_t>(lastFlush_.time().hhmmss());
 
     currState[14] = static_cast<std::uint64_t>(timeStepInSeconds_);
     currState[15] = static_cast<std::uint64_t>(count_);

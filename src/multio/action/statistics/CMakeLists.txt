@@ -4,10 +4,10 @@ list( APPEND _statistics_sources
     cfg/StatisticsConfiguration.h
     cfg/StatisticsOptions.cc
     cfg/StatisticsOptions.h
-    periodUpdaters/PeriodUpdater.h
-    periodUpdaters/HourPeriodUpdater.h
-    periodUpdaters/DayPeriodUpdater.h
-    periodUpdaters/MonthPeriodUpdater.h
+    period-updaters/PeriodUpdater.h
+    period-updaters/HourPeriodUpdater.h
+    period-updaters/DayPeriodUpdater.h
+    period-updaters/MonthPeriodUpdater.h
     StatisticsIO.cc
     StatisticsIO.h
     io/FstreamIO.cc
@@ -37,6 +37,14 @@ list( APPEND _statistics_sources
     TemporalStatistics.h
     Statistics.cc
     Statistics.h
+    # SynopticCollection.cc
+    # SynopticCollection.h
+    # SynopticFilters.cc
+    # SynopticFilters.h
+    # synoptic-filters/AllTimesFilter.h
+    # synoptic-filters/DailyCustomFilter.h
+    # synoptic-filters/DailyHoursFilter.h
+    # synoptic-filters/Filter.h
 )
 
 list( APPEND _statistics_libs

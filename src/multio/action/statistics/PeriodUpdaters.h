@@ -3,10 +3,10 @@
 
 #include "multio/action/statistics/cfg/StatisticsConfiguration.h"
 
-#include "multio/action/statistics/periodUpdaters/PeriodUpdater.h"
-#include "multio/action/statistics/periodUpdaters/HourPeriodUpdater.h"
-#include "multio/action/statistics/periodUpdaters/DayPeriodUpdater.h"
-#include "multio/action/statistics/periodUpdaters/MonthPeriodUpdater.h"
+#include "multio/action/statistics/period-updaters/PeriodUpdater.h"
+#include "multio/action/statistics/period-updaters/HourPeriodUpdater.h"
+#include "multio/action/statistics/period-updaters/DayPeriodUpdater.h"
+#include "multio/action/statistics/period-updaters/MonthPeriodUpdater.h"
 
 #include "multio/action/statistics/TimeUtils.h"
 #include "eckit/types/DateTime.h"

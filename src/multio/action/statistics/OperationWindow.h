@@ -8,7 +8,7 @@
 
 #include "multio/action/statistics/cfg/StatisticsOptions.h"
 #include "multio/action/statistics/cfg/StatisticsConfiguration.h"
-#include "multio/action/statistics/periodUpdaters/PeriodUpdater.h"
+#include "multio/action/statistics/period-updaters/PeriodUpdater.h"
 #include "StatisticsIO.h"
 #include "multio/message/Message.h"
 #include "multio/util/DateTime.h"

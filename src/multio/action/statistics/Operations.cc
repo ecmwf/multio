@@ -18,10 +18,11 @@ void parse_file_name( const std::string& file, std::string& opname, std::string&
 };
 
 
-std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::string>& opNames, message::Message msg,
+std::vector<std::unique_ptr<Operation>> make_operations(const std::vector<std::string>& opNames,
+                                                        message::Message msg,
                                                         std::shared_ptr<StatisticsIO>& IOmanager,
                                                         const OperationWindow& win,
-                                                        const StatisticsConfiguration& cfg) {
+                                                        const StatisticsConfiguration& cfg ) {
 
     return multio::util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;

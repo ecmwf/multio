@@ -2,7 +2,7 @@
 
 
 #include "multio/action/statistics/cfg/StatisticsConfiguration.h"
-#include "multio/action/statistics/periodUpdaters/PeriodUpdater.h"
+#include "multio/action/statistics/period-updaters/PeriodUpdater.h"
 #include "multio/action/statistics/TimeUtils.h"
 #include "eckit/types/DateTime.h"
 #include "multio/message/Message.h"

@@ -40,11 +40,13 @@ public:
 private:
     bool needRestart_;
     std::string lastDateTime_;
-    void DumpRestart();
+    void DumpRestart(const message::Message& msg);
     void CreateLatestSymLink();
-    void LoadRestart();
+    // void LoadRestart();
     std::unique_ptr<TemporalStatistics> LoadTemporalStatisticsFromKey(const std::string& key);
     bool HasRestartKey(const std::string& key);
+    bool HasMainRestartDir();
+    void updateLatestDateTime( const StatisticsConfiguration& cfg );
     std::string generateKey(const message::Message& msg) const;
     void print(std::ostream& os) const override;
     const StatisticsOptions opt_;
@@ -53,7 +55,7 @@ private:
     RemapParamID remapParamID_;
     std::shared_ptr<StatisticsIO> IOmanager_;
 
-    std::map<std::string, std::shared_ptr<TemporalStatistics>> fieldStats_;
+    std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 };
 
 }  // namespace multio::action

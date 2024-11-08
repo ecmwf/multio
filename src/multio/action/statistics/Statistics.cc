@@ -42,17 +42,55 @@ Statistics::Statistics(const ComponentConfiguration& compConf) :
 }
 
 
-void Statistics::DumpRestart() {
-    if (opt_.writeRestart() && needRestart_) {
-        for (auto it = fieldStats_.begin(); it != fieldStats_.end(); it++) {
-            LOG_DEBUG_LIB(LibMultio) << "Restart for field with key :: " << it->first << ", "
-                                     << it->second->cwin().currPointInSteps() << std::endl;
-            IOmanager_->pushDir(it->first);
-            IOmanager_->createCurrentDir();
-            it->second->dump(IOmanager_, opt_);
-            IOmanager_->popDir();
+void Statistics::DumpRestart( const message::Message& msg ) {
+    if ( msg.metadata().has( "flushKind" ) &&
+         opt_.writeRestart() &&
+         needRestart_ ) {
+
+        // Check the kind of flush
+        std::string flushKind = msg.metadata().getString( "flushKind" );
+        if ( flushKind == "step-and-restart" ||
+             flushKind == "last-step" ||
+             flushKind == "end-of-simulation" ||
+             flushKind == "close-connection" ) {
+
+            // Generate name of the main restart directory
+            std::string folderName;
+            if ( msg.metadata().has( "restartDateTime" ) ) {
+                folderName = msg.metadata().getString( "restartDateTime" );
+            }
+            else {
+                folderName = lastDateTime_;
+            }
+
+            // Create the main restart directory
+            LOG_DEBUG_LIB(LibMultio) << "Performing a Dump :: Flush kind :: " <<
+                    flushKind << "Last DateTime :: " << folderName <<  std::endl;
+            IOmanager_->setDateTime( folderName );
+            if ( !IOmanager_->currentDirExists() ) {
+                IOmanager_->createCurrentDir();
+            }
+
+            // Dump the temporal sttistics restrt directories
+            for (auto it = fieldStats_.begin(); it != fieldStats_.end(); it++) {
+                LOG_DEBUG_LIB(LibMultio) << "   - Restart for field with key :: " << it->first << ", "
+                                         << it->second->cwin().currPointInSteps() << std::endl;
+                IOmanager_->pushDir(it->first);
+                if ( IOmanager_->currentDirExists() ) {
+                    std::ostringstream os;
+                    os << "Current restart already exists: " << IOmanager_->getCurrentDir() << std::endl;
+                    throw eckit::SeriousBug(os.str(), Here());
+                }
+                IOmanager_->createCurrentDir();
+                it->second->dump(IOmanager_, opt_);
+                IOmanager_->popDir();
+            }
+
+            // Create the latest symlink to the latest restart directory
+            CreateLatestSymLink();
         }
     }
+    return;
 }
 
 void Statistics::CreateLatestSymLink() {
@@ -74,17 +112,17 @@ void Statistics::CreateLatestSymLink() {
 
 }
 
-void Statistics::LoadRestart() {
-    if (opt_.readRestart()) {
-        IOmanager_->setDateTime(opt_.restartTime());
-        std::vector<eckit::PathName> dirs = IOmanager_->getDirs();
-        for ( const auto& dir : dirs ) {
-            IOmanager_->pushDir(dir.baseName());
-            fieldStats_[dir.baseName()] = std::make_unique<TemporalStatistics>( IOmanager_, opt_ );
-            IOmanager_->popDir();
-        }
-    }
-}
+// void Statistics::LoadRestart() {
+//     if (opt_.readRestart()) {
+//         IOmanager_->setDateTime(opt_.restartTime());
+//         std::vector<eckit::PathName> dirs = IOmanager_->getDirs();
+//         for ( const auto& dir : dirs ) {
+//             IOmanager_->pushDir(dir.baseName());
+//             fieldStats_[dir.baseName()] = std::make_unique<TemporalStatistics>( IOmanager_, opt_ );
+//             IOmanager_->popDir();
+//         }
+//     }
+// }
 
 std::unique_ptr<TemporalStatistics> Statistics::LoadTemporalStatisticsFromKey( const std::string& key ) {
     IOmanager_->setDateTime(opt_.restartTime());
@@ -97,6 +135,12 @@ std::unique_ptr<TemporalStatistics> Statistics::LoadTemporalStatisticsFromKey( c
     std::unique_ptr<TemporalStatistics> tmp = std::make_unique<TemporalStatistics>( IOmanager_, opt_ );
     IOmanager_->popDir();
     return tmp;
+}
+
+bool Statistics::HasMainRestartDir( ) {
+    IOmanager_->setDateTime(opt_.restartTime());
+    bool has_restart = IOmanager_->currentDirExists() ? true : false;
+    return has_restart;
 }
 
 bool Statistics::HasRestartKey( const std::string& key ) {
@@ -153,43 +197,51 @@ message::Metadata Statistics::outputMetadata(const message::Metadata& inputMetad
 }
 
 
-void Statistics::executeImpl(message::Message msg) {
+void Statistics::updateLatestDateTime( const StatisticsConfiguration& cfg ){
 
-    if (msg.tag() == message::Message::Tag::Flush ) {
-        if ( msg.metadata().has( "flushKind" ) && needRestart_ ) {
-            std::string flushKind = msg.metadata().getString( "flushKind" );
-            if ( flushKind == "step-and-restart" ||
-                 flushKind == "last-step" ||
-                 flushKind == "end-of-simulation" ||
-                 flushKind == "close-connection" ) {
-                std::cout << "Performing a Dump :: Flush kind :: " << flushKind << "Last DateTime :: " << lastDateTime_ <<  std::endl;
-                IOmanager_->setDateTime( lastDateTime_ );
-                DumpRestart();
-                CreateLatestSymLink();
-            }
-        }
-        executeNext(msg);
-        return;
-    }
-
-    if (msg.tag() != message::Message::Tag::Field) {
-        executeNext(msg);
-        return;
-    }
-
-
-    StatisticsConfiguration cfg{msg, opt_};
-    std::string key = cfg.key();
     std::ostringstream tmp;
     tmp << std::setw(8) << std::setfill('0') << cfg.curr().date().yyyymmdd() << "-"
         << std::setw(6) << std::setfill('0') << cfg.curr().time().hhmmss();
     lastDateTime_ = tmp.str();
     needRestart_ = true;
 
+    return;
+}
+
+
+void Statistics::executeImpl(message::Message msg) {
+
+    // Handle flush
+    if (msg.tag() == message::Message::Tag::Flush ) {
+        DumpRestart(msg);
+        executeNext(msg);
+        return;
+    }
+
+    // Handle other non fields
+    if (msg.tag() != message::Message::Tag::Field) {
+        executeNext(msg);
+        return;
+    }
+
+    // Handle fields
+    // -------------
+
+    // Initialize local variables
+    StatisticsConfiguration cfg{msg, opt_};
+    std::string key = cfg.key();
+    updateLatestDateTime( cfg );
+
+    // Check if the main restart directory exists
+    if ( opt_.readRestart() && !HasMainRestartDir() ) {
+        std::ostringstream os;
+        os << "Main restart directory does not exist :: " << opt_.restartPath() << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
 
     util::ScopedTiming timing{statistics_.localTimer_, statistics_.actionTiming_};
 
-
+    // Access or create the temporal statistics object
     auto stat = fieldStats_.find(key);
     if ( stat == fieldStats_.end() ) {
         if ( opt_.readRestart() && HasRestartKey(key) ) {
@@ -198,6 +250,8 @@ void Statistics::executeImpl(message::Message msg) {
         else {
             fieldStats_[key] = std::make_unique<TemporalStatistics>(outputFrequency_, operations_, msg, IOmanager_, cfg);
         }
+        // TODO: Reorganize the code to avoid this second search
+        // which is not efficient
         stat = fieldStats_.find(key);
     }
 
@@ -257,15 +311,15 @@ void Statistics::executeImpl(message::Message msg) {
 
 
 void Statistics::print(std::ostream& os) const {
-    // os << "Statistics(output frequency = " << periodUpdater_->timeSpan() << ", unit = " << periodUpdater_->timeUnit()
-    //    << ", operations = ";
+    os << "Statistics( output-frequency:" << outputFrequency_
+       << ", operations:{";
     bool first = true;
     for (const auto& ops : operations_) {
         os << (first ? "" : ", ");
         os << ops;
         first = false;
     }
-    os << ")";
+    os << "})";
 }
 
 

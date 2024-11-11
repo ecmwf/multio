@@ -23,6 +23,7 @@ StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& comp
     readRestart_{false},
     writeRestart_{false},
     debugRestart_{false},
+    clientSideStatistics_{false},
     restartTime_{"latest"},//00000000-000000
     restartPath_{"."},
     restartPrefix_{"StatisticsRestartFile"},
@@ -64,6 +65,7 @@ StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& comp
         parseInitialConditionPresent(options);
         parseWriteRestart(options);
         parseDebugRestart(options);
+        parseClientSideStatistics(options);
         parseReadRestart(options);
         parseRestartPath(compConf, options);
         parseRestartPrefix(compConf, options);
@@ -189,6 +191,22 @@ void StatisticsOptions::parseDebugRestart(const eckit::LocalConfiguration& cfg) 
     else {
         usage();
         throw eckit::SeriousBug{"Unable to read restart", Here()};
+    }
+    return;
+};
+
+
+void StatisticsOptions::parseClientSideStatistics(const eckit::LocalConfiguration& cfg) {
+    // Used to determine if the simulation need to save/load
+    // restart files.
+    std::optional<bool> r;
+    r = util::parseBool(cfg, "is-client-side", false);
+    if (r) {
+        clientSideStatistics_ = *r;
+    }
+    else {
+        usage();
+        throw eckit::SeriousBug{"Unable to read client-side", Here()};
     }
     return;
 };
@@ -384,6 +402,10 @@ bool StatisticsOptions::writeRestart() const {
 
 bool StatisticsOptions::debugRestart() const {
     return debugRestart_;
+};
+
+bool StatisticsOptions::clientSideStatistics() const {
+    return clientSideStatistics_;
 };
 
 

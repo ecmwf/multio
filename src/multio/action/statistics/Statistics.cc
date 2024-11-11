@@ -17,6 +17,7 @@
 
 #include "TemporalStatistics.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/types/DateTime.h"
 #include "multio/LibMultio.h"
 #include "multio/message/Message.h"
 #include "multio/util/ScopedTimer.h"
@@ -34,20 +35,134 @@ Statistics::Statistics(const ComponentConfiguration& compConf) :
     operations_{compConf.parsedConfig().getStringVector("operations")},
     outputFrequency_{compConf.parsedConfig().getString("output-frequency")},
     remapParamID_{compConf},
-    IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {
-    // if ( opt_.readRestart() ) {
-    //     LoadRestart();
-    // }
+    IOmanager_{StatisticsIOFactory::instance().build(opt_.restartLib(), opt_.restartPath(), opt_.restartPrefix())} {}
+
+
+std::string Statistics::generateRestartNameFromFlush(const message::Message& msg) const {
+
+    std::string folderName;
+    // Restart flush directly provides the folderName
+    if ( msg.metadata().has( "restartDateTime" ) ) {
+        folderName = msg.metadata().getString( "restartDateTime" );
+    }
+
+    // Restart flush provides the step, timeStep, date and time
+    else if ( msg.metadata().has( "step" ) ) {
+        if ( !msg.metadata().has( "timeStep" ) ) {
+            std::ostringstream os;
+            os << "timeStep is not present in the metadata" << std::endl;
+            throw eckit::SeriousBug(os.str(), Here());
+        }
+        if ( !msg.metadata().has( "date" ) ) {
+            std::ostringstream os;
+            os << "date is not present in the metadata" << std::endl;
+            throw eckit::SeriousBug(os.str(), Here());
+        }
+        if ( !msg.metadata().has( "time" ) ) {
+            std::ostringstream os;
+            os << "time is not present in the metadata" << std::endl;
+            throw eckit::SeriousBug(os.str(), Here());
+        }
+        long flushStep     = msg.metadata().getLong( "step" );
+        long flushTimeStep = msg.metadata().getLong( "timeStep" );
+        long flushDate     = msg.metadata().getLong( "date" );
+        long flushTime     = msg.metadata().getLong( "time" );
+
+        // Compute the date and time from the step
+        // TODO: Remove this multiple times repeated code
+        long D = static_cast<long>(flushDate % 100);
+        long M = static_cast<long>((flushDate % 10000) / 100);
+        long Y = static_cast<long>((flushDate % 100000000) / 10000);
+        long s = static_cast<long>(flushTime % 100);
+        long m = static_cast<long>((flushTime % 10000) / 100);
+        long h = static_cast<long>((flushTime % 1000000) / 10000);
+        eckit::DateTime epoch{eckit::Date{Y, M, D}, eckit::Time{h, m, s}};
+
+        // TODO: Loop over the TemporalStatistics windows and check that the date/time in the flush
+        // is the same as the epoch date/time of the window. If not throw an error.
+        //
+        // for (auto ts : fieldStats_) {
+        //     if (ts->cwin().epochPoint() != epoch) {
+        //         std::ostringstream os;
+        //         os << "Epoch point of the window is not the same as the flush date/time" << std::endl;
+        //         throw eckit::SeriousBug(os.str(), Here());
+        //     }
+        // }
+
+        eckit::DateTime dt = epoch + static_cast<eckit::Second>(flushStep * flushTimeStep);
+        std::ostringstream tmp;
+        tmp << std::setw(8) << std::setfill('0') << dt.date().yyyymmdd() << "-"
+            << std::setw(6) << std::setfill('0') << dt.time().hhmmss();
+        folderName = tmp.str();
+    }
+
+    // Restart flush does not provide anything (Fallback)
+    else {
+        folderName = lastDateTime_;
+    }
+
+    return folderName;
+}
+
+void Statistics::CreateMainRestartDirectory( const std::string& restartFolderName, bool is_master ) {
+
+    // Create the main restart directory
+    // TODO: if statistics are client side opt_.clientSideStatistics() then
+    // the restart directory should be created with appended the mpi-rank of
+    // processor that is creating the directory and all following login should
+    // be skipped since every processor will create its own directory.
+    IOmanager_->setDateTime( restartFolderName );
+
+    // Only master create the directory
+    if ( !IOmanager_->currentDirExists() ) {
+        if ( is_master ) {
+            IOmanager_->createCurrentDir();
+        }
+        else {
+            long cnt = 0;
+            while ( !IOmanager_->currentDirExists() && cnt < 100 ) {
+                cnt++;
+                usleep(1000);
+                LOG_DEBUG_LIB(LibMultio) << "Waiting for Dump directory to be created by master: " << restartFolderName << std::endl;
+            }
+            if ( cnt>= 100 ){
+                std::ostringstream os;
+                os << "Unable to create the restart directory: " << restartFolderName << std::endl;
+                throw eckit::SeriousBug(os.str(), Here());
+            }
+        }
+    }
+
     return;
 }
 
+void Statistics::DumpTemporalStatistics(){
+    for (auto it = fieldStats_.begin(); it != fieldStats_.end(); it++) {
+        LOG_DEBUG_LIB(LibMultio) << "   - Restart for field with key :: " << it->first << ", "
+                                 << it->second->cwin().currPointInSteps() << std::endl;
+        IOmanager_->pushDir(it->first);
+        if ( IOmanager_->currentDirExists() ) {
+            std::ostringstream os;
+            os << "Current restart already exists (this means that two mpi tasks has the same field): " << IOmanager_->getCurrentDir() << std::endl;
+            throw eckit::SeriousBug(os.str(), Here());
+        }
+        IOmanager_->createCurrentDir();
+        it->second->dump(IOmanager_, opt_);
+        IOmanager_->popDir();
+    }
+    return;
+}
 
-void Statistics::DumpRestart( const message::Message& msg ) {
+void Statistics::TryDumpRestart( const message::Message& msg ) {
     if ( msg.metadata().has( "flushKind" ) &&
          opt_.writeRestart() &&
          needRestart_ ) {
 
         // Check the kind of flush
+        // NOTE: This is a bit of a hack, in case no serverRank is provided, we
+        // assume that all processors are "master" and rely on atomicity of
+        // filesystem operation to avoid race conditions
+        bool is_master = msg.metadata().getLong( "serverRank", 0L ) == 0L;
         std::string flushKind = msg.metadata().getString( "flushKind" );
         if ( flushKind == "step-and-restart" ||
              flushKind == "last-step" ||
@@ -55,54 +170,48 @@ void Statistics::DumpRestart( const message::Message& msg ) {
              flushKind == "close-connection" ) {
 
             // Generate name of the main restart directory
-            std::string folderName;
-            if ( msg.metadata().has( "restartDateTime" ) ) {
-                folderName = msg.metadata().getString( "restartDateTime" );
-            }
-            else {
-                folderName = lastDateTime_;
-            }
+            std::string restartFolderName = generateRestartNameFromFlush( msg );
 
-            // Create the main restart directory
+            // Log for Dump operation
             LOG_DEBUG_LIB(LibMultio) << "Performing a Dump :: Flush kind :: " <<
-                    flushKind << "Last DateTime :: " << folderName <<  std::endl;
-            IOmanager_->setDateTime( folderName );
-            if ( !IOmanager_->currentDirExists() ) {
-                IOmanager_->createCurrentDir();
+                    flushKind << "Last DateTime :: " << restartFolderName <<  std::endl;
+
+            // Delete the latest symlink as soon as possible
+            if ( is_master ) {
+                DeleteLatestSymLink();
             }
 
-            // Dump the temporal sttistics restrt directories
-            for (auto it = fieldStats_.begin(); it != fieldStats_.end(); it++) {
-                LOG_DEBUG_LIB(LibMultio) << "   - Restart for field with key :: " << it->first << ", "
-                                         << it->second->cwin().currPointInSteps() << std::endl;
-                IOmanager_->pushDir(it->first);
-                if ( IOmanager_->currentDirExists() ) {
-                    std::ostringstream os;
-                    os << "Current restart already exists: " << IOmanager_->getCurrentDir() << std::endl;
-                    throw eckit::SeriousBug(os.str(), Here());
-                }
-                IOmanager_->createCurrentDir();
-                it->second->dump(IOmanager_, opt_);
-                IOmanager_->popDir();
-            }
+            // Create the main restart directory: <rundir>/<UniqueID>/<DateTime>
+            CreateMainRestartDirectory( restartFolderName, is_master );
+
+            // Dump the temporal statistics restart directories
+            DumpTemporalStatistics();
 
             // Create the latest symlink to the latest restart directory
-            CreateLatestSymLink();
+            if ( is_master ) {
+                CreateLatestSymLink();
+            }
         }
     }
     return;
 }
 
-void Statistics::CreateLatestSymLink() {
+void Statistics::DeleteLatestSymLink() {
 
     std::string latestPath = IOmanager_->getRestartSymLink();
     std::string currentDateTime = IOmanager_->getDateTime();
     //Even though eckit::PathName::link is a hardlink and does not work blow exists() follows the link and isLink also works for symlinks and hence the eckit calls can be used here
     if ( eckit::PathName{latestPath}.exists() && eckit::PathName{latestPath}.isLink()){
-
         eckit::PathName{latestPath}.unlink();
+        LOG_DEBUG_LIB(LibMultio) << "Deleted old Symlink from " << currentDateTime << " to "
+                                     << latestPath << std::endl;
     }
 
+}
+
+void Statistics::CreateLatestSymLink() {
+    std::string latestPath = IOmanager_->getRestartSymLink();
+    std::string currentDateTime = IOmanager_->getDateTime();
     // create latest symlink
     // TODO If eckit allows symlinks for directories instead of hard links it would be good to use eckit
     // //eckit::PathName::link(eckit::PathName{latestPath},eckit::PathName{IOmanager_->getCurrentDir()});
@@ -111,18 +220,6 @@ void Statistics::CreateLatestSymLink() {
                                      << latestPath << std::endl;
 
 }
-
-// void Statistics::LoadRestart() {
-//     if (opt_.readRestart()) {
-//         IOmanager_->setDateTime(opt_.restartTime());
-//         std::vector<eckit::PathName> dirs = IOmanager_->getDirs();
-//         for ( const auto& dir : dirs ) {
-//             IOmanager_->pushDir(dir.baseName());
-//             fieldStats_[dir.baseName()] = std::make_unique<TemporalStatistics>( IOmanager_, opt_ );
-//             IOmanager_->popDir();
-//         }
-//     }
-// }
 
 std::unique_ptr<TemporalStatistics> Statistics::LoadTemporalStatisticsFromKey( const std::string& key ) {
     IOmanager_->setDateTime(opt_.restartTime());
@@ -213,7 +310,7 @@ void Statistics::executeImpl(message::Message msg) {
 
     // Handle flush
     if (msg.tag() == message::Message::Tag::Flush ) {
-        DumpRestart(msg);
+        TryDumpRestart(msg);
         executeNext(msg);
         return;
     }
@@ -223,6 +320,7 @@ void Statistics::executeImpl(message::Message msg) {
         executeNext(msg);
         return;
     }
+
 
     // Handle fields
     // -------------

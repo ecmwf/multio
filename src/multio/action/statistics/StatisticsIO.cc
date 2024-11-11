@@ -104,7 +104,7 @@ StatisticsIO::StatisticsIO(const std::string& basePath, const std::string& uniqu
         throw eckit::SeriousBug{os.str(), Here()};
     }
     // Create the unique restart directory
-    eckit::PathName{getUniqueRestartDir()}.mkdir();
+    // eckit::PathName{getUniqueRestartDir()}.mkdir();
     return;
 };
 

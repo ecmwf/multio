@@ -28,4 +28,4 @@ plans:
           - type: file
             append: false
             per-server: false # Will give you one file per server
-            path: Result_standard_0_average_1d_regrid_grib2.grib
+            path: Result_standard_0_average_1d_regrid_2-1-10_grib2.grib

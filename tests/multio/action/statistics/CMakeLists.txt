@@ -38,12 +38,12 @@ list( APPEND _statistics_test_data
 # Some tests depend from mir interpolation
 if( HAVE_MIR )
 list ( APPEND _statistics_tests_names
-    average_1d_regrid_grib2
+    average_1d_regrid_2-1-10_grib2
 )
 list( APPEND _statistics_test_data
   "regular_ll_pl_grib2.tmpl"
-  "Reference_standard_average_1d_regrid_grib2.grib"
-  "Reference_restart_average_1d_regrid_grib2.grib"
+  "Reference_standard_average_1d_regrid_2-1-10_grib2.grib"
+  "Reference_restart_average_1d_regrid_2-1-10_grib2.grib"
 )
 endif( HAVE_MIR )
 

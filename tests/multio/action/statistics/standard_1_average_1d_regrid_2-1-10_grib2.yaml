@@ -6,7 +6,6 @@ plans:
         output-frequency: 1d
         operations: [ average ]
         options:
-          initial-condition-present: true
           step-frequency: 1
           time-step: 3600
           use-current-time: true
@@ -28,4 +27,4 @@ plans:
           - type: file
             append: false
             per-server: false # Will give you one file per server
-            path: Result_restart_0_average_1d_regrid_grib2.grib
+            path: Result_standard_1_average_1d_regrid_2-1-10_grib2.grib

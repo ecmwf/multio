@@ -37,6 +37,7 @@ private:
     bool readRestart_;
     bool writeRestart_;
     bool debugRestart_;
+    bool clientSideStatistics_;
     std::string restartTime_;
 
     std::string restartPath_;
@@ -68,6 +69,7 @@ private:
     void parseInitialConditionPresent(const eckit::LocalConfiguration& cfg);
     void parseWriteRestart(const eckit::LocalConfiguration& cfg);
     void parseDebugRestart(const eckit::LocalConfiguration& cfg);
+    void parseClientSideStatistics(const eckit::LocalConfiguration& cfg);
     void parseReadRestart(const eckit::LocalConfiguration& cfg);
     void parseRestartPath(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
     void parseRestartPrefix(const config::ComponentConfiguration& compConf, const eckit::LocalConfiguration& cfg);
@@ -110,6 +112,7 @@ public:
     bool readRestart() const;
     bool writeRestart() const;
     bool debugRestart() const;
+    bool clientSideStatistics() const;
 
     const std::string& restartTime() const;
     const std::string& restartPath() const;

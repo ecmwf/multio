@@ -40,8 +40,12 @@ public:
 private:
     bool needRestart_;
     std::string lastDateTime_;
-    void DumpRestart(const message::Message& msg);
+    void TryDumpRestart(const message::Message& msg);
+    std::string generateRestartNameFromFlush(const message::Message& msg) const;
+    void DeleteLatestSymLink();
     void CreateLatestSymLink();
+    void CreateMainRestartDirectory( const std::string& restartFolderName, bool is_master );
+    void DumpTemporalStatistics();
     // void LoadRestart();
     std::unique_ptr<TemporalStatistics> LoadTemporalStatisticsFromKey(const std::string& key);
     bool HasRestartKey(const std::string& key);

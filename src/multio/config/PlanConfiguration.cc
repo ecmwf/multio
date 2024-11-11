@@ -212,6 +212,15 @@ eckit::LocalConfiguration generate_interpolate_action(const metkit::mars::MarsPa
     return interpolate_action;
 };
 
+eckit::LocalConfiguration generate_scale_action(const metkit::mars::MarsParsedRequest& request,
+                                                 const eckit::LocalConfiguration& componentConfig,
+                                                 const std::string& templatesPath) {
+    eckit::LocalConfiguration scale_action;
+    scale_action.set("type", "scale");
+    scale_action.set("scale-factor", 1.0);
+
+    return scale_action;
+};
 
 eckit::LocalConfiguration generate_encode_action(const metkit::mars::MarsParsedRequest& request,
                                                  const eckit::LocalConfiguration& componentConfig,

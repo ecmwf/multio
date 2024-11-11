@@ -459,6 +459,13 @@ int multio_delete_handle(multio_handle_t* mio) {
 #if !defined(MULTIO_DUMMY_API)
     return wrapApiFunction([mio]() {
         ASSERT(mio);
+
+        multio::message::Metadata md;
+        md.set("flushKind", "end-of-simulation");
+        
+	mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
+        
+	// TODO add sleep
         delete mio;
     });
 #else
@@ -499,8 +506,13 @@ int multio_close_connections(multio_handle_t* mio) {
     return wrapApiFunction(
         [mio]() {
             ASSERT(mio);
-
-            mio->closeConnections();
+            
+	    multio::message::Metadata md;
+            md.set("flushKind", "end-of-simulation");
+            
+	    mio->dispatch(std::move(md), eckit::Buffer{0}, Message::Tag::Flush);
+            
+	    mio->closeConnections();
         },
         mio);
 #else

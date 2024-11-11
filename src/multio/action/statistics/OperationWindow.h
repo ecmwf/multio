@@ -5,7 +5,10 @@
 
 #include "eckit/types/DateTime.h"
 
-#include "StatisticsConfiguration.h"
+
+#include "multio/action/statistics/cfg/StatisticsOptions.h"
+#include "multio/action/statistics/cfg/StatisticsConfiguration.h"
+#include "multio/action/statistics/period-updaters/PeriodUpdater.h"
 #include "StatisticsIO.h"
 #include "multio/message/Message.h"
 #include "multio/util/DateTime.h"
@@ -14,22 +17,26 @@ namespace multio::action {
 
 class OperationWindow {
 public:
-    OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg);
+    OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt);
 
     OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
-                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint, long timeStepInSeconds);
+                    const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
+                    long timeStepInSeconds, long windowType);
 
     long count() const;
 
     void updateData(const eckit::DateTime& currentPoint);
     void updateWindow(const eckit::DateTime& startPoint, const eckit::DateTime& endPoint);
 
-    void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const;
-    void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg);
+    void dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const;
+    void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt );
 
+    std::string windowType() const;
     bool isWithin(const eckit::DateTime& dt) const;
     bool gtLowerBound(const eckit::DateTime& dt, bool throw_error) const;
+    bool geLowerBound(const eckit::DateTime& dt, bool throw_error) const;
     bool leUpperBound(const eckit::DateTime& dt, bool throw_error) const;
+    bool ltUpperBound(const eckit::DateTime& dt, bool throw_error) const;
 
     long timeSpanInSeconds() const;
     long timeSpanInHours() const;
@@ -107,12 +114,17 @@ private:
 
     long timeStepInSeconds_;
     long count_;
+    long type_;
 
-    void serialize(IOBuffer& currState) const;
-    void deserialize(const IOBuffer& currState);
+    void serialize(IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) const;
+    void deserialize(const IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt);
 
     void print(std::ostream& os) const;
     friend std::ostream& operator<<(std::ostream& os, const OperationWindow& a);
 };
 
+OperationWindow make_window( const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg);
+OperationWindow load_window( std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt );
+
 }  // namespace multio::action
+

@@ -1,15 +1,21 @@
 
 list( APPEND _statistics_sources
-    StatisticsConfiguration.cc
-    StatisticsConfiguration.h
+    cfg/StatisticsConfiguration.cc
+    cfg/StatisticsConfiguration.h
+    cfg/StatisticsOptions.cc
+    cfg/StatisticsOptions.h
+    period-updaters/PeriodUpdater.h
+    period-updaters/HourPeriodUpdater.h
+    period-updaters/DayPeriodUpdater.h
+    period-updaters/MonthPeriodUpdater.h
     StatisticsIO.cc
     StatisticsIO.h
     io/FstreamIO.cc
     io/FstreamIO.h
     TimeUtils.cc
     TimeUtils.h
-    PeriodUpdater.cc
-    PeriodUpdater.h
+    PeriodUpdaters.cc
+    PeriodUpdaters.h
     OperationWindow.cc
     OperationWindow.h
     Operations.cc
@@ -25,10 +31,20 @@ list( APPEND _statistics_sources
     operations/Maximum.h
     operations/DeAccumulate.h
     operations/FixedWindowFluxAverage.h
+    RemapParamID.cc
+    RemapParamID.h
     TemporalStatistics.cc
     TemporalStatistics.h
     Statistics.cc
     Statistics.h
+    # SynopticCollection.cc
+    # SynopticCollection.h
+    # SynopticFilters.cc
+    # SynopticFilters.h
+    # synoptic-filters/AllTimesFilter.h
+    # synoptic-filters/DailyCustomFilter.h
+    # synoptic-filters/DailyHoursFilter.h
+    # synoptic-filters/Filter.h
 )
 
 list( APPEND _statistics_libs
@@ -54,10 +70,9 @@ ecbuild_add_library(
 
     TARGET multio-action-statistics
 
-    TYPE SHARED # Due to reliance on factory self registration this library cannot be static
-
     SOURCES
         ${_statistics_sources}
+
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}
@@ -65,5 +80,5 @@ ecbuild_add_library(
     CONDITION
 
     PUBLIC_LIBS
-        ${_statistics_libs}
+    ${_statistics_libs}
 )

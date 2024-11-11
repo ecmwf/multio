@@ -20,7 +20,8 @@ static eckit::LocalConfiguration no_compression = [] {
 class AtlasIO final : public StatisticsIO {
 public:
     AtlasIO(const std::string& path, const std::string& prefix);
-    void write(const std::string& name, std::size_t writeSize) override;
+    void write(const std::string& name, std::size_t fieldSize, std::size_t writeSize) override;
+    void readSize(const std::string& name, std::size_t& writeSize) override;
     void read(const std::string& name, std::size_t writeSize) override;
     void flush() override;
 

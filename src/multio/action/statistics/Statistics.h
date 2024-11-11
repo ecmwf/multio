@@ -16,10 +16,11 @@
 #pragma once
 
 
-#include "PeriodUpdater.h"
-#include "StatisticsConfiguration.h"
+#include "PeriodUpdaters.h"
 #include "StatisticsIO.h"
+#include "RemapParamID.h"
 #include "multio/action/ChainedAction.h"
+#include "multio/action/statistics/cfg/StatisticsOptions.h"
 
 namespace eckit {
 class Configuration;
@@ -37,14 +38,24 @@ public:
                                      const std::string& key) const;
 
 private:
-    void DumpRestart();
-    std::string generateKey(const message::Message& msg) const;
+    bool needRestart_;
+    std::string lastDateTime_;
+    void TryDumpRestart(const message::Message& msg);
+    std::string generateRestartNameFromFlush(const message::Message& msg) const;
+    void DeleteLatestSymLink();
+    void CreateLatestSymLink();
+    void CreateMainRestartDirectory( const std::string& restartFolderName, bool is_master );
+    void DumpTemporalStatistics();
+    std::unique_ptr<TemporalStatistics> LoadTemporalStatisticsFromKey(const std::string& key);
+    bool HasRestartKey(const std::string& key);
+    bool HasMainRestartDir();
+    void updateLatestDateTime( const StatisticsConfiguration& cfg );
     void print(std::ostream& os) const override;
-    const StatisticsConfiguration cfg_;
+    const StatisticsOptions opt_;
     const std::vector<std::string> operations_;
-    std::shared_ptr<PeriodUpdater> periodUpdater_;
+    std::string outputFrequency_;
+    RemapParamID remapParamID_;
     std::shared_ptr<StatisticsIO> IOmanager_;
-
 
     std::map<std::string, std::unique_ptr<TemporalStatistics>> fieldStats_;
 };

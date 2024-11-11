@@ -33,9 +33,9 @@ void yyyymmdd2ymd(uint64_t yyyymmdd, long& y, long& m, long& d) {
 }
 
 void hhmmss2hms(uint64_t hhmmss, long& h, long& m, long& s) {
-    h = static_cast<long>(hhmmss % 100);
+    s = static_cast<long>(hhmmss % 100);
     m = static_cast<long>((hhmmss % 10000) / 100);
-    s = static_cast<long>((hhmmss % 1000000) / 10000);
+    h = static_cast<long>((hhmmss % 1000000) / 10000);
     if (s < 0 || s > 59) {
         throw eckit::SeriousBug("invalid seconds range", Here());
     }
@@ -57,7 +57,38 @@ eckit::DateTime yyyymmdd_hhmmss2DateTime(uint64_t yyyymmdd, uint64_t hhmmss) {
 }  // namespace
 
 
-OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) :
+OperationWindow make_window( const std::unique_ptr<PeriodUpdater>& periodUpdater, const StatisticsConfiguration& cfg) {
+    eckit::DateTime epochPoint{cfg.epoch()};
+    eckit::DateTime startPoint{periodUpdater->computeWinStartTime(cfg.winStart())};
+    eckit::DateTime creationPoint{periodUpdater->computeWinCreationTime(cfg.winStart())};
+    eckit::DateTime endPoint{periodUpdater->computeWinEndTime(startPoint)};
+    long windowType = 0;
+    if ( cfg.options().windowType() == "forward-offset" ){
+        windowType = 0;
+    }
+    else if ( cfg.options().windowType() == "backward-offset" ) {
+        windowType = 1;
+    }
+    else {
+        std::ostringstream os;
+        os << " Unknown window type: " << cfg.options().windowType() << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    };
+    return OperationWindow{epochPoint, startPoint, creationPoint, endPoint, cfg.timeStep(), windowType};
+};
+
+OperationWindow load_window( std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt ) {
+    IOmanager->pushDir( "operationWindow" );
+    // std::ostringstream logos;
+    // logos << "     - Loading operationWindow from: " << IOmanager->getCurrentDir()  << std::endl;
+    // LOG_DEBUG_LIB(LibMultio) << logos.str() << std::endl;
+    OperationWindow opwin{IOmanager, opt};
+    IOmanager->popDir();
+    return opwin;
+};
+
+
+OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) :
     epochPoint_{eckit::Date{0}, eckit::Time{0}},
     startPoint_{eckit::Date{0}, eckit::Time{0}},
     creationPoint_{eckit::Date{0}, eckit::Time{0}},
@@ -66,14 +97,15 @@ OperationWindow::OperationWindow(std::shared_ptr<StatisticsIO>& IOmanager, const
     endPoint_{eckit::Date{0}, eckit::Time{0}},
     lastFlush_{eckit::Date{0}, eckit::Time{0}},
     timeStepInSeconds_{0},
-    count_{0} {
-    load(IOmanager, cfg);
+    count_{0},
+    type_{0} {
+    load(IOmanager, opt);
     return;
 }
 
 OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit::DateTime& startPoint,
                                  const eckit::DateTime& creationPoint, const eckit::DateTime& endPoint,
-                                 long timeStepInSeconds) :
+                                 long timeStepInSeconds, long windowType) :
     epochPoint_{epochPoint},
     startPoint_{startPoint},
     creationPoint_{creationPoint},
@@ -82,26 +114,28 @@ OperationWindow::OperationWindow(const eckit::DateTime& epochPoint, const eckit:
     endPoint_{endPoint},
     lastFlush_{epochPoint},
     timeStepInSeconds_{timeStepInSeconds},
-    count_{0} {}
+    count_{0},
+    type_{windowType} {}
+
 
 long OperationWindow::count() const {
     return count_;
 }
 
-void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) {
+void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) const {
     IOBuffer restartState{IOmanager->getBuffer(restartSize())};
-    IOmanager->read("window", restartSize());
-    deserialize(restartState);
     restartState.zero();
+    serialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_dump.txt", opt );
+    IOmanager->write("operationWindow", static_cast<size_t>(16), restartSize() );
+    IOmanager->flush();
     return;
 }
 
-void OperationWindow::dump(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsConfiguration& cfg) const {
+void OperationWindow::load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) {
     IOBuffer restartState{IOmanager->getBuffer(restartSize())};
+    IOmanager->read( "operationWindow", restartSize() );
+    deserialize(restartState, IOmanager->getCurrentDir() + "/operationWindow_load.txt", opt);
     restartState.zero();
-    serialize(restartState);
-    IOmanager->write("window", restartSize());
-    IOmanager->flush();
     return;
 }
 
@@ -126,9 +160,32 @@ void OperationWindow::updateWindow(const eckit::DateTime& startPoint, const ecki
     return;
 }
 
+std::string OperationWindow::windowType() const {
+    if (type_ == 0) {
+        return std::string{"forward-offset"};
+    } else if (type_ == 1) {
+        return std::string{"backward-offset"};
+    } else {
+        std::ostringstream os;
+        os << *this << " Unknown window type " << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+}
+
 
 bool OperationWindow::isWithin(const eckit::DateTime& dt) const {
-    bool ret = gtLowerBound(dt, true) && leUpperBound(dt, false);
+    bool ret;
+    if ( type_ == 0 ) {
+        ret = gtLowerBound(dt, false) && leUpperBound(dt, false);
+    }
+    else if ( type_ == 1 ) {
+        ret = geLowerBound(dt, false) && ltUpperBound(dt, false);
+    }
+    else {
+        std::ostringstream os;
+        os << *this << " Unknown window type " << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
     LOG_DEBUG_LIB(LibMultio) << " ------ Is " << dt << " within " << *this << "? -- " << (ret ? "yes" : "no")
                              << std::endl;
     return ret;
@@ -143,6 +200,15 @@ bool OperationWindow::gtLowerBound(const eckit::DateTime& dt, bool throw_error) 
     return dt > creationPoint_;
 };
 
+bool OperationWindow::geLowerBound(const eckit::DateTime& dt, bool throw_error) const {
+    if (throw_error && creationPoint_ > dt) {
+        std::ostringstream os;
+        os << *this << " : " << dt << " is outside of current period : lower Bound violation" << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+    return dt >= creationPoint_;
+};
+
 bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) const {
     // TODO: test without 1 second added. Now it should work
     if (throw_error && dt > endPoint()) {
@@ -151,6 +217,16 @@ bool OperationWindow::leUpperBound(const eckit::DateTime& dt, bool throw_error) 
         throw eckit::SeriousBug(os.str(), Here());
     }
     return dt <= endPoint();
+};
+
+bool OperationWindow::ltUpperBound(const eckit::DateTime& dt, bool throw_error) const {
+    // TODO: test without 1 second added. Now it should work
+    if (throw_error && dt >= endPoint()) {
+        std::ostringstream os;
+        os << *this << " : " << dt << " is outside of current period : upper Bound violation" << std::endl;
+        throw eckit::SeriousBug(os.str(), Here());
+    }
+    return dt < endPoint();
 };
 
 long OperationWindow::timeSpanInHours() const {
@@ -356,8 +432,22 @@ long OperationWindow::lastFlushInSteps() const {
     return (lastFlush_ - epochPoint_) / timeStepInSeconds_;
 }
 
-void OperationWindow::serialize(IOBuffer& currState) const {
+void OperationWindow::serialize(IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) const {
 
+    if ( opt.debugRestart() ) {
+        std::ofstream outFile(fname);
+        outFile << "epochPoint_ :: " << epochPoint_ << std::endl;
+        outFile << "startPoint_ :: " << startPoint_ << std::endl;
+        outFile << "endPoint_ :: " << endPoint_ << std::endl;
+        outFile << "creationPoint_ :: " << creationPoint_ << std::endl;
+        outFile << "prevPoint_ :: " << prevPoint_ << std::endl;
+        outFile << "currPoint_ :: " << currPoint_ << std::endl;
+        outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
+        outFile << "timeStepInSeconds_ :: " << timeStepInSeconds_ << std::endl;
+        outFile << "count_ :: " << count_ << std::endl;
+        outFile << "type_ :: " << type_ << std::endl;
+        outFile.close();
+    }
 
     currState[0] = static_cast<std::uint64_t>(epochPoint_.date().yyyymmdd());
     currState[1] = static_cast<std::uint64_t>(epochPoint_.time().hhmmss());
@@ -377,18 +467,19 @@ void OperationWindow::serialize(IOBuffer& currState) const {
     currState[10] = static_cast<std::uint64_t>(currPoint_.date().yyyymmdd());
     currState[11] = static_cast<std::uint64_t>(currPoint_.time().hhmmss());
 
-    currState[12] = static_cast<std::uint64_t>(currPoint_.date().yyyymmdd());
-    currState[13] = static_cast<std::uint64_t>(currPoint_.time().hhmmss());
+    currState[12] = static_cast<std::uint64_t>(lastFlush_.date().yyyymmdd());
+    currState[13] = static_cast<std::uint64_t>(lastFlush_.time().hhmmss());
 
     currState[14] = static_cast<std::uint64_t>(timeStepInSeconds_);
     currState[15] = static_cast<std::uint64_t>(count_);
+    currState[16] = static_cast<std::uint64_t>(type_);
 
     currState.computeChecksum();
 
     return;
 }
 
-void OperationWindow::deserialize(const IOBuffer& currState) {
+void OperationWindow::deserialize(const IOBuffer& currState, const std::string& fname, const StatisticsOptions& opt) {
 
     currState.checkChecksum();
     epochPoint_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[0]), static_cast<long>(currState[1]));
@@ -400,16 +491,32 @@ void OperationWindow::deserialize(const IOBuffer& currState) {
     lastFlush_ = yyyymmdd_hhmmss2DateTime(static_cast<long>(currState[12]), static_cast<long>(currState[13]));
     timeStepInSeconds_ = static_cast<long>(currState[14]);
     count_ = static_cast<long>(currState[15]);
+    type_ = static_cast<long>(currState[16]);
+
+    if ( opt.debugRestart() ) {
+        std::ofstream outFile(fname);
+        outFile << "epochPoint_ :: " << epochPoint_ << std::endl;
+        outFile << "startPoint_ :: " << startPoint_ << std::endl;
+        outFile << "endPoint_ :: " << endPoint_ << std::endl;
+        outFile << "creationPoint_ :: " << creationPoint_ << std::endl;
+        outFile << "prevPoint_ :: " << prevPoint_ << std::endl;
+        outFile << "currPoint_ :: " << currPoint_ << std::endl;
+        outFile << "lastFlush_ :: " << lastFlush_ << std::endl;
+        outFile << "timeStepInSeconds_ :: " << timeStepInSeconds_ << std::endl;
+        outFile << "count_ :: " << count_ << std::endl;
+        outFile << "type_ :: " << type_ << std::endl;
+        outFile.close();
+    }
 
     return;
 }
 
 size_t OperationWindow::restartSize() const {
-    return static_cast<size_t>(17);
+    return static_cast<size_t>(18);
 }
 
 void OperationWindow::print(std::ostream& os) const {
-    os << "MovingWindow(" << startPoint_ << " to " << endPoint() << ")";
+    os << "OperationWindow(" << startPoint_ << " to " << endPoint() << ")";
 }
 
 std::ostream& operator<<(std::ostream& os, const OperationWindow& a) {

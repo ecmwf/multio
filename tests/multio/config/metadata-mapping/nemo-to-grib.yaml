@@ -285,7 +285,7 @@ data:
     grid-type: "unstructured_grid"
     domain : "T grid"
     unstructured-grid-subtype : "T"
-    level-type : "oceanDepthLayer"
+    level-type : "depthBelowSeaLayer"
 
   # Integral of sea water practical salinity in the upper 700m
   - nemo-id : sal700
@@ -293,7 +293,7 @@ data:
     grid-type: "unstructured_grid"
     domain : "T grid"
     unstructured-grid-subtype : "T"
-    level-type : "oceanDepthLayer"
+    level-type : "depthBelowSeaLayer"
 
   # Integral of sea water practical salinity in the total water column
   - nemo-id : salbtm
@@ -309,7 +309,7 @@ data:
     grid-type: "unstructured_grid"
     domain : "T grid"
     unstructured-grid-subtype : "T"
-    level-type : "oceanDepthLayer"
+    level-type : "depthBelowSeaLayer"
 
   # Water column integrated heat content in the upper 700m
   - nemo-id : hc700
@@ -317,7 +317,7 @@ data:
     grid-type: "unstructured_grid"
     domain : "T grid"
     unstructured-grid-subtype : "T"
-    level-type : "oceanDepthLayer"
+    level-type : "depthBelowSeaLayer"
 
   # Water column integrated heat content in the total water column
   - nemo-id : hcbtm

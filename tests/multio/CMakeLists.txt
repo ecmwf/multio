@@ -232,14 +232,17 @@ ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_initdefault_passdown
                   ENVIRONMENT  "${_test_environment}"
 )
 
-ecbuild_add_test( TARGET       test_multio_replay_nemo_fapi
-                  CONDITION    HAVE_FORTRAN
-                  COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh
-                  TEST_DEPENDS multio_replay_get_test_data
-                  ARGS         $<TARGET_FILE:multio-replay-nemo-fapi>
-                               $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
-                  ENVIRONMENT  "${_test_environment}"
-)
+ecbuild_find_mpi(COMPONENTS Fortran)
+if( HAVE_MPI AND TARGET MPI::MPI_Fortran )
+  ecbuild_add_test( TARGET       test_multio_replay_nemo_fapi
+                    CONDITION    HAVE_FORTRAN
+                    COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh
+                    TEST_DEPENDS multio_replay_get_test_data
+                    ARGS         $<TARGET_FILE:multio-replay-nemo-fapi>
+                                 $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
+                    ENVIRONMENT  "${_test_environment}"
+  )
+endif()
 
 ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_masked
                   COMMAND      ${CMAKE_CURRENT_SOURCE_DIR}/replay-nemo.sh

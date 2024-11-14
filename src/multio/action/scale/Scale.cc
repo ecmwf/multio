@@ -10,7 +10,6 @@
 
 #include "multio/action/scale/Scale.h"
 
-#include "eckit/config/Configuration.h"
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 
@@ -18,14 +17,15 @@
 #include "multio/LibMultio.h"
 #include "multio/util/PrecisionTag.h"
 #include "multio/message/Message.h"
+#include "multio/config/ComponentConfiguration.h"
+
 
 
 namespace multio::action {
 
 Scale::Scale(const ComponentConfiguration& compConf) :
     ChainedAction(compConf),
-    cfg_{compConf},
-    scalingFactor_{compConf.parsedConfig().getDouble("scaling-Factor"),1.0} {}
+    scalingFactor_{compConf.parsedConfig().getDouble("scaling-Factor",1.0)} {}
 
 void Scale::executeImpl(message::Message msg) {
     if (msg.tag() != message::Message::Tag::Field) {
@@ -43,34 +43,30 @@ template <typename Precision>
 message::Message Scale::ScaleMessage(message::Message&& msg) const {
     LOG_DEBUG_LIB(LibMultio) << "Scale :: Metadata of the input message :: " <<std::endl
                              <<msg.metadata() <<std::endl;
-    eckit::Buffer& buffer = msg.payload();
+
+    size_t size = msg.payload().size()/sizeof(Precision);
+
+    auto data = static_cast<Precision*>(msg.payload().modifyData());
     
-    Precision* data = reinterpret_cast<Precision *>(buffer.data());
-    const size_t size = msg.payload().size()/sizeof(Precision);
-    cfg_.haveMissingValue() ? computeWithMissing(data, size, scalingFactor_) : computeWithoutMissing(data, size, scalingFactor_);
-        
+    scaling(data, size, scalingFactor_);
     //TODO LOOK WHAT IS NEEDED FOR METADATA then do message::Metadata md = msg.metadata(); modify md in return pass md instead of msg.metatdata()
     return {message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(msg.metadata())},
-            std::move(buffer)};
+            std::move(msg.payload())};
+}
+
+template <typename Precision>
+void Scale::scaling(Precision* data, std::size_t size, double scalingFactor) const {
+    // Apply the scaling in place to each element
+    std::transform(data, data + size, data, [scalingFactor](Precision value) {
+        return static_cast<Precision>(value * scalingFactor);
+    });
 }
 
 void Scale::print(std::ostream & os) const {
     os << "Scale (Scaling factor = " <<  scalingFactor_ << " )" ;
 }
+
+
 static ActionBuilder<Scale> ScaleBuilder("scale");
 
-private:
-    template <typename T>
-    void scaleWithMissing(T* data, std::size_t size, double scalingFactor) {
-        const double m = cfg_.missingValue();
-        std::transform(data, data + size, data, [scalingFactor, m](T value) {return static_cast<T>(m==value ? m : value * scalingFactor);});
-    }
-
-    template <typename T>
-    void scaleWithoutMissing(T* data, std::size_t size, double scalingFactor) {
-        // Apply the scaling in place to each element
-        std::transform(data, data + size, data, [scalingFactor](T value) {
-            return static_cast<T>(value * scalingFactor);
-        });
-    }
 }

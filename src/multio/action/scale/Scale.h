@@ -3,6 +3,9 @@
 #include "multio/action/ChainedAction.h"
 #include "multio/config/ComponentConfiguration.h"  // Ensure this include is present
 
+#include "multio/action/scale/Mapping.h"
+#include "multio/action/scale/Scaling.h"
+
 namespace multio::action {
 
 class Scale final : public ChainedAction {
@@ -12,14 +15,12 @@ public:
 
 private:
 
-    const double scalingFactor_;  
+    ScaleScaling scaling_;  
+    ScaleMapping mapping_;
     
     template <typename Precision>
     message::Message ScaleMessage(message::Message&& msg) const;
 
-    template <typename Precision>
-    void scaling(Precision* data, std::size_t size, double scalingFactor) const;
-    
     void print(std::ostream&) const override;
 };
 

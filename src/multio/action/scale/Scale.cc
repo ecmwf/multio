@@ -19,20 +19,23 @@
 #include "multio/message/Message.h"
 #include "multio/config/ComponentConfiguration.h"
 
+#include "multio/action/scale/Mapping.h"
+#include "multio/action/scale/Scaling.h"
+
 
 
 namespace multio::action {
 
 Scale::Scale(const ComponentConfiguration& compConf) :
     ChainedAction(compConf),
-    scalingFactor_{compConf.parsedConfig().getDouble("scaling-Factor",1.0)} {}
+    scaling_{compConf},
+    mapping_{compConf} {}
 
 void Scale::executeImpl(message::Message msg) {
     if (msg.tag() != message::Message::Tag::Field) {
         executeNext(std::move(msg));
         return;
     }
-
     executeNext(util::dispatchPrecisionTag(msg.precision(), [&](auto pt) -> message::Message {
         using Precision = typename decltype(pt)::type;
         return ScaleMessage<Precision>(std::move(msg));
@@ -43,29 +46,15 @@ template <typename Precision>
 message::Message Scale::ScaleMessage(message::Message&& msg) const {
     LOG_DEBUG_LIB(LibMultio) << "Scale :: Metadata of the input message :: " <<std::endl
                              <<msg.metadata() <<std::endl;
-
-    size_t size = msg.payload().size()/sizeof(Precision);
-
-    auto data = static_cast<Precision*>(msg.payload().modifyData());
-    
-    scaling(data, size, scalingFactor_);
-    //TODO LOOK WHAT IS NEEDED FOR METADATA then do message::Metadata md = msg.metadata(); modify md in return pass md instead of msg.metatdata()
+    scaling_.applyScaling<Precision>(msg);
+    mapping_.applyMapping(msg.modifyMetadata());
     return {message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(msg.metadata())},
             std::move(msg.payload())};
 }
 
-template <typename Precision>
-void Scale::scaling(Precision* data, std::size_t size, double scalingFactor) const {
-    // Apply the scaling in place to each element
-    std::transform(data, data + size, data, [scalingFactor](Precision value) {
-        return static_cast<Precision>(value * scalingFactor);
-    });
-}
-
 void Scale::print(std::ostream & os) const {
-    os << "Scale (Scaling factor = " <<  scalingFactor_ << " )" ;
+    os << "Scale Action ";
 }
-
 
 static ActionBuilder<Scale> ScaleBuilder("scale");
 

@@ -20,7 +20,7 @@ public:
     explicit ScaleScaling( const config::ComponentConfiguration& compConf );
     double getScalingFactor( const std::string paramID) const;
     template <typename Precision>
-    void ScaleScaling::applyScaling( message::Message & msg) const {
+    void applyScaling( message::Message & msg) const {
         if (hasScaling_) {
             std::ostringstream key;
             std::string cparam{"xxx"};

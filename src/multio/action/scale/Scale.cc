@@ -14,6 +14,7 @@
 #include "eckit/log/Log.h"
 
 
+
 #include "multio/LibMultio.h"
 #include "multio/util/PrecisionTag.h"
 #include "multio/message/Message.h"
@@ -98,5 +99,10 @@ void Scale::print(std::ostream & os) const {
 }
 
 static ActionBuilder<Scale> ScaleBuilder("scale");
+
+
+template message::Message Scale::ScaleMessage<float>(message::Message&&) const;
+template message::Message Scale::ScaleMessage<double>(message::Message&&) const;
+
 
 }

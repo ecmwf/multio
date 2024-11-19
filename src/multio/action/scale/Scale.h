@@ -17,6 +17,7 @@ private:
 
     ScaleScaling scaling_;  
     ScaleMapping mapping_;
+    std::set<std::string> paramsToScale_;
     
     template <typename Precision>
     message::Message ScaleMessage(message::Message&& msg) const;

@@ -79,7 +79,7 @@ void Scale::executeImpl(message::Message msg) {
 template <typename Precision>
 message::Message Scale::ScaleMessage(message::Message&& msg) const {
     
-    std::cout<<"LOG_DEBUG_LIB(LibMultio)" << "Scale :: Metadata of the input message :: Apply Scaling " <<std::endl
+    LOG_DEBUG_LIB(LibMultio) << "Scale :: Metadata of the input message :: Apply Scaling " <<std::endl
                              <<msg.metadata() <<std::endl;
     msg.acquire();
 

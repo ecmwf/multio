@@ -14,15 +14,14 @@ public:
     void executeImpl(message::Message) override;
 
 private:
-
-    ScaleScaling scaling_;  
+    ScaleScaling scaling_;
     ScaleMapping mapping_;
     std::set<std::string> paramsToScale_;
-    
+
     template <typename Precision>
     message::Message ScaleMessage(message::Message&& msg) const;
 
     void print(std::ostream&) const override;
 };
 
-}  // namespace multio::action::scale
+}  // namespace multio::action

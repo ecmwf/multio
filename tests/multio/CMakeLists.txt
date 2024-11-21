@@ -69,13 +69,13 @@ ecbuild_add_test( TARGET    test_multio_select
 
 ecbuild_add_test( TARGET    test_multio_ringbuffer
                   SOURCES   test_multio_ringbuffer.cc
-                  LIBS      ${_link_libraries} )
+                  LIBS      multio )
 
 # Test tracing
 
 ecbuild_add_test( TARGET    test_multio_tracing
                   SOURCES   test_multio_tracing.cc
-                  LIBS      ${_link_libraries} )
+                  LIBS      multio )
 
 # Test api
 

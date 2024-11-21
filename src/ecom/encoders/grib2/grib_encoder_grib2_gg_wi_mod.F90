@@ -39,7 +39,8 @@ CONTAINS
 END TYPE
 
 ! Name of the grib sample to be loaded
-CHARACTER(LEN=*), PARAMETER :: SAMPLE_NAME_GRIB2_GG_WI='gg_sfc_grib2'
+! CHARACTER(LEN=*), PARAMETER :: SAMPLE_NAME_GRIB2_GG_WI='gg_sfc_grib2'
+CHARACTER(LEN=*), PARAMETER :: SAMPLE_NAME_GRIB2_GG_WI='multio-gg-sfc-grib2'
 
 ! Whitelist of public symbols
 PUBLIC :: MAKE_GRIB2_GG_WI_ENCODER
@@ -383,7 +384,6 @@ IMPLICIT NONE
   PP_METADATA_ENTER_PROCEDURE( METADATA )
 
   EX = .TRUE.
-
 
   PP_LOG_DEVELOP_STR( 'ENCODER: grib2, gridded, wave_integral, runtime' )
 

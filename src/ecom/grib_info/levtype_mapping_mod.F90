@@ -1,0 +1,185 @@
+MODULE LEVTYPE_MAPPING_MOD
+
+IMPLICIT NONE
+
+!> Rules used to match fields
+TYPE :: MATCHER_T
+  INTEGER(KIND=JPIB_K), DIMENSION(:), ALLOCATABLE :: LEV_TYPE
+  INTEGER(KIND=JPIB_K), DIMENSION(:), ALLOCATABLE :: LEVEL
+  INTEGER(KIND=JPIB_K), DIMENSION(:), ALLOCATABLE :: REPRES
+  INTEGER(KIND=JPIB_K), DIMENSION(:), ALLOCATABLE :: PARAM_ID
+  LOGICAL :: IS_ENSAMBLE = .FALSE.
+END TYPE
+
+!> Rules used to match fields
+TYPE :: MATCHER_T
+  INTEGER(KIND=JPIB_K), DIMENSION(:), ALLOCATABLE :: LEV_TYPE
+  INTEGER(KIND=JPIB_K), DIMENSION(:), ALLOCATABLE :: LEVEL
+  INTEGER(KIND=JPIB_K), DIMENSION(:), ALLOCATABLE :: REPRES
+  INTEGER(KIND=JPIB_K), DIMENSION(:), ALLOCATABLE :: PARAM_ID
+  LOGICAL :: IS_ENSAMBLE = .FALSE.
+END TYPE
+
+!> Default assumptions
+TYPE(RULE_T), TARGET, DIMENSION(:), ALLOCATABLE :: DEFAULT_ASSUMPTIONS
+TYPE(RULE_T), TARGET, DIMENSION(:), ALLOCATABLE :: SPECIAL_ASSUMPTIONS
+
+
+!> Whitelise of public symbols
+PUBLIC :: LEVEL_ASSUMPTIONS_T
+PUBLIC :: INIT_LEVEL_ASSUMPTION_RULES
+PUBLIC :: FREE_LEVEL_ASSUMPTION_RULES
+PUBLIC :: MATCH_LEVEL_ASSUMPTION_RULES
+
+CONTAINS
+
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'INIT'
+SUBROUTINE INIT_LEVEL_ASSUMPTION_RULES( MAIN_CFG, VERBOSE )
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
+
+  ! Symbols imported from other modules within the project.
+  USE :: OM_CORE_MOD,          ONLY: JPIB_K
+  USE :: OM_GENERAL_UTILS_MOD, ONLY: OM_REPLACE_ENVVAR_IN_STRING
+
+  ! Symbols imported from other libraries
+  USE :: FCKIT_PATHNAME_MODULE,      ONLY: FCKIT_PATHNAME
+  USE :: FCKIT_CONFIGURATION_MODULE, ONLY: FCKIT_YAMLCONFIGURATION
+  USE :: FCKIT_CONFIGURATION_MODULE, ONLY: FCKIT_CONFIGURATION
+  USE :: FCKIT_CONFIGURATION_MODULE, ONLY: DEALLOCATE_FCKIT_CONFIGURATION
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(FCKIT_CONFIGURATION), INTENT(IN) :: MAIN_CFG
+  LOGICAL,                   INTENT(IN) :: VERBOSE
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=JPIB_K) :: J
+  INTEGER(KIND=JPIB_K) :: STAT
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+  TYPE(FCKIT_CONFIGURATION) :: CFG
+  TYPE(FCKIT_CONFIGURATION) :: ASSUMPTIONS_RULES_CFG
+  TYPE(FCKIT_CONFIGURATION), ALLOCATABLE, DIMENSION(:) :: DEFAULT_RULES_CFG
+  TYPE(FCKIT_CONFIGURATION), ALLOCATABLE, DIMENSION(:) :: SPECIAL_RULES_CFG
+  CHARACTER(LEN=:), ALLOCATABLE :: CLTMP
+  CHARACTER(LEN=1024) :: YAMLFNAME
+  LOGICAL :: EX
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  YAMLFNAME = REPEAT(' ',1024)
+  IF ( MAIN_CFG%GET( 'leveltype-mapping-file', CLTMP ) ) THEN
+    PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(CLTMP), 0 )
+    CALL OM_REPLACE_ENVVAR_IN_STRING( CLTMP, YAMLFNAME )
+  ELSE
+    YAMLFNAME = './leveltype-mapping.yaml'
+  ENDIF
+
+  ! Free memory
+  IF ( ALLOCATED(CLTMP) ) THEN
+    DEALLOCATE(CLTMP)
+  ENDIF
+
+  ! Check if the file exists
+  INQUIRE(FILE=YAMLFNAME, EXIST=EX)
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.EX, 1 )
+
+  ! Open the time assumptions file
+  CFG = FCKIT_YAMLCONFIGURATION( FCKIT_PATHNAME( TRIM(YAMLFNAME) ) )
+
+  ! Reading the encoding rules
+  IF ( CFG%GET( 'rules', ASSUMPTIONS_RULES_CFG ) ) THEN
+
+    ! Logging
+    IF ( VERBOSE ) THEN
+      WRITE(ERROR_UNIT,*) 'The size of the allocated object is: ', SIZE(ASSUMPTIONS_RULES_CFG)
+    ENDIF
+
+    ! Memory allocation
+    ALLOCATE(SPECIAL_ASSUMPTIONS(SIZE(ASSUMPTIONS_RULES_CFG)), STAT=STAT, ERRMSG=ERRMSG )
+    PP_DEBUG_DEVELOP_COND_THROW( STAT.NE.0, 2 )
+
+    ! Loop over the rules and read rule configuration
+    DO I = 1, SIZE(ASSUMPTIONS_RULES_CFG)
+      ! Logging
+      IF ( VERBOSE ) THEN
+        WRITE(ERROR_UNIT,*) 'Reading the next special rule: ', I
+      ENDIF
+      CALL READ_NAME( ASSUMPTIONS_RULES_CFG(I), SPECIAL_ASSUMPTIONS(I)%NAME, VERBOSE )
+      CALL READ_ACTIONS( ASSUMPTIONS_RULES_CFG(I), SPECIAL_ASSUMPTIONS(I), VERBOSE )
+    ENDDO
+
+    ! Log rules names
+    IF ( VERBOSE ) THEN
+      WRITE(ERROR_UNIT,*) SPECIAL_ASSUMPTIONS(1)%NAME
+    ENDIF
+
+  ENDIF
+
+  ! Free memory
+  CALL ASSUMPTIONS_RULES_CFG%FINAL()
+
+  ! Destroy the fckit configuration object
+  CALL CFG%FINAL()
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ErrorHandler: BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=:), ALLOCATABLE :: STR
+    CHARACTER(LEN=128) :: TMP
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (0)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Time assumptions file name not allocated after reading' )
+    CASE (1)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'file does not exist' )
+    CASE (2)
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unable to allocate rules: '//TRIM(ADJUSTL(ERRMSG)) )
+    CASE DEFAULT
+      PP_DEBUG_CREATE_ERROR_MSG( STR, 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT( STR )
+
+  END BLOCK ErrorHandler
+
+  ! Exit point on error
+  RETURN
+
+END SUBROUTINE INIT_LEVEL_ASSUMPTION_RULES
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+END MODULE LEVTYPE_MAPPING_MOD

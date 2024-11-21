@@ -19,6 +19,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "Cray")
 
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   set(autopromote_flags   "-fdefault-real-8 -fdefault-double-8")
+  #set(checkbounds_flags   "")
   set(checkbounds_flags   "-fcheck=bounds")
   set(fpe_flags           "-ffpe-trap=invalid,zero,overflow")
   set(initsnan_flags      "-finit-real=snan")
@@ -29,7 +30,8 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
 
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
   set(autopromote_flags   "-real-size 64")
-  set(checkbounds_flags   "-check bounds")
+  #set(checkbounds_flags   "-check bounds")
+  set(checkbounds_flags   "")
   set(initsnan_flags      "-init=snan")
   set(fpe_flags           "-fpe0")
 

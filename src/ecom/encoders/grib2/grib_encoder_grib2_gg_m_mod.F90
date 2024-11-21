@@ -39,7 +39,8 @@ CONTAINS
 END TYPE
 
 ! Name of the grib sample to be loaded
-CHARACTER(LEN=*), PARAMETER :: SAMPLE_NAME_GRIB2_GG_M='gg_ml'
+! CHARACTER(LEN=*), PARAMETER :: SAMPLE_NAME_GRIB2_GG_M='gg_ml'
+CHARACTER(LEN=*), PARAMETER :: SAMPLE_NAME_GRIB2_GG_M='multio-gg-ml-grib2'
 
 ! Whitelist of public symbols
 PUBLIC :: MAKE_GRIB2_GG_M_ENCODER

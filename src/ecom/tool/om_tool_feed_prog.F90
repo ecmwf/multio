@@ -5,6 +5,7 @@ PROGRAM OM_TOOL_PROG
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: OUTPUT_UNIT
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL32
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+  USE, INTRINSIC :: ISO_C_BINDING,   ONLY: C_INT
 
   ! Symbols imported from other modules within the project.
   USE :: OM_TOOL_UTILS_MOD, ONLY: SET_HOOK_VERBOSITY
@@ -23,7 +24,12 @@ PROGRAM OM_TOOL_PROG
   USE :: OM_TOOL_CFG_MOD, ONLY: FREE_COMMAND_LINE_OPTIONS
   USE :: OM_TOOL_CFG_MOD, ONLY: MATCH
 
+  USE :: MULTIO_API, ONLY: MULTIO_INITIALISE
+
   ! Symbols imported from the main library of the project.
+  USE :: OM_API_MOD, ONLY: IPREFIX2ILEVTYPE
+  USE :: OM_API_MOD, ONLY: ILEVTYPE2CLEVTYPE
+  USE :: OM_API_MOD, ONLY: IREPRES2CREPRES
   USE :: OM_API_MOD, ONLY: JPIB_K
   USE :: OM_API_MOD, ONLY: VALUES_SP_E
   USE :: OM_API_MOD, ONLY: VALUES_DP_E
@@ -63,6 +69,8 @@ IMPLICIT NONE
   TYPE(PROC_TOPO_T) :: YLTOPO
   TYPE(MODEL_PAR_T) :: YLOMP
   INTEGER(KIND=JPIB_K) :: TOCID
+
+  INTEGER(KIND=C_INT) :: ERR
   TYPE(OM_ATM_MSG_T) :: YLATMMSG
   TYPE(OM_WAM_MSG_T) :: YLWAMMSG
   CHARACTER(LEN=2048) :: TOCFNAME
@@ -73,15 +81,19 @@ IMPLICIT NONE
   REAL(KIND=REAL32), POINTER, DIMENSION(:) :: VALUES_SP
   REAL(KIND=REAL64), POINTER, DIMENSION(:) :: VALUES_DP
 
+  ! Initialize multio
+  ERR = MULTIO_INITIALISE()
+
   ! Set the default values for the command line options
   CALL INIT_COMMAND_LINE_OPTIONS( CFG )
 
   ! Parse command line options
   CALL PARSE_COMMAND_LINE_OPTIONS( CFG )
 
-  ! Log teh configuration of hte tool
-  CALL PRINT_COMMAND_LINE_OPTIONS( CFG )
-
+  ! Log the configuration of hte tool
+  IF ( CFG%VERBOSE ) THEN
+    CALL PRINT_COMMAND_LINE_OPTIONS( CFG )
+  ENDIF
 
   ! Set the verbosity of the hooks at begin and end of every function
   CALL SET_HOOK_VERBOSITY( .FALSE. )
@@ -111,6 +123,11 @@ IMPLICIT NONE
     CALL TOC_READ_ALL( TRIM(CFG%INPUT_DIR), TOC, YLOMP%SIM_%NPROC_IO, CFG%BIG_ENDIAN_READ, CFG%VERBOSE )
   ENDIF
 
+  IF ( CFG%VERBOSE ) THEN
+    WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
+    WRITE(OUTPUT_UNIT,'(A20,A10,A10,A10,A10,A10,A10,A4,A20,A10)') ' message type', 'paramId', 'level/uid', 'step', 'proc', 'repres', 'prefix', '    ', 'crepres', 'clevtype'
+  ENDIF
+
   ! Loop over the toc entries
   FeederLoop: DO TOCID = 1, SIZE(TOC)
 
@@ -120,7 +137,7 @@ IMPLICIT NONE
     CLASS IS ( TOC_SIM_INIT_T )
 
       IF ( CFG%DRYRUN ) THEN
-        WRITE(OUTPUT_UNIT,*) '---------------------------------------------------------------------'
+        WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
         WRITE(OUTPUT_UNIT,*) 'Begin of simulation'
       ENDIF
       CYCLE FeederLoop
@@ -161,7 +178,7 @@ IMPLICIT NONE
             STOP
           END SELECT
         ELSE
-          WRITE(OUTPUT_UNIT,'(A,I10,I10,I10)') 'Atm. message:       ', A%PARAM_ID_, A%U_ID_, A%STEP_ID_
+          WRITE(OUTPUT_UNIT,'(A,I10,I10,I10,I10,I10,I10,A4,A20,A10)') 'Atm. message:       ', A%PARAM_ID_, A%U_ID_, A%STEP_ID_, A%PROC_ID_, A%REPRES_ID_, A%PREFIX_ID_, '    ', IREPRES2CREPRES(A%REPRES_ID_), ILEVTYPE2CLEVTYPE(IPREFIX2ILEVTYPE(A%PREFIX_ID_,A%PARAM_ID_,A%U_ID_,A%REPRES_ID_))
         ENDIF
 
       ENDIF
@@ -204,7 +221,7 @@ IMPLICIT NONE
           END SELECT
 
         ELSE
-          WRITE(OUTPUT_UNIT,'(A,I10,I10,I10)') 'Wam. message:       ', A%PARAM_ID_, A%U_ID_, A%STEP_ID_
+          WRITE(OUTPUT_UNIT,'(A,I10,I10,I10,I10,I10,I10,A4,A20,A10)') 'Wam. message:       ', A%PARAM_ID_, A%U_ID_, A%STEP_ID_, A%PROC_ID_, A%REPRES_ID_, A%PREFIX_ID_, '    ', IREPRES2CREPRES(A%REPRES_ID_), ILEVTYPE2CLEVTYPE(IPREFIX2ILEVTYPE(A%PREFIX_ID_,A%PARAM_ID_,A%U_ID_,A%REPRES_ID_))
         ENDIF
       ENDIF
 
@@ -214,7 +231,7 @@ IMPLICIT NONE
       IF ( .NOT.CFG%DRYRUN ) THEN
         CALL YLOM%FLUSH_STEP( A%STEP_ )
       ELSE
-        WRITE(OUTPUT_UNIT,*) '---------------------------------------------------------------------'
+        WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
         WRITE(OUTPUT_UNIT,'(A,I10)') 'Flush:              ', A%STEP_
       ENDIF
 
@@ -223,7 +240,7 @@ IMPLICIT NONE
       IF ( .NOT.CFG%DRYRUN ) THEN
         CALL YLOM%FLUSH_STEP_AND_TRIGGER_RESTART( A%STEP_ )
       ELSE
-        WRITE(OUTPUT_UNIT,*) '---------------------------------------------------------------------'
+        WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
         WRITE(OUTPUT_UNIT,'(A,I10)') 'Flush and restart:  ', A%STEP_
       ENDIF
 
@@ -232,7 +249,7 @@ IMPLICIT NONE
       IF ( .NOT.CFG%DRYRUN ) THEN
         CALL YLOM%FLUSH_LAST_STEP( A%STEP_ )
       ELSE
-        WRITE(OUTPUT_UNIT,*) '---------------------------------------------------------------------'
+        WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
         WRITE(OUTPUT_UNIT,'(A,I10)') 'Flush last step:    ', A%STEP_
       ENDIF
 
@@ -242,7 +259,7 @@ IMPLICIT NONE
         ! WRITE(*,*) 'I AM THE DESTROYER'
         CALL DESTROY_OUTPUT_MANAGER( YLOM )
       ELSE
-        WRITE(OUTPUT_UNIT,*) '---------------------------------------------------------------------'
+        WRITE(OUTPUT_UNIT,'(A150)') REPEAT('-',150)
         WRITE(OUTPUT_UNIT,*) 'End of simulation'
       ENDIF
       EXIT FeederLoop

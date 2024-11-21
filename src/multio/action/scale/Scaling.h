@@ -20,6 +20,7 @@ private:
 public:
     explicit ScaleScaling(const config::ComponentConfiguration& compConf);
     double getScalingFactor(const std::string paramID) const;
+
     template <typename Precision>
     void applyScaling(message::Message& msg) const {
         if (hasScaling_) {

@@ -11,7 +11,8 @@ namespace multio::action {
 class Scale final : public ChainedAction {
 public:
     explicit Scale(const ComponentConfiguration& compConf);  // Constructor declaration
-    void executeImpl(message::Message) override;
+
+    void executeImpl(message::Message msg) override;
 
 private:
     ScaleScaling scaling_;

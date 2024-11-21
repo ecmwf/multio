@@ -101,7 +101,6 @@ struct multio_metadata_t {
 
 
 namespace {
-
 // Template magic to provide a consistent error-handling approach
 
 MultioErrorValues errorValue(const FailureAwareException& e) {

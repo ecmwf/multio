@@ -34,7 +34,6 @@ Scale::Scale(const ComponentConfiguration& compConf) :
     const auto mappings = compConf.parsedConfig().has("mapping-definition")
                             ? compConf.parsedConfig().getSubConfigurations("mapping-definition")
                             : throw eckit::SeriousBug{"Scaling information not specified in plan", Here()};
-    ;
 
     if (!mappings.empty()) {
         for (const auto& mapping : mappings) {
@@ -42,7 +41,7 @@ Scale::Scale(const ComponentConfiguration& compConf) :
             paramsToScale_.insert(matcher.getString("param-is"));
         }
     }
-    std::cout << paramsToScale_ << std::endl;
+    eckit::Log::info() << paramsToScale_ << std::endl;
 }
 
 void Scale::executeImpl(message::Message msg) {

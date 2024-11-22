@@ -62,7 +62,3 @@ ecbuild_add_executable( TARGET    multio-generate-grib-template
 ecbuild_add_executable( TARGET    multio-convert-trace-log
                         SOURCES   multio-convert-trace-log.cc MultioTool.cc
                         LIBS      multio eckit )
-
-ecbuild_add_executable( TARGET      multio-replay-nemo-capi-partial-agg
-                        SOURCES     multio-replay-nemo-capi-partial-agg.cc MultioTool.cc
-                        LIBS        multio-api )

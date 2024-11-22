@@ -85,7 +85,8 @@ std::map<InformationTypes, InformationItem> createMemoryInformation() {
                 std::smatch match;
                 if (std::regex_search(lineText, match, extractor.second)) {
                     information.emplace(extractor.first,
-                                        InformationItem{std::atoi(match[1].str().c_str()), toSizeUnit(match[2].str())});
+                                        InformationItem{static_cast<uint64_t>(std::atol(match[1].str().c_str())),
+                                                        toSizeUnit(match[2].str())});
                 }
             }
         }

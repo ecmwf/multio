@@ -69,12 +69,14 @@ ecbuild_add_test( TARGET    test_multio_select
 
 ecbuild_add_test( TARGET    test_multio_ringbuffer
                   SOURCES   test_multio_ringbuffer.cc
+                  CONDITION HAVE_MULTIO_SERVER_MEMORY_PROFILE OR HAVE_MULTIO_CLIENT_MEMORY_PROFILE
                   LIBS      multio )
 
 # Test tracing
 
 ecbuild_add_test( TARGET    test_multio_tracing
                   SOURCES   test_multio_tracing.cc
+                  CONDITION HAVE_MULTIO_SERVER_MEMORY_PROFILE OR HAVE_MULTIO_CLIENT_MEMORY_PROFILE
                   LIBS      multio )
 
 # Test api

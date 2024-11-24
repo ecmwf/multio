@@ -6,6 +6,7 @@
 #include "multio/LibMultio.h"
 #include "multio/message/Glossary.h"
 #include "multio/util/Substitution.h"
+#include "MetadataUtils.h"
 
 
 namespace multio::action {
@@ -29,20 +30,12 @@ ScaleMapping::ScaleMapping(const config::ComponentConfiguration& compConf) : has
 
 void ScaleMapping::applyMapping(message::Metadata& md) const {
     if (hasMapping_) {
-        std::string cparam{"xxx"};
-        if (auto param = md.getOpt<std::string>(glossary().param); param) {
-            cparam = *param;
-        }
-        if (auto paramId = md.getOpt<std::int64_t>(glossary().paramId); paramId) {
-            cparam = std::to_string(*paramId);
-        }
-        else {
-            throw eckit::SeriousBug{"param/paramId metadata not present", Here()};
-        }
+
+        std::string cparam = extractParam(md);
 
         auto it = scaleMap_.find(cparam);
         if (it != scaleMap_.end()) {
-            md.set(glossary().paramId, std::int64_t(::atol(it->second.c_str())));
+            md.set(glossary().paramId, std::stoll(it->second)); 
             md.set(glossary().param, it->second.c_str());
         }
     }

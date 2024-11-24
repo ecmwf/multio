@@ -22,6 +22,7 @@
 
 #include "multio/action/scale/Mapping.h"
 #include "multio/action/scale/Scaling.h"
+#include "multio/action/scale/MetadataUtils.h"
 
 
 namespace multio::action {
@@ -41,7 +42,6 @@ Scale::Scale(const ComponentConfiguration& compConf) :
             paramsToScale_.insert(matcher.getString("param-is"));
         }
     }
-    eckit::Log::info() << paramsToScale_ << std::endl;
 }
 
 void Scale::executeImpl(message::Message msg) {
@@ -50,31 +50,25 @@ void Scale::executeImpl(message::Message msg) {
         return;
     }
 
-    std::string cparam{"xxx"};
-    if (auto param = msg.metadata().getOpt<std::string>(glossary().param); param) {
-        cparam = *param;
-    }
-    if (auto paramId = msg.metadata().getOpt<std::int64_t>(glossary().paramId); paramId) {
-        cparam = std::to_string(*paramId);
-    }
-    else {
-        throw eckit::SeriousBug{"param/paramId metadata not present", Here()};
-    }
+    std::string cparam = extractParam(msg.metadata());
 
     // Continue if no scaling definition was specified in the plan.
     if (paramsToScale_.find(cparam) == paramsToScale_.end()) {
         executeNext(std::move(msg));
         return;
     }
-
-    executeNext(util::dispatchPrecisionTag(msg.precision(), [&](auto pt) -> message::Message {
+    //Scale the message
+    util::dispatchPrecisionTag(msg.precision(), [&](auto pt) {
         using Precision = typename decltype(pt)::type;
-        return ScaleMessage<Precision>(std::move(msg));
-    }));
+        ScaleMessage<Precision>(msg); // Modify msg in place
+    });
+    //pass on the modified message
+    executeNext(std::move(msg));
+    return;
 }
 
 template <typename Precision>
-message::Message Scale::ScaleMessage(message::Message&& msg) const {
+void Scale::ScaleMessage(message::Message& msg) const {
 
     LOG_DEBUG_LIB(LibMultio) << "Scale :: Metadata of the input message :: Apply Scaling " << std::endl
                              << msg.metadata() << std::endl;
@@ -85,9 +79,7 @@ message::Message Scale::ScaleMessage(message::Message&& msg) const {
 
     mapping_.applyMapping(msg.modifyMetadata());
 
-
-    return {message::Message::Header{msg.tag(), msg.source(), msg.destination(), std::move(msg.metadata())},
-            std::move(msg.payload())};
+    return;
 }
 
 void Scale::print(std::ostream& os) const {
@@ -97,8 +89,8 @@ void Scale::print(std::ostream& os) const {
 static ActionBuilder<Scale> ScaleBuilder("scale");
 
 
-template message::Message Scale::ScaleMessage<float>(message::Message&&) const;
-template message::Message Scale::ScaleMessage<double>(message::Message&&) const;
+template void Scale::ScaleMessage<float>(message::Message&) const;
+template void Scale::ScaleMessage<double>(message::Message&) const;
 
 
 }  // namespace multio::action

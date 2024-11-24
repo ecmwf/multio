@@ -11,6 +11,8 @@ ecbuild_add_library(
         Mapping.h 
         Scaling.cc
         Scaling.h
+        MetadataUtils.cc
+        MetadataUtils.h
 
     PRIVATE_INCLUDES
         ${ECKIT_INCLUDE_DIRS}

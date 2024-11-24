@@ -7,6 +7,7 @@
 #include "multio/config/ComponentConfiguration.h"
 #include "multio/message/Glossary.h"
 #include "multio/message/Message.h"
+#include "multio/action/scale/MetadataUtils.h"
 
 namespace multio::action {
 
@@ -24,20 +25,7 @@ public:
     template <typename Precision>
     void applyScaling(message::Message& msg) const {
         if (hasScaling_) {
-            std::ostringstream key;
-            std::string cparam{"xxx"};
-
-            // Extract the scaling parameter
-            if (auto param = msg.metadata().getOpt<std::string>(glossary().param); param) {
-                cparam = *param;
-            }
-            else if (auto paramId = msg.metadata().getOpt<std::int64_t>(glossary().paramId); paramId) {
-                cparam = std::to_string(*paramId);
-            }
-            else {
-                throw eckit::SeriousBug{"param/paramId metadata not present", Here()};
-            }
-
+            std::string cparam = extractParam(msg.metadata());
             // Find the scaling factor
             double scaleFactor = getScalingFactor(cparam);
 
@@ -52,14 +40,10 @@ public:
             if (!data) {
                 throw eckit::SeriousBug{
                     " Payload data could not be modified: Scaling Action: " + msg.metadata().toString(), Here()};
-                std::cout << "Error: Payload data could not be modified." << std::endl;
-                return;
             }
             // Apply the scaling factor using std::transform
             std::transform(data, data + size, data,
                            [scaleFactor](Precision value) { return static_cast<Precision>(value * scaleFactor); });
-
-            // TODO do we need to consider missing values and skip?
         }
         else {
             return;

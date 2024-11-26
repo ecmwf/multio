@@ -94,7 +94,7 @@ public:
 
     void load(std::shared_ptr<StatisticsIO>& IOmanager, const StatisticsOptions& opt) override {
         if (needRestart_) {
-            std::uint64_t sz;
+            std::size_t sz;
             std::string fname = restartFileName();
             IOmanager->readSize(fname, sz);
             values_.resize(sz);

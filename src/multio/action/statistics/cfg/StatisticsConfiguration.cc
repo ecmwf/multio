@@ -16,13 +16,13 @@ namespace multio::action {
 
 using message::glossary;
 
-StatisticsConfiguration::StatisticsConfiguration( const message::Message& msg, const StatisticsOptions& opt ):
+StatisticsConfiguration::StatisticsConfiguration(const message::Message& msg, const StatisticsOptions& opt) :
     opt_{opt},
     date_{0},
     time_{0},
     level_{0},
-    timeStep_{0},
-    stepFreq_{0},
+    timeStep_{opt.timeStep()},
+    stepFreq_{opt.stepFreq()},
     step_{0},
     param_{"none"},
     levType_{"none"},
@@ -31,7 +31,7 @@ StatisticsConfiguration::StatisticsConfiguration( const message::Message& msg, c
     bitmapPresent_{false},
     missingValue_{std::numeric_limits<double>::quiet_NaN()},
     key_{"unknown"},
-    logPrefix_{opt_.logPrefix()}{
+    logPrefix_{opt_.logPrefix()} {
 
     // Associate local procedure pointers
     computeEpoch_    = std::bind(&StatisticsConfiguration::computeEpoch, this);

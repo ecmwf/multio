@@ -27,7 +27,7 @@ program multio_replay_nemo_fapi
     integer(int64) :: mio_parent_comm = MPI_UNDEFINED
 
     character(len=3), dimension(4) :: nemo_parameters = ["sst", "ssu", "ssv", "ssw" ]
-    integer, dimension(4) :: grib_param_id = [262101, 262137, 262138, 212202 ]
+    integer, dimension(4) :: grib_param_id = [262101, 262138, 262137, 212202 ]
     character(len=6), dimension(4) :: grib_grid_type = ["T grid", "U grid", "V grid", "W grid" ]
     character(len=12), dimension(4) :: grib_level_type = ["oceanSurface", "oceanSurface", "oceanSurface", "oceanSurface" ]
 
@@ -254,10 +254,10 @@ subroutine run(mio, rank, client_count, &
     integer, intent(in) :: level
     integer, intent(in) :: step
     logical, intent(in) :: singlePrecision
-    character(*), dimension(2), intent(in) :: nemo_parameters
-    integer, dimension(2), intent(in) :: grib_param_id
-    character(*), dimension(2), intent(in) :: grib_grid_type
-    character(*), dimension(2), intent(in) :: grib_level_type
+    character(*), dimension(4), intent(in) :: nemo_parameters
+    integer, dimension(4), intent(in) :: grib_param_id
+    character(*), dimension(4), intent(in) :: grib_grid_type
+    character(*), dimension(4), intent(in) :: grib_level_type
 
 
     write(0,*) "Run..."
@@ -347,10 +347,10 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
     integer, intent(in) :: client_count
     type(multio_metadata) :: md
     integer, dimension(11) :: buffer
-    character(*), dimension(2), intent(in) :: nemo_parameters
-    integer, dimension(2), intent(in) :: grib_param_id
-    character(*), dimension(2), intent(in) :: grib_grid_type
-    character(*), dimension(2), intent(in) :: grib_level_type
+    character(*), dimension(4), intent(in) :: nemo_parameters
+    integer, dimension(4), intent(in) :: grib_param_id
+    character(*), dimension(4), intent(in) :: grib_grid_type
+    character(*), dimension(4), intent(in) :: grib_level_type
     integer, intent(in):: global_size
     integer, intent(in):: level
     integer, intent(in):: step
@@ -481,10 +481,10 @@ subroutine test_data(rank, &
     integer, intent(in) :: global_size
     integer, intent(in) :: level
     integer, intent(in) :: step
-    character(*), dimension(2), intent(in) :: nemo_parameters
-    integer, dimension(2), intent(in)      :: grib_param_id
-    character(*), dimension(2), intent(in) :: grib_grid_type
-    character(*), dimension(2), intent(in) :: grib_level_type
+    character(*), dimension(4), intent(in) :: nemo_parameters
+    integer, dimension(4), intent(in)      :: grib_param_id
+    character(*), dimension(4), intent(in) :: grib_grid_type
+    character(*), dimension(4), intent(in) :: grib_level_type
 
     type(fckit_mpi_comm) :: comm
 

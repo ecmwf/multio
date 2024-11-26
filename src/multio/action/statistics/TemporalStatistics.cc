@@ -55,11 +55,12 @@ void TemporalStatistics::updateData(message::Message& msg, const StatisticsConfi
 }
 
 void TemporalStatistics::updateWindow(const message::Message& msg, const StatisticsConfiguration& cfg) {
-    LOG_DEBUG_LIB(::multio::LibMultio) << cfg.logPrefix() << " *** Update Window " << std::endl;
+    LOG_DEBUG_LIB(multio::LibMultio) << cfg.logPrefix() << " *** Update Window " << std::endl;
     window_.updateWindow(window_.endPoint(), periodUpdater_->updateWinEndTime(window_.endPoint()));
     for (auto& stat : statistics_) {
         stat->updateWindow(msg.payload().data(), msg.size(), msg, cfg);
     }
+
     return;
 }
 

@@ -246,7 +246,6 @@ ecbuild_add_test( TARGET       test_multio_replay_nemo_fapi
                   ARGS         $<TARGET_FILE:multio-replay-nemo-fapi>
                                $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
                   ENVIRONMENT  "${_test_environment}"
-                  ENABLED      OFF
 )
 
 ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_masked

@@ -710,7 +710,7 @@ void setDateAndStatisticalFields(GribEncoder& g, const eckit::LocalConfiguration
                                       / 3600);
         }
 
-        if (operation) {
+        if (operation && (*operation != "instant")) {
             static const std::map<const std::string, const std::int64_t> TYPE_OF_STATISTICAL_PROCESSING{
                 {"average", 0}, {"accumulate", 1}, {"maximum", 2}, {"minimum", 3}, {"stddev", 6}};
             if (auto searchStat = TYPE_OF_STATISTICAL_PROCESSING.find(*operation);

@@ -1,0 +1,879 @@
+! Include preprocessor utils
+#include "output_manager_preprocessor_utils.h"
+#include "output_manager_preprocessor_trace_utils.h"
+#include "output_manager_preprocessor_logging_utils.h"
+#include "output_manager_preprocessor_errhdl_utils.h"
+
+
+#define PP_FILE_NAME 'ENCODING_RULE_mod.F90'
+#define PP_SECTION_TYPE 'MODULE'
+#define PP_SECTION_NAME 'ENCODING_RULE_MOD'
+MODULE ENCODING_RULE_MOD
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,     ONLY: JPIB_K
+  USE :: GRIB_SECTION_BASE_MOD, ONLY: GRIB_SECTION_BASE_A
+  USE :: FILTER_BASE_MOD,       ONLY: FILTER_BASE_A
+  USE :: SAMPLE_MOD,            ONLY: SAMPLE_T
+
+IMPLICIT NONE
+
+
+TYPE :: ENCODING_RULE_CONTAINER_T
+
+  !> Nested rule
+  CLASS(ENCODING_RULE_T), POINTER :: RULE_ => NULL()
+
+END TYPE
+
+
+TYPE :: ENCODING_RULE_T
+
+  !> Default visibility of the module
+  PRIVATE
+
+  !> Id of the rule
+  INTEGER(KIND=JPIB_K) :: ID_=-9999_JPIB_K
+
+  !> Name of the rule
+  CHARACTER(LEN=256) :: NAME_ = REPEAT( ' ', 256 )
+
+  !> Tag of the rule
+  CHARACTER(LEN=256) :: TAG_ = REPEAT( ' ', 256 )
+
+  !> Filters of the rule
+  CLASS(FILTER_BASE_A), POINTER :: FILTER_ => NULL()
+
+  !> Sample to be loaded
+  TYPE(SAMPLE_T), POINTER :: SAMPLE_ => NULL()
+
+  !> Encoder rule
+  CLASS(GRIB_SECTION_BASE_A), POINTER :: ENCODER_ => NULL()
+
+CONTAINS
+
+  !> Initialize the rule
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: INIT => RULE_INIT
+
+  !> Match the rule
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: MATCH => RULE_MATCH
+
+  !> Get the encoder of the rule
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: GET_ENCODER => RULE_GET_ENCODER
+
+  !> Free all the memory allocated by the rule
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: PRINT => RULE_PRINT
+
+  !> Free all the memory allocated by the rule
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: FREE => RULE_FREE
+
+END TYPE
+
+!> Whitelist of public symbols
+PUBLIC :: ENCODING_RULE_T
+PUBLIC :: ENCODING_RULE_CONTAINER_T
+
+CONTAINS
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RULE_INIT'
+PP_THREAD_SAFE FUNCTION RULE_INIT( THIS, ID, CFG, FILTER_OPT, ENCODER_OPT, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
+  USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: FILTER_FACTORY_MOD,       ONLY: MAKE_FILTER
+  USE :: GRIB_ENCODER_FACTORY_MOD, ONLY: MAKE_ENCODER
+  USE :: GRIB_ENCODER_FACTORY_MOD, ONLY: READ_ENCODER_TYPE
+  USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
+  USE :: FILTER_OPTIONS_MOD,       ONLY: FILTER_OPTIONS_T
+  USE :: FILTER_OPTIONS_MOD,       ONLY: FILTER_OPTIONS_T
+
+  ! Symbols imported from other libraries
+  USE  :: YAML_CORE_UTILS_MOD, ONLY: YAML_CONFIGURATION_T
+  USE  :: YAML_CORE_UTILS_MOD, ONLY: YAML_CONFIGURATION_HAS_KEY
+  USE  :: YAML_CORE_UTILS_MOD, ONLY: YAML_GET_SUBCONFIGURATION
+  USE  :: YAML_CORE_UTILS_MOD, ONLY: YAML_DELETE_CONFIGURATION
+  USE  :: YAML_CORE_UTILS_MOD, ONLY: YAML_READ_STRING
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(ENCODING_RULE_T),       INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),         INTENT(IN)    :: ID
+  TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
+  TYPE(FILTER_OPTIONS_T),       INTENT(IN)    :: FILTER_OPT
+  TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: ENCODER_OPT
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  TYPE(YAML_CONFIGURATION_T) :: SAMPLE_CFG
+  TYPE(YAML_CONFIGURATION_T) :: FILTER_CFG
+  TYPE(YAML_CONFIGURATION_T) :: ENCODER_CFG
+  CHARACTER(LEN=:), ALLOCATABLE :: RULE_NAME
+  CHARACTER(LEN=:), ALLOCATABLE :: ENCODING_RULE_TAG
+  CHARACTER(LEN=:), ALLOCATABLE :: FILTER_TYPE
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+  LOGICAL :: CONFIGURATION_HAS_NAME
+  LOGICAL :: CONFIGURATION_HAS_FILTER
+  LOGICAL :: CONFIGURATION_HAS_ENCODER
+  LOGICAL :: CONFIGURATION_HAS_TAG
+  LOGICAL :: CONFIGURATION_HAS_SAMPLE
+  INTEGER(KIND=JPIB_K) :: ALLOC_STATUS
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STATUS
+  INTEGER(KIND=JPIB_K) :: ENCODER_TYPE
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_CFG=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RULE_WITHOUT_NAME=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RULE_WITHOUT_FILTER=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RULE_WITHOUT_ENCODER=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_ALLOCATED_AFTER_READ=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NAME_TOO_LONG=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TAG_TOO_LONG=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_FILTER_CFG=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_MAKE_FILTER=9_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DELETE_FILTER_CFG=10_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_ENCODER_CFG=11_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_MAKE_ENCODER=12_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DELETE_ENCODER_CFG=13_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_RULE_NAME=14_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_ENCODING_RULE_TAG=15_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RULE_WITHOUT_TAG=16_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DELETE_FILTER_CFG=17_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_FILTER_TYPE=18_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_ENCODER_TYPE=19_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOCATE_SAMPLE=20_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RULE_WITHOUT_SAMPLE=21_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_SAMPLE_CFG=22_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_SAMPLE=23_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_FREE_SAMPLE_CFG=24_JPIB_K
+
+
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !>
+  !> Read the encoder configuration
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'name', CONFIGURATION_HAS_NAME, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. CONFIGURATION_HAS_NAME, ERRFLAG_RULE_WITHOUT_NAME )
+
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'tag', CONFIGURATION_HAS_TAG, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. CONFIGURATION_HAS_NAME, ERRFLAG_RULE_WITHOUT_TAG )
+
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'sample', CONFIGURATION_HAS_SAMPLE, HOOKS )
+  ! PP_DEBUG_CRITICAL_COND_THROW( .NOT. CONFIGURATION_HAS_NAME, ERRFLAG_RULE_WITHOUT_SAMPLE )
+
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'filter', CONFIGURATION_HAS_FILTER, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. CONFIGURATION_HAS_FILTER, ERRFLAG_RULE_WITHOUT_FILTER )
+
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'encoder', CONFIGURATION_HAS_ENCODER, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. CONFIGURATION_HAS_ENCODER, ERRFLAG_RULE_WITHOUT_ENCODER )
+
+  !> Set the ID
+  THIS%ID_ = ID
+
+  !>
+  !> Read the name of the rule
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_READ_STRING( CFG, 'name', RULE_NAME, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(RULE_NAME), ERRFLAG_NOT_ALLOCATED_AFTER_READ )
+  PP_DEBUG_CRITICAL_COND_THROW( LEN_TRIM(RULE_NAME).GT.LEN(THIS%NAME_), ERRFLAG_NAME_TOO_LONG )
+  THIS%NAME_ = RULE_NAME
+  DEALLOCATE( RULE_NAME, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS.NE.0, ERRFLAG_UNABLE_TO_DEALLOCATE_RULE_NAME )
+
+
+  !>
+  !> Read the name of the rule
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_READ_STRING( CFG, 'tag', ENCODING_RULE_TAG, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(ENCODING_RULE_TAG), ERRFLAG_NOT_ALLOCATED_AFTER_READ )
+  PP_DEBUG_CRITICAL_COND_THROW( LEN_TRIM(ENCODING_RULE_TAG).GT.LEN(THIS%TAG_), ERRFLAG_TAG_TOO_LONG )
+  THIS%TAG_ = ENCODING_RULE_TAG
+  DEALLOCATE( ENCODING_RULE_TAG, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS.NE.0, ERRFLAG_UNABLE_TO_DEALLOCATE_ENCODING_RULE_TAG )
+
+  !>
+  !> Load subconfiguration for the sample
+  IF ( CONFIGURATION_HAS_SAMPLE ) THEN
+    ALLOCATE( THIS%SAMPLE_, STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
+    PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS.NE.0, ERRFLAG_UNABLE_TO_ALLOCATE_SAMPLE )
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_SAMPLE_CFG)  YAML_GET_SUBCONFIGURATION( CFG, 'sample', SAMPLE_CFG, HOOKS )
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_SAMPLE)     THIS%SAMPLE_%READ( SAMPLE_CFG, HOOKS )
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_FREE_SAMPLE_CFG) YAML_DELETE_CONFIGURATION( SAMPLE_CFG, HOOKS )
+  ELSE
+    THIS%SAMPLE_ => NULL()
+  ENDIF
+
+  !>
+  !> Load subconfiguration for the filter
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_FILTER_CFG) YAML_GET_SUBCONFIGURATION( CFG, 'filter', FILTER_CFG, HOOKS )
+
+  !> Read the filter type
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_READ_STRING( FILTER_CFG, 'type', FILTER_TYPE, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(FILTER_TYPE), ERRFLAG_NOT_ALLOCATED_AFTER_READ )
+
+  !> Read the filter
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_MAKE_FILTER) MAKE_FILTER( THIS%FILTER_, FILTER_TYPE, FILTER_CFG, FILTER_OPT, HOOKS )
+
+  !> Delete the subconfiguration
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_DELETE_FILTER_CFG) YAML_DELETE_CONFIGURATION( FILTER_CFG, HOOKS )
+
+  !> Deallocate the filter type
+  DEALLOCATE( FILTER_TYPE, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS.NE.0, ERRFLAG_UNABLE_TO_DEALLOCATE_FILTER_TYPE )
+
+
+  !>
+  !> Load subconfiguration for the encoder
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_ENCODER_CFG) YAML_GET_SUBCONFIGURATION( CFG, 'encoder', ENCODER_CFG, HOOKS )
+
+  !> Read the encoder
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_MAKE_ENCODER) MAKE_ENCODER( THIS%ENCODER_, ENCODER_CFG, ENCODER_OPT, HOOKS )
+
+  !> Delete the subconfiguration
+  PP_TRYCALL(ERRFLAG_DELETE_ENCODER_CFG) YAML_DELETE_CONFIGURATION( ENCODER_CFG, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_READ_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the configuration' )
+    CASE(ERRFLAG_RULE_WITHOUT_NAME)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Rule without name' )
+    CASE(ERRFLAG_RULE_WITHOUT_FILTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Rule without filter' )
+    CASE(ERRFLAG_RULE_WITHOUT_ENCODER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Rule without encoder' )
+    CASE(ERRFLAG_NOT_ALLOCATED_AFTER_READ)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'The string was not allocated after reading' )
+    CASE(ERRFLAG_NAME_TOO_LONG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'The name of the rule is too long' )
+    CASE(ERRFLAG_TAG_TOO_LONG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'The tag of the rule is too long' )
+    CASE(ERRFLAG_UNABLE_TO_READ_FILTER_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the filter configuration' )
+    CASE(ERRFLAG_UNABLE_TO_MAKE_FILTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to make the filter' )
+    CASE(ERRFLAG_DELETE_FILTER_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to delete the filter configuration' )
+    CASE(ERRFLAG_UNABLE_TO_READ_ENCODER_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the encoder configuration' )
+    CASE(ERRFLAG_UNABLE_TO_MAKE_ENCODER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to make the encoder' )
+    CASE(ERRFLAG_DELETE_ENCODER_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to delete the encoder configuration' )
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE_RULE_NAME)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate the rule name' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( ERRMSG )
+        DEALLOCATE(ERRMSG)
+      ENDIF
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE_ENCODING_RULE_TAG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate the rule tag' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( ERRMSG )
+        DEALLOCATE(ERRMSG)
+      ENDIF
+    CASE(ERRFLAG_RULE_WITHOUT_TAG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Rule without tag' )
+    CASE(ERRFLAG_UNABLE_TO_DELETE_FILTER_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to delete the filter configuration' )
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE_FILTER_TYPE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate the filter type' )
+    CASE(ERRFLAG_UNABLE_TO_READ_ENCODER_TYPE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the encoder type' )
+    CASE(ERRFLAG_UNABLE_TO_ALLOCATE_SAMPLE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to allocate the sample' )
+    CASE(ERRFLAG_RULE_WITHOUT_SAMPLE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Rule without sample' )
+    CASE(ERRFLAG_UNABLE_TO_GET_SAMPLE_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get the sample configuration' )
+    CASE(ERRFLAG_UNABLE_TO_READ_SAMPLE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the sample' )
+    CASE(ERRFLAG_UNABLE_TO_FREE_SAMPLE_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to free the sample configuration' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION RULE_INIT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RULE_MATCH'
+PP_THREAD_SAFE FUNCTION RULE_MATCH( THIS, MSG, PAR, MATCH, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(ENCODING_RULE_T),           INTENT(INOUT) :: THIS
+  TYPE(PARAMETRIZATION_T), INTENT(IN)    :: PAR
+  TYPE(FORTRAN_MESSAGE_T), INTENT(IN)    :: MSG
+  LOGICAL,                 INTENT(OUT)   :: MATCH
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_FILTER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MATCH_FILTERS=2_JPIB_K
+
+  !> Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  !> Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  !> Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%FILTER_), ERRFLAG_FILTER_NOT_ASSOCIATED )
+
+  !> Match the filter
+  PP_TRYCALL(ERRFLAG_MATCH_FILTERS) THIS%FILTER_%MATCH( MSG, PAR, MATCH, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_FILTER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Filter not associated' )
+    CASE(ERRFLAG_MATCH_FILTERS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to match the filter' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION RULE_MATCH
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RULE_GET_ENCODER'
+PP_THREAD_SAFE FUNCTION RULE_GET_ENCODER( THIS, NAME, TAG, SAMPLE, ENCODER, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,     ONLY: JPIB_K
+  USE :: HOOKS_MOD,             ONLY: HOOKS_T
+  USE :: GRIB_SECTION_BASE_MOD, ONLY: GRIB_SECTION_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(ENCODING_RULE_T),              INTENT(INOUT) :: THIS
+  CHARACTER(LEN=256),                  INTENT(OUT)   :: NAME
+  CHARACTER(LEN=256),                  INTENT(OUT)   :: TAG
+  TYPE(SAMPLE_T), POINTER,             INTENT(OUT)   :: SAMPLE
+  CLASS(GRIB_SECTION_BASE_A), POINTER, INTENT(OUT)   :: ENCODER
+  TYPE(HOOKS_T),                       INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_NOT_ASSOCIATED=1_JPIB_K
+
+  !> Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  !> Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  !> Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ENCODER_), ERRFLAG_ENCODER_NOT_ASSOCIATED )
+
+  !> Get the sample
+  SAMPLE => THIS%SAMPLE_
+
+  !> Get the encoder
+  ENCODER => THIS%ENCODER_
+
+  !> Get the tag
+  TAG = THIS%TAG_
+
+  !> Get the name
+  NAME = THIS%NAME_
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_ENCODER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder not associated' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION RULE_GET_ENCODER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RULE_PRINT'
+PP_THREAD_SAFE FUNCTION RULE_PRINT( THIS, UNIT, OFFSET, OPT, HOOKS, SEPARATOR ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
+  USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(ENCODING_RULE_T),       INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),         INTENT(IN)    :: UNIT
+  INTEGER(KIND=JPIB_K),         INTENT(IN)    :: OFFSET
+  TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+  CHARACTER(LEN=*), OPTIONAL,   INTENT(IN)    :: SEPARATOR
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Locl variables
+  CHARACTER(LEN=32) :: CRULE_ID
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_FILTER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PRINT_FILTER=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PRINT_ENCODER=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PRINT_SAMPLE=5_JPIB_K
+
+
+  !> Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  !> Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  !> Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%FILTER_), ERRFLAG_FILTER_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ENCODER_), ERRFLAG_ENCODER_NOT_ASSOCIATED )
+
+  !> Print the rule
+  WRITE(CRULE_ID, '(I32)') THIS%ID_
+
+  !> Open rule
+  WRITE( UNIT, '(A,A,A,A)' ) REPEAT(' ', OFFSET), 'Rule[', TRIM(ADJUSTL(CRULE_ID)), ']: ('
+  ! WRITE( UNIT, * ) ' '
+
+  !> Print the name of the rule
+  WRITE( UNIT, '(A,A,A,A)' ) REPEAT(' ', OFFSET+2), 'Rule name: "', TRIM(THIS%NAME_), '"; ...'
+  ! WRITE( UNIT, * ) ' '
+
+  !> Print the tag of the rule
+  WRITE( UNIT, '(A,A,A,A)' ) REPEAT(' ', OFFSET+2), 'Rule tag: "', TRIM(THIS%TAG_), '"; ...'
+  ! WRITE( UNIT, * ) ' '
+
+  !> Print the filter
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_PRINT_FILTER) THIS%FILTER_%PRINT( UNIT, OFFSET+2, HOOKS )
+  ! WRITE( UNIT, * ) ' '
+
+  IF ( ASSOCIATED(THIS%SAMPLE_) ) THEN
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_PRINT_SAMPLE) THIS%SAMPLE_%PRINT( UNIT, OFFSET+2, HOOKS )
+  ENDIF
+
+  !> Print the encoder
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_PRINT_ENCODER) THIS%ENCODER_%PRINT( UNIT, OFFSET+2, OPT, HOOKS )
+
+
+  !> Close rule
+  IF ( PRESENT(SEPARATOR) ) THEN
+    WRITE( UNIT, '(A,A,A)' ) REPEAT(' ', OFFSET), ')', TRIM(ADJUSTL(SEPARATOR))
+  ELSE
+    WRITE( UNIT, '(A,A)' ) REPEAT(' ', OFFSET), ')'
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_FILTER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Filter not associated' )
+    CASE (ERRFLAG_ENCODER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder not associated' )
+    CASE (ERRFLAG_UNABLE_TO_PRINT_FILTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to print the filter' )
+    CASE (ERRFLAG_UNABLE_TO_PRINT_ENCODER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to print the encoder' )
+    CASE (ERRFLAG_UNABLE_TO_PRINT_SAMPLE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to print the sample' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION RULE_PRINT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'RULE_FREE'
+PP_THREAD_SAFE FUNCTION RULE_FREE( THIS, OPT, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
+  USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: FILTER_FACTORY_MOD,       ONLY: DESTROY_FILTER
+  USE :: GRIB_ENCODER_FACTORY_MOD, ONLY: DESTROY_ENCODER
+  USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(ENCODING_RULE_T),       INTENT(INOUT) :: THIS
+  TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STATUS
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DESTROY_FILTER=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DESTROY_ENCODER=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_FILTER_NOT_ASSOCIATED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_NOT_ASSOCIATED=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_SAMPLE=5_JPIB_K
+
+
+  !> Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  !> Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  !> Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%FILTER_), ERRFLAG_FILTER_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ENCODER_), ERRFLAG_ENCODER_NOT_ASSOCIATED )
+
+  !> Reset the name of the rule
+  THIS%NAME_ = REPEAT( ' ', 256 )
+
+  !> Reset the tag of the rule
+  THIS%TAG_ = REPEAT( ' ', 256 )
+
+  !> Destroy the filters
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_DESTROY_FILTER) DESTROY_FILTER( THIS%FILTER_, HOOKS )
+
+  ! Destroy the samples
+  IF ( ASSOCIATED(THIS%SAMPLE_) ) THEN
+    DEALLOCATE( THIS%SAMPLE_, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG )
+    PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS.NE.0, ERRFLAG_UNABLE_TO_DEALLOCATE_SAMPLE )
+  ENDIF
+
+  !> Destroy the encoders
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_DESTROY_FILTER) DESTROY_ENCODER( THIS%ENCODER_, OPT, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_DESTROY_FILTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to destroy the filter' )
+    CASE(ERRFLAG_UNABLE_TO_DESTROY_ENCODER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to destroy the encoder' )
+    CASE(ERRFLAG_FILTER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Filter not associated' )
+    CASE(ERRFLAG_ENCODER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Encoder not associated' )
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE_SAMPLE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate the sample' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( ERRMSG )
+        DEALLOCATE(ERRMSG, STAT=DEALLOC_STATUS)
+      ENDIF
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION RULE_FREE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+END MODULE ENCODING_RULE_MOD
+#undef PP_SECTION_NAME
+#undef PP_SECTION_TYPE
+#undef PP_FILE_NAME

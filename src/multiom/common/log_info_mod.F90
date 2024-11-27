@@ -1,0 +1,584 @@
+! Include preprocessor utils
+#include "output_manager_preprocessor_utils.h"
+#include "output_manager_preprocessor_trace_utils.h"
+#include "output_manager_preprocessor_logging_utils.h"
+#include "output_manager_preprocessor_errhdl_utils.h"
+
+
+#define PP_FILE_NAME 'log_info_mod.F90'
+#define PP_SECTION_TYPE 'MODULE'
+#define PP_SECTION_NAME 'LOG_INFO_MOD'
+MODULE LOG_INFO_MOD
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+
+IMPLICIT NONE
+
+! Default visibility
+PRIVATE
+
+! Whitelist of public symbols (procedures)
+PUBLIC :: LOG_SYSINFO
+PUBLIC :: LOG_MEMORY
+PUBLIC :: LOG_VERSION
+PUBLIC :: LOG_CURR_TIME
+
+CONTAINS
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'LOG_SYSINFO'
+PP_THREAD_SAFE FUNCTION LOG_SYSINFO( LOGUNIT, NPROCSIO, MYPROCIO, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: SYSINFO_MOD,       ONLY: GET_HOSTNAME
+  USE :: SYSINFO_MOD,       ONLY: GET_PID
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN) :: LOGUNIT
+  INTEGER(KIND=JPIB_K), INTENT(IN) :: NPROCSIO
+  INTEGER(KIND=JPIB_K), INTENT(IN) :: MYPROCIO
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  CHARACTER(LEN=1024)  :: HOSTNAME
+  CHARACTER(LEN=32)    :: CPID
+  INTEGER(KIND=JPIB_K) :: PID
+  INTEGER(KIND=JPIB_K) :: STAT
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_HOSTNAME=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_PID=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_WRITE=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Get the hostname
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_HOSTNAME) GET_HOSTNAME( HOSTNAME, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_PID) GET_PID( PID, HOOKS )
+
+  ! Convert the PID to string
+  CPID = REPEAT(' ',32)
+  WRITE(CPID,'(I8)', IOSTAT=STAT) PID
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+
+  ! Write system information to the given unit
+  WRITE(LOGUNIT,'(A)', IOSTAT=STAT) ' '
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A)', IOSTAT=STAT) ' SYSTEM/MULTIPROCESSOR INFO'
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A)', IOSTAT=STAT) ' --------------------------'
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,I8)', IOSTAT=STAT) ' + NPROCSIO............: ', NPROCSIO
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,I8)', IOSTAT=STAT) ' + MYPROCIO............: ', MYPROCIO
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT)  ' + HOSTNAME............: ', TRIM(ADJUSTL(HOSTNAME))
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,I8)', IOSTAT=STAT) ' + PID.................: ', TRIM(ADJUSTL(CPID))
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_GET_HOSTNAME)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to get hostname' )
+    CASE(ERRFLAG_UNABLE_TO_GET_PID)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to get PID' )
+    CASE(ERRFLAG_UNABLE_TO_WRITE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to write' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION LOG_SYSINFO
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'LOG_MEMORY'
+PP_THREAD_SAFE FUNCTION LOG_MEMORY( LOGUNIT, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRD_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: SYSINFO_MOD,       ONLY: GET_MEM
+  USE :: LOG_UTILS_MOD,     ONLY: BYTES_TO_STRING
+  USE :: LOG_UTILS_MOD,     ONLY: MAX_STR_LEN
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: LOGUNIT
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  CHARACTER(LEN=MAX_STR_LEN) :: CTOT_MEM
+  CHARACTER(LEN=MAX_STR_LEN) :: CSYS_USAGE
+  CHARACTER(LEN=MAX_STR_LEN) :: CTASK_USAGE
+  INTEGER(KIND=JPIB_K) :: TOT_MEM
+  INTEGER(KIND=JPIB_K) :: SYS_USAGE
+  INTEGER(KIND=JPIB_K) :: TASK_USAGE
+  INTEGER(KIND=JPIB_K) :: STAT
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_BYTES_TO_STRING=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_MEM=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_WRITE=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Get the memory
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_GET_MEM) GET_MEM( TOT_MEM, SYS_USAGE, TASK_USAGE, HOOKS )
+
+  ! Convert the memory to string
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_BYTES_TO_STRING) BYTES_TO_STRING( TOT_MEM, CTOT_MEM, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_BYTES_TO_STRING) BYTES_TO_STRING( SYS_USAGE, CSYS_USAGE, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_BYTES_TO_STRING) BYTES_TO_STRING( TASK_USAGE, CTASK_USAGE, HOOKS )
+
+  ! Write memory information to the given unit
+  WRITE(LOGUNIT,'(A)', IOSTAT=STAT) ' '
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A)', IOSTAT=STAT) ' SYSTEM MEMORY'
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A)', IOSTAT=STAT) ' --------------------------'
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT)      ' + TOTAL MEMORY............: ', TRIM(ADJUSTL(CTOT_MEM))
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT)      ' + SYSTEM USAGE............: ', TRIM(ADJUSTL(CSYS_USAGE))
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT)      ' + TASK USAGE..............: ', TRIM(ADJUSTL(CTASK_USAGE))
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,F5.2,A)', IOSTAT=STAT) ' + TASK/SYSTEM PERCENTAGE..: ', REAL(TASK_USAGE,JPRD_K)/REAL(SYS_USAGE,JPRD_K)*100, '%'
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_CONVERT_BYTES_TO_STRING)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert bytes to string' )
+    CASE(ERRFLAG_UNABLE_TO_GET_MEM)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to get memory' )
+    CASE(ERRFLAG_UNABLE_TO_WRITE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to write' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION LOG_MEMORY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'LOG_VERSION'
+PP_THREAD_SAFE FUNCTION LOG_VERSION( LOGUNIT, HOOKS ) RESULT(RET)
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: COMPILER_VERSION
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: COMPILER_OPTIONS
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: VERSION_UTILS_MOD, ONLY: IFS_CYCLE
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_MAJOR
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_MINOR
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_PATCH
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_BUILD_FLAVOUR
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_COMPILER
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_COMPILER_ID
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_COMPILER_VERSION
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_COMPILER_FLAGS
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_EXE_LINKER_FLAGS
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_SHARED_LINKER_FLAGS
+  USE :: VERSION_UTILS_MOD, ONLY: GIT_SHA
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_SYSTEM_NAME
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_BUILD_TYPE
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_BUILD_DATE
+  USE :: VERSION_UTILS_MOD, ONLY: OUTPUT_MANAGER_HOSTNAME
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN) :: LOGUNIT
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: STAT
+  INTEGER(KIND=JPIB_K), DIMENSION(8) :: VALUES
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_WRITE=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  WRITE(LOGUNIT,'(A)', IOSTAT=STAT) ' '
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A)', IOSTAT=STAT) ' OUTPUT MANAGER VERSION INFO'
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A)', IOSTAT=STAT) ' ---------------------------'
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + IFS_CYCLE............................: ', IFS_CYCLE
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_MAJOR.................: ', OUTPUT_MANAGER_MAJOR
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_MINOR.................: ', OUTPUT_MANAGER_MINOR
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_PATCH.................: ', OUTPUT_MANAGER_PATCH
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_BUILD_FLAVOUR.........: ', OUTPUT_MANAGER_BUILD_FLAVOUR
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_COMPILER..............: ', OUTPUT_MANAGER_COMPILER
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_COMPILER_ID...........: ', OUTPUT_MANAGER_COMPILER_ID
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_COMPILER_VERSION......: ', OUTPUT_MANAGER_COMPILER_VERSION
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_COMPILER_FLAGS........: ', OUTPUT_MANAGER_COMPILER_FLAGS
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_EXE_LINKER_FLAGS......: ', OUTPUT_MANAGER_EXE_LINKER_FLAGS
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_SHARED_LINKER_FLAGS...: ', OUTPUT_MANAGER_SHARED_LINKER_FLAGS
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + GIT_SHA..............................: ', GIT_SHA
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_SYSTEM_NAME...........: ', OUTPUT_MANAGER_SYSTEM_NAME
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_BUILD_TYPE............: ', OUTPUT_MANAGER_BUILD_TYPE
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_BUILD_DATE............: ', OUTPUT_MANAGER_BUILD_DATE
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + OUTPUT_MANAGER_HOSTNAME..............: ', OUTPUT_MANAGER_HOSTNAME
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + COMPILER_VERSION.....................: ', COMPILER_VERSION()
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT) ' + COMPILER_OPTIONS.....................: ', COMPILER_OPTIONS()
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_WRITE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to write' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION LOG_VERSION
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'LOG_CURR_TIME'
+PP_THREAD_SAFE FUNCTION LOG_CURR_TIME( LOGUNIT, CDTXT, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: LOGUNIT
+  CHARACTER(LEN=*),     INTENT(IN)    :: CDTXT
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIB_K) :: STAT
+  INTEGER(KIND=JPIB_K), DIMENSION(8) :: VALUES
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_WRITE=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Get the time
+  CALL DATE_AND_TIME( VALUES=VALUES )
+
+  ! Write the logging
+  WRITE(LOGUNIT,'(A)', IOSTAT=STAT)    ' '
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A)', IOSTAT=STAT)    ' CURRENT TIME'
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A)', IOSTAT=STAT)    ' ------------'
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,A)', IOSTAT=STAT)  ' + ', TRIM(ADJUSTL(CDTXT))
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,I8)', IOSTAT=STAT) ' + YEAR, INCLUDING THE CENTURY...........: ', VALUES(1)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,I8)', IOSTAT=STAT) ' + MONTH OF THE YEAR.....................: ', VALUES(2)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,I8)', IOSTAT=STAT) ' + DAY OF THE MONTH......................: ', VALUES(3)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,I8)', IOSTAT=STAT) ' + TIME DIFFERENCE FROM UTC IN MINUTES...: ', VALUES(4)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,I8)', IOSTAT=STAT) ' + HOUR OF THE DAY.......................: ', VALUES(5)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,I8)', IOSTAT=STAT) ' + MINUTES OF THE HOUR...................: ', VALUES(6)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,I8)', IOSTAT=STAT) ' + SECONDS OF THE MINUTE.................: ', VALUES(7)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+  WRITE(LOGUNIT,'(A,I8)', IOSTAT=STAT) ' + MILLISECONDS OF THE SECOND............: ', VALUES(8)
+  PP_DEBUG_CRITICAL_COND_THROW( STAT .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_WRITE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to write' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION LOG_CURR_TIME
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+END MODULE LOG_INFO_MOD
+#undef PP_SECTION_NAME
+#undef PP_SECTION_TYPE
+#undef PP_FILE_NAME

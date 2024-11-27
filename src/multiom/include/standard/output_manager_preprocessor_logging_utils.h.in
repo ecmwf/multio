@@ -1,0 +1,27 @@
+#ifndef OUTPUT_MANAGER_PREPROCESSOR_LOGGING_UTILS_H
+#define OUTPUT_MANAGER_PREPROCESSOR_LOGGING_UTILS_H
+
+#define PP_LOG_USE_VARS
+
+#define PP_LOG_DECL_VARS
+
+#if 1
+#define PP_LOG_DEVELOP_STR( STR ) \
+WRITE(*,*) STR
+#else
+#define PP_LOG_DEVELOP_STR( STR )
+#endif
+
+#if 0
+#define PP_LOG_DEVELOP_COND_STR( COND, FMT, STR ) \
+IF ( COND ) THEN; \
+WRITE(*,FMT) STR;  \
+ENDIF
+#else
+#define PP_LOG_DEVELOP_COND_STR( COND, FMT, STR )
+#endif
+
+#define PP_LOG_TODO( MSG )
+#define PP_LOG_INFO( MSG )
+
+#endif

@@ -12,6 +12,11 @@ multio is a package developed by ECMWF that provides an application programming 
 The fundamental design principle behind multio is that data is decoupled from metadata, and that the
 metadata is used for routing the data through the post-processing pipelines.
 
+Documentation
+------------
+
+The documentation can be found at https://multio.readthedocs.io.
+
 Requirements
 ------------
 

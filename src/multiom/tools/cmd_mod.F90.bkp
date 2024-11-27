@@ -1,0 +1,241 @@
+PROGRAM CommandLineParser
+
+IMPLICIT NONE
+
+  TYPE :: CommandLine
+    INTEGER :: type=0
+    CHARACTER(LEN=16) :: key=REPEAT(" ", 16)
+    CHARACTER(LEN=16), DIMENSION(:), ALLOCATABLE :: value
+  END TYPE
+
+  TYPE(CommandLine), DIMENSION(:), ALLOCATABLE :: cmd
+  INTEGER :: num_args, i, j, n, cnt
+  CHARACTER(LEN=8192) :: full_command
+  CHARACTER(LEN=256) :: arg
+
+  ! Declare parser-related variables
+  CHARACTER(LEN=1024) :: current_arg, key, value, tmp
+  LOGICAL :: is_flag, is_key_value
+  INTEGER :: eq_pos
+
+  ! Initialize full_command
+  full_command = ""
+
+  ! Get the number of command-line arguments
+  num_args = COMMAND_ARGUMENT_COUNT()
+
+  ! Combine all arguments into a single string
+  DO i = 1, num_args
+    CALL GET_COMMAND_ARGUMENT(i, arg)
+    full_command = TRIM(full_command) // " " // TRIM(arg)
+  END DO
+
+  ! PRINT *, "Full command-line string: ", TRIM(full_command)
+
+  call CountArgs(full_command, n)
+  ! PRINT *, "Number of arguments: ", n
+  ALLOCATE(cmd(n))
+
+  ! Parse the full command
+  cnt = 0
+  DO WHILE (LEN_TRIM(full_command) > 0)
+
+    cnt = cnt + 1
+
+    ! Extract the next argument
+    CALL ExtractNextArg(full_command, current_arg)
+
+    ! Determine the type of argument
+    is_flag = INDEX(current_arg, "=") == 0
+    is_key_value = INDEX(current_arg, "=") > 0
+
+    IF (is_flag) THEN
+
+      ! PRINT *, "Flag: ", TRIM(current_arg) ! Strip "--"
+      cmd(cnt)%type = 1
+      cmd(cnt)%key = REPEAT(" ", 16)
+      cmd(cnt)%key = TRIM(ADJUSTL(current_arg))
+
+    ELSE IF (is_key_value) THEN
+
+      eq_pos = INDEX(current_arg, "=")
+      key = TRIM(current_arg(1:eq_pos-1))        ! Extract key
+      cmd(cnt)%type = 2
+      cmd(cnt)%key = REPEAT(" ", 16)
+      cmd(cnt)%key = TRIM(ADJUSTL(current_arg(1:eq_pos-1)))
+      value = TRIM(current_arg(eq_pos+1:))      ! Extract value
+      ! PRINT *, "Key: ", trim(key), ", Value: ", trim(value)
+      eq_pos = INDEX(value, "[")
+      IF ( eq_pos .EQ. 0 ) THEN
+        ! PRINT *, "Value: ", TRIM(value)
+        ALLOCATE(cmd(cnt)%value(1))
+        cmd(cnt)%value(1) = REPEAT(" ", 16)
+        cmd(cnt)%value(1) = TRIM(value)
+      ELSE
+        value = TRIM(value(eq_pos+1:))
+        eq_pos = INDEX(value, "]")
+        IF ( eq_pos .EQ. 0 ) THEN
+          PRINT *, "Error, unable to find ]: ", TRIM(value)
+        ELSE
+          value = TRIM(adjustl(value(1:eq_pos-1)))
+          call CountValues(value, n)
+          ALLOCATE(cmd(cnt)%value(n))
+          ! PRINT *, "Value: ", TRIM(value), n
+          i = 0
+          DO WHILE( len_trim(value) .GT. 0 )
+            CALL ExtractNextVal(value, tmp)
+            i = i + 1
+            cmd(cnt)%value(i) = REPEAT(" ", 16)
+            cmd(cnt)%value(i) = TRIM(ADJUSTL(tmp))
+            ! PRINT *, "Value(", i ,"): ", TRIM(tmp)
+          ENDDO
+        END IF
+      END IF
+
+    ELSE
+
+      PRINT *, "Unknown argument: ", TRIM(current_arg)
+
+    END IF
+
+  END DO
+
+
+  DO I = 1, size(cmd)
+    PRINT *, "Type: ", cmd(I)%type
+    PRINT *, "Key: ", TRIM(cmd(I)%key)
+    IF ( .NOT. ALLOCATED(cmd(I)%value) ) THEN
+      PRINT *, "Value: None"
+    ELSE
+      DO J = 1, size(cmd(I)%value)
+        PRINT *, "Value(", J, "): ", TRIM(cmd(I)%value(J))
+      END DO
+    ENDIF
+    write(*,*) "--------------------------------------------------"
+  ENDDO
+
+END PROGRAM CommandLineParser
+
+
+
+!---------------------------------------------------------------
+
+! Subroutine to extract the next argument from the command string
+
+!---------------------------------------------------------------
+
+SUBROUTINE ExtractNextArg(command, next_arg)
+
+IMPLICIT NONE
+
+  CHARACTER(LEN=*), INTENT(INOUT) :: command    ! Full command string (modified)
+  CHARACTER(LEN=*), INTENT(OUT)  :: next_arg    ! Next argument (output)
+  INTEGER :: pos
+
+  next_arg=repeat(' ',len(next_arg))
+  DO WHILE ( LEN_TRIM(next_arg) == 0 )
+
+    ! Find the position of the next space
+    pos = INDEX(TRIM(command), "--")
+
+    IF (pos == 0) THEN
+
+      ! No more spaces: return the entire command as the next argument
+      next_arg = TRIM(command)
+      command = ""
+
+    ELSE
+
+      ! Extract the next argument and update the command
+      next_arg = TRIM(command(1:pos-1))
+      command  = TRIM(command(pos+2:))
+
+      ! write(*,*) " + NEXT_ARG: ", TRIM(ADJUSTL(next_arg))
+      ! write(*,*) " + COMMAND : ", TRIM(ADJUSTL(command))
+
+    ENDIF
+
+ENDDO
+
+END SUBROUTINE ExtractNextArg
+
+SUBROUTINE ExtractNextVal(command, next_arg)
+
+IMPLICIT NONE
+
+  CHARACTER(LEN=*), INTENT(INOUT) :: command    ! Full command string (modified)
+  CHARACTER(LEN=*), INTENT(OUT)  :: next_arg    ! Next argument (output)
+  INTEGER :: pos
+
+  next_arg=repeat(' ',len(next_arg))
+  DO WHILE ( LEN_TRIM(next_arg) == 0 )
+
+    ! Find the position of the next space
+    pos = INDEX(TRIM(command), ",")
+
+    IF (pos == 0) THEN
+
+      ! No more spaces: return the entire command as the next argument
+      next_arg = TRIM(command)
+      command = ""
+
+    ELSE
+
+      ! Extract the next argument and update the command
+      next_arg = TRIM(command(1:pos-1))
+      command  = TRIM(command(pos+1:))
+
+      ! write(*,*) " + NEXT_ARG: ", TRIM(ADJUSTL(next_arg))
+      ! write(*,*) " + COMMAND : ", TRIM(ADJUSTL(command))
+
+    ENDIF
+
+ENDDO
+
+END SUBROUTINE ExtractNextVal
+
+SUBROUTINE CountValues(command, n)
+
+IMPLICIT NONE
+
+  CHARACTER(LEN=*), INTENT(IN) :: command    ! Full command string (modified)
+  integer, INTENT(OUT)  :: n    ! Next argument (output)
+
+  integer :: i
+
+  n = 1
+  DO i = 1, len_trim(command)
+
+    IF (command(i:i) == ",") THEN
+      n = n + 1
+    END IF
+
+  ENDDO
+
+END SUBROUTINE CountValues
+
+SUBROUTINE CountArgs(command, n)
+
+IMPLICIT NONE
+
+  CHARACTER(LEN=*), INTENT(IN) :: command    ! Full command string (modified)
+  integer, INTENT(OUT)  :: n    ! Next argument (output)
+
+  integer :: i
+  logical :: maybe
+
+  n = 0
+  maybe = .false.
+  DO i = 1, len_trim(command)
+
+    IF (command(i:i) == "-" .and. .not.maybe ) THEN
+      maybe =.true.
+    ELSE IF (command(i:i) == "-" .and. maybe ) THEN
+      n = n + 1
+    ELSE
+      maybe = .false.
+    END IF
+
+  ENDDO
+
+END SUBROUTINE CountArgs

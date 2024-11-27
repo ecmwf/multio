@@ -1,0 +1,851 @@
+! Include preprocessor utils
+#include "output_manager_preprocessor_utils.h"
+#include "output_manager_preprocessor_trace_utils.h"
+#include "output_manager_preprocessor_logging_utils.h"
+#include "output_manager_preprocessor_errhdl_utils.h"
+
+
+#define PP_FILE_NAME 'mapping_rule_mod.F90'
+#define PP_SECTION_TYPE 'MODULE'
+#define PP_SECTION_NAME 'MAPPING_RULE_MOD'
+MODULE MAPPING_RULE_MOD
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: ASSIGNMENT_BASE_MOD, ONLY: ASSIGNMENT_BASE_A
+  USE :: FILTER_BASE_MOD,     ONLY: FILTER_BASE_A
+
+IMPLICIT NONE
+
+
+TYPE :: MAPPING_RULE_CONTAINER_T
+
+  !> Nested mapping_rule
+  CLASS(MAPPING_RULE_T), POINTER :: RULE_ => NULL()
+
+END TYPE
+
+
+TYPE :: MAPPING_RULE_T
+
+  !> Default visibility of the module
+  PRIVATE
+
+  !> Id of the mapping_rule
+  INTEGER(KIND=JPIB_K) :: ID_=-9999_JPIB_K
+
+  !> Name of the mapping_rule
+  CHARACTER(LEN=256) :: NAME_ = REPEAT( ' ', 256 )
+
+  !> Tag of the mapping_rule
+  CHARACTER(LEN=256) :: TAG_ = REPEAT( ' ', 256 )
+
+  !> Read the sink type required
+  CHARACTER(LEN=256) :: SINK_KIND_ = REPEAT( ' ', 256 )
+
+  !> Filters of the mapping_rule
+  CLASS(FILTER_BASE_A), POINTER :: FILTER_ => NULL()
+
+  !> ASSIGNMENT mapping_rule
+  CLASS(ASSIGNMENT_BASE_A), POINTER :: ASSIGNMENT_ => NULL()
+
+CONTAINS
+
+  !> Initialize the mapping_rule
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: INIT => MAPPING_RULE_INIT
+
+  !> Match the mapping_rule
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: MATCH => MAPPING_RULE_MATCH
+
+  !> Get the assignment of the mapping_rule
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: GET_ASSIGNMENT => MAPPING_RULE_GET_ASSIGNMENT
+
+  !> Free all the memory allocated by the mapping_rule
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: PRINT => MAPPING_RULE_PRINT
+
+  !> Free all the memory allocated by the mapping_rule
+  PROCEDURE, PASS, PUBLIC, NON_OVERRIDABLE :: FREE => MAPPING_RULE_FREE
+
+END TYPE
+
+!> Whitelist of public symbols
+PUBLIC :: MAPPING_RULE_T
+PUBLIC :: MAPPING_RULE_CONTAINER_T
+
+CONTAINS
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MAPPING_RULE_INIT'
+PP_THREAD_SAFE FUNCTION MAPPING_RULE_INIT( THIS, ID, CFG, FILTER_OPT, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,      ONLY: JPIB_K
+  USE :: HOOKS_MOD,              ONLY: HOOKS_T
+  USE :: FILTER_FACTORY_MOD,     ONLY: MAKE_FILTER
+  USE :: ASSIGNMENT_FACTORY_MOD, ONLY: MAKE_ASSIGNMENT
+  USE :: FILTER_OPTIONS_MOD,     ONLY: FILTER_OPTIONS_T
+  USE :: FILTER_OPTIONS_MOD,     ONLY: FILTER_OPTIONS_T
+
+  ! Symbols imported from other libraries
+  USE  :: YAML_CORE_UTILS_MOD, ONLY: YAML_CONFIGURATION_T
+  USE  :: YAML_CORE_UTILS_MOD, ONLY: YAML_CONFIGURATION_HAS_KEY
+  USE  :: YAML_CORE_UTILS_MOD, ONLY: YAML_GET_SUBCONFIGURATION
+  USE  :: YAML_CORE_UTILS_MOD, ONLY: YAML_DELETE_CONFIGURATION
+  USE  :: YAML_CORE_UTILS_MOD, ONLY: YAML_READ_STRING
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(MAPPING_RULE_T),      INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),       INTENT(IN)    :: ID
+  TYPE(YAML_CONFIGURATION_T), INTENT(IN)    :: CFG
+  TYPE(FILTER_OPTIONS_T),     INTENT(IN)    :: FILTER_OPT
+  TYPE(HOOKS_T),              INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  TYPE(YAML_CONFIGURATION_T) :: FILTER_CFG
+  TYPE(YAML_CONFIGURATION_T) :: ASSIGNMENT_CFG
+  CHARACTER(LEN=:), ALLOCATABLE :: MAPPING_RULE_NAME
+  CHARACTER(LEN=:), ALLOCATABLE :: MAPPING_RULE_TAG
+  CHARACTER(LEN=:), ALLOCATABLE :: MAPPING_RULE_SINK
+  CHARACTER(LEN=:), ALLOCATABLE :: FILTER_TYPE
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+  LOGICAL :: CONFIGURATION_HAS_NAME
+  LOGICAL :: CONFIGURATION_HAS_FILTER
+  LOGICAL :: CONFIGURATION_HAS_ASSIGNMENT
+  LOGICAL :: CONFIGURATION_HAS_SINK
+  LOGICAL :: CONFIGURATION_HAS_TAG
+  LOGICAL :: HAS_TYPE
+  CHARACTER(LEN=:), ALLOCATABLE :: NESTED_CTYPE
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STATUS
+  INTEGER(KIND=JPIB_K) :: ASSIGNMENT_TYPE
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_CFG=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MAPPING_RULE_WITHOUT_NAME=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MAPPING_RULE_WITHOUT_FILTER=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MAPPING_RULE_WITHOUT_ASSIGNMENT=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_ALLOCATED_AFTER_READ=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NAME_TOO_LONG=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TAG_TOO_LONG=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_FILTER_CFG=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_MAKE_FILTER=9_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DELETE_FILTER_CFG=10_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_ASSIGNMENT_CFG=11_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_MAKE_ASSIGNMENT=12_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DELETE_ASSIGNMENT_CFG=13_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_MAPPING_RULE_NAME=14_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_MAPPING_RULE_TAG=15_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MAPPING_RULE_WITHOUT_TAG=16_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DELETE_FILTER_CFG=17_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_FILTER_TYPE=18_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_ASSIGNMENT_TYPE=19_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UDEFINED_TYPE=20_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_TYPE_CFG=21_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_TYPE_ID=23_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TYPE_NOT_ALLOCATED_AFTER_READ=24_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_NESTED_FILTER=25_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_TYPE=26_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE_MAPPING_RULE_SINK=27_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SINK_TOO_LONG=28_JPIB_K
+
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !>
+  !> Read the assignment configuration
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'name', CONFIGURATION_HAS_NAME, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. CONFIGURATION_HAS_NAME, ERRFLAG_MAPPING_RULE_WITHOUT_NAME )
+
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'tag', CONFIGURATION_HAS_TAG, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. CONFIGURATION_HAS_TAG, ERRFLAG_MAPPING_RULE_WITHOUT_TAG )
+
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'sink', CONFIGURATION_HAS_SINK, HOOKS )
+
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'filter', CONFIGURATION_HAS_FILTER, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. CONFIGURATION_HAS_FILTER, ERRFLAG_MAPPING_RULE_WITHOUT_FILTER )
+
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'assignment', CONFIGURATION_HAS_ASSIGNMENT, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. CONFIGURATION_HAS_ASSIGNMENT, ERRFLAG_MAPPING_RULE_WITHOUT_ASSIGNMENT )
+
+  !> Set the ID
+  THIS%ID_ = ID
+
+  !>
+  !> Read the name of the mapping_rule
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_READ_STRING( CFG, 'name', MAPPING_RULE_NAME, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(MAPPING_RULE_NAME), ERRFLAG_NOT_ALLOCATED_AFTER_READ )
+  PP_DEBUG_CRITICAL_COND_THROW( LEN_TRIM(MAPPING_RULE_NAME).GT.LEN(THIS%NAME_), ERRFLAG_NAME_TOO_LONG )
+  THIS%NAME_ = MAPPING_RULE_NAME
+  DEALLOCATE( MAPPING_RULE_NAME, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS.NE.0, ERRFLAG_UNABLE_TO_DEALLOCATE_MAPPING_RULE_NAME )
+
+
+  !>
+  !> Read the name of the mapping_rule
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_READ_STRING( CFG, 'tag', MAPPING_RULE_TAG, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(MAPPING_RULE_TAG), ERRFLAG_NOT_ALLOCATED_AFTER_READ )
+  PP_DEBUG_CRITICAL_COND_THROW( LEN_TRIM(MAPPING_RULE_TAG).GT.LEN(THIS%TAG_), ERRFLAG_TAG_TOO_LONG )
+  THIS%TAG_ = MAPPING_RULE_TAG
+  DEALLOCATE( MAPPING_RULE_TAG, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS.NE.0, ERRFLAG_UNABLE_TO_DEALLOCATE_MAPPING_RULE_TAG )
+
+
+  !>
+  !> Read the name of the mapping_rule
+  IF ( CONFIGURATION_HAS_SINK ) THEN
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_READ_STRING( CFG, 'sink', MAPPING_RULE_SINK, HOOKS )
+    PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(MAPPING_RULE_SINK), ERRFLAG_NOT_ALLOCATED_AFTER_READ )
+    PP_DEBUG_CRITICAL_COND_THROW( LEN_TRIM(MAPPING_RULE_SINK).GT.LEN(THIS%SINK_KIND_), ERRFLAG_SINK_TOO_LONG )
+    THIS%SINK_KIND_ = MAPPING_RULE_SINK
+    DEALLOCATE( MAPPING_RULE_SINK, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG )
+    PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS.NE.0, ERRFLAG_UNABLE_TO_DEALLOCATE_MAPPING_RULE_SINK )
+  ELSE
+    THIS%SINK_KIND_ = 'file'
+  ENDIF
+
+
+  !>
+  !> Load subconfiguration for the filter
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_FILTER_CFG) YAML_GET_SUBCONFIGURATION( CFG, 'filter', FILTER_CFG, HOOKS )
+
+  !> Read the filter type
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_READ_STRING( FILTER_CFG, 'type', FILTER_TYPE, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(FILTER_TYPE), ERRFLAG_NOT_ALLOCATED_AFTER_READ )
+
+  !> Read the filter
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_MAKE_FILTER) MAKE_FILTER( THIS%FILTER_, FILTER_TYPE, FILTER_CFG, FILTER_OPT, HOOKS )
+
+  !> Delete the subconfiguration
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_DELETE_FILTER_CFG) YAML_DELETE_CONFIGURATION( FILTER_CFG, HOOKS )
+
+  !> Deallocate the filter type
+  DEALLOCATE( FILTER_TYPE, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS.NE.0, ERRFLAG_UNABLE_TO_DEALLOCATE_FILTER_TYPE )
+
+
+  !>
+  !> Load subconfiguration for the assignment
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_ASSIGNMENT_CFG) YAML_GET_SUBCONFIGURATION( CFG, 'assignment', ASSIGNMENT_CFG, HOOKS )
+
+  !> Check if configuration has the section keyword
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_TYPE_CFG) YAML_CONFIGURATION_HAS_KEY( ASSIGNMENT_CFG, 'type', HAS_TYPE, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. HAS_TYPE, ERRFLAG_UDEFINED_TYPE )
+
+  !> Get the section ID
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_TYPE_ID) YAML_READ_STRING( ASSIGNMENT_CFG, 'type', NESTED_CTYPE, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(NESTED_CTYPE), ERRFLAG_TYPE_NOT_ALLOCATED_AFTER_READ )
+
+  !> Create the nested filter
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_MAKE_ASSIGNMENT) MAKE_ASSIGNMENT( THIS%ASSIGNMENT_, NESTED_CTYPE, ASSIGNMENT_CFG, HOOKS )
+
+  !> Delete the subconfiguration
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_DELETE_FILTER_CFG) YAML_DELETE_CONFIGURATION( ASSIGNMENT_CFG, HOOKS )
+
+  !> Free memory
+  DEALLOCATE(NESTED_CTYPE, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG )
+  PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE_TYPE )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_READ_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the configuration' )
+    CASE(ERRFLAG_MAPPING_RULE_WITHOUT_NAME)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MAPPING_RULE without name' )
+    CASE(ERRFLAG_MAPPING_RULE_WITHOUT_FILTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MAPPING_RULE without filter' )
+    CASE(ERRFLAG_MAPPING_RULE_WITHOUT_ASSIGNMENT)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MAPPING_RULE without assignment' )
+    CASE(ERRFLAG_NOT_ALLOCATED_AFTER_READ)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'The string was not allocated after reading' )
+    CASE(ERRFLAG_NAME_TOO_LONG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'The name of the mapping_rule is too long' )
+    CASE(ERRFLAG_TAG_TOO_LONG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'The tag of the mapping_rule is too long' )
+    CASE(ERRFLAG_SINK_TOO_LONG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'The sink of the mapping_rule is too long' )
+    CASE(ERRFLAG_UNABLE_TO_READ_FILTER_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the filter configuration' )
+    CASE(ERRFLAG_UNABLE_TO_MAKE_FILTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to make the filter' )
+    CASE(ERRFLAG_DELETE_FILTER_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to delete the filter configuration' )
+    CASE(ERRFLAG_UNABLE_TO_READ_ASSIGNMENT_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the assignment configuration' )
+    CASE(ERRFLAG_UNABLE_TO_MAKE_ASSIGNMENT)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to make the assignment' )
+    CASE(ERRFLAG_DELETE_ASSIGNMENT_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to delete the assignment configuration' )
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE_MAPPING_RULE_NAME)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate the mapping_rule name' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( ERRMSG )
+        DEALLOCATE(ERRMSG)
+      ENDIF
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE_MAPPING_RULE_TAG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate the mapping_rule tag' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( ERRMSG )
+        DEALLOCATE(ERRMSG)
+      ENDIF
+    CASE(ERRFLAG_MAPPING_RULE_WITHOUT_TAG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'MAPPING_RULE without tag' )
+    CASE(ERRFLAG_UNABLE_TO_DELETE_FILTER_CFG)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to delete the filter configuration' )
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE_FILTER_TYPE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate the filter type' )
+    CASE(ERRFLAG_UNABLE_TO_READ_ASSIGNMENT_TYPE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read the assignment type' )
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE_MAPPING_RULE_SINK)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to deallocate the mapping_rule sink' )
+      IF ( ALLOCATED(ERRMSG) ) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( ERRMSG )
+        DEALLOCATE(ERRMSG)
+      ENDIF
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION MAPPING_RULE_INIT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MAPPING_RULE_MATCH'
+PP_THREAD_SAFE FUNCTION MAPPING_RULE_MATCH( THIS, MSG, PAR, MATCH, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(MAPPING_RULE_T),   INTENT(INOUT) :: THIS
+  TYPE(PARAMETRIZATION_T), INTENT(IN)    :: PAR
+  TYPE(FORTRAN_MESSAGE_T), INTENT(IN)    :: MSG
+  LOGICAL,                 INTENT(OUT)   :: MATCH
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_FILTER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MATCH_FILTERS=2_JPIB_K
+
+  !> Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  !> Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  !> Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%FILTER_), ERRFLAG_FILTER_NOT_ASSOCIATED )
+
+  !> Match the filter
+  PP_TRYCALL(ERRFLAG_MATCH_FILTERS) THIS%FILTER_%MATCH( MSG, PAR, MATCH, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_FILTER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Filter not associated' )
+    CASE(ERRFLAG_MATCH_FILTERS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to match the filter' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION MAPPING_RULE_MATCH
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MAPPING_RULE_GET_ASSIGNMENT'
+PP_THREAD_SAFE FUNCTION MAPPING_RULE_GET_ASSIGNMENT( THIS, ASSIGNMENT, TAG, NAME, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ASSIGNMENT_BASE_MOD, ONLY: ASSIGNMENT_BASE_A
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(MAPPING_RULE_T),             INTENT(INOUT) :: THIS
+  CLASS(ASSIGNMENT_BASE_A), POINTER, INTENT(OUT)   :: ASSIGNMENT
+  CHARACTER(LEN=256),                INTENT(OUT)   :: TAG
+  CHARACTER(LEN=256),                INTENT(OUT)   :: NAME
+  TYPE(HOOKS_T),                     INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ASSIGNMENT_NOT_ASSOCIATED=1_JPIB_K
+
+  !> Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  !> Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  !> Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ASSIGNMENT_), ERRFLAG_ASSIGNMENT_NOT_ASSOCIATED )
+
+  !> Get the assignment
+  ASSIGNMENT => THIS%ASSIGNMENT_
+
+  !> Get the tag
+  TAG = THIS%TAG_
+  NAME = THIS%NAME_
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_ASSIGNMENT_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'ASSIGNMENT not associated' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION MAPPING_RULE_GET_ASSIGNMENT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MAPPING_RULE_PRINT'
+PP_THREAD_SAFE FUNCTION MAPPING_RULE_PRINT( THIS, UNIT, OFFSET, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(MAPPING_RULE_T),        INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: UNIT
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: OFFSET
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Locl variables
+  CHARACTER(LEN=32) :: CMAPPING_RULE_ID
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_FILTER_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ASSIGNMENT_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PRINT_FILTER=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PRINT_ASSIGNMENT=4_JPIB_K
+
+
+  !> Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  !> Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  !> Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%FILTER_), ERRFLAG_FILTER_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ASSIGNMENT_), ERRFLAG_ASSIGNMENT_NOT_ASSOCIATED )
+
+  !> Print the mapping_rule
+  WRITE(CMAPPING_RULE_ID, '(I32)') THIS%ID_
+
+  !> Open mapping_rule
+  WRITE( UNIT, '(A,A,A,A)' ) REPEAT(' ', OFFSET), 'MAPPING_RULE[', TRIM(ADJUSTL(CMAPPING_RULE_ID)), ']: ('
+  WRITE( UNIT, * ) ' '
+
+  !> Print the name of the mapping_rule
+  WRITE( UNIT, '(A,A,A,A)' ) REPEAT(' ', OFFSET+2), 'MAPPING_RULE name: "', TRIM(THIS%NAME_), '"'
+  WRITE( UNIT, * ) ' '
+
+  !> Print the tag of the mapping_rule
+  WRITE( UNIT, '(A,A,A,A)' ) REPEAT(' ', OFFSET+2), 'MAPPING_RULE tag: "', TRIM(THIS%TAG_), '"'
+  WRITE( UNIT, * ) ' '
+
+  !> Print the filter
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_PRINT_FILTER) THIS%FILTER_%PRINT( UNIT, OFFSET+2, HOOKS )
+  WRITE( UNIT, * ) ' '
+
+  !> Print the assignment
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_PRINT_ASSIGNMENT) THIS%ASSIGNMENT_%PRINT( UNIT, OFFSET+2, HOOKS )
+
+  !> Close mapping_rule
+  WRITE( UNIT, '(A,A)' ) REPEAT(' ', OFFSET), ')'
+  WRITE( UNIT, * ) ' '
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_FILTER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Filter not associated' )
+    CASE (ERRFLAG_ASSIGNMENT_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'ASSIGNMENT not associated' )
+    CASE (ERRFLAG_UNABLE_TO_PRINT_FILTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to print the filter' )
+    CASE (ERRFLAG_UNABLE_TO_PRINT_ASSIGNMENT)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to print the assignment' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MAPPING_RULE_PRINT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MAPPING_RULE_FREE'
+PP_THREAD_SAFE FUNCTION MAPPING_RULE_FREE( THIS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,      ONLY: JPIB_K
+  USE :: HOOKS_MOD,              ONLY: HOOKS_T
+  USE :: FILTER_FACTORY_MOD,     ONLY: DESTROY_FILTER
+  USE :: ASSIGNMENT_FACTORY_MOD, ONLY: DESTROY_ASSIGNMENT
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(MAPPING_RULE_T), INTENT(INOUT) :: THIS
+  TYPE(HOOKS_T), INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DESTROY_FILTER=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DESTROY_ASSIGNMENT=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_FILTER_NOT_ASSOCIATED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ASSIGNMENT_NOT_ASSOCIATED=4_JPIB_K
+
+
+  !> Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  !> Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  !> Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  !> Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%FILTER_), ERRFLAG_FILTER_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ASSIGNMENT_), ERRFLAG_ASSIGNMENT_NOT_ASSOCIATED )
+
+  !> Reset the name of the mapping_rule
+  THIS%NAME_ = REPEAT( ' ', 256 )
+
+  !> Reset the tag of the mapping_rule
+  THIS%TAG_ = REPEAT( ' ', 256 )
+
+  !> Destroy the filters
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_DESTROY_FILTER) DESTROY_FILTER( THIS%FILTER_, HOOKS )
+
+  !> Destroy the assignments
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_DESTROY_FILTER) DESTROY_ASSIGNMENT( THIS%ASSIGNMENT_, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_DESTROY_FILTER)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to destroy the filter' )
+    CASE(ERRFLAG_UNABLE_TO_DESTROY_ASSIGNMENT)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to destroy the assignment' )
+    CASE(ERRFLAG_FILTER_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Filter not associated' )
+    CASE(ERRFLAG_ASSIGNMENT_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'ASSIGNMENT not associated' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION MAPPING_RULE_FREE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+END MODULE MAPPING_RULE_MOD
+#undef PP_SECTION_NAME
+#undef PP_SECTION_TYPE
+#undef PP_FILE_NAME

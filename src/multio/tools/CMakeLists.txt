@@ -48,7 +48,6 @@ ecbuild_add_executable( TARGET    multio-feed
                         NO_AS_NEEDED
                         LIBS      multio-api )
 
-# TODO ADD SOME FCKIT condition; this currently breaks GitHub CI
 ecbuild_add_executable( TARGET    multio-replay-nemo-fapi
                         CONDITION HAVE_FORTRAN
                         SOURCES   multio-replay-nemo-fapi.f90

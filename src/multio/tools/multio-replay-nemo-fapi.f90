@@ -12,7 +12,6 @@ program multio_replay_nemo_fapi
     use multio_api
     use fckit_module
     use fckit_mpi_module
-    use mpi ! for error codes
     implicit none
 
     integer :: rank, client_count, server_count
@@ -24,7 +23,7 @@ program multio_replay_nemo_fapi
     logical singlePrecision
 
     type(multio_handle) :: mio
-    integer(int64) :: mio_parent_comm = MPI_UNDEFINED
+    integer(int64) :: mio_parent_comm
 
     character(len=3), dimension(4) :: nemo_parameters = ["sst", "ssu", "ssv", "ssw" ]
     integer, dimension(4) :: grib_param_id = [262101, 262138, 262137, 212202 ]
@@ -87,12 +86,7 @@ implicit none
     if (err /= MULTIO_SUCCESS) then
         write (error_unit, *) 'MULTIO ERROR: ',multio_error_string(err, info)
         write (error_unit, *) 'Abort mpi...'
-
-        if (context /= MPI_UNDEFINED) then
-            comm = fckit_mpi_comm(int(context))
-            call comm%abort(MPI_ERR_OTHER)
-            context = MPI_UNDEFINED
-        endif
+        call fckit_mpi%abort()
     endif
 end subroutine
 

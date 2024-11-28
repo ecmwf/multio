@@ -52,7 +52,7 @@ ecbuild_add_executable( TARGET    multio-feed
 ecbuild_add_executable( TARGET    multio-replay-nemo-fapi
                         CONDITION HAVE_FORTRAN
                         SOURCES   multio-replay-nemo-fapi.f90
-                        LIBS      multio-fapi fckit MPI::MPI_Fortran )
+                        LIBS      multio-fapi fckit )
 
 # TODO: add atlas condition/dependency
 ecbuild_add_executable( TARGET    multio-generate-grib-template

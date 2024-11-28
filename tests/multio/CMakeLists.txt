@@ -146,13 +146,12 @@ ecbuild_add_test( TARGET test_multio_hammer_thread
                   ARGS --transport=thread --nbclients=5 --nbservers=3
                   ENVIRONMENT "${_test_environment}" )
 
-if (eckit_HAVE_MPI)
 ecbuild_add_test( TARGET      test_multio_hammer_mpi
+                  CONDITION   eckit_HAVE_MPI
                   COMMAND     $<TARGET_FILE:multio-hammer>
                   ARGS        --transport=mpi --nbclients=5 --nbservers=3
                   MPI         8
                   ENVIRONMENT "${_test_environment}" )
-endif (eckit_HAVE_MPI)
 
 ecbuild_add_test( TARGET test_multio_hammer_tcp
                   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tcp-launch.sh
@@ -246,7 +245,6 @@ ecbuild_add_test( TARGET       test_multio_replay_nemo_fapi
                   ARGS         $<TARGET_FILE:multio-replay-nemo-fapi>
                                $<TARGET_FILE:multio-probe> ${MPIEXEC_EXECUTABLE} ${MPI_ARGS}
                   ENVIRONMENT  "${_test_environment}"
-                  ENABLED      OFF
 )
 
 ecbuild_add_test( TARGET       test_multio_replay_nemo_capi_masked

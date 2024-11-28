@@ -12,7 +12,6 @@ program multio_replay_nemo_fapi
     use multio_api
     use fckit_module
     use fckit_mpi_module
-    use mpi ! for error codes
     implicit none
 
     integer :: rank, client_count, server_count
@@ -24,10 +23,10 @@ program multio_replay_nemo_fapi
     logical singlePrecision
 
     type(multio_handle) :: mio
-    integer(int64) :: mio_parent_comm = MPI_UNDEFINED
+    integer(int64) :: mio_parent_comm
 
     character(len=3), dimension(4) :: nemo_parameters = ["sst", "ssu", "ssv", "ssw" ]
-    integer, dimension(4) :: grib_param_id = [262101, 262137, 262138, 212202 ]
+    integer, dimension(4) :: grib_param_id = [262101, 262138, 262137, 212202 ]
     character(len=6), dimension(4) :: grib_grid_type = ["T grid", "U grid", "V grid", "W grid" ]
     character(len=12), dimension(4) :: grib_level_type = ["oceanSurface", "oceanSurface", "oceanSurface", "oceanSurface" ]
 
@@ -87,12 +86,7 @@ implicit none
     if (err /= MULTIO_SUCCESS) then
         write (error_unit, *) 'MULTIO ERROR: ',multio_error_string(err, info)
         write (error_unit, *) 'Abort mpi...'
-
-        if (context /= MPI_UNDEFINED) then
-            comm = fckit_mpi_comm(int(context))
-            call comm%abort(MPI_ERR_OTHER)
-            context = MPI_UNDEFINED
-        endif
+        call fckit_mpi%abort()
     endif
 end subroutine
 
@@ -254,10 +248,10 @@ subroutine run(mio, rank, client_count, &
     integer, intent(in) :: level
     integer, intent(in) :: step
     logical, intent(in) :: singlePrecision
-    character(*), dimension(2), intent(in) :: nemo_parameters
-    integer, dimension(2), intent(in) :: grib_param_id
-    character(*), dimension(2), intent(in) :: grib_grid_type
-    character(*), dimension(2), intent(in) :: grib_level_type
+    character(*), dimension(4), intent(in) :: nemo_parameters
+    integer, dimension(4), intent(in) :: grib_param_id
+    character(*), dimension(4), intent(in) :: grib_grid_type
+    character(*), dimension(4), intent(in) :: grib_level_type
 
 
     write(0,*) "Run..."
@@ -347,10 +341,10 @@ subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id,
     integer, intent(in) :: client_count
     type(multio_metadata) :: md
     integer, dimension(11) :: buffer
-    character(*), dimension(2), intent(in) :: nemo_parameters
-    integer, dimension(2), intent(in) :: grib_param_id
-    character(*), dimension(2), intent(in) :: grib_grid_type
-    character(*), dimension(2), intent(in) :: grib_level_type
+    character(*), dimension(4), intent(in) :: nemo_parameters
+    integer, dimension(4), intent(in) :: grib_param_id
+    character(*), dimension(4), intent(in) :: grib_grid_type
+    character(*), dimension(4), intent(in) :: grib_level_type
     integer, intent(in):: global_size
     integer, intent(in):: level
     integer, intent(in):: step
@@ -481,10 +475,10 @@ subroutine test_data(rank, &
     integer, intent(in) :: global_size
     integer, intent(in) :: level
     integer, intent(in) :: step
-    character(*), dimension(2), intent(in) :: nemo_parameters
-    integer, dimension(2), intent(in)      :: grib_param_id
-    character(*), dimension(2), intent(in) :: grib_grid_type
-    character(*), dimension(2), intent(in) :: grib_level_type
+    character(*), dimension(4), intent(in) :: nemo_parameters
+    integer, dimension(4), intent(in)      :: grib_param_id
+    character(*), dimension(4), intent(in) :: grib_grid_type
+    character(*), dimension(4), intent(in) :: grib_level_type
 
     type(fckit_mpi_comm) :: comm
 

@@ -63,7 +63,7 @@ public:
 
     const std::string& logPrefix() const;
     const std::string& windowType() const;
-    bool useDateTime() const { return true; };
+    bool useDateTime() const { return useDateTime_; };
 
     // Handle missing value
     const std::string& bitmapPresentKey() const;

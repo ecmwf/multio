@@ -15,16 +15,16 @@ MetadataMissingKeyException::MetadataMissingKeyException(const std::string& miss
     MetadataKeyException(missingKey, std::string("missing"), l) {};
 
 MetadataWrongTypeException::MetadataWrongTypeException(const std::string& key, const eckit::CodeLocation& l) :
-    MetadataException(std::string("differet key type contained for \"") + key + std::string("\""), l) {};
+    MetadataException(std::string("different key type contained for \"") + key + std::string("\""), l) {};
 
 MetadataWrongTypeException::MetadataWrongTypeException(std::size_t requestedIndex, std::size_t containedIndex,
                                                        const eckit::CodeLocation& l) :
-    MetadataException(std::string("differet key type contained. Requested index: ") + std::to_string(requestedIndex)
+    MetadataException(std::string("different key type contained. Requested index: ") + std::to_string(requestedIndex)
                           + std::string(" contained index: ") + std::to_string(containedIndex),
                       l) {};
 
 MetadataWrongTypeException::MetadataWrongTypeException(const eckit::CodeLocation& l) :
-    MetadataException(std::string("differet key type contained"), l) {};
+    MetadataException(std::string("different key type contained"), l) {};
 
 //-----------------------------------------------------------------------------
 

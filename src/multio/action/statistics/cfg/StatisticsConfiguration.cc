@@ -94,6 +94,8 @@ void StatisticsConfiguration::readGridType(const message::Metadata& md, const St
 void StatisticsConfiguration::readLevType(const message::Metadata& md, const StatisticsOptions& opt) {
     if (auto levType = md.getOpt<std::string>(glossary().levtype); levType) {
         levType_ = *levType;
+    } else if ( auto category = md.getOpt<std::string>(glossary().category); category) {
+        levType_ = *category;//TODO this needs proper handling once category is changed to levtype
     }
     else {
         throw eckit::SeriousBug{"LevType metadata not present", Here()};
@@ -130,10 +132,10 @@ void StatisticsConfiguration::readLevel(const message::Metadata& md, const Stati
 
 void StatisticsConfiguration::readStartTime(const message::Metadata& md, const StatisticsOptions& opt) {
     std::optional<std::int64_t> timeVal;
-    if (opt.useDateTime() && (timeVal = md.get<std::int64_t>(glossary().time))) {
+    if (opt.useDateTime() && (timeVal = md.getOpt<std::int64_t>(glossary().time))) {
         time_ = *timeVal;
     }
-    else if (!opt.useDateTime() && (timeVal = md.get<std::int64_t>(glossary().startTime))) {
+    else if (!opt.useDateTime() && (timeVal = md.getOpt<std::int64_t>(glossary().startTime))) {
         time_ = *timeVal;
     }
     else {
@@ -144,10 +146,10 @@ void StatisticsConfiguration::readStartTime(const message::Metadata& md, const S
 
 void StatisticsConfiguration::readStartDate(const message::Metadata& md, const StatisticsOptions& opt) {
     std::optional<std::int64_t> dateVal;
-    if (opt.useDateTime() && (dateVal = md.get<std::int64_t>(glossary().date))) {
+    if (opt.useDateTime() && (dateVal = md.getOpt<std::int64_t>(glossary().date))) {
         date_ = *dateVal;
     }
-    else if (!opt.useDateTime() && (dateVal = md.get<std::int64_t>(glossary().startDate))) {
+    else if (!opt.useDateTime() && (dateVal = md.getOpt<std::int64_t>(glossary().startDate))) {
         date_ = *dateVal;
     }
     else {

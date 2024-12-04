@@ -11,7 +11,7 @@ StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& comp
     readRestart_{false},
     writeRestart_{false},
     debugRestart_{false},
-    useDateTime_{true},
+    useDateTime_{false},
     clientSideStatistics_{false},
     restartTime_{"latest"},//00000000-000000
     restartPath_{"."},
@@ -58,7 +58,7 @@ StatisticsOptions::StatisticsOptions( const config::ComponentConfiguration& comp
 
 void StatisticsOptions::parseUseDateTime(const eckit::LocalConfiguration& cfg) {
     // Distance in steps between two messages
-    useDateTime_ = cfg.getLong("use-date-time", true );
+    useDateTime_ = cfg.getLong("use-current-time", false );
     return;
 };
 

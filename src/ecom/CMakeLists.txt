@@ -48,14 +48,43 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+
+# Path to the configured file
+set(ECOM_VERSION_FILE ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90)
+
+# Remove the file if it exists
+if(EXISTS ${ECOM_VERSION_FILE})
+    file(REMOVE ${ECOM_VERSION_FILE})
+endif()
+
+# Generate the file
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/output_manager_version_mod.F90.in
+  ${ECOM_VERSION_FILE}
+)
+
+
+
+
+# Define the include directory path
+set(ECOM_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
+
+# Clean the directory if it exists
+if(EXISTS ${ECOM_INCLUDE_DIR})
+    file(REMOVE_RECURSE ${ECOM_INCLUDE_DIR})
+endif()
+
+# Create the directory
+file(MAKE_DIRECTORY ${ECOM_INCLUDE_DIR})
+
+
 #
 # + CONFIGURE HEADERS
 # ======================================================================
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/output_manager_version_mod.F90.in                               ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_utils.h.in         ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_trace_utils.h.in   ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_trace_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_logging_utils.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_logging_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_errhdl_utils.h.in  ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_errhdl_utils.h  )
+configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_utils.h.in         ${ECOM_INCLUDE_DIR}/output_manager_preprocessor_utils.h  )
+configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_trace_utils.h.in   ${ECOM_INCLUDE_DIR}/output_manager_preprocessor_trace_utils.h  )
+configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_logging_utils.h.in ${ECOM_INCLUDE_DIR}/output_manager_preprocessor_logging_utils.h  )
+configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_errhdl_utils.h.in  ${ECOM_INCLUDE_DIR}/output_manager_preprocessor_errhdl_utils.h  )
 
 
 #
@@ -72,7 +101,7 @@ set( OUTPUT_MANAGER_LIBRARIES
 # + BUILD OUTPUT MANAGER CORE (this organisation comes from dep. problems in CMake)
 # ======================================================================
 list( APPEND output_manager_src
-  ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90
+  ${ECOM_VERSION_FILE}
   core/om_data_kind_mod.F90
   core/om_data_types_mod.F90
   core/om_constants_mod.F90

@@ -7,12 +7,11 @@
 ! does it submit to any jurisdiction.
 !
 program multio_replay_nemo_fapi
-    use, intrinsic :: iso_c_binding
-    use, intrinsic :: iso_fortran_env
+    use, intrinsic :: iso_fortran_env, only: int64
     use multio_api
     use fckit_module
     use fckit_mpi_module
-    implicit none
+implicit none
 
     integer :: rank, client_count, server_count
 
@@ -58,7 +57,9 @@ contains
 
 
 function hasSinglePrecison() result(singlePrecision)
-    use, intrinsic :: iso_c_binding
+    use, intrinsic :: iso_c_binding, only: c_int
+    use, intrinsic :: iso_c_binding, only: c_char
+implicit none
     character(kind=c_char,len=255) :: arg
     integer(c_int) :: iarg
     logical :: singlePrecision
@@ -74,6 +75,7 @@ function hasSinglePrecison() result(singlePrecision)
 end function hasSinglePrecison
 
 subroutine multio_custom_error_handler(context, err, info)
+    use, intrinsic :: iso_fortran_env, only: error_unit
     use, intrinsic :: iso_fortran_env, only: int64
     use :: multio_api, only: multio_failure_info
     use fckit_module,  only: fckit_mpi_comm
@@ -94,6 +96,8 @@ end subroutine
 
 subroutine init(mio, rank, server_count, client_count)
     use :: multio_api, only: failure_handler_t
+    use, intrinsic :: iso_fortran_env, only: error_unit
+    use, intrinsic :: iso_c_binding, only: c_int
 implicit none
     integer(kind=c_int) :: cerr
     integer :: ierror
@@ -240,6 +244,8 @@ subroutine run(mio, rank, client_count, &
         nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
         global_size, level, step, singlePrecision &
 )
+    use, intrinsic :: iso_c_binding, only: c_int
+implicit none
     integer(kind=c_int) :: cerr
     type(multio_handle), intent(inout) :: mio
     integer, intent(in) :: rank
@@ -270,6 +276,8 @@ end subroutine run
 
 
 subroutine read_grid(grid_type, client_id, domain_dims)
+    use, intrinsic :: iso_c_binding, only: c_int
+implicit none
     integer(kind=c_int) :: cerr
     integer, intent(in) :: client_id
     character(len=*), intent(in) :: grid_type
@@ -296,6 +304,8 @@ end subroutine read_grid
 
 
 subroutine set_domains(mio, rank, client_count)
+    use, intrinsic :: iso_c_binding, only: c_int
+implicit none
     integer(kind=c_int) :: cerr
     type(multio_handle), intent(inout) :: mio
     integer, intent(in) :: rank
@@ -335,6 +345,10 @@ end subroutine set_domains
 
 subroutine write_fields(mio, rank, client_count, nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
     global_size, level, step, singlePrecision)
+    use, intrinsic :: iso_c_binding, only: c_int
+    use, intrinsic :: iso_c_binding, only: c_double
+    use, intrinsic :: iso_c_binding, only: c_float
+implicit none
     integer(kind=c_int) :: cerr
     type(multio_handle), intent(inout) :: mio
     integer, intent(in) :: rank
@@ -420,6 +434,10 @@ end subroutine write_fields
 
 
 subroutine read_field(param, client_id, step, values)
+    use, intrinsic :: iso_c_binding, only: c_int
+    use, intrinsic :: iso_c_binding, only: c_double
+    use, intrinsic :: iso_c_binding, only: c_sizeof
+implicit none
      integer(kind=c_int) :: cerr
      integer, intent(in) :: client_id
      integer, intent(in) :: step
@@ -470,6 +488,8 @@ subroutine test_data(rank, &
         nemo_parameters, grib_param_id, grib_grid_type, grib_level_type, &
         global_size, level, step &
 )
+    use, intrinsic :: iso_c_binding, only: c_int
+implicit none
     integer(kind=c_int) :: cerr
     integer, intent(in) :: rank
     integer, intent(in) :: global_size

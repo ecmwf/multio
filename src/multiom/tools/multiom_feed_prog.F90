@@ -464,7 +464,7 @@ PP_ERROR_HANDLER
     CALL HOOKS%DEBUG_HOOK_%FREE( )
 
     ! Write the error message and stop the program
-    PP_DEBUG_ABORT()
+    PP_DEBUG_ABORT
 
   END BLOCK
 

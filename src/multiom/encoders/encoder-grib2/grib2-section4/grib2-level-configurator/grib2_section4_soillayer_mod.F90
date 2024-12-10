@@ -282,7 +282,7 @@ PP_ERROR_HANDLER
     PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
 
     ! Write the error message and stop the program
-    PP_DEBUG_ABORT()
+    PP_DEBUG_ABORT
 
   END BLOCK
 
@@ -418,7 +418,7 @@ PP_ERROR_HANDLER
     PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
 
     ! Write the error message and stop the program
-    PP_DEBUG_ABORT()
+    PP_DEBUG_ABORT
 
   END BLOCK
 
@@ -575,7 +575,7 @@ PP_ERROR_HANDLER
     PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
 
     ! Write the error message and stop the program
-    PP_DEBUG_ABORT()
+    PP_DEBUG_ABORT
 
   END BLOCK
 
@@ -727,7 +727,7 @@ PP_ERROR_HANDLER
     PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
 
     ! Write the error message and stop the program
-    PP_DEBUG_ABORT()
+    PP_DEBUG_ABORT
 
   END BLOCK
 
@@ -887,7 +887,7 @@ PP_ERROR_HANDLER
     PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
 
     ! Write the error message and stop the program
-    PP_DEBUG_ABORT()
+    PP_DEBUG_ABORT
 
   END BLOCK
 
@@ -1032,7 +1032,7 @@ PP_ERROR_HANDLER
     PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
 
     ! Write the error message and stop the program
-    PP_DEBUG_ABORT()
+    PP_DEBUG_ABORT
 
   END BLOCK
 
@@ -1150,7 +1150,7 @@ PP_ERROR_HANDLER
     PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
 
     ! Write the error message and stop the program
-    PP_DEBUG_ABORT()
+    PP_DEBUG_ABORT
 
   END BLOCK
 
@@ -1327,7 +1327,7 @@ PP_ERROR_HANDLER
     PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
 
     ! Write the error message and stop the program
-    PP_DEBUG_ABORT()
+    PP_DEBUG_ABORT
 
   END BLOCK
 

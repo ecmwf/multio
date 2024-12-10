@@ -1428,8 +1428,6 @@ IMPLICIT NONE
     MSG%ANOFFSET = THIS%MODEL_PAR_%SIM_%NWINOFF
   ENDIF
 
-
-
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 

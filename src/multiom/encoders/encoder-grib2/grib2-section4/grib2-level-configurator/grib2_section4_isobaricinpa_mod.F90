@@ -1268,17 +1268,18 @@ IMPLICIT NONE
 
   ! According to the options decide where to set the levels (preset or runlevel)
   PP_LOG_INFO( 'TypeOfLevel: isobaricInPa' )
-  IF ( OPT%USE_TYPE_OF_LEVEL ) THEN
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'isobaricInPa' )
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
-  ELSE
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfFirstFixedSurface', 100_JPIB_K )
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfSecondFixedSurface', 255_JPIB_K )
-    ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaledValueOfFirstFixedSurface', pressure level)
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfSecondFixedSurface' )
-    ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface', pressure level)
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
-  ENDIF
+  ! IF ( OPT%USE_TYPE_OF_LEVEL ) THEN
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'isobaricInPa' )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
+  ! TODO: Set type of level using low level keywords
+  ! ELSE
+  !   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfFirstFixedSurface', 100_JPIB_K )
+  !   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfSecondFixedSurface', 255_JPIB_K )
+  !   ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaledValueOfFirstFixedSurface', pressure level)
+  !   PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfSecondFixedSurface' )
+  !   ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface', pressure level)
+  !   PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
+  ! ENDIF
 
 
 

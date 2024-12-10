@@ -1,3 +1,5 @@
+
+
 if ( HAVE_OUTPUT_MANAGER )
 
 # Update on new big features
@@ -48,21 +50,44 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+
+# Path to the configured file
+set(ECOM_VERSION_FILE ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90)
+
+# Remove the file if it exists
+if(EXISTS ${ECOM_VERSION_FILE})
+    file(REMOVE ${ECOM_VERSION_FILE})
+endif()
+
+# Generate the file
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/output_manager_version_mod.F90.in
+  ${ECOM_VERSION_FILE}
+)
+
+
+
+
+# Define the include directory path
+set(ECOM_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
+
+# Clean the directory if it exists
+if(EXISTS ${ECOM_INCLUDE_DIR})
+    file(REMOVE_RECURSE ${ECOM_INCLUDE_DIR})
+endif()
+
+# Create the directory
+file(MAKE_DIRECTORY ${ECOM_INCLUDE_DIR})
+
+
 #
 # + CONFIGURE HEADERS
 # ======================================================================
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/output_manager_version_mod.F90.in                               ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_utils.h.in         ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_trace_utils.h.in   ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_trace_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_logging_utils.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_logging_utils.h  )
-configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_errhdl_utils.h.in  ${CMAKE_CURRENT_BINARY_DIR}/include/output_manager_preprocessor_errhdl_utils.h  )
+configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_utils.h.in         ${ECOM_INCLUDE_DIR}/output_manager_preprocessor_utils.h  )
+configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_trace_utils.h.in   ${ECOM_INCLUDE_DIR}/output_manager_preprocessor_trace_utils.h  )
+configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_logging_utils.h.in ${ECOM_INCLUDE_DIR}/output_manager_preprocessor_logging_utils.h  )
+configure_file(  ${CMAKE_CURRENT_SOURCE_DIR}/include/standard/output_manager_preprocessor_errhdl_utils.h.in  ${ECOM_INCLUDE_DIR}/output_manager_preprocessor_errhdl_utils.h  )
 
-
-#
-# Configure the include path (the variable is defined and used in the parent scope)
-list( APPEND OUTPUT_MANAGER_INCLUDE_PATH
-    ${CMAKE_CURRENT_BINARY_DIR}/include/
-)
 
 #
 # Recursive add fo all the files in the grib directory
@@ -91,6 +116,7 @@ add_subdirectory( ifs-interface )
 add_subdirectory( output-manager )
 add_subdirectory( sinks )
 add_subdirectory( ifs-encoders )
+add_subdirectory( ifs2mars )
 add_subdirectory( tools )
 
 #
@@ -113,6 +139,7 @@ list( APPEND output_manager_src
   ${MULTIOM_OUTPUT_MANAGER_SOURCES}
   ${MULTIOM_SINKS_SOURCES}
   ${MULTIOM_IFS_ENCODERS_SOURCES}
+  ${MULTIOM_IFS2MARS_SOURCES}
   ${CMAKE_CURRENT_BINARY_DIR}/output_manager_version_mod.F90
   ./multiom_api.F90
 )
@@ -136,7 +163,7 @@ endif()
 # ======================================================================
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
-message(STATUS "multIOM include path: ${OUTPUT_MANAGER_INCLUDE_PATH}")
+
 ecbuild_add_library(
   TARGET  multiom
   SOURCES ${output_manager_src}
@@ -144,7 +171,7 @@ ecbuild_add_library(
   DEFINITIONS ${OUTPUT_MANAGER_BUILD_FLAVOUR}
 
   PRIVATE_INCLUDES
-    ${OUTPUT_MANAGER_INCLUDE_PATH}
+    $<BUILD_INTERFACE:${ECOM_INCLUDE_DIR}>
 
   PUBLIC_LIBS
     fckit

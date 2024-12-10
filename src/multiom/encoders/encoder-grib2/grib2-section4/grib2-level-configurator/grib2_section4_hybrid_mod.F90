@@ -1230,7 +1230,7 @@ PP_THREAD_SAFE FUNCTION G2S4_HYBRID_SET_LEVELS( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(GRIB2_SECTION4_HYBRID_T),     INTENT(INOUT) :: THIS
+  CLASS(GRIB2_SECTION4_HYBRID_T),  INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -1263,19 +1263,18 @@ IMPLICIT NONE
 
   ! According to the options decide where to set the levels (preset or runlevel)
   PP_LOG_INFO( 'TypeOfLevel: hybrid' )
-  IF ( OPT%USE_TYPE_OF_LEVEL ) THEN
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'hybrid' )
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
-  ELSE
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfFirstFixedSurface', 105_JPIB_K )
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfSecondFixedSurface', 255_JPIB_K )
-    ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaledValueOfFirstFixedSurface', model level)
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfSecondFixedSurface' )
-    ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface', model level)
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
-  ENDIF
-
-
+  ! IF ( OPT%USE_TYPE_OF_LEVEL ) THEN
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'hybrid' )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
+  ! TODO: Set type of level using low level keywords
+  ! ELSE
+  !   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfFirstFixedSurface', 105_JPIB_K )
+  !   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfSecondFixedSurface', 255_JPIB_K )
+  !   ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaledValueOfFirstFixedSurface', model level)
+  !   PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfSecondFixedSurface' )
+  !   ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface', model level)
+  !   PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
+  ! ENDIF
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )

@@ -96,6 +96,13 @@ PRIVATE
   PUBLIC :: IMSGSTRINGFLDS2CMSGSTRINGFLDS
   PUBLIC :: CMSGSTRINGFLDS2IMSGSTRINGFLDS
 
+  PUBLIC :: HAS_CMSGFLOATFLDS
+  PUBLIC :: HAS_CMSGINTFLDS
+  PUBLIC :: HAS_CMSGSTRINGFLDS
+  PUBLIC :: HAS_IMSGFLOATFLDS
+  PUBLIC :: HAS_IMSGINTFLDS
+  PUBLIC :: HAS_IMSGSTRINGFLDS
+
 CONTAINS
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
@@ -402,6 +409,258 @@ END FUNCTION CMSGINTFLDS2IMSGINTFLDS
 #undef PP_PROCEDURE_TYPE
 
 
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'HAS_CMSGINTFLDS'
+PP_THREAD_SAFE FUNCTION HAS_CMSGINTFLDS( CMSGINTFLDS, HAS_FIELD, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*), INTENT(IN)    :: CMSGINTFLDS
+  LOGICAL,          INTENT(OUT)   :: HAS_FIELD
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CMSGINTFLDS)) :: LOC_CMSGINTFLDS
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Convert prefix to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( CMSGINTFLDS, LOC_CMSGINTFLDS, HOOKS )
+
+  !> Select the prefix
+  SELECT CASE ( TRIM(ADJUSTL(LOC_CMSGINTFLDS)) )
+  CASE( 'stream' )
+    HAS_FIELD = .TRUE.
+  CASE( 'type' )
+    HAS_FIELD = .TRUE.
+  CASE( 'class' )
+    HAS_FIELD = .TRUE.
+  CASE( 'origin' )
+    HAS_FIELD = .TRUE.
+  CASE( 'anoffset' )
+    HAS_FIELD = .TRUE.
+  CASE( 'number' )
+    HAS_FIELD = .TRUE.
+  CASE( 'ident' )
+    HAS_FIELD = .TRUE.
+  CASE( 'instrument' )
+    HAS_FIELD = .TRUE.
+  CASE( 'channel' )
+    HAS_FIELD = .TRUE.
+  CASE( 'param-type' )
+    HAS_FIELD = .TRUE.
+  CASE( 'chem' )
+    HAS_FIELD = .TRUE.
+  CASE( 'param' )
+    HAS_FIELD = .TRUE.
+  CASE( 'levtype' )
+    HAS_FIELD = .TRUE.
+  CASE( 'levelist' )
+    HAS_FIELD = .TRUE.
+  CASE( 'direction' )
+    HAS_FIELD = .TRUE.
+  CASE( 'frequency' )
+    HAS_FIELD = .TRUE.
+  CASE( 'model' )
+    HAS_FIELD = .TRUE.
+  CASE( 'repres' )
+    HAS_FIELD = .TRUE.
+  CASE( 'date' )
+    HAS_FIELD = .TRUE.
+  CASE( 'time' )
+    HAS_FIELD = .TRUE.
+  CASE( 'step' )
+    HAS_FIELD = .TRUE.
+  CASE( 'packing' )
+    HAS_FIELD = .TRUE.
+  CASE DEFAULT
+    HAS_FIELD = .FALSE.
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION HAS_CMSGINTFLDS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'HAS_IMSGINTFLDS'
+PP_THREAD_SAFE FUNCTION HAS_IMSGINTFLDS( IMSGINTFLDS, HAS_FIELD, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IMSGINTFLDS
+  LOGICAL,              INTENT(OUT)   :: HAS_FIELD
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Select the prefix
+  SELECT CASE ( IMSGINTFLDS )
+  CASE (MSGINTFLD_STREAM_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_TYPE_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_CLASS_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_ORIGIN_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_ANOFFSET_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_NUMBER_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_IDENT_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_INSTRUMENT_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_CHANNEL_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_PARAM_TYPE_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_CHEM_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_PARAM_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_LEVTYPE_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_LEVELIST_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_DIRECTION_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_FREQUENCY_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_MODEL_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_REPRES_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_DATE_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_TIME_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_STEP_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGINTFLD_PACKING_E)
+    HAS_FIELD = .TRUE.
+  CASE DEFAULT
+    HAS_FIELD = .FALSE.
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+END FUNCTION HAS_IMSGINTFLDS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'CMSGFLOATFLDS2IMSGFLOATFLDS'
@@ -514,6 +773,7 @@ END FUNCTION CMSGFLOATFLDS2IMSGFLOATFLDS
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
+
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'IMSGFLOATFLDS2CMSGFLOATFLDS'
 PP_THREAD_SAFE FUNCTION IMSGFLOATFLDS2CMSGFLOATFLDS( IMSGFLOATFLDS, CMSGFLOATFLDS, HOOKS ) RESULT(RET)
@@ -618,7 +878,171 @@ END FUNCTION IMSGFLOATFLDS2CMSGFLOATFLDS
 #undef PP_PROCEDURE_TYPE
 
 
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'HAS_CMSGFLOATFLDS'
+PP_THREAD_SAFE FUNCTION HAS_CMSGFLOATFLDS( CMSGFLOATFLDS, HAS_FIELD, HOOKS ) RESULT(RET)
 
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+  USE :: ENUMERATORS_MOD,   ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*), INTENT(IN)    :: CMSGFLOATFLDS
+  LOGICAL,          INTENT(OUT)   :: HAS_FIELD
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CMSGFLOATFLDS)) :: LOC_CMSGFLOATFLDS
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Convert prefix to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( CMSGFLOATFLDS, LOC_CMSGFLOATFLDS, HOOKS )
+
+  !> Select the prefix
+  SELECT CASE ( TRIM(ADJUSTL(LOC_CMSGFLOATFLDS)) )
+  CASE DEFAULT
+    HAS_FIELD = .FALSE.
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION HAS_CMSGFLOATFLDS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'HAS_IMSGFLOATFLDS'
+PP_THREAD_SAFE FUNCTION HAS_IMSGFLOATFLDS( IMSGFLOATFLDS, HAS_FIELD, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+  USE :: ENUMERATORS_MOD,   ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IMSGFLOATFLDS
+  LOGICAL,              INTENT(OUT)   :: HAS_FIELD
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Select the prefix
+  SELECT CASE ( IMSGFLOATFLDS )
+  CASE DEFAULT
+    HAS_FIELD = .FALSE.
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+END FUNCTION HAS_IMSGFLOATFLDS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
@@ -736,6 +1160,7 @@ END FUNCTION CMSGSTRINGFLDS2IMSGSTRINGFLDS
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
+
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'IMSGSTRINGFLDS2CMSGSTRINGFLDS'
 PP_THREAD_SAFE FUNCTION IMSGSTRINGFLDS2CMSGSTRINGFLDS( IMSGSTRINGFLDS, CMSGSTRINGFLDS, HOOKS ) RESULT(RET)
@@ -840,6 +1265,181 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION IMSGSTRINGFLDS2CMSGSTRINGFLDS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'HAS_CMSGSTRINGFLDS'
+PP_THREAD_SAFE FUNCTION HAS_CMSGSTRINGFLDS( CMSGSTRINGFLDS, HAS_FIELD, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+  USE :: ENUMERATORS_MOD,   ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*), INTENT(IN)    :: CMSGSTRINGFLDS
+  LOGICAL,          INTENT(OUT)   :: HAS_FIELD
+  TYPE(HOOKS_T),    INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CMSGSTRINGFLDS)) :: LOC_CMSGSTRINGFLDS
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Convert prefix to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( CMSGSTRINGFLDS, LOC_CMSGSTRINGFLDS, HOOKS )
+
+  !> Select the prefix
+  SELECT CASE ( TRIM(ADJUSTL(LOC_CMSGSTRINGFLDS)) )
+  CASE ('expver')
+    HAS_FIELD = .TRUE.
+  CASE ('grid')
+    HAS_FIELD = .TRUE.
+  CASE DEFAULT
+    HAS_FIELD = .FALSE.
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION HAS_CMSGSTRINGFLDS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'HAS_IMSGSTRINGFLDS'
+PP_THREAD_SAFE FUNCTION HAS_IMSGSTRINGFLDS( IMSGSTRINGFLDS, HAS_FIELD, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+  USE :: ENUMERATORS_MOD,   ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IMSGSTRINGFLDS
+  LOGICAL,              INTENT(OUT)   :: HAS_FIELD
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Select the prefix
+  SELECT CASE ( IMSGSTRINGFLDS )
+  CASE (MSGSTRFLD_GRID_E)
+    HAS_FIELD = .TRUE.
+  CASE (MSGSTRFLD_EXPVER_E)
+    HAS_FIELD = .TRUE.
+  CASE DEFAULT
+    HAS_FIELD = .FALSE.
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+END FUNCTION HAS_IMSGSTRINGFLDS
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

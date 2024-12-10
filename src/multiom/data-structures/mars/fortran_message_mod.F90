@@ -22,6 +22,9 @@ PRIVATE
 !>
 TYPE :: FORTRAN_MESSAGE_T
 
+  ! Default visibility of the type
+  ! PRIVATE
+
   !> General information
   INTEGER(KIND=JPIB_K) :: STREAM = UNDEF_PARAM_E
   INTEGER(KIND=JPIB_K) :: TYPE = UNDEF_PARAM_E
@@ -49,19 +52,20 @@ TYPE :: FORTRAN_MESSAGE_T
   INTEGER(KIND=JPIB_K) :: LEVELIST = UNDEF_PARAM_E
   INTEGER(KIND=JPIB_K) :: DIRECTION = UNDEF_PARAM_E
   INTEGER(KIND=JPIB_K) :: FREQUENCY = UNDEF_PARAM_E
-  INTEGER(KIND=JPIB_K) :: MODEL = UNDEF_PARAM_E
-  INTEGER(KIND=JPIB_K) :: REPRES = UNDEF_PARAM_E
+  INTEGER(KIND=JPIB_K) :: MODEL = UNDEF_PARAM_E !! Deprecated
 
   INTEGER(KIND=JPIB_K) :: DATE = UNDEF_PARAM_E
   INTEGER(KIND=JPIB_K) :: TIME = UNDEF_PARAM_E
   INTEGER(KIND=JPIB_K) :: STEP = UNDEF_PARAM_E
 
   !> Grid information
+  INTEGER(KIND=JPIB_K) :: REPRES = UNDEF_PARAM_E
   CHARACTER(LEN=8)     :: GRID = REPEAT('*',8)
 
 CONTAINS
 
   !> Comparison operators
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INIT           => FORTRAN_MESSAGE_INIT
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: COPY_FROM      => FORTRAN_MESSAGE_COPY_DATA_FROM
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SWAP_DATA      => FORTRAN_MESSAGE_SWAP_DATA
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: READ_FROM_YAML => FORTRAN_MESSAGE_READ_FROM_YAML
@@ -69,21 +73,49 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: IS_LOWER_THAN  => FORTRAN_MESSAGE_LOWER_THAN
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: FREE           => FORTRAN_MESSAGE_FREE
 
-  !> Set fields by field ID
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_INT    => FORTRAN_MESSAGE_SET_INT
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_STRING => FORTRAN_MESSAGE_SET_STRING
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_FLOAT  => FORTRAN_MESSAGE_SET_FLOAT
-  GENERIC :: SET => SET_INT
-  GENERIC :: SET => SET_STRING
-  GENERIC :: SET => SET_FLOAT
+  !> Set fields by field ID/Key
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_ENUM_INT    => FORTRAN_MESSAGE_SET_ENUM_INT
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_KEY_INT     => FORTRAN_MESSAGE_SET_KEY_INT
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_ENUM_STRING => FORTRAN_MESSAGE_SET_ENUM_STRING
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_KEY_STRING  => FORTRAN_MESSAGE_SET_KEY_STRING
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_ENUM_FLOAT  => FORTRAN_MESSAGE_SET_ENUM_FLOAT
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_KEY_FLOAT   => FORTRAN_MESSAGE_SET_KEY_FLOAT
+  GENERIC :: SET => SET_ENUM_INT
+  GENERIC :: SET => SET_KEY_INT
+  GENERIC :: SET => SET_ENUM_STRING
+  GENERIC :: SET => SET_KEY_STRING
+  GENERIC :: SET => SET_ENUM_FLOAT
+  GENERIC :: SET => SET_KEY_FLOAT
 
-  !> Set fields by field ID
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_INT    => FORTRAN_MESSAGE_GET_INT
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_STRING => FORTRAN_MESSAGE_GET_STRING
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_FLOAT  => FORTRAN_MESSAGE_GET_FLOAT
-  GENERIC :: GET => GET_INT
-  GENERIC :: GET => GET_STRING
-  GENERIC :: GET => GET_FLOAT
+  !> Get fields by field ID/Key
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_ENUM_INT    => FORTRAN_MESSAGE_GET_ENUM_INT
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_KEY_INT     => FORTRAN_MESSAGE_GET_KEY_INT
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_ENUM_STRING => FORTRAN_MESSAGE_GET_ENUM_STRING
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_KEY_STRING  => FORTRAN_MESSAGE_GET_KEY_STRING
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_ENUM_FLOAT  => FORTRAN_MESSAGE_GET_ENUM_FLOAT
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_KEY_FLOAT   => FORTRAN_MESSAGE_GET_KEY_FLOAT
+  GENERIC :: GET => GET_ENUM_INT
+  GENERIC :: GET => GET_KEY_INT
+  GENERIC :: GET => GET_ENUM_STRING
+  GENERIC :: GET => GET_KEY_STRING
+  GENERIC :: GET => GET_ENUM_FLOAT
+  GENERIC :: GET => GET_KEY_FLOAT
+
+
+
+  !> Has fields by field ID/Key
+  !! PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: HAS_ENUM_INT    => FORTRAN_MESSAGE_HAS_ENUM_INT
+  !! PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: HAS_KEY_INT     => FORTRAN_MESSAGE_HAS_KEY_INT
+  !! PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: HAS_ENUM_STRING => FORTRAN_MESSAGE_HAS_ENUM_STRING
+  !! PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: HAS_KEY_STRING  => FORTRAN_MESSAGE_HAS_KEY_STRING
+  !! PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: HAS_ENUM_FLOAT  => FORTRAN_MESSAGE_HAS_ENUM_FLOAT
+  !! PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: HAS_KEY_FLOAT   => FORTRAN_MESSAGE_HAS_KEY_FLOAT
+  !! GENERIC :: HAS => HAS_ENUM_INT
+  !! GENERIC :: HAS => HAS_KEY_INT
+  !! GENERIC :: HAS => HAS_ENUM_STRING
+  !! GENERIC :: HAS => HAS_KEY_STRING
+  !! GENERIC :: HAS => HAS_ENUM_FLOAT
+  !! GENERIC :: HAS => HAS_KEY_FLOAT
 
   !> Set fields by field ID
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: PRINT => FORTRAN_MESSAGE_PRINT
@@ -95,6 +127,120 @@ END TYPE
 PUBLIC :: FORTRAN_MESSAGE_T
 
 CONTAINS
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_INIT'
+FUNCTION FORTRAN_MESSAGE_INIT( THIS, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
+  USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: GRIB_ENCODER_OPTIONS_MOD, ONLY: GRIB_ENCODER_OPTIONS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(FORTRAN_MESSAGE_T),     INTENT(INOUT) :: THIS
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Reset to default values
+  THIS%STREAM     = UNDEF_PARAM_E
+  THIS%TYPE       = UNDEF_PARAM_E
+  THIS%CLASS      = UNDEF_PARAM_E
+  THIS%EXPVER     = REPEAT('*',4)
+  THIS%ORIGIN     = UNDEF_PARAM_E
+  THIS%ANOFFSET   = UNDEF_PARAM_E
+  THIS%NUMBER     = UNDEF_PARAM_E
+  THIS%IDENT      = UNDEF_PARAM_E
+  THIS%INSTRUMENT = UNDEF_PARAM_E
+  THIS%CHANNEL    = UNDEF_PARAM_E
+  THIS%PARAM_TYPE = UNDEF_PARAM_E
+  THIS%CHEM       = UNDEF_PARAM_E
+  THIS%PARAM      = UNDEF_PARAM_E
+  THIS%LEVTYPE    = UNDEF_PARAM_E
+  THIS%LEVELIST   = UNDEF_PARAM_E
+  THIS%DIRECTION  = UNDEF_PARAM_E
+  THIS%FREQUENCY  = UNDEF_PARAM_E
+  THIS%MODEL      = UNDEF_PARAM_E
+  THIS%REPRES     = UNDEF_PARAM_E
+  THIS%DATE       = UNDEF_PARAM_E
+  THIS%TIME       = UNDEF_PARAM_E
+  THIS%STEP       = UNDEF_PARAM_E
+  THIS%GRID       = REPEAT('*',8)
+
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION FORTRAN_MESSAGE_INIT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
@@ -287,7 +433,7 @@ IMPLICIT NONE
     WRITE(UNIT,*) '+ Integer members'
     DO I = 1, N_MSGINTFLDS
       PP_TRYCALL(ERRFLAG_IMSGINTFLDS2CMSGINTFLDS) IMSGINTFLDS2CMSGINTFLDS( I, CKEY, HOOKS )
-      PP_TRYCALL(ERRFLAG_GET_INT) THIS%GET_INT( I, ITMP, HOOKS )
+      PP_TRYCALL(ERRFLAG_GET_INT) THIS%GET_ENUM_INT( I, ITMP, HOOKS )
       IF ( ITMP .NE. UNDEF_PARAM_E ) THEN
         WRITE(UNIT,'(A3,A20,A3,I32)',IOSTAT=WRITE_STAT) ' - ', TRIM(ADJUSTL(CKEY)) ,' : ', ITMP
         PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
@@ -300,7 +446,7 @@ IMPLICIT NONE
     WRITE(UNIT,*) '+ String members'
     DO I = 1, N_MSGSTRFLDS
       PP_TRYCALL(ERRFLAG_IMSGSTRINGFLDS2CMSGSTRINGFLDS) IMSGSTRINGFLDS2CMSGSTRINGFLDS( I, CKEY, HOOKS )
-      PP_TRYCALL(ERRFLAG_GET_STRING) THIS%GET_STRING( I, CTMP, HOOKS )
+      PP_TRYCALL(ERRFLAG_GET_STRING) THIS%GET_ENUM_STRING( I, CTMP, HOOKS )
       WRITE(UNIT,'(A3,A20,A3,A8)',IOSTAT=WRITE_STAT) ' - ', TRIM(ADJUSTL(CKEY)) ,' : ', CTMP
       PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
     ENDDO
@@ -311,7 +457,7 @@ IMPLICIT NONE
     WRITE(UNIT,*) '+ Float members'
     DO I = 1, N_MSGFLOATFLDS
       PP_TRYCALL(ERRFLAG_IMSGFLOATFLDS2CMSGFLOATFLDS) IMSGFLOATFLDS2CMSGFLOATFLDS( I, CKEY, HOOKS )
-      PP_TRYCALL(ERRFLAG_GET_FLOAT) THIS%GET_FLOAT( I, RTMP, HOOKS )
+      PP_TRYCALL(ERRFLAG_GET_FLOAT) THIS%GET_ENUM_FLOAT( I, RTMP, HOOKS )
       WRITE(UNIT,'(A3,A20,A3,F11.4)',IOSTAT=WRITE_STAT) ' - ', TRIM(ADJUSTL(CKEY)) ,' : ', RTMP
       PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT .NE. 0, ERRFLAG_IOSTATUS_NOT_ZERO )
     ENDDO
@@ -465,7 +611,7 @@ IMPLICIT NONE
       CTMP=REPEAT(' ',32)
       CKEY=REPEAT(' ',16)
       PP_TRYCALL(ERRFLAG_IMSGINTFLDS2CMSGINTFLDS) IMSGINTFLDS2CMSGINTFLDS( I, CKEY, HOOKS )
-      PP_TRYCALL(ERRFLAG_GET_INT) THIS%GET_INT( I, ITMP, HOOKS )
+      PP_TRYCALL(ERRFLAG_GET_INT) THIS%GET_ENUM_INT( I, ITMP, HOOKS )
       WRITE(CTMP,*,IOSTAT=WRITE_STAT) ITMP
       SZ = 1 + LEN_TRIM(ADJUSTL(CKEY)) + 1 + LEN_TRIM(ADJUSTL(CTMP)) + 1
       LO = HI + 1
@@ -479,7 +625,7 @@ IMPLICIT NONE
       CTMP=REPEAT(' ',32)
       CKEY=REPEAT(' ',16)
       PP_TRYCALL(ERRFLAG_IMSGSTRINGFLDS2CMSGSTRINGFLDS) IMSGSTRINGFLDS2CMSGSTRINGFLDS( I, CKEY, HOOKS )
-      PP_TRYCALL(ERRFLAG_GET_STRING) THIS%GET_STRING( I, CTMP, HOOKS )
+      PP_TRYCALL(ERRFLAG_GET_STRING) THIS%GET_ENUM_STRING( I, CTMP, HOOKS )
       SZ = 1 + LEN_TRIM(ADJUSTL(CKEY)) + 1 + LEN_TRIM(ADJUSTL(CTMP)) + 1
       LO = HI + 1
       HI = LO + SZ - 1
@@ -492,7 +638,7 @@ IMPLICIT NONE
       CTMP=REPEAT(' ',32)
       CKEY=REPEAT(' ',16)
       PP_TRYCALL(ERRFLAG_IMSGFLOATFLDS2CMSGFLOATFLDS) IMSGFLOATFLDS2CMSGFLOATFLDS( I, CKEY, HOOKS )
-      PP_TRYCALL(ERRFLAG_GET_FLOAT) THIS%GET_FLOAT( I, RTMP, HOOKS )
+      PP_TRYCALL(ERRFLAG_GET_FLOAT) THIS%GET_ENUM_FLOAT( I, RTMP, HOOKS )
       WRITE(CTMP,*,IOSTAT=WRITE_STAT) RTMP
       SZ = 1 + LEN_TRIM(ADJUSTL(CKEY)) + 1 + LEN_TRIM(ADJUSTL(CTMP)) + 1
       LO = HI + 1
@@ -535,7 +681,7 @@ IMPLICIT NONE
       CTMP=REPEAT(' ',32)
       CKEY=REPEAT(' ',16)
       PP_TRYCALL(ERRFLAG_IMSGINTFLDS2CMSGINTFLDS) IMSGINTFLDS2CMSGINTFLDS( I, CKEY, HOOKS )
-      PP_TRYCALL(ERRFLAG_GET_INT) THIS%GET_INT( I, ITMP, HOOKS )
+      PP_TRYCALL(ERRFLAG_GET_INT) THIS%GET_ENUM_INT( I, ITMP, HOOKS )
       WRITE(CTMP,*,IOSTAT=WRITE_STAT) ITMP
       SZ = 1 + LEN_TRIM(ADJUSTL(CKEY)) + 1 + LEN_TRIM(ADJUSTL(CTMP)) + 1
       LO = HI + 1
@@ -558,7 +704,7 @@ IMPLICIT NONE
       CTMP=REPEAT(' ',32)
       CKEY=REPEAT(' ',16)
       PP_TRYCALL(ERRFLAG_IMSGSTRINGFLDS2CMSGSTRINGFLDS) IMSGSTRINGFLDS2CMSGSTRINGFLDS( I, CKEY, HOOKS )
-      PP_TRYCALL(ERRFLAG_GET_STRING) THIS%GET_STRING( I, CTMP, HOOKS )
+      PP_TRYCALL(ERRFLAG_GET_STRING) THIS%GET_ENUM_STRING( I, CTMP, HOOKS )
       SZ = 1 + LEN_TRIM(ADJUSTL(CKEY)) + 1 + LEN_TRIM(ADJUSTL(CTMP)) + 1
       LO = HI + 1
       HI = LO + SZ - 1
@@ -580,7 +726,7 @@ IMPLICIT NONE
       CTMP=REPEAT(' ',32)
       CKEY=REPEAT(' ',16)
       PP_TRYCALL(ERRFLAG_IMSGFLOATFLDS2CMSGFLOATFLDS) IMSGFLOATFLDS2CMSGFLOATFLDS( I, CKEY, HOOKS )
-      PP_TRYCALL(ERRFLAG_GET_FLOAT) THIS%GET_FLOAT( I, RTMP, HOOKS )
+      PP_TRYCALL(ERRFLAG_GET_FLOAT) THIS%GET_ENUM_FLOAT( I, RTMP, HOOKS )
       WRITE(CTMP,*,IOSTAT=WRITE_STAT) RTMP
       SZ = 1 + LEN_TRIM(ADJUSTL(CKEY)) + 1 + LEN_TRIM(ADJUSTL(CTMP)) + 1
       LO = HI + 1
@@ -1257,8 +1403,8 @@ END FUNCTION FORTRAN_MESSAGE_LOWER_THAN
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_SET_INT'
-FUNCTION FORTRAN_MESSAGE_SET_INT( THIS, ID, VALUE, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_SET_ENUM_INT'
+FUNCTION FORTRAN_MESSAGE_SET_ENUM_INT( THIS, ID, VALUE, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -1416,7 +1562,112 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION FORTRAN_MESSAGE_SET_INT
+END FUNCTION FORTRAN_MESSAGE_SET_ENUM_INT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_SET_KEY_INT'
+FUNCTION FORTRAN_MESSAGE_SET_KEY_INT( THIS, KEY, VALUE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_ENUMERATORS_MOD, ONLY: CMSGINTFLDS2IMSGINTFLDS
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(FORTRAN_MESSAGE_T), INTENT(INOUT) :: THIS
+  CHARACTER(LEN=*),         INTENT(IN)    :: KEY
+  INTEGER(KIND=JPIB_K),     INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),            INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: ID
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_ENUM=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SET_VALUE=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Set fields by field ID
+  PP_TRYCALL(ERRFLAG_CONVERT_TO_ENUM) CMSGINTFLDS2IMSGINTFLDS( KEY, ID, HOOKS )
+  PP_TRYCALL(ERRFLAG_SET_VALUE) THIS%SET_ENUM_INT( ID, VALUE, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_CONVERT_TO_ENUM)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'convert to enum' )
+    CASE (ERRFLAG_SET_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'set value' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION FORTRAN_MESSAGE_SET_KEY_INT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1424,8 +1675,8 @@ END FUNCTION FORTRAN_MESSAGE_SET_INT
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_SET_STRING'
-FUNCTION FORTRAN_MESSAGE_SET_STRING( THIS, ID, VALUE, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_SET_ENUM_STRING'
+FUNCTION FORTRAN_MESSAGE_SET_ENUM_STRING( THIS, ID, VALUE, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -1524,7 +1775,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION FORTRAN_MESSAGE_SET_STRING
+END FUNCTION FORTRAN_MESSAGE_SET_ENUM_STRING
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1532,8 +1783,115 @@ END FUNCTION FORTRAN_MESSAGE_SET_STRING
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_SET_FLOAT'
-FUNCTION FORTRAN_MESSAGE_SET_FLOAT( THIS, ID, VALUE, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_SET_KEY_STRING'
+FUNCTION FORTRAN_MESSAGE_SET_KEY_STRING( THIS, KEY, VALUE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_ENUMERATORS_MOD, ONLY: CMSGSTRINGFLDS2IMSGSTRINGFLDS
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(FORTRAN_MESSAGE_T), INTENT(INOUT) :: THIS
+  CHARACTER(LEN=*),         INTENT(IN)    :: KEY
+  CHARACTER(LEN=*),         INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),            INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: ID
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CONVERT_TO_ENUM=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SET_VALUE=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Select the prefix
+  PP_TRYCALL(ERRFLAG_CONVERT_TO_ENUM) CMSGSTRINGFLDS2IMSGSTRINGFLDS( KEY, ID, HOOKS )
+  PP_TRYCALL(ERRFLAG_SET_VALUE) THIS%SET_ENUM_STRING( ID, VALUE, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_CONVERT_TO_ENUM)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'convert to enum' )
+    CASE (ERRFLAG_SET_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'set value' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION FORTRAN_MESSAGE_SET_KEY_STRING
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_SET_ENUM_FLOAT'
+FUNCTION FORTRAN_MESSAGE_SET_ENUM_FLOAT( THIS, ID, VALUE, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -1622,14 +1980,113 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION FORTRAN_MESSAGE_SET_FLOAT
+END FUNCTION FORTRAN_MESSAGE_SET_ENUM_FLOAT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_GET_INT'
-FUNCTION FORTRAN_MESSAGE_GET_INT( THIS, ID, VALUE, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_SET_KEY_FLOAT'
+FUNCTION FORTRAN_MESSAGE_SET_KEY_FLOAT( THIS, KEY, VALUE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRD_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(FORTRAN_MESSAGE_T), INTENT(INOUT) :: THIS
+  CHARACTER(LEN=*),         INTENT(IN)    :: KEY
+  REAL(KIND=JPRD_K),        INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),            INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: ID
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_FIELD_ID=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_FIELD_ID )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_INVALID_FIELD_ID)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid field ID' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION FORTRAN_MESSAGE_SET_KEY_FLOAT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_GET_ENUM_INT'
+FUNCTION FORTRAN_MESSAGE_GET_ENUM_INT( THIS, ID, VALUE, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -1656,6 +2113,7 @@ FUNCTION FORTRAN_MESSAGE_GET_INT( THIS, ID, VALUE, HOOKS ) RESULT(RET)
   USE :: FORTRAN_MESSAGE_ENUMERATORS_MOD, ONLY: MSGINTFLD_TIME_E
   USE :: FORTRAN_MESSAGE_ENUMERATORS_MOD, ONLY: MSGINTFLD_STEP_E
   USE :: FORTRAN_MESSAGE_ENUMERATORS_MOD, ONLY: MSGINTFLD_PACKING_E
+  USE :: ENUMERATORS_MOD,                 ONLY: UNDEF_PARAM_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1679,6 +2137,7 @@ IMPLICIT NONE
 
   !> Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_FIELD_ID=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_VALUE=3_JPIB_K
 
 
   ! Local variables declared by the preprocessor for debugging purposes
@@ -1749,6 +2208,9 @@ IMPLICIT NONE
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_FIELD_ID )
   END SELECT
 
+  ! Check value
+  PP_DEBUG_CRITICAL_COND_THROW( VALUE .EQ. UNDEF_PARAM_E, ERRFLAG_INVALID_VALUE )
+
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
@@ -1773,6 +2235,8 @@ PP_ERROR_HANDLER
     SELECT CASE(ERRIDX)
     CASE (ERRFLAG_INVALID_FIELD_ID)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid field ID' )
+    CASE (ERRFLAG_INVALID_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid value' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -1791,16 +2255,227 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION FORTRAN_MESSAGE_GET_INT
+END FUNCTION FORTRAN_MESSAGE_GET_ENUM_INT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_GET_KEY_INT'
+FUNCTION FORTRAN_MESSAGE_GET_KEY_INT( THIS, KEY, VALUE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,               ONLY: JPIB_K
+  USE :: HOOKS_MOD,                       ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_ENUMERATORS_MOD, ONLY: CMSGINTFLDS2IMSGINTFLDS
+  USE :: ENUMERATORS_MOD,                 ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(FORTRAN_MESSAGE_T), INTENT(IN)    :: THIS
+  CHARACTER(LEN=*),         INTENT(IN)    :: KEY
+  INTEGER(KIND=JPIB_K),     INTENT(OUT)   :: VALUE
+  TYPE(HOOKS_T),            INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: ID
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_FIELD_ID=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SET_VALUE=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_VALUE=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Initialize the output value
+  VALUE = 0_JPIB_K
+
+  ! Get field by ID
+  PP_TRYCALL(ERRFLAG_INVALID_FIELD_ID) CMSGINTFLDS2IMSGINTFLDS( KEY, ID, HOOKS )
+  PP_TRYCALL(ERRFLAG_SET_VALUE) THIS%GET_ENUM_INT( ID, VALUE, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( VALUE .EQ. UNDEF_PARAM_E, ERRFLAG_INVALID_VALUE )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_INVALID_FIELD_ID)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid field ID' )
+    CASE (ERRFLAG_SET_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'set value' )
+    CASE (ERRFLAG_INVALID_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid value' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION FORTRAN_MESSAGE_GET_KEY_INT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_GET_STRING'
-FUNCTION FORTRAN_MESSAGE_GET_STRING( THIS, ID, VALUE, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_HAS_ENUM_INT'
+FUNCTION FORTRAN_MESSAGE_HAS_ENUM_INT( THIS, ID, HAS_FIELD, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_ENUMERATORS_MOD, ONLY: HAS_IMSGINTFLDS
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(FORTRAN_MESSAGE_T), INTENT(IN)    :: THIS
+  INTEGER(KIND=JPIB_K),     INTENT(IN)    :: ID
+  LOGICAL,                  INTENT(OUT)   :: HAS_FIELD
+  TYPE(HOOKS_T),            INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_FIELD_ID=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_VALUE=3_JPIB_K
+
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Check if the field is valid
+  PP_TRYCALL(ERRFLAG_INVALID_FIELD_ID) HAS_IMSGINTFLDS( ID, HAS_FIELD, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_INVALID_FIELD_ID)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid field ID' )
+    CASE (ERRFLAG_INVALID_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid value' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION FORTRAN_MESSAGE_HAS_ENUM_INT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_GET_ENUM_STRING'
+FUNCTION FORTRAN_MESSAGE_GET_ENUM_STRING( THIS, ID, VALUE, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -1830,7 +2505,7 @@ IMPLICIT NONE
 
   !> Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_FIELD_ID=1_JPIB_K
-
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_VALUE=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1851,8 +2526,10 @@ IMPLICIT NONE
   SELECT CASE ( ID )
   CASE (MSGSTRFLD_GRID_E)
     VALUE = THIS%GRID
+    PP_DEBUG_CRITICAL_COND_THROW( VALUE .EQ. '********', ERRFLAG_INVALID_VALUE )
   CASE (MSGSTRFLD_EXPVER_E)
     VALUE = THIS%EXPVER
+    PP_DEBUG_CRITICAL_COND_THROW( VALUE .EQ. '****', ERRFLAG_INVALID_VALUE )
   CASE DEFAULT
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_FIELD_ID )
   END SELECT
@@ -1881,6 +2558,8 @@ PP_ERROR_HANDLER
     SELECT CASE(ERRIDX)
     CASE (ERRFLAG_INVALID_FIELD_ID)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid field ID' )
+    CASE (ERRFLAG_INVALID_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid value' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -1899,7 +2578,115 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION FORTRAN_MESSAGE_GET_STRING
+END FUNCTION FORTRAN_MESSAGE_GET_ENUM_STRING
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_GET_KEY_STRING'
+FUNCTION FORTRAN_MESSAGE_GET_KEY_STRING( THIS, KEY, VALUE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: FORTRAN_MESSAGE_ENUMERATORS_MOD, ONLY: CMSGSTRINGFLDS2IMSGSTRINGFLDS
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(FORTRAN_MESSAGE_T), INTENT(IN)    :: THIS
+  CHARACTER(LEN=*),         INTENT(IN)    :: KEY
+  CHARACTER(LEN=8),         INTENT(OUT)   :: VALUE
+  TYPE(HOOKS_T),            INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: ID
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_FIELD_ID=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SET_VALUE=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_VALUE=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Select the prefix
+  PP_TRYCALL(ERRFLAG_INVALID_FIELD_ID) CMSGSTRINGFLDS2IMSGSTRINGFLDS( KEY, ID, HOOKS )
+  PP_TRYCALL(ERRFLAG_SET_VALUE) THIS%GET_ENUM_STRING( ID, VALUE, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( VALUE .EQ. '********', ERRFLAG_INVALID_VALUE )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_INVALID_FIELD_ID)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid field ID' )
+    CASE (ERRFLAG_SET_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'set value' )
+    CASE (ERRFLAG_INVALID_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid value' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION FORTRAN_MESSAGE_GET_KEY_STRING
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1907,8 +2694,8 @@ END FUNCTION FORTRAN_MESSAGE_GET_STRING
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_GET_FLOAT'
-FUNCTION FORTRAN_MESSAGE_GET_FLOAT( THIS, ID, VALUE, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_GET_ENUM_FLOAT'
+FUNCTION FORTRAN_MESSAGE_GET_ENUM_FLOAT( THIS, ID, VALUE, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -1999,9 +2786,112 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION FORTRAN_MESSAGE_GET_FLOAT
+END FUNCTION FORTRAN_MESSAGE_GET_ENUM_FLOAT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'FORTRAN_MESSAGE_GET_KEY_FLOAT'
+FUNCTION FORTRAN_MESSAGE_GET_KEY_FLOAT( THIS, KEY, VALUE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPRD_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(FORTRAN_MESSAGE_T), INTENT(IN)    :: THIS
+  CHARACTER(LEN=*),         INTENT(IN)    :: KEY
+  REAL(KIND=JPRD_K),        INTENT(OUT)   :: VALUE
+  TYPE(HOOKS_T),            INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_FIELD_ID=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  VALUE = 0.0_JPRD_K
+
+  PP_DEBUG_CRITICAL_THROW( ERRFLAG_INVALID_FIELD_ID )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_INVALID_FIELD_ID)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid field ID' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT()
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION FORTRAN_MESSAGE_GET_KEY_FLOAT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'

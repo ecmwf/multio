@@ -1243,6 +1243,7 @@ IMPLICIT NONE
   !> Error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SETLEVELS=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_LEVELIST=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1257,25 +1258,24 @@ IMPLICIT NONE
   PP_TRACE_ENTER_PROCEDURE()
   PP_METADATA_ENTER_PROCEDURE( METADATA, ERRFLAG_METADATA )
 
-
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
   ! According to the options decide where to set the levels (preset or runlevel)
   PP_LOG_INFO( 'TypeOfLevel: surface' )
-  IF ( OPT%USE_TYPE_OF_LEVEL ) THEN
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'surface' )
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
-  ELSE
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfFirstFixedSurface', 1_JPIB_K )
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfSecondFixedSurface', 255_JPIB_K )
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfFirstFixedSurface' )
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfSecondFixedSurface' )
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
-  ENDIF
-
-
+  ! IF ( OPT%USE_TYPE_OF_LEVEL ) THEN
+  PP_DEBUG_CRITICAL_COND_THROW( MSG%LEVELIST.NE.0, ERRFLAG_WRONG_LEVELIST )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'surface' )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
+  ! TODO: Set type of level using low level keywords
+  ! ELSE
+  !   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfFirstFixedSurface', 1_JPIB_K )
+  !   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfSecondFixedSurface', 255_JPIB_K )
+  !   PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfFirstFixedSurface' )
+  !   PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfSecondFixedSurface' )
+  !   PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
+  !   PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
+  ! ENDIF
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -1304,6 +1304,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error with metadata' )
     CASE ( ERRFLAG_SETLEVELS )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error setting levels' )
+    CASE ( ERRFLAG_WRONG_LEVELIST )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'wrong levelist' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT

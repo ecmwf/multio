@@ -1263,17 +1263,18 @@ IMPLICIT NONE
 
   ! According to the options decide where to set the levels (preset or runlevel)
   PP_LOG_INFO( 'TypeOfLevel: potentialVorticity' )
-  IF ( OPT%USE_TYPE_OF_LEVEL ) THEN
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'potentialVorticity' )
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
-  ELSE
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfFirstFixedSurface', 109_JPIB_K )
-    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfSecondFixedSurface', 255_JPIB_K )
-    ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaledValueOfFirstFixedSurface', pt level)
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfSecondFixedSurface' )
-    ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface', pt level)
-    PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
-  ENDIF
+  ! IF ( OPT%USE_TYPE_OF_LEVEL ) THEN
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfLevel', 'potentialVorticity' )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'level', MSG%LEVELIST )
+  ! TODO: Set type of level using low level keywords
+  ! ELSE
+  !   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfFirstFixedSurface', 109_JPIB_K )
+  !   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'TypeOfSecondFixedSurface', 255_JPIB_K )
+  !   ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaledValueOfFirstFixedSurface', pt level)
+  !   PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaledValueOfSecondFixedSurface' )
+  !   ! TODO PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface', pt level)
+  !   PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'ScaleFactorOfFirstFixedSurface' )
+  ! ENDIF
 
 
 

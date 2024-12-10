@@ -80,7 +80,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   # if( NOT CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 10 )
   #   ecbuild_add_fortran_flags( "-fallow-argument-mismatch" NAME argument_mismatch )
   # endif()
-  ecbuild_add_fortran_flags( "-Wall -Wpedantic" NAME warnings )
+  # ecbuild_add_fortran_flags( "-Wall -Wpedantic" NAME warnings )
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "Flang")

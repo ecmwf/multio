@@ -332,23 +332,28 @@ void Statistics::executeImpl(message::Message msg) {
         // TODO: Reorganize the code to avoid this second search
         // which is not efficient
         stat = fieldStats_.find(key);
+        if (opt_.solver_send_initial_condition()) {
+            return;
+        }
     }
+    else {
+        // Exit if the current time is the same as the current point in the
+        // window and the solver does not send the initial condition.
+        // This can happen when the solver is sending the initial condition
+        // and and the same point is already present in the restart
+        auto& ts = *(stat->second);
 
-    // Exit if the current time is the same as the current point in the
-    // window and the solver does not send the initial condition.
-    // This can happen when the solver is sending the initial condition
-    // and and the same point is already present in the restart
-    auto& ts = *(stat->second);
-    if ( cfg.curr() == ts.cwin().currPoint() && opt_.solver_send_initial_condition() ) {
-        return;
+        if (cfg.curr() == ts.cwin().currPoint() && opt_.solver_send_initial_condition()) {
+            return;
+        }
     }
-
     // std::ostringstream os;
     // os << "Current time vs current point in the  window :: "
     //    << cfg.curr() << " " << ts.cwin().currPoint()
     //    << std::endl;
     // std::cout << os.str() << std::endl;
 
+    auto& ts = *(stat->second);
     // In any case if the current time is greater than the current point in the window, we have a problem
     if ( cfg.curr() <= ts.cwin().currPoint() ) {
         std::ostringstream os;

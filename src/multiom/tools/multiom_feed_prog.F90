@@ -4,9 +4,9 @@
 #include "output_manager_preprocessor_logging_utils.h"
 #include "output_manager_preprocessor_errhdl_utils.h"
 
-#define PP_FILE_NAME 'test_read21_prog.F90'
+#define PP_FILE_NAME 'multiom_feed_prog.F90'
 #define PP_SECTION_TYPE 'PROGRAM'
-#define PP_SECTION_NAME 'TEST_READ21_PROG'
+#define PP_SECTION_NAME 'MULTIOM_FEED_PROG'
 #define PP_PROCEDURE_TYPE 'PROGRAM'
 #define PP_PROCEDURE_NAME 'MULTIOM_FEED_PROG'
 PROGRAM MULTIOM_FEED_PROG

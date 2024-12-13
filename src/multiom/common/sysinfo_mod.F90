@@ -97,6 +97,9 @@ IMPLICIT NONE
   ! Trace begin of procedure
   PP_TRACE_ENTER_PROCEDURE()
 
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
   ! Initialise c buffers
   C_CLHOSTNAME = REPEAT(C_NULL_CHAR,LEN(C_CLHOSTNAME))
   C_LENGTH = INT( LEN(C_CLHOSTNAME), C_INT )

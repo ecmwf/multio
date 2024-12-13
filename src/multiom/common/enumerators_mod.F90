@@ -24,6 +24,16 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: OPT_CACHE_FULL_E=3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: N_CACHE_OPT_E=3_JPIB_K
 
+  ! Enumerators for paramtype
+  INTEGER(KIND=JPIB_K), PARAMETER :: PARAMTYPE_CHEMICAL_E=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: PARAMTYPE_OPTICAL_E=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: PARAMTYPE_CHEMICAL_OPTICAL_E=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: PARAMTYPE_BASE_E=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: PARAMTYPE_WAVE_SPECTRA_E=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: PARAMTYPE_TILE_E=6_JPIB_K
+  ! INTEGER(KIND=JPIB_K), PARAMETER :: PARAMTYPE_AEROSOL_E=7_JPIB_K
+
+
   ! Enumerators for prefixes
   INTEGER(KIND=JPIB_K), PARAMETER :: PREFIX_MODEL_LEVEL_E=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: PREFIX_PRESSURE_LEVEL_E=2_JPIB_K
@@ -353,9 +363,9 @@ IMPLICIT NONE
 
 
   ! Enumerators for representations
-  INTEGER(KIND=JPIB_K), PARAMETER :: REPRES_LATLONG_E=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: REPRES_GAUSSIANGRID_E=2_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: REPRES_SPHERICALHARMONICS_E=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: REPRES_GAUSSIANGRID_E=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: REPRES_SPHERICALHARMONICS_E=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: REPRES_LATLONG_E=3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: N_REPRES=3_JPIB_K
 
   ! Enumerators for models
@@ -484,8 +494,8 @@ IMPLICIT NONE
 
 
   ! Enumerators for the type of the interfaces
-  INTEGER(KIND=JPIB_K), PARAMETER :: VALUES_DP_E=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: VALUES_SP_E=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: VALUES_SP_E=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: VALUES_DP_E=2_JPIB_K
 
   !>
   !>
@@ -501,6 +511,16 @@ IMPLICIT NONE
   PUBLIC :: OPT_CACHE_INTEMEDIATE_E
   PUBLIC :: OPT_CACHE_FULL_E
   PUBLIC :: N_CACHE_OPT_E
+
+
+  ! Enumerators for paramtypes
+  PUBLIC :: PARAMTYPE_CHEMICAL_E
+  PUBLIC :: PARAMTYPE_OPTICAL_E
+  PUBLIC :: PARAMTYPE_CHEMICAL_OPTICAL_E
+  PUBLIC :: PARAMTYPE_BASE_E
+  PUBLIC :: PARAMTYPE_WAVE_SPECTRA_E
+  PUBLIC :: PARAMTYPE_TILE_E
+  ! PUBLIC :: PARAMTYPE_AEROSOL_E
 
   ! Enumerators for prefixes
   PUBLIC :: PREFIX_MODEL_LEVEL_E
@@ -1001,6 +1021,8 @@ IMPLICIT NONE
   PUBLIC :: CIFACES2IIFACES
   PUBLIC :: IPREF2MSGTYPE
   PUBLIC :: IPREFIX2ILEVTYPE
+  PUBLIC :: IPARAMTYPE2CPARAMTYPE
+  PUBLIC :: CPARAMTYPE2IPARAMTYPE
 
 CONTAINS
 
@@ -1117,15 +1139,6 @@ FUNCTION IPREFIX2ILEVTYPE( IPREFIX, PARAM_ID, LEVEL, REPRES, ILEVTYPE, HOOKS ) R
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
-  ! USE :: GRIB_CODES_MOD,    ONLY: NGRBRSN
-  ! USE :: GRIB_CODES_MOD,    ONLY: NGRBTSN
-  ! USE :: GRIB_CODES_MOD,    ONLY: NGRBWSN
-  ! USE :: GRIB_CODES_MOD,    ONLY: NGRBSOT
-  ! USE :: GRIB_CODES_MOD,    ONLY: NGRBVSW
-  ! USE :: GRIB_CODES_MOD,    ONLY: NGRBSIT
-  ! USE :: GRIB_CODES_MOD,    ONLY: NGRBSD
-  ! USE :: GRIB_CODES_MOD,    ONLY: NGRB100U
-  ! USE :: GRIB_CODES_MOD,    ONLY: NGRB100V
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -7641,6 +7654,254 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION CFLOATOPFUNCCALL2IFLOATOPFUNCCALL
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IPARAMTYPE2CPARAMTYPE'
+PP_THREAD_SAFE FUNCTION IPARAMTYPE2CPARAMTYPE( IPARAMTYPE, CPARAMTYPE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IPARAMTYPE
+  CHARACTER(LEN=16),    INTENT(OUT)   :: CPARAMTYPE
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_IPARAMTYPE=1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  CPARAMTYPE = REPEAT(' ', 16)
+
+  !> Select the prefix
+  SELECT CASE ( IPARAMTYPE )
+  CASE ( PARAMTYPE_CHEMICAL_E )
+    CPARAMTYPE = 'chemical'
+  CASE ( PARAMTYPE_OPTICAL_E )
+    CPARAMTYPE = 'optical'
+  CASE ( PARAMTYPE_CHEMICAL_OPTICAL_E )
+    CPARAMTYPE = 'chemical-optical'
+  ! CASE ( PARAMTYPE_AEROSOL_E )
+  !   CPARAMTYPE = 'aerosol'
+  CASE ( PARAMTYPE_BASE_E )
+    CPARAMTYPE = 'base'
+  CASE ( PARAMTYPE_WAVE_SPECTRA_E )
+    CPARAMTYPE = 'wave-spectra'
+  CASE ( PARAMTYPE_TILE_E )
+    CPARAMTYPE = 'tile'
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_IPARAMTYPE )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+    CHARACTER(LEN=16) :: TMPSTR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNKNOWN_IPARAMTYPE)
+      TMPSTR = REPEAT(' ', 16)
+      WRITE(TMPSTR,*) IPARAMTYPE
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown ifloatop_function_call: '//TRIM(ADJUSTL(TMPSTR)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION IPARAMTYPE2CPARAMTYPE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'CPARAMTYPE2IPARAMTYPE'
+PP_THREAD_SAFE FUNCTION CPARAMTYPE2IPARAMTYPE( CPARAMTYPE, IPARAMTYPE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: GENERAL_UTILS_MOD, ONLY: TOLOWER
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CHARACTER(LEN=*),     INTENT(IN)    :: CPARAMTYPE
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: IPARAMTYPE
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=LEN_TRIM(CPARAMTYPE)) :: LOC_CPARAMTYPE
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_CPARAMTYPE=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_LC=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Initialization of the output variable
+  IPARAMTYPE = UNDEF_PARAM_E
+
+  !> Convert prefix to lowercase
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_LC) TOLOWER( CPARAMTYPE, LOC_CPARAMTYPE, HOOKS )
+
+  !> Select the prefix
+  SELECT CASE ( TRIM(ADJUSTL(LOC_CPARAMTYPE)) )
+  CASE ( 'chemical' )
+    IPARAMTYPE = PARAMTYPE_CHEMICAL_E
+  CASE ( 'optical' )
+    IPARAMTYPE = PARAMTYPE_OPTICAL_E
+  CASE ( 'chemical-optical' )
+    IPARAMTYPE = PARAMTYPE_CHEMICAL_OPTICAL_E
+  ! CASE ( 'aerosol' )
+  !   IPARAMTYPE = PARAMTYPE_AEROSOL_E
+  CASE ( 'base' )
+    IPARAMTYPE = PARAMTYPE_BASE_E
+  CASE ( 'wave-spectra' )
+    IPARAMTYPE = PARAMTYPE_WAVE_SPECTRA_E
+  CASE ( 'tile' )
+    IPARAMTYPE = PARAMTYPE_TILE_E
+  CASE DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_CPARAMTYPE )
+  END SELECT
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_CONVERT_LC)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to lowercase' )
+    CASE (ERRFLAG_UNKNOWN_CPARAMTYPE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unknown cfloatop_function_call: '//TRIM(ADJUSTL(CPARAMTYPE)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION CPARAMTYPE2IPARAMTYPE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

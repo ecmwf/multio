@@ -102,6 +102,7 @@ TYPE, EXTENDS(OM_BASE_MSG_A) :: OM_WAM_MSG_T
 END TYPE
 
 ! White list of the public symbols (datatypes)
+PUBLIC :: OM_BASE_MSG_A
 PUBLIC :: OM_ATM_MSG_T
 PUBLIC :: OM_WAM_MSG_T
 

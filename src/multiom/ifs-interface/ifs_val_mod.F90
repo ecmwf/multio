@@ -754,6 +754,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrong upper bound' )
     CASE (ERRFLAG_WRONG_GUARD)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrong guard' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Got: "'//TRIM(ADJUSTL(GUARD))//'"' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Expected: "GUARD_SP"' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -1049,6 +1051,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrong upper bound' )
     CASE (ERRFLAG_WRONG_GUARD)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrong guard' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Got: "'//TRIM(ADJUSTL(GUARD))//'"' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Expected: "GUARD_DP"' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT

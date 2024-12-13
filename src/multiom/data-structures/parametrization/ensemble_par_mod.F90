@@ -22,11 +22,20 @@ PRIVATE
   !> Ensemble information I am not able to fit into mars message
   TYPE :: ENSEMBLE_PAR_T
     ! PRIVATE
+    INTEGER(KIND=JPIB_K) :: SYSTEM_NUMBER_= UNDEF_PARAM_E
+    INTEGER(KIND=JPIB_K) :: METHOD_NUMBER_= UNDEF_PARAM_E
     INTEGER(KIND=JPIB_K) :: TYPE_OF_ENSEMBLE_FORECAST_= UNDEF_PARAM_E
     INTEGER(KIND=JPIB_K) :: NUMBER_OF_FORECASTS_IN_ENSEMBLE_= UNDEF_PARAM_E
   CONTAINS
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: COPY_FROM => ENSEMBLE_PAR_COPY_FROM
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: READ_FROM_YAML => READ_ENSEMBLE_PAR_FROM_YAML
+
+    PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_METHOD_NUMBER => ENSEMBLE_PAR_SET_METHOD_NUMBER
+    PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_METHOD_NUMBER => ENSEMBLE_PAR_GET_METHOD_NUMBER
+
+    PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_SYSTEM_NUMBER => ENSEMBLE_PAR_SET_SYSTEM_NUMBER
+    PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_SYSTEM_NUMBER => ENSEMBLE_PAR_GET_SYSTEM_NUMBER
+
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_TYPE_OF_ENSEMBLE_FORECAST => ENSEMBLE_PAR_SET_TYPE_OF_ENSEMBLE_FORECAST
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: GET_TYPE_OF_ENSEMBLE_FORECAST => ENSEMBLE_PAR_GET_TYPE_OF_ENSEMBLE_FORECAST
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_NUMBER_OF_FORECASTS_IN_ENSEMBLE => ENSEMBLE_PAR_SET_NUMBER_OF_FORECASTS_IN_ENSEMBLE
@@ -43,7 +52,7 @@ CONTAINS
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'ENSEMBLE_PAR_FREE'
-FUNCTION ENSEMBLE_PAR_FREE( ENSEMBLE_PAR, HOOKS ) RESULT(RET)
+PP_THREAD_SAFE FUNCTION ENSEMBLE_PAR_FREE( ENSEMBLE_PAR, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
@@ -83,6 +92,8 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Copy the data
+  ENSEMBLE_PAR%SYSTEM_NUMBER_ = UNDEF_PARAM_E
+  ENSEMBLE_PAR%METHOD_NUMBER_ = UNDEF_PARAM_E
   ENSEMBLE_PAR%TYPE_OF_ENSEMBLE_FORECAST_ = UNDEF_PARAM_E
   ENSEMBLE_PAR%NUMBER_OF_FORECASTS_IN_ENSEMBLE_ = UNDEF_PARAM_E
 
@@ -132,8 +143,406 @@ END FUNCTION ENSEMBLE_PAR_FREE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'ENSEMBLE_PAR_SET_SYSTEM_NUMBER'
+PP_THREAD_SAFE FUNCTION ENSEMBLE_PAR_SET_SYSTEM_NUMBER( ENSEMBLE_PAR, VALUE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(ENSEMBLE_PAR_T), INTENT(INOUT) :: ENSEMBLE_PAR
+  INTEGER(KIND=JPIB_K),  INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),         INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_VALUE = 1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( VALUE.LT.0, ERRFLAG_INVALID_VALUE )
+
+  ! Copy the data
+  ENSEMBLE_PAR%SYSTEM_NUMBER_ = VALUE
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_INVALID_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid value' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION ENSEMBLE_PAR_SET_SYSTEM_NUMBER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'ENSEMBLE_PAR_GET_SYSTEM_NUMBER'
+PP_THREAD_SAFE FUNCTION ENSEMBLE_PAR_GET_SYSTEM_NUMBER( ENSEMBLE_PAR, VALUE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(ENSEMBLE_PAR_T), INTENT(IN)    :: ENSEMBLE_PAR
+  INTEGER(KIND=JPIB_K),  INTENT(OUT)   :: VALUE
+  TYPE(HOOKS_T),         INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_VALUE = 1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ENSEMBLE_PAR%SYSTEM_NUMBER_.LT.0, ERRFLAG_INVALID_VALUE )
+
+  ! Copy the data
+  VALUE = ENSEMBLE_PAR%SYSTEM_NUMBER_
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_INVALID_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid value' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION ENSEMBLE_PAR_GET_SYSTEM_NUMBER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'ENSEMBLE_PAR_SET_METHOD_NUMBER'
+PP_THREAD_SAFE FUNCTION ENSEMBLE_PAR_SET_METHOD_NUMBER( ENSEMBLE_PAR, VALUE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(ENSEMBLE_PAR_T), INTENT(INOUT) :: ENSEMBLE_PAR
+  INTEGER(KIND=JPIB_K),  INTENT(IN)    :: VALUE
+  TYPE(HOOKS_T),         INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_VALUE = 1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( VALUE.LT.0, ERRFLAG_INVALID_VALUE )
+
+  ! Copy the data
+  ENSEMBLE_PAR%METHOD_NUMBER_ = VALUE
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_INVALID_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid value' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION ENSEMBLE_PAR_SET_METHOD_NUMBER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'ENSEMBLE_PAR_GET_METHOD_NUMBER'
+PP_THREAD_SAFE FUNCTION ENSEMBLE_PAR_GET_METHOD_NUMBER( ENSEMBLE_PAR, VALUE, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(ENSEMBLE_PAR_T), INTENT(IN)    :: ENSEMBLE_PAR
+  INTEGER(KIND=JPIB_K),  INTENT(OUT)   :: VALUE
+  TYPE(HOOKS_T),         INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_VALUE = 1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ENSEMBLE_PAR%METHOD_NUMBER_.LT.0, ERRFLAG_INVALID_VALUE )
+
+  ! Copy the data
+  VALUE = ENSEMBLE_PAR%METHOD_NUMBER_
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_INVALID_VALUE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid value' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION ENSEMBLE_PAR_GET_METHOD_NUMBER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'ENSEMBLE_PAR_SET_TYPE_OF_ENSEMBLE_FORECAST'
-FUNCTION ENSEMBLE_PAR_SET_TYPE_OF_ENSEMBLE_FORECAST( ENSEMBLE_PAR, VALUE, HOOKS ) RESULT(RET)
+PP_THREAD_SAFE FUNCTION ENSEMBLE_PAR_SET_TYPE_OF_ENSEMBLE_FORECAST( ENSEMBLE_PAR, VALUE, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
@@ -231,7 +640,7 @@ END FUNCTION ENSEMBLE_PAR_SET_TYPE_OF_ENSEMBLE_FORECAST
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'ENSEMBLE_PAR_GET_TYPE_OF_ENSEMBLE_FORECAST'
-FUNCTION ENSEMBLE_PAR_GET_TYPE_OF_ENSEMBLE_FORECAST( ENSEMBLE_PAR, VALUE, HOOKS ) RESULT(RET)
+PP_THREAD_SAFE FUNCTION ENSEMBLE_PAR_GET_TYPE_OF_ENSEMBLE_FORECAST( ENSEMBLE_PAR, VALUE, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
@@ -329,7 +738,7 @@ END FUNCTION ENSEMBLE_PAR_GET_TYPE_OF_ENSEMBLE_FORECAST
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'ENSEMBLE_PAR_SET_NUMBER_OF_FORECASTS_IN_ENSEMBLE'
-FUNCTION ENSEMBLE_PAR_SET_NUMBER_OF_FORECASTS_IN_ENSEMBLE( ENSEMBLE_PAR, VALUE, HOOKS ) RESULT(RET)
+PP_THREAD_SAFE FUNCTION ENSEMBLE_PAR_SET_NUMBER_OF_FORECASTS_IN_ENSEMBLE( ENSEMBLE_PAR, VALUE, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
@@ -427,7 +836,7 @@ END FUNCTION ENSEMBLE_PAR_SET_NUMBER_OF_FORECASTS_IN_ENSEMBLE
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'ENSEMBLE_PAR_GET_NUMBER_OF_FORECASTS_IN_ENSEMBLE'
-FUNCTION ENSEMBLE_PAR_GET_NUMBER_OF_FORECASTS_IN_ENSEMBLE( ENSEMBLE_PAR, VALUE, HOOKS ) RESULT(RET)
+PP_THREAD_SAFE FUNCTION ENSEMBLE_PAR_GET_NUMBER_OF_FORECASTS_IN_ENSEMBLE( ENSEMBLE_PAR, VALUE, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
@@ -525,7 +934,7 @@ END FUNCTION ENSEMBLE_PAR_GET_NUMBER_OF_FORECASTS_IN_ENSEMBLE
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'ENSEMBLE_PAR_COPY_FROM'
-FUNCTION ENSEMBLE_PAR_COPY_FROM( ENSEMBLE_PAR_TO, ENSEMBLE_PAR_FROM, HOOKS ) RESULT(RET)
+PP_THREAD_SAFE FUNCTION ENSEMBLE_PAR_COPY_FROM( ENSEMBLE_PAR_TO, ENSEMBLE_PAR_FROM, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
@@ -566,6 +975,8 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Copy the data
+  ENSEMBLE_PAR_TO%SYSTEM_NUMBER_ = ENSEMBLE_PAR_FROM%SYSTEM_NUMBER_
+  ENSEMBLE_PAR_TO%METHOD_NUMBER_ = ENSEMBLE_PAR_FROM%METHOD_NUMBER_
   ENSEMBLE_PAR_TO%TYPE_OF_ENSEMBLE_FORECAST_ = ENSEMBLE_PAR_FROM%TYPE_OF_ENSEMBLE_FORECAST_
   ENSEMBLE_PAR_TO%NUMBER_OF_FORECASTS_IN_ENSEMBLE_ = ENSEMBLE_PAR_FROM%NUMBER_OF_FORECASTS_IN_ENSEMBLE_
 
@@ -616,7 +1027,7 @@ END FUNCTION ENSEMBLE_PAR_COPY_FROM
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'READ_ENSEMBLE_PAR_FROM_YAML'
-FUNCTION READ_ENSEMBLE_PAR_FROM_YAML( ENSEMBLE_PAR, CONFIG, HOOKS ) RESULT(RET)
+PP_THREAD_SAFE FUNCTION READ_ENSEMBLE_PAR_FROM_YAML( ENSEMBLE_PAR, CONFIG, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
@@ -657,6 +1068,8 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TEST_CASE_DELETE_ERROR = 3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_VALUE_FOR_TFIE = 4_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_VALUE_FOR_NFIE = 5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_VALUE_FOR_SN = 6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_VALUE_FOR_VN = 7_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -681,6 +1094,27 @@ IMPLICIT NONE
 
     !> Read all the subconfigurations
     PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_SUBCFG) YAML_GET_SUBCONFIGURATION( CONFIG, 'ensemble', ENSEMBLE_CONFIGURATION, HOOKS )
+
+
+    !> Read the "truncate-degrees"
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( ENSEMBLE_CONFIGURATION, 'system-number', HAS_KEY, HOOKS )
+    IF ( HAS_KEY ) THEN
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_READ_INTEGER( ENSEMBLE_CONFIGURATION, 'system-number', ENSEMBLE_PAR%SYSTEM_NUMBER_, HOOKS )
+      PP_DEBUG_CRITICAL_COND_THROW( ENSEMBLE_PAR%SYSTEM_NUMBER_.LE.0, ERRFLAG_WRONG_VALUE_FOR_SN)
+    ELSE
+      ENSEMBLE_PAR%SYSTEM_NUMBER_ = 1_JPIB_K
+    ENDIF
+
+
+    !> Read the "truncate-degrees"
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( ENSEMBLE_CONFIGURATION, 'method-number', HAS_KEY, HOOKS )
+    IF ( HAS_KEY ) THEN
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_READ_INTEGER( ENSEMBLE_CONFIGURATION, 'method-number', ENSEMBLE_PAR%METHOD_NUMBER_, HOOKS )
+      PP_DEBUG_CRITICAL_COND_THROW( ENSEMBLE_PAR%METHOD_NUMBER_.LE.0, ERRFLAG_WRONG_VALUE_FOR_VN )
+    ELSE
+      ENSEMBLE_PAR%METHOD_NUMBER_ = 1_JPIB_K
+    ENDIF
+
 
     !> Read the "truncate-degrees"
     PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( ENSEMBLE_CONFIGURATION, 'type-of-ensemble-forecast', HAS_KEY, HOOKS )
@@ -737,6 +1171,10 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'wrong value for type-of-ensemble-forecast' )
     CASE(ERRFLAG_WRONG_VALUE_FOR_NFIE)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'wrong value for number-of-forecasts-in-ensemble' )
+    CASE(ERRFLAG_WRONG_VALUE_FOR_SN)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'wrong value for system-number' )
+    CASE(ERRFLAG_WRONG_VALUE_FOR_VN)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'wrong value for version-number' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -763,7 +1201,7 @@ END FUNCTION READ_ENSEMBLE_PAR_FROM_YAML
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'WRITE_ENSEMBLE_PAR_TO_YAML'
-FUNCTION WRITE_ENSEMBLE_PAR_TO_YAML( ENSEMBLE_PAR, UNIT, OFFSET, HOOKS ) RESULT(RET)
+PP_THREAD_SAFE FUNCTION WRITE_ENSEMBLE_PAR_TO_YAML( ENSEMBLE_PAR, UNIT, OFFSET, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
@@ -829,6 +1267,8 @@ IMPLICIT NONE
   WRITE( UNIT, '(A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET), 'ensemble:'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
 
+
+
   ! convert integer to string
   CTMP = REPEAT(' ', MAX_STR_LEN)
   IF ( ENSEMBLE_PAR%TYPE_OF_ENSEMBLE_FORECAST_ .EQ. UNDEF_PARAM_E ) THEN
@@ -841,6 +1281,8 @@ IMPLICIT NONE
   WRITE( UNIT, '(A,A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'type-of-ensemble-forecast: ', TRIM(ADJUSTL(CTMP)), ' # type of ensemble forecast (default=1)'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
 
+
+
   ! convert integer to string
   CTMP = REPEAT(' ', MAX_STR_LEN)
   IF ( ENSEMBLE_PAR%NUMBER_OF_FORECASTS_IN_ENSEMBLE_ .EQ. UNDEF_PARAM_E ) THEN
@@ -852,6 +1294,38 @@ IMPLICIT NONE
   ! Write to the unit
   WRITE( UNIT, '(A,A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'number-of-forecasts-in-ensemble: ', TRIM(ADJUSTL(CTMP)), ' # total number of forecasts in ensemble (if not present then it is assumed that the simulation is deterministic)'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+
+
+  ! convert integer to string
+  CTMP = REPEAT(' ', MAX_STR_LEN)
+  IF ( ENSEMBLE_PAR%SYSTEM_NUMBER_ .EQ. UNDEF_PARAM_E ) THEN
+    CTMP='"undefined"'
+  ELSE
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( ENSEMBLE_PAR%SYSTEM_NUMBER_, CTMP, HOOKS )
+  ENDIF
+
+  ! Write to the unit
+  WRITE( UNIT, '(A,A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'system-number: ', TRIM(ADJUSTL(CTMP)), ' # system number to be set in section2'
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+
+
+  ! convert integer to string
+  CTMP = REPEAT(' ', MAX_STR_LEN)
+  IF ( ENSEMBLE_PAR%METHOD_NUMBER_ .EQ. UNDEF_PARAM_E ) THEN
+    CTMP='"undefined"'
+  ELSE
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( ENSEMBLE_PAR%METHOD_NUMBER_, CTMP, HOOKS )
+  ENDIF
+
+  ! Write to the unit
+  WRITE( UNIT, '(A,A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'method-number: ', TRIM(ADJUSTL(CTMP)), ' # version number to be set in section2'
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+
+
+
+
+
+
 
   ! Add an empty line
   WRITE( UNIT, '(A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET)

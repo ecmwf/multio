@@ -1041,6 +1041,7 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to read integer' )
     CASE(ERRFLAG_UNDEFINED_FLAG)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Undefined flag' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'passed flag: "'//TRIM(ADJUSTL(COMMAND_LINE_ARG))//'"' )
     CASE(ERRFLAG_UNABLE_TO_CALL_USAGE)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to call usage' )
     CASE DEFAULT

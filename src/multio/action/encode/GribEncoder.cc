@@ -848,6 +848,12 @@ void GribEncoder::setOceanMetadata(message::Metadata& md) {
         setValue("scaledValueOfFirstFixedSurface", level);
         setValue("scaleFactorOfFirstFixedSurface", 0l);
     }
+    if (typeOfLevel == "iceLayerOnWater") {
+        setMissing(glossary().scaleFactorOfFirstFixedSurface);
+        setMissing(glossary().scaledValueOfFirstFixedSurface);
+        setMissing(glossary().scaleFactorOfSecondFixedSurface);
+        setMissing(glossary().scaledValueOfSecondFixedSurface);
+    }
 
     std::string gridType;
     const auto searchGridType = md.find(glossary().gridType);

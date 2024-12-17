@@ -50,9 +50,17 @@ REAL(KIND=JPRD_K), PARAMETER :: SECONDS2DAYS=1.0_JPRD_K/REAL(SECONDS_IN_DAY,KIND
 PUBLIC :: YYYYMMDD_HHMMSS_TO_DATETIME
 PUBLIC :: UNPACK_YYYYMMDD
 PUBLIC :: PACK_YYYYMMDD
+PUBLIC :: SEC2DD_SS
 PUBLIC :: SEC2HH_MM_SS
+PUBLIC :: HH_MM_SS2SEC
 PUBLIC :: PACK_HHMM
+PUBLIC :: PACK_HHMMSS
+PUBLIC :: UNPACK_HHMM
+PUBLIC :: UNPACK_HHMMSS
 PUBLIC :: DATE_SUB_DAYS
+PUBLIC :: DATE_SUM_DAYS
+PUBLIC :: HHMMSS2STRING
+PUBLIC :: YYYYMMDD2STRING
 ! PUBLIC :: DATETIME_TO_YYYYMMDD_HHMMSS
 
 ! PUBLIC :: HH_MM_SS_TO_SECONDS
@@ -70,6 +78,105 @@ PUBLIC :: ADD_SECONDS_TO_DATETIME
 PUBLIC :: HOURS2SECONDS
 
 CONTAINS
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'SEC2DD_SS'
+PP_THREAD_SAFE FUNCTION SEC2DD_SS( NSSSSS, IDD, ISS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: NSSSSS
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: IDD
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: ISS
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !< Error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SECONDS_LOWER_THAN_ZERO = 1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_DEVELOP_COND_THROW( NSSSSS.LT.0, ERRFLAG_SECONDS_LOWER_THAN_ZERO )
+
+  IDD = NSSSSS / SECONDS_IN_DAY
+  ISS = MOD(NSSSSS, SECONDS_IN_DAY)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_SECONDS_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Seconds lower than zero' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION SEC2DD_SS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'SEC2HH_MM_SS'
@@ -184,6 +291,122 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION SEC2HH_MM_SS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'HH_MM_SS2SEC'
+PP_THREAD_SAFE FUNCTION HH_MM_SS2SEC( IHH, IMM, ISS, NSSSSS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IHH
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IMM
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: ISS
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: NSSSSS
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !< Error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SECONDS_LOWER_THAN_ZERO = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_HOUR_OUT_OF_RANGE = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MINUTE_OUT_OF_RANGE = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SECOND_OUT_OF_RANGE = 4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+
+  ! Error handling
+  PP_DEBUG_DEVELOP_COND_THROW( IHH.GT.23,   ERRFLAG_HOUR_OUT_OF_RANGE )
+  PP_DEBUG_DEVELOP_COND_THROW( IHH.LT.0,    ERRFLAG_HOUR_OUT_OF_RANGE )
+  PP_DEBUG_DEVELOP_COND_THROW( IMM.GT.59,   ERRFLAG_MINUTE_OUT_OF_RANGE )
+  PP_DEBUG_DEVELOP_COND_THROW( IMM.LT.0,    ERRFLAG_MINUTE_OUT_OF_RANGE )
+  PP_DEBUG_DEVELOP_COND_THROW( ISS.GT.59,   ERRFLAG_SECOND_OUT_OF_RANGE )
+  PP_DEBUG_DEVELOP_COND_THROW( ISS.LT.0,    ERRFLAG_SECOND_OUT_OF_RANGE )
+
+  ! Convert Hours, Minutes and Seconds to seconds
+  NSSSSS = IHH*3600 + IMM*60 + ISS
+
+  ! Error handling
+  PP_DEBUG_DEVELOP_COND_THROW( NSSSSS.LT.0, ERRFLAG_SECONDS_LOWER_THAN_ZERO )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_HOUR_OUT_OF_RANGE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Hour out of range' )
+    CASE (ERRFLAG_MINUTE_OUT_OF_RANGE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Minute out of range' )
+    CASE (ERRFLAG_SECOND_OUT_OF_RANGE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Second out of range' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION HH_MM_SS2SEC
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -446,6 +669,256 @@ END FUNCTION PACK_YYYYMMDD
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'YYYYMMDD2STRING'
+FUNCTION YYYYMMDD2STRING( IYYYYMMDD, STR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IYYYYMMDD
+  CHARACTER(LEN=10),    INTENT(OUT)   :: STR
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: DIM
+  INTEGER(KIND=JPIB_K) :: YYYY
+  INTEGER(KIND=JPIB_K) :: MN
+  INTEGER(KIND=JPIB_K) :: DD
+
+  !> Error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNPACK = 0_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_YEAR_LOWER_THAN_ZERO = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MONTH_LOWER_THAN_ONE = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MONTH_GREATER_THAN_TWELVE = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DAY_LOWER_THAN_ONE = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DAY_GREATER_THAN_DAYS_IN_MONTH = 5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_COMPUTE_DAYS_IN_MONTH = 6_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  PP_TRYCALL(ERRFLAG_UNPACK) UNPACK_YYYYMMDD( IYYYYMMDD, YYYY, MN, DD, HOOKS )
+
+  ! Error handling
+  PP_DEBUG_DEVELOP_COND_THROW( YYYY.LT.0, ERRFLAG_YEAR_LOWER_THAN_ZERO )
+  PP_DEBUG_DEVELOP_COND_THROW( MN.LT.1,   ERRFLAG_MONTH_LOWER_THAN_ONE )
+  PP_DEBUG_DEVELOP_COND_THROW( MN.GT.12,  ERRFLAG_MONTH_GREATER_THAN_TWELVE )
+  PP_DEBUG_DEVELOP_COND_THROW( DD.LT.1,   ERRFLAG_DAY_LOWER_THAN_ONE )
+
+  PP_TRYCALL( ERRFLAG_UNABLE_TO_COMPUTE_DAYS_IN_MONTH ) DAYS_IN_MONTH( YYYY, MN, DIM, HOOKS )
+  PP_DEBUG_DEVELOP_COND_THROW( DD.GT.DIM, ERRFLAG_DAY_GREATER_THAN_DAYS_IN_MONTH )
+
+  ! Pack Year, Month and Day
+  STR = REPEAT(' ',10)
+  WRITE(STR,'(I4.4,A1,I2.2,A1,I2.2)') YYYY, '-', MN, '-', DD
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNPACK)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to unpack the date' )
+    CASE (ERRFLAG_YEAR_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Year out of range. Year lower than 0' )
+    CASE (ERRFLAG_MONTH_LOWER_THAN_ONE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Month out of range. Month index lower than 1' )
+    CASE (ERRFLAG_MONTH_GREATER_THAN_TWELVE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Month out of range. Month index higher than 12' )
+    CASE (ERRFLAG_DAY_LOWER_THAN_ONE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Day out of range. Day index lower than 1' )
+    CASE (ERRFLAG_DAY_GREATER_THAN_DAYS_IN_MONTH)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Day out of range. Day index higher than the number of days in month' )
+    CASE (ERRFLAG_UNABLE_TO_COMPUTE_DAYS_IN_MONTH)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to compute the number of days in the month' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION YYYYMMDD2STRING
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'HHMMSS2STRING'
+FUNCTION HHMMSS2STRING( IHHMMSS, STR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IHHMMSS
+  CHARACTER(LEN=8),     INTENT(OUT)   :: STR
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: WRITE_ERROR
+  INTEGER(KIND=JPIB_K) :: HH
+  INTEGER(KIND=JPIB_K) :: MM
+  INTEGER(KIND=JPIB_K) :: SS
+
+ !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIMEPACK_LOWER_THAN_ZERO = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_HOUR_GREATER_THAN_23 = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNPACK = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRITE_ERROR = 4_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  PP_DEBUG_CRITICAL_COND_THROW( IHHMMSS.LT.0, ERRFLAG_TIMEPACK_LOWER_THAN_ZERO )
+
+  PP_TRYCALL(ERRFLAG_UNPACK) UNPACK_HHMMSS( IHHMMSS, HH, MM, SS, HOOKS )
+
+  PP_DEBUG_CRITICAL_COND_THROW( HH.GT.23, ERRFLAG_HOUR_GREATER_THAN_23 )
+
+
+  ! Pack Year, Month and Day
+  STR = REPEAT(' ',8)
+  WRITE(STR,'(I2.2,A1,I2.2,A1,I2.2)',IOSTAT=WRITE_ERROR) HH, ':', MM, ':', SS
+  PP_DEBUG_CRITICAL_COND_THROW( WRITE_ERROR.NE.0, ERRFLAG_WRITE_ERROR )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_TIMEPACK_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Packed time invalid. Packed time lower than 0' )
+    CASE (ERRFLAG_HOUR_GREATER_THAN_23)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Hour out of range. Hour index higher than 23' )
+    CASE (ERRFLAG_UNPACK)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to unpack the time' )
+    CASE (ERRFLAG_WRITE_ERROR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error writing the time to the string' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION HHMMSS2STRING
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'PACK_HHMM'
 FUNCTION PACK_HHMM( IHH, IMM, IHHMM, HOOKS ) RESULT(RET)
 
@@ -549,6 +1022,411 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION PACK_HHMM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!>
+!> @brief Unpack year, month and day.
+!>
+!> This function is used to unpack year, month and day into three
+!> separate integers.
+!>
+!> @param [in]  hhmmsss  Packed time to be extracted
+!> @param [out] hh       Hours computed from the packed time
+!> @param [out] mm       Minutes computed from the packed time
+!> @param [out] ss       Seconds computed from the packed time
+!> @param [inout] hooks  Hooks for logging and error handling, tracing, logging etc.
+!>
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'UNPACK_HHMM'
+PP_THREAD_SAFE FUNCTION UNPACK_HHMM(  HHMM, HH, MM, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: HHMM
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: HH
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: MM
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIMEPACK_LOWER_THAN_ZERO = 1_JPIB_K
+!  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIMEPACK_OUTOFBOUNDS = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_HOUR_LOWER_THAN_ZERO = 3_JPIB_K
+!  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_HOUR_GREATER_THAN_23 = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MINUTE_LOWER_THAN_ZERO = 5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MINUTE_GREATER_THAN_SIXTY = 6_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_DEVELOP_COND_THROW( HHMM.LT.0_JPIB_K, ERRFLAG_TIMEPACK_LOWER_THAN_ZERO )
+  ! PP_DEBUG_DEVELOP_COND_THROW( HHMM.GT.235959_JPIB_K, ERRFLAG_TIMEPACK_OUTOFBOUNDS )
+
+
+  ! Extract Year, Month and Day
+  MM = MOD(HHMM,100_JPIB_K)
+  HH = HHMM/100_JPIB_K
+
+  ! Compute days in month
+  !! TODO:  PP_TRYCALL(ERRFLAG_UNABLE_TO_COMPUTE_DAYS_IN_MONTH) DAYS_IN_MONTH( YYYY, MM, DIM, HOOKS )
+
+  ! Error handling
+  PP_DEBUG_DEVELOP_COND_THROW( HH.LT.0,   ERRFLAG_HOUR_LOWER_THAN_ZERO )
+  ! PP_DEBUG_DEVELOP_COND_THROW( HH.GT.23,  ERRFLAG_HOUR_GREATER_THAN_23 )
+  PP_DEBUG_DEVELOP_COND_THROW( MM.LT.0,   ERRFLAG_MINUTE_LOWER_THAN_ZERO )
+  PP_DEBUG_DEVELOP_COND_THROW( MM.GT.59,  ERRFLAG_MINUTE_GREATER_THAN_SIXTY )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_TIMEPACK_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Packed time invalid. Packed time lower than 0' )
+!    CASE (ERRFLAG_TIMEPACK_OUTOFBOUNDS)
+!      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Packed time invalid. Packed time higher than 235959' )
+    CASE (ERRFLAG_HOUR_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Hour out of range. Hour index lower than 0' )
+!    CASE (ERRFLAG_HOUR_GREATER_THAN_23)
+!      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Hour out of range. Hour index higher than 23' )
+    CASE (ERRFLAG_MINUTE_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Minute out of range. Minute index lower than 0' )
+    CASE (ERRFLAG_MINUTE_GREATER_THAN_SIXTY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Minute out of range. Minute index higher than 59' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION UNPACK_HHMM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'PACK_HHMMSS'
+FUNCTION PACK_HHMMSS( IHH, IMM, ISS, IHHMMSS, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IHH
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: IMM
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: ISS
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: IHHMMSS
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_HOUR_LOWER_THAN_ZERO = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_HOUR_GREATER_THAN_TWENTYTHREE = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MINUTE_LOWER_THAN_ZERO = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MINUTE_GREATER_THAN_FIFTYNINE = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SECONDS_LOWER_THAN_ZERO = 5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SECONDS_GREATER_THAN_FIFTYNINE = 6_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_DEVELOP_COND_THROW( IHH.LT.0,  ERRFLAG_HOUR_LOWER_THAN_ZERO )
+  PP_DEBUG_DEVELOP_COND_THROW( IHH.GT.23, ERRFLAG_HOUR_GREATER_THAN_TWENTYTHREE )
+  PP_DEBUG_DEVELOP_COND_THROW( IMM.LT.0,  ERRFLAG_MINUTE_LOWER_THAN_ZERO )
+  PP_DEBUG_DEVELOP_COND_THROW( IMM.GT.59, ERRFLAG_MINUTE_GREATER_THAN_FIFTYNINE )
+  PP_DEBUG_DEVELOP_COND_THROW( ISS.LT.0,  ERRFLAG_SECONDS_LOWER_THAN_ZERO )
+  PP_DEBUG_DEVELOP_COND_THROW( ISS.GT.59, ERRFLAG_SECONDS_GREATER_THAN_FIFTYNINE )
+
+  ! Pack Hours and minutes
+  IHHMMSS = IHH*10000_JPIB_K + IMM*100_JPIB_K + ISS
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_HOUR_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Hour out of range. Index of hour lower than 0' )
+    CASE (ERRFLAG_HOUR_GREATER_THAN_TWENTYTHREE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Hour out of range. Index of hour higher than 23' )
+    CASE (ERRFLAG_MINUTE_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Minute out of range. Index of minute lower than 0' )
+    CASE (ERRFLAG_MINUTE_GREATER_THAN_FIFTYNINE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Minute out of range. Index of minute higher than 59' )
+    CASE (ERRFLAG_SECONDS_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Seconds out of range. Index of seconds lower than 0' )
+    CASE (ERRFLAG_SECONDS_GREATER_THAN_FIFTYNINE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Seconds out of range. Index of seconds higher than 59' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION PACK_HHMMSS
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!>
+!> @brief Unpack year, month and day.
+!>
+!> This function is used to unpack year, month and day into three
+!> separate integers.
+!>
+!> @param [in]  hhmmsss  Packed time to be extracted
+!> @param [out] hh       Hours computed from the packed time
+!> @param [out] mm       Minutes computed from the packed time
+!> @param [out] ss       Seconds computed from the packed time
+!> @param [inout] hooks  Hooks for logging and error handling, tracing, logging etc.
+!>
+#define PP_PROCEDURE_TYPE 'SUBROUTINE'
+#define PP_PROCEDURE_NAME 'UNPACK_HHMMSS'
+PP_THREAD_SAFE FUNCTION UNPACK_HHMMSS(  HHMMSS, HH, MM, SS, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: HHMMSS
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: HH
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: MM
+  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: SS
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIMEPACK_LOWER_THAN_ZERO = 1_JPIB_K
+  ! INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIMEPACK_OUTOFBOUNDS = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_HOUR_LOWER_THAN_ZERO = 3_JPIB_K
+  ! INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_HOUR_GREATER_THAN_23 = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MINUTE_LOWER_THAN_ZERO = 5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MINUTE_GREATER_THAN_SIXTY = 6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SECOND_LOWER_THAN_ZERO = 7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SECOND_GREATER_THAN_SIXTY = 8_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_DEVELOP_COND_THROW( HHMMSS.LT.0_JPIB_K, ERRFLAG_TIMEPACK_LOWER_THAN_ZERO )
+!  PP_DEBUG_DEVELOP_COND_THROW( HHMMSS.GT.235959_JPIB_K, ERRFLAG_TIMEPACK_OUTOFBOUNDS )
+
+
+  ! Extract Year, Month and Day
+  SS = MOD(HHMMSS,100_JPIB_K)
+  MM = MOD(HHMMSS/100_JPIB_K,100_JPIB_K)
+  HH = HHMMSS/10000_JPIB_K
+
+  ! Compute days in month
+  !! TODO:  PP_TRYCALL(ERRFLAG_UNABLE_TO_COMPUTE_DAYS_IN_MONTH) DAYS_IN_MONTH( YYYY, MM, DIM, HOOKS )
+
+  ! Error handling
+  PP_DEBUG_DEVELOP_COND_THROW( HH.LT.0,   ERRFLAG_HOUR_LOWER_THAN_ZERO )
+  ! PP_DEBUG_DEVELOP_COND_THROW( HH.GT.23,  ERRFLAG_HOUR_GREATER_THAN_23 )
+  PP_DEBUG_DEVELOP_COND_THROW( MM.LT.0,   ERRFLAG_MINUTE_LOWER_THAN_ZERO )
+  PP_DEBUG_DEVELOP_COND_THROW( MM.GT.59,  ERRFLAG_MINUTE_GREATER_THAN_SIXTY )
+  PP_DEBUG_DEVELOP_COND_THROW( SS.LT.0,   ERRFLAG_SECOND_LOWER_THAN_ZERO )
+  PP_DEBUG_DEVELOP_COND_THROW( SS.GT.59,  ERRFLAG_SECOND_GREATER_THAN_SIXTY )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point on success
+  RETURN
+
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_TIMEPACK_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Packed time invalid. Packed time lower than 0' )
+!    CASE (ERRFLAG_TIMEPACK_OUTOFBOUNDS)
+!      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Packed time invalid. Packed time higher than 235959' )
+    CASE (ERRFLAG_HOUR_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Hour out of range. Hour index lower than 0' )
+!    CASE (ERRFLAG_HOUR_GREATER_THAN_23)
+!      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Hour out of range. Hour index higher than 23' )
+    CASE (ERRFLAG_MINUTE_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Minute out of range. Minute index lower than 0' )
+    CASE (ERRFLAG_MINUTE_GREATER_THAN_SIXTY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Minute out of range. Minute index higher than 59' )
+    CASE (ERRFLAG_SECOND_LOWER_THAN_ZERO)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Second out of range. Second index lower than 0' )
+    CASE (ERRFLAG_SECOND_GREATER_THAN_SIXTY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Second out of range. Second index higher than 59' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION UNPACK_HHMMSS
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1820,153 +2698,7 @@ END FUNCTION UNPACK_YYYYMMDD
 #endif
 
 
-!>
-!> @brief Unpack year, month and day.
-!>
-!> This function is used to unpack year, month and day into three
-!> separate integers.
-!>
-!> @param [in]  hhmmsss  Packed time to be extracted
-!> @param [out] hh       Hours computed from the packed time
-!> @param [out] mm       Minutes computed from the packed time
-!> @param [out] ss       Seconds computed from the packed time
-!> @param [inout] hooks  Hooks for logging and error handling, tracing, logging etc.
-!>
-#define PP_PROCEDURE_TYPE 'SUBROUTINE'
-#define PP_PROCEDURE_NAME 'UNPACK_HHMMSS'
-PP_THREAD_SAFE FUNCTION UNPACK_HHMMSS(  HHMMSS, HH, MM, SS, HOOKS ) RESULT(RET)
 
-  !> Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
-  USE :: HOOKS_MOD,         ONLY: HOOKS_T
-
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for logging purposes
-  PP_LOG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  ! Dummy arguments
-  INTEGER(KIND=JPIB_K), INTENT(IN)    :: HHMMSS
-  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: HH
-  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: MM
-  INTEGER(KIND=JPIB_K), INTENT(OUT)   :: SS
-  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
-
-  !> Function result
-  INTEGER(KIND=JPIB_K) :: RET
-
-  !> Local error flags
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIMEPACK_LOWER_THAN_ZERO = 1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIMEPACK_OUTOFBOUNDS = 2_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_HOUR_LOWER_THAN_ZERO = 3_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_HOUR_GREATER_THAN_23 = 4_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MINUTE_LOWER_THAN_ZERO = 5_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_MINUTE_GREATER_THAN_SIXTY = 6_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SECOND_LOWER_THAN_ZERO = 7_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SECOND_GREATER_THAN_SIXTY = 8_JPIB_K
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for logging purposes
-  PP_LOG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  ! Initialization of good path return value
-  PP_SET_ERR_SUCCESS( RET )
-
-  ! Error handling
-  PP_DEBUG_DEVELOP_COND_THROW( HHMMSS.LT.0_JPIB_K, ERRFLAG_TIMEPACK_LOWER_THAN_ZERO )
-  PP_DEBUG_DEVELOP_COND_THROW( HHMMSS.GT.235959_JPIB_K, ERRFLAG_TIMEPACK_OUTOFBOUNDS )
-
-
-  ! Extract Year, Month and Day
-  SS = MOD(HHMMSS,100_JPIB_K)
-  MM = MOD(HHMMSS/100_JPIB_K,100_JPIB_K)
-  HH = HHMMSS/10000_JPIB_K
-
-  ! Compute days in month
-  !! TODO:  PP_TRYCALL(ERRFLAG_UNABLE_TO_COMPUTE_DAYS_IN_MONTH) DAYS_IN_MONTH( YYYY, MM, DIM, HOOKS )
-
-  ! Error handling
-  PP_DEBUG_DEVELOP_COND_THROW( HH.LT.0,   ERRFLAG_HOUR_LOWER_THAN_ZERO )
-  PP_DEBUG_DEVELOP_COND_THROW( HH.LT.23,  ERRFLAG_HOUR_GREATER_THAN_23 )
-  PP_DEBUG_DEVELOP_COND_THROW( MM.LT.0,   ERRFLAG_MINUTE_LOWER_THAN_ZERO )
-  PP_DEBUG_DEVELOP_COND_THROW( MM.GT.59,  ERRFLAG_MINUTE_GREATER_THAN_SIXTY )
-  PP_DEBUG_DEVELOP_COND_THROW( SS.LT.0,   ERRFLAG_SECOND_LOWER_THAN_ZERO )
-  PP_DEBUG_DEVELOP_COND_THROW( SS.GT.59,  ERRFLAG_SECOND_GREATER_THAN_SIXTY )
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point on success
-  RETURN
-
-
-! Error handler
-PP_ERROR_HANDLER
-
-  ! Initialization of bad path return value
-  PP_SET_ERR_FAILURE( RET )
-
-#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
-!$omp critical(ERROR_HANDLER)
-
-  BLOCK
-
-    ! Error handling variables
-    PP_DEBUG_PUSH_FRAME()
-
-    ! HAndle different errors
-    SELECT CASE(ERRIDX)
-    CASE (ERRFLAG_TIMEPACK_LOWER_THAN_ZERO)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Packed time invalid. Packed time lower than 0' )
-    CASE (ERRFLAG_TIMEPACK_OUTOFBOUNDS)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Packed time invalid. Packed time higher than 235959' )
-    CASE (ERRFLAG_HOUR_LOWER_THAN_ZERO)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Hour out of range. Hour index lower than 0' )
-    CASE (ERRFLAG_HOUR_GREATER_THAN_23)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Hour out of range. Hour index higher than 23' )
-    CASE (ERRFLAG_MINUTE_LOWER_THAN_ZERO)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Minute out of range. Minute index lower than 0' )
-    CASE (ERRFLAG_MINUTE_GREATER_THAN_SIXTY)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Minute out of range. Minute index higher than 59' )
-    CASE (ERRFLAG_SECOND_LOWER_THAN_ZERO)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Second out of range. Second index lower than 0' )
-    CASE (ERRFLAG_SECOND_GREATER_THAN_SIXTY)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Second out of range. Second index higher than 59' )
-    CASE DEFAULT
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
-    END SELECT
-
-    ! Trace end of procedure (on error)
-    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
-
-    ! Write the error message and stop the program
-    PP_DEBUG_ABORT
-
-  END BLOCK
-
-!$omp end critical(ERROR_HANDLER)
-#endif
-
-  ! Exit point on error
-  RETURN
-
-END FUNCTION UNPACK_HHMMSS
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'

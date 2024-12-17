@@ -2976,11 +2976,11 @@ IMPLICIT NONE
   SELECT CASE ( IPACKING )
 
   CASE ( PACKING_GRIB_SIMPLE_E )
-    CPACKING = 'grib-simple'
+    CPACKING = 'simple'
   CASE ( PACKING_GRIB_CCSDS_E )
-    CPACKING = 'grib-ccsds'
+    CPACKING = 'ccsds'
   CASE ( PACKING_GRIB_COMPLEX_E )
-    CPACKING = 'grib-complex'
+    CPACKING = 'complex'
   CASE DEFAULT
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_PACKING )
   END SELECT
@@ -3095,11 +3095,11 @@ IMPLICIT NONE
   !> Select the repres
   SELECT CASE ( TRIM(ADJUSTL(LOC_CPACKING)) )
 
-  CASE ( 'grib-simple' )
+  CASE ( 'simple' )
     IPACKING = PACKING_GRIB_SIMPLE_E
-  CASE ( 'grib-ccsds' )
+  CASE ( 'ccsds' )
     IPACKING = PACKING_GRIB_CCSDS_E
-  CASE ( 'grib-complex' )
+  CASE ( 'complex' )
     IPACKING = PACKING_GRIB_COMPLEX_E
   CASE DEFAULT
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_PACKING )

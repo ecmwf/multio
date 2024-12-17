@@ -26,6 +26,7 @@ PRIVATE
     INTEGER(KIND=JPIB_K) :: NUMBER_OF_MISSING_VALUES_= UNDEF_PARAM_E
     REAL(KIND=JPRD_K)    :: VALUE_OF_MISSING_VALUES_=-HUGE(0.0_JPRD_K)
   CONTAINS
+    PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INIT => BITMAP_PAR_INIT
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: COPY_FROM => BITMAP_PAR_COPY_FROM
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: READ_FROM_YAML => READ_BITMAP_PAR_FROM_YAML
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_VALUE_OF_MISSING_VALUES => BITMAP_PAR_SET_VALUE_OF_MISSING_VALUES
@@ -40,6 +41,96 @@ PRIVATE
   PUBLIC :: BITMAP_PAR_T
 
 CONTAINS
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'BITMAP_PAR_INIT'
+PP_THREAD_SAFE FUNCTION BITMAP_PAR_INIT( BITMAP_PAR, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(BITMAP_PAR_T), INTENT(INOUT) :: BITMAP_PAR
+  TYPE(HOOKS_T),       INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Copy the data
+  BITMAP_PAR%NUMBER_OF_MISSING_VALUES_ = UNDEF_PARAM_E
+  BITMAP_PAR%VALUE_OF_MISSING_VALUES_ = HUGE(0.0_JPRD_K)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION BITMAP_PAR_INIT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
@@ -771,7 +862,7 @@ PP_THREAD_SAFE FUNCTION WRITE_BITMAP_PAR_TO_YAML( BITMAP_PAR, UNIT, OFFSET, HOOK
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(BITMAP_PAR_T),  INTENT(INOUT) :: BITMAP_PAR
+  CLASS(BITMAP_PAR_T),  INTENT(IN)    :: BITMAP_PAR
   INTEGER(KIND=JPIB_K), INTENT(IN)    :: UNIT
   INTEGER(KIND=JPIB_K), INTENT(IN)    :: OFFSET
   TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
@@ -808,43 +899,40 @@ IMPLICIT NONE
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( OFFSET.LT.0, ERRFLAG_INVALID_OFFSET )
 
-  ! Check if it is possible to write on the provided unit
-  INQUIRE( UNIT=UNIT, OPENED=IS_OPENED )
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT.IS_OPENED, ERRFLAG_UNIT_NOT_OPENED )
+  IF ( BITMAP_PAR%NUMBER_OF_MISSING_VALUES_ .NE. UNDEF_PARAM_E ) THEN
 
-  ! Write to the unit
-  WRITE( UNIT, '(A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET), 'bitmap: '
-  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+    ! Check if it is possible to write on the provided unit
+    INQUIRE( UNIT=UNIT, OPENED=IS_OPENED )
+    PP_DEBUG_CRITICAL_COND_THROW( .NOT.IS_OPENED, ERRFLAG_UNIT_NOT_OPENED )
 
-  ! convert integer to string
-  CTMP = REPEAT(' ', MAX_STR_LEN)
-  IF ( BITMAP_PAR%NUMBER_OF_MISSING_VALUES_ .EQ. UNDEF_PARAM_E ) THEN
-    CTMP='"undefined"'
-  ELSE
+    ! Write to the unit
+    WRITE( UNIT, '(A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET), 'bitmap: '
+    PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+
+    ! convert integer to string
+    CTMP = REPEAT(' ', MAX_STR_LEN)
     PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( BITMAP_PAR%NUMBER_OF_MISSING_VALUES_, CTMP, HOOKS )
-  ENDIF
 
-  ! Write to the unit
-  WRITE( UNIT, '(A,A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'number-of-missing-values: ', &
-&  TRIM(ADJUSTL(CTMP)), ' # number of missing values (used only as boolean for setting "bitmapPresent")'
-  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+    ! Write to the unit
+    WRITE( UNIT, '(A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'number-of-missing-values: ', &
+&    TRIM(ADJUSTL(CTMP))
+    PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
 
-  ! convert integer to string
-  CTMP = REPEAT(' ', MAX_STR_LEN)
-  IF ( BITMAP_PAR%NUMBER_OF_MISSING_VALUES_ .EQ. UNDEF_PARAM_E ) THEN
-    CTMP='"undefined"'
-  ELSE
+
+    ! convert integer to string
+    CTMP = REPEAT(' ', MAX_STR_LEN)
     PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( BITMAP_PAR%VALUE_OF_MISSING_VALUES_, CTMP, HOOKS )
+
+    ! Write to the unit
+    WRITE( UNIT, '(A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'value-of-missing-values: ', &
+&    TRIM(ADJUSTL(CTMP))
+    PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+
+    ! Add an empty line
+    WRITE( UNIT, '(A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET)
+    PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+
   ENDIF
-
-  ! Write to the unit
-  WRITE( UNIT, '(A,A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'value-of-missing-values: ', &
-&  TRIM(ADJUSTL(CTMP)), ' # value to be used to identify missing values in the field values'
-  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
-
-  ! Add an empty line
-  WRITE( UNIT, '(A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET)
-  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

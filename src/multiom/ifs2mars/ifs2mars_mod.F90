@@ -20,10 +20,16 @@
 #define PP_SECTION_TYPE 'MODULE'
 #define PP_SECTION_NAME 'IFS2MARS_MOD'
 MODULE IFS2MARS_MOD
+
 IMPLICIT NONE
 
 ! Default visibility
 PRIVATE
+
+INTERFACE IFS2MARS_SET_IDENTIFICATION
+MODULE PROCEDURE IFS2MARS_SET_IDENTIFICATION_ATM
+MODULE PROCEDURE IFS2MARS_SET_IDENTIFICATION_WAM
+END INTERFACE
 
 ! Whitelist of public symbols
 PUBLIC :: IFS2MARS_SET_STREAM       ! STREAM
@@ -38,12 +44,86 @@ PUBLIC :: IFS2MARS_SET_PACKING      ! PACKING
 PUBLIC :: IFS2MARS_SET_ORIGIN       ! ORIGIN
 PUBLIC :: ATM2MARS_SET_SATELLITE    ! IDENT/INSTRUMENT/CHANNEL
 PUBLIC :: ATM2MARS_SET_PARAM        ! PARAM/PARAM_TYPE/CHEM/WAVELENGTH
+PUBLIC :: WAM2MARS_SET_PARAM        ! PARAM/PARAM_TYPE
 PUBLIC :: IFS2MARS_SET_DATETIME     ! DATE/TIME/STEP/TIMEPROC
-
-! PUBLIC :: IFS2MARS_SET_GEOMETRY     ! GRID/REPRES
-! PUBLIC :: IFS2MARS_SET_WAVE         ! DIRECTION/FREQUENCY
+PUBLIC :: IFS2MARS_SET_GEOMETRY     ! GRID/REPRES
+PUBLIC :: WAM2MARS_SET_DIRFREQ      ! DIRECTION/FREQUENCY
+PUBLIC :: IFS2MARS_SET_IDENTIFICATION ! PAR::GENERATING_PROCESS_IDENTIFIER
 
 CONTAINS
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'WAM2MARS_IS_WAVE_SPECTRA'
+PP_THREAD_SAFE FUNCTION WAM2MARS_IS_WAVE_SPECTRA( IFS_MSG, IFS_PAR, IS_WAVE_SPECTRA, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: IFS_MSG_MOD,       ONLY: OM_WAM_MSG_T
+  USE :: IFS_PAR_MOD,       ONLY: MODEL_PAR_T
+
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBCRRFL
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBCDRFL
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBCSBT
+  USE :: GRIB_CODES_MOD,    ONLY: NGRBCLBT
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(OM_WAM_MSG_T), INTENT(IN)    :: IFS_MSG
+  TYPE(MODEL_PAR_T),  INTENT(IN)    :: IFS_PAR
+  LOGICAL,            INTENT(OUT)   :: IS_WAVE_SPECTRA
+  TYPE(HOOKS_T),      INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL, DIMENSION(4) :: CONDITIONS
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Conditions to match the satellite message
+  CONDITIONS(1) = (IFS_MSG%PARAM_ID_ .EQ. 140250)
+  CONDITIONS(2) = (IFS_MSG%PARAM_ID_ .EQ. 140251)
+
+  ! If any of the conditions match the it is a satellite message
+  IF ( ANY(CONDITIONS) ) THEN
+    IS_WAVE_SPECTRA = .TRUE.
+  ELSE
+    IS_WAVE_SPECTRA = .FALSE.
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+END FUNCTION WAM2MARS_IS_WAVE_SPECTRA
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'ATM2MARS_IS_SATELLITE'
@@ -1034,7 +1114,7 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Set stream
-  MSG%STREAM = IFS_PAR%SIM_%NSTREAM
+  MSG%EXPVER = IFS_PAR%SIM_%CNMEXP(1:4)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -1476,6 +1556,202 @@ END FUNCTION IFS2MARS_SET_ENSEMBLE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IFS2MARS_SET_IDENTIFICATION_ATM'
+PP_THREAD_SAFE FUNCTION IFS2MARS_SET_IDENTIFICATION_ATM( ATM_MSG, IFS_PAR, MSG, PAR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: IFS_MSG_MOD,         ONLY: OM_ATM_MSG_T
+  USE :: IFS_PAR_MOD,         ONLY: MODEL_PAR_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(OM_ATM_MSG_T),     INTENT(IN)    :: ATM_MSG
+  TYPE(MODEL_PAR_T),       INTENT(IN)    :: IFS_PAR
+  TYPE(FORTRAN_MESSAGE_T), INTENT(INOUT) :: MSG
+  TYPE(PARAMETRIZATION_T), INTENT(INOUT) :: PAR
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  PAR%GENERATING_PROCESS_IDENTIFIER = IFS_PAR%SIM_%NCYCLE
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION IFS2MARS_SET_IDENTIFICATION_ATM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IFS2MARS_SET_IDENTIFICATION_WAM'
+PP_THREAD_SAFE FUNCTION IFS2MARS_SET_IDENTIFICATION_WAM( WAM_MSG, IFS_PAR, MSG, PAR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: IFS_MSG_MOD,         ONLY: OM_WAM_MSG_T
+  USE :: IFS_PAR_MOD,         ONLY: MODEL_PAR_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(OM_WAM_MSG_T),     INTENT(IN)    :: WAM_MSG
+  TYPE(MODEL_PAR_T),       INTENT(IN)    :: IFS_PAR
+  TYPE(FORTRAN_MESSAGE_T), INTENT(INOUT) :: MSG
+  TYPE(PARAMETRIZATION_T), INTENT(INOUT) :: PAR
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  IF (  IFS_PAR%WAM_%CLDOMAIN == 'g' ) THEN
+    PAR%GENERATING_PROCESS_IDENTIFIER = IFS_PAR%WAM_%IMDLGRBID_G
+  ELSE
+    PAR%GENERATING_PROCESS_IDENTIFIER = IFS_PAR%WAM_%IMDLGRBID_M
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION IFS2MARS_SET_IDENTIFICATION_WAM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'ATM2MARS_SET_PARAM'
 PP_THREAD_SAFE FUNCTION ATM2MARS_SET_PARAM( IFS_MSG, IFS_PAR, MSG, PAR, HOOKS ) RESULT(RET)
 
@@ -1529,17 +1805,17 @@ IMPLICIT NONE
 
   ! Extract paramtype
   IF ( IFS_MSG%PARAM_ID_ .GE. 400000000 .AND. IFS_MSG%PARAM_ID_ .LT. 500000000 ) THEN
-    MSG%PARAM_TYPE = PARAMTYPE_CHEMICAL_OPTICAL_E
+    ! MSG%PARAM_TYPE = PARAMTYPE_CHEMICAL_OPTICAL_E
     MSG%PARAM = IFS_MSG%PARAM_ID_/1000000*1000
     MSG%CHEM  = MOD( IFS_MSG%PARAM_ID_/1000, 1000 )
     ! TODO: need to understand how to handle wavelength ranges
     ! WAVELENGTH_ID = MOD( IFS_MSG%PARAM_ID_, 1000 )
   ELSEIF ( IFS_MSG%PARAM_ID_ .GE. 400000 .AND. IFS_MSG%PARAM_ID_ .LT. 500000 ) THEN
-    MSG%PARAM_TYPE = PARAMTYPE_CHEMICAL_E
+    ! MSG%PARAM_TYPE = PARAMTYPE_CHEMICAL_E
     MSG%PARAM = (IFS_MSG%PARAM_ID_/1000)*1000
     MSG%CHEM  = MOD( IFS_MSG%PARAM_ID_, 1000 )
   ELSE
-    MSG%PARAM_TYPE = PARAMTYPE_BASE_E
+    ! MSG%PARAM_TYPE = PARAMTYPE_BASE_E
     MSG%PARAM = IFS_MSG%PARAM_ID_
   ENDIF
 
@@ -1589,6 +1865,120 @@ END FUNCTION ATM2MARS_SET_PARAM
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'WAM2MARS_SET_PARAM'
+PP_THREAD_SAFE FUNCTION WAM2MARS_SET_PARAM( IFS_MSG, IFS_PAR, MSG, PAR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: IFS_MSG_MOD,         ONLY: OM_WAM_MSG_T
+  USE :: IFS_PAR_MOD,         ONLY: MODEL_PAR_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: ENUMERATORS_MOD,     ONLY: PARAMTYPE_WAVE_SPECTRA_E
+  USE :: ENUMERATORS_MOD,     ONLY: PARAMTYPE_BASE_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(OM_WAM_MSG_T),      INTENT(IN)    :: IFS_MSG
+  TYPE(MODEL_PAR_T),       INTENT(IN)    :: IFS_PAR
+  TYPE(FORTRAN_MESSAGE_T), INTENT(INOUT) :: MSG
+  TYPE(PARAMETRIZATION_T), INTENT(INOUT) :: PAR
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL, DIMENSION(2) :: CONDITIONS
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Checks
+  CONDITIONS(1) = IFS_MSG%PARAM_ID_ .EQ. 140250
+  CONDITIONS(2) = IFS_MSG%PARAM_ID_ .EQ. 140251
+  ! TODO : more conditions to be added
+
+  ! Extract paramtype
+  IF ( ANY(CONDITIONS) ) THEN
+    ! MSG%PARAM_TYPE = PARAMTYPE_WAVE_SPECTRA_E
+    MSG%PARAM = IFS_MSG%PARAM_ID_
+    ! TODO: need to understand how to handle wavelength ranges
+    ! WAVELENGTH_ID = MOD( IFS_MSG%PARAM_ID_, 1000 )
+  ELSE
+    ! MSG%PARAM_TYPE = PARAMTYPE_BASE_E
+    MSG%PARAM = IFS_MSG%PARAM_ID_
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION WAM2MARS_SET_PARAM
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'IFS2MARS_SET_DATETIME'
 PP_THREAD_SAFE FUNCTION IFS2MARS_SET_DATETIME( IFS_MSG, IFS_PAR, MSG, PAR, HOOKS ) RESULT(RET)
 
@@ -1602,7 +1992,7 @@ PP_THREAD_SAFE FUNCTION IFS2MARS_SET_DATETIME( IFS_MSG, IFS_PAR, MSG, PAR, HOOKS
   USE :: DATETIME_UTILS_MOD,  ONLY: UNPACK_YYYYMMDD
   USE :: DATETIME_UTILS_MOD,  ONLY: SEC2HH_MM_SS
   USE :: DATETIME_UTILS_MOD,  ONLY: PACK_YYYYMMDD
-  USE :: DATETIME_UTILS_MOD,  ONLY: PACK_HHMM
+  USE :: DATETIME_UTILS_MOD,  ONLY: PACK_HHMMSS
   USE :: DATETIME_UTILS_MOD,  ONLY: DATE_SUB_DAYS
 
   ! Symbols imported by the preprocessor for debugging purposes
@@ -1644,6 +2034,11 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: TSS1
   INTEGER(KIND=JPIB_K) :: IFCDA_INI
   INTEGER(KIND=JPIB_K) :: IFCHO_RES
+  LOGICAL :: IS_ANALYSIS
+  INTEGER(KIND=JPIB_K) :: DATE
+  INTEGER(KIND=JPIB_K) :: TIME
+  INTEGER(KIND=JPIB_K) :: STEP
+  INTEGER(KIND=JPIB_K) :: TIMESTEP_IN_SECONDS
 
   ! Error flags
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_UNPACK_DATETIME=1_JPIB_K
@@ -1651,6 +2046,8 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PACK_DATE=3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PACK_TIME=4_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SUB_DAYS=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CHECK_TYPE=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SET_ANALYSIS=7_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1689,6 +2086,7 @@ IMPLICIT NONE
   CONDITION2(1) = (IFS_PAR%SIM_%LVAREPS)     ! .T. when running with variable resolution
   CONDITION2(2) = (IFS_PAR%SIM_%NLEG .GE. 2) ! current VAREPS leg number (eg 1(2) for the T399(T255) part of a T399-T255 VAREPS)
 
+  ! TODO: Need to handle the analysis case and in that case add the offset to the date/time
 
   ! If needed modify the time
   IF ( ALL(CONDITION1) ) THEN
@@ -1722,15 +2120,29 @@ IMPLICIT NONE
   ENDIF
 
   ! Output date and time
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_PACK_DATE) PACK_YYYYMMDD( DYYYY1, DMM1, DDD1, MSG%DATE, HOOKS )
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_PACK_TIME) PACK_HHMM( THH1, TMM1, MSG%TIME, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_PACK_DATE) PACK_YYYYMMDD( DYYYY1, DMM1, DDD1, DATE, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_PACK_TIME) PACK_HHMMSS( THH1, TMM1, TSS1, TIME, HOOKS )
 
   ! Set the step
-  MSG%STEP = IFS_MSG%ISTEP_
+  STEP = IFS_MSG%ISTEP_
+  TIMESTEP_IN_SECONDS = INT( IFS_PAR%SIM_%TSTEP, KIND=JPIB_K )
 
-  ! Somehow need to set "timeproc"
-  MSG%TIMEPROC = 'point-in-time'
+  ! TODO: If we do not set "timeproc" we rely on the default in the rules
+  ! MSG%TIMEPROC = 'instant'
 
+  ! Check if the simulation is analysis
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CHECK_TYPE) IFS2MARS_IS_ANALYSIS( IFS_MSG, IFS_PAR, IS_ANALYSIS, HOOKS )
+
+  ! If it is analysis DATE/TIME/STEP should be set to the analysis time
+  IF ( IS_ANALYSIS ) THEN
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_SET_ANALYSIS) IFS2MARS_SET_ANALYSIS_TIME( &
+&     DATE, TIME, STEP, TIMESTEP_IN_SECONDS, MSG, PAR, HOOKS )
+  ELSE
+    MSG%DATE = DATE
+    MSG%TIME = TIME
+    MSG%STEP = STEP
+    PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_ = TIMESTEP_IN_SECONDS
+  ENDIF
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
@@ -1763,6 +2175,10 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in packing time' )
     CASE(ERRFLAG_UNABLE_TO_SUB_DAYS)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in subtracting days' )
+    CASE(ERRFLAG_UNABLE_TO_CHECK_TYPE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in checking the type of simulation' )
+    CASE(ERRFLAG_UNABLE_TO_SET_ANALYSIS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in setting the analysis time' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -1787,13 +2203,173 @@ END FUNCTION IFS2MARS_SET_DATETIME
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'IFS2MARS_SET_ANALYSIS_TIME'
+PP_THREAD_SAFE FUNCTION IFS2MARS_SET_ANALYSIS_TIME( DATE, TIME, STEP, &
+&  TIMESTEP_IN_SECONDS, MSG, PAR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: IFS_MSG_MOD,         ONLY: OM_BASE_MSG_A
+  USE :: IFS_PAR_MOD,         ONLY: MODEL_PAR_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: DATETIME_UTILS_MOD,  ONLY: SEC2DD_SS
+  USE :: DATETIME_UTILS_MOD,  ONLY: SEC2HH_MM_SS
+  USE :: DATETIME_UTILS_MOD,  ONLY: HH_MM_SS2SEC
+  USE :: DATETIME_UTILS_MOD,  ONLY: UNPACK_HHMMSS
+  USE :: DATETIME_UTILS_MOD,  ONLY: PACK_HHMMSS
+  USE :: DATETIME_UTILS_MOD,  ONLY: DATE_SUM_DAYS
+  USE :: DATETIME_UTILS_MOD,  ONLY: UNPACK_YYYYMMDD
+  USE :: DATETIME_UTILS_MOD,  ONLY: PACK_YYYYMMDD
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: DATE
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: TIME
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: STEP
+  INTEGER(KIND=JPIB_K),    INTENT(IN)    :: TIMESTEP_IN_SECONDS
+  TYPE(FORTRAN_MESSAGE_T), INTENT(INOUT) :: MSG
+  TYPE(PARAMETRIZATION_T), INTENT(INOUT) :: PAR
+  TYPE(HOOKS_T),           INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variabels
+  INTEGER(KIND=JPIB_K) :: IN_YYYY
+  INTEGER(KIND=JPIB_K) :: IN_MN
+  INTEGER(KIND=JPIB_K) :: IN_DD
+  INTEGER(KIND=JPIB_K) :: DELTA_DD
+  INTEGER(KIND=JPIB_K) :: OUT_YYYY
+  INTEGER(KIND=JPIB_K) :: OUT_MN
+  INTEGER(KIND=JPIB_K) :: OUT_DD
+  INTEGER(KIND=JPIB_K) :: HH
+  INTEGER(KIND=JPIB_K) :: MS
+  INTEGER(KIND=JPIB_K) :: SS
+  INTEGER(KIND=JPIB_K) :: SEC
+  INTEGER(KIND=JPIB_K) :: TOTAL_SEC
+
+  ! Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_EXTRACT_HH_MM_SS=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_SECONDS=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_SECONDS_TO_DAYS=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_SECONDS_TO_HH_MM_SS=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PACK_TIME=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: UNABLE_TO_UNPACK_DATE=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SUM_DAYS=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_PACK_DATE=8_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! TODO: To be verified, THis logic uses gregorian calendar (Functions copied from IFS, but probably julian calendar need to be used)
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_EXTRACT_HH_MM_SS) UNPACK_HHMMSS( TIME, HH, MS, SS, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_SECONDS) HH_MM_SS2SEC( HH, MS, SS, SEC, HOOKS )
+
+  TOTAL_SEC = SEC + STEP*TIMESTEP_IN_SECONDS
+
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_SECONDS_TO_DAYS) SEC2DD_SS( TOTAL_SEC, DELTA_DD, SEC, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_SECONDS_TO_HH_MM_SS) SEC2HH_MM_SS( SEC, HH, MS, SS, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_PACK_TIME) PACK_HHMMSS( HH, MS, SS, MSG%TIME, HOOKS )
+
+  PP_TRYCALL(UNABLE_TO_UNPACK_DATE) UNPACK_YYYYMMDD( DATE, IN_YYYY, IN_MN, IN_DD, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_SUM_DAYS) DATE_SUM_DAYS( IN_YYYY, IN_MN, IN_DD, DELTA_DD, OUT_YYYY, OUT_MN, OUT_DD, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_PACK_DATE) PACK_YYYYMMDD( OUT_YYYY, OUT_MN, OUT_DD, MSG%DATE, HOOKS )
+
+  MSG%STEP = 0_JPIB_K
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_EXTRACT_HH_MM_SS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in extracting HH:MM:SS' )
+    CASE(ERRFLAG_UNABLE_TO_CONVERT_SECONDS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in converting seconds' )
+    CASE(ERRFLAG_UNABLE_TO_CONVERT_SECONDS_TO_DAYS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in converting seconds to days' )
+    CASE(ERRFLAG_UNABLE_TO_CONVERT_SECONDS_TO_HH_MM_SS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in converting seconds to HH:MM:SS' )
+    CASE(ERRFLAG_UNABLE_TO_PACK_TIME)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in packing time' )
+    CASE(UNABLE_TO_UNPACK_DATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in unpacking date' )
+    CASE(ERRFLAG_UNABLE_TO_SUM_DAYS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in summing days' )
+    CASE(ERRFLAG_UNABLE_TO_PACK_DATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in packing date' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point on error
+  RETURN
+
+END FUNCTION IFS2MARS_SET_ANALYSIS_TIME
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'IFS2MARS_NEEDS_PV_ARRAY'
 PP_THREAD_SAFE FUNCTION IFS2MARS_NEEDS_PV_ARRAY( IFS_MSG, IFS_PAR, NEEDS_PV_ARRAY, HOOKS ) RESULT(RET)
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
   USE :: HOOKS_MOD,           ONLY: HOOKS_T
-  USE :: IFS_MSG_MOD,         ONLY: OM_ATM_MSG_T
+  USE :: IFS_MSG_MOD,         ONLY: OM_BASE_MSG_A
   USE :: IFS_PAR_MOD,         ONLY: MODEL_PAR_T
   USE :: ENUMERATORS_MOD,     ONLY: PREFIX_MODEL_LEVEL_E
 
@@ -1809,10 +2385,10 @@ PP_THREAD_SAFE FUNCTION IFS2MARS_NEEDS_PV_ARRAY( IFS_MSG, IFS_PAR, NEEDS_PV_ARRA
 IMPLICIT NONE
 
   ! Dummy arguments
-  TYPE(OM_ATM_MSG_T), INTENT(IN)    :: IFS_MSG
-  TYPE(MODEL_PAR_T),  INTENT(IN)    :: IFS_PAR
-  LOGICAL,            INTENT(OUT)   :: NEEDS_PV_ARRAY
-  TYPE(HOOKS_T),      INTENT(INOUT) :: HOOKS
+  CLASS(OM_BASE_MSG_A), INTENT(IN)    :: IFS_MSG
+  TYPE(MODEL_PAR_T),    INTENT(IN)    :: IFS_PAR
+  LOGICAL,              INTENT(OUT)   :: NEEDS_PV_ARRAY
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
 
   ! Function result
   INTEGER(KIND=JPIB_K) :: RET
@@ -1851,248 +2427,15 @@ END FUNCTION IFS2MARS_NEEDS_PV_ARRAY
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'IFS2MARS_INFER_GG_REPRES_FROM_IFS'
-PP_THREAD_SAFE FUNCTION IFS2MARS_INFER_GG_REPRES_FROM_IFS( IFS_MSG, IFS_PAR, NAME, HOOKS ) RESULT(RET)
-
-  ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
-  USE :: HOOKS_MOD,           ONLY: HOOKS_T
-  USE :: IFS_MSG_MOD,         ONLY: OM_ATM_MSG_T
-  USE :: IFS_PAR_MOD,         ONLY: MODEL_PAR_T
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for logging purposes
-  PP_LOG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  ! Dummy arguments
-  TYPE(OM_ATM_MSG_T), INTENT(IN)    :: IFS_MSG
-  TYPE(MODEL_PAR_T),  INTENT(IN)    :: IFS_PAR
-  CHARACTER(LEN=8),   INTENT(OUT)   :: NAME
-  TYPE(HOOKS_T),      INTENT(INOUT) :: HOOKS
-
-  ! Function result
-  INTEGER(KIND=JPIB_K) :: RET
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for logging purposes
-  PP_LOG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  ! Initialization of good path return value
-  PP_SET_ERR_SUCCESS( RET )
-
-  ! TODO
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point (on success)
-  RETURN
-
-END FUNCTION IFS2MARS_INFER_GG_REPRES_FROM_IFS
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
-
-
-#define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'IFS2MARS_INFER_SH_REPRES_FROM_IFS'
-PP_THREAD_SAFE FUNCTION IFS2MARS_INFER_SH_REPRES_FROM_IFS( IFS_MSG, IFS_PAR, NAME, HOOKS ) RESULT(RET)
-
-  ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
-  USE :: HOOKS_MOD,           ONLY: HOOKS_T
-  USE :: IFS_MSG_MOD,         ONLY: OM_ATM_MSG_T
-  USE :: IFS_PAR_MOD,         ONLY: MODEL_PAR_T
-
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for logging purposes
-  PP_LOG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  ! Dummy arguments
-  TYPE(OM_ATM_MSG_T), INTENT(IN)    :: IFS_MSG
-  TYPE(MODEL_PAR_T),  INTENT(IN)    :: IFS_PAR
-  CHARACTER(LEN=8),   INTENT(OUT)   :: NAME
-  TYPE(HOOKS_T),      INTENT(INOUT) :: HOOKS
-
-  ! Function result
-  INTEGER(KIND=JPIB_K) :: RET
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for logging purposes
-  PP_LOG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  ! Initialization of good path return value
-  PP_SET_ERR_SUCCESS( RET )
-
-  ! TODO
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point (on success)
-  RETURN
-
-END FUNCTION IFS2MARS_INFER_SH_REPRES_FROM_IFS
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
-
-
-#define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'IFS2MARS_GET_GG_REPRES_DEFINITION'
-PP_THREAD_SAFE FUNCTION IFS2MARS_GET_GG_REPRES_DEFINITION( IFS_MSG, IFS_PAR, NAME, GRID_DEFINITION, HOOKS ) RESULT(RET)
-
-  ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
-  USE :: HOOKS_MOD,           ONLY: HOOKS_T
-  USE :: IFS_MSG_MOD,         ONLY: OM_ATM_MSG_T
-  USE :: IFS_PAR_MOD,         ONLY: MODEL_PAR_T
-  USE :: REDUCED_GG_MAP_MOD,  ONLY: REDUCED_GG_GEOMETRY_T
-
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for logging purposes
-  PP_LOG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  ! Dummy arguments
-  TYPE(OM_ATM_MSG_T),                   INTENT(IN)    :: IFS_MSG
-  TYPE(MODEL_PAR_T),                    INTENT(IN)    :: IFS_PAR
-  CHARACTER(LEN=8),                     INTENT(IN)    :: NAME
-  TYPE(REDUCED_GG_GEOMETRY_T), POINTER, INTENT(OUT)   :: GRID_DEFINITION
-  TYPE(HOOKS_T),                        INTENT(INOUT) :: HOOKS
-
-  ! Function result
-  INTEGER(KIND=JPIB_K) :: RET
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for logging purposes
-  PP_LOG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  ! Initialization of good path return value
-  PP_SET_ERR_SUCCESS( RET )
-
-  ! TODO
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point (on success)
-  RETURN
-
-END FUNCTION IFS2MARS_GET_GG_REPRES_DEFINITION
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
-
-
-#define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'IFS2MARS_GET_SH_REPRES_DEFINITION'
-PP_THREAD_SAFE FUNCTION IFS2MARS_GET_SH_REPRES_DEFINITION( IFS_MSG, IFS_PAR, NAME, SPHERICAL_HARMONICS_DEFINITIONS, HOOKS ) RESULT(RET)
-
-  ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD,           ONLY: JPIB_K
-  USE :: HOOKS_MOD,                   ONLY: HOOKS_T
-  USE :: IFS_MSG_MOD,                 ONLY: OM_ATM_MSG_T
-  USE :: IFS_PAR_MOD,                 ONLY: MODEL_PAR_T
-  USE :: SPHERICAL_HARMONICS_MAP_MOD, ONLY: SPHERICAL_HARMONICS_T
-
-  ! Symbols imported by the preprocessor for debugging purposes
-  PP_DEBUG_USE_VARS
-
-  ! Symbols imported by the preprocessor for logging purposes
-  PP_LOG_USE_VARS
-
-  ! Symbols imported by the preprocessor for tracing purposes
-  PP_TRACE_USE_VARS
-
-IMPLICIT NONE
-
-  ! Dummy arguments
-  TYPE(OM_ATM_MSG_T),                   INTENT(IN)    :: IFS_MSG
-  TYPE(MODEL_PAR_T),                    INTENT(IN)    :: IFS_PAR
-  CHARACTER(LEN=8),                     INTENT(IN)    :: NAME
-  TYPE(SPHERICAL_HARMONICS_T), POINTER, INTENT(OUT)   :: SPHERICAL_HARMONICS_DEFINITIONS
-  TYPE(HOOKS_T),                        INTENT(INOUT) :: HOOKS
-
-  ! Function result
-  INTEGER(KIND=JPIB_K) :: RET
-
-  ! Local variables declared by the preprocessor for debugging purposes
-  PP_DEBUG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for logging purposes
-  PP_LOG_DECL_VARS
-
-  ! Local variables declared by the preprocessor for tracing purposes
-  PP_TRACE_DECL_VARS
-
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
-  ! Initialization of good path return value
-  PP_SET_ERR_SUCCESS( RET )
-
-  ! TODO
-
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
-
-  ! Exit point (on success)
-  RETURN
-
-END FUNCTION IFS2MARS_GET_SH_REPRES_DEFINITION
-#undef PP_PROCEDURE_NAME
-#undef PP_PROCEDURE_TYPE
-
-
-#define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'ATM2MARS_SET_LEVELIST'
 PP_THREAD_SAFE FUNCTION ATM2MARS_SET_LEVELIST( IFS_MSG, IFS_PAR, MSG, PAR, HOOKS ) RESULT(RET)
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
   USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: IFS_MSG_MOD,         ONLY: OM_BASE_MSG_A
   USE :: IFS_MSG_MOD,         ONLY: OM_ATM_MSG_T
+  USE :: IFS_MSG_MOD,         ONLY: OM_WAM_MSG_T
   USE :: IFS_PAR_MOD,         ONLY: MODEL_PAR_T
   USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
   USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
@@ -2110,7 +2453,7 @@ PP_THREAD_SAFE FUNCTION ATM2MARS_SET_LEVELIST( IFS_MSG, IFS_PAR, MSG, PAR, HOOKS
 IMPLICIT NONE
 
   ! Dummy arguments
-  TYPE(OM_ATM_MSG_T),        INTENT(IN)    :: IFS_MSG
+  CLASS(OM_BASE_MSG_A),      INTENT(IN)    :: IFS_MSG
   TYPE(MODEL_PAR_T), TARGET, INTENT(IN)    :: IFS_PAR
   TYPE(FORTRAN_MESSAGE_T),   INTENT(INOUT) :: MSG
   TYPE(PARAMETRIZATION_T),   INTENT(INOUT) :: PAR
@@ -2126,6 +2469,7 @@ IMPLICIT NONE
   ! Error flags
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NEEDS_PV_ARRAY=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_SET_PARAMETRIZATION=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_CLASS=3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -2156,8 +2500,15 @@ IMPLICIT NONE
 !    PAR%LEVELS%PV => NULL()
   ENDIF
 
-  ! Set level and levtype
-  MSG%LEVELIST = IFS_MSG%ILEVG_
+  ! Set levelist
+  SELECT TYPE(A  => IFS_MSG)
+  CLASS IS (OM_ATM_MSG_T)
+    MSG%LEVELIST = A%ILEVG_
+  CLASS IS (OM_WAM_MSG_T)
+    MSG%LEVELIST = 0_JPIB_K
+  CLASS DEFAULT
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_CLASS )
+  END SELECT
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -2183,6 +2534,10 @@ PP_ERROR_HANDLER
     SELECT CASE(ERRIDX)
     CASE(ERRFLAG_NEEDS_PV_ARRAY)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in calling IFS2MARS_NEEDS_PV_ARRAY' )
+    ! CASE(ERRFLAG_UNABLE_TO_SET_PARAMETRIZATION)
+    !   PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in setting the parametrization' )
+    CASE(ERRFLAG_UNKNOWN_CLASS)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown class' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
     END SELECT
@@ -2208,23 +2563,20 @@ END FUNCTION ATM2MARS_SET_LEVELIST
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'IFS2MARS_SET_GEOMETRY'
-PP_THREAD_SAFE FUNCTION IFS2MARS_SET_GEOMETRY( IFS_MSG, IFS_PAR, REPRESENTATIONS, MSG, PAR, HOOKS ) RESULT(RET)
+PP_THREAD_SAFE FUNCTION IFS2MARS_SET_GEOMETRY( IFS_MSG, IFS_PAR, GG_GRID_NAME, SH_GRID_NAME, REPRESENTATIONS, MSG, PAR, HOOKS ) RESULT(RET)
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
   USE :: HOOKS_MOD,           ONLY: HOOKS_T
   USE :: GEOMETRY_PAR_MOD,    ONLY: GEOMETRY_PAR_T
-  USE :: IFS_MSG_MOD,         ONLY: OM_ATM_MSG_T
+  USE :: IFS_MSG_MOD,         ONLY: OM_BASE_MSG_A
   USE :: IFS_PAR_MOD,         ONLY: MODEL_PAR_T
   USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
   USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
   USE :: ENUMERATORS_MOD,     ONLY: REPRES_LATLONG_E
   USE :: ENUMERATORS_MOD,     ONLY: REPRES_GAUSSIANGRID_E
   USE :: ENUMERATORS_MOD,     ONLY: REPRES_SPHERICALHARMONICS_E
-
-  USE :: REGULAR_LL_MAP_MOD,          ONLY: REGULAR_LL_GEOMETRY_T
-  USE :: REDUCED_GG_MAP_MOD,          ONLY: REDUCED_GG_GEOMETRY_T
-  USE :: SPHERICAL_HARMONICS_MAP_MOD, ONLY: SPHERICAL_HARMONICS_T
+  USE :: REPRES_MAP_MOD,      ONLY: REPRES_MAP_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -2238,34 +2590,20 @@ PP_THREAD_SAFE FUNCTION IFS2MARS_SET_GEOMETRY( IFS_MSG, IFS_PAR, REPRESENTATIONS
 IMPLICIT NONE
 
   ! Dummy arguments
-  TYPE(OM_ATM_MSG_T),           INTENT(IN)    :: IFS_MSG
-  TYPE(MODEL_PAR_T),            INTENT(IN)    :: IFS_PAR
-  TYPE(GEOMETRY_PAR_T), TARGET, INTENT(IN)    :: REPRESENTATIONS
-  TYPE(FORTRAN_MESSAGE_T),      INTENT(INOUT) :: MSG
-  TYPE(PARAMETRIZATION_T),      INTENT(INOUT) :: PAR
-  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+  CLASS(OM_BASE_MSG_A),       INTENT(IN)    :: IFS_MSG
+  TYPE(MODEL_PAR_T),          INTENT(IN)    :: IFS_PAR
+  CHARACTER(LEN=*),           INTENT(IN)    :: GG_GRID_NAME
+  CHARACTER(LEN=*),           INTENT(IN)    :: SH_GRID_NAME
+  TYPE(REPRES_MAP_T), TARGET, INTENT(IN)    :: REPRESENTATIONS
+  TYPE(FORTRAN_MESSAGE_T),    INTENT(INOUT) :: MSG
+  TYPE(PARAMETRIZATION_T),    INTENT(INOUT) :: PAR
+  TYPE(HOOKS_T),              INTENT(INOUT) :: HOOKS
 
   ! Function result
   INTEGER(KIND=JPIB_K) :: RET
 
-  ! Local variables
-  LOGICAL :: LMATCH
-  TYPE(REGULAR_LL_GEOMETRY_T), POINTER :: LL_REPRES_DESCRIPTION
-  TYPE(REDUCED_GG_GEOMETRY_T), POINTER :: GG_REPRES_DESCRIPTION
-  TYPE(SPHERICAL_HARMONICS_T), POINTER :: SH_REPRES_DESCRIPTION
-
   ! Error flags
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_REPRES=2_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INFER_GG_REPRES_FROM_IFS=3_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHECK_GG_REPRES=4_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GENERATE_GG_REPRES=5_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PUSH_GG_REPRES=6_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INFER_SH_REPRES_FROM_IFS=7_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHECK_SH_REPRES=8_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GENERATE_SH_REPRES=9_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PUSH_SH_REPRES=10_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_REPRES_NOT_ASSOCIATED=11_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNSUPPORTED_GEOMETRY=1_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -2282,74 +2620,20 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! At the moment we need the PV array only for the model levels
-  SELECT CASE ( IFS_MSG%IREPRES_ )
-
-  ! ================================================================================================
-  CASE (REPRES_LATLONG_E)
-
-    ! Unexpected regular latlon from IFS
-    LL_REPRES_DESCRIPTION => NULL()
-    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
-
-  ! ================================================================================================
-  CASE (REPRES_GAUSSIANGRID_E)
-
-    GG_REPRES_DESCRIPTION => NULL()
+  IF ( IFS_MSG%IREPRES_ .EQ. REPRES_GAUSSIANGRID_E ) THEN
     MSG%REPRES = REPRES_GAUSSIANGRID_E
-
-    PAR%GEOMETRY%LL_TO_BE_DEALLOCATED = .FALSE.
-    PAR%GEOMETRY%GG_TO_BE_DEALLOCATED = .FALSE.
-    PAR%GEOMETRY%SH_TO_BE_DEALLOCATED = .FALSE.
-
-    PAR%GEOMETRY%LL => NULL()
-    PAR%GEOMETRY%GG => REPRESENTATIONS%GG
-    PAR%GEOMETRY%SH => NULL()
-
-    ! Infer grid (type) from if parameters
-    PP_TRYCALL(ERRFLAG_INFER_GG_REPRES_FROM_IFS) IFS2MARS_INFER_GG_REPRES_FROM_IFS( IFS_MSG, IFS_PAR, MSG%GRID, HOOKS )
-
-    ! Check if the grid definition is already in the parameters
-    PP_TRYCALL(ERRFLAG_CHECK_GG_REPRES) PAR%GEOMETRY%GG%MATCH( MSG%GRID, LMATCH, HOOKS )
-
-    ! If the grid is not already in the parameters, then set it
-    IF ( .NOT. LMATCH ) THEN
-      PP_TRYCALL(ERRFLAG_GENERATE_GG_REPRES) IFS2MARS_GET_GG_REPRES_DEFINITION( IFS_MSG, IFS_PAR, MSG%GRID, GG_REPRES_DESCRIPTION, HOOKS )
-      PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(GG_REPRES_DESCRIPTION), ERRFLAG_REPRES_NOT_ASSOCIATED )
-      PP_TRYCALL(ERRFLAG_PUSH_GG_REPRES) PAR%GEOMETRY%GG%PUSH( MSG%GRID, GG_REPRES_DESCRIPTION, HOOKS )
-    ENDIF
-
-  ! ================================================================================================
-  CASE (REPRES_SPHERICALHARMONICS_E)
-
-    SH_REPRES_DESCRIPTION => NULL()
+    MSG%GRID = TRIM(ADJUSTL(GG_GRID_NAME))
+  ELSEIF ( IFS_MSG%IREPRES_ .EQ. REPRES_SPHERICALHARMONICS_E ) THEN
     MSG%REPRES = REPRES_SPHERICALHARMONICS_E
+    ! MSG%GRID = TRIM(ADJUSTL(SH_GRID_NAME))
+    MSG%TRUNCATION = IFS_PAR%GEO_%ISMAX
+  ELSE
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNSUPPORTED_GEOMETRY )
+  ENDIF
 
-    PAR%GEOMETRY%LL_TO_BE_DEALLOCATED = .FALSE.
-    PAR%GEOMETRY%GG_TO_BE_DEALLOCATED = .FALSE.
-    PAR%GEOMETRY%SH_TO_BE_DEALLOCATED = .FALSE.
-
-    PAR%GEOMETRY%LL => NULL()
-    PAR%GEOMETRY%GG => NULL()
-    PAR%GEOMETRY%SH => REPRESENTATIONS%SH
-
-    ! Infer grid (type) from if parameters
-    PP_TRYCALL(ERRFLAG_INFER_SH_REPRES_FROM_IFS) IFS2MARS_INFER_SH_REPRES_FROM_IFS( IFS_MSG, IFS_PAR, MSG%GRID, HOOKS )
-
-    ! Check if the grid definition is already in the parameters
-    PP_TRYCALL(ERRFLAG_CHECK_SH_REPRES) PAR%GEOMETRY%SH%MATCH( MSG%GRID, LMATCH, HOOKS )
-
-    ! If the grid is not already in the parameters, then set it
-    IF ( .NOT. LMATCH ) THEN
-      PP_TRYCALL(ERRFLAG_GENERATE_SH_REPRES) IFS2MARS_GET_SH_REPRES_DEFINITION( IFS_MSG, IFS_PAR, MSG%GRID, SH_REPRES_DESCRIPTION, HOOKS )
-      PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(SH_REPRES_DESCRIPTION), ERRFLAG_REPRES_NOT_ASSOCIATED )
-      PP_TRYCALL(ERRFLAG_PUSH_SH_REPRES) PAR%GEOMETRY%SH%PUSH( MSG%GRID, SH_REPRES_DESCRIPTION, HOOKS )
-    ENDIF
-
-  ! ================================================================================================
-  CASE DEFAULT
-    PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_REPRES )
-  END SELECT
+  ! TODO: Handle the rotation on sh representations triggered throug the following conditions
+  ! IF ( THIS%MODEL_PAR_%GEO_%NSTTYP .GE. 2_JPIB_K ) THEN
+  ! ELSEIF ( ABS(THIS%MODEL_PAR_%GEO_%RSTRET-1.0_JPRD_K) .GE. 1.0E-14_JPRD_K ) THEN
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -2373,28 +2657,6 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
-    CASE(ERRFLAG_NOT_IMPLEMENTED)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unexpected regular latlon from IFS' )
-    CASE(ERRFLAG_UNKNOWN_REPRES)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown representation' )
-    CASE(ERRFLAG_INFER_GG_REPRES_FROM_IFS)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in calling IFS2MARS_INFER_GG_REPRES_FROM_IFS' )
-    CASE(ERRFLAG_CHECK_GG_REPRES)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in checking GG representation' )
-    CASE(ERRFLAG_GENERATE_GG_REPRES)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in generating GG representation' )
-    CASE(ERRFLAG_PUSH_GG_REPRES)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in pushing GG representation' )
-    CASE(ERRFLAG_INFER_SH_REPRES_FROM_IFS)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in calling IFS2MARS_INFER_SH_REPRES_FROM_IFS' )
-    CASE(ERRFLAG_CHECK_SH_REPRES)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in checking SH representation' )
-    CASE(ERRFLAG_GENERATE_SH_REPRES)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in generating SH representation' )
-    CASE(ERRFLAG_PUSH_SH_REPRES)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in pushing SH representation' )
-    CASE(ERRFLAG_REPRES_NOT_ASSOCIATED)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Representation not associated' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -2414,6 +2676,192 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION IFS2MARS_SET_GEOMETRY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'WAM2MARS_SET_DIRFREQ'
+PP_THREAD_SAFE FUNCTION WAM2MARS_SET_DIRFREQ( IFS_MSG, IFS_PAR, MSG, PAR, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: IFS_MSG_MOD,         ONLY: OM_WAM_MSG_T
+  USE :: IFS_PAR_MOD,         ONLY: MODEL_PAR_T
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
+  USE :: ENUMERATORS_MOD,     ONLY: LEVTYPE_SFC_E
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  TYPE(OM_WAM_MSG_T),         INTENT(IN)    :: IFS_MSG
+  TYPE(MODEL_PAR_T), TARGET,  INTENT(IN)    :: IFS_PAR
+  TYPE(FORTRAN_MESSAGE_T),    INTENT(INOUT) :: MSG
+  TYPE(PARAMETRIZATION_T),    INTENT(INOUT) :: PAR
+  TYPE(HOOKS_T),              INTENT(INOUT) :: HOOKS
+
+  ! Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  LOGICAL IS_WAVE_SPECTRA
+
+  ! Error handling variables
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_IS_SPECTRA=0_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_TH_ALLOCATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_FR_ALLOCATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_OUT_OF_BOUNDS_FRLB=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_OUT_OF_BOUNDS_FRUB=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_OUT_OF_BOUNDS_THLB=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_OUT_OF_BOUNDS_THUB=6_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! TODO: if it is wave spectra then we need to set the frequency and direction,
+  !       otherwise need to set level and levetype
+  PP_TRYCALL(ERRFLAG_IS_SPECTRA) WAM2MARS_IS_WAVE_SPECTRA( IFS_MSG, IFS_PAR, IS_WAVE_SPECTRA, HOOKS )
+
+  IF ( IS_WAVE_SPECTRA ) THEN
+
+    ! Error handling
+    PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(IFS_PAR%WAM_%TH), ERRFLAG_NOT_TH_ALLOCATED )
+    PP_DEBUG_CRITICAL_COND_THROW( .NOT.ALLOCATED(IFS_PAR%WAM_%FR), ERRFLAG_NOT_FR_ALLOCATED )
+    PP_DEBUG_CRITICAL_COND_THROW( IFS_MSG%IANGLE .LT. 1_JPIB_K, ERRFLAG_OUT_OF_BOUNDS_THLB )
+    PP_DEBUG_CRITICAL_COND_THROW( IFS_MSG%IANGLE .GT. SIZE(IFS_PAR%WAM_%TH), ERRFLAG_OUT_OF_BOUNDS_THUB )
+    PP_DEBUG_CRITICAL_COND_THROW( IFS_MSG%IFREQ .LT. 1_JPIB_K, ERRFLAG_OUT_OF_BOUNDS_FRLB )
+    PP_DEBUG_CRITICAL_COND_THROW( IFS_MSG%IFREQ .GT. SIZE(IFS_PAR%WAM_%FR), ERRFLAG_OUT_OF_BOUNDS_FRUB )
+
+    ! Set the direction of the frequency
+    ! NOTE: It may make sense to scale the frequency with the direction here
+    ! TODO: Scaling of frequency may require more info
+    ! PP_METADATA_SET( METADATA,  'numberOfWaveDirections', MODEL_PARAMS%WAM_%NANG )
+    ! PP_METADATA_SET( METADATA,  'scaleFactorOfWaveDirections', IDIRSCALING )
+    ! PP_METADATA_SET( METADATA,  'scaledValuesOfWaveDirections', SCTH )
+    ! PP_METADATA_SET( METADATA,  'numberOfWaveFrequencies', MODEL_PARAMS%WAM_%NFRE_RED )
+    ! PP_METADATA_SET( METADATA,  'scaleFactorOfWaveFrequencies', IFRESCALING )
+    ! PP_METADATA_SET( METADATA,  'scaledValuesOfWaveFrequencies', SCFR )
+    MSG%DIRECTION = IFS_MSG%IANGLE
+    MSG%FREQUENCY = IFS_MSG%IFREQ
+    PAR%WAVE%TO_BE_DEALLOCATED = .FALSE.
+    PAR%WAVE%DIRS_ => IFS_PAR%WAM_%TH
+    PAR%WAVE%FREQ_ => IFS_PAR%WAM_%FR
+
+  ELSE
+
+    MSG%LEVTYPE  = LEVTYPE_SFC_E
+
+    ! TODO Not sure if levelist has to be set here (for surfaces is always 0)
+    MSG%LEVELIST = 0_JPIB_K
+
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (on success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Local debug variables
+    INTEGER(KIND=JPIB_K) :: DUMMYSTAT
+    CHARACTER(LEN=32) :: GOT
+    CHARACTER(LEN=32) :: EXPECTED
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_IS_SPECTRA)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Error in checking for wave spectra' )
+    CASE(ERRFLAG_NOT_TH_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Direction not allocated' )
+    CASE(ERRFLAG_NOT_FR_ALLOCATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Frequency not allocated' )
+    CASE(ERRFLAG_OUT_OF_BOUNDS_FRLB)
+      GOT=REPEAT(' ',32)
+      WRITE(GOT, '(I32)', IOSTAT=DUMMYSTAT) IFS_MSG%IFREQ
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Frequency lower bound out of bounds' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Got: '//TRIM(ADJUSTL(GOT)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Expected: bigger than 0' )
+    CASE(ERRFLAG_OUT_OF_BOUNDS_FRUB)
+      GOT=REPEAT(' ',32)
+      EXPECTED=REPEAT(' ',32)
+      WRITE(GOT, '(I32)', IOSTAT=DUMMYSTAT) IFS_MSG%IFREQ
+      WRITE(EXPECTED, '(I32)', IOSTAT=DUMMYSTAT) SIZE(IFS_PAR%WAM_%FR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Frequency upper bound out of bounds' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Expected: lower or equal to -> '//TRIM(ADJUSTL(EXPECTED)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Got: '//TRIM(ADJUSTL(GOT)) )
+    CASE(ERRFLAG_OUT_OF_BOUNDS_THLB)
+      GOT=REPEAT(' ',32)
+      WRITE(GOT, '(I32)', IOSTAT=DUMMYSTAT) IFS_MSG%IANGLE
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Direction lower bound out of bounds' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Got: '//TRIM(ADJUSTL(GOT)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Expected: bigger than 0' )
+    CASE(ERRFLAG_OUT_OF_BOUNDS_THUB)
+      GOT=REPEAT(' ',32)
+      EXPECTED=REPEAT(' ',32)
+      WRITE(GOT, '(I32)', IOSTAT=DUMMYSTAT) IFS_MSG%IANGLE
+      WRITE(EXPECTED, '(I32)', IOSTAT=DUMMYSTAT) SIZE(IFS_PAR%WAM_%TH)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Direction upper bound out of bounds' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Expected: lower or equal to -> '//TRIM(ADJUSTL(EXPECTED)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Got: '//TRIM(ADJUSTL(GOT)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION WAM2MARS_SET_DIRFREQ
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

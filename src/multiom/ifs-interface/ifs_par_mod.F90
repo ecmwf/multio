@@ -188,7 +188,7 @@ TYPE :: SIM_PAR_T
 
   LOGICAL :: LPPSTEPS
 
-  REAL(KIND=JPIB_K) :: TSTEP
+  REAL(KIND=JPRD_K) :: TSTEP
 
   ! LOBSC1  : .T. = term of observations included in configuration 1
   LOGICAL :: LOBSC1

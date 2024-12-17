@@ -23,6 +23,7 @@ PRIVATE
   TYPE :: DATA_REPRESENTATION_PAR_T
     INTEGER(KIND=JPIB_K) :: BITS_PER_VALUE_= 16_JPIB_K
   CONTAINS
+    PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INIT => DATA_REPRESENTATION_PAR_INIT
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: COPY_FROM => DATA_REPRESENTATION_PAR_COPY_FROM
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: READ_FROM_YAML => READ_DATA_REPRESENTATION_PAR_FROM_YAML
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: WRITE_TO_YAML => WRITE_DATA_REPRESENTATION_PAR_TO_YAML
@@ -33,6 +34,95 @@ PRIVATE
   PUBLIC :: DATA_REPRESENTATION_PAR_T
 
 CONTAINS
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'DATA_REPRESENTATION_PAR_INIT'
+PP_THREAD_SAFE FUNCTION DATA_REPRESENTATION_PAR_INIT( DATA_REPRESENTATION_PAR, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(DATA_REPRESENTATION_PAR_T), INTENT(INOUT) :: DATA_REPRESENTATION_PAR
+  TYPE(HOOKS_T),                    INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Copy the data
+  DATA_REPRESENTATION_PAR%BITS_PER_VALUE_ = UNDEF_PARAM_E
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION DATA_REPRESENTATION_PAR_INIT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
@@ -373,10 +463,10 @@ PP_THREAD_SAFE FUNCTION WRITE_DATA_REPRESENTATION_PAR_TO_YAML( DATA_REPRESENTATI
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(DATA_REPRESENTATION_PAR_T), INTENT(INOUT) :: DATA_REPRESENTATION_PAR
-  INTEGER(KIND=JPIB_K),  INTENT(IN)    :: UNIT
-  INTEGER(KIND=JPIB_K),  INTENT(IN)    :: OFFSET
-  TYPE(HOOKS_T),         INTENT(INOUT) :: HOOKS
+  CLASS(DATA_REPRESENTATION_PAR_T), INTENT(IN)    :: DATA_REPRESENTATION_PAR
+  INTEGER(KIND=JPIB_K),             INTENT(IN)    :: UNIT
+  INTEGER(KIND=JPIB_K),             INTENT(IN)    :: OFFSET
+  TYPE(HOOKS_T),                    INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
@@ -423,7 +513,7 @@ IMPLICIT NONE
   PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( DATA_REPRESENTATION_PAR%BITS_PER_VALUE_, CTMP, HOOKS )
 
   ! Write to the unit
-  WRITE( UNIT, '(A,A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'bits-per-value: ', TRIM(ADJUSTL(CTMP)), ' # number of bits used to save each value (default=16)'
+  WRITE( UNIT, '(A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'bits-per-value: ', TRIM(ADJUSTL(CTMP))
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
 
   ! Add an empty line

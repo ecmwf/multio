@@ -1,0 +1,188 @@
+mapping-rules:
+
+
+  # change of units example
+  - rule:
+
+    name: 'modify the units of a specific field'
+
+    tag: 'change-unit'
+
+    filter:
+      type: 'param'
+      operation: 'match'
+      value: 220221
+
+    assignment:
+      type: 'composed'
+      chained: true
+      assignments:
+        - type: 'copy'
+        - type: 'composed'
+          chained: false
+          assignments:
+            - type: 'parametrization-float'
+              name: 'scale-factor'
+              expression:
+                type: 'constant'
+                value: 1000.0
+            - type: 'message-int'
+              name: 'param'
+              expression:
+                type: 'constant'
+                value: 654321
+
+  # change of units example
+  - rule:
+
+    name: 'modify the expver and scaling factor'
+
+    tag: 'change expver'
+
+    filter:
+      type: 'param'
+      operation: 'match'
+      value: 220221
+
+    assignment:
+      type: 'composed'
+      chained: true
+      assignments:
+        - type: 'copy'
+        - type: 'composed'
+          chained: false
+          assignments:
+            - type: 'parametrization-float'
+              name: 'scale-factor'
+              expression:
+                type: 'constant'
+                value: 999.0
+            - type: 'message-string'
+              name: 'expver'
+              value: 'ABCD'
+
+
+  # change of units example
+  - rule:
+
+    name: 'modify the expver for the spherical harmonics fields'
+
+    tag: 'change expver for sh fields'
+
+    filter:
+      type: 'repres'
+      operation: 'match'
+      value: 'sh'
+
+    assignment:
+      type: 'composed'
+      chained: true
+      assignments:
+        - type: 'copy'
+        - type: 'composed'
+          chained: false
+          assignments:
+            - type: 'message-string'
+              name: 'expver'
+              value: 'ABCD'
+
+  
+  # change packing type injecting a new constant through an enumerator (changing the packing type to simple)
+  - rule:
+
+    name: 'modify the packing type'
+
+    tag: 'change packing type for some fields'
+
+    filter:
+      type: 'param'
+      operation: 'match'
+      value: 162112
+
+    assignment:
+      type: 'composed'
+      chained: true
+      assignments:
+        - type: 'copy'
+        - type: 'composed'
+          chained: false
+          assignments:
+            - type: 'message-int'
+              name: 'packing'
+              expression:
+                type: 'enum'
+                name: 'packing'
+                value: 'simple'
+
+  # change bits-per-value of some fields
+  - rule:
+
+    name: 'modify the bits per value'
+
+    tag: 'change packing type for some fields'
+
+    filter:
+      type: 'param'
+      operation: 'match'
+      values: [ 8, 9, 26, 228007 ]
+
+    assignment:
+      type: 'composed'
+      chained: true
+      assignments:
+        - type: 'copy'
+        - type: 'composed'
+          chained: false
+          assignments:
+            - type: 'parametrization-int'
+              name: 'bits-per-value'
+              expression:
+                type: 'constant'
+                value: 25
+
+
+  # change of units example
+  - rule:
+
+    name: 'copy spherical harmonics fields with original expver'
+
+    tag: 'copy sh fields'
+
+    filter:
+      type: 'repres'
+      operation: 'match'
+      value: 'sh'
+
+    assignment:
+      type: 'copy'
+
+  # change of units example
+  - rule:
+
+    name: 'modify the units of a specific field (not supposed to match)'
+
+    tag: 'change-unit-not-match'
+
+    filter:
+      type: 'param'
+      operation: 'match'
+      value: 220222
+
+    assignment:
+      type: 'composed'
+      chained: true
+      assignments:
+        - type: 'copy'
+        - type: 'composed'
+          chained: false
+          assignments:
+            - type: 'parametrization-float'
+              name: 'scale-factor'
+              expression:
+                type: 'constant'
+                value: 1000.0
+            - type: 'message-int'
+              name: 'param'
+              expression:
+                type: 'constant'
+                value: 654321

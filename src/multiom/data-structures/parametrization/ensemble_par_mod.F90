@@ -27,6 +27,7 @@ PRIVATE
     INTEGER(KIND=JPIB_K) :: TYPE_OF_ENSEMBLE_FORECAST_= UNDEF_PARAM_E
     INTEGER(KIND=JPIB_K) :: NUMBER_OF_FORECASTS_IN_ENSEMBLE_= UNDEF_PARAM_E
   CONTAINS
+    PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INIT => ENSEMBLE_PAR_INIT
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: COPY_FROM => ENSEMBLE_PAR_COPY_FROM
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: READ_FROM_YAML => READ_ENSEMBLE_PAR_FROM_YAML
 
@@ -48,6 +49,98 @@ PRIVATE
   PUBLIC :: ENSEMBLE_PAR_T
 
 CONTAINS
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'ENSEMBLE_PAR_INIT'
+PP_THREAD_SAFE FUNCTION ENSEMBLE_PAR_INIT( ENSEMBLE_PAR, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(ENSEMBLE_PAR_T), INTENT(INOUT) :: ENSEMBLE_PAR
+  TYPE(HOOKS_T),         INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Copy the data
+  ENSEMBLE_PAR%SYSTEM_NUMBER_ = UNDEF_PARAM_E
+  ENSEMBLE_PAR%METHOD_NUMBER_ = UNDEF_PARAM_E
+  ENSEMBLE_PAR%TYPE_OF_ENSEMBLE_FORECAST_ = UNDEF_PARAM_E
+  ENSEMBLE_PAR%NUMBER_OF_FORECASTS_IN_ENSEMBLE_ = UNDEF_PARAM_E
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION ENSEMBLE_PAR_INIT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
@@ -1209,6 +1302,7 @@ PP_THREAD_SAFE FUNCTION WRITE_ENSEMBLE_PAR_TO_YAML( ENSEMBLE_PAR, UNIT, OFFSET, 
 
   USE :: LOG_UTILS_MOD, ONLY: TO_STRING
   USE :: LOG_UTILS_MOD, ONLY: MAX_STR_LEN
+  USE :: ENUMERATORS_MOD, ONLY: UNDEF_PARAM_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1222,7 +1316,7 @@ PP_THREAD_SAFE FUNCTION WRITE_ENSEMBLE_PAR_TO_YAML( ENSEMBLE_PAR, UNIT, OFFSET, 
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(ENSEMBLE_PAR_T), INTENT(INOUT) :: ENSEMBLE_PAR
+  CLASS(ENSEMBLE_PAR_T), INTENT(IN)    :: ENSEMBLE_PAR
   INTEGER(KIND=JPIB_K),  INTENT(IN)    :: UNIT
   INTEGER(KIND=JPIB_K),  INTENT(IN)    :: OFFSET
   TYPE(HOOKS_T),         INTENT(INOUT) :: HOOKS
@@ -1234,6 +1328,7 @@ IMPLICIT NONE
   CHARACTER(LEN=MAX_STR_LEN) :: CTMP
   INTEGER(KIND=JPIB_K) :: WRITE_STAT
   LOGICAL :: IS_OPENED
+  LOGICAL, DIMENSION(4) :: CONDITIONS
 
   !> Error flags
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_OFFSET = 1_JPIB_K
@@ -1259,77 +1354,69 @@ IMPLICIT NONE
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( OFFSET.LT.0, ERRFLAG_INVALID_OFFSET )
 
-  ! Check if it is possible to write on the provided unit
-  INQUIRE( UNIT=UNIT, OPENED=IS_OPENED )
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT.IS_OPENED, ERRFLAG_UNIT_NOT_OPENED )
+  CONDITIONS(1) = ENSEMBLE_PAR%TYPE_OF_ENSEMBLE_FORECAST_.NE.UNDEF_PARAM_E
+  CONDITIONS(2) = ENSEMBLE_PAR%NUMBER_OF_FORECASTS_IN_ENSEMBLE_.NE.UNDEF_PARAM_E
+  CONDITIONS(3) = ENSEMBLE_PAR%SYSTEM_NUMBER_.NE.UNDEF_PARAM_E
+  CONDITIONS(4) = ENSEMBLE_PAR%METHOD_NUMBER_.NE.UNDEF_PARAM_E
 
-  ! Write to the unit
-  WRITE( UNIT, '(A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET), 'ensemble:'
-  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+  IF ( ANY(CONDITIONS) ) THEN
+
+    ! Check if it is possible to write on the provided unit
+    INQUIRE( UNIT=UNIT, OPENED=IS_OPENED )
+    PP_DEBUG_CRITICAL_COND_THROW( .NOT.IS_OPENED, ERRFLAG_UNIT_NOT_OPENED )
+
+    ! Write to the unit
+    WRITE( UNIT, '(A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET), 'ensemble:'
+    PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
 
 
+    IF ( CONDITIONS(1) ) THEN
+      ! convert integer to string
+      CTMP = REPEAT(' ', MAX_STR_LEN)
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( ENSEMBLE_PAR%TYPE_OF_ENSEMBLE_FORECAST_, CTMP, HOOKS )
 
-  ! convert integer to string
-  CTMP = REPEAT(' ', MAX_STR_LEN)
-  IF ( ENSEMBLE_PAR%TYPE_OF_ENSEMBLE_FORECAST_ .EQ. UNDEF_PARAM_E ) THEN
-    CTMP='"undefined"'
-  ELSE
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( ENSEMBLE_PAR%TYPE_OF_ENSEMBLE_FORECAST_, CTMP, HOOKS )
+      ! Write to the unit
+      WRITE( UNIT, '(A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'type-of-ensemble-forecast: ', TRIM(ADJUSTL(CTMP))
+      PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+    ENDIF
+
+
+    IF ( CONDITIONS(2) ) THEN
+      ! convert integer to string
+      CTMP = REPEAT(' ', MAX_STR_LEN)
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( ENSEMBLE_PAR%NUMBER_OF_FORECASTS_IN_ENSEMBLE_, CTMP, HOOKS )
+
+      ! Write to the unit
+      WRITE( UNIT, '(A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'number-of-forecasts-in-ensemble: ', TRIM(ADJUSTL(CTMP))
+      PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+    ENDIF
+
+
+    IF ( CONDITIONS(3) ) THEN
+      ! convert integer to string
+      CTMP = REPEAT(' ', MAX_STR_LEN)
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( ENSEMBLE_PAR%SYSTEM_NUMBER_, CTMP, HOOKS )
+
+      ! Write to the unit
+      WRITE( UNIT, '(A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'system-number: ', TRIM(ADJUSTL(CTMP))
+      PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+    ENDIF
+
+    ! convert integer to string
+    IF ( CONDITIONS(4) ) THEN
+      CTMP = REPEAT(' ', MAX_STR_LEN)
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( ENSEMBLE_PAR%METHOD_NUMBER_, CTMP, HOOKS )
+
+      ! Write to the unit
+      WRITE( UNIT, '(A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'method-number: ', TRIM(ADJUSTL(CTMP))
+      PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+    ENDIF
+
+    ! Add an empty line
+    WRITE( UNIT, '(A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET)
+    PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+
   ENDIF
-
-  ! Write to the unit
-  WRITE( UNIT, '(A,A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'type-of-ensemble-forecast: ', TRIM(ADJUSTL(CTMP)), ' # type of ensemble forecast (default=1)'
-  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
-
-
-
-  ! convert integer to string
-  CTMP = REPEAT(' ', MAX_STR_LEN)
-  IF ( ENSEMBLE_PAR%NUMBER_OF_FORECASTS_IN_ENSEMBLE_ .EQ. UNDEF_PARAM_E ) THEN
-    CTMP='"undefined"'
-  ELSE
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( ENSEMBLE_PAR%NUMBER_OF_FORECASTS_IN_ENSEMBLE_, CTMP, HOOKS )
-  ENDIF
-
-  ! Write to the unit
-  WRITE( UNIT, '(A,A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'number-of-forecasts-in-ensemble: ', TRIM(ADJUSTL(CTMP)), ' # total number of forecasts in ensemble (if not present then it is assumed that the simulation is deterministic)'
-  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
-
-
-  ! convert integer to string
-  CTMP = REPEAT(' ', MAX_STR_LEN)
-  IF ( ENSEMBLE_PAR%SYSTEM_NUMBER_ .EQ. UNDEF_PARAM_E ) THEN
-    CTMP='"undefined"'
-  ELSE
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( ENSEMBLE_PAR%SYSTEM_NUMBER_, CTMP, HOOKS )
-  ENDIF
-
-  ! Write to the unit
-  WRITE( UNIT, '(A,A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'system-number: ', TRIM(ADJUSTL(CTMP)), ' # system number to be set in section2'
-  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
-
-
-  ! convert integer to string
-  CTMP = REPEAT(' ', MAX_STR_LEN)
-  IF ( ENSEMBLE_PAR%METHOD_NUMBER_ .EQ. UNDEF_PARAM_E ) THEN
-    CTMP='"undefined"'
-  ELSE
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( ENSEMBLE_PAR%METHOD_NUMBER_, CTMP, HOOKS )
-  ENDIF
-
-  ! Write to the unit
-  WRITE( UNIT, '(A,A,A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'method-number: ', TRIM(ADJUSTL(CTMP)), ' # version number to be set in section2'
-  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
-
-
-
-
-
-
-
-  ! Add an empty line
-  WRITE( UNIT, '(A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET)
-  PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

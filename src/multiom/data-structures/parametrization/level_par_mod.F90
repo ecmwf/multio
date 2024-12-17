@@ -24,15 +24,129 @@ PRIVATE
     LOGICAL :: TO_BE_DEALLOCATED=.FALSE.
     REAL(KIND=JPRD_K), DIMENSION(:), POINTER :: PV => NULL()
   CONTAINS
+    PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INIT => LEVEL_PAR_INIT
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: COPY_FROM => LEVEL_PAR_COPY_FROM
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: READ_FROM_YAML => READ_LEVEL_PAR_FROM_YAML
     PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: FREE => LEVEL_PAR_FREE
+    PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: WRITE_TO_YAML => WRITE_LEVEL_PAR_TO_YAML
   END TYPE
 
   !> Whitelist of public symbols (types)
   PUBLIC :: LEVEL_PAR_T
 
 CONTAINS
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'LEVEL_PAR_INIT'
+PP_THREAD_SAFE FUNCTION LEVEL_PAR_INIT( LEVEL_PAR, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(LEVEL_PAR_T), INTENT(INOUT) :: LEVEL_PAR
+  TYPE(HOOKS_T),      INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STATUS
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE = 1_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Reset the data
+  IF ( LEVEL_PAR%TO_BE_DEALLOCATED ) THEN
+    IF ( ASSOCIATED(LEVEL_PAR%PV) ) THEN
+      DEALLOCATE( LEVEL_PAR%PV, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG )
+      PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+      NULLIFY( LEVEL_PAR%PV )
+    ENDIF
+    LEVEL_PAR%TO_BE_DEALLOCATED = .FALSE.
+  ELSE
+    LEVEL_PAR%TO_BE_DEALLOCATED = .FALSE.
+    NULLIFY( LEVEL_PAR%PV )
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to deallocate memory' )
+      IF ( ALLOCATED( ERRMSG)) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'error message: ' // TRIM(ERRMSG) )
+        DEALLOCATE( ERRMSG, STAT=DEALLOC_STATUS )
+      ENDIF
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION LEVEL_PAR_INIT
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
@@ -83,13 +197,17 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! Copy the data
+  ! Reset the data
   IF ( LEVEL_PAR%TO_BE_DEALLOCATED ) THEN
     IF ( ASSOCIATED(LEVEL_PAR%PV) ) THEN
       DEALLOCATE( LEVEL_PAR%PV, STAT=DEALLOC_STATUS, ERRMSG=ERRMSG )
       PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STATUS .NE. 0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+      NULLIFY( LEVEL_PAR%PV )
     ENDIF
     LEVEL_PAR%TO_BE_DEALLOCATED = .FALSE.
+  ELSE
+    LEVEL_PAR%TO_BE_DEALLOCATED = .FALSE.
+    NULLIFY( LEVEL_PAR%PV )
   ENDIF
 
   ! Trace end of procedure (on success)
@@ -401,6 +519,172 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION READ_LEVEL_PAR_FROM_YAML
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'WRITE_LEVEL_PAR_TO_YAML'
+PP_THREAD_SAFE FUNCTION WRITE_LEVEL_PAR_TO_YAML( LEVEL_PAR, UNIT, OFFSET, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+
+  USE :: LOG_UTILS_MOD, ONLY: TO_STRING
+  USE :: LOG_UTILS_MOD, ONLY: MAX_STR_LEN
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(LEVEL_PAR_T),   INTENT(IN)    :: LEVEL_PAR
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: UNIT
+  INTEGER(KIND=JPIB_K), INTENT(IN)    :: OFFSET
+  TYPE(HOOKS_T),        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  CHARACTER(LEN=MAX_STR_LEN), DIMENSION(:), ALLOCATABLE :: CATMP
+  INTEGER(KIND=JPIB_K) :: WRITE_STAT
+  INTEGER(KIND=JPIB_K) :: I
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STAT
+  LOGICAL :: IS_OPENED
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_OFFSET = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNIT_NOT_OPENED = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRITE_ERROR = 3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE = 4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CONVERT_TO_STRING = 5_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( OFFSET.LT.0, ERRFLAG_INVALID_OFFSET )
+
+  IF ( ASSOCIATED(LEVEL_PAR%PV) ) THEN
+
+    ! convert integer to string
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING) TO_STRING( LEVEL_PAR%PV, CATMP, HOOKS )
+
+    ! Check if it is possible to write on the provided unit
+    INQUIRE( UNIT=UNIT, OPENED=IS_OPENED )
+    PP_DEBUG_CRITICAL_COND_THROW( .NOT.IS_OPENED, ERRFLAG_UNIT_NOT_OPENED )
+
+    ! Write to the unit
+    WRITE( UNIT, '(A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET), 'levels:'
+    PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+
+    WRITE( UNIT, '(A,A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2), 'pv: ['
+    PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+
+    WRITE( UNIT, '(A)', ADVANCE='NO',IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+4)
+    PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+
+    IF ( ALLOCATED(CATMP) ) THEN
+      DO I = 1, SIZE(CATMP)-1
+        IF ( MOD(I,10) .EQ. 0 ) THEN
+          WRITE( UNIT, '(A)', IOSTAT=WRITE_STAT ) TRIM(ADJUSTL(CATMP(I)))//', '
+          PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+          WRITE( UNIT, '(A)', ADVANCE='NO',IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+4)
+          PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+        ELSE
+          WRITE( UNIT, '(A)', ADVANCE='NO', IOSTAT=WRITE_STAT ) TRIM(ADJUSTL(CATMP(I)))//', '
+          PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+        ENDIF
+      ENDDO
+      WRITE( UNIT, '(A)', IOSTAT=WRITE_STAT ) TRIM(ADJUSTL(CATMP(SIZE(CATMP))))
+      PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+      WRITE( UNIT, '(A)', IOSTAT=WRITE_STAT ) REPEAT(' ', OFFSET+2)//']'
+      PP_DEBUG_CRITICAL_COND_THROW( WRITE_STAT.NE.0, ERRFLAG_WRITE_ERROR )
+
+      DEALLOCATE(CATMP, STAT=DEALLOC_STAT, ERRMSG=ERRMSG)
+      PP_DEBUG_CRITICAL_COND_THROW( DEALLOC_STAT.NE.0, ERRFLAG_UNABLE_TO_DEALLOCATE )
+    ENDIF
+
+  ENDIF
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_INVALID_OFFSET)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid offset' )
+    CASE(ERRFLAG_UNIT_NOT_OPENED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unit not opened' )
+    CASE(ERRFLAG_WRITE_ERROR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'write error' )
+    CASE(ERRFLAG_UNABLE_TO_DEALLOCATE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to deallocate memory' )
+      IF ( ALLOCATED( ERRMSG)) THEN
+        PP_DEBUG_PUSH_MSG_TO_FRAME( 'error message: ' // TRIM(ERRMSG) )
+        DEALLOCATE( ERRMSG, STAT=DEALLOC_STAT )
+      ENDIF
+    CASE(ERRFLAG_UNABLE_TO_CONVERT_TO_STRING)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to convert to string' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION WRITE_LEVEL_PAR_TO_YAML
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

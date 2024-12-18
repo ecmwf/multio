@@ -1,11 +1,11 @@
 !>
-!> @file filter_direction_mod.F90
+!> @file filter_level_mod.F90
 !>
-!> @brief Module containing definitions and procedures for levtype filters.
+!> @brief Module containing definitions and procedures for level filters.
 !>
-!> This module defines the `FILTER_STREAM_T` type, along with its associated
+!> This module defines the `FILTER_NUMBER_T` type, along with its associated
 !> procedures and helper functions that facilitate the creation, management, and
-!> utilization of levtype filters within the system. Levtype filters allow for
+!> utilization of level filters within the system. Level filters allow for
 !> complex filtering operations by combining multiple nested filters.
 !>
 !> @author Mirco Valentini
@@ -13,17 +13,16 @@
 !>
 
 ! Include preprocessor utils
-
 #include "output_manager_preprocessor_utils.h"
 #include "output_manager_preprocessor_trace_utils.h"
 #include "output_manager_preprocessor_logging_utils.h"
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'filter_levtype_mod.F90'
+#define PP_FILE_NAME 'filter_number_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
-#define PP_SECTION_NAME 'FILTER_STREAM_MOD'
-MODULE FILTER_STREAM_MOD
+#define PP_SECTION_NAME 'FILTER_NUMBER_MOD'
+MODULE FILTER_NUMBER_MOD
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -35,73 +34,88 @@ IMPLICIT NONE
 !> Default visibility of the module
 PRIVATE
 
+!>
+!> @brief A type representing a filter with support for nested filters and matching logic.
+!>
+!> This derived type extends `FILTER_BASE_A` and is used for filtering based on parameters.
+!> It supports matching, ignoring, or applying thresholds to specific parameters, and can
+!> also utilize a keyset to perform nested filtering.
+!>
+TYPE, EXTENDS(FILTER_BASE_A) :: FILTER_NUMBER_T
 
-!>
-!> @brief Filter type for managing level types (STREAM).
-!>
-!> This derived type `FILTER_STREAM_T` is used to manage level-type-specific filtering.
-!> It extends the base filter type `FILTER_BASE_A` and allows operations such as
-!> initialization, matching, printing, and freeing of level type filters.
-!>
-TYPE, EXTENDS(FILTER_BASE_A) :: FILTER_STREAM_T
-
-  ! Default visibility of the type
+  !> Default visibility of the type.
   PRIVATE
 
-  !> Specifies the type of filter operation (e.g., MATCH, IGNORE, THRESHOLD).
+  !> @brief Type of the filter (e.g., MATCH, IGNORE, GT, GE, LE, LT).
+  !> @details Defines the mode in which the filter operates. It can be configured to either match
+  !> specific parameters, ignore them, or apply a threshold condition (gt, ge, le, lt).
   INTEGER(KIND=JPIB_K) :: FILTER_TYPE_
 
-  !> Indicates whether to use a keyset for the level types.
+  !> @brief Indicator of whether a keyset is used for nested filtering.
+  !> @details If `.TRUE.`, the `NUMBERS_` keyset is used for filtering specific parameter IDs.
   LOGICAL :: USE_KEYSET_
 
-  !> Stores the level type to filter by.
-  INTEGER(KIND=JPIB_K) :: STREAM_
+  !> @brief The ID of the parameter for which the filter is applied.
+  !> @details This is the identifier for the parameter being filtered. It is used
+  !> when `USE_KEYSET_` is `.FALSE.`.
+  INTEGER(KIND=JPIB_K) :: NUMBER_
 
-  !> Holds the keyset of level types for filtering.
-  TYPE(KEYSET_INT64_T) :: STREAMS_
+  !> @brief A keyset of parameter IDs used for nested filtering.
+  !> @details A keyset that contains a list of parameter IDs for which the filter applies.
+  !> This is used when `USE_KEYSET_` is `.TRUE.`.
+  TYPE(KEYSET_INT64_T) :: NUMBERS_
 
 CONTAINS
 
-  !> Initializes the level type filter.
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INIT  => FILTER_STREAM_INIT
+  !> @brief Initializes the filter parameter type.
+  !> @details This procedure sets up the `FILTER_NUMBER_T` type, initializing its components.
+  !>
+  !> @param [in] this The instance of `FILTER_NUMBER_T` to initialize.
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: INIT  => FILTER_NUMBER_INIT
 
-  !> Matches the filter with the input data based on level type.
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: MATCH => FILTER_STREAM_MATCH
+  !> @brief Matches a condition against the filter.
+  !> @details This procedure checks whether a given condition matches the criteria defined by the filter.
+  !>
+  !> @param [in] this The instance of `FILTER_NUMBER_T`.
+  !> @param [in] input The input to be checked against the filter criteria.
+  !> @return Logical result of the match operation (`.TRUE.` if match, `.FALSE.` otherwise).
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: MATCH => FILTER_NUMBER_MATCH
 
-  !> Prints the filter’s current state and configuration.
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: PRINT => FILTER_STREAM_PRINT
+  !> @brief Prints the filter's details for debugging or logging.
+  !> @details Outputs the filter's configuration and current state.
+  !>
+  !> @param [in] this The instance of `FILTER_NUMBER_T` to print.
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: PRINT => FILTER_NUMBER_PRINT
 
-  !> Frees the resources allocated by the filter.
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: FREE  => FILTER_STREAM_FREE
+  !> @brief Frees resources allocated for the filter.
+  !> @details Cleans up the `FILTER_NUMBER_T` type, deallocating any resources used by the filter.
+  !>
+  !> @param [in] this The instance of `FILTER_NUMBER_T` to free.
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: FREE  => FILTER_NUMBER_FREE
 
 END TYPE
 
+
+
 !> Whitlist of public symbols
-PUBLIC :: FILTER_STREAM_T
+PUBLIC :: FILTER_NUMBER_T
 
 CONTAINS
 
 
 !>
-!> @brief Initializes a level type filter (`FILTER_STREAM_T`) from a YAML configuration.
+!> @brief Initializes the `FILTER_NUMBER_T` filter from a YAML configuration.
 !>
-!> This function initializes the `FILTER_STREAM_T` object (`THIS`) by reading relevant
-!> settings from the provided YAML configuration (`CFG`). The function ensures that all
-!> necessary parameters are properly set and that any allocated memory is handled. It also
-!> checks for specific keys within the YAML configuration and reads integer values, arrays,
-!> or filters as needed. Debugging, logging, and tracing functionalities can be enabled if
-!> configured.
+!> This function initializes the `FILTER_NUMBER_T` type based on the provided YAML
+!> configuration (`CFG`) and applies any hooks specified in `HOOKS`. The function
+!> reads the necessary parameters from the configuration and sets up the filter structure.
 !>
-!> The `HOOKS` object may be used for additional processing or interactions with external
-!> systems during the initialization process.
-!>
-!> @section interface
-!> @param [inout] THIS The filter object of type `FILTER_STREAM_T` to be initialized.
-!> @param [in] CFG The YAML configuration object containing the initialization data.
+!> @param [inout] THIS The filter object (`FILTER_NUMBER_T`) that will be initialized.
+!> @param [in]    CFG  The YAML configuration object containing the filter settings.
 !> @param [in]    OPT The generic options to be used to initialize the filter.
-!> @param [inout] HOOKS An optional hooks object for external interaction.
+!> @param [inout] HOOKS A structure (`HOOKS_T`) used for additional hooks or callbacks during initialization.
 !>
-!> @return Integer error code (`RET`) indicating success or failure of the initialization.
+!> @return Integer error code (`RET`) indicating the success or failure of the initialization.
 !>         Possible values:
 !>           - `0`: Success
 !>           - `1`: Failure
@@ -109,33 +123,25 @@ CONTAINS
 !> @section local dependencies
 !> @dependency [TYPE] DATAKINDS_DEF_MOD::JPIB_K
 !> @dependency [TYPE] YAML_CORE_UTILS_MOD::YAML_CONFIGURATION_T
+!> @dependency [TYPE] HOOKS_MOD::HOOKS_T
 !> @dependency [PROCEDURE] YAML_CORE_UTILS_MOD::YAML_CONFIGURATION_HAS_KEY
 !> @dependency [PROCEDURE] YAML_CORE_UTILS_MOD::YAML_GET_SUBCONFIGURATIONS
 !> @dependency [PROCEDURE] YAML_CORE_UTILS_MOD::YAML_GET_CONFIGURATIONS_SIZE
 !> @dependency [PROCEDURE] YAML_CORE_UTILS_MOD::YAML_GET_CONFIGURATION_BY_ID
-!> @dependency [PROCEDURE] YAML_CORE_UTILS_MOD::YAML_READ_INTEGER_WITH_FILTER
-!> @dependency [PROCEDURE] YAML_CORE_UTILS_MOD::YAML_READ_INTEGER_ARRAY_WITH_FILTER
+!> @dependency [PROCEDURE] YAML_CORE_UTILS_MOD::YAML_READ_STRING
+!> @dependency [PROCEDURE] YAML_CORE_UTILS_MOD::YAML_READ_INTEGER
+!> @dependency [PROCEDURE] YAML_CORE_UTILS_MOD::YAML_READ_INTEGER_KEYSET_WITH_RANGES
 !> @dependency [PROCEDURE] YAML_CORE_UTILS_MOD::YAML_DELETE_CONFIGURATION
 !> @dependency [PROCEDURE] YAML_CORE_UTILS_MOD::YAML_DELETE_CONFIGURATIONS
-!> @dependency [PROCEDURE] ENUMERATORS_MOD::CSTREAM2ISTREAM
-!> @dependency [PROCEDURE] ENUMERATORS_MOD::FLT_INT_COP2IOP
-!> @dependency [PROCEDURE] ENUMERATORS_MOD::FLT_INT_MATCH_E
-!> @dependency [PROCEDURE] ENUMERATORS_MOD::FLT_INT_IGNORE_E
-!> @dependency [PROCEDURE] ENUMERATORS_MOD::FLT_INT_GT_E
-!> @dependency [PROCEDURE] ENUMERATORS_MOD::FLT_INT_GE_E
-!> @dependency [PROCEDURE] ENUMERATORS_MOD::FLT_INT_LE_E
-!> @dependency [PROCEDURE] ENUMERATORS_MOD::FLT_INT_LT_E
 !>
 !> @section special dependencies
 !> @dependency [*] PP_DEBUG_USE_VARS::*
 !> @dependency [*] PP_LOG_USE_VARS::*
 !> @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see FILTER_STREAM_T, YAML_CONFIGURATION_T, HOOKS_T
-!>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'FILTER_STREAM_INIT'
-FUNCTION FILTER_STREAM_INIT( THIS, CFG, OPT, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'FILTER_NUMBER_INIT'
+FUNCTION FILTER_NUMBER_INIT( THIS, CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
@@ -148,11 +154,11 @@ FUNCTION FILTER_STREAM_INIT( THIS, CFG, OPT, HOOKS ) RESULT(RET)
   USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_GET_CONFIGURATIONS_SIZE
   USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_GET_CONFIGURATION_BY_ID
   USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_READ_INTEGER_WITH_FILTER
-  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_READ_INTEGER_KEYSET_WITH_FILTER
+  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_READ_INTEGER
+  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_READ_INTEGER_KEYSET_WITH_RANGES
   USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_DELETE_CONFIGURATION
   USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_DELETE_CONFIGURATIONS
   USE :: YAML_CORE_UTILS_MOD, ONLY: FUN_C2I_IF
-  USE :: ENUMERATORS_MOD,     ONLY: CSTREAM2ISTREAM
   USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_COP2IOP
   USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_MATCH_E
   USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_IGNORE_E
@@ -175,7 +181,7 @@ FUNCTION FILTER_STREAM_INIT( THIS, CFG, OPT, HOOKS ) RESULT(RET)
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(FILTER_STREAM_T),     INTENT(INOUT) :: THIS
+  CLASS(FILTER_NUMBER_T),      INTENT(INOUT) :: THIS
   TYPE(YAML_CONFIGURATION_T), INTENT(IN)    :: CFG
   TYPE(FILTER_OPTIONS_T),     INTENT(IN)    :: OPT
   TYPE(HOOKS_T),              INTENT(INOUT) :: HOOKS
@@ -185,21 +191,23 @@ IMPLICIT NONE
 
   !> Local variables
   PROCEDURE(FUN_C2I_IF), POINTER :: P_FLT_INT_COP2IOP
-  PROCEDURE(FUN_C2I_IF), POINTER :: P_CSTREAM2ISTREAM
   LOGICAL :: HAS_OPERATION
   LOGICAL :: HAS_VALUE
   LOGICAL :: HAS_VALUES
+  LOGICAL :: HAS_TRESHOLD
   INTEGER(KIND=JPIB_K) :: TMP
+  LOGICAL :: MATCH
 
   !> Local error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_OPERATION_UNDEFINED = 1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_TYPE = 2_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_OPERATION = 3_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_CFG = 4_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_VALUE = 5_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_VALUES = 6_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UDEFINED_TYPE = 7_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INIT_KEYSET = 8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_OPERATION = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_OPERATION_UNDEFINED = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_CFG = 7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_VALUE = 8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_VALUES = 9_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_VALUE_UNDEFINED = 10_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_VALUES_UNDEFINED = 11_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UDEFINED_TYPE = 12_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INIT_KEYSET = 13_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -217,11 +225,8 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   !> Initialize the nested filters
-  PP_TRYCALL(ERRFLAG_INIT_KEYSET) THIS%STREAMS_%INIT( HOOKS )
+  PP_TRYCALL(ERRFLAG_INIT_KEYSET) THIS%NUMBERS_%INIT( HOOKS )
   THIS%USE_KEYSET_ = .FALSE.
-
-  !> Associate the filter procedure
-  P_CSTREAM2ISTREAM => CSTREAM2ISTREAM
 
   !> Read the encoder configuration
   PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_OPERATION ) YAML_CONFIGURATION_HAS_KEY( CFG, 'operation', HAS_OPERATION, HOOKS )
@@ -230,42 +235,82 @@ IMPLICIT NONE
   !> Read all the subconfigurations
   P_FLT_INT_COP2IOP => FLT_INT_COP2IOP
   PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_OPERATION) YAML_READ_INTEGER_WITH_FILTER( CFG, 'operation', THIS%FILTER_TYPE_, P_FLT_INT_COP2IOP, HOOKS )
-  PP_DEBUG_CRITICAL_COND_THROW( THIS%FILTER_TYPE_ .EQ. FLT_INT_GT_E, ERRFLAG_INVALID_TYPE )
-  PP_DEBUG_CRITICAL_COND_THROW( THIS%FILTER_TYPE_ .EQ. FLT_INT_GE_E, ERRFLAG_INVALID_TYPE )
-  PP_DEBUG_CRITICAL_COND_THROW( THIS%FILTER_TYPE_ .EQ. FLT_INT_LE_E, ERRFLAG_INVALID_TYPE )
-  PP_DEBUG_CRITICAL_COND_THROW( THIS%FILTER_TYPE_ .EQ. FLT_INT_LT_E, ERRFLAG_INVALID_TYPE )
+
+  !> Read the encoder configuration
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'treshold', HAS_TRESHOLD, HOOKS )
+
+  !> Read the encoder configuration
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'value', HAS_VALUE, HOOKS )
+
+  !> Read the encoder configuration
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'values', HAS_VALUES, HOOKS )
+
 
   IF ( THIS%FILTER_TYPE_ .NE. FLT_INT_HAS_E .AND. THIS%FILTER_TYPE_ .NE. FLT_INT_LACKS_E ) THEN
 
-    !> Read the encoder configuration
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'value', HAS_VALUE, HOOKS )
-
-    !> Read the encoder configuration
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, 'values', HAS_VALUES, HOOKS )
-
-
-    !> Read the paramID to be used in the filter
-    IF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_MATCH_E .AND. HAS_VALUES .AND. .NOT.HAS_VALUE ) THEN
+    !> Read the level to be used in the filter
+    IF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_GT_E .AND. HAS_TRESHOLD .AND. &
+&            .NOT.HAS_VALUE .AND. .NOT. HAS_VALUES ) THEN
 
       !> Read all the subconfigurations
-      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUES) YAML_READ_INTEGER_KEYSET_WITH_FILTER( CFG, 'values', THIS%STREAMS_, P_CSTREAM2ISTREAM, HOOKS )
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUE) YAML_READ_INTEGER( CFG, 'treshold', TMP, HOOKS )
+      THIS%NUMBER_ = TMP
+
+    ELSEIF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_GT_E .AND. HAS_TRESHOLD .AND. &
+&            .NOT.HAS_VALUE .AND. .NOT.HAS_VALUES ) THEN
+
+      !> Read all the subconfigurations
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUE) YAML_READ_INTEGER( CFG, 'treshold', TMP, HOOKS )
+      THIS%NUMBER_ = TMP
+
+    ELSEIF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_GE_E .AND. HAS_TRESHOLD .AND. &
+&            .NOT.HAS_VALUE .AND. .NOT.HAS_VALUES ) THEN
+
+      !> Read all the subconfigurations
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUE) YAML_READ_INTEGER( CFG, 'treshold', TMP, HOOKS )
+      THIS%NUMBER_ = TMP
+
+    ELSEIF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_LT_E .AND. HAS_TRESHOLD .AND. &
+&            .NOT.HAS_VALUE .AND. .NOT.HAS_VALUES ) THEN
+
+      !> Read all the subconfigurations
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUE) YAML_READ_INTEGER( CFG, 'treshold', TMP, HOOKS )
+      THIS%NUMBER_ = TMP
+
+    ELSEIF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_LE_E .AND. HAS_TRESHOLD .AND. &
+&            .NOT.HAS_VALUE .AND. .NOT.HAS_VALUES ) THEN
+
+      !> Read all the subconfigurations
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUE) YAML_READ_INTEGER( CFG, 'treshold', TMP, HOOKS )
+      THIS%NUMBER_ = TMP
+
+    ELSEIF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_MATCH_E .AND. HAS_VALUES  .AND. &
+&            .NOT.HAS_TRESHOLD .AND. .NOT.HAS_VALUE ) THEN
+
+      !> Read all the subconfigurations
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUES) YAML_READ_INTEGER_KEYSET_WITH_RANGES( CFG, 'values', THIS%NUMBERS_, HOOKS )
       THIS%USE_KEYSET_ = .TRUE.
 
-    ELSEIF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_MATCH_E .AND. HAS_VALUE .AND. .NOT.HAS_VALUES ) THEN
+    ELSEIF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_MATCH_E .AND. HAS_VALUE  .AND. &
+&            .NOT.HAS_TRESHOLD .AND. .NOT.HAS_VALUES ) THEN
 
       !> Read all the subconfigurations
-      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUE) YAML_READ_INTEGER_WITH_FILTER( CFG, 'value',THIS%STREAM_, P_CSTREAM2ISTREAM, HOOKS )
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUE) YAML_READ_INTEGER( CFG, 'value', TMP, HOOKS )
+      THIS%NUMBER_ = TMP
 
-    ELSEIF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_IGNORE_E .AND. HAS_VALUES .AND. .NOT.HAS_VALUE )THEN
+    ELSEIF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_IGNORE_E .AND. HAS_VALUES  .AND. &
+&            .NOT.HAS_TRESHOLD .AND. .NOT.HAS_VALUE )THEN
 
       !> Read all the subconfigurations
-      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUES) YAML_READ_INTEGER_KEYSET_WITH_FILTER( CFG, 'values', THIS%STREAMS_, P_CSTREAM2ISTREAM, HOOKS )
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUES) YAML_READ_INTEGER_KEYSET_WITH_RANGES( CFG, 'values', THIS%NUMBERS_, HOOKS )
       THIS%USE_KEYSET_ = .TRUE.
 
-    ELSEIF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_IGNORE_E .AND. HAS_VALUE .AND. .NOT.HAS_VALUES ) THEN
+    ELSEIF ( THIS%FILTER_TYPE_ .EQ. FLT_INT_IGNORE_E .AND. HAS_VALUE  .AND. &
+&            .NOT.HAS_TRESHOLD .AND. .NOT.HAS_VALUES ) THEN
 
       !> Read all the subconfigurations
-      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUE) YAML_READ_INTEGER_WITH_FILTER( CFG, 'value', THIS%STREAM_, P_CSTREAM2ISTREAM, HOOKS )
+      PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUE) YAML_READ_INTEGER( CFG, 'value', TMP, HOOKS )
+      THIS%NUMBER_ = TMP
 
     ELSE
 
@@ -274,6 +319,7 @@ IMPLICIT NONE
     ENDIF
 
   ENDIF
+
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -297,18 +343,22 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_INIT_KEYSET)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to initialize keyset' )
     CASE (ERRFLAG_UNABLE_TO_READ_OPERATION)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to read operation' )
     CASE (ERRFLAG_OPERATION_UNDEFINED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'operation undefined' )
-    CASE (ERRFLAG_INVALID_TYPE)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid operation type' )
     CASE (ERRFLAG_UNABLE_TO_READ_CFG)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to read cfg' )
     CASE (ERRFLAG_UNABLE_TO_READ_VALUE)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to read value' )
     CASE (ERRFLAG_UNABLE_TO_READ_VALUES)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to read values' )
+    CASE (ERRFLAG_VALUE_UNDEFINED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'value undefined' )
+    CASE (ERRFLAG_VALUES_UNDEFINED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'values undefined' )
     CASE (ERRFLAG_UDEFINED_TYPE)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'undefined type' )
     CASE DEFAULT
@@ -329,30 +379,26 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION FILTER_STREAM_INIT
+END FUNCTION FILTER_NUMBER_INIT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 !>
-!> @brief Matches a given parameterization (`PAR`) against the filter level type (`FILTER_STREAM_T`).
+!> @brief Matches a filter parameter with a message and parameter.
 !>
-!> This function checks if the given parameterization (`PAR`) matches the current level type filter (`THIS`)
-!> using specific matching rules. The result of the match is stored in the logical flag `MATCH`.
-!> The function operates in conjunction with hooks (`HOOKS`) for additional operations, and logging, tracing,
-!> and debugging can be enabled.
+!> This function checks whether the provided message (`MSG`) and parameter (`PAR`)
+!> match the filter's criteria. If a match is found, the `MATCH` flag is set to `.TRUE.`;
+!> otherwise, it is set to `.FALSE.`. Hooks can be applied during the matching process
+!> to allow additional processing.
 !>
-!> The function also considers various enumerated match types (e.g., `FLT_INT_MATCH_E`, `FLT_INT_IGNORE_E`)
-!> to decide the match result.
+!> @param [inout] THIS  The filter object (`FILTER_NUMBER_T`) used for matching.
+!> @param [in]    MSG   The message (`FORTRAN_MESSAGE_T`) that is checked against the filter.
+!> @param [in]    PAR   The parameter object (`PARAMETRIZATION_T`) used in the matching process.
+!> @param [out]   MATCH Logical flag indicating whether the message and parameter match the filter's criteria.
+!> @param [inout] HOOKS A structure (`HOOKS_T`) used for additional hooks or callbacks during matching.
 !>
-!> @section interface
-!> @param [inout] THIS The level type filter object (`FILTER_STREAM_T`) for the match check.
-!> @param [in] MSG A message object (`FORTRAN_MESSAGE_T`) used during the match operation.
-!> @param [in] PAR The parameterization object (`PARAMETRIZATION_T`) to be matched against the filter.
-!> @param [out] MATCH Logical flag set to `.TRUE.` if the parameterization matches, `.FALSE.` otherwise.
-!> @param [inout] HOOKS Optional hooks object used for external operations during the match.
-!>
-!> @return Integer error code (`RET`) indicating success or failure of the match operation.
+!> @return Integer error code (`RET`) indicating success or failure of the matching process.
 !>         Possible values:
 !>           - `0`: Success
 !>           - `1`: Failure
@@ -362,19 +408,15 @@ END FUNCTION FILTER_STREAM_INIT
 !> @dependency [TYPE] PARAMETRIZATION_MOD::PARAMETRIZATION_T
 !> @dependency [TYPE] FORTRAN_MESSAGE_MOD::FORTRAN_MESSAGE_T
 !> @dependency [TYPE] HOOKS_MOD::HOOKS_T
-!> @dependency [PROCEDURE] ENUMERATORS_MOD::FLT_INT_MATCH_E
-!> @dependency [PROCEDURE] ENUMERATORS_MOD::FLT_INT_IGNORE_E
 !>
 !> @section special dependencies
 !> @dependency [*] PP_DEBUG_USE_VARS::*
 !> @dependency [*] PP_LOG_USE_VARS::*
 !> @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see FILTER_STREAM_T, PARAMETRIZATION_T, FORTRAN_MESSAGE_T, HOOKS_T
-!>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'FILTER_STREAM_MATCH'
-FUNCTION FILTER_STREAM_MATCH( THIS, MSG, PAR, MATCH, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'FILTER_NUMBER_MATCH'
+FUNCTION FILTER_NUMBER_MATCH( THIS, MSG, PAR, MATCH, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
@@ -383,6 +425,10 @@ FUNCTION FILTER_STREAM_MATCH( THIS, MSG, PAR, MATCH, HOOKS ) RESULT(RET)
   USE :: HOOKS_MOD,           ONLY: HOOKS_T
   USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_MATCH_E
   USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_IGNORE_E
+  USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_GT_E
+  USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_GE_E
+  USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_LE_E
+  USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_LT_E
   USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_HAS_E
   USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_LACKS_E
   USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
@@ -399,7 +445,7 @@ FUNCTION FILTER_STREAM_MATCH( THIS, MSG, PAR, MATCH, HOOKS ) RESULT(RET)
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(FILTER_STREAM_T),   INTENT(INOUT) :: THIS
+  CLASS(FILTER_NUMBER_T),    INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),  INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),  INTENT(IN)    :: PAR
   LOGICAL,                  INTENT(OUT)   :: MATCH
@@ -430,32 +476,73 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  !> Evaluate the nested filters
+
+  !> Evaluate the operation
   SELECT CASE( THIS%FILTER_TYPE_ )
 
   CASE ( FLT_INT_HAS_E )
 
-    MATCH = (MSG%STREAM .NE. UNDEF_PARAM_E)
+    MATCH = (MSG%CLASS .NE. UNDEF_PARAM_E)
 
   CASE ( FLT_INT_LACKS_E )
 
-    MATCH = (MSG%STREAM .EQ. UNDEF_PARAM_E)
+    MATCH = (MSG%CLASS .EQ. UNDEF_PARAM_E)
 
   CASE( FLT_INT_MATCH_E )
 
-    IF ( THIS%USE_KEYSET_ ) THEN
-      PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_KEYSET_MATCH) THIS%STREAMS_%MATCH( MSG%STREAM, MATCH, HOOKS )
+    IF ( MSG%NUMBER .EQ. UNDEF_PARAM_E ) THEN
+      MATCH = .FALSE.
     ELSE
-      MATCH = (THIS%STREAM_ .EQ. MSG%STREAM)
+      IF ( THIS%USE_KEYSET_ ) THEN
+        PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_KEYSET_MATCH) THIS%NUMBERS_%MATCH( MSG%NUMBER, MATCH, HOOKS )
+      ELSE
+        MATCH = (THIS%NUMBER_ .EQ. MSG%NUMBER)
+      ENDIF
     ENDIF
 
   CASE( FLT_INT_IGNORE_E )
 
-    IF ( THIS%USE_KEYSET_ ) THEN
-      PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_KEYSET_MATCH) THIS%STREAMS_%MATCH( MSG%STREAM, MATCH, HOOKS )
-      MATCH = .NOT.MATCH
+    IF ( MSG%NUMBER .EQ. UNDEF_PARAM_E ) THEN
+      MATCH = .FALSE.
     ELSE
-      MATCH = .NOT.(THIS%STREAM_ .EQ. MSG%STREAM)
+      IF ( THIS%USE_KEYSET_ ) THEN
+        PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_KEYSET_MATCH) THIS%NUMBERS_%MATCH( MSG%NUMBER, MATCH, HOOKS )
+        MATCH = .NOT.MATCH
+      ELSE
+        MATCH = .NOT.(THIS%NUMBER_ .EQ. MSG%NUMBER)
+      ENDIF
+    ENDIF
+
+  CASE( FLT_INT_GT_E )
+
+    IF ( MSG%NUMBER .EQ. UNDEF_PARAM_E ) THEN
+      MATCH = .FALSE.
+    ELSE
+      MATCH = (MSG%NUMBER .GT. THIS%NUMBER_ )
+    ENDIF
+
+  CASE( FLT_INT_GE_E )
+
+    IF ( MSG%NUMBER .EQ. UNDEF_PARAM_E ) THEN
+      MATCH = .FALSE.
+    ELSE
+      MATCH = (MSG%NUMBER .GE. THIS%NUMBER_ )
+    ENDIF
+
+  CASE( FLT_INT_LE_E )
+
+    IF ( MSG%NUMBER .EQ. UNDEF_PARAM_E ) THEN
+      MATCH = .FALSE.
+    ELSE
+      MATCH = (MSG%NUMBER .LE. THIS%NUMBER_ )
+    ENDIF
+
+  CASE( FLT_INT_LT_E )
+
+    IF ( MSG%NUMBER .EQ. UNDEF_PARAM_E ) THEN
+      MATCH = .FALSE.
+    ELSE
+      MATCH = (MSG%NUMBER .LT. THIS%NUMBER_ )
     ENDIF
 
   CASE DEFAULT
@@ -508,25 +595,23 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION FILTER_STREAM_MATCH
+END FUNCTION FILTER_NUMBER_MATCH
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 !>
-!> @brief Prints the details of a level type filter (`FILTER_STREAM_T`) to the specified output unit.
+!> @brief Prints the filter's configuration and details to the specified output unit.
 !>
-!> This function outputs the internal state and properties of the level type filter object (`THIS`)
-!> to a specified output unit (`UNIT`). The `OFFSET` parameter allows for indentation in the output,
-!> facilitating better readability. The function may utilize hooks (`HOOKS`) for additional output
-!> functionalities, such as custom logging or formatting. Debugging, logging, and tracing features
-!> can be enabled using preprocessor directives.
+!> This function prints the details of the filter to the output specified by the `UNIT`.
+!> An `OFFSET` can be applied to format the output, and `HOOKS` can be used for additional
+!> callbacks during the printing process. The printed output includes details about
+!> the filter's current configuration.
 !>
-!> @section interface
-!> @param [inout] THIS The level type filter object to be printed.
-!> @param [in] UNIT The output unit number (e.g., 6 for standard output).
-!> @param [in] OFFSET The indentation offset for formatted output.
-!> @param [inout] HOOKS Optional hooks object for additional operations during printing.
+!> @param [inout] THIS    The filter object (`FILTER_NUMBER_T`) whose details are to be printed.
+!> @param [in]    UNIT    The output unit (file or console) where the filter's details will be printed.
+!> @param [in]    OFFSET  The offset applied to the printed output for formatting purposes.
+!> @param [inout] HOOKS   Structure (`HOOKS_T`) used for additional hooks or callbacks during printing.
 !>
 !> @return Integer error code (`RET`) indicating success or failure of the print operation.
 !>         Possible values:
@@ -536,17 +621,16 @@ END FUNCTION FILTER_STREAM_MATCH
 !> @section local dependencies
 !> @dependency [TYPE] DATAKINDS_DEF_MOD::JPIB_K
 !> @dependency [TYPE] HOOKS_MOD::HOOKS_T
+!> @dependency [PROCEDURE] DESTROY_FILTER (*to be implemented)
 !>
 !> @section special dependencies
 !> @dependency [*] PP_DEBUG_USE_VARS::*
 !> @dependency [*] PP_LOG_USE_VARS::*
 !> @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see FILTER_STREAM_T, HOOKS_T
-!>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'FILTER_STREAM_PRINT'
-FUNCTION FILTER_STREAM_PRINT( THIS, UNIT, OFFSET, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'FILTER_NUMBER_PRINT'
+FUNCTION FILTER_NUMBER_PRINT( THIS, UNIT, OFFSET, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -565,10 +649,10 @@ FUNCTION FILTER_STREAM_PRINT( THIS, UNIT, OFFSET, HOOKS ) RESULT(RET)
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(FILTER_STREAM_T), INTENT(INOUT) :: THIS
-  INTEGER(KIND=JPIB_K),   INTENT(IN)    :: UNIT
-  INTEGER(KIND=JPIB_K),   INTENT(IN)    :: OFFSET
-  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  CLASS(FILTER_NUMBER_T), INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),  INTENT(IN)    :: UNIT
+  INTEGER(KIND=JPIB_K),  INTENT(IN)    :: OFFSET
+  TYPE(HOOKS_T),         INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
@@ -598,7 +682,7 @@ IMPLICIT NONE
   PP_TRYCALL(ERRFLAG_UNABLE_TO_CONVERT_OPERATION) FLT_INT_IOP2COP( THIS%FILTER_TYPE_, OPERATION_TYPE_STR, HOOKS )
 
   !> Print the param filter
-  WRITE(UNIT,'(A)') REPEAT(' ',OFFSET)//'STREAM FILTER: '//TRIM(ADJUSTL(OPERATION_TYPE_STR))
+  WRITE(UNIT,'(A)') REPEAT(' ',OFFSET)//'NUMBER FILTER: '//TRIM(ADJUSTL(OPERATION_TYPE_STR))
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -642,21 +726,20 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION FILTER_STREAM_PRINT
+END FUNCTION FILTER_NUMBER_PRINT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 !>
-!> @brief Releases resources allocated for a level type filter (`FILTER_STREAM_T`).
+!> @brief Frees the memory and resources associated with the filter.
 !>
-!> This function frees the memory and resources associated with the level type filter object (`THIS`).
-!> It is essential to call this function when the filter is no longer needed to avoid memory leaks.
-!> The function can utilize hooks (`HOOKS`) for additional cleanup or logging functionalities.
+!> This function deallocates the memory and resources used by the filter object.
+!> It ensures proper cleanup of nested structures and any associated hooks.
+!> After this function is called, the filter object should no longer be used.
 !>
-!> @section interface
-!> @param [inout] THIS The level type filter object to be freed.
-!> @param [inout] HOOKS Optional hooks object for additional operations during freeing.
+!> @param [inout] THIS   The filter object (`FILTER_NUMBER_T`) whose resources are to be freed.
+!> @param [inout] HOOKS  Structure (`HOOKS_T`) used for additional hooks or callbacks during the deallocation process.
 !>
 !> @return Integer error code (`RET`) indicating success or failure of the free operation.
 !>         Possible values:
@@ -666,17 +749,16 @@ END FUNCTION FILTER_STREAM_PRINT
 !> @section local dependencies
 !> @dependency [TYPE] DATAKINDS_DEF_MOD::JPIB_K
 !> @dependency [TYPE] HOOKS_MOD::HOOKS_T
+!> @dependency [PROCEDURE] DESTROY_FILTER (*to be implemented)
 !>
 !> @section special dependencies
 !> @dependency [*] PP_DEBUG_USE_VARS::*
 !> @dependency [*] PP_LOG_USE_VARS::*
 !> @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see FILTER_STREAM_T, HOOKS_T
-!>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'FILTER_STREAM_FREE'
-FUNCTION FILTER_STREAM_FREE( THIS, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'FILTER_NUMBER_FREE'
+FUNCTION FILTER_NUMBER_FREE( THIS, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -695,15 +777,19 @@ FUNCTION FILTER_STREAM_FREE( THIS, HOOKS ) RESULT(RET)
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(FILTER_STREAM_T), INTENT(INOUT) :: THIS
-  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  CLASS(FILTER_NUMBER_T), INTENT(INOUT) :: THIS
+  TYPE(HOOKS_T),         INTENT(INOUT) :: HOOKS
 
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=JPIB_K) :: DEALLOC_STATE
+  CHARACTER(LEN=:), ALLOCATABLE :: ERRMSG
+
   !> Local error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_FILTERS_NOT_ASSOCIATED = 1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_FREE_KEYSET = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_FREE_KEYSET = 1_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -721,7 +807,7 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Free keyset
-  PP_TRYCALL(ERRFLAG_UNABLE_TO_FREE_KEYSET) THIS%STREAMS_%FREE( HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_FREE_KEYSET) THIS%NUMBERS_%FREE( HOOKS )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -745,10 +831,8 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
-    CASE (ERRFLAG_FILTERS_NOT_ASSOCIATED)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'nested filters are not associated' )
     CASE (ERRFLAG_UNABLE_TO_FREE_KEYSET)
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to free keyset'  )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to free keyset' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -767,12 +851,11 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION FILTER_STREAM_FREE
+END FUNCTION FILTER_NUMBER_FREE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
-
-END MODULE FILTER_STREAM_MOD
+END MODULE FILTER_NUMBER_MOD
 #undef PP_SECTION_NAME
 #undef PP_SECTION_TYPE
 #undef PP_FILE_NAME

@@ -1,7 +1,3 @@
-add_subdirectory(fc)
-add_subdirectory(an)
-add_subdirectory(4v)
-
 file(GLOB encoding_rules RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.yaml")
 
 
@@ -15,5 +11,5 @@ endforeach()
 
 install(
     FILES       ${encoding_rules}
-    DESTINATION ${MULTIOM_CONFIG_DIR}/${KNOWLEDGE_VERSION}/encodings
+    DESTINATION ${MULTIOM_CONFIG_DIR}/${KNOWLEDGE_VERSION}/encodings/fc
     PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)

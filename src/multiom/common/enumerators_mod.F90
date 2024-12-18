@@ -423,7 +423,9 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: FLT_INT_GE_E=4_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: FLT_INT_LT_E=5_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: FLT_INT_LE_E=6_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: N_FLT_INT=6_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: FLT_INT_HAS_E=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: FLT_INT_LACKS_E=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: N_FLT_INT=8_JPIB_K
 
   !> Enumerators for the operations between filters defined in this module
   INTEGER(KIND=JPIB_K), PARAMETER :: FLT_COMPOSE_ALL_E=1_JPIB_K
@@ -911,6 +913,8 @@ IMPLICIT NONE
   PUBLIC :: FLT_INT_GE_E
   PUBLIC :: FLT_INT_LT_E
   PUBLIC :: FLT_INT_LE_E
+  PUBLIC :: FLT_INT_HAS_E
+  PUBLIC :: FLT_INT_LACKS_E
   PUBLIC :: N_FLT_INT
 
   ! Enumerators for the operations between filters defined in this module
@@ -3775,6 +3779,14 @@ IMPLICIT NONE
 
     IOP = FLT_INT_LE_E
 
+  CASE( 'has' )
+
+    IOP = FLT_INT_HAS_E
+
+  CASE( 'lacks' )
+
+    IOP = FLT_INT_LACKS_E
+
   CASE DEFAULT
 
     PP_DEBUG_CRITICAL_THROW( ERRFLAG_UNKNOWN_OPERATION )
@@ -3905,6 +3917,14 @@ IMPLICIT NONE
   CASE( FLT_INT_LE_E )
 
     COP = 'lower-equal'
+
+  CASE( FLT_INT_HAS_E )
+
+    COP = 'has'
+
+  CASE( FLT_INT_LACKS_E )
+
+    COP = 'lacks'
 
   CASE DEFAULT
 
@@ -4830,7 +4850,7 @@ IMPLICIT NONE
     ITYPE = TYPE_0_E
   CASE ('fg')
     ITYPE = TYPE_FG_E
-  CASE ('an')
+  CASE ('an','analysis')
     ITYPE = TYPE_AN_E
   CASE ('ia')
     ITYPE = TYPE_IA_E
@@ -4844,7 +4864,7 @@ IMPLICIT NONE
     ITYPE = TYPE_3G_E
   CASE ('4g')
     ITYPE = TYPE_4G_E
-  CASE ('fc')
+  CASE ('fc', 'forecast')
     ITYPE = TYPE_FC_E
   CASE ('cf')
     ITYPE = TYPE_CF_E

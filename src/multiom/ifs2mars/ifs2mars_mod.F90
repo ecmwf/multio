@@ -2759,14 +2759,6 @@ IMPLICIT NONE
     PP_DEBUG_CRITICAL_COND_THROW( IFS_MSG%IFREQ .GT. SIZE(IFS_PAR%WAM_%FR), ERRFLAG_OUT_OF_BOUNDS_FRUB )
 
     ! Set the direction of the frequency
-    ! NOTE: It may make sense to scale the frequency with the direction here
-    ! TODO: Scaling of frequency may require more info
-    ! PP_METADATA_SET( METADATA,  'numberOfWaveDirections', MODEL_PARAMS%WAM_%NANG )
-    ! PP_METADATA_SET( METADATA,  'scaleFactorOfWaveDirections', IDIRSCALING )
-    ! PP_METADATA_SET( METADATA,  'scaledValuesOfWaveDirections', SCTH )
-    ! PP_METADATA_SET( METADATA,  'numberOfWaveFrequencies', MODEL_PARAMS%WAM_%NFRE_RED )
-    ! PP_METADATA_SET( METADATA,  'scaleFactorOfWaveFrequencies', IFRESCALING )
-    ! PP_METADATA_SET( METADATA,  'scaledValuesOfWaveFrequencies', SCFR )
     MSG%DIRECTION = IFS_MSG%IANGLE
     MSG%FREQUENCY = IFS_MSG%IFREQ
     PAR%WAVE%TO_BE_DEALLOCATED = .FALSE.

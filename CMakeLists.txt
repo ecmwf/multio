@@ -114,7 +114,7 @@ ecbuild_add_option( FEATURE OUTPUT_MANAGER_TOOL
 
 ### export package info
 set( MULTIO_CONFIG_DIR     share/multio/config )
-set( MULTIOM_CONFIG_DIR     share/multiom/config )
+set( MULTIOM_CONFIG_DIR     share/multiom )
 set( MULTIO_INCLUDE_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src )
 set( MULTIO_LIBRARIES      multio )
 

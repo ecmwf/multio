@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-pl-sh-fc-ensemble-ccsds-instant-pa'
+name: 'rule-pl-sh-fc-deterministic-ccsds-instant-pa'
 
 #
 # Future use
@@ -30,17 +30,18 @@ filter:
 
     - type: 'repres'
       operation: 'match'
-      value: 'gaussian-grid'
+      value: 'spherical-harmonics'
 
     - type: 'type'
       operation: 'match'
       value: 'forecast'
 
     - type: 'is-ensemble'
+      negate: true
 
     - type: 'packing'
       operation: 'match'
-      value: 'ccsds'
+      value: 'complex'
 
 
 #
@@ -81,7 +82,7 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 1
+    template-number: 0
 
     point-in-time-configurator:
       type: 'default'
@@ -91,9 +92,6 @@ encoder:
 
     level-configurator:
       type: 'isobaricinpa'
-
-    ensemble-configurator:
-      type: 'default'
 
   # Section 5: Data Representation Section
   data-representation-section:

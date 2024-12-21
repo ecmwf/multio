@@ -473,6 +473,7 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error constructing rule' )
     CASE(ERRFLAG_CFG_FILE_DOES_NOT_EXIST)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'The configuration file does not exist' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'File name: '//TRIM(ADJUSTL(FNAME)) )
     CASE(ERRFLAG_NOT_ALLOCATED_AFTER_READ)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error reading the file name' )
     CASE(ERRFLAG_UNABLE_TO_READ_FILE)

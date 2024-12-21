@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-pl-sh-fc-deterministic-ccsds-instant-pa'
+name: 'rule-pl-sh-fc-deterministic-ccsds-instant-hpa'
 
 #
 # Future use
@@ -25,12 +25,12 @@ filter:
       value: 'pl'
 
     - type: 'levelist'
-      operation: 'lower-than'
+      operation: 'greater-equal'
       treshold: 100
 
     - type: 'repres'
       operation: 'match'
-      value: 'gaussian-grid'
+      value: 'spherical-harmonics'
 
     - type: 'type'
       operation: 'match'
@@ -41,7 +41,7 @@ filter:
 
     - type: 'packing'
       operation: 'match'
-      value: 'ccsds'
+      value: 'complex'
 
 
 #
@@ -91,7 +91,7 @@ encoder:
       type: 'paramId'
 
     level-configurator:
-      type: 'isobaricinpa'
+      type: 'isobaricinhpa'
 
   # Section 5: Data Representation Section
   data-representation-section:

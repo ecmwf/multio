@@ -42,6 +42,7 @@ encoding-rules:
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-seaice-gg-fc-ensemble-ccsds-instant.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-seaice-gg-fc-ensemble-simple-instant.yaml'
 
+
   # Spherical harmonics for forecast on ml
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-ml-sh-fc-deterministic-complex-instant.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-ml-sh-fc-ensemble-complex-instant.yaml'
@@ -51,4 +52,17 @@ encoding-rules:
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-sh-fc-ensemble-complex-instant-pa.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-sh-fc-deterministic-complex-instant-hpa.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-sh-fc-ensemble-complex-instant-hpa.yaml'
+
+
+  # Gridded wam integral for forecast on sfc
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-deterministic-ccsds-instant-wam-int.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-deterministic-simple-instant-wam-int.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-ensemble-ccsds-instant-wam-int.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-ensemble-simple-instant-wam-int.yaml'
+
+  # Gridded wam spectral for forecast on sfc
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-deterministic-ccsds-instant-wam-spec.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-deterministic-simple-instant-wam-spec.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-ensemble-ccsds-instant-wam-spec.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-ensemble-simple-instant-wam-spec.yaml'
 

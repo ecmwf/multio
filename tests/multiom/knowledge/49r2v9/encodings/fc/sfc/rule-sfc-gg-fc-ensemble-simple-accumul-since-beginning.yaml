@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-sfc-gg-fc-deterministic-simple-instant'
+name: 'rule-sfc-gg-fc-ensemble-simple-accumul-since-beginning'
 
 #
 # Future use
@@ -17,15 +17,10 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        '26:32', '34:43', 59, '66:67', 74, '78:79',
-        129, 134, '136:137', 139, 141, 148, 151, 159, '160:168',
-        170, '172:174', '186:188', 198, 202, '206:207', '229:232',
-        '234:236', '243:245', 3020, 162059, '162060:162063', 162071,
-        162072, 162093, 174096, 228003, '228007:228009', '228011:228019',
-        228021, '228023:228024', 228029, '228044:228048', 228052,
-        '228088:228089', '228131:228132', '228217:228219', 228221,
-        228227, '228231:228237',228239, 228241, '228246:228247',
-        260015, 260048, 260109, 260121, 260123, 262139, 262140
+        8, 9, 20, 44, 45, 47, 50, 57, 58, '142:147', 169, '175:182', 189,
+        '195:197', 205, '208:213', 228, 239, 240, '162100:162113',
+        '222001:222256', 228021, 228022, '228080:228082', 228129, 228130,
+        228216, 228251, '233000:233035'
       ]
 
     - type: 'levtype'
@@ -41,7 +36,6 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
-      negate: true
 
     - type: 'packing'
       operation: 'match'
@@ -86,16 +80,20 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 0
+    template-number: 11
 
-    point-in-time-configurator:
-      type: 'default'
+    time-statistics-configurator:
+      type: 'since-beginning-of-forecast'
+      type-of-statistical-processing: 'accumul'
 
     param-configurator:
       type: 'paramId'
 
     level-configurator:
       type: 'surface'
+
+    ensemble-configurator:
+      type: 'default'
 
   # Section 5: Data Representation Section
   data-representation-section:

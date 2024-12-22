@@ -188,71 +188,71 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + PROTOTYPE: ./outputManager.x [options]'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + PROTOTYPE: ./outputManager.x [options]'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + --------------------------------------'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + --------------------------------------'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + '
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + '
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + OPTIONS ARE: '
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + OPTIONS ARE: '
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -t || --output-manager-type :: type of output manager to use. (Default: "NO-IO-INFO-LOG")'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -t || --output-manager-type :: type of output manager to use. (Default: "NO-IO-INFO-LOG")'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' +                                 |-> "NO-IO-INFO-LOG"'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' +                                 |-> "NO-IO-INFO-LOG"'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' +                                 |-> "DUMP-FORTRAN-DATA-REPRODUCER"'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' +                                 |-> "DUMP-FORTRAN-DATA-REPRODUCER"'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' +                                 |-> "GRIB-MSG-TO-FILE"'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' +                                 |-> "GRIB-MSG-TO-FILE"'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' +                                 |-> "GRIB-MSG-TO-MULTIO"'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' +                                 |-> "GRIB-MSG-TO-MULTIO"'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' +                                 |-> "GRIB-HEADER-TO-MULTIO"'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' +                                 |-> "GRIB-HEADER-TO-MULTIO"'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' +                                 |-> "FULL-GRIB-HEADER-TO-MULTIO"'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' +                                 |-> "FULL-GRIB-HEADER-TO-MULTIO"'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' +                                 |-> "FORTRAN-METADATA-TO-MULTIO"'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' +                                 |-> "FORTRAN-METADATA-TO-MULTIO"'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -i || --input-dir           :: input directory where all the binary reproducers are (Default: ".")'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -i || --input-dir           :: input directory where all the binary reproducers are (Default: ".")'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -y || --yaml-cfg            :: name of the "yaml" configuration file of the output manager (Default: "./output_manager_cfg.yaml")'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -y || --yaml-cfg            :: name of the "yaml" configuration file of the output manager (Default: "./output_manager_cfg.yaml")'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -d || --dry-run             :: Just print to screen the "toc.bin" file. (Default: .FALSE.)'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -d || --dry-run             :: Just print to screen the "toc.bin" file. (Default: .FALSE.)'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -v || --verbose             :: Enable verbosity in read operations. (Default: .FALSE.)'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -v || --verbose             :: Enable verbosity in read operations. (Default: .FALSE.)'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -b || --big-endian-read     :: Convert endian to big endian in read. This feature has to be used on macos (Default: .FALSE.)'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -b || --big-endian-read     :: Convert endian to big endian in read. This feature has to be used on macos (Default: .FALSE.)'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -p || --param-id            :: list of the param-ids to be processed. Then grammar can be:'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -p || --param-id            :: list of the param-ids to be processed. Then grammar can be:'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' +                                 |-> "*"         a star: all the param ids are processd (Defaul behaviour)'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' +                                 |-> "*"         a star: all the param ids are processd (Defaul behaviour)'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' +                                 |-> "1"         a number: only the paramid that match the number is processed'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' +                                 |-> "1"         a number: only the paramid that match the number is processed'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' +                                 |-> "[1,2,3,4]" a list of numbers: all the param ids that match the numbers in the list are processed'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' +                                 |-> "[1,2,3,4]" a list of numbers: all the param ids that match the numbers in the list are processed'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -z || --excluded-param-id   :: list of the param-ids to be excluded'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -z || --excluded-param-id   :: list of the param-ids to be excluded'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -l || --level               :: list of levels to be processed. The grammar is the same used for param ids'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -l || --level               :: list of levels to be processed. The grammar is the same used for param ids'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -s || --step                :: list of steps to be processed. The grammar is the same used for param ids'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -s || --step                :: list of steps to be processed. The grammar is the same used for param ids'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -r || --representation      :: [1=gridded, 2=spectral]'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -r || --representation      :: [1=gridded, 2=spectral]'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -n || --n-procs             :: use data from a specific io-server (number of processors of the io-server to use)'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -n || --n-procs             :: use data from a specific io-server (number of processors of the io-server to use)'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -q || --level-type          :: [1=model_level, 2=pressure_level, 3=vorticity_level, 4=theta_level, 5=surface_level, 6=wave_int, 7=wave_spec]'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -q || --level-type          :: [1=model_level, 2=pressure_level, 3=vorticity_level, 4=theta_level, 5=surface_level, 6=wave_int, 7=wave_spec]'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + -h || --help || ?           :: print this message'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + -h || --help || ?           :: print this message'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' +'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' +'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + ATTENTION: the values NEED to be surrounded by double quotes to avoid unexpected behaviours!!!!'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + ATTENTION: the values NEED to be surrounded by double quotes to avoid unexpected behaviours!!!!'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + '
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + '
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + EXAMPLE: ecom-feed  -t NO-IO-INFO-LOG  -i "." -y "/ec/res4/scratch/mavm/develop_v7/raps/multio_yaml/output-manager-config.yaml"   -v -p [137]'
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + EXAMPLE: ecom-feed  -t NO-IO-INFO-LOG  -i "." -y "/ec/res4/scratch/mavm/develop_v7/raps/multio_yaml/output-manager-config.yaml"   -v -p [137]'
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
-  WRITE(OUTPUT_UNIT,*, IOSTAT=WRITE_STATUS) ' + '
+  WRITE(OUTPUT_UNIT,'(A)', IOSTAT=WRITE_STATUS) ' + '
   PP_DEBUG_CRITICAL_COND_THROW( WRITE_STATUS .NE. 0, ERRFLAG_UNABLE_TO_WRITE )
 
   ! Trace end of procedure (on success)

@@ -1,68 +1,180 @@
 encoding-rules:
 
   # Gridded surfaces for forecast
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-deterministic-ccsds-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-deterministic-simple-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-ensemble-ccsds-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-ensemble-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-instant.yaml'
 
   # Gridded model levels for forecast
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-ml-gg-fc-deterministic-ccsds-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-ml-gg-fc-deterministic-simple-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-ml-gg-fc-ensemble-ccsds-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-ml-gg-fc-ensemble-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-ensemble-simple-instant.yaml'
 
   # Gridded isobaric for forecast (pa)
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-gg-fc-deterministic-ccsds-instant-pa.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-gg-fc-deterministic-simple-instant-pa.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-gg-fc-ensemble-ccsds-instant-pa.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-gg-fc-ensemble-simple-instant-pa.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/pl/rule-pl-gg-fc-deterministic-ccsds-instant-pa.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/pl/rule-pl-gg-fc-deterministic-simple-instant-pa.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/pl/rule-pl-gg-fc-ensemble-ccsds-instant-pa.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/pl/rule-pl-gg-fc-ensemble-simple-instant-pa.yaml'
 
   # Gridded isobaric for forecast (hpa)
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-gg-fc-deterministic-ccsds-instant-hpa.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-gg-fc-deterministic-simple-instant-hpa.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-gg-fc-ensemble-ccsds-instant-hpa.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-gg-fc-ensemble-simple-instant-hpa.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/pl/rule-pl-gg-fc-deterministic-ccsds-instant-hpa.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/pl/rule-pl-gg-fc-deterministic-simple-instant-hpa.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/pl/rule-pl-gg-fc-ensemble-ccsds-instant-hpa.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/pl/rule-pl-gg-fc-ensemble-simple-instant-hpa.yaml'
 
   # Gridded sol (snow) for forecast
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-snow-gg-fc-deterministic-ccsds-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-snow-gg-fc-deterministic-simple-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-snow-gg-fc-ensemble-ccsds-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-snow-gg-fc-ensemble-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sol/rule-snow-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sol/rule-snow-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sol/rule-snow-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sol/rule-snow-gg-fc-ensemble-simple-instant.yaml'
 
   # Gridded sol (soil) for forecast
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-soil-gg-fc-deterministic-ccsds-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-soil-gg-fc-deterministic-simple-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-soil-gg-fc-ensemble-ccsds-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-soil-gg-fc-ensemble-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sol/rule-soil-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sol/rule-soil-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sol/rule-soil-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sol/rule-soil-gg-fc-ensemble-simple-instant.yaml'
 
   # Gridded sol (seaice) for forecast
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-seaice-gg-fc-deterministic-ccsds-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-seaice-gg-fc-deterministic-simple-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-seaice-gg-fc-ensemble-ccsds-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-seaice-gg-fc-ensemble-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sol/rule-seaice-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sol/rule-seaice-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sol/rule-seaice-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sol/rule-seaice-gg-fc-ensemble-simple-instant.yaml'
 
 
   # Spherical harmonics for forecast on ml
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-ml-sh-fc-deterministic-complex-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-ml-sh-fc-ensemble-complex-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-sh-fc-deterministic-complex-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-sh-fc-ensemble-complex-instant.yaml'
 
   # Spherical harmonics for forecast on pl
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-sh-fc-deterministic-complex-instant-pa.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-sh-fc-ensemble-complex-instant-pa.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-sh-fc-deterministic-complex-instant-hpa.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-pl-sh-fc-ensemble-complex-instant-hpa.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/pl/rule-pl-sh-fc-deterministic-complex-instant-pa.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/pl/rule-pl-sh-fc-ensemble-complex-instant-pa.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/pl/rule-pl-sh-fc-deterministic-complex-instant-hpa.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/pl/rule-pl-sh-fc-ensemble-complex-instant-hpa.yaml'
 
 
   # Gridded wam integral for forecast on sfc
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-deterministic-ccsds-instant-wam-int.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-deterministic-simple-instant-wam-int.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-ensemble-ccsds-instant-wam-int.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-ensemble-simple-instant-wam-int.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-instant-wam-int.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-instant-wam-int.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-instant-wam-int.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-instant-wam-int.yaml'
 
   # Gridded wam spectral for forecast on sfc
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-deterministic-ccsds-instant-wam-spec.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-deterministic-simple-instant-wam-spec.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-ensemble-ccsds-instant-wam-spec.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/rule-sfc-gg-fc-ensemble-simple-instant-wam-spec.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-instant-wam-spec.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-instant-wam-spec.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-instant-wam-spec.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-instant-wam-spec.yaml'
+
+
+
+
+  # Gridded surfaces for forecast max over last 3h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-max-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-max-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-max-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-max-over-last-3h.yaml'
+
+  # Gridded surfaces for forecast max over last 6h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-max-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-max-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-max-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-max-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast min over last 3h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-min-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-min-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-min-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-min-over-last-3h.yaml'
+
+  # Gridded surfaces for forecast min over last 6h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-min-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-min-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-min-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-min-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast average over last 1h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-average-over-last-1h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-average-over-last-1h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-average-over-last-1h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-1h.yaml'
+
+  # Gridded surfaces for forecast average over last 3h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-average-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-average-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-average-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-3h.yaml'
+
+  # Gridded surfaces for forecast average over last 6h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-average-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-average-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-average-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast average over last 1h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-average-over-last-1h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-average-over-last-1h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-average-over-last-1h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-1h.yaml'
+
+  # Gridded surfaces for forecast average over last 3h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-average-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-average-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-average-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-3h.yaml'
+
+  # Gridded surfaces for forecast average over last 6h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-average-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-average-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-average-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast mode over last 1h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-mode-over-last-1h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-mode-over-last-1h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-mode-over-last-1h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-mode-over-last-1h.yaml'
+
+  # Gridded surfaces for forecast mode over last 3h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-mode-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-mode-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-mode-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-mode-over-last-3h.yaml'
+
+  # Gridded surfaces for forecast mode over last 6h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-mode-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-mode-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-mode-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-mode-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast severity over last 1h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-severity-over-last-1h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-severity-over-last-1h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-severity-over-last-1h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-severity-over-last-1h.yaml'
+
+  # Gridded surfaces for forecast severity over last 3h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-severity-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-severity-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-severity-over-last-3h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-severity-over-last-3h.yaml'
+
+  # Gridded surfaces for forecast severity over last 6h
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-severity-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-severity-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-severity-over-last-6h.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-severity-over-last-6h.yaml'
+
+  # Gridded surfaces for forecast accumul since beginning of forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-accumul-since-beginning.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-accumul-since-beginning.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-accumul-since-beginning.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-accumul-since-beginning.yaml'
+
+  # Gridded model level for forecast accumul since beginning of forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-deterministic-ccsds-accumul-since-beginning.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-deterministic-simple-accumul-since-beginning.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-ensemble-ccsds-accumul-since-beginning.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-ensemble-simple-accumul-since-beginning.yaml'
+
 

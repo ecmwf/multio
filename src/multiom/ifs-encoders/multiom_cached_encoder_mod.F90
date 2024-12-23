@@ -72,6 +72,7 @@ CONTAINS
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: PRINT  => MULTIO_ENCODER_PRINT
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: ENCODING_CACHE_DUMP => MULTIO_DUMP_ENCODING_CACHE
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: ENCODING_CACHE_BYTESIZE => MULTIO_ENCODING_CACHE_BYTESIZE
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: ENCODING_CACHE_SIZE => MULTIO_ENCODING_CACHE_SIZE
 
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS :: FREE   => MULTIO_ENCODER_FREE
 
@@ -706,6 +707,105 @@ PP_ERROR_HANDLER
 
 
 END FUNCTION MULTIO_ENCODING_CACHE_BYTESIZE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIO_ENCODING_CACHE_SIZE'
+PP_THREAD_SAFE FUNCTION MULTIO_ENCODING_CACHE_SIZE( THIS, SIZE, HOOKS ) RESULT(RET)
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,    ONLY: JPIB_K
+  USE :: HOOKS_MOD,            ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(MULTIOM_CACHED_ENCODERS_T), INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),             INTENT(OUT)   :: SIZE
+  TYPE(HOOKS_T),                    INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODING_SIZE_ERROR = 2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  !> Print all the rules
+  PP_TRYCALL( ERRFLAG_ENCODING_SIZE_ERROR ) THIS%ENCODER_CACHE%SIZE( &
+&   SIZE, &
+&   THIS%CACHE_OPTIONS, &
+&   HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_ENCODING_SIZE_ERROR)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to compute the bytesize of the encoding cache' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+
+END FUNCTION MULTIO_ENCODING_CACHE_SIZE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

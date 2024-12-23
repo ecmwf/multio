@@ -423,6 +423,7 @@ FUNCTION FILTER_LEVELIST_MATCH( THIS, MSG, PAR, MATCH, HOOKS ) RESULT(RET)
   USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_LE_E
   USE :: ENUMERATORS_MOD,     ONLY: FLT_INT_LT_E
   USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
+  ! USE :: ENUMERATORS_MOD,     ONLY: LEVTYPE_PL_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -451,6 +452,7 @@ IMPLICIT NONE
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNKNOWN_OPERATION = 1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_CALL_KEYSET_MATCH = 2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_FILTER = 3_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -467,6 +469,10 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
+  ! Error handling
+  ! PP_DEBUG_CRITICAL_COND_THROW( MSG%LEVTYPE .NE. LEVTYPE_PL_E, ERRFLAG_INVALID_FILTER )
+
+  !> Match the filter
   IF ( MSG%LEVELIST .EQ. UNDEF_PARAM_E ) THEN
 
     MATCH = .FALSE.
@@ -543,6 +549,10 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to evaluate nested filter' )
     CASE (ERRFLAG_UNABLE_TO_CALL_KEYSET_MATCH)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to call keyset match' )
+!    CASE (ERRFLAG_INVALID_FILTER)
+!      PP_DEBUG_PUSH_MSG_TO_FRAME( 'invalid filter' )
+!      PP_DEBUG_PUSH_MSG_TO_FRAME( '"levelist" filter can be used only with "levtype"="pl"' )
+!      PP_DEBUG_PUSH_MSG_TO_FRAME( 'this constraint has been added to keep the cache small!!!!' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT

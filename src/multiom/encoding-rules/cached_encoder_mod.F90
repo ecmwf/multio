@@ -66,6 +66,7 @@ PP_THREAD_SAFE FUNCTION  CACHED_ENCODER_INIT( THIS, MSG, PAR, TAG, NAME, &
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD,        ONLY: JPRD_K
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: GRIB_SECTION_BASE_MOD,    ONLY: GRIB_SECTION_BASE_A
@@ -74,6 +75,8 @@ PP_THREAD_SAFE FUNCTION  CACHED_ENCODER_INIT( THIS, MSG, PAR, TAG, NAME, &
   USE :: FORTRAN_MESSAGE_MOD,      ONLY: FORTRAN_MESSAGE_T
   USE :: METADATA_FACTORY_MOD,     ONLY: MAKE_METADATA
   USE :: SAMPLE_MOD,               ONLY: SAMPLE_T
+  USE :: ENUMERATORS_MOD,          ONLY: REPRES_SPHERICALHARMONICS_E
+  USE :: ENUMERATORS_MOD,          ONLY: REPRES_GAUSSIANGRID_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -102,6 +105,9 @@ IMPLICIT NONE
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
+  !> Local variables
+  REAL(KIND=JPRD_K), DIMENSION(6) :: FAKE_VALUES
+
   !> Local error flag
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CLONE_METADATA=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_ALLOCATE=2_JPIB_K
@@ -110,6 +116,7 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA_ALREADY_ALLOCATED=5_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_ALREADY_ALLOCATED=6_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=7_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_SET_METADATA=8_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -139,12 +146,58 @@ IMPLICIT NONE
   IF ( ASSOCIATED(THIS%SAMPLE_) ) THEN
     ! Call the Clone constructor of metadata
     ! Here we clone a metadata object passed from the rule.
+    PP_LOG_DEVELOP_STR( 'Creating a new metadata from the sample passed in the rule (if any)' )
     PP_TRYCALL(ERRFLAG_CLONE_METADATA) MAKE_METADATA( METADATA, THIS%METADATA_, TRIM(THIS%SAMPLE_%NAME_), HOOKS)
     ! PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
   ELSE
     ! Call the Clone constructor of metadata
     ! Here we clone a metadata object passed as input.
+    PP_LOG_DEVELOP_STR( 'Creating a new metadata from input metadata (the unique sample)' )
     PP_TRYCALL(ERRFLAG_CLONE_METADATA) MAKE_METADATA( METADATA, THIS%METADATA_, HOOKS)
+
+    !
+    ! Hack to avoid the need of multiple samples
+    IF ( MSG%REPRES .EQ. REPRES_SPHERICALHARMONICS_E ) THEN
+      PP_LOG_DEVELOP_STR( 'The sample needs to be modified for spherical harmonics' )
+      PP_LOG_DEVELOP_STR( 'This is an hack just to avoid the need of multiple samples' )
+      !!  // Hack suggested by Shahram
+      !!  set numberOfDataPoints = 6;
+      !!  set numberOfValues = 6;
+      !!  set bitsPerValue = 16;
+      !!  set values = {0, 1, 0, 2, 0, 9}; # Any old set of 6 values
+      !!  set typeOfFirstFixedSurface = 105;
+      !!  set scaleFactorOfFirstFixedSurface = 0;
+      !!  set scaledValueOfFirstFixedSurface = 0;
+      !!  set gridDefinitionTemplateNumber=50;
+      !!  set J=1;
+      !!  set K=1;
+      !!  set M=1;
+      !!  set spectralType = 1;
+      !!  set spectralMode = 1;
+      !!  set dataRepresentationTemplateNumber=51;
+      FAKE_VALUES = [0.0_JPRD_K, 0.0_JPRD_K, 0.0_JPRD_K, 0.0_JPRD_K, 0.0_JPRD_K, 0.0_JPRD_K ]
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'numberOfDataPoints', 6_JPIB_K, HOOKS )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'numberOfValues', 6_JPIB_K, HOOKS )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'bitsPerValue', 16_JPIB_K, HOOKS )
+      !! PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'values', FAKE_VALUES, HOOKS )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'typeOfFirstFixedSurface', 105_JPIB_K, HOOKS )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'scaleFactorOfFirstFixedSurface', 0_JPIB_K, HOOKS )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'scaledValueOfFirstFixedSurface', 0_JPIB_K, HOOKS )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'gridDefinitionTemplateNumber', 50_JPIB_K, HOOKS )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'J', 1_JPIB_K, HOOKS )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'K', 1_JPIB_K, HOOKS )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'M', 1_JPIB_K, HOOKS )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'spectralType', 1_JPIB_K, HOOKS )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'spectralMode', 1_JPIB_K, HOOKS )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'dataRepresentationTemplateNumber', 51_JPIB_K, HOOKS )
+
+    ELSEIF ( MSG%REPRES .EQ. REPRES_GAUSSIANGRID_E ) THEN
+      PP_LOG_DEVELOP_STR( 'The sample needs to be modified for grid point data' )
+      PP_LOG_DEVELOP_STR( 'This is an hack just to avoid the need of multiple samples' )
+      PP_TRYCALL(ERRFLAG_SET_METADATA) THIS%METADATA_%SET( 'gridType', 'reduced_gg', HOOKS )
+
+    ENDIF
+
   ENDIF
 
 
@@ -195,6 +248,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'encoder already allocated' )
     CASE(ERRFLAG_NOT_IMPLEMENTED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'not implemented' )
+    CASE(ERRFLAG_SET_METADATA)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error setting metadata' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -570,6 +625,13 @@ IMPLICIT NONE
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
+  !> Local variables
+  CHARACTER(LEN=1024) :: SAMPLE_NAME
+  CHARACTER(LEN=32) :: CTMP
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DUMP_SAMPLE=1_JPIB_K
+
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
 
@@ -585,7 +647,19 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! TODO Dump the metadata!!!!
+  !> Create the name of the file
+  SAMPLE_NAME = REPEAT(' ',1024)
+  IF ( OPT%DUMP_SAMPLES_TO_ONE_FILE ) THEN
+    SAMPLE_NAME = TRIM(ADJUSTL(DUMP_PATH))//'samples.grib'
+  ELSE
+    CNT = CNT + 1
+    CTMP = REPEAT(' ',32)
+    WRITE(CTMP,'(I12.12)') CNT
+    SAMPLE_NAME = TRIM(ADJUSTL(DUMP_PATH))//'sample_'//TRIM(ADJUSTL(CTMP))//'.grib'
+  ENDIF
+
+  !> Dump the sample
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_DUMP_SAMPLE) THIS%METADATA_%DUMP_SAMPLE( SAMPLE_NAME, HOOKS )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -609,6 +683,9 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
+    CASE(ERRFLAG_UNABLE_TO_DUMP_SAMPLE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error dumping metadata sample sample' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'sample name: '//TRIM(ADJUSTL(SAMPLE_NAME)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -667,6 +744,7 @@ IMPLICIT NONE
 
   !> Local error flag
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_COMPUTE_CIRCULAR_BUFFER_BYTESIZE=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_COMPUTE_METADATA_BYTESIZE=2_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -687,13 +765,15 @@ IMPLICIT NONE
   MEMORY_BYTESIZE = 256 + 256 + 8 + 8
 
   ! Add the circular buffer byte size
+  ! TODO::MIVAL: time hisotry can be removed
   PP_TRYCALL(ERRFLAG_UNABLE_TO_COMPUTE_CIRCULAR_BUFFER_BYTESIZE) THIS%TIME_HISTORY_%BYTESIZE(TMP_MEMORY_BYTESIZE, HOOKS)
   MEMORY_BYTESIZE = MEMORY_BYTESIZE + TMP_MEMORY_BYTESIZE
 
-  ! TODO: Add size of metadata
-  ! PP_TRYCALL(ERRFLAG_UNABLE_TO_COMPUTE_METADATA_BYTESIZE) THIS%METADATA_%BYTESIZE(TMP_MEMORY_BYTESIZE, HOOKS)
+  ! Add size of metadata
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_COMPUTE_METADATA_BYTESIZE) THIS%METADATA_%SAMPLE_SIZE(TMP_MEMORY_BYTESIZE, HOOKS)
+  MEMORY_BYTESIZE = MEMORY_BYTESIZE + TMP_MEMORY_BYTESIZE
 
-  ! TODO: Add size of encoder (if needed)
+  ! TODO::MIVAL: Add size of encoder (if needed)
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

@@ -109,6 +109,12 @@ CONTAINS
   !> @brief Sets an array of 64-bit real values.
   PROCEDURE(SET_REAL64_ARRAY_IF), DEFERRED, PUBLIC, PASS :: SET_REAL64_ARRAY
 
+  !> @brief Dump the sample to disk (for debugging and checking purposes)
+  PROCEDURE(DUMP_SAMPLE_IF), DEFERRED, PUBLIC, PASS :: DUMP_SAMPLE
+
+  !> @brief Get the size in bytes of the sample
+  PROCEDURE(SAMPLE_SIZE_IF), DEFERRED, PUBLIC, PASS :: SAMPLE_SIZE
+
   !> @brief Generic set procedure that can handle all supported data types.
   GENERIC, PUBLIC :: SET => SET_STRING
   GENERIC, PUBLIC :: SET => SET_BOOL
@@ -629,6 +635,46 @@ IMPLICIT NONE
   TYPE(HOOKS_T),                   INTENT(INOUT) :: HOOKS
   INTEGER(KIND=JPIB_K) :: RET
 END FUNCTION SET_REAL64_ARRAY_IF
+
+!> @brief Write the sample to disk (for debugging purposes).
+!>
+!> This procedure allows the user to write the metadata to disk.
+!>
+!> @param [inout] this   The object where metadata is to be set.
+!> @param [in]    name   The name to be given to the file.
+!> @param [inout] HOOKS  Utilities to be used for logging, debugging, tracing and option handling
+!>
+PP_THREAD_SAFE FUNCTION DUMP_SAMPLE_IF( THIS, NAME, HOOKS ) RESULT(RET)
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
+  IMPORT :: METADATA_BASE_A
+IMPLICIT NONE
+  CLASS(METADATA_BASE_A), INTENT(INOUT) :: THIS
+  CHARACTER(LEN=*),       INTENT(IN)    :: NAME
+  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  INTEGER(KIND=JPIB_K) :: RET
+END FUNCTION DUMP_SAMPLE_IF
+
+!> @brief Get the size in bytes of the sample.
+!>
+!> This procedure allows the user to inquire the size in bytes of the sample.
+!>
+!> @param [inout] this   The object where metadata is to be set.
+!> @param [out]   size   Size of the sample in bytes.
+!> @param [inout] HOOKS  Utilities to be used for logging, debugging, tracing and option handling
+!>
+PP_THREAD_SAFE FUNCTION SAMPLE_SIZE_IF( THIS, SIZE, HOOKS ) RESULT(RET)
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD, ONLY: HOOKS_T
+  IMPORT :: METADATA_BASE_A
+IMPLICIT NONE
+  CLASS(METADATA_BASE_A), INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),   INTENT(OUT)   :: SIZE
+  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+  INTEGER(KIND=JPIB_K) :: RET
+END FUNCTION SAMPLE_SIZE_IF
 
 END INTERFACE
 

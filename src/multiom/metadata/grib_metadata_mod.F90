@@ -133,6 +133,12 @@ CONTAINS
   !> @brief Sets an array of 64-bit real values.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SET_REAL64_ARRAY  => GRIB_METADATA_SET_REAL64_ARRAY
 
+  !> @brief Dump the sample to disk (for debugging and checking purposes)
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: DUMP_SAMPLE  => GRIB_METADATA_DUMP_SAMPLE
+
+  !> @brief Get the size in bytes of the sample
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS :: SAMPLE_SIZE  => GRIB_METADATA_SAMPLE_SIZE
+
 END TYPE
 
 
@@ -573,6 +579,9 @@ IMPLICIT NONE
   CALL GRIB_NEW_FROM_SAMPLES( THIS%IGRIB_HANDLE_, TRIM(ADJUSTL(SAMPLE_NAME)), STATUS=KRET )
   PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_GRIB_NEW_FROM_SAMPLES_FAILED )
 
+  ! Logging the sample name
+  PP_LOG_DEVELOP_STR( ' + Init from sample name: '//TRIM(ADJUSTL(SAMPLE_NAME)) )
+
   ! ------------------------------------------------------------------------------------------------
   ! ** Patch to fix the fact that the samples are not all stripped from values
   ! ------------------------------------------------------------------------------------------------
@@ -751,6 +760,9 @@ IMPLICIT NONE
 
   ! This procedure can be called only if the object is not initialized
   PP_DEBUG_DEVELOP_COND_THROW( THIS%INITIALIZED_, ERRFLAG_THIS_NOT_INITIALIZED )
+
+  ! Logging the sample name
+  PP_LOG_DEVELOP_STR( ' + Init from sample' )
 
   ! Read the sample ad if it's necessary distribute it
   CALL GRIB_CLONE( SAMPLE_HANDLE, THIS%IGRIB_HANDLE_, STATUS=KRET )
@@ -1796,6 +1808,7 @@ PP_THREAD_SAFE FUNCTION GRIB_METADATA_SET_INT64( THIS, KEY, VAL, HOOKS ) RESULT(
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
   USE :: HOOKS_MOD,         ONLY: HOOKS_T
 
   ! Symbols imported from external libraries
@@ -1871,6 +1884,8 @@ PP_ERROR_HANDLER
 
     ! Error handling variables
     CHARACTER(LEN=4096) :: GRIB_ERROR
+    CHARACTER(LEN=32)   :: CTMP
+    INTEGER(KIND=JPIB_K) :: WRITE_STAT
 
     ! Error handling variables
     PP_DEBUG_PUSH_FRAME()
@@ -1881,8 +1896,12 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Handle not initialized' )
     CASE (ERRFLAG_GRIB_SET_FAILED)
       GRIB_ERROR = REPEAT(' ', 4096)
+      CTMP = REPEAT(' ', 32)
+      WRITE(CTMP, '(I32)', IOSTAT=WRITE_STAT) VAL
       CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to set int64 value.' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key: '//TRIM(ADJUSTL(KEY)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Value: '//TRIM(ADJUSTL(CTMP)) )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
@@ -3128,6 +3147,285 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION GRIB_METADATA_SET_REAL64_ARRAY
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!>
+!> @brief Write the sample to disk (for debugging purposes).
+!>
+!> This procedure allows the user to write the metadata to disk.
+!>
+!> @param [inout] this   The object where metadata is to be set.
+!> @param [in]    name   The name to be given to the file.
+!> @param [inout] HOOKS  Utilities to be used for logging, debugging, tracing and option handling
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'GRIB_METADATA_DUMP_SAMPLE'
+PP_THREAD_SAFE FUNCTION GRIB_METADATA_DUMP_SAMPLE( THIS, NAME, HOOKS ) RESULT(RET)
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported from external libraries
+  USE :: GRIB_API, ONLY: GRIB_OPEN_FILE
+  USE :: GRIB_API, ONLY: GRIB_WRITE
+  USE :: GRIB_API, ONLY: GRIB_CLOSE_FILE
+  USE :: GRIB_API, ONLY: GRIB_SUCCESS
+  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(GRIB_METADATA_T), INTENT(INOUT) :: THIS
+  CHARACTER(LEN=*),       INTENT(IN)    :: NAME
+  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIM_K) :: GRIB_FILE_HANDLE
+  INTEGER(KIND=JPIM_K) :: KRET
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_OPEN_FILE_FAILED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRITE_FAILED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CLOSE_FILE_FAILED=3_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+  ! Open the grib file
+  CALL GRIB_OPEN_FILE( GRIB_FILE_HANDLE, TRIM(NAME), 'a', STATUS=KRET )
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_OPEN_FILE_FAILED )
+
+  ! Write to the grib file
+  CALL GRIB_WRITE( THIS%IGRIB_HANDLE_, GRIB_FILE_HANDLE, STATUS=KRET )
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_WRITE_FAILED )
+
+  ! Close the grib file
+  CALL GRIB_CLOSE_FILE( GRIB_FILE_HANDLE, STATUS=KRET )
+  PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_CLOSE_FILE_FAILED )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=4096) :: GRIB_ERROR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_OPEN_FILE_FAILED)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to open the file.' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
+    CASE (ERRFLAG_WRITE_FAILED)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to write the file.' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
+    CASE (ERRFLAG_CLOSE_FILE_FAILED)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to close the file.' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION GRIB_METADATA_DUMP_SAMPLE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+!>
+!> @brief Get the size in bytes of the sample.
+!>
+!> This procedure allows the user to inquire the size in bytes of the sample.
+!>
+!> @param [inout] this   The object where metadata is to be set.
+!> @param [out]   size   Size of the sample in bytes.
+!> @param [inout] HOOKS  Utilities to be used for logging, debugging, tracing and option handling
+!>
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'GRIB_METADATA_SAMPLE_SIZE'
+PP_THREAD_SAFE FUNCTION GRIB_METADATA_SAMPLE_SIZE( THIS, SIZE, HOOKS ) RESULT(RET)
+
+  ! Symbolds imported from intrinsic modules
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: REAL64
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIM_K
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported from external libraries
+  USE :: GRIB_API, ONLY: GRIB_GET_MESSAGE_SIZE
+  USE :: GRIB_API, ONLY: GRIB_SUCCESS
+  USE :: GRIB_API, ONLY: GRIB_GET_ERROR_STRING
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  ! Dummy arguments
+  CLASS(GRIB_METADATA_T), INTENT(INOUT) :: THIS
+  INTEGER(KIND=JPIB_K),   INTENT(OUT)   :: SIZE
+  TYPE(HOOKS_T),          INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  ! Local variables
+  INTEGER(KIND=JPIM_K) :: DATA_LENGTH
+  INTEGER(KIND=JPIM_K) :: KRET
+
+  !> Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_GET_SIZE=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_INVALID_LENGTH=2_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+
+  ! Get encoded grib message size
+  KRET = GRIB_SUCCESS
+  CALL GRIB_GET_MESSAGE_SIZE( THIS%IGRIB_HANDLE_, DATA_LENGTH, STATUS=KRET)
+  PP_DEBUG_CRITICAL_COND_THROW(KRET.NE.GRIB_SUCCESS, ERRFLAG_UNABLE_TO_GET_SIZE)
+  PP_DEBUG_CRITICAL_COND_THROW(DATA_LENGTH.LE.0, ERRFLAG_INVALID_LENGTH)
+
+  ! Cast the size
+  SIZE = INT(DATA_LENGTH, KIND=JPIB_K)
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    CHARACTER(LEN=4096) :: GRIB_ERROR
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! HAndle different errors
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_UNABLE_TO_GET_SIZE)
+      GRIB_ERROR = REPEAT(' ', 4096)
+      CALL GRIB_GET_ERROR_STRING( KRET, GRIB_ERROR )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to get the size of the sample.' )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'grib error: '//TRIM(ADJUSTL(GRIB_ERROR)) )
+    CASE (ERRFLAG_INVALID_LENGTH)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Invalid length of the sample.' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION GRIB_METADATA_SAMPLE_SIZE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 

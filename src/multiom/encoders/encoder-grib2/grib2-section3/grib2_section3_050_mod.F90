@@ -474,6 +474,9 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION3_050_ALLOCATE( THIS, &
   USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: REPRESENTATIONS_MOD,      ONLY: SH_T
+  USE :: REPRESENTATIONS_MOD,      ONLY: STRETCHED_SH_T
+  USE :: REPRESENTATIONS_MOD,      ONLY: STRETCHED_ROTATED_SH_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -497,17 +500,11 @@ IMPLICIT NONE
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
-  !> Local variables
-  INTEGER(KIND=JPIB_K) :: IDX
-
-  !> Local variables
-  INTEGER(KIND=JPIB_K) :: NPTS
-
   !> Error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GEOMETRY_DESCRIPTION_NOT_ASSOCIATED=2_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GEOMETRY_DESCRIPTION_OUT_OF_BOUNDS=3_JPIB_K
-  ! INTEGER(KIND=JPIB_K). PARAMETER :: ERRFLAG_SEARCH_GRID_DEFINITION_INDEX=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GEOMETRY_DESCRIPTION_NOT_ASSOCIATED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=4_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -525,33 +522,49 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-#if 0
   ! Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(PAR%GEO%SH), ERRFLAG_GEOMETRY_DESCRIPTION_NOT_ASSOCIATED )
-
-  ! Initialize the index (In general this index should com from a search procedure that uses the MARS
-  ! keyword "grid" to look for the index of the proper gg grid inside the parametrization)
-  IDX = 1
-
-  ! Search the index of the gg grid inside the parametrization. MSG%GRID is the mars keyword "grid" i.e. grid=O800 in this case
-  ! PP_TRYCALL(ERRFLAG_SEARCH_GRID_DEFINITION_INDEX) PAR%GEO%SH%SEARCH( IDX, MSG%GRID, HOOKS )
-
-  ! Check that the index is correct
-  PP_DEBUG_CRITICAL_COND_THROW( IDX < 1 .OR. IDX > SIZE(PAR%GEO%SH), ERRFLAG_GEOMETRY_DESCRIPTION_OUT_OF_BOUNDS )
-
-  ! Extract the number of points and the number of latitudes
-  NPTS =  (PAR%GEO%SH(IDX)%NFREQ + 1)*(PAR%GEO%SH(IDX)%NFREQ + 2) ! n(n+1)
+  PP_DEBUG_CRITICAL_COND_THROW(  .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW(  .NOT. ASSOCIATED(PAR%GEOMETRY%REPRES), ERRFLAG_GEOMETRY_DESCRIPTION_NOT_ASSOCIATED )
 
   ! Enable section 3
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'sourceOfGRidDefinition', 0 )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfDataPoints', NPTS )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfOctectsForNumberOfPoints', 0 )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'interpretationOfNumberOfPoints', 0 )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'gridDefinitionTemplateNumber', 50 )
 
-  ! Set the number of local definitions
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'gridDefinitionTemplateNumber', 50 )
-#endif
+  ! Configure the representation
+  SELECT TYPE ( R => PAR%GEOMETRY%REPRES )
+
+  CLASS IS (SH_T)
+
+    ! Set the specific metadata for a spherical harmonics representation
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'gridType', 'sh' )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pentagonalResolutionParameterJ', R%PENTAGONAL_RESOLUTIONS_PAR_J )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pentagonalResolutionParameterK', R%PENTAGONAL_RESOLUTIONS_PAR_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pentagonalResolutionParameterM', R%PENTAGONAL_RESOLUTIONS_PAR_M )
+
+  CLASS IS (STRETCHED_SH_T)
+
+    ! Set the specific metadata for a spherical harmonics representation
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'gridType', 'stretched_sh' )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'stretchingFactor', R%STRETCH_FACTOR )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pentagonalResolutionParameterJ', R%PENTAGONAL_RESOLUTIONS_PAR_J )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pentagonalResolutionParameterK', R%PENTAGONAL_RESOLUTIONS_PAR_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pentagonalResolutionParameterM', R%PENTAGONAL_RESOLUTIONS_PAR_M )
+
+  CLASS IS (STRETCHED_ROTATED_SH_T)
+
+    ! Set the specific metadata for a spherical harmonics representation
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'gridType', 'stretched_rotated_sh' )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'latitudeOfStretchingPoleInDegrees', R%LAT_STRET_DEG )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'longitudeOfStretchingPoleInDegrees', R%LON_STRET_DEG )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'stretchingFactor', R%STRETCH_FACTOR )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pentagonalResolutionParameterJ', R%PENTAGONAL_RESOLUTIONS_PAR_J )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pentagonalResolutionParameterK', R%PENTAGONAL_RESOLUTIONS_PAR_K )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pentagonalResolutionParameterM', R%PENTAGONAL_RESOLUTIONS_PAR_M )
+
+  CLASS DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
+
+  END SELECT
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -578,10 +591,12 @@ PP_ERROR_HANDLER
     SELECT CASE(ERRIDX)
     CASE ( ERRFLAG_METADATA )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'error using metadata' )
+    CASE ( ERRFLAG_METADATA_NOT_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'metadata not associated' )
     CASE ( ERRFLAG_GEOMETRY_DESCRIPTION_NOT_ASSOCIATED )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'geometry description not associated' )
-    CASE ( ERRFLAG_GEOMETRY_DESCRIPTION_OUT_OF_BOUNDS )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'geometry description out of bounds' )
+    CASE ( ERRFLAG_NOT_IMPLEMENTED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'not implemented' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT

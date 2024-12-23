@@ -474,6 +474,8 @@ PP_THREAD_SAFE FUNCTION GRIB2_SECTION3_040_ALLOCATE( THIS, &
   USE :: PARAMETRIZATION_MOD,      ONLY: PARAMETRIZATION_T
   USE :: METADATA_BASE_MOD,        ONLY: METADATA_BASE_A
   USE :: HOOKS_MOD,                ONLY: HOOKS_T
+  USE :: REPRESENTATIONS_MOD,      ONLY: REDUCED_GG_T
+  USE :: REPRESENTATIONS_MOD,      ONLY: REGULAR_GG_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -504,10 +506,11 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: NPTS
 
   !> Error codes
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA_NOT_ASSOCIATED=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GEOMETRY_DESCRIPTION_NOT_ASSOCIATED=2_JPIB_K
-  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GEOMETRY_DESCRIPTION_OUT_OF_BOUNDS=3_JPIB_K
-  ! INTEGER(KIND=JPIB_K). PARAMETER :: ERRFLAG_SEARCH_GRID_DEFINITION_INDEX=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_GEOMETRY_PL_ARRAY_NOT_ASSOCIATED=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_NOT_IMPLEMENTED=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=5_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -524,44 +527,52 @@ IMPLICIT NONE
 
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
-#if 0
+
   ! Error handling
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
-  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(PAR%GEO%GG), ERRFLAG_GEOMETRY_DESCRIPTION_NOT_ASSOCIATED )
-
-  ! Initialize the index (In general this index should com from a search procedure that uses the MARS
-  ! keyword "grid" to look for the index of the proper gg grid inside the parametrization)
-  IDX = 1
-
-  ! Search the index of the gg grid inside the parametrization. MSG%GRID is the mars keyword "grid" i.e. grid=O800 in this case
-  ! PP_TRYCALL(ERRFLAG_SEARCH_GRID_DEFINITION_INDEX) PAR%GEO%GG%SEARCH( IDX, MSG%GRID, HOOKS )
-
-  ! Check that the index is correct
-  PP_DEBUG_CRITICAL_COND_THROW( IDX < 1 .OR. IDX > SIZE(PAR%GEO%GG), ERRFLAG_GEOMETRY_DESCRIPTION_OUT_OF_BOUNDS )
-
-  ! Extract the number of points and the number of latitudes
-  NPTS = PAR%GEO%GG(IDX)%NPTS ! Sum of the pl array
-  NLAT = PAR%GEO%GG(IDX)%NLAT
+  PP_DEBUG_CRITICAL_COND_THROW(  .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW(  .NOT. ASSOCIATED(PAR%GEOMETRY%REPRES), ERRFLAG_GEOMETRY_DESCRIPTION_NOT_ASSOCIATED )
 
   ! Enable section 3
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'sourceOfGRidDefinition', 0 )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'gridDefinitionTemplateNumber', 40 )
 
-  ! Number of pointes used to describe the geometry (real number of points used to describe the whole geometry)
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfDataPoints', NPTS )
+  ! Configure the representation
+  SELECT TYPE ( R => PAR%GEOMETRY%REPRES )
 
-  ! How many bytes for each point (here points are the points used to describe the geometry how many parallels)
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfOctectsForNumberOfPoints', 2 )
+  CLASS IS (REGULAR_GG_T)
 
-  !> MEaning of the description array
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'interpretationOfNumberOfPoints', 1 )
+    ! Set the specific metadata for a regular_gg grid
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'gridType','regular_gg' )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'truncateDegrees', R%TRUNCATE_DEGREES )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfPointsAlongAMeridian', R%NUMBER_OF_POINTS_ALONG_A_MERIDIAN )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfPointsAlongAParallel', R%NUMBER_OF_POINTS_ALONG_A_PARALLEL )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'latitudeOfFirstGridPointInDegrees', R%LAT_FIRST_GP_DEG )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'longitudeOfFirstGridPointInDegrees', R%LON_FIRST_GP_DEG )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'latitudeOfLastGridPointInDegrees', R%LAT_LAST_GP_DEG )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'longitudeOfLastGridPointInDegrees', R%LON_LAST_GP_DEG )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfParallelsBetweenAPoleAndTheEquator', R%NUMBER_OF_PARALLELS_BETWEEN_POLE_AND_EQUATOR )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'iDirectionIncrementInDegrees', R%IDIR_INC )
 
-  ! Set the number of local definitions
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA,  'gridDefinitionTemplateNumber', 40 )
+  CLASS IS (REDUCED_GG_T)
 
-  ! For O399 -> all the point from north pole to south pole (800)
-  ! Is this a bug? number of points should probably be NLAT, not the total number of points...
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pl', PAR%GEO%GG(IDX)%PL )
-#endif
+    ! Error handling
+    PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(R%PL), ERRFLAG_GEOMETRY_PL_ARRAY_NOT_ASSOCIATED )
+
+    ! Set the specific metadata for a reduced_gg grid
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'gridType','regular_gg' )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'truncateDegrees', R%TRUNCATE_DEGREES )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfPointsAlongAMeridian', R%NUMBER_OF_POINTS_ALONG_A_MERIDIAN )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'latitudeOfFirstGridPointInDegrees', R%LAT_FIRST_GP_DEG )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'longitudeOfFirstGridPointInDegrees', R%LON_FIRST_GP_DEG )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'latitudeOfLastGridPointInDegrees', R%LAT_LAST_GP_DEG )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'longitudeOfLastGridPointInDegrees', R%LON_LAST_GP_DEG )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfParallelsBetweenAPoleAndTheEquator', R%NUMBER_OF_PARALLELS_BETWEEN_POLE_AND_EQUATOR )
+    PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'pl', R%PL )
+
+  CLASS DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_NOT_IMPLEMENTED )
+
+  END SELECT
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -586,12 +597,16 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
-    CASE ( ERRFLAG_METADATA )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'error using metadata' )
-    CASE ( ERRFLAG_GEOMETRY_DESCRIPTION_NOT_ASSOCIATED )
+    CASE (ERRFLAG_METADATA_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'metadata not associated' )
+    CASE (ERRFLAG_GEOMETRY_DESCRIPTION_NOT_ASSOCIATED)
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'geometry description not associated' )
-    CASE ( ERRFLAG_GEOMETRY_DESCRIPTION_OUT_OF_BOUNDS )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'geometry description out of bounds' )
+    CASE (ERRFLAG_GEOMETRY_PL_ARRAY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'geometry pl array not associated' )
+    CASE (ERRFLAG_NOT_IMPLEMENTED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'not implemented' )
+    CASE (ERRFLAG_METADATA)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'metadata error' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT

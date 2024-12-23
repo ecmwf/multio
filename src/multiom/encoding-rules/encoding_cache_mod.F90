@@ -497,6 +497,7 @@ IMPLICIT NONE
     ENCODERS => ROOT%ENCODERS_
     PP_TRYCALL(ERRFLAG_UNABLE_TO_FIXUP_INSERT) INSERT_FIXUP( ROOT, ROOT, CACHE_OPT, HOOKS )
     INSERTION_POINT => ROOT
+      PP_LOG_INFO( 'Node created (map empty)' )
   ELSE
 
     ! Map not empty
@@ -520,7 +521,9 @@ IMPLICIT NONE
         ENCODERS => INSERTION_POINT%RIGHT%ENCODERS_
         PP_TRYCALL(ERRFLAG_UNABLE_TO_FIXUP_INSERT) INSERT_FIXUP( ROOT, INSERTION_POINT%RIGHT, CACHE_OPT, HOOKS )
       ENDIF
+      PP_LOG_INFO( 'Node created' )
     ELSE
+      PP_LOG_INFO( 'Node already in the map' )
       ! If the node is in the map then return the value
       INSERTED =.FALSE.
       ENCODERS => INSERTION_POINT%ENCODERS_

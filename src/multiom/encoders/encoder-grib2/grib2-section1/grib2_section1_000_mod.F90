@@ -264,7 +264,7 @@ IMPLICIT NONE
   THIS%KIND_ = '1.0'
 
   ! Logging informations
-  PP_LOG_TODO( 'Lazy initialization of GRIB2 Section: '//TRIM(ADJUSTL(THIS%TYPE_))//'::'//TRIM(ADJUSTL(THIS%SUBTYPE_))//'('//TRIM(ADJUSTL(THIS%KIND_))//')' )
+  PP_LOG_TODO( 'Cfg initialization of GRIB2 Section: '//TRIM(ADJUSTL(THIS%TYPE_))//'::'//TRIM(ADJUSTL(THIS%SUBTYPE_))//'('//TRIM(ADJUSTL(THIS%KIND_))//')' )
 
 
   ! Initialize sub sections

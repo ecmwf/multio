@@ -240,7 +240,7 @@ IMPLICIT NONE
   THIS%KIND_ = '0.0'
 
   ! Logging informations
-  PP_LOG_TODO( 'Lazy initialization of GRIB2 Section: '//TRIM(ADJUSTL(THIS%TYPE_))//'::'//TRIM(ADJUSTL(THIS%SUBTYPE_))//'('//TRIM(ADJUSTL(THIS%KIND_))//')' )
+  PP_LOG_TODO( 'Cfg initialization of GRIB2 Section: '//TRIM(ADJUSTL(THIS%TYPE_))//'::'//TRIM(ADJUSTL(THIS%SUBTYPE_))//'('//TRIM(ADJUSTL(THIS%KIND_))//')' )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

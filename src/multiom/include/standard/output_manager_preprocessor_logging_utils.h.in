@@ -21,7 +21,11 @@ ENDIF
 #define PP_LOG_DEVELOP_COND_STR( COND, FMT, STR )
 #endif
 
-#define PP_LOG_TODO( MSG )
-#define PP_LOG_INFO( MSG )
+#define PP_LOG_TODO( MSG ) \
+WRITE(*,*) MSG
+
+
+#define PP_LOG_INFO( MSG ) \
+WRITE(*,*) MSG
 
 #endif

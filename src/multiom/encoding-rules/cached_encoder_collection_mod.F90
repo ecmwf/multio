@@ -111,7 +111,7 @@ IMPLICIT NONE
   THIS%ENCODERS_ => ENCODERS
 
   !> Allocate and preset the encoders
-  WRITE(*,*) 'ALLOCATING/PRESET ENCODERS'
+  PP_LOG_DEVELOP_STR( 'ALLOCATING/PRESET ENCODERS' )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

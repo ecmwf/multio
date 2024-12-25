@@ -532,9 +532,6 @@ IMPLICIT NONE
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
 
-  !> Set metadata for allocation of reference_time images (NB in grib header)
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfContributingSpectralBands', 1_JPIB_K )
-
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

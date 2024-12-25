@@ -633,15 +633,37 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: RET
 
 END FUNCTION SECTION_ALLOCATOR_IF
+
+
+PP_THREAD_SAFE FUNCTION SECTION_DEALLOCATOR_IF( SECTION, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Imported abstract class
+  IMPORT :: GRIB_SECTION_BASE_A
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(GRIB_SECTION_BASE_A), POINTER,  INTENT(INOUT) :: SECTION
+  TYPE(HOOKS_T),                        INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+END FUNCTION SECTION_DEALLOCATOR_IF
+
 END INTERFACE
 
 
 !> Whitelist of public symbols (Interfaces)
 PUBLIC :: GRIB_SECTION_BASE_A
 PUBLIC :: SECTION_ALLOCATOR_IF
+PUBLIC :: SECTION_DEALLOCATOR_IF
 
 CONTAINS
-
 
 
 
@@ -979,7 +1001,7 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Logging informations
-  PP_LOG_INFO( 'Print GRIB Section' )
+  PP_LOG_STRICT_DEVELOP( 'Print GRIB Section' )
 
   ! Write the section information
   IF ( PRESENT(SEPARATOR) ) THEN

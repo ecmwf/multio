@@ -681,7 +681,7 @@ IMPLICIT NONE
 
   !> Configure the information needed for describing the ensemble
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'perturbationNumber', MSG%NUMBER)
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfForecastsInEnsemble', PAR%ENSEMBLE%NUMBER_OF_FORECAST_IN_ENSEMBLE_ )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'numberOfForecastsInEnsemble', PAR%ENSEMBLE%NUMBER_OF_FORECASTS_IN_ENSEMBLE_ )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )

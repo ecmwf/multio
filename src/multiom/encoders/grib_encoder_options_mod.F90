@@ -5,7 +5,7 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'fortran_message_mod.F90'
+#define PP_FILE_NAME 'grib_encoder_options_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
 #define PP_SECTION_NAME 'GRIB_ENCODER_OPTIONS_MOD'
 MODULE GRIB_ENCODER_OPTIONS_MOD

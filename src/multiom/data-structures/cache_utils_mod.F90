@@ -30,6 +30,7 @@ PRIVATE
 
 !> Options used to control the cache
 TYPE :: CACHE_OPTIONS_T
+  LOGICAL :: USE_COMPRESSED_CACHE = .TRUE.
   LOGICAL :: ENABLE_CACHE = .FALSE.
 END TYPE
 

@@ -580,6 +580,10 @@ IMPLICIT NONE
   PP_TRYCALL(ERRFLAG_UNABLE_TO_CALL_TO_BE_ENCODED) THIS%ENCODER_%TO_BE_ENCODED( &
 &    MSG, PAR, THIS%TIME_HISTORY_, CURR_TIME, OPT, TO_BE_ENCODED, HOOKS )
 
+  PP_LOG_STR( 'encoding to be done' )
+
+!  TO_BE_ENCODED = .TRUE.
+
   ! If needed then encode the field
   IF ( TO_BE_ENCODED ) THEN
 
@@ -597,10 +601,15 @@ IMPLICIT NONE
     ! Set the encoding done flag
     ENCODING_DONE = .TRUE.
 
+
+    PP_LOG_STR( 'encoding done' )
+
   ELSE
 
     ! Set the encoding done flag
     ENCODING_DONE = .FALSE.
+
+    PP_LOG_STR( 'encoding not done' )
 
   ENDIF
 

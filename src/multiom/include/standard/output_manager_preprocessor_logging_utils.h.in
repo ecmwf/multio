@@ -5,7 +5,7 @@
 
 #define PP_LOG_DECL_VARS
 
-#if 1
+#if 0
 #define PP_LOG_DEVELOP_STR( STR ) \
 WRITE(*,*) STR
 #else
@@ -21,11 +21,13 @@ ENDIF
 #define PP_LOG_DEVELOP_COND_STR( COND, FMT, STR )
 #endif
 
-#define PP_LOG_TODO( MSG ) \
-WRITE(*,*) MSG
+#define PP_LOG_STRICT_DEVELOP( MSG )
 
+#define PP_LOG_TODO( MSG )
 
-#define PP_LOG_INFO( MSG ) \
-WRITE(*,*) MSG
+#define PP_LOG_INFO( MSG )
+
+#define PP_LOG_STR( MSG ) \
+WRITE(*,'(A)') MSG
 
 #endif

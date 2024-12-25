@@ -744,7 +744,7 @@ IMPLICIT NONE
   !> @note See table 4.11 in the GRIB2 documentation for the following values
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfTimeIncrement',  2_JPIB_K )
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'indicatorOfUnitForTimeIncrement',  's' )
-  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'timeIncrement', INT(PAR%LENGTH_OF_TIME_STEP_IN_SECONDS, KIND=JPIB_K)  )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'timeIncrement', INT(PAR%TIME%LENGTH_OF_TIME_STEP_IN_SECONDS_, KIND=JPIB_K)  )
 
   ! TODO: Implement the inner loops
 

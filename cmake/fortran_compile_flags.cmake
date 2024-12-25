@@ -78,6 +78,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   #   ecbuild_add_fortran_flags( "-fallow-argument-mismatch" NAME argument_mismatch )
   # endif()
   # ecbuild_add_fortran_flags( "-Wall -Wpedantic" NAME warnings )
+  ecbuild_add_fortran_flags( "-fno-ipa-modref -fno-ipa-pure-const -fno-ipa-cp -fno-ipa-sra -fno-tree-ccp -fno-tree-dominator-opts -fno-if-conversion -fno-if-conversion2 -ftime-report" NAME warnings )
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "Flang")

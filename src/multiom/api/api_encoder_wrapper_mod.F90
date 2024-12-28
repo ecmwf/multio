@@ -5,10 +5,10 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'api_wrapper_mod_mod.F90'
+#define PP_FILE_NAME 'api_encoder_wrapper_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
-#define PP_SECTION_NAME 'GENERAL_UTILS_MOD'
-MODULE API_WRAPPER_MOD
+#define PP_SECTION_NAME 'API_ENCODER_WRAPPER_MOD'
+MODULE API_ENCODER_WRAPPER_MOD
 
   ! USE :: ENCODERS_MAP_MOD, ONLY: ENCODERS_MAP_T
   ! USE :: ENCODERS_MAP_MOD, ONLY: MARS_MAP_T
@@ -25,16 +25,17 @@ PRIVATE
 ! TYPE(ENCODERS_MAP_T) :: PAR_MAP
 
 
-! Whitelist of public symbols
+! Whitelist of public symbols (encoder management)
 PUBLIC :: MULTIO_GRIB2_ENCODER_OPEN
 PUBLIC :: MULTIO_GRIB2_ENCODER_CLOSE
 PUBLIC :: MULTIO_GRIB2_ENCODER_ENCODE64
 PUBLIC :: MULTIO_GRIB2_ENCODER_ENCODE32
+PUBLIC :: MULTIO_GRIB2_ENCODER_EXTRACT_METADATA
 
 CONTAINS
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'TOUPPER'
+#define PP_PROCEDURE_NAME 'MULTIO_GRIB2_ENCODER_OPEN'
 PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_ENCODER_OPEN( OPTIONS, MULTIO_GRIB2 ) &
  BIND(C,NAME='multio_grib2_encoder_open') RESULT(RET)
 
@@ -42,6 +43,7 @@ PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_ENCODER_OPEN( OPTIONS, MULTIO_GRIB2 ) &
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
 
   ! Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
@@ -65,6 +67,12 @@ IMPLICIT NONE
   !> Function result
   INTEGER(KIND=C_INT) :: RET
 
+  !> Local variables
+  LOGICAL :: OPTIONS_PRESENT
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENCODER_ALREADY_ASSOCIATED=1_JPIB_K
+
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
 
@@ -80,6 +88,13 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( C_ASSOCIATED(MULTIO_GRIB2), ERRFLAG_ENCODER_ALREADY_ASSOCIATED )
+
+  !> Check if the options are present
+  OPTIONS_PRESENT = .NOT.C_ASSOCIATED( OPTIONS )
+
+  
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -104,7 +119,7 @@ END FUNCTION MULTIO_GRIB2_ENCODER_OPEN
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'TOUPPER'
+#define PP_PROCEDURE_NAME 'MULTIO_GRIB2_ENCODER_CLOSE'
 PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_ENCODER_CLOSE( MULTIO_GRIB2 ) &
  BIND(C,NAME='multio_grib2_encoder_close') RESULT(RET)
 
@@ -167,6 +182,78 @@ PP_ERROR_HANDLER
   RETURN
 
 END FUNCTION MULTIO_GRIB2_ENCODER_CLOSE
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'MULTIO_GRIB2_ENCODER_EXTRACT_METADATA'
+PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_ENCODER_EXTRACT_METADATA( MULTIO_GRIB2, GRIB_HANDLE, MARS_DICT, PAR_DICT ) &
+ BIND(C,NAME='multio_grib2_encoder_extract_metadata') RESULT(RET)
+
+  !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
+
+  ! Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
+  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  TYPE(C_PTR), VALUE, INTENT(IN)    :: MULTIO_GRIB2
+  TYPE(C_PTR), VALUE, INTENT(IN)    :: GRIB_HANDLE
+  TYPE(C_PTR),        INTENT(INOUT) :: MARS_DICT
+  TYPE(C_PTR),        INTENT(INOUT) :: PAR_DICT
+
+  !> Function result
+  INTEGER(KIND=C_INT) :: RET
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+  ! TODO: Add error handling code here
+
+  RETURN
+
+END FUNCTION MULTIO_GRIB2_ENCODER_EXTRACT_METADATA
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -372,8 +459,6 @@ IMPLICIT NONE
   !> Parameterization handle from the c pointer
   CALL C_F_POINTER( PAR_DICT, PAR_ID )
 
-  !> 
-
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
 
@@ -395,7 +480,7 @@ END FUNCTION MULTIO_GRIB2_ENCODER_ENCODE32
 #undef PP_PROCEDURE_TYPE
 
 
-END MODULE API_WRAPPER_MOD
+END MODULE API_ENCODER_WRAPPER_MOD
 #undef PP_SECTION_NAME
 #undef PP_SECTION_TYPE
 #undef PP_FILE_NAME

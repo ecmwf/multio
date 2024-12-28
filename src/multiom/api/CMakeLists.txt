@@ -1,5 +1,7 @@
 set(MULTIOM_API_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
+add_subdirectory( c )
+
 # Enter in the module
 message("${OFFSET} + API sources: ${MULTIOM_API_DIR}")
 
@@ -8,7 +10,8 @@ set(OFFSET ${OFFSET}${DOFFSET})
 
 # Collect source files in module2
 set( MULTIOM_API_SOURCES
-  ${MULTIOM_API_DIR}/api_wrapper_mod.F90
+  ${MULTIOM_API_DIR}/api_encoder_wrapper_mod.F90
+  ${MULTIOM_API_DIR}/api_dictionary_wrapper_mod.F90
   CACHE INTERNAL "List of all sources in API directory"
 )
 

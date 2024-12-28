@@ -101,6 +101,7 @@ set( DOFFSET "     ")
 #
 # + ADD SUB-DIRECTORIES
 # =====================
+add_subdirectory( api )
 add_subdirectory( common )
 add_subdirectory( configuration )
 add_subdirectory( containers )
@@ -123,6 +124,7 @@ add_subdirectory( tools )
 # + ADD LOCAL FILES
 # =================
 list( APPEND output_manager_src
+  ${MULTIOM_API_SOURCES}
   ${MULTIOM_COMMON_SOURCES}
   ${MULTIOM_CONFIGURATION_SOURCES}
   ${MULTIOM_CONTAINERS_SOURCES}

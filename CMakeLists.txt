@@ -99,12 +99,12 @@ ecbuild_add_option( FEATURE HEALPIX_EXAMPLES
 
 ###  Definitions used by the output manager
 ecbuild_add_option( FEATURE OUTPUT_MANAGER
-	                DEFAULT ON
+	                  DEFAULT ON
                     DESCRIPTION "Build the output manager" )
 
 ecbuild_add_option( FEATURE OUTPUT_MANAGER_ENCODER_REPORT
                     CONDITION HAVE_OUTPUT_MANAGER
-		            DEFAULT OFF
+		                DEFAULT OFF
                     DESCRIPTION "Enable generation of the encoding report" )
 
 ecbuild_add_option( FEATURE OUTPUT_MANAGER_TOOL
@@ -114,7 +114,7 @@ ecbuild_add_option( FEATURE OUTPUT_MANAGER_TOOL
 
 ### export package info
 set( MULTIO_CONFIG_DIR     share/multio/config )
-set( MULTIOM_CONFIG_DIR     share/multiom )
+set( MULTIOM_CONFIG_DIR    share/multiom )
 set( MULTIO_INCLUDE_DIRS   ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src )
 set( MULTIO_LIBRARIES      multio )
 

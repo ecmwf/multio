@@ -1,8 +1,11 @@
+typedef unsigned long grib_handle;
+typedef unsigned long size_t;
+
 // multio_grib2 dictionary
 int multio_grib2_dict_create( void** dict );
 int multio_grib2_dict_set( void* dict, const char* key, const char* value );
 int multio_grib2_dict_get( void* dict, const char* key, char** value );
-int multio_grib2_dict_has( void* dict, const char* key, bool* has );
+int multio_grib2_dict_has( void* dict, const char* key, int* has );
 int multio_grib2_dict_iterate( void* dict, void** iterator, char** key, char** value );
 int multio_grib2_dict_destroy( void* dict );
 

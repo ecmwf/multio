@@ -11,6 +11,9 @@ set(OUTPUT_MANAGER_MINOR 0)
 # Implementation updates with constant interfaces
 set(OUTPUT_MANAGER_PATCH 1)
 
+# Define the include directory path
+set(ECOM_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
+
 # Use Fortran to get the compiler and compiler version
 execute_process(
     COMMAND ${CMAKE_Fortran_COMPILER} --version
@@ -66,11 +69,6 @@ configure_file(
 )
 
 
-
-
-# Define the include directory path
-set(ECOM_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
-
 # Clean the directory if it exists
 if(EXISTS ${ECOM_INCLUDE_DIR})
     file(REMOVE_RECURSE ${ECOM_INCLUDE_DIR})
@@ -101,7 +99,6 @@ set( DOFFSET "     ")
 #
 # + ADD SUB-DIRECTORIES
 # =====================
-add_subdirectory( api )
 add_subdirectory( common )
 add_subdirectory( configuration )
 add_subdirectory( containers )
@@ -119,6 +116,7 @@ add_subdirectory( sinks )
 add_subdirectory( ifs-encoders )
 add_subdirectory( ifs2mars )
 add_subdirectory( tools )
+add_subdirectory( api )
 
 #
 # + ADD LOCAL FILES

@@ -9,9 +9,14 @@ message("${OFFSET} + API sources: ${MULTIOM_API_DIR}")
 set(OFFSET ${OFFSET}${DOFFSET})
 
 # Collect source files in module2
-set( MULTIOM_API_SOURCES
+set( MULTIOM_API_MAIN_SOURCES
   ${MULTIOM_API_DIR}/api_encoder_wrapper_mod.F90
   ${MULTIOM_API_DIR}/api_dictionary_wrapper_mod.F90
+)
+
+# Collect source files in module2
+set( MULTIOM_API_SOURCES
+  ${MULTIOM_API_MAIN_SOURCES}
   CACHE INTERNAL "List of all sources in API directory"
 )
 

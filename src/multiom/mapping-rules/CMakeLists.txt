@@ -15,7 +15,7 @@ set( MULTIOM_MAPPING_RULES_MAIN_SOURCES
   ${MULTIOM_MAPPING_RULES_DIR}/cached_mapper_mod.F90
   ${MULTIOM_MAPPING_RULES_DIR}/mapping_cache_mod.F90
   ${MULTIOM_MAPPING_RULES_DIR}/mapping_utils_mod.F90
-  ${MULTIOM_MAPPING_RULES_DIR}/mapping_options_mod.F90
+  # ${MULTIOM_MAPPING_RULES_DIR}/mapping_options_mod.F90
 )
 
 # Collect source files in module2

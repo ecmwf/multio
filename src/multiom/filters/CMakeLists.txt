@@ -17,7 +17,7 @@ set(MULTIOM_FILTERS_MAIN_SOURCES
   ${MULTIOM_FILTERS_DIR}/filter_base_mod.F90
   ${MULTIOM_FILTERS_DIR}/filter_composed_mod.F90
   ${MULTIOM_FILTERS_DIR}/filter_factory_mod.F90
-  ${MULTIOM_FILTERS_DIR}/filter_options_mod.F90
+  # ${MULTIOM_FILTERS_DIR}/filter_options_mod.F90
 )
 
 # Collect source files in module2

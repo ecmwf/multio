@@ -10,14 +10,16 @@ set(OFFSET ${OFFSET}${DOFFSET})
 # Add Subdirectories
 add_subdirectory(encoder-grib2)
 
+
+
 # Collect source files in module2
 set( MULTIOM_ENCODERS_MAIN_SOURCES
-  ${MULTIOM_ENCODERS_DIR}/grib_section_base_mod.F90
-  ${MULTIOM_ENCODERS_DIR}/grib_encoder_options_mod.F90
+  #${MULTIOM_ENCODERS_DIR}/grib_section_base_mod.F90
+  #${MULTIOM_ENCODERS_DIR}/grib_encoder_options_mod.F90
   ${MULTIOM_ENCODERS_DIR}/grib_encoder_factory_mod.F90
-  ${MULTIOM_ENCODERS_DIR}/grib_encoder_register_mod.F90
-  ${MULTIOM_ENCODERS_DIR}/grib_encoder_tunneling_mod.F90
-  ${MULTIOM_ENCODERS_DIR}/grib_encoder_lazy_rules_mod.F90
+  #${MULTIOM_ENCODERS_DIR}/grib_encoder_register_mod.F90
+  #${MULTIOM_ENCODERS_DIR}/grib_encoder_tunneling_mod.F90
+  #${MULTIOM_ENCODERS_DIR}/grib_encoder_lazy_rules_mod.F90
 )
 
 # Collect source files in module2

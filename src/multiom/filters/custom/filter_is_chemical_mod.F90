@@ -45,6 +45,9 @@ TYPE, EXTENDS(FILTER_BASE_A) :: FILTER_IS_CHEMICAL_T
   !> Default visibility of the type
   PRIVATE
 
+  !> Flag indicating whether the ensemble filter is negated.
+  LOGICAL :: NEGATE_ = .FALSE.
+
 CONTAINS
 
   !> Initializes the chemical filter with default values.
@@ -95,6 +98,8 @@ FUNCTION FILTER_IS_CHEMICAL_INIT( THIS, CFG, OPT, HOOKS ) RESULT(RET)
   USE :: FILTER_OPTIONS_MOD,  ONLY: FILTER_OPTIONS_T
   USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_CONFIGURATION_T
   USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_CONFIGURATION_HAS_KEY
+  USE :: YAML_CORE_UTILS_MOD, ONLY: YAML_READ_LOGICAL
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -116,6 +121,13 @@ IMPLICIT NONE
   !> Function result
   INTEGER(KIND=JPIB_K) :: RET
 
+  !> Local variables
+  LOGICAL :: HAS_NEGATE
+
+  !> Error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_OPERATION = 1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_VALUE     = 2_JPIB_K
+
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
 
@@ -130,6 +142,16 @@ IMPLICIT NONE
 
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
+
+  !> Read the encoder configuration
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_OPERATION ) YAML_CONFIGURATION_HAS_KEY( CFG, 'negate', HAS_NEGATE, HOOKS )
+
+  !> Read the "negate" flag
+  IF ( HAS_NEGATE ) THEN
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_VALUE) YAML_READ_LOGICAL( CFG, 'negate',THIS%NEGATE_, HOOKS )
+  ELSE
+    THIS%NEGATE_ = .FALSE.
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -204,6 +226,7 @@ FUNCTION FILTER_IS_CHEMICAL_MATCH( THIS, MSG, PAR, MATCH, HOOKS ) RESULT(RET)
   USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
   USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
   USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: ENUMERATORS_MOD,     ONLY: UNDEF_PARAM_E
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -241,8 +264,17 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  !> TODO: Some kind of logic here
-  MATCH = .FALSE.
+  ! Check if the simulation is an ensemble simulation
+  IF ( MSG%CHEM .NE. UNDEF_PARAM_E ) THEN
+    MATCH = .TRUE.
+  ELSE
+    MATCH = .FALSE.
+  ENDIF
+
+  ! Apply the negation operator
+  IF ( THIS%NEGATE_ ) THEN
+    MATCH = .NOT. MATCH
+  ENDIF
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

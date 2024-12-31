@@ -17,10 +17,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        8, 9, 20, 44, 45, 47, 50, 57, 58, '142:147', 169, '175:182', 189,
-        '195:197', 205, '208:213', 228, 239, 240, '162100:162113',
-        '222001:222256', 228021, 228022, '228081:228082', 228129, 228130,
-        228216, 228251, '233000:233035'
+        228080
       ]
 
     - type: 'levtype'
@@ -36,6 +33,8 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
+
+    - type: 'is-chemical'
 
     - type: 'packing'
       operation: 'match'
@@ -67,7 +66,8 @@ encoder:
       type: 'default'
 
     tables-configurator:
-      type: 'default'
+      type: 'custom'
+      tables-version: 30
       local-tables-version: 0
 
   # Section 2: Local Use Section
@@ -80,7 +80,7 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 11
+    template-number: 43
 
     time-statistics-configurator:
       type: 'since-beginning-of-forecast'
@@ -88,12 +88,16 @@ encoder:
 
     param-configurator:
       type: 'paramId'
+      dataset-for-local: 'era6'
 
     level-configurator:
       type: 'surface'
 
     ensemble-configurator:
       type: 'default'
+
+    chemistry-configurator:
+      type: 'chemical'
 
   # Section 5: Data Representation Section
   data-representation-section:

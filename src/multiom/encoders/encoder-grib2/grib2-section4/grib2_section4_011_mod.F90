@@ -2084,9 +2084,9 @@ END FUNCTION GRIB2_SECTION4_011_BUILD_PARAM_HANDLER
 
 
 !>
-!> @brief Builds the level handler for GRIB2 section 4, template 000.
+!> @brief Builds the level handler for GRIB2 section 4, template 011.
 !>
-!> This function constructs the level handler for GRIB2 section 4, template 000,
+!> This function constructs the level handler for GRIB2 section 4, template 011,
 !> based on the provided configuration (`CFG`), options (`OPT`).
 !> It modifies the `THIS` structure accordingly and returns an error code if the operation fails.
 !> The function is thread-safe and uses preprocessor directives for debugging, logging, and tracing.
@@ -2116,12 +2116,12 @@ END FUNCTION GRIB2_SECTION4_011_BUILD_PARAM_HANDLER
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see GRIB2_SECTION4_000_INIT
-!> @see GRIB2_SECTION4_000_ALLOCATE
-!> @see GRIB2_SECTION4_000_PRESET
-!> @see GRIB2_SECTION4_000_RUNLEVEL
-!> @see GRIB2_SECTION4_000_TO_BE_ENCODED
-!> @see GRIB2_SECTION4_000_FREE
+!> @see GRIB2_SECTION4_011_INIT
+!> @see GRIB2_SECTION4_011_ALLOCATE
+!> @see GRIB2_SECTION4_011_PRESET
+!> @see GRIB2_SECTION4_011_RUNLEVEL
+!> @see GRIB2_SECTION4_011_TO_BE_ENCODED
+!> @see GRIB2_SECTION4_011_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
 #define PP_PROCEDURE_NAME 'GRIB2_SECTION4_011_BUILD_LEVEL_HANDLER'

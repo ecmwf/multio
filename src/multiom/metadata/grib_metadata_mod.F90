@@ -3174,6 +3174,7 @@ PP_THREAD_SAFE FUNCTION GRIB_METADATA_DUMP_SAMPLE( THIS, NAME, HOOKS ) RESULT(RE
 
   ! Symbols imported from external libraries
   USE :: GRIB_API, ONLY: GRIB_OPEN_FILE
+  USE :: GRIB_API, ONLY: GRIB_GET
   USE :: GRIB_API, ONLY: GRIB_WRITE
   USE :: GRIB_API, ONLY: GRIB_CLOSE_FILE
   USE :: GRIB_API, ONLY: GRIB_SUCCESS
@@ -3201,6 +3202,7 @@ IMPLICIT NONE
   ! Local variables
   INTEGER(KIND=JPIM_K) :: GRIB_FILE_HANDLE
   INTEGER(KIND=JPIM_K) :: KRET
+  INTEGER(KIND=JPIB_K) :: PDT
 
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_OPEN_FILE_FAILED=1_JPIB_K
@@ -3221,6 +3223,10 @@ IMPLICIT NONE
 
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
+
+  ! MIVAL: Remove
+  CALL GRIB_GET( THIS%IGRIB_HANDLE_, 'productDefinitionTemplateNumber', PDT )
+  WRITE(*,*) 'This is the f*****g PDT; ', PDT
 
   ! Open the grib file
   CALL GRIB_OPEN_FILE( GRIB_FILE_HANDLE, TRIM(NAME), 'a', STATUS=KRET )

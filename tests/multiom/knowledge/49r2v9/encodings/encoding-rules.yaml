@@ -171,6 +171,12 @@ encoding-rules:
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-accumul-since-beginning.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-accumul-since-beginning.yaml'
 
+  # Gridded surfaces chemical for forecast accumul since beginning of forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-accumul-since-beginning-chem.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-accumul-since-beginning-chem.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-accumul-since-beginning-chem.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-accumul-since-beginning-chem.yaml'
+
   # Gridded model level for forecast accumul since beginning of forecast
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-deterministic-ccsds-accumul-since-beginning.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-deterministic-simple-accumul-since-beginning.yaml'

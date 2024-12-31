@@ -1,9 +1,9 @@
 !>
-!> @file G2S4_001_mod.F90
+!> @file G2S4_041_mod.F90
 !>
 !> @brief Module for managing GRIB2 Section 4 operations.
 !>
-!> The `G2S4_001_MOD` module contains procedures to initialize, allocate,
+!> The `G2S4_041_MOD` module contains procedures to initialize, allocate,
 !> preset, run, and clean up the resources associated with GRIB2 Section 4 objects.
 !> This module provides thread-safe operations and includes extensive use of debugging,
 !> logging, and tracing capabilities, making it robust for production and testing.
@@ -18,12 +18,12 @@
 !> @section interface
 !>
 !> The module exports the following procedures:
-!>   - @see G2S4_001_INIT
-!>   - @see G2S4_001_ALLOCATE
-!>   - @see G2S4_001_PRESET
-!>   - @see G2S4_001_RUNTIME
-!>   - @see G2S4_001_TO_BE_ENCODED
-!>   - @see G2S4_001_FREE
+!>   - @see G2S4_041_INIT
+!>   - @see G2S4_041_ALLOCATE
+!>   - @see G2S4_041_PRESET
+!>   - @see G2S4_041_RUNTIME
+!>   - @see G2S4_041_TO_BE_ENCODED
+!>   - @see G2S4_041_FREE
 !>
 !> @section dependencies
 !>
@@ -52,10 +52,10 @@
 #include "output_manager_preprocessor_errhdl_utils.h"
 
 
-#define PP_FILE_NAME 'grib2_section4_001_mod.F90'
+#define PP_FILE_NAME 'grib2_section4_041_mod.F90'
 #define PP_SECTION_TYPE 'MODULE'
-#define PP_SECTION_NAME 'GRIB2_SECTION4_001_MOD'
-MODULE GRIB2_SECTION4_001_MOD
+#define PP_SECTION_NAME 'GRIB2_SECTION4_041_MOD'
+MODULE GRIB2_SECTION4_041_MOD
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,     ONLY: JPIB_K
@@ -68,12 +68,12 @@ IMPLICIT NONE
 PRIVATE
 
 !> Name of the object (to be used in the register)
-CHARACTER(LEN=*), PARAMETER :: G2S4_001_NAME = 'g2s4::001'
+CHARACTER(LEN=*), PARAMETER :: G2S4_041_NAME = 'g2s4::041'
 
 !>
 !> @brief Type definition for GRIB2 Section 4 handler.
 !>
-!> The `G2S4_001_T` type extends the base class `GRIB_SECTION_BASE_A` and
+!> The `G2S4_041_T` type extends the base class `GRIB_SECTION_BASE_A` and
 !> provides concrete implementations of initialization, allocation, preset, runtime,
 !> encoding checks, and cleanup operations for GRIB2 Section 4 objects.
 !>
@@ -81,13 +81,13 @@ CHARACTER(LEN=*), PARAMETER :: G2S4_001_NAME = 'g2s4::001'
 !> non-overridable methods, providing robustness in both multi-threaded and single-threaded
 !> environments.
 !>
-TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: G2S4_001_T
+TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: G2S4_041_T
 
   !> Default symbols visibility
   PRIVATE
 
   !> Integer section number
-  INTEGER(KIND=JPIB_K) :: TEMPLATE_NUMBER_ = 1_JPIB_K
+  INTEGER(KIND=JPIB_K) :: TEMPLATE_NUMBER_ = 41_JPIB_K
 
   !> Name of the sub sections
   CHARACTER(LEN=64) :: TIME_SUBSECTION_NAME_ = REPEAT( ' ', 64 )
@@ -98,6 +98,7 @@ TYPE, EXTENDS(GRIB_SECTION_BASE_A) :: G2S4_001_T
   !> Type definition for GRIB2 Section 4 handler.
   CLASS(GRIB_SECTION_BASE_A), POINTER :: TIME_ => NULL()
   CLASS(GRIB_SECTION_BASE_A), POINTER :: LEVEL_ => NULL()
+  CLASS(GRIB_SECTION_BASE_A), POINTER :: CHEM_ => NULL()
   CLASS(GRIB_SECTION_BASE_A), POINTER :: PARAMID_ => NULL()
   CLASS(GRIB_SECTION_BASE_A), POINTER :: ENSEMBLE_ => NULL()
 
@@ -111,7 +112,7 @@ CONTAINS
   !> The procedure starts from a yaml configuration file to construct the
   !> GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => G2S4_001_INIT_CFG
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_CFG => G2S4_041_INIT_CFG
 
   !>
   !> @brief Initializes the GRIB2 Section 4 object.
@@ -121,7 +122,7 @@ CONTAINS
   !> The preocedure starts from a message and fro the parameters to construct
   !> the GRIB2 encoder.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => G2S4_001_INIT_LAZY
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: INIT_LAZY => G2S4_041_INIT_LAZY
 
   !>
   !> @brief Allocates resources for the GRIB2 Section 4 object.
@@ -129,7 +130,7 @@ CONTAINS
   !> This procedure allocates memory and other necessary resources for
   !> the object based on provided parameters.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => G2S4_001_ALLOCATE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: ALLOCATE => G2S4_041_ALLOCATE
 
   !>
   !> @brief Presets the parameters of the GRIB2 Section 4 object.
@@ -137,7 +138,7 @@ CONTAINS
   !> This procedure configures the internal parameters of the object
   !> before runtime execution.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => G2S4_001_PRESET
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRESET => G2S4_041_PRESET
 
   !>
   !> @brief Manages the runtime execution of GRIB2 Section 4 operations.
@@ -145,7 +146,7 @@ CONTAINS
   !> This procedure handles operations and computations during runtime,
   !> making use of time and metadata information.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => G2S4_001_RUNTIME
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: RUNTIME => G2S4_041_RUNTIME
 
   !>
   !> @brief Determines if the GRIB2 Section 4 object needs to be encoded.
@@ -153,7 +154,7 @@ CONTAINS
   !> This procedure checks whether the object should be encoded based
   !> on the provided parameters and internal state.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => G2S4_001_TO_BE_ENCODED
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: TO_BE_ENCODED => G2S4_041_TO_BE_ENCODED
 
   !>
   !> @brief Frees resources allocated for the GRIB2 Section 4 object.
@@ -161,7 +162,7 @@ CONTAINS
   !> This procedure deallocates resources and performs cleanup after
   !> the object has been used.
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => G2S4_001_FREE
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: FREE => G2S4_041_FREE
 
   !>
   !> @brief Print informations related to the section
@@ -169,7 +170,7 @@ CONTAINS
   !> This procedure print informatin about the section and eventually call
   !> the print method of the nested sub-sections
   !>
-  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRINT => G2S4_001_PRINT
+  PROCEDURE, PUBLIC, PASS, NON_OVERRIDABLE :: PRINT => G2S4_041_PRINT
 
 
 
@@ -178,72 +179,75 @@ CONTAINS
   !>
   !> This procedure allocates the proper time configurator
   !>
-  PROCEDURE, PRIVATE, PASS :: BUILD_TIME_CONFIGURATOR_CFG => G2S4_001_BUILD_TIME_HANDLER_CFG
+  PROCEDURE, PRIVATE, PASS :: BUILD_TIME_CONFIGURATOR_CFG => G2S4_041_BUILD_TIME_HANDLER_CFG
 
   !>
   !> @brief Build the param configurator object from yaml configuration
   !>
   !> This procedure allocates the proper param configurator
   !>
-  PROCEDURE, PRIVATE, PASS :: BUILD_PARAM_CONFIGURATOR_CFG => G2S4_001_BUILD_PARAM_HANDLER_CFG
+  PROCEDURE, PRIVATE, PASS :: BUILD_PARAM_CONFIGURATOR_CFG => G2S4_041_BUILD_PARAM_HANDLER_CFG
 
   !>
   !> @brief Build the level configurator object from yaml configuration
   !>
   !> This procedure allocates the proper level configurator
   !>
-  PROCEDURE, PRIVATE, PASS :: BUILD_LEVEL_CONFIGURATOR_CFG => G2S4_001_BUILD_LEVEL_HANDLER_CFG
+  PROCEDURE, PRIVATE, PASS :: BUILD_LEVEL_CONFIGURATOR_CFG => G2S4_041_BUILD_LEVEL_HANDLER_CFG
 
   !>
   !> @brief Build the ensemble configurator object from yaml configuration
   !>
   !> This procedure allocates the proper ensemble configurator
   !>
-  PROCEDURE, PRIVATE, PASS :: BUILD_ENSEMBLE_CONFIGURATOR_CFG => G2S4_001_BUILD_ENSEMBLE_HANDLER_CFG
+  PROCEDURE, PRIVATE, PASS :: BUILD_ENSEMBLE_CONFIGURATOR_CFG => G2S4_041_BUILD_ENSEMBLE_HANDLER_CFG
+
+  PROCEDURE, PRIVATE, PASS :: BUILD_CHEM_CONFIGURATOR_CFG => GRIB2_SECTION4_041_BUILD_CHEM_HANDLER
+
 
   !>
   !> @brief Build the param configurator object from rules
   !>
   !> This procedure allocates the proper param configurator
   !>
-  PROCEDURE, PRIVATE, PASS :: BUILD_PARAM_CONFIGURATOR_LAZY => G2S4_001_BUILD_PARAM_HANDLER_LAZY
+  PROCEDURE, PRIVATE, PASS :: BUILD_PARAM_CONFIGURATOR_LAZY => G2S4_041_BUILD_PARAM_HANDLER_LAZY
 
   !>
   !> @brief Build the level configurator object from rules
   !>
   !> This procedure allocates the proper level configurator
   !>
-  PROCEDURE, PRIVATE, PASS :: BUILD_LEVEL_CONFIGURATOR_LAZY => G2S4_001_BUILD_LEVEL_HANDLER_LAZY
+  PROCEDURE, PRIVATE, PASS :: BUILD_LEVEL_CONFIGURATOR_LAZY => G2S4_041_BUILD_LEVEL_HANDLER_LAZY
 
   !>
   !> @brief Build the time configurator object from rules
   !>
   !> This procedure allocates the proper time configurator
   !>
-  PROCEDURE, PRIVATE, PASS :: BUILD_TIME_CONFIGURATOR_LAZY => G2S4_001_BUILD_TIME_HANDLER_LAZY
+  PROCEDURE, PRIVATE, PASS :: BUILD_TIME_CONFIGURATOR_LAZY => G2S4_041_BUILD_TIME_HANDLER_LAZY
 
   !>
   !> @brief Build the ensemble configurator object from rules
   !>
   !> This procedure allocates the proper ensemble configurator
   !>
-  PROCEDURE, PRIVATE, PASS :: BUILD_ENSEMBLE_CONFIGURATOR_LAZY => G2S4_001_BUILD_ENSEMBLE_HANDLER_LAZY
+  PROCEDURE, PRIVATE, PASS :: BUILD_ENSEMBLE_CONFIGURATOR_LAZY => G2S4_041_BUILD_ENSEMBLE_HANDLER_LAZY
 
 END TYPE
 
 
 !>
 !> Public symbols (procedures)
-PUBLIC :: G2S4_001_MAKE
-PUBLIC :: G2S4_001_REGISTER
-PUBLIC :: G2S4_001_DESTROY
+PUBLIC :: G2S4_041_MAKE
+PUBLIC :: G2S4_041_REGISTER
+PUBLIC :: G2S4_041_DESTROY
 
 CONTAINS
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_REGISTER'
-PP_THREAD_SAFE FUNCTION G2S4_001_REGISTER( IDX ) BIND(C, NAME='g2s4_001_register') RESULT(RET)
+#define PP_PROCEDURE_NAME 'G2S4_041_REGISTER'
+PP_THREAD_SAFE FUNCTION G2S4_041_REGISTER( IDX ) BIND(C, NAME='g2s4_041_register') RESULT(RET)
 
   !> Symbols imported from intrinsics modules
   USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: INT64
@@ -319,11 +323,11 @@ IMPLICIT NONE
     PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(REG), ERRFLAG_UNABLE_TO_GET_SECTION_REGISTER)
 
     ! Associate the allocator
-    FA => G2S4_001_MAKE
-    FD => G2S4_001_DESTROY
+    FA => G2S4_041_MAKE
+    FD => G2S4_041_DESTROY
 
     ! Register the section (since the register is shared, constructors needs to be registered only once)
-    PP_TRYCALL(ERRFLAG_UNABLE_TO_REGISTER) REG%REGISTER( G2S4_001_NAME, FA, FD, HOOKS )
+    PP_TRYCALL(ERRFLAG_UNABLE_TO_REGISTER) REG%REGISTER( G2S4_041_NAME, FA, FD, HOOKS )
 
   ENDIF
 !omp end single
@@ -351,7 +355,7 @@ PP_ERROR_HANDLER
     ! Handle different errors
     SELECT CASE(ERRIDX)
     CASE ( ERRFLAG_UNABLE_TO_REGISTER )
-      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to register section: '//TRIM(ADJUSTL(G2S4_001_NAME)) )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to register section: '//TRIM(ADJUSTL(G2S4_041_NAME)) )
     CASE ( ERRFLAG_UNABLE_TO_GET_SECTION_REGISTER )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to get section register' )
     CASE DEFAULT
@@ -372,14 +376,14 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_REGISTER
+END FUNCTION G2S4_041_REGISTER
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_MAKE'
-PP_THREAD_SAFE FUNCTION G2S4_001_MAKE( GRIB_SECTION, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'G2S4_041_MAKE'
+PP_THREAD_SAFE FUNCTION G2S4_041_MAKE( GRIB_SECTION, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
@@ -432,7 +436,7 @@ IMPLICIT NONE
 
   ! Allocate concrete class
 !$omp critical(G2S4_ALLOCATE)
-  ALLOCATE( G2S4_001_T::GRIB_SECTION, STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
+  ALLOCATE( G2S4_041_T::GRIB_SECTION, STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
   PP_DEBUG_CRITICAL_COND_THROW( ALLOC_STATUS.NE.0, ERRFLAG_ALLOCATION_ERROR )
 !$omp end critical(G2S4_ALLOCATE)
 
@@ -484,7 +488,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_MAKE
+END FUNCTION G2S4_041_MAKE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -492,8 +496,8 @@ END FUNCTION G2S4_001_MAKE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_DESTROY'
-PP_THREAD_SAFE FUNCTION G2S4_001_DESTROY( GRIB_SECTION, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'G2S4_041_DESTROY'
+PP_THREAD_SAFE FUNCTION G2S4_041_DESTROY( GRIB_SECTION, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
@@ -599,7 +603,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_DESTROY
+END FUNCTION G2S4_041_DESTROY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -612,7 +616,7 @@ END FUNCTION G2S4_001_DESTROY
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `G2S4_001_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `G2S4_041_T` representing the GRIB section being initialized.
 !>   @param [in]    CFG   The YAML configuration object of type `YAML_CONFIGURATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS A structure of type `HOOKS_T` that contains hooks for initialization.
@@ -634,16 +638,16 @@ END FUNCTION G2S4_001_DESTROY
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_001_INIT
-!> @see G2S4_001_ALLOCATE
-!> @see G2S4_001_PRESET
-!> @see G2S4_001_RUNTIME
-!> @see G2S4_001_TO_BE_ENCODED
-!> @see G2S4_001_FREE
+!> @see G2S4_041_INIT
+!> @see G2S4_041_ALLOCATE
+!> @see G2S4_041_PRESET
+!> @see G2S4_041_RUNTIME
+!> @see G2S4_041_TO_BE_ENCODED
+!> @see G2S4_041_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_INIT_CFG'
-PP_THREAD_SAFE FUNCTION G2S4_001_INIT_CFG( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_INIT_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_041_INIT_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -664,7 +668,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_INIT_CFG( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -677,6 +681,7 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_INIT_PARAM_HANDLER=2_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_INIT_LEVEL_HANDLER=3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_INIT_ENSEMBLE_HANDLER=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_INIT_CHEM_HANDLER=5_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -694,16 +699,17 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Initialise the section
-  THIS%TEMPLATE_NUMBER_ = 1_JPIB_K
+  THIS%TEMPLATE_NUMBER_ = 41_JPIB_K
   THIS%TYPE_ = 'SECTION'
   THIS%SUBTYPE_ = 'PRODUCT_DEFINITION_SECTION'
-  THIS%KIND_   = '4.1'
+  THIS%KIND_   = '4.41'
 
   ! Initialize tha time handler
   PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_TIME_HANDLER)  THIS%BUILD_TIME_CONFIGURATOR_CFG( CFG, OPT, HOOKS )
   PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_PARAM_HANDLER) THIS%BUILD_PARAM_CONFIGURATOR_CFG( CFG, OPT, HOOKS )
   PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_LEVEL_HANDLER) THIS%BUILD_LEVEL_CONFIGURATOR_CFG( CFG, OPT, HOOKS )
   PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_ENSEMBLE_HANDLER) THIS%BUILD_ENSEMBLE_CONFIGURATOR_CFG( CFG, OPT, HOOKS )
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_INIT_CHEM_HANDLER)  THIS%BUILD_CHEM_CONFIGURATOR_CFG( CFG, OPT, HOOKS )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -735,6 +741,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to initialize level handler' )
     CASE ( ERRFLAG_UNABLE_TO_INIT_ENSEMBLE_HANDLER )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to initialize ensemble handler' )
+    CASE ( ERRFLAG_UNABLE_TO_INIT_CHEM_HANDLER )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to initialize chem handler' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -753,7 +761,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_INIT_CFG
+END FUNCTION G2S4_041_INIT_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -765,7 +773,7 @@ END FUNCTION G2S4_001_INIT_CFG
 !> is thread-safe and returns an error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `G2S4_001_T` representing the GRIB section being initialized.
+!>   @param [inout] THIS  An object of type `G2S4_041_T` representing the GRIB section being initialized.
 !>   @param [in]    MSG   All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR   All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -788,16 +796,16 @@ END FUNCTION G2S4_001_INIT_CFG
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_001_INIT
-!> @see G2S4_001_ALLOCATE
-!> @see G2S4_001_PRESET
-!> @see G2S4_001_RUNTIME
-!> @see G2S4_001_TO_BE_ENCODED
-!> @see G2S4_001_FREE
+!> @see G2S4_041_INIT
+!> @see G2S4_041_ALLOCATE
+!> @see G2S4_041_PRESET
+!> @see G2S4_041_RUNTIME
+!> @see G2S4_041_TO_BE_ENCODED
+!> @see G2S4_041_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_INIT_LAZY'
-PP_THREAD_SAFE FUNCTION G2S4_001_INIT_LAZY( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_INIT_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_041_INIT_LAZY( THIS, &
 &               MSG, PAR, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -810,6 +818,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_INIT_LAZY( THIS, &
   USE :: GRIB2_SECTION4_PARAM_FACTORY_MOD,         ONLY: MAKE_GRIB2_PARAM_CONFIGURATOR
   USE :: GRIB2_SECTION4_LEVEL_FACTORY_MOD,         ONLY: MAKE_GRIB2_LEVEL_CONFIGURATOR
   USE :: GRIB2_SECTION4_ENSEMBLE_FACTORY_MOD,      ONLY: MAKE_GRIB2_ENSEMBLE_CONFIGURATOR
+  USE :: GRIB2_SECTION4_CHEM_FACTORY_MOD,          ONLY: MAKE_GRIB2_CHEM_CONFIGURATOR
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -823,7 +832,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_INIT_LAZY( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -837,6 +846,7 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_BUILD_PARAM_CONFIGURATOR=2_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_BUILD_LEVEL_CONFIGURATOR=3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_BUILD_ENSEMBLE_CONFIGURATOR=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_BUILD_CHEM_CONFIGURATOR=5_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -854,10 +864,10 @@ IMPLICIT NONE
   PP_SET_ERR_SUCCESS( RET )
 
   ! Initialise the section
-  THIS%TEMPLATE_NUMBER_ = 1_JPIB_K
+  THIS%TEMPLATE_NUMBER_ = 41_JPIB_K
   THIS%TYPE_ = 'SECTION'
   THIS%SUBTYPE_ = 'PRODUCT_DEFINITION_SECTION'
-  THIS%KIND_   = '4.1'
+  THIS%KIND_   = '4.41'
 
   ! Build the param configurator
   PP_TRYCALL(ERRFLAG_UNABLE_TO_BUILD_TIME_CONFIGURATOR) MAKE_GRIB2_POINT_IN_TIME_CONFIGURATOR( &
@@ -874,6 +884,10 @@ IMPLICIT NONE
   ! Build the level configurator
   PP_TRYCALL(ERRFLAG_UNABLE_TO_BUILD_ENSEMBLE_CONFIGURATOR) MAKE_GRIB2_ENSEMBLE_CONFIGURATOR( &
 &  THIS%LEVEL_, THIS%TEMPLATE_NUMBER_, MSG, PAR, OPT, HOOKS )
+
+  ! Build the level configurator
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_BUILD_CHEM_CONFIGURATOR) MAKE_GRIB2_CHEM_CONFIGURATOR( &
+&  THIS%CHEM_, THIS%TEMPLATE_NUMBER_, MSG, PAR, OPT, HOOKS )
 
   ! Trace end of procedure (on success)
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
@@ -905,6 +919,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to build level configurator' )
     CASE ( ERRFLAG_UNABLE_TO_BUILD_ENSEMBLE_CONFIGURATOR )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to build ensemble configurator' )
+    CASE ( ERRFLAG_UNABLE_TO_BUILD_CHEM_CONFIGURATOR )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to build chem configurator' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -923,7 +939,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_INIT_LAZY
+END FUNCTION G2S4_041_INIT_LAZY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -937,7 +953,7 @@ END FUNCTION G2S4_001_INIT_LAZY
 !> The function is thread-safe and returns an error code indicating the success or failure of the allocation process.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `G2S4_001_T` representing the GRIB section to allocate resources for.
+!>   @param [in]    THIS     An object of type `G2S4_041_T` representing the GRIB section to allocate resources for.
 !>   @param [in]    MSG      All the mars keywords needed to describe the field `FORTRAN_MESSAGE_T`.
 !>   @param [in]    PAR      All information outside mars keywords needed to describe the field `PARAMETRIZATION_T`.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -962,16 +978,16 @@ END FUNCTION G2S4_001_INIT_LAZY
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_001_ALLOCATE
-!> @see G2S4_001_INIT
-!> @see G2S4_001_PRESET
-!> @see G2S4_001_RUNTIME
-!> @see G2S4_001_TO_BE_ENCODED
-!> @see G2S4_001_FREE
+!> @see G2S4_041_ALLOCATE
+!> @see G2S4_041_INIT
+!> @see G2S4_041_PRESET
+!> @see G2S4_041_RUNTIME
+!> @see G2S4_041_TO_BE_ENCODED
+!> @see G2S4_041_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_ALLOCATE'
-PP_THREAD_SAFE FUNCTION G2S4_001_ALLOCATE( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_ALLOCATE'
+PP_THREAD_SAFE FUNCTION G2S4_041_ALLOCATE( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -994,7 +1010,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_ALLOCATE( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),               INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),               INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -1010,10 +1026,12 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALLOCATE_LEVEL=3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALLOCATE_PARAMID=4_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALLOCATE_ENSEMBLE=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ALLOCATE_CHEM=10_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED=6_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED=7_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED=8_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED=9_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED=11_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1035,6 +1053,7 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%TIME_), ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%LEVEL_), ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%CHEM_), ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%PARAMID_), ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ENSEMBLE_), ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
 
@@ -1044,6 +1063,7 @@ IMPLICIT NONE
   ! Allocate time, level and paramId subcomponents of the section
   PP_TRYCALL(ERRFLAG_ALLOCATE_TIME) THIS%TIME_%ALLOCATE( MSG, PAR, OPT, METADATA, HOOKS )
   PP_TRYCALL(ERRFLAG_ALLOCATE_LEVEL) THIS%LEVEL_%ALLOCATE( MSG, PAR, OPT, METADATA, HOOKS )
+  PP_TRYCALL(ERRFLAG_ALLOCATE_CHEM) THIS%CHEM_%ALLOCATE( MSG, PAR, OPT, METADATA, HOOKS )
   PP_TRYCALL(ERRFLAG_ALLOCATE_PARAMID) THIS%PARAMID_%ALLOCATE( MSG, PAR, OPT, METADATA, HOOKS )
   PP_TRYCALL(ERRFLAG_ALLOCATE_ENSEMBLE) THIS%ENSEMBLE_%ALLOCATE( MSG, PAR, OPT, METADATA, HOOKS )
 
@@ -1076,6 +1096,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to allocate time' )
     CASE ( ERRFLAG_ALLOCATE_LEVEL )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to allocate level' )
+    CASE ( ERRFLAG_ALLOCATE_CHEM )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to allocate chemistry' )
     CASE ( ERRFLAG_ALLOCATE_PARAMID )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to allocate paramId' )
     CASE ( ERRFLAG_ALLOCATE_ENSEMBLE )
@@ -1088,6 +1110,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'level configurator not associated' )
     CASE ( ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'paramId configurator not associated' )
+    CASE ( ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'chemistry configurator not associated' )
     CASE ( ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'ensemble configurator not associated' )
     CASE DEFAULT
@@ -1108,7 +1132,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_ALLOCATE
+END FUNCTION G2S4_041_ALLOCATE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1121,7 +1145,7 @@ END FUNCTION G2S4_001_ALLOCATE
 !> The function is thread-safe and returns an error code indicating the success or failure of the preset operation.
 !>
 !> @section interface
-!>   @param [in]    THIS     An object of type `G2S4_001_T` representing the GRIB section to be preset.
+!>   @param [in]    THIS     An object of type `G2S4_041_T` representing the GRIB section to be preset.
 !>   @param [in]    MSG      The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR      The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    OPT      The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -1146,16 +1170,16 @@ END FUNCTION G2S4_001_ALLOCATE
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_001_PRESET
-!> @see G2S4_001_ALLOCATE
-!> @see G2S4_001_INIT
-!> @see G2S4_001_RUNTIME
-!> @see G2S4_001_TO_BE_ENCODED
-!> @see G2S4_001_FREE
+!> @see G2S4_041_PRESET
+!> @see G2S4_041_ALLOCATE
+!> @see G2S4_041_INIT
+!> @see G2S4_041_RUNTIME
+!> @see G2S4_041_TO_BE_ENCODED
+!> @see G2S4_041_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_PRESET'
-PP_THREAD_SAFE FUNCTION G2S4_001_PRESET( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_PRESET'
+PP_THREAD_SAFE FUNCTION G2S4_041_PRESET( THIS, &
 &  MSG, PAR, OPT,  METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1178,7 +1202,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_PRESET( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),               INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),               INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T),    INTENT(IN)    :: OPT
@@ -1194,10 +1218,12 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PRESET_LEVEL=3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PRESET_PARAMID=4_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PRESET_ENSEMBLE=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PRESET_CHEM=10_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED=6_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED=7_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED=8_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED=9_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED=11_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1220,12 +1246,14 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%LEVEL_), ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%PARAMID_), ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%CHEM_), ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ENSEMBLE_), ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%TIME_), ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED )
 
   ! Allocate time, level and paramId subcomponents of the section
   PP_TRYCALL(ERRFLAG_PRESET_TIME) THIS%TIME_%PRESET( MSG, PAR, OPT, METADATA, HOOKS )
   PP_TRYCALL(ERRFLAG_PRESET_LEVEL) THIS%LEVEL_%PRESET( MSG, PAR, OPT, METADATA, HOOKS )
+  PP_TRYCALL(ERRFLAG_PRESET_CHEM) THIS%CHEM_%PRESET( MSG, PAR, OPT, METADATA, HOOKS )
   PP_TRYCALL(ERRFLAG_PRESET_PARAMID) THIS%PARAMID_%PRESET( MSG, PAR, OPT, METADATA, HOOKS )
   PP_TRYCALL(ERRFLAG_PRESET_ENSEMBLE) THIS%ENSEMBLE_%PRESET( MSG, PAR, OPT, METADATA, HOOKS )
 
@@ -1256,6 +1284,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to preset time' )
     CASE ( ERRFLAG_PRESET_LEVEL )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to preset level' )
+    CASE ( ERRFLAG_PRESET_CHEM )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to preset chemistry' )
     CASE ( ERRFLAG_PRESET_PARAMID )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to preset paramId' )
     CASE ( ERRFLAG_PRESET_ENSEMBLE )
@@ -1266,6 +1296,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'time configurator not associated' )
     CASE ( ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'level configurator not associated' )
+    CASE ( ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'chemistry configurator not associated' )
     CASE ( ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'paramId configurator not associated' )
     CASE ( ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
@@ -1288,7 +1320,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_PRESET
+END FUNCTION G2S4_041_PRESET
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1302,7 +1334,7 @@ END FUNCTION G2S4_001_PRESET
 !> the success or failure of the runtime operation.
 !>
 !> @section interface
-!>   @param [in]    THIS      An object of type `G2S4_001_T` representing the GRIB section for runtime execution.
+!>   @param [in]    THIS      An object of type `G2S4_041_T` representing the GRIB section for runtime execution.
 !>   @param [in]    MSG       The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR       The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    TIME_HIST The time history object of type `TIME_HISTORY_T` providing historical time data.
@@ -1331,16 +1363,16 @@ END FUNCTION G2S4_001_PRESET
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_001_RUNTIME
-!> @see G2S4_001_ALLOCATE
-!> @see G2S4_001_INIT
-!> @see G2S4_001_PRESET
-!> @see G2S4_001_TO_BE_ENCODED
-!> @see G2S4_001_FREE
+!> @see G2S4_041_RUNTIME
+!> @see G2S4_041_ALLOCATE
+!> @see G2S4_041_INIT
+!> @see G2S4_041_PRESET
+!> @see G2S4_041_TO_BE_ENCODED
+!> @see G2S4_041_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_RUNTIME'
-PP_THREAD_SAFE FUNCTION G2S4_001_RUNTIME( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_RUNTIME'
+PP_THREAD_SAFE FUNCTION G2S4_041_RUNTIME( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1365,7 +1397,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_RUNTIME( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),               INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),               INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),         INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),         INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),            INTENT(IN)    :: TIME_HIST
@@ -1381,12 +1413,14 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_METADATA=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RUNTIME_TIME=2_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RUNTIME_LEVEL=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RUNTIME_CHEM=10_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RUNTIME_PARAMID=4_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_RUNTIME_ENSEMBLE=5_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED=6_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED=7_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED=8_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED=9_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED=11_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1407,6 +1441,7 @@ IMPLICIT NONE
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(METADATA), ERRFLAG_METADATA )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%LEVEL_), ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%CHEM_), ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%PARAMID_), ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ENSEMBLE_), ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%TIME_), ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED )
@@ -1414,6 +1449,7 @@ IMPLICIT NONE
   ! Allocate time, level and paramId subcomponents of the section
   PP_TRYCALL(ERRFLAG_RUNTIME_TIME) THIS%TIME_%RUNTIME( MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS )
   PP_TRYCALL(ERRFLAG_RUNTIME_LEVEL) THIS%LEVEL_%RUNTIME( MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS )
+  PP_TRYCALL(ERRFLAG_RUNTIME_CHEM) THIS%CHEM_%RUNTIME( MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS )
   PP_TRYCALL(ERRFLAG_RUNTIME_PARAMID) THIS%PARAMID_%RUNTIME( MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS )
   PP_TRYCALL(ERRFLAG_RUNTIME_ENSEMBLE) THIS%ENSEMBLE_%RUNTIME( MSG, PAR, TIME_HIST, CURR_TIME, OPT, METADATA, HOOKS )
 
@@ -1445,6 +1481,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to runtime time' )
     CASE ( ERRFLAG_RUNTIME_LEVEL )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to runtime level' )
+    CASE ( ERRFLAG_RUNTIME_CHEM )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to runtime chemistry' )
     CASE ( ERRFLAG_RUNTIME_PARAMID )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to runtime paramId' )
     CASE ( ERRFLAG_RUNTIME_ENSEMBLE )
@@ -1455,6 +1493,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'time configurator not associated' )
     CASE ( ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'level configurator not associated' )
+    CASE ( ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'chemistry configurator not associated' )
     CASE ( ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'paramId configurator not associated' )
     CASE ( ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
@@ -1477,7 +1517,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_RUNTIME
+END FUNCTION G2S4_041_RUNTIME
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1491,7 +1531,7 @@ END FUNCTION G2S4_001_RUNTIME
 !> of the operation. The process can also be run in verbose mode if specified.
 !>
 !> @section interface
-!>   @param [inout] THIS          An object of type `G2S4_001_T` representing the GRIB section being checked.
+!>   @param [inout] THIS          An object of type `G2S4_041_T` representing the GRIB section being checked.
 !>   @param [in]    MSG           The message object of type `FORTRAN_MESSAGE_T` used to handle preset-related messaging.
 !>   @param [in]    PAR           The parametrization structure of type `PARAMETRIZATION_T` used for the preset operation.
 !>   @param [in]    TIME_HIST     The time history object of type `TIME_HISTORY_T` providing historical time data.
@@ -1519,16 +1559,16 @@ END FUNCTION G2S4_001_RUNTIME
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_001_TO_BE_ENCODED
-!> @see G2S4_001_INIT
-!> @see G2S4_001_ALLOCATE
-!> @see G2S4_001_PRESET
-!> @see G2S4_001_RUNTIME
-!> @see G2S4_001_FREE
+!> @see G2S4_041_TO_BE_ENCODED
+!> @see G2S4_041_INIT
+!> @see G2S4_041_ALLOCATE
+!> @see G2S4_041_PRESET
+!> @see G2S4_041_RUNTIME
+!> @see G2S4_041_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_TO_BE_ENCODED'
-PP_THREAD_SAFE FUNCTION G2S4_001_TO_BE_ENCODED( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_TO_BE_ENCODED'
+PP_THREAD_SAFE FUNCTION G2S4_041_TO_BE_ENCODED( THIS, &
 &  MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1552,7 +1592,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_TO_BE_ENCODED( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(TIME_HISTORY_T),         INTENT(IN)    :: TIME_HIST
@@ -1570,9 +1610,11 @@ IMPLICIT NONE
   ! Local error codes
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TO_BE_ENCODED_TIME=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TO_BE_ENCODED_LEVEL=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TO_BE_ENCODED_CHEM=9_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TO_BE_ENCODED_PARAMID=3_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TO_BE_ENCODED_ENSEMBLE=4_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED=10_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED=6_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED=7_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED=8_JPIB_K
@@ -1594,6 +1636,7 @@ IMPLICIT NONE
 
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%LEVEL_), ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%CHEM_), ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%PARAMID_), ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ENSEMBLE_), ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%TIME_), ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED )
@@ -1601,6 +1644,7 @@ IMPLICIT NONE
   ! Check if the field needs to be encoded, time, level and paramId subcomponents
   PP_TRYCALL(ERRFLAG_TO_BE_ENCODED_TIME) THIS%TIME_%TO_BE_ENCODED( MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED_SUBS(1), HOOKS )
   PP_TRYCALL(ERRFLAG_TO_BE_ENCODED_LEVEL) THIS%LEVEL_%TO_BE_ENCODED( MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED_SUBS(2), HOOKS )
+  PP_TRYCALL(ERRFLAG_TO_BE_ENCODED_CHEM) THIS%CHEM_%TO_BE_ENCODED( MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED_SUBS(2), HOOKS )
   PP_TRYCALL(ERRFLAG_TO_BE_ENCODED_PARAMID) THIS%PARAMID_%TO_BE_ENCODED( MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED_SUBS(3), HOOKS )
   PP_TRYCALL(ERRFLAG_TO_BE_ENCODED_ENSEMBLE) THIS%ENSEMBLE_%TO_BE_ENCODED( MSG, PAR, TIME_HIST, CURR_TIME, OPT, TO_BE_ENCODED_SUBS(4), HOOKS )
 
@@ -1633,6 +1677,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to check if time is ready to be encoded' )
     CASE ( ERRFLAG_TO_BE_ENCODED_LEVEL )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to check if level is ready to be encoded' )
+    CASE ( ERRFLAG_TO_BE_ENCODED_CHEM )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to check if chem is ready to be encoded' )
     CASE ( ERRFLAG_TO_BE_ENCODED_PARAMID )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to check if paramId is ready to be encoded' )
     CASE ( ERRFLAG_TO_BE_ENCODED_ENSEMBLE )
@@ -1641,6 +1687,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'time configurator not associated' )
     CASE ( ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'level configurator not associated' )
+    CASE ( ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'chemistry configurator not associated' )
     CASE ( ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'paramId configurator not associated' )
     CASE ( ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
@@ -1663,7 +1711,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_TO_BE_ENCODED
+END FUNCTION G2S4_041_TO_BE_ENCODED
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1676,7 +1724,7 @@ END FUNCTION G2S4_001_TO_BE_ENCODED
 !> error code indicating the success or failure of the operation.
 !>
 !> @section interface
-!>   @param [inout] THIS  An object of type `G2S4_001_T` representing the GRIB section to be freed.
+!>   @param [inout] THIS  An object of type `G2S4_041_T` representing the GRIB section to be freed.
 !>   @param [in]    OPT   The encoder options structure of type `ENCODER_OPTIONS_T`.
 !>   @param [inout] HOOKS Utilities to be used for logging, debugging, tracing and option handling
 !>
@@ -1692,15 +1740,15 @@ END FUNCTION G2S4_001_TO_BE_ENCODED
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_001_INIT
-!> @see G2S4_001_ALLOCATE
-!> @see G2S4_001_PRESET
-!> @see G2S4_001_RUNTIME
-!> @see G2S4_001_TO_BE_ENCODED
+!> @see G2S4_041_INIT
+!> @see G2S4_041_ALLOCATE
+!> @see G2S4_041_PRESET
+!> @see G2S4_041_RUNTIME
+!> @see G2S4_041_TO_BE_ENCODED
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_FREE'
-PP_THREAD_SAFE FUNCTION G2S4_001_FREE( THIS, OPT, HOOKS ) RESULT(RET)
+#define PP_PROCEDURE_NAME 'G2S4_041_FREE'
+PP_THREAD_SAFE FUNCTION G2S4_041_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
   USE :: DATAKINDS_DEF_MOD,        ONLY: JPIB_K
@@ -1710,6 +1758,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_FREE( THIS, OPT, HOOKS ) RESULT(RET)
   USE :: GRIB2_SECTION4_LEVEL_FACTORY_MOD,         ONLY: DESTROY_GRIB2_LEVEL_CONFIGURATOR
   USE :: GRIB2_SECTION4_PARAM_FACTORY_MOD,         ONLY: DESTROY_GRIB2_PARAM_CONFIGURATOR
   USE :: GRIB2_SECTION4_ENSEMBLE_FACTORY_MOD,      ONLY: DESTROY_GRIB2_ENSEMBLE_CONFIGURATOR
+  USE :: GRIB2_SECTION4_CHEM_FACTORY_MOD,          ONLY: DESTROY_GRIB2_CHEM_CONFIGURATOR
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -1723,7 +1772,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_FREE( THIS, OPT, HOOKS ) RESULT(RET)
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
 
@@ -1734,8 +1783,10 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DESTROY_INSTANT=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DESTROY_PARAM=2_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DESTROY_LEVEL=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DESTROY_CHEM=9_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DESTROY_ENSEMBLE=4_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED=10_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED=6_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED=7_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED=8_JPIB_K
@@ -1757,6 +1808,7 @@ IMPLICIT NONE
 
   ! Error handling
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%LEVEL_), ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%CHEM_), ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%PARAMID_), ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ENSEMBLE_), ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%TIME_), ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED )
@@ -1764,6 +1816,7 @@ IMPLICIT NONE
   ! Free all the memory
   PP_TRYCALL(ERRFLAG_DESTROY_INSTANT)  DESTROY_GRIB2_POINT_IN_TIME_CONFIGURATOR( THIS%TIME_, OPT, HOOKS )
   PP_TRYCALL(ERRFLAG_DESTROY_LEVEL)    DESTROY_GRIB2_LEVEL_CONFIGURATOR(    THIS%LEVEL_,    OPT, HOOKS )
+  PP_TRYCALL(ERRFLAG_DESTROY_CHEM)     DESTROY_GRIB2_CHEM_CONFIGURATOR( THIS%CHEM_, OPT, HOOKS )
   PP_TRYCALL(ERRFLAG_DESTROY_PARAM)    DESTROY_GRIB2_PARAM_CONFIGURATOR(    THIS%PARAMID_,  OPT, HOOKS )
   PP_TRYCALL(ERRFLAG_DESTROY_ENSEMBLE) DESTROY_GRIB2_ENSEMBLE_CONFIGURATOR( THIS%ENSEMBLE_, OPT, HOOKS )
 
@@ -1795,6 +1848,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to free paramId' )
     CASE ( ERRFLAG_DESTROY_LEVEL )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to free level' )
+    CASE ( ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'chem configurator not associated' )
     CASE ( ERRFLAG_DESTROY_ENSEMBLE )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to free ensemble' )
     CASE ( ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED )
@@ -1805,6 +1860,8 @@ PP_ERROR_HANDLER
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'paramId configurator not associated' )
     CASE ( ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'ensemble configurator not associated' )
+    CASE ( ERRFLAG_DESTROY_CHEM )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to free chemistry' )
     CASE DEFAULT
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
     END SELECT
@@ -1823,7 +1880,7 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_FREE
+END FUNCTION G2S4_041_FREE
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
@@ -1836,7 +1893,7 @@ END FUNCTION G2S4_001_FREE
 !> @brief Print informations related to the grib section
 !>
 !> @section interface
-!>   @param [inout] THIS   An object of type `G2S4_001_T` representing the GRIB section to be freed.
+!>   @param [inout] THIS   An object of type `G2S4_041_T` representing the GRIB section to be freed.
 !>   @param [in]    UNIT   The unit number to print the information.
 !>   @param [in]    OFFSET The offset to print the information.
 !>   @param [in]    OPT    The encoder options structure of type `ENCODER_OPTIONS_T`.
@@ -1860,8 +1917,8 @@ END FUNCTION G2S4_001_FREE
 !>   None.
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_PRINT'
-PP_THREAD_SAFE FUNCTION G2S4_001_PRINT( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_PRINT'
+PP_THREAD_SAFE FUNCTION G2S4_041_PRINT( THIS, &
 & UNIT, OFFSET, OPT, HOOKS, SEPARATOR ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -1881,7 +1938,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_PRINT( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   INTEGER(KIND=JPIB_K),         INTENT(IN)    :: UNIT
   INTEGER(KIND=JPIB_K),         INTENT(IN)    :: OFFSET
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -1895,6 +1952,7 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K) :: WRITE_STAT
 
    ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED=0_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED=1_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED=2_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED=3_JPIB_K
@@ -1903,6 +1961,8 @@ IMPLICIT NONE
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CALL_PRINT_LEVEL=6_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CALL_PRINT_ENSEMBLE=7_JPIB_K
   INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CALL_PRINT_PARAMID=8_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED=9_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CALL_PRINT_CHEM=10_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -1923,6 +1983,7 @@ IMPLICIT NONE
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%LEVEL_), ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%ENSEMBLE_), ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
   PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%PARAMID_), ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. ASSOCIATED(THIS%CHEM_), ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED )
 
   ! Write the section information
   IF ( OFFSET .LE. 0 ) THEN
@@ -1941,6 +2002,7 @@ IMPLICIT NONE
   PP_TRYCALL(ERRFLAG_CALL_PRINT_TIME) THIS%TIME_%PRINT( UNIT, OFFSET+2, OPT, HOOKS, ', ...' )
   PP_TRYCALL(ERRFLAG_CALL_PRINT_LEVEL) THIS%LEVEL_%PRINT( UNIT, OFFSET+2, OPT, HOOKS, ', ...' )
   PP_TRYCALL(ERRFLAG_CALL_PRINT_ENSEMBLE) THIS%ENSEMBLE_%PRINT( UNIT, OFFSET+2, OPT, HOOKS, ', ...' )
+  PP_TRYCALL(ERRFLAG_CALL_PRINT_CHEM) THIS%CHEM_%PRINT( UNIT, OFFSET+2, OPT, HOOKS, ', ...' )
   PP_TRYCALL(ERRFLAG_CALL_PRINT_PARAMID) THIS%PARAMID_%PRINT( UNIT, OFFSET+2, OPT, HOOKS )
 
   ! Close section
@@ -1984,8 +2046,12 @@ PP_ERROR_HANDLER
 
     ! Handle different errors
     SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_TIME_CONFIGURATOR_NOT_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'time configurator not associated' )
     CASE ( ERRFLAG_LEVEL_CONFIGURATOR_NOT_ASSOCIATED )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'level configurator not associated' )
+    CASE ( ERRFLAG_CHEM_CONFIGURATOR_NOT_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'chemistry configurator not associated' )
     CASE ( ERRFLAG_PARAMID_CONFIGURATOR_NOT_ASSOCIATED )
       PP_DEBUG_PUSH_MSG_TO_FRAME( 'paramId configurator not associated' )
     CASE ( ERRFLAG_ENSEMBLE_CONFIGURATOR_NOT_ASSOCIATED )
@@ -2018,16 +2084,16 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_PRINT
+END FUNCTION G2S4_041_PRINT
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 
 !>
-!> @brief Builds the param handler for GRIB2 section 4, template 001.
+!> @brief Builds the param handler for GRIB2 section 4, template 041.
 !>
-!> This function constructs the param handler for GRIB2 section 4, template 001,
+!> This function constructs the param handler for GRIB2 section 4, template 041,
 !> based on the provided configuration (`CFG`), options (`OPT`).
 !> It modifies the `THIS` structure accordingly and returns an error code if the operation fails.
 !> The function is thread-safe and uses preprocessor directives for debugging, logging, and tracing.
@@ -2057,16 +2123,16 @@ END FUNCTION G2S4_001_PRINT
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_001_INIT
-!> @see G2S4_001_ALLOCATE
-!> @see G2S4_001_PRESET
-!> @see G2S4_001_RUNPARAM
-!> @see G2S4_001_TO_BE_ENCODED
-!> @see G2S4_001_FREE
+!> @see G2S4_041_INIT
+!> @see G2S4_041_ALLOCATE
+!> @see G2S4_041_PRESET
+!> @see G2S4_041_RUNPARAM
+!> @see G2S4_041_TO_BE_ENCODED
+!> @see G2S4_041_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_BUILD_PARAM_HANDLER_CFG'
-PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_PARAM_HANDLER_CFG( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_BUILD_PARAM_HANDLER_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_041_BUILD_PARAM_HANDLER_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -2091,7 +2157,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_PARAM_HANDLER_CFG( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -2210,14 +2276,14 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_BUILD_PARAM_HANDLER_CFG
+END FUNCTION G2S4_041_BUILD_PARAM_HANDLER_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_BUILD_PARAM_HANDLER_LAZY'
-PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_PARAM_HANDLER_LAZY( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_BUILD_PARAM_HANDLER_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_041_BUILD_PARAM_HANDLER_LAZY( THIS, &
 &               MSG, PAR, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -2240,7 +2306,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_PARAM_HANDLER_LAZY( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -2318,15 +2384,15 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_BUILD_PARAM_HANDLER_LAZY
+END FUNCTION G2S4_041_BUILD_PARAM_HANDLER_LAZY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 !>
-!> @brief Builds the level handler for GRIB2 section 4, template 001.
+!> @brief Builds the level handler for GRIB2 section 4, template 041.
 !>
-!> This function constructs the level handler for GRIB2 section 4, template 001,
+!> This function constructs the level handler for GRIB2 section 4, template 041,
 !> based on the provided configuration (`CFG`), options (`OPT`).
 !> It modifies the `THIS` structure accordingly and returns an error code if the operation fails.
 !> The function is thread-safe and uses preprocessor directives for debugging, logging, and tracing.
@@ -2356,16 +2422,16 @@ END FUNCTION G2S4_001_BUILD_PARAM_HANDLER_LAZY
 !>   - @dependency [*] PP_LOG_USE_VARS::*
 !>   - @dependency [*] PP_TRACE_USE_VARS::*
 !>
-!> @see G2S4_001_INIT
-!> @see G2S4_001_ALLOCATE
-!> @see G2S4_001_PRESET
-!> @see G2S4_001_RUNLEVEL
-!> @see G2S4_001_TO_BE_ENCODED
-!> @see G2S4_001_FREE
+!> @see G2S4_041_INIT
+!> @see G2S4_041_ALLOCATE
+!> @see G2S4_041_PRESET
+!> @see G2S4_041_RUNLEVEL
+!> @see G2S4_041_TO_BE_ENCODED
+!> @see G2S4_041_FREE
 !>
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_BUILD_LEVEL_HANDLER_CFG'
-PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_LEVEL_HANDLER_CFG( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_BUILD_LEVEL_HANDLER_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_041_BUILD_LEVEL_HANDLER_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -2390,7 +2456,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_LEVEL_HANDLER_CFG( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -2497,14 +2563,14 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_BUILD_LEVEL_HANDLER_CFG
+END FUNCTION G2S4_041_BUILD_LEVEL_HANDLER_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_BUILD_LEVEL_HANDLER_LAZY'
-PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_LEVEL_HANDLER_LAZY( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_BUILD_LEVEL_HANDLER_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_041_BUILD_LEVEL_HANDLER_LAZY( THIS, &
 &               MSG, PAR, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -2527,7 +2593,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_LEVEL_HANDLER_LAZY( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -2605,15 +2671,15 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_BUILD_LEVEL_HANDLER_LAZY
+END FUNCTION G2S4_041_BUILD_LEVEL_HANDLER_LAZY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_BUILD_ENSEMBLE_HANDLER_CFG'
-PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_ENSEMBLE_HANDLER_CFG( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_BUILD_ENSEMBLE_HANDLER_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_041_BUILD_ENSEMBLE_HANDLER_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -2638,7 +2704,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_ENSEMBLE_HANDLER_CFG( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -2745,15 +2811,15 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_BUILD_ENSEMBLE_HANDLER_CFG
+END FUNCTION G2S4_041_BUILD_ENSEMBLE_HANDLER_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 #undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_BUILD_ENSEMBLE_HANDLER_LAZY'
-PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_ENSEMBLE_HANDLER_LAZY( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_BUILD_ENSEMBLE_HANDLER_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_041_BUILD_ENSEMBLE_HANDLER_LAZY( THIS, &
 &               MSG, PAR, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -2776,7 +2842,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_ENSEMBLE_HANDLER_LAZY( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -2854,13 +2920,157 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_BUILD_ENSEMBLE_HANDLER_LAZY
+END FUNCTION G2S4_041_BUILD_ENSEMBLE_HANDLER_LAZY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
+
+
+
+
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_BUILD_TIME_HANDLER_CFG'
-PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_TIME_HANDLER_CFG( THIS, &
+#define PP_PROCEDURE_NAME 'GRIB2_SECTION4_041_BUILD_CHEM_HANDLER'
+PP_THREAD_SAFE FUNCTION GRIB2_SECTION4_041_BUILD_CHEM_HANDLER( THIS, &
+&               CFG, OPT, HOOKS ) RESULT(RET)
+
+  !> Symbols imported from other modules within the project.
+  USE :: DATAKINDS_DEF_MOD,               ONLY: JPIB_K
+  USE :: GRIB_ENCODER_OPTIONS_MOD,        ONLY: GRIB_ENCODER_OPTIONS_T
+  USE :: YAML_CORE_UTILS_MOD,             ONLY: YAML_CONFIGURATION_T
+  USE :: HOOKS_MOD,                       ONLY: HOOKS_T
+  USE :: YAML_CORE_UTILS_MOD,             ONLY: YAML_CONFIGURATION_HAS_KEY
+  USE :: YAML_CORE_UTILS_MOD,             ONLY: YAML_GET_SUBCONFIGURATION
+  USE :: YAML_CORE_UTILS_MOD,             ONLY: YAML_DELETE_CONFIGURATION
+  USE :: GRIB2_SECTION4_CHEM_FACTORY_MOD, ONLY: MAKE_GRIB2_CHEM_CONFIGURATOR
+
+  ! Symbols imported by the preprocessor for debugging purposes
+  PP_DEBUG_USE_VARS
+
+  ! Symbols imported by the preprocessor for logging purposes
+  PP_LOG_USE_VARS
+
+  ! Symbols imported by the preprocessor for tracing purposes
+  PP_TRACE_USE_VARS
+
+IMPLICIT NONE
+
+  !> Dummy arguments
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
+  TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
+  TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
+  TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
+
+  !> Function result
+  INTEGER(KIND=JPIB_K) :: RET
+
+  !> Local variables
+  LOGICAL :: HAS_CHEM_CONFIGURATOR
+  TYPE(YAML_CONFIGURATION_T) :: CHEM_CONFIGURATOR_CFG
+
+  !> Local parameters
+  CHARACTER(LEN=*), PARAMETER :: CHEM_CONFIGURATOR_NAME='chemistry-configurator'
+
+  ! Local error codes
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHEM_CONFIGURATOR_ALREADY_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_CFG=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_CHEM_CONFIGURATOR_CFG_NOT_PRESENT=3_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_READ_SUBCFG=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_MAKE_CHEM_CONFIGURATOR=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_UNABLE_TO_DEALLOCATE=6_JPIB_K
+
+  ! Local variables declared by the preprocessor for debugging purposes
+  PP_DEBUG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for logging purposes
+  PP_LOG_DECL_VARS
+
+  ! Local variables declared by the preprocessor for tracing purposes
+  PP_TRACE_DECL_VARS
+
+  ! Trace begin of procedure
+  PP_TRACE_ENTER_PROCEDURE()
+
+  ! Initialization of good path return value
+  PP_SET_ERR_SUCCESS( RET )
+
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( ASSOCIATED(THIS%CHEM_), ERRFLAG_CHEM_CONFIGURATOR_ALREADY_ASSOCIATED )
+
+  !> Check if a configuration for the indicator-section is available
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_CFG) YAML_CONFIGURATION_HAS_KEY( CFG, CHEM_CONFIGURATOR_NAME, HAS_CHEM_CONFIGURATOR, HOOKS )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT. HAS_CHEM_CONFIGURATOR, ERRFLAG_CHEM_CONFIGURATOR_CFG_NOT_PRESENT )
+
+  !> Read the subconfiguration for the indicator-section
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_READ_SUBCFG) YAML_GET_SUBCONFIGURATION( CFG, CHEM_CONFIGURATOR_NAME, CHEM_CONFIGURATOR_CFG, HOOKS )
+
+  !> Make the indicator-section
+  PP_TRYCALL(ERRFLAG_UNABLE_TO_MAKE_CHEM_CONFIGURATOR) MAKE_GRIB2_CHEM_CONFIGURATOR( THIS%CHEM_, THIS%TEMPLATE_NUMBER_, CHEM_CONFIGURATOR_CFG, OPT, HOOKS )
+
+  !> Deallocate the indicator-section configuration
+  PP_TRYCALL( ERRFLAG_UNABLE_TO_DEALLOCATE ) YAML_DELETE_CONFIGURATION( CHEM_CONFIGURATOR_CFG, HOOKS )
+
+  ! Trace end of procedure (on success)
+  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+
+  ! Exit point (On success)
+  RETURN
+
+! Error handler
+PP_ERROR_HANDLER
+
+  ! Initialization of bad path return value
+  PP_SET_ERR_FAILURE( RET )
+
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    ! Handle different errors
+    SELECT CASE(ERRIDX)
+    CASE ( ERRFLAG_CHEM_CONFIGURATOR_ALREADY_ASSOCIATED )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'chemistry configurator already associated' )
+    CASE ( ERRFLAG_UNABLE_TO_READ_CFG )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to read configuration' )
+    CASE ( ERRFLAG_CHEM_CONFIGURATOR_CFG_NOT_PRESENT )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'chemistry configurator configuration not present' )
+    CASE ( ERRFLAG_UNABLE_TO_READ_SUBCFG )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to read subconfiguration' )
+    CASE ( ERRFLAG_UNABLE_TO_MAKE_CHEM_CONFIGURATOR )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to make chem configurator' )
+    CASE ( ERRFLAG_UNABLE_TO_DEALLOCATE )
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unable to deallocate chem configurator object' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'unhandled error' )
+    END SELECT
+
+    ! Trace end of procedure (on error)
+    PP_TRACE_EXIT_PROCEDURE_ON_ERROR()
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
+
+  ! Exit point (on error)
+  RETURN
+
+END FUNCTION GRIB2_SECTION4_041_BUILD_CHEM_HANDLER
+#undef PP_PROCEDURE_NAME
+#undef PP_PROCEDURE_TYPE
+
+
+
+#define PP_PROCEDURE_TYPE 'FUNCTION'
+#define PP_PROCEDURE_NAME 'G2S4_041_BUILD_TIME_HANDLER_CFG'
+PP_THREAD_SAFE FUNCTION G2S4_041_BUILD_TIME_HANDLER_CFG( THIS, &
 &               CFG, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -2885,7 +3095,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_TIME_HANDLER_CFG( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
   TYPE(YAML_CONFIGURATION_T),   INTENT(IN)    :: CFG
   TYPE(HOOKS_T),                INTENT(INOUT) :: HOOKS
@@ -2992,14 +3202,14 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_BUILD_TIME_HANDLER_CFG
+END FUNCTION G2S4_041_BUILD_TIME_HANDLER_CFG
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
 #define PP_PROCEDURE_TYPE 'FUNCTION'
-#define PP_PROCEDURE_NAME 'G2S4_001_BUILD_TIME_HANDLER_LAZY'
-PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_TIME_HANDLER_LAZY( THIS, &
+#define PP_PROCEDURE_NAME 'G2S4_041_BUILD_TIME_HANDLER_LAZY'
+PP_THREAD_SAFE FUNCTION G2S4_041_BUILD_TIME_HANDLER_LAZY( THIS, &
 &               MSG, PAR, OPT, HOOKS ) RESULT(RET)
 
   !> Symbols imported from other modules within the project.
@@ -3022,7 +3232,7 @@ PP_THREAD_SAFE FUNCTION G2S4_001_BUILD_TIME_HANDLER_LAZY( THIS, &
 IMPLICIT NONE
 
   !> Dummy arguments
-  CLASS(G2S4_001_T),            INTENT(INOUT) :: THIS
+  CLASS(G2S4_041_T),            INTENT(INOUT) :: THIS
   TYPE(FORTRAN_MESSAGE_T),      INTENT(IN)    :: MSG
   TYPE(PARAMETRIZATION_T),      INTENT(IN)    :: PAR
   TYPE(GRIB_ENCODER_OPTIONS_T), INTENT(IN)    :: OPT
@@ -3100,12 +3310,12 @@ PP_ERROR_HANDLER
   ! Exit point (on error)
   RETURN
 
-END FUNCTION G2S4_001_BUILD_TIME_HANDLER_LAZY
+END FUNCTION G2S4_041_BUILD_TIME_HANDLER_LAZY
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
 
 
-END MODULE GRIB2_SECTION4_001_MOD
+END MODULE GRIB2_SECTION4_041_MOD
 #undef PP_SECTION_NAME
 #undef PP_SECTION_TYPE
 #undef PP_FILE_NAME

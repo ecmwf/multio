@@ -14,6 +14,10 @@ set(OUTPUT_MANAGER_PATCH 1)
 # Define the include directory path
 set(ECOM_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 
+# Define the template directory
+set(MULTIOM_TEMPLATES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/templates)
+
+
 # Use Fortran to get the compiler and compiler version
 execute_process(
     COMMAND ${CMAKE_Fortran_COMPILER} --version

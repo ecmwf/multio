@@ -17,7 +17,7 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        33, 74, 238, 228038
+        260360, 260199
       ]
 
     - type: 'levtype'

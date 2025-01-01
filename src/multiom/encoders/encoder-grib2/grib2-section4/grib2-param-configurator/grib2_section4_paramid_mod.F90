@@ -716,6 +716,9 @@ IMPLICIT NONE
   ! Set the paramId
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'paramId', MSG%PARAM )
 
+  ! PAranoid verification
+
+
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
   PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()

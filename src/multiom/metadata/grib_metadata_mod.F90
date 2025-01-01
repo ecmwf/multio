@@ -3224,10 +3224,6 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! MIVAL: Remove
-  CALL GRIB_GET( THIS%IGRIB_HANDLE_, 'productDefinitionTemplateNumber', PDT )
-  WRITE(*,*) 'This is the f*****g PDT; ', PDT
-
   ! Open the grib file
   CALL GRIB_OPEN_FILE( GRIB_FILE_HANDLE, TRIM(NAME), 'a', STATUS=KRET )
   PP_DEBUG_CRITICAL_COND_THROW( KRET.NE.GRIB_SUCCESS, ERRFLAG_OPEN_FILE_FAILED )

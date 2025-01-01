@@ -202,9 +202,11 @@ IMPLICIT NONE
     DICT_TYPE_NAME(I:I) = DICT_TYPE_C(I)
   END DO
 
+  !TODO: Convert to lowercase
+
   SELECT CASE( TRIM(DICT_TYPE_NAME) )
 
-  CASE ('mars')
+  CASE ('mars', 'm', 'mars-dict', 'mars_dict')
 
     !> Get the dictionary handle from the c pointer
     ALLOCATE( F_MULTIO_GRIB2(2), STAT=ALLOC_STATUS, ERRMSG=ERRMSG )
@@ -247,7 +249,7 @@ IMPLICIT NONE
     !> Get the location of the dictionary
     MULTIO_GRIB2 = C_LOC( F_MULTIO_GRIB2 )
 
-  CASE ('parametrization')
+  CASE ('parametrization', 'p', 'par', 'param', 'parametrization-dict', 'parametrization_dict', 'par-dict', 'par_dict', 'param-dict', 'param_dict')
 
 
     !> Get the dictionary handle from the c pointer
@@ -806,14 +808,22 @@ PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_DICT_GET( DICT, KEY, KLEN, VALUE ) &
  BIND(C,NAME='multio_grib2_dict_get_f') RESULT(RET)
 
   !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG_LONG
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
 
   ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
-  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: API_SHARED_DATA_MOD, ONLY: EXTRACT_MARS_DICTIONARY
+  USE :: API_SHARED_DATA_MOD, ONLY: EXTRACT_PAR_DICTIONARY
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -835,6 +845,22 @@ IMPLICIT NONE
   !> Function result
   INTEGER(KIND=C_INT) :: RET
 
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_LONG_LONG), POINTER, DIMENSION(:) :: F_DICT
+  TYPE(FORTRAN_MESSAGE_T), POINTER :: MARS_DICT
+  TYPE(PARAMETRIZATION_T), POINTER :: PAR_DICT
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(:), POINTER :: C_TMP_KEY
+  CHARACTER(LEN=KLEN) :: F_KEY
+  TYPE(HOOKS_T) :: HOOKS
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DICTIONARY_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_KEY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_HANDLE=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_MARS_DICTIONARY=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_PAR_DICTIONARY=6_JPIB_K
+
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
 
@@ -844,14 +870,60 @@ IMPLICIT NONE
   ! Local variables declared by the preprocessor for tracing purposes
   PP_TRACE_DECL_VARS
 
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+  ! Initialization of the hooks
+  CALL HOOKS%DEBUG_HOOK_%INIT( )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(DICT), ERRFLAG_DICTIONARY_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(KEY),  ERRFLAG_KEY_NOT_ASSOCIATED )
+
+  !> Get the size of the dictionary type
+  CALL C_F_POINTER( KEY,   C_TMP_KEY, [KLEN] )
+
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(C_TMP_KEY), ERRFLAG_KEY_NOT_ASSOCIATED )
+
+  ! Copy the key to a fortran string
+  F_KEY = REPEAT(' ', KLEN)
+  DO I = 1, KLEN
+    F_KEY(I:I) = C_TMP_KEY(I)
+  ENDDO
+  C_TMP_KEY => NULL()
+
+  !> Get th fortran handle from the c handle
+  F_DICT => NULL()
+  CALL C_F_POINTER( DICT, F_DICT, [2] )
+
+  !> Check the allocation status of the fortran handle
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(F_DICT), ERRFLAG_KEY_NOT_ASSOCIATED )
+
+  !> Depending on the dictionary type we have to deallocate the dictionary
+  SELECT CASE ( F_DICT(1) )
+
+  CASE ( 10_C_LONG_LONG )
+
+    PP_TRYCALL(ERRFLAG_EXTRACT_MARS_DICTIONARY) EXTRACT_MARS_DICTIONARY( F_DICT, MARS_DICT, HOOKS )
+
+    ! TODO: Utility to allocate a string that can be deallocated from c
+    WRITE(*,*) 'KEY: ', F_KEY
+
+
+  CASE ( 20_C_LONG_LONG )
+
+    PP_TRYCALL(ERRFLAG_EXTRACT_PAR_DICTIONARY) EXTRACT_PAR_DICTIONARY( F_DICT, PAR_DICT, HOOKS )
+
+    ! TODO: Set the value
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_WRONG_HANDLE )
+
+  END SELECT
+
+  !> Be sure we don't have any memory leaks
+  CALL HOOKS%DEBUG_HOOK_%FREE( )
 
   ! Exit point (On success)
   RETURN
@@ -862,7 +934,44 @@ PP_ERROR_HANDLER
   ! Initialization of bad path return value
   PP_SET_ERR_FAILURE( RET )
 
-  ! TODO: Add error handling code here
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Dictionary not associated' )
+    CASE (ERRFLAG_KEY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key not associated' )
+    CASE (ERRFLAG_WRONG_HANDLE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrong handle (handle is not from an dictionary)' )
+    CASE (ERRFLAG_EXTRACT_MARS_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract the mars dictionary' )
+    CASE (ERRFLAG_EXTRACT_PAR_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract the parametrization dictionary' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Print the error stack
+    ! NOTE: This is importent when c is calling this function. Is opens the error_unit
+    WRITE(ERROR_UNIT,*) ' PRINT ERROR STACK FROM: "'//__FILE__//'":', __LINE__
+    CALL HOOKS%DEBUG_HOOK_%PRINT_ERROR_STACK( ERROR_UNIT )
+
+    ! Free the error stack
+    CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
 
   RETURN
 
@@ -877,14 +986,22 @@ PP_THREAD_SAFE FUNCTION MULTIO_GRIB2_DICT_HAS( DICT, KEY, KLEN, HAS ) &
  BIND(C,NAME='multio_grib2_dict_has_f') RESULT(RET)
 
   !> Symbols imported from intrinsic modules.
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_CHAR
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_INT
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_PTR
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_NULL_PTR
   USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_ASSOCIATED
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_F_POINTER
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LONG_LONG
+  USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: ERROR_UNIT
 
   ! Symbols imported from other modules within the project.
-  USE :: DATAKINDS_DEF_MOD, ONLY: JPIB_K
-  USE :: HOOKS_MOD,         ONLY: HOOKS_T
+  USE :: DATAKINDS_DEF_MOD,   ONLY: JPIB_K
+  USE :: HOOKS_MOD,           ONLY: HOOKS_T
+  USE :: API_SHARED_DATA_MOD, ONLY: EXTRACT_MARS_DICTIONARY
+  USE :: API_SHARED_DATA_MOD, ONLY: EXTRACT_PAR_DICTIONARY
+  USE :: FORTRAN_MESSAGE_MOD, ONLY: FORTRAN_MESSAGE_T
+  USE :: PARAMETRIZATION_MOD, ONLY: PARAMETRIZATION_T
 
   ! Symbols imported by the preprocessor for debugging purposes
   PP_DEBUG_USE_VARS
@@ -901,10 +1018,26 @@ IMPLICIT NONE
   TYPE(C_PTR), VALUE,         INTENT(IN)    :: DICT
   TYPE(C_PTR), VALUE,         INTENT(IN)    :: KEY
   INTEGER(KIND=C_INT), VALUE, INTENT(IN)    :: KLEN
-  TYPE(C_PTR),                INTENT(INOUT) :: HAS
+  INTEGER(KIND=C_INT),        INTENT(INOUT) :: HAS
 
   !> Function result
   INTEGER(KIND=C_INT) :: RET
+
+  !> Local variables
+  INTEGER(KIND=JPIB_K) :: I
+  INTEGER(KIND=C_LONG_LONG), POINTER, DIMENSION(:) :: F_DICT
+  TYPE(FORTRAN_MESSAGE_T), POINTER :: MARS_DICT
+  TYPE(PARAMETRIZATION_T), POINTER :: PAR_DICT
+  CHARACTER(LEN=1,KIND=C_CHAR), DIMENSION(:), POINTER :: C_TMP_KEY
+  CHARACTER(LEN=KLEN) :: F_KEY
+  TYPE(HOOKS_T) :: HOOKS
+
+  !> Local error flags
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_DICTIONARY_NOT_ASSOCIATED=1_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_KEY_NOT_ASSOCIATED=2_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_WRONG_HANDLE=4_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_MARS_DICTIONARY=5_JPIB_K
+  INTEGER(KIND=JPIB_K), PARAMETER :: ERRFLAG_EXTRACT_PAR_DICTIONARY=6_JPIB_K
 
   ! Local variables declared by the preprocessor for debugging purposes
   PP_DEBUG_DECL_VARS
@@ -915,14 +1048,61 @@ IMPLICIT NONE
   ! Local variables declared by the preprocessor for tracing purposes
   PP_TRACE_DECL_VARS
 
-  ! Trace begin of procedure
-  PP_TRACE_ENTER_PROCEDURE()
-
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! Trace end of procedure (on success)
-  PP_TRACE_EXIT_PROCEDURE_ON_SUCCESS()
+  ! Initialization of the hooks
+  CALL HOOKS%DEBUG_HOOK_%INIT( )
+
+  !> Error handling
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(DICT), ERRFLAG_DICTIONARY_NOT_ASSOCIATED )
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.C_ASSOCIATED(KEY),  ERRFLAG_KEY_NOT_ASSOCIATED )
+
+  !> Get the size of the dictionary type
+  CALL C_F_POINTER( KEY, C_TMP_KEY, [KLEN] )
+
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(C_TMP_KEY), ERRFLAG_KEY_NOT_ASSOCIATED )
+
+  ! Copy the key to a fortran string
+  F_KEY = REPEAT(' ', KLEN)
+  DO I = 1, KLEN
+    F_KEY(I:I) = C_TMP_KEY(I)
+  ENDDO
+  C_TMP_KEY => NULL()
+
+  !> Get th fortran handle from the c handle
+  F_DICT => NULL()
+  CALL C_F_POINTER( DICT, F_DICT, [2] )
+
+  !> Check the allocation status of the fortran handle
+  PP_DEBUG_CRITICAL_COND_THROW( .NOT.ASSOCIATED(F_DICT), ERRFLAG_KEY_NOT_ASSOCIATED )
+
+  !> Depending on the dictionary type we have to deallocate the dictionary
+  SELECT CASE ( F_DICT(1) )
+
+  CASE ( 10_C_LONG_LONG )
+
+    PP_TRYCALL(ERRFLAG_EXTRACT_MARS_DICTIONARY) EXTRACT_MARS_DICTIONARY( F_DICT, MARS_DICT, HOOKS )
+
+    ! TODO: Utility to allocate a string that can be deallocated from c
+    WRITE(*,*) 'KEY: ', F_KEY
+    HAS = 0_C_INT
+
+
+  CASE ( 20_C_LONG_LONG )
+
+    PP_TRYCALL(ERRFLAG_EXTRACT_PAR_DICTIONARY) EXTRACT_PAR_DICTIONARY( F_DICT, PAR_DICT, HOOKS )
+
+    ! TODO: Set the value
+
+  CASE DEFAULT
+
+    PP_DEBUG_CRITICAL_THROW( ERRFLAG_WRONG_HANDLE )
+
+  END SELECT
+
+  !> Be sure we don't have any memory leaks
+  CALL HOOKS%DEBUG_HOOK_%FREE( )
 
   ! Exit point (On success)
   RETURN
@@ -933,7 +1113,44 @@ PP_ERROR_HANDLER
   ! Initialization of bad path return value
   PP_SET_ERR_FAILURE( RET )
 
-  ! TODO: Add error handling code here
+#if defined( PP_DEBUG_ENABLE_ERROR_HANDLING )
+!$omp critical(ERROR_HANDLER)
+
+  BLOCK
+
+    ! Error handling variables
+    PP_DEBUG_PUSH_FRAME()
+
+    SELECT CASE(ERRIDX)
+    CASE (ERRFLAG_DICTIONARY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Dictionary not associated' )
+    CASE (ERRFLAG_KEY_NOT_ASSOCIATED)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Key not associated' )
+    CASE (ERRFLAG_WRONG_HANDLE)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Wrong handle (handle is not from an dictionary)' )
+    CASE (ERRFLAG_EXTRACT_MARS_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract the mars dictionary' )
+    CASE (ERRFLAG_EXTRACT_PAR_DICTIONARY)
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unable to extract the parametrization dictionary' )
+    CASE DEFAULT
+      PP_DEBUG_PUSH_MSG_TO_FRAME( 'Unknown error' )
+    END SELECT
+
+    ! Print the error stack
+    ! NOTE: This is importent when c is calling this function. Is opens the error_unit
+    WRITE(ERROR_UNIT,*) ' PRINT ERROR STACK FROM: "'//__FILE__//'":', __LINE__
+    CALL HOOKS%DEBUG_HOOK_%PRINT_ERROR_STACK( ERROR_UNIT )
+
+    ! Free the error stack
+    CALL HOOKS%DEBUG_HOOK_%FREE( )
+
+    ! Write the error message and stop the program
+    PP_DEBUG_ABORT
+
+  END BLOCK
+
+!$omp end critical(ERROR_HANDLER)
+#endif
 
   RETURN
 

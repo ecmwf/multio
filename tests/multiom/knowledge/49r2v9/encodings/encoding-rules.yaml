@@ -6,6 +6,12 @@ encoding-rules:
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-instant.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-instant.yaml'
 
+  # Gridded ice layer on water for forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-iceLayerOnWater-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-iceLayerOnWater-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-iceLayerOnWater-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-iceLayerOnWater-gg-fc-ensemble-simple-instant.yaml'
+
   # Gridded model levels for forecast
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-deterministic-ccsds-instant.yaml'
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/ml/rule-ml-gg-fc-deterministic-simple-instant.yaml'

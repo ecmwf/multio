@@ -21,6 +21,7 @@ PRIVATE
 TYPE :: GRIB_ENCODER_OPTIONS_T
 
   ! Variables used to control the cache dump functionality
+  LOGICAL :: ALLOW_MULTIPLE_ENCODING_RULES = .FALSE.
   LOGICAL :: DUMP_SAMPLES_TO_ONE_FILE = .TRUE.
   CHARACTER(LEN=256) :: DUMP_PATH = './dump'
 

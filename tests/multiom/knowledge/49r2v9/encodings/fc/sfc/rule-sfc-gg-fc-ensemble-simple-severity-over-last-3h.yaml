@@ -4,7 +4,7 @@ name: 'rule-sfc-gg-fc-ensemble-simple-severity-over-last-3h'
 
 #
 # Future use
-tag: 'fdb-01'
+tag: 'grib2'
 
 
 #

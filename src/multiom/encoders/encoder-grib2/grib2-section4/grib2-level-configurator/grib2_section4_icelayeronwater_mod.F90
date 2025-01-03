@@ -680,6 +680,7 @@ IMPLICIT NONE
 
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
+
   ! Logging
   PP_LOG_DEVELOP_STR( 'PRESET ICE LAYER ON WATER' )
 
@@ -688,8 +689,8 @@ IMPLICIT NONE
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfFirstFixedSurface', 174_JPIB_K )
   PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfSecondFixedSurface', 176_JPIB_K )
   PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface' )
-  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfSecondFixedSurface' )
-  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfFirstFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfSecondFixedSurface' )
   PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfSecondFixedSurface' )
 
   ! Trace end of procedure (on success)

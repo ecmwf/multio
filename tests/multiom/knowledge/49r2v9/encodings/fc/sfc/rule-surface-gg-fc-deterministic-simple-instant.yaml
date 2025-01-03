@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-sfc-gg-fc-ensemble-simple-mode-over-last-3h'
+name: 'rule-surface-gg-fc-deterministic-simple-instant'
 
 #
 # Future use
@@ -17,7 +17,15 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        260321
+        '26:32', '34:43', '66:67', 74,
+        129, 134, 139, 141, 148, 151, 159, '160:163', '165:168',
+        170, '172:174', '186:188', 198, 202, 207, '229:232',
+        '234:236', '243:245', 3020,
+        174096, 228003, '228007:228013', '228015:228020',
+        '228023:228024', 228029, '228045:228048',
+        '228131:228132', '228217:228221',
+        228227, '228231:228237',228239, 228240, 228241, '228246:228247',
+        260015, 260048, 260109, 260121, 260123, 262139, 262140
       ]
 
     - type: 'levtype'
@@ -33,6 +41,7 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
+      negate: true
 
     - type: 'packing'
       operation: 'match'
@@ -77,21 +86,16 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 11
+    template-number: 0
 
-    time-statistics-configurator:
-      type: 'fixed-timerange'
-      type-of-statistical-processing: 'mode'
-      overall-length-of-timerange: '3h'
+    point-in-time-configurator:
+      type: 'default'
 
     param-configurator:
       type: 'paramId'
 
     level-configurator:
       type: 'surface'
-
-    ensemble-configurator:
-      type: 'default'
 
   # Section 5: Data Representation Section
   data-representation-section:

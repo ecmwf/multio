@@ -1,10 +1,16 @@
 encoding-rules:
 
   # Gridded surfaces for forecast
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-instant.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-surface-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-surface-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-surface-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-surface-gg-fc-ensemble-simple-instant.yaml'
+
+  # Gridded surfaces for forecast
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-entireAtmosphere-gg-fc-deterministic-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-entireAtmosphere-gg-fc-deterministic-simple-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-entireAtmosphere-gg-fc-ensemble-ccsds-instant.yaml'
+  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-entireAtmosphere-gg-fc-ensemble-simple-instant.yaml'
 
   # Gridded ice layer on water for forecast
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-iceLayerOnWater-gg-fc-deterministic-ccsds-instant.yaml'
@@ -118,22 +124,22 @@ encoding-rules:
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-6h.yaml'
 
   # Gridded surfaces for forecast average over last 1h
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-average-over-last-1h.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-average-over-last-1h.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-average-over-last-1h.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-1h.yaml'
+  #- file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-average-over-last-1h.yaml'
+  #- file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-average-over-last-1h.yaml'
+  #- file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-average-over-last-1h.yaml'
+  #- file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-1h.yaml'
 
   # Gridded surfaces for forecast average over last 3h
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-average-over-last-3h.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-average-over-last-3h.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-average-over-last-3h.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-3h.yaml'
+  #- file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-average-over-last-3h.yaml'
+  #- file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-average-over-last-3h.yaml'
+  #- file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-average-over-last-3h.yaml'
+  #- file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-3h.yaml'
 
   # Gridded surfaces for forecast average over last 6h
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-average-over-last-6h.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-average-over-last-6h.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-average-over-last-6h.yaml'
-  - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-6h.yaml'
+  #- file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-average-over-last-6h.yaml'
+  #- file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-simple-average-over-last-6h.yaml'
+  #- file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-ccsds-average-over-last-6h.yaml'
+  #- file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-ensemble-simple-average-over-last-6h.yaml'
 
   # Gridded surfaces for forecast mode over last 1h
   - file: '{MULTIO_INSTALL_DIR}/{KNOWLEDGE_VERSION}/encodings/fc/sfc/rule-sfc-gg-fc-deterministic-ccsds-mode-over-last-1h.yaml'

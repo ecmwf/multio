@@ -31,7 +31,7 @@ set( MULTIOM_ENCODER_GRIB2_SECTION4_LEVEL_MAIN_SOURCES
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_depthbelowland_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_depthbelowsealayer_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_depthbelowsea_mod.F90
-  # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_entireatmosphere_mod.F90
+  ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_entireatmosphere_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_entirelake_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_entiremeltpond_mod.F90
   # ${MULTIOM_ENCODERS_GRIB2_SECTION4_LEVEL_DIR}/grib2_section4_entireocean_mod.F90

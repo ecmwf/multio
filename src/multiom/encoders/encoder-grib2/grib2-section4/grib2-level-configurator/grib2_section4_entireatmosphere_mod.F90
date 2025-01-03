@@ -151,7 +151,7 @@ CONTAINS
   !>
   !> This procedure set in the grib header all the variables needed to configure a specific level
   !>
-  PROCEDURE, PRIVATE, PASS, NON_OVERRIDABLE :: SET_LEVELS => G2S4_ENTIREATMOSPHERE_SET_LEVELS
+  ! PROCEDURE, PRIVATE, PASS, NON_OVERRIDABLE :: SET_LEVELS => G2S4_ENTIREATMOSPHERE_SET_LEVELS
 
 END TYPE
 
@@ -687,10 +687,16 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
+  ! Logging
+  PP_LOG_DEVELOP_STR( 'PRESET ENTIRE ATMOSPHERE' )
+
   ! According to the options decide where to set the levels (preset or runlevel)
-  IF ( OPT%CACHE_STRATEGY .EQ. OPT_CACHE_FULL_E ) THEN
-    PP_TRYCALL(ERRFLAG_SETLEVELS) THIS%SET_LEVELS( MSG, PAR, OPT, METADATA, HOOKS )
-  ENDIF
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfFirstFixedSurface', 1_JPIB_K )
+  PP_METADATA_SET( METADATA, ERRFLAG_METADATA, 'typeOfSecondFixedSurface', 8_JPIB_K )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfFirstFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaleFactorOfFirstFixedSurface' )
+  PP_METADATA_SET_MISSING( METADATA, ERRFLAG_METADATA, 'scaledValueOfSecondFixedSurface' )
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -847,10 +853,6 @@ IMPLICIT NONE
   ! Initialization of good path return value
   PP_SET_ERR_SUCCESS( RET )
 
-  ! According to the options decide where to set the levels (preset or runlevel)
-  IF ( OPT%CACHE_STRATEGY .NE. OPT_CACHE_FULL_E ) THEN
-    PP_TRYCALL(ERRFLAG_SETLEVELS) THIS%SET_LEVELS( MSG, PAR, OPT, METADATA, HOOKS )
-  ENDIF
 
   ! Trace end of procedure (on success)
   PP_METADATA_EXIT_PROCEDURE( METADATA, ERRFLAG_METADATA )
@@ -1165,7 +1167,7 @@ END FUNCTION G2S4_ENTIREATMOSPHERE_FREE
 #undef PP_PROCEDURE_TYPE
 
 
-
+#if 0
 !>
 !> @brief Presets GRIB2 Section 4 level configuration using the provided parameters and message data.
 !>
@@ -1325,7 +1327,7 @@ PP_ERROR_HANDLER
 END FUNCTION G2S4_ENTIREATMOSPHERE_SET_LEVELS
 #undef PP_PROCEDURE_NAME
 #undef PP_PROCEDURE_TYPE
-
+#endif
 
 END MODULE GRIB2_SECTION4_ENTIREATMOSPHERE_MOD
 #undef PP_SECTION_NAME

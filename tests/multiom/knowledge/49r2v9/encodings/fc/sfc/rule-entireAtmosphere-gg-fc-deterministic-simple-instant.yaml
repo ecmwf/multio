@@ -1,6 +1,6 @@
 #
 # Name of the rule
-name: 'rule-sfc-gg-fc-ensemble-simple-mode-over-last-3h'
+name: 'rule-entireAtmosphere-gg-fc-deterministic-simple-instant'
 
 #
 # Future use
@@ -17,7 +17,8 @@ filter:
     - type: 'param'
       operation: 'match'
       values: [
-        260321
+        59, '78:79', '136:137', 164, 206, '162059:162063', '162071:162072',
+        162093, 228044, 228050, 228052, '228088:228090'
       ]
 
     - type: 'levtype'
@@ -33,6 +34,7 @@ filter:
       value: 'forecast'
 
     - type: 'is-ensemble'
+      negate: true
 
     - type: 'packing'
       operation: 'match'
@@ -77,21 +79,16 @@ encoder:
 
   # Section 4: Product Definition Section
   product-definition-section:
-    template-number: 11
+    template-number: 0
 
-    time-statistics-configurator:
-      type: 'fixed-timerange'
-      type-of-statistical-processing: 'mode'
-      overall-length-of-timerange: '3h'
+    point-in-time-configurator:
+      type: 'default'
 
     param-configurator:
       type: 'paramId'
 
     level-configurator:
-      type: 'surface'
-
-    ensemble-configurator:
-      type: 'default'
+      type: 'entireAtmosphere'
 
   # Section 5: Data Representation Section
   data-representation-section:

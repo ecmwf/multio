@@ -37,6 +37,15 @@ set(RESULT_FILE "Result_chunks_0_of_11.grib")
 set(RESTART_ID "none")
 
 ecbuild_add_test(
+    TARGET  ${PREFIX}_clean_dir
+    COMMAND ${CMAKE_COMMAND}
+    ARGS    -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/${RESTART_MAIN_FOLDER}
+)
+set_tests_properties(${PREFIX}_clean_dir PROPERTIES
+    FIXTURES_SETUP ${PREFIX}_clean_dir
+)
+
+ecbuild_add_test(
     TARGET       ${PREFIX}_run_0-24_new_restart
     CONDITION    HAVE_ATLAS_IO
     TEST_DEPENDS ${PREFIX}_get_data
@@ -44,21 +53,11 @@ ecbuild_add_test(
     COMMAND      multio-feed
     ARGS         --stepRange=0-24 --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-restart.yaml standard_0_statistics_test_data.grib
 )
+set_tests_properties(${PREFIX}_run_0-24_new_restart PROPERTIES
+    FIXTURES_SETUP    ${PREFIX}_run_0-24_new_restart
+    FIXTURES_REQUIRED ${PREFIX}_clean_dir
+)
 
-# ecbuild_add_test(
-#     TARGET       ${PREFIX}_check_metadata_0-24_new_restart
-#     TEST_DEPENDS ${PREFIX}_run_0-24_new_restart
-#     ARGS         -H "Result_chunks_0_of_11.grib" "Reference_chunks_0_of_11.grib"
-#     COMMAND      grib_compare
-# )
-# 
-# ecbuild_add_test(
-#     TARGET       ${PREFIX}_check_values_0-24_new_restart
-#     TEST_DEPENDS ${PREFIX}_check_metadata_0-24_new_restart
-#     ARGS         -P -T10 "Result_chunks_0_of_11.grib" "Reference_chunks_0_of_11.grib"
-#     COMMAND      grib_compare
-# )
-# 
 # Set the number of steps and loop through them
 set(NUM_STEPS 11)
 set( prevStepRange "0-24" )
@@ -82,27 +81,16 @@ foreach(i RANGE 1 ${NUM_STEPS})
 
     # Run the multio-feed command
     ecbuild_add_test(
-        TARGET       ${PREFIX}_run_${stepRange}_new_restart
-        CONDITION    HAVE_ATLAS_IO
-        TEST_DEPENDS ${PREFIX}_check_metadata_${prevStepRange}_new_restart
-        ENVIRONMENT  READ_RESTART=${READ_RESTART} WRITE_RESTART=${WRITE_RESTART} RESTART_MAIN_FOLDER=${RESTART_MAIN_FOLDER}  RESULT_FILE=${RESULT_FILE}  RESTART_ID=${RESTART_ID}
-        COMMAND      multio-feed
-        ARGS         --stepRange=${stepRange} --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-restart.yaml standard_0_statistics_test_data.grib
+        TARGET      ${PREFIX}_run_${stepRange}_new_restart
+        CONDITION   HAVE_ATLAS_IO
+        ENVIRONMENT READ_RESTART=${READ_RESTART} WRITE_RESTART=${WRITE_RESTART} RESTART_MAIN_FOLDER=${RESTART_MAIN_FOLDER}  RESULT_FILE=${RESULT_FILE}  RESTART_ID=${RESTART_ID}
+        COMMAND     multio-feed
+        ARGS        --stepRange=${stepRange} --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-restart.yaml standard_0_statistics_test_data.grib
     )
-
-#    ecbuild_add_test(
-#        TARGET       ${PREFIX}_check_metadata_${stepRange}_new_restart
-#        TEST_DEPENDS ${PREFIX}_run_${stepRange}_new_restart
-#        ARGS         -H "Result_chunks_${i}_of_11.grib" "Reference_chunks_${i}_of_11.grib"
-#        COMMAND      grib_compare
-#    )
-#
-#    ecbuild_add_test(
-#        TARGET       ${PREFIX}_check_values_${stepRange}_new_restart
-#        TEST_DEPENDS ${PREFIX}_check_metadata_${stepRange}_new_restart
-#        ARGS         -P -T10 "Result_chunks_${i}_of_11.grib" "Reference_chunks_${i}_of_11.grib"
-#        COMMAND      grib_compare
-#    )
+    set_tests_properties(${PREFIX}_run_${stepRange}_new_restart PROPERTIES
+    FIXTURES_SETUP    ${PREFIX}_run_${stepRange}_new_restart
+    FIXTURES_REQUIRED ${PREFIX}_run_${prevStepRange}_new_restart
+    )
 
     set( prevStepRange "${stepRange}" )
 
@@ -124,34 +112,45 @@ ecbuild_add_test(
     COMMAND      multio-feed
     ARGS         --decode --plans=${CMAKE_CURRENT_SOURCE_DIR}/test-restart.yaml standard_0_statistics_test_data.grib
 )
-
-ecbuild_add_test(
-    TARGET       ${PREFIX}_check_metadata_single_chunk_new_restart
-    TEST_DEPENDS ${PREFIX}_run_single_chunk_new_restart
-    ARGS         -H "Result_single_chunk.grib" "Reference_single_chunk.grib"
-    COMMAND      grib_compare
+set_tests_properties(${PREFIX}_run_single_chunk_new_restart PROPERTIES
+    FIXTURES_SETUP    ${PREFIX}_run_single_chunk_new_restart
+    FIXTURES_REQUIRED ${PREFIX}_clean_dir
 )
 
 ecbuild_add_test(
-    TARGET       ${PREFIX}_check_values_single_chunk_new_restart
-    TEST_DEPENDS ${PREFIX}_check_metadata_single_chunk_new_restart
-    ARGS         -P -T10 "Result_single_chunk.grib" "Reference_single_chunk.grib"
-    COMMAND      grib_compare
+    TARGET  ${PREFIX}_check_metadata_single_chunk_new_restart
+    ARGS    -H "Result_single_chunk.grib" "Reference_single_chunk.grib"
+    COMMAND grib_compare
+)
+set_tests_properties(${PREFIX}_check_metadata_single_chunk_new_restart PROPERTIES
+    FIXTURES_REQUIRED "${PREFIX}_run_${stepRange}_new_restart;${PREFIX}_run_single_chunk_new_restart"
 )
 
+ecbuild_add_test(
+    TARGET  ${PREFIX}_check_values_single_chunk_new_restart
+    ARGS    -P -T10 "Result_single_chunk.grib" "Reference_single_chunk.grib"
+    COMMAND grib_compare
+)
+set_tests_properties(${PREFIX}_check_values_single_chunk_new_restart PROPERTIES
+    FIXTURES_REQUIRED "${PREFIX}_run_${stepRange}_new_restart;${PREFIX}_run_single_chunk_new_restart"
+)
 
 #
 # Final comparison
 ecbuild_add_test(
-    TARGET       ${PREFIX}_check_metadata_singleVSrestart_chunk_new_restart
-    TEST_DEPENDS ${PREFIX}_check_values_single_chunk_new_restart
-    ARGS         -H "Result_chunks_11_of_11.grib" "Result_single_chunk.grib"
-    COMMAND      grib_compare
+    TARGET  ${PREFIX}_check_metadata_singleVSrestart_chunk_new_restart
+    ARGS    -H "Result_chunks_11_of_11.grib" "Result_single_chunk.grib"
+    COMMAND grib_compare
+)
+set_tests_properties(${PREFIX}_check_metadata_singleVSrestart_chunk_new_restart PROPERTIES
+    FIXTURES_REQUIRED "${PREFIX}_run_${stepRange}_new_restart;${PREFIX}_run_single_chunk_new_restart"
 )
 
 ecbuild_add_test(
-    TARGET       ${PREFIX}_check_values_singleVSrestart_chunk_new_restart
-    TEST_DEPENDS ${PREFIX}_check_metadata_singleVSrestart_chunk_new_restart
-    ARGS         -P -T10 "Result_chunks_11_of_11.grib" "Result_single_chunk.grib"
-    COMMAND      grib_compare
+    TARGET  ${PREFIX}_check_values_singleVSrestart_chunk_new_restart
+    ARGS    -P -T10 "Result_chunks_11_of_11.grib" "Result_single_chunk.grib"
+    COMMAND grib_compare
+)
+set_tests_properties(${PREFIX}_check_values_singleVSrestart_chunk_new_restart PROPERTIES
+    FIXTURES_REQUIRED "${PREFIX}_run_${stepRange}_new_restart;${PREFIX}_run_single_chunk_new_restart"
 )
